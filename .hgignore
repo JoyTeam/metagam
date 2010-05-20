@@ -2,7 +2,6 @@ syntax: glob
 *.orig
 *.rej
 *~
-*.o
 tests/*.err
 
 syntax: regexp
