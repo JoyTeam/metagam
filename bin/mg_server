@@ -1,0 +1,10 @@
+#!/usr/bin/python2.6
+
+from mg.srv.common import Server
+from concurrence import dispatch
+
+def main():
+    server = Server()
+    server.run()
+
+dispatch(main)

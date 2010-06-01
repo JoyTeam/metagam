@@ -3,6 +3,7 @@ syntax: glob
 *.rej
 *~
 tests/*.err
+*.pyc
 
 syntax: regexp
 .*\#.*\#$
