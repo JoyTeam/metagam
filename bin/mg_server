@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 
-from mg.srv.common import Server
+from mg.srv.server import Server
 from concurrence import dispatch
 
 def main():

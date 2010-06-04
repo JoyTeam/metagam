@@ -1,0 +1,12 @@
+#!/usr/bin/python2.6
+
+from mg.srv.director import Director
+from mg.srv.common import Instance
+from concurrence import dispatch
+
+def main():
+    inst = Instance()
+    director = Director(inst)
+    director.run()
+
+dispatch(main)
