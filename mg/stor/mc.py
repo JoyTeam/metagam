@@ -7,7 +7,7 @@ class MemcachedPool(object):
     Handles pool of MemcacheConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("localhost", 11211), size=10):
+    def __init__(self, host=("127.0.0.1", 11211), size=10):
         self.host = host
         self.connections = []
         self.size = size
@@ -21,7 +21,7 @@ class MemcachedPool(object):
         return connection
 
     def get(self):
-        "Get a connection from the pool. If pool is empty, the current tasklet will be blocked"
+        "Get a connection from the pool. If the pool is empty, current tasklet will be blocked"
         # The Pool contains at least one connection
         if len(self.connections) > 0:
             return self.connections.pop(0)
@@ -55,9 +55,16 @@ class Memcached(object):
     pool - MemcachedPool object
     prefix will be used in every key
     """
-    def __init__(self, pool, prefix):
+    def __init__(self, pool=None, prefix=""):
+        """
+        pool - MemcachedPool object
+        prefix - prefix for all keys
+        """
         object.__init__(self)
-        self.pool = pool
+        if pool is None:
+            self.pool = MemcachedPool()
+        else:
+            self.pool = pool
         self.prefix = prefix
         self.prefix_re = re.compile("^" + prefix)
     

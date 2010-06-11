@@ -7,7 +7,7 @@ import logging
 import urlparse
 import cgi
 import re
-import urllib
+import mg.tools
 
 class Request(object):
     "HTTP request"
@@ -101,7 +101,7 @@ class WebDaemon(object):
         "Process single HTTP request"
         request = Request(environ, start_response)
         # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-        uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', urllib.unquote(request.uri()))).decode("utf-8")
+        uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
         return self.req_uri(request, uri)
 
     def req_uri(self, request, uri):

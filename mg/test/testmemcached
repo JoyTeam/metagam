@@ -7,7 +7,7 @@ from concurrence import dispatch, Tasklet
 
 class TestMemcached(unittest.TestCase):
     def setUp(self):
-        self.mc = Memcached(MemcachedPool(), "mgtest_")
+        self.mc = Memcached(prefix="mgtest_")
 
     def testsetget(self):
         self.mc.set("key1", "value1")
