@@ -1,0 +1,32 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import unittest
+from concurrence import dispatch, Tasklet
+
+from mg.core import *
+from mg.stor.db import DatabasePool
+from mg.stor.mc import Memcached
+
+class TestMemcached(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), mc=Memcached(prefix="mgtest_"))
+        list = []
+        self.app.hooks.call("core.loaded_modules", list)
+        self.assertEqual(len(list), 0)
+
+        self.app.modules.load(["test.Test1"])
+        list = []
+        self.app.hooks.call("core.loaded_modules", list)
+        self.assertEqual(len(list), 1)
+        self.assertEqual(list[0], "test.Test1")
+
+        dbstruct = {}
+        self.app.hooks.call("database.struct", dbstruct)
+        self.assertTrue(len(dbstruct) > 0)
+
+if __name__ == "__main__":
+    dispatch(unittest.main)

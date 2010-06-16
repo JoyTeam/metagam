@@ -117,32 +117,3 @@ class WebDaemon(object):
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
         return request.not_found()
-
-class Instance:
-    "Daemon instance. It contains references to all singleton objects"
-    def __init__(self):
-        pass
-
-class Application:
-    """
-    Application is anything that can process unified /group/hook/args
-    HTTP requests, call hooks, keep it's own database with configuration,
-    data and hooks
-    """
-    def __init__(self, dbpool=None, dbhost=None, dbname=None, mcpool=None, mcprefix=None):
-        """
-        dbpool - DatabasePool object. If None a new one will be created automatically (size=10)
-        mcpool - MemcachedPool object. If None a new one will be created automatically (host=localhost, size=10)
-        dbhost, dbname - database host and name
-        mcprefix - memcached prefix
-        """
-        self.db = Database(dbpool, dbhost, dbname)
-        self.mc = Memcached(mcpool, mcprefix)
-        pass
-
-    def http_request(self, request, group, hook, args):
-        print "group=%s, hook=%s, args=%s" % (group, hook, args)
-        args = cgi.escape(args)
-        param = request.param('param')
-        param = cgi.escape(param)
-        return request.response_unicode('<html><body>Hello, world! args=%s, param=%s</body></html>' % (args, param))
