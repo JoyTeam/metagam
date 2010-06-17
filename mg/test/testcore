@@ -12,7 +12,7 @@ class TestMemcached(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test(self):
+    def test01(self):
         self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         list = []
         self.app.hooks.call("core.loaded_modules", list)
@@ -28,9 +28,35 @@ class TestMemcached(unittest.TestCase):
         dbstruct = {}
         self.app.hooks.call("database.struct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
-        self.assertTrue("Config" in dbstruct)
-        self.assertTrue("Hooks" in dbstruct)
+        self.assertTrue("Core" in dbstruct)
         self.app.hooks.call("database.apply", dbstruct)
+
+        self.app.config.load_groups(["a", "b", "c"])
+        self.assertTrue("a" in self.app.config._config)
+        self.assertTrue("b" in self.app.config._config)
+        self.assertTrue("c" in self.app.config._config)
+        self.assertFalse("d" in self.app.config._config)
+        self.app.config.set("a", "key1", "value1")
+        self.assertEqual(self.app.config.get("a", "key1"), "value1")
+        self.app.config.store()
+
+    def test02(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.assertEqual(self.app.config.get("a", "key1"), "value1")
+        self.app.config.set("a", "key2", "value2")
+        self.app.config.delete("a", "key1")
+        self.app.config.store()
+        self.assertEqual(self.app.config.get("a", "key1"), None)
+        self.assertEqual(self.app.config.get("a", "key2"), "value2")
+
+    def test03(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.assertEqual(self.app.config.get("a", "key1"), None)
+        self.assertEqual(self.app.config.get("a", "key2"), "value2")
+        self.assertTrue("a" in self.app.config._config)
+        self.assertFalse("b" in self.app.config._config)
+        self.assertFalse("c" in self.app.config._config)
+        self.assertFalse("d" in self.app.config._config)
 
 if __name__ == "__main__":
     dispatch(unittest.main)

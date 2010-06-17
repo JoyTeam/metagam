@@ -5,6 +5,9 @@ import imp
 import mg.mod
 from operator import itemgetter
 from concurrence.extra import Lock
+from cassandra.ttypes import *
+import time
+import json
 
 class Hooks(object):
     """
@@ -22,8 +25,6 @@ class Hooks(object):
         groups - list of hook group names
         """
         # TODO: fetch list of modules handling this groups from the database
-
-
         # TODO: call self.app().modules.load_groups(groups)
         # TODO: cache group status in self._loaded_groups
         # TODO: don't forget to wrap I/O operations in the application-wide mutex
@@ -67,6 +68,7 @@ class Config(object):
     """
     def __init__(self, app):
         self._config = dict()
+        self._modified = set()
         self.app = weakref.ref(app)
 
     def load_groups(self, groups):
@@ -74,7 +76,16 @@ class Config(object):
         Load requested config groups.
         groups - list of config group names
         """
-        # TODO: don't forget to wrap I/O operations in the application-wide mutex
+        with self.app().config_lock:
+            load_groups = [g for g in groups if g not in self._config]
+            if len(load_groups):
+                db = self.app().db()
+                data = db.get_slice("Config", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
+                for col in data:
+                    self._config[col.column.name] = json.loads(col.column.value)
+                for g in load_groups:
+                    if not g in self._config:
+                        self._config[g] = {}
         pass
 
     def load_all(self):
@@ -89,11 +100,44 @@ class Config(object):
         group and name - key identifier
         default - default value for the key
         """
-        # ensure modules are loaded
         if group not in self._config:
             self.load_groups([group])
-        # fetch the value
         return self._config[group].get(name, default)
+
+    def set(self, group, name, value):
+        """
+        Change config value
+        group and name - key identifier
+        value - value to set
+        Note: to store configuration in the database use store() method
+        """
+        with self.app().config_lock:
+            if group not in self._config:
+                self.load_groups([group])
+            self._config[group][name] = value
+            self._modified.add(group)
+
+    def delete(self, group, name):
+        """
+        Delete config value
+        group and name - key identifier
+        Note: to store configuration in the database use store() method
+        """
+        with self.app().config_lock:
+            if group not in self._config:
+                self.load_groups([group])
+            del self._config[group][name]
+            self._modified.add(group)
+
+    def store(self):
+        if len(self._modified):
+            with self.app().config_lock:
+                db = self.app().db()
+                timestamp = time.time() * 1000
+                data = [(g, json.dumps(self._config[g])) for g in self._modified]
+                mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
+                db.batch_mutate({"Config": {"Core": mutations}}, ConsistencyLevel.ALL)
+                self._modified.clear()
 
 class Module(object):
     """
@@ -192,6 +236,7 @@ class Application(object):
         self.hooks = Hooks(self)
         self.config = Config(self)
         self.modules = Modules(self)
+        self.config_lock = Lock()
 
     def http_request(self, request, group, hook, args):
         print "group=%s, hook=%s, args=%s" % (group, hook, args)

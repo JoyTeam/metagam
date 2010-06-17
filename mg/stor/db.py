@@ -61,6 +61,34 @@ class Database(object):
         self.apply_keyspace()
         return self.conn.cass.get_slice(*args, **kwargs)
 
+    def multiget_slice(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.multiget_slice(*args, **kwargs)
+
+    def batch_mutate(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.batch_mutate(*args, **kwargs)
+
+    def insert(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.insert(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.remove(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.get(*args, **kwargs)
+
+    def get_count(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.get_count(*args, **kwargs)
+
+    def get_range_slices(self, *args, **kwargs):
+        self.apply_keyspace()
+        return self.conn.cass.get_range_slices(*args, **kwargs)
+
 class DatabasePool(object):
     """
     Handles pool of DatabaseConnection objects, allowing get and put operations.

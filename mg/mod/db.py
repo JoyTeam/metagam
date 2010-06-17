@@ -9,8 +9,7 @@ class CommonDatabaseStruct(Module):
         self.rhook("database.apply", self.database_apply)
 
     def database_struct(self, dbstruct):
-        dbstruct["Config"] = CfDef()
-        dbstruct["Hooks"] = CfDef()
+        dbstruct["Core"] = CfDef()
 
     def database_apply(self, dbstruct):
         db = self.db()
