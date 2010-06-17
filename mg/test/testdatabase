@@ -10,12 +10,10 @@ import pprint
 
 class TestMemcached(unittest.TestCase):
     def setUp(self):
-        self.db = DatabaseConnection()
-        self.db.connect()
-        self.pp = pprint.PrettyPrinter(indent=2)
+        self.db = DatabasePool().dbget("mgtest")
 
         self.cleanup()
-        restruct = DatabaseRestructure(self.db, "mgtest")
+        restruct = DatabaseRestructure(self.db)
 
         struct = {
             "Family1": CfDef(comparator_type="BytesType"),
@@ -56,23 +54,20 @@ class TestMemcached(unittest.TestCase):
         self.assertTrue("Family2" not in ksinfo)
         self.assertTrue("Family3" in ksinfo)
 
-        self.db.set_keyspace("mgtest")
-
     def tearDown(self):
         #self.cleanup()
         pass
 
     def cleanup(self):
         try:
-            self.db.cass.set_keyspace("system")
-            self.db.cass.system_drop_keyspace("mgtest")
+            self.db.system_drop_keyspace("mgtest")
         except Exception, e:
             pass
 
     def testputget(self):
         timestamp = time.time() * 1000
-        self.db.cass.insert("1", ColumnParent(column_family="Family1"), Column(name="email", value="aml@rulezz.ru - проверка", clock=Clock(timestamp=timestamp)), ConsistencyLevel.QUORUM)
-        self.pp.pprint(self.db.cass.get_slice("1", ColumnParent(column_family="Family1"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.QUORUM))
+        self.db.insert("1", ColumnParent(column_family="Family1"), Column(name="email", value="aml@rulezz.ru - проверка", clock=Clock(timestamp=timestamp)), ConsistencyLevel.QUORUM)
+        print self.db.get_slice("1", ColumnParent(column_family="Family1"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.QUORUM)
 
 if __name__ == "__main__":
     dispatch(unittest.main)

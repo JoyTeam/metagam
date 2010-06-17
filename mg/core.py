@@ -4,6 +4,7 @@ import sys
 import imp
 import mg.mod
 from operator import itemgetter
+from concurrence.extra import Lock
 
 class Hooks(object):
     """
@@ -21,6 +22,8 @@ class Hooks(object):
         groups - list of hook group names
         """
         # TODO: fetch list of modules handling this groups from the database
+
+
         # TODO: call self.app().modules.load_groups(groups)
         # TODO: cache group status in self._loaded_groups
         # TODO: don't forget to wrap I/O operations in the application-wide mutex
@@ -71,6 +74,7 @@ class Config(object):
         Load requested config groups.
         groups - list of config group names
         """
+        # TODO: don't forget to wrap I/O operations in the application-wide mutex
         pass
 
     def load_all(self):
@@ -120,6 +124,9 @@ class Module(object):
         "Appends name of the current module to the list"
         list.append(self.fqn)
 
+    def db(self):
+        return self.app().dbpool.dbget(self.app().keyspace)
+
 class ModuleException(Exception):
     "Error during module loading"
     pass
@@ -140,27 +147,28 @@ class Modules(object):
         modules - list of module names (format: "group.Class" means
         "import Class from mg.mod.group")
         """
-        for mod in modules:
-            if not mod in self._loaded_modules:
-                m = self._path_re.match(mod)
-                if not m:
-                    raise ModuleError("Invalid module name: %s" % mod)
-                (module_name, class_name) = m.group(1, 2)
-                module = sys.modules.get(module_name)
-                if module is None:
-                    # TODO: wrap module loading into the system-wide mutex
-                    (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
-                    module = imp.load_module(module_name, file, pathname, description)
-                cls = module.__dict__[class_name]
-                obj = cls(self.app(), mod)
-                obj.register()
-                self._loaded_modules[mod] = obj
+        with self.app().inst.modules_lock:
+            for mod in modules:
+                if not mod in self._loaded_modules:
+                    m = self._path_re.match(mod)
+                    if not m:
+                        raise ModuleError("Invalid module name: %s" % mod)
+                    (module_name, class_name) = m.group(1, 2)
+                    module = sys.modules.get(module_name)
+                    if module is None:
+                        (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
+                        module = imp.load_module(module_name, file, pathname, description)
+                    cls = module.__dict__[class_name]
+                    obj = cls(self.app(), mod)
+                    obj.register()
+                    self._loaded_modules[mod] = obj
 
 class Instance(object):
     """
     This is an executable instance. It keeps references to all major objects
     """
-    pass
+    def __init__(self):
+        self.modules_lock = Lock()
 
 class Application(object):
     """
@@ -168,15 +176,18 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, dbpool, mc):
+    def __init__(self, inst, dbpool, keyspace, mc):
         """
         inst - Instance object
-        dbpool - DatabasePool object. If None a new one will be created automatically (size=10)
-        mcpool - MemcachedPool object. If None a new one will be created automatically (host=localhost, size=10)
+        dbpool - DatabasePool object
+        keyspace - database keyspace
+        mc - Memcached object
         dbhost, dbname - database host and name
         mcprefix - memcached prefix
         """
+        self.inst = inst
         self.dbpool = dbpool
+        self.keyspace = keyspace
         self.mc = mc
         self.hooks = Hooks(self)
         self.config = Config(self)
@@ -188,3 +199,6 @@ class Application(object):
         param = request.param('param')
         param = cgi.escape(param)
         return request.response_unicode('<html><body>Hello, world! args=%s, param=%s</body></html>' % (args, param))
+
+    def db(self):
+        return self.dbpool.dbget(self.keyspace)

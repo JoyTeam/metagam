@@ -13,7 +13,7 @@ class TestMemcached(unittest.TestCase):
         pass
 
     def test(self):
-        self.app = Application(inst=Instance(), dbpool=DatabasePool(), mc=Memcached(prefix="mgtest_"))
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         list = []
         self.app.hooks.call("core.loaded_modules", list)
         self.assertEqual(len(list), 0)
@@ -24,9 +24,13 @@ class TestMemcached(unittest.TestCase):
         self.assertEqual(len(list), 1)
         self.assertEqual(list[0], "test.Test1")
 
+        self.app.modules.load(["db.CommonDatabaseStruct"])
         dbstruct = {}
         self.app.hooks.call("database.struct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
+        self.assertTrue("Config" in dbstruct)
+        self.assertTrue("Hooks" in dbstruct)
+        self.app.hooks.call("database.apply", dbstruct)
 
 if __name__ == "__main__":
     dispatch(unittest.main)
