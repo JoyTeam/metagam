@@ -6,6 +6,7 @@ from mg.net.thr import Socket
 from thrift.transport import TTransport
 from cassandra import Cassandra
 from cassandra.ttypes import *
+import socket
 
 class DatabaseError(Exception):
     "This exception can be raised during database queries"
@@ -94,7 +95,7 @@ class DatabasePool(object):
     Handles pool of DatabaseConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, hosts=(("127.0.0.1", 9160),), size=10):
+    def __init__(self, hosts=(("127.0.0.1", 9160),), size=None):
         self.hosts = list(hosts)
         self.connections = []
         self.size = size
@@ -115,7 +116,7 @@ class DatabasePool(object):
             return self.connections.pop(0)
 
         # There are no connections in the pool, but we may allocate more
-        if self.allocated < self.size:
+        if self.size is None or self.allocated < self.size:
             self.allocated += 1
             connection = self.new_connection()
             return connection
@@ -202,7 +203,7 @@ class DatabaseRestructure(object):
         family_exists = dict()
         required = set()
         if not self.db.keyspace in keyspaces:
-            dbdiff.ops.append(("cks", KsDef(name="mgtest", strategy_class="org.apache.cassandra.locator.RackUnawareStrategy", replication_factor=1, cf_defs=[])))
+            dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.RackUnawareStrategy", replication_factor=1, cf_defs=[])))
         else:
             family_exists = self.db.describe_keyspace(self.db.keyspace)
         for (name, cfdef) in config.items():

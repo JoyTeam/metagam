@@ -14,4 +14,5 @@ class CommonDatabaseStruct(Module):
     def database_apply(self, dbstruct):
         db = self.db()
         restruct = DatabaseRestructure(db)
-        restruct.apply(restruct.diff(dbstruct))
+        diff = restruct.diff(dbstruct)
+        restruct.apply(diff)

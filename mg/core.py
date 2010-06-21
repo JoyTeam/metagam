@@ -45,7 +45,7 @@ class Hooks(object):
                 self._groups[col.column.name] = json.loads(col.column.value)
             for g in load_groups:
                 if g not in self._groups:
-                    self._groups = {}
+                    self._groups[g] = {}
 
     def load_handlers(self, names):
         """
@@ -310,12 +310,12 @@ class Application(object):
         self.config_lock = Lock()
         self.hook_lock = Lock()
 
-    def http_request(self, request, group, hook, args):
-        print "group=%s, hook=%s, args=%s" % (group, hook, args)
-        args = cgi.escape(args)
-        param = request.param('param')
-        param = cgi.escape(param)
-        return request.response_unicode('<html><body>Hello, world! args=%s, param=%s</body></html>' % (args, param))
-
     def db(self):
+        "Get an instance of the Database"
         return self.dbpool.dbget(self.keyspace)
+
+    def dbrestruct(self):
+        "Check database structure and update if necessary"
+        dbstruct = {}
+        self.hooks.call("core.dbstruct", dbstruct)
+        self.hooks.call("core.dbapply", dbstruct)

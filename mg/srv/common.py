@@ -3,25 +3,37 @@ from concurrence.http import WSGIServer
 from concurrence import Tasklet
 from mg.stor.db import Database
 from mg.stor.mc import Memcached
+from mg.core import Application, Instance
 import logging
 import urlparse
 import cgi
 import re
 import mg.tools
 
+class DoubleResponseException(Exception):
+    "start_response called twice on the same request"
+    pass
+
 class Request(object):
     "HTTP request"
 
     def __init__(self, environ, start_response):
         self.environ = environ
-        self.start_response = start_response
+        self._start_response = start_response
         self._params_loaded = None
         self.headers = []
         self.content_type = 'text/html; charset=utf-8';
         self.config_stat = {}
         self.hook_stat = {}
+        self.headers_sent = False
         # Storing reference request to the current tasklet. It will be used in different modules to access currenct request implicitly
         Tasklet.current().req = self
+
+    def start_response(self, *args):
+        if self.headers_sent:
+            raise DoubleResponseException()
+        self.headers_sent = True
+        self._start_response(*args)
 
     def is_post_request(self):
         if self.environ['REQUEST_METHOD'].upper() != 'POST':
@@ -59,34 +71,37 @@ class Request(object):
         "Get the URI requested"
         return self.environ['PATH_INFO']
 
+    def send_response(self, status, headers, content):
+        self.content = content
+        self.start_response(status, headers)
+        return [content];
+
     def not_found(self):
         "Return 404 Not Found page"
-        self.start_response("404 Not Found", self.headers)
-        return ["<html><body><h1>404 Not Found</h1></body></html>"]
+        return self.send_response("404 Not Found", self.headers, "<html><body><h1>404 Not Found</h1></body></html>")
 
     def forbidden(self):
         "Return 403 Forbidden page"
-        self.start_response("403 Forbidden", self.headers)
-        return ["<html><body><h1>403 Forbidden</h1></body></html>"]
+        return self.send_response("403 Forbidden", self.headers, "<html><body><h1>403 Forbidden</h1></body></html>")
 
     def response(self, content):
         "Return HTTP response. content will be returned to the client"
         self.headers.append(('Content-type', self.content_type))
         self.headers.append(('Content-length', len(content)))
-        self.start_response("200 OK", self.headers)
-        return [content]
+        return self.send_response("200 OK", self.headers, content)
 
-    def response_unicode(self, content):
+    def uresponse(self, content):
         "Return HTTP response. content must be unicode - it will be converted to utf-8"
         return self.response(content.encode("utf-8"))
 
 class WebDaemon(object):
     "Abstract web application serving HTTP requests"
 
-    def __init__(self, inst):
+    def __init__(self, inst, app):
         object.__init__(self)
         self.server = WSGIServer(self.req)
         self.inst = inst
+        self.app = app
 
     def serve(self, addr):
         "Runs a WebDaemon instance listening given port"
@@ -116,4 +131,16 @@ class WebDaemon(object):
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
-        return request.not_found()
+        return self.app.http_request(request, group, hook, args)
+
+class WebApplication(Application):
+    """
+    WebApplication is an Application that can handle http requests
+    """
+    def http_request(self, request, group, hook, args):
+        "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
+        self.hooks.call("web-%s.%s" % (group, hook), args, request)
+        if request.headers_sent:
+            return [request.content]
+        else:
+            return request.not_found()
