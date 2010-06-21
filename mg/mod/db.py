@@ -5,8 +5,8 @@ from mg.stor.db import DatabaseRestructure
 class CommonDatabaseStruct(Module):
     def register(self):
         Module.register(self)
-        self.rhook("database.struct", self.database_struct)
-        self.rhook("database.apply", self.database_apply)
+        self.rhook("core.dbstruct", self.database_struct)
+        self.rhook("core.dbapply", self.database_apply)
 
     def database_struct(self, dbstruct):
         dbstruct["Core"] = CfDef()

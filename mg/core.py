@@ -9,6 +9,10 @@ from cassandra.ttypes import *
 import time
 import json
 
+class HookFormatException(Exception):
+    "Invalid hook format"
+    pass
+
 class Hooks(object):
     """
     This class is a hook manager for the application. It keeps list of loaded handlers
@@ -16,50 +20,118 @@ class Hooks(object):
     """
     def __init__(self, app):
         self.handlers = dict()
-        self._loaded_groups = set()
+        self._groups = dict()
+        self._loaded_hooks = set()
         self.app = weakref.ref(app)
+        self._path_re = re.compile(r'^(.+?)\.(.+)$')
 
     def load_groups(self, groups):
         """
         Load all modules handling any hooks from the given groups
         groups - list of hook group names
         """
-        # TODO: fetch list of modules handling this groups from the database
-        # TODO: call self.app().modules.load_groups(groups)
-        # TODO: cache group status in self._loaded_groups
-        # TODO: don't forget to wrap I/O operations in the application-wide mutex
-        pass
+        with self.app().hook_lock:
+            self._load_groups(groups)
 
-    def register(self, name, handler, priority=100):
+    def _load_groups(self, groups):
+        """
+        The same as load_groups but without locking
+        """
+        load_groups = [g for g in groups if g not in self._groups]
+        if len(load_groups):
+            db = self.app().db()
+            data = db.get_slice("Hooks", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
+            for col in data:
+                self._groups[col.column.name] = json.loads(col.column.value)
+            for g in load_groups:
+                if g not in self._groups:
+                    self._groups = {}
+
+    def load_handlers(self, names):
+        """
+        Load all modules handling any of listed hooks
+        names - list of hook names
+        """
+        with self.app().hook_lock:
+            load_hooks = [n for n in names if n not in self._loaded_hooks]
+            if len(load_hooks):
+                load_groups = []
+                load_hooks_list = []
+                for name in load_hooks:
+                    m = self._path_re.match(name)
+                    if not m:
+                        raise HookFormatException("Invalid hook name: %s" % name)
+                    (hook_group, hook_name) = m.group(1, 2)
+                    if hook_group not in self._groups:
+                        load_groups.append(hook_group)
+                    load_hooks_list.append((hook_group, hook_name))
+                    self._loaded_hooks.add(name)
+                self._load_groups(load_groups)
+                modules = []
+                for hook_group, hook_name in load_hooks_list:
+                    modules = self._groups[hook_group].get(hook_name)
+                    if modules is not None:
+                        self.app().modules.load(modules)
+
+    def register(self, module_name, hook_name, handler, priority=100):
         """
         Register hook handler
-        name - hook name (format: "group.name")
+        module_name - fully qualified module name
+        hook_name - hook name (format: "group.name")
         handler - will be called on hook calls
         priority - order of hooks execution
         """
-        list = self.handlers.get(name)
+        list = self.handlers.get(hook_name)
         if list is None:
             list = []
-            self.handlers[name] = list
-        list.append((handler, priority))
+            self.handlers[hook_name] = list
+        list.append((handler, priority, module_name))
         list.sort(key=itemgetter(1))
 
     def call(self, name, *args, **kwargs):
         """
         Call hook
-        name - hook name (format: "group.name" or "group.name.anything.else")
+        name - hook name (format: "group.name")
         *args and **kwargs - arbitrary parameters that will be passed to the handlers
         Hook handler receives all parameters passed to the method
         """
-        path = name.split(".")
+        m = self._path_re.match(name)
+        if not m:
+            raise HookFormatException("Invalid hook name: %s" % name)
+        (hook_group, hook_name) = m.group(1, 2)
         # ensure modules are loaded
-        if path[0] not in self._loaded_groups:
-            self.load_groups([path[0]])
+        if hook_group != "core":
+            if name not in self._loaded_hooks:
+                self.load_handlers([name])
         # call handlers
-        handlers = self.handlers.get("%s.%s" % (path[0], path[1]))
+        handlers = self.handlers.get(name)
         if handlers is not None:
-            for handler, priority in handlers:
+            for handler, priority, module_name in handlers:
                 handler(*args, **kwargs)
+
+    def store(self):
+        """
+        This method iterates over installed handlers and stores group => struct(name => modules_list)
+        into the database
+        """
+        rec = dict()
+        for name, handlers in self.handlers.iteritems():
+            m = self._path_re.match(name)
+            if not m:
+                raise HookFormatException("Invalid hook name: %s" % name)
+            (hook_group, hook_name) = m.group(1, 2)
+            if hook_group != "core":
+                grpdict = rec.get(hook_group)
+                if grpdict is None:
+                    grpdict = rec[hook_group] = dict()
+                grpdict[hook_name] = [handler[2] for handler in handlers]
+        with self.app().hook_lock:
+            db = self.app().db()
+            timestamp = time.time() * 1000
+            data = [(g, json.dumps(rec[g])) for g in rec]
+            mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
+            mutations.insert(0, Mutation(deletion=Deletion(clock=Clock(timestamp=timestamp-1))))
+            db.batch_mutate({"Hooks": {"Core": mutations}}, ConsistencyLevel.ALL)
 
 class Config(object):
     """
@@ -86,7 +158,6 @@ class Config(object):
                 for g in load_groups:
                     if not g in self._config:
                         self._config[g] = {}
-        pass
 
     def load_all(self):
         """
@@ -153,8 +224,8 @@ class Module(object):
         self.fqn = fqn
 
     def rhook(self, *args, **kwargs):
-        "Syntactic sugar for app.hooks.register(...)"
-        self.app().hooks.register(*args, **kwargs)
+        "Registers handler for the current module. Arguments: all for Hooks.register() without module name"
+        self.app().hooks.register(self.fqn, *args, **kwargs)
 
     def call(self, *args, **kwargs):
         "Syntactic sugar for app.hooks.call(...)"
@@ -182,7 +253,7 @@ class Modules(object):
     """
     def __init__(self, app):
         self.app = weakref.ref(app)
-        self._path_re = re.compile(r'^(.+)\.(.+)$')
+        self._path_re = re.compile(r'^(.+?)\.(.+)$')
         self._loaded_modules = dict()
 
     def load(self, modules):
@@ -193,10 +264,10 @@ class Modules(object):
         """
         with self.app().inst.modules_lock:
             for mod in modules:
-                if not mod in self._loaded_modules:
+                if mod not in self._loaded_modules:
                     m = self._path_re.match(mod)
                     if not m:
-                        raise ModuleError("Invalid module name: %s" % mod)
+                        raise ModuleException("Invalid module name: %s" % mod)
                     (module_name, class_name) = m.group(1, 2)
                     module = sys.modules.get(module_name)
                     if module is None:
@@ -237,6 +308,7 @@ class Application(object):
         self.config = Config(self)
         self.modules = Modules(self)
         self.config_lock = Lock()
+        self.hook_lock = Lock()
 
     def http_request(self, request, group, hook, args):
         print "group=%s, hook=%s, args=%s" % (group, hook, args)

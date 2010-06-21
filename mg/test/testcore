@@ -8,9 +8,18 @@ from mg.core import *
 from mg.stor.db import DatabasePool
 from mg.stor.mc import Memcached
 
+from cassandra.ttypes import *
+
 class TestMemcached(unittest.TestCase):
     def setUp(self):
         pass
+
+    def test00(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        try:
+            self.app.db().system_drop_keyspace("mgtest")
+        except Exception, e:
+            pass
 
     def test01(self):
         self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
@@ -26,10 +35,10 @@ class TestMemcached(unittest.TestCase):
 
         self.app.modules.load(["db.CommonDatabaseStruct"])
         dbstruct = {}
-        self.app.hooks.call("database.struct", dbstruct)
+        self.app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
         self.assertTrue("Core" in dbstruct)
-        self.app.hooks.call("database.apply", dbstruct)
+        self.app.hooks.call("core.dbapply", dbstruct)
 
         self.app.config.load_groups(["a", "b", "c"])
         self.assertTrue("a" in self.app.config._config)
@@ -57,6 +66,50 @@ class TestMemcached(unittest.TestCase):
         self.assertFalse("b" in self.app.config._config)
         self.assertFalse("c" in self.app.config._config)
         self.assertFalse("d" in self.app.config._config)
+
+    def test04(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.app.modules.load(["test.Test1"])
+        self.app.hooks.store()
+
+    def test05(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.assertEqual(len(self.app.hooks._groups), 0)
+        list = []
+        self.app.hooks.call("core.loaded_modules", list)
+        self.assertEqual(len(self.app.hooks._groups), 0)
+        self.app.hooks.call("grp1.test1")
+        self.assertEqual(len(self.app.hooks._groups), 1)
+        self.assertTrue("grp1" in self.app.hooks._groups)
+        self.app.hooks.load_handlers(["grp1.test2", "grp2.test3"])
+        self.assertEqual(len(self.app.hooks._groups), 2)
+        self.assertTrue("grp1" in self.app.hooks._groups)
+        self.assertTrue("grp2" in self.app.hooks._groups)
+
+    def test06(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.app.modules.load(["test.Test2"])
+        self.app.hooks.store()
+
+    def test07(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.assertEqual(len(self.app.hooks._groups), 0)
+        self.app.hooks.call("grp1.test1")
+        self.assertEqual(len(self.app.hooks._groups), 1)
+        self.assertTrue("grp1" in self.app.hooks._groups)
+        self.assertTrue("test.Test1" not in self.app.hooks._groups["grp1"]["test1"])
+        self.assertTrue("test.Test2" in self.app.hooks._groups["grp1"]["test1"])
+        self.app.modules.load(["test.Test1"])
+        self.app.hooks.store()
+
+    def test08(self):
+        self.app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        self.assertEqual(len(self.app.hooks._groups), 0)
+        self.app.hooks.call("grp1.test1")
+        self.assertEqual(len(self.app.hooks._groups), 1)
+        self.assertTrue("grp1" in self.app.hooks._groups)
+        self.assertTrue("test.Test1" in self.app.hooks._groups["grp1"]["test1"])
+        self.assertTrue("test.Test2" in self.app.hooks._groups["grp1"]["test1"])
 
 if __name__ == "__main__":
     dispatch(unittest.main)
