@@ -10,4 +10,4 @@ class Director(Module):
         args = cgi.escape(args)
         param = request.param('param')
         param = cgi.escape(param)
-        return request.uresponse('<html><body>Director test handler! args=%s, param=%s</body></html>' % (args, param))
+        return request.uresponse('<html><body>Director test handler: args=%s, param=%s</body></html>' % (args, param))
