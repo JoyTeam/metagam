@@ -9,6 +9,7 @@ import urlparse
 import cgi
 import re
 import mg.tools
+import json
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -93,6 +94,11 @@ class Request(object):
     def uresponse(self, content):
         "Return HTTP response. content must be unicode - it will be converted to utf-8"
         return self.response(content.encode("utf-8"))
+
+    def jresponse(self, obj):
+        "Return HTTP response. obj will be encoded into JSON"
+        self.content_type = "application/json"
+        return self.uresponse(json.dumps(obj))
 
 class WebDaemon(object):
     "Abstract web application serving HTTP requests"
