@@ -143,9 +143,23 @@ class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
+    def __init__(self, inst, dbpool, keyspace, mc, hook_prefix):
+        """
+        inst - Instance object
+        dbpool - DatabasePool object
+        keyspace - database keyspace
+        mc - Memcached object
+        dbhost, dbname - database host and name
+        mcprefix - memcached prefix
+        hook_prefix - prefix for hook names, i.e. prefix "web" means that
+           URL /group/hook will be mapped to hook name web-group.hook
+        """
+        Application.__init__(self, inst, dbpool, keyspace, mc)
+        self.hook_prefix = hook_prefix
+
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
-        self.hooks.call("web-%s.%s" % (group, hook), args, request)
+        self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), args, request)
         if request.headers_sent:
             return [request.content]
         else:

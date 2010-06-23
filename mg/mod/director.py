@@ -4,8 +4,8 @@ import cgi
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rhook("web-director.ready", self.ready)
-        self.rhook("web-director.test", self.test)
+        self.rhook("int-director.ready", self.ready)
+        self.rhook("int-director.test", self.test)
 
     def test(self, args, request):
         args = cgi.escape(args)

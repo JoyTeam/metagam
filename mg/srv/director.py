@@ -7,7 +7,7 @@ class Director(WebDaemon):
     "Director receives announces from Servers and manages all Servers"
     
     def __init__(self, inst):
-        app = WebApplication(inst, DatabasePool(hosts=(("director-db", 9160),)), "director", Memcached(pool=MemcachedPool(host=("director-mc", 11211)), prefix="dir_"))
+        app = WebApplication(inst, DatabasePool(hosts=(("director-db", 9160),)), "director", Memcached(pool=MemcachedPool(host=("director-mc", 11211)), prefix="dir_"), "int")
         app.modules.load(["db.CommonDatabaseStruct", "director.Director"])
         app.dbrestruct()
         WebDaemon.__init__(self, inst, app)
