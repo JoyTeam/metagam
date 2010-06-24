@@ -1,0 +1,21 @@
+#!/usr/bin/python2.6
+
+from concurrence import dispatch, quit
+from concurrence.http import HTTPConnection
+
+def main():
+    try:
+        cnn = HTTPConnection()
+        cnn.connect(("director", 3000))
+        request = cnn.get("/director/reload")
+        response = cnn.perform(request)
+        print response.status
+        print response.headers
+        print response.body
+        cnn.close()
+    except IOError, e:
+        print e
+    finally:
+        quit()
+
+dispatch(main)

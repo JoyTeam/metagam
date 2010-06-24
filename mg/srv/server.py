@@ -1,19 +1,17 @@
-from mg.srv.common import WebDaemon
-from concurrence.web import Application, Controller, web
+from mg.srv.common import WebDaemon, WebApplication
 from concurrence import Tasklet
+from mg.stor.db import DatabasePool
+from mg.stor.mc import MemcachedPool, Memcached
 
 class Server(WebDaemon):
     "A web server starting on every node and handling server requests: 'spawn', 'kill', etc"
 
-    class ServerController(Controller):
-        @web.route('/srv/spawn')
-        def spawn(self):
-            print "spawn"
-            return "ok"
-
-    def register(self):
-        WebDaemon.register(self)
-        self.application.add_controller(Server.ServerController())
+    def __init__(self, inst):
+        # TODO: ask director about application configuration (database address, memcached address etc)
+        app = WebApplication(inst, DatabasePool(hosts=(("director-db", 9160),)), "director", Memcached(pool=MemcachedPool(host=("director-mc", 11211)), prefix="dir_"), "int")
+        app.modules.load(["db.CommonDatabaseStruct", "director.Director"])
+        app.dbrestruct()
+        WebDaemon.__init__(self, inst, app)
 
     def run(self):
         self.serve(("0.0.0.0", 3000))

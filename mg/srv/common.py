@@ -10,6 +10,7 @@ import cgi
 import re
 import mg.tools
 import json
+import traceback
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -78,12 +79,16 @@ class Request(object):
         return [content];
 
     def not_found(self):
-        "Return 404 Not Found page"
+        "Return 404 Not Found"
         return self.send_response("404 Not Found", self.headers, "<html><body><h1>404 Not Found</h1></body></html>")
 
     def forbidden(self):
-        "Return 403 Forbidden page"
+        "Return 403 Forbidden"
         return self.send_response("403 Forbidden", self.headers, "<html><body><h1>403 Forbidden</h1></body></html>")
+
+    def internal_server_error(self):
+        "Return 500 Internal Server Error"
+        return self.send_response("500 Internal Server Error", self.headers, "<html><body><h1>500 Internal Server Error</h1></body></html>")
 
     def response(self, content):
         "Return HTTP response. content will be returned to the client"
@@ -103,7 +108,7 @@ class Request(object):
 class WebDaemon(object):
     "Abstract web application serving HTTP requests"
 
-    def __init__(self, inst, app):
+    def __init__(self, inst, app=None):
         object.__init__(self)
         self.server = WSGIServer(self.req)
         self.inst = inst
@@ -114,16 +119,23 @@ class WebDaemon(object):
         logging.basicConfig(level=logging.DEBUG)
         try:
             self.server.serve(addr)
+            print "serving %s:%d" % (addr[0], addr[1])
         except Exception as err:
             print "Listen %s:%d: %s" % (addr[0], addr[1], err)
-            quit()
+            quit(1)
 
     def req(self, environ, start_response):
         "Process single HTTP request"
         request = Request(environ, start_response)
-        # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-        uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
-        return self.req_uri(request, uri)
+        try:
+            # remove doubling, leading and trailing slashes, unquote and convert to utf-8
+          uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
+          return self.req_uri(request, uri)
+        except SystemExit:
+            raise
+        except BaseException, e:
+            traceback.print_exc()
+            return request.internal_server_error()
 
     def req_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"

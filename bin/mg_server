@@ -1,10 +1,13 @@
 #!/usr/bin/python2.6
 
 from mg.srv.server import Server
+from mg.srv.common import Instance
 from concurrence import dispatch
 
 def main():
-    server = Server()
+    inst = Instance()
+    server = Server(inst)
     server.run()
 
 dispatch(main)
+

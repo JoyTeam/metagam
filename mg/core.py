@@ -88,6 +88,10 @@ class Hooks(object):
         list.append((handler, priority, module_name))
         list.sort(key=itemgetter(1))
 
+    def unregister_all(self):
+        "Unregister all registered hooks"
+        self.handlers.clear()
+
     def call(self, name, *args, **kwargs):
         """
         Call hook
@@ -263,20 +267,42 @@ class Modules(object):
         "import Class from mg.mod.group")
         """
         with self.app().inst.modules_lock:
-            for mod in modules:
-                if mod not in self._loaded_modules:
-                    m = self._path_re.match(mod)
-                    if not m:
-                        raise ModuleException("Invalid module name: %s" % mod)
-                    (module_name, class_name) = m.group(1, 2)
-                    module = sys.modules.get(module_name)
-                    if module is None:
-                        (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
-                        module = imp.load_module(module_name, file, pathname, description)
-                    cls = module.__dict__[class_name]
-                    obj = cls(self.app(), mod)
-                    obj.register()
-                    self._loaded_modules[mod] = obj
+            self._load(modules)
+
+    def _load(self, modules):
+        "The same as load but without locking"
+        for mod in modules:
+            if mod not in self._loaded_modules:
+                m = self._path_re.match(mod)
+                if not m:
+                    raise ModuleException("Invalid module name: %s" % mod)
+                (module_name, class_name) = m.group(1, 2)
+                module = sys.modules.get(module_name)
+                if module is None:
+                    (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
+                    module = imp.load_module(module_name, file, pathname, description)
+                cls = module.__dict__[class_name]
+                obj = cls(self.app(), mod)
+                obj.register()
+                self._loaded_modules[mod] = obj
+
+    def reload(self):
+        "Reload all modules"
+        with self.app().inst.modules_lock:
+            modules = []
+            for name, mod in self._loaded_modules.iteritems():
+                modules.append(name)
+                m = self._path_re.match(name)
+                if not m:
+                    raise ModuleException("Invalid module name: %s" % name)
+                (module_name, class_name) = m.group(1, 2)
+                try:
+                    del sys.modules[module_name]
+                except KeyError:
+                    pass
+            self._loaded_modules.clear()
+            self.app().hooks.unregister_all()
+            self._load(modules)
 
 class Instance(object):
     """
@@ -319,3 +345,7 @@ class Application(object):
         dbstruct = {}
         self.hooks.call("core.dbstruct", dbstruct)
         self.hooks.call("core.dbapply", dbstruct)
+
+    def reload(self):
+        "Reload all loaded modules"
+        self.modules.reload()
