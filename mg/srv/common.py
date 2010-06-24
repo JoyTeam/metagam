@@ -28,6 +28,7 @@ class Request(object):
         self.config_stat = {}
         self.hook_stat = {}
         self.headers_sent = False
+        self.global_html = "global.html"
         # Storing reference request to the current tasklet. It will be used in different modules to access currenct request implicitly
         Tasklet.current().req = self
 
@@ -139,12 +140,14 @@ class WebDaemon(object):
 
     def req_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
+        if uri == "":
+            return self.req_handler(request, "index", "index", "")
         m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-]+)(?:/(.*)|)', uri)
         if not m:
             return request.not_found()
         (group, hook, args) = m.group(1, 2, 3)
         if args is None:
-            args = ''
+            args = ""
         return self.req_handler(request, group, hook, args)
 
     def req_handler(self, request, group, hook, args):

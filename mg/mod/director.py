@@ -4,9 +4,12 @@ import cgi
 class Director(Module):
     def register(self):
         Module.register(self)
+        self.rdep(["web.Web"])
         self.rhook("int-director.ready", self.ready)
         self.rhook("int-director.test", self.test)
         self.rhook("int-director.reload", self.reload)
+        self.rhook("int-index.index", self.index)
+        self.rhook("web.template", self.web_template)
 
     def test(self, args, request):
         args = cgi.escape(args)
@@ -20,3 +23,9 @@ class Director(Module):
     def reload(self, args, request):
         self.app().reload()
         return request.jresponse({ "ok": 1 })
+
+    def web_template(self, filename, struct):
+        self.call("web.set_global_html", "director/global.html")
+
+    def index(self, args, request):
+        return self.call("web.template", "director/index.html", { "title": "Director index" })

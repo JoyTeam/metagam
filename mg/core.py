@@ -18,6 +18,12 @@ class Hooks(object):
     This class is a hook manager for the application. It keeps list of loaded handlers
     and passes them hook calls.
     """
+
+    class Return(Exception):
+        "This exception is raised when a hook handler wants to return the value immediately"
+        def __init__(self, value=None):
+            self.value = value
+
     def __init__(self, app):
         self.handlers = dict()
         self._groups = dict()
@@ -73,7 +79,7 @@ class Hooks(object):
                     if modules is not None:
                         self.app().modules.load(modules)
 
-    def register(self, module_name, hook_name, handler, priority=100):
+    def register(self, module_name, hook_name, handler, priority=0):
         """
         Register hook handler
         module_name - fully qualified module name
@@ -86,17 +92,17 @@ class Hooks(object):
             list = []
             self.handlers[hook_name] = list
         list.append((handler, priority, module_name))
-        list.sort(key=itemgetter(1))
+        list.sort(key=itemgetter(1), reverse=True)
 
     def unregister_all(self):
         "Unregister all registered hooks"
         self.handlers.clear()
 
-    def call(self, name, *args, **kwargs):
+    def call(self, name, *args):
         """
         Call hook
         name - hook name (format: "group.name")
-        *args and **kwargs - arbitrary parameters that will be passed to the handlers
+        *args - arbitrary parameters that will be passed to the handlers
         Hook handler receives all parameters passed to the method
         """
         m = self._path_re.match(name)
@@ -109,9 +115,18 @@ class Hooks(object):
                 self.load_handlers([name])
         # call handlers
         handlers = self.handlers.get(name)
+        ret = None
         if handlers is not None:
             for handler, priority, module_name in handlers:
-                handler(*args, **kwargs)
+                try:
+                    res = handler(*args)
+                    if type(res) == tuple:
+                        args = res
+                    elif res is not None:
+                        ret = res
+                except Hooks.Return, e:
+                    return e.value
+        return ret
 
     def store(self):
         """
@@ -146,6 +161,7 @@ class Config(object):
         self._config = dict()
         self._modified = set()
         self.app = weakref.ref(app)
+        self._path_re = re.compile(r'^(.+?)\.(.+)$')
 
     def load_groups(self, groups):
         """
@@ -169,35 +185,47 @@ class Config(object):
         """
         pass
 
-    def get(self, group, name, default=None):
+    def get(self, name, default=None):
         """
         Returns config value
-        group and name - key identifier
+        name - key identifier (format: "group.name")
         default - default value for the key
         """
+        m = self._path_re.match(name)
+        if not m:
+            raise ModuleException("Invalid config key: %s" % name)
+        (group, name) = m.group(1, 2)
         if group not in self._config:
             self.load_groups([group])
         return self._config[group].get(name, default)
 
-    def set(self, group, name, value):
+    def set(self, name, value):
         """
         Change config value
-        group and name - key identifier
+        name - key identifier (format: "group.name")
         value - value to set
         Note: to store configuration in the database use store() method
         """
+        m = self._path_re.match(name)
+        if not m:
+            raise ModuleException("Invalid config key: %s" % name)
+        (group, name) = m.group(1, 2)
         with self.app().config_lock:
             if group not in self._config:
                 self.load_groups([group])
             self._config[group][name] = value
             self._modified.add(group)
 
-    def delete(self, group, name):
+    def delete(self, name):
         """
         Delete config value
-        group and name - key identifier
+        name - key identifier (format: "group.name")
         Note: to store configuration in the database use store() method
         """
+        m = self._path_re.match(name)
+        if not m:
+            raise ModuleException("Invalid config key: %s" % name)
+        (group, name) = m.group(1, 2)
         with self.app().config_lock:
             if group not in self._config:
                 self.load_groups([group])
@@ -231,9 +259,17 @@ class Module(object):
         "Registers handler for the current module. Arguments: all for Hooks.register() without module name"
         self.app().hooks.register(self.fqn, *args, **kwargs)
 
+    def rdep(self, modules):
+        "Register module dependency. This module will be loaded automatically"
+        self.app().modules._load(modules)
+
+    def conf(self, *args):
+        "Syntactic sugar for app.config.get(...)"
+        return self.app().config.get(*args)
+
     def call(self, *args, **kwargs):
         "Syntactic sugar for app.hooks.call(...)"
-        self.app().hooks.call(*args, **kwargs)
+        return self.app().hooks.call(*args, **kwargs)
 
     def register(self):
         "Register all required event handlers"
