@@ -9,7 +9,8 @@ class Director(Module):
         self.rhook("int-director.test", self.test)
         self.rhook("int-director.reload", self.reload)
         self.rhook("int-index.index", self.index)
-        self.rhook("web.template", self.web_template)
+        self.rhook("web.template", self.web_template, 5)
+        self.app().lang = "ru"
 
     def test(self, args, request):
         args = cgi.escape(args)
@@ -28,4 +29,7 @@ class Director(Module):
         self.call("web.set_global_html", "director/global.html")
 
     def index(self, args, request):
-        return self.call("web.template", "director/index.html", { "title": "Director index" })
+        return self.call("web.template", "director/index.html", {
+            "title": self._("Welcome to the Director control center"),
+            "setup": self._("Change director settings")
+        })

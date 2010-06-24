@@ -11,10 +11,11 @@ class Web(Module):
 
     def register(self):
         Module.register(self)
-        self.rhook("web.template", self.web_template, -1)
-        self.rhook("web.response", self.web_response, -1)
-        self.rhook("web.parse_template", self.parse_template, -1)
-        self.rhook("web.set_global_html", self.set_global_html, -1)
+        self.rdep(["l10n.L10n"])
+        self.rhook("web.template", self.web_template)
+        self.rhook("web.response", self.web_response)
+        self.rhook("web.parse_template", self.parse_template)
+        self.rhook("web.set_global_html", self.set_global_html)
 
     def parse_template(self, filename, struct):
         if self.tpl is None:
@@ -39,4 +40,4 @@ class Web(Module):
         self.call("web.response", self.call("web.parse_template", Tasklet.current().req.global_html, struct))
 
     def web_response(self, content):
-        return Tasklet.current().req.uresponse(content)
+        return Tasklet.current().req.response(content)

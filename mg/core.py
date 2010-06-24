@@ -8,6 +8,7 @@ from concurrence.extra import Lock
 from cassandra.ttypes import *
 import time
 import json
+import gettext
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -281,6 +282,9 @@ class Module(object):
 
     def db(self):
         return self.app().dbpool.dbget(self.app().keyspace)
+
+    def _(self, val):
+        return self.call("l10n.gettext", val)
 
 class ModuleException(Exception):
     "Error during module loading"
