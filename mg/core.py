@@ -9,6 +9,8 @@ from cassandra.ttypes import *
 import time
 import json
 import gettext
+import traceback
+from concurrence import Tasklet
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -280,6 +282,10 @@ class Module(object):
         "Appends name of the current module to the list"
         list.append(self.fqn)
 
+    def ok(self):
+        """Returns value of "ok" HTTP parameter"""
+        return Tasklet.current().req.param("ok")
+
     def db(self):
         return self.app().dbpool.dbget(self.app().keyspace)
 
@@ -307,24 +313,36 @@ class Modules(object):
         "import Class from mg.mod.group")
         """
         with self.app().inst.modules_lock:
-            self._load(modules)
+            return self._load(modules)
 
-    def _load(self, modules):
+    def _load(self, modules, reload=False):
         "The same as load but without locking"
+        errors = 0
         for mod in modules:
             if mod not in self._loaded_modules:
                 m = self._path_re.match(mod)
                 if not m:
                     raise ModuleException("Invalid module name: %s" % mod)
                 (module_name, class_name) = m.group(1, 2)
-                module = sys.modules.get(module_name)
+                module = None
+                if not reload:
+                    module = sys.modules.get(module_name)
                 if module is None:
                     (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
-                    module = imp.load_module(module_name, file, pathname, description)
+                    try:
+                        module = imp.load_module(module_name, file, pathname, description)
+                    except:
+                        errors += 1
+                        module = sys.modules.get(module_name)
+                        if module:
+                            traceback.print_exc()
+                        else:
+                            raise
                 cls = module.__dict__[class_name]
                 obj = cls(self.app(), mod)
                 obj.register()
                 self._loaded_modules[mod] = obj
+        return errors
 
     def reload(self):
         "Reload all modules"
@@ -336,13 +354,9 @@ class Modules(object):
                 if not m:
                     raise ModuleException("Invalid module name: %s" % name)
                 (module_name, class_name) = m.group(1, 2)
-                try:
-                    del sys.modules[module_name]
-                except KeyError:
-                    pass
             self._loaded_modules.clear()
             self.app().hooks.unregister_all()
-            self._load(modules)
+            return self._load(modules, reload=True)
 
 class Instance(object):
     """
@@ -388,4 +402,6 @@ class Application(object):
 
     def reload(self):
         "Reload all loaded modules"
-        self.modules.reload()
+        errors = 0
+        errors += self.modules.reload()
+        return errors

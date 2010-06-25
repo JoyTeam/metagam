@@ -33,20 +33,16 @@ class Request(object):
         Tasklet.current().req = self
 
     def start_response(self, *args):
+        # WORKAROUND: concurrence bug. It wsgi.input remains untouched the connection will hang infinitely
+        self.load_params()
         if self.headers_sent:
             raise DoubleResponseException()
         self.headers_sent = True
         self._start_response(*args)
 
-    def is_post_request(self):
-        if self.environ['REQUEST_METHOD'].upper() != 'POST':
-            return False
-        content_type = environ.get('CONTENT_TYPE', 'application/x-www-form-urlencoded')
-        return content_type.startswith('application/x-www-form-urlencoded') or content_type.startswith('multipart/form-data')
-
     def load_params(self):
         self._params_loaded = True
-        self._params = cgi.parse(fp = input, environ = self.environ, keep_blank_values = 1)
+        self._params = cgi.parse(fp = self.environ["wsgi.input"], environ = self.environ, keep_blank_values = 1)
 
     def param_dict(self):
         "Get directory of all parameters (both GET and POST)"
@@ -106,6 +102,11 @@ class Request(object):
         self.content_type = "application/json"
         return self.uresponse(json.dumps(obj))
 
+    def redirect(self, uri):
+        "Return 302 Found. uri - redirect URI"
+        self.headers.append(('Location', uri))
+        return self.send_response("302 Found", self.headers, "")
+
 class WebDaemon(object):
     "Abstract web application serving HTTP requests"
 
@@ -130,11 +131,11 @@ class WebDaemon(object):
         request = Request(environ, start_response)
         try:
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-          uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
-          return self.req_uri(request, uri)
+            uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
+            return self.req_uri(request, uri)
         except SystemExit:
             raise
-        except BaseException, e:
+        except BaseException:
             traceback.print_exc()
             return request.internal_server_error()
 

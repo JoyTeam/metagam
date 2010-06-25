@@ -1,0 +1,8 @@
+<form action="/director/setup" method="post">
+	<input type="hidden" name="ok" value="1" />
+	<table>
+		<tr><td>[%form.memcached_desc%]</td><td><input name="memcached" value="[%form.memcached%]" size="50" /></td></tr>
+		<tr><td>[%form.cassandra_desc%]</td><td><input name="cassandra" value="[%form.cassandra%]" size="50" /></td></tr>
+		<tr><td></td><td><input type="submit" value="[%form.submit_desc%]" /></td></tr>
+	</table>
+</form>

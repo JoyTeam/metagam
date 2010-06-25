@@ -6,8 +6,7 @@ all: po mo
 
 po: $(po_objects)
 %.po: ../mg_server.pot
-	msgmerge $@ ../mg_server.pot
-	touch $@
+	msgmerge -U $@ ../mg_server.pot
 
 mo: $(mo_objects)
 ../%/LC_MESSAGES/mg_server.mo: %.po

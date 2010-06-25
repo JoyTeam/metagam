@@ -10,7 +10,6 @@ def main():
         request = cnn.get("/director/reload")
         response = cnn.perform(request)
         print response.status
-        print response.headers
         print response.body
         cnn.close()
     except IOError, e:
