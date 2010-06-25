@@ -5,7 +5,7 @@ import json
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["db.CommonDatabaseStruct", "web.Web"])
+        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.web.Web"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.director_reload)

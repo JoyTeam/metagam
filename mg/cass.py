@@ -7,6 +7,7 @@ from thrift.transport import TTransport
 from cassandra import Cassandra
 from cassandra.ttypes import *
 import socket
+from mg.core import Module
 
 class DatabaseError(Exception):
     "This exception can be raised during database queries"
@@ -235,3 +236,18 @@ class DatabaseRestructure(object):
                 print "created keyspace %s: %s" % (cmd[1].name, self.db.system_add_keyspace(cmd[1]))
             else:
                 print "invalid command %s" % cmd
+
+class CommonDatabaseStruct(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("core.dbstruct", self.database_struct)
+        self.rhook("core.dbapply", self.database_apply)
+
+    def database_struct(self, dbstruct):
+        dbstruct["Core"] = CfDef()
+
+    def database_apply(self, dbstruct):
+        db = self.db()
+        restruct = DatabaseRestructure(db)
+        diff = restruct.diff(dbstruct)
+        restruct.apply(diff)

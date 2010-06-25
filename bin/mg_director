@@ -1,6 +1,7 @@
 #!/usr/bin/python2.6
 
-from mg.server import Instance, WebDaemon, WebApplication
+from mg.core import Instance
+from mg.web import WebDaemon, WebApplication
 from concurrence import dispatch
 from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
@@ -15,7 +16,7 @@ def main():
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="dir_")
         app = WebApplication(inst, dbpool, "director", mc, "int")
         daemon.app = app
-        app.modules.load(["director.Director"])
+        app.modules.load(["mg.director.Director"])
         app.dbrestruct()
         port = daemon.serve(("0.0.0.0", 3000))
     except RuntimeError as e:

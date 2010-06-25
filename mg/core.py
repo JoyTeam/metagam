@@ -1,8 +1,7 @@
 import weakref
 import re
 import sys
-import imp
-import mg.mod
+import mg
 from operator import itemgetter
 from concurrence.extra import Lock
 from cassandra.ttypes import *
@@ -220,9 +219,8 @@ class Config(object):
         with self.app().config_lock:
             if group not in self._config:
                 self.load_groups([group])
-            if self._config[group].get(name) != value:
-                self._config[group][name] = value
-                self._modified.add(group)
+            self._config[group][name] = value
+            self._modified.add(group)
 
     def delete(self, name):
         """
@@ -308,14 +306,14 @@ class Modules(object):
     """
     def __init__(self, app):
         self.app = weakref.ref(app)
-        self._path_re = re.compile(r'^(.+?)\.(.+)$')
+        self._path_re = re.compile(r'^(.+)\.(.+)$')
         self._loaded_modules = dict()
 
     def load(self, modules):
         """
         Load requested modules.
-        modules - list of module names (format: "group.Class" means
-        "import Class from mg.mod.group")
+        modules - list of module names (format: "mg.group.Class" means
+        "import Class from mg.group")
         """
         with self.app().inst.modules_lock:
             return self._load(modules)
@@ -333,9 +331,9 @@ class Modules(object):
                 if not reload:
                     module = sys.modules.get(module_name)
                 if module is None:
-                    (file, pathname, description) = imp.find_module(module_name, mg.mod.__path__)
                     try:
-                        module = imp.load_module(module_name, file, pathname, description)
+                        __import__(module_name, globals(), locals(), [], -1)
+                        module = sys.modules.get(module_name)
                     except:
                         errors += 1
                         module = sys.modules.get(module_name)

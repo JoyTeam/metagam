@@ -6,7 +6,7 @@ import json
 class Monitor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["db.CommonDatabaseStruct", "cluster.Director", "web.Web"])
+        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Director", "mg.web.Web"])
         self.rhook("monitor.check", self.monitor_check)
 
     def monitor_check(self):

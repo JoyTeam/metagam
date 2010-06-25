@@ -1,6 +1,7 @@
 #!/usr/bin/python2.6
 
-from mg.server import Instance, WebDaemon, WebApplication
+from mg.core import Instance
+from mg.web import WebDaemon, WebApplication
 from concurrence import dispatch
 from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
@@ -16,7 +17,7 @@ def main():
         mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="srv_")
         app = WebApplication(inst, dbpool, "server", mc, "int")
         daemon.app = app
-        app.modules.load(["server.Server"])
+        app.modules.load(["mg.server.Server"])
         app.dbrestruct()
         port = daemon.serve_any_port("0.0.0.0")
         app.hooks.call("director.query", "/director/ready", {

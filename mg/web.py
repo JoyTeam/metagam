@@ -2,7 +2,9 @@ from concurrence import quit, Tasklet, http
 from concurrence.http import server
 from mg.cass import Database
 from mg.memcached import Memcached
-from mg.core import Application, Instance
+from mg.core import Application, Instance, Module
+from template import Template
+from template.provider import Provider
 import urlparse
 import cgi
 import re
@@ -10,6 +12,7 @@ import mg.tools
 import json
 import traceback
 import socket
+import mg
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -233,3 +236,45 @@ class WebApplication(Application):
             return [request.content]
         else:
             return request.not_found()
+
+class Web(Module):
+    def __init__(self, *args, **kwargs):
+        Module.__init__(self, *args, **kwargs)
+        self.tpl = None
+
+    def register(self):
+        Module.register(self)
+        self.rdep(["mg.l10n.L10n"])
+        self.rhook("web.template", self.web_template)
+        self.rhook("web.response", self.web_response)
+        self.rhook("web.parse_template", self.parse_template)
+        self.rhook("web.set_global_html", self.set_global_html)
+        self.rhook("int-core.ping", self.core_ping)
+
+    def parse_template(self, filename, struct):
+        if self.tpl is None:
+            conf = {
+                "INCLUDE_PATH": [ mg.__path__[0] + "/templates" ],
+                "ANYCASE": True,
+            }
+            try:
+                conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
+            except AttributeError, e:
+                provider = Provider(conf)
+                self.app().inst.tpl_provider = provider
+                conf["LOAD_TEMPLATES"] = provider
+            self.tpl = Template(conf)
+        return self.tpl.process(filename, struct)
+
+    def set_global_html(self, global_html):
+        Tasklet.current().req.global_html = global_html
+
+    def web_template(self, filename, struct):
+        struct["content"] = self.call("web.parse_template", filename, struct)
+        self.call("web.response", self.call("web.parse_template", Tasklet.current().req.global_html, struct))
+
+    def web_response(self, content):
+        return Tasklet.current().req.response(content)
+
+    def core_ping(self, args, request):
+        return request.jresponse({"ok": 1})

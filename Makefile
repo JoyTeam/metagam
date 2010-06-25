@@ -25,3 +25,6 @@ $(server_po_files): mg/locale/mg_server.pot
 mo: $(server_mo_files)
 $(server_mo_files): $(server_po_files)
 	make -C mg/locale/server mo
+
+test:
+	for i in mg/test/*.py ; do echo $$i ; python2.6 $$i ; done
