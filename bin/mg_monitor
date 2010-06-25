@@ -1,0 +1,21 @@
+#!/usr/bin/python2.6
+
+from mg.srv.monitor import Monitor
+from mg.srv.common import Instance
+from concurrence import dispatch
+import traceback
+
+def main():
+    try:
+        inst = Instance()
+        monitor = Monitor(inst)
+        monitor.run()
+    except RuntimeError as e:
+        print e
+        quit(1)
+    except:
+        traceback.print_exc()
+        quit(1)
+
+dispatch(main)
+
