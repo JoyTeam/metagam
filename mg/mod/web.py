@@ -16,6 +16,7 @@ class Web(Module):
         self.rhook("web.response", self.web_response)
         self.rhook("web.parse_template", self.parse_template)
         self.rhook("web.set_global_html", self.set_global_html)
+        self.rhook("int-core.ping", self.core_ping)
 
     def parse_template(self, filename, struct):
         if self.tpl is None:
@@ -41,3 +42,6 @@ class Web(Module):
 
     def web_response(self, content):
         return Tasklet.current().req.response(content)
+
+    def core_ping(self, args, request):
+        return request.jresponse({"ok": 1})

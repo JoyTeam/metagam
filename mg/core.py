@@ -162,10 +162,13 @@ class Config(object):
     config groups and can perform get operation on the configuration.
     """
     def __init__(self, app):
-        self._config = dict()
-        self._modified = set()
+        self.clear()
         self.app = weakref.ref(app)
         self._path_re = re.compile(r'^(.+?)\.(.+)$')
+
+    def clear(self):
+        self._config = {}
+        self._modified = {}
 
     def load_groups(self, groups):
         """

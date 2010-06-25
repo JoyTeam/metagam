@@ -10,7 +10,7 @@ class Server(WebDaemon):
     def __init__(self, inst):
         self.cluster_config = self.download_config()
         app = WebApplication(inst, DatabasePool(hosts=self.cluster_config["cassandra"]), "server", Memcached(pool=MemcachedPool(host=self.cluster_config["memcached"][0]), prefix="srv_"), "int")
-        app.modules.load(["db.CommonDatabaseStruct", "cluster.Director"])
+        app.modules.load(["db.CommonDatabaseStruct", "cluster.Director", "server.Server"])
         app.dbrestruct()
         WebDaemon.__init__(self, inst, app)
 

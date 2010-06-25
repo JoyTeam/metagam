@@ -32,9 +32,11 @@ class Director(Module):
             "setup": self._("Change director settings")
         }
         if len(self.servers_online):
+            hosts = self.servers_online.keys()
+            hosts.sort()
             params["servers_online"] = {
                 "title": self._("List of servers online"),
-                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in self.servers_online.iteritems()]
+                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in [(host, self.servers_online[host]) for host in hosts]]
             }
         return self.call("web.template", "director/index.html", params)
 
