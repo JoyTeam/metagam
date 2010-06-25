@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-25 11:49+0400\n"
+"POT-Creation-Date: 2010-06-25 12:49+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,26 +16,26 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/mod/director.py:39
+#: mg/mod/director.py:40
 msgid "Welcome to the Director control center"
 msgstr ""
 
-#: mg/mod/director.py:40
+#: mg/mod/director.py:41
 msgid "Change director settings"
 msgstr ""
 
-#: mg/mod/director.py:57
+#: mg/mod/director.py:77
 msgid "Director settings"
 msgstr ""
 
-#: mg/mod/director.py:59
-msgid "Memcached servers (host:port, host:port, ...)"
+#: mg/mod/director.py:79
+msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/mod/director.py:60
-msgid "Cassandra servers (host:port, host:post, ...)"
+#: mg/mod/director.py:80
+msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/mod/director.py:61
+#: mg/mod/director.py:83
 msgid "Save"
 msgstr ""
