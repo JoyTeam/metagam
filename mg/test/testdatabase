@@ -1,7 +1,7 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.stor.db import DatabaseConnection, DatabaseRestructure, DatabasePool
+from mg.cass import DatabaseConnection, DatabaseRestructure, DatabasePool
 import unittest
 from concurrence import dispatch, Tasklet
 import time

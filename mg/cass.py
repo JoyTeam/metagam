@@ -2,7 +2,7 @@ from concurrence.http import HTTPConnection, HTTPRequest
 import json
 import re
 import mg.tools
-from mg.net.thr import Socket
+from mg.thr import Socket
 from thrift.transport import TTransport
 from cassandra import Cassandra
 from cassandra.ttypes import *

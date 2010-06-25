@@ -168,7 +168,7 @@ class Config(object):
 
     def clear(self):
         self._config = {}
-        self._modified = {}
+        self._modified = set()
 
     def load_groups(self, groups):
         """

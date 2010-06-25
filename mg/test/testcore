@@ -5,8 +5,8 @@ import unittest
 from concurrence import dispatch, Tasklet
 
 from mg.core import *
-from mg.stor.db import DatabasePool
-from mg.stor.mc import Memcached
+from mg.cass import DatabasePool
+from mg.memcached import Memcached
 
 from cassandra.ttypes import *
 

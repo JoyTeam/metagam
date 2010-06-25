@@ -1,15 +1,35 @@
 #!/usr/bin/python2.6
 
-from mg.srv.monitor import Monitor
-from mg.srv.common import Instance
-from concurrence import dispatch
+from mg.server import Instance, WebDaemon, WebApplication
+from concurrence import dispatch, Tasklet
+from mg.cass import DatabasePool
+from mg.memcached import MemcachedPool, Memcached
 import traceback
+import json
 
 def main():
     try:
         inst = Instance()
-        monitor = Monitor(inst)
-        monitor.run()
+        daemon = WebDaemon(inst)
+        conf = daemon.download_config()
+        dbpool = DatabasePool(conf["cassandra"])
+        mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="dir_")
+        app = WebApplication(inst, dbpool, "director", mc, "int")
+        daemon.app = app
+        app.modules.load(["monitor.Monitor"])
+        app.dbrestruct()
+        port = daemon.serve_any_port("0.0.0.0")
+        app.hooks.call("director.query", "/director/ready", {
+            "type": "monitor",
+            "port": port,
+            "params": json.dumps({})
+        })
+        while True:
+            try:
+                app.hooks.call("monitor.check")
+            except:
+                traceback.print_exc()
+            Tasklet.sleep(10)
     except RuntimeError as e:
         print e
         quit(1)

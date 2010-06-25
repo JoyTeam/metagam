@@ -1,15 +1,31 @@
 #!/usr/bin/python2.6
 
-from mg.srv.server import Server
-from mg.srv.common import Instance
+from mg.server import Instance, WebDaemon, WebApplication
 from concurrence import dispatch
+from mg.cass import DatabasePool
+from mg.memcached import MemcachedPool, Memcached
 import traceback
+import json
 
 def main():
     try:
         inst = Instance()
-        server = Server(inst)
-        server.run()
+        daemon = WebDaemon(inst)
+        conf = daemon.download_config()
+        dbpool = DatabasePool(conf["cassandra"])
+        mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="srv_")
+        app = WebApplication(inst, dbpool, "server", mc, "int")
+        daemon.app = app
+        app.modules.load(["server.Server"])
+        app.dbrestruct()
+        port = daemon.serve_any_port("0.0.0.0")
+        app.hooks.call("director.query", "/director/ready", {
+            "type": "server",
+            "port": port,
+            "params": json.dumps({
+               "backend": 1
+            })
+        })
     except RuntimeError as e:
         print e
         quit(1)

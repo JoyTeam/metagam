@@ -1,6 +1,6 @@
 from mg.core import Module
 from cassandra.ttypes import *
-from mg.stor.db import DatabaseRestructure
+from mg.cass import DatabaseRestructure
 
 class CommonDatabaseStruct(Module):
     def register(self):

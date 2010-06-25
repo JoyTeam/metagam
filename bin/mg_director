@@ -1,15 +1,23 @@
 #!/usr/bin/python2.6
 
-from mg.srv.director import Director
-from mg.srv.common import Instance
+from mg.server import Instance, WebDaemon, WebApplication
 from concurrence import dispatch
+from mg.cass import DatabasePool
+from mg.memcached import MemcachedPool, Memcached
 import traceback
+import json
 
 def main():
     try:
         inst = Instance()
-        director = Director(inst)
-        director.run()
+        daemon = WebDaemon(inst)
+        dbpool = DatabasePool((("director-db", 9160),))
+        mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="dir_")
+        app = WebApplication(inst, dbpool, "director", mc, "int")
+        daemon.app = app
+        app.modules.load(["director.Director"])
+        app.dbrestruct()
+        port = daemon.serve(("0.0.0.0", 3000))
     except RuntimeError as e:
         print e
         quit(1)
@@ -18,3 +26,4 @@ def main():
         quit(1)
 
 dispatch(main)
+

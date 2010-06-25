@@ -1,7 +1,7 @@
 from concurrence import quit, Tasklet, http
 from concurrence.http import server
-from mg.stor.db import Database
-from mg.stor.mc import Memcached
+from mg.cass import Database
+from mg.memcached import Memcached
 from mg.core import Application, Instance
 import urlparse
 import cgi
