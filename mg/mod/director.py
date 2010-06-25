@@ -13,7 +13,6 @@ class Director(Module):
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
         self.rhook("int-director.offline", self.director_offline)
-        self.app().lang = "ru"
         self.servers_online = self.conf("director.servers", {})
 
     def director_reload(self, args, request):

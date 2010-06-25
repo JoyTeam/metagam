@@ -220,8 +220,9 @@ class Config(object):
         with self.app().config_lock:
             if group not in self._config:
                 self.load_groups([group])
-            self._config[group][name] = value
-            self._modified.add(group)
+            if self._config[group].get(name) != value:
+                self._config[group][name] = value
+                self._modified.add(group)
 
     def delete(self, name):
         """

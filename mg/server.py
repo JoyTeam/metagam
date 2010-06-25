@@ -165,6 +165,7 @@ class WebDaemon(object):
         "Process single HTTP request"
         request = Request(environ, start_response)
         try:
+            self.app.hooks.call("l10n.set_request_lang", request)
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
             return self.req_uri(request, uri)
