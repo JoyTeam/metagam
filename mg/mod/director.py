@@ -1,6 +1,6 @@
 from mg.core import Module
-import cgi
 import re
+import json
 
 class Director(Module):
     def register(self):
@@ -8,22 +8,13 @@ class Director(Module):
         self.rdep(["web.Web"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("int-director.ready", self.director_ready)
-        self.rhook("int-director.test", self.director_test)
         self.rhook("int-director.reload", self.director_reload)
         self.rhook("int-index.index", self.director_index)
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
+        self.rhook("int-director.offline", self.director_offline)
         self.app().lang = "ru"
-
-    def director_test(self, args, request):
-        # TODO: remove
-        args = cgi.escape(args)
-        param = request.param('param')
-        param = cgi.escape(param)
-        return request.uresponse('<html><body>Director test handler: args=%s, param=%s</body></html>' % (args, param))
-
-    def director_ready(self, args, request):
-        return request.jresponse({ "ok": 1 })
+        self.servers_online = self.conf("director.servers", {})
 
     def director_reload(self, args, request):
         errors = self.app().reload()
@@ -36,10 +27,16 @@ class Director(Module):
         self.call("web.set_global_html", "director/global.html")
 
     def director_index(self, args, request):
-        return self.call("web.template", "director/index.html", {
+        params = {
             "title": self._("Welcome to the Director control center"),
             "setup": self._("Change director settings")
-        })
+        }
+        if len(self.servers_online):
+            params["servers_online"] = {
+                "title": self._("List of servers online"),
+                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in self.servers_online.iteritems()]
+            }
+        return self.call("web.template", "director/index.html", params)
 
     def config(self):
         conf = self.conf("director.config")
@@ -68,7 +65,7 @@ class Director(Module):
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
             self.app().config.set("director.config", config)
-            print config
+            self.app().config.store()
             return request.redirect('/')
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
@@ -83,3 +80,30 @@ class Director(Module):
                 "submit_desc": self._("Save")
             }
         })
+
+    def store_servers_online(self):
+        self.app().config.set("director.servers", self.servers_online)
+        self.app().config.store()
+
+    def director_ready(self, args, request):
+        host = request.environ["REMOTE_ADDR"]
+        type = request.param("type")
+        params = json.loads(request.param("params"))
+        port = int(request.param("port"))
+        tag = "%s:%s" % (host, port)
+        self.servers_online[tag] = {
+            "type": type,
+            "params": params
+        }
+        self.store_servers_online()
+        return request.jresponse({ "ok": 1 })
+
+    def director_offline(self, args, request):
+        host = request.param("host")
+        if self.servers_online.get(host):
+            del self.servers_online[host]
+            self.store_servers_online()
+            return request.jresponse({ "ok": 1 })
+        else:
+            return request.jresponse({ "already": 1 })
+

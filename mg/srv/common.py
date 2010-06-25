@@ -1,16 +1,15 @@
-from concurrence import quit
-from concurrence.http import WSGIServer
-from concurrence import Tasklet
+from concurrence import quit, Tasklet, http
+from concurrence.http import server
 from mg.stor.db import Database
 from mg.stor.mc import Memcached
 from mg.core import Application, Instance
-import logging
 import urlparse
 import cgi
 import re
 import mg.tools
 import json
 import traceback
+import socket
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -34,7 +33,8 @@ class Request(object):
 
     def start_response(self, *args):
         # WORKAROUND: concurrence bug. It wsgi.input remains untouched the connection will hang infinitely
-        self.load_params()
+        if self._params_loaded is None:
+            self.load_params()
         if self.headers_sent:
             raise DoubleResponseException()
         self.headers_sent = True
@@ -42,6 +42,8 @@ class Request(object):
 
     def load_params(self):
         self._params_loaded = True
+        if self.environ.get("CONTENT_TYPE") is None:
+            self.environ["CONTENT_TYPE"] = "application/octet-stream"
         self._params = cgi.parse(fp = self.environ["wsgi.input"], environ = self.environ, keep_blank_values = 1)
 
     def param_dict(self):
@@ -107,6 +109,21 @@ class Request(object):
         self.headers.append(('Location', uri))
         return self.send_response("302 Found", self.headers, "")
 
+class HTTPHandler(server.HTTPHandler):
+    def handle(self, socket, application):
+        self._remote_addr, self._remote_port = socket.socket.getpeername()
+        server.HTTPHandler.handle(self, socket, application)
+
+    def handle_request(self, control, request, application):
+        request.environ["REMOTE_ADDR"] = self._remote_addr
+        request.environ["REMOTE_PORT"] = self._remote_port
+        response = self._server.handle_request(request, application)
+        self.MSG_REQUEST_HANDLED.send(control)(request, response)
+
+class WSGIServer(http.WSGIServer):
+    def handle_connection(self, socket):
+        HTTPHandler(self).handle(socket, self._application)
+
 class WebDaemon(object):
     "Abstract web application serving HTTP requests"
 
@@ -118,13 +135,31 @@ class WebDaemon(object):
 
     def serve(self, addr):
         "Runs a WebDaemon instance listening given port"
-        logging.basicConfig(level=logging.DEBUG)
         try:
             self.server.serve(addr)
             print "serving %s:%d" % (addr[0], addr[1])
         except Exception as err:
             print "Listen %s:%d: %s" % (addr[0], addr[1], err)
             quit(1)
+
+    def serve_any_port(self, hostaddr):
+        "Runs a WebDaemon instance listening arbitrarily selected port"
+        for port in range(3000, 65536):
+            try:
+                try:
+                    self.server.serve((hostaddr, port))
+                    print "serving %s:%d" % (hostaddr, port)
+                    return port
+                except socket.error as err:
+                    if err.errno == 98:
+                        pass
+                    else:
+                        raise
+            except Exception as err:
+                print "Listen %s:%d: %s (%s)" % (hostaddr, port, err, type(err))
+                quit(1)
+        print "Couldn't find any unused port"
+        quit(1)
 
     def req(self, environ, start_response):
         "Process single HTTP request"
@@ -154,6 +189,23 @@ class WebDaemon(object):
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
         return self.app.http_request(request, group, hook, args)
+
+    def download_config(self):
+        "Connect to Director and ask for the claster configuration: http://director:3000/director/config"
+        cnn = http.HTTPConnection()
+        try:
+            cnn.connect(("director", 3000))
+        except BaseException as e:
+            raise RuntimeError("Couldn't connect to director:3000: %s" % e)
+        try:
+            request = cnn.get("/director/config")
+            response = cnn.perform(request)
+            config = json.loads(response.body)
+            for key in ("memcached", "cassandra"):
+                config[key] = [tuple(ent) for ent in config[key]]
+            return config
+        finally:
+            cnn.close()
 
 class WebApplication(Application):
     """

@@ -11,6 +11,7 @@ import json
 import gettext
 import traceback
 from concurrence import Tasklet
+import logging
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -364,6 +365,7 @@ class Instance(object):
     """
     def __init__(self):
         self.modules_lock = Lock()
+        logging.basicConfig(level=logging.DEBUG)
 
 class Application(object):
     """

@@ -1,3 +1,12 @@
 <h1>[%title%]</h1>
 
 <p><a href="/director/setup">[%setup%]</a></p>
+
+[%if servers_online%]
+<h2>[%servers_online.title%]</h2>
+<ul>
+[%foreach srv in servers_online.list%]
+<li><strong>[%srv.host%]</strong> &mdash; [%srv.type%] &mdash; [%srv.params%]</li>
+[%end%]
+</ul>
+[%end%]
