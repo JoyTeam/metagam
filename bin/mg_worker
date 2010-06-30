@@ -2,6 +2,7 @@
 
 from mg.core import Instance
 from mg.web import WebDaemon, WebApplication
+from mg.worker import MultiapplicationWebDaemon, ApplicationFactory
 from concurrence import dispatch
 from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
@@ -13,18 +14,21 @@ def main():
     try:
         inst = Instance()
 
+        # Running internal daemon
         int_daemon = WebDaemon(inst)
         conf = int_daemon.download_config()
-        int_dbpool = DatabasePool(conf["cassandra"])
-        int_mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="srv_")
-        int_app = WebApplication(inst, int_dbpool, "worker", int_mc, "int")
+        dbpool = DatabasePool(conf["cassandra"])
+        mcpool = MemcachedPool(conf["memcached"][0])
+        int_mc = Memcached(mcpool, prefix="mg_")
+        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int")
         int_daemon.app = int_app
         int_app.modules.load(["mg.worker.Worker"])
-        int_app.dbrestruct()
         int_port = int_daemon.serve_any_port("0.0.0.0")
 
-        ext_daemon = WebDaemon(inst)
+        # Running external daemon
+        ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
+        inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
         dir = mg.cluster.dir_query("/director/ready", {
             "type": "worker",
             "port": int_port,

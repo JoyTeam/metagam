@@ -2,7 +2,7 @@ from concurrence import quit, Tasklet, http
 from concurrence.http import server
 from mg.cass import Database
 from mg.memcached import Memcached
-from mg.core import Application, Instance, Module
+from mg.core import Application, Instance, Module, ApplicationFactory
 from template import Template
 from template.provider import Provider
 import urlparse
@@ -168,7 +168,6 @@ class WebDaemon(object):
         "Process single HTTP request"
         request = Request(environ, start_response)
         try:
-            self.app.hooks.call("l10n.set_request_lang", request)
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
             return self.req_uri(request, uri)
@@ -192,10 +191,15 @@ class WebDaemon(object):
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
+        self.app.hooks.call("l10n.set_request_lang", request)
         return self.app.http_request(request, group, hook, args)
 
     def download_config(self):
-        "Connect to Director and ask for the claster configuration: http://director:3000/director/config"
+        """
+        Connect to Director and ask for the claster configuration: http://director:3000/director/config
+        Return value: config dict
+        Side effect: stores downloaded dict in the inst.config
+        """
         cnn = http.HTTPConnection()
         try:
             cnn.connect(("director", 3000))
@@ -207,6 +211,7 @@ class WebDaemon(object):
             config = json.loads(response.body)
             for key in ("memcached", "cassandra"):
                 config[key] = [tuple(ent) for ent in config[key]]
+            self.inst.config = config
             return config
         finally:
             cnn.close()
@@ -278,3 +283,4 @@ class Web(Module):
 
     def core_ping(self, args, request):
         return request.jresponse({"ok": 1})
+

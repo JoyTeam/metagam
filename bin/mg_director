@@ -13,11 +13,12 @@ def main():
         inst = Instance()
         daemon = WebDaemon(inst)
         dbpool = DatabasePool((("director-db", 9160),))
-        mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="dir_")
-        app = WebApplication(inst, dbpool, "director", mc, "int")
+        mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg_")
+        app = WebApplication(inst, dbpool, "metagam", mc, "int")
         daemon.app = app
-        app.modules.load(["mg.director.Director"])
+        app.modules.load(["mg.director.DatabaseStruct"])
         app.dbrestruct()
+        app.modules.load(["mg.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
     except RuntimeError as e:
         print e

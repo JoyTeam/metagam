@@ -368,6 +368,7 @@ class Instance(object):
     def __init__(self):
         self.modules_lock = Lock()
         logging.basicConfig(level=logging.DEBUG)
+        self.config = {}
 
 class Application(object):
     """
@@ -409,3 +410,13 @@ class Application(object):
         errors = 0
         errors += self.modules.reload()
         return errors
+
+class ApplicationFactory(object):
+    """
+    ApplicationFactory returns Application object by it's tag
+    """
+    def __init__(self, inst):
+        self.inst = inst
+
+    def get(self, tag):
+        return None

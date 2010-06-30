@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-25 16:35+0400\n"
-"PO-Revision-Date: 2010-06-25 16:35+0300\n"
+"POT-Creation-Date: 2010-06-30 17:27+0400\n"
+"PO-Revision-Date: 2010-06-30 17:49+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -17,31 +17,35 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/mod/director.py:31
+#: mg/director.py:34
 msgid "Welcome to the Director control center"
 msgstr "Добро пожаловать в центр управления Director"
 
-#: mg/mod/director.py:32
+#: mg/director.py:35
 msgid "Change director settings"
 msgstr "Изменить настройки Director"
 
-#: mg/mod/director.py:36
+#: mg/director.py:41
 msgid "List of servers online"
 msgstr "Список серверов онлайн"
 
-#: mg/mod/director.py:74
+#: mg/director.py:85
 msgid "Director settings"
 msgstr "Настройки Director"
 
-#: mg/mod/director.py:76
+#: mg/director.py:87
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
 
-#: mg/mod/director.py:77
+#: mg/director.py:89
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
 
-#: mg/mod/director.py:80
+#: mg/director.py:91
+msgid "<strong>Main application host name</strong> (without www)"
+msgstr "<strong>Домен основного сайта</strong> (без www)"
+
+#: mg/director.py:93
 msgid "Save"
 msgstr "Сохранить"
 

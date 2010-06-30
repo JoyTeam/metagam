@@ -14,11 +14,10 @@ def main():
         daemon = WebDaemon(inst)
         conf = daemon.download_config()
         dbpool = DatabasePool(conf["cassandra"])
-        mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="srv_")
-        app = WebApplication(inst, dbpool, "server", mc, "int")
+        mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg_")
+        app = WebApplication(inst, dbpool, "metagam", mc, "int")
         daemon.app = app
         app.modules.load(["mg.server.Server"])
-        app.dbrestruct()
         port = daemon.serve_any_port("0.0.0.0")
         app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "server",

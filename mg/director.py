@@ -2,10 +2,14 @@ from mg.core import Module
 import re
 import json
 
+class DatabaseStruct(Module):
+    def register(self):
+        self.rdep(["mg.cass.CommonDatabaseStruct"])
+
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.web.Web", "mg.cluster.Cluster"])
+        self.rdep(["mg.director.DatabaseStruct", "mg.web.Web", "mg.cluster.Cluster"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.director_reload)
@@ -42,10 +46,13 @@ class Director(Module):
     def config(self):
         conf = self.conf("director.config")
         if conf is None:
-            conf = {
-                "cassandra": [("director-db", 9160)],
-                "memcached": [("director-mc", 11211)]
-            }
+            conf = {}
+        if conf.get("cassandra") is None:
+            conf["cassandra"] = [("director-db", 9160)]
+        if conf.get("memcached") is None:
+            conf["memcached"] = [("director-mc", 11211)]
+        if conf.get("metagam_host") is None:
+            conf["metagam_host"] = "metagam"
         return conf
 
     def director_config(self, args, request):
@@ -61,23 +68,28 @@ class Director(Module):
     def director_setup(self, args, request):
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
+        metagam_host = request.param("metagam_host")
         config = self.config()
         if self.ok():
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
+            config["metagam_host"] = metagam_host
             self.app().config.set("director.config", config)
             self.app().config.store()
             return request.redirect('/')
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
+            metagam_host = config["metagam_host"]
         return self.call("web.template", "director/setup.html", {
             "title": self._("Director settings"),
             "form": {
                 "memcached_desc": self._("<strong>Memcached servers</strong> (host:port, host:port, ...)"),
-                "cassandra_desc": self._("<strong>Cassandra servers</strong> (host:port, host:post, ...)"),
                 "memcached": memcached,
+                "cassandra_desc": self._("<strong>Cassandra servers</strong> (host:port, host:post, ...)"),
                 "cassandra": cassandra,
+                "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
+                "metagam_host": metagam_host,
                 "submit_desc": self._("Save")
             }
         })

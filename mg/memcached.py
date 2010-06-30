@@ -8,6 +8,9 @@ class MemcachedPool(object):
     Connections are created on demand
     """
     def __init__(self, host=("127.0.0.1", 11211), size=10):
+        """
+        size - max amount of active memcached connections (None if no limit)
+        """
         self.host = host
         self.connections = []
         self.size = size
@@ -27,7 +30,7 @@ class MemcachedPool(object):
             return self.connections.pop(0)
 
         # There are no connections in the pool, but we may allocate more
-        if self.allocated < self.size:
+        if self.size is None or self.allocated < self.size:
             self.allocated += 1
             connection = self.new_connection()
             return connection
