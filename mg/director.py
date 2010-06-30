@@ -5,7 +5,7 @@ import json
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.web.Web"])
+        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.web.Web", "mg.cluster.Cluster"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.director_reload)
@@ -91,6 +91,14 @@ class Director(Module):
         type = request.param("type")
         params = json.loads(request.param("params"))
         port = int(request.param("port"))
+
+        # sending configuration
+        if params.get("backend"):
+            self.call("cluster.query_server", host, port, "/server/spawn", {
+                "workers": 3,
+            })
+
+        # storing online list
         tag = "%s:%s" % (host, port)
         self.servers_online[tag] = {
             "type": type,

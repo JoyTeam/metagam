@@ -6,7 +6,7 @@ import json
 class Monitor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Director", "mg.web.Web"])
+        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Cluster", "mg.web.Web"])
         self.rhook("monitor.check", self.monitor_check)
 
     def monitor_check(self):
@@ -31,6 +31,6 @@ class Monitor(Module):
             except BaseException as e:
                 print "%s:%s - %s" % (host, port, e)
             if not success:
-                self.call("director.query", "/director/offline", {
+                self.call("cluster.query_director", "/director/offline", {
                     "host": "%s:%s" % (host, port)
                 })

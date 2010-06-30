@@ -20,7 +20,7 @@ def main():
         app.modules.load(["mg.monitor.Monitor"])
         app.dbrestruct()
         port = daemon.serve_any_port("0.0.0.0")
-        app.hooks.call("director.query", "/director/ready", {
+        app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "monitor",
             "port": port,
             "params": json.dumps({})

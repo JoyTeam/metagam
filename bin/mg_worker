@@ -1,0 +1,43 @@
+#!/usr/bin/python2.6
+
+from mg.core import Instance
+from mg.web import WebDaemon, WebApplication
+from concurrence import dispatch
+from mg.cass import DatabasePool
+from mg.memcached import MemcachedPool, Memcached
+import traceback
+import json
+import mg.cluster
+
+def main():
+    try:
+        inst = Instance()
+
+        int_daemon = WebDaemon(inst)
+        conf = int_daemon.download_config()
+        int_dbpool = DatabasePool(conf["cassandra"])
+        int_mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="srv_")
+        int_app = WebApplication(inst, int_dbpool, "worker", int_mc, "int")
+        int_daemon.app = int_app
+        int_app.modules.load(["mg.worker.Worker"])
+        int_app.dbrestruct()
+        int_port = int_daemon.serve_any_port("0.0.0.0")
+
+        ext_daemon = WebDaemon(inst)
+        ext_port = ext_daemon.serve_any_port("0.0.0.0")
+        dir = mg.cluster.dir_query("/director/ready", {
+            "type": "worker",
+            "port": int_port,
+            "params": json.dumps({
+                "ext_port": ext_port,
+            }),
+        })
+    except RuntimeError as e:
+        print e
+        quit(1)
+    except:
+        traceback.print_exc()
+        quit(1)
+
+dispatch(main)
+
