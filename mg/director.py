@@ -1,6 +1,7 @@
 from mg.core import Module
 import re
 import json
+from concurrence import Tasklet, JoinError
 
 class DatabaseStruct(Module):
     def register(self):
@@ -17,7 +18,10 @@ class Director(Module):
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
         self.rhook("int-director.offline", self.director_offline)
+        self.rhook("core.fastidle", self.fastidle)
         self.servers_online = self.conf("director.servers", {})
+        self.servers_online_modified = True
+        self.workers_str = None
 
     def director_reload(self, args, request):
         errors = self.app().reload()
@@ -95,8 +99,46 @@ class Director(Module):
         })
 
     def store_servers_online(self):
-        self.app().config.set("director.servers", self.servers_online)
-        self.app().config.store()
+        self.servers_online_modified = True
+
+    def fastidle(self):
+        if self.servers_online_modified:
+            self.app().config.set("director.servers", self.servers_online)
+            self.app().config.store()
+            try:
+                if self.configure_nginx():
+                    self.servers_online_modified = False
+            except JoinError:
+                pass
+
+    def configure_nginx(self):
+        nginx = set()
+        workers = []
+        for server_id, info in self.servers_online.iteritems():
+            if info["type"] == "server" and info["params"].get("nginx"):
+                nginx.add((info["host"], info["port"]))
+            elif info["type"] == "worker":
+                workers.append((info["host"], info["params"].get("ext_port")))
+        workers_str = json.dumps(workers, sort_keys=True)
+        if workers_str != self.workers_str:
+            self.debug("Sending nginx configuration")
+            tasklets = []
+            for host, port in nginx:
+                tasklet = Tasklet.new(self.configure_nginx_server)(host, port, workers_str)
+                tasklets.append(tasklet)
+            for tasklet in tasklets:
+                if not Tasklet.join(tasklet):
+                    return False
+            self.workers_str = workers_str
+        return True
+
+    def configure_nginx_server(self, host, port, workers):
+        try:
+            self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
+            return True
+        except BaseException as e:
+            self.error("%s:%d - %s", host, port, e)
+            return False
 
     def director_ready(self, args, request):
         host = request.environ["REMOTE_ADDR"]

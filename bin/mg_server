@@ -2,14 +2,21 @@
 
 from mg.core import Instance
 from mg.web import WebDaemon, WebApplication
-from concurrence import dispatch, Tasklet
+from concurrence import dispatch, Tasklet, quit
+import concurrence.core
 from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
 import traceback
 import json
+import optparse
 
 def main():
     try:
+        # Parsing configuration
+        parser = optparse.OptionParser()
+        parser.add_option("-n", "--nginx", action="store_true", dest="nginx", help="Manage nginx configuration")
+        (options, args) = parser.parse_args()
+
         # Running daemon
         inst = Instance()
         daemon = WebDaemon(inst)
@@ -28,7 +35,8 @@ def main():
             "port": port,
             "id": app.server_id,
             "params": json.dumps({
-               "backend": 1
+                "backend": 1,
+                "nginx": options.nginx
             })
         })
         inst.server_id = res["server_id"]
@@ -38,6 +46,8 @@ def main():
             except:
                 traceback.print_exc()
             Tasklet.sleep(1)
+    except SystemExit:
+        quit(0)
     except RuntimeError as e:
         print e
         quit(1)

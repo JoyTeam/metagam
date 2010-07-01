@@ -1,13 +1,16 @@
+from __future__ import print_function
 from mg.core import Module
 import subprocess
 import sys
 import re
+import json
 
 class Server(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Cluster", "mg.web.Web"])
         self.rhook("int-server.spawn", self.spawn)
+        self.rhook("int-server.nginx", self.nginx)
         self.rhook("core.fastidle", self.fastidle)
         self.executable = re.sub(r'[^\/]+$', 'mg_worker', sys.argv[0])
 
@@ -41,7 +44,7 @@ class Server(Module):
                 self.debug("running child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
             workers["count"] = new_count
-        return request.jresponse({ "ok": 1 })
+        return request.jresponse({"ok": 1})
 
     def fastidle(self):
         workers = self.running_workers()
@@ -51,3 +54,21 @@ class Server(Module):
             if workers[i].returncode is not None:
                 self.debug("respawning child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
+
+    def nginx(self, args, request):
+        workers = json.loads(request.param("workers"))
+        filename = "/etc/nginx/nginx-metagam.conf"
+        try:
+            with open(filename, "w") as f:
+                print("upstream metagam {", file=f)
+                for srv in workers:
+                    print("\tserver %s:%d;" % (srv[0], srv[1]), file=f)
+                print("}", file=f)
+            subprocess.check_call(["/usr/bin/sudo", "/etc/init.d/nginx", "reload"])
+        except IOError as e:
+            self.error("Error writing %s: %s", filename, e)
+            return request.internal_server_error()
+        except subprocess.CalledProcessError as e:
+            self.error("Error reloading nginx: %s", e)
+            return request.internal_server_error()
+        return request.jresponse({"ok": 1})

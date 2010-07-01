@@ -2,7 +2,7 @@
 
 from mg.core import Instance
 from mg.web import WebDaemon, WebApplication
-from concurrence import dispatch
+from concurrence import dispatch, Tasklet
 from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
 import traceback
@@ -22,6 +22,12 @@ def main():
         app.dbrestruct()
         app.modules.load(["mg.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
+        while True:
+            try:
+                app.hooks.call("core.fastidle")
+            except:
+                traceback.print_exc()
+            Tasklet.sleep(1)
     except RuntimeError as e:
         logging.error(e)
         quit(1)

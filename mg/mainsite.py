@@ -14,5 +14,4 @@ class MainSite(Module):
         params = {
             "title": self._("Constructor of browser based online games"),
         }
-        self.warning("warn")
         return self.call("web.template", "mainsite/index.html", params)
