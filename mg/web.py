@@ -282,5 +282,10 @@ class Web(Module):
         return Tasklet.current().req.response(content)
 
     def core_ping(self, args, request):
-        return request.jresponse({"ok": 1})
+        response = {"ok": 1}
+        try:
+            response["server_id"] = self.app().inst.server_id
+        except:
+            pass
+        return request.jresponse(response)
 

@@ -111,18 +111,26 @@ class Director(Module):
             })
 
         # storing online list
-        tag = "%s:%s" % (host, port)
-        self.servers_online[tag] = {
+        server_id = "%s-%s" % (host, type)
+        conf = {
+            "host": host,
+            "port": port,
             "type": type,
             "params": params
         }
+        id = request.param("id")
+        if id:
+            server_id = "%s-%s" % (server_id, id)
+            conf["id"] = id
+        self.servers_online[server_id] = conf
         self.store_servers_online()
-        return request.jresponse({ "ok": 1 })
+        return request.jresponse({ "ok": 1, "server_id": server_id })
 
     def director_offline(self, args, request):
-        host = request.param("host")
-        if self.servers_online.get(host):
-            del self.servers_online[host]
+        server_id = request.param("server_id")
+        server = self.servers_online.get(server_id)
+        if server and server["port"] == int(request.param("port")):
+            del self.servers_online[server_id]
             self.store_servers_online()
             return request.jresponse({ "ok": 1 })
         else:

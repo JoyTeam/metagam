@@ -12,8 +12,9 @@ class Monitor(Module):
     def monitor_check(self):
         self.app().config.clear()
         servers_online = self.conf("director.servers", {})
-        for host, info in servers_online.iteritems():
-            host, port = re.split(':', host)
+        for server_id, info in servers_online.iteritems():
+            host = info.get("host")
+            port = info.get("port")
             success = False
             try:
                 cnn = HTTPConnection()
@@ -24,13 +25,14 @@ class Monitor(Module):
                     response = cnn.perform(request)
                     if response.status_code == 200 and response.get_header("Content-type") == "application/json":
                         body = json.loads(response.body)
-                        if body.get("ok"):
+                        if body.get("ok") and body.get("server_id") == server_id:
                             success = True
                 finally:
                     cnn.close()
             except BaseException as e:
-                print "%s:%s - %s" % (host, port, e)
+                print "%s - %s" % (server_id, e)
             if not success:
                 self.call("cluster.query_director", "/director/offline", {
-                    "host": "%s:%s" % (host, port)
+                    "server_id": server_id,
+                    "port": port
                 })

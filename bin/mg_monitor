@@ -19,11 +19,12 @@ def main():
         daemon.app = app
         app.modules.load(["mg.monitor.Monitor"])
         port = daemon.serve_any_port("0.0.0.0")
-        app.hooks.call("cluster.query_director", "/director/ready", {
+        res = app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "monitor",
             "port": port,
             "params": json.dumps({})
         })
+        inst.server_id = res["server_id"]
         while True:
             try:
                 app.hooks.call("monitor.check")

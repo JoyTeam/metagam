@@ -9,6 +9,7 @@ from mg.memcached import MemcachedPool, Memcached
 import traceback
 import json
 import mg.cluster
+import sys
 
 def main():
     try:
@@ -29,13 +30,17 @@ def main():
         ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
         inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
-        dir = mg.cluster.dir_query("/director/ready", {
+
+        # Registering
+        res = mg.cluster.dir_query("/director/ready", {
             "type": "worker",
             "port": int_port,
+            "id": sys.argv[1],
             "params": json.dumps({
                 "ext_port": ext_port,
             }),
         })
+        inst.server_id = res["server_id"]
     except RuntimeError as e:
         print e
         quit(1)

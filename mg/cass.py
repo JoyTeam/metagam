@@ -231,7 +231,7 @@ class DatabaseRestructure(object):
             if cmd[0] == "cf":
                 print "created column family %s: %s" % (cmd[1].name, self.db.system_add_column_family(cmd[1]))
             elif cmd[0] == "df":
-                print "destoyed column family %s: %s" % (cmd[1], self.db.system_drop_column_family(self.db.keyspace, cmd[1]))
+                print "destoyed column family %s: %s" % (cmd[1], self.db.system_drop_column_family(cmd[1]))
             elif cmd[0] == "cks":
                 print "created keyspace %s: %s" % (cmd[1].name, self.db.system_add_keyspace(cmd[1]))
             else:
