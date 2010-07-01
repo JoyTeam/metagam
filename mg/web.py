@@ -10,9 +10,9 @@ import cgi
 import re
 import mg.tools
 import json
-import traceback
 import socket
 import mg
+import logging
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -135,14 +135,15 @@ class WebDaemon(object):
         self.server = WSGIServer(self.req)
         self.inst = inst
         self.app = app
+        self.logger = logging.getLogger("mg.web.WebDaemon")
 
     def serve(self, addr):
         "Runs a WebDaemon instance listening given port"
         try:
             self.server.serve(addr)
-            print "serving %s:%d" % (addr[0], addr[1])
+            self.logger.info("serving %s:%d", addr[0], addr[1])
         except Exception as err:
-            print "Listen %s:%d: %s" % (addr[0], addr[1], err)
+            self.logger.error("Listen %s:%d: %s", addr[0], addr[1], err)
             quit(1)
 
     def serve_any_port(self, hostaddr):
@@ -151,7 +152,7 @@ class WebDaemon(object):
             try:
                 try:
                     self.server.serve((hostaddr, port))
-                    print "serving %s:%d" % (hostaddr, port)
+                    self.logger.info("serving %s:%d", hostaddr, port)
                     return port
                 except socket.error as err:
                     if err.errno == 98:
@@ -159,9 +160,9 @@ class WebDaemon(object):
                     else:
                         raise
             except Exception as err:
-                print "Listen %s:%d: %s (%s)" % (hostaddr, port, err, type(err))
+                self.logger.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
                 quit(1)
-        print "Couldn't find any unused port"
+        self.logger.error("Couldn't find any unused port")
         quit(1)
 
     def req(self, environ, start_response):
@@ -173,8 +174,8 @@ class WebDaemon(object):
             return self.req_uri(request, uri)
         except SystemExit:
             raise
-        except BaseException:
-            traceback.print_exc()
+        except BaseException as e:
+            self.logger.exception(e)
             return request.internal_server_error()
 
     def req_uri(self, request, uri):

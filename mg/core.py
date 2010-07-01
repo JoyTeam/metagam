@@ -8,7 +8,6 @@ from cassandra.ttypes import *
 import time
 import json
 import gettext
-import traceback
 from concurrence import Tasklet
 import logging
 
@@ -292,6 +291,46 @@ class Module(object):
     def db(self):
         return self.app().dbpool.dbget(self.app().keyspace)
 
+    def log_params(self):
+        d = {}
+        try:
+            req = Tasklet.current().req
+            val = req.environ.get("HTTP_X_REAL_IP")
+            if val:
+                d["ip"] = val
+            val = req.environ.get("HTTP_X_REAL_HOST")
+            if val:
+                d["host"] = val
+        except:
+            pass
+        return d
+
+    def logger(self):
+        return logging.getLogger(self.fqn)
+
+    def log(self, level, msg, *args):
+        logger = self.logger()
+        if logger.isEnabledFor(level):
+            logger.log(level, msg, *args, extra=self.log_params())
+
+    def debug(self, msg, *args):
+        self.logger().debug(msg, *args, extra=self.log_params())
+
+    def info(self, msg, *args):
+        self.logger().info(msg, *args, extra=self.log_params())
+
+    def warning(self, msg, *args):
+        self.logger().warning(msg, *args, extra=self.log_params())
+
+    def error(self, msg, *args):
+        self.logger().error(msg, *args, extra=self.log_params())
+
+    def critical(self, msg, *args):
+        self.logger().critical(msg, *args, extra=self.log_params())
+
+    def exception(self, msg, *args):
+        self.logger().exception(msg, *args, extra=self.log_params())
+
     def _(self, val):
         return self.call("l10n.gettext", val)
 
@@ -334,11 +373,11 @@ class Modules(object):
                     try:
                         __import__(module_name, globals(), locals(), [], -1)
                         module = sys.modules.get(module_name)
-                    except:
+                    except BaseException as e:
                         errors += 1
                         module = sys.modules.get(module_name)
                         if module:
-                            traceback.print_exc()
+                            logging.getLogger("mg.core.Modules").exception(e)
                         else:
                             raise
                 cls = module.__dict__[class_name]
@@ -361,14 +400,30 @@ class Modules(object):
             self.app().hooks.unregister_all()
             return self._load(modules, reload=True)
 
+class Formatter(logging.Formatter):
+    def format(self, record):
+        if record.__dict__.has_key("ip"):
+            record.msg = "ip:%s - %s" % (record.ip, record.msg)
+        if record.__dict__.has_key("host"):
+            record.msg = "host:%s - %s" % (record.host, record.msg)
+        return logging.Formatter.format(self, record)
+
 class Instance(object):
     """
     This is an executable instance. It keeps references to all major objects
     """
     def __init__(self):
         self.modules_lock = Lock()
-        logging.basicConfig(level=logging.DEBUG)
         self.config = {}
+
+        # Logging setup
+        modlogger = logging.getLogger("")
+        modlogger.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        ch.setFormatter(formatter)
+        modlogger.addHandler(ch)
 
 class Application(object):
     """

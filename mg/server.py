@@ -32,13 +32,13 @@ class Server(Module):
             workers["count"] = new_count
             for i in range(new_count, old_count):
                 process = workers[i]
-                print "terminating child %d (pid %d)" % (i, process.pid)
+                self.debug("terminating child %d (pid %d)", i, process.pid)
                 process.terminate()
                 del workers[i]
         elif new_count > old_count:
             # Spawning
             for i in range(old_count, new_count):
-                print "running child %d (process %s)" % (i, self.executable)
+                self.debug("running child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
             workers["count"] = new_count
         return request.jresponse({ "ok": 1 })
@@ -49,5 +49,5 @@ class Server(Module):
         for i in range(0, workers["count"]):
             workers[i].poll()
             if workers[i].returncode is not None:
-                print "respawning child %d (process %s)" % (i, self.executable)
+                self.debug("respawning child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])

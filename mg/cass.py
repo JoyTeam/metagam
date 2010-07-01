@@ -8,6 +8,7 @@ from cassandra import Cassandra
 from cassandra.ttypes import *
 import socket
 from mg.core import Module
+import logging
 
 class DatabaseError(Exception):
     "This exception can be raised during database queries"
@@ -196,6 +197,7 @@ class DatabaseRestructure(object):
         db - Database object
         """
         self.db = db
+        self.logger = logging.getLogger("mg.cass.DatabaseRestructure")
 
     def diff(self, config):
         "Perform all checks and returns diff of existing and target configuration"
@@ -229,13 +231,13 @@ class DatabaseRestructure(object):
         "Take diff and performs all required operations"
         for cmd in dbdiff.ops:
             if cmd[0] == "cf":
-                print "created column family %s: %s" % (cmd[1].name, self.db.system_add_column_family(cmd[1]))
+                self.logger.debug("created column family %s: %s", cmd[1].name, self.db.system_add_column_family(cmd[1]))
             elif cmd[0] == "df":
-                print "destoyed column family %s: %s" % (cmd[1], self.db.system_drop_column_family(cmd[1]))
+                self.logger.debug("destoyed column family %s: %s", cmd[1], self.db.system_drop_column_family(cmd[1]))
             elif cmd[0] == "cks":
-                print "created keyspace %s: %s" % (cmd[1].name, self.db.system_add_keyspace(cmd[1]))
+                self.logger.debug("created keyspace %s: %s", cmd[1].name, self.db.system_add_keyspace(cmd[1]))
             else:
-                print "invalid command %s" % cmd
+                self.logger.error("invalid command %s", cmd)
 
 class CommonDatabaseStruct(Module):
     def register(self):

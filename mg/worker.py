@@ -21,6 +21,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
     def get(self, tag):
         if tag == "metagam":
             app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg_"), "ext")
+            app.modules.load(["mg.mainsite.MainSite"])
             return app
 
 class MultiapplicationWebDaemon(WebDaemon):
@@ -46,4 +47,5 @@ class MultiapplicationWebDaemon(WebDaemon):
             app = self.inst.appfactory.get("metagam")
         if app is None:
             return request.redirect("http://%s" % str(self.metagam_host))
-        return []
+        app.hooks.call("l10n.set_request_lang", request)
+        return app.http_request(request, group, hook, args)

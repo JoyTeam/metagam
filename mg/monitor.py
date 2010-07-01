@@ -2,6 +2,7 @@ from mg.core import Module
 from concurrence.http import HTTPConnection
 import re
 import json
+import logging
 
 class Monitor(Module):
     def register(self):
@@ -30,7 +31,7 @@ class Monitor(Module):
                 finally:
                     cnn.close()
             except BaseException as e:
-                print "%s - %s" % (server_id, e)
+                logging.getLogger("mg.monitor.Monitor").info("%s - %s", server_id, e)
             if not success:
                 self.call("cluster.query_director", "/director/offline", {
                     "server_id": server_id,

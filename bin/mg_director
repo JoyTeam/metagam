@@ -7,10 +7,12 @@ from mg.cass import DatabasePool
 from mg.memcached import MemcachedPool, Memcached
 import traceback
 import json
+import logging
 
 def main():
     try:
         inst = Instance()
+        inst.server_id = 'director';
         daemon = WebDaemon(inst)
         dbpool = DatabasePool((("director-db", 9160),))
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg_")
@@ -21,10 +23,10 @@ def main():
         app.modules.load(["mg.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
     except RuntimeError as e:
-        print e
+        logging.error(e)
         quit(1)
-    except:
-        traceback.print_exc()
+    except BaseException as e:
+        logging.exception(e)
         quit(1)
 
 dispatch(main)
