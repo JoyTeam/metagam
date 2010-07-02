@@ -13,5 +13,6 @@ class MainSite(Module):
     def mainsite_index(self, args, request):
         params = {
             "title": self._("Constructor of browser based online games"),
+            "blog": self._("Project blog"),
         }
         return self.call("web.template", "mainsite/index.html", params)

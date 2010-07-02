@@ -247,6 +247,7 @@ class Web(Module):
     def __init__(self, *args, **kwargs):
         Module.__init__(self, *args, **kwargs)
         self.tpl = None
+        self.re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
 
     def register(self):
         Module.register(self)
@@ -276,7 +277,16 @@ class Web(Module):
         Tasklet.current().req.global_html = global_html
 
     def web_template(self, filename, struct):
-        struct["content"] = self.call("web.parse_template", filename, struct)
+        content = self.call("web.parse_template", filename, struct)
+        head = ""
+        m = self.re_content.match(content)
+        if m:
+            (head, content) = m.group(1, 2)
+        if struct.get("head") == None:
+            struct["head"] = head
+        else:
+            struct["head"] = struct["head"] + head
+        struct["content"] = content
         self.call("web.response", self.call("web.parse_template", Tasklet.current().req.global_html, struct))
 
     def web_response(self, content):
