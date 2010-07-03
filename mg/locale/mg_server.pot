@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-03 12:07+0400\n"
+"POT-Creation-Date: 2010-07-03 15:36+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,47 +16,47 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/director.py:38
+#: mg/director.py:58
 msgid "Welcome to the Director control center"
 msgstr ""
 
-#: mg/director.py:39
+#: mg/director.py:59
 msgid "Change director settings"
 msgstr ""
 
-#: mg/director.py:45
+#: mg/director.py:65
 msgid "List of servers online"
 msgstr ""
 
-#: mg/director.py:89
+#: mg/director.py:109
 msgid "Director settings"
 msgstr ""
 
-#: mg/director.py:91
+#: mg/director.py:111
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/director.py:93
+#: mg/director.py:113
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/director.py:95
+#: mg/director.py:115
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/director.py:97
+#: mg/director.py:117
 msgid "Save"
 msgstr ""
 
-#: mg/mainsite.py:15
+#: mg/mainsite.py:17
 msgid "Constructor of browser based online games"
 msgstr ""
 
-#: mg/mainsite.py:16
+#: mg/mainsite.py:18
 msgid "Project blog"
 msgstr ""
 
-#: mg/mainsite.py:17
+#: mg/mainsite.py:19
 msgid ""
 "MMO Constructor is a web application giving everyone possibility to create "
 "their own browser-based online games. Creating a game is totally free. No "
@@ -64,8 +64,16 @@ msgid ""
 "basis."
 msgstr ""
 
-#: mg/mainsite.py:18
+#: mg/mainsite.py:20
 msgid ""
-"The project is currently under construction. If you want to subscribe for "
+"The project is currently under construction. If you want to subscribe to the "
 "development status information leave us your e-mail"
+msgstr ""
+
+#: mg/mainsite.py:28
+msgid "Enter your e-mail address"
+msgstr ""
+
+#: mg/mainsite.py:30
+msgid "Invalid e-mail format"
 msgstr ""

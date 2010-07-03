@@ -1,41 +1,54 @@
 Ext.BLANK_IMAGE_URL = '/st/ext/resources/images/default/s.gif';
+Ext.QuickTips.init();
+Ext.form.Field.prototype.msgTarget = 'under';
 Ext.onReady(function() {
+
+	var submitButton = new Ext.Button({
+		text: gt.gettext('Subscribe'),
+		handler: function() {
+			this.fireEvent('submit');
+		},
+		listeners: {
+			submit: function() {
+				emailForm.getForm().submit({
+					success: function(form, action) {
+						Ext.Msg.alert(gt.gettext('Subscription confirmation'), gt.gettext('You have successfully subscribed to the project news'));
+						emailForm.getForm().reset();
+					},
+					failure: function(form, action) {
+						if (action.failureType == Ext.form.Action.CONNECT_FAILURE)
+							Ext.Msg.alert(gt.gettext('Error'), gt.gettext('Connection to the server failed'));
+					}
+				});
+			}
+		}
+	});
+
 	var emailForm = new Ext.FormPanel({
-		title: gt.gettext('Project status notifications'),
+		title: gt.gettext('Subscribe to the project news'),
+		url: '/mainsite/subscribe',
 		frame: true,
-		bodyStyle:'padding: 5px 5px 0',
-		width: 350,
-		defaults: {width: '100%'},
+		bodyStyle: 'padding: 5px 5px 0',
+		width: 400,
+		height: 120,
+		defaults: {
+			width: '100%',
+			enableKeyEvents: true,
+			listeners: {
+				specialKey: function(field, el) {
+					if (el.getKey() == Ext.EventObject.ENTER) {
+						submitButton.fireEvent('submit');
+					}
+				}
+			}
+		},
 		defaultType: 'textfield',
 		items: [{
 			fieldLabel: gt.gettext('E-mail address'),
 			name: 'email',
-			allowBlank: false
 		}],
-		buttons: [{
-			text: gt.gettext('Stay tuned'),
-			handler: function() {
-				emailForm.getForm().submit({
-					clientValidation: true,
-					url: '/mainsite/email',
-					success: function(form, action) {
-						Ext.Msg.alert('Success', action.result.msg);
-					},
-					failure: function(form, action) {
-						switch (action.failureType) {
-							case Ext.form.Action.CLIENT_INVALID:
-								Ext.Msg.alert('Failure', 'Form fields may not be submitted with invalid values');
-								break;
-							case Ext.form.Action.CONNECT_FAILURE:
-								Ext.Msg.alert('Failure', 'Ajax communication failed');
-								break;
-							case Ext.form.Action.SERVER_INVALID:
-								Ext.Msg.alert('Failure', action.result.msg);
-						}
-					}
-				});
-			}
-		}]
+		buttons: [submitButton]
 	});
+
 	emailForm.render('emailform');
 });
