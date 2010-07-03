@@ -2,6 +2,7 @@
 
 from concurrence import dispatch, quit
 from concurrence.http import HTTPConnection
+import json
 
 def main():
     try:
@@ -9,8 +10,15 @@ def main():
         cnn.connect(("director", 3000))
         request = cnn.get("/director/reload")
         response = cnn.perform(request)
-        print response.status
-        print response.body
+        if response.status_code == 200:
+            result = json.loads(response.body)
+            server_ids = result.keys()
+            server_ids.sort()
+            for server_id in server_ids:
+                print "%-45s - %s" % (server_id, result[server_id])
+        else:
+            print response.status
+            print response.body
         cnn.close()
     except IOError, e:
         print e

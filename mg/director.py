@@ -24,11 +24,31 @@ class Director(Module):
         self.workers_str = None
 
     def director_reload(self, args, request):
+        result = {
+        }
         errors = self.app().reload()
         if errors:
-            return request.jresponse({ "errors": errors })
+            result["director"] = "ERRORS: %d" % errors
         else:
-            return request.jresponse({ "ok": 1 })
+            result["director"] = "ok"
+
+        for server_id, info in self.servers_online.iteritems():
+            errors = 1
+            try:
+                res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {})
+                err = res.get("errors")
+                if err is None:
+                    errors = 0
+                else:
+                    errors = err
+            except BaseException as e:
+                self.error("%s:%d - %s", info["host"], info["port"], e)
+            tag = "%s (%s:%d)" % (server_id, info["host"], info["port"])
+            if errors:
+                result[tag] = "ERRORS: %d" % errors
+            else:
+                result[tag] = "ok"
+        return request.jresponse(result)
 
     def web_template(self, filename, struct):
         self.call("web.set_global_html", "director/global.html")
@@ -121,7 +141,6 @@ class Director(Module):
                 workers.append((info["host"], info["params"].get("ext_port")))
         workers_str = json.dumps(workers, sort_keys=True)
         if workers_str != self.workers_str:
-            self.debug("Sending nginx configuration")
             tasklets = []
             for host, port in nginx:
                 tasklet = Tasklet.new(self.configure_nginx_server)(host, port, workers_str)

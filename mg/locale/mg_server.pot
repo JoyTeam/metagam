@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-03 10:45+0400\n"
+"POT-Creation-Date: 2010-07-03 12:07+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,4 +54,18 @@ msgstr ""
 
 #: mg/mainsite.py:16
 msgid "Project blog"
+msgstr ""
+
+#: mg/mainsite.py:17
+msgid ""
+"MMO Constructor is a web application giving everyone possibility to create "
+"their own browser-based online games. Creating a game is totally free. No "
+"subscription fees. We will share your games revenue with you on 50%/50% "
+"basis."
+msgstr ""
+
+#: mg/mainsite.py:18
+msgid ""
+"The project is currently under construction. If you want to subscribe for "
+"development status information leave us your e-mail"
 msgstr ""

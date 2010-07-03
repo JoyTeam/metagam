@@ -357,7 +357,7 @@ class Modules(object):
         with self.app().inst.modules_lock:
             return self._load(modules)
 
-    def _load(self, modules, reload=False):
+    def _load(self, modules):
         "The same as load but without locking"
         errors = 0
         for mod in modules:
@@ -366,20 +366,20 @@ class Modules(object):
                 if not m:
                     raise ModuleException("Invalid module name: %s" % mod)
                 (module_name, class_name) = m.group(1, 2)
-                module = None
-                if not reload:
-                    module = sys.modules.get(module_name)
-                if module is None:
-                    try:
+                module = sys.modules.get(module_name)
+                try:
+                    if module:
+                        reload(module)
+                    else:
                         __import__(module_name, globals(), locals(), [], -1)
-                        module = sys.modules.get(module_name)
-                    except BaseException as e:
-                        errors += 1
-                        module = sys.modules.get(module_name)
-                        if module:
-                            logging.getLogger("mg.core.Modules").exception(e)
-                        else:
-                            raise
+                    module = sys.modules.get(module_name)
+                except BaseException as e:
+                    errors += 1
+                    module = sys.modules.get(module_name)
+                    if module:
+                        logging.getLogger("mg.core.Modules").exception(e)
+                    else:
+                        raise
                 cls = module.__dict__[class_name]
                 obj = cls(self.app(), mod)
                 obj.register()
@@ -398,7 +398,7 @@ class Modules(object):
                 (module_name, class_name) = m.group(1, 2)
             self._loaded_modules.clear()
             self.app().hooks.unregister_all()
-            return self._load(modules, reload=True)
+            return self._load(modules)
 
 class Formatter(logging.Formatter):
     def format(self, record):

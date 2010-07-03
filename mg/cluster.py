@@ -33,7 +33,7 @@ def dir_query(uri, params):
 
 def query(host, port, uri, params):
     cnn = HTTPConnection()
-    cnn.connect((host, port))
+    cnn.connect((str(host), int(port)))
     try:
         request = cnn.post(uri, urlencode(params))
         request.add_header("Content-type", "application/x-www-form-urlencoded")

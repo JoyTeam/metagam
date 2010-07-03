@@ -257,6 +257,14 @@ class Web(Module):
         self.rhook("web.parse_template", self.parse_template)
         self.rhook("web.set_global_html", self.set_global_html)
         self.rhook("int-core.ping", self.core_ping)
+        self.rhook("int-core.reload", self.core_reload)
+
+    def core_reload(self, args, request):
+        errors = self.app().reload()
+        if errors:
+            return request.jresponse({ "errors": errors })
+        else:
+            return request.jresponse({ "ok": 1 })
 
     def parse_template(self, filename, struct):
         if self.tpl is None:
