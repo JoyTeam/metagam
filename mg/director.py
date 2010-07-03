@@ -135,10 +135,13 @@ class Director(Module):
         nginx = set()
         workers = []
         for server_id, info in self.servers_online.iteritems():
-            if info["type"] == "server" and info["params"].get("nginx"):
-                nginx.add((info["host"], info["port"]))
-            elif info["type"] == "worker":
-                workers.append((info["host"], info["params"].get("ext_port")))
+            try:
+                if info["type"] == "server" and info["params"].get("nginx"):
+                    nginx.add((info["host"], info["port"]))
+                elif info["type"] == "worker":
+                    workers.append((info["host"], info["params"].get("ext_port")))
+            except KeyError:
+                pass
         workers_str = json.dumps(workers, sort_keys=True)
         if workers_str != self.workers_str:
             tasklets = []
@@ -190,7 +193,8 @@ class Director(Module):
     def director_offline(self, args, request):
         server_id = request.param("server_id")
         server = self.servers_online.get(server_id)
-        if server and server["port"] == int(request.param("port")):
+        port = server.get("port")
+        if server and (port is None or port == int(request.param("port"))):
             del self.servers_online[server_id]
             self.store_servers_online()
             return request.jresponse({ "ok": 1 })
