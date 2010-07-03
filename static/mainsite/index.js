@@ -7,10 +7,10 @@ Ext.onReady(function() {
 		margins: '0 4 4 0',
 		activeTab: 0,
 		items:[{
-			title: 'Login',
+			title: gt.gettext('Login'),
 			html: 'Login form'
 		}, {
-			title: 'Register',
+			title: gt.gettext('Register'),
 			html: 'Register form'
 		}]
 	});

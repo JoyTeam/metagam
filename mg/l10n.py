@@ -26,6 +26,7 @@ class L10n(Module):
         self.rhook("l10n.translation", self.l10n_translation)
         self.rhook("l10n.gettext", self.l10n_gettext)
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
+        self.rhook("web.universal_variables", self.universal_variables)
 
     def l10n_domain(self):
         return "mg_server"
@@ -79,3 +80,6 @@ class L10n(Module):
                 weight.sort(key=itemgetter(1), reverse=True)
                 if weight[0][0] != "en":
                    request.lang = weight[0][0]
+
+    def universal_variables(self, struct):
+        struct["lang"] = self.call("l10n.lang")

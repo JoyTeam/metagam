@@ -1,30 +1,60 @@
+.PHONY: all pot po mo js
+all: pot po mo js
+
+# ============= SETTINGS ===============
 copyright="Alexander Lourier <aml@rulezz.ru>"
 package_name="Metagam"
 package_version="0.1"
+langs := ru
+mo_modules := server
+js_modules := mainsite
 
-all: pot po mo
-.PHONY: pot po mo
-	
-sources=$(shell find . -name '*.py')
-server_mo_files = $(wildcard mg/locale/*/LC_MESSAGES/*.mo)
-server_po_files = $(wildcard mg/locale/server/*.po)
-
-pot: mg/locale/mg_server.pot
-mg/locale/mg_server.pot: $(sources)
+# ============= MODULE: server ===============
+server_sources := $(shell find . -name '*.py')
+server_mo_files := $(foreach lang,$(langs),mg/locale/$(lang)/LC_MESSAGES/mg_server.mo)
+server_po_files := $(foreach lang,$(langs),mg/locale/server/$(lang).po)
+mg/locale/mg_server.pot: $(server_sources)
 	find . -name '*.py' > .src-files
 	xgettext -d mg_server -f .src-files -L Python --copyright-holder=$(copyright) \
-		--package-name=$(package_name) --package-version=$(package_version)
+		--package-name=$(package_name) --package-version=$(package_version) \
+		--force-po
 	rm .src-files
 	mv mg_server.po mg/locale/mg_server.pot
 	mkdir -p mg/locale/server
+mg/locale/server/%.po: mg/locale/mg_server.pot
+	msgmerge -U $@ $<
+	touch $@
+mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
+	msgfmt -o $@ $<
 
-po: $(server_po_files)
-$(server_po_files): mg/locale/mg_server.pot
-	make -C mg/locale/server po
+# ============= MODULE: mainsite ===============
+mainsite_sources := $(shell find static/mainsite -name '*.js' | egrep -v '/gettext-')
+mainsite_po_files := $(foreach lang,$(langs),mg/locale/mainsite/$(lang).po)
+mainsite_js_files := $(foreach lang,$(langs),static/mainsite/gettext-$(lang).js)
+mg/locale/mg_mainsite.pot: $(mainsite_sources)
+	xgettext -d mg_mainsite -L Python --copyright-holder=$(copyright) --force-po \
+		--package-name=$(package_name) --package-version=$(package_version) \
+		$(mainsite_sources)
+	mv mg_mainsite.po mg/locale/mg_mainsite.pot
+	mkdir -p mg/locale/mainsite
+mg/locale/mainsite/%.po: mg/locale/mg_mainsite.pot
+	msgmerge -U $@ $<
+	touch $@
+static/mainsite/gettext-%.js: mg/locale/mainsite/%.po
+	(echo -n 'var gt=new Gettext({"domain": "mg_mainsite", "locale_data": {"mg_mainsite": '; po2json $< ; echo '}})') > $@
 
-mo: $(server_mo_files)
-$(server_mo_files): $(server_po_files)
-	make -C mg/locale/server mo
+# ============= GLOBAL ===============
+modules := $(mo_modules) $(js_modules)
+pot: $(foreach module,$(modules),mg/locale/mg_$(module).pot)
+po: $(foreach module,$(modules),$($(module)_po_files))
+mo: $(foreach module,$(mo_modules),$($(module)_mo_files))
+js: $(foreach module,$(js_modules),$($(module)_js_files))
 
 test:
 	for i in mg/test/*.py ; do echo $$i ; python2.6 $$i ; done
+
+debug:
+	@echo "POT Files: $(foreach module,$(modules),mg/locale/mg_$(module).pot)"
+	@echo "PO Files: $(foreach module,$(modules),$($(module)_po_files))"
+	@echo "MO Files: $(foreach module,$(mo_modules),$($(module)_mo_files))"
+	@echo "JS Files: $(foreach module,$(js_modules),$($(module)_js_files))"

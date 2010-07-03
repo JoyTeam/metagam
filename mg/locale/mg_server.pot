@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-01 16:17+0400\n"
+"POT-Creation-Date: 2010-07-03 10:45+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,38 +16,42 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/director.py:34
+#: mg/director.py:38
 msgid "Welcome to the Director control center"
 msgstr ""
 
-#: mg/director.py:35
+#: mg/director.py:39
 msgid "Change director settings"
 msgstr ""
 
-#: mg/director.py:41
+#: mg/director.py:45
 msgid "List of servers online"
 msgstr ""
 
-#: mg/director.py:85
+#: mg/director.py:89
 msgid "Director settings"
 msgstr ""
 
-#: mg/director.py:87
+#: mg/director.py:91
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/director.py:89
+#: mg/director.py:93
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/director.py:91
+#: mg/director.py:95
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/director.py:93
+#: mg/director.py:97
 msgid "Save"
 msgstr ""
 
 #: mg/mainsite.py:15
 msgid "Constructor of browser based online games"
+msgstr ""
+
+#: mg/mainsite.py:16
+msgid "Project blog"
 msgstr ""

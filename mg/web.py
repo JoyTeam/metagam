@@ -271,6 +271,7 @@ class Web(Module):
                 self.app().inst.tpl_provider = provider
                 conf["LOAD_TEMPLATES"] = provider
             self.tpl = Template(conf)
+        self.call("web.universal_variables", struct)
         return self.tpl.process(filename, struct)
 
     def set_global_html(self, global_html):
