@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-03 15:36+0400\n"
-"PO-Revision-Date: 2010-07-03 15:37+0300\n"
+"POT-Creation-Date: 2010-07-06 12:33+0400\n"
+"PO-Revision-Date: 2010-07-06 12:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -49,27 +49,35 @@ msgstr "<strong>Домен основного сайта</strong> (без www)"
 msgid "Save"
 msgstr "Сохранить"
 
-#: mg/mainsite.py:17
-msgid "Constructor of browser based online games"
+#: mg/mainsite.py:20
+msgid "Constructor of browser-based online games"
 msgstr "Конструктор браузерных онлайн-игр"
 
-#: mg/mainsite.py:18
+#: mg/mainsite.py:21
 msgid "Project blog"
 msgstr "Блог проекта"
 
-#: mg/mainsite.py:19
+#: mg/mainsite.py:22
+msgid "Project forum"
+msgstr "Форум проекта"
+
+#: mg/mainsite.py:23
+msgid "Send me email on something interesting"
+msgstr "Отправьте мне e-mail, когда будет что-то интересное"
+
+#: mg/mainsite.py:24
 msgid "MMO Constructor is a web application giving everyone possibility to create their own browser-based online games. Creating a game is totally free. No subscription fees. We will share your games revenue with you on 50%/50% basis."
 msgstr "MMO Constructor - это сервис, позволяющий любому желающему создать свою собственную браузерную онлайн-игру. Создание игры полностью бесплатно. Абонентская плата отсутствует. Выручка от ваших игр будет делиться между вами и нами в соотношении 50%/50%."
 
-#: mg/mainsite.py:20
+#: mg/mainsite.py:25
 msgid "The project is currently under construction. If you want to subscribe to the development status information leave us your e-mail"
 msgstr "В данный момент проект находится в разработке. Если вы хотите подписаться на уведомления о статусе разработки, оставьте нам свой e-mail."
 
-#: mg/mainsite.py:28
+#: mg/mainsite.py:33
 msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
 
-#: mg/mainsite.py:30
+#: mg/mainsite.py:35
 msgid "Invalid e-mail format"
 msgstr "Неверный формат e-mail"
 

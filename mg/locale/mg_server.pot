@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-03 15:36+0400\n"
+"POT-Creation-Date: 2010-07-06 12:33+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,15 +48,23 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: mg/mainsite.py:17
-msgid "Constructor of browser based online games"
+#: mg/mainsite.py:20
+msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/mainsite.py:18
+#: mg/mainsite.py:21
 msgid "Project blog"
 msgstr ""
 
-#: mg/mainsite.py:19
+#: mg/mainsite.py:22
+msgid "Project forum"
+msgstr ""
+
+#: mg/mainsite.py:23
+msgid "Send me email on something interesting"
+msgstr ""
+
+#: mg/mainsite.py:24
 msgid ""
 "MMO Constructor is a web application giving everyone possibility to create "
 "their own browser-based online games. Creating a game is totally free. No "
@@ -64,16 +72,16 @@ msgid ""
 "basis."
 msgstr ""
 
-#: mg/mainsite.py:20
+#: mg/mainsite.py:25
 msgid ""
 "The project is currently under construction. If you want to subscribe to the "
 "development status information leave us your e-mail"
 msgstr ""
 
-#: mg/mainsite.py:28
+#: mg/mainsite.py:33
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/mainsite.py:30
+#: mg/mainsite.py:35
 msgid "Invalid e-mail format"
 msgstr ""
