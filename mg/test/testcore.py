@@ -4,19 +4,19 @@
 import unittest
 from concurrence import dispatch, Tasklet
 from mg.core import *
-from mg.cass import DatabasePool
+from mg.cass import CassandraPool
 from mg.memcached import Memcached
 from cassandra.ttypes import *
 
 class Test1(Module):
     def register(self):
         Module.register(self)
-        self.rhook("core.dbstruct", self.database_struct)
+        self.rhook("core.dbstruct", self.cassandra_struct)
         self.rhook("grp1.test1", self.test1)
         self.rhook("grp1.test2", self.test2)
         self.rhook("grp2.test3", self.test3)
 
-    def database_struct(self, dbstruct):
+    def cassandra_struct(self, dbstruct):
         dbstruct["TestFamily"] = CfDef(comparator_type="BytesType")
 
     def test1(self):
@@ -95,14 +95,14 @@ class TestCore(unittest.TestCase):
         pass
 
     def test00(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         try:
             app.db().system_drop_keyspace("mgtest")
         except Exception, e:
             pass
 
     def test01(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         list = []
         app.hooks.call("core.loaded_modules", list)
         self.assertEqual(len(list), 0)
@@ -113,7 +113,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(len(list), 1)
         self.assertEqual(list[0], "mg.test.testcore.Test1")
 
-        app.modules.load(["mg.cass.CommonDatabaseStruct"])
+        app.modules.load(["mg.cass.CommonCassandraStruct"])
         dbstruct = {}
         app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
@@ -130,7 +130,7 @@ class TestCore(unittest.TestCase):
         app.config.store()
 
     def test02(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         self.assertEqual(app.config.get("a.key1"), "value1")
         app.config.set("a.key2", "value2")
         app.config.delete("a.key1")
@@ -139,7 +139,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(app.config.get("a.key2"), "value2")
 
     def test03(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         self.assertEqual(app.config.get("a.key1"), None)
         self.assertEqual(app.config.get("a.key2"), "value2")
         self.assertTrue("a" in app.config._config)
@@ -148,12 +148,12 @@ class TestCore(unittest.TestCase):
         self.assertFalse("d" in app.config._config)
 
     def test04(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         app.modules.load(["mg.test.testcore.Test1"])
         app.hooks.store()
 
     def test05(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         self.assertEqual(len(app.hooks._groups), 0)
         list = []
         app.hooks.call("core.loaded_modules", list)
@@ -167,12 +167,12 @@ class TestCore(unittest.TestCase):
         self.assertTrue("grp2" in app.hooks._groups)
 
     def test06(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         app.modules.load(["mg.test.testcore.Test2"])
         app.hooks.store()
 
     def test07(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         self.assertEqual(len(app.hooks._groups), 0)
         app.hooks.call("grp1.test1")
         self.assertEqual(len(app.hooks._groups), 1)
@@ -183,7 +183,7 @@ class TestCore(unittest.TestCase):
         app.hooks.store()
 
     def test08(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         self.assertEqual(len(app.hooks._groups), 0)
         app.hooks.call("grp1.test1")
         self.assertEqual(len(app.hooks._groups), 1)
@@ -192,7 +192,7 @@ class TestCore(unittest.TestCase):
         self.assertTrue("mg.test.testcore.Test2" in app.hooks._groups["grp1"]["test1"])
 
     def test09(self):
-        app = Application(inst=Instance(), dbpool=DatabasePool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
+        app = Application(inst=Instance(), dbpool=CassandraPool(), keyspace="mgtest", mc=Memcached(prefix="mgtest_"))
         app.modules.load(["mg.test.testcore.TestJoin"])
         self.assertEqual(app.hooks.call("join.empty"), None)
         self.assertEqual(app.hooks.call("join.single"), "single")

@@ -4,23 +4,23 @@ import re
 import mg.tools
 from mg.thr import Socket
 from thrift.transport import TTransport
-from cassandra import Cassandra
+from cassandra.Cassandra import Client
 from cassandra.ttypes import *
 import socket
 from mg.core import Module
 import logging
 
-class DatabaseError(Exception):
+class CassandraError(Exception):
     "This exception can be raised during database queries"
     pass
 
-class JSONError(DatabaseError):
+class JSONError(CassandraError):
     "JSON or UTF-8 decoding error"
     pass
 
-class Database(object):
+class Cassandra(object):
     """
-    Wrapper around DatabaseConnection class. It puts DatabaseConnection
+    Wrapper around CassandraConnection class. It puts CassandraConnection
     back to the pool on destruction
     """
     def __init__(self, conn, pool, keyspace):
@@ -92,9 +92,9 @@ class Database(object):
         self.apply_keyspace()
         return self.conn.cass.get_range_slices(*args, **kwargs)
 
-class DatabasePool(object):
+class CassandraPool(object):
     """
-    Handles pool of DatabaseConnection objects, allowing get and put operations.
+    Handles pool of CassandraConnection objects, allowing get and put operations.
     Connections are created on demand
     """
     def __init__(self, hosts=(("127.0.0.1", 9160),), size=None):
@@ -105,8 +105,8 @@ class DatabasePool(object):
         self.channel = None
 
     def new_connection(self):
-        "Create a new DatabaseConnection and connect it"
-        connection = DatabaseConnection(self.hosts)
+        "Create a new CassandraConnection and connect it"
+        connection = CassandraConnection(self.hosts)
         connection.connect()
         self.hosts.append(self.hosts.pop(0))
         return connection
@@ -141,11 +141,11 @@ class DatabasePool(object):
         self.cput(self.new_connection())
 
     def dbget(self, keyspace):
-        "The same as cget, but returns Database wrapper"
-        return Database(self.cget(), self, keyspace)
+        "The same as cget, but returns Cassandra wrapper"
+        return Cassandra(self.cget(), self, keyspace)
 
-class DatabaseConnection(object):
-    "DatabaseConnection - interface to Cassandra database engine"
+class CassandraConnection(object):
+    "CassandraConnection - interface to Cassandra database engine"
     def __init__(self, hosts=(("127.0.0.1", 9160),)):
         """
         hosts - ((host, port), (host, port), ...)
@@ -164,7 +164,7 @@ class DatabaseConnection(object):
             sock = Socket(self.hosts)
             self.trans = TTransport.TFramedTransport(sock)
             proto = TBinaryProtocol.TBinaryProtocolAccelerated(self.trans)
-            self.cass = Cassandra.Client(proto)
+            self.cass = Client(proto)
             self.trans.open()
             self.actual_keyspace = None
         except:
@@ -182,7 +182,7 @@ class DatabaseConnection(object):
         self.actual_keyspace = keyspace
         self.cass.set_keyspace(keyspace)
 
-class DatabaseDiff(object):
+class CassandraDiff(object):
     "Difference between old and new configurations"
     def __init__(self):
         self.ops = []
@@ -190,18 +190,18 @@ class DatabaseDiff(object):
     def __str__(self):
         return self.ops.__str__()
 
-class DatabaseRestructure(object):
-    "DatabaseRestructure creates missing column families and drops unused ones"
+class CassandraRestructure(object):
+    "CassandraRestructure creates missing column families and drops unused ones"
     def __init__(self, db):
         """
-        db - Database object
+        db - Cassandra object
         """
         self.db = db
-        self.logger = logging.getLogger("mg.cass.DatabaseRestructure")
+        self.logger = logging.getLogger("mg.cass.CassandraRestructure")
 
     def diff(self, config):
         "Perform all checks and returns diff of existing and target configuration"
-        dbdiff = DatabaseDiff()
+        dbdiff = CassandraDiff()
         keyspaces = self.db.describe_keyspaces()
         family_exists = dict()
         required = set()
@@ -239,17 +239,17 @@ class DatabaseRestructure(object):
             else:
                 self.logger.error("invalid command %s", cmd)
 
-class CommonDatabaseStruct(Module):
+class CommonCassandraStruct(Module):
     def register(self):
         Module.register(self)
-        self.rhook("core.dbstruct", self.database_struct)
-        self.rhook("core.dbapply", self.database_apply)
+        self.rhook("core.dbstruct", self.cassandra_struct)
+        self.rhook("core.dbapply", self.cassandra_apply)
 
-    def database_struct(self, dbstruct):
+    def cassandra_struct(self, dbstruct):
         dbstruct["Core"] = CfDef()
 
-    def database_apply(self, dbstruct):
+    def cassandra_apply(self, dbstruct):
         db = self.db()
-        restruct = DatabaseRestructure(db)
+        restruct = CassandraRestructure(db)
         diff = restruct.diff(dbstruct)
         restruct.apply(diff)

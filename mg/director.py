@@ -3,14 +3,14 @@ import re
 import json
 from concurrence import Tasklet, JoinError
 
-class DatabaseStruct(Module):
+class CassandraStruct(Module):
     def register(self):
-        self.rdep(["mg.cass.CommonDatabaseStruct"])
+        self.rdep(["mg.cass.CommonCassandraStruct"])
 
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.director.DatabaseStruct", "mg.web.Web", "mg.cluster.Cluster"])
+        self.rdep(["mg.director.CassandraStruct", "mg.web.Web", "mg.cluster.Cluster"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.director_reload)

@@ -7,7 +7,7 @@ import logging
 class Monitor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Cluster", "mg.web.Web"])
+        self.rdep(["mg.cass.CommonCassandraStruct", "mg.cluster.Cluster", "mg.web.Web"])
         self.rhook("monitor.check", self.monitor_check)
 
     def monitor_check(self):

@@ -434,7 +434,7 @@ class Application(object):
     def __init__(self, inst, dbpool, keyspace, mc):
         """
         inst - Instance object
-        dbpool - DatabasePool object
+        dbpool - CassandraPool object
         keyspace - database keyspace
         mc - Memcached object
         dbhost, dbname - database host and name
@@ -451,7 +451,7 @@ class Application(object):
         self.hook_lock = Lock()
 
     def db(self):
-        "Get an instance of the Database"
+        "Get an instance of the Cassandra"
         return self.dbpool.dbget(self.keyspace)
 
     def dbrestruct(self):

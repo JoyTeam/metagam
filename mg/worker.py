@@ -7,7 +7,7 @@ import mg.core
 class Worker(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonDatabaseStruct", "mg.cluster.Cluster", "mg.web.Web"])
+        self.rdep(["mg.cass.CommonCassandraStruct", "mg.cluster.Cluster", "mg.web.Web"])
 
 class ApplicationFactory(mg.core.ApplicationFactory):
     """
@@ -29,7 +29,7 @@ class MultiapplicationWebDaemon(WebDaemon):
     def __init__(self, inst, dbpool, mcpool):
         """
         inst - Instance reference
-        dbpool - DatabasePool reference
+        dbpool - CassandraPool reference
         mcpool - MemcachedPool reference
         """
         WebDaemon.__init__(self, inst)
