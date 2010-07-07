@@ -7,7 +7,7 @@ from concurrence import dispatch, Tasklet
 import time
 from cassandra.ttypes import *
 
-class TestMemcached(unittest.TestCase):
+class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.db = CassandraPool().dbget("mgtest")
 

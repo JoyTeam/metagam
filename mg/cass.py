@@ -9,6 +9,8 @@ from cassandra.ttypes import *
 import socket
 from mg.core import Module
 import logging
+from uuid import uuid4
+import time
 
 class CassandraError(Exception):
     "This exception can be raised during database queries"
@@ -247,9 +249,110 @@ class CommonCassandraStruct(Module):
 
     def cassandra_struct(self, dbstruct):
         dbstruct["Core"] = CfDef()
+        dbstruct["Objects"] = CfDef()
 
     def cassandra_apply(self, dbstruct):
         db = self.db()
         restruct = CassandraRestructure(db)
         diff = restruct.diff(dbstruct)
         restruct.apply(diff)
+
+class CassandraObject(object):
+    """
+    An ORM object
+    """
+    def __init__(self, db, uuid=None, data=None):
+        """
+        db - CassandraDatabase Object
+        uuid - ID of object (None if newly created)
+        data - preloaded object data (None is not loaded)
+        """
+        self.db = db
+        if uuid is None:
+            self.uuid = re.sub(r'^urn:uuid:', '', uuid4().urn)
+            self.new = True
+            self.dirty = True
+            if data is None:
+                self.data = {}
+            else:
+                self.data = data
+        else:
+            self.uuid = uuid
+            self.dirty = False
+            self.new = False
+            if data is None:
+                self.load()
+            else:
+                self.data = data
+
+    def indexes(self):
+        """
+        List of object indexes. Every index is a mapping: key => UUID
+        When object is changed it is reflected in its indexes.
+        Override to set your own index lists. Format:
+        [
+          ['field1', 'field2']
+          ['field3', 'field2', 'field4']
+        ]
+        """
+        return []
+
+    def load(self):
+        """
+        Load object from the database
+        Raises NotFoundException
+        """
+        col = self.db.get(self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+        self.data = json.loads(col.value)
+        self.dirty = False
+
+    def store_data(self):
+        """
+        Returns JSON object or None if not modified
+        dirty flag is turned down
+        """
+        if not self.dirty:
+            return None
+        self.dirty = False
+        return json.dumps(self.data)
+
+    def store(self):
+        """
+        Store object in the database
+        """
+        data = self.store_data()
+        if data is not None:
+            timestamp = time.time() * 1000
+            self.db.batch_mutate({self.uuid: {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}}, ConsistencyLevel.QUORUM)
+        self.new = False
+
+    def remove(self):
+        """
+        Remove object from the database
+        """
+        self.db.remove(self.uuid, ColumnPath("Objects"), ConsistencyLevel.QUORUM)
+        self.dirty = False
+        self.new = False
+
+    def get(self, key):
+        """
+        Get data key
+        """
+        return self.data.get(key)
+
+    def set(self, key, value):
+        """
+        Set data value
+        """
+        self.data[key] = value
+        self.dirty = True
+
+    def delkey(self, key):
+        """
+        Delete key
+        """
+        try:
+            del self.data[key]
+            self.dirty = True
+        except KeyError:
+            pass
