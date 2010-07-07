@@ -314,6 +314,7 @@ class CassandraObject(object):
         if not self.dirty:
             return None
         self.dirty = False
+        self.new = False
         return json.dumps(self.data)
 
     def store(self):
@@ -324,13 +325,13 @@ class CassandraObject(object):
         if data is not None:
             timestamp = time.time() * 1000
             self.db.batch_mutate({self.uuid: {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}}, ConsistencyLevel.QUORUM)
-        self.new = False
 
     def remove(self):
         """
         Remove object from the database
         """
-        self.db.remove(self.uuid, ColumnPath("Objects"), ConsistencyLevel.QUORUM)
+        timestamp = time.time() * 1000
+        self.db.remove(self.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
         self.dirty = False
         self.new = False
 
@@ -356,3 +357,68 @@ class CassandraObject(object):
             self.dirty = True
         except KeyError:
             pass
+
+class CassandraObjectList(object):
+    def __init__(self, db, uuids):
+        self.dict = [CassandraObject(db, uuid, {}) for uuid in uuids]
+        self.load()
+
+    def load(self):
+        if len(self.dict) > 0:
+            d = self.dict[0].db.multiget_slice([obj.uuid for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
+            for obj in self.dict:
+                cols = d[obj.uuid]
+                if len(cols) > 0:
+                    obj.data = json.loads(cols[0].column.value)
+                    obj.dirty = False
+                else:
+                    raise NotFoundException("UUID %s not found" % obj.uuid)
+
+    def store(self):
+        if len(self.dict) > 0:
+            mutations = {}
+            timestamp = time.time() * 1000
+            for obj in self.dict:
+                data = obj.store_data()
+                if data is not None:
+                    mutations[obj.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}
+            if len(mutations) > 0:
+                self.dict[0].db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+
+    def remove(self):
+        if len(self.dict) > 0:
+            timestamp = time.time() * 1000
+            for obj in self.dict:
+                obj.db.remove(obj.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
+                obj.dirty = False
+                obj.new = False
+
+    def __len__(self):
+        return self.dict.__len__()
+
+    def __getitem__(self, key):
+        return self.dict.__getitem__(key)
+
+    def __setitem__(self, key, value):
+        return self.dict.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        return self.dict.__delitem__(key)
+
+    def __iter__(self):
+        return self.dict.__iter__()
+
+    def __reversed__(self):
+        return self.dict.__reversed__()
+
+    def __contains__(self, item):
+        return self.dict.__contains__(item)
+
+    def __getslice__(self, i, j):
+        return self.dict.__getslice__(i, j)
+
+    def __setslice__(self, i, j, sequence):
+        return self.dict.__setslice__(i, j, sequence)
+
+    def __delslice__(self, i, j):
+        return self.dict.__delslice__(i, j)
