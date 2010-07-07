@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-03 15:30+0400\n"
-"PO-Revision-Date: 2010-07-03 15:31+0300\n"
+"POT-Creation-Date: 2010-07-06 12:47+0400\n"
+"PO-Revision-Date: 2010-07-06 12:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -17,33 +17,33 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: static/mainsite/index.js:7
+#: static/mainsite/index.js:12
 msgid "Subscribe"
 msgstr "Подписаться"
 
-#: static/mainsite/index.js:15
+#: static/mainsite/index.js:20
 msgid "Subscription confirmation"
 msgstr "Подтверждение подписки"
 
-#: static/mainsite/index.js:15
+#: static/mainsite/index.js:20
 msgid "You have successfully subscribed to the project news"
 msgstr "Вы успешно подписались на новости проекта"
 
-#: static/mainsite/index.js:20
+#: static/mainsite/index.js:26
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/mainsite/index.js:20
+#: static/mainsite/index.js:26
 msgid "Connection to the server failed"
 msgstr "Нет связи с сервером"
 
-#: static/mainsite/index.js:28
-msgid "Subscribe to the project news"
-msgstr "Подпишитесь на новости проекта"
-
-#: static/mainsite/index.js:47
+#: static/mainsite/index.js:52
 msgid "E-mail address"
 msgstr "Адрес e-mail"
+
+#: static/mainsite/index.js:59
+msgid "Subsciption to the project news"
+msgstr "Подписка на новости проекта"
 
 #~ msgid "Stay tuned"
 #~ msgstr "Хочу быть в курсе"

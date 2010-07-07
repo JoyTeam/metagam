@@ -4,7 +4,7 @@ from mg.core import Instance
 from mg.web import WebDaemon, WebApplication
 from mg.worker import MultiapplicationWebDaemon, ApplicationFactory
 from concurrence import dispatch
-from mg.cass import DatabasePool
+from mg.cass import CassandraPool
 from mg.memcached import MemcachedPool, Memcached
 import traceback
 import json
@@ -18,7 +18,7 @@ def main():
         # Running internal daemon
         int_daemon = WebDaemon(inst)
         conf = int_daemon.download_config()
-        dbpool = DatabasePool(conf["cassandra"])
+        dbpool = CassandraPool(conf["cassandra"])
         mcpool = MemcachedPool(conf["memcached"][0])
         int_mc = Memcached(mcpool, prefix="mg_")
         int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int")

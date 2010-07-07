@@ -3,7 +3,7 @@
 from mg.core import Instance
 from mg.web import WebDaemon
 from concurrence import dispatch, quit
-from mg.cass import DatabasePool
+from mg.cass import CassandraPool
 import traceback
 import json
 from cassandra.ttypes import *
@@ -13,7 +13,7 @@ def main():
         inst = Instance()
         daemon = WebDaemon(inst)
         conf = daemon.download_config()
-        dbpool = DatabasePool(conf["cassandra"])
+        dbpool = CassandraPool(conf["cassandra"])
         db = dbpool.dbget("metagam")
         res = db.multiget_slice(["NewsSubscriptions"], ColumnParent(column_family="Core"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.ALL)
         for col in res["NewsSubscriptions"]:

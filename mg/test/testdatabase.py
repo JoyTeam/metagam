@@ -1,18 +1,18 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.cass import DatabaseConnection, DatabaseRestructure, DatabasePool
+from mg.cass import CassandraConnection, CassandraRestructure, CassandraPool
 import unittest
 from concurrence import dispatch, Tasklet
 import time
 from cassandra.ttypes import *
 
-class TestMemcached(unittest.TestCase):
+class TestDatabase(unittest.TestCase):
     def setUp(self):
-        self.db = DatabasePool().dbget("mgtest")
+        self.db = CassandraPool().dbget("mgtest")
 
         self.cleanup()
-        restruct = DatabaseRestructure(self.db)
+        restruct = CassandraRestructure(self.db)
 
         struct = {
             "Family1": CfDef(comparator_type="BytesType"),

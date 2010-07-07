@@ -3,7 +3,7 @@
 from mg.core import Instance
 from mg.web import WebDaemon, WebApplication
 from concurrence import dispatch, Tasklet
-from mg.cass import DatabasePool
+from mg.cass import CassandraPool
 from mg.memcached import MemcachedPool, Memcached
 import traceback
 import json
@@ -14,11 +14,11 @@ def main():
         inst = Instance()
         inst.server_id = 'director';
         daemon = WebDaemon(inst)
-        dbpool = DatabasePool((("director-db", 9160),))
+        dbpool = CassandraPool((("director-db", 9160),))
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg_")
         app = WebApplication(inst, dbpool, "metagam", mc, "int")
         daemon.app = app
-        app.modules.load(["mg.director.DatabaseStruct"])
+        app.modules.load(["mg.director.CassandraStruct"])
         app.dbrestruct()
         app.modules.load(["mg.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))

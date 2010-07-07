@@ -19,6 +19,8 @@ class MainSite(Module):
         params = {
             "title": self._("Constructor of browser-based online games"),
             "blog": self._("Project blog"),
+            "forum": self._("Project forum"),
+            "subscribe": self._("Send me email on something interesting"),
             "project_info": self._("MMO Constructor is a web application giving everyone possibility to create their own browser-based online games. Creating a game is totally free. No subscription fees. We will share your games revenue with you on 50%/50% basis."),
             "under_construction": self._("The project is currently under construction. If you want to subscribe to the development status information leave us your e-mail"),
         }

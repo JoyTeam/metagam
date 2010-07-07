@@ -1,6 +1,6 @@
 from concurrence import quit, Tasklet, http
 from concurrence.http import server
-from mg.cass import Database
+from mg.cass import Cassandra
 from mg.memcached import Memcached
 from mg.core import Application, Instance, Module, ApplicationFactory
 from template import Template
@@ -224,7 +224,7 @@ class WebApplication(Application):
     def __init__(self, inst, dbpool, keyspace, mc, hook_prefix):
         """
         inst - Instance object
-        dbpool - DatabasePool object
+        dbpool - CassandraPool object
         keyspace - database keyspace
         mc - Memcached object
         dbhost, dbname - database host and name
