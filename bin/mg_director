@@ -16,7 +16,7 @@ def main():
         daemon = WebDaemon(inst)
         dbpool = CassandraPool((("director-db", 9160),))
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg_")
-        app = WebApplication(inst, dbpool, "metagam", mc, "int")
+        app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg_")
         daemon.app = app
         app.modules.load(["mg.director.CassandraStruct"])
         app.dbrestruct()

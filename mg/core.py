@@ -47,7 +47,7 @@ class Hooks(object):
         """
         load_groups = [g for g in groups if g not in self._groups]
         if len(load_groups):
-            db = self.app().db()
+            db = self.app().db
             data = db.get_slice("Hooks", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
             for col in data:
                 self._groups[col.column.name] = json.loads(col.column.value)
@@ -147,7 +147,7 @@ class Hooks(object):
                     grpdict = rec[hook_group] = dict()
                 grpdict[hook_name] = [handler[2] for handler in handlers]
         with self.app().hook_lock:
-            db = self.app().db()
+            db = self.app().db
             timestamp = time.time() * 1000
             data = [(g, json.dumps(rec[g])) for g in rec]
             mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
@@ -176,7 +176,7 @@ class Config(object):
         with self.app().config_lock:
             load_groups = [g for g in groups if g not in self._config]
             if len(load_groups):
-                db = self.app().db()
+                db = self.app().db
                 data = db.get_slice("Config", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
                 for col in data:
                     self._config[col.column.name] = json.loads(col.column.value)
@@ -240,7 +240,7 @@ class Config(object):
     def store(self):
         if len(self._modified):
             with self.app().config_lock:
-                db = self.app().db()
+                db = self.app().db
                 timestamp = time.time() * 1000
                 data = [(g, json.dumps(self._config[g])) for g in self._modified]
                 mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
@@ -333,6 +333,12 @@ class Module(object):
 
     def _(self, val):
         return self.call("l10n.gettext", val)
+
+    def obj(self, uuid=None, data=None):
+        return self.app().obj(uuid, data)
+
+    def objlist(self, uuids):
+        return self.app().obj(uuids)
 
 class ModuleException(Exception):
     "Error during module loading"
@@ -431,14 +437,13 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, dbpool, keyspace, mc):
+    def __init__(self, inst, dbpool, keyspace, mc, keyprefix):
         """
         inst - Instance object
         dbpool - CassandraPool object
         keyspace - database keyspace
         mc - Memcached object
-        dbhost, dbname - database host and name
-        mcprefix - memcached prefix
+        keyprefix - prefix for CassandraObject keys
         """
         self.inst = inst
         self.dbpool = dbpool
@@ -449,10 +454,8 @@ class Application(object):
         self.modules = Modules(self)
         self.config_lock = Lock()
         self.hook_lock = Lock()
-
-    def db(self):
-        "Get an instance of the Cassandra"
-        return self.dbpool.dbget(self.keyspace)
+        self.keyprefix = keyprefix
+        self.db = self.dbpool.dbget(self.keyspace)
 
     def dbrestruct(self):
         "Check database structure and update if necessary"
@@ -465,6 +468,13 @@ class Application(object):
         errors = 0
         errors += self.modules.reload()
         return errors
+
+    def obj(self, uuid=None, data=None):
+        "Access CassandraObject constructor"
+        return CassandraObject(self.db, uuid, data, self.keyprefix)
+
+    def objlist(self, uuids):
+        return CassandraObjectList(self.db, uuids, self.keyprefix)
 
 class ApplicationFactory(object):
     """

@@ -21,7 +21,7 @@ def main():
         dbpool = CassandraPool(conf["cassandra"])
         mcpool = MemcachedPool(conf["memcached"][0])
         int_mc = Memcached(mcpool, prefix="mg_")
-        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int")
+        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg_")
         int_daemon.app = int_app
         int_app.modules.load(["mg.worker.Worker"])
         int_port = int_daemon.serve_any_port("0.0.0.0")

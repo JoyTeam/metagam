@@ -20,7 +20,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
 
     def get(self, tag):
         if tag == "metagam":
-            app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg_"), "ext")
+            app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg_"), "ext", "mg_")
             app.modules.load(["mg.mainsite.MainSite"])
             return app
 

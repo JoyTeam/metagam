@@ -221,7 +221,7 @@ class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
-    def __init__(self, inst, dbpool, keyspace, mc, hook_prefix):
+    def __init__(self, inst, dbpool, keyspace, mc, hook_prefix, keyprefix):
         """
         inst - Instance object
         dbpool - CassandraPool object
@@ -231,8 +231,9 @@ class WebApplication(Application):
         mcprefix - memcached prefix
         hook_prefix - prefix for hook names, i.e. prefix "web" means that
            URL /group/hook will be mapped to hook name web-group.hook
+        keyprefix - prefix for CassandraObject keys
         """
-        Application.__init__(self, inst, dbpool, keyspace, mc)
+        Application.__init__(self, inst, dbpool, keyspace, mc, keyprefix)
         self.hook_prefix = hook_prefix
 
     def http_request(self, request, group, hook, args):

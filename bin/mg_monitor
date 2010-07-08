@@ -15,7 +15,7 @@ def main():
         conf = daemon.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg_")
-        app = WebApplication(inst, dbpool, "metagam", mc, "int")
+        app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg_")
         daemon.app = app
         app.modules.load(["mg.monitor.Monitor"])
         port = daemon.serve_any_port("0.0.0.0")

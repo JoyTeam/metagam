@@ -25,74 +25,130 @@ class Cassandra(object):
     Wrapper around CassandraConnection class. It puts CassandraConnection
     back to the pool on destruction
     """
-    def __init__(self, conn, pool, keyspace):
-        self.conn = conn
+    def __init__(self, pool, keyspace):
         self.pool = pool
         self.keyspace = keyspace
 
-    def __del__(self):
-        self.pool.cput(self.conn)
-
-    def apply_keyspace(self):
-        if self.keyspace != self.conn.actual_keyspace:
-            self.conn.set_keyspace(self.keyspace)
+    def apply_keyspace(self, conn):
+        if self.keyspace != conn.actual_keyspace:
+            conn.set_keyspace(self.keyspace)
 
     def describe_keyspaces(self, *args, **kwargs):
-        return self.conn.cass.describe_keyspaces(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            return conn.cass.describe_keyspaces(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def describe_keyspace(self, *args, **kwargs):
-        return self.conn.cass.describe_keyspace(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            return conn.cass.describe_keyspace(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def system_add_keyspace(self, *args, **kwargs):
-        return self.conn.cass.system_add_keyspace(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            return conn.cass.system_add_keyspace(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def system_drop_keyspace(self, *args, **kwargs):
-        self.conn.set_keyspace("system")
-        return self.conn.cass.system_drop_keyspace(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            conn.set_keyspace("system")
+            return conn.cass.system_drop_keyspace(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def system_add_column_family(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.system_add_column_family(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.system_add_column_family(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def system_drop_column_family(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.system_drop_column_family(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.system_drop_column_family(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def insert(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.insert(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.insert(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def get_slice(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.get_slice(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.get_slice(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def multiget_slice(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.multiget_slice(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.multiget_slice(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def batch_mutate(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.batch_mutate(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.batch_mutate(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def insert(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.insert(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.insert(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def remove(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.remove(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.remove(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def get(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.get(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.get(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def get_count(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.get_count(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.get_count(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
     def get_range_slices(self, *args, **kwargs):
-        self.apply_keyspace()
-        return self.conn.cass.get_range_slices(*args, **kwargs)
+        conn = self.pool.cget()
+        try:
+            self.apply_keyspace(conn)
+            return conn.cass.get_range_slices(*args, **kwargs)
+        finally:
+            self.pool.cput(conn)
 
 class CassandraPool(object):
     """
@@ -144,7 +200,7 @@ class CassandraPool(object):
 
     def dbget(self, keyspace):
         "The same as cget, but returns Cassandra wrapper"
-        return Cassandra(self.cget(), self, keyspace)
+        return Cassandra(self, keyspace)
 
 class CassandraConnection(object):
     "CassandraConnection - interface to Cassandra database engine"
