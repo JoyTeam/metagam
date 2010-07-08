@@ -261,13 +261,14 @@ class CassandraObject(object):
     """
     An ORM object
     """
-    def __init__(self, db, uuid=None, data=None):
+    def __init__(self, db, uuid=None, data=None, prefix=""):
         """
         db - CassandraDatabase Object
         uuid - ID of object (None if newly created)
         data - preloaded object data (None is not loaded)
         """
         self.db = db
+        self.prefix = prefix
         if uuid is None:
             self.uuid = re.sub(r'^urn:uuid:', '', uuid4().urn)
             self.new = True
@@ -302,7 +303,7 @@ class CassandraObject(object):
         Load object from the database
         Raises NotFoundException
         """
-        col = self.db.get(self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+        col = self.db.get(self.prefix + self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
         self.data = json.loads(col.value)
         self.dirty = False
 
@@ -324,14 +325,14 @@ class CassandraObject(object):
         data = self.store_data()
         if data is not None:
             timestamp = time.time() * 1000
-            self.db.batch_mutate({self.uuid: {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}}, ConsistencyLevel.QUORUM)
+            self.db.batch_mutate({(self.prefix + self.uuid): {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}}, ConsistencyLevel.QUORUM)
 
     def remove(self):
         """
         Remove object from the database
         """
         timestamp = time.time() * 1000
-        self.db.remove(self.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
+        self.db.remove((self.prefix + self.uuid), ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
         self.dirty = False
         self.new = False
 
@@ -359,20 +360,20 @@ class CassandraObject(object):
             pass
 
 class CassandraObjectList(object):
-    def __init__(self, db, uuids):
-        self.dict = [CassandraObject(db, uuid, {}) for uuid in uuids]
+    def __init__(self, db, uuids, prefix=""):
+        self.dict = [CassandraObject(db, uuid, {}, prefix) for uuid in uuids]
         self.load()
 
     def load(self):
         if len(self.dict) > 0:
-            d = self.dict[0].db.multiget_slice([obj.uuid for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
+            d = self.dict[0].db.multiget_slice([(obj.prefix + obj.uuid) for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
             for obj in self.dict:
-                cols = d[obj.uuid]
+                cols = d[obj.prefix + obj.uuid]
                 if len(cols) > 0:
                     obj.data = json.loads(cols[0].column.value)
                     obj.dirty = False
                 else:
-                    raise NotFoundException("UUID %s not found" % obj.uuid)
+                    raise NotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
 
     def store(self):
         if len(self.dict) > 0:
@@ -381,7 +382,7 @@ class CassandraObjectList(object):
             for obj in self.dict:
                 data = obj.store_data()
                 if data is not None:
-                    mutations[obj.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}
+                    mutations[obj.prefix + obj.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}
             if len(mutations) > 0:
                 self.dict[0].db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
@@ -389,7 +390,7 @@ class CassandraObjectList(object):
         if len(self.dict) > 0:
             timestamp = time.time() * 1000
             for obj in self.dict:
-                obj.db.remove(obj.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
+                obj.db.remove(obj.prefix + obj.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
                 obj.dirty = False
                 obj.new = False
 

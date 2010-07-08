@@ -26,6 +26,10 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj.get("key3"), None)
         obj.store()
 
+        obj_a = CassandraObject(self.db, obj.uuid, {}, prefix="prefix_")
+        obj_a.set("K1", 1)
+        obj_a.store()
+
         obj2 = CassandraObject(self.db, obj.uuid)
         self.assertEqual(obj2.get("key1"), 1)
         self.assertEqual(obj2.get("key2"), "value2")
@@ -38,6 +42,10 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj3.get("key2"), "value2")
         self.assertEqual(obj3.get("key3"), None)
         self.assertEqual(obj3.get("key4"), "test")
+
+        obj_a = CassandraObject(self.db, obj.uuid, prefix="prefix_")
+        self.assertEqual(obj_a.get("K1"), 1)
+        obj_a.store()
 
     def test02(self):
         raised = 0
@@ -101,6 +109,38 @@ class TestORM(unittest.TestCase):
         except NotFoundException:
             raised = raised + 1
         self.assertEqual(raised, 1)
+
+        obj1 = CassandraObject(self.db, prefix="prf_")
+        obj1.set("key1", 1)
+        obj1.set("key2", "value2")
+        obj1.store()
+
+        obj2 = CassandraObject(self.db, prefix="prf_")
+        obj2.set("key3", 3)
+        obj2.set("key4", "value4")
+        obj2.store()
+
+        lst = CassandraObjectList(self.db, [obj1.uuid, obj2.uuid], prefix="prf_")
+        self.assertEqual(len(lst), 2)
+        self.assertEqual(lst[0].uuid, obj1.uuid)
+        self.assertEqual(lst[1].uuid, obj2.uuid)
+        self.assertEqual(lst[0].get("key1"), 1)
+        self.assertEqual(lst[0].get("key2"), "value2")
+        self.assertEqual(lst[1].get("key3"), 3)
+        self.assertEqual(lst[1].get("key4"), "value4")
+        lst[0].set("key1", "test")
+        obj1.load()
+        self.assertEqual(obj1.get("key1"), 1)
+        lst.store()
+        self.assertEqual(obj1.get("key1"), 1)
+        obj1.load()
+        self.assertEqual(obj1.get("key1"), "test")
+        obj1.set("key1", "aaa")
+        self.assertEqual(lst[0].get("key1"), "test")
+        obj1.store()
+        self.assertEqual(lst[0].get("key1"), "test")
+        lst.load()
+        self.assertEqual(lst[0].get("key1"), "aaa")
 
 if __name__ == "__main__":
     dispatch(unittest.main)
