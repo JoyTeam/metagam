@@ -1,0 +1,42 @@
+<table class="categories">
+
+<tr class="cathead">
+<td class="catgroup"></td>
+<td class="catevents">Тем</td>
+<td class="catcomments">Ответов</td>
+<td class="catcomments">Новые</td>
+<td class="catlast">Последнее сообщение</td>
+</tr>
+
+[%for ent in categories%]
+
+[%if ent.category%]
+<tr class="category">
+<td class="name">
+<div class="catname"><a href="/forum/cat/[%ent.category.tag%]">[%ent.category.name%]</a></div>
+<div class="catdescription">[%ent.category.description%]</div>
+</td>
+<td class="counter">[%ent.category.events%]</td>
+<td class="counter">[%ent.category.comments%]</td>
+<td class="counter">[%if ent.category.unread%]<img src="/st/interface/c1/box.gif" alt="" />[%end%]</td>
+<td>
+[%if ent.category.last_event%]
+<div><a href="/forum/topic/[%ent.category.tag%]/[%ent.category.last_event.id%][%if ent.category.last_event.comment%]?page=[%ent.category.last_event.page%]#comment[%ent.category.last_event.comment%][%end%]">[%ent.category.last_event.subject%]</a></div>
+<div>[%ent.category.last_event.updated%]</div>
+<div>от [%ent.category.last_event.member_name%]</div>
+[%end%]
+</td></tr>
+[%end%]
+
+[%if ent.header%]
+<tr class="catdelim"><td colspan="5"><div class="top_cat">[%ent.header%]</div></td></tr>
+[%end%]
+
+[%if ent.delim%]
+<tr class="catdelim"><td colspan="5"><div class="thin"></div></td></tr>
+[%end%]
+
+[%end%]
+
+</table>
+

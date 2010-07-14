@@ -2,7 +2,7 @@ from concurrence import quit, Tasklet, http
 from concurrence.http import server
 from mg.core.cass import Cassandra
 from mg.core.memcached import Memcached
-from mg.core import Application, Instance, Module, ApplicationFactory
+from mg.core import Application, Instance, Module
 from template import Template
 from template.provider import Provider
 import urlparse
@@ -180,15 +180,21 @@ class WebDaemon(object):
 
     def req_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
+        # /
         if uri == "":
             return self.req_handler(request, "index", "index", "")
+        # /group/hook[/args]
         m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-]+)(?:/(.*)|)', uri)
-        if not m:
-            return request.not_found()
-        (group, hook, args) = m.group(1, 2, 3)
-        if args is None:
-            args = ""
-        return self.req_handler(request, group, hook, args)
+        if m:
+            (group, hook, args) = m.group(1, 2, 3)
+            if args is None:
+                args = ""
+            return self.req_handler(request, group, hook, args)
+        # /group
+        m = re.match(r'^[a-z0-9\-]+', uri)
+        if m:
+            return self.req_handler(request, uri, "index", "")
+        return request.not_found()
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
@@ -261,7 +267,7 @@ class Web(Module):
         self.rhook("int-core.reload", self.core_reload)
 
     def core_reload(self, args, request):
-        errors = self.app().reload()
+        errors = self.app().inst.reload()
         if errors:
             return request.jresponse({ "errors": errors })
         else:
@@ -281,21 +287,22 @@ class Web(Module):
                 conf["LOAD_TEMPLATES"] = provider
             self.tpl = Template(conf)
         self.call("web.universal_variables", struct)
-        return self.tpl.process(filename, struct)
+        content = self.tpl.process(filename, struct)
+        # everything before ===HEAD=== delimiter will pass to the header
+        m = self.re_content.match(content)
+        if m:
+            (head, content) = m.group(1, 2)
+            if struct.get("head") is None:
+                struct["head"] = head
+            else:
+                struct["head"] = struct["head"] + head
+        return content
 
     def set_global_html(self, global_html):
         Tasklet.current().req.global_html = global_html
 
     def web_template(self, filename, struct):
         content = self.call("web.parse_template", filename, struct)
-        head = ""
-        m = self.re_content.match(content)
-        if m:
-            (head, content) = m.group(1, 2)
-        if struct.get("head") == None:
-            struct["head"] = head
-        else:
-            struct["head"] = struct["head"] + head
         struct["content"] = content
         self.call("web.response", self.call("web.parse_template", Tasklet.current().req.global_html, struct))
 

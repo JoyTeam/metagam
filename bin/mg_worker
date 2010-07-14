@@ -29,7 +29,10 @@ def main():
         # Running external daemon
         ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
+
+        # Application factory
         inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
+        inst.appfactory.add_permanent(int_app)
 
         # Registering
         res = mg.core.cluster.dir_query("/director/ready", {

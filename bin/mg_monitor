@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 
-from mg.core import Instance
+from mg.core import Instance, ApplicationFactory
 from mg.core.web import WebDaemon, WebApplication
 from concurrence import dispatch, Tasklet
 from mg.core.cass import CassandraPool
@@ -18,6 +18,11 @@ def main():
         app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg_")
         daemon.app = app
         app.modules.load(["mg.core.monitor.Monitor"])
+
+        # Application factory
+        inst.appfactory = ApplicationFactory(inst)
+        inst.appfactory.add_permanent(app)
+
         port = daemon.serve_any_port("0.0.0.0")
         res = app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "monitor",

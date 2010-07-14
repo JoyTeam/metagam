@@ -366,6 +366,7 @@ class Modules(object):
     def _load(self, modules):
         "The same as load but without locking"
         errors = 0
+        app = self.app()
         for mod in modules:
             if mod not in self._loaded_modules:
                 m = self._path_re.match(mod)
@@ -373,35 +374,28 @@ class Modules(object):
                     raise ModuleException("Invalid module name: %s" % mod)
                 (module_name, class_name) = m.group(1, 2)
                 module = sys.modules.get(module_name)
-                try:
-                    if module:
-                        reload(module)
-                    else:
+                app.inst.modules.add(module_name)
+                if not module:
+                    try:
                         __import__(module_name, globals(), locals(), [], -1)
-                    module = sys.modules.get(module_name)
-                except BaseException as e:
-                    errors += 1
-                    module = sys.modules.get(module_name)
-                    if module:
-                        logging.getLogger("mg.core.Modules").exception(e)
-                    else:
-                        raise
+                        module = sys.modules.get(module_name)
+                    except BaseException as e:
+                        errors += 1
+                        module = sys.modules.get(module_name)
+                        if module:
+                            logging.getLogger("mg.core.Modules").exception(e)
+                        else:
+                            raise
                 cls = module.__dict__[class_name]
-                obj = cls(self.app(), mod)
-                obj.register()
+                obj = cls(app, mod)
                 self._loaded_modules[mod] = obj
+                obj.register()
         return errors
 
     def reload(self):
         "Reload all modules"
         with self.app().inst.modules_lock:
-            modules = []
-            for name, mod in self._loaded_modules.iteritems():
-                modules.append(name)
-                m = self._path_re.match(name)
-                if not m:
-                    raise ModuleException("Invalid module name: %s" % name)
-                (module_name, class_name) = m.group(1, 2)
+            modules = self._loaded_modules.keys()
             self._loaded_modules.clear()
             self.app().hooks.unregister_all()
             return self._load(modules)
@@ -421,6 +415,8 @@ class Instance(object):
     def __init__(self):
         self.modules_lock = Lock()
         self.config = {}
+        self.appfactory = None
+        self.modules = set()
 
         # Logging setup
         modlogger = logging.getLogger("")
@@ -430,6 +426,12 @@ class Instance(object):
         formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch.setFormatter(formatter)
         modlogger.addHandler(ch)
+
+    def reload(self):
+        "Reloads instance. Return value: number of errors"
+        if self.appfactory is None:
+            return 0
+        return self.appfactory.reload()
 
 class Application(object):
     """
@@ -482,6 +484,28 @@ class ApplicationFactory(object):
     """
     def __init__(self, inst):
         self.inst = inst
+        self.permanent_applications = []
+
+    def add_permanent(self, app):
+        self.permanent_applications.append(app)
 
     def get(self, tag):
         return None
+
+    def reload(self):
+        errors = 0
+        for module_name in self.inst.modules:
+            module = sys.modules.get(module_name)
+            if module:
+                try:
+                    reload(module)
+                except BaseException as e:
+                    errors += 1
+                    module = sys.modules.get(module_name)
+                    if module:
+                        logging.getLogger("mg.core.Modules").exception(e)
+                    else:
+                        raise
+        for app in self.permanent_applications:
+            errors = errors + app.reload()
+        return errors

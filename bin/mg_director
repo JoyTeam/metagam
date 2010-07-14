@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 
-from mg.core import Instance
+from mg.core import Instance, ApplicationFactory
 from mg.core.web import WebDaemon, WebApplication
 from concurrence import dispatch, Tasklet
 from mg.core.cass import CassandraPool
@@ -22,6 +22,11 @@ def main():
         app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
+
+        # Application factory
+        inst.appfactory = ApplicationFactory(inst)
+        inst.appfactory.add_permanent(app)
+
         while True:
             try:
                 app.hooks.call("core.fastidle")

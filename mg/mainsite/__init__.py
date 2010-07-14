@@ -7,7 +7,7 @@ import json
 class MainSite(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.web.Web"])
+        self.rdep(["mg.core.web.Web", "mg.socio.Forum"])
         self.rhook("web.template", self.web_template, 5)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-mainsite.subscribe", self.subscribe)
