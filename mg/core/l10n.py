@@ -1,4 +1,3 @@
-from concurrence import Tasklet
 from mg.core import Module
 from operator import itemgetter
 import gettext
@@ -33,7 +32,7 @@ class L10n(Module):
 
     def l10n_lang(self):
         try:
-            return Tasklet.current().req.lang
+            return self.req().lang
         except:
             pass
         try:
@@ -60,7 +59,8 @@ class L10n(Module):
         trans = self.call("l10n.translation", domain, lang)
         return trans.gettext(str)
 
-    def l10n_set_request_lang(self, request):
+    def l10n_set_request_lang(self):
+        request = self.req()
         accept_language = request.environ.get("HTTP_ACCEPT_LANGUAGE")
         if accept_language is not None:
             weight = []

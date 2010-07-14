@@ -11,7 +11,7 @@ class Director(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster"])
-        self.rhook("web.template", self.web_template, 5)
+        self.rhook("web.global_html", self.web_global_html)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.director_reload)
         self.rhook("int-index.index", self.director_index)
@@ -23,7 +23,8 @@ class Director(Module):
         self.servers_online_modified = True
         self.workers_str = None
 
-    def director_reload(self, args, request):
+    def director_reload(self):
+        request = self.req()
         result = {
         }
         errors = self.app().reload()
@@ -50,22 +51,22 @@ class Director(Module):
                 result[tag] = "ok"
         return request.jresponse(result)
 
-    def web_template(self, filename, struct):
-        self.call("web.set_global_html", "director/global.html")
+    def web_global_html(self):
+        return "director/global.html"
 
-    def director_index(self, args, request):
-        params = {
+    def director_index(self):
+        vars = {
             "title": self._("Welcome to the Director control center"),
             "setup": self._("Change director settings")
         }
         if len(self.servers_online):
             hosts = self.servers_online.keys()
             hosts.sort()
-            params["servers_online"] = {
+            vars["servers_online"] = {
                 "title": self._("List of servers online"),
                 "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in [(host, self.servers_online[host]) for host in hosts]]
             }
-        return self.call("web.template", "director/index.html", params)
+        return self.call("web.response_template", "director/index.html", vars)
 
     def config(self):
         conf = self.conf("director.config")
@@ -79,7 +80,8 @@ class Director(Module):
             conf["metagam_host"] = "metagam"
         return conf
 
-    def director_config(self, args, request):
+    def director_config(self):
+        request = self.req()
         return request.jresponse(self.config())
 
     def split_host_port(self, str, defport):
@@ -89,7 +91,8 @@ class Director(Module):
         else:
             return (str, defport)
         
-    def director_setup(self, args, request):
+    def director_setup(self):
+        request = self.req()
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
         metagam_host = request.param("metagam_host")
@@ -105,7 +108,7 @@ class Director(Module):
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             metagam_host = config["metagam_host"]
-        return self.call("web.template", "director/setup.html", {
+        return self.call("web.response_template", "director/setup.html", {
             "title": self._("Director settings"),
             "form": {
                 "memcached_desc": self._("<strong>Memcached servers</strong> (host:port, host:port, ...)"),
@@ -162,7 +165,8 @@ class Director(Module):
             self.error("%s:%d - %s", host, port, e)
             return False
 
-    def director_ready(self, args, request):
+    def director_ready(self):
+        request = self.req()
         host = request.environ["REMOTE_ADDR"]
         type = request.param("type")
         params = json.loads(request.param("params"))
@@ -190,7 +194,8 @@ class Director(Module):
         self.store_servers_online()
         return request.jresponse({ "ok": 1, "server_id": server_id })
 
-    def director_offline(self, args, request):
+    def director_offline(self):
+        request = self.req()
         server_id = request.param("server_id")
         server = self.servers_online.get(server_id)
         port = server.get("port")

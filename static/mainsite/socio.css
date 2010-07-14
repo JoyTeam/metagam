@@ -1,0 +1,23 @@
+table.categories { }
+tr.cathead td { padding-bottom: 2px; }
+tr.cathead td { font-size: 11px; vertical-align: bottom; color: #614115; }
+tr.cathead td.catgroup { padding-top: 10px; font-size: 15px; font-weight: bold; width: 40%; }
+tr.cathead td.catevents { width: 10%; text-align: center; padding-right: 40px; }
+tr.cathead td.catcomments { width: 10%; text-align: center; padding-right: 40px; }
+tr.cathead td.catlast { width: 30%; }
+tr.catdelim div.head { background-color: #ebcb88; border: solid 1px #f0d69d; padding: 0px 10px 0px 17px; }
+tr.catdelim div.head img { vertical-align: middle; }
+div.thick { height: 13px; background-color: #ebcb88; }
+div.thin { height: 3px; background-color: #ebcb88; }
+div.thin2 { height: 4px; background-color: #ebcb88; }
+div.thin3 { height: 4px; background-color: #ebcb88; margin-top: 20px; }
+tr.category_pinned td { vertical-align: top; background-color: #e8ca86; padding: 9px 50px 9px 0px; }
+tr.category td { vertical-align: top; padding: 9px 50px 9px 0px; }
+tr.category td.name { padding: 9px 50px 9px 15px; }
+tr.category_pinned td.counter { padding: 9px 40px 9px 0px; text-align: center; }
+tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
+tr.category_pinned td.name { padding: 9px 50px 9px 15px; }
+div.catname { font-size: 14px; font-weight: bold; }
+div#head { position: absolute; left: 0px; top: 0px; height: 50px; background-color: #ffe0e0; width: 100% }
+div#menuleft { position: absolute; left: 0px; top: 50px; width: 150px; background-color: #e0ffe0 }
+div#content { margin: 50px 0px 0px 150px; background-color: #e0e0ff }

@@ -25,7 +25,8 @@ class Server(Module):
             app.running_workers = {"count": 0}
             return app.running_workers
 
-    def spawn(self, args, request):
+    def spawn(self):
+        request = self.req()
         workers = self.running_workers()
         new_count = int(request.param("workers"))
         old_count = workers["count"]
@@ -58,7 +59,8 @@ class Server(Module):
                 self.debug("respawning child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
 
-    def nginx(self, args, request):
+    def nginx(self):
+        request = self.req()
         workers = json.loads(request.param("workers"))
         filename = "/etc/nginx/nginx-metagam.conf"
         try:

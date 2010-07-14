@@ -30,9 +30,8 @@ class Request(object):
         self.config_stat = {}
         self.hook_stat = {}
         self.headers_sent = False
-        self.global_html = "global.html"
-        # Storing reference request to the current tasklet. It will be used in different modules to access currenct request implicitly
-        Tasklet.current().req = self
+        self.templates_parsed = 0
+        self.templates_len = 0
 
     def start_response(self, *args):
         # WORKAROUND: concurrence bug. It wsgi.input remains untouched the connection will hang infinitely
@@ -132,7 +131,7 @@ class WebDaemon(object):
 
     def __init__(self, inst, app=None):
         object.__init__(self)
-        self.server = WSGIServer(self.req)
+        self.server = WSGIServer(self.request)
         self.inst = inst
         self.app = app
         self.logger = logging.getLogger("mg.core.web.WebDaemon")
@@ -165,20 +164,27 @@ class WebDaemon(object):
         self.logger.error("Couldn't find any unused port")
         quit(1)
 
-    def req(self, environ, start_response):
+    def req(self):
+        try:
+            return Tasklet.current().req
+        except AttributeError:
+            raise RuntimeError("Module.req() called outside of a web handler")
+
+    def request(self, environ, start_response):
         "Process single HTTP request"
         request = Request(environ, start_response)
+        Tasklet.current().req = request
         try:
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
-            return self.req_uri(request, uri)
+            return self.request_uri(request, uri)
         except SystemExit:
             raise
         except BaseException as e:
             self.logger.exception(e)
             return request.internal_server_error()
 
-    def req_uri(self, request, uri):
+    def request_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
         # /
         if uri == "":
@@ -197,8 +203,8 @@ class WebDaemon(object):
         return request.not_found()
 
     def req_handler(self, request, group, hook, args):
-        "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
-        self.app.hooks.call("l10n.set_request_lang", request)
+        "Process HTTP request with parsed URI"
+        self.app.hooks.call("l10n.set_request_lang")
         return self.app.http_request(request, group, hook, args)
 
     def download_config(self):
@@ -244,7 +250,10 @@ class WebApplication(Application):
 
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
-        self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), args, request)
+        request.group = group
+        request.hook = hook
+        request.args = args
+        self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         if request.headers_sent:
             return [request.content]
         else:
@@ -255,25 +264,48 @@ class Web(Module):
         Module.__init__(self, *args, **kwargs)
         self.tpl = None
         self.re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
+        self.re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
+        self.re_hook_parse = re.compile(r'^<hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*/>$')
+        self.re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
 
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
-        self.rhook("web.template", self.web_template)
-        self.rhook("web.response", self.web_response)
-        self.rhook("web.parse_template", self.parse_template)
-        self.rhook("web.set_global_html", self.set_global_html)
         self.rhook("int-core.ping", self.core_ping)
         self.rhook("int-core.reload", self.core_reload)
+        self.rhook("web.parse_template", self.web_parse_template)
+        self.rhook("web.response", self.web_response)
+        self.rhook("web.response_global", self.web_response_global)
+        self.rhook("web.response_template", self.web_response_template)
+        self.rhook("web.parse_layout", self.web_parse_layout)
+        self.rhook("web.parse_hook_layout", self.web_parse_hook_layout)
+        self.rhook("web.response_layout", self.web_response_layout)
+        self.rhook("web.response_hook_layout", self.web_response_hook_layout)
 
-    def core_reload(self, args, request):
+    def core_reload(self):
+        request = self.req()
         errors = self.app().inst.reload()
         if errors:
             return request.jresponse({ "errors": errors })
         else:
             return request.jresponse({ "ok": 1 })
 
-    def parse_template(self, filename, struct):
+    def core_ping(self):
+        request = self.req()
+        response = {"ok": 1}
+        try:
+            response["server_id"] = self.app().inst.server_id
+        except:
+            pass
+        return request.jresponse(response)
+
+    def web_parse_template(self, filename, vars):
+        req = self.req()
+        if req.templates_parsed >= 100:
+            return "<too-much-templates />"
+        if req.templates_len >= 10000000:
+            return "<too-long-templates />"
+        req.templates_parsed = req.templates_parsed + 1
         if self.tpl is None:
             conf = {
                 "INCLUDE_PATH": [ mg.__path__[0] + "/templates" ],
@@ -286,34 +318,59 @@ class Web(Module):
                 self.app().inst.tpl_provider = provider
                 conf["LOAD_TEMPLATES"] = provider
             self.tpl = Template(conf)
-        self.call("web.universal_variables", struct)
-        content = self.tpl.process(filename, struct)
-        # everything before ===HEAD=== delimiter will pass to the header
+        self.call("web.universal_variables", vars)
+        content = self.tpl.process(filename, vars)
+        req.templates_len = req.templates_len + len(content)
         m = self.re_content.match(content)
         if m:
+            # everything before ===HEAD=== delimiter will pass to the header
             (head, content) = m.group(1, 2)
-            if struct.get("head") is None:
-                struct["head"] = head
+            if vars.get("head") is None:
+                vars["head"] = head
             else:
-                struct["head"] = struct["head"] + head
+                vars["head"] = vars["head"] + head
         return content
 
-    def set_global_html(self, global_html):
-        Tasklet.current().req.global_html = global_html
-
-    def web_template(self, filename, struct):
-        content = self.call("web.parse_template", filename, struct)
-        struct["content"] = content
-        self.call("web.response", self.call("web.parse_template", Tasklet.current().req.global_html, struct))
-
     def web_response(self, content):
-        return Tasklet.current().req.response(content)
+        return self.req().response(content)
 
-    def core_ping(self, args, request):
-        response = {"ok": 1}
-        try:
-            response["server_id"] = self.app().inst.server_id
-        except:
-            pass
-        return request.jresponse(response)
+    def web_response_global(self, content, vars):
+        vars["content"] = content
+        global_html = self.call("web.global_html")
+        if global_html is None:
+            global_html = "global.html"
+        return self.call("web.response", self.call("web.parse_template", global_html, vars))
+
+    def web_response_template(self, filename, vars):
+        return self.call("web.response_global", self.call("web.parse_template", filename, vars), vars)
+
+    def web_parse_layout(self, filename, vars):
+        content = self.call("web.parse_template", filename, vars)
+        tokens = self.re_hooks_split.split(content)
+        i = 1
+        while i < len(tokens):
+            m = self.re_hook_parse.match(tokens[i])
+            if not m:
+                raise RuntimeError("'%s' could not be parsed as a hook tag" % tokens[i])
+            (hook_name, hook_args) = m.group(1, 2)
+            args = {}
+            for key, value in self.re_hook_args.findall(hook_args):
+                args[key] = value
+            res = None
+            try:
+                res = self.call(hook_name, vars, **args)
+            except BaseException, e:
+                res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
+            tokens[i] = str(res)
+            i = i + 2
+        return "".join(tokens)
+
+    def web_parse_hook_layout(self, hook, vars):
+        return self.call("web.parse_layout", self.call(hook, vars), vars)
+
+    def web_response_layout(self, filename, vars):
+        return self.call("web.response_global", self.call("web.parse_layout", filename, vars), vars)
+
+    def web_response_hook_layout(self, hook, vars):
+        return self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars)
 

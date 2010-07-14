@@ -8,15 +8,15 @@ class MainSite(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.web.Web", "mg.socio.Forum"])
-        self.rhook("web.template", self.web_template, 5)
+        self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-mainsite.subscribe", self.subscribe)
 
-    def web_template(self, filename, struct):
-        self.call("web.set_global_html", "mainsite/global.html")
+    def web_global_html(self):
+        return "mainsite/global.html"
 
-    def index(self, args, request):
-        params = {
+    def index(self):
+        vars = {
             "title": self._("Constructor of browser-based online games"),
             "blog": self._("Project blog"),
             "forum": self._("Project forum"),
@@ -24,9 +24,10 @@ class MainSite(Module):
             "project_info": self._("MMO Constructor is a web application giving everyone possibility to create their own browser-based online games. Creating a game is totally free. No subscription fees. We will share your games revenue with you on 50%/50% basis."),
             "under_construction": self._("The project is currently under construction. If you want to subscribe to the development status information leave us your e-mail"),
         }
-        return self.call("web.template", "mainsite/index.html", params)
+        return self.call("web.response_template", "mainsite/index.html", vars)
 
-    def subscribe(self, args, request):
+    def subscribe(self):
+        request = self.req()
         email = request.param("email")
         errors = {}
         if email is None or email == "":

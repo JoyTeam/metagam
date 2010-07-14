@@ -286,7 +286,7 @@ class Module(object):
 
     def ok(self):
         """Returns value of "ok" HTTP parameter"""
-        return Tasklet.current().req.param("ok")
+        return self.req().param("ok")
 
     def db(self):
         return self.app().dbpool.dbget(self.app().keyspace)
@@ -294,7 +294,7 @@ class Module(object):
     def log_params(self):
         d = {}
         try:
-            req = Tasklet.current().req
+            req = self.req()
             val = req.environ.get("HTTP_X_REAL_IP")
             if val:
                 d["ip"] = val
@@ -339,6 +339,12 @@ class Module(object):
 
     def objlist(self, uuids):
         return self.app().obj(uuids)
+
+    def req(self):
+        try:
+            return Tasklet.current().req
+        except AttributeError:
+            raise RuntimeError("Module.req() called outside of a web handler")
 
 class ModuleException(Exception):
     "Error during module loading"
