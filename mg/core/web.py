@@ -336,7 +336,11 @@ class Web(Module):
 
     def web_response_global(self, content, vars):
         vars["content"] = content
-        global_html = self.call("web.global_html")
+        global_html = None
+        try:
+            global_html = self.req().global_html
+        except:
+            global_html = self.call("web.global_html")
         if global_html is None:
             global_html = "global.html"
         return self.call("web.response", self.call("web.parse_template", global_html, vars))
