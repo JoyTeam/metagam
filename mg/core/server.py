@@ -8,7 +8,7 @@ import json
 class Server(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonCassandraStruct", "mg.cluster.Cluster", "mg.web.Web"])
+        self.rdep(["mg.core.cass.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
         self.rhook("int-server.spawn", self.spawn)
         self.rhook("int-server.nginx", self.nginx)
         self.rhook("core.fastidle", self.fastidle)
@@ -42,7 +42,10 @@ class Server(Module):
             # Spawning
             for i in range(old_count, new_count):
                 self.debug("running child %d (process %s)", i, self.executable)
-                workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
+                try:
+                    workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
+                except OSError, e:
+                    raise RuntimeError("Running %s: %s" % (self.executable, e))
             workers["count"] = new_count
         return request.jresponse({"ok": 1})
 

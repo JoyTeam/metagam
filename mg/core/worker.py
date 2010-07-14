@@ -1,13 +1,13 @@
 from mg.core import Module
-from mg.web import WebDaemon, WebApplication
-from mg.memcached import Memcached
+from mg.core.web import WebDaemon, WebApplication
+from mg.core.memcached import Memcached
 import re
 import mg.core
 
 class Worker(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonCassandraStruct", "mg.cluster.Cluster", "mg.web.Web"])
+        self.rdep(["mg.core.cass.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
 
 class ApplicationFactory(mg.core.ApplicationFactory):
     """

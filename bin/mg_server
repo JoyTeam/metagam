@@ -1,11 +1,11 @@
 #!/usr/bin/python2.6
 
 from mg.core import Instance
-from mg.web import WebDaemon, WebApplication
+from mg.core.web import WebDaemon, WebApplication
 from concurrence import dispatch, Tasklet, quit
 import concurrence.core
-from mg.cass import CassandraPool
-from mg.memcached import MemcachedPool, Memcached
+from mg.core.cass import CassandraPool
+from mg.core.memcached import MemcachedPool, Memcached
 import traceback
 import json
 import optparse
@@ -25,7 +25,7 @@ def main():
         mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg_")
         app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg_")
         daemon.app = app
-        app.modules.load(["mg.server.Server"])
+        app.modules.load(["mg.core.server.Server"])
         port = daemon.serve_any_port("0.0.0.0")
         app.server_id = port
 

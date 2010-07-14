@@ -1,7 +1,7 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.memcached import Memcached, MemcachedPool
+from mg.core.memcached import Memcached, MemcachedPool
 import unittest
 from concurrence import dispatch, Tasklet
 

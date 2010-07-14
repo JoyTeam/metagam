@@ -1,9 +1,9 @@
 #!/usr/bin/python2.6
 
 from mg.core import Instance
-from mg.web import WebDaemon
+from mg.core.web import WebDaemon
 from concurrence import dispatch, quit
-from mg.cass import CassandraPool
+from mg.core.cass import CassandraPool
 import traceback
 import json
 from cassandra.ttypes import *

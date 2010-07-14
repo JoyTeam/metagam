@@ -1,14 +1,14 @@
 #!/usr/bin/python2.6
 
 from mg.core import Instance
-from mg.web import WebDaemon, WebApplication
-from mg.worker import MultiapplicationWebDaemon, ApplicationFactory
+from mg.core.web import WebDaemon, WebApplication
+from mg.core.worker import MultiapplicationWebDaemon, ApplicationFactory
 from concurrence import dispatch
-from mg.cass import CassandraPool
-from mg.memcached import MemcachedPool, Memcached
+from mg.core.cass import CassandraPool
+from mg.core.memcached import MemcachedPool, Memcached
 import traceback
 import json
-import mg.cluster
+import mg.core.cluster
 import sys
 
 def main():
@@ -23,7 +23,7 @@ def main():
         int_mc = Memcached(mcpool, prefix="mg_")
         int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg_")
         int_daemon.app = int_app
-        int_app.modules.load(["mg.worker.Worker"])
+        int_app.modules.load(["mg.core.worker.Worker"])
         int_port = int_daemon.serve_any_port("0.0.0.0")
 
         # Running external daemon
@@ -32,7 +32,7 @@ def main():
         inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
 
         # Registering
-        res = mg.cluster.dir_query("/director/ready", {
+        res = mg.core.cluster.dir_query("/director/ready", {
             "type": "worker",
             "port": int_port,
             "id": sys.argv[1],

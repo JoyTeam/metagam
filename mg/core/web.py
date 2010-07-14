@@ -1,14 +1,14 @@
 from concurrence import quit, Tasklet, http
 from concurrence.http import server
-from mg.cass import Cassandra
-from mg.memcached import Memcached
+from mg.core.cass import Cassandra
+from mg.core.memcached import Memcached
 from mg.core import Application, Instance, Module, ApplicationFactory
 from template import Template
 from template.provider import Provider
 import urlparse
 import cgi
 import re
-import mg.tools
+import mg.core.tools
 import json
 import socket
 import mg
@@ -135,7 +135,7 @@ class WebDaemon(object):
         self.server = WSGIServer(self.req)
         self.inst = inst
         self.app = app
-        self.logger = logging.getLogger("mg.web.WebDaemon")
+        self.logger = logging.getLogger("mg.core.web.WebDaemon")
 
     def serve(self, addr):
         "Runs a WebDaemon instance listening given port"
@@ -170,7 +170,7 @@ class WebDaemon(object):
         request = Request(environ, start_response)
         try:
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-            uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.tools.urldecode(request.uri())))
+            uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
             return self.req_uri(request, uri)
         except SystemExit:
             raise
@@ -252,7 +252,7 @@ class Web(Module):
 
     def register(self):
         Module.register(self)
-        self.rdep(["mg.l10n.L10n"])
+        self.rdep(["mg.core.l10n.L10n"])
         self.rhook("web.template", self.web_template)
         self.rhook("web.response", self.web_response)
         self.rhook("web.parse_template", self.parse_template)

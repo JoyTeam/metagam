@@ -1,8 +1,8 @@
 from concurrence.http import HTTPConnection, HTTPRequest
 import json
 import re
-import mg.tools
-from mg.thr import Socket
+import mg.core.tools
+from mg.core.thr import Socket
 from thrift.transport import TTransport
 from cassandra.Cassandra import Client
 from cassandra.ttypes import *
@@ -255,7 +255,7 @@ class CassandraRestructure(object):
         db - Cassandra object
         """
         self.db = db
-        self.logger = logging.getLogger("mg.cass.CassandraRestructure")
+        self.logger = logging.getLogger("mg.core.cass.CassandraRestructure")
 
     def diff(self, config):
         "Perform all checks and returns diff of existing and target configuration"

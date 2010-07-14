@@ -4,8 +4,8 @@
 import unittest
 from concurrence import dispatch, Tasklet
 from mg.core import *
-from mg.cass import CassandraPool
-from mg.memcached import Memcached
+from mg.core.cass import CassandraPool
+from mg.core.memcached import Memcached
 from cassandra.ttypes import *
 
 class Test1(Module):
@@ -113,7 +113,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(len(list), 1)
         self.assertEqual(list[0], "mg.test.testcore.Test1")
 
-        app.modules.load(["mg.cass.CommonCassandraStruct"])
+        app.modules.load(["mg.core.cass.CommonCassandraStruct"])
         dbstruct = {}
         app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)

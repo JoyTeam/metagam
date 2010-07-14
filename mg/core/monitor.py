@@ -7,7 +7,7 @@ import logging
 class Monitor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.cass.CommonCassandraStruct", "mg.cluster.Cluster", "mg.web.Web"])
+        self.rdep(["mg.core.cass.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
         self.rhook("monitor.check", self.monitor_check)
 
     def monitor_check(self):
@@ -31,7 +31,7 @@ class Monitor(Module):
                 finally:
                     cnn.close()
             except BaseException as e:
-                logging.getLogger("mg.monitor.Monitor").info("%s - %s", server_id, e)
+                logging.getLogger("mg.core.monitor.Monitor").info("%s - %s", server_id, e)
             if not success:
                 self.call("cluster.query_director", "/director/offline", {
                     "server_id": server_id,

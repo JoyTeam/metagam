@@ -1,10 +1,10 @@
 #!/usr/bin/python2.6
 
 from mg.core import Instance
-from mg.web import WebDaemon, WebApplication
+from mg.core.web import WebDaemon, WebApplication
 from concurrence import dispatch, Tasklet
-from mg.cass import CassandraPool
-from mg.memcached import MemcachedPool, Memcached
+from mg.core.cass import CassandraPool
+from mg.core.memcached import MemcachedPool, Memcached
 import traceback
 import json
 import logging
@@ -18,9 +18,9 @@ def main():
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg_")
         app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg_")
         daemon.app = app
-        app.modules.load(["mg.director.CassandraStruct"])
+        app.modules.load(["mg.core.director.CassandraStruct"])
         app.dbrestruct()
-        app.modules.load(["mg.director.Director"])
+        app.modules.load(["mg.core.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
         while True:
             try:
