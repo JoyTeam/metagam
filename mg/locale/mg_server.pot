@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-14 12:38+0400\n"
+"POT-Creation-Date: 2010-07-14 17:30+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,35 +16,39 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/director.py:58
-msgid "Welcome to the Director control center"
+#: mg/socio/__init__.py:23
+msgid "Forum categories"
 msgstr ""
 
 #: mg/core/director.py:59
+msgid "Welcome to the Director control center"
+msgstr ""
+
+#: mg/core/director.py:60
 msgid "Change director settings"
 msgstr ""
 
-#: mg/core/director.py:65
+#: mg/core/director.py:66
 msgid "List of servers online"
 msgstr ""
 
-#: mg/core/director.py:109
+#: mg/core/director.py:112
 msgid "Director settings"
 msgstr ""
 
-#: mg/core/director.py:111
+#: mg/core/director.py:114
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/core/director.py:113
+#: mg/core/director.py:116
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/core/director.py:115
+#: mg/core/director.py:118
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:117
+#: mg/core/director.py:120
 msgid "Save"
 msgstr ""
 
@@ -78,10 +82,10 @@ msgid ""
 "development status information leave us your e-mail"
 msgstr ""
 
-#: mg/mainsite/__init__.py:33
+#: mg/mainsite/__init__.py:34
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/mainsite/__init__.py:35
+#: mg/mainsite/__init__.py:36
 msgid "Invalid e-mail format"
 msgstr ""

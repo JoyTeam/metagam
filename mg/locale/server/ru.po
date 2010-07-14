@@ -8,45 +8,48 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-14 10:56+0400\n"
-"PO-Revision-Date: 2010-07-06 12:47+0300\n"
+"POT-Creation-Date: 2010-07-14 17:27+0400\n"
+"PO-Revision-Date: 2010-07-14 17:27+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/core/director.py:58
+#: mg/socio/__init__.py:23
+msgid "Forum categories"
+msgstr "Разделы форума"
+
+#: mg/core/director.py:59
 msgid "Welcome to the Director control center"
 msgstr "Добро пожаловать в центр управления Director"
 
-#: mg/core/director.py:59
+#: mg/core/director.py:60
 msgid "Change director settings"
 msgstr "Изменить настройки Director"
 
-#: mg/core/director.py:65
+#: mg/core/director.py:66
 msgid "List of servers online"
 msgstr "Список серверов онлайн"
 
-#: mg/core/director.py:109
+#: mg/core/director.py:112
 msgid "Director settings"
 msgstr "Настройки Director"
 
-#: mg/core/director.py:111
+#: mg/core/director.py:114
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
 
-#: mg/core/director.py:113
+#: mg/core/director.py:116
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
 
-#: mg/core/director.py:115
+#: mg/core/director.py:118
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr "<strong>Домен основного сайта</strong> (без www)"
 
-#: mg/core/director.py:117
+#: mg/core/director.py:120
 msgid "Save"
 msgstr "Сохранить"
 
@@ -67,29 +70,18 @@ msgid "Send me email on something interesting"
 msgstr "Отправьте мне e-mail, когда будет что-то интересное"
 
 #: mg/mainsite/__init__.py:24
-msgid ""
-"MMO Constructor is a web application giving everyone possibility to create "
-"their own browser-based online games. Creating a game is totally free. No "
-"subscription fees. We will share your games revenue with you on 50%/50% "
-"basis."
-msgstr ""
-"MMO Constructor - это сервис, позволяющий любому желающему создать свою "
-"собственную браузерную онлайн-игру. Создание игры полностью бесплатно. "
-"Абонентская плата отсутствует. Выручка от ваших игр будет делиться между "
-"вами и нами в соотношении 50%/50%."
+msgid "MMO Constructor is a web application giving everyone possibility to create their own browser-based online games. Creating a game is totally free. No subscription fees. We will share your games revenue with you on 50%/50% basis."
+msgstr "MMO Constructor - это сервис, позволяющий любому желающему создать свою собственную браузерную онлайн-игру. Создание игры полностью бесплатно. Абонентская плата отсутствует. Выручка от ваших игр будет делиться между вами и нами в соотношении 50%/50%."
 
 #: mg/mainsite/__init__.py:25
-msgid ""
-"The project is currently under construction. If you want to subscribe to the "
-"development status information leave us your e-mail"
-msgstr ""
-"В данный момент проект находится в разработке. Если вы хотите подписаться на "
-"уведомления о статусе разработки, оставьте нам свой e-mail."
+msgid "The project is currently under construction. If you want to subscribe to the development status information leave us your e-mail"
+msgstr "В данный момент проект находится в разработке. Если вы хотите подписаться на уведомления о статусе разработки, оставьте нам свой e-mail."
 
-#: mg/mainsite/__init__.py:33
+#: mg/mainsite/__init__.py:34
 msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
 
-#: mg/mainsite/__init__.py:35
+#: mg/mainsite/__init__.py:36
 msgid "Invalid e-mail format"
 msgstr "Неверный формат e-mail"
+
