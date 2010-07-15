@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-14 17:30+0400\n"
+"POT-Creation-Date: 2010-07-15 18:14+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,12 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/socio/__init__.py:23
+#: mg/socio/__init__.py:26 mg/socio/__init__.py:55
 msgid "Forum categories"
+msgstr ""
+
+#: mg/socio/__init__.py:52
+msgid "Forum"
 msgstr ""
 
 #: mg/core/director.py:59
@@ -88,4 +92,8 @@ msgstr ""
 
 #: mg/mainsite/__init__.py:36
 msgid "Invalid e-mail format"
+msgstr ""
+
+#: mg/admin/__init__.py:12
+msgid "Administration interface"
 msgstr ""

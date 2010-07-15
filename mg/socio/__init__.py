@@ -6,6 +6,9 @@ class Forum(Module):
         self.rhook("ext-forum.index", self.index)
         self.rhook("forum.index", self.forum_index)
         self.rhook("forum.categories", self.forum_categories)
+        self.rhook("admin.menu-root", self.menu_root)
+        self.rhook("admin.menu-forum", self.menu_forum)
+        self.rhook("ext-admin.forum.categories", self.admin_categories)
 
     def index(self):
         return self.call("web.response_hook_layout", "forum.index", {})
@@ -28,24 +31,28 @@ class Forum(Module):
         pass
 
     def categories(self):
-        return [
-            {
-                "id": 123,
-                "name": "Game"
-            },
-            {
-                "id": 124,
-                "name": "Talks"
-            },
-            {
-                "id": 125,
-                "name": "Fuckoff"
-            },
-            {
-                "id": 126,
-                "name": "Some other forum"
-            }
-        ]
+        cats = self.conf("forum.categories")
+        if cats is None:
+            cats = [
+                {
+                    "name": "Test forum 1",
+                    "description": "This is a primary place to talk to another buddies"
+                },
+                {
+                    "name": "Test forum 2",
+                    "description": "This is a secondary to talk about anything else"
+                }
+            ]
+        return cats
 
     def may_read(self, cat):
         return True
+
+    def menu_root(self, menu):
+        menu.append({ "id": "forum", "text": self._("Forum") })
+
+    def menu_forum(self, menu):
+        menu.append({ "id": "forum.categories", "text": self._("Forum categories"), "leaf": True })
+
+    def admin_categories(self):
+        return self.call("admin.response", "admin/forum/categories.js", "ForumCategories", self.categories())

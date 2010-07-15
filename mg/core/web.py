@@ -14,6 +14,8 @@ import socket
 import mg
 import logging
 
+ver = 1
+
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
     pass
@@ -190,7 +192,7 @@ class WebDaemon(object):
         if uri == "":
             return self.req_handler(request, "index", "index", "")
         # /group/hook[/args]
-        m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-]+)(?:/(.*)|)', uri)
+        m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)', uri)
         if m:
             (group, hook, args) = m.group(1, 2, 3)
             if args is None:
@@ -271,6 +273,7 @@ class Web(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
+        self.rhook("core.ver", self.core_ver)
         self.rhook("int-core.ping", self.core_ping)
         self.rhook("int-core.reload", self.core_reload)
         self.rhook("web.parse_template", self.web_parse_template)
@@ -299,6 +302,9 @@ class Web(Module):
             pass
         return request.jresponse(response)
 
+    def core_ver(self):
+        return ver
+
     def web_parse_template(self, filename, vars):
         req = self.req()
         if req.templates_parsed >= 100:
@@ -318,7 +324,10 @@ class Web(Module):
                 self.app().inst.tpl_provider = provider
                 conf["LOAD_TEMPLATES"] = provider
             self.tpl = Template(conf)
-        self.call("web.universal_variables", vars)
+        if vars.get("universal_variables") is None:
+            vars["ver"] = self.call("core.ver")
+            vars["universal_variables"] = True
+            self.call("web.universal_variables", vars)
         content = self.tpl.process(filename, vars)
         req.templates_len = req.templates_len + len(content)
         m = self.re_content.match(content)

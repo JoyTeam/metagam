@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-06 12:47+0400\n"
+"POT-Creation-Date: 2010-07-15 18:14+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,4 +42,9 @@ msgstr ""
 
 #: static/mainsite/index.js:59
 msgid "Subsciption to the project news"
+msgstr ""
+
+#: static/admin/index.js:42
+#, python-format
+msgid "Error loading %s: %s"
 msgstr ""

@@ -28,7 +28,7 @@ mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
 	msgfmt -o $@ $<
 
 # ============= MODULE: mainsite ===============
-mainsite_sources := $(shell find static/mainsite -name '*.js' | egrep -v '/gettext-')
+mainsite_sources := $(shell find static/mainsite static/admin -name '*.js' | egrep -v '/gettext-')
 mainsite_po_files := $(foreach lang,$(langs),mg/locale/mainsite/$(lang).po)
 mainsite_js_files := $(foreach lang,$(langs),static/mainsite/gettext-$(lang).js)
 mg/locale/mg_mainsite.pot: $(mainsite_sources)

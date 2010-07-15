@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-14 17:27+0400\n"
-"PO-Revision-Date: 2010-07-14 17:27+0300\n"
+"POT-Creation-Date: 2010-07-15 18:14+0400\n"
+"PO-Revision-Date: 2010-07-15 18:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -17,9 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/socio/__init__.py:23
+#: mg/socio/__init__.py:26
+#: mg/socio/__init__.py:55
 msgid "Forum categories"
 msgstr "Разделы форума"
+
+#: mg/socio/__init__.py:52
+msgid "Forum"
+msgstr "Форум"
 
 #: mg/core/director.py:59
 msgid "Welcome to the Director control center"
@@ -84,4 +89,8 @@ msgstr "Введите ваш адрес e-mail"
 #: mg/mainsite/__init__.py:36
 msgid "Invalid e-mail format"
 msgstr "Неверный формат e-mail"
+
+#: mg/admin/__init__.py:12
+msgid "Administration interface"
+msgstr "Административный интерфейс"
 
