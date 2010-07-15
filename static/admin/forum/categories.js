@@ -7,7 +7,7 @@ ForumCategories = Ext.extend(AdminResponse, {
 					id: 'name',
 					header: 'Category title',
 					dataIndex: 'name',
-					width: 300
+					width: 200
 				}, {
 					id: 'description',
 					header: 'Category description',
@@ -66,7 +66,4 @@ ForumCategories = Ext.extend(AdminResponse, {
 	}
 });
 
-wait(['js/roweditor.js'], function() {
-
-	loaded('admin/forum/categories.js');
-});
+loaded('admin/forum/categories.js');
