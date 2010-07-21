@@ -52,11 +52,17 @@ class L10n(Module):
         return trans
 
     def l10n_gettext(self, str):
+        request = self.req()
+        try:
+            return request.trans.gettext(str)
+        except:
+            pass
         lang = self.call("l10n.lang")
         if lang is None:
             return str
         domain = self.call("l10n.domain")
         trans = self.call("l10n.translation", domain, lang)
+        request.trans = trans
         return trans.gettext(str)
 
     def l10n_set_request_lang(self):

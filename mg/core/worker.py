@@ -18,12 +18,9 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         self.dbpool = dbpool
         self.mcpool = mcpool
         self.metagam_app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg_"), "ext", "mg_")
+        self.metagam_app.tag = "metagam"
         self.metagam_app.modules.load(["mg.mainsite.MainSite"])
         self.add_permanent(self.metagam_app)
-
-    def get(self, tag):
-        if tag == "metagam":
-            return self.metagam_app
 
 class MultiapplicationWebDaemon(WebDaemon):
     "This is a WebDaemon that accesses application depending on HTTP host"

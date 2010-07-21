@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-15 18:14+0400\n"
-"PO-Revision-Date: 2010-07-15 18:14+0300\n"
+"POT-Creation-Date: 2010-07-21 18:13+0400\n"
+"PO-Revision-Date: 2010-07-21 18:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -17,14 +17,154 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/socio/__init__.py:26
-#: mg/socio/__init__.py:55
+#: mg/socio/__init__.py:29
+#: mg/socio/__init__.py:131
 msgid "Forum categories"
 msgstr "Разделы форума"
 
-#: mg/socio/__init__.py:52
+#: mg/socio/__init__.py:42
+#: mg/socio/__init__.py:49
+#: mg/socio/__init__.py:50
+#: mg/socio/__init__.py:56
+#: mg/socio/__init__.py:63
+msgid "Game"
+msgstr "Игра"
+
+#: mg/socio/__init__.py:43
+msgid "News"
+msgstr "Новости"
+
+#: mg/socio/__init__.py:44
+msgid "Game news published by the administrators"
+msgstr "Игровые новости, публикуемые администрацией"
+
+#: mg/socio/__init__.py:51
+msgid "Talks about game activities: gameplay, news, wars, politics etc."
+msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
+
+#: mg/socio/__init__.py:57
+msgid "Newbies"
+msgstr "Вопросы новичков"
+
+#: mg/socio/__init__.py:58
+msgid "Dear newbies, if you have any questions about the game, feel free to ask"
+msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
+
+#: mg/socio/__init__.py:64
+msgid "Diplomacy"
+msgstr "Дипломатия"
+
+#: mg/socio/__init__.py:65
+msgid "Authorized guild members can talk to each other about diplomacy and politics issues here"
+msgstr "В этом разделе уполномоченные члены кланов могут общаться на темы дипломатии, войн и политики"
+
+#: mg/socio/__init__.py:70
+#: mg/socio/__init__.py:77
+#: mg/socio/__init__.py:84
+msgid "Admin"
+msgstr "Администрация"
+
+#: mg/socio/__init__.py:71
+msgid "Admin talks"
+msgstr "Общение с администрацией"
+
+#: mg/socio/__init__.py:72
+msgid "Discussions with the game administrators. Here you can discuss any issues related to the game itself."
+msgstr "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, связанные с игрой в целом."
+
+#: mg/socio/__init__.py:78
+msgid "Reference manuals"
+msgstr "Справочная информация"
+
+#: mg/socio/__init__.py:79
+msgid "Actual reference documents about the game are placed here."
+msgstr "Здесь публикуется актуальная справочная информация об игре"
+
+#: mg/socio/__init__.py:85
+msgid "Bug reports"
+msgstr "Сообщения об ошибках"
+
+#: mg/socio/__init__.py:86
+msgid "Report any problems in the game here"
+msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
+
+#: mg/socio/__init__.py:91
+#: mg/socio/__init__.py:98
+msgid "Reallife"
+msgstr "Реальная жизнь"
+
+#: mg/socio/__init__.py:92
+msgid "Smoking room"
+msgstr "Курилка"
+
+#: mg/socio/__init__.py:93
+msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
+msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
+
+#: mg/socio/__init__.py:99
+msgid "Art"
+msgstr "Творчество"
+
+#: mg/socio/__init__.py:100
+msgid "Poems, prose, pictures, photos, music about the game"
+msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
+
+#: mg/socio/__init__.py:105
+#: mg/socio/__init__.py:112
+msgid "Trading"
+msgstr "Торговля"
+
+#: mg/socio/__init__.py:106
+msgid "Services"
+msgstr "Услуги"
+
+#: mg/socio/__init__.py:107
+msgid "Any game services: mercenaries, guardians, builders etc."
+msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
+
+#: mg/socio/__init__.py:113
+msgid "Market"
+msgstr "Рынок"
+
+#: mg/socio/__init__.py:114
+msgid "Market place to sell and by any item"
+msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
+
+#: mg/socio/__init__.py:128
 msgid "Forum"
 msgstr "Форум"
+
+#: mg/socio/__init__.py:142
+msgid "Code"
+msgstr "Код"
+
+#: mg/socio/__init__.py:143
+msgid "Title"
+msgstr "Название"
+
+#: mg/socio/__init__.py:144
+msgid "Order"
+msgstr "Порядок"
+
+#: mg/socio/__init__.py:145
+msgid "Editing"
+msgstr "Редактирование"
+
+#: mg/socio/__init__.py:146
+msgid "edit"
+msgstr "редактировать"
+
+#: mg/socio/__init__.py:158
+msgid "Category title"
+msgstr "Название раздела"
+
+#: mg/socio/__init__.py:163
+msgid "Category description"
+msgstr "Описание раздела"
+
+#: mg/socio/__init__.py:168
+msgid "Sort order"
+msgstr "Порядок сортировки"
 
 #: mg/core/director.py:59
 msgid "Welcome to the Director control center"
@@ -55,6 +195,7 @@ msgid "<strong>Main application host name</strong> (without www)"
 msgstr "<strong>Домен основного сайта</strong> (без www)"
 
 #: mg/core/director.py:120
+#: mg/admin/__init__.py:51
 msgid "Save"
 msgstr "Сохранить"
 
@@ -90,7 +231,10 @@ msgstr "Введите ваш адрес e-mail"
 msgid "Invalid e-mail format"
 msgstr "Неверный формат e-mail"
 
-#: mg/admin/__init__.py:12
+#: mg/admin/__init__.py:17
 msgid "Administration interface"
 msgstr "Административный интерфейс"
+
+#~ msgid "Game section"
+#~ msgstr "Игра"
 

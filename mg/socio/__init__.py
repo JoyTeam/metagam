@@ -1,4 +1,6 @@
 from mg.core import Module
+from operator import itemgetter
+from uuid import uuid4
 
 class Forum(Module):
     def register(self):
@@ -9,6 +11,7 @@ class Forum(Module):
         self.rhook("admin.menu-root", self.menu_root)
         self.rhook("admin.menu-forum", self.menu_forum)
         self.rhook("ext-admin.forum.categories", self.admin_categories)
+        self.rhook("ext-admin.forum.category", self.admin_category)
 
     def index(self):
         return self.call("web.response_hook_layout", "forum.index", {})
@@ -31,18 +34,91 @@ class Forum(Module):
         pass
 
     def categories(self):
-        cats = self.conf("forum.categories")
+        cats = self.conf("forum.categories-2")
         if cats is None:
             cats = [
                 {
-                    "name": "Test forum 1",
-                    "description": "This is a primary place to talk to another buddies"
+                    "id": uuid4().hex,
+                    "topcat": self._("Game"),
+                    "title": self._("News"),
+                    "description": self._("Game news published by the administrators"),
+                    "order": 10
                 },
                 {
-                    "name": "Test forum 2",
-                    "description": "This is a secondary to talk about anything else"
+                    "id": uuid4().hex,
+                    "topcat": self._("Game"),
+                    "title": self._("Game"),
+                    "description": self._("Talks about game activities: gameplay, news, wars, politics etc."),
+                    "order": 20
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Game"),
+                    "title": self._("Newbies"),
+                    "description": self._("Dear newbies, if you have any questions about the game, feel free to ask"),
+                    "order": 30
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Game"),
+                    "title": self._("Diplomacy"),
+                    "description": self._("Authorized guild members can talk to each other about diplomacy and politics issues here"),
+                    "order": 40
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Admin"),
+                    "title": self._("Admin talks"),
+                    "description": self._("Discussions with the game administrators. Here you can discuss any issues related to the game itself."),
+                    "order": 50
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Admin"),
+                    "title": self._("Reference manuals"),
+                    "description": self._("Actual reference documents about the game are placed here."),
+                    "order": 60
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Admin"),
+                    "title": self._("Bug reports"),
+                    "description": self._("Report any problems in the game here"),
+                    "order": 70
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Reallife"),
+                    "title": self._("Smoking room"),
+                    "description": self._("Everything not related to the game: humor, forum games, hobbies, sport etc."),
+                    "order": 80
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Reallife"),
+                    "title": self._("Art"),
+                    "description": self._("Poems, prose, pictures, photos, music about the game"),
+                    "order": 90
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Trading"),
+                    "title": self._("Services"),
+                    "description": self._("Any game services: mercenaries, guardians, builders etc."),
+                    "order": 100
+                },
+                {
+                    "id": uuid4().hex,
+                    "topcat": self._("Trading"),
+                    "title": self._("Market"),
+                    "description": self._("Market place to sell and by any item"),
+                    "order": 110
                 }
             ]
+            conf = self.app().config
+            conf.set("forum.categories-2", cats)
+            conf.store()
+        cats.sort(key=itemgetter("order"))
         return cats
 
     def may_read(self, cat):
@@ -55,4 +131,44 @@ class Forum(Module):
         menu.append({ "id": "forum.categories", "text": self._("Forum categories"), "leaf": True })
 
     def admin_categories(self):
-        return self.call("admin.response", "admin/forum/categories.js", "ForumCategories", self.categories())
+        categories = []
+        topcat = None
+        for cat in self.categories():
+            if cat["topcat"] != topcat:
+                topcat = cat["topcat"]
+                categories.append({"header": topcat})
+            categories.append({"cat": cat})
+        return self.call("admin.response_template", "admin/forum/categories.html", {
+            "code": self._("Code"),
+            "title": self._("Title"),
+            "order": self._("Order"),
+            "editing": self._("Editing"),
+            "edit": self._("edit"),
+            "categories": categories
+        })
+
+    def admin_category(self):
+        req = self.req()
+        categories = self.categories()
+        for cat in categories:
+            if cat["id"] == req.args:
+                fields = [
+                    {
+                        "name": "title",
+                        "label": self._("Category title"),
+                        "value": "name-name-name"
+                    },
+                    {
+                        "name": "description",
+                        "label": self._("Category description"),
+                        "value": "desc-desc-desc"
+                    },
+                    {
+                        "name": "order",
+                        "label": self._("Sort order"),
+                        "value": 123,
+                        "type": "numberfield"
+                    }
+                ]
+                return self.call("admin.form", fields=fields)
+        return req.not_found()

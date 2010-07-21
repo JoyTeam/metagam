@@ -6,10 +6,11 @@ from urllib import urlencode
 class Cluster(Module):
     def register(self):
         Module.register(self)
-        self.rhook("cluster.query_director", self.director_query)
-        self.rhook("cluster.query_server", self.server_query)
+        self.rhook("cluster.query_director", self.query_director)
+        self.rhook("cluster.query_server", self.query_server)
+        self.rhook("cluster.servers_online", self.servers_online)
 
-    def director_query(self, uri, params):
+    def query_director(self, uri, params):
         """
         Connect to Director and query given URI
         uri - URI
@@ -18,7 +19,7 @@ class Cluster(Module):
         """
         return dir_query(uri, params)
 
-    def server_query(self, host, port, uri, params):
+    def query_server(self, host, port, uri, params):
         """
         Connect to an arbitrary server and query given URI
         host:port - server socket
@@ -27,6 +28,15 @@ class Cluster(Module):
         Return value: received response (application/json will be decoded automatically)
         """
         return query(host, port, uri, params)
+
+    def servers_online(self):
+        """
+        Returns list of internal servers currently online
+        """
+        online = self.conf("director.servers", reset_cache=True)
+        if online is None:
+            online = []
+        return online
 
 def dir_query(uri, params):
     return query("director", 3000, uri, params)

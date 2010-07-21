@@ -1,14 +1,71 @@
 AdminResponse = Ext.extend(Ext.Panel, {
-	bodyStyle: 'padding: 10',
-	border: false
+	border: false,
+	bodyStyle: 'padding: 10px'
 });
+
+var base_url = document.URL;
+var default_page;
+var i = base_url.indexOf('#');
+if (i >= 0) {
+	default_page = base_url.substr(i + 1);
+	base_url = base_url.substr(0, i);
+}
+
+var admin_ajax_trans;
+var adminmain;
+var ver_suffix = '-' + Math.round(Math.random() * 100000000);
+ver = ver + ver_suffix;
+
+function adm(node_id)
+{
+	if (admin_ajax_trans)
+		Ext.Ajax.abort(admin_ajax_trans);
+	if (node_id) {
+		document.location.replace(base_url + '#' + node_id);
+		admin_ajax_trans = Ext.Ajax.request({
+			url: '/admin/' + node_id + '/ver' + ver,
+			func: node_id,
+			success: function(response, opts) {
+				if (response.getResponseHeader("Content-Type").match(/json/)) {
+					var res = Ext.util.JSON.decode(response.responseText);
+					ver = res.ver + ver_suffix;
+					wait([res.script], function() {
+						var obj = new (eval(res.cls))(res.data);
+						adminmain.removeAll();
+						adminmain.add(obj);
+						adminmain.doLayout();
+					});
+				} else {
+					var panel = new AdminResponse({
+						border: false,
+						html: response.responseText,
+						autoScroll: true
+					});
+					adminmain.removeAll();
+					adminmain.add(panel);
+					adminmain.doLayout();
+				}
+			},
+			failure: function(response, opts) {
+				var panel = new AdminResponse({
+					border: false,
+					html: sprintf('%s: <strong>%s</strong>', opts.func, response.status + ' ' + response.statusText)
+				});
+				adminmain.removeAll();
+				adminmain.add(panel);
+				adminmain.doLayout();
+			}
+		});
+	} else {
+		document.location.replace(base_url + '#');
+		adminmain.removeAll();
+	}
+}
 
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	var ver_suffix = '-' + Math.round(Math.random() * 100000000);
-	ver = ver + ver_suffix;
-	var admin_ajax_trans;
-	var adminmain = new Ext.Container({
+	Ext.form.Field.prototype.msgTarget = 'side';
+	adminmain = new Ext.Container({
 		autoDestroy: true,
 		layout: 'fit'
 	});
@@ -18,33 +75,13 @@ Ext.onReady(function() {
 		animate: true,
 		containerScroll: true,
 		border: false,
-		dataUrl: '/admin/menu/' + ver,
 		rootVisible: false,
+		dataUrl: '/admin/menu/' + ver,
 		root: {
 			nodeType: 'async',
 			text: 'Root',
 			id: 'root'
 		},
-		onSuccess: function(response, opts) {
-			var res = Ext.util.JSON.decode(response.responseText);
-			ver = res.ver + ver_suffix;
-			wait([res.script], function() {
-				var obj = new (eval(res.cls))(res.data);
-				adminmain.removeAll();
-				adminmain.add(obj);
-				adminmain.doLayout();
-			});
-		},
-		onFailure: function(response, opts) {
-			var panel = new Ext.Panel({
-				bodyStyle: 'padding: 10',
-				border: false,
-				html: sprintf(gt.gettext('Error loading %s: %s'), opts.func, response.status + ' ' + response.statusText)
-			});
-			adminmain.removeAll();
-			adminmain.add(panel);
-			adminmain.doLayout();
-		}
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
@@ -69,21 +106,14 @@ Ext.onReady(function() {
 	});
 	menu.getSelectionModel().on({
 		'beforeselect' : function(sm, node) {
-		},
-		'selectionchange' : function(sm, node) {
-			Ext.Ajax.abort(admin_ajax_trans);
-			if (node && node.isLeaf()) {
-				admin_ajax_trans = Ext.Ajax.request({
-					url: '/admin/' + node.id + '/' + ver,
-					func: node.id,
-					success: menu.onSuccess,
-					failure: menu.onFailure,
-					scope: menu
-				});
-			} else {
-				adminmain.removeAll();
-			}
+			if (node && node.isLeaf())
+				adm(node.id);
+			else
+				adm(undefined);
+			return false;
 		},
 		scope: menu
 	});
+	if (default_page)
+		adm(default_page);
 });

@@ -249,12 +249,13 @@ class WebApplication(Application):
         """
         Application.__init__(self, inst, dbpool, keyspace, mc, keyprefix)
         self.hook_prefix = hook_prefix
+        self.re_remove_ver = re.compile(r'/ver\d+(?:-\d+)?$')
 
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
         request.group = group
         request.hook = hook
-        request.args = args
+        request.args = self.re_remove_ver.sub("", args)
         self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         if request.headers_sent:
             return [request.content]
@@ -276,6 +277,7 @@ class Web(Module):
         self.rhook("core.ver", self.core_ver)
         self.rhook("int-core.ping", self.core_ping)
         self.rhook("int-core.reload", self.core_reload)
+        self.rhook("int-core.appconfig", self.core_appconfig)
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.response", self.web_response)
         self.rhook("web.response_global", self.web_response_global)
@@ -301,6 +303,14 @@ class Web(Module):
         except:
             pass
         return request.jresponse(response)
+
+    def core_appconfig(self):
+        req = self.req()
+        app = self.app().inst.appfactory.get(req.args)
+        if app is None:
+            return req.jresponse({"error": "app_not_found"})
+        app.config.clear()
+        return req.jresponse({"ok": 1})
 
     def core_ver(self):
         return ver
@@ -352,7 +362,10 @@ class Web(Module):
             global_html = self.call("web.global_html")
         if global_html is None:
             global_html = "global.html"
-        return self.call("web.response", self.call("web.parse_template", global_html, vars))
+        if global_html == "":
+            return self.call("web.response", content)
+        else:
+            return self.call("web.response", self.call("web.parse_template", global_html, vars))
 
     def web_response_template(self, filename, vars):
         return self.call("web.response_global", self.call("web.parse_template", filename, vars), vars)

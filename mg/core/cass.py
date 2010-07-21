@@ -326,7 +326,8 @@ class CassandraObject(object):
         self.db = db
         self.prefix = prefix
         if uuid is None:
-            self.uuid = re.sub(r'^urn:uuid:', '', uuid4().urn)
+            #self.uuid = re.sub(r'^urn:uuid:', '', uuid4().urn)
+            self.uuid = uuid4().hex
             self.new = True
             self.dirty = True
             if data is None:

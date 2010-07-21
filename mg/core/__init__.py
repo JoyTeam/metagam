@@ -100,11 +100,11 @@ class Hooks(object):
         "Unregister all registered hooks"
         self.handlers.clear()
 
-    def call(self, name, *args):
+    def call(self, name, *args, **kwargs):
         """
         Call hook
         name - hook name (format: "group.name")
-        *args - arbitrary parameters that will be passed to the handlers
+        *args, **kwargs - arbitrary parameters that will be passed to the handlers
         Hook handler receives all parameters passed to the method
         """
         m = self._path_re.match(name)
@@ -121,7 +121,7 @@ class Hooks(object):
         if handlers is not None:
             for handler, priority, module_name in handlers:
                 try:
-                    res = handler(*args)
+                    res = handler(*args, **kwargs)
                     if type(res) == tuple:
                         args = res
                     elif res is not None:
@@ -168,21 +168,28 @@ class Config(object):
         self._config = {}
         self._modified = set()
 
+    def _load_groups(self, groups):
+        """
+        Load requested config groups without lock
+        groups - list of config group names
+        """
+        load_groups = [g for g in groups if g not in self._config]
+        if len(load_groups):
+            db = self.app().db
+            data = db.get_slice("Config", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
+            for col in data:
+                self._config[col.column.name] = json.loads(col.column.value)
+            for g in load_groups:
+                if not g in self._config:
+                    self._config[g] = {}
+
     def load_groups(self, groups):
         """
-        Load requested config groups.
+        Load requested config groups with lock
         groups - list of config group names
         """
         with self.app().config_lock:
-            load_groups = [g for g in groups if g not in self._config]
-            if len(load_groups):
-                db = self.app().db
-                data = db.get_slice("Config", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
-                for col in data:
-                    self._config[col.column.name] = json.loads(col.column.value)
-                for g in load_groups:
-                    if not g in self._config:
-                        self._config[g] = {}
+            self._load_groups(groups)
 
     def load_all(self):
         """
@@ -217,7 +224,7 @@ class Config(object):
         (group, name) = m.group(1, 2)
         with self.app().config_lock:
             if group not in self._config:
-                self.load_groups([group])
+                self._load_groups([group])
             self._config[group][name] = value
             self._modified.add(group)
 
@@ -233,7 +240,7 @@ class Config(object):
         (group, name) = m.group(1, 2)
         with self.app().config_lock:
             if group not in self._config:
-                self.load_groups([group])
+                self._load_groups([group])
             del self._config[group][name]
             self._modified.add(group)
 
@@ -246,6 +253,22 @@ class Config(object):
                 mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
                 db.batch_mutate({"Config": {"Core": mutations}}, ConsistencyLevel.ALL)
                 self._modified.clear()
+                tag = None
+                try:
+                    tag = self.app().tag
+                except AttributeError:
+                    pass
+                if tag is not None:
+                    factory = self.app().inst.appfactory
+                    int_app = factory.get("int")
+                    if int_app is not None:
+                        servers_online = int_app.hooks.call("cluster.servers_online")
+                        for server, info in servers_online.iteritems():
+                            if info["type"] == "worker":
+                                try:
+                                    int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                                except BaseException as e:
+                                    logging.getLogger("mg.core.Config").error(e)
 
 class Module(object):
     """
@@ -268,9 +291,12 @@ class Module(object):
         "Register module dependency. This module will be loaded automatically"
         self.app().modules._load(modules)
 
-    def conf(self, *args):
-        "Syntactic sugar for app.config.get(...)"
-        return self.app().config.get(*args)
+    def conf(self, key, reset_cache=False):
+        "Syntactic sugar for app.config.get(key)"
+        conf = self.app().config
+        if reset_cache:
+            conf.clear()
+        return conf.get(key)
 
     def call(self, *args, **kwargs):
         "Syntactic sugar for app.hooks.call(...)"
@@ -332,6 +358,10 @@ class Module(object):
         self.logger().exception(msg, *args, extra=self.log_params())
 
     def _(self, val):
+        try:
+            return self.req().trans.gettext(val)
+        except:
+            pass
         return self.call("l10n.gettext", val)
 
     def obj(self, uuid=None, data=None):
@@ -496,6 +526,9 @@ class ApplicationFactory(object):
         self.permanent_applications.append(app)
 
     def get(self, tag):
+        for app in self.permanent_applications:
+            if app.tag == tag:
+                return app
         return None
 
     def reload(self):

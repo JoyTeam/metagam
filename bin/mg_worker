@@ -24,6 +24,7 @@ def main():
         int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg_")
         int_daemon.app = int_app
         int_app.modules.load(["mg.core.worker.Worker"])
+        int_app.tag = "int"
         int_port = int_daemon.serve_any_port("0.0.0.0")
 
         # Running external daemon
