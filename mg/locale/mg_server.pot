@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-07-21 18:13+0400\n"
+"POT-Creation-Date: 2010-07-28 19:51+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,150 +16,184 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/socio/__init__.py:29 mg/socio/__init__.py:131
+#: mg/socio/__init__.py:12
+msgid "Socio"
+msgstr ""
+
+#: mg/socio/__init__.py:28
+msgid "Forum"
+msgstr ""
+
+#: mg/socio/__init__.py:31 mg/socio/__init__.py:34 mg/socio/__init__.py:60
+#: mg/socio/__init__.py:159
 msgid "Forum categories"
 msgstr ""
 
-#: mg/socio/__init__.py:42 mg/socio/__init__.py:49 mg/socio/__init__.py:50
-#: mg/socio/__init__.py:56 mg/socio/__init__.py:63
+#: mg/socio/__init__.py:39
+msgid "No such category"
+msgstr ""
+
+#: mg/socio/__init__.py:40
+#, python-format
+msgid "Category %s"
+msgstr ""
+
+#: mg/socio/__init__.py:73 mg/socio/__init__.py:80 mg/socio/__init__.py:81
+#: mg/socio/__init__.py:87 mg/socio/__init__.py:94
 msgid "Game"
 msgstr ""
 
-#: mg/socio/__init__.py:43
+#: mg/socio/__init__.py:74
 msgid "News"
 msgstr ""
 
-#: mg/socio/__init__.py:44
+#: mg/socio/__init__.py:75
 msgid "Game news published by the administrators"
 msgstr ""
 
-#: mg/socio/__init__.py:51
+#: mg/socio/__init__.py:82
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr ""
 
-#: mg/socio/__init__.py:57
+#: mg/socio/__init__.py:88
 msgid "Newbies"
 msgstr ""
 
-#: mg/socio/__init__.py:58
+#: mg/socio/__init__.py:89
 msgid ""
 "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr ""
 
-#: mg/socio/__init__.py:64
+#: mg/socio/__init__.py:95
 msgid "Diplomacy"
 msgstr ""
 
-#: mg/socio/__init__.py:65
+#: mg/socio/__init__.py:96
 msgid ""
 "Authorized guild members can talk to each other about diplomacy and politics "
 "issues here"
 msgstr ""
 
-#: mg/socio/__init__.py:70 mg/socio/__init__.py:77 mg/socio/__init__.py:84
+#: mg/socio/__init__.py:101 mg/socio/__init__.py:108 mg/socio/__init__.py:115
 msgid "Admin"
 msgstr ""
 
-#: mg/socio/__init__.py:71
+#: mg/socio/__init__.py:102
 msgid "Admin talks"
 msgstr ""
 
-#: mg/socio/__init__.py:72
+#: mg/socio/__init__.py:103
 msgid ""
 "Discussions with the game administrators. Here you can discuss any issues "
 "related to the game itself."
 msgstr ""
 
-#: mg/socio/__init__.py:78
+#: mg/socio/__init__.py:109
 msgid "Reference manuals"
 msgstr ""
 
-#: mg/socio/__init__.py:79
+#: mg/socio/__init__.py:110
 msgid "Actual reference documents about the game are placed here."
 msgstr ""
 
-#: mg/socio/__init__.py:85
+#: mg/socio/__init__.py:116
 msgid "Bug reports"
 msgstr ""
 
-#: mg/socio/__init__.py:86
+#: mg/socio/__init__.py:117
 msgid "Report any problems in the game here"
 msgstr ""
 
-#: mg/socio/__init__.py:91 mg/socio/__init__.py:98
+#: mg/socio/__init__.py:122 mg/socio/__init__.py:129
 msgid "Reallife"
 msgstr ""
 
-#: mg/socio/__init__.py:92
+#: mg/socio/__init__.py:123
 msgid "Smoking room"
 msgstr ""
 
-#: mg/socio/__init__.py:93
+#: mg/socio/__init__.py:124
 msgid ""
 "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr ""
 
-#: mg/socio/__init__.py:99
+#: mg/socio/__init__.py:130
 msgid "Art"
 msgstr ""
 
-#: mg/socio/__init__.py:100
+#: mg/socio/__init__.py:131
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr ""
 
-#: mg/socio/__init__.py:105 mg/socio/__init__.py:112
+#: mg/socio/__init__.py:136 mg/socio/__init__.py:143
 msgid "Trading"
 msgstr ""
 
-#: mg/socio/__init__.py:106
+#: mg/socio/__init__.py:137
 msgid "Services"
 msgstr ""
 
-#: mg/socio/__init__.py:107
+#: mg/socio/__init__.py:138
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr ""
 
-#: mg/socio/__init__.py:113
+#: mg/socio/__init__.py:144
 msgid "Market"
 msgstr ""
 
-#: mg/socio/__init__.py:114
+#: mg/socio/__init__.py:145
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/socio/__init__.py:128
-msgid "Forum"
-msgstr ""
-
-#: mg/socio/__init__.py:142
+#: mg/socio/__init__.py:170
 msgid "Code"
 msgstr ""
 
-#: mg/socio/__init__.py:143
+#: mg/socio/__init__.py:171
 msgid "Title"
 msgstr ""
 
-#: mg/socio/__init__.py:144
+#: mg/socio/__init__.py:172
 msgid "Order"
 msgstr ""
 
-#: mg/socio/__init__.py:145
+#: mg/socio/__init__.py:173
 msgid "Editing"
 msgstr ""
 
-#: mg/socio/__init__.py:146
+#: mg/socio/__init__.py:174
 msgid "edit"
 msgstr ""
 
-#: mg/socio/__init__.py:158
+#: mg/socio/__init__.py:190
+msgid "Enter category title"
+msgstr ""
+
+#: mg/socio/__init__.py:192
+msgid "Enter top category title"
+msgstr ""
+
+#: mg/socio/__init__.py:194
+msgid "Enter category order"
+msgstr ""
+
+#: mg/socio/__init__.py:196
+msgid "Invalid numeric format"
+msgstr ""
+
+#: mg/socio/__init__.py:211
+msgid "Top category title"
+msgstr ""
+
+#: mg/socio/__init__.py:216
 msgid "Category title"
 msgstr ""
 
-#: mg/socio/__init__.py:163
+#: mg/socio/__init__.py:221
 msgid "Category description"
 msgstr ""
 
-#: mg/socio/__init__.py:168
+#: mg/socio/__init__.py:226
 msgid "Sort order"
 msgstr ""
 
@@ -191,7 +225,7 @@ msgstr ""
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:120 mg/admin/__init__.py:51
+#: mg/core/director.py:120 mg/admin/__init__.py:117
 msgid "Save"
 msgstr ""
 
@@ -233,6 +267,6 @@ msgstr ""
 msgid "Invalid e-mail format"
 msgstr ""
 
-#: mg/admin/__init__.py:17
+#: mg/admin/__init__.py:24
 msgid "Administration interface"
 msgstr ""

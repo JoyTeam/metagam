@@ -1,6 +1,7 @@
 Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
-		Form.superclass.constructor.call(this, {});
+		Form.superclass.constructor.call(this, {
+		});
 		var i;
 		var items = new Array();
 		for (i = 0; i < data.fields.length; i++) {
@@ -14,21 +15,50 @@ Form = Ext.extend(AdminResponse, {
 				width: 825
 			});
 		}
+		items.push({
+			xtype: 'hidden',
+			name: 'ok',
+			value: '1'
+		});
 		var buttons = new Array();
+		var form;
 		for (i = 0; i < data.buttons.length; i++) {
 			var btn = data.buttons[i];
 			buttons.push({
 				text: btn.text,
-				type: 'submit'
+				handler: function() {
+					form.getForm().submit({
+						url: data.url,
+						waitMsg: gt.gettext('Sending data...'),
+						success: function(f, action) {
+							if (action.result.redirect) {
+								adm(action.result.redirect);
+							} else {
+								adm_success(action.response, {
+									func: data.url
+								});
+							}
+						},
+						failure: function(f, action) {
+							if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+								if (action.result.errormsg) {
+									Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+								}
+							} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+								Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s %s<br />%s'), action.response.status, action.response.statusText, data.url));
+							}
+						},
+					});
+				},
 			});
 		}
-		var form = new Ext.FormPanel({
-			width: 1000,
+		form = new Ext.FormPanel({
+			width: 1020,
 			labelWidth: 150,
-			url: data.url,
 			frame: true,
 			items: items,
-			buttons: buttons
+			buttons: buttons,
+			buttonAlign: 'left'
 		});
 		this.add(form);
 	}

@@ -18,6 +18,5 @@ tr.category_pinned td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category_pinned td.name { padding: 9px 50px 9px 15px; }
 div.catname { font-size: 14px; font-weight: bold; }
-div#head { position: absolute; left: 0px; top: 0px; height: 50px; background-color: #ffe0e0; width: 100% }
-div#menuleft { position: absolute; left: 0px; top: 50px; width: 150px; background-color: #e0ffe0 }
-div#content { margin: 50px 0px 0px 150px; background-color: #e0e0ff }
+div#head { position: absolute; left: 0px; top: 0px; height: 50px; width: 100% }
+div#content { margin: 50px 0px 0px 0px;}

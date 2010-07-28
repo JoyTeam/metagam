@@ -8,7 +8,7 @@ sprintfWrapper = {
 		if (typeof RegExp == "undefined") { return null; }
  
 		var string = arguments[0];
-		var exp = new RegExp(/(%([%]|(\-)?(\+|\x20)?(0)?(\d+)?(\.(\d)?)?([bcdfosxX])))/g);
+		var exp = new RegExp(/(%([%]|(\-)?(\+|\x20)?(0)?(\d+)?(\.(\d)?)?([bcdfosxXh])))/g);
 		var matches = new Array();
 		var strings = new Array();
 		var convCount = 0;
@@ -73,6 +73,15 @@ sprintfWrapper = {
 			else if (matches[i].code == 's') {
 				matches[i].argument = matches[i].argument.substring(0, matches[i].precision ? matches[i].precision : matches[i].argument.length)
 				substitution = sprintfWrapper.convert(matches[i], true);
+			}
+			else if (matches[i].code == 'h') {
+				matches[i].argument = matches[i].argument.substring(0, matches[i].precision ? matches[i].precision : matches[i].argument.length)
+				substitution = sprintfWrapper.convert(matches[i], true);
+				substitution = substitution.replace(/\046/g, '\&amp;');
+				substitution = substitution.replace(/\074/g, '\&lt;');
+				substitution = substitution.replace(/\076/g, '\&gt;');
+				substitution = substitution.replace(/\012/g, '\&quot;');
+
 			}
 			else if (matches[i].code == 'x') {
 				matches[i].argument = String(Math.abs(parseInt(matches[i].argument)).toString(16));
