@@ -16,7 +16,7 @@ class AdminInterface(Module):
         self.rhook("ext-admin.menu", self.menu)
         self.rhook("admin.response_js", self.response_js)
         self.rhook("admin.response_template", self.response_template)
-        self.rhook("admin.link", self.link)
+        self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
 
     def index(self):

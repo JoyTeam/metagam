@@ -6,6 +6,7 @@ tr.cathead td.catevents { width: 10%; text-align: center; padding-right: 40px; }
 tr.cathead td.catcomments { width: 10%; text-align: center; padding-right: 40px; }
 tr.cathead td.catlast { width: 30%; }
 tr.catdelim div.head { background-color: #ebcb88; border: solid 1px #f0d69d; padding: 0px 10px 0px 17px; }
+tr.catdelim div.top_cat { margin-top: 5px; padding: 3px 5px 3px 15px; background-color: #ebcb88; color: #614115; font-size: 16px; font-weight: bold; }
 tr.catdelim div.head img { vertical-align: middle; }
 div.thick { height: 13px; background-color: #ebcb88; }
 div.thin { height: 3px; background-color: #ebcb88; }

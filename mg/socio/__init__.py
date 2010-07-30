@@ -11,12 +11,10 @@ class Socio(Module):
     def menu_root_index(self, menu):
         menu.append({ "id": "socio.index", "text": self._("Socio") })
 
-class Forum(Module):
+class ForumAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-forum.index", self.index)
-        self.rhook("forum.index", self.forum_index)
-        self.rhook("forum.categories", self.forum_categories)
+        self.rdep(["mg.socio.Forum"])
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("headmenu-admin-forum.categories", self.headmenu_forum_categories)
@@ -34,28 +32,109 @@ class Forum(Module):
         return self._("Forum categories")
 
     def headmenu_forum_category(self, args):
-        cat = self.category(args)
+        cat = self.call("forum.category", args)
         if cat is None:
             return [self._("No such category"), "forum/categories"]
         return [self._("Category %s").decode("utf-8") % cat["title"], "forum/categories"]
 
-    def index(self):
-        return self.call("web.response_hook_layout", "forum.index", {})
+    def admin_categories(self):
+        categories = []
+        topcat = None
+        for cat in self.call("forum.categories"):
+            if cat["topcat"] != topcat:
+                topcat = cat["topcat"]
+                categories.append({"header": topcat})
+            categories.append({"cat": cat})
+        return self.call("admin.response_template", "admin/forum/categories.html", {
+            "code": self._("Code"),
+            "title": self._("Title"),
+            "order": self._("Order"),
+            "editing": self._("Editing"),
+            "edit": self._("edit"),
+            "categories": categories
+        })
 
-    def forum_index(self, vars):
-        return "socio/layout_categories.html"
+    def admin_category(self):
+        req = self.req()
+        cat = self.call("forum.category", req.args)
+        if cat is None:
+            return req.not_found()
+        if req.param("ok"):
+            errors = {}
+            title = req.param("title")
+            topcat = req.param("topcat")
+            description = req.param("description")
+            order = req.param("order")
+            if title is None or title == "":
+                errors["title"] = self._("Enter category title")
+            if topcat is None or topcat == "":
+                errors["topcat"] = self._("Enter top category title")
+            if order is None or order == "":
+                errors["order"] = self._("Enter category order")
+            elif not re.match(r'^-?(?:\d+|\d+\.\d+)$', order):
+                errors["order"] = self._("Invalid numeric format")
+            if len(errors):
+                return req.jresponse({"success": False, "errors": errors})
+            cat["title"] = title
+            cat["topcat"] = topcat
+            cat["description"] = description
+            cat["order"] = float(order)
+            conf = self.app().config
+            conf.set("forum.categories", self.call("forum.categories"))
+            conf.store()
+            return req.jresponse({"success": True, "redirect": "forum/categories"})
+
+        fields = [
+            {
+                "name": "topcat",
+                "label": self._("Top category title"),
+                "value": cat["topcat"],
+            },
+            {
+                "name": "title",
+                "label": self._("Category title"),
+                "value": cat["title"]
+            },
+            {
+                "name": "description",
+                "label": self._("Category description"),
+                "value": cat["description"]
+            },
+            {
+                "name": "order",
+                "label": self._("Sort order"),
+                "value": cat["order"],
+                "type": "numberfield"
+            }
+        ]
+        return self.call("admin.form", fields=fields)
+
+class Forum(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("ext-forum.index", self.index)
+        self.rhook("hook-forum.categories", self.hook_forum_categories)
+        self.rhook("forum.category", self.category)
+        self.rhook("forum.categories", self.categories)
+
+    def index(self):
+        return self.call("web.response_layout", "socio/layout_categories.html", {})
 
     def category(self, id):
         for cat in self.categories():
             if cat["id"] == id:
                 return cat
 
-    def forum_categories(self, vars):
+    def hook_forum_categories(self, vars):
         request = self.req()
         categories = [cat for cat in self.categories() if self.may_read(cat)]
         self.categories_htmlencode(categories)
         entries = []
+        topcat = None
         for cat in categories:
+            if cat["topcat"] != topcat:
+                topcat = cat["topcat"]
+                entries.append({"header": topcat})
             entries.append({"category": cat})
         vars["title"] = self._("Forum categories")
         vars["categories"] = entries
@@ -155,77 +234,3 @@ class Forum(Module):
     def may_read(self, cat):
         return True
 
-    def menu_forum(self, menu):
-        menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
-
-    def admin_categories(self):
-        categories = []
-        topcat = None
-        for cat in self.categories():
-            if cat["topcat"] != topcat:
-                topcat = cat["topcat"]
-                categories.append({"header": topcat})
-            categories.append({"cat": cat})
-        return self.call("admin.response_template", "admin/forum/categories.html", {
-            "code": self._("Code"),
-            "title": self._("Title"),
-            "order": self._("Order"),
-            "editing": self._("Editing"),
-            "edit": self._("edit"),
-            "categories": categories
-        })
-
-    def admin_category(self):
-        req = self.req()
-        cat = self.category(req.args)
-        if cat is None:
-            return req.not_found()
-        if req.param("ok"):
-            errors = {}
-            title = req.param("title")
-            topcat = req.param("topcat")
-            description = req.param("description")
-            order = req.param("order")
-            if title is None or title == "":
-                errors["title"] = self._("Enter category title")
-            if topcat is None or topcat == "":
-                errors["topcat"] = self._("Enter top category title")
-            if order is None or order == "":
-                errors["order"] = self._("Enter category order")
-            elif not re.match(r'^-?(?:\d+|\d+\.\d+)$', order):
-                errors["order"] = self._("Invalid numeric format")
-            if len(errors):
-                return req.jresponse({"success": False, "errors": errors})
-            cat["title"] = title
-            cat["topcat"] = topcat
-            cat["description"] = description
-            cat["order"] = float(order)
-            conf = self.app().config
-            conf.set("forum.categories", self.categories())
-            conf.store()
-            return req.jresponse({"success": True, "redirect": "forum/categories"})
-
-        fields = [
-            {
-                "name": "topcat",
-                "label": self._("Top category title"),
-                "value": cat["topcat"],
-            },
-            {
-                "name": "title",
-                "label": self._("Category title"),
-                "value": cat["title"]
-            },
-            {
-                "name": "description",
-                "label": self._("Category description"),
-                "value": cat["description"]
-            },
-            {
-                "name": "order",
-                "label": self._("Sort order"),
-                "value": cat["order"],
-                "type": "numberfield"
-            }
-        ]
-        return self.call("admin.form", fields=fields)

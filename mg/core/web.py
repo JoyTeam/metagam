@@ -384,7 +384,7 @@ class Web(Module):
                 args[key] = value
             res = None
             try:
-                res = self.call(hook_name, vars, **args)
+                res = self.call("hook-%s" % hook_name, vars, **args)
             except BaseException, e:
                 res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
             tokens[i] = str(res)
