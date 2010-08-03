@@ -20,6 +20,10 @@ class JSONError(CassandraError):
     "JSON or UTF-8 decoding error"
     pass
 
+class ObjectNotFoundException(Exception):
+    "CassandraObject not found"
+    pass
+
 class Cassandra(object):
     """
     Wrapper around CassandraConnection class. It puts CassandraConnection
@@ -345,51 +349,130 @@ class CassandraObject(object):
 
     def indexes(self):
         """
-        List of object indexes. Every index is a mapping: key => UUID
-        When object is changed it is reflected in its indexes.
-        Override to set your own index lists. Format:
-        [
-          ['field1', 'field2']
-          ['field3', 'field2', 'field4']
-        ]
+        Returns structure describing object indexes. When an object changes it is reflected in its indexes. Format:
+        {
+          'name1': [['eqfield1']],                            # where eqfield1=<value1>
+          'name2': [['eqfield1', 'eqfield2']],                # where eqfield1=<value1> and eqfield2=<value2>
+          'name3': [[], 'ordfield'],                          # where ordfield between <value1> and <value2> order by ordfield
+          'name4': [['eqfield1'], 'ordfield'],                # where eqfield1=<value1> and ordfield between <value2> and <value3> order by ordfield
+          'name5': [['eqfield1', 'eqfield2'], 'ordfield'],    # where eqfield1=<value1> and eqfield2=<value2> and ordfield between <value3> and <value4> order by ordfield
+        }
         """
-        return []
+        return {}
 
     def load(self):
         """
         Load object from the database
-        Raises NotFoundException
+        Raises ObjectNotFoundException
         """
-        col = self.db.get(self.prefix + self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+        try:
+            col = self.db.get(self.prefix + self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+        except NotFoundException:
+            raise ObjectNotFoundException(self.prefix + self.uuid)
         self.data = json.loads(col.value)
         self.dirty = False
 
-    def store_data(self):
+    def index_values(self):
+        ind_values = {}
+        for index_name, index in self.indexes().iteritems():
+            values = []
+            abort = False
+            for field in index[0]:
+                val = self.data.get(field)
+                if val is None:
+                    abort = True
+                    break;
+                values.append(val)
+            if not abort:
+                col = "id"
+                if len(index) > 1:
+                    val = self.data.get(index[1])
+                    if val is None:
+                        abort = True
+                    else:
+                        col = unicode(val) + "-" + unicode(self.uuid)
+                if not abort:
+                    row_suffix = ""
+                    for val in values:
+                        row_suffix = "%s-%s" % (row_suffix, val)
+                    ind_values[index_name] = [row_suffix, col]
+        return ind_values
+
+    def mutate(self, mutations, clock):
         """
-        Returns JSON object or None if not modified
-        dirty flag is turned down
+        Returns mapping of row_key => [Mutation, Mutation, ...] if modified
+        dirty flag is turned off
         """
         if not self.dirty:
-            return None
+            return
+        #print "mutating %s" % self.uuid
+        # calculating index mutations
+        index_values = self.index_values()
+        old_index_values = self.data.get("indexes")
+        if old_index_values is None:
+            self.data["indexes"] = old_index_values = {}
+        for index_name, columns in self.indexes().iteritems():
+            key = index_values.get(index_name)
+            old_key = old_index_values.get(index_name)
+            if old_key != key:
+                #print "%s: %s => %s" % (index_name, old_key, key)
+                if old_key is not None:
+                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([old_key[1].encode("utf-8")]), clock=clock))
+                    index_row = (self.prefix + index_name + old_key[0]).encode("utf-8")
+                    #print "delete: row=%s, column=%s" % (index_row, old_key[1].encode("utf-8"))
+                    exists = mutations.get(index_row)
+                    if exists:
+                        exists["Objects"].append(mutation)
+                    else:
+                        mutations[index_row] = {"Objects": [mutation]}
+                if key is None:
+                    del old_index_values[index_name]
+                else:
+                    old_index_values[index_name] = key
+                    mutation = Mutation(ColumnOrSuperColumn(Column(name=key[1].encode("utf-8"), value=self.uuid, clock=clock)))
+                    index_row = (self.prefix + index_name + key[0]).encode("utf-8")
+                    #print [ index_row, key[1] ]
+                    #print "insert: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
+                    exists = mutations.get(index_row)
+                    if exists:
+                        exists["Objects"].append(mutation)
+                    else:
+                        mutations[index_row] = {"Objects": [mutation]}
+        # mutation of the object itself
+        mutations[self.prefix + self.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
         self.dirty = False
         self.new = False
-        return json.dumps(self.data)
 
     def store(self):
         """
         Store object in the database
         """
-        data = self.store_data()
-        if data is not None:
-            timestamp = time.time() * 1000
-            self.db.batch_mutate({(self.prefix + self.uuid): {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}}, ConsistencyLevel.QUORUM)
+        if not self.dirty:
+            return
+        clock = Clock(time.time() * 1000)
+        mutations = {}
+        self.mutate(mutations, clock)
+        if len(mutations):
+            #print "applying mutations: %s" % mutations
+            self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def remove(self):
         """
         Remove object from the database
         """
-        timestamp = time.time() * 1000
-        self.db.remove((self.prefix + self.uuid), ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
+        #print "removing %s" % self.uuid
+        clock = Clock(time.time() * 1000)
+        self.db.remove(self.prefix + self.uuid, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+        # removing indexes
+        mutations = {}
+        old_index_values = self.data.get("indexes")
+        if old_index_values is not None:
+            for index_name, key in old_index_values.iteritems():
+                index_row = (self.prefix + index_name + key[0]).encode("utf-8")
+                mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
+                #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
+        if len(mutations):
+            self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.dirty = False
         self.new = False
 
@@ -403,6 +486,8 @@ class CassandraObject(object):
         """
         Set data value
         """
+        if type(value) == str:
+            value = unicode(value, "utf-8")
         self.data[key] = value
         self.dirty = True
 
@@ -417,39 +502,109 @@ class CassandraObject(object):
             pass
 
 class CassandraObjectList(object):
-    def __init__(self, db, uuids, prefix=""):
-        self.dict = [CassandraObject(db, uuid, {}, prefix) for uuid in uuids]
-        self.load()
+    def __init__(self, db, uuids=None, prefix="", cls=CassandraObject, query_index=None, query_equal=None, query_start="", query_finish="", query_limit=100, query_reversed=False):
+        """
+        To access a list of known uuids:
+        lst = CassandraObjectList(db, ["uuid1", "uuid2", ...])
 
-    def load(self):
+        To query equal index 'name2' => [['eqfield1', 'eqfield2']]:
+        lst = CassandraObjectList(db, query_index="name2", query_equal="value1-value2", query_limit=1000)
+
+        To query ordered index 'name5' => [['eqfield1', 'eqfield2'], 'ordfield']:
+        lst = CassandraObjectList(db, query_index="name5", query_equal="value1-value2", query_start="OrdFrom", query_finish="OrdTo", query_reversed=True)
+        """
+        self.db = db
+        self._loaded = False
+        self.index_row = None
+        if uuids is not None:
+            self.dict = [cls(db, uuid, {}, prefix=prefix) for uuid in uuids]
+        elif query_index is not None:
+            index_row = prefix + query_index
+            if query_equal is not None:
+                index_row = index_row + "-" + query_equal
+            if type(index_row) == unicode:
+                index_row = index_row.encode("utf-8")
+            #print "search index row: %s" % index_row
+            d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+            #print "loaded index: %s" % d
+            self.index_row = index_row
+            self.index_data = d
+            self.dict = [cls(db, col.column.value, {}, prefix=prefix) for col in d]
+        else:
+            raise RuntimeError("Invalid usage of CassandraObjectList")
+
+    def load(self, silent=False):
         if len(self.dict) > 0:
-            d = self.dict[0].db.multiget_slice([(obj.prefix + obj.uuid) for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
+            d = self.db.multiget_slice([(obj.prefix + obj.uuid) for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
+            recovered = False
             for obj in self.dict:
+                obj.valid = True
                 cols = d[obj.prefix + obj.uuid]
                 if len(cols) > 0:
                     obj.data = json.loads(cols[0].column.value)
                     obj.dirty = False
+                elif silent:
+                    if self.index_row is not None:
+                        mutations = []
+                        clock = None
+                        for col in self.index_data:
+                            if col.column.value == obj.uuid:
+                                obj.valid = False
+                                recovered = True
+                                #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
+                                if clock is None:
+                                    clock = Clock(time.time() * 1000)
+                                mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
+                                break
+                        if len(mutations):
+                            self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
                 else:
-                    raise NotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
+                    raise ObjectNotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
+            if recovered:
+                self.dict = [obj for obj in self.dict if obj.valid]
+        self._loaded = True
+
+    def _load_if_not_yet(self, silent=False):
+        if not self._loaded:
+            self.load(silent);
 
     def store(self):
+        self._load_if_not_yet()
         if len(self.dict) > 0:
             mutations = {}
-            timestamp = time.time() * 1000
+            clock = None
             for obj in self.dict:
-                data = obj.store_data()
-                if data is not None:
-                    mutations[obj.prefix + obj.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=data, clock=Clock(timestamp=timestamp))))]}
+                if obj.dirty:
+                    if clock is None:
+                        clock = Clock(time.time() * 1000)
+                    obj.mutate(mutations, clock)
             if len(mutations) > 0:
-                self.dict[0].db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                #print "applying mutations: %s" % mutations
+                self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def remove(self):
+        self._load_if_not_yet(True)
         if len(self.dict) > 0:
-            timestamp = time.time() * 1000
+            clock = Clock(time.time() * 1000)
+            mutations = {}
             for obj in self.dict:
-                obj.db.remove(obj.prefix + obj.uuid, ColumnPath("Objects"), Clock(timestamp=timestamp), ConsistencyLevel.QUORUM)
+                old_index_values = obj.data.get("indexes")
+                if old_index_values is not None:
+                    for index_name, key in old_index_values.iteritems():
+                        index_row = (obj.prefix + index_name + key[0]).encode("utf-8")
+                        m = mutations.get(index_row)
+                        mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))
+                        if m is None:
+                            mutations[index_row] = {"Objects": [mutation]}
+                        else:
+                            m["Objects"].append(mutation)
+                obj.db.remove(obj.prefix + obj.uuid, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
                 obj.dirty = False
                 obj.new = False
+            # removing indexes
+            #print "remove mutations: %s" % mutations
+            if len(mutations):
+                self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def __len__(self):
         return self.dict.__len__()

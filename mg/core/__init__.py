@@ -218,6 +218,8 @@ class Config(object):
         value - value to set
         Note: to store configuration in the database use store() method
         """
+        if type(value) == str:
+            value = unicode(value, "utf-8")
         m = self._path_re.match(name)
         if not m:
             raise ModuleException("Invalid config key: %s" % name)
@@ -507,12 +509,12 @@ class Application(object):
         errors += self.modules.reload()
         return errors
 
-    def obj(self, uuid=None, data=None):
+    def obj(self, type, uuid=None, data=None):
         "Access CassandraObject constructor"
-        return CassandraObject(self.db, uuid, data, self.keyprefix)
+        return CassandraObject(self.db, uuid, data, "%s-%s-" % (self.keyprefix, type))
 
     def objlist(self, uuids):
-        return CassandraObjectList(self.db, uuids, self.keyprefix)
+        return CassandraObjectList(self.db, uuids, "%s-%s-" % (self.keyprefix, type))
 
 class ApplicationFactory(object):
     """

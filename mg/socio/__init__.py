@@ -234,3 +234,6 @@ class Forum(Module):
     def may_read(self, cat):
         return True
 
+    def topics(self, cat):
+        pass
+

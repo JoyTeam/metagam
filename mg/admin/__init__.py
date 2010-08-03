@@ -82,7 +82,8 @@ class AdminInterface(Module):
                         menu.append(self.link([], href, res))
                     break
             first = False
-        return " &bull; ".join(reversed(menu))
+        menu.reverse()
+        return " &bull; ".join(menu)
 
     def response_js(self, script, cls, data):
         req = self.req()
