@@ -1,0 +1,72 @@
+<div style="width: 350px"></div>
+[%if form_texteditors%]<script type="text/javascript" src="/st/[%ver%]/js/texteditor.js"></script>[%end%]
+<form action="[%form_action%]" method="post" enctype="multipart/form-data" class="std" name="stdform">
+[%if form_top%]<div class="list_messages_top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
+<div>[%for hidden in form_hidden%]<input type="hidden" name="[%hidden.name%]" value="[%hidden.value%]" />[%end%]</div>
+[%for row in form_rows%]
+<table class="std_form_row">
+[%if row.show_header%]
+<tr>
+	[%for col in row.cols%]
+	<td width="[%col.width%]%" class="desc">
+		[%col.desc%]
+		[%if col.error%]<div class="error">[%col.error.text%]</div>[%end%]
+	</td>
+	[%end%]
+</tr>
+[%end%]
+<tr>
+	[%for col in row.cols%]
+	<td width="[%col.width%]%" class="control">
+	[%if col.element_header%][%col.element_header.html%][%end%]
+	[%if col.element_input%]<input id="[%col.name%]" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="w100 bg" />[%end%]
+	[%if col.element_range%]<input id="[%col.name%]_min" name="[%col.name%]_min" value="[%col.value_min%]" size="[%form_cols%]" class="bg" /> &mdash; <input id="[%col.name%]_max" name="[%col.name%]_max" value="[%col.value_max%]" size="[%form_cols%]" class="bg" />[%end%]
+	[%if col.element_checkbox%]<table><tr valign="top"><td><input type="checkbox" class="checkbox" name="[%col.name%]" value="1"[%if col.checked%] checked="checked"[%end%] /></td><td class="checkbox_text">[%col.text%]</td></tr></table>[%end%]
+	[%if col.element_radio%]<table><tr><td><input type="radio" class="radio" id="[%col.form_control_id%]" name="[%col.name%]" value="[%col.value%]" [%if col.checked%] checked="checked"[%end%] /></td><td style="padding: 3px 0px 0px 4px;" class="clickable">[%col.text%]</td></tr></table>[%end%]
+	[%if col.element_file%]<input type="file" name="[%col.name%]" size="[%form_cols%]" class="bg" />[%end%]
+	[%if col.element_password%]<input type="password" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="w100 bg" />[%end%]
+	[%if col.element_select%]<select name="[%col.name%]" class="w100 bg">[%for opt in col.options%]<option value="[%opt.value%]"[%if opt.selected%] selected="selected"[%end%][%if opt.bgcolor%] style="background-color: [%opt.bgcolor%]"[%end%]>[%opt.text%]</option>[%end%]</select>[%end%]
+	[%if col.element_textarea%]<textarea name="[%col.name%]" class="w100 bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]">[%col.value%]</textarea>[%end%]
+	[%if col.element_textarea_fixed%]<textarea name="[%col.name%]" class="bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]" wrap="hard">[%col.value%]</textarea>[%end%]
+	[%if col.element_submit%]<input type="submit"[%if col.name%] name="[%col.name.text%]"[%end%] value="[%col.value%]" class="submit" />[%end%]
+	[%if col.element_generic_submit%]<input type="submit"[%if col.name%] name="[%col.name.text%]"[%end%] value="[%col.value%]" class="submit" />[%end%]
+	[%if col.element_texteditor%]
+	<table class="editor_toolbox"><tr>
+	<td><img class="clickable" src="/st/form/bold.gif" alt="Ж" title="Полужирный" /></td>
+	<td><img class="clickable" src="/st/form/italic.gif" alt="К" title="Курсив" /></td>
+	<td><img class="clickable" src="/st/form/underline.gif" alt="П" title="Подчеркивание" /></td>
+	<td><img class="clickable" src="/st/form/strike.gif" alt="З" title="Зачеркивание" /></td>
+	<td><img class="clickable" src="/st/form/quote.gif" alt="Ж" title="Цитата" /></td>
+	<td><img class="clickable" src="/st/form/red.gif" alt="КР" title="Красный" /></td>
+	<td><img class="clickable" src="/st/form/green.gif" alt="ЗЕ" title="Зеленый" /></td>
+	<td><img class="clickable" src="/st/form/blue.gif" alt="СИ" title="Синий" /></td>
+	<td><img class="clickable" src="/st/form/dark_green.gif" alt="ТЗ" title="Темно-зеленый" /></td>
+	<td><img class="clickable" src="/st/form/magenta.gif" alt="ФИ" title="Фиолетовый" /></td>
+	<td><img class="clickable" src="/st/form/yellow.gif" alt="ЖЕ" title="Желтый" /></td>
+	<td><img class="clickable" src="/st/form/orange.gif" alt="ОР" title="Оранжевый" /></td>
+	[%if col.attaches%]<td><img class="clickable" src="/st/form/image.gif" alt="Картинка" title="Вставить картинку" /></td>[%end%]
+	<td><img class="clickable" src="/st/form/translit.gif" alt="Транслит" title="Транслитерация на русский" /></td>
+	</tr></table>
+	[%if col.show_smiles%]<table style="width: 100%"><tr valign="top"><td>[%end%]
+	<textarea id="[%col.name%]" name="[%col.name%]" class="[%if col.fixed_not_ok%]w100 [%end%]bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]"[%if fixed_ok%] wrap="hard"[%end%]>[%col.value%]</textarea>
+	[%if col.show_smiles%]
+		<div class="smiles">Смайлики</div>
+		<div>[%for cat in smile_categories%]<a href="javascript:void(0)">[%cat.name%]</a> [%end%]</div>
+		<p id="[%cat.name%]_smiles"></p>
+		</td>
+		</tr></table>
+		[%for cat in smile_categories%]
+			<div id="smiles_[%col.name%]_[%cat.id%]" style="display: none">
+			[%for sm in cat.smiles%]<img src="[%sm.image%]" alt="" class="clickable" /> [%end%]
+			</div>
+		[%end%]
+	[%end%]
+	[%end%]
+	[%if col.element_html%][%col.element_html.html%][%end%]
+	</td>
+	[%end%]
+</tr>
+</table>
+[%end%]
+[%if form_bottom%]<div class="list_messages_bottom">[%for html in form_bottom%]<div>[%html%]</div>[%end%]</div>[%end%]
+</form>

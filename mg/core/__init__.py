@@ -357,7 +357,7 @@ class Module(object):
         self.logger().critical(msg, *args, extra=self.log_params())
 
     def exception(self, msg, *args):
-        self.logger().exception(msg, *args, extra=self.log_params())
+        self.logger().exception(msg, *args)
 
     def _(self, val):
         try:
@@ -366,11 +366,11 @@ class Module(object):
             pass
         return self.call("l10n.gettext", val)
 
-    def obj(self, uuid=None, data=None):
-        return self.app().obj(uuid, data)
+    def obj(self, *args, **kwargs):
+        return self.app().obj(*args, **kwargs)
 
-    def objlist(self, uuids):
-        return self.app().obj(uuids)
+    def objlist(self, *args, **kwargs):
+        return self.app().objlist(*args, **kwargs)
 
     def req(self):
         try:
@@ -509,12 +509,12 @@ class Application(object):
         errors += self.modules.reload()
         return errors
 
-    def obj(self, type, uuid=None, data=None):
+    def obj(self, cls, type, uuid=None, data=None):
         "Access CassandraObject constructor"
-        return CassandraObject(self.db, uuid, data, "%s-%s-" % (self.keyprefix, type))
+        return cls(self.db, uuid, data, prefix="%s-%s-" % (self.keyprefix, type))
 
-    def objlist(self, uuids):
-        return CassandraObjectList(self.db, uuids, "%s-%s-" % (self.keyprefix, type))
+    def objlist(self, cls, uuids=None, **kwargs):
+        return cls(self.db, uuids, prefix="%s-%s-" % (self.keyprefix, type), **kwargs)
 
 class ApplicationFactory(object):
     """

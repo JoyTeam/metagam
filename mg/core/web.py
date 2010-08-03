@@ -13,6 +13,7 @@ import json
 import socket
 import mg
 import logging
+import math
 
 ver = 1
 
@@ -286,6 +287,7 @@ class Web(Module):
         self.rhook("web.parse_hook_layout", self.web_parse_hook_layout)
         self.rhook("web.response_layout", self.web_response_layout)
         self.rhook("web.response_hook_layout", self.web_response_hook_layout)
+        self.rhook("web.form", self.web_form)
 
     def core_reload(self):
         request = self.req()
@@ -386,6 +388,7 @@ class Web(Module):
             try:
                 res = self.call("hook-%s" % hook_name, vars, **args)
             except BaseException, e:
+                self.debug(e)
                 res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
             tokens[i] = str(res)
             i = i + 2
@@ -400,3 +403,162 @@ class Web(Module):
     def web_response_hook_layout(self, hook, vars):
         return self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars)
 
+    def web_form(self, template, action=None):
+        return WebForm(self, template, action)
+
+class WebForm(object):
+    """
+    WebForm offers interface to create HTML forms
+    """
+    def __init__(self, module, template, action=None):
+        self.module = module
+        self.template = template
+        if action is None:
+            self.action = module.req().uri()
+        else:
+            self.action = action
+        self.cols = 30
+        self.textarea_cols = 80
+        self.textarea_rows = 15
+        self._hidden = []
+        self.rows = []
+        self._error = {}
+        self.hidden("ok", 1)
+        self.submit_created = False
+        self.messages_top = None
+        self.messages_bottom = None
+        self.texteditors = False
+        self.any_error = False
+
+    def control(self, desc, name, **kwargs):
+        """
+        Add a control to the form.
+        name - parameter name
+        desc - human-readable description (html enabled)
+        inline=True - control will be appended to the last row
+        """
+        if kwargs.get("name") is None:
+            kwargs["name"] = name
+        if kwargs.get("desc") is None:
+            kwargs["desc"] = desc
+        err = self._error.get(name)
+        if err is not None:
+            kwargs["error"] = {
+                text: err
+            }
+            del self._errors[name]
+        put = False
+        try:
+            if kwargs.get("inline"):
+                self.rows[-1]["cols"].append(kwargs)
+                put = True
+        except KeyError:
+            pass
+        if not put:
+            self.rows.append({"cols": [kwargs]})
+        last_row = self.rows[-1]
+        last_row["width"] = math.floor(100 / len(last_row["cols"]))
+        if kwargs.get("desc") or kwargs.get("error") or kwargs.get("element_submit"):
+            last_row["show_header"] = True
+
+    def html(self):
+        """
+        Return cooked HTML form
+        """
+        if not self.submit_created:
+            self.submit(None, None, self.module._("Save"))
+        vars = {
+            "form_action": self.action,
+            "form_hidden": self._hidden,
+            "form_top": self.messages_top,
+            "form_bottom": self.messages_bottom,
+            "form_rows": self.rows,
+            "form_cols": self.cols,
+            "form_textarea_cols": self.textarea_cols,
+            "form_textarea_rows": self.textarea_rows,
+        }
+        if self.texteditors:
+            smiles = self.module.call("smiles.list")
+            if smiles is not None:
+                vars["smile_categories"] = smiles
+                vars["form_texteditors"] = True
+        return self.module.call("web.parse_template", self.template, vars)
+
+    def error(self, name, text):
+        """
+        Mark field 'name' containing error 'text'
+        """
+        self.any_errors = True
+        self._error[name] = text
+
+    def hidden(self, name, value):
+        """
+        <input type="hidden" />
+        """
+        self._hidden.append({"name": name, "value": cgi.escape(str(value))})
+
+    def input(self, desc, name, value, **kwargs):
+        """
+        <input />
+        """
+        kwargs["value"] = cgi.escape(value)
+        kwargs["element_input"] = True
+        self.control(desc, name, **kwargs)
+
+    def textarea(self, desc, name, value, **kwargs):
+        """
+        <textarea />
+        """
+        kwargs["value"] = cgi.escape(value)
+        kwargs["element_textarea"] = True
+        self.control(desc, name, **kwargs)
+
+    def textarea_fixed(self, desc, name, value, **kwargs):
+        """
+        <textarea />
+        """
+        kwargs["value"] = cgi.escape(value)
+        kwargs["element_textarea_fixed"] = True
+        self.control(desc, name, **kwargs)
+
+    def submit(self, desc, name, value, **kwargs):
+        """
+        <input type="submit" />
+        """
+        kwargs["value"] = cgi.escape(value)
+        if name is not None:
+            kwargs["name"] = {"text": name}
+        kwargs["element_submit"] = True
+        self.control(desc, name, **kwargs)
+        self.submit_created = True
+
+    def texteditor(self, desc, name, value, **kwargs):
+        """
+        <textarea /> with formatting buttons
+        """
+        kwargs["value"] = cgi.escape(value)
+        kwargs["attaches"] = not kwargs.get("no_attaches")
+        kwargs["show_smiles"] = not kwargs.get("no_smiles")
+        if kwargs.get("fixed"):
+            kwargs["fixed_ok"] = True
+        else:
+            kwargs["fixed_not_ok"] = True
+        kwargs["element_texteditor"] = True
+        self.control(desc, name, **kwargs)
+        self.texteditors = True
+
+    def add_message_top(self, html):
+        """
+        Write a html in the top of a form
+        """
+        if self.messages_top is None:
+            self.messages_top = []
+        self.messages_top.append(html)
+
+    def add_message_bottom(self, html):
+        """
+        Write a html in the bottom of a form
+        """
+        if self.messages_bottom is None:
+            self.messages_bottom = []
+        self.messages_bottom.append(html)
