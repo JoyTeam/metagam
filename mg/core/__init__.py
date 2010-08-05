@@ -1,15 +1,16 @@
+from concurrence.extra import Lock
+from concurrence import Tasklet
+from cassandra.ttypes import *
+from operator import itemgetter
 import weakref
 import re
 import sys
 import mg
-from operator import itemgetter
-from concurrence.extra import Lock
-from cassandra.ttypes import *
 import time
 import json
 import gettext
-from concurrence import Tasklet
 import logging
+import datetime
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -378,6 +379,9 @@ class Module(object):
         except AttributeError:
             raise RuntimeError("Module.req() called outside of a web handler")
 
+    def now(self):
+        return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
 class ModuleException(Exception):
     "Error during module loading"
     pass
@@ -509,12 +513,12 @@ class Application(object):
         errors += self.modules.reload()
         return errors
 
-    def obj(self, cls, type, uuid=None, data=None):
+    def obj(self, cls, uuid=None, data=None):
         "Access CassandraObject constructor"
-        return cls(self.db, uuid, data, prefix="%s-%s-" % (self.keyprefix, type))
+        return cls(self.db, uuid, data, prefix="%s-" % self.keyprefix)
 
     def objlist(self, cls, uuids=None, **kwargs):
-        return cls(self.db, uuids, prefix="%s-%s-" % (self.keyprefix, type), **kwargs)
+        return cls(self.db, uuids, prefix="%s-" % self.keyprefix, **kwargs)
 
 class ApplicationFactory(object):
     """

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-08-03 16:04+0400\n"
+"POT-Creation-Date: 2010-08-05 15:44+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Forum"
 msgstr ""
 
-#: mg/socio/__init__.py:70 mg/socio/__init__.py:73 mg/socio/__init__.py:181
+#: mg/socio/__init__.py:70 mg/socio/__init__.py:73 mg/socio/__init__.py:182
 msgid "Forum categories"
 msgstr ""
 
@@ -89,147 +89,231 @@ msgstr ""
 msgid "Sort order"
 msgstr ""
 
-#: mg/socio/__init__.py:183
+#: mg/socio/__init__.py:184
 msgid "Topics"
 msgstr ""
 
-#: mg/socio/__init__.py:184 mg/socio/__init__.py:316
+#: mg/socio/__init__.py:185 mg/socio/__init__.py:321
 msgid "Replies"
 msgstr ""
 
-#: mg/socio/__init__.py:185
+#: mg/socio/__init__.py:186
 msgid "Unread"
 msgstr ""
 
-#: mg/socio/__init__.py:186
+#: mg/socio/__init__.py:187
 msgid "Last message"
 msgstr ""
 
-#: mg/socio/__init__.py:198 mg/socio/__init__.py:205 mg/socio/__init__.py:206
-#: mg/socio/__init__.py:212 mg/socio/__init__.py:219
+#: mg/socio/__init__.py:199 mg/socio/__init__.py:206 mg/socio/__init__.py:207
+#: mg/socio/__init__.py:213 mg/socio/__init__.py:220
 msgid "Game"
 msgstr ""
 
-#: mg/socio/__init__.py:199
+#: mg/socio/__init__.py:200
 msgid "News"
 msgstr ""
 
-#: mg/socio/__init__.py:200
+#: mg/socio/__init__.py:201
 msgid "Game news published by the administrators"
 msgstr ""
 
-#: mg/socio/__init__.py:207
+#: mg/socio/__init__.py:208
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr ""
 
-#: mg/socio/__init__.py:213
+#: mg/socio/__init__.py:214
 msgid "Newbies"
 msgstr ""
 
-#: mg/socio/__init__.py:214
+#: mg/socio/__init__.py:215
 msgid ""
 "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr ""
 
-#: mg/socio/__init__.py:220
+#: mg/socio/__init__.py:221
 msgid "Diplomacy"
 msgstr ""
 
-#: mg/socio/__init__.py:221
+#: mg/socio/__init__.py:222
 msgid ""
 "Authorized guild members can talk to each other about diplomacy and politics "
 "issues here"
 msgstr ""
 
-#: mg/socio/__init__.py:226 mg/socio/__init__.py:233 mg/socio/__init__.py:240
+#: mg/socio/__init__.py:227 mg/socio/__init__.py:234 mg/socio/__init__.py:241
 msgid "Admin"
 msgstr ""
 
-#: mg/socio/__init__.py:227
+#: mg/socio/__init__.py:228
 msgid "Admin talks"
 msgstr ""
 
-#: mg/socio/__init__.py:228
+#: mg/socio/__init__.py:229
 msgid ""
 "Discussions with the game administrators. Here you can discuss any issues "
 "related to the game itself."
 msgstr ""
 
-#: mg/socio/__init__.py:234
+#: mg/socio/__init__.py:235
 msgid "Reference manuals"
 msgstr ""
 
-#: mg/socio/__init__.py:235
+#: mg/socio/__init__.py:236
 msgid "Actual reference documents about the game are placed here."
 msgstr ""
 
-#: mg/socio/__init__.py:241
+#: mg/socio/__init__.py:242
 msgid "Bug reports"
 msgstr ""
 
-#: mg/socio/__init__.py:242
+#: mg/socio/__init__.py:243
 msgid "Report any problems in the game here"
 msgstr ""
 
-#: mg/socio/__init__.py:247 mg/socio/__init__.py:254
+#: mg/socio/__init__.py:248 mg/socio/__init__.py:255
 msgid "Reallife"
 msgstr ""
 
-#: mg/socio/__init__.py:248
+#: mg/socio/__init__.py:249
 msgid "Smoking room"
 msgstr ""
 
-#: mg/socio/__init__.py:249
+#: mg/socio/__init__.py:250
 msgid ""
 "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr ""
 
-#: mg/socio/__init__.py:255
+#: mg/socio/__init__.py:256
 msgid "Art"
 msgstr ""
 
-#: mg/socio/__init__.py:256
+#: mg/socio/__init__.py:257
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr ""
 
-#: mg/socio/__init__.py:261 mg/socio/__init__.py:268
+#: mg/socio/__init__.py:262 mg/socio/__init__.py:269
 msgid "Trading"
 msgstr ""
 
-#: mg/socio/__init__.py:262
+#: mg/socio/__init__.py:263
 msgid "Services"
 msgstr ""
 
-#: mg/socio/__init__.py:263
+#: mg/socio/__init__.py:264
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr ""
 
-#: mg/socio/__init__.py:269
+#: mg/socio/__init__.py:270
 msgid "Market"
 msgstr ""
 
-#: mg/socio/__init__.py:270
+#: mg/socio/__init__.py:271
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/socio/__init__.py:299
+#: mg/socio/__init__.py:303
 msgid "Categories"
 msgstr ""
 
-#: mg/socio/__init__.py:315
+#: mg/socio/__init__.py:305
+msgid "New topic"
+msgstr ""
+
+#: mg/socio/__init__.py:320
 msgid "Author"
 msgstr ""
 
-#: mg/socio/__init__.py:317
+#: mg/socio/__init__.py:322
 msgid "Last reply"
 msgstr ""
 
-#: mg/socio/__init__.py:318
+#: mg/socio/__init__.py:323
 msgid "by"
 msgstr ""
 
-#: mg/socio/__init__.py:319
+#: mg/socio/__init__.py:324
 msgid "Pages"
+msgstr ""
+
+#: mg/socio/__init__.py:337
+msgid "Subject"
+msgstr ""
+
+#: mg/socio/__init__.py:338
+msgid "Content"
+msgstr ""
+
+#: mg/core/web.py:469 mg/core/director.py:120 mg/admin/__init__.py:118
+msgid "Save"
+msgstr ""
+
+#: mg/core/web.py:479
+msgid "Bold"
+msgstr ""
+
+#: mg/core/web.py:480
+msgid "Italic"
+msgstr ""
+
+#: mg/core/web.py:481
+msgid "Underline"
+msgstr ""
+
+#: mg/core/web.py:482
+msgid "Strike"
+msgstr ""
+
+#: mg/core/web.py:483
+msgid "Quote"
+msgstr ""
+
+#: mg/core/web.py:484
+msgid "Red"
+msgstr ""
+
+#: mg/core/web.py:485
+msgid "Green"
+msgstr ""
+
+#: mg/core/web.py:486
+msgid "Blue"
+msgstr ""
+
+#: mg/core/web.py:487
+msgid "Dark green"
+msgstr ""
+
+#: mg/core/web.py:488
+msgid "Magenta"
+msgstr ""
+
+#: mg/core/web.py:489
+msgid "Yellow"
+msgstr ""
+
+#: mg/core/web.py:490
+msgid "Orange"
+msgstr ""
+
+#: mg/core/web.py:491
+msgid "Image"
+msgstr ""
+
+#: mg/core/web.py:492
+msgid "Insert image"
+msgstr ""
+
+#: mg/core/web.py:493
+msgid "Translit"
+msgstr ""
+
+#: mg/core/web.py:494
+msgid "Transliterate to Russian"
+msgstr ""
+
+#: mg/core/web.py:495
+msgid "Smiles"
 msgstr ""
 
 #: mg/core/director.py:59
@@ -258,10 +342,6 @@ msgstr ""
 
 #: mg/core/director.py:118
 msgid "<strong>Main application host name</strong> (without www)"
-msgstr ""
-
-#: mg/core/director.py:120 mg/admin/__init__.py:118
-msgid "Save"
 msgstr ""
 
 #: mg/mainsite/__init__.py:20

@@ -14,6 +14,7 @@ import socket
 import mg
 import logging
 import math
+import traceback
 
 ver = 1
 
@@ -73,6 +74,9 @@ class Request(object):
         else:
             return unicode(val[0], "utf-8")
 
+    def ok(self):
+        return self.param("ok")
+
     def uri(self):
         "Get the URI requested"
         return self.environ['PATH_INFO']
@@ -111,6 +115,8 @@ class Request(object):
 
     def redirect(self, uri):
         "Return 302 Found. uri - redirect URI"
+        if type(uri) == unicode:
+            uri = uri.encode("utf-8")
         self.headers.append(('Location', uri))
         return self.send_response("302 Found", self.headers, "")
 
@@ -388,7 +394,7 @@ class Web(Module):
             try:
                 res = self.call("hook-%s" % hook_name, vars, **args)
             except BaseException, e:
-                self.debug(e)
+                self.error(traceback.format_exc())
                 res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
             tokens[i] = str(res)
             i = i + 2
@@ -428,7 +434,7 @@ class WebForm(object):
         self.messages_top = None
         self.messages_bottom = None
         self.texteditors = False
-        self.any_error = False
+        self.errors = False
 
     def control(self, desc, name, **kwargs):
         """
@@ -444,9 +450,9 @@ class WebForm(object):
         err = self._error.get(name)
         if err is not None:
             kwargs["error"] = {
-                text: err
+                "text": err
             }
-            del self._errors[name]
+            del self._error[name]
         put = False
         try:
             if kwargs.get("inline"):
@@ -476,19 +482,36 @@ class WebForm(object):
             "form_cols": self.cols,
             "form_textarea_cols": self.textarea_cols,
             "form_textarea_rows": self.textarea_rows,
+            "bold": self.module._("Bold"),
+            "italic": self.module._("Italic"),
+            "underline": self.module._("Underline"),
+            "strike": self.module._("Strike"),
+            "quote": self.module._("Quote"),
+            "red": self.module._("Red"),
+            "green": self.module._("Green"),
+            "blue": self.module._("Blue"),
+            "dark_green": self.module._("Dark green"),
+            "magenta": self.module._("Magenta"),
+            "yellow": self.module._("Yellow"),
+            "orange": self.module._("Orange"),
+            "image": self.module._("Image"),
+            "insert_image": self.module._("Insert image"),
+            "translit": self.module._("Translit"),
+            "transliterate_to_russian": self.module._("Transliterate to Russian"),
+            "smiles": self.module._("Smiles"),
         }
         if self.texteditors:
             smiles = self.module.call("smiles.list")
             if smiles is not None:
                 vars["smile_categories"] = smiles
-                vars["form_texteditors"] = True
+            vars["form_texteditors"] = True
         return self.module.call("web.parse_template", self.template, vars)
 
     def error(self, name, text):
         """
         Mark field 'name' containing error 'text'
         """
-        self.any_errors = True
+        self.errors = True
         self._error[name] = text
 
     def hidden(self, name, value):

@@ -635,3 +635,11 @@ class CassandraObjectList(object):
 
     def __delslice__(self, i, j):
         return self.dict.__delslice__(i, j)
+
+    def data(self):
+        res = []
+        for d in self.dict:
+            ent = d.data.copy()
+            ent["uuid"] = d.uuid
+            res.append(ent)
+        return res

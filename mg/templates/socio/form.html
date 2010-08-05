@@ -32,25 +32,25 @@
 	[%if col.element_generic_submit%]<input type="submit"[%if col.name%] name="[%col.name.text%]"[%end%] value="[%col.value%]" class="submit" />[%end%]
 	[%if col.element_texteditor%]
 	<table class="editor_toolbox"><tr>
-	<td><img class="clickable" src="/st/form/bold.gif" alt="Ж" title="Полужирный" /></td>
-	<td><img class="clickable" src="/st/form/italic.gif" alt="К" title="Курсив" /></td>
-	<td><img class="clickable" src="/st/form/underline.gif" alt="П" title="Подчеркивание" /></td>
-	<td><img class="clickable" src="/st/form/strike.gif" alt="З" title="Зачеркивание" /></td>
-	<td><img class="clickable" src="/st/form/quote.gif" alt="Ж" title="Цитата" /></td>
-	<td><img class="clickable" src="/st/form/red.gif" alt="КР" title="Красный" /></td>
-	<td><img class="clickable" src="/st/form/green.gif" alt="ЗЕ" title="Зеленый" /></td>
-	<td><img class="clickable" src="/st/form/blue.gif" alt="СИ" title="Синий" /></td>
-	<td><img class="clickable" src="/st/form/dark_green.gif" alt="ТЗ" title="Темно-зеленый" /></td>
-	<td><img class="clickable" src="/st/form/magenta.gif" alt="ФИ" title="Фиолетовый" /></td>
-	<td><img class="clickable" src="/st/form/yellow.gif" alt="ЖЕ" title="Желтый" /></td>
-	<td><img class="clickable" src="/st/form/orange.gif" alt="ОР" title="Оранжевый" /></td>
-	[%if col.attaches%]<td><img class="clickable" src="/st/form/image.gif" alt="Картинка" title="Вставить картинку" /></td>[%end%]
-	<td><img class="clickable" src="/st/form/translit.gif" alt="Транслит" title="Транслитерация на русский" /></td>
+	<td><img class="clickable" src="/st/form/bold.gif" alt="B" title="[%bold%]" onclick="add_code('[%col.name%]', this, '[b]','[/b]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/italic.gif" alt="I" title="[%italic%]" onclick="add_code('[%col.name%]', this, '[i]','[/i]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/underline.gif" alt="U" title="[%underline%]" onclick="add_code('[%col.name%]', this, '[u]','[/u]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/strike.gif" alt="S" title="[%strike%]" onclick="add_code('[%col.name%]', this, '[s]','[/s]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/quote.gif" alt="Q" title="[%quote%]" onclick="add_code('[%col.name%]', this, '[quote]','[/quote]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/red.gif" alt="RD" title="[%red%]" onclick="add_code('[%col.name%]', this, '[color=#ff0000]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/green.gif" alt="GR" title="[%green%]" onclick="add_code('[%col.name%]', this, '[color=#00c000]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/blue.gif" alt="BL" title="[%blue%]" onclick="add_code('[%col.name%]', this, '[color=#0000ff]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/dark_green.gif" alt="DG" title="[%dark_green%]" onclick="add_code('[%col.name%]', this, '[color=#009a00]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/magenta.gif" alt="MG" title="[%magenta%]" onclick="add_code('[%col.name%]', this, '[color=#e909f1]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/yellow.gif" alt="YL" title="[%yellow%]" onclick="add_code('[%col.name%]', this, '[color=#f1f100]','[/color]', 1)" /></td>
+	<td><img class="clickable" src="/st/form/orange.gif" alt="OR" title="[%orange%]" onclick="add_code('[%col.name%]', this, '[color=#ff9600]','[/color]', 1)" /></td>
+	[%if col.attaches%]<td><img class="clickable" src="/st/form/image.gif" alt="IMG" title="[%insert_image%]" onclick="add_img('[%col.name%]', '[%member%]')" /></td>[%end%]
+	<td><img class="clickable" src="/st/form/translit.gif" alt="TR" title="[%transliterate_to_russian%]" onclick="translit('[%col.name%]')" /></td>
 	</tr></table>
 	[%if col.show_smiles%]<table style="width: 100%"><tr valign="top"><td>[%end%]
 	<textarea id="[%col.name%]" name="[%col.name%]" class="[%if col.fixed_not_ok%]w100 [%end%]bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]"[%if fixed_ok%] wrap="hard"[%end%]>[%col.value%]</textarea>
-	[%if col.show_smiles%]
-		<div class="smiles">Смайлики</div>
+	[%if col.show_smiles and smile_categories%]
+		<div class="smiles">[%smiles%]</div>
 		<div>[%for cat in smile_categories%]<a href="javascript:void(0)">[%cat.name%]</a> [%end%]</div>
 		<p id="[%cat.name%]_smiles"></p>
 		</td>
