@@ -5,7 +5,7 @@ from concurrence import Tasklet, JoinError
 
 class CassandraStruct(Module):
     def register(self):
-        self.rdep(["mg.core.cass.CommonCassandraStruct"])
+        self.rdep(["mg.core.cass_struct.CommonCassandraStruct"])
 
 class Director(Module):
     def register(self):

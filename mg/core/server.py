@@ -8,7 +8,7 @@ import json
 class Server(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.cass.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
+        self.rdep(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
         self.rhook("int-server.spawn", self.spawn)
         self.rhook("int-server.nginx", self.nginx)
         self.rhook("core.fastidle", self.fastidle)

@@ -1,7 +1,7 @@
 from mg.core import Module
 from operator import itemgetter
 from uuid import uuid4
-from mg.core.cass import CassandraObject, CassandraObjectList
+from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 import re
 import cgi
@@ -16,7 +16,6 @@ class ForumTopic(CassandraObject):
 
     def __init__(self, *args, **kwargs):
         kwargs["prefix"] = "ForumTopic-"
-        print "creating ForumTopic(%s, %s)" % (args, kwargs)
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -324,8 +323,6 @@ class Forum(Module):
             topic["member_html"] = "Author-name"
             topic["comments"] = intz(topic.get("comments"))
             topic["content_html"] = cgi.escape(topic.get("content"))
-            print "------------------------"
-            print topic
 
     def hook_forum_topics(self, vars):
         cat = vars["category"]
@@ -378,8 +375,10 @@ class Forum(Module):
 
     def ext_topic(self):
         req = self.req()
-        topic = self.obj(ForumTopic, req.args)
-        print topic.data
+        try:
+            topic = self.obj(ForumTopic, req.args)
+        except ObjectNotFoundException:
+            return req.not_found()
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             return req.not_found()

@@ -1,7 +1,8 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.core.cass import CassandraConnection, CassandraRestructure, CassandraPool, CassandraObject, CassandraObjectList, ObjectNotFoundException
+from mg.core.cass import CassandraConnection, CassandraPool, CassandraObject, CassandraObjectList, ObjectNotFoundException
+from mg.core.cass_struct import CassandraRestructure
 import unittest
 from concurrence import dispatch, Tasklet
 import time

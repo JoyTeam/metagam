@@ -113,7 +113,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(len(list), 1)
         self.assertEqual(list[0], "mg.test.testcore.Test1")
 
-        app.modules.load(["mg.core.cass.CommonCassandraStruct"])
+        app.modules.load(["mg.core.cass_struct.CommonCassandraStruct"])
         dbstruct = {}
         app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
