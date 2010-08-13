@@ -2,6 +2,7 @@ from concurrence.extra import Lock
 from concurrence import Tasklet
 from cassandra.ttypes import *
 from operator import itemgetter
+from mg.core.memcached import MemcachedLock
 import weakref
 import re
 import sys
@@ -382,6 +383,9 @@ class Module(object):
     def now(self):
         return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
+    def lock(self, *args, **kwargs):
+        return self.app().lock(*args, **kwargs)
+
 class ModuleException(Exception):
     "Error during module loading"
     pass
@@ -519,6 +523,9 @@ class Application(object):
 
     def objlist(self, cls, uuids=None, **kwargs):
         return cls(self.db, uuids, prefix="%s-" % self.keyprefix, **kwargs)
+
+    def lock(self, keys, patience=20, delay=0.1, ttl=30):
+        return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "_")
 
 class ApplicationFactory(object):
     """

@@ -65,10 +65,11 @@ class Server(Module):
         filename = "/etc/nginx/nginx-metagam.conf"
         try:
             with open(filename, "w") as f:
-                print("upstream metagam {", file=f)
-                for srv in workers:
-                    print("\tserver %s:%d;" % (srv[0], srv[1]), file=f)
-                print("}", file=f)
+                for cls, list in workers.iteritems():
+                    print("upstream %s {" % cls, file=f)
+                    for srv in list:
+                        print("\tserver %s:%d;" % (srv[0], srv[1]), file=f)
+                    print("}", file=f)
             subprocess.check_call(["/usr/bin/sudo", "/etc/init.d/nginx", "reload"])
         except IOError as e:
             self.error("Error writing %s: %s", filename, e)

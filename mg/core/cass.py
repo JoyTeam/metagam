@@ -380,7 +380,6 @@ class CassandraObject(object):
         mutations = {}
         self.mutate(mutations, clock)
         if len(mutations):
-            #print "applying mutations: %s" % mutations
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def remove(self):
@@ -427,6 +426,12 @@ class CassandraObject(object):
             self.dirty = True
         except KeyError:
             pass
+
+    def get_int(self, key):
+        val = self.get(key)
+        if val is None:
+            return 0
+        return int(val)
 
 class CassandraObjectList(object):
     def __init__(self, db, uuids=None, prefix="", cls=CassandraObject, query_index=None, query_equal=None, query_start="", query_finish="", query_limit=100, query_reversed=False):

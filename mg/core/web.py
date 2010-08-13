@@ -238,6 +238,10 @@ class WebDaemon(object):
         finally:
             cnn.close()
 
+class WebResponse(Exception):
+    def __init__(self, content):
+        self.content = content
+
 class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
@@ -263,7 +267,10 @@ class WebApplication(Application):
         request.group = group
         request.hook = hook
         request.args = self.re_remove_ver.sub("", args)
-        self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
+        try:
+            self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
+        except WebResponse as res:
+            return res.content
         if request.headers_sent:
             return [request.content]
         else:
@@ -293,7 +300,11 @@ class Web(Module):
         self.rhook("web.parse_hook_layout", self.web_parse_hook_layout)
         self.rhook("web.response_layout", self.web_response_layout)
         self.rhook("web.response_hook_layout", self.web_response_hook_layout)
+        self.rhook("web.response_json", self.web_response_json)
         self.rhook("web.form", self.web_form)
+        self.rhook("web.not_found", self.web_not_found)
+        self.rhook("web.forbidden", self.web_forbidden)
+        self.rhook("web.internal_server_error", self.web_internal_server_error)
 
     def core_reload(self):
         request = self.req()
@@ -331,8 +342,10 @@ class Web(Module):
             return "<too-long-templates />"
         req.templates_parsed = req.templates_parsed + 1
         if self.tpl is None:
+            include_path = [ mg.__path__[0] + "/templates" ]
+            self.call("core.template_path", include_path)
             conf = {
-                "INCLUDE_PATH": [ mg.__path__[0] + "/templates" ],
+                "INCLUDE_PATH": include_path,
                 "ANYCASE": True,
             }
             try:
@@ -359,7 +372,7 @@ class Web(Module):
         return content
 
     def web_response(self, content):
-        return self.req().response(content)
+        raise WebResponse(self.req().response(content))
 
     def web_response_global(self, content, vars):
         vars["content"] = content
@@ -409,8 +422,20 @@ class Web(Module):
     def web_response_hook_layout(self, hook, vars):
         return self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars)
 
+    def web_response_json(self, data):
+        return self.req().jresponse(data)
+
     def web_form(self, template, action=None):
         return WebForm(self, template, action)
+
+    def web_forbidden(self):
+        raise WebResponse(self.req().forbidden())
+
+    def web_internal_server_error(self):
+        raise WebResponse(self.req().internal_server_error())
+
+    def web_not_found(self):
+        raise WebResponse(self.req().not_found())
 
 class WebForm(object):
     """

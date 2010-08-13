@@ -1,6 +1,8 @@
-from concurrence.memcache.client import MemcacheConnection
+from concurrence.memcache.client import MemcacheConnection, MemcacheResult
+from concurrence import Tasklet
 import stackless
 import re
+import time
 
 class MemcachedPool(object):
     """
@@ -75,6 +77,12 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.get(self.prefix + keys, default)
+        except IOError:
+            self.pool.new()
+            return None
+        except EOFError:
+            self.pool.new()
+            return None
         except:
             self.pool.new()
             raise
@@ -89,6 +97,12 @@ class Memcached(object):
             for item in got[1].iteritems():
                 (key, data) = item
                 res[self.prefix_re.sub("", key)] = data
+        except IOError:
+            self.pool.new()
+            return {}
+        except EOFError:
+            self.pool.new()
+            return {}
         except:
             self.pool.new()
             raise
@@ -98,54 +112,143 @@ class Memcached(object):
     def set(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            connection.set(self.prefix + key, data, expiration, flags)
+            res = connection.set(self.prefix + key, data, expiration, flags)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
     def add(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            connection.add(self.prefix + key, data, expiration, flags)
+            res = connection.add(self.prefix + key, data, expiration, flags)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
     def replace(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            connection.replace(self.prefix + key, data, expiration, flags)
+            res = connection.replace(self.prefix + key, data, expiration, flags)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
     def incr(self, key, increment):
         connection = self.pool.get()
         try:
-            connection.incr(self.prefix + key, increment)
+            res = connection.incr(self.prefix + key, increment)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
     def decr(self, key, decrement):
         connection = self.pool.get()
         try:
-            connection.decr(self.prefix + key, decrement)
+            res = connection.decr(self.prefix + key, decrement)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
     def delete(self, key, expiration=0):
         connection = self.pool.get()
         try:
-            connection.delete(self.prefix + key, expiration)
+            res = connection.delete(self.prefix + key, expiration)
+        except IOError:
+            self.pool.new()
+            return MemcacheResult.ERROR
+        except EOFError:
+            self.pool.new()
+            return MemcacheResult.ERROR
         except:
             self.pool.new()
             raise
         self.pool.put(connection)
+        return res
 
+class MemcachedLock(object):
+    """
+    MemcachedLocker performs basic services on locking object using memcached INCR-DECR service
+    """
+    def __init__(self, mc, keys, patience=20, delay=0.1, ttl=30, value_prefix=""):
+        """
+        mc - Memcached instance
+        keys - list of keys to lock
+        """
+        self.mc = mc
+        self.keys = ["_lock-" + str(key) for key in sorted(keys)]
+        self.patience = patience
+        self.delay = delay
+        self.locked = None
+        self.ttl = ttl
+        self.value = str(value_prefix) + str(id(Tasklet.current()))
+
+    def __enter__(self):
+        while True:
+            locked = []
+            success = True
+            start = None
+            for key in self.keys:
+                if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                    locked.append(key)
+                else:
+                    for k in locked:
+                        self.mc.delete(k)
+                    success = False
+                    break
+            if success:
+                self.locked = time.time()
+                return
+            Tasklet.sleep(self.delay)
+            if start is None:
+                start = time.time()
+            elif time.time() > start + self.patience:
+                for key in self.keys:
+                    self.mc.set(key, self.value, self.ttl)
+                self.locked = time.time()
+                return
+
+    def __exit__(self, type, value, traceback):
+        if self.locked is not None:
+            if time.time() < self.locked + self.ttl:
+                for key in self.keys:
+                    self.mc.delete(key)

@@ -42,6 +42,7 @@ def main():
             "id": sys.argv[1],
             "params": json.dumps({
                 "ext_port": ext_port,
+                "class": "metagam",
             }),
         })
         inst.server_id = res["server_id"]

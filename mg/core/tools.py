@@ -1,4 +1,5 @@
 import urllib
+import string
 
 def urldecode(str):
     return urllib.unquote(str).decode("utf-8")
@@ -13,3 +14,17 @@ def intz(str):
         return int(str)
     except TypeError:
         return 0
+
+def jsencode(str):
+    str = string.replace(str, "\\", "\\\\")
+    str = string.replace(str, "'", "\\'")
+    str = string.replace(str, "\r", "\\r")
+    str = string.replace(str, "\n", "\\n")
+    return str
+
+def jsdecode(str):
+    str = string.replace(str, "\\n", "\n")
+    str = string.replace(str, "\\r", "\r")
+    str = string.replace(str, "\\'", "'")
+    str = string.replace(str, "\\\\", "\\")
+    return str

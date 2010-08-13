@@ -136,13 +136,16 @@ class Director(Module):
 
     def configure_nginx(self):
         nginx = set()
-        workers = []
+        workers = {}
         for server_id, info in self.servers_online.iteritems():
             try:
                 if info["type"] == "server" and info["params"].get("nginx"):
                     nginx.add((info["host"], info["port"]))
                 elif info["type"] == "worker":
-                    workers.append((info["host"], info["params"].get("ext_port")))
+                    cls = info["params"].get("class")
+                    if workers.get(cls) is None:
+                        workers[cls] = []
+                    workers[cls].append((info["host"], info["params"].get("ext_port")))
             except KeyError:
                 pass
         workers_str = json.dumps(workers, sort_keys=True)
