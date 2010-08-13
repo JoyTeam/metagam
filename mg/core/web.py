@@ -74,6 +74,12 @@ class Request(object):
         else:
             return unicode(val[0], "utf-8")
 
+    def param_int(self, key):
+        try:
+            return int(self.param(key))
+        except:
+            return 0
+
     def ok(self):
         return self.param("ok")
 
@@ -423,7 +429,7 @@ class Web(Module):
         return self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars)
 
     def web_response_json(self, data):
-        return self.req().jresponse(data)
+        raise WebResponse(self.req().jresponse(data))
 
     def web_form(self, template, action=None):
         return WebForm(self, template, action)
