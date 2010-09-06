@@ -9,12 +9,12 @@
 <table class="categories">
 
 [%if show_topic%]
-<tr class="catdelim"><td colspan="4"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/interface/c1/down.gif" alt="" /> [%topic_started%] [%literal_created%]</td></tr></table></div></td></tr>
+<tr class="catdelim"><td colspan="4"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/interface/c1/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
 
 <tr class="category">
 
 <td class="avatar" rowspan="2">
-<div class="avatar"><img src="[%topic.avatar%]" alt="" /></div>
+<div class="avatar">[%if topic.avatar%]<img src="[%topic.avatar%]" alt="" />[%end%]</div>
 <div class="member_name">[%topic.member_html_no_icons%]</div>
 <div class="member_icons">[%topic.member_html_icons%] [%if topic.member_search%]<a href="/forum/search?query=author:[%member_search%]"><img src="/st/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
 </td>

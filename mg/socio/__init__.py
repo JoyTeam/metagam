@@ -323,6 +323,7 @@ class Forum(Module):
             topic["member_html"] = "Author-name"
             topic["comments"] = intz(topic.get("comments"))
             topic["content_html"] = cgi.escape(topic.get("content"))
+            topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
 
     def hook_forum_topics(self, vars):
         cat = vars["category"]

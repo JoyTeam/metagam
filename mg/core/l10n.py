@@ -3,6 +3,25 @@ from operator import itemgetter
 import gettext
 import mg
 import os
+import re
+
+def gettext_noop(x):
+    return x
+
+timeencode2_month = {
+    "01": gettext_noop("of January"),
+    "02": gettext_noop("of February"),
+    "03": gettext_noop("of March"),
+    "04": gettext_noop("of April"),
+    "05": gettext_noop("of May"),
+    "06": gettext_noop("of June"),
+    "07": gettext_noop("of July"),
+    "08": gettext_noop("of August"),
+    "09": gettext_noop("of September"),
+    "10": gettext_noop("of October"),
+    "11": gettext_noop("of November"),
+    "12": gettext_noop("of December")
+}
 
 class L10n(Module):
     def __init__(self, *args, **kwargs):
@@ -26,6 +45,8 @@ class L10n(Module):
         self.rhook("l10n.gettext", self.l10n_gettext)
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
+        self.rhook("l10n.timeencode2", self.l10n_timeencode2)
+        self.re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
 
     def l10n_domain(self):
         return "mg_server"
@@ -89,3 +110,22 @@ class L10n(Module):
 
     def universal_variables(self, struct):
         struct["lang"] = self.call("l10n.lang")
+
+    def l10n_timeencode2(self, time):
+        m = self.re_timeencode2.match(time)
+        if not m:
+            return ""
+        year, month, day, time = m.group(1, 2, 3, 4)
+        year = int(year)
+        day = int(day)
+        th = "th"
+        day100 = day % 100
+        if day100 <= 10 or day100 >= 20:
+            day10 = day % 10
+            if day10 == 1:
+                th = "st"
+            elif day10 == 2:
+                th = "nd"
+            elif day10 == 3:
+                th = "rd"
+        return self._("at the {2:d}{4} {1}, {0} at {3}").format(year, self._(timeencode2_month.get(month)), day, time, th)

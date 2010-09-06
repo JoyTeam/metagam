@@ -23,3 +23,18 @@ div#page_head {}
 div#page_content { margin: 10px 0px 0px 0px; }
 div#catname { font-size: 14px; font-weight: bold; padding: 0px 50px 20px 13px; }
 div#newtopic { padding: 0px 0px 15px 13px; }
+div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 0px; padding-bottom: 15px; }
+td.avatar { padding: 7px 10px 30px 17px; vertical-align: top; width: 120px; }
+div.avatar img { border: solid 1px #614115; }
+div.member_name { font-weight: bold; color: #364b52; padding: 10px 0px 3px 0px; }
+div.member_icons img { vertical-align: middle; }
+td.post_actions { vertical-align: top; padding-top: 7px; }
+td.actions { vertical-align: bottom; padding-bottom: 30px; }
+table.actions { width: 100%; }
+table.actions td.left { padding-right: 40px; vertical-align: bottom; }
+table.actions td.right { text-align: right; vertical-align: bottom; }
+div.signature { font-size: 12px; padding-top: 15px; }
+div.quote { background-color: #e8ddc4; border: solid 1px #b59c69; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
+div.quote div.author { font-size: 10px; color: #808080; margin-bottom: 5px; }
+div.socio_pages { margin: 5px 0px 0px 0px; background-color: #ebcb88; border: solid 1px #f0d69d; font-size: 12px; text-align: right; padding-right: 10px; }
+span.page { font-weight: bold; color: #614115; }

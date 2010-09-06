@@ -17,7 +17,7 @@ mg/locale/mg_server.pot: $(server_sources)
 	find . -name '*.py' > .src-files
 	xgettext -d mg_server -f .src-files -L Python --copyright-holder=$(copyright) \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		--force-po
+		--force-po -kgettext_noop
 	rm .src-files
 	mv mg_server.po mg/locale/mg_server.pot
 	mkdir -p mg/locale/server
@@ -34,6 +34,7 @@ mainsite_js_files := $(foreach lang,$(langs),static/mainsite/gettext-$(lang).js)
 mg/locale/mg_mainsite.pot: $(mainsite_sources)
 	xgettext -d mg_mainsite -L Python --copyright-holder=$(copyright) --force-po \
 		--package-name=$(package_name) --package-version=$(package_version) \
+		-kgettext_noop \
 		$(mainsite_sources)
 	mv mg_mainsite.po mg/locale/mg_mainsite.pot
 	mkdir -p mg/locale/mainsite
