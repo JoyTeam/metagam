@@ -295,12 +295,15 @@ class Module(object):
         "Register module dependency. This module will be loaded automatically"
         self.app().modules._load(modules)
 
-    def conf(self, key, reset_cache=False):
+    def conf(self, key, reset_cache=False, default=None):
         "Syntactic sugar for app.config.get(key)"
         conf = self.app().config
         if reset_cache:
             conf.clear()
-        return conf.get(key)
+        val = conf.get(key)
+        if val is None:
+            val = default
+        return val
 
     def call(self, *args, **kwargs):
         "Syntactic sugar for app.hooks.call(...)"

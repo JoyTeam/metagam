@@ -299,7 +299,7 @@ class Forum(Module):
         topics_per_page = 5
         if start is None:
             start = ""
-        topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_start=start, query_limit=topics_per_page, query_reversed=True)
+        topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_start="", query_finish="", query_limit=topics_per_page, query_reversed=True)
         topics.load()
         return topics
 
@@ -353,8 +353,8 @@ class Forum(Module):
             if not content:
                 form.error("content", self._("Enter topic content"))
             if not form.errors:
-                self.call("forum.newtopic", cat, None, subject, content)
-                return req.redirect("/forum/cat/%s" % cat["id"])
+                topic = self.call("forum.newtopic", cat, None, subject, content)
+                return req.redirect("/forum/topic/%s" % topic.uuid)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         return self.call("web.response_layout", "socio/layout_form.html", {
@@ -363,6 +363,7 @@ class Forum(Module):
 
     def newtopic(self, cat, author, subject, content):
         topic = ForumTopic(self.db())
+        print "topic.uuid=%s creating in category=%s" % (topic.uuid, cat["id"])
         now = self.now()
         topic.set("category", cat["id"])
         topic.set("created", now)
@@ -372,6 +373,7 @@ class Forum(Module):
         topic.set("content", content)
         topic.sync()
         topic.store()
+        return topic
 
     def ext_topic(self):
         req = self.req()

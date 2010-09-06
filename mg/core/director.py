@@ -19,7 +19,7 @@ class Director(Module):
         self.rhook("int-director.config", self.director_config)
         self.rhook("int-director.offline", self.director_offline)
         self.rhook("core.fastidle", self.fastidle)
-        self.servers_online = self.conf("director.servers", {})
+        self.servers_online = self.conf("director.servers", default={})
         self.servers_online_modified = True
         self.workers_str = None
 

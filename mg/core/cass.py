@@ -332,7 +332,7 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-        #print "mutating %s" % self.uuid
+#       print "mutating %s: %s" % (self.uuid, self.data)
         # calculating index mutations
         index_values = self.index_values()
         old_index_values = self.data.get("indexes")
@@ -456,9 +456,11 @@ class CassandraObjectList(object):
                 index_row = index_row + "-" + query_equal
             if type(index_row) == unicode:
                 index_row = index_row.encode("utf-8")
-            #print "search index row: %s" % index_row
+#           print "search index row: %s" % index_row
             d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
-            #print "loaded index: %s" % d
+#           print "loaded index:"
+#           for cosc in d:
+#               print cosc.column.name
             self.index_row = index_row
             self.index_data = d
             self.dict = [cls(db, col.column.value, {}, prefix=prefix) for col in d]

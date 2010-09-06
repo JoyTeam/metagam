@@ -22,17 +22,19 @@ class CassandraRestructure(object):
     def diff(self, config):
         "Perform all checks and returns diff of existing and target configuration"
         dbdiff = CassandraDiff()
-        keyspaces = self.db.describe_keyspaces()
+        keyspaces = [ksdef.name for ksdef in self.db.describe_keyspaces()]
         family_exists = dict()
         required = set()
+        print "keyspaces: %s" % keyspaces
         if not self.db.keyspace in keyspaces:
-            dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.RackUnawareStrategy", replication_factor=1, cf_defs=[])))
+            dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
         else:
-            family_exists = self.db.describe_keyspace(self.db.keyspace)
+            family_exists = dict([(cfdef.name, cfdef) for cfdef in self.db.describe_keyspace(self.db.keyspace).cf_defs])
+            print "family_exists: %s" % family_exists
         for (name, cfdef) in config.items():
             if name in family_exists:
                 existing = family_exists[name]
-                if cfdef.column_type != existing["Type"] or "org.apache.cassandra.db.marshal." + cfdef.comparator_type != existing["CompareWith"] or cfdef.comment != existing["Desc"] or cfdef.clock_type != existing["ClockType"]:
+                if cfdef.column_type != existing.column_type or "org.apache.cassandra.db.marshal." + cfdef.comparator_type != existing.comparator_type or cfdef.comment != existing.comment or cfdef.clock_type != existing.clock_type:
                     dbdiff.ops.append(("df", name))
                     cfdef.table = self.db.keyspace
                     cfdef.name = name
@@ -51,6 +53,7 @@ class CassandraRestructure(object):
         "Take diff and performs all required operations"
         for cmd in dbdiff.ops:
             if cmd[0] == "cf":
+                cmd[1].keyspace = self.db.keyspace
                 self.logger.debug("created column family %s: %s", cmd[1].name, self.db.system_add_column_family(cmd[1]))
             elif cmd[0] == "df":
                 self.logger.debug("destoyed column family %s: %s", cmd[1], self.db.system_drop_column_family(cmd[1]))
