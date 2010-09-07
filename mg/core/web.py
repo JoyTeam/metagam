@@ -64,6 +64,15 @@ class Request(object):
             self.load_params()
         return map(lambda val: encode(val, "utf-8"), self._params.get(key, []))
 
+    def param_raw(self, key):
+        "Get specific parameter (both GET and POST) not attempting to decode"
+        if self._params_loaded is None:
+            self.load_params()
+        val = self._params.get(key)
+        if val is None:
+            return None
+        return val[0]
+
     def param(self, key):
         "Get specific parameter (both GET and POST)"
         if self._params_loaded is None:
@@ -72,7 +81,10 @@ class Request(object):
         if val is None:
             return u''
         else:
-            return unicode(val[0], "utf-8")
+            try:
+                return unicode(val[0], "utf-8")
+            except UnicodeDecodeError:
+                raise WebResponse(self.bad_request())
 
     def param_int(self, key):
         try:
@@ -91,6 +103,10 @@ class Request(object):
         self.content = content
         self.start_response(status, headers)
         return [content]
+
+    def bad_request(self):
+        "Return 400 Bad Request"
+        return self.send_response("400 Bad Request", self.headers, "<html><body><h1>400 Bad Request</h1></body></html>")
 
     def not_found(self):
         "Return 404 Not Found"
@@ -500,7 +516,7 @@ class WebForm(object):
         if not put:
             self.rows.append({"cols": [kwargs]})
         last_row = self.rows[-1]
-        last_row["width"] = math.floor(100 / len(last_row["cols"]))
+        last_row["width"] = int(math.floor(100 / len(last_row["cols"])))
         if kwargs.get("desc") or kwargs.get("error") or kwargs.get("element_submit"):
             last_row["show_header"] = True
 
@@ -606,6 +622,10 @@ class WebForm(object):
         kwargs["element_texteditor"] = True
         self.control(desc, name, **kwargs)
         self.texteditors = True
+
+    def file(self, desc, name, **kwargs):
+        kwargs["element_file"] = True
+        self.control(desc, name, **kwargs)
 
     def add_message_top(self, html):
         """

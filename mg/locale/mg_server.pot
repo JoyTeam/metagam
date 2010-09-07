@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-07 23:10+0400\n"
+"POT-Creation-Date: 2010-09-08 02:10+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,75 +16,76 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/web.py:512 mg/core/director.py:120 mg/admin/__init__.py:118
+#: mg/core/web.py:528 mg/core/director.py:120 mg/socio/__init__.py:857
+#: mg/admin/__init__.py:118
 msgid "Save"
 msgstr ""
 
-#: mg/core/web.py:522
+#: mg/core/web.py:538
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:523
+#: mg/core/web.py:539
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:524
+#: mg/core/web.py:540
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:525
+#: mg/core/web.py:541
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:526
+#: mg/core/web.py:542
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:527
+#: mg/core/web.py:543
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:528
+#: mg/core/web.py:544
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:529
+#: mg/core/web.py:545
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:530
+#: mg/core/web.py:546
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:531
+#: mg/core/web.py:547
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:532
+#: mg/core/web.py:548
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:533
+#: mg/core/web.py:549
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:534
+#: mg/core/web.py:550 mg/socio/__init__.py:330
 msgid "Image"
 msgstr ""
 
-#: mg/core/web.py:535
+#: mg/core/web.py:551
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:536
+#: mg/core/web.py:552
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:537
+#: mg/core/web.py:553
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:538
+#: mg/core/web.py:554
 msgid "Smiles"
 msgstr ""
 
@@ -206,17 +207,13 @@ msgstr ""
 msgid "Invalid e-mail format"
 msgstr ""
 
-#: mg/socio/__init__.py:64
-msgid "Socio"
-msgstr ""
-
 #: mg/socio/__init__.py:78
 msgid "Forum"
 msgstr ""
 
-#: mg/socio/__init__.py:81 mg/socio/__init__.py:84 mg/socio/__init__.py:255
-#: mg/socio/__init__.py:262 mg/socio/__init__.py:391 mg/socio/__init__.py:442
-#: mg/socio/__init__.py:541 mg/socio/__init__.py:641
+#: mg/socio/__init__.py:81 mg/socio/__init__.py:84 mg/socio/__init__.py:383
+#: mg/socio/__init__.py:390 mg/socio/__init__.py:519 mg/socio/__init__.py:570
+#: mg/socio/__init__.py:671 mg/socio/__init__.py:771 mg/socio/__init__.py:812
 msgid "Forum categories"
 msgstr ""
 
@@ -241,11 +238,11 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: mg/socio/__init__.py:104
+#: mg/socio/__init__.py:104 mg/socio/__init__.py:815
 msgid "Editing"
 msgstr ""
 
-#: mg/socio/__init__.py:105
+#: mg/socio/__init__.py:105 mg/socio/__init__.py:631 mg/socio/__init__.py:643
 msgid "edit"
 msgstr ""
 
@@ -281,204 +278,246 @@ msgstr ""
 msgid "Sort order"
 msgstr ""
 
-#: mg/socio/__init__.py:257
+#: mg/socio/__init__.py:183
+msgid "Socio"
+msgstr ""
+
+#: mg/socio/__init__.py:246
+msgid "Image format not recognized"
+msgstr ""
+
+#: mg/socio/__init__.py:301
+#, python-format
+msgid "Error storing image: %s"
+msgstr ""
+
+#: mg/socio/__init__.py:317
+#, python-format
+msgid "Error storing thumbnail: %s"
+msgstr ""
+
+#: mg/socio/__init__.py:328
+msgid "Upload an image"
+msgstr ""
+
+#: mg/socio/__init__.py:331
+msgid "Or Internet address"
+msgstr ""
+
+#: mg/socio/__init__.py:332
+msgid "Upload"
+msgstr ""
+
+#: mg/socio/__init__.py:334
+msgid "Upload image"
+msgstr ""
+
+#: mg/socio/__init__.py:385
 msgid "Topics"
 msgstr ""
 
-#: mg/socio/__init__.py:258 mg/socio/__init__.py:386
+#: mg/socio/__init__.py:386 mg/socio/__init__.py:514
 msgid "Replies"
 msgstr ""
 
-#: mg/socio/__init__.py:259
+#: mg/socio/__init__.py:387
 msgid "Unread"
 msgstr ""
 
-#: mg/socio/__init__.py:260
+#: mg/socio/__init__.py:388
 msgid "Last message"
 msgstr ""
 
-#: mg/socio/__init__.py:278 mg/socio/__init__.py:285 mg/socio/__init__.py:286
-#: mg/socio/__init__.py:292 mg/socio/__init__.py:299
+#: mg/socio/__init__.py:406 mg/socio/__init__.py:413 mg/socio/__init__.py:414
+#: mg/socio/__init__.py:420 mg/socio/__init__.py:427
 msgid "Game"
 msgstr ""
 
-#: mg/socio/__init__.py:279
+#: mg/socio/__init__.py:407
 msgid "News"
 msgstr ""
 
-#: mg/socio/__init__.py:280
+#: mg/socio/__init__.py:408
 msgid "Game news published by the administrators"
 msgstr ""
 
-#: mg/socio/__init__.py:287
+#: mg/socio/__init__.py:415
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr ""
 
-#: mg/socio/__init__.py:293
+#: mg/socio/__init__.py:421
 msgid "Newbies"
 msgstr ""
 
-#: mg/socio/__init__.py:294
+#: mg/socio/__init__.py:422
 msgid ""
 "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr ""
 
-#: mg/socio/__init__.py:300
+#: mg/socio/__init__.py:428
 msgid "Diplomacy"
 msgstr ""
 
-#: mg/socio/__init__.py:301
+#: mg/socio/__init__.py:429
 msgid ""
 "Authorized guild members can talk to each other about diplomacy and politics "
 "issues here"
 msgstr ""
 
-#: mg/socio/__init__.py:306 mg/socio/__init__.py:313 mg/socio/__init__.py:320
+#: mg/socio/__init__.py:434 mg/socio/__init__.py:441 mg/socio/__init__.py:448
 msgid "Admin"
 msgstr ""
 
-#: mg/socio/__init__.py:307
+#: mg/socio/__init__.py:435
 msgid "Admin talks"
 msgstr ""
 
-#: mg/socio/__init__.py:308
+#: mg/socio/__init__.py:436
 msgid ""
 "Discussions with the game administrators. Here you can discuss any issues "
 "related to the game itself."
 msgstr ""
 
-#: mg/socio/__init__.py:314
+#: mg/socio/__init__.py:442
 msgid "Reference manuals"
 msgstr ""
 
-#: mg/socio/__init__.py:315
+#: mg/socio/__init__.py:443
 msgid "Actual reference documents about the game are placed here."
 msgstr ""
 
-#: mg/socio/__init__.py:321
+#: mg/socio/__init__.py:449
 msgid "Bug reports"
 msgstr ""
 
-#: mg/socio/__init__.py:322
+#: mg/socio/__init__.py:450
 msgid "Report any problems in the game here"
 msgstr ""
 
-#: mg/socio/__init__.py:327 mg/socio/__init__.py:334
+#: mg/socio/__init__.py:455 mg/socio/__init__.py:462
 msgid "Reallife"
 msgstr ""
 
-#: mg/socio/__init__.py:328
+#: mg/socio/__init__.py:456
 msgid "Smoking room"
 msgstr ""
 
-#: mg/socio/__init__.py:329
+#: mg/socio/__init__.py:457
 msgid ""
 "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr ""
 
-#: mg/socio/__init__.py:335
+#: mg/socio/__init__.py:463
 msgid "Art"
 msgstr ""
 
-#: mg/socio/__init__.py:336
+#: mg/socio/__init__.py:464
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr ""
 
-#: mg/socio/__init__.py:341 mg/socio/__init__.py:348
+#: mg/socio/__init__.py:469 mg/socio/__init__.py:476
 msgid "Trading"
 msgstr ""
 
-#: mg/socio/__init__.py:342
+#: mg/socio/__init__.py:470
 msgid "Services"
 msgstr ""
 
-#: mg/socio/__init__.py:343
+#: mg/socio/__init__.py:471
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr ""
 
-#: mg/socio/__init__.py:349
+#: mg/socio/__init__.py:477
 msgid "Market"
 msgstr ""
 
-#: mg/socio/__init__.py:350
+#: mg/socio/__init__.py:478
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/socio/__init__.py:383 mg/socio/__init__.py:440 mg/socio/__init__.py:444
+#: mg/socio/__init__.py:511 mg/socio/__init__.py:568 mg/socio/__init__.py:572
 msgid "New topic"
 msgstr ""
 
-#: mg/socio/__init__.py:385
+#: mg/socio/__init__.py:513
 msgid "Author"
 msgstr ""
 
-#: mg/socio/__init__.py:387
+#: mg/socio/__init__.py:515
 msgid "Last reply"
 msgstr ""
 
-#: mg/socio/__init__.py:388
+#: mg/socio/__init__.py:516
 msgid "by"
 msgstr ""
 
-#: mg/socio/__init__.py:389 mg/socio/__init__.py:531
+#: mg/socio/__init__.py:517 mg/socio/__init__.py:661
 msgid "Pages"
 msgstr ""
 
-#: mg/socio/__init__.py:430
+#: mg/socio/__init__.py:558 mg/socio/__init__.py:843
 msgid "Enter topic subject"
 msgstr ""
 
-#: mg/socio/__init__.py:432
+#: mg/socio/__init__.py:560 mg/socio/__init__.py:845
 msgid "Enter topic content"
 msgstr ""
 
-#: mg/socio/__init__.py:436
+#: mg/socio/__init__.py:564 mg/socio/__init__.py:855
 msgid "Subject"
 msgstr ""
 
-#: mg/socio/__init__.py:437
+#: mg/socio/__init__.py:565
 msgid "Content"
 msgstr ""
 
-#: mg/socio/__init__.py:502 mg/socio/__init__.py:513
-msgid "reply"
-msgstr ""
-
-#: mg/socio/__init__.py:503 mg/socio/__init__.py:514
+#: mg/socio/__init__.py:630 mg/socio/__init__.py:642
 msgid "delete"
 msgstr ""
 
-#: mg/socio/__init__.py:521 mg/socio/__init__.py:619
+#: mg/socio/__init__.py:632 mg/socio/__init__.py:644
+msgid "reply"
+msgstr ""
+
+#: mg/socio/__init__.py:651 mg/socio/__init__.py:749 mg/socio/__init__.py:823
 msgid "Enter post content"
 msgstr ""
 
-#: mg/socio/__init__.py:526 mg/socio/__init__.py:635 mg/socio/__init__.py:639
-#: mg/socio/__init__.py:644
+#: mg/socio/__init__.py:656 mg/socio/__init__.py:765 mg/socio/__init__.py:769
+#: mg/socio/__init__.py:774
 msgid "Reply"
 msgstr ""
 
-#: mg/socio/__init__.py:533
+#: mg/socio/__init__.py:663
 msgid "topic started"
 msgstr ""
 
-#: mg/socio/__init__.py:534
+#: mg/socio/__init__.py:664
 msgid "All posts"
 msgstr ""
 
-#: mg/socio/__init__.py:535
+#: mg/socio/__init__.py:665
 msgid "Search for all posts of this member"
 msgstr ""
 
-#: mg/socio/__init__.py:536
+#: mg/socio/__init__.py:666
 msgid "to the top"
 msgstr ""
 
-#: mg/socio/__init__.py:537
+#: mg/socio/__init__.py:667
 msgid "written at"
 msgstr ""
 
-#: mg/socio/__init__.py:543 mg/socio/__init__.py:643
+#: mg/socio/__init__.py:673 mg/socio/__init__.py:773 mg/socio/__init__.py:814
 msgid "Topic"
+msgstr ""
+
+#: mg/socio/__init__.py:819
+msgid "Edit post"
+msgstr ""
+
+#: mg/socio/__init__.py:838
+msgid "Edit topic"
 msgstr ""
 
 #: mg/admin/__init__.py:24

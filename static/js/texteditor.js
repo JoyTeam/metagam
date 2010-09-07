@@ -172,7 +172,7 @@ function translit(id)
 	element.value = data;
 }
 
-function add_img(id, m)
+function add_img(id)
 {
 	try {
 		if (img_win)
@@ -181,7 +181,7 @@ function add_img(id, m)
 	} catch (e) {
 	}
 
-	img_win = window.open('/socio/image/' + id + '?m=' + m, '_blank', 'width=750,height=380,toolbar=0,location=0,directories=0,menubar=0,scrollbars=1,resizable=1,status=0');
+	img_win = window.open('/socio/image/' + id, '_blank', 'width=750,height=380,toolbar=0,location=0,directories=0,menubar=0,scrollbars=1,resizable=1,status=0');
 }
 
 function add_rt(id)

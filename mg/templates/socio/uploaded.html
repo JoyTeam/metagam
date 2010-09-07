@@ -1,0 +1,18 @@
+<h1>Image uploaded</h1>
+
+<script type="text/javascript">
+try {
+	try {
+		opener.add_code('[%id%]', this, '[img:[%image%]]', '', 2);
+	} catch (e) {
+		var textarea = opener.document.getElementById('[%id%]');
+		textarea.focus();
+		textarea.value += "[img:[%image%]]";
+	}
+	window.close();
+} catch (e) {
+	document.write('<p><strong>[img:[%image%]]</strong></p>');
+}
+</script>
+
+

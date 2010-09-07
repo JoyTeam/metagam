@@ -3,8 +3,11 @@ from operator import itemgetter
 from uuid import uuid4
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
+from concurrence.http import HTTPConnection, HTTPRequest
 import re
 import cgi
+import cStringIO
+from PIL import Image
 
 posts_per_page = 20
 
@@ -55,13 +58,10 @@ class ForumPostList(CassandraObjectList):
         kwargs["cls"] = ForumPost
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class Socio(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-
-    def menu_root_index(self, menu):
-        menu.append({ "id": "socio.index", "text": self._("Socio") })
+class SocioImage(CassandraObject):
+    def __init__(self, *args, **kwargs):
+        kwargs["prefix"] = "SocioImage-"
+        CassandraObject.__init__(self, *args, **kwargs)
 
 class ForumAdmin(Module):
     def register(self):
@@ -164,7 +164,6 @@ class ForumAdmin(Module):
 class Socio(Module):
     def register(self):
         Module.register(self)
-        self.rhook("socio.format_text", self.format_text)
         self.re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
         self.re_color = re.compile(r'^#[0-9a-f]{6}$')
         self.re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
@@ -175,6 +174,13 @@ class Socio(Module):
         self.re_parbreak = re.compile(r'(\n\s*){2,}')
         self.re_linebreak = re.compile(r'\n')
         self.re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("socio.format_text", self.format_text)
+        self.rhook("ext-socio.image", self.ext_image)
+        self.re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
+
+    def menu_root_index(self, menu):
+        menu.append({ "id": "socio.index", "text": self._("Socio") })
 
     def format_text(self, html, options={}):
         m = self.re_tag.match(html)
@@ -199,6 +205,19 @@ class Socio(Module):
                     tag = "strike"
                 return self.format_text(before, options) + ('<%s>' % tag) + self.format_text(inner, options) + ('</%s>' % tag) + self.format_text(after, options)
             return self.format_text(before, options) + self.format_text(inner, options) + self.format_text(after, options)
+        m = self.re_img.match(html)
+        if m:
+            before, id, after = m.group(1, 2, 3)
+            try:
+                image = self.obj(SocioImage, id)
+            except ObjectNotFoundException:
+                return self.format_text(before, options) + self.format_text(after, options)
+            thumbnail = image.get("thumbnail")
+            image = image.get("image")
+            if thumbnail is None:
+                return '%s <img src="%s" alt="" /> %s' % (self.format_text(before, options), image, self.format_text(after, options))
+            else:
+                return '%s <a href="%s" target="_blank"><img src="%s" alt="" /></a> %s' % (self.format_text(before, options), image, thumbnail, self.format_text(after, options))
         html = self.re_cut.sub("\n", html)
         html = self.re_softhyphen.sub(r'\1' + u"\u200b", html)
         html = cgi.escape(html)
@@ -207,6 +226,112 @@ class Socio(Module):
         html = self.re_parbreak.sub("\n\n", html)
         html = self.re_linebreak.sub("<br />", html)
         return html
+
+    def ext_image(self):
+        req = self.req()
+        if not re.match(r'^[a-z0-9_]+$', req.args):
+            self.call("web.not_found")
+        form = self.call("web.form", "socio/form.html")
+        url = req.param("url")
+        if req.ok():
+            image = req.param_raw("image")
+            if not image and url:
+                form.error("url", "Not implemented yet")
+            if image:
+                try:
+                    image_obj = Image.open(cStringIO.StringIO(image))
+                except IOError:
+                    form.error("image", self._("Image format not recognized"))
+                if not form.errors:
+                    format = image_obj.format
+                    if format == "GIF":
+                        ext = "gif"
+                        content_type = "image/gif"
+                        target_format = "GIF"
+                    elif format == "PNG":
+                        ext = "png"
+                        content_type = "image/png"
+                        target_format = "PNG"
+                    else:
+                        target_format = "JPEG"
+                        ext = "jpg"
+                        content_type = "image/jpeg"
+                    width, height = image_obj.size
+                    if width <= 800 and height <= 600 and format == target_format:
+                        th_data = None
+                    else:
+                        th = image_obj.convert("RGB")
+                        th.thumbnail((800, 600), Image.ANTIALIAS)
+                        th_data = cStringIO.StringIO()
+                        th.save(th_data, "JPEG")
+                        th_data = th_data.getvalue()
+                        th_ext = "jpg"
+                        th_content_type = "image/jpeg"
+                    if target_format != format:
+                        im_data = cStringIO.StringIO()
+                        image_obj.save(im_data, target_format)
+                        im_data = im_data.getvalue()
+                    else:
+                        im_data = image
+                    # storing
+                    socio_image = self.obj(SocioImage)
+                    storage_server = "storage"
+                    image_url = "/%s.%s" % (socio_image.uuid, ext)
+                    image_uri = "http://" + storage_server + image_url
+                    socio_image.set("image", image_uri)
+                    if th_data is not None:
+                        thumbnail_url = "/%s-th.%s" % (socio_image.uuid, th_ext)
+                        thumbnail_uri = "http://" + storage_server + thumbnail_url
+                        socio_image.set("thumbnail", thumbnail_uri)
+                    if not form.errors:
+                        cnn = HTTPConnection()
+                        cnn.connect((str(storage_server), 80))
+                        try:
+                            request = HTTPRequest()
+                            request.method = "PUT"
+                            request.path = image_url
+                            request.host = storage_server
+                            request.body = im_data
+                            request.add_header("Content-type", content_type)
+                            request.add_header("Content-length", len(request.body))
+                            response = cnn.perform(request)
+                            if response.status_code != 201:
+                                form.error("image", self._("Error storing image: %s") % response.status)
+                        finally:
+                            cnn.close()
+                    if not form.errors and th_data is not None:
+                        cnn = HTTPConnection()
+                        cnn.connect((str(storage_server), 80))
+                        try:
+                            request = HTTPRequest()
+                            request.method = "PUT"
+                            request.path = thumbnail_url
+                            request.host = storage_server
+                            request.body = th_data
+                            request.add_header("Content-type", th_content_type)
+                            request.add_header("Content-length", len(request.body))
+                            response = cnn.perform(request)
+                            if response.status_code != 201:
+                                form.error("image", self._("Error storing thumbnail: %s") % response.status)
+                        finally:
+                            cnn.close()
+                    if not form.errors:
+                        socio_image.store()
+                        vars = {
+                            "image": socio_image.uuid,
+                            "id": req.args,
+                        }
+                        self.call("web.response_template", "socio/uploaded.html", vars)
+            elif not form.errors:
+                form.error("image", self._("Upload an image"))
+            
+        form.file(self._("Image"), "image")
+        form.input(self._("Or Internet address"), "url", url)
+        form.submit(None, None, self._("Upload"))
+        vars = {
+            "title": self._("Upload image")
+        }
+        self.call("web.response_global", form.html(), vars)
 
 class Forum(Module):
     def register(self):
@@ -448,7 +573,7 @@ class Forum(Module):
         self.call("forum.response", form.html(), vars)
 
     def newtopic(self, cat, author, subject, content):
-        topic = ForumTopic(self.db())
+        topic = self.obj(ForumTopic)
         now = self.now()
         topic.set("category", cat["id"])
         topic.set("created", now)
@@ -466,7 +591,7 @@ class Forum(Module):
 
     def reply(self, cat, topic, author, content):
         with self.lock(["ForumTopic-" + topic.uuid]):
-            post = ForumPost(self.db())
+            post = self.obj(ForumPost)
             now = self.now()
             post.set("category", cat["id"])
             post.set("topic", topic.uuid)

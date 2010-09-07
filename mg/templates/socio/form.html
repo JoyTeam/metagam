@@ -8,7 +8,7 @@
 [%if row.show_header%]
 <tr>
 	[%for col in row.cols%]
-	<td width="[%col.width%]%" class="desc">
+	<td width="[%row.width%]%" class="desc">
 		[%col.desc%]
 		[%if col.error%]<div class="error">[%col.error.text%]</div>[%end%]
 	</td>
@@ -17,7 +17,7 @@
 [%end%]
 <tr>
 	[%for col in row.cols%]
-	<td width="[%col.width%]%" class="control">
+	<td width="[%row.width%]%" class="control">
 	[%if col.element_header%][%col.element_header.html%][%end%]
 	[%if col.element_input%]<input id="[%col.name%]" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="w100 bg" />[%end%]
 	[%if col.element_range%]<input id="[%col.name%]_min" name="[%col.name%]_min" value="[%col.value_min%]" size="[%form_cols%]" class="bg" /> &mdash; <input id="[%col.name%]_max" name="[%col.name%]_max" value="[%col.value_max%]" size="[%form_cols%]" class="bg" />[%end%]
@@ -44,7 +44,7 @@
 	<td><img class="clickable" src="/st/form/magenta.gif" alt="MG" title="[%magenta%]" onclick="add_code('[%col.name%]', this, '[color=#e909f1]','[/color]', 1)" /></td>
 	<td><img class="clickable" src="/st/form/yellow.gif" alt="YL" title="[%yellow%]" onclick="add_code('[%col.name%]', this, '[color=#f1f100]','[/color]', 1)" /></td>
 	<td><img class="clickable" src="/st/form/orange.gif" alt="OR" title="[%orange%]" onclick="add_code('[%col.name%]', this, '[color=#ff9600]','[/color]', 1)" /></td>
-	[%if col.attaches%]<td><img class="clickable" src="/st/form/image.gif" alt="IMG" title="[%insert_image%]" onclick="add_img('[%col.name%]', '[%member%]')" /></td>[%end%]
+	[%if col.attaches%]<td><img class="clickable" src="/st/form/image.gif" alt="IMG" title="[%insert_image%]" onclick="add_img('[%col.name%]')" /></td>[%end%]
 	<td><img class="clickable" src="/st/form/translit.gif" alt="TR" title="[%transliterate_to_russian%]" onclick="translit('[%col.name%]')" /></td>
 	</tr></table>
 	[%if col.show_smiles%]<table style="width: 100%"><tr valign="top"><td>[%end%]

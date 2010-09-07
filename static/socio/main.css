@@ -46,4 +46,5 @@ span.page { font-weight: bold; color: #614115; }
 table.delim { width: 100%; }
 table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115; }
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
-div.error { color: red; font-size: 11px }
+table.std_form_row { width: 100%; }
+table.std_form_row td.control { padding-right: 10px; vertical-align: top; }
