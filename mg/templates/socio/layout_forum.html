@@ -1,0 +1,7 @@
+<link rel="stylesheet" type="text/css"	href="/st/[%ver%]/socio/main.css" />
+===HEAD===
+<div id="page_head">Заголовог</div>
+<div id="page_content">
+	[%if menu%]<div id="catname">[%for ent in menu%][%if ent.delim%] &bull; [%end%][%ent.html%][%end%]</div>[%end%]
+	[%forum_content%]
+</div>

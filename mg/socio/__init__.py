@@ -35,7 +35,8 @@ class ForumTopicList(CassandraObjectList):
 
 class ForumPost(CassandraObject):
     _indexes = {
-        "topic-created": [["topic"], "created"],
+        "topic": [["topic"], "created"],
+        "category": [["category"], "created"],
         "author": [["author"], "created"],
     }
 
@@ -94,7 +95,7 @@ class ForumAdmin(Module):
                 topcat = cat["topcat"]
                 categories.append({"header": topcat})
             categories.append({"cat": cat})
-        return self.call("admin.response_template", "admin/forum/categories.html", {
+        self.call("admin.response_template", "admin/forum/categories.html", {
             "code": self._("Code"),
             "title": self._("Title"),
             "order": self._("Order"),
@@ -107,7 +108,7 @@ class ForumAdmin(Module):
         req = self.req()
         cat = self.call("forum.category", req.args)
         if cat is None:
-            return req.not_found()
+            self.call("web.not_found")
         if req.param("ok"):
             errors = {}
             title = req.param("title")
@@ -161,28 +162,18 @@ class ForumAdmin(Module):
 class Forum(Module):
     def register(self):
         Module.register(self)
-        self.rhook("hook-forum.categories", self.hook_forum_categories)
-        self.rhook("hook-forum.topics", self.hook_forum_topics)
-        self.rhook("hook-forum.topic", self.hook_forum_topic)
-        self.rhook("forum.category", self.category)
-        self.rhook("forum.categories", self.categories)
+        self.rhook("forum.category", self.category)         # get forum category by id
+        self.rhook("forum.categories", self.categories)     # get list of forum categories
+        self.rhook("forum.newtopic", self.newtopic)         # create new topic
+        self.rhook("forum.reply", self.reply)               # reply in the topic
         self.rhook("ext-forum.index", self.ext_index)
         self.rhook("ext-forum.cat", self.ext_category)
         self.rhook("ext-forum.newtopic", self.ext_newtopic)
-        self.rhook("forum.newtopic", self.newtopic)
         self.rhook("ext-forum.topic", self.ext_topic)
+        self.rhook("ext-forum.reply", self.ext_reply)
 
     def ext_index(self):
-        return self.call("web.response_layout", "socio/layout_categories.html", {})
-
-    def category(self, id):
-        for cat in self.categories():
-            if cat["id"] == id:
-                return cat
-
-    def hook_forum_categories(self, vars):
         categories = [cat for cat in self.categories() if self.may_read(cat)]
-        self.categories_htmlencode(categories)
         entries = []
         topcat = None
         for cat in categories:
@@ -190,16 +181,21 @@ class Forum(Module):
                 topcat = cat["topcat"]
                 entries.append({"header": topcat})
             entries.append({"category": cat})
-        vars["title"] = self._("Forum categories")
-        vars["categories"] = entries
-        vars["topics"] = self._("Topics")
-        vars["replies"] = self._("Replies")
-        vars["unread"] = self._("Unread")
-        vars["last_message"] = self._("Last message")
-        return self.call("web.parse_template", "socio/categories.html", vars)
+        vars = {
+            "title": self._("Forum categories"),
+            "categories": entries,
+            "topics": self._("Topics"),
+            "replies": self._("Replies"),
+            "unread": self._("Unread"),
+            "last_message": self._("Last message"),
+        }
+        vars["forum_content"] = self.call("web.parse_template", "socio/categories.html", vars)
+        self.call("web.response_layout", "socio/layout_forum.html", vars)
 
-    def categories_htmlencode(self, categories):
-        pass
+    def category(self, id):
+        for cat in self.categories():
+            if cat["id"] == id:
+                return cat
 
     def categories(self):
         cats = self.conf("forum.categories")
@@ -296,10 +292,7 @@ class Forum(Module):
         return True
 
     def topics(self, cat, start=None):
-        topics_per_page = 5
-        if start is None:
-            start = ""
-        topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_start="", query_finish="", query_limit=topics_per_page, query_reversed=True)
+        topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_reversed=True)
         topics.load()
         return topics
 
@@ -307,44 +300,52 @@ class Forum(Module):
         req = self.req()
         cat = self.call("forum.category", req.args)
         if cat is None:
-            return req.not_found()
+            self.call("web.not_found")
         if not self.may_read(cat):
-            return req.forbidden()
-        return self.call("web.response_layout", "socio/layout_topics.html", {
+            self.call("web.forbidden")
+        topics = self.topics(cat).data()
+        self.topics_htmlencode(topics)
+        vars = {
             "title": cat["title"],
             "categories_list": self._("Categories"),
             "category": cat,
             "new_topic": self._("New topic"),
-        })
+            "topics": topics,
+            "author": self._("Author"),
+            "replies": self._("Replies"),
+            "last_reply": self._("Last reply"),
+            "by": self._("by"),
+            "to_page": self._("Pages"),
+        }
+        vars["forum_content"] = self.call("web.parse_template", "socio/topics.html", vars)
+        self.call("web.response_layout", "socio/layout_forum.html", vars)
 
     def topics_htmlencode(self, topics):
         for topic in topics:
             topic["subject_html"] = cgi.escape(topic.get("subject"))
+            topic["avatar"] = "/st/socio/default_avatar.gif"
             topic["member_html"] = "Author-name"
+            topic["member_html_no_icons"] = "Author-name"
             topic["comments"] = intz(topic.get("comments"))
             topic["content_html"] = cgi.escape(topic.get("content"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
 
-    def hook_forum_topics(self, vars):
-        cat = vars["category"]
-        topics = self.topics(cat).data()
-        self.topics_htmlencode(topics)
-        vars["title"] = cat["title"]
-        vars["topics"] = topics
-        vars["author"] = self._("Author")
-        vars["replies"] = self._("Replies")
-        vars["last_reply"] = self._("Last reply")
-        vars["by"] = self._("by")
-        vars["to_page"] = self._("Pages")
-        return self.call("web.parse_template", "socio/topics.html", vars)
+    def posts_htmlencode(self, posts):
+        for post in posts:
+            post["avatar"] = "/st/socio/default_avatar.gif"
+            post["member_html"] = "Author-name"
+            post["member_html_no_icons"] = "Author-name"
+            post["comments"] = intz(post.get("comments"))
+            post["content_html"] = cgi.escape(post.get("content"))
+            post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
 
     def ext_newtopic(self):
         req = self.req()
         cat = self.call("forum.category", req.args)
         if cat is None:
-            return req.not_found()
+            self.call("web.not_found")
         if not self.may_write(cat):
-            return req.forbidden()
+            self.call("web.forbidden")
         subject = req.param("subject")
         content = req.param("content")
         form = self.call("web.form", "socio/form.html")
@@ -355,16 +356,17 @@ class Forum(Module):
                 form.error("content", self._("Enter topic content"))
             if not form.errors:
                 topic = self.call("forum.newtopic", cat, None, subject, content)
-                return req.redirect("/forum/topic/%s" % topic.uuid)
+                self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
-        return self.call("web.response_layout", "socio/layout_form.html", {
+        vars = {
             "form": form.html()
-        })
+        }
+        vars["forum_content"] = self.call("web.parse_template", "socio/form.html", vars)
+        self.call("web.response_layout", "socio/layout_forum.html", vars)
 
     def newtopic(self, cat, author, subject, content):
         topic = ForumTopic(self.db())
-        print "topic.uuid=%s creating in category=%s" % (topic.uuid, cat["id"])
         now = self.now()
         topic.set("category", cat["id"])
         topic.set("created", now)
@@ -376,33 +378,129 @@ class Forum(Module):
         topic.store()
         return topic
 
+    def reply(self, cat, topic, author, content):
+        post = ForumPost(self.db())
+        now = self.now()
+        post.set("category", cat["id"])
+        post.set("topic", topic.uuid)
+        post.set("created", now)
+        post.set("author", author)
+        post.set("content", content)
+        post.store()
+        return post
+
     def ext_topic(self):
         req = self.req()
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
-            return req.not_found()
+            self.call("web.not_found")
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
-            return req.not_found()
+            self.call("web.not_found")
         if not self.may_read(cat):
-            return req.forbidden()
-        topic = topic.data
-        self.topics_htmlencode([topic])
-        return self.call("web.response_layout", "socio/layout_topic.html", {
-            "categories_list": self._("Categories"),
-            "topic": topic,
+            self.call("web.forbidden")
+        topic_data = topic.data
+        topic_data["uuid"] = topic.uuid
+        self.topics_htmlencode([topic_data])
+        actions = []
+        actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
+        if len(actions):
+            topic_data["topic_actions"] = " &bull; ".join(actions)
+        posts = self.posts(topic).data()
+        self.posts_htmlencode(posts)
+        for post in posts:
+            actions = []
+            actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
+            if len(actions):
+                post["post_actions"] = " &bull; ".join(actions)
+        req = self.req()
+        content = req.param("content")
+        form = self.call("web.form", "socio/form.html")
+        if req.ok():
+            if not content:
+                form.error("content", self._("Enter post content"))
+            if not form.errors:
+                post = self.call("forum.reply", cat, topic, None, content)
+                self.call("web.redirect", "/forum/topic/%s#post_form" % topic.uuid)
+        form.texteditor(None, "content", content)
+        form.submit(None, None, self._("Reply"))
+        vars = {
+            "topic": topic_data,
             "category": cat,
-            "title": topic["subject_html"]
-        })
+            "title": topic_data.get("subject_html"),
+            "to_page": self._("Pages"),
+            "show_topic": True,
+            "topic_started": self._("topic started"),
+            "all_posts": self._("All posts"),
+            "search_all_posts": self._("Search for all posts of this member"),
+            "to_the_top": self._("to the top"),
+            "written_at": self._("written at"),
+            "posts": posts,
+            "new_post_form": form.html()
+        }
+        vars["forum_content"] = self.call("web.parse_template", "socio/posts.html", vars)
+        self.call("web.response_layout", "socio/layout_forum.html", vars)
 
-    def hook_forum_topic(self, vars):
-        vars["to_page"] = self._("Pages")
-        vars["show_topic"] = True
-        vars["topic_started"] = self._("topic started")
-        vars["all_posts"] = self._("All posts")
-        vars["search_all_posts"] = self._("Search for all posts of this member")
-        vars["to_the_top"] = self._("to the top")
-        vars["written_at"] = self._("written at")
-        return self.call("web.parse_template", "socio/topic.html", vars)
+    def posts(self, topic, start=None):
+        posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+        posts.load()
+        return posts
 
+    def ext_reply(self):
+        req = self.req()
+        m = re.match(r'^([0-9a-f]+)/([0-9a-f]+)$', req.args)
+        if m:
+            topic_id, post_id = m.group(1, 2)
+        else:
+            m = re.match(r'^([0-9a-f]+)$', req.args)
+            if m:
+                topic_id = m.group(1)
+                post_id = None
+            else:
+                self.call("web.not_found")
+        try:
+            topic = self.obj(ForumTopic, topic_id)
+        except ObjectNotFoundException:
+            print "topic %s not found" % topic_id
+            self.call("web.not_found")
+        if post_id is not None:
+            try:
+                post = self.obj(ForumPost, post_id)
+            except ObjectNotFoundException:
+                print "post %s not found" % post_id
+                self.call("web.not_found")
+            if post.get("topic") != topic_id:
+                print "post %s doesn't match topic %s" % (post_id, topic_id)
+                self.call("web.not_found")
+            old_content = post.get("content")
+        else:
+            old_content = topic.get("content")
+        cat = self.call("forum.category", topic.get("category"))
+        if cat is None:
+            self.call("web.not_found")
+        if not self.may_write(cat):
+            self.call("web.forbidden")
+        topic_data = topic.data
+        self.topics_htmlencode([topic_data])
+        req = self.req()
+        content = req.param("content")
+        form = self.call("web.form", "socio/form.html")
+        if req.ok():
+            if not content:
+                form.error("content", self._("Enter post content"))
+            if not form.errors:
+                post = self.call("forum.reply", cat, topic, None, content)
+                self.call("web.redirect", "/forum/topic/%s#post_form" % topic.uuid)
+        else:
+            # TODO: clear old_content
+            content = "[quote]\n%s\n[/quote]" % old_content
+        form.texteditor(None, "content", content)
+        form.submit(None, None, self._("Reply"))
+        vars = {
+            "topic": topic_data,
+            "category": cat,
+            "title": "%s: %s" % (self._("Reply"), topic_data.get("subject_html")),
+        }
+        vars["forum_content"] = form.html()
+        self.call("web.response_layout", "socio/layout_forum.html", vars)

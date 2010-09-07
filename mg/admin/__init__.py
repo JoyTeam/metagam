@@ -23,7 +23,7 @@ class AdminInterface(Module):
         vars = {
             "title": self._("Administration interface")
         }
-        return self.call("web.response_template", "admin/index.html", vars)
+        self.call("web.response_template", "admin/index.html", vars)
 
     def menu(self):
         req = self.req()
@@ -87,19 +87,19 @@ class AdminInterface(Module):
 
     def response_js(self, script, cls, data):
         req = self.req()
-        return req.jresponse({
+        raise WebResponse(req.jresponse({
             "ver": self.call("core.ver"),
             "script": script,
             "cls": cls,
             "data": data,
             "headmenu": self.headmenu()
-        })
+        }))
 
     def response_template(self, filename, vars):
         req = self.req()
         req.global_html = "admin/response.html"
         vars["headmenu"] = self.headmenu()
-        return self.call("web.response_layout", filename, vars)
+        self.call("web.response_layout", filename, vars)
 
     def link(self, vars, href=None, title=None):
         if type(href) == unicode:
@@ -116,4 +116,4 @@ class AdminInterface(Module):
             fields = []
         if buttons is None:
             buttons = [{"text": self._("Save")}]
-        return self.call("admin.response_js", "admin/form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})
+        self.call("admin.response_js", "admin/form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})

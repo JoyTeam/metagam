@@ -1,4 +1,4 @@
-table.categories { }
+table.categories { width: 100% }
 tr.cathead td { padding-bottom: 2px; }
 tr.cathead td { font-size: 11px; vertical-align: bottom; color: #614115; }
 tr.cathead td.catgroup { padding-top: 10px; font-size: 15px; font-weight: bold; width: 40%; }
@@ -13,7 +13,7 @@ div.thin { height: 3px; background-color: #ebcb88; }
 div.thin2 { height: 4px; background-color: #ebcb88; }
 div.thin3 { height: 4px; background-color: #ebcb88; margin-top: 20px; }
 tr.category_pinned td { vertical-align: top; background-color: #e8ca86; padding: 9px 50px 9px 0px; }
-tr.category td { vertical-align: top; padding: 9px 50px 9px 0px; }
+tr.category td { vertical-align: top; padding: 9px 10px 9px 0px; }
 tr.category td.name { padding: 9px 50px 9px 15px; }
 tr.category_pinned td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
@@ -23,13 +23,13 @@ div#page_head {}
 div#page_content { margin: 10px 0px 0px 0px; }
 div#catname { font-size: 14px; font-weight: bold; padding: 0px 50px 20px 13px; }
 div#newtopic { padding: 0px 0px 15px 13px; }
-div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 0px; padding-bottom: 15px; }
-td.avatar { padding: 7px 10px 30px 17px; vertical-align: top; width: 120px; }
+div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 11px; padding-bottom: 15px; }
+tr.category td.avatar { padding: 7px 10px 30px 17px; vertical-align: top; width: 150px; }
 div.avatar img { border: solid 1px #614115; }
 div.member_name { font-weight: bold; color: #364b52; padding: 10px 0px 3px 0px; }
 div.member_icons img { vertical-align: middle; }
 td.post_actions { vertical-align: top; padding-top: 7px; }
-td.actions { vertical-align: bottom; padding-bottom: 30px; }
+td.actions { vertical-align: bottom; padding: 0px 10px 30px 0px; }
 table.actions { width: 100%; }
 table.actions td.left { padding-right: 40px; vertical-align: bottom; }
 table.actions td.right { text-align: right; vertical-align: bottom; }
@@ -38,3 +38,6 @@ div.quote { background-color: #e8ddc4; border: solid 1px #b59c69; padding: 5px 3
 div.quote div.author { font-size: 10px; color: #808080; margin-bottom: 5px; }
 div.socio_pages { margin: 5px 0px 0px 0px; background-color: #ebcb88; border: solid 1px #f0d69d; font-size: 12px; text-align: right; padding-right: 10px; }
 span.page { font-weight: bold; color: #614115; }
+table.delim { width: 100%; }
+table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115; }
+table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }

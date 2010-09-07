@@ -103,7 +103,7 @@ class Director(Module):
             config["metagam_host"] = metagam_host
             self.app().config.set("director.config", config)
             self.app().config.store()
-            return request.redirect('/')
+            self.call("web.redirect", "/")
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])

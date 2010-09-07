@@ -30,7 +30,7 @@ class Request(object):
         self._start_response = start_response
         self._params_loaded = None
         self.headers = []
-        self.content_type = 'text/html; charset=utf-8';
+        self.content_type = 'text/html; charset=utf-8'
         self.config_stat = {}
         self.hook_stat = {}
         self.headers_sent = False
@@ -90,7 +90,7 @@ class Request(object):
     def send_response(self, status, headers, content):
         self.content = content
         self.start_response(status, headers)
-        return [content];
+        return [content]
 
     def not_found(self):
         "Return 404 Not Found"
@@ -311,6 +311,7 @@ class Web(Module):
         self.rhook("web.not_found", self.web_not_found)
         self.rhook("web.forbidden", self.web_forbidden)
         self.rhook("web.internal_server_error", self.web_internal_server_error)
+        self.rhook("web.redirect", self.web_redirect)
 
     def core_reload(self):
         request = self.req()
@@ -390,12 +391,12 @@ class Web(Module):
         if global_html is None:
             global_html = "global.html"
         if global_html == "":
-            return self.call("web.response", content)
+            self.call("web.response", content)
         else:
-            return self.call("web.response", self.call("web.parse_template", global_html, vars))
+            self.call("web.response", self.call("web.parse_template", global_html, vars))
 
     def web_response_template(self, filename, vars):
-        return self.call("web.response_global", self.call("web.parse_template", filename, vars), vars)
+        raise WebResponse(self.call("web.response_global", self.call("web.parse_template", filename, vars), vars))
 
     def web_parse_layout(self, filename, vars):
         content = self.call("web.parse_template", filename, vars)
@@ -412,7 +413,9 @@ class Web(Module):
             res = None
             try:
                 res = self.call("hook-%s" % hook_name, vars, **args)
-            except BaseException, e:
+            except WebResponse:
+                raise
+            except BaseException as e:
                 self.error(traceback.format_exc())
                 res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
             tokens[i] = str(res)
@@ -423,10 +426,10 @@ class Web(Module):
         return self.call("web.parse_layout", self.call(hook, vars), vars)
 
     def web_response_layout(self, filename, vars):
-        return self.call("web.response_global", self.call("web.parse_layout", filename, vars), vars)
+        raise WebResponse(self.call("web.response_global", self.call("web.parse_layout", filename, vars), vars))
 
     def web_response_hook_layout(self, hook, vars):
-        return self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars)
+        raise WebResponse(self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars))
 
     def web_response_json(self, data):
         raise WebResponse(self.req().jresponse(data))
@@ -442,6 +445,9 @@ class Web(Module):
 
     def web_not_found(self):
         raise WebResponse(self.req().not_found())
+
+    def web_redirect(self, uri):
+        raise WebResponse(self.req().redirect(uri))
 
 class WebForm(object):
     """

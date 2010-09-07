@@ -9,7 +9,7 @@
 <table class="categories">
 
 [%if show_topic%]
-<tr class="catdelim"><td colspan="4"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/interface/c1/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
+<tr class="catdelim"><td colspan="2"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/interface/c1/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
 
 <tr class="category">
 
@@ -27,18 +27,18 @@
 
 <td class="actions">
 <table class="actions"><tr><td class="left">
-[%if topic.signature%]<div class="signature">----------------------------------------------------<br />[%topic.signature.html%]</div>[%end%]
+[%if topic.signature%]<div class="signature">----------------------------------------------------<br />[%topic.signature%]</div>[%end%]
 </td><td class="right">
-[%if topic.topic_actions%]<div class="actions">[%topic.topic_actions.html%]</div>[%end%]
+[%if topic.topic_actions%]<div class="actions">[%topic.topic_actions%]</div>[%end%]
 </td></tr></table>
 </td>
 </tr>
 [%end%]
 
 [%foreach post in posts%]
-<tr class="catdelim"><td colspan="4">
+<tr class="catdelim"><td colspan="2">
 <a name="post[%post.uuid%]"></a>
-<div class="head"><table class="delim"><tr><td class="left"><img src="/st/socio/up.gif" alt="" /> <a href="/forum/[%topic.uuid%]#top">[%to_the_top%]</a></td><td class="right"><img src="/st/socio/down.gif" alt="" /> [%written_at%] [%post.literal_created%]</td></tr></table></div></td></tr>
+<div class="head"><table class="delim"><tr><td class="left"><img src="/st/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a></td><td class="right"><img src="/st/socio/down.gif" alt="" /> [%written_at%] [%post.literal_created%]</td></tr></table></div></td></tr>
 
 <tr class="category">
 
@@ -49,7 +49,7 @@
 </td>
 
 <td class="post_actions">
-[%post.html%]
+[%post.content_html%]
 </td>
 
 </tr>
@@ -57,14 +57,13 @@
 <tr>
 <td class="actions">
 <table class="actions"><tr><td class="left">
-[%if post.signature%]<div class="signature">----------------------------------------------------<br />[%post.signature.html%]</div>[%end%]
+[%if post.signature%]<div class="signature">----------------------------------------------------<br />[%post.signature%]</div>[%end%]
 </td><td class="right">
-[%if post.post_actions%]<div class="actions">[%post.post_actions.html%]</div>[%end%]
+[%if post.post_actions%]<div class="actions">[%post.post_actions%]</div>[%end%]
 </td></tr></table>
 </td>
 </tr>
 [%end%]
-
 </table>
 
 [%foreach page in pages%]

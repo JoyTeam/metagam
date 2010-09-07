@@ -44,6 +44,6 @@ class MultiapplicationWebDaemon(WebDaemon):
         if host == self.metagam_host:
             app = self.inst.appfactory.get("metagam")
         if app is None:
-            return request.redirect("http://%s" % str(self.metagam_host))
+            self.call("web.redirect", "http://%s" % str(self.metagam_host))
         app.hooks.call("l10n.set_request_lang")
         return app.http_request(request, group, hook, args)
