@@ -20,8 +20,8 @@ tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category_pinned td.name { padding: 9px 50px 9px 15px; }
 div.catname { font-size: 14px; font-weight: bold; }
 #page_head { background-image: url("/st/socio/test/head1.gif"); background-repeat: repeat-x; background-position: 0% 0%; }
-#page_head1 { auto; margin: 0px auto 0px auto; }
-#page_head2 { background-image: url("/st/socio/test/head2.gif"); background-repeat: no-repeat; background-position: 0% 0%; padding-left: 258px; }
+#page_head1 { margin: 0px auto 0px auto; }
+#page_head2 { background-image: url("/st/socio/test/head2.gif"); background-repeat: no-repeat; background-position: 0% 0%; padding-left: 258px; vertical-align: top; }
 #page_head3 { background-image: url("/st/socio/test/head4.gif"); background-repeat: no-repeat; background-position: 100% 0%; padding-right: 258px; }
 #page_head4 { background-image: url("/st/socio/test/head3.gif"); background-repeat: repeat-x; background-position: 0% 0%; height: 165px; text-align: center; }
 #page_head5 { padding-top: 135px; }
@@ -46,3 +46,4 @@ span.page { font-weight: bold; color: #614115; }
 table.delim { width: 100%; }
 table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115; }
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
+div.error { color: red; font-size: 11px }

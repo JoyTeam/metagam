@@ -72,19 +72,27 @@ class L10n(Module):
         self.translations[key] = trans
         return trans
 
-    def l10n_gettext(self, str):
+    def l10n_gettext(self, value):
         request = self.req()
         try:
-            return request.trans.gettext(str)
+            value = request.trans.gettext(value)
+            if type(value) == str:
+                value = unicode(value, "utf-8")
+            return value
         except:
             pass
         lang = self.call("l10n.lang")
         if lang is None:
-            return str
+            if type(value) == str:
+                value = unicode(value, "utf-8")
+            return value 
         domain = self.call("l10n.domain")
         trans = self.call("l10n.translation", domain, lang)
         request.trans = trans
-        return trans.gettext(str)
+        value = trans.gettext(value)
+        if type(value) == str:
+            value = unicode(value, "utf-8")
+        return value
 
     def l10n_set_request_lang(self):
         request = self.req()

@@ -366,7 +366,10 @@ class Module(object):
 
     def _(self, val):
         try:
-            return self.req().trans.gettext(val)
+            value = self.req().trans.gettext(val)
+            if type(value) == str:
+                value = unicode(value, "utf-8")
+            return value
         except:
             pass
         return self.call("l10n.gettext", val)

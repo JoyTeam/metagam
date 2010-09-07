@@ -166,14 +166,15 @@ class Forum(Module):
         self.rhook("forum.categories", self.categories)     # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)         # create new topic
         self.rhook("forum.reply", self.reply)               # reply in the topic
-        self.rhook("forum.response", self.response)         # return forum page to the browser
+        self.rhook("forum.response", self.response)
+        self.rhook("forum.response_template", self.response_template)
         self.rhook("ext-forum.index", self.ext_index)
         self.rhook("ext-forum.cat", self.ext_category)
         self.rhook("ext-forum.newtopic", self.ext_newtopic)
         self.rhook("ext-forum.topic", self.ext_topic)
         self.rhook("ext-forum.reply", self.ext_reply)
 
-    def response(self, template, vars):
+    def response(self, content, vars):
         if vars.get("menu") and len(vars["menu"]):
             menu = []
             first = True
@@ -184,7 +185,11 @@ class Forum(Module):
                     menu.append({"delim": True})
                 menu.append(ent)
             vars["menu"] = menu
+        vars["forum_content"] = content
         self.call("web.response_layout", "socio/layout_forum.html", vars)
+
+    def response_template(self, template, vars):
+        self.call("forum.response", self.call("web.parse_template", template, vars), vars)
 
     def ext_index(self):
         categories = [cat for cat in self.categories() if self.may_read(cat)]
@@ -206,8 +211,7 @@ class Forum(Module):
                 { "html": self._("Forum categories") },
             ],
         }
-        vars["forum_content"] = self.call("web.parse_template", "socio/index.html", vars)
-        self.call("forum.response", "socio/layout_forum.html", vars)
+        self.call("forum.response_template", "socio/index.html", vars)
 
     def category(self, id):
         for cat in self.categories():
@@ -337,8 +341,7 @@ class Forum(Module):
                 { "html": cat["title"] },
             ],
         }
-        vars["forum_content"] = self.call("web.parse_template", "socio/category.html", vars)
-        self.call("forum.response", "socio/layout_forum.html", vars)
+        self.call("forum.response_template", "socio/category.html", vars)
 
     def topics_htmlencode(self, topics):
         for topic in topics:
@@ -380,10 +383,15 @@ class Forum(Module):
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         vars = {
-            "form": form.html()
+            "category": cat,
+            "title": u"%s: %s" % (self._("New topic"), cat["title"]),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "href": "/forum/cat/%s" % cat["id"], "html": cat["title"] },
+                { "html": self._("New topic") },
+            ],
         }
-        vars["forum_content"] = self.call("web.parse_template", "socio/form.html", vars)
-        self.call("forum.response", "socio/layout_forum.html", vars)
+        self.call("forum.response", form.html(), vars)
 
     def newtopic(self, cat, author, subject, content):
         topic = ForumTopic(self.db())
@@ -436,7 +444,7 @@ class Forum(Module):
                 post["post_actions"] = " &bull; ".join(actions)
         req = self.req()
         content = req.param("content")
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "socio/form.html", "/forum/topic/" + topic.uuid + "#post_form")
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
@@ -464,8 +472,7 @@ class Forum(Module):
                 { "html": self._("Topic") },
             ],
         }
-        vars["forum_content"] = self.call("web.parse_template", "socio/topic.html", vars)
-        self.call("forum.response", "socio/layout_forum.html", vars)
+        self.call("forum.response_template", "socio/topic.html", vars)
 
     def posts(self, topic, start=None):
         posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
@@ -533,5 +540,4 @@ class Forum(Module):
                 { "html": self._("Reply") },
             ],
         }
-        vars["forum_content"] = form.html()
-        self.call("forum.response", "socio/layout_forum.html", vars)
+        self.call("forum.response", form.html(), vars)
