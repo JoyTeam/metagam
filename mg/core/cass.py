@@ -577,3 +577,6 @@ class CassandraObjectList(object):
             ent["uuid"] = d.uuid
             res.append(ent)
         return res
+
+    def __str__(self):
+        return str([obj.uuid for obj in self.dict])

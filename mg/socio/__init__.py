@@ -1,10 +1,12 @@
-from mg.core import Module
+from mg.core import Module, Hooks
 from operator import itemgetter
 from uuid import uuid4
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 import re
 import cgi
+
+posts_per_page = 20
 
 class ForumTopic(CassandraObject):
     _indexes = {
@@ -22,10 +24,10 @@ class ForumTopic(CassandraObject):
         return ForumTopic._indexes
 
     def sync(self):
-        pinned = "1" if self.get("pinned") else "0"
+        pinned = 1 if self.get("pinned") else 0
         self.set("pinned", pinned)
-        self.set("pinned-created", pinned + self.get("created"))
-        self.set("pinned-updated", pinned + self.get("updated"))
+        self.set("pinned-created", str(pinned) + self.get("created"))
+        self.set("pinned-updated", str(pinned) + self.get("updated"))
 
 class ForumTopicList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
@@ -159,9 +161,57 @@ class ForumAdmin(Module):
         ]
         return self.call("admin.form", fields=fields)
 
+class Socio(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("socio.format_text", self.format_text)
+        self.re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
+        self.re_color = re.compile(r'^#[0-9a-f]{6}$')
+        self.re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
+        self.re_cut = re.compile(r'\[cut\]')
+        self.re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
+        self.re_mdash = re.compile(r' +-( +|$)', re.MULTILINE)
+        self.re_bull = re.compile(r'^\*( +|$)', re.MULTILINE)
+        self.re_parbreak = re.compile(r'(\n\s*){2,}')
+        self.re_linebreak = re.compile(r'\n')
+        self.re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
+
+    def format_text(self, html, options={}):
+        m = self.re_tag.match(html)
+        if m:
+            before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
+            if tag == "color":
+                if self.re_color.match(arg):
+                    return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
+            elif tag == "url":
+                if self.re_url.match(arg):
+                    arg = cgi.escape(arg)
+                    return self.format_text(before, options) + ('<a href="%s" target="_blank">' % arg) + self.format_text(inner, options) + '</a>' + self.format_text(after, options)
+            elif tag == "quote":
+                before = self.format_text(self.re_trim.sub(r'\1', before), options)
+                inner = self.format_text(self.re_trim.sub(r'\1', inner), options)
+                after = self.format_text(self.re_trim.sub(r'\1', after), options)
+                if arg is not None:
+                    inner = '<div class="author">%s</div>%s' % (cgi.escape(arg), inner)
+                return '%s<div class="quote">%s</div>%s' % (before, inner, after)
+            else:
+                if tag == "s":
+                    tag = "strike"
+                return self.format_text(before, options) + ('<%s>' % tag) + self.format_text(inner, options) + ('</%s>' % tag) + self.format_text(after, options)
+            return self.format_text(before, options) + self.format_text(inner, options) + self.format_text(after, options)
+        html = self.re_cut.sub("\n", html)
+        html = self.re_softhyphen.sub(r'\1' + u"\u200b", html)
+        html = cgi.escape(html)
+        html = self.re_mdash.sub("&nbsp;&mdash; ", html)
+        html = self.re_bull.sub("&bull; ", html)
+        html = self.re_parbreak.sub("\n\n", html)
+        html = self.re_linebreak.sub("<br />", html)
+        return html
+
 class Forum(Module):
     def register(self):
         Module.register(self)
+        self.rdep(["mg.socio.Socio"])
         self.rhook("forum.category", self.category)         # get forum category by id
         self.rhook("forum.categories", self.categories)     # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)         # create new topic
@@ -173,6 +223,8 @@ class Forum(Module):
         self.rhook("ext-forum.newtopic", self.ext_newtopic)
         self.rhook("ext-forum.topic", self.ext_topic)
         self.rhook("ext-forum.reply", self.ext_reply)
+        self.rhook("ext-forum.delete", self.ext_delete)
+        self.rhook("ext-forum.edit", self.ext_edit)
 
     def response(self, content, vars):
         if vars.get("menu") and len(vars["menu"]):
@@ -347,19 +399,21 @@ class Forum(Module):
         for topic in topics:
             topic["subject_html"] = cgi.escape(topic.get("subject"))
             topic["avatar"] = "/st/socio/default_avatar.gif"
-            topic["member_html"] = "Author-name"
-            topic["member_html_no_icons"] = "Author-name"
-            topic["comments"] = intz(topic.get("comments"))
-            topic["content_html"] = cgi.escape(topic.get("content"))
+            topic["author_html"] = topic.get("author_html")
+            topic["author_icons"] = topic.get("author_icons")
+            topic["posts"] = intz(topic.get("posts"))
+            if topic.get("content_html") is None:
+                topic["content_html"] = self.call("socio.format_text", topic.get("content"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
 
     def posts_htmlencode(self, posts):
         for post in posts:
             post["avatar"] = "/st/socio/default_avatar.gif"
-            post["member_html"] = "Author-name"
-            post["member_html_no_icons"] = "Author-name"
-            post["comments"] = intz(post.get("comments"))
-            post["content_html"] = cgi.escape(post.get("content"))
+            post["author_html"] = post.get("author_html")
+            post["author_icons"] = post.get("author_icons")
+            post["posts"] = intz(post.get("posts"))
+            if post.get("content_html") is None:
+                post["content_html"] = self.call("socio.format_text", post.get("content"))
             post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
 
     def ext_newtopic(self):
@@ -400,22 +454,36 @@ class Forum(Module):
         topic.set("created", now)
         topic.set("updated", now)
         topic.set("author", author)
+        topic.set("author_name", "Author-name")
+        topic.set("author_html", "Author-name")
+        topic.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
         topic.set("subject", subject)
         topic.set("content", content)
+        topic.set("content_html", self.call("socio.format_text", content))
         topic.sync()
         topic.store()
         return topic
 
     def reply(self, cat, topic, author, content):
-        post = ForumPost(self.db())
-        now = self.now()
-        post.set("category", cat["id"])
-        post.set("topic", topic.uuid)
-        post.set("created", now)
-        post.set("author", author)
-        post.set("content", content)
-        post.store()
-        return post
+        with self.lock(["ForumTopic-" + topic.uuid]):
+            post = ForumPost(self.db())
+            now = self.now()
+            post.set("category", cat["id"])
+            post.set("topic", topic.uuid)
+            post.set("created", now)
+            post.set("author", author)
+            post.set("author_name", "Author-name")
+            post.set("author_html", "Author-name")
+            post.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
+            post.set("content", content)
+            post.set("content_html", self.call("socio.format_text", content))
+            post.store()
+            posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
+            topic.set("posts", posts)
+            topic.sync()
+            topic.store()
+            page = (posts - 1) / posts_per_page + 1
+            raise Hooks.Return((post, page))
 
     def ext_topic(self):
         req = self.req()
@@ -428,29 +496,35 @@ class Forum(Module):
             self.call("web.not_found")
         if not self.may_read(cat):
             self.call("web.forbidden")
-        topic_data = topic.data
+        topic_data = topic.data.copy()
         topic_data["uuid"] = topic.uuid
         self.topics_htmlencode([topic_data])
         actions = []
+        actions.append('<a href="/forum/delete/' + topic.uuid + '">' + self._("delete") + '</a>')
+        actions.append('<a href="/forum/edit/' + topic.uuid + '">' + self._("edit") + '</a>')
         actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
         if len(actions):
             topic_data["topic_actions"] = " &bull; ".join(actions)
-        posts = self.posts(topic).data()
+        req = self.req()
+        page = intz(req.param("page"))
+        posts, page, pages = self.posts(topic, page)
+        posts = posts.data()
         self.posts_htmlencode(posts)
         for post in posts:
             actions = []
+            actions.append('<a href="/forum/delete/' + topic.uuid + '/' + post["uuid"] + '">' + self._("delete") + '</a>')
+            actions.append('<a href="/forum/edit/' + topic.uuid + '/' + post["uuid"] + '">' + self._("edit") + '</a>')
             actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
                 post["post_actions"] = " &bull; ".join(actions)
-        req = self.req()
         content = req.param("content")
         form = self.call("web.form", "socio/form.html", "/forum/topic/" + topic.uuid + "#post_form")
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
             if not form.errors:
-                post = self.call("forum.reply", cat, topic, None, content)
-                self.call("web.redirect", "/forum/topic/%s#post_form" % topic.uuid)
+                post, page = self.call("forum.reply", cat, topic, None, content)
+                self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
         form.texteditor(None, "content", content)
         form.submit(None, None, self._("Reply"))
         vars = {
@@ -458,7 +532,7 @@ class Forum(Module):
             "category": cat,
             "title": topic_data.get("subject_html"),
             "to_page": self._("Pages"),
-            "show_topic": True,
+            "show_topic": page <= 1,
             "topic_started": self._("topic started"),
             "all_posts": self._("All posts"),
             "search_all_posts": self._("Search for all posts of this member"),
@@ -472,16 +546,39 @@ class Forum(Module):
                 { "html": self._("Topic") },
             ],
         }
+        if pages > 1:
+            pages_list = []
+            last_show = None
+            for i in range(1, pages + 1):
+                show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                if show:
+                    if len(pages_list):
+                        pages_list.append({"delim": True})
+                    pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/topic/%s?page=%d" % (topic.uuid, i)}}})
+                elif last_show:
+                    if len(pages_list):
+                        pages_list.append({"delim": True})
+                    pages_list.append({"entry": {"text": "..."}})
+                last_show = show
+            vars["pages"] = pages_list
         self.call("forum.response_template", "socio/topic.html", vars)
 
-    def posts(self, topic, start=None):
+    def posts(self, topic, page=1):
         posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+        pages = (len(posts) - 1) / posts_per_page + 1
+        if page < 1:
+            page = 1
+        elif page > pages:
+            page = pages
+        del posts[0:(page - 1) * posts_per_page]
+        del posts[page * posts_per_page:]
         posts.load()
-        return posts
+        return posts, page, pages
 
-    def ext_reply(self):
+    def category_or_topic_args(self):
         req = self.req()
         m = re.match(r'^([0-9a-f]+)/([0-9a-f]+)$', req.args)
+        post = None
         if m:
             topic_id, post_id = m.group(1, 2)
         else:
@@ -494,26 +591,28 @@ class Forum(Module):
         try:
             topic = self.obj(ForumTopic, topic_id)
         except ObjectNotFoundException:
-            print "topic %s not found" % topic_id
             self.call("web.not_found")
         if post_id is not None:
             try:
                 post = self.obj(ForumPost, post_id)
             except ObjectNotFoundException:
-                print "post %s not found" % post_id
                 self.call("web.not_found")
             if post.get("topic") != topic_id:
-                print "post %s doesn't match topic %s" % (post_id, topic_id)
                 self.call("web.not_found")
-            old_content = post.get("content")
-        else:
-            old_content = topic.get("content")
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
+        return cat, topic, post
+
+    def ext_reply(self):
+        cat, topic, post = self.category_or_topic_args()
         if not self.may_write(cat):
             self.call("web.forbidden")
-        topic_data = topic.data
+        if post is not None:
+            old_content = post.get("content")
+        else:
+            old_content = topic.get("content")
+        topic_data = topic.data.copy()
         self.topics_htmlencode([topic_data])
         req = self.req()
         content = req.param("content")
@@ -522,11 +621,19 @@ class Forum(Module):
             if not content:
                 form.error("content", self._("Enter post content"))
             if not form.errors:
-                post = self.call("forum.reply", cat, topic, None, content)
-                self.call("web.redirect", "/forum/topic/%s#post_form" % topic.uuid)
+                post, page = self.call("forum.reply", cat, topic, None, content)
+                self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
         else:
-            # TODO: clear old_content
-            content = "[quote]\n%s\n[/quote]" % old_content
+            old_content = re.sub(r'\[img:[0-9a-f]+\]', '', old_content)
+            old_content = re.sub(re.compile(r'\[quote(|=[^\]]*)\].*?\[\/quote\]', re.DOTALL), '', old_content)
+            old_content = re.sub(re.compile(r'^\s*(.*?)\s*$', re.MULTILINE), r'\1', old_content)
+            old_content = re.sub(r'\r', '', old_content)
+            old_content = re.sub(r'\n{3,}', '\n\n', old_content)
+            old_content = re.sub(re.compile(r'^\s*(.*?)\s*$', re.DOTALL), r'\1', old_content)
+            if old_content != "":
+                content = "[quote=%s]\n%s\n[/quote]\n\n" % (post.get("author_name") if post else topic.get("author_name"), old_content)
+            else:
+                content = old_content
         form.texteditor(None, "content", content)
         form.submit(None, None, self._("Reply"))
         vars = {
@@ -540,4 +647,85 @@ class Forum(Module):
                 { "html": self._("Reply") },
             ],
         }
+        self.call("forum.response", form.html(), vars)
+
+    def ext_delete(self):
+        cat, topic, post = self.category_or_topic_args()
+        if not self.may_write(cat):
+            self.call("web.forbidden")
+        if post is not None:
+            posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+            page = 1
+            prev = ""
+            for i in range(0, len(posts)):
+                if posts[i].uuid == post.uuid:
+                    page = (i - 1) / posts_per_page + 1
+                    if i < len(posts) - 1:
+                        prev = "#%s" % posts[i + 1].uuid
+                    break
+            post.remove()
+            topic.set("posts", len(posts) - 1)
+            topic.sync()
+            topic.store()
+            self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, prev))
+        else:
+            posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+            posts.remove()
+            topic.remove()
+            self.call("web.redirect", "/forum/cat/%s" % cat["id"])
+
+    def ext_edit(self):
+        cat, topic, post = self.category_or_topic_args()
+        if not self.may_write(cat):
+            self.call("web.forbidden")
+        req = self.req()
+        form = self.call("web.form", "socio/form.html")
+        vars = {
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "href": "/forum/cat/%s" % cat["id"], "html": cat["title"] },
+                { "href": "/forum/topic/%s" % topic.uuid, "html": self._("Topic") },
+                { "html": self._("Editing") },
+            ]
+        }
+        if post is not None:
+            vars["title"] = self._("Edit post")
+            content = req.param("content")
+            if req.ok():
+                if not content:
+                    form.error("content", self._("Enter post content"))
+                if not form.errors:
+                    post.set("content", content)
+                    post.set("content_html", self.call("socio.format_text", content))
+                    post.store()
+                    posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+                    for i in range(0, len(posts)):
+                        if posts[i].uuid == post.uuid:
+                            page = (i - 1) / posts_per_page + 1
+                            self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, post.uuid))
+                    self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+            else:
+                content = post.get("content")
+            form.texteditor(None, "content", content)
+        else:
+            vars["title"] = self._("Edit topic")
+            subject = req.param("subject")
+            content = req.param("content")
+            if req.ok():
+                if not subject:
+                    form.error("subject", self._("Enter topic subject"))
+                if not content:
+                    form.error("content", self._("Enter topic content"))
+                if not form.errors:
+                    topic.set("subject", subject)
+                    topic.set("content", content)
+                    topic.set("content_html", self.call("socio.format_text", content))
+                    topic.store()
+                    self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+            else:
+                content = topic.get("content")
+                subject = topic.get("subject")
+            form.input(self._("Subject"), "subject", subject)
+            form.texteditor(None, "content", content)
+        form.submit(None, None, self._("Save"))
         self.call("forum.response", form.html(), vars)
