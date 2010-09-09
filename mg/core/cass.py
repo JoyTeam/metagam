@@ -332,7 +332,7 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-#       print "mutating %s: %s" % (self.uuid, self.data)
+        print "mutating %s: %s" % (self.uuid, self.data)
         # calculating index mutations
         index_values = self.index_values()
         old_index_values = self.data.get("indexes")

@@ -2,9 +2,13 @@ import urllib
 import string
 
 def urldecode(str):
+    if str is None:
+        return ""
     return urllib.unquote(str).decode("utf-8")
 
 def urlencode(str):
+    if str is None:
+        return ""
     if type(str) != unicode:
         str = unicode(str, "utf-8")
     return urllib.quote(str)
@@ -28,3 +32,4 @@ def jsdecode(str):
     str = string.replace(str, "\\'", "'")
     str = string.replace(str, "\\\\", "\\")
     return str
+

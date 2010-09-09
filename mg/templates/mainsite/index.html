@@ -1,17 +1,15 @@
 <link rel="stylesheet" type="text/css" href="/st/[%ver%]/mainsite/index.css" />
-<link rel="stylesheet" type="text/css" href="/st/ext/resources/css/ext-all.css" />
-<script type="text/javascript" src="/st/ext/ext-base.js"></script>
-<script type="text/javascript" src="/st/ext/ext-all.js"></script>
-<script type="text/javascript" src="/st/[%ver%]/js/gettext.js"></script>
-[%if lang%]<script type="text/javascript" src="/st/[%ver%]/mainsite/gettext-[%lang%].js"></script>[%end%]
-<script type="text/javascript" src="/st/[%ver%]/mainsite/index.js"></script>
 ===HEAD===
-<div id="logo"></div>
-<!--<div id="blog"><a href="/blog">[%blog%]</a></div>-->
-<div id="forum"><a href="/forum">[%forum%]</a></div>
-<div id="head">[%title%]</div>
-<div id="cent">
-<p class="text">[%project_info%]</p>
-<p class="text">[%under_construction%]</p>
-<div id="subscribe"><a href="javascript:void(0)" onclick="show_subscribe(); return false">[%subscribe%]</a></div>
+<div id="title">[%online_games_constructor%]</div>
+<div id="logo"><img src="/st/mainsite/logo.jpg" alt="[%games_constructor%]" /></div>
+<div id="slogan">[%slogan%]</div>
+<div id="menu">
+	[%if logged%]
+	<a href="/cabinet">[%cabinet%]</a>
+	<a href="/auth/logout">[%logout%]</a>
+	[%else%]
+	<a href="/auth/login">[%login%]</a>
+	<a href="/auth/register">[%register%]</a>
+	[%end%]
+	<a href="/forum">[%forum%]</a>
 </div>

@@ -15,8 +15,11 @@ import mg
 import logging
 import math
 import traceback
+import Cookie
 
 ver = 1
+
+re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -29,6 +32,8 @@ class Request(object):
         self.environ = environ
         self._start_response = start_response
         self._params_loaded = None
+        self._cookies_loaded = None
+        self._set_cookies = None
         self.headers = []
         self.content_type = 'text/html; charset=utf-8'
         self.config_stat = {}
@@ -92,6 +97,35 @@ class Request(object):
         except:
             return 0
 
+    def load_cookies(self):
+        self._cookies_loaded = True
+        header = self.environ.get("HTTP_COOKIE")
+        self._cookies = Cookie.SimpleCookie()
+        if header is not None:
+            self._cookies.load(header)
+
+    def cookies(self):
+        "Get cookies of the query"
+        if self._cookies_loaded is None:
+            self.load_cookies()
+        return self._cookies
+
+    def cookie(self, name):
+        cookie = self.cookies().get(name)
+        if cookie is not None:
+            return cookie.value
+        else:
+            return None
+
+    def set_cookie(self, name, value, **kwargs):
+        if self._set_cookies is None:
+            self._set_cookies = []
+        cookie = Cookie.SimpleCookie()
+        cookie[name] = value
+        for key, val in kwargs.iteritems():
+            cookie[name][key] = val
+        self._set_cookies.append(cookie)
+            
     def ok(self):
         return self.param("ok")
 
@@ -101,6 +135,10 @@ class Request(object):
 
     def send_response(self, status, headers, content):
         self.content = content
+        if self._set_cookies is not None:
+            for cookie in self._set_cookies:
+                c = re_set_cookie.sub("", str(cookie))
+                headers.append(("Set-Cookie", c))
         self.start_response(status, headers)
         return [content]
 
@@ -394,7 +432,9 @@ class Web(Module):
                 vars["head"] = vars["head"] + head
         return content
 
-    def web_response(self, content):
+    def web_response(self, content, content_type=None):
+        if content_type is not None:
+            self.content_type = content_type
         raise WebResponse(self.req().response(content))
 
     def web_response_global(self, content, vars):
@@ -579,6 +619,14 @@ class WebForm(object):
         """
         kwargs["value"] = cgi.escape(value)
         kwargs["element_input"] = True
+        self.control(desc, name, **kwargs)
+
+    def password(self, desc, name, value, **kwargs):
+        """
+        <input type="password" />
+        """
+        kwargs["value"] = cgi.escape(value)
+        kwargs["element_password"] = True
         self.control(desc, name, **kwargs)
 
     def textarea(self, desc, name, value, **kwargs):
