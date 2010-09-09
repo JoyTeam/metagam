@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-09 21:38+0400\n"
+"POT-Creation-Date: 2010-09-10 02:02+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,76 +16,76 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/web.py:528 mg/core/director.py:120 mg/socio/__init__.py:894
+#: mg/core/web.py:568 mg/core/director.py:120 mg/socio/__init__.py:894
 #: mg/admin/__init__.py:118
 msgid "Save"
 msgstr ""
 
-#: mg/core/web.py:538
+#: mg/core/web.py:578
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:539
+#: mg/core/web.py:579
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:540
+#: mg/core/web.py:580
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:541
+#: mg/core/web.py:581
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:542
+#: mg/core/web.py:582
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:543
+#: mg/core/web.py:583
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:544
+#: mg/core/web.py:584
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:545
+#: mg/core/web.py:585
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:546
+#: mg/core/web.py:586
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:547
+#: mg/core/web.py:587
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:548
+#: mg/core/web.py:588
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:549
+#: mg/core/web.py:589
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:550 mg/socio/__init__.py:367
+#: mg/core/web.py:590 mg/socio/__init__.py:367
 msgid "Image"
 msgstr ""
 
-#: mg/core/web.py:551
+#: mg/core/web.py:591
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:552
+#: mg/core/web.py:592
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:553
+#: mg/core/web.py:593
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:554
+#: mg/core/web.py:594
 msgid "Smiles"
 msgstr ""
 
@@ -169,55 +169,125 @@ msgstr ""
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/auth.py:15
+#: mg/core/auth.py:141 mg/core/auth.py:338
+msgid "Enter your user name"
+msgstr ""
+
+#: mg/core/auth.py:143
+msgid ""
+"Invalid characters in the name. Only latin letters, numbers, symbols '_' and "
+"'-' are allowed"
+msgstr ""
+
+#: mg/core/auth.py:145
+msgid "This name is taken already"
+msgstr ""
+
+#: mg/core/auth.py:147 mg/core/auth.py:344
+msgid "Enter your password"
+msgstr ""
+
+#: mg/core/auth.py:149
+msgid "Minimal password length - 6 characters"
+msgstr ""
+
+#: mg/core/auth.py:151
+msgid "Retype your password"
+msgstr ""
+
+#: mg/core/auth.py:153
+msgid "Password don't match. Try again, please"
+msgstr ""
+
+#: mg/core/auth.py:157
+msgid "Enter numbers from the picture"
+msgstr ""
+
+#: mg/core/auth.py:162 mg/core/auth.py:164
+msgid "Incorrect number"
+msgstr ""
+
+#: mg/core/auth.py:190 mg/core/auth.py:360
 msgid "User name"
 msgstr ""
 
-#: mg/core/auth.py:16
+#: mg/core/auth.py:191 mg/core/auth.py:361
 msgid "Password"
 msgstr ""
 
-#: mg/core/auth.py:17
+#: mg/core/auth.py:192
 msgid "Retype password"
 msgstr ""
 
-#: mg/core/auth.py:19
+#: mg/core/auth.py:193
+msgid "Enter a number (6 digits) from the picture"
+msgstr ""
+
+#: mg/core/auth.py:194 mg/core/auth.py:363
+msgid "Register"
+msgstr ""
+
+#: mg/core/auth.py:196
 msgid "User registration"
 msgstr ""
 
-#: mg/mainsite/__init__.py:20
+#: mg/core/auth.py:342
+msgid "User not found"
+msgstr ""
+
+#: mg/core/auth.py:349
+msgid "Incorrect password"
+msgstr ""
+
+#: mg/core/auth.py:362
+msgid "Log in"
+msgstr ""
+
+#: mg/core/auth.py:365
+msgid "User login"
+msgstr ""
+
+#: mg/mainsite/__init__.py:21
 msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/mainsite/__init__.py:26
+#: mg/mainsite/__init__.py:27
 msgid "Online games constructor"
 msgstr ""
 
-#: mg/mainsite/__init__.py:27
+#: mg/mainsite/__init__.py:28
 msgid "Games constructor"
 msgstr ""
 
-#: mg/mainsite/__init__.py:28
+#: mg/mainsite/__init__.py:29
 msgid "Create the world of your dreams"
 msgstr ""
 
-#: mg/mainsite/__init__.py:29
+#: mg/mainsite/__init__.py:30
 msgid "log in"
 msgstr ""
 
-#: mg/mainsite/__init__.py:30
+#: mg/mainsite/__init__.py:31
 msgid "register"
 msgstr ""
 
-#: mg/mainsite/__init__.py:31
+#: mg/mainsite/__init__.py:32
 msgid "forum"
 msgstr ""
 
-#: mg/mainsite/__init__.py:40
+#: mg/mainsite/__init__.py:33
+msgid "cabinet"
+msgstr ""
+
+#: mg/mainsite/__init__.py:34
+msgid "log out"
+msgstr ""
+
+#: mg/mainsite/__init__.py:46
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/mainsite/__init__.py:42
+#: mg/mainsite/__init__.py:48
 msgid "Invalid e-mail format"
 msgstr ""
 

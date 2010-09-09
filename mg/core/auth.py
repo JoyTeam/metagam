@@ -16,7 +16,7 @@ class User(CassandraObject):
     _indexes = {
         "created": [[], "created"],
         "last_login": [[], "last_login"],
-        "name": [["name"]],
+        "name": [["name_lower"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -168,14 +168,15 @@ class PasswordAuthentication(Module):
                 user.set("created", now)
                 user.set("last_login", now)
                 user.set("name", name)
+                user.set("name_lower", name.lower())
                 salt = ""
                 letters = "abcdefghijklmnopqrstuvwxyz"
                 for i in range(0, 10):
                     salt += random.choice(letters)
                 user.set("salt", salt)
-                user.set("pass_reminder", re.sub(r'^(..).*$', r'\1', password1))
+                user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password1))
                 m = hashlib.md5()
-                m.update(salt + password1)
+                m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
                 user.store()
                 session.set("user", user.uuid)
@@ -189,7 +190,7 @@ class PasswordAuthentication(Module):
         form.input(self._("User name"), "name", name)
         form.password(self._("Password"), "password1", password1)
         form.password(self._("Retype password"), "password2", password2)
-        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture:'), "captcha", "")
+        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
         form.submit(None, None, self._("Register"))
         vars = {
             "title": self._("User registration"),
@@ -311,7 +312,7 @@ class PasswordAuthentication(Module):
         self.call("web.response", data.getvalue(), "image/jpeg")
 
     def find_user(self, name):
-        users = self.objlist(UserList, query_index="name", query_equal=name)
+        users = self.objlist(UserList, query_index="name", query_equal=name.lower())
         if len(users):
             users.load()
             return users[0]
@@ -343,7 +344,7 @@ class PasswordAuthentication(Module):
                 form.error("password", self._("Enter your password"))
             if not form.errors:
                 m = hashlib.md5()
-                m.update(user.get("salt") + password)
+                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
                 if m.hexdigest() != user.get("pass_hash"):
                     form.error("password", self._("Incorrect password"))
             if not form.errors:

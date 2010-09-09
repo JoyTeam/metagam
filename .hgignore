@@ -5,6 +5,7 @@ syntax: glob
 tests/*.err
 *.pyc
 *.swp
+*.mo
 
 syntax: regexp
 .*\#.*\#$
