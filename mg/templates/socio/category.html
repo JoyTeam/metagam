@@ -16,7 +16,7 @@
 [%for topic in topics%]
 <tr class="category[%if topic.pinned%]_pinned[%end%]">
 <td class="name">
-	<a href="/forum/topic/[%topic.uuid%]">[%if topic.unread%]<strong>[%end%][%topic.subject_html%][%if topic.unread%]</strong>[%end%]</a>[%if subscribed%]&nbsp;<img src="/st/socio/subscribed.gif" alt="" class="mark" />[%end%]
+	<a href="/forum/topic/[%topic.uuid%]">[%if topic.unread%]<strong>[%end%][%topic.subject_html%][%if topic.unread%]</strong>[%end%]</a>[%if subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="mark" />[%end%]
 	<div class="event_created">[%topic.event_created%]</div>
 	[%topic.event_pages%]
 </td>

@@ -9,14 +9,14 @@
 <table class="categories">
 
 [%if show_topic%]
-<tr class="catdelim"><td colspan="2"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/interface/c1/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
+<tr class="catdelim"><td colspan="2"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/[%ver%]/socio/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
 
 <tr class="category">
 
 <td class="avatar" rowspan="2">
 <div class="avatar">[%if topic.avatar%]<img src="[%topic.avatar%]" alt="" />[%end%]</div>
 <div class="member_name">[%topic.author_html%]</div>
-<div class="member_icons">[%topic.author_icons%] [%if topic.author_search%]<a href="/forum/search?query=author:[%author_search%]"><img src="/st/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
+<div class="member_icons">[%topic.author_icons%] [%if topic.author_search%]<a href="/forum/search?query=author:[%author_search%]"><img src="/st/[%ver%]/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
 </td>
 
 <td class="post_actions">
@@ -38,14 +38,14 @@
 [%foreach post in posts%]
 <tr class="catdelim"><td colspan="2">
 <a name="[%post.uuid%]"></a>
-<div class="head"><table class="delim"><tr><td class="left"><img src="/st/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a></td><td class="right"><img src="/st/socio/down.gif" alt="" /> [%written_at%] [%post.literal_created%]</td></tr></table></div></td></tr>
+<div class="head"><table class="delim"><tr><td class="left"><img src="/st/[%ver%]/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a></td><td class="right"><img src="/st/[%ver%]/socio/down.gif" alt="" /> [%written_at%] [%post.literal_created%]</td></tr></table></div></td></tr>
 
 <tr class="category">
 
 <td class="avatar" rowspan="2">
 <div class="avatar"><img src="[%post.avatar%]" alt="" /></div>
 <div class="member_name">[%post.author_html%]</div>
-<div class="member_icons">[%post.author_icons%] [%if post.author_search%]<a href="/forum/search?query=author:[%post.author_search%]"><img src="/st/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
+<div class="member_icons">[%post.author_icons%] [%if post.author_search%]<a href="/forum/search?query=author:[%post.author_search%]"><img src="/st/[%ver%]/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
 </td>
 
 <td class="post_actions">
