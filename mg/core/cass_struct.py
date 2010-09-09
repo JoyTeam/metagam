@@ -25,12 +25,10 @@ class CassandraRestructure(object):
         keyspaces = [ksdef.name for ksdef in self.db.describe_keyspaces()]
         family_exists = dict()
         required = set()
-        print "keyspaces: %s" % keyspaces
         if not self.db.keyspace in keyspaces:
             dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
         else:
             family_exists = dict([(cfdef.name, cfdef) for cfdef in self.db.describe_keyspace(self.db.keyspace).cf_defs])
-            print "family_exists: %s" % family_exists
         for (name, cfdef) in config.items():
             if name in family_exists:
                 existing = family_exists[name]

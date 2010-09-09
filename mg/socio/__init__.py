@@ -4,10 +4,12 @@ from uuid import uuid4
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 from concurrence.http import HTTPConnection, HTTPRequest
+from concurrence import Timeout, TimeoutError
+from PIL import Image
 import re
 import cgi
 import cStringIO
-from PIL import Image
+import urlparse
 
 posts_per_page = 20
 
@@ -233,15 +235,52 @@ class Socio(Module):
             self.call("web.not_found")
         form = self.call("web.form", "socio/form.html")
         url = req.param("url")
+        image_field = "image"
         if req.ok():
             image = req.param_raw("image")
             if not image and url:
-                form.error("url", "Not implemented yet")
+                url_obj = urlparse.urlparse(url.encode("utf-8"), "http", False)
+                if url_obj.scheme != "http":
+                    form.error("url", self._("Scheme '%s' is not supported") % cgi.escape(url_obj.scheme))
+                elif url_obj.hostname is None:
+                    form.error("url", self._("Enter correct URL"))
+                else:
+                    cnn = HTTPConnection()
+                    try:
+                        with Timeout.push(50):
+                            cnn.set_limit(20000000)
+                            port = url_obj.port
+                            if port is None:
+                                port = 80
+                            cnn.connect((url_obj.hostname, port))
+                            request = cnn.get(url_obj.path + url_obj.query)
+                            response = cnn.perform(request)
+                            if response.status_code != 200:
+                                if response.status_code == 404:
+                                    form.error("url", self._("Remote server response: Resource not found"))
+                                elif response.status_code == 403:
+                                    form.error("url", self._("Remote server response: Access denied"))
+                                elif response.status_code == 500:
+                                    form.error("url", self._("Remote server response: Internal server error"))
+                                else:
+                                    form.error("url", self._("Download error: %s") % cgi.escape(response.status))
+                            else:
+                                image = response.body
+                                image_field = "url"
+                    except TimeoutError as e:
+                        form.error("url", self._("Timeout on downloading image. Time limit - 30 sec"))
+                    except BaseException as e:
+                        form.error("url", self._("Download error: %s") % cgi.escape(str(e)))
+                    finally:
+                        try:
+                            cnn.close()
+                        except:
+                            pass
             if image:
                 try:
                     image_obj = Image.open(cStringIO.StringIO(image))
                 except IOError:
-                    form.error("image", self._("Image format not recognized"))
+                    form.error(image_field, self._("Image format not recognized"))
                 if not form.errors:
                     format = image_obj.format
                     if format == "GIF":
@@ -296,7 +335,7 @@ class Socio(Module):
                             request.add_header("Content-length", len(request.body))
                             response = cnn.perform(request)
                             if response.status_code != 201:
-                                form.error("image", self._("Error storing image: %s") % response.status)
+                                form.error(image_field, self._("Error storing image: %s") % response.status)
                         finally:
                             cnn.close()
                     if not form.errors and th_data is not None:
@@ -312,7 +351,7 @@ class Socio(Module):
                             request.add_header("Content-length", len(request.body))
                             response = cnn.perform(request)
                             if response.status_code != 201:
-                                form.error("image", self._("Error storing thumbnail: %s") % response.status)
+                                form.error(image_field, self._("Error storing thumbnail: %s") % response.status)
                         finally:
                             cnn.close()
                     if not form.errors:
