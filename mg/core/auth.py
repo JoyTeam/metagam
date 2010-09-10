@@ -3,7 +3,7 @@ from mg.core import Module
 from uuid import uuid4
 from wsgiref.handlers import format_date_time
 from datetime import datetime
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
 from mg.core.bezier import make_bezier
 from mg.core.tools import *
 import cStringIO
@@ -201,12 +201,12 @@ class PasswordAuthentication(Module):
         session = self.call("session.get")
         if session is None:
             self.call("web.forbidden")
-        field = 10
+        field = 20
         char_w = 35
         char_h = 40
         step = 20
         digits = 6
-        jitter = 0.2
+        jitter = 0.15
         image = Image.new("RGB", (step * (digits - 1) + char_w + field * 2, char_h + field * 2), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         number = ""
@@ -215,7 +215,7 @@ class PasswordAuthentication(Module):
             digit = random.randint(0, 9)
             number += str(digit)
             off_x = i * step + field
-            off_y = field
+            off_y = field + char_h * random.uniform(-0.1, 0.1)
             if digit == 0:
                 splines = [
                     ((0, 0.33), (0.33, -0.1), (0.67, -0.1), (1, 0.33), (1, 0.67)),
@@ -298,7 +298,7 @@ class PasswordAuthentication(Module):
                 xys = [(x * char_w + off_x, y * char_h + off_y) for x, y in xys]
                 bezier = make_bezier(xys)
                 points.extend(bezier(ts))
-            draw.line(points, fill=(0, 0, 0), width=3)
+            draw.line(points, fill=(0, 0, 0), width=1)
         del draw
         try:
             captcha = self.obj(Captcha, session.uuid)
@@ -308,6 +308,7 @@ class PasswordAuthentication(Module):
         captcha.set("valid_till", "%020d" % (time.time() + 86400))
         captcha.store()
         data = cStringIO.StringIO()
+        image = image.filter(ImageFilter.MinFilter(3))
         image.save(data, "JPEG")
         self.call("web.response", data.getvalue(), "image/jpeg")
 
