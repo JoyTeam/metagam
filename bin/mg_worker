@@ -20,8 +20,8 @@ def main():
         conf = int_daemon.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         mcpool = MemcachedPool(conf["memcached"][0])
-        int_mc = Memcached(mcpool, prefix="mg_")
-        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg_")
+        int_mc = Memcached(mcpool, prefix="mg-")
+        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg-")
         int_daemon.app = int_app
         int_app.modules.load(["mg.core.worker.Worker"])
         int_app.tag = "int"

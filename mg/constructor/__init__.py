@@ -8,7 +8,7 @@ import json
 class Constructor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession"])
+        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-constructor.subscribe", self.subscribe)
@@ -16,6 +16,7 @@ class Constructor(Module):
         self.rhook("auth.redirects", self.redirects)
         self.rhook("forum.topmenu", self.forum_topmenu)
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
+        self.rhook("ext-documentation.index", self.documentation_index)
 
     def web_global_html(self):
         return "constructor/global.html"
@@ -25,19 +26,19 @@ class Constructor(Module):
         tbl["register"] = "/constructor/newgame"
 
     def forum_topmenu(self, topmenu):
-        session = self.call("session.get")
         req = self.req()
         redirect = urlencode(req.uri())
-        if session is not None and session.get("user"):
+        if req.user():
             topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "html": self._("Log out")})
             topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
             topmenu.append({"href": "/cabinet", "html": self._("Cabinet"), "left": True})
-            topmenu.append({"href": "/constructor/documentation", "html": self._("Documentation"), "left": True})
+            topmenu.append({"href": "/documentation", "html": self._("Documentation"), "left": True})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
             topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
 
     def index(self):
+        req = self.req()
         vars = {
             "title": self._("Constructor of browser-based online games"),
 #            "blog": self._("Project blog"),
@@ -54,8 +55,7 @@ class Constructor(Module):
             "cabinet": self._("cabinet"),
             "logout": self._("log out"),
         }
-        session = self.call("session.get")
-        if session is not None and session.get("user"):
+        if req.user():
             vars["logged"] = True
         return self.call("web.response_template", "constructor/index.html", vars)
 
@@ -80,7 +80,7 @@ class Constructor(Module):
             "title": self._("Cabinet"),
             "menu": [
                 [
-                    { "href": "/constructor/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation") },
+                    { "href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation") },
                     { "href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum") },
                 ],
                 [
@@ -110,3 +110,16 @@ class Constructor(Module):
             ],
         }
         self.call("web.response_template", "constructor/cabinet.html", vars)
+
+    def documentation_index(self):
+        session = self.call("session.require_login")
+        vars = {
+            "title": self._("Documentation"),
+            "menu": [
+                [
+                    { "href": "/cabinet", "image": "constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
+                ],
+            ],
+        }
+        self.call("web.response_template", "constructor/documentation.html", vars)
+

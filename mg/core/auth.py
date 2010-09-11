@@ -77,23 +77,17 @@ class CookieSession(Module):
 
     def get(self, create=False):
         req = self.req()
-        try:
-            return req.session
-        except AttributeError:
-            pass
         sid = req.cookie("mgsess")
         if sid is not None:
-            mcid = "Session-%s" % sid
+            mcid = "SessionCache-%s" % sid
             val = self.app().mc.get(mcid)
             if val is not None:
-                req.session = self.obj(Session, sid, val)
-                return req.session
+                return self.obj(Session, sid, val)
             session = self.find(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                 session.store()
                 self.app().mc.set(mcid, session.data)
-                req.session = session
                 return session
         sid = uuid4().hex
         args = {}
@@ -110,7 +104,6 @@ class CookieSession(Module):
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
             session.store()
-        req.session = session
         return session
 
     def find(self, sid):
@@ -188,7 +181,7 @@ class PasswordAuthentication(Module):
                 user.store()
                 session.set("user", user.uuid)
                 session.store()
-                self.app().mc.delete("Session-%s" % session.uuid)
+                self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
                 redirects = {}
@@ -336,7 +329,7 @@ class PasswordAuthentication(Module):
         if session is not None and session.get("user"):
             session.delkey("user")
             session.store()
-            self.app().mc.delete("Session-%s" % session.uuid)
+            self.app().mc.delete("SessionCache-%s" % session.uuid)
             req = self.req()
             redirect = req.param("redirect")
             if redirect is not None and redirect != "":
@@ -367,7 +360,7 @@ class PasswordAuthentication(Module):
                 session = self.call("session.get", True)
                 session.set("user", user.uuid)
                 session.store()
-                self.app().mc.delete("Session-%s" % session.uuid)
+                self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
                 redirects = {}

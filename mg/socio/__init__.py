@@ -3,9 +3,10 @@ from operator import itemgetter
 from uuid import uuid4
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
-from concurrence.http import HTTPConnection, HTTPRequest
+from mg.core.cluster import StaticUploadError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
+from mg.core.auth import User
 import re
 import cgi
 import cStringIO
@@ -18,6 +19,18 @@ re_r = re.compile(r'\r')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
 re_images = re.compile(r'\[img:[0-9a-f]+\]')
+re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
+re_color = re.compile(r'^#[0-9a-f]{6}$')
+re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
+re_cut = re.compile(r'\[cut\]')
+re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
+re_mdash = re.compile(r' +-( +|$)', re.MULTILINE)
+re_bull = re.compile(r'^\*( +|$)', re.MULTILINE)
+re_parbreak = re.compile(r'(\n\s*){2,}')
+re_linebreak = re.compile(r'\n')
+re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
+valid = r'\/\w\/\+\%\#\$\&=\?#'
+re_urls = re.compile(r'(.*?)((?:http|ftp|https):\/\/[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
 
 class UserForumSettings(CassandraObject):
     _indexes = {
@@ -189,39 +202,28 @@ class ForumAdmin(Module):
 class Socio(Module):
     def register(self):
         Module.register(self)
-        self.re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
-        self.re_color = re.compile(r'^#[0-9a-f]{6}$')
-        self.re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
-        self.re_cut = re.compile(r'\[cut\]')
-        self.re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
-        self.re_mdash = re.compile(r' +-( +|$)', re.MULTILINE)
-        self.re_bull = re.compile(r'^\*( +|$)', re.MULTILINE)
-        self.re_parbreak = re.compile(r'(\n\s*){2,}')
-        self.re_linebreak = re.compile(r'\n')
-        self.re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("socio.format_text", self.format_text)
         self.rhook("ext-socio.image", self.ext_image)
-        self.re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
 
     def menu_root_index(self, menu):
         menu.append({ "id": "socio.index", "text": self._("Socio") })
 
     def format_text(self, html, options={}):
-        m = self.re_tag.match(html)
+        m = re_tag.match(html)
         if m:
             before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
             if tag == "color":
-                if self.re_color.match(arg):
+                if re_color.match(arg):
                     return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
             elif tag == "url":
-                if self.re_url.match(arg):
+                if re_url.match(arg):
                     arg = cgi.escape(arg)
                     return self.format_text(before, options) + ('<a href="%s" target="_blank">' % arg) + self.format_text(inner, options) + '</a>' + self.format_text(after, options)
             elif tag == "quote":
-                before = self.format_text(self.re_trim.sub(r'\1', before), options)
-                inner = self.format_text(self.re_trim.sub(r'\1', inner), options)
-                after = self.format_text(self.re_trim.sub(r'\1', after), options)
+                before = self.format_text(re_trim.sub(r'\1', before), options)
+                inner = self.format_text(re_trim.sub(r'\1', inner), options)
+                after = self.format_text(re_trim.sub(r'\1', after), options)
                 if arg is not None:
                     inner = '<div class="author">%s</div>%s' % (cgi.escape(arg), inner)
                 return '%s<div class="quote">%s</div>%s' % (before, inner, after)
@@ -230,7 +232,7 @@ class Socio(Module):
                     tag = "strike"
                 return self.format_text(before, options) + ('<%s>' % tag) + self.format_text(inner, options) + ('</%s>' % tag) + self.format_text(after, options)
             return self.format_text(before, options) + self.format_text(inner, options) + self.format_text(after, options)
-        m = self.re_img.match(html)
+        m = re_img.match(html)
         if m:
             before, id, after = m.group(1, 2, 3)
             try:
@@ -243,16 +245,23 @@ class Socio(Module):
                 return '%s <img src="%s" alt="" /> %s' % (self.format_text(before, options), image, self.format_text(after, options))
             else:
                 return '%s <a href="%s" target="_blank"><img src="%s" alt="" /></a> %s' % (self.format_text(before, options), image, thumbnail, self.format_text(after, options))
-        html = self.re_cut.sub("\n", html)
-        html = self.re_softhyphen.sub(r'\1' + u"\u200b", html)
+        m = re_urls.match(html)
+        if m:
+            before, inner, after = m.group(1, 2, 3)
+            inner_show = cgi.escape(re_softhyphen.sub(r'\1' + u"\u200b", inner))
+            inner = cgi.escape(inner)
+            return '%s<a href="%s" target="_blank">%s</a>%s' % (self.format_text(before, options), inner, inner_show, self.format_text(after, options))
+        html = re_cut.sub("\n", html)
+        html = re_softhyphen.sub(r'\1' + u"\u200b", html)
         html = cgi.escape(html)
-        html = self.re_mdash.sub("&nbsp;&mdash; ", html)
-        html = self.re_bull.sub("&bull; ", html)
-        html = self.re_parbreak.sub("\n\n", html)
-        html = self.re_linebreak.sub("<br />", html)
+        html = re_mdash.sub("&nbsp;&mdash; ", html)
+        html = re_bull.sub("&bull; ", html)
+        html = re_parbreak.sub("\n\n", html)
+        html = re_linebreak.sub("<br />", html)
         return html
 
     def ext_image(self):
+        self.call("session.require_login")
         req = self.req()
         if not re.match(r'^[a-z0-9_]+$', req.args):
             self.call("web.not_found")
@@ -337,7 +346,7 @@ class Socio(Module):
                         im_data = image
                     # storing
                     socio_image = self.obj(SocioImage)
-                    storage_server = "storage"
+                    storage_server = self.call("cluster.storage_server")
                     image_url = "/%s.%s" % (socio_image.uuid, ext)
                     image_uri = "http://" + storage_server + image_url
                     socio_image.set("image", image_uri)
@@ -346,37 +355,15 @@ class Socio(Module):
                         thumbnail_uri = "http://" + storage_server + thumbnail_url
                         socio_image.set("thumbnail", thumbnail_uri)
                     if not form.errors:
-                        cnn = HTTPConnection()
-                        cnn.connect((str(storage_server), 80))
                         try:
-                            request = HTTPRequest()
-                            request.method = "PUT"
-                            request.path = image_url
-                            request.host = storage_server
-                            request.body = im_data
-                            request.add_header("Content-type", content_type)
-                            request.add_header("Content-length", len(request.body))
-                            response = cnn.perform(request)
-                            if response.status_code != 201:
-                                form.error(image_field, self._("Error storing image: %s") % response.status)
-                        finally:
-                            cnn.close()
+                            self.call("cluster.static_upload", image_url, im_data, content_type)
+                        except StaticUploadError as e:
+                            form.error(image_field, unicode(e))
                     if not form.errors and th_data is not None:
-                        cnn = HTTPConnection()
-                        cnn.connect((str(storage_server), 80))
                         try:
-                            request = HTTPRequest()
-                            request.method = "PUT"
-                            request.path = thumbnail_url
-                            request.host = storage_server
-                            request.body = th_data
-                            request.add_header("Content-type", th_content_type)
-                            request.add_header("Content-length", len(request.body))
-                            response = cnn.perform(request)
-                            if response.status_code != 201:
-                                form.error(image_field, self._("Error storing thumbnail: %s") % response.status)
-                        finally:
-                            cnn.close()
+                            self.call("cluster.static_upload", thumbnail_url, th_data, th_content_type)
+                        except StaticUploadError as e:
+                            form.error(image_field, unicode(e))
                     if not form.errors:
                         socio_image.store()
                         vars = {
@@ -573,7 +560,37 @@ class Forum(Module):
     def may_read(self, cat):
         return True
 
-    def may_write(self, cat):
+    def may_write(self, cat, topic=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        return True
+
+    def may_edit(self, cat, topic=None, post=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        if post is None:
+            if topic.get("author") != user:
+                return False
+        else:
+            if post.get("author") != user:
+                return False
+        return True
+
+    def may_delete(self, cat, topic=None, post=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        if post is None:
+            if topic.get("author") != user:
+                return False
+        else:
+            if post.get("author") != user:
+                return False
         return True
 
     def topics(self, cat, start=None):
@@ -607,10 +624,26 @@ class Forum(Module):
         }
         self.call("forum.response_template", "socio/category.html", vars)
 
-    def topics_htmlencode(self, topics):
+    def load_settings(self, list, signatures, avatars):
+        authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
+        if len(authors):
+            authors_list = self.objlist(UserForumSettingsList, authors)
+            authors_list.load(silent=True)
+            for obj in authors_list:
+                signatures[obj.uuid] = obj.get("signature_html")
+                avatars[obj.uuid] = obj.get("avatar")
+        for ent in list:
+            author = ent.get("author")
+            ent["avatar"] = avatars.get(author) if avatars.get(author) is not None else "/st/socio/default_avatar.gif"
+            ent["signature"] = signatures.get(author)
+
+    def topics_htmlencode(self, topics, load_settings=False):
+        signatures = {}
+        avatars = {}
+        if load_settings:
+            self.load_settings(topics, signatures, avatars)
         for topic in topics:
             topic["subject_html"] = cgi.escape(topic.get("subject"))
-            topic["avatar"] = "/st/socio/default_avatar.gif"
             topic["author_html"] = topic.get("author_html")
             topic["author_icons"] = topic.get("author_icons")
             topic["posts"] = intz(topic.get("posts"))
@@ -619,8 +652,10 @@ class Forum(Module):
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
 
     def posts_htmlencode(self, posts):
+        signatures = {}
+        avatars = {}
+        self.load_settings(posts, signatures, avatars)
         for post in posts:
-            post["avatar"] = "/st/socio/default_avatar.gif"
             post["author_html"] = post.get("author_html")
             post["author_icons"] = post.get("author_icons")
             post["posts"] = intz(post.get("posts"))
@@ -644,7 +679,8 @@ class Forum(Module):
             if not content:
                 form.error("content", self._("Enter topic content"))
             if not form.errors:
-                topic = self.call("forum.newtopic", cat, None, subject, content)
+                user = self.obj(User, req.user())
+                topic = self.call("forum.newtopic", cat, user, subject, content)
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
@@ -665,10 +701,11 @@ class Forum(Module):
         topic.set("category", cat["id"])
         topic.set("created", now)
         topic.set("updated", now)
-        topic.set("author", author)
-        topic.set("author_name", "Author-name")
-        topic.set("author_html", "Author-name")
-        topic.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
+        if author is not None:
+            topic.set("author", author.uuid)
+            topic.set("author_name", author.get("name"))
+            topic.set("author_html", cgi.escape(author.get("name").encode("utf-8")))
+            topic.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
         topic.set("subject", subject)
         topic.set("content", content)
         topic.set("content_html", self.call("socio.format_text", content))
@@ -683,10 +720,11 @@ class Forum(Module):
             post.set("category", cat["id"])
             post.set("topic", topic.uuid)
             post.set("created", now)
-            post.set("author", author)
-            post.set("author_name", "Author-name")
-            post.set("author_html", "Author-name")
-            post.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
+            if author is not None:
+                post.set("author", author.uuid)
+                post.set("author_name", author.get("name"))
+                post.set("author_html", cgi.escape(author.get("name").encode("utf-8")))
+                post.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
             post.set("content", content)
             post.set("content_html", self.call("socio.format_text", content))
             post.store()
@@ -710,11 +748,15 @@ class Forum(Module):
             self.call("web.forbidden")
         topic_data = topic.data.copy()
         topic_data["uuid"] = topic.uuid
-        self.topics_htmlencode([topic_data])
+        self.topics_htmlencode([topic_data], load_settings=True)
+        may_write = self.may_write(cat, topic)
         actions = []
-        actions.append('<a href="/forum/delete/' + topic.uuid + '">' + self._("delete") + '</a>')
-        actions.append('<a href="/forum/edit/' + topic.uuid + '">' + self._("edit") + '</a>')
-        actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
+        if self.may_delete(cat, topic):
+            actions.append('<a href="/forum/delete/' + topic.uuid + '">' + self._("delete") + '</a>')
+        if self.may_edit(cat, topic):
+            actions.append('<a href="/forum/edit/' + topic.uuid + '">' + self._("edit") + '</a>')
+        if may_write:
+            actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
         if len(actions):
             topic_data["topic_actions"] = " &bull; ".join(actions)
         req = self.req()
@@ -724,9 +766,12 @@ class Forum(Module):
         self.posts_htmlencode(posts)
         for post in posts:
             actions = []
-            actions.append('<a href="/forum/delete/' + topic.uuid + '/' + post["uuid"] + '">' + self._("delete") + '</a>')
-            actions.append('<a href="/forum/edit/' + topic.uuid + '/' + post["uuid"] + '">' + self._("edit") + '</a>')
-            actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
+            if self.may_delete(cat, topic, post):
+                actions.append('<a href="/forum/delete/' + topic.uuid + '/' + post["uuid"] + '">' + self._("delete") + '</a>')
+            if self.may_edit(cat, topic, post):
+                actions.append('<a href="/forum/edit/' + topic.uuid + '/' + post["uuid"] + '">' + self._("edit") + '</a>')
+            if may_write:
+                actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
                 post["post_actions"] = " &bull; ".join(actions)
         content = req.param("content")
@@ -734,11 +779,12 @@ class Forum(Module):
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
+            elif not self.may_write(cat):
+                form.error("content", self._("Access denied"))
             if not form.errors:
-                post, page = self.call("forum.reply", cat, topic, None, content)
+                user = self.obj(User, req.user())
+                post, page = self.call("forum.reply", cat, topic, user, content)
                 self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
-        form.texteditor(None, "content", content)
-        form.submit(None, None, self._("Reply"))
         vars = {
             "topic": topic_data,
             "category": cat,
@@ -751,13 +797,16 @@ class Forum(Module):
             "to_the_top": self._("to the top"),
             "written_at": self._("written at"),
             "posts": posts,
-            "new_post_form": form.html(),
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "href": "/forum/cat/%s" % cat["id"], "html": cat["title"] },
                 { "html": self._("Topic") },
             ],
         }
+        if req.ok() or self.may_write(cat):
+            form.texteditor(None, "content", content)
+            form.submit(None, None, self._("Reply"))
+            vars["new_post_form"] = form.html()
         if pages > 1:
             pages_list = []
             last_show = None
@@ -833,7 +882,8 @@ class Forum(Module):
             if not content:
                 form.error("content", self._("Enter post content"))
             if not form.errors:
-                post, page = self.call("forum.reply", cat, topic, None, content)
+                user = self.obj(User, req.user())
+                post, page = self.call("forum.reply", cat, topic, user, content)
                 self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
         else:
             old_content = re.sub(r'\[img:[0-9a-f]+\]', '', old_content)
@@ -863,7 +913,7 @@ class Forum(Module):
 
     def ext_delete(self):
         cat, topic, post = self.category_or_topic_args()
-        if not self.may_write(cat):
+        if not self.may_delete(cat, topic, post):
             self.call("web.forbidden")
         if post is not None:
             posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
@@ -874,6 +924,8 @@ class Forum(Module):
                     page = (i - 1) / posts_per_page + 1
                     if i < len(posts) - 1:
                         prev = "#%s" % posts[i + 1].uuid
+                    elif i > 0:
+                        prev = "#%s" % posts[i - 1].uuid
                     break
             post.remove()
             topic.set("posts", len(posts) - 1)
@@ -888,7 +940,7 @@ class Forum(Module):
 
     def ext_edit(self):
         cat, topic, post = self.category_or_topic_args()
-        if not self.may_write(cat):
+        if not self.may_edit(cat, topic, post):
             self.call("web.forbidden")
         req = self.req()
         form = self.call("web.form", "socio/form.html")
@@ -914,7 +966,7 @@ class Forum(Module):
                     for i in range(0, len(posts)):
                         if posts[i].uuid == post.uuid:
                             page = (i - 1) / posts_per_page + 1
-                            self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, post.uuid))
+                            self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
                 content = post.get("content")
@@ -943,8 +995,8 @@ class Forum(Module):
         self.call("forum.response", form.html(), vars)
 
     def ext_settings(self):
-        session = self.call("session.require_login")
-        user_id = session.get("user")
+        req = self.req()
+        user_id = req.user()
         try:
             settings = self.obj(UserForumSettings, user_id)
         except ObjectNotFoundException:
@@ -956,10 +1008,10 @@ class Forum(Module):
                 { "html": self._("Forum settings") },
             ]
         }
-        req = self.req()
         form = self.call("web.form", "socio/form.html")
         form.textarea_rows = 4
         signature = req.param("signature")
+        avatar = req.param_raw("avatar")
         redirect = req.param("redirect")
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
@@ -975,7 +1027,62 @@ class Forum(Module):
                         form.error("signature", self._("Signature line couldn't be longer than 80 symbols"))
                     elif re_images.match(line):
                         form.error("signature", self._("Signature couldn't contain images"))
+            image_obj = None
+            if avatar:
+                try:
+                    image_obj = Image.open(cStringIO.StringIO(avatar))
+                except IOError:
+                    form.error("avatar", self._("Image format not recognized"))
+                if image_obj:
+                    format = image_obj.format
+                    if format == "GIF":
+                        ext = "gif"
+                        content_type = "image/gif"
+                        target_format = "GIF"
+                    elif format == "PNG":
+                        ext = "png"
+                        content_type = "image/png"
+                        target_format = "PNG"
+                    else:
+                        target_format = "JPEG"
+                        ext = "jpg"
+                        content_type = "image/jpeg"
+                    width, height = image_obj.size
+                    if width < 100 or height < 100:
+                        form.error("avatar", self._("Avatar has to be at least 100x100 pixels"))
+                    elif width != 100 or height != 100 or format != target_format:
+                        image_obj = image_obj.convert("RGB")
+                        if width > 100 and height > 100:
+                            if width <= height:
+                                height = height * 100 / width
+                                width = 100
+                            else:
+                                width = width * 100 / height
+                                height = 100
+                            image_obj.thumbnail((width, height), Image.ANTIALIAS)
+                        if width > 100:
+                            left = (width - 100) / 2
+                            top = 0
+                            image_obj = image_obj.crop((left, top, left + 99, top + 99))
+                        elif height > 100:
+                            left = 0
+                            top = (height - 100) / 2
+                            image_obj = image_obj.crop((left, top, left + 99, top + 99))
             if not form.errors:
+                if image_obj:
+                    # storing
+                    im_data = cStringIO.StringIO()
+                    image_obj.save(im_data, target_format)
+                    im_data = im_data.getvalue()
+                    image_id = uuid4().hex
+                    storage_server = self.call("cluster.storage_server")
+                    image_url = "/%s.%s" % (image_id, ext)
+                    image_uri = "http://" + storage_server + image_url
+                    settings.set("avatar", image_uri)
+                    try:
+                        self.call("cluster.static_upload", image_url, im_data, content_type)
+                    except StaticUploadError as e:
+                        form.error("avatar", unicode(e))
                 settings.set("signature", signature)
                 settings.set("signature_html", self.call("socio.format_text", signature))
                 settings.store()
@@ -986,4 +1093,5 @@ class Forum(Module):
             signature = settings.get("signature")
         form.hidden("redirect", redirect)
         form.texteditor(self._("Your forum signature"), "signature", signature)
+        form.file(self._("Your avatar"), "avatar")
         self.call("forum.response", form.html(), vars)

@@ -3,6 +3,7 @@
 
 from mg.core.cass import CassandraConnection, CassandraPool, CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.cass_struct import CassandraRestructure
+from mg.core.memcached import Memcached
 import unittest
 from concurrence import dispatch, Tasklet
 import time
@@ -32,7 +33,8 @@ class TestObjectList(CassandraObjectList):
 
 class TestORM(unittest.TestCase):
     def setUp(self):
-        self.db = CassandraPool().dbget("mgtest")
+        self.mc = Memcached(prefix="mgtest-")
+        self.db = CassandraPool().dbget("mgtest", self.mc)
         restruct = CassandraRestructure(self.db)
         struct = {
             "Objects": CfDef(),
@@ -49,7 +51,7 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj.get("key3"), None)
         obj.store()
 
-        obj_a = CassandraObject(self.db, obj.uuid, {}, prefix="prefix_")
+        obj_a = CassandraObject(self.db, obj.uuid, {}, prefix="prefix-")
         obj_a.set("K1", 1)
         obj_a.store()
 
@@ -66,7 +68,7 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj3.get("key3"), None)
         self.assertEqual(obj3.get("key4"), "test")
 
-        obj_a = CassandraObject(self.db, obj.uuid, prefix="prefix_")
+        obj_a = CassandraObject(self.db, obj.uuid, prefix="prefix-")
         self.assertEqual(obj_a.get("K1"), 1)
         obj_a.store()
 
@@ -136,17 +138,17 @@ class TestORM(unittest.TestCase):
             raised = raised + 1
         self.assertEqual(raised, 1)
 
-        obj1 = CassandraObject(self.db, prefix="prf_")
+        obj1 = CassandraObject(self.db, prefix="prf-")
         obj1.set("key1", 1)
         obj1.set("key2", "value2")
         obj1.store()
 
-        obj2 = CassandraObject(self.db, prefix="prf_")
+        obj2 = CassandraObject(self.db, prefix="prf-")
         obj2.set("key3", 3)
         obj2.set("key4", "value4")
         obj2.store()
 
-        lst = CassandraObjectList(self.db, [obj1.uuid, obj2.uuid], prefix="prf_")
+        lst = CassandraObjectList(self.db, [obj1.uuid, obj2.uuid], prefix="prf-")
         lst.load()
         self.assertEqual(len(lst), 2)
         self.assertEqual(lst[0].uuid, obj1.uuid)
@@ -223,6 +225,7 @@ class TestORM(unittest.TestCase):
             uuids.append(obj.uuid)
         # ---
         lst = TestObjectList(self.db, query_index="index")
+        print "loaded: %s" % lst
         self.assertEqual(len(lst), 10)
         for uuid in uuids:
             self.assertTrue(uuid in uuids)

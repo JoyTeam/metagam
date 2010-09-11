@@ -12,6 +12,8 @@ import logging
 from uuid import uuid4
 import time
 
+cache_interval = 3600
+
 class CassandraError(Exception):
     "This exception can be raised during database queries"
     pass
@@ -29,9 +31,10 @@ class Cassandra(object):
     Wrapper around CassandraConnection class. It puts CassandraConnection
     back to the pool on destruction
     """
-    def __init__(self, pool, keyspace):
+    def __init__(self, pool, keyspace, mc):
         self.pool = pool
         self.keyspace = keyspace
+        self.mc = mc
 
     def apply_keyspace(self, conn):
         if self.keyspace != conn.actual_keyspace:
@@ -202,9 +205,9 @@ class CassandraPool(object):
         "Put a new connection to the pool"
         self.cput(self.new_connection())
 
-    def dbget(self, keyspace):
+    def dbget(self, keyspace, mc):
         "The same as cget, but returns Cassandra wrapper"
-        return Cassandra(self, keyspace)
+        return Cassandra(self, keyspace, mc)
 
 class CassandraConnection(object):
     "CassandraConnection - interface to Cassandra database engine"
@@ -250,7 +253,7 @@ class CassandraObject(object):
     """
     def __init__(self, db, uuid=None, data=None, prefix=""):
         """
-        db - CassandraDatabase Object
+        db - Cassandra Object
         uuid - ID of object (None if newly created)
         data - preloaded object data (None is not loaded)
         """
@@ -292,11 +295,21 @@ class CassandraObject(object):
         Load object from the database
         Raises ObjectNotFoundException
         """
-        try:
-            col = self.db.get(self.prefix + self.uuid, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
-        except NotFoundException:
-            raise ObjectNotFoundException(self.prefix + self.uuid)
-        self.data = json.loads(col.value)
+        row_id = self.prefix + self.uuid
+        self.data = self.db.mc.get(row_id)
+        if self.data == "tomb":
+#            print "LOAD(MC) %s %s" % (row_id, self.data)
+            raise ObjectNotFoundException(row_id)
+        elif self.data is None:
+            try:
+                col = self.db.get(row_id, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+            except NotFoundException:
+                raise ObjectNotFoundException(row_id)
+            self.data = json.loads(col.value)
+            self.db.mc.add(row_id, self.data, cache_interval)
+#            print "LOAD(DB) %s %s" % (row_id, self.data)
+#        else:
+#            print "LOAD(MC) %s %s" % (row_id, self.data)
         self.dirty = False
 
     def index_values(self):
@@ -332,7 +345,7 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-        print "mutating %s: %s" % (self.uuid, self.data)
+#        print "mutating %s: %s" % (self.uuid, self.data)
         # calculating index mutations
         index_values = self.index_values()
         old_index_values = self.data.get("indexes")
@@ -366,7 +379,10 @@ class CassandraObject(object):
                     else:
                         mutations[index_row] = {"Objects": [mutation]}
         # mutation of the object itself
-        mutations[self.prefix + self.uuid] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
+        row_id = self.prefix + self.uuid
+        mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
+        self.db.mc.set(row_id, self.data, cache_interval)
+#        print "STORE %s %s" % (row_id, self.data)
         self.dirty = False
         self.new = False
 
@@ -388,7 +404,9 @@ class CassandraObject(object):
         """
         #print "removing %s" % self.uuid
         clock = Clock(time.time() * 1000)
-        self.db.remove(self.prefix + self.uuid, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+        row_id = self.prefix + self.uuid
+        self.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+        self.db.mc.set(row_id, "tomb", cache_interval)
         # removing indexes
         mutations = {}
         old_index_values = self.data.get("indexes")
@@ -469,31 +487,62 @@ class CassandraObjectList(object):
 
     def load(self, silent=False):
         if len(self.dict) > 0:
-            d = self.db.multiget_slice([(obj.prefix + obj.uuid) for obj in self.dict], ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM)
+            row_ids = [(obj.prefix + obj.uuid) for obj in self.dict]
+            mc_d = self.db.mc.get_multi(row_ids)
+            row_ids = [id for id in row_ids if mc_d.get(id) is None]
+            db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM) if len(row_ids) else {}
             recovered = False
             for obj in self.dict:
                 obj.valid = True
-                cols = d[obj.prefix + obj.uuid]
-                if len(cols) > 0:
-                    obj.data = json.loads(cols[0].column.value)
-                    obj.dirty = False
-                elif silent:
-                    if self.index_row is not None:
-                        mutations = []
-                        clock = None
-                        for col in self.index_data:
-                            if col.column.value == obj.uuid:
-                                obj.valid = False
-                                recovered = True
-                                #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
-                                if clock is None:
-                                    clock = Clock(time.time() * 1000)
-                                mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
-                                break
-                        if len(mutations):
-                            self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
+                row_id = obj.prefix + obj.uuid
+                data = mc_d.get(row_id)
+                if data is not None:
+#                    print "LOAD(MC) %s %s" % (obj.uuid, data)
+                    if data == "tomb":
+                        if silent:
+                            if self.index_row is not None:
+                                mutations = []
+                                clock = None
+                                for col in self.index_data:
+                                    if col.column.value == obj.uuid:
+                                        obj.valid = False
+                                        recovered = True
+                                        #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
+                                        if clock is None:
+                                            clock = Clock(time.time() * 1000)
+                                        mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
+                                        break
+                                if len(mutations):
+                                    self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
+                        else:
+                            raise ObjectNotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
+                    else:
+                        obj.data = data
+                        obj.dirty = False
                 else:
-                    raise ObjectNotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
+                    cols = db_d[row_id]
+                    if len(cols) > 0:
+                        obj.data = json.loads(cols[0].column.value)
+                        obj.dirty = False
+                        self.db.mc.add(row_id, obj.data, cache_interval)
+#                        print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
+                    elif silent:
+                        if self.index_row is not None:
+                            mutations = []
+                            clock = None
+                            for col in self.index_data:
+                                if col.column.value == obj.uuid:
+                                    obj.valid = False
+                                    recovered = True
+                                    #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
+                                    if clock is None:
+                                        clock = Clock(time.time() * 1000)
+                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
+                                    break
+                            if len(mutations):
+                                self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
+                    else:
+                        raise ObjectNotFoundException("UUID %s (prefix %s) not found" % (obj.uuid, obj.prefix))
             if recovered:
                 self.dict = [obj for obj in self.dict if obj.valid]
         self._loaded = True
@@ -532,7 +581,9 @@ class CassandraObjectList(object):
                             mutations[index_row] = {"Objects": [mutation]}
                         else:
                             m["Objects"].append(mutation)
-                obj.db.remove(obj.prefix + obj.uuid, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+                row_id = obj.prefix + obj.uuid
+                obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+                obj.db.mc.set(row_id, "tomb", cache_interval)
                 obj.dirty = False
                 obj.new = False
             # removing indexes

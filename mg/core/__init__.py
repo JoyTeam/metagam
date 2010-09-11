@@ -322,7 +322,8 @@ class Module(object):
         return self.req().param("ok")
 
     def db(self):
-        return self.app().dbpool.dbget(self.app().keyspace)
+        app = self.app()
+        return app.dbpool.dbget(app.keyspace, app.mc)
 
     def log_params(self):
         d = {}
@@ -509,7 +510,7 @@ class Application(object):
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.keyprefix = keyprefix
-        self.db = self.dbpool.dbget(self.keyspace)
+        self.db = self.dbpool.dbget(self.keyspace, mc)
 
     def dbrestruct(self):
         "Check database structure and update if necessary"
@@ -531,7 +532,7 @@ class Application(object):
         return cls(self.db, uuids, prefix="%s-" % self.keyprefix, **kwargs)
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
-        return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "_")
+        return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
 
 class ApplicationFactory(object):
     """

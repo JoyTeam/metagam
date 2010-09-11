@@ -76,7 +76,7 @@ class Memcached(object):
     def get(self, keys, default=None):
         connection = self.pool.get()
         try:
-            res = connection.get(self.prefix + keys, default)
+            res = connection.get(str(self.prefix + keys), default)
         except IOError:
             self.pool.new()
             return None
@@ -92,7 +92,7 @@ class Memcached(object):
     def get_multi(self, keys):
         connection = self.pool.get()
         try:
-            got = connection.get_multi(map(lambda key: self.prefix + key, keys))
+            got = connection.get_multi(map(lambda key: str(self.prefix + key), keys))
             res = {}
             for item in got[1].iteritems():
                 (key, data) = item
@@ -112,7 +112,7 @@ class Memcached(object):
     def set(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            res = connection.set(self.prefix + key, data, expiration, flags)
+            res = connection.set(str(self.prefix + key), data, expiration, flags)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -128,7 +128,7 @@ class Memcached(object):
     def add(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            res = connection.add(self.prefix + key, data, expiration, flags)
+            res = connection.add(str(self.prefix + key), data, expiration, flags)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -144,7 +144,7 @@ class Memcached(object):
     def replace(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
         try:
-            res = connection.replace(self.prefix + key, data, expiration, flags)
+            res = connection.replace(str(self.prefix + key), data, expiration, flags)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -160,7 +160,7 @@ class Memcached(object):
     def incr(self, key, increment):
         connection = self.pool.get()
         try:
-            res = connection.incr(self.prefix + key, increment)
+            res = connection.incr(str(self.prefix + key), increment)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -176,7 +176,7 @@ class Memcached(object):
     def decr(self, key, decrement):
         connection = self.pool.get()
         try:
-            res = connection.decr(self.prefix + key, decrement)
+            res = connection.decr(str(self.prefix + key), decrement)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -192,7 +192,7 @@ class Memcached(object):
     def delete(self, key, expiration=0):
         connection = self.pool.get()
         try:
-            res = connection.delete(self.prefix + key, expiration)
+            res = connection.delete(str(self.prefix + key), expiration)
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR

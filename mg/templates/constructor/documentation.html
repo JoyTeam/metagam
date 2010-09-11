@@ -1,0 +1,10 @@
+<link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/cabinet.css" />
+===HEAD===
+<div id="title">[%title%]</div>
+[%foreach m in menu%]
+<table class="menu">
+<tr class="images">[%foreach ent in m%]<td><a href="[%ent.href%]"><img src="/st/[%ver%]/[%ent.image%]" alt="" /></a></td>[%end%]</tr>
+<tr class="text">[%foreach ent in m%]<td><a href="[%ent.href%]">[%ent.text%]</a></td>[%end%]</tr>
+</table>
+[%end%]
+<table id="docindex"><tr><td class="docindex">Some documentation</td></tr></table>

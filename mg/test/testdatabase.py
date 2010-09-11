@@ -3,6 +3,7 @@
 
 from mg.core.cass import CassandraConnection, CassandraPool
 from mg.core.cass_struct import CassandraRestructure
+from mg.core.memcached import Memcached
 import unittest
 from concurrence import dispatch, Tasklet
 import time
@@ -10,7 +11,8 @@ from cassandra.ttypes import *
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
-        self.db = CassandraPool().dbget("mgtest")
+        self.mc = Memcached(prefix="mgtest-")
+        self.db = CassandraPool().dbget("mgtest", self.mc)
 
         self.cleanup()
         restruct = CassandraRestructure(self.db)
@@ -49,7 +51,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(len(diff.ops), 0)
         restruct.apply(diff)
 
-        ksinfo = self.db.describe_keyspace("mgtest")
+        ksinfo = dict([(cfdef.name, cfdef) for cfdef in self.db.describe_keyspace("mgtest").cf_defs])
         self.assertTrue("Family1" in ksinfo)
         self.assertTrue("Family2" not in ksinfo)
         self.assertTrue("Family3" in ksinfo)

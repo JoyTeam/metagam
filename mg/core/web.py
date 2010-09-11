@@ -180,6 +180,26 @@ class Request(object):
         self.headers.append(('Location', uri))
         return self.send_response("302 Found", self.headers, "")
 
+    def session(self):
+        try:
+            return self._session
+        except AttributeError:
+            pass
+        self._session = self.app.hooks.call("session.get")
+        return self._session
+
+    def user(self):
+        try:
+            return self._user
+        except AttributeError:
+            pass
+        sess = self.session()
+        if sess is None:
+            self._user = None
+        else:
+            self._user = sess.get("user")
+        return self._user
+
 class HTTPHandler(server.HTTPHandler):
     def handle(self, socket, application):
         self._remote_addr, self._remote_port = socket.socket.getpeername()
@@ -324,6 +344,7 @@ class WebApplication(Application):
 
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
+        request.app = self
         request.group = group
         request.hook = hook
         request.args = self.re_remove_ver.sub("", args)

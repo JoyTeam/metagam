@@ -17,7 +17,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         mg.core.ApplicationFactory.__init__(self, inst)
         self.dbpool = dbpool
         self.mcpool = mcpool
-        self.metagam_app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg_"), "ext", "mg_")
+        self.metagam_app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg-"), "ext", "mg-")
         self.metagam_app.tag = "metagam"
         self.metagam_app.modules.load(["mg.constructor.Constructor"])
         self.add_permanent(self.metagam_app)
