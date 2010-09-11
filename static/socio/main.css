@@ -26,7 +26,6 @@ div.catname { font-size: 14px; font-weight: bold; }
 #page_head4 { background-image: url("/st/socio/test/head3.gif"); background-repeat: repeat-x; background-position: 0% 0%; height: 165px; text-align: center; }
 #page_head5 { padding-top: 135px; }
 div#page_content { margin: 10px 0px 0px 0px; }
-#menu { font-size: 14px; font-weight: bold; white-space: nowrap; }
 div#newtopic { padding: 0px 0px 15px 13px; }
 div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 11px; padding-bottom: 15px; }
 tr.category td.avatar { padding: 7px 10px 30px 17px; vertical-align: top; width: 150px; }
@@ -48,3 +47,7 @@ table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115;
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
 table.std_form_row { width: 100%; }
 table.std_form_row td.control { padding-right: 10px; vertical-align: top; }
+#menu { font-size: 14px; font-weight: bold; padding: 10px 10px 0px 17px }
+#topmenu { width: 100%; background-color: #ebcb88; }
+#topmenu_left { padding: 5px 10px 5px 17px; }
+#topmenu_right { padding: 5px 10px 5px 17px; text-align: right; }

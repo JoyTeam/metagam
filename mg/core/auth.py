@@ -77,17 +77,23 @@ class CookieSession(Module):
 
     def get(self, create=False):
         req = self.req()
+        try:
+            return req.session
+        except AttributeError:
+            pass
         sid = req.cookie("mgsess")
         if sid is not None:
             mcid = "Session-%s" % sid
             val = self.app().mc.get(mcid)
             if val is not None:
-                return self.obj(Session, sid, val)
+                req.session = self.obj(Session, sid, val)
+                return req.session
             session = self.find(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                 session.store()
                 self.app().mc.set(mcid, session.data)
+                req.session = session
                 return session
         sid = uuid4().hex
         args = {}
@@ -104,6 +110,7 @@ class CookieSession(Module):
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
             session.store()
+        req.session = session
         return session
 
     def find(self, sid):
@@ -184,6 +191,10 @@ class PasswordAuthentication(Module):
                 self.app().mc.delete("Session-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
+                redirects = {}
+                self.call("auth.redirects", redirects)
+                if redirects.has_key("register"):
+                    self.call("web.redirect", redirects["register"])
                 self.call("web.redirect", "/")
         if redirect is not None:
             form.hidden("redirect", redirect)
@@ -326,6 +337,10 @@ class PasswordAuthentication(Module):
             session.delkey("user")
             session.store()
             self.app().mc.delete("Session-%s" % session.uuid)
+            req = self.req()
+            redirect = req.param("redirect")
+            if redirect is not None and redirect != "":
+                self.call("web.redirect", redirect)
         self.call("web.redirect", "/")
 
     def ext_login(self):
@@ -355,6 +370,10 @@ class PasswordAuthentication(Module):
                 self.app().mc.delete("Session-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
+                redirects = {}
+                self.call("auth.redirects", redirects)
+                if redirects.has_key("login"):
+                    self.call("web.redirect", redirects["login"])
                 self.call("web.redirect", "/")
         if redirect is not None:
             form.hidden("redirect", redirect)

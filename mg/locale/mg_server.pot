@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-10 02:02+0400\n"
+"POT-Creation-Date: 2010-09-10 18:16+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -169,7 +169,7 @@ msgstr ""
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/auth.py:141 mg/core/auth.py:338
+#: mg/core/auth.py:141 mg/core/auth.py:339
 msgid "Enter your user name"
 msgstr ""
 
@@ -183,7 +183,7 @@ msgstr ""
 msgid "This name is taken already"
 msgstr ""
 
-#: mg/core/auth.py:147 mg/core/auth.py:344
+#: mg/core/auth.py:147 mg/core/auth.py:345
 msgid "Enter your password"
 msgstr ""
 
@@ -207,11 +207,11 @@ msgstr ""
 msgid "Incorrect number"
 msgstr ""
 
-#: mg/core/auth.py:190 mg/core/auth.py:360
+#: mg/core/auth.py:190 mg/core/auth.py:361
 msgid "User name"
 msgstr ""
 
-#: mg/core/auth.py:191 mg/core/auth.py:361
+#: mg/core/auth.py:191 mg/core/auth.py:362
 msgid "Password"
 msgstr ""
 
@@ -223,7 +223,7 @@ msgstr ""
 msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
-#: mg/core/auth.py:194 mg/core/auth.py:363
+#: mg/core/auth.py:194 mg/core/auth.py:364
 msgid "Register"
 msgstr ""
 
@@ -231,63 +231,63 @@ msgstr ""
 msgid "User registration"
 msgstr ""
 
-#: mg/core/auth.py:342
+#: mg/core/auth.py:343
 msgid "User not found"
 msgstr ""
 
-#: mg/core/auth.py:349
+#: mg/core/auth.py:350
 msgid "Incorrect password"
 msgstr ""
 
-#: mg/core/auth.py:362
+#: mg/core/auth.py:363
 msgid "Log in"
 msgstr ""
 
-#: mg/core/auth.py:365
+#: mg/core/auth.py:366
 msgid "User login"
 msgstr ""
 
-#: mg/mainsite/__init__.py:21
+#: mg/constructor/__init__.py:21
 msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/mainsite/__init__.py:27
+#: mg/constructor/__init__.py:27
 msgid "Online games constructor"
 msgstr ""
 
-#: mg/mainsite/__init__.py:28
+#: mg/constructor/__init__.py:28
 msgid "Games constructor"
 msgstr ""
 
-#: mg/mainsite/__init__.py:29
+#: mg/constructor/__init__.py:29
 msgid "Create the world of your dreams"
 msgstr ""
 
-#: mg/mainsite/__init__.py:30
+#: mg/constructor/__init__.py:30
 msgid "log in"
 msgstr ""
 
-#: mg/mainsite/__init__.py:31
+#: mg/constructor/__init__.py:31
 msgid "register"
 msgstr ""
 
-#: mg/mainsite/__init__.py:32
+#: mg/constructor/__init__.py:32
 msgid "forum"
 msgstr ""
 
-#: mg/mainsite/__init__.py:33
+#: mg/constructor/__init__.py:33
 msgid "cabinet"
 msgstr ""
 
-#: mg/mainsite/__init__.py:34
+#: mg/constructor/__init__.py:34
 msgid "log out"
 msgstr ""
 
-#: mg/mainsite/__init__.py:46
+#: mg/constructor/__init__.py:46
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/mainsite/__init__.py:48
+#: mg/constructor/__init__.py:48
 msgid "Invalid e-mail format"
 msgstr ""
 

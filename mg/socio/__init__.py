@@ -13,6 +13,29 @@ import urlparse
 
 posts_per_page = 20
 
+re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
+re_r = re.compile(r'\r')
+re_emptylines = re.compile(r'(\s*\n)+\s*')
+re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
+re_images = re.compile(r'\[img:[0-9a-f]+\]')
+
+class UserForumSettings(CassandraObject):
+    _indexes = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["prefix"] = "UserForumSettings-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return UserForumSettings._indexes
+
+class UserForumSettingsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["prefix"] = "UserForumSettings-"
+        kwargs["cls"] = UserForumSettings
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class ForumTopic(CassandraObject):
     _indexes = {
         "category-created": [["category"], "pinned-created"],
@@ -389,8 +412,33 @@ class Forum(Module):
         self.rhook("ext-forum.reply", self.ext_reply)
         self.rhook("ext-forum.delete", self.ext_delete)
         self.rhook("ext-forum.edit", self.ext_edit)
+        self.rhook("ext-forum.settings", self.ext_settings)
 
     def response(self, content, vars):
+        topmenu = []
+        self.call("forum.topmenu", topmenu)
+        if len(topmenu):
+            topmenu_left = []
+            topmenu_right = []
+            first_left = True
+            first_right = True
+            for ent in topmenu:
+                if ent.get("left"):
+                    if first_left:
+                        first_left = False
+                    else:
+                        topmenu_left.append({"delim": True})
+                    topmenu_left.append(ent)
+                else:
+                    if first_right:
+                        first_right = False
+                    else:
+                        topmenu_right.append({"delim": True})
+                    topmenu_right.append(ent)
+            if len(topmenu_left):
+                vars["topmenu_left"] = topmenu_left
+            if len(topmenu_right):
+                vars["topmenu_right"] = topmenu_right
         if vars.get("menu") and len(vars["menu"]):
             menu = []
             first = True
@@ -892,4 +940,50 @@ class Forum(Module):
             form.input(self._("Subject"), "subject", subject)
             form.texteditor(None, "content", content)
         form.submit(None, None, self._("Save"))
+        self.call("forum.response", form.html(), vars)
+
+    def ext_settings(self):
+        session = self.call("session.require_login")
+        user_id = session.get("user")
+        try:
+            settings = self.obj(UserForumSettings, user_id)
+        except ObjectNotFoundException:
+            settings = self.obj(UserForumSettings, user_id, {})
+        vars = {
+            "title": self._("Forum settings"),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("Forum settings") },
+            ]
+        }
+        req = self.req()
+        form = self.call("web.form", "socio/form.html")
+        form.textarea_rows = 4
+        signature = req.param("signature")
+        redirect = req.param("redirect")
+        if req.ok():
+            signature = re_trim.sub(r'\1', signature)
+            signature = re_r.sub('', signature)
+            signature = re_emptylines.sub('\n', signature)
+            signature = re_trimlines.sub(r'\1', signature)
+            lines = signature.split('\n')
+            if len(lines) > 4:
+                form.error("signature", self._("Signature can't contain more than 4 lines"))
+            else:
+                for line in lines:
+                    if len(line) > 80:
+                        form.error("signature", self._("Signature line couldn't be longer than 80 symbols"))
+                    elif re_images.match(line):
+                        form.error("signature", self._("Signature couldn't contain images"))
+            if not form.errors:
+                settings.set("signature", signature)
+                settings.set("signature_html", self.call("socio.format_text", signature))
+                settings.store()
+                if redirect is not None and redirect != "":
+                    self.call("web.redirect", redirect)
+                self.call("web.redirect", "/cabinet/settings")
+        else:
+            signature = settings.get("signature")
+        form.hidden("redirect", redirect)
+        form.texteditor(self._("Your forum signature"), "signature", signature)
         self.call("forum.response", form.html(), vars)

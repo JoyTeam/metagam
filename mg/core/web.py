@@ -611,13 +611,13 @@ class WebForm(object):
         """
         <input type="hidden" />
         """
-        self._hidden.append({"name": name, "value": cgi.escape(str(value))})
+        self._hidden.append({"name": name, "value": cgi.escape(str(value)) if value is not None else None})
 
     def input(self, desc, name, value, **kwargs):
         """
         <input />
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["element_input"] = True
         self.control(desc, name, **kwargs)
 
@@ -625,7 +625,7 @@ class WebForm(object):
         """
         <input type="password" />
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["element_password"] = True
         self.control(desc, name, **kwargs)
 
@@ -633,7 +633,7 @@ class WebForm(object):
         """
         <textarea />
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["element_textarea"] = True
         self.control(desc, name, **kwargs)
 
@@ -641,7 +641,7 @@ class WebForm(object):
         """
         <textarea />
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["element_textarea_fixed"] = True
         self.control(desc, name, **kwargs)
 
@@ -649,7 +649,7 @@ class WebForm(object):
         """
         <input type="submit" />
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         if name is not None:
             kwargs["name"] = {"text": name}
         kwargs["element_submit"] = True
@@ -660,7 +660,7 @@ class WebForm(object):
         """
         <textarea /> with formatting buttons
         """
-        kwargs["value"] = cgi.escape(value)
+        kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["attaches"] = not kwargs.get("no_attaches")
         kwargs["show_smiles"] = not kwargs.get("no_smiles")
         if kwargs.get("fixed"):

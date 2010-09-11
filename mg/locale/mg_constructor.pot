@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-07 20:33+0400\n"
+"POT-Creation-Date: 2010-09-11 23:04+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,31 +16,32 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/mainsite/index.js:12
+#: static/constructor/index.js:12
 msgid "Subscribe"
 msgstr ""
 
-#: static/mainsite/index.js:20
+#: static/constructor/index.js:20
 msgid "Subscription confirmation"
 msgstr ""
 
-#: static/mainsite/index.js:20
+#: static/constructor/index.js:20
 msgid "You have successfully subscribed to the project news"
 msgstr ""
 
-#: static/mainsite/index.js:26 static/admin/form.js:45 static/admin/form.js:48
+#: static/constructor/index.js:26 static/admin/form.js:45
+#: static/admin/form.js:48
 msgid "Error"
 msgstr ""
 
-#: static/mainsite/index.js:26
+#: static/constructor/index.js:26
 msgid "Connection to the server failed"
 msgstr ""
 
-#: static/mainsite/index.js:52
+#: static/constructor/index.js:52
 msgid "E-mail address"
 msgstr ""
 
-#: static/mainsite/index.js:59
+#: static/constructor/index.js:59
 msgid "Subsciption to the project news"
 msgstr ""
 

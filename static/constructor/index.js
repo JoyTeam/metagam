@@ -31,7 +31,7 @@ function show_subscribe()
 		});
 
 		var emailForm = new Ext.FormPanel({
-			url: '/mainsite/subscribe',
+			url: '/constructor/subscribe',
 			frame: true,
 			bodyStyle: 'padding: 5px 5px 0',
 			width: 400,

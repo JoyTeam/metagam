@@ -7,7 +7,7 @@ package_name="Metagam"
 package_version="0.1"
 langs := ru
 mo_modules := server
-js_modules := mainsite
+js_modules := constructor
 
 # ============= MODULE: server ===============
 server_sources := $(shell find . -name '*.py')
@@ -27,22 +27,22 @@ mg/locale/server/%.po: mg/locale/mg_server.pot
 mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
 	msgfmt -o $@ $<
 
-# ============= MODULE: mainsite ===============
-mainsite_sources := $(shell find static/mainsite static/admin -name '*.js' | egrep -v '/gettext-')
-mainsite_po_files := $(foreach lang,$(langs),mg/locale/mainsite/$(lang).po)
-mainsite_js_files := $(foreach lang,$(langs),static/mainsite/gettext-$(lang).js)
-mg/locale/mg_mainsite.pot: $(mainsite_sources)
-	xgettext -d mg_mainsite -L Python --copyright-holder=$(copyright) --force-po \
+# ============= MODULE: constructor ===============
+constructor_sources := $(shell find static/constructor static/admin -name '*.js' | egrep -v '/gettext-')
+constructor_po_files := $(foreach lang,$(langs),mg/locale/constructor/$(lang).po)
+constructor_js_files := $(foreach lang,$(langs),static/constructor/gettext-$(lang).js)
+mg/locale/mg_constructor.pot: $(constructor_sources)
+	xgettext -d mg_constructor -L Python --copyright-holder=$(copyright) --force-po \
 		--package-name=$(package_name) --package-version=$(package_version) \
 		-kgettext_noop \
-		$(mainsite_sources)
-	mv mg_mainsite.po mg/locale/mg_mainsite.pot
-	mkdir -p mg/locale/mainsite
-mg/locale/mainsite/%.po: mg/locale/mg_mainsite.pot
+		$(constructor_sources)
+	mv mg_constructor.po mg/locale/mg_constructor.pot
+	mkdir -p mg/locale/constructor
+mg/locale/constructor/%.po: mg/locale/mg_constructor.pot
 	msgmerge -U $@ $<
 	touch $@
-static/mainsite/gettext-%.js: mg/locale/mainsite/%.po
-	(echo -n 'var gt=new Gettext({"domain": "mg_mainsite", "locale_data": {"mg_mainsite": '; po2json $< ; echo '}})') > $@
+static/constructor/gettext-%.js: mg/locale/constructor/%.po
+	(echo -n 'var gt=new Gettext({"domain": "mg_constructor", "locale_data": {"mg_constructor": '; po2json $< ; echo '}})') > $@
 
 # ============= GLOBAL ===============
 modules := $(mo_modules) $(js_modules)
