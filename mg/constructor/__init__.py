@@ -8,7 +8,8 @@ import json
 class Constructor(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster"])
+        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession",
+            "mg.core.cluster.Cluster", "mg.core.auth.Authorization"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-constructor.subscribe", self.subscribe)
@@ -75,17 +76,21 @@ class Constructor(Module):
         return request.jresponse({"success": True})
 
     def cabinet_index(self):
+        req = self.req()
         session = self.call("session.require_login")
+        perms = req.permissions()
+        menu1 = []
+        menu1.append({"href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation")})
+        if len(perms):
+            menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Administration")})
+        menu1.append({"href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum")})
+        menu2 = []
+        menu2.append({"href": "/constructor/newgame", "image": "constructor/cab_newgame.jpg", "text": self._("New game")})
         vars = {
             "title": self._("Cabinet"),
             "menu": [
-                [
-                    { "href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation") },
-                    { "href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum") },
-                ],
-                [
-                    { "href": "/constructor/newgame", "image": "constructor/cab_newgame.jpg", "text": self._("New game") },
-                ],
+                menu1,
+                menu2,
                 [
                     { "href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings") },
                     { "href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out") },

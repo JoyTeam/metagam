@@ -2,6 +2,7 @@ from mg.core import Module
 import cgi
 import random
 import re
+import json
 
 class AdminInterface(Module):
     def __init__(self, app, fqn):
@@ -13,23 +14,34 @@ class AdminInterface(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-admin.index", self.index)
-        self.rhook("ext-admin.menu", self.menu)
         self.rhook("admin.response_js", self.response_js)
+        self.rhook("admin.response", self.response)
         self.rhook("admin.response_template", self.response_template)
         self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
 
     def index(self):
+        menu = self.makemenu("root.index", "Root")
+        if not menu:
+            self.call("web.forbidden")
         vars = {
-            "title": self._("Administration interface")
+            "menu": json.dumps(menu),
+            "title": self._("Administration interface"),
         }
         self.call("web.response_template", "admin/index.html", vars)
 
-    def menu(self):
-        req = self.req()
+    def makemenu(self, node, text):
         menu = []
-        self.call("menu-admin-%s" % req.param("node"), menu)
-        return req.jresponse(menu)
+        self.call("menu-admin-%s" % node, menu)
+        result = []
+        for ent in menu:
+            if ent.get("leaf"):
+                result.append(ent)
+            else:
+                submenu = self.makemenu(ent["id"], ent["text"])
+                if submenu:
+                    result.append(submenu)
+        return {"text": text, "children": result} if len(result) else None
 
     def headmenu(self):
         menu = []
@@ -87,13 +99,19 @@ class AdminInterface(Module):
 
     def response_js(self, script, cls, data):
         req = self.req()
-        raise WebResponse(req.jresponse({
+        return req.jresponse({
             "ver": self.call("core.ver"),
             "script": script,
             "cls": cls,
             "data": data,
             "headmenu": self.headmenu()
-        }))
+        })
+
+    def response(self, content, vars):
+        req = self.req()
+        req.global_html = "admin/response.html"
+        vars["headmenu"] = self.headmenu()
+        self.call("web.response_inline_layout", content, vars)
 
     def response_template(self, filename, vars):
         req = self.req()

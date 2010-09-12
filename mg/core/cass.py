@@ -324,7 +324,7 @@ class CassandraObject(object):
                     break;
                 values.append(val)
             if not abort:
-                col = "id"
+                col = self.uuid
                 if len(index) > 1:
                     val = self.data.get(index[1])
                     if val is None:
@@ -345,7 +345,6 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-#        print "mutating %s: %s" % (self.uuid, self.data)
         # calculating index mutations
         index_values = self.index_values()
         old_index_values = self.data.get("indexes")
@@ -382,7 +381,7 @@ class CassandraObject(object):
         row_id = self.prefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
         self.db.mc.set(row_id, self.data, cache_interval)
-#        print "STORE %s %s" % (row_id, self.data)
+#       print "STORE %s %s" % (row_id, self.data)
         self.dirty = False
         self.new = False
 
@@ -562,7 +561,6 @@ class CassandraObjectList(object):
                         clock = Clock(time.time() * 1000)
                     obj.mutate(mutations, clock)
             if len(mutations) > 0:
-                #print "applying mutations: %s" % mutations
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def remove(self):
@@ -587,7 +585,6 @@ class CassandraObjectList(object):
                 obj.dirty = False
                 obj.new = False
             # removing indexes
-            #print "remove mutations: %s" % mutations
             if len(mutations):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 

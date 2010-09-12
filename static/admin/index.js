@@ -102,12 +102,7 @@ Ext.onReady(function() {
 		containerScroll: true,
 		border: false,
 		rootVisible: false,
-		dataUrl: '/admin/menu/' + ver,
-		root: {
-			nodeType: 'async',
-			text: 'Root',
-			id: 'root.index'
-		},
+		root: admin_menu,
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',

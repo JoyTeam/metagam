@@ -15,7 +15,7 @@ class Director(Module):
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("int-director.ready", self.director_ready)
-        self.rhook("int-director.reload", self.director_reload)
+        self.rhook("int-director.reload", self.int_director_reload)
         self.rhook("int-index.index", self.director_index)
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
@@ -26,20 +26,23 @@ class Director(Module):
         self.servers_online_modified = True
         self.workers_str = None
 
-    def director_reload(self):
+    def int_director_reload(self):
         request = self.req()
-        result = {
-        }
+        result = self.director_reload()
+        return request.jresponse(result)
+
+    def director_reload(self):
+        result = {}
         errors = self.app().reload()
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
             result["director"] = "ok"
-
+        config = json.dumps(self.config())
         for server_id, info in self.servers_online.iteritems():
             errors = 1
             try:
-                res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {})
+                res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {"config": config})
                 err = res.get("errors")
                 if err is None:
                     errors = 0
@@ -52,7 +55,7 @@ class Director(Module):
                 result[tag] = "ERRORS: %d" % errors
             else:
                 result[tag] = "ok"
-        return request.jresponse(result)
+        return result
 
     def web_global_html(self):
         return "director/global.html"
@@ -99,18 +102,22 @@ class Director(Module):
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
         metagam_host = request.param("metagam_host")
+        admin_user = request.param("admin_user")
         config = self.config()
         if self.ok():
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
             config["metagam_host"] = metagam_host
+            config["admin_user"] = admin_user
             self.app().config.set("director.config", config)
             self.app().config.store()
+            self.director_reload()
             self.call("web.redirect", "/")
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             metagam_host = config["metagam_host"]
+            admin_user = config.get("admin_user")
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Director settings"),
             "form": {
@@ -120,6 +127,8 @@ class Director(Module):
                 "cassandra": cassandra,
                 "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
                 "metagam_host": metagam_host,
+                "admin_user_desc": self._("<strong>Admin user uuid</strong>"),
+                "admin_user": admin_user,
                 "submit_desc": self._("Save")
             }
         })

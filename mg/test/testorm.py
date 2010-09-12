@@ -201,13 +201,11 @@ class TestORM(unittest.TestCase):
         lst.load()
         lst[0].set("created", "Не-дата");
         lst[1].set("topic", "Топик")
-        print "storing"
         lst.store()
 
         lst = TestObjectList(self.db, query_index="created", query_equal="Топик")
         self.assertEqual(len(lst), 2)
         uuids = [obj.uuid for obj in lst]
-        print "uuid1=%s, uuid2=%s, uuids=%s" % (obj1.uuid, obj2.uuid, uuids)
         self.assertTrue(obj1.uuid in uuids)
         self.assertTrue(obj2.uuid in uuids)
 
@@ -225,7 +223,6 @@ class TestORM(unittest.TestCase):
             uuids.append(obj.uuid)
         # ---
         lst = TestObjectList(self.db, query_index="index")
-        print "loaded: %s" % lst
         self.assertEqual(len(lst), 10)
         for uuid in uuids:
             self.assertTrue(uuid in uuids)

@@ -200,6 +200,20 @@ class Request(object):
             self._user = sess.get("user")
         return self._user
 
+    def permissions(self):
+        try:
+            return self._permissions
+        except AttributeError:
+            pass
+        self._permissions = self.app.hooks.call("auth.permissions", self.user())
+        return self._permissions
+
+    def has_access(self, key):
+        perms = self.permissions()
+        if perms.get(key):
+            return True
+        return perms.get("admin")
+
 class HTTPHandler(server.HTTPHandler):
     def handle(self, socket, application):
         self._remote_addr, self._remote_port = socket.socket.getpeername()
@@ -378,8 +392,10 @@ class Web(Module):
         self.rhook("web.response_global", self.web_response_global)
         self.rhook("web.response_template", self.web_response_template)
         self.rhook("web.parse_layout", self.web_parse_layout)
+        self.rhook("web.parse_inline_layout", self.web_parse_inline_layout)
         self.rhook("web.parse_hook_layout", self.web_parse_hook_layout)
         self.rhook("web.response_layout", self.web_response_layout)
+        self.rhook("web.response_inline_layout", self.web_response_inline_layout)
         self.rhook("web.response_hook_layout", self.web_response_hook_layout)
         self.rhook("web.response_json", self.web_response_json)
         self.rhook("web.form", self.web_form)
@@ -390,6 +406,9 @@ class Web(Module):
 
     def core_reload(self):
         request = self.req()
+        config = request.param("config")
+        if config:
+            self.app().inst.config = json.loads(config)
         errors = self.app().inst.reload()
         if errors:
             return request.jresponse({ "errors": errors })
@@ -477,6 +496,9 @@ class Web(Module):
 
     def web_parse_layout(self, filename, vars):
         content = self.call("web.parse_template", filename, vars)
+        return self.call("web.parse_inline_layout", content, vars)
+
+    def web_parse_inline_layout(self, content, vars):
         tokens = self.re_hooks_split.split(content)
         i = 1
         while i < len(tokens):
@@ -504,6 +526,9 @@ class Web(Module):
 
     def web_response_layout(self, filename, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_layout", filename, vars), vars))
+
+    def web_response_inline_layout(self, content, vars):
+        raise WebResponse(self.call("web.response_global", self.call("web.parse_inline_layout", content, vars), vars))
 
     def web_response_hook_layout(self, hook, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars))

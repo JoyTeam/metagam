@@ -11,6 +11,7 @@ import time
 import re
 import random
 import hashlib
+import cgi
 
 class User(CassandraObject):
     _indexes = {
@@ -30,6 +31,27 @@ class UserList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["prefix"] = "User-"
         kwargs["cls"] = User
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class UserPermissions(CassandraObject):
+    _indexes = {
+        "any": [["any"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["prefix"] = "UserPermissions-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return UserPermissions._indexes
+
+    def sync(self):
+        self.set("any", "1")
+
+class UserPermissionsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["prefix"] = "UserPermissions-"
+        kwargs["cls"] = UserPermissions
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Session(CassandraObject):
@@ -126,6 +148,7 @@ class PasswordAuthentication(Module):
         self.rhook("ext-auth.captcha", self.ext_captcha)
         self.rhook("ext-auth.logout", self.ext_logout)
         self.rhook("ext-auth.login", self.ext_login)
+        self.rhook("session.find_user", self.find_user)
 
     def ext_register(self):
         req = self.req()
@@ -378,3 +401,142 @@ class PasswordAuthentication(Module):
             "title": self._("User login"),
         }
         self.call("web.response_global", form.html(), vars)
+
+class Authorization(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("auth.permissions", self.auth_permissions)
+        self.rhook("session.require_permission", self.require_permission)
+        self.admin_uuid = self.app().inst.config.get("admin_user")
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-security.index", self.menu_security_index)
+        self.rhook("ext-admin-auth.permissions", self.admin_permissions)
+        self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
+        self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions)
+        self.rhook("headmenu-admin-auth.editpermissions", self.headmenu_editpermissions)
+        self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions)
+        self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
+        self.rhook("permissions.list", self.permissions_list)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "permissions", "name": self._("User permissions editor")})
+
+    def auth_permissions(self, user_id):
+        perms = {}
+        if user_id:
+            if user_id == self.admin_uuid:
+                perms["admin"] = True
+            try:
+                p = self.obj(UserPermissions, user_id)
+                for key in p.get("perms").keys():
+                    perms[key] = True
+            except ObjectNotFoundException:
+                pass
+        return perms
+
+    def require_permission(self, perm):
+        req = self.req()
+        if not req.has_access(perm):
+            self.call("web.forbidden")
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "security.index", "text": self._("Security")})
+
+    def menu_security_index(self, menu):
+        req = self.req()
+        if req.has_access("permissions"):
+            menu.append({"id": "auth/permissions", "text": self._("Permissions"), "leaf": True})
+
+    def admin_permissions(self):
+        self.call("session.require_permission", "permissions")
+        permissions_list = []
+        self.call("permissions.list", permissions_list)
+        users = []
+        user_permissions = self.objlist(UserPermissionsList, query_index="any", query_equal="1")
+        print "user_permissions: %s" % user_permissions
+        if len(user_permissions):
+            user_permissions.load()
+            perms = dict([(obj.uuid, obj.get("perms")) for obj in user_permissions])
+            usr = self.objlist(UserList, perms.keys())
+            usr.load()
+            for u in usr:
+                grant_list = []
+                p = perms[u.uuid]
+                for perm in permissions_list:
+                    if p.get(perm["id"]):
+                        grant_list.append(perm["name"])
+                users.append({"id": u.uuid, "name": cgi.escape(u.get("name")), "permissions": "<br />".join(grant_list)})
+        vars = {
+            "editpermissions": self._("Edit permissions of a user"),
+            "user_name": self._("User name"),
+            "permissions": self._("Permissions"),
+            "edit": self._("edit"),
+            "editing": self._("Editing"),
+            "users": users,
+        }
+        self.call("admin.response_template", "admin/auth/permissions.html", vars)
+
+    def headmenu_permissions(self, args):
+        return self._("User permissions")
+
+    def admin_editpermissions(self):
+        self.call("session.require_permission", "permissions")
+        req = self.req()
+        name = req.param("name")
+        if req.ok():
+            errors = {}
+            if not name:
+                errors["name"] = self._("Enter user name")
+            else:
+                user = self.call("session.find_user", name)
+                if not user:
+                    errors["name"] = self._("User not found")
+                else:
+                    return req.jresponse({"success": True, "redirect": "auth/edituserpermissions/%s" % user.uuid})
+            return req.jresponse({"success": False, "errors": errors})
+        fields = [
+            {"name": "name", "label": self._("User name"), "value": name},
+        ]
+        buttons = [{"text": self._("Search")}]
+        return self.call("admin.form", fields=fields, buttons=buttons)
+
+    def headmenu_editpermissions(self, args):
+        return [self._("Edit permissions of a user"), "auth/permissions"]
+
+    def admin_edituserpermissions(self):
+        self.call("session.require_permission", "permissions")
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        perms = []
+        self.call("permissions.list", perms)
+        try:
+            user_permissions = self.obj(UserPermissions, req.args)
+        except ObjectNotFoundException:
+            user_permissions = self.obj(UserPermissions, req.args, {})
+        if req.ok():
+            perm_values = {}
+            for perm in perms:
+                if req.param("perm%s" % perm["id"]):
+                    perm_values[perm["id"]] = True
+            if perm_values:
+                user_permissions.set("perms", perm_values)
+                user_permissions.sync()
+                user_permissions.store()
+            else:
+                user_permissions.remove()
+            return req.jresponse({"success": True, "redirect": "auth/permissions"})
+        else:
+            perm_values = user_permissions.get("perms")
+            if not perm_values:
+                perm_values = {}
+        fields = []
+        for perm in perms:
+            fields.append({"name": "perm%s" % perm["id"], "label": perm["name"], "type": "checkbox", "checked": perm_values.get(perm["id"])})
+        return self.call("admin.form", fields=fields)
+
+    def headmenu_edituserpermissions(self, args):
+        user = self.obj(User, args)
+        return [cgi.escape(user.get("name")), "auth/editpermissions"]

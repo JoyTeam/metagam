@@ -111,11 +111,18 @@ class ForumAdmin(Module):
         self.rhook("headmenu-admin-forum.category", self.headmenu_forum_category)
         self.rhook("ext-admin-forum.categories", self.admin_categories)
         self.rhook("ext-admin-forum.category", self.admin_category)
+        self.rhook("permissions.list", self.permissions_list)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})
 
     def menu_socio_index(self, menu):
-        menu.append({ "id": "forum.index", "text": self._("Forum") })
+        req = self.req()
+        if req.has_access("forum.categories"):
+            menu.append({ "id": "forum.index", "text": self._("Forum") })
 
     def menu_forum_index(self, menu):
+        self.call("session.require_permission", "forum.categories")
         menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
 
     def headmenu_forum_categories(self, args):
@@ -125,9 +132,10 @@ class ForumAdmin(Module):
         cat = self.call("forum.category", args)
         if cat is None:
             return [self._("No such category"), "forum/categories"]
-        return [self._("Category %s").decode("utf-8") % cat["title"], "forum/categories"]
+        return [self._("Category %s") % cat["title"], "forum/categories"]
 
     def admin_categories(self):
+        self.call("session.require_permission", "forum.categories")
         categories = []
         topcat = None
         for cat in self.call("forum.categories"):
@@ -135,7 +143,7 @@ class ForumAdmin(Module):
                 topcat = cat["topcat"]
                 categories.append({"header": topcat})
             categories.append({"cat": cat})
-        self.call("admin.response_template", "admin/forum/index.html", {
+        self.call("admin.response_template", "admin/forum/categories.html", {
             "code": self._("Code"),
             "title": self._("Title"),
             "order": self._("Order"),
@@ -145,6 +153,7 @@ class ForumAdmin(Module):
         })
 
     def admin_category(self):
+        self.call("session.require_permission", "forum.categories")
         req = self.req()
         cat = self.call("forum.category", req.args)
         if cat is None:

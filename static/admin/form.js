@@ -11,6 +11,7 @@ Form = Ext.extend(AdminResponse, {
 				name: (it.name != undefined) ? it.name : '',
 				allowBlank: true,
 				value: it.value,
+				checked: it.checked,
 				xtype: (it.type == undefined) ? 'textfield' : it.type,
 				width: 825
 			});
