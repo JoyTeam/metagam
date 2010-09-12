@@ -39,7 +39,8 @@ def main():
         res = mg.core.cluster.dir_query("/director/ready", {
             "type": "worker",
             "port": int_port,
-            "id": sys.argv[1],
+            "parent": sys.argv[1],
+            "id": sys.argv[2],
             "params": json.dumps({
                 "ext_port": ext_port,
                 "class": "metagam",

@@ -14,7 +14,9 @@ def main():
     try:
         # Parsing configuration
         parser = optparse.OptionParser()
-        parser.add_option("-n", "--nginx", action="store_true", dest="nginx", help="Manage nginx configuration")
+        parser.add_option("-n", "--nginx", action="store_true", help="Manage nginx configuration")
+        parser.add_option("-q", "--queue", action="store_true", help="Take part in the global queue processing")
+        parser.add_option("-b", "--backends", type="int", help="Run the give quantity of backends")
         (options, args) = parser.parse_args()
 
         # Running daemon
@@ -33,14 +35,21 @@ def main():
         inst.appfactory = ApplicationFactory(inst)
         inst.appfactory.add_permanent(app)
 
+        # Default option set
+        if not options.backends and not options.nginx and not options.queue:
+            options.backends = 4
+            options.nginx = True
+            options.queue = True
+
         # Registering
         res = app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "server",
             "port": port,
             "id": app.server_id,
             "params": json.dumps({
-                "backend": 1,
-                "nginx": options.nginx
+                "backends": options.backends,
+                "nginx": options.nginx,
+                "queue": options.queue,
             })
         })
         inst.server_id = res["server_id"]

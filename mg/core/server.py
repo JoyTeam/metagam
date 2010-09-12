@@ -44,7 +44,7 @@ class Server(Module):
             for i in range(old_count, new_count):
                 self.debug("running child %d (process %s)", i, self.executable)
                 try:
-                    workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
+                    workers[i] = subprocess.Popen([self.executable, str(server_id), str(i)])
                 except OSError, e:
                     raise RuntimeError("Running %s: %s" % (self.executable, e))
             workers["count"] = new_count
@@ -57,7 +57,7 @@ class Server(Module):
             workers[i].poll()
             if workers[i].returncode is not None:
                 self.debug("respawning child %d (process %s)", i, self.executable)
-                workers[i] = subprocess.Popen([self.executable, "%s-%d" % (server_id, i)])
+                workers[i] = subprocess.Popen([self.executable, str(server_id), str(i)])
 
     def nginx(self):
         request = self.req()

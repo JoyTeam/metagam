@@ -179,19 +179,24 @@ class Director(Module):
         port = int(request.param("port"))
 
         # sending configuration
-        if params.get("backend"):
+        if params.get("backends"):
             self.call("cluster.query_server", host, port, "/server/spawn", {
-                "workers": 3,
+                "workers": params.get("backends"),
             })
 
         # storing online list
-        server_id = "%s-%s" % (host, type)
+        server_id = str(host)
         conf = {
             "host": host,
             "port": port,
             "type": type,
             "params": params
         }
+        parent = request.param("parent")
+        if parent:
+            server_id = "%s-server-%s" % (server_id, parent)
+            params["parent"] = "%s-%s-%s" % (host, "server", parent)
+        server_id = "%s-%s" % (server_id, type)
         id = request.param("id")
         if id:
             server_id = "%s-%s" % (server_id, id)
