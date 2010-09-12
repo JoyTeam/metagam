@@ -22,11 +22,9 @@ def main():
         app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
         port = daemon.serve(("0.0.0.0", 3000))
-
-        # Application factory
         inst.appfactory = ApplicationFactory(inst)
         inst.appfactory.add_permanent(app)
-
+        Tasklet.new(monitor)(app)
         while True:
             try:
                 app.hooks.call("core.fastidle")
@@ -39,6 +37,14 @@ def main():
     except BaseException as e:
         logging.exception(e)
         quit(1)
+
+def monitor(app):
+    while True:
+        try:
+            app.hooks.call("monitor.check")
+        except:
+            traceback.print_exc()
+        Tasklet.sleep(10)
 
 dispatch(main)
 

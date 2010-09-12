@@ -1,7 +1,9 @@
 from mg.core import Module
+from concurrence import Tasklet, JoinError
+from concurrence.http import HTTPConnection
 import re
 import json
-from concurrence import Tasklet, JoinError
+import logging
 
 class CassandraStruct(Module):
     def register(self):
@@ -17,8 +19,9 @@ class Director(Module):
         self.rhook("int-index.index", self.director_index)
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
-        self.rhook("int-director.offline", self.director_offline)
+#       self.rhook("int-director.offline", self.director_offline)
         self.rhook("core.fastidle", self.fastidle)
+        self.rhook("monitor.check", self.monitor_check)
         self.servers_online = self.conf("director.servers", default={})
         self.servers_online_modified = True
         self.workers_str = None
@@ -197,15 +200,43 @@ class Director(Module):
         self.store_servers_online()
         return request.jresponse({ "ok": 1, "server_id": server_id })
 
-    def director_offline(self):
-        request = self.req()
-        server_id = request.param("server_id")
-        server = self.servers_online.get(server_id)
-        port = server.get("port")
-        if server and (port is None or port == int(request.param("port"))):
-            del self.servers_online[server_id]
-            self.store_servers_online()
-            return request.jresponse({ "ok": 1 })
-        else:
-            return request.jresponse({ "already": 1 })
+#   def director_offline(self):
+#       request = self.req()
+#       server_id = request.param("server_id")
+#       server = self.servers_online.get(server_id)
+#       port = server.get("port")
+#       if server and (port is None or port == int(request.param("port"))):
+#           del self.servers_online[server_id]
+#           self.store_servers_online()
+#           return request.jresponse({ "ok": 1 })
+#       else:
+#           return request.jresponse({ "already": 1 })
 
+    def monitor_check(self):
+        for server_id, info in self.servers_online.items():
+            host = info.get("host")
+            port = info.get("port")
+            success = False
+            try:
+                cnn = HTTPConnection()
+                cnn.connect((str(host), int(port)))
+                try:
+                    request = cnn.get("/core/ping")
+                    request.add_header("Content-type", "application/x-www-form-urlencoded")
+                    response = cnn.perform(request)
+                    if response.status_code == 200 and response.get_header("Content-type") == "application/json":
+                        body = json.loads(response.body)
+                        if body.get("ok") and body.get("server_id") == server_id:
+                            success = True
+                finally:
+                    cnn.close()
+            except BaseException as e:
+                logging.getLogger("mg.core.director.Director").info("%s - %s", server_id, e)
+            if not success:
+                # at the moment failing server could be removed from the configuration already
+                fact_server = self.servers_online.get(server_id)
+                if fact_server is not None:
+                    fact_port = fact_server.get("port")
+                    if fact_port is None or fact_port == port:
+                        del self.servers_online[server_id]
+                        self.store_servers_online()

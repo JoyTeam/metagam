@@ -1003,10 +1003,6 @@ class Forum(Module):
             settings = self.obj(UserForumSettings, user_id, {})
         vars = {
             "title": self._("Forum settings"),
-            "menu": [
-                { "href": "/forum", "html": self._("Forum categories") },
-                { "html": self._("Forum settings") },
-            ]
         }
         form = self.call("web.form", "socio/form.html")
         form.textarea_rows = 4
