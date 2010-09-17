@@ -310,28 +310,6 @@ class WebDaemon(object):
         self.app.hooks.call("l10n.set_request_lang")
         return self.app.http_request(request, group, hook, args)
 
-    def download_config(self):
-        """
-        Connect to Director and ask for the claster configuration: http://director:3000/director/config
-        Return value: config dict
-        Side effect: stores downloaded dict in the inst.config
-        """
-        cnn = http.HTTPConnection()
-        try:
-            cnn.connect(("director", 3000))
-        except BaseException as e:
-            raise RuntimeError("Couldn't connect to director:3000: %s" % e)
-        try:
-            request = cnn.get("/director/config")
-            response = cnn.perform(request)
-            config = json.loads(response.body)
-            for key in ("memcached", "cassandra"):
-                config[key] = [tuple(ent) for ent in config[key]]
-            self.inst.config = config
-            return config
-        finally:
-            cnn.close()
-
 class WebResponse(Exception):
     def __init__(self, content):
         self.content = content

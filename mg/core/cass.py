@@ -251,7 +251,7 @@ class CassandraObject(object):
     """
     An ORM object
     """
-    def __init__(self, db, uuid=None, data=None, prefix=""):
+    def __init__(self, db, uuid=None, data=None, prefix="", silent=False):
         """
         db - Cassandra Object
         uuid - ID of object (None if newly created)
@@ -260,7 +260,6 @@ class CassandraObject(object):
         self.db = db
         self.prefix = prefix
         if uuid is None:
-            #self.uuid = re.sub(r'^urn:uuid:', '', uuid4().urn)
             self.uuid = uuid4().hex
             self.new = True
             self.dirty = True
@@ -273,7 +272,13 @@ class CassandraObject(object):
             self.dirty = False
             self.new = False
             if data is None:
-                self.load()
+                try:
+                    self.load()
+                except ObjectNotFoundException:
+                    if silent:
+                        self.data = {}
+                    else:
+                        raise
             else:
                 self.data = data
 

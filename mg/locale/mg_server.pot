@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-12 23:25+0400\n"
+"POT-Creation-Date: 2010-09-16 18:27+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,372 +16,12 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/web.py:614 mg/core/director.py:132 mg/socio/__init__.py:1003
-#: mg/admin/__init__.py:136
-msgid "Save"
-msgstr ""
-
-#: mg/core/web.py:624
-msgid "Bold"
-msgstr ""
-
-#: mg/core/web.py:625
-msgid "Italic"
-msgstr ""
-
-#: mg/core/web.py:626
-msgid "Underline"
-msgstr ""
-
-#: mg/core/web.py:627
-msgid "Strike"
-msgstr ""
-
-#: mg/core/web.py:628
-msgid "Quote"
-msgstr ""
-
-#: mg/core/web.py:629
-msgid "Red"
-msgstr ""
-
-#: mg/core/web.py:630
-msgid "Green"
-msgstr ""
-
-#: mg/core/web.py:631
-msgid "Blue"
-msgstr ""
-
-#: mg/core/web.py:632
-msgid "Dark green"
-msgstr ""
-
-#: mg/core/web.py:633
-msgid "Magenta"
-msgstr ""
-
-#: mg/core/web.py:634
-msgid "Yellow"
-msgstr ""
-
-#: mg/core/web.py:635
-msgid "Orange"
-msgstr ""
-
-#: mg/core/web.py:636 mg/socio/__init__.py:386
-msgid "Image"
-msgstr ""
-
-#: mg/core/web.py:637
-msgid "Insert image"
-msgstr ""
-
-#: mg/core/web.py:638
-msgid "Translit"
-msgstr ""
-
-#: mg/core/web.py:639
-msgid "Transliterate to Russian"
-msgstr ""
-
-#: mg/core/web.py:640
-msgid "Smiles"
-msgstr ""
-
-#: mg/core/l10n.py:12
-msgid "of January"
-msgstr ""
-
-#: mg/core/l10n.py:13
-msgid "of February"
-msgstr ""
-
-#: mg/core/l10n.py:14
-msgid "of March"
-msgstr ""
-
-#: mg/core/l10n.py:15
-msgid "of April"
-msgstr ""
-
-#: mg/core/l10n.py:16
-msgid "of May"
-msgstr ""
-
-#: mg/core/l10n.py:17
-msgid "of June"
-msgstr ""
-
-#: mg/core/l10n.py:18
-msgid "of July"
-msgstr ""
-
-#: mg/core/l10n.py:19
-msgid "of August"
-msgstr ""
-
-#: mg/core/l10n.py:20
-msgid "of September"
-msgstr ""
-
-#: mg/core/l10n.py:21
-msgid "of October"
-msgstr ""
-
-#: mg/core/l10n.py:22
-msgid "of November"
-msgstr ""
-
-#: mg/core/l10n.py:23
-msgid "of December"
-msgstr ""
-
-#: mg/core/l10n.py:139
-msgid "at the {2:d}{4} {1}, {0} at {3}"
-msgstr ""
-
-#: mg/core/cluster.py:61
-#, python-format
-msgid "Error storing image: %s"
-msgstr ""
-
-#: mg/core/director.py:65
-msgid "Welcome to the Director control center"
-msgstr ""
-
-#: mg/core/director.py:66
-msgid "Change director settings"
-msgstr ""
-
-#: mg/core/director.py:72
-msgid "List of servers online"
-msgstr ""
-
-#: mg/core/director.py:122
-msgid "Director settings"
-msgstr ""
-
-#: mg/core/director.py:124
-msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
-msgstr ""
-
-#: mg/core/director.py:126
-msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
-msgstr ""
-
-#: mg/core/director.py:128
-msgid "<strong>Main application host name</strong> (without www)"
-msgstr ""
-
-#: mg/core/director.py:130
-msgid "<strong>Admin user uuid</strong>"
-msgstr ""
-
-#: mg/core/auth.py:164 mg/core/auth.py:370
-msgid "Enter your user name"
-msgstr ""
-
-#: mg/core/auth.py:166
-msgid ""
-"Invalid characters in the name. Only latin letters, numbers, symbols '_' and "
-"'-' are allowed"
-msgstr ""
-
-#: mg/core/auth.py:168
-msgid "This name is taken already"
-msgstr ""
-
-#: mg/core/auth.py:170 mg/core/auth.py:376
-msgid "Enter your password"
-msgstr ""
-
-#: mg/core/auth.py:172
-msgid "Minimal password length - 6 characters"
-msgstr ""
-
-#: mg/core/auth.py:174
-msgid "Retype your password"
-msgstr ""
-
-#: mg/core/auth.py:176
-msgid "Password don't match. Try again, please"
-msgstr ""
-
-#: mg/core/auth.py:180
-msgid "Enter numbers from the picture"
-msgstr ""
-
-#: mg/core/auth.py:185 mg/core/auth.py:187
-msgid "Incorrect number"
-msgstr ""
-
-#: mg/core/auth.py:217 mg/core/auth.py:396 mg/core/auth.py:471
-#: mg/core/auth.py:498
-msgid "User name"
-msgstr ""
-
-#: mg/core/auth.py:218 mg/core/auth.py:397
-msgid "Password"
-msgstr ""
-
-#: mg/core/auth.py:219
-msgid "Retype password"
-msgstr ""
-
-#: mg/core/auth.py:220
-msgid "Enter a number (6 digits) from the picture"
-msgstr ""
-
-#: mg/core/auth.py:221 mg/core/auth.py:399 mg/constructor/__init__.py:39
-msgid "Register"
-msgstr ""
-
-#: mg/core/auth.py:223
-msgid "User registration"
-msgstr ""
-
-#: mg/core/auth.py:374 mg/core/auth.py:493
-msgid "User not found"
-msgstr ""
-
-#: mg/core/auth.py:381
-msgid "Incorrect password"
-msgstr ""
-
-#: mg/core/auth.py:398 mg/constructor/__init__.py:38
-msgid "Log in"
-msgstr ""
-
-#: mg/core/auth.py:401
-msgid "User login"
-msgstr ""
-
-#: mg/core/auth.py:422
-msgid "User permissions editor"
-msgstr ""
-
-#: mg/core/auth.py:443
-msgid "Security"
-msgstr ""
-
-#: mg/core/auth.py:448 mg/core/auth.py:472
-msgid "Permissions"
-msgstr ""
-
-#: mg/core/auth.py:470 mg/core/auth.py:504
-msgid "Edit permissions of a user"
-msgstr ""
-
-#: mg/core/auth.py:473 mg/socio/__init__.py:151 mg/socio/__init__.py:766
-#: mg/socio/__init__.py:781
-msgid "edit"
-msgstr ""
-
-#: mg/core/auth.py:474 mg/socio/__init__.py:150 mg/socio/__init__.py:961
-msgid "Editing"
-msgstr ""
-
-#: mg/core/auth.py:480
-msgid "User permissions"
-msgstr ""
-
-#: mg/core/auth.py:489
-msgid "Enter user name"
-msgstr ""
-
-#: mg/core/auth.py:500
-msgid "Search"
-msgstr ""
-
-#: mg/constructor/__init__.py:33 mg/constructor/__init__.py:96
-msgid "Log out"
-msgstr ""
-
-#: mg/constructor/__init__.py:34 mg/constructor/__init__.py:95
-#: mg/constructor/__init__.py:105
-msgid "Settings"
-msgstr ""
-
-#: mg/constructor/__init__.py:35 mg/constructor/__init__.py:90
-msgid "Cabinet"
-msgstr ""
-
-#: mg/constructor/__init__.py:36 mg/constructor/__init__.py:83
-#: mg/constructor/__init__.py:122
-msgid "Documentation"
-msgstr ""
-
-#: mg/constructor/__init__.py:44 mg/constructor/__init__.py:50
-msgid "Constructor of browser-based online games"
-msgstr ""
-
-#: mg/constructor/__init__.py:51
-msgid "Games constructor"
-msgstr ""
-
-#: mg/constructor/__init__.py:52
-msgid "Create the world of your dreams"
-msgstr ""
-
-#: mg/constructor/__init__.py:53
-msgid "log in"
-msgstr ""
-
-#: mg/constructor/__init__.py:54
-msgid "register"
-msgstr ""
-
-#: mg/constructor/__init__.py:55
-msgid "forum"
-msgstr ""
-
-#: mg/constructor/__init__.py:56
-msgid "cabinet"
-msgstr ""
-
-#: mg/constructor/__init__.py:57
-msgid "log out"
-msgstr ""
-
-#: mg/constructor/__init__.py:68
-msgid "Enter your e-mail address"
-msgstr ""
-
-#: mg/constructor/__init__.py:70
-msgid "Invalid e-mail format"
-msgstr ""
-
-#: mg/constructor/__init__.py:85
-msgid "Administration"
-msgstr ""
-
-#: mg/constructor/__init__.py:86 mg/socio/__init__.py:122
-msgid "Forum"
-msgstr ""
-
-#: mg/constructor/__init__.py:88
-msgid "New game"
-msgstr ""
-
-#: mg/constructor/__init__.py:108 mg/constructor/__init__.py:125
-msgid "Return to the Cabinet"
-msgstr ""
-
-#: mg/constructor/__init__.py:111
-msgid "Change password"
-msgstr ""
-
-#: mg/constructor/__init__.py:112 mg/socio/__init__.py:1014
-msgid "Forum settings"
-msgstr ""
-
-#: mg/constructor/__init__.py:113
-msgid "WebMoney Certification"
-msgstr ""
-
 #: mg/socio/__init__.py:117
 msgid "Forum categories editor"
+msgstr ""
+
+#: mg/socio/__init__.py:122 mg/constructor/__init__.py:86
+msgid "Forum"
 msgstr ""
 
 #: mg/socio/__init__.py:126 mg/socio/__init__.py:129 mg/socio/__init__.py:464
@@ -409,6 +49,15 @@ msgstr ""
 
 #: mg/socio/__init__.py:149
 msgid "Order"
+msgstr ""
+
+#: mg/socio/__init__.py:150 mg/socio/__init__.py:961 mg/core/auth.py:474
+msgid "Editing"
+msgstr ""
+
+#: mg/socio/__init__.py:151 mg/socio/__init__.py:766 mg/socio/__init__.py:781
+#: mg/core/auth.py:473
+msgid "edit"
 msgstr ""
 
 #: mg/socio/__init__.py:168
@@ -483,6 +132,10 @@ msgstr ""
 
 #: mg/socio/__init__.py:384
 msgid "Upload an image"
+msgstr ""
+
+#: mg/socio/__init__.py:386 mg/core/web.py:636
+msgid "Image"
 msgstr ""
 
 #: mg/socio/__init__.py:387
@@ -709,6 +362,15 @@ msgstr ""
 msgid "Edit topic"
 msgstr ""
 
+#: mg/socio/__init__.py:1003 mg/core/web.py:614 mg/core/director.py:132
+#: mg/admin/__init__.py:136
+msgid "Save"
+msgstr ""
+
+#: mg/socio/__init__.py:1014 mg/constructor/__init__.py:112
+msgid "Forum settings"
+msgstr ""
+
 #: mg/socio/__init__.py:1028
 msgid "Signature can't contain more than 4 lines"
 msgstr ""
@@ -733,6 +395,344 @@ msgstr ""
 msgid "Your avatar"
 msgstr ""
 
+#: mg/core/l10n.py:12
+msgid "of January"
+msgstr ""
+
+#: mg/core/l10n.py:13
+msgid "of February"
+msgstr ""
+
+#: mg/core/l10n.py:14
+msgid "of March"
+msgstr ""
+
+#: mg/core/l10n.py:15
+msgid "of April"
+msgstr ""
+
+#: mg/core/l10n.py:16
+msgid "of May"
+msgstr ""
+
+#: mg/core/l10n.py:17
+msgid "of June"
+msgstr ""
+
+#: mg/core/l10n.py:18
+msgid "of July"
+msgstr ""
+
+#: mg/core/l10n.py:19
+msgid "of August"
+msgstr ""
+
+#: mg/core/l10n.py:20
+msgid "of September"
+msgstr ""
+
+#: mg/core/l10n.py:21
+msgid "of October"
+msgstr ""
+
+#: mg/core/l10n.py:22
+msgid "of November"
+msgstr ""
+
+#: mg/core/l10n.py:23
+msgid "of December"
+msgstr ""
+
+#: mg/core/l10n.py:139
+msgid "at the {2:d}{4} {1}, {0} at {3}"
+msgstr ""
+
+#: mg/core/web.py:624
+msgid "Bold"
+msgstr ""
+
+#: mg/core/web.py:625
+msgid "Italic"
+msgstr ""
+
+#: mg/core/web.py:626
+msgid "Underline"
+msgstr ""
+
+#: mg/core/web.py:627
+msgid "Strike"
+msgstr ""
+
+#: mg/core/web.py:628
+msgid "Quote"
+msgstr ""
+
+#: mg/core/web.py:629
+msgid "Red"
+msgstr ""
+
+#: mg/core/web.py:630
+msgid "Green"
+msgstr ""
+
+#: mg/core/web.py:631
+msgid "Blue"
+msgstr ""
+
+#: mg/core/web.py:632
+msgid "Dark green"
+msgstr ""
+
+#: mg/core/web.py:633
+msgid "Magenta"
+msgstr ""
+
+#: mg/core/web.py:634
+msgid "Yellow"
+msgstr ""
+
+#: mg/core/web.py:635
+msgid "Orange"
+msgstr ""
+
+#: mg/core/web.py:637
+msgid "Insert image"
+msgstr ""
+
+#: mg/core/web.py:638
+msgid "Translit"
+msgstr ""
+
+#: mg/core/web.py:639
+msgid "Transliterate to Russian"
+msgstr ""
+
+#: mg/core/web.py:640
+msgid "Smiles"
+msgstr ""
+
+#: mg/core/cluster.py:61
+#, python-format
+msgid "Error storing image: %s"
+msgstr ""
+
+#: mg/core/auth.py:164 mg/core/auth.py:370
+msgid "Enter your user name"
+msgstr ""
+
+#: mg/core/auth.py:166
+msgid ""
+"Invalid characters in the name. Only latin letters, numbers, symbols '_' and "
+"'-' are allowed"
+msgstr ""
+
+#: mg/core/auth.py:168
+msgid "This name is taken already"
+msgstr ""
+
+#: mg/core/auth.py:170 mg/core/auth.py:376
+msgid "Enter your password"
+msgstr ""
+
+#: mg/core/auth.py:172
+msgid "Minimal password length - 6 characters"
+msgstr ""
+
+#: mg/core/auth.py:174
+msgid "Retype your password"
+msgstr ""
+
+#: mg/core/auth.py:176
+msgid "Password don't match. Try again, please"
+msgstr ""
+
+#: mg/core/auth.py:180
+msgid "Enter numbers from the picture"
+msgstr ""
+
+#: mg/core/auth.py:185 mg/core/auth.py:187
+msgid "Incorrect number"
+msgstr ""
+
+#: mg/core/auth.py:217 mg/core/auth.py:396 mg/core/auth.py:471
+#: mg/core/auth.py:498
+msgid "User name"
+msgstr ""
+
+#: mg/core/auth.py:218 mg/core/auth.py:397
+msgid "Password"
+msgstr ""
+
+#: mg/core/auth.py:219
+msgid "Retype password"
+msgstr ""
+
+#: mg/core/auth.py:220
+msgid "Enter a number (6 digits) from the picture"
+msgstr ""
+
+#: mg/core/auth.py:221 mg/core/auth.py:399 mg/constructor/__init__.py:39
+msgid "Register"
+msgstr ""
+
+#: mg/core/auth.py:223
+msgid "User registration"
+msgstr ""
+
+#: mg/core/auth.py:374 mg/core/auth.py:493
+msgid "User not found"
+msgstr ""
+
+#: mg/core/auth.py:381
+msgid "Incorrect password"
+msgstr ""
+
+#: mg/core/auth.py:398 mg/constructor/__init__.py:38
+msgid "Log in"
+msgstr ""
+
+#: mg/core/auth.py:401
+msgid "User login"
+msgstr ""
+
+#: mg/core/auth.py:422
+msgid "User permissions editor"
+msgstr ""
+
+#: mg/core/auth.py:443
+msgid "Security"
+msgstr ""
+
+#: mg/core/auth.py:448 mg/core/auth.py:472
+msgid "Permissions"
+msgstr ""
+
+#: mg/core/auth.py:470 mg/core/auth.py:504
+msgid "Edit permissions of a user"
+msgstr ""
+
+#: mg/core/auth.py:480
+msgid "User permissions"
+msgstr ""
+
+#: mg/core/auth.py:489
+msgid "Enter user name"
+msgstr ""
+
+#: mg/core/auth.py:500
+msgid "Search"
+msgstr ""
+
+#: mg/core/director.py:65
+msgid "Welcome to the Director control center"
+msgstr ""
+
+#: mg/core/director.py:66
+msgid "Change director settings"
+msgstr ""
+
+#: mg/core/director.py:72
+msgid "List of servers online"
+msgstr ""
+
+#: mg/core/director.py:122
+msgid "Director settings"
+msgstr ""
+
+#: mg/core/director.py:124
+msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
+msgstr ""
+
+#: mg/core/director.py:126
+msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
+msgstr ""
+
+#: mg/core/director.py:128
+msgid "<strong>Main application host name</strong> (without www)"
+msgstr ""
+
+#: mg/core/director.py:130
+msgid "<strong>Admin user uuid</strong>"
+msgstr ""
+
 #: mg/admin/__init__.py:29
 msgid "Administration interface"
+msgstr ""
+
+#: mg/constructor/__init__.py:33 mg/constructor/__init__.py:96
+msgid "Log out"
+msgstr ""
+
+#: mg/constructor/__init__.py:34 mg/constructor/__init__.py:95
+#: mg/constructor/__init__.py:105
+msgid "Settings"
+msgstr ""
+
+#: mg/constructor/__init__.py:35 mg/constructor/__init__.py:90
+msgid "Cabinet"
+msgstr ""
+
+#: mg/constructor/__init__.py:36 mg/constructor/__init__.py:83
+#: mg/constructor/__init__.py:122
+msgid "Documentation"
+msgstr ""
+
+#: mg/constructor/__init__.py:44 mg/constructor/__init__.py:50
+msgid "Constructor of browser-based online games"
+msgstr ""
+
+#: mg/constructor/__init__.py:51
+msgid "Games constructor"
+msgstr ""
+
+#: mg/constructor/__init__.py:52
+msgid "Create the world of your dreams"
+msgstr ""
+
+#: mg/constructor/__init__.py:53
+msgid "log in"
+msgstr ""
+
+#: mg/constructor/__init__.py:54
+msgid "register"
+msgstr ""
+
+#: mg/constructor/__init__.py:55
+msgid "forum"
+msgstr ""
+
+#: mg/constructor/__init__.py:56
+msgid "cabinet"
+msgstr ""
+
+#: mg/constructor/__init__.py:57
+msgid "log out"
+msgstr ""
+
+#: mg/constructor/__init__.py:68
+msgid "Enter your e-mail address"
+msgstr ""
+
+#: mg/constructor/__init__.py:70
+msgid "Invalid e-mail format"
+msgstr ""
+
+#: mg/constructor/__init__.py:85
+msgid "Administration"
+msgstr ""
+
+#: mg/constructor/__init__.py:88
+msgid "New game"
+msgstr ""
+
+#: mg/constructor/__init__.py:108 mg/constructor/__init__.py:125
+msgid "Return to the Cabinet"
+msgstr ""
+
+#: mg/constructor/__init__.py:111
+msgid "Change password"
+msgstr ""
+
+#: mg/constructor/__init__.py:113
+msgid "WebMoney Certification"
 msgstr ""

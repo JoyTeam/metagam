@@ -21,15 +21,16 @@ def main():
 
         # Running daemon
         inst = Instance()
-        daemon = WebDaemon(inst)
-        conf = daemon.download_config()
+        conf = inst.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg-")
         app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg-")
+        daemon = WebDaemon(inst)
         daemon.app = app
         app.modules.load(["mg.core.server.Server"])
         port = daemon.serve_any_port("0.0.0.0")
         app.server_id = port
+        inst.int_app = app
 
         # Application factory
         inst.appfactory = ApplicationFactory(inst)

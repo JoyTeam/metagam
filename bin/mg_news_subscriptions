@@ -1,7 +1,6 @@
 #!/usr/bin/python2.6
 
 from mg.core import Instance
-from mg.core.web import WebDaemon
 from concurrence import dispatch, quit
 from mg.core.cass import CassandraPool
 import traceback
@@ -11,8 +10,7 @@ from cassandra.ttypes import *
 def main():
     try:
         inst = Instance()
-        daemon = WebDaemon(inst)
-        conf = daemon.download_config()
+        conf = inst.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         db = dbpool.dbget("metagam")
         res = db.multiget_slice(["NewsSubscriptions"], ColumnParent(column_family="Core"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.ALL)

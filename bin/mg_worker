@@ -16,16 +16,17 @@ def main():
         inst = Instance()
 
         # Running internal daemon
-        int_daemon = WebDaemon(inst)
-        conf = int_daemon.download_config()
+        conf = inst.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         mcpool = MemcachedPool(conf["memcached"][0])
         int_mc = Memcached(mcpool, prefix="mg-")
         int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg-")
+        int_daemon = WebDaemon(inst)
         int_daemon.app = int_app
         int_app.modules.load(["mg.core.worker.Worker"])
         int_app.tag = "int"
         int_port = int_daemon.serve_any_port("0.0.0.0")
+        inst.int_app = int_app
 
         # Running external daemon
         ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)

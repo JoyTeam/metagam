@@ -1,5 +1,5 @@
 from concurrence.extra import Lock
-from concurrence import Tasklet
+from concurrence import Tasklet, http
 from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock
@@ -485,6 +485,28 @@ class Instance(object):
         if self.appfactory is None:
             return 0
         return self.appfactory.reload()
+
+    def download_config(self):
+        """
+        Connect to Director and ask for the claster configuration: http://director:3000/director/config
+        Return value: config dict
+        Side effect: stores downloaded dict in the inst.config
+        """
+        cnn = http.HTTPConnection()
+        try:
+            cnn.connect(("director", 3000))
+        except BaseException as e:
+            raise RuntimeError("Couldn't connect to director:3000: %s" % e)
+        try:
+            request = cnn.get("/director/config")
+            response = cnn.perform(request)
+            config = json.loads(response.body)
+            for key in ("memcached", "cassandra"):
+                config[key] = [tuple(ent) for ent in config[key]]
+            self.config = config
+            return config
+        finally:
+            cnn.close()
 
 class Application(object):
     """

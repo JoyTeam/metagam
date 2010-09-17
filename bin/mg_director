@@ -24,7 +24,9 @@ def main():
         port = daemon.serve(("0.0.0.0", 3000))
         inst.appfactory = ApplicationFactory(inst)
         inst.appfactory.add_permanent(app)
+        inst.int_app = app
         Tasklet.new(monitor)(app)
+        Tasklet.new(app.hooks.call)("queue.process")
         while True:
             try:
                 app.hooks.call("core.fastidle")

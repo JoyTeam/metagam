@@ -12,14 +12,14 @@ class CassandraStruct(Module):
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster"])
+        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster",
+            "mg.core.queue.Queue"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.int_director_reload)
         self.rhook("int-index.index", self.director_index)
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
-#       self.rhook("int-director.offline", self.director_offline)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("monitor.check", self.monitor_check)
         self.servers_online = self.conf("director.servers", default={})
@@ -84,6 +84,8 @@ class Director(Module):
             conf["memcached"] = [("director-mc", 11211)]
         if conf.get("metagam_host") is None:
             conf["metagam_host"] = "metagam"
+        if conf.get("storage") is None:
+            conf["storage"] = ["storage"]
         return conf
 
     def director_config(self):
@@ -101,12 +103,14 @@ class Director(Module):
         request = self.req()
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
+        storage = request.param("storage")
         metagam_host = request.param("metagam_host")
         admin_user = request.param("admin_user")
         config = self.config()
         if self.ok():
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
+            config["storage"] = re.split('\s*,\s*', storage)
             config["metagam_host"] = metagam_host
             config["admin_user"] = admin_user
             self.app().config.set("director.config", config)
@@ -116,6 +120,7 @@ class Director(Module):
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
+            storage = ", ".join(config["storage"])
             metagam_host = config["metagam_host"]
             admin_user = config.get("admin_user")
         return self.call("web.response_template", "director/setup.html", {
@@ -125,6 +130,8 @@ class Director(Module):
                 "memcached": memcached,
                 "cassandra_desc": self._("<strong>Cassandra servers</strong> (host:port, host:post, ...)"),
                 "cassandra": cassandra,
+                "storage_desc": self._("<strong>Storage servers</strong> (host, host, ...)"),
+                "storage": storage,
                 "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
                 "metagam_host": metagam_host,
                 "admin_user_desc": self._("<strong>Admin user uuid</strong>"),
@@ -213,18 +220,6 @@ class Director(Module):
         self.servers_online[server_id] = conf
         self.store_servers_online()
         return request.jresponse({ "ok": 1, "server_id": server_id })
-
-#   def director_offline(self):
-#       request = self.req()
-#       server_id = request.param("server_id")
-#       server = self.servers_online.get(server_id)
-#       port = server.get("port")
-#       if server and (port is None or port == int(request.param("port"))):
-#           del self.servers_online[server_id]
-#           self.store_servers_online()
-#           return request.jresponse({ "ok": 1 })
-#       else:
-#           return request.jresponse({ "already": 1 })
 
     def monitor_check(self):
         for server_id, info in self.servers_online.items():

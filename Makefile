@@ -1,5 +1,6 @@
 .PHONY: all pot po mo js
-all: pot po mo js
+all: translations
+translations: pot po mo js
 
 # ============= SETTINGS ===============
 copyright="Alexander Lourier <aml@rulezz.ru>"
@@ -59,3 +60,17 @@ debug:
 	@echo "PO Files: $(foreach module,$(modules),$($(module)_po_files))"
 	@echo "MO Files: $(foreach module,$(mo_modules),$($(module)_mo_files))"
 	@echo "JS Files: $(foreach module,$(js_modules),$($(module)_js_files))"
+
+clean:
+	find \( -name '*.pyc' -or -name '*~' \) -exec rm {} \;
+
+deploy: translations
+	rm -rf depl
+	find -name '*.pyc' -exec rm {} \;
+	bin/mg_compile .
+	mkdir -p depl/bin
+	for m in director reload server worker ; do cp bin/mg_$$m bin/*.sh depl/bin/ ; done
+	cp -R mg static depl/
+	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
+	rsync -r depl/* f0.mmoconstructor.com:/home/mg/
+	ssh f0.mmoconstructor.com 'cd /home/mg;rsync -r * d0:/home/mg/'

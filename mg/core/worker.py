@@ -41,9 +41,9 @@ class MultiapplicationWebDaemon(WebDaemon):
             return request.response("X-Real-Host HTTP header not configured")
         host = host.lower()
         app = None
-        if host == self.metagam_host:
+        if host == "www.%s" % self.metagam_host:
             app = self.inst.appfactory.get("metagam")
         if app is None:
-            self.call("web.redirect", "http://%s" % str(self.metagam_host))
+            return request.redirect("http://www.%s" % str(self.metagam_host))
         app.hooks.call("l10n.set_request_lang")
         return app.http_request(request, group, hook, args)

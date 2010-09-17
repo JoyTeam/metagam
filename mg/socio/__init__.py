@@ -355,22 +355,16 @@ class Socio(Module):
                         im_data = image
                     # storing
                     socio_image = self.obj(SocioImage)
-                    storage_server = self.call("cluster.storage_server")
-                    image_url = "/%s.%s" % (socio_image.uuid, ext)
-                    image_uri = "http://" + storage_server + image_url
-                    socio_image.set("image", image_uri)
-                    if th_data is not None:
-                        thumbnail_url = "/%s-th.%s" % (socio_image.uuid, th_ext)
-                        thumbnail_uri = "http://" + storage_server + thumbnail_url
-                        socio_image.set("thumbnail", thumbnail_uri)
                     if not form.errors:
                         try:
-                            self.call("cluster.static_upload", image_url, im_data, content_type)
+                            uri = self.call("cluster.static_upload", "socio", ext, content_type, im_data)
+                            socio_image.set("image", uri)
                         except StaticUploadError as e:
                             form.error(image_field, unicode(e))
                     if not form.errors and th_data is not None:
                         try:
-                            self.call("cluster.static_upload", thumbnail_url, th_data, th_content_type)
+                            uri = self.call("cluster.static_upload", "thumb", th_ext, th_content_type, th_data)
+                            socio_image.set("thumbnail", uri)
                         except StaticUploadError as e:
                             form.error(image_field, unicode(e))
                     if not form.errors:
@@ -1079,13 +1073,9 @@ class Forum(Module):
                     im_data = cStringIO.StringIO()
                     image_obj.save(im_data, target_format)
                     im_data = im_data.getvalue()
-                    image_id = uuid4().hex
-                    storage_server = self.call("cluster.storage_server")
-                    image_url = "/%s.%s" % (image_id, ext)
-                    image_uri = "http://" + storage_server + image_url
-                    settings.set("avatar", image_uri)
                     try:
-                        self.call("cluster.static_upload", image_url, im_data, content_type)
+                        uri = self.call("cluster.static_upload", "avatars", ext, content_type, im_data)
+                        settings.set("avatar", uri)
                     except StaticUploadError as e:
                         form.error("avatar", unicode(e))
                 settings.set("signature", signature)

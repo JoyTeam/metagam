@@ -1,0 +1,7 @@
+#!/usr/bin/python2.6
+
+import compileall
+import sys
+
+compileall.compile_dir(sys.argv[1], force=True, quiet=True)
+

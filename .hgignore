@@ -6,6 +6,7 @@ tests/*.err
 *.pyc
 *.swp
 *.mo
+depl
 
 syntax: regexp
 .*\#.*\#$
