@@ -19,7 +19,7 @@ class Cluster(Module):
         self.rhook("cluster.servers_online", self.servers_online)
         self.rhook("cluster.static_upload", self.static_upload)
 
-    def query_director(self, uri, params):
+    def query_director(self, uri, params={}):
         """
         Connect to Director and query given URI
         uri - URI
@@ -28,7 +28,7 @@ class Cluster(Module):
         """
         return dir_query(uri, params)
 
-    def query_server(self, host, port, uri, params):
+    def query_server(self, host, port, uri, params={}):
         """
         Connect to an arbitrary server and query given URI
         host:port - server socket

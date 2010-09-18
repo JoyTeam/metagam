@@ -363,6 +363,7 @@ class CassandraObject(object):
         old_index_values = self.index_values()
         self.calculate_indexes()
         index_values = self.index_values()
+#       print "storing indexes %s (old %s)" % (index_values, old_index_values)
         for index_name, columns in self.indexes().iteritems():
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)
@@ -430,12 +431,17 @@ class CassandraObject(object):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.dirty = False
         self.new = False
+        print "REMOVE %s" % row_id
 
     def get(self, key):
         """
         Get data key
         """
         return self.data.get(key)
+
+    def touch(self):
+        self.index_values()
+        self.dirty = True
 
     def set(self, key, value):
         """
@@ -491,7 +497,7 @@ class CassandraObjectList(object):
             d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
 #           print "loaded index:"
 #           for cosc in d:
-#               print cosc.column.name
+#               print "%s => %s" % (cosc.column.name, cosc.column.value)
             self.index_row = index_row
             self.index_data = d
             self.dict = [cls(db, col.column.value, {}, prefix=prefix) for col in d]

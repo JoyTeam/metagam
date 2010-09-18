@@ -41,6 +41,7 @@ class Email(Module):
         Module.register(self)
         self.rhook("email.send", self.email_send)
         self.rhook("queue-email.send", self.queue_email_send)
+        self.rhook("queue-email.test", self.queue_email_test)
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False):
         if immediately:
@@ -81,3 +82,6 @@ class Email(Module):
 
     def queue_email_send(self, args):
         return self.email_send(args.get("to_email"), args.get("to_name"), args.get("subject"), args.get("content"), args.get("from_email"), args.get("from_name"), immediately=True)
+
+    def queue_email_test(self, args):
+        self.call("email.send", "aml@rulezz.ru", u"Alexander Lourier", u"Test subject", u"Test content")

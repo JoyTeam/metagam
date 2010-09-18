@@ -10,7 +10,7 @@ class Constructor(Module):
         Module.register(self)
         self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
-            "mg.core.emails.Email"])
+            "mg.core.emails.Email", "mg.core.queue.Queue"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-constructor.subscribe", self.subscribe)
