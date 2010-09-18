@@ -1,5 +1,5 @@
 from mg.core import Module
-from concurrence import Tasklet, JoinError
+from concurrence import Tasklet, JoinError, Timeout
 from concurrence.http import HTTPConnection
 import re
 import json
@@ -12,8 +12,12 @@ class CassandraStruct(Module):
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster",
-            "mg.core.queue.Queue"])
+        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner"])
+        self.config()
+        self.servers_online = self.conf("director.servers", default={})
+        self.servers_online_modified = True
+        self.queue_workers = []
+        self.workers_str = None
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.int_director_reload)
@@ -22,9 +26,12 @@ class Director(Module):
         self.rhook("int-director.config", self.director_config)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("monitor.check", self.monitor_check)
-        self.servers_online = self.conf("director.servers", default={})
-        self.servers_online_modified = True
-        self.workers_str = None
+        self.rhook("director.queue_workers", self.director_queue_workers)
+        self.servers_online_updated()
+        self.reload_servers()
+
+    def director_queue_workers(self):
+        return self.queue_workers
 
     def int_director_reload(self):
         request = self.req()
@@ -38,6 +45,10 @@ class Director(Module):
             result["director"] = "ERRORS: %d" % errors
         else:
             result["director"] = "ok"
+        self.reload_servers(result, errors)
+        return result
+
+    def reload_servers(self, result={}, errors={}):
         config = json.dumps(self.config())
         for server_id, info in self.servers_online.iteritems():
             errors = 1
@@ -55,7 +66,6 @@ class Director(Module):
                 result[tag] = "ERRORS: %d" % errors
             else:
                 result[tag] = "ok"
-        return result
 
     def web_global_html(self):
         return "director/global.html"
@@ -86,6 +96,11 @@ class Director(Module):
             conf["metagam_host"] = "metagam"
         if conf.get("storage") is None:
             conf["storage"] = ["storage"]
+        if conf.get("smtp_server") is None:
+            conf["smtp_server"] = "localhost"
+        if conf.get("locale") is None:
+            conf["locale"] = "en"
+        self.app().inst.config = conf
         return conf
 
     def director_config(self):
@@ -106,6 +121,8 @@ class Director(Module):
         storage = request.param("storage")
         metagam_host = request.param("metagam_host")
         admin_user = request.param("admin_user")
+        smtp_server = request.param("smtp_server")
+        locale = request.param("locale")
         config = self.config()
         if self.ok():
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
@@ -113,6 +130,8 @@ class Director(Module):
             config["storage"] = re.split('\s*,\s*', storage)
             config["metagam_host"] = metagam_host
             config["admin_user"] = admin_user
+            config["smtp_server"] = smtp_server
+            config["locale"] = locale
             self.app().config.set("director.config", config)
             self.app().config.store()
             self.director_reload()
@@ -123,6 +142,8 @@ class Director(Module):
             storage = ", ".join(config["storage"])
             metagam_host = config["metagam_host"]
             admin_user = config.get("admin_user")
+            smtp_server = config.get("smtp_server")
+            locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Director settings"),
             "form": {
@@ -136,12 +157,19 @@ class Director(Module):
                 "metagam_host": metagam_host,
                 "admin_user_desc": self._("<strong>Admin user uuid</strong>"),
                 "admin_user": admin_user,
+                "smtp_server_desc": self._("<strong>SMTP server (hostname)</strong>"),
+                "smtp_server": smtp_server,
+                "locale_desc": self._("<strong>Global locale (en, ru, ...)</strong>"),
+                "locale": locale,
                 "submit_desc": self._("Save")
             }
         })
 
     def store_servers_online(self):
         self.servers_online_modified = True
+
+    def servers_online_updated(self):
+        self.queue_workers = [srv for id, srv in self.servers_online.iteritems() if srv["type"] == "worker" and srv["params"].get("queue")]
 
     def fastidle(self):
         if self.servers_online_modified:
@@ -212,13 +240,18 @@ class Director(Module):
         if parent:
             server_id = "%s-server-%s" % (server_id, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
+            parent_info = self.servers_online.get(params["parent"])
+            if parent_info is not None:
+                if parent_info["params"].get("queue"):
+                    params["queue"] = True
         server_id = "%s-%s" % (server_id, type)
         id = request.param("id")
         if id:
-            server_id = "%s-%s" % (server_id, id)
+            server_id = "%s-%02d" % (server_id, int(id))
             conf["id"] = id
         self.servers_online[server_id] = conf
         self.store_servers_online()
+        self.servers_online_updated()
         return request.jresponse({ "ok": 1, "server_id": server_id })
 
     def monitor_check(self):
@@ -230,13 +263,14 @@ class Director(Module):
                 cnn = HTTPConnection()
                 cnn.connect((str(host), int(port)))
                 try:
-                    request = cnn.get("/core/ping")
-                    request.add_header("Content-type", "application/x-www-form-urlencoded")
-                    response = cnn.perform(request)
-                    if response.status_code == 200 and response.get_header("Content-type") == "application/json":
-                        body = json.loads(response.body)
-                        if body.get("ok") and body.get("server_id") == server_id:
-                            success = True
+                    with Timeout.push(20):
+                        request = cnn.get("/core/ping")
+                        request.add_header("Content-type", "application/x-www-form-urlencoded")
+                        response = cnn.perform(request)
+                        if response.status_code == 200 and response.get_header("Content-type") == "application/json":
+                            body = json.loads(response.body)
+                            if body.get("ok") and body.get("server_id") == server_id:
+                                success = True
                 finally:
                     cnn.close()
             except BaseException as e:
@@ -249,3 +283,4 @@ class Director(Module):
                     if fact_port is None or fact_port == port:
                         del self.servers_online[server_id]
                         self.store_servers_online()
+                        self.servers_online_updated()

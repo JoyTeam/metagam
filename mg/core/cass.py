@@ -263,6 +263,7 @@ class CassandraObject(object):
             self.uuid = uuid4().hex
             self.new = True
             self.dirty = True
+            self._indexes = {}
             if data is None:
                 self.data = {}
             else:
@@ -277,10 +278,12 @@ class CassandraObject(object):
                 except ObjectNotFoundException:
                     if silent:
                         self.data = {}
+                        self._indexes = {}
                     else:
                         raise
             else:
                 self.data = data
+                self._indexes = None
 
     def indexes(self):
         """
@@ -295,30 +298,13 @@ class CassandraObject(object):
         """
         return {}
 
-    def load(self):
-        """
-        Load object from the database
-        Raises ObjectNotFoundException
-        """
-        row_id = self.prefix + self.uuid
-        self.data = self.db.mc.get(row_id)
-        if self.data == "tomb":
-#            print "LOAD(MC) %s %s" % (row_id, self.data)
-            raise ObjectNotFoundException(row_id)
-        elif self.data is None:
-            try:
-                col = self.db.get(row_id, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
-            except NotFoundException:
-                raise ObjectNotFoundException(row_id)
-            self.data = json.loads(col.value)
-            self.db.mc.add(row_id, self.data, cache_interval)
-#            print "LOAD(DB) %s %s" % (row_id, self.data)
-#        else:
-#            print "LOAD(MC) %s %s" % (row_id, self.data)
-        self.dirty = False
-
     def index_values(self):
-        ind_values = {}
+        if self._indexes is None:
+            self.calculate_indexes()
+        return self._indexes
+
+    def calculate_indexes(self):
+        _indexes = {}
         for index_name, index in self.indexes().iteritems():
             values = []
             abort = False
@@ -340,8 +326,31 @@ class CassandraObject(object):
                     row_suffix = ""
                     for val in values:
                         row_suffix = "%s-%s" % (row_suffix, val)
-                    ind_values[index_name] = [row_suffix, col]
-        return ind_values
+                    _indexes[index_name] = [row_suffix, col]
+        self._indexes = _indexes
+
+    def load(self):
+        """
+        Load object from the database
+        Raises ObjectNotFoundException
+        """
+        self._indexes = None
+        row_id = self.prefix + self.uuid
+        self.data = self.db.mc.get(row_id)
+        if self.data == "tomb":
+#            print "LOAD(MC) %s %s" % (row_id, self.data)
+            raise ObjectNotFoundException(row_id)
+        elif self.data is None:
+            try:
+                col = self.db.get(row_id, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
+            except NotFoundException:
+                raise ObjectNotFoundException(row_id)
+            self.data = json.loads(col.value)
+            self.db.mc.add(row_id, self.data, cache_interval)
+#            print "LOAD(DB) %s %s" % (row_id, self.data)
+#        else:
+#            print "LOAD(MC) %s %s" % (row_id, self.data)
+        self.dirty = False
 
     def mutate(self, mutations, clock):
         """
@@ -351,10 +360,9 @@ class CassandraObject(object):
         if not self.dirty:
             return
         # calculating index mutations
+        old_index_values = self.index_values()
+        self.calculate_indexes()
         index_values = self.index_values()
-        old_index_values = self.data.get("indexes")
-        if old_index_values is None:
-            self.data["indexes"] = old_index_values = {}
         for index_name, columns in self.indexes().iteritems():
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)
@@ -413,12 +421,11 @@ class CassandraObject(object):
         self.db.mc.set(row_id, "tomb", cache_interval)
         # removing indexes
         mutations = {}
-        old_index_values = self.data.get("indexes")
-        if old_index_values is not None:
-            for index_name, key in old_index_values.iteritems():
-                index_row = (self.prefix + index_name + key[0]).encode("utf-8")
-                mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
-                #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
+        old_index_values = self.index_values()
+        for index_name, key in old_index_values.iteritems():
+            index_row = (self.prefix + index_name + key[0]).encode("utf-8")
+            mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
+            #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.dirty = False
@@ -434,6 +441,7 @@ class CassandraObject(object):
         """
         Set data value
         """
+        self.index_values()
         if type(value) == str:
             value = unicode(value, "utf-8")
         self.data[key] = value
@@ -443,6 +451,7 @@ class CassandraObject(object):
         """
         Delete key
         """
+        self.index_values()
         try:
             del self.data[key]
             self.dirty = True
@@ -456,7 +465,7 @@ class CassandraObject(object):
         return int(val)
 
 class CassandraObjectList(object):
-    def __init__(self, db, uuids=None, prefix="", cls=CassandraObject, query_index=None, query_equal=None, query_start="", query_finish="", query_limit=100, query_reversed=False):
+    def __init__(self, db, uuids=None, prefix="", cls=CassandraObject, query_index=None, query_equal=None, query_start="", query_finish="", query_limit=1000000, query_reversed=False):
         """
         To access a list of known uuids:
         lst = CassandraObjectList(db, ["uuid1", "uuid2", ...])
@@ -574,16 +583,15 @@ class CassandraObjectList(object):
             clock = Clock(time.time() * 1000)
             mutations = {}
             for obj in self.dict:
-                old_index_values = obj.data.get("indexes")
-                if old_index_values is not None:
-                    for index_name, key in old_index_values.iteritems():
-                        index_row = (obj.prefix + index_name + key[0]).encode("utf-8")
-                        m = mutations.get(index_row)
-                        mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))
-                        if m is None:
-                            mutations[index_row] = {"Objects": [mutation]}
-                        else:
-                            m["Objects"].append(mutation)
+                old_index_values = obj.index_values()
+                for index_name, key in old_index_values.iteritems():
+                    index_row = (obj.prefix + index_name + key[0]).encode("utf-8")
+                    m = mutations.get(index_row)
+                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))
+                    if m is None:
+                        mutations[index_row] = {"Objects": [mutation]}
+                    else:
+                        m["Objects"].append(mutation)
                 row_id = obj.prefix + obj.uuid
                 obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
                 obj.db.mc.set(row_id, "tomb", cache_interval)
@@ -633,3 +641,7 @@ class CassandraObjectList(object):
 
     def __str__(self):
         return str([obj.uuid for obj in self.dict])
+
+    def sort(self, *args, **kwargs):
+        return self.dict.sort(*args, **kwargs)
+

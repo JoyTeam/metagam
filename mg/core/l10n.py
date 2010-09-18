@@ -23,20 +23,20 @@ timeencode2_month = {
     "12": gettext_noop("of December")
 }
 
-class L10n(Module):
-    def __init__(self, *args, **kwargs):
-        Module.__init__(self, *args, **kwargs)
-        self.translations = {}
-        self.localedir = mg.__path__[0] + "/locale"
-        self.languages = set()
-        self.languages.add("en")
-        for lang in os.listdir(self.localedir):
-            try:
-                os.stat(self.localedir + "/" + lang + "/LC_MESSAGES")
-                self.languages.add(lang)
-            except:
-                pass
+translations = {}
+localedir = mg.__path__[0] + "/locale"
+languages = set()
+languages.add("en")
+for lang in os.listdir(localedir):
+    try:
+        os.stat(localedir + "/" + lang + "/LC_MESSAGES")
+        languages.add(lang)
+    except:
+        pass
 
+re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
+
+class L10n(Module):
     def register(self):
         Module.register(self)
         self.rhook("l10n.domain", self.l10n_domain)
@@ -46,7 +46,6 @@ class L10n(Module):
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("l10n.timeencode2", self.l10n_timeencode2)
-        self.re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
 
     def l10n_domain(self):
         return "mg_server"
@@ -60,17 +59,27 @@ class L10n(Module):
             return self.app().lang
         except:
             pass
+        try:
+            return self.app().inst.config["locale"]
+        except:
+            pass
         return None
 
     def l10n_translation(self, domain, lang):
+        if lang == "en":
+            return gettext.NullTranslations()
         key = "%s.%s" % (domain, lang)
         try:
-            return self.translations[key]
+            return translations[key]
         except KeyError:
             pass
-        trans = gettext.translation(domain, localedir=self.localedir, languages=[lang])
-        self.translations[key] = trans
-        return trans
+        try:
+            trans = gettext.translation(domain, localedir=localedir, languages=[lang])
+            translations[key] = trans
+            return trans
+        except IOError as e:
+            self.error("Error loading language %s in %s: %s", lang, localedir, e)
+            return l10n_translation(domain, "en")
 
     def l10n_gettext(self, value):
         request = self.req()
@@ -102,7 +111,7 @@ class L10n(Module):
             for ent in accept_language.split(","):
                 try:
                     tokens = ent.split(";")
-                    if tokens[0] in self.languages:
+                    if tokens[0] in languages:
                         if len(tokens) == 1:
                             weight.append((tokens[0], 1))
                         elif len(tokens) == 2:
@@ -120,7 +129,7 @@ class L10n(Module):
         struct["lang"] = self.call("l10n.lang")
 
     def l10n_timeencode2(self, time):
-        m = self.re_timeencode2.match(time)
+        m = re_timeencode2.match(time)
         if not m:
             return ""
         year, month, day, time = m.group(1, 2, 3, 4)

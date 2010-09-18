@@ -3,6 +3,7 @@ from concurrence import Tasklet, http
 from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock
+from uuid import uuid4
 import weakref
 import re
 import sys
@@ -436,7 +437,7 @@ class Modules(object):
                         errors += 1
                         module = sys.modules.get(module_name)
                         if module:
-                            logging.getLogger("mg.core.Modules").exception(e)
+                            logging.getLogger("%s:mg.core.Modules" % self.app().inst.server_id).exception(e)
                         else:
                             raise
                 cls = module.__dict__[class_name]
@@ -470,15 +471,23 @@ class Instance(object):
         self.config = {}
         self.appfactory = None
         self.modules = set()
+        self.server_id = uuid4().hex
 
         # Logging setup
         modlogger = logging.getLogger("")
         modlogger.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        self.log_channel = logging.StreamHandler()
+        self.log_channel.setLevel(logging.DEBUG)
         formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        modlogger.addHandler(ch)
+        self.log_channel.setFormatter(formatter)
+        modlogger.addHandler(self.log_channel)
+
+    def set_server_id(self, id, logger_id=None):
+        self.server_id = id
+        if logger_id is None:
+            logger_id = id
+        formatter = Formatter("%(asctime)s - " + ("%-9s" % logger_id) + " - %(name)s - %(levelname)s - %(message)s")
+        self.log_channel.setFormatter(formatter)
 
     def reload(self):
         "Reloads instance. Return value: number of errors"

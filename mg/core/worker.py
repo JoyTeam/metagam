@@ -7,7 +7,11 @@ import mg.core
 class Worker(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web"])
+        self.rdep(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web", "mg.core.queue.Queue"])
+        self.rhook("core.fastidle", self.fastidle)
+
+    def fastidle(self):
+        self.call("core.check_last_ping")
 
 class ApplicationFactory(mg.core.ApplicationFactory):
     """
@@ -45,5 +49,5 @@ class MultiapplicationWebDaemon(WebDaemon):
             app = self.inst.appfactory.get("metagam")
         if app is None:
             return request.redirect("http://www.%s" % str(self.metagam_host))
-        app.hooks.call("l10n.set_request_lang")
+        #app.hooks.call("l10n.set_request_lang")
         return app.http_request(request, group, hook, args)

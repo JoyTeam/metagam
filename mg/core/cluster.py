@@ -74,7 +74,10 @@ def dir_query(uri, params):
 
 def query(host, port, uri, params):
     cnn = HTTPConnection()
-    cnn.connect((str(host), int(port)))
+    try:
+        cnn.connect((str(host), int(port)))
+    except IOError as e:
+        raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
     try:
         request = cnn.post(uri, urlencode(params))
         request.add_header("Content-type", "application/x-www-form-urlencoded")

@@ -270,7 +270,8 @@ class TestORM(unittest.TestCase):
         lst = TestObjectList(self.db, query_index="index")
         self.assertEqual(len(lst), 2)
         tmp = CassandraObject(self.db, obj.uuid, prefix="TestObject-")
-        tmp.delkey("indexes")
+        # breaking indexes
+        tmp._indexes = {}
         tmp.remove()
         lst = TestObjectList(self.db, query_index="index")
         self.assertEqual(len(lst), 2)

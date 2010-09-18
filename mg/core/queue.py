@@ -7,6 +7,8 @@ from urllib import urlencode
 from uuid import uuid4
 import json
 import time
+import logging
+import re
 
 class QueueTask(CassandraObject):
     _indexes = {
@@ -32,12 +34,9 @@ class Queue(Module):
     def register(self):
         Module.register(self)
         self.rhook("queue.add", self.queue_add)
-        self.rhook("queue.process", self.queue_process)
-        self.rhook("queue.processing", self.queue_processing)
-        self.processing = set()
-        self.processing_uniques = set()
+        self.rhook("int-queue.run", self.queue_run)
 
-    def queue_add(self, hook, args, at=None, priority=100, unique=None, retry_on_fail=False):
+    def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False):
         int_app = self.app().inst.int_app
         with int_app.lock(["queue"]):
             app_tag = self.app().tag
@@ -57,45 +56,87 @@ class Queue(Module):
             if at is not None:
                 raise RuntimeError("Not implemented")
             task = int_app.obj(QueueTask, data=data)
-            print "storing task %s: %s(%s) with priority=%d" % (task.uuid, hook, args, int(priority))
             task.store()
 
+    def queue_run(self):
+        req = self.req()
+        m = re.match(r'(\S+?)\/(\S+)', req.args)
+        if not m:
+            self.call("web.not_found")
+        app_tag, hook = m.group(1, 2)
+        args = json.loads(req.param("args"))
+        app = self.app().inst.appfactory.get(app_tag)
+        if app is None:
+            self.call("web.not_found")
+        app.hooks.call(hook, args)
+        self.call("web.response_json", {"ok": 1})
+
+class QueueRunner(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("queue.process", self.queue_process)
+        self.rhook("queue.processing", self.queue_processing)
+        self.processing = set()
+        self.processing_uniques = set()
+        self.workers = 4
+
     def queue_process(self):
-        self.workers = 1
         self.wait_free = channel()
         while True:
-            if self.workers > 0:
-                self.workers = self.workers - 1
-            else:
-                self.wait_free.recv()
-            tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time())
-            if len(tasks):
-                tasks.sort(key=lambda x, y: cmp(a.get("priority"), b.get("priority")), reverse=True)
-                print "sorted tasks: %s" % tasks
-                task = tasks[0]
-                task.remove()
-                Tasklet.new(self.queue_worker)(task)
-            else:
-                self.workers = self.workers + 1
-                Tasklet.sleep(5)
+            try:
+                while self.workers <= 0:
+                    self.wait_free.receive()
+                tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
+                if len(tasks):
+                    tasks.load()
+                    tasks.sort(cmp=lambda x, y: cmp(x.get("priority"), y.get("priority")), reverse=True)
+                    if len(tasks) > self.workers:
+                        del tasks[self.workers:]
+                    queue_workers = self.call("director.queue_workers")
+                    if len(queue_workers):
+                        tasks.remove()
+                        for task in tasks:
+                            worker = queue_workers.pop(0)
+                            queue_workers.append(worker)
+                            self.workers = self.workers - 1
+                            Tasklet.new(self.queue_run)(task, worker)
+                    else:
+                        Tasklet.sleep(5)
+                else:
+                    Tasklet.sleep(1)
+            except TaskletExit:
+                raise
+            except BaseException as e:
+                logging.getLogger("mg.core.queue.Queue").exception(e)
 
-    def queue_worker(self, task):
-        print "starting processing task %s (%s)" % (task, task.data)
+    def queue_run(self, task, worker):
         self.processing.add(task.uuid)
         unique = task.get("unique")
         if unique is not None:
             self.processing_uniques.add(unique)
+        success = False
         try:
-            pass
-        finally:
-            self.processing.discard(task.uuid)
-            if unique is not None:
-                self.processing_uniques.discard(unique)
-            print "finished processing task %s" % task
-            if self.wait_free.balance < 0:
-                self.wait_free.send(None)
-            else:
-                self.workers = self.workers + 1
+            self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (task.get("app"), task.get("hook")), {
+                "args": json.dumps(task.get("args")),
+            })
+            success = True
+        except HTTPError as e:
+            self.error("Error executing task %s: %s" % (task.get("hook"), e))
+        except TaskletExit:
+            raise
+        except BaseException as e:
+            self.exception(e)
+        self.workers = self.workers + 1
+        self.processing.discard(task.uuid)
+        if unique is not None:
+            self.processing_uniques.discard(unique)
+        if self.wait_free.balance < 0:
+            self.wait_free.send(None)
+        if not success and task.get("retry_on_fail"):
+            task.set("at", "%020d" % (time.time() + 5))
+            task.set("priority", task.get_int("priority") - 10)
+            task = self.obj(QueueTask, data=task.data)
+            task.store()
 
     def queue_processing(self):
-        return (self.processing, self.processing_uniques)
+        return (self.processing, self.processing_uniques, self.workers)

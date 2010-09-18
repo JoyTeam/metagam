@@ -21,6 +21,7 @@ def main():
 
         # Running daemon
         inst = Instance()
+        inst.set_server_id('server')
         conf = inst.download_config()
         dbpool = CassandraPool(conf["cassandra"])
         mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg-")
@@ -53,7 +54,7 @@ def main():
                 "queue": options.queue,
             })
         })
-        inst.server_id = res["server_id"]
+        inst.set_server_id(res["server_id"], "server")
         while True:
             try:
                 app.hooks.call("core.fastidle")

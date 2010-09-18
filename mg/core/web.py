@@ -16,6 +16,7 @@ import logging
 import math
 import traceback
 import Cookie
+import time
 
 ver = 1
 
@@ -157,6 +158,10 @@ class Request(object):
     def internal_server_error(self):
         "Return 500 Internal Server Error"
         return self.send_response("500 Internal Server Error", self.headers, "<html><body><h1>500 Internal Server Error</h1></body></html>")
+
+    def service_unavailable(self):
+        "Return 503 Service Unavailable"
+        return self.send_response("503 Service Unavailable", self.headers, "<html><body><h1>503 Service Unavailable</h1></body></html>")
 
     def response(self, content):
         "Return HTTP response. content will be returned to the client"
@@ -307,7 +312,7 @@ class WebDaemon(object):
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
-        self.app.hooks.call("l10n.set_request_lang")
+        #self.app.hooks.call("l10n.set_request_lang")
         return self.app.http_request(request, group, hook, args)
 
 class WebResponse(Exception):
@@ -357,12 +362,14 @@ class Web(Module):
         self.re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
         self.re_hook_parse = re.compile(r'^<hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*/>$')
         self.re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
+        self.last_ping = None
 
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
         self.rhook("core.ver", self.core_ver)
         self.rhook("int-core.ping", self.core_ping)
+        self.rhook("core.check_last_ping", self.check_last_ping)
         self.rhook("int-core.reload", self.core_reload)
         self.rhook("int-core.appconfig", self.core_appconfig)
         self.rhook("web.parse_template", self.web_parse_template)
@@ -380,6 +387,7 @@ class Web(Module):
         self.rhook("web.not_found", self.web_not_found)
         self.rhook("web.forbidden", self.web_forbidden)
         self.rhook("web.internal_server_error", self.web_internal_server_error)
+        self.rhook("web.service_unavailable", self.web_service_unavailable)
         self.rhook("web.redirect", self.web_redirect)
 
     def core_reload(self):
@@ -400,7 +408,15 @@ class Web(Module):
             response["server_id"] = self.app().inst.server_id
         except:
             pass
+        self.last_ping = time.time()
         return request.jresponse(response)
+
+    def check_last_ping(self):
+        if self.last_ping is None:
+            self.last_ping = time.time()
+        elif time.time() > self.last_ping + 300:
+            self.error("Director missing since %d. Exiting", self.last_ping)
+            quit(2)
 
     def core_appconfig(self):
         req = self.req()
@@ -522,6 +538,9 @@ class Web(Module):
 
     def web_internal_server_error(self):
         raise WebResponse(self.req().internal_server_error())
+
+    def web_service_unavailable(self):
+        raise WebResponse(self.req().service_unavailable())
 
     def web_not_found(self):
         raise WebResponse(self.req().not_found())

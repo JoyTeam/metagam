@@ -12,7 +12,7 @@ import logging
 def main():
     try:
         inst = Instance()
-        inst.server_id = 'director';
+        inst.set_server_id("director");
         daemon = WebDaemon(inst)
         dbpool = CassandraPool((("director-db", 9160),))
         mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg-")

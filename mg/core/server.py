@@ -58,6 +58,7 @@ class Server(Module):
             if workers[i].returncode is not None:
                 self.debug("respawning child %d (process %s)", i, self.executable)
                 workers[i] = subprocess.Popen([self.executable, str(server_id), str(i)])
+        self.call("core.check_last_ping")
 
     def nginx(self):
         request = self.req()
