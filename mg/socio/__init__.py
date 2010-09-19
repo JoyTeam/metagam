@@ -37,7 +37,7 @@ class UserForumSettings(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "UserForumSettings-"
+        kwargs["clsprefix"] = "UserForumSettings-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -45,7 +45,7 @@ class UserForumSettings(CassandraObject):
 
 class UserForumSettingsList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "UserForumSettings-"
+        kwargs["clsprefix"] = "UserForumSettings-"
         kwargs["cls"] = UserForumSettings
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -58,7 +58,7 @@ class ForumTopic(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "ForumTopic-"
+        kwargs["clsprefix"] = "ForumTopic-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -72,7 +72,7 @@ class ForumTopic(CassandraObject):
 
 class ForumTopicList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "ForumTopic-"
+        kwargs["clsprefix"] = "ForumTopic-"
         kwargs["cls"] = ForumTopic
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -84,7 +84,7 @@ class ForumPost(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "ForumPost-"
+        kwargs["clsprefix"] = "ForumPost-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -92,13 +92,13 @@ class ForumPost(CassandraObject):
 
 class ForumPostList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "ForumPost-"
+        kwargs["clsprefix"] = "ForumPost-"
         kwargs["cls"] = ForumPost
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class SocioImage(CassandraObject):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "SocioImage-"
+        kwargs["clsprefix"] = "SocioImage-"
         CassandraObject.__init__(self, *args, **kwargs)
 
 class ForumAdmin(Module):
@@ -403,6 +403,13 @@ class Forum(Module):
         self.rhook("ext-forum.delete", self.ext_delete)
         self.rhook("ext-forum.edit", self.ext_edit)
         self.rhook("ext-forum.settings", self.ext_settings)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)
+        objclasses["ForumTopic"] = (ForumTopic, ForumTopicList)
+        objclasses["ForumPost"] = (ForumPost, ForumPostList)
+        objclasses["SocioImage"] = (SocioImage, None)
 
     def response(self, content, vars):
         topmenu = []

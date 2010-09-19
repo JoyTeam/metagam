@@ -21,7 +21,7 @@ class QueueTask(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "QueueTask-"
+        kwargs["clsprefix"] = "QueueTask-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -29,13 +29,13 @@ class QueueTask(CassandraObject):
 
 class QueueTaskList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "QueueTask-"
+        kwargs["clsprefix"] = "QueueTask-"
         kwargs["cls"] = QueueTask
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class ScheduleList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Schedule-"
+        kwargs["clsprefix"] = "Schedule-"
         kwargs["cls"] = Schedule
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -45,6 +45,11 @@ class Queue(Module):
         self.rhook("queue.add", self.queue_add)
         self.rhook("int-queue.run", self.queue_run)
         self.rhook("queue.schedule", self.queue_schedule)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["QueueTask"] = (QueueTask, QueueTaskList)
+        objclasses["Schedule"] = (Schedule, ScheduleList)
 
     def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False, app_tag=None):
         int_app = self.app().inst.int_app
@@ -111,7 +116,7 @@ class Schedule(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Schedule-"
+        kwargs["clsprefix"] = "Schedule-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):

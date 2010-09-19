@@ -557,10 +557,10 @@ class Application(object):
 
     def obj(self, cls, uuid=None, data=None):
         "Access CassandraObject constructor"
-        return cls(self.db, uuid, data, prefix="%s-" % self.keyprefix)
+        return cls(self.db, uuid, data, dbprefix=self.keyprefix)
 
     def objlist(self, cls, uuids=None, **kwargs):
-        return cls(self.db, uuids, prefix="%s-" % self.keyprefix, **kwargs)
+        return cls(self.db, uuids, dbprefix=self.keyprefix, **kwargs)
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")

@@ -10,7 +10,7 @@ class Constructor(Module):
         Module.register(self)
         self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
-            "mg.core.emails.Email", "mg.core.queue.Queue"])
+            "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-constructor.subscribe", self.subscribe)
@@ -19,6 +19,7 @@ class Constructor(Module):
         self.rhook("forum.topmenu", self.forum_topmenu)
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
         self.rhook("ext-documentation.index", self.documentation_index)
+        self.rhook("ext-debug.validate", self.debug_validate)
 
     def web_global_html(self):
         return "constructor/global.html"
@@ -128,4 +129,8 @@ class Constructor(Module):
             ],
         }
         self.call("web.response_template", "constructor/documentation.html", vars)
+
+    def debug_validate(self):
+        self.call("cassmaint.validate")
+        self.call("web.response_json", {"ok": 1})
 

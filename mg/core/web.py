@@ -126,6 +126,12 @@ class Request(object):
         for key, val in kwargs.iteritems():
             cookie[name][key] = val
         self._set_cookies.append(cookie)
+
+    def host(self):
+        host = self.environ.get("HTTP_X_REAL_HOST")
+        if host is None:
+            raise RuntimeError("X-Real-Host HTTP header not configured")
+        return host.lower()
             
     def ok(self):
         return self.param("ok")

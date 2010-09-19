@@ -19,7 +19,7 @@ class TestObject(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "TestObject-"
+        kwargs["clsprefix"] = "TestObject-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -27,7 +27,7 @@ class TestObject(CassandraObject):
 
 class TestObjectList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "TestObject-"
+        kwargs["clsprefix"] = "TestObject-"
         kwargs["cls"] = TestObject
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -51,7 +51,7 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj.get("key3"), None)
         obj.store()
 
-        obj_a = CassandraObject(self.db, obj.uuid, {}, prefix="prefix-")
+        obj_a = CassandraObject(self.db, obj.uuid, {}, clsprefix="prefix-")
         obj_a.set("K1", 1)
         obj_a.store()
 
@@ -68,7 +68,7 @@ class TestORM(unittest.TestCase):
         self.assertEqual(obj3.get("key3"), None)
         self.assertEqual(obj3.get("key4"), "test")
 
-        obj_a = CassandraObject(self.db, obj.uuid, prefix="prefix-")
+        obj_a = CassandraObject(self.db, obj.uuid, clsprefix="prefix-")
         self.assertEqual(obj_a.get("K1"), 1)
         obj_a.store()
 
@@ -138,17 +138,17 @@ class TestORM(unittest.TestCase):
             raised = raised + 1
         self.assertEqual(raised, 1)
 
-        obj1 = CassandraObject(self.db, prefix="prf-")
+        obj1 = CassandraObject(self.db, clsprefix="prf-")
         obj1.set("key1", 1)
         obj1.set("key2", "value2")
         obj1.store()
 
-        obj2 = CassandraObject(self.db, prefix="prf-")
+        obj2 = CassandraObject(self.db, clsprefix="prf-")
         obj2.set("key3", 3)
         obj2.set("key4", "value4")
         obj2.store()
 
-        lst = CassandraObjectList(self.db, [obj1.uuid, obj2.uuid], prefix="prf-")
+        lst = CassandraObjectList(self.db, [obj1.uuid, obj2.uuid], clsprefix="prf-")
         lst.load()
         self.assertEqual(len(lst), 2)
         self.assertEqual(lst[0].uuid, obj1.uuid)
@@ -269,7 +269,7 @@ class TestORM(unittest.TestCase):
         obj.store()
         lst = TestObjectList(self.db, query_index="index")
         self.assertEqual(len(lst), 2)
-        tmp = CassandraObject(self.db, obj.uuid, prefix="TestObject-")
+        tmp = CassandraObject(self.db, obj.uuid, clsprefix="TestObject-")
         # breaking indexes
         tmp._indexes = {}
         tmp.remove()

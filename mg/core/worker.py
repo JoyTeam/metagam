@@ -37,17 +37,14 @@ class MultiapplicationWebDaemon(WebDaemon):
         WebDaemon.__init__(self, inst)
         self.dbpool = dbpool
         self.mcpool = mcpool
-        self.metagam_host = self.inst.config["metagam_host"]
 
     def req_handler(self, request, group, hook, args):
-        host = request.environ.get("HTTP_X_REAL_HOST")
-        if host is None:
-            return request.response("X-Real-Host HTTP header not configured")
-        host = host.lower()
+        host = request.host()
         app = None
-        if host == "www.%s" % self.metagam_host:
+        metagam_host = self.inst.config["metagam_host"]
+        if host == "www.%s" % metagam_host:
             app = self.inst.appfactory.get("metagam")
         if app is None:
-            return request.redirect("http://www.%s" % str(self.metagam_host))
+            return request.redirect("http://www.%s" % str(metagam_host))
         #app.hooks.call("l10n.set_request_lang")
         return app.http_request(request, group, hook, args)

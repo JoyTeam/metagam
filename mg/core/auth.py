@@ -18,10 +18,12 @@ class User(CassandraObject):
         "created": [[], "created"],
         "last_login": [[], "last_login"],
         "name": [["name_lower"]],
+        "inactive": [["inactive"], "created"],
+        "email": [["email"]],
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "User-"
+        kwargs["clsprefix"] = "User-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -29,7 +31,7 @@ class User(CassandraObject):
 
 class UserList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "User-"
+        kwargs["clsprefix"] = "User-"
         kwargs["cls"] = User
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -39,7 +41,7 @@ class UserPermissions(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "UserPermissions-"
+        kwargs["clsprefix"] = "UserPermissions-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -50,7 +52,7 @@ class UserPermissions(CassandraObject):
 
 class UserPermissionsList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "UserPermissions-"
+        kwargs["clsprefix"] = "UserPermissions-"
         kwargs["cls"] = UserPermissions
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -61,7 +63,7 @@ class Session(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Session-"
+        kwargs["clsprefix"] = "Session-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -69,7 +71,7 @@ class Session(CassandraObject):
 
 class SessionList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Session-"
+        kwargs["clsprefix"] = "Session-"
         kwargs["cls"] = Session
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -79,7 +81,7 @@ class Captcha(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Captcha-"
+        kwargs["clsprefix"] = "Captcha-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
@@ -87,7 +89,7 @@ class Captcha(CassandraObject):
 
 class CaptchaList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["prefix"] = "Captcha-"
+        kwargs["clsprefix"] = "Captcha-"
         kwargs["cls"] = Captcha
         CassandraObjectList.__init__(self, *args, **kwargs)
 
@@ -148,13 +150,23 @@ class PasswordAuthentication(Module):
         self.rhook("ext-auth.captcha", self.ext_captcha)
         self.rhook("ext-auth.logout", self.ext_logout)
         self.rhook("ext-auth.login", self.ext_login)
+        self.rhook("ext-auth.activate", self.ext_activate)
+        self.rhook("ext-auth.remind", self.ext_remind)
         self.rhook("session.find_user", self.find_user)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["User"] = (User, UserList)
+        objclasses["UserPermissions"] = (UserPermissions, UserPermissionsList)
+        objclasses["Session"] = (Session, SessionList)
+        objclasses["Captcha"] = (Captcha, CaptchaList)
 
     def ext_register(self):
         req = self.req()
         session = self.call("session.get", True)
         form = self.call("web.form", "socio/form.html")
         name = req.param("name")
+        email = req.param("email")
         password1 = req.param("password1")
         password2 = req.param("password2")
         captcha = req.param("captcha")
@@ -176,6 +188,10 @@ class PasswordAuthentication(Module):
                 form.error("password2", self._("Password don't match. Try again, please"))
                 password1 = ""
                 password2 = ""
+            if not email:
+                form.error("email", self._("Enter your email address"))
+            elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
+                form.error("email", self._("Enter correct email"))
             if not captcha:
                 form.error("captcha", self._("Enter numbers from the picture"))
             else:
@@ -186,12 +202,18 @@ class PasswordAuthentication(Module):
                 except ObjectNotFoundException:
                     form.error("captcha", self._("Incorrect number"))
             if not form.errors:
+                email = email.lower()
                 user = self.obj(User)
                 now = "%020d" % time.time()
                 user.set("created", now)
                 user.set("last_login", now)
                 user.set("name", name)
                 user.set("name_lower", name.lower())
+                user.set("email", email)
+                user.set("inactive", 1)
+                activation_code = uuid4().hex
+                user.set("activation_code", activation_code)
+                user.set("activation_redirect", redirect)
                 salt = ""
                 letters = "abcdefghijklmnopqrstuvwxyz"
                 for i in range(0, 10):
@@ -201,6 +223,47 @@ class PasswordAuthentication(Module):
                 m = hashlib.md5()
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
+                user.store()
+                self.call("email.send", email, name, self._("Account activation"), self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n%s\n\nor simply follow the link:\n\nhttp://%s/auth/activate/%s?code=%s") % (activation_code, req.host(), user.uuid, activation_code))
+                self.call("web.redirect", "/auth/activate/%s" % user.uuid)
+        if redirect is not None:
+            form.hidden("redirect", redirect)
+        form.input(self._("User name"), "name", name)
+        form.input(self._("Email"), "email", email)
+        form.password(self._("Password"), "password1", password1)
+        form.password(self._("Confirm password"), "password2", password2)
+        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        form.submit(None, None, self._("Register"))
+        vars = {
+            "title": self._("User registration"),
+        }
+        self.call("web.response_global", form.html(), vars)
+
+    def ext_activate(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        if not user.get("inactive"):
+            redirects = {}
+            self.call("auth.redirects", redirects)
+            if redirects.has_key("register"):
+                self.call("web.redirect", redirects["register"])
+            self.call("web.redirect", "/")
+        session = self.call("session.get", True)
+        form = self.call("web.form", "socio/form.html")
+        code = req.param("code")
+        if req.ok():
+            if not code:
+                form.error("code", self._("Enter activation code from your email box"))
+            elif code != user.get("activation_code"):
+                form.error("code", self._("Invalid activation code"))
+            if not form.errors:
+                redirect = user.get("activation_redirect")
+                user.delkey("inactive")
+                user.delkey("activation_code")
+                user.delkey("activation_redirect")
                 user.store()
                 session.set("user", user.uuid)
                 session.store()
@@ -212,15 +275,41 @@ class PasswordAuthentication(Module):
                 if redirects.has_key("register"):
                     self.call("web.redirect", redirects["register"])
                 self.call("web.redirect", "/")
-        if redirect is not None:
-            form.hidden("redirect", redirect)
-        form.input(self._("User name"), "name", name)
-        form.password(self._("Password"), "password1", password1)
-        form.password(self._("Retype password"), "password2", password2)
-        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
-        form.submit(None, None, self._("Register"))
+        form.input(self._("Activation code"), "code", code)
+        form.submit(None, None, self._("Activate"))
         vars = {
-            "title": self._("User registration"),
+            "title": self._("User activation"),
+        }
+        self.call("web.response_global", form.html(), vars)
+
+    def ext_remind(self):
+        req = self.req()
+        form = self.call("web.form", "socio/form.html")
+        email = req.param("email")
+        redirect = req.param("redirect")
+        if req.ok():
+            if not email:
+                form.error("email", self._("Enter your email"))
+            if not form.errors:
+                list = self.objlist(UserList, query_index="email", query_equal=email.lower())
+                if not len(list):
+                    form.error("email", self._("No users with this email"))
+            if not form.errors:
+                list.load()
+                name = ""
+                content = ""
+                for user in list:
+                    content += "User '%s' has password '%s'\n" % (user.get("name"), user.get("pass_reminder"))
+                    name = user.get("name")
+                self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your email are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
+                if redirect is not None and redirect != "":
+                    self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
+                self.call("web.redirect", "/auth/login")
+        form.hidden("redirect", redirect)
+        form.input(self._("Your email"), "email", email)
+        form.submit(None, None, self._("Remind"))
+        vars = {
+            "title": self._("Password reminder"),
         }
         self.call("web.response_global", form.html(), vars)
 
@@ -372,6 +461,8 @@ class PasswordAuthentication(Module):
                 user = self.find_user(name)
                 if user is None:
                     form.error("name", self._("User not found"))
+                elif user.get("inactive"):
+                    form.error("name", self._("User is not active. Check your email and enter activation code"))
             if not password:
                 form.error("password", self._("Enter your password"))
             if not form.errors:
@@ -396,7 +487,7 @@ class PasswordAuthentication(Module):
         form.input(self._("User name"), "name", name)
         form.password(self._("Password"), "password", password)
         form.submit(None, None, self._("Log in"))
-        form.add_message_bottom('<a href="/auth/register?redirect=%s">%s</a>' % (urlencode(redirect), self._("Register")))
+        form.add_message_bottom('<a href="/auth/register?redirect=%s">%s</a> &middot; <a href="/auth/remind?redirect=%s">%s</a>' % (urlencode(redirect), self._("Register"), urlencode(redirect), self._("Remind my password")))
         vars = {
             "title": self._("User login"),
         }

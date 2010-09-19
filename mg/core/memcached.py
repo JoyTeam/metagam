@@ -215,7 +215,7 @@ class MemcachedLock(object):
         keys - list of keys to lock
         """
         self.mc = mc
-        self.keys = ["_lock-" + str(key) for key in sorted(keys)]
+        self.keys = ["LOCK-" + str(key) for key in sorted(keys)]
         self.patience = patience
         self.delay = delay
         self.locked = None
