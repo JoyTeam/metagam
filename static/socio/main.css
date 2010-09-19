@@ -5,7 +5,7 @@ tr.cathead td.catgroup { padding-top: 10px; font-size: 15px; font-weight: bold; 
 tr.cathead td.catevents { width: 10%; text-align: center; padding-right: 40px; }
 tr.cathead td.catcomments { width: 10%; text-align: center; padding-right: 40px; }
 tr.cathead td.catlast { width: 30%; }
-tr.catdelim div.head { background-color: #ebcb88; border: solid 1px #f0d69d; padding: 0px 10px 0px 17px; }
+tr.catdelim div.head { background-color: #ebcb88; border: solid 1px #f0d69d; padding: 0px 10px 0px 13px; }
 tr.catdelim div.top_cat { margin-top: 5px; padding: 3px 5px 3px 15px; background-color: #ebcb88; color: #614115; font-size: 16px; font-weight: bold; }
 tr.catdelim div.head img { vertical-align: middle; }
 div.thick { height: 13px; background-color: #ebcb88; }
@@ -14,7 +14,7 @@ div.thin2 { height: 4px; background-color: #ebcb88; }
 div.thin3 { height: 4px; background-color: #ebcb88; margin-top: 20px; }
 tr.category_pinned td { vertical-align: top; background-color: #e8ca86; padding: 9px 50px 9px 0px; }
 tr.category td { vertical-align: top; padding: 9px 10px 9px 0px; }
-tr.category td.name { padding: 9px 50px 9px 15px; }
+tr.category td.name { padding: 9px 50px 9px 13px; }
 tr.category_pinned td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
 tr.category_pinned td.name { padding: 9px 50px 9px 15px; }
@@ -28,7 +28,7 @@ div.catname { font-size: 14px; font-weight: bold; }
 div#page_content { margin: 10px 0px 0px 0px; }
 div#newtopic { padding: 0px 0px 15px 13px; }
 div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 11px; padding-bottom: 15px; }
-tr.category td.avatar { padding: 7px 10px 30px 17px; vertical-align: top; width: 150px; }
+tr.category td.avatar { padding: 7px 10px 30px 13px; vertical-align: top; width: 150px; }
 div.avatar img { border: solid 1px #614115; }
 div.member_name { font-weight: bold; color: #364b52; padding: 10px 0px 3px 0px; }
 div.member_icons img { vertical-align: middle; }
@@ -47,7 +47,8 @@ table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115;
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
 table.std_form_row { width: 100%; }
 table.std_form_row td.control { padding-right: 10px; vertical-align: top; }
-#menu { font-size: 14px; font-weight: bold; padding: 10px 10px 0px 17px }
 #topmenu { width: 100%; background-color: #ebcb88; }
-#topmenu_left { padding: 5px 10px 5px 17px; }
-#topmenu_right { padding: 5px 10px 5px 17px; text-align: right; }
+#menu { width: 100%; margin-top: 10px; }
+#menu * { font-size: 14px; }
+.menu_left { padding: 5px 10px 5px 13px; }
+.menu_right { padding: 5px 10px 5px 13px; text-align: right; }

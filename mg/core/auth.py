@@ -69,6 +69,15 @@ class Session(CassandraObject):
     def indexes(self):
         return Session._indexes
 
+    def user(self):
+        return self.get("user")
+
+    def semi_user(self):
+        user = self.get("user")
+        if user is not None:
+            return user
+        return self.get("semi_user")
+
 class SessionList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "Session-"
@@ -266,6 +275,7 @@ class PasswordAuthentication(Module):
                 user.delkey("activation_redirect")
                 user.store()
                 session.set("user", user.uuid)
+                session.delkey("semi_user")
                 session.store()
                 self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":
@@ -438,7 +448,9 @@ class PasswordAuthentication(Module):
 
     def ext_logout(self):
         session = self.call("session.get")
-        if session is not None and session.get("user"):
+        user = session.get("user")
+        if session is not None and user:
+            session.set("semi_user", user)
             session.delkey("user")
             session.store()
             self.app().mc.delete("SessionCache-%s" % session.uuid)
@@ -473,6 +485,7 @@ class PasswordAuthentication(Module):
             if not form.errors:
                 session = self.call("session.get", True)
                 session.set("user", user.uuid)
+                session.delkey("semi_user")
                 session.store()
                 self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":

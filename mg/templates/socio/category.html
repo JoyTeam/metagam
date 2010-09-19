@@ -16,14 +16,14 @@
 [%for topic in topics%]
 <tr class="category[%if topic.pinned%]_pinned[%end%]">
 <td class="name">
-	<a href="/forum/topic/[%topic.uuid%]">[%if topic.unread%]<strong>[%end%][%topic.subject_html%][%if topic.unread%]</strong>[%end%]</a>[%if subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="mark" />[%end%]
+	<a href="/forum/topic/[%topic.uuid%]">[%if topic.unread%]<strong>[%end%][%topic.subject_html%][%if topic.unread%]</strong>[%end%]</a>[%if topic.subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="mark" />[%end%]
 	<div class="event_created">[%topic.event_created%]</div>
 	[%topic.event_pages%]
 </td>
 <td class="author">[%topic.author_html%]</td>
 <td class="counter">[%topic.posts%]</td>
 <td>
-	[%if topic.last_comment%]<a href="/forum/topic/[%topic.uuid%]?page=[%last_comment_page%]#comment[%last_comment%]">[%last_comment_created%]</a> [%by%] [%last_comment_member_name%][%end%]
+	[%if topic.last_post%]<a href="/forum/topic/[%topic.uuid%]?page=[%topic.last_post_page%]#[%topic.last_post%]">[%topic.last_post_created%]</a> [%by%] [%topic.last_post_author_html%][%end%]
 </td>
 </tr>
 <tr class="catdelim"><td colspan="4"><div class="thin"></div></td></tr>

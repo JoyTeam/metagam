@@ -32,6 +32,7 @@ class CassandraMaintenance(Module):
         slices_dict = dict([(slice.key, slice.columns) for slice in slices_list])
         for slice in slices_list:
             key = slice.key
+            print key
             for parser in parsers:
                 if parser[1] == 1:
                     m = parser[0].match(key)

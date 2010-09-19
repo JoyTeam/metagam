@@ -11,6 +11,7 @@ import re
 import cgi
 import cStringIO
 import urlparse
+import time
 
 posts_per_page = 20
 
@@ -100,6 +101,26 @@ class SocioImage(CassandraObject):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "SocioImage-"
         CassandraObject.__init__(self, *args, **kwargs)
+
+class ForumLastRead(CassandraObject):
+    _indexes = {
+        "topic-user": [["topic", "user"]],
+        "user-subscribed": [["user", "subscribed"]],
+        "topic": [["topic"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumLastRead-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return ForumLastRead._indexes
+
+class ForumLastReadList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumLastRead-"
+        kwargs["cls"] = ForumLastRead
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class ForumAdmin(Module):
     def register(self):
@@ -403,6 +424,11 @@ class Forum(Module):
         self.rhook("ext-forum.delete", self.ext_delete)
         self.rhook("ext-forum.edit", self.ext_edit)
         self.rhook("ext-forum.settings", self.ext_settings)
+        self.rhook("ext-forum.subscribe", self.ext_subscribe)
+        self.rhook("ext-forum.unsubscribe", self.ext_unsubscribe)
+        self.rhook("ext-forum.pin", self.ext_pin)
+        self.rhook("ext-forum.unpin", self.ext_unpin)
+        self.rhook("ext-forum.move", self.ext_move)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def objclasses_list(self, objclasses):
@@ -437,15 +463,27 @@ class Forum(Module):
             if len(topmenu_right):
                 vars["topmenu_right"] = topmenu_right
         if vars.get("menu") and len(vars["menu"]):
-            menu = []
-            first = True
+            menu_left = []
+            menu_right = []
+            first_left = True
+            first_right = True
             for ent in vars["menu"]:
-                if first:
-                    first = False
+                if ent.get("right"):
+                    if first_right:
+                        first_right = False
+                    else:
+                        menu_right.append({"delim": True})
+                    menu_right.append(ent)
                 else:
-                    menu.append({"delim": True})
-                menu.append(ent)
-            vars["menu"] = menu
+                    if first_left:
+                        first_left = False
+                    else:
+                        menu_left.append({"delim": True})
+                    menu_left.append(ent)
+            if len(menu_left):
+                vars["menu_left"] = menu_left
+            if len(menu_right):
+                vars["menu_right"] = menu_right
         vars["forum_content"] = content
         self.call("web.response_layout", "socio/layout_forum.html", vars)
 
@@ -590,11 +628,22 @@ class Forum(Module):
                 return False
         return True
 
+    def may_pin(self, cat, topic=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        if req.has_access("admin"):
+            return True
+        return False
+
     def may_delete(self, cat, topic=None, post=None):
         req = self.req()
         user = req.user()
         if user is None:
             return False
+        if req.has_access("admin"):
+            return True
         if post is None:
             if topic.get("author") != user:
                 return False
@@ -721,6 +770,8 @@ class Forum(Module):
         topic.set("content_html", self.call("socio.format_text", content))
         topic.sync()
         topic.store()
+        if author is not None:
+            self.subscribe(author.uuid, topic.uuid, now)
         return topic
 
     def reply(self, cat, topic, author, content):
@@ -738,10 +789,9 @@ class Forum(Module):
             post.set("content", content)
             post.set("content_html", self.call("socio.format_text", content))
             post.store()
+            if author is not None:
+                self.subscribe(author.uuid, topic.uuid, now)
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
-            topic.set("posts", posts)
-            topic.sync()
-            topic.store()
             page = (posts - 1) / posts_per_page + 1
             raise Hooks.Return((post, page))
 
@@ -760,18 +810,45 @@ class Forum(Module):
         topic_data["uuid"] = topic.uuid
         self.topics_htmlencode([topic_data], load_settings=True)
         may_write = self.may_write(cat, topic)
+        # preparing menu
+        menu = [
+            { "href": "/forum", "html": self._("Forum categories") },
+            { "href": "/forum/cat/%s" % cat["id"], "html": cat["title"] },
+            { "html": self._("Topic") },
+        ]
         actions = []
         if self.may_delete(cat, topic):
-            actions.append('<a href="/forum/delete/' + topic.uuid + '">' + self._("delete") + '</a>')
+            menu.append({"href": "/forum/delete/%s" % topic.uuid, "html": self._("delete"), "right": True})
         if self.may_edit(cat, topic):
             actions.append('<a href="/forum/edit/' + topic.uuid + '">' + self._("edit") + '</a>')
         if may_write:
             actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
         if len(actions):
             topic_data["topic_actions"] = " &bull; ".join(actions)
-        req = self.req()
+        # getting list of posts
         page = intz(req.param("page"))
-        posts, page, pages = self.posts(topic, page)
+        posts, page, pages, last_post = self.posts(topic, page)
+        # updating lastread
+        user_uuid = req.session().semi_user()
+        if user_uuid is not None:
+            lastread = self.lastread(user_uuid, topic.uuid)
+            if last_post is not None:
+                created = last_post.get("created")
+                if lastread.get("last_post", "") < created:
+                    lastread.set("last_post", created)
+            lastread.store()
+            if req.user():
+                redirect = urlencode(req.uri())
+                if lastread.get("subscribed"):
+                    menu.append({"href": "/forum/unsubscribe/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unsubscribe"), "right": True})
+                else:
+                    menu.append({"href": "/forum/subscribe/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("subscribe"), "right": True})
+                if self.may_pin(cat, topic):
+                    if topic.get("pinned"):
+                        menu.append({"href": "/forum/unpin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unpin"), "right": True})
+                    else:
+                        menu.append({"href": "/forum/pin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("pin"), "right": True})
+        # preparing posts to rendering
         posts = posts.data()
         self.posts_htmlencode(posts)
         for post in posts:
@@ -784,6 +861,7 @@ class Forum(Module):
                 actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
                 post["post_actions"] = " &bull; ".join(actions)
+        # reply form
         content = req.param("content")
         form = self.call("web.form", "socio/form.html", "/forum/topic/" + topic.uuid + "#post_form")
         if req.ok():
@@ -795,6 +873,7 @@ class Forum(Module):
                 user = self.obj(User, req.user())
                 post, page = self.call("forum.reply", cat, topic, user, content)
                 self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
+        # making web response
         vars = {
             "topic": topic_data,
             "category": cat,
@@ -807,11 +886,7 @@ class Forum(Module):
             "to_the_top": self._("to the top"),
             "written_at": self._("written at"),
             "posts": posts,
-            "menu": [
-                { "href": "/forum", "html": self._("Forum categories") },
-                { "href": "/forum/cat/%s" % cat["id"], "html": cat["title"] },
-                { "html": self._("Topic") },
-            ],
+            "menu": menu,
         }
         if req.ok() or self.may_write(cat):
             form.texteditor(None, "content", content)
@@ -834,9 +909,58 @@ class Forum(Module):
             vars["pages"] = pages_list
         self.call("forum.response_template", "socio/topic.html", vars)
 
+    def lastread(self, user_uuid, topic_uuid):
+        if user_uuid is None:
+            return None
+        list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal="%s-%s" % (topic_uuid, user_uuid))
+        if len(list):
+            list.load()
+            return list[0]
+        else:
+            return self.obj(ForumLastRead, data={"topic": topic_uuid, "user": user_uuid})
+
+    def subscribe(self, user_uuid, topic_uuid, now):
+        lastread = self.lastread(user_uuid, topic_uuid)
+        lastread.set("last_post", now)
+        lastread.set("subscribed", 1)
+        lastread.store()
+
+    def unsubscribe(self, user_uuid, topic_uuid, now):
+        lastread = self.lastread(user_uuid, topic_uuid)
+        lastread.set("last_post", now)
+        lastread.delkey("subscribed")
+        lastread.store()
+
     def posts(self, topic, page=1):
         posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
         pages = (len(posts) - 1) / posts_per_page + 1
+        if len(posts):
+            last_post = posts[-1]
+            last_post.load()
+            if topic.get("last_post") != last_post.uuid:
+                topic.set("last_post", last_post.uuid)
+                topic.set("last_post_page", pages)
+                topic.set("last_post_created", last_post.get("created"))
+                topic.set("last_post_author", last_post.get("author"))
+                topic.set("last_post_author_name", last_post.get("author_name"))
+                topic.set("last_post_author_html", cgi.escape(last_post.get("author_name")))
+            updated = last_post.get("created")
+        else:
+            last_post = None
+            if topic.get("last_post"):
+                topic.delkey("last_post")
+                topic.delkey("last_post_page")
+                topic.delkey("last_post_created")
+                topic.delkey("last_post_author")
+                topic.delkey("last_post_author_name")
+                topic.delkey("last_post_author_html")
+            updated = topic.get("created")
+        if topic.get("updated") != updated:
+            topic.set("updated", updated)
+        if topic.get("posts") != len(posts):
+            topic.set("posts", len(posts))
+        topic.sync()
+        topic.store()
         if page < 1:
             page = 1
         elif page > pages:
@@ -844,7 +968,7 @@ class Forum(Module):
         del posts[0:(page - 1) * posts_per_page]
         del posts[page * posts_per_page:]
         posts.load()
-        return posts, page, pages
+        return posts, page, pages, last_post
 
     def category_or_topic_args(self):
         req = self.req()
@@ -938,13 +1062,12 @@ class Forum(Module):
                         prev = "#%s" % posts[i - 1].uuid
                     break
             post.remove()
-            topic.set("posts", len(posts) - 1)
-            topic.sync()
-            topic.store()
             self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, prev))
         else:
             posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
             posts.remove()
+            lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic.uuid)
+            lastread.remove()
             topic.remove()
             self.call("web.redirect", "/forum/cat/%s" % cat["id"])
 
@@ -1097,3 +1220,82 @@ class Forum(Module):
         form.texteditor(self._("Your forum signature"), "signature", signature)
         form.file(self._("Your avatar"), "avatar")
         self.call("forum.response", form.html(), vars)
+
+    def ext_subscribe(self):
+        req = self.req()
+        self.call("session.require_login")
+        try:
+            topic = self.obj(ForumTopic, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        cat = self.call("forum.category", topic.get("category"))
+        if cat is None:
+            self.call("web.not_found")
+        if not self.may_read(cat):
+            self.call("web.forbidden")
+        self.subscribe(req.user(), topic.uuid, self.now())
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_unsubscribe(self):
+        req = self.req()
+        self.call("session.require_login")
+        try:
+            topic = self.obj(ForumTopic, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        cat = self.call("forum.category", topic.get("category"))
+        if cat is None:
+            self.call("web.not_found")
+        if not self.may_read(cat):
+            self.call("web.forbidden")
+        self.unsubscribe(req.user(), topic.uuid, self.now())
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_pin(self):
+        req = self.req()
+        self.call("session.require_login")
+        try:
+            topic = self.obj(ForumTopic, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        cat = self.call("forum.category", topic.get("category"))
+        if cat is None:
+            self.call("web.not_found")
+        if not self.may_pin(cat, topic):
+            self.call("web.forbidden")
+        topic.set("pinned", 1)
+        topic.sync()
+        topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_unpin(self):
+        req = self.req()
+        self.call("session.require_login")
+        try:
+            topic = self.obj(ForumTopic, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        cat = self.call("forum.category", topic.get("category"))
+        if cat is None:
+            self.call("web.not_found")
+        if not self.may_pin(cat, topic):
+            self.call("web.forbidden")
+        topic.delkey("pinned")
+        topic.sync()
+        topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_move(self):
+        pass

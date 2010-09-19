@@ -397,7 +397,7 @@ class CassandraObject(object):
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
         self.db.mc.set(row_id, self.data, cache_interval)
-#       print "STORE %s %s" % (row_id, self.data)
+        print "STORE %s %s" % (row_id, self.data)
         self.dirty = False
         self.new = False
 
@@ -435,11 +435,11 @@ class CassandraObject(object):
         self.new = False
         print "REMOVE %s" % row_id
 
-    def get(self, key):
+    def get(self, key, default=None):
         """
         Get data key
         """
-        return self.data.get(key)
+        return self.data.get(key, default)
 
     def touch(self):
         self.index_values()
@@ -449,11 +449,12 @@ class CassandraObject(object):
         """
         Set data value
         """
-        self.index_values()
         if type(value) == str:
             value = unicode(value, "utf-8")
-        self.data[key] = value
-        self.dirty = True
+        if self.data.get(key) != value:
+            self.index_values()
+            self.data[key] = value
+            self.dirty = True
 
     def delkey(self, key):
         """
@@ -601,6 +602,7 @@ class CassandraObjectList(object):
                     else:
                         m["Objects"].append(mutation)
                 row_id = obj.dbprefix + obj.clsprefix + obj.uuid
+                print "REMOVE %s" % row_id
                 obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
                 obj.db.mc.set(row_id, "tomb", cache_interval)
                 obj.dirty = False
