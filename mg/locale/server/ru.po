@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-19 18:25+0400\n"
-"PO-Revision-Date: 2010-09-19 18:29+0300\n"
+"POT-Creation-Date: 2010-09-19 18:30+0400\n"
+"PO-Revision-Date: 2010-09-19 18:30+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -329,6 +329,11 @@ msgstr "Введите ваш адрес e-mail"
 msgid "No users with this email"
 msgstr "Пользователей с этим e-mail не найдено"
 
+#: mg/core/auth.py:302
+#, python-format
+msgid "User '%s' has password '%s'\n"
+msgstr "Пользователь '%s' имеет пароль '%s'\n"
+
 #: mg/core/auth.py:304
 #: mg/core/auth.py:312
 msgid "Password reminder"
@@ -342,7 +347,7 @@ msgid ""
 "%s\n"
 "If you still can't remember your password feel free to contact our support."
 msgstr ""
-"Кто-то, возможно, вы, запросил восстановление пароля на сайте MMOConstructor. На ваш email зарегистрированы следующие аккаунты:\n"
+"Кто-то, возможно, вы, запросил восстановление пароля на сайте MMOConstructor. На ваш email зарегистрированы следующие пользователи:\n"
 "\n"
 "%s\n"
 "Если вы всё равно не можете вспомнить ваш пароль, обратитесь в нашу службу технической поддержки."

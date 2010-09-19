@@ -299,7 +299,7 @@ class PasswordAuthentication(Module):
                 name = ""
                 content = ""
                 for user in list:
-                    content += "User '%s' has password '%s'\n" % (user.get("name"), user.get("pass_reminder"))
+                    content += self._("User '%s' has password '%s'\n") % (user.get("name"), user.get("pass_reminder"))
                     name = user.get("name")
                 self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your email are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
                 if redirect is not None and redirect != "":
