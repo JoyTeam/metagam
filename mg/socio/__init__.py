@@ -1357,26 +1357,34 @@ class Forum(Module):
         raise RuntimeError("Not implemented")
 
     def notify_newtopic(self, args):
+        print "notify_newtopic called"
         try:
             topic = self.obj(ForumTopic, args["topic"])
         except ObjectNotFoundException:
             self.call("web.response_json", {"error": "Topic not found"})
         subscribers = self.objlist(UserForumSettingsList, query_index="notify-any", query_equal="1")
         subscribers.load()
+        print "subscribers: %s" % subscribers.data()
         notify_str = "notify_%s" % topic.get("category")
         users = []
         for sub in subscribers:
             if sub.get(notify_str) and self.may_read(sub.uuid, topic):
                 users.append(sub.uuid)
+        print "users: %s" % users
         if len(users):
             vars = {
                 "author_name": topic.get("author_name"),
+                "topic_subject": topic.get("subject"),
+                "domain": self.app().domain,
+                "topic_uuid": topic.get("uuid"),
             }
             author = topic.get("author")
             if author:
                 author_obj = self.obj(User, author)
-                vars["author_gender"] = author_obj.get("gender")
-            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), "New topic notification")
+                gender = author_obj.get("gender", 0)
+            else:
+                gender = 0
+            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), self._("{author_name} started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars))
         self.call("web.response_json", {"ok": 1})
 
     def notify_reply(self, args):

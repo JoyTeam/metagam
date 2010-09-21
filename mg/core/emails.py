@@ -1,4 +1,5 @@
 from mg.core import Module
+from mg.core.auth import User, UserList
 from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 import re
@@ -42,6 +43,8 @@ class Email(Module):
         self.rhook("email.send", self.email_send)
         self.rhook("queue-email.send", self.queue_email_send)
         self.rhook("queue-email.test", self.queue_email_test)
+        self.rhook("email.users", self.email_users)
+        self.rhook("queue-email.users", self.queue_email_users)
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False):
         if immediately:
@@ -85,3 +88,22 @@ class Email(Module):
 
     def queue_email_test(self, args):
         self.call("email.send", "aml@rulezz.ru", u"Alexander Lourier", u"Test subject", u"Test content")
+
+    def email_users(self, users, subject, content, from_email=None, from_name=None, immediately=False):
+        if immediately:
+            usr = self.objlist(UserList, users)
+            usr.load(silent=True)
+            for user in usr:
+                self.email_send(user.get("email"), user.get("name"), subject, content, from_email, from_name, immediately=True)
+        else:
+            self.call("queue.add", "queue-email.users", {
+                "users": users,
+                "subject": subject,
+                "content": content,
+                "from_email": from_email,
+                "from_name": from_name,
+            }, retry_on_fail=True)
+
+    def queue_email_users(self, args):
+        return self.email_users(args.get("users"), args.get("subject"), args.get("content"), args.get("from_email"), args.get("from_name"), immediately=True)
+

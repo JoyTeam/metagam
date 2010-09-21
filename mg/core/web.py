@@ -459,6 +459,10 @@ class Web(Module):
         if vars.get("universal_variables") is None:
             vars["ver"] = self.call("core.ver")
             vars["universal_variables"] = True
+            try:
+                vars["domain"] = self.app().domain
+            except AttributeError:
+                pass
             self.call("web.universal_variables", vars)
         content = self.tpl.process(filename, vars)
         req.templates_len = req.templates_len + len(content)
