@@ -198,9 +198,9 @@ class PasswordAuthentication(Module):
                 password1 = ""
                 password2 = ""
             if not email:
-                form.error("email", self._("Enter your email address"))
+                form.error("email", self._("Enter your e-mail address"))
             elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
-                form.error("email", self._("Enter correct email"))
+                form.error("email", self._("Enter correct e-mail"))
             if not captcha:
                 form.error("captcha", self._("Enter numbers from the picture"))
             else:
@@ -238,7 +238,7 @@ class PasswordAuthentication(Module):
         if redirect is not None:
             form.hidden("redirect", redirect)
         form.input(self._("User name"), "name", name)
-        form.input(self._("Email"), "email", email)
+        form.input(self._("E-mail"), "email", email)
         form.password(self._("Password"), "password1", password1)
         form.password(self._("Confirm password"), "password2", password2)
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
@@ -265,7 +265,7 @@ class PasswordAuthentication(Module):
         code = req.param("code")
         if req.ok():
             if not code:
-                form.error("code", self._("Enter activation code from your email box"))
+                form.error("code", self._("Enter activation code from your e-mail box"))
             elif code != user.get("activation_code"):
                 form.error("code", self._("Invalid activation code"))
             if not form.errors:
@@ -299,11 +299,11 @@ class PasswordAuthentication(Module):
         redirect = req.param("redirect")
         if req.ok():
             if not email:
-                form.error("email", self._("Enter your email"))
+                form.error("email", self._("Enter your e-mail"))
             if not form.errors:
                 list = self.objlist(UserList, query_index="email", query_equal=email.lower())
                 if not len(list):
-                    form.error("email", self._("No users with this email"))
+                    form.error("email", self._("No users with this e-mail"))
             if not form.errors:
                 list.load()
                 name = ""
@@ -311,12 +311,12 @@ class PasswordAuthentication(Module):
                 for user in list:
                     content += self._("User '%s' has password '%s'\n") % (user.get("name"), user.get("pass_reminder"))
                     name = user.get("name")
-                self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your email are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
+                self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your e-mail are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
                 self.call("web.redirect", "/auth/login")
         form.hidden("redirect", redirect)
-        form.input(self._("Your email"), "email", email)
+        form.input(self._("Your e-mail"), "email", email)
         form.submit(None, None, self._("Remind"))
         vars = {
             "title": self._("Password reminder"),
@@ -474,7 +474,7 @@ class PasswordAuthentication(Module):
                 if user is None:
                     form.error("name", self._("User not found"))
                 elif user.get("inactive"):
-                    form.error("name", self._("User is not active. Check your email and enter activation code"))
+                    form.error("name", self._("User is not active. Check your e-mail and enter activation code"))
             if not password:
                 form.error("password", self._("Enter your password"))
             if not form.errors:

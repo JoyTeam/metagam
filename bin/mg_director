@@ -17,6 +17,7 @@ def main():
         mcpool = MemcachedPool(("director-mc", 11211))
         # application
         app = WebApplication(inst, dbpool, mcpool, "int", "int")
+        inst.int_app = app
         app.modules.load(["mg.core.director.CassandraStruct"])
         app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
@@ -27,7 +28,6 @@ def main():
         # application factory
         inst.appfactory = ApplicationFactory(inst)
         inst.appfactory.add(app)
-        inst.int_app = app
         # run
         Tasklet.new(monitor)(app)
         Tasklet.new(app.hooks.call)("queue.process")

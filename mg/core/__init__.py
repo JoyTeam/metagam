@@ -269,13 +269,6 @@ class Config(object):
 
     def store(self):
         if len(self._modified):
-            # list of servers must be extracted outside config_lock
-            factory = self.app().inst.appfactory
-            int_app = factory.get_by_tag("int")
-            if int_app is not None:
-                servers_online = int_app.hooks.call("cluster.servers_online")
-            else:
-                servers_online = None
             with self.app().config_lock:
                 list = self.app().objlist(ConfigGroupList, [])
                 list.load()
@@ -285,19 +278,21 @@ class Config(object):
                     list.append(obj)
                 list.store()
                 self._modified.clear()
-                tag = None
-                try:
-                    tag = self.app().tag
-                except AttributeError:
-                    pass
-                if tag is not None:
-                    if servers_online is not None:
-                        for server, info in servers_online.iteritems():
-                            if info["type"] == "worker":
-                                try:
-                                    int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
-                                except BaseException as e:
-                                    logging.getLogger("mg.core.Config").exception(e)
+            tag = None
+            try:
+                tag = self.app().tag
+            except AttributeError:
+                pass
+            if tag is not None:
+                int_app = self.app().inst.int_app
+                servers_online = int_app.hooks.call("cluster.servers_online")
+                if servers_online is not None:
+                    for server, info in servers_online.items():
+                        if info["type"] == "worker":
+                            try:
+                                int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                            except BaseException as e:
+                                logging.getLogger("mg.core.Config").exception(e)
 
 class Module(object):
     """

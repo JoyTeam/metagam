@@ -26,6 +26,7 @@ def main():
         mcpool = MemcachedPool(("director-mc", 11211))
         # application
         app = WebApplication(inst, dbpool, mcpool, "int", "int")
+        inst.int_app = app
         app.modules.load(["mg.core.server.Server"])
         # daemon
         daemon = WebDaemon(inst)
@@ -35,7 +36,6 @@ def main():
         # application_factory
         inst.appfactory = ApplicationFactory(inst)
         inst.appfactory.add(app)
-        inst.int_app = app
         # default option set
         if not options.backends and not options.nginx and not options.queue:
             options.backends = 4
