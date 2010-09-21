@@ -21,10 +21,45 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         mg.core.ApplicationFactory.__init__(self, inst)
         self.dbpool = dbpool
         self.mcpool = mcpool
-        self.metagam_app = WebApplication(self.inst, self.dbpool, "metagam", Memcached(self.mcpool, prefix="mg-"), "ext", "mg-")
-        self.metagam_app.tag = "metagam"
-        self.metagam_app.modules.load(["mg.constructor.Constructor"])
-        self.add_permanent(self.metagam_app)
+        self.apps_by_domain = {}
+
+    def tag_by_domain(self, domain):
+        metagam_host = self.inst.config["metagam_host"]
+        if domain == "www.%s" % metagam_host:
+            return "metagam"
+        elif domain == metagam_host:
+            return "metagam"
+        return None
+
+    def get_by_domain(self, domain):
+        tag = self.tag_by_domain(domain)
+        if tag is None:
+            return None
+        return self.get_by_tag(tag)
+
+    def load(self, tag):
+        if tag == "metagam":
+            app = WebApplication(self.inst, self.dbpool, self.mcpool, tag, "ext")
+            app.domain = self.inst.config["metagam_host"]
+            app.modules.load(["mg.constructor.Constructor"])
+            return app
+        return None
+
+    def add(self, app):
+        mg.core.ApplicationFactory.add(self, app)
+        try:
+            self.apps_by_domain[app.domain] = app
+        except AttributeError:
+            pass
+
+    def remove(self, app):
+        ApplicationFactory.remove(self, app)
+        try:
+            del self.apps_by_domain[app.domain]
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
 
 class MultiapplicationWebDaemon(WebDaemon):
     "This is a WebDaemon that accesses application depending on HTTP host"
@@ -40,11 +75,8 @@ class MultiapplicationWebDaemon(WebDaemon):
 
     def req_handler(self, request, group, hook, args):
         host = request.host()
-        app = None
-        metagam_host = self.inst.config["metagam_host"]
-        if host == "www.%s" % metagam_host:
-            app = self.inst.appfactory.get("metagam")
+        app = self.inst.appfactory.get_by_domain(host)
         if app is None:
-            return request.redirect("http://www.%s" % str(metagam_host))
+            return request.redirect("http://www.%s" % str(self.inst.config["metagam_host"]))
         #app.hooks.call("l10n.set_request_lang")
         return app.http_request(request, group, hook, args)

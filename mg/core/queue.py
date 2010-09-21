@@ -92,7 +92,7 @@ class Queue(Module):
             self.call("web.not_found")
         app_tag, hook = m.group(1, 2)
         args = json.loads(req.param("args"))
-        app = self.app().inst.appfactory.get(app_tag)
+        app = self.app().inst.appfactory.get_by_tag(app_tag)
         if app is None:
             self.call("web.not_found")
         app.hooks.call(hook, args)
@@ -192,9 +192,10 @@ class QueueRunner(Module):
             self.processing_uniques.add(unique)
         success = False
         try:
-            self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (str(task.get("app")), str(task.get("hook"))), {
+            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (str(task.get("app")), str(task.get("hook"))), {
                 "args": json.dumps(task.get("args")),
             })
+            self.debug("%s.%s(%s) - %s", task.get("app"), task.get("hook"), task.get("args"), res)
             success = True
         except HTTPError as e:
             self.error("Error executing task %s: %s" % (task.get("hook"), e))

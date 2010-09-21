@@ -2,7 +2,8 @@ from concurrence.extra import Lock
 from concurrence import Tasklet, http
 from cassandra.ttypes import *
 from operator import itemgetter
-from mg.core.memcached import MemcachedLock
+from mg.core.memcached import MemcachedLock, Memcached
+from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from uuid import uuid4
 import weakref
 import re
@@ -157,6 +158,23 @@ class Hooks(object):
             mutations.insert(0, Mutation(deletion=Deletion(clock=Clock(timestamp=timestamp-1))))
             db.batch_mutate({"Hooks": {"Core": mutations}}, ConsistencyLevel.ALL)
 
+class ConfigGroup(CassandraObject):
+    _indexes = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ConfigGroup-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return ConfigGroup._indexes
+
+class ConfigGroupList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ConfigGroup-"
+        kwargs["cls"] = ConfigGroup
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Config(object):
     """
     This class is a config manager for the application. It keeps list of loaded
@@ -178,10 +196,10 @@ class Config(object):
         """
         load_groups = [g for g in groups if g not in self._config]
         if len(load_groups):
-            db = self.app().db
-            data = db.get_slice("Config", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
-            for col in data:
-                self._config[col.column.name] = json.loads(col.column.value)
+            list = self.app().objlist(ConfigGroupList, load_groups)
+            list.load(silent=True)
+            for g in list:
+                self._config[g.uuid] = g.data
             for g in load_groups:
                 if not g in self._config:
                     self._config[g] = {}
@@ -251,12 +269,21 @@ class Config(object):
 
     def store(self):
         if len(self._modified):
+            # list of servers must be extracted outside config_lock
+            factory = self.app().inst.appfactory
+            int_app = factory.get_by_tag("int")
+            if int_app is not None:
+                servers_online = int_app.hooks.call("cluster.servers_online")
+            else:
+                servers_online = None
             with self.app().config_lock:
-                db = self.app().db
-                timestamp = time.time() * 1000
-                data = [(g, json.dumps(self._config[g])) for g in self._modified]
-                mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
-                db.batch_mutate({"Config": {"Core": mutations}}, ConsistencyLevel.ALL)
+                list = self.app().objlist(ConfigGroupList, [])
+                list.load()
+                for g in self._modified:
+                    obj = self.app().obj(ConfigGroup, g, data=self._config[g])
+                    obj.dirty = True
+                    list.append(obj)
+                list.store()
                 self._modified.clear()
                 tag = None
                 try:
@@ -264,16 +291,13 @@ class Config(object):
                 except AttributeError:
                     pass
                 if tag is not None:
-                    factory = self.app().inst.appfactory
-                    int_app = factory.get("int")
-                    if int_app is not None:
-                        servers_online = int_app.hooks.call("cluster.servers_online")
+                    if servers_online is not None:
                         for server, info in servers_online.iteritems():
                             if info["type"] == "worker":
                                 try:
                                     int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
                                 except BaseException as e:
-                                    logging.getLogger("mg.core.Config").error(e)
+                                    logging.getLogger("mg.core.Config").exception(e)
 
 class Module(object):
     """
@@ -287,6 +311,9 @@ class Module(object):
         """
         self.app = weakref.ref(app)
         self.fqn = fqn
+
+    def db(self):
+        return self.app().db
 
     def rhook(self, *args, **kwargs):
         "Registers handler for the current module. Arguments: all for Hooks.register() without module name"
@@ -321,10 +348,6 @@ class Module(object):
     def ok(self):
         """Returns value of "ok" HTTP parameter"""
         return self.req().param("ok")
-
-    def db(self):
-        app = self.app()
-        return app.dbpool.dbget(app.keyspace, app.mc)
 
     def log_params(self):
         d = {}
@@ -523,25 +546,23 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, dbpool, keyspace, mc, keyprefix):
+    def __init__(self, inst, dbpool, mcpool, tag):
         """
         inst - Instance object
         dbpool - CassandraPool object
-        keyspace - database keyspace
-        mc - Memcached object
-        keyprefix - prefix for CassandraObject keys
+        mcpool - MemcachedPool object
+        tag - Application tag
         """
         self.inst = inst
-        self.dbpool = dbpool
-        self.keyspace = keyspace
-        self.mc = mc
+        self.mc = Memcached(mcpool, prefix="%s-" % tag)
+        self.db = dbpool.dbget("metagam", self.mc)
+        self.keyprefix = "%s-" % tag
+        self.tag = tag
         self.hooks = Hooks(self)
         self.config = Config(self)
         self.modules = Modules(self)
         self.config_lock = Lock()
         self.hook_lock = Lock()
-        self.keyprefix = keyprefix
-        self.db = self.dbpool.dbget(self.keyspace, mc)
 
     def dbrestruct(self):
         "Check database structure and update if necessary"
@@ -571,18 +592,45 @@ class ApplicationFactory(object):
     """
     def __init__(self, inst):
         self.inst = inst
-        self.permanent_applications = []
+        self.applications = {}
 
-    def add_permanent(self, app):
-        self.permanent_applications.append(app)
+    def add(self, app):
+        "Add application to the factory"
+        self.applications[app.tag] = app
 
-    def get(self, tag):
-        for app in self.permanent_applications:
-            if app.tag == tag:
-                return app
+    def remove_tag(self, tag):
+        "Remove application from the factory by its tag"
+        try:
+            app = self.applications[tag]
+        except KeyError:
+            return
+        self.remove(app)
+
+    def remove(self, app):
+        "Remove application from the factory"
+        try:
+            del self.applications[app.tag]
+        except KeyError:
+            pass
+
+    def get_by_tag(self, tag):
+        "Find application by tag and load it"
+        try:
+            return self.applications[tag]
+        except KeyError:
+            pass
+        app = self.load(tag)
+        if app is None:
+            return None
+        self.add(app)
+        return app
+
+    def load(self, tag):
+        "Load application if not yet"
         return None
 
     def reload(self):
+        "Reload all modules and applications"
         errors = 0
         for module_name in self.inst.modules:
             module = sys.modules.get(module_name)
@@ -596,6 +644,14 @@ class ApplicationFactory(object):
                         logging.getLogger("mg.core.Modules").exception(e)
                     else:
                         raise
-        for app in self.permanent_applications:
+        errors = errors + self.reload_applications()
+        return errors
+
+    def reload_applications(self):
+        "Reload all applications"
+        # NOTE: if this will be very slow, it can be replaced with unloading unloadable modules
+        # and reloading not unloadable ones
+        errors = 0
+        for app in self.applications.values():
             errors = errors + app.reload()
         return errors

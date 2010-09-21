@@ -30,7 +30,12 @@ class Constructor(Module):
 
     def forum_topmenu(self, topmenu):
         req = self.req()
-        redirect = urlencode(req.uri())
+        redirect = req.param("redirect")
+        redirect_param = True
+        if redirect is None or redirect == "":
+            redirect = req.uri()
+            redirect_param = False
+        redirect = urlencode(redirect)
         if req.user():
             topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "html": self._("Log out")})
             topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
@@ -39,6 +44,8 @@ class Constructor(Module):
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
             topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
+        if redirect_param:
+            topmenu.append({"href": redirect, "html": self._("Cancel")})
 
     def index(self):
         req = self.req()

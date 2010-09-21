@@ -44,7 +44,7 @@ class Cluster(Module):
         """
         online = self.conf("director.servers", reset_cache=True)
         if online is None:
-            online = []
+            online = {}
         return online
 
     def static_upload(self, subdir, ext, content_type, data):
@@ -79,7 +79,7 @@ def query(host, port, uri, params):
     except IOError as e:
         raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
     try:
-        request = cnn.post(uri, urlencode(params))
+        request = cnn.post(str(uri), urlencode(params))
         request.add_header("Content-type", "application/x-www-form-urlencoded")
         response = cnn.perform(request)
         if response.status_code != 200:

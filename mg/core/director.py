@@ -4,6 +4,7 @@ from concurrence.http import HTTPConnection
 import re
 import json
 import logging
+import mg.core
 
 class CassandraStruct(Module):
     def register(self):
@@ -27,8 +28,12 @@ class Director(Module):
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("monitor.check", self.monitor_check)
         self.rhook("director.queue_workers", self.director_queue_workers)
+        self.rhook("cluster.servers_online", self.cluster_servers_online, priority=10)
         self.servers_online_updated()
         self.reload_servers()
+
+    def cluster_servers_online(self):
+        raise mg.core.Hooks.Return(self.servers_online)
 
     def director_queue_workers(self):
         return self.queue_workers

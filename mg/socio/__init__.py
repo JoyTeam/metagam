@@ -35,6 +35,7 @@ re_urls = re.compile(r'(.*?)((?:http|ftp|https):\/\/[\-\.\w]+(?::\d+|)(?:[\/#]['
 
 class UserForumSettings(CassandraObject):
     _indexes = {
+        "notify-any": [["notify_any"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -185,6 +186,7 @@ class ForumAdmin(Module):
             topcat = req.param("topcat")
             description = req.param("description")
             order = req.param("order")
+            default_subscribe = req.param("default_subscribe")
             if title is None or title == "":
                 errors["title"] = self._("Enter category title")
             if topcat is None or topcat == "":
@@ -199,6 +201,7 @@ class ForumAdmin(Module):
             cat["topcat"] = topcat
             cat["description"] = description
             cat["order"] = float(order)
+            cat["default_subscribe"] = True if default_subscribe else False
             conf = self.app().config
             conf.set("forum.categories", self.call("forum.categories"))
             conf.store()
@@ -225,6 +228,12 @@ class ForumAdmin(Module):
                 "label": self._("Sort order"),
                 "value": cat["order"],
                 "type": "numberfield"
+            },
+            {
+                "name": "default_subscribe",
+                "label": self._("Notify users about new topics in this category by default"),
+                "checked": cat.get("default_subscribe"),
+                "type": "checkbox"
             }
         ]
         return self.call("admin.form", fields=fields)
@@ -414,6 +423,8 @@ class Forum(Module):
         self.rhook("forum.categories", self.categories)     # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)         # create new topic
         self.rhook("forum.reply", self.reply)               # reply in the topic
+        self.rhook("forum.notify_newtopic", self.notify_newtopic)
+        self.rhook("forum.notify_reply", self.notify_reply)
         self.rhook("forum.response", self.response)
         self.rhook("forum.response_template", self.response_template)
         self.rhook("ext-forum.index", self.ext_index)
@@ -491,7 +502,9 @@ class Forum(Module):
         self.call("forum.response", self.call("web.parse_template", template, vars), vars)
 
     def ext_index(self):
-        categories = [cat for cat in self.categories() if self.may_read(cat)]
+        req = self.req()
+        user_id = req.user()
+        categories = [cat for cat in self.categories() if self.may_read(user_id, cat)]
         entries = []
         topcat = None
         for cat in categories:
@@ -526,7 +539,8 @@ class Forum(Module):
                     "topcat": self._("Game"),
                     "title": self._("News"),
                     "description": self._("Game news published by the administrators"),
-                    "order": 10.0
+                    "order": 10.0,
+                    "default_subscribe": True,
                 },
                 {
                     "id": uuid4().hex,
@@ -605,7 +619,7 @@ class Forum(Module):
         cats.sort(key=itemgetter("order"))
         return cats
 
-    def may_read(self, cat):
+    def may_read(self, user_id, cat):
         return True
 
     def may_write(self, cat, topic=None):
@@ -659,10 +673,11 @@ class Forum(Module):
 
     def ext_category(self):
         req = self.req()
+        user_id = req.user()
         cat = self.call("forum.category", req.args)
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(cat):
+        if not self.may_read(user_id, cat):
             self.call("web.forbidden")
         topics = self.topics(cat).data()
         self.topics_htmlencode(topics)
@@ -679,6 +694,7 @@ class Forum(Module):
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "html": cat["title"] },
+                { "href": "/forum/newtopic/%s" % cat["id"], "html": self._("New topic"), "right": True },
             ],
         }
         self.call("forum.response_template", "socio/category.html", vars)
@@ -709,6 +725,19 @@ class Forum(Module):
             if topic.get("content_html") is None:
                 topic["content_html"] = self.call("socio.format_text", topic.get("content"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
+        req = self.req()
+        user_uuid = req.session().semi_user()
+        if user_uuid is not None:
+            lastread_list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal=["%s-%s" % (topic["uuid"], user_uuid) for topic in topics])
+            lastread_list.load()
+            lastread = dict([(lr.get("topic"), lr) for lr in lastread_list])
+            for topic in topics:
+                lr = lastread.get(topic["uuid"])
+                if lr is None:
+                    topic["unread"] = True
+                else:
+                    topic["subscribed"] = lr.get("subscribed")
+                    topic["unread"] = topic["updated"] > lr.get("last_post")
 
     def posts_htmlencode(self, posts):
         signatures = {}
@@ -772,6 +801,7 @@ class Forum(Module):
         topic.store()
         if author is not None:
             self.subscribe(author.uuid, topic.uuid, now)
+        self.call("queue.add", "forum.notify_newtopic", {"topic": topic.uuid}, retry_on_fail=True)
         return topic
 
     def reply(self, cat, topic, author, content):
@@ -797,6 +827,7 @@ class Forum(Module):
 
     def ext_topic(self):
         req = self.req()
+        user_id = req.user()
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
@@ -804,7 +835,7 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(cat):
+        if not self.may_read(user_id, cat):
             self.call("web.forbidden")
         topic_data = topic.data.copy()
         topic_data["uuid"] = topic.uuid
@@ -836,6 +867,7 @@ class Forum(Module):
                 created = last_post.get("created")
                 if lastread.get("last_post", "") < created:
                     lastread.set("last_post", created)
+            lastread.delkey("email_notified")
             lastread.store()
             if req.user():
                 redirect = urlencode(req.uri())
@@ -1137,11 +1169,16 @@ class Forum(Module):
         vars = {
             "title": self._("Forum settings"),
         }
+        categories = [cat for cat in self.categories() if self.may_read(user_id, cat)]
         form = self.call("web.form", "socio/form.html")
         form.textarea_rows = 4
         signature = req.param("signature")
         avatar = req.param_raw("avatar")
         redirect = req.param("redirect")
+        notify_replies = req.param("notify_replies")
+        notify = {}
+        for cat in categories:
+            notify[cat["id"]] = req.param("notify_%s" % cat["id"])
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1210,19 +1247,36 @@ class Forum(Module):
                         form.error("avatar", unicode(e))
                 settings.set("signature", signature)
                 settings.set("signature_html", self.call("socio.format_text", signature))
+                notify_any = False
+                for cat in categories:
+                    settings.set("notify_%s" % cat["id"], True if notify[cat["id"]] else False)
+                    if notify[cat["id"]]:
+                        notify_any = True
+                if notify_any:
+                    settings.set("notify_any", 1)
+                else:
+                    settings.delkey("notify_any")
+                settings.set("notify_replies", True if notify_replies else False)
                 settings.store()
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
                 self.call("web.redirect", "/cabinet/settings")
         else:
             signature = settings.get("signature")
+            notify_replies = settings.get("notify_replies", True)
+            for cat in categories:
+                notify[cat["id"]] = settings.get("notify_%s" % cat["id"], cat.get("default_subscribe"))
         form.hidden("redirect", redirect)
         form.texteditor(self._("Your forum signature"), "signature", signature)
         form.file(self._("Your avatar"), "avatar")
+        form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
+        for cat in categories:
+            form.checkbox(self._("New topics in '%s / %s'") % (cat["topcat"], cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
         self.call("forum.response", form.html(), vars)
 
     def ext_subscribe(self):
         req = self.req()
+        user_id = req.user()
         self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
@@ -1231,9 +1285,9 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(cat):
+        if not self.may_read(user_id, cat):
             self.call("web.forbidden")
-        self.subscribe(req.user(), topic.uuid, self.now())
+        self.subscribe(user_id, topic.uuid, self.now())
         redirect = req.param("redirect")
         if redirect is not None and redirect != "":
             self.call("web.redirect", redirect)
@@ -1241,6 +1295,7 @@ class Forum(Module):
 
     def ext_unsubscribe(self):
         req = self.req()
+        user_id = req.user()
         self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
@@ -1249,9 +1304,9 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(cat):
+        if not self.may_read(user_id, cat):
             self.call("web.forbidden")
-        self.unsubscribe(req.user(), topic.uuid, self.now())
+        self.unsubscribe(user_id, topic.uuid, self.now())
         redirect = req.param("redirect")
         if redirect is not None and redirect != "":
             self.call("web.redirect", redirect)
@@ -1298,4 +1353,30 @@ class Forum(Module):
         self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
 
     def ext_move(self):
-        pass
+        raise RuntimeError("Not implemented")
+
+    def notify_newtopic(self, args):
+        try:
+            topic = self.obj(ForumTopic, args["topic"])
+        except ObjectNotFoundException:
+            self.call("web.response_json", {"error": "Topic not found"})
+        subscribers = self.objlist(UserForumSettingsList, query_index="notify-any", query_equal="1")
+        subscribers.load()
+        notify_str = "notify_%s" % topic.get("category")
+        users = []
+        for sub in subscribers:
+            if sub.get(notify_str) and self.may_read(sub.uuid, topic):
+                users.append(sub.uuid)
+        if len(users):
+            vars = {
+                "author_name": topic.get("author_name"),
+            }
+            author = topic.get("author")
+            if author:
+                author_obj = self.obj(User, author)
+                vars["author_gender"] = author_obj.get("gender")
+            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), "New topic notification")
+        self.call("web.response_json", {"ok": 1})
+
+    def notify_reply(self, args):
+        raise RuntimeError("Not implemented")

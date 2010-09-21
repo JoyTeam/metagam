@@ -14,31 +14,29 @@ import re
 
 def main():
     try:
+        # instance
         inst = Instance()
         inst.set_server_id("worker")
-
-        # Running internal daemon
         conf = inst.download_config()
-        dbpool = CassandraPool(conf["cassandra"])
-        mcpool = MemcachedPool(conf["memcached"][0])
-        int_mc = Memcached(mcpool, prefix="mg-")
-        int_app = WebApplication(inst, dbpool, "metagam", int_mc, "int", "mg-")
+        dbpool = CassandraPool((("director-db", 9160),))
+        mcpool = MemcachedPool(("director-mc", 11211))
+        # internal application
+        int_app = WebApplication(inst, dbpool, mcpool, "int", "int")
+        int_app.modules.load(["mg.core.worker.Worker"])
+        # internal daemon
         int_daemon = WebDaemon(inst)
         int_daemon.app = int_app
-        int_app.modules.load(["mg.core.worker.Worker"])
-        int_app.tag = "int"
         int_port = int_daemon.serve_any_port("0.0.0.0")
+        # application factory
+        dbpool = CassandraPool(conf["cassandra"])
+        mcpool = MemcachedPool(conf["memcached"][0])
+        inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
+        inst.appfactory.add(int_app)
         inst.int_app = int_app
-
-        # Running external daemon
+        # external daemon
         ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
-
-        # Application factory
-        inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
-        inst.appfactory.add_permanent(int_app)
-
-        # Registering
+        # registering
         res = mg.core.cluster.dir_query("/director/ready", {
             "type": "worker",
             "port": int_port,
@@ -49,6 +47,7 @@ def main():
                 "class": "metagam",
             }),
         })
+        # run
         inst.set_server_id(res["server_id"], re.sub(r'^\d+\.\d+\.\d+\.\d+-server-\d+-', '', res["server_id"]))
         while True:
             try:

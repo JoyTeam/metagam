@@ -188,6 +188,8 @@ class TestORM(unittest.TestCase):
     def test05(self):
         lst = TestObjectList(self.db, query_index="created", query_equal="Топик")
         lst.remove()
+        lst = TestObjectList(self.db, query_index="created", query_equal="Другой-топик")
+        lst.remove()
 
         obj1 = TestObject(self.db)
         obj1.set("created", "2011-01-01")
@@ -197,6 +199,10 @@ class TestORM(unittest.TestCase):
         obj2.set("created", "2011-01-01")
         obj2.set("topic", "Другой-топик")
         obj2.store()
+        obj3 = TestObject(self.db)
+        obj3.set("created", "2012-01-01")
+        obj3.set("topic", "Другой-топик")
+        obj3.store()
         lst = TestObjectList(self.db, [obj1.uuid, obj2.uuid])
         lst.load()
         lst[0].set("created", "Не-дата");
@@ -208,6 +214,13 @@ class TestORM(unittest.TestCase):
         uuids = [obj.uuid for obj in lst]
         self.assertTrue(obj1.uuid in uuids)
         self.assertTrue(obj2.uuid in uuids)
+
+        lst = TestObjectList(self.db, query_index="created", query_equal=["Топик", "Другой-топик"])
+        self.assertEqual(len(lst), 3)
+        uuids = [obj.uuid for obj in lst]
+        self.assertTrue(obj1.uuid in uuids)
+        self.assertTrue(obj2.uuid in uuids)
+        self.assertTrue(obj3.uuid in uuids)
 
     def test06(self):
         lst = TestObjectList(self.db, query_index="index")

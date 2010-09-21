@@ -12,38 +12,36 @@ import optparse
 
 def main():
     try:
-        # Parsing configuration
+        # configuration
         parser = optparse.OptionParser()
         parser.add_option("-n", "--nginx", action="store_true", help="Manage nginx configuration")
         parser.add_option("-q", "--queue", action="store_true", help="Take part in the global queue processing")
         parser.add_option("-b", "--backends", type="int", help="Run the give quantity of backends")
         (options, args) = parser.parse_args()
-
-        # Running daemon
+        # configuration
         inst = Instance()
         inst.set_server_id('server')
         conf = inst.download_config()
-        dbpool = CassandraPool(conf["cassandra"])
-        mc = Memcached(MemcachedPool(conf["memcached"][0]), prefix="mg-")
-        app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg-")
+        dbpool = CassandraPool((("director-db", 9160),))
+        mcpool = MemcachedPool(("director-mc", 11211))
+        # application
+        app = WebApplication(inst, dbpool, mcpool, "int", "int")
+        app.modules.load(["mg.core.server.Server"])
+        # daemon
         daemon = WebDaemon(inst)
         daemon.app = app
-        app.modules.load(["mg.core.server.Server"])
         port = daemon.serve_any_port("0.0.0.0")
         app.server_id = port
-        inst.int_app = app
-
-        # Application factory
+        # application_factory
         inst.appfactory = ApplicationFactory(inst)
-        inst.appfactory.add_permanent(app)
-
-        # Default option set
+        inst.appfactory.add(app)
+        inst.int_app = app
+        # default option set
         if not options.backends and not options.nginx and not options.queue:
             options.backends = 4
             options.nginx = True
             options.queue = True
-
-        # Registering
+        # registering
         res = app.hooks.call("cluster.query_director", "/director/ready", {
             "type": "server",
             "port": port,
@@ -54,6 +52,7 @@ def main():
                 "queue": options.queue,
             })
         })
+        # run
         inst.set_server_id(res["server_id"], "server")
         while True:
             try:

@@ -325,32 +325,30 @@ class WebResponse(Exception):
     def __init__(self, content):
         self.content = content
 
+re_remove_ver = re.compile(r'/ver\d+(?:-\d+)?$')
+
 class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
-    def __init__(self, inst, dbpool, keyspace, mc, hook_prefix, keyprefix):
+    def __init__(self, inst, dbpool, mcpool, tag, hook_prefix):
         """
         inst - Instance object
         dbpool - CassandraPool object
-        keyspace - database keyspace
-        mc - Memcached object
-        dbhost, dbname - database host and name
-        mcprefix - memcached prefix
+        mcpool - MemcachedPool object
+        tag - application tag
         hook_prefix - prefix for hook names, i.e. prefix "web" means that
            URL /group/hook will be mapped to hook name web-group.hook
-        keyprefix - prefix for CassandraObject keys
         """
-        Application.__init__(self, inst, dbpool, keyspace, mc, keyprefix)
+        Application.__init__(self, inst, dbpool, mcpool, tag)
         self.hook_prefix = hook_prefix
-        self.re_remove_ver = re.compile(r'/ver\d+(?:-\d+)?$')
 
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
         request.app = self
         request.group = group
         request.hook = hook
-        request.args = self.re_remove_ver.sub("", args)
+        request.args = re_remove_ver.sub("", args)
         try:
             self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         except WebResponse as res:
@@ -360,14 +358,15 @@ class WebApplication(Application):
         else:
             return request.not_found()
 
+re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
+re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
+re_hook_parse = re.compile(r'^<hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*/>$')
+re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
+
 class Web(Module):
     def __init__(self, *args, **kwargs):
         Module.__init__(self, *args, **kwargs)
         self.tpl = None
-        self.re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
-        self.re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
-        self.re_hook_parse = re.compile(r'^<hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*/>$')
-        self.re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
         self.last_ping = None
 
     def register(self):
@@ -426,10 +425,11 @@ class Web(Module):
 
     def core_appconfig(self):
         req = self.req()
-        app = self.app().inst.appfactory.get(req.args)
-        if app is None:
-            return req.jresponse({"error": "app_not_found"})
-        app.config.clear()
+        factory = self.app().inst.appfactory
+        if req.args == "int" or req.args == "metagam":
+            factory.get_by_tag(req.args).reload()
+        else:
+            factory.remove_by_tag(req.args)
         return req.jresponse({"ok": 1})
 
     def core_ver(self):
@@ -462,7 +462,7 @@ class Web(Module):
             self.call("web.universal_variables", vars)
         content = self.tpl.process(filename, vars)
         req.templates_len = req.templates_len + len(content)
-        m = self.re_content.match(content)
+        m = re_content.match(content)
         if m:
             # everything before ===HEAD=== delimiter will pass to the header
             (head, content) = m.group(1, 2)
@@ -499,15 +499,15 @@ class Web(Module):
         return self.call("web.parse_inline_layout", content, vars)
 
     def web_parse_inline_layout(self, content, vars):
-        tokens = self.re_hooks_split.split(content)
+        tokens = re_hooks_split.split(content)
         i = 1
         while i < len(tokens):
-            m = self.re_hook_parse.match(tokens[i])
+            m = re_hook_parse.match(tokens[i])
             if not m:
                 raise RuntimeError("'%s' could not be parsed as a hook tag" % tokens[i])
             (hook_name, hook_args) = m.group(1, 2)
             args = {}
-            for key, value in self.re_hook_args.findall(hook_args):
+            for key, value in re_hook_args.findall(hook_args):
                 args[key] = value
             res = None
             try:
@@ -676,6 +676,20 @@ class WebForm(object):
         """
         kwargs["value"] = cgi.escape(value) if value is not None else None
         kwargs["element_password"] = True
+        self.control(desc, name, **kwargs)
+
+    def checkbox(self, desc, name, value, **kwargs):
+        """
+        <input type="checkbox" />
+        """
+        kwargs["checked"] = True if value else None
+        kwargs["text"] = desc
+        kwargs["element_checkbox"] = True
+        if kwargs.has_key("description"):
+            desc = kwargs["description"]
+            del kwargs["description"]
+        else:
+            desc = None
         self.control(desc, name, **kwargs)
 
     def textarea(self, desc, name, value, **kwargs):

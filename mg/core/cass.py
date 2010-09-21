@@ -7,7 +7,6 @@ from thrift.transport import TTransport
 from cassandra.Cassandra import Client
 from cassandra.ttypes import *
 import socket
-from mg.core import Module
 import logging
 from uuid import uuid4
 import time
@@ -460,12 +459,10 @@ class CassandraObject(object):
         """
         Delete key
         """
-        self.index_values()
-        try:
+        if self.data.has_key(key):
+            self.index_values()
             del self.data[key]
             self.dirty = True
-        except KeyError:
-            pass
 
     def get_int(self, key):
         val = self.get(key)
@@ -482,28 +479,51 @@ class CassandraObjectList(object):
         To query equal index 'name2' => [['eqfield1', 'eqfield2']]:
         lst = CassandraObjectList(db, query_index="name2", query_equal="value1-value2", query_limit=1000)
 
+        To query equal index 'name2' for several index values:
+        lst = CassandraObjectList(db, query_index="name2", query_equal=["value1-value2", "VALUE1-VALUE2", ...], query_limit=1000)
+
         To query ordered index 'name5' => [['eqfield1', 'eqfield2'], 'ordfield']:
         lst = CassandraObjectList(db, query_index="name5", query_equal="value1-value2", query_start="OrdFrom", query_finish="OrdTo", query_reversed=True)
         """
         self.db = db
         self._loaded = False
-        self.index_row = None
+        self.index_rows = []
         if uuids is not None:
             self.dict = [cls(db, uuid, {}, dbprefix=dbprefix, clsprefix=clsprefix) for uuid in uuids]
         elif query_index is not None:
-            index_row = dbprefix + clsprefix + query_index
-            if query_equal is not None:
-                index_row = index_row + "-" + query_equal
-            if type(index_row) == unicode:
-                index_row = index_row.encode("utf-8")
-#           print "search index row: %s" % index_row
-            d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
-#           print "loaded index:"
-#           for cosc in d:
-#               print "%s => %s" % (cosc.column.name, cosc.column.value)
-            self.index_row = index_row
-            self.index_data = d
-            self.dict = [cls(db, col.column.value, {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in d]
+            if type(query_equal) == list:
+                # multiple keys
+                index_rows = []
+                for val in query_equal:
+                    index_row = dbprefix + clsprefix + query_index + "-" + val
+                    if type(index_row) == unicode:
+                        index_row = index_row.encode("utf-8")
+                    index_rows.append(index_row)
+#               print "search index rows: %s" % index_rows
+                d = self.db.multiget_slice(index_rows, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+#               print "loaded index: %s" % d
+                self.index_data = []
+                for index_row, index_data in d.iteritems():
+                    self.index_rows.append(index_row)
+                    self.index_data.extend(index_data)
+                self.index_data.sort(cmp=lambda x, y: cmp(x.column.name, y.column.name), reverse=query_reversed)
+                self.dict = [cls(db, col.column.value, {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
+#               print "loaded keys: %s" % [obj.uuid for obj in self.dict]
+            else:
+                # single key
+                index_row = dbprefix + clsprefix + query_index
+                if query_equal is not None:
+                    index_row = index_row + "-" + query_equal
+                if type(index_row) == unicode:
+                    index_row = index_row.encode("utf-8")
+#               print "search index row: %s" % index_row
+                d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+#               print "loaded index:"
+#               for cosc in d:
+#                   print "%s => %s" % (cosc.column.name, cosc.column.value)
+                self.index_rows.append(index_row)
+                self.index_data = d
+                self.dict = [cls(db, col.column.value, {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in d]
         else:
             raise RuntimeError("Invalid usage of CassandraObjectList")
 
@@ -519,10 +539,10 @@ class CassandraObjectList(object):
                 row_id = obj.dbprefix + obj.clsprefix + obj.uuid
                 data = mc_d.get(row_id)
                 if data is not None:
-#                    print "LOAD(MC) %s %s" % (obj.uuid, data)
+#                   print "LOAD(MC) %s %s" % (obj.uuid, data)
                     if data == "tomb":
                         if silent:
-                            if self.index_row is not None:
+                            if len(self.index_rows):
                                 mutations = []
                                 clock = None
                                 for col in self.index_data:
@@ -535,7 +555,7 @@ class CassandraObjectList(object):
                                         mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
                                         break
                                 if len(mutations):
-                                    self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
+                                    self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
                         else:
                             raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
                     else:
@@ -549,7 +569,7 @@ class CassandraObjectList(object):
                         self.db.mc.add(row_id, obj.data, cache_interval)
 #                        print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
                     elif silent:
-                        if self.index_row is not None:
+                        if len(self.index_rows):
                             mutations = []
                             clock = None
                             for col in self.index_data:
@@ -562,7 +582,7 @@ class CassandraObjectList(object):
                                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
                                     break
                             if len(mutations):
-                                self.db.batch_mutate({self.index_row: {"Objects": mutations}}, ConsistencyLevel.QUORUM)
+                                self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
                     else:
                         raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix %s) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
             if recovered:
@@ -640,6 +660,9 @@ class CassandraObjectList(object):
 
     def __delslice__(self, i, j):
         return self.dict.__delslice__(i, j)
+
+    def append(self, item):
+        self.dict.append(item)
 
     def data(self):
         res = []

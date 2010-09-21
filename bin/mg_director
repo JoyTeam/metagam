@@ -13,18 +13,22 @@ def main():
     try:
         inst = Instance()
         inst.set_server_id("director");
-        daemon = WebDaemon(inst)
         dbpool = CassandraPool((("director-db", 9160),))
-        mc = Memcached(MemcachedPool(("director-mc", 11211)), prefix="mg-")
-        app = WebApplication(inst, dbpool, "metagam", mc, "int", "mg-")
-        daemon.app = app
+        mcpool = MemcachedPool(("director-mc", 11211))
+        # application
+        app = WebApplication(inst, dbpool, mcpool, "int", "int")
         app.modules.load(["mg.core.director.CassandraStruct"])
         app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
+        # web daemon
+        daemon = WebDaemon(inst)
+        daemon.app = app
         port = daemon.serve(("0.0.0.0", 3000))
+        # application factory
         inst.appfactory = ApplicationFactory(inst)
-        inst.appfactory.add_permanent(app)
+        inst.appfactory.add(app)
         inst.int_app = app
+        # run
         Tasklet.new(monitor)(app)
         Tasklet.new(app.hooks.call)("queue.process")
         while True:
