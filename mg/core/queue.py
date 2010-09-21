@@ -195,7 +195,8 @@ class QueueRunner(Module):
             res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (str(task.get("app")), str(task.get("hook"))), {
                 "args": json.dumps(task.get("args")),
             })
-            self.debug("%s.%s(%s) - %s", task.get("app"), task.get("hook"), task.get("args"), res)
+            if res.get("error"):
+                self.warning("%s.%s(%s) - %s", task.get("app"), task.get("hook"), task.get("args"), res)
             success = True
         except HTTPError as e:
             self.error("Error executing task %s: %s" % (task.get("hook"), e))

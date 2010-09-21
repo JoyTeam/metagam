@@ -157,7 +157,7 @@ class Memcached(object):
         self.pool.put(connection)
         return res
 
-    def incr(self, key, increment):
+    def incr(self, key, increment=1):
         connection = self.pool.get()
         try:
             res = connection.incr(str(self.prefix + key), increment)
@@ -173,7 +173,7 @@ class Memcached(object):
         self.pool.put(connection)
         return res
 
-    def decr(self, key, decrement):
+    def decr(self, key, decrement=1):
         connection = self.pool.get()
         try:
             res = connection.decr(str(self.prefix + key), decrement)

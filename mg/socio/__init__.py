@@ -1160,6 +1160,7 @@ class Forum(Module):
         self.call("forum.response", form.html(), vars)
 
     def ext_settings(self):
+        self.call("session.require_login")
         req = self.req()
         user_id = req.user()
         try:

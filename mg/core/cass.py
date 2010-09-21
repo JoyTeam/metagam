@@ -10,6 +10,7 @@ import socket
 import logging
 from uuid import uuid4
 import time
+import random
 
 cache_interval = 3600
 
@@ -353,7 +354,7 @@ class CassandraObject(object):
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
         self.dirty = False
 
-    def mutate(self, mutations, clock):
+    def mutate(self, mutations, mcgroups, clock):
         """
         Returns mapping of row_key => [Mutation, Mutation, ...] if modified
         dirty flag is turned off
@@ -369,6 +370,7 @@ class CassandraObject(object):
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)
             if old_key != key:
+                mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
                 #print "%s: %s => %s" % (index_name, old_key, key)
                 if old_key is not None:
                     mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([old_key[1].encode("utf-8")]), clock=clock))
@@ -408,9 +410,12 @@ class CassandraObject(object):
             return
         clock = Clock(time.time() * 1000)
         mutations = {}
-        self.mutate(mutations, clock)
+        mcgroups = set()
+        self.mutate(mutations, mcgroups, clock)
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+            for mcid in mcgroups:
+                self.db.mc.incr(mcid)
 
     def remove(self):
         """
@@ -423,16 +428,20 @@ class CassandraObject(object):
         self.db.mc.set(row_id, "tomb", cache_interval)
         # removing indexes
         mutations = {}
+        mcgroups = set()
         old_index_values = self.index_values()
         for index_name, key in old_index_values.iteritems():
             index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
             mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
+            mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
             #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
+        print "REMOVE %s" % row_id
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+            for mcid in mcgroups:
+                self.db.mc.incr(mcid)
         self.dirty = False
         self.new = False
-        print "REMOVE %s" % row_id
 
     def get(self, key, default=None):
         """
@@ -488,42 +497,77 @@ class CassandraObjectList(object):
         self.db = db
         self._loaded = False
         self.index_rows = []
+        self.query_index = query_index
         if uuids is not None:
             self.dict = [cls(db, uuid, {}, dbprefix=dbprefix, clsprefix=clsprefix) for uuid in uuids]
         elif query_index is not None:
+            grpmcid = "%s%s%s/VER" % (dbprefix, clsprefix, query_index)
+            grpid = self.db.mc.get(grpmcid)
+            if grpid is None:
+                grpid = random.randint(0, 2000000000)
+                self.db.mc.set(grpmcid, grpid)
             if type(query_equal) == list:
                 # multiple keys
+                mcids = []
                 index_rows = []
+                self.index_data = []
                 for val in query_equal:
-                    index_row = dbprefix + clsprefix + query_index + "-" + val
+                    mcid = "%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, val, query_start, query_finish, query_limit, query_reversed, grpid)
+                    if type(mcid) == unicode:
+                        mcid = mcid.encode("utf-8")
+                    mcids.append(mcid)
+                    index_row = "%s%s%s-%s" % (dbprefix, clsprefix, query_index, val)
                     if type(index_row) == unicode:
                         index_row = index_row.encode("utf-8")
                     index_rows.append(index_row)
-#               print "search index rows: %s" % index_rows
-                d = self.db.multiget_slice(index_rows, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
-#               print "loaded index: %s" % d
-                self.index_data = []
-                for index_row, index_data in d.iteritems():
-                    self.index_rows.append(index_row)
-                    self.index_data.extend(index_data)
-                self.index_data.sort(cmp=lambda x, y: cmp(x.column.name, y.column.name), reverse=query_reversed)
-                self.dict = [cls(db, col.column.value, {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
-#               print "loaded keys: %s" % [obj.uuid for obj in self.dict]
+#               print "loading mcids %s" % mcids
+                d = self.db.mc.get_multi(mcids)
+                remain_index_rows = []
+                for i in range(0, len(query_equal)):
+                    index_row = index_rows[i]
+                    index_data = d.get(mcids[i])
+                    if index_data is not None:
+                        self.index_rows.append(index_row)
+                        self.index_data.extend(index_data)
+                    else:
+                        remain_index_rows.append(index_row)
+#               print "loading index rows %s" % remain_index_rows
+                if len(remain_index_rows):
+                    d = self.db.multiget_slice(remain_index_rows, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+                    for index_row, index_data in d.iteritems():
+                        index_data = [[col.column.name, col.column.value] for col in index_data]
+                        self.index_rows.append(index_row)
+                        self.index_data.extend(index_data)
+                        mcid = "%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid)
+#                       print "storing mcid %s = %s" % (mcid, index_data)
+                        self.db.mc.set(mcid, index_data)
+                self.index_data.sort(cmp=lambda x, y: cmp(x[0], y[0]), reverse=query_reversed)
+                self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
+#               print "loaded index data " % self.index_data
             else:
                 # single key
+                mcid = "%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid)
+                if type(mcid) == unicode:
+                    mcid = mcid.encode("utf-8")
                 index_row = dbprefix + clsprefix + query_index
                 if query_equal is not None:
                     index_row = index_row + "-" + query_equal
                 if type(index_row) == unicode:
                     index_row = index_row.encode("utf-8")
-#               print "search index row: %s" % index_row
-                d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
-#               print "loaded index:"
-#               for cosc in d:
-#                   print "%s => %s" % (cosc.column.name, cosc.column.value)
-                self.index_rows.append(index_row)
-                self.index_data = d
-                self.dict = [cls(db, col.column.value, {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in d]
+#               print "loading mcid %s" % mcid
+                d = self.db.mc.get(mcid)
+                if d is not None:
+                    self.index_rows.append(index_row)
+                    self.index_data = d
+                else:
+#                   print "loading index row %s" % index_row
+                    d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+                    self.index_rows.append(index_row)
+                    self.index_data = [[col.column.name, col.column.value] for col in d]
+#                   print "storing mcid %s = %s" % (mcid, self.index_data)
+                    self.db.mc.set(mcid, self.index_data)
+#               print "loaded index data " % self.index_data
+                self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
         else:
             raise RuntimeError("Invalid usage of CassandraObjectList")
 
@@ -544,15 +588,17 @@ class CassandraObjectList(object):
                         if silent:
                             if len(self.index_rows):
                                 mutations = []
+                                mcgroups = set()
                                 clock = None
                                 for col in self.index_data:
-                                    if col.column.value == obj.uuid:
+                                    if col[1] == obj.uuid:
                                         obj.valid = False
                                         recovered = True
                                         #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                         if clock is None:
                                             clock = Clock(time.time() * 1000)
-                                        mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
+                                        mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), clock=clock)))
+                                        self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
                                         break
                                 if len(mutations):
                                     self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
@@ -573,13 +619,14 @@ class CassandraObjectList(object):
                             mutations = []
                             clock = None
                             for col in self.index_data:
-                                if col.column.value == obj.uuid:
+                                if col[1] == obj.uuid:
                                     obj.valid = False
                                     recovered = True
                                     #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                     if clock is None:
                                         clock = Clock(time.time() * 1000)
-                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=clock)))
+                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), clock=clock)))
+                                    self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
                                     break
                             if len(mutations):
                                 self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
@@ -597,20 +644,24 @@ class CassandraObjectList(object):
         self._load_if_not_yet()
         if len(self.dict) > 0:
             mutations = {}
+            mcgroups = set()
             clock = None
             for obj in self.dict:
                 if obj.dirty:
                     if clock is None:
                         clock = Clock(time.time() * 1000)
-                    obj.mutate(mutations, clock)
+                    obj.mutate(mutations, mcgroups, clock)
             if len(mutations) > 0:
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                for mcid in mcgroups:
+                    self.db.mc.incr(mcid)
 
     def remove(self):
         self._load_if_not_yet(True)
         if len(self.dict) > 0:
             clock = Clock(time.time() * 1000)
             mutations = {}
+            mcgroups = set()
             for obj in self.dict:
                 old_index_values = obj.index_values()
                 for index_name, key in old_index_values.iteritems():
@@ -621,6 +672,7 @@ class CassandraObjectList(object):
                         mutations[index_row] = {"Objects": [mutation]}
                     else:
                         m["Objects"].append(mutation)
+                    mcgroups.add("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, index_name))
                 row_id = obj.dbprefix + obj.clsprefix + obj.uuid
                 print "REMOVE %s" % row_id
                 obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
@@ -630,6 +682,9 @@ class CassandraObjectList(object):
             # removing indexes
             if len(mutations):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                for mcid in mcgroups:
+                    print "INVALIDATE %s" % mcid
+                    self.db.mc.incr(mcid)
 
     def __len__(self):
         return self.dict.__len__()
