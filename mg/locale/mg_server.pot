@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-22 15:39+0400\n"
+"POT-Creation-Date: 2010-09-22 16:58+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -390,7 +390,7 @@ msgstr ""
 msgid "Edit topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1254 mg/core/web.py:621 mg/core/director.py:169
+#: mg/socio/__init__.py:1254 mg/core/web.py:621 mg/core/director.py:177
 #: mg/admin/__init__.py:136
 msgid "Save"
 msgstr ""
@@ -810,47 +810,51 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: mg/core/director.py:80
+#: mg/core/director.py:81
 msgid "Welcome to the cluster control center"
 msgstr ""
 
-#: mg/core/director.py:81
+#: mg/core/director.py:82
 msgid "Change cluster settings"
 msgstr ""
 
-#: mg/core/director.py:87
+#: mg/core/director.py:88
 msgid "List of servers online"
 msgstr ""
 
-#: mg/core/director.py:153
+#: mg/core/director.py:159
 msgid "Cluster settings"
 msgstr ""
 
-#: mg/core/director.py:155
+#: mg/core/director.py:161
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/core/director.py:157
+#: mg/core/director.py:163
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/core/director.py:159
+#: mg/core/director.py:165
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr ""
 
-#: mg/core/director.py:161
+#: mg/core/director.py:167
+msgid "<strong>Syslog server</strong> (host)"
+msgstr ""
+
+#: mg/core/director.py:169
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:163
+#: mg/core/director.py:171
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr ""
 
-#: mg/core/director.py:165
+#: mg/core/director.py:173
 msgid "<strong>SMTP server</strong> (host)"
 msgstr ""
 
-#: mg/core/director.py:167
+#: mg/core/director.py:175
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr ""
 

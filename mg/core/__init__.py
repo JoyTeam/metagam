@@ -504,6 +504,7 @@ class Instance(object):
         self.appfactory = None
         self.modules = set()
         self.server_id = uuid4().hex
+        self.logger_id = self.server_id
         self.log_channel = None
         self.setup_logger()
 
@@ -515,7 +516,7 @@ class Instance(object):
             modlogger.removeHandler(self.log_channel)
         self.log_channel = logging.handlers.SysLogHandler((self.config.get("logger", "127.0.0.1"), 514))
         self.log_channel.setLevel(logging.DEBUG)
-        formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        formatter = Formatter(self.logger_id + " - %(name)s - %(message)s")
         self.log_channel.setFormatter(formatter)
         filter = Filter()
         self.log_channel.addFilter(filter)
@@ -524,9 +525,10 @@ class Instance(object):
     def set_server_id(self, id, logger_id=None):
         self.server_id = id
         if logger_id is None:
-            logger_id = id
-        formatter = Formatter("%(asctime)s - " + ("%-9s" % logger_id) + " - %(name)s - %(levelname)s - %(message)s")
-        self.log_channel.setFormatter(formatter)
+            self.logger_id = id
+        else:
+            self.logger_id = id
+        self.setup_logger()
 
     def reload(self):
         "Reloads instance. Return value: number of errors"

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-22 15:39+0400\n"
-"PO-Revision-Date: 2010-09-22 15:40+0300\n"
+"POT-Creation-Date: 2010-09-22 16:58+0400\n"
+"PO-Revision-Date: 2010-09-22 16:58+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -424,7 +424,7 @@ msgstr "Редактирование темы"
 
 #: mg/socio/__init__.py:1254
 #: mg/core/web.py:621
-#: mg/core/director.py:169
+#: mg/core/director.py:177
 #: mg/admin/__init__.py:136
 msgid "Save"
 msgstr "Сохранить"
@@ -872,47 +872,51 @@ msgstr "Введите имя пользователя"
 msgid "Search"
 msgstr "Искать"
 
-#: mg/core/director.py:80
+#: mg/core/director.py:81
 msgid "Welcome to the cluster control center"
 msgstr "Добро пожаловать в центр управления кластером"
 
-#: mg/core/director.py:81
+#: mg/core/director.py:82
 msgid "Change cluster settings"
 msgstr "Изменить настройки кластера"
 
-#: mg/core/director.py:87
+#: mg/core/director.py:88
 msgid "List of servers online"
 msgstr "Список серверов онлайн"
 
-#: mg/core/director.py:153
+#: mg/core/director.py:159
 msgid "Cluster settings"
 msgstr "Настройки кластера"
 
-#: mg/core/director.py:155
+#: mg/core/director.py:161
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
 
-#: mg/core/director.py:157
+#: mg/core/director.py:163
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
 
-#: mg/core/director.py:159
+#: mg/core/director.py:165
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
 
-#: mg/core/director.py:161
+#: mg/core/director.py:167
+msgid "<strong>Syslog server</strong> (host)"
+msgstr "<strong>Сервер Syslog</strong> (host)"
+
+#: mg/core/director.py:169
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr "<strong>Домен основного сайта</strong> (без www)"
 
-#: mg/core/director.py:163
+#: mg/core/director.py:171
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr "<strong>Администратор</strong> (uuid)"
 
-#: mg/core/director.py:165
+#: mg/core/director.py:173
 msgid "<strong>SMTP server</strong> (host)"
 msgstr "<strong>Сервер SMTP</strong> (host)"
 
-#: mg/core/director.py:167
+#: mg/core/director.py:175
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr "<strong>Глобальная локаль</strong> (en, ru)"
 
