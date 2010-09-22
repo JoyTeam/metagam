@@ -150,7 +150,7 @@ class Director(Module):
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             storage = ", ".join(config["storage"])
-            storage = config["logger"]
+            logger = config["logger"]
             metagam_host = config["metagam_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")

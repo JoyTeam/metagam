@@ -26,7 +26,8 @@ class Constructor(Module):
 
     def redirects(self, tbl):
         tbl["login"] = "/cabinet"
-        tbl["register"] = "/constructor/newgame"
+        tbl["register"] = "/cabinet"
+        tbl["change"] = "/cabinet/settings"
 
     def forum_topmenu(self, topmenu):
         req = self.req()
@@ -118,6 +119,7 @@ class Constructor(Module):
                 ],
                 [
                     { "href": "/auth/change", "image": "constructor/cab_changepass.jpg", "text": self._("Change password") },
+                    { "href": "/auth/email", "image": "constructor/cab_changeemail.jpg", "text": self._("Change e-mail") },
                     { "href": "/forum/settings", "image": "constructor/cab_forumsettings.jpg", "text": self._("Forum settings") },
                     { "href": "/constructor/certificate", "image": "constructor/cab_certificate.jpg", "text": self._("WebMoney Certification") },
                 ],

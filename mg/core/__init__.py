@@ -472,13 +472,13 @@ class Modules(object):
 class Formatter(logging.Formatter):
     def format(self, record):
         if record.__dict__.get("user"):
-            record.msg = "user:%s - %s" % (record.user, record.msg)
+            record.msg = "user:%s %s" % (record.user, record.msg)
         if record.__dict__.get("ip"):
-            record.msg = "ip:%s - %s" % (record.ip, record.msg)
+            record.msg = "ip:%s %s" % (record.ip, record.msg)
         if record.__dict__.get("app"):
-            record.msg = "app:%s - %s" % (record.app, record.msg)
+            record.msg = "app:%s %s" % (record.app, record.msg)
         if record.__dict__.get("host"):
-            record.msg = "host:%s - %s" % (record.host, record.msg)
+            record.msg = "host:%s %s" % (record.host, record.msg)
         return logging.Formatter.format(self, record)
 
 class Filter(logging.Filter):
@@ -489,7 +489,8 @@ class Filter(logging.Filter):
             record.ip = req.environ.get("HTTP_X_REAL_IP")
             app = req.app
             record.app = app.tag
-            record.user = req.user()
+            if req.__dict__.has_key("_session"):
+                record.user = req.user()
         except AttributeError:
             pass
         return 1
@@ -516,7 +517,7 @@ class Instance(object):
             modlogger.removeHandler(self.log_channel)
         self.log_channel = logging.handlers.SysLogHandler((self.config.get("logger", "127.0.0.1"), 514))
         self.log_channel.setLevel(logging.DEBUG)
-        formatter = Formatter(self.logger_id + " - %(name)s - %(message)s")
+        formatter = Formatter(self.logger_id + " cls:%(name)s %(message)s")
         self.log_channel.setFormatter(formatter)
         filter = Filter()
         self.log_channel.addFilter(filter)
@@ -532,6 +533,7 @@ class Instance(object):
 
     def reload(self):
         "Reloads instance. Return value: number of errors"
+        self.setup_logger()
         if self.appfactory is None:
             return 0
         return self.appfactory.reload()

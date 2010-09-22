@@ -107,20 +107,28 @@ class CookieSession(Module):
         Module.register(self)
         self.rhook("session.get", self.get)
         self.rhook("session.require_login", self.require_login)
+        self.rhook("all.schedule", self.schedule)
+        self.rhook("session.cleanup", self.cleanup)
 
     def get(self, create=False):
         req = self.req()
+        try:
+            return req._session
+        except AttributeError:
+            pass
         sid = req.cookie("mgsess")
         if sid is not None:
             mcid = "SessionCache-%s" % sid
             val = self.app().mc.get(mcid)
             if val is not None:
-                return self.obj(Session, sid, val)
+                req._session = self.obj(Session, sid, val)
+                return req._session
             session = self.find(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                 session.store()
                 self.app().mc.set(mcid, session.data)
+                req._session = session
                 return session
         sid = uuid4().hex
         args = {}
@@ -137,6 +145,7 @@ class CookieSession(Module):
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
             session.store()
+        req._session = session
         return session
 
     def find(self, sid):
@@ -152,6 +161,13 @@ class CookieSession(Module):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
         return session
 
+    def schedule(self, sched):
+        sched.add("session.cleanup", "* * * * *", priority=10)
+
+    def cleanup(self):
+        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
+        sessions.remove()
+
 class PasswordAuthentication(Module):
     def register(self):
         Module.register(self)
@@ -161,6 +177,8 @@ class PasswordAuthentication(Module):
         self.rhook("ext-auth.login", self.ext_login)
         self.rhook("ext-auth.activate", self.ext_activate)
         self.rhook("ext-auth.remind", self.ext_remind)
+        self.rhook("ext-auth.change", self.ext_change)
+        self.rhook("ext-auth.email", self.ext_email)
         self.rhook("session.find_user", self.find_user)
         self.rhook("objclasses.list", self.objclasses_list)
 
@@ -512,6 +530,139 @@ class PasswordAuthentication(Module):
         }
         self.call("web.response_global", form.html(), vars)
 
+    def ext_change(self):
+        self.call("auth.require_login")
+        req = self.req()
+        form = self.call("web.form", "socio/form.html")
+        if req.ok():
+            prefix = req.param("prefix")
+        else:
+            prefix = uuid4().hex
+        password = req.param(prefix + "_p")
+        password1 = req.param(prefix + "_p1")
+        password2 = req.param(prefix + "_p2")
+        if req.ok():
+            user = self.obj(User, req.user())
+            if not password:
+                form.error(prefix + "_p", self._("Enter your old password"))
+            if not form.errors:
+                m = hashlib.md5()
+                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+                if m.hexdigest() != user.get("pass_hash"):
+                    form.error(prefix + "_p", self._("Incorrect old password"))
+            if not password1:
+                form.error(prefix + "_p1", self._("Enter your new password"))
+            elif len(password1) < 6:
+                form.error(prefix + "_p1", self._("Minimal password length - 6 characters"))
+            elif not password2:
+                form.error(prefix + "_p2", self._("Retype your new password"))
+            elif password1 != password2:
+                form.error(prefix + "_p2", self._("Password don't match. Try again, please"))
+                password1 = ""
+                password2 = ""
+            if not form.errors:
+                salt = ""
+                letters = "abcdefghijklmnopqrstuvwxyz"
+                for i in range(0, 10):
+                    salt += random.choice(letters)
+                user.set("salt", salt)
+                user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password1))
+                m = hashlib.md5()
+                m.update(salt + password1.encode("utf-8"))
+                user.set("pass_hash", m.hexdigest())
+                user.store()
+                my_session = req.session()
+                sessions = self.objlist(SessionList, query_index="user", query_equal=user.uuid)
+                sessions.load()
+                for sess in sessions:
+                    if sess.uuid != my_session.uuid:
+                        sess.delkey("user")
+                        sess.delkey("semi_user")
+                sessions.store()
+                for sess in sessions:
+                    if sess.uuid != my_session.uuid:
+                        self.app().mc.delete("SessionCache-%s" % sess.uuid)
+                redirects = {}
+                self.call("auth.redirects", redirects)
+                if redirects.has_key("change"):
+                    self.call("web.redirect", redirects["change"])
+                self.call("web.redirect", "/")
+        form.hidden("prefix", prefix)
+        form.password(self._("Old password"), prefix + "_p", password)
+        form.password(self._("New password"), prefix + "_p1", password1)
+        form.password(self._("Confirm new password"), prefix + "_p2", password2)
+        form.submit(None, None, self._("Change"))
+        vars = {
+            "title": self._("Password change"),
+        }
+        self.call("web.response_global", form.html(), vars)
+
+    def ext_email(self):
+        self.call("auth.require_login")
+        req = self.req()
+        user = self.obj(User, req.user())
+        if req.args == "confirm":
+            form = self.call("web.form", "socio/form.html")
+            code = req.param("code")
+            redirect = req.param("redirect")
+            if req.ok():
+                if not code:
+                    form.error("code", self._("Enter your code"))
+                else:
+                    if user.get("email_change"):
+                        if user.get("email_confirmation_code") != code:
+                            form.error("Invalid code")
+                        else:
+                            user.set("email", user.get("email_change"))
+                            user.delkey("email_change")
+                            user.delkey("email_confirmation_code")
+                            user.store()
+                redirects = {}
+                self.call("auth.redirects", redirects)
+                if redirects.has_key("change"):
+                    self.call("web.redirect", redirects["change"])
+                self.call("web.redirect", "/")
+            form.input(self._("Confirmation code from your post box"), "code", code)
+            form.submit(None, None, self._("Confirm e-mail change"))
+            vars = {
+                "title": self._("E-mail confirmation"),
+            }
+            self.call("web.response_global", form.html(), vars)
+        form = self.call("web.form", "socio/form.html")
+        if req.ok():
+            prefix = req.param("prefix")
+        else:
+            prefix = uuid4().hex
+        password = req.param(prefix + "_p")
+        email = req.param("email")
+        if req.ok():
+            if not password:
+                form.error(prefix + "_p", self._("Enter your old password"))
+            if not form.errors:
+                m = hashlib.md5()
+                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+                if m.hexdigest() != user.get("pass_hash"):
+                    form.error(prefix + "_p", self._("Incorrect old password"))
+            if not email:
+                form.error("email", self._("Enter new e-mail address"))
+            elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
+                form.error("email", self._("Enter correct e-mail"))
+            if not form.errors:
+                user.set("email_change", email)
+                code = uuid4().hex
+                user.set("email_confirmation_code", code)
+                user.store()
+                self.call("email.send", email, user.get("name"), self._("E-mail confirmation"), self._("Someone possibly you requested e-mail change on the MMOConstructor site. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}").format(code=code, host=req.host()))
+                self.call("web.redirect", "/auth/email/confirm")
+        form.hidden("prefix", prefix)
+        form.input(self._("New e-mail address"), "email", email)
+        form.password(self._("Your current password"), prefix + "_p", password)
+        form.submit(None, None, self._("Change"))
+        vars = {
+            "title": self._("E-mail change"),
+        }
+        self.call("web.response_global", form.html(), vars)
+
 class Authorization(Module):
     def register(self):
         Module.register(self)
@@ -562,7 +713,6 @@ class Authorization(Module):
         self.call("permissions.list", permissions_list)
         users = []
         user_permissions = self.objlist(UserPermissionsList, query_index="any", query_equal="1")
-        print "user_permissions: %s" % user_permissions
         if len(user_permissions):
             user_permissions.load()
             perms = dict([(obj.uuid, obj.get("perms")) for obj in user_permissions])
