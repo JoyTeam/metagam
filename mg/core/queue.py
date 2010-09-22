@@ -46,6 +46,8 @@ class Queue(Module):
         self.rhook("int-queue.run", self.queue_run)
         self.rhook("queue.schedule", self.queue_schedule)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("all.check", self.check)
+        self.rhook("queue.generate", self.queue_generate)
 
     def objclasses_list(self, objclasses):
         objclasses["QueueTask"] = (QueueTask, QueueTaskList)
@@ -95,20 +97,38 @@ class Queue(Module):
         app = self.app().inst.appfactory.get_by_tag(app_tag)
         if app is None:
             self.call("web.not_found")
-        app.hooks.call(hook, args)
+        if args.get("schedule"):
+            del args["schedule"]
+            if args.has_key("at"):
+                del args["at"]
+        app.hooks.call(hook, **args)
         self.call("web.response_json", {"ok": 1})
 
-    def queue_schedule(self):
+    def queue_schedule(self, empty=False):
         int_app = self.app().inst.int_app
         app_tag = self.app().tag
-        try:
-            sched = int_app.obj(Schedule, app_tag)
-        except ObjectNotFoundException:
+        if empty:
             sched = int_app.obj(Schedule, app_tag, data={
                 "entries": {},
             })
+        else:
+            try:
+                sched = int_app.obj(Schedule, app_tag)
+            except ObjectNotFoundException:
+                sched = int_app.obj(Schedule, app_tag, data={
+                    "entries": {},
+                })
         sched.app = weakref.ref(self.app())
         return sched
+
+    def check(self):
+        self.queue_generate()
+
+    def queue_generate(self):
+        sched = self.call("queue.schedule", empty=True)
+        self.call("all.schedule", sched)
+        self.debug("generated schedule: %s", sched.data["entries"])
+        sched.store()
 
 class Schedule(CassandraObject):
     _indexes = {
@@ -155,11 +175,21 @@ class QueueRunner(Module):
         self.processing = set()
         self.processing_uniques = set()
         self.workers = 4
+        self.last_check = None
+
+    def check(self):
+        self.info("Starting daily check")
+        # TODO: load application list
+        self.call("queue.add", "all.check", priority=20, app_tag="metagam")
 
     def queue_process(self):
         self.wait_free = channel()
         while True:
             try:
+                nd = self.nowdate()
+                if nd != self.last_check:
+                    self.last_check = nd
+                    Tasklet.new(self.check)()
                 while self.workers <= 0:
                     self.wait_free.receive()
                 tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)

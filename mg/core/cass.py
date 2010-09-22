@@ -6,9 +6,9 @@ from mg.core.thr import Socket
 from thrift.transport import TTransport
 from cassandra.Cassandra import Client
 from cassandra.ttypes import *
+from uuid import uuid4
 import socket
 import logging
-from uuid import uuid4
 import time
 import random
 
@@ -398,7 +398,7 @@ class CassandraObject(object):
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
         self.db.mc.set(row_id, self.data, cache_interval)
-        print "STORE %s %s" % (row_id, self.data)
+        logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
         self.dirty = False
         self.new = False
 
@@ -478,6 +478,12 @@ class CassandraObject(object):
         if val is None:
             return 0
         return int(val)
+
+    def incr(self, key, incr=1):
+        self.set(key, self.get_int(key) + incr)
+
+    def decr(self, key, decr=1):
+        self.set(key, self.get_int(key) - decr)
 
     def data_copy(self):
         copy = self.data.copy()

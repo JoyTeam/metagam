@@ -14,6 +14,7 @@ import time
 import json
 import gettext
 import logging
+import logging.handlers
 import datetime
 
 class HookFormatException(Exception):
@@ -351,42 +352,28 @@ class Module(object):
         """Returns value of "ok" HTTP parameter"""
         return self.req().param("ok")
 
-    def log_params(self):
-        d = {}
-        try:
-            req = self.req()
-            val = req.environ.get("HTTP_X_REAL_IP")
-            if val:
-                d["ip"] = val
-            val = req.environ.get("HTTP_X_REAL_HOST")
-            if val:
-                d["host"] = val
-        except:
-            pass
-        return d
-
     def logger(self):
         return logging.getLogger(self.fqn)
 
     def log(self, level, msg, *args):
         logger = self.logger()
         if logger.isEnabledFor(level):
-            logger.log(level, msg, *args, extra=self.log_params())
+            logger.log(level, msg, *args)
 
     def debug(self, msg, *args):
-        self.logger().debug(msg, *args, extra=self.log_params())
+        self.logger().debug(msg, *args)
 
     def info(self, msg, *args):
-        self.logger().info(msg, *args, extra=self.log_params())
+        self.logger().info(msg, *args)
 
     def warning(self, msg, *args):
-        self.logger().warning(msg, *args, extra=self.log_params())
+        self.logger().warning(msg, *args)
 
     def error(self, msg, *args):
-        self.logger().error(msg, *args, extra=self.log_params())
+        self.logger().error(msg, *args)
 
     def critical(self, msg, *args):
-        self.logger().critical(msg, *args, extra=self.log_params())
+        self.logger().critical(msg, *args)
 
     def exception(self, msg, *args):
         self.logger().exception(msg, *args)
@@ -412,6 +399,9 @@ class Module(object):
             return Tasklet.current().req
         except AttributeError:
             raise RuntimeError("Module.req() called outside of a web handler")
+
+    def nowdate(self):
+        return datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
     def now(self):
         return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
@@ -481,11 +471,28 @@ class Modules(object):
 
 class Formatter(logging.Formatter):
     def format(self, record):
-        if record.__dict__.has_key("ip"):
+        if record.__dict__.get("user"):
+            record.msg = "user:%s - %s" % (record.user, record.msg)
+        if record.__dict__.get("ip"):
             record.msg = "ip:%s - %s" % (record.ip, record.msg)
-        if record.__dict__.has_key("host"):
+        if record.__dict__.get("app"):
+            record.msg = "app:%s - %s" % (record.app, record.msg)
+        if record.__dict__.get("host"):
             record.msg = "host:%s - %s" % (record.host, record.msg)
         return logging.Formatter.format(self, record)
+
+class Filter(logging.Filter):
+    def filter(self, record):
+        try:
+            req = Tasklet.current().req
+            record.host = req.environ.get("HTTP_X_REAL_HOST")
+            record.ip = req.environ.get("HTTP_X_REAL_IP")
+            app = req.app
+            record.app = app.tag
+            record.user = req.user()
+        except AttributeError:
+            pass
+        return 1
 
 class Instance(object):
     """
@@ -497,14 +504,21 @@ class Instance(object):
         self.appfactory = None
         self.modules = set()
         self.server_id = uuid4().hex
+        self.log_channel = None
+        self.setup_logger()
 
-        # Logging setup
+    def setup_logger(self):
         modlogger = logging.getLogger("")
         modlogger.setLevel(logging.DEBUG)
-        self.log_channel = logging.StreamHandler()
+        # log channel
+        if self.log_channel:
+            modlogger.removeHandler(self.log_channel)
+        self.log_channel = logging.handlers.SysLogHandler((self.config.get("logger", "127.0.0.1"), 514))
         self.log_channel.setLevel(logging.DEBUG)
         formatter = Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         self.log_channel.setFormatter(formatter)
+        filter = Filter()
+        self.log_channel.addFilter(filter)
         modlogger.addHandler(self.log_channel)
 
     def set_server_id(self, id, logger_id=None):
@@ -538,6 +552,7 @@ class Instance(object):
             for key in ("memcached", "cassandra"):
                 config[key] = [tuple(ent) for ent in config[key]]
             self.config = config
+            self.setup_logger()
             return config
         finally:
             cnn.close()
@@ -578,15 +593,30 @@ class Application(object):
         errors += self.modules.reload()
         return errors
 
-    def obj(self, cls, uuid=None, data=None):
+    def obj(self, cls, uuid=None, data=None, silent=False):
         "Access CassandraObject constructor"
-        return cls(self.db, uuid, data, dbprefix=self.keyprefix)
+        return cls(self.db, uuid, data, dbprefix=self.keyprefix, silent=silent)
 
     def objlist(self, cls, uuids=None, **kwargs):
         return cls(self.db, uuids, dbprefix=self.keyprefix, **kwargs)
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
+
+    def log_params(self, req):
+        d = {}
+        val = req.environ.get("HTTP_X_REAL_IP")
+        if val:
+            d["ip"] = val
+        val = req.environ.get("HTTP_X_REAL_HOST")
+        if val:
+            d["host"] = val
+        try:
+            d["app"] = self.app().tag
+        except AttributeError:
+            pass
+        print "log_params=%s" % d
+        return d
 
 class ApplicationFactory(object):
     """
