@@ -175,6 +175,7 @@ class PasswordAuthentication(Module):
         session = self.call("session.get", True)
         form = self.call("web.form", "socio/form.html")
         name = req.param("name")
+        sex = req.param("sex")
         email = req.param("email")
         password1 = req.param("password1")
         password2 = req.param("password2")
@@ -197,6 +198,8 @@ class PasswordAuthentication(Module):
                 form.error("password2", self._("Password don't match. Try again, please"))
                 password1 = ""
                 password2 = ""
+            if sex != "0" and sex != "1":
+                form.error("sex", self._("Select your sex"))
             if not email:
                 form.error("email", self._("Enter your e-mail address"))
             elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
@@ -216,6 +219,7 @@ class PasswordAuthentication(Module):
                 now = "%020d" % time.time()
                 user.set("created", now)
                 user.set("last_login", now)
+                user.set("sex", sex)
                 user.set("name", name)
                 user.set("name_lower", name.lower())
                 user.set("email", email)
@@ -233,11 +237,12 @@ class PasswordAuthentication(Module):
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
                 user.store()
-                self.call("email.send", email, name, self._("Account activation"), self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n%s\n\nor simply follow the link:\n\nhttp://%s/auth/activate/%s?code=%s") % (activation_code, req.host(), user.uuid, activation_code))
+                self.call("email.send", email, name, self._("Account activation"), self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}").format(code=activation_code, host=req.host(), user=user.uuid))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         if redirect is not None:
             form.hidden("redirect", redirect)
         form.input(self._("User name"), "name", name)
+        form.select(self._("Sex"), "sex", sex, [{"value": 0, "description": self._("Male")}, {"value": 1, "description": self._("Female")}])
         form.input(self._("E-mail"), "email", email)
         form.password(self._("Password"), "password1", password1)
         form.password(self._("Confirm password"), "password2", password2)
@@ -274,6 +279,7 @@ class PasswordAuthentication(Module):
                 user.delkey("activation_code")
                 user.delkey("activation_redirect")
                 user.store()
+                self.call("auth.registered", user)
                 session.set("user", user.uuid)
                 session.delkey("semi_user")
                 session.store()
@@ -309,7 +315,7 @@ class PasswordAuthentication(Module):
                 name = ""
                 content = ""
                 for user in list:
-                    content += self._("User '%s' has password '%s'\n") % (user.get("name"), user.get("pass_reminder"))
+                    content += self._("User '{user}' has password '{password}'\n").format(user=user.get("name"), password=user.get("pass_reminder"))
                     name = user.get("name")
                 self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your e-mail are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
                 if redirect is not None and redirect != "":
@@ -511,7 +517,6 @@ class Authorization(Module):
         Module.register(self)
         self.rhook("auth.permissions", self.auth_permissions)
         self.rhook("session.require_permission", self.require_permission)
-        self.admin_uuid = self.app().inst.config.get("admin_user")
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-security.index", self.menu_security_index)
         self.rhook("ext-admin-auth.permissions", self.admin_permissions)
@@ -528,7 +533,7 @@ class Authorization(Module):
     def auth_permissions(self, user_id):
         perms = {}
         if user_id:
-            if user_id == self.admin_uuid:
+            if user_id == self.app().inst.config.get("admin_user"):
                 perms["admin"] = True
             try:
                 p = self.obj(UserPermissions, user_id)

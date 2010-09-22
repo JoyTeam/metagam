@@ -1,5 +1,6 @@
 from concurrence.extra import Lock
 from concurrence import Tasklet, http
+from concurrence.http import HTTPError
 from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached
@@ -295,6 +296,8 @@ class Config(object):
                             if info["type"] == "worker":
                                 try:
                                     int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                                except HTTPError as e:
+                                    logging.getLogger("mg.core.Config").error(e)
                                 except BaseException as e:
                                     logging.getLogger("mg.core.Config").exception(e)
 

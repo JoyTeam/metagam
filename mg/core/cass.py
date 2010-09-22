@@ -435,7 +435,7 @@ class CassandraObject(object):
             mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
             mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
             #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
-        print "REMOVE %s" % row_id
+#       print "REMOVE %s" % row_id
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
             for mcid in mcgroups:
@@ -478,6 +478,11 @@ class CassandraObject(object):
         if val is None:
             return 0
         return int(val)
+
+    def data_copy(self):
+        copy = self.data.copy()
+        copy["uuid"] = self.uuid
+        return copy
 
 class CassandraObjectList(object):
     def __init__(self, db, uuids=None, dbprefix="", clsprefix="", cls=CassandraObject, query_index=None, query_equal=None, query_start="", query_finish="", query_limit=1000000, query_reversed=False):
@@ -674,7 +679,7 @@ class CassandraObjectList(object):
                         m["Objects"].append(mutation)
                     mcgroups.add("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, index_name))
                 row_id = obj.dbprefix + obj.clsprefix + obj.uuid
-                print "REMOVE %s" % row_id
+#               print "REMOVE %s" % row_id
                 obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
                 obj.db.mc.set(row_id, "tomb", cache_interval)
                 obj.dirty = False
@@ -683,7 +688,6 @@ class CassandraObjectList(object):
             if len(mutations):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 for mcid in mcgroups:
-                    print "INVALIDATE %s" % mcid
                     self.db.mc.incr(mcid)
 
     def __len__(self):

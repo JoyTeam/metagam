@@ -4,6 +4,7 @@ from uuid import uuid4
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 from mg.core.cluster import StaticUploadError
+from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
 from mg.core.auth import User
@@ -107,6 +108,7 @@ class ForumLastRead(CassandraObject):
     _indexes = {
         "topic-user": [["topic", "user"]],
         "user-subscribed": [["user", "subscribed"]],
+        "topic-subscribed": [["topic", "subscribed"]],
         "topic": [["topic"]],
     }
 
@@ -423,8 +425,8 @@ class Forum(Module):
         self.rhook("forum.categories", self.categories)     # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)         # create new topic
         self.rhook("forum.reply", self.reply)               # reply in the topic
-        self.rhook("forum.notify_newtopic", self.notify_newtopic)
-        self.rhook("forum.notify_reply", self.notify_reply)
+        self.rhook("forum.notify-newtopic", self.notify_newtopic)
+        self.rhook("forum.notify-reply", self.notify_reply)
         self.rhook("forum.response", self.response)
         self.rhook("forum.response_template", self.response_template)
         self.rhook("ext-forum.index", self.ext_index)
@@ -441,6 +443,7 @@ class Forum(Module):
         self.rhook("ext-forum.unpin", self.ext_unpin)
         self.rhook("ext-forum.move", self.ext_move)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("auth.registered", self.auth_registered)
 
     def objclasses_list(self, objclasses):
         objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)
@@ -801,7 +804,7 @@ class Forum(Module):
         topic.store()
         if author is not None:
             self.subscribe(author.uuid, topic.uuid, now)
-        self.call("queue.add", "forum.notify_newtopic", {"topic": topic.uuid}, retry_on_fail=True)
+        self.call("queue.add", "forum.notify-newtopic", {"topic": topic.uuid}, retry_on_fail=True)
         return topic
 
     def reply(self, cat, topic, author, content):
@@ -823,6 +826,7 @@ class Forum(Module):
                 self.subscribe(author.uuid, topic.uuid, now)
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
             page = (posts - 1) / posts_per_page + 1
+            self.call("queue.add", "forum.notify-reply", {"topic": topic.uuid, "page": page, "post": post.uuid}, retry_on_fail=True)
             raise Hooks.Return((post, page))
 
     def ext_topic(self):
@@ -837,8 +841,7 @@ class Forum(Module):
             self.call("web.not_found")
         if not self.may_read(user_id, cat):
             self.call("web.forbidden")
-        topic_data = topic.data.copy()
-        topic_data["uuid"] = topic.uuid
+        topic_data = topic.data_copy()
         self.topics_htmlencode([topic_data], load_settings=True)
         may_write = self.may_write(cat, topic)
         # preparing menu
@@ -865,8 +868,10 @@ class Forum(Module):
             lastread = self.lastread(user_uuid, topic.uuid)
             if last_post is not None:
                 created = last_post.get("created")
-                if lastread.get("last_post", "") < created:
-                    lastread.set("last_post", created)
+            else:
+                created = topic.get("created")
+            if lastread.get("last_post", "") < created:
+                lastread.set("last_post", created)
             lastread.delkey("email_notified")
             lastread.store()
             if req.user():
@@ -1039,7 +1044,7 @@ class Forum(Module):
             old_content = post.get("content")
         else:
             old_content = topic.get("content")
-        topic_data = topic.data.copy()
+        topic_data = topic.data_copy()
         self.topics_htmlencode([topic_data])
         req = self.req()
         content = req.param("content")
@@ -1272,7 +1277,7 @@ class Forum(Module):
         form.file(self._("Your avatar"), "avatar")
         form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
         for cat in categories:
-            form.checkbox(self._("New topics in '%s / %s'") % (cat["topcat"], cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
+            form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
         self.call("forum.response", form.html(), vars)
 
     def ext_subscribe(self):
@@ -1356,36 +1361,87 @@ class Forum(Module):
     def ext_move(self):
         raise RuntimeError("Not implemented")
 
+    def auth_registered(self, user):
+        settings = self.obj(UserForumSettings, user.uuid, {})
+        categories = [cat for cat in self.categories() if self.may_read(user.uuid, cat)]
+        for cat in categories:
+            if cat.get("default_subscribe"):
+                settings.set("notify_%s" % cat["id"], True)
+                settings.set("notify_any", 1)
+        settings.store()
+
     def notify_newtopic(self, args):
-        print "notify_newtopic called"
         try:
             topic = self.obj(ForumTopic, args["topic"])
         except ObjectNotFoundException:
             self.call("web.response_json", {"error": "Topic not found"})
         subscribers = self.objlist(UserForumSettingsList, query_index="notify-any", query_equal="1")
         subscribers.load()
-        print "subscribers: %s" % subscribers.data()
         notify_str = "notify_%s" % topic.get("category")
+        author = topic.get("author")
         users = []
         for sub in subscribers:
-            if sub.get(notify_str) and self.may_read(sub.uuid, topic):
+            if sub.get(notify_str) and self.may_read(sub.uuid, topic) and sub.uuid != author:
                 users.append(sub.uuid)
-        print "users: %s" % users
         if len(users):
             vars = {
                 "author_name": topic.get("author_name"),
                 "topic_subject": topic.get("subject"),
                 "domain": self.app().domain,
-                "topic_uuid": topic.get("uuid"),
+                "topic_uuid": topic.uuid,
             }
-            author = topic.get("author")
             if author:
                 author_obj = self.obj(User, author)
-                gender = author_obj.get("gender", 0)
+                sex = author_obj.get("sex", 0)
             else:
-                gender = 0
-            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), self._("{author_name} started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars))
+                sex = 0
+            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
         self.call("web.response_json", {"ok": 1})
 
     def notify_reply(self, args):
-        raise RuntimeError("Not implemented")
+        try:
+            topic = self.obj(ForumTopic, args["topic"])
+        except ObjectNotFoundException:
+            self.call("web.response_json", {"error": "Topic not found"})
+        try:
+            post = self.obj(ForumPost, args["post"])
+        except ObjectNotFoundException:
+            self.call("web.response_json", {"error": "Post not found"})
+        subscribers = self.objlist(ForumLastReadList, query_index="topic-subscribed", query_equal="%s-1" % topic.uuid)
+        subscribers.load()
+        author = post.get("author")
+        users = []
+        now = time.time()
+        for sub in subscribers:
+            email_notified = sub.get("email_notified")
+            if email_notified is None or float(email_notified) < now - 86400 * 3:
+                user = sub.get("user")
+                if user != author:
+                    users.append(user)
+                    sub.set("email_notified", now)
+        subscribers.store()
+        notify_users = []
+        if len(users):
+            settings = self.objlist(UserForumSettingsList, users)
+            settings.load(silent=True)
+            sets = dict([(set.uuid, set) for set in settings])
+            for usr in users:
+                set = sets.get(usr)
+                if (set is None or set.get("notify_replies", True)) and self.may_read(usr, topic):
+                    notify_users.append(usr)
+        if len(notify_users):
+            vars = {
+                "author_name": post.get("author_name"),
+                "topic_subject": topic.get("subject"),
+                "domain": self.app().domain,
+                "topic_uuid": topic.uuid,
+                "post_uuid": post.uuid,
+                "post_page": args["page"],
+            }
+            if author:
+                author_obj = self.obj(User, author)
+                sex = author_obj.get("sex", 0)
+            else:
+                sex = 0
+            self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
+        self.call("web.response_json", {"ok": 1})

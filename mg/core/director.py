@@ -25,12 +25,12 @@ class Director(Module):
         self.rhook("int-index.index", self.director_index)
         self.rhook("int-director.setup", self.director_setup)
         self.rhook("int-director.config", self.director_config)
+        self.rhook("director.reload_servers", self.reload_servers)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("monitor.check", self.monitor_check)
         self.rhook("director.queue_workers", self.director_queue_workers)
         self.rhook("cluster.servers_online", self.cluster_servers_online, priority=10)
         self.servers_online_updated()
-        self.reload_servers()
 
     def cluster_servers_online(self):
         raise mg.core.Hooks.Return(self.servers_online)
@@ -55,7 +55,7 @@ class Director(Module):
 
     def reload_servers(self, result={}, errors={}):
         config = json.dumps(self.config())
-        for server_id, info in self.servers_online.iteritems():
+        for server_id, info in self.servers_online.items():
             errors = 1
             try:
                 res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {"config": config})
@@ -77,8 +77,8 @@ class Director(Module):
 
     def director_index(self):
         vars = {
-            "title": self._("Welcome to the Director control center"),
-            "setup": self._("Change director settings")
+            "title": self._("Welcome to the cluster control center"),
+            "setup": self._("Change cluster settings")
         }
         if len(self.servers_online):
             hosts = self.servers_online.keys()
@@ -150,7 +150,7 @@ class Director(Module):
             smtp_server = config.get("smtp_server")
             locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
-            "title": self._("Director settings"),
+            "title": self._("Cluster settings"),
             "form": {
                 "memcached_desc": self._("<strong>Memcached servers</strong> (host:port, host:port, ...)"),
                 "memcached": memcached,
@@ -160,11 +160,11 @@ class Director(Module):
                 "storage": storage,
                 "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
                 "metagam_host": metagam_host,
-                "admin_user_desc": self._("<strong>Admin user uuid</strong>"),
+                "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),
                 "admin_user": admin_user,
-                "smtp_server_desc": self._("<strong>SMTP server (hostname)</strong>"),
+                "smtp_server_desc": self._("<strong>SMTP server</strong> (host)"),
                 "smtp_server": smtp_server,
-                "locale_desc": self._("<strong>Global locale (en, ru, ...)</strong>"),
+                "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
                 "submit_desc": self._("Save")
             }

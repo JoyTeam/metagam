@@ -674,6 +674,14 @@ class WebForm(object):
         kwargs["element_input"] = True
         self.control(desc, name, **kwargs)
 
+    def select(self, desc, name, value, options, **kwargs):
+        """
+        <select />
+        """
+        kwargs["options"] = [{"value": opt.get("value"), "text": cgi.escape(opt.get("description")), "selected": (unicode(opt.get("value")) == unicode(value)), "bgcolor": opt.get("bgcolor")} for opt in options]
+        kwargs["element_select"] = True
+        self.control(desc, name, **kwargs)
+
     def password(self, desc, name, value, **kwargs):
         """
         <input type="password" />

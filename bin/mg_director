@@ -21,6 +21,7 @@ def main():
         app.modules.load(["mg.core.director.CassandraStruct"])
         app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
+        app.hooks.call("director.reload_servers")
         # web daemon
         daemon = WebDaemon(inst)
         daemon.app = app

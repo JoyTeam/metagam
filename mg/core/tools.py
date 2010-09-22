@@ -1,5 +1,6 @@
 import urllib
 import string
+import re
 
 def urldecode(str):
     if str is None:
@@ -33,3 +34,5 @@ def jsdecode(str):
     str = string.replace(str, "\\\\", "\\")
     return str
 
+def format_gender(gender, str):
+    return re.sub(r'\[gender\?([^:\]]*):([^:\]]*)\]', lambda m: m.group(1) if gender else m.group(2), str)
