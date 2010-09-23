@@ -181,6 +181,7 @@ class PasswordAuthentication(Module):
         self.rhook("ext-auth.email", self.ext_email)
         self.rhook("session.find_user", self.find_user)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("session.cleanup", self.cleanup)
 
     def objclasses_list(self, objclasses):
         objclasses["User"] = (User, UserList)
@@ -270,6 +271,12 @@ class PasswordAuthentication(Module):
             "title": self._("User registration"),
         }
         self.call("web.response_global", form.html(), vars)
+
+    def cleanup(self):
+        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
+        captchas.remove()
+        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
+        users.remove()
 
     def ext_activate(self):
         req = self.req()

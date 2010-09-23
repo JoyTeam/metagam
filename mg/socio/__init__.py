@@ -992,7 +992,7 @@ class Forum(Module):
             "posts": posts,
             "menu": menu,
         }
-        if req.ok() or (self.may_write(cat) and page == pages):
+        if req.ok() or (self.may_write(cat) and (page == pages)):
             form.texteditor(None, "content", content)
             form.submit(None, None, self._("Reply"))
             vars["new_post_form"] = form.html()
@@ -1038,6 +1038,8 @@ class Forum(Module):
     def posts(self, topic, page=1):
         posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
         pages = (len(posts) - 1) / posts_per_page + 1
+        if pages < 1:
+            pages = 1
         lock = self.lock(["ForumTopic-" + topic.uuid])
         if len(posts):
             last_post = posts[-1]
