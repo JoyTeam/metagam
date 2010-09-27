@@ -102,8 +102,6 @@ class Director(Module):
             conf["metagam_host"] = "metagam"
         if conf.get("storage") is None:
             conf["storage"] = ["storage"]
-        if conf.get("logger") is None:
-            conf["logger"] = "localhost"
         if conf.get("smtp_server") is None:
             conf["smtp_server"] = "localhost"
         if conf.get("locale") is None:
@@ -127,7 +125,6 @@ class Director(Module):
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
         storage = request.param("storage")
-        logger = request.param("logger")
         metagam_host = request.param("metagam_host")
         admin_user = request.param("admin_user")
         smtp_server = request.param("smtp_server")
@@ -137,7 +134,6 @@ class Director(Module):
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
             config["storage"] = re.split('\s*,\s*', storage)
-            config["logger"] = logger
             config["metagam_host"] = metagam_host
             config["admin_user"] = admin_user
             config["smtp_server"] = smtp_server
@@ -150,7 +146,6 @@ class Director(Module):
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             storage = ", ".join(config["storage"])
-            logger = config["logger"]
             metagam_host = config["metagam_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")
@@ -164,8 +159,6 @@ class Director(Module):
                 "cassandra": cassandra,
                 "storage_desc": self._("<strong>Storage servers</strong> (host, host, ...)"),
                 "storage": storage,
-                "logger_desc": self._("<strong>Syslog server</strong> (host)"),
-                "logger": logger,
                 "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
                 "metagam_host": metagam_host,
                 "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),

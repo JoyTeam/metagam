@@ -1,7 +1,8 @@
 from concurrence.http import HTTPConnection, HTTPRequest
 import json
 import re
-import mg.core.tools
+import mg.core
+from mg.core.tools import *
 from mg.core.thr import Socket
 from thrift.transport import TTransport
 from cassandra.Cassandra import Client
@@ -316,15 +317,17 @@ class CassandraObject(object):
                     break;
                 values.append(val)
             if not abort:
-                if len(index) > 1:
-                    val = self.data.get(index[1])
+                tokens = []
+                for i in range(1, len(index)):
+                    val = self.data.get(index[i])
                     if val is None:
                         abort = True
+                        break
                     else:
-                        col = u"%s-%s" % (unicode(val), unicode(self.uuid))
-                else:
-                    col = self.uuid
+                        tokens.append(unicode(val))
                 if not abort:
+                    tokens.append(self.uuid)
+                    col = u"-".join(tokens)
                     row_suffix = ""
                     for val in values:
                         row_suffix = "%s-%s" % (row_suffix, val)
@@ -502,7 +505,7 @@ class CassandraObjectList(object):
         To query equal index 'name2' for several index values:
         lst = CassandraObjectList(db, query_index="name2", query_equal=["value1-value2", "VALUE1-VALUE2", ...], query_limit=1000)
 
-        To query ordered index 'name5' => [['eqfield1', 'eqfield2'], 'ordfield']:
+        To query ordered index 'name5' => [['eqfield1', 'eqfield2'], 'ordfield1', 'ordfield2']:
         lst = CassandraObjectList(db, query_index="name5", query_equal="value1-value2", query_start="OrdFrom", query_finish="OrdTo", query_reversed=True)
         """
         self.db = db
@@ -523,9 +526,7 @@ class CassandraObjectList(object):
                 index_rows = []
                 self.index_data = []
                 for val in query_equal:
-                    mcid = "%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, val, query_start, query_finish, query_limit, query_reversed, grpid)
-                    if type(mcid) == unicode:
-                        mcid = mcid.encode("utf-8")
+                    mcid = urlencode("%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, val, query_start, query_finish, query_limit, query_reversed, grpid))
                     mcids.append(mcid)
                     index_row = "%s%s%s-%s" % (dbprefix, clsprefix, query_index, val)
                     if type(index_row) == unicode:
@@ -549,7 +550,7 @@ class CassandraObjectList(object):
                         index_data = [[col.column.name, col.column.value] for col in index_data]
                         self.index_rows.append(index_row)
                         self.index_data.extend(index_data)
-                        mcid = "%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid)
+                        mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid))
 #                       print "storing mcid %s = %s" % (mcid, index_data)
                         self.db.mc.set(mcid, index_data)
                 self.index_data.sort(cmp=lambda x, y: cmp(x[0], y[0]), reverse=query_reversed)
@@ -557,9 +558,7 @@ class CassandraObjectList(object):
 #               print "loaded index data " % self.index_data
             else:
                 # single key
-                mcid = "%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid)
-                if type(mcid) == unicode:
-                    mcid = mcid.encode("utf-8")
+                mcid = urlencode("%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid))
                 index_row = dbprefix + clsprefix + query_index
                 if query_equal is not None:
                     index_row = index_row + "-" + query_equal

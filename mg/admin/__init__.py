@@ -4,13 +4,11 @@ import random
 import re
 import json
 
-class AdminInterface(Module):
-    def __init__(self, app, fqn):
-        Module.__init__(self, app, fqn)
-        self.re_remove_admin = re.compile(r'^admin-')
-        self.re_split_3 = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
-        self.re_split_2 = re.compile(r'^([^/]+)/([^/]+)$')
+re_remove_admin = re.compile(r'^admin-')
+re_split_3 = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
+re_split_2 = re.compile(r'^([^/]+)/([^/]+)$')
 
+class AdminInterface(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-admin.index", self.index)
@@ -49,7 +47,7 @@ class AdminInterface(Module):
         group = req.group
         hook = req.hook
         args = req.args
-        href = "%s/%s" % (self.re_remove_admin.sub('', group), hook)
+        href = "%s/%s" % (re_remove_admin.sub('', group), hook)
         if args != "":
             href = "%s/%s" % (href, args)
         first = True
@@ -69,11 +67,11 @@ class AdminInterface(Module):
                         menu.append(self.link([], href, res[0]))
                     if len(res) == 2:
                         href = res[1]
-                        m = self.re_split_3.match(href)
+                        m = re_split_3.match(href)
                         if m:
                             group, hook, args = m.group(1, 2, 3)
                         else:
-                            m = self.re_split_2.match(href)
+                            m = re_split_2.match(href)
                             if m:
                                 group, hook = m.group(1, 2)
                                 args = ""

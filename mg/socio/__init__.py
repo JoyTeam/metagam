@@ -7,7 +7,7 @@ from mg.core.cluster import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
-from mg.core.auth import User
+from mg.core.auth import User, PermissionsEditor
 import re
 import cgi
 import cStringIO
@@ -67,6 +67,7 @@ class ForumTopic(CassandraObject):
     _indexes = {
         "category-created": [["category"], "pinned-created"],
         "category-updated": [["category"], "pinned-updated"],
+        "updated-category": [[], "updated", "category"],
         "category-list": [["category"], "updated"],
         "author": [["author"], "created"],
         "tag": [["tag"]],
@@ -89,6 +90,17 @@ class ForumTopicList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "ForumTopic-"
         kwargs["cls"] = ForumTopic
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class ForumTopicContent(CassandraObject):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumTopicContent-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+class ForumTopicContentList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumTopicContent-"
+        kwargs["cls"] = ForumTopicContent
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class ForumPost(CassandraObject):
@@ -137,16 +149,36 @@ class ForumLastReadList(CassandraObjectList):
         kwargs["cls"] = ForumLastRead
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class ForumPermissions(CassandraObject):
+    _indexes = {
+        "member": [["member"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumPermissions-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return ForumPermissions._indexes
+
+class ForumPermissionsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ForumPermissions-"
+        kwargs["cls"] = ForumPermissions
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class ForumAdmin(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.socio.Forum"])
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
-        self.rhook("headmenu-admin-forum.categories", self.headmenu_forum_categories)
-        self.rhook("headmenu-admin-forum.category", self.headmenu_forum_category)
         self.rhook("ext-admin-forum.categories", self.admin_categories)
+        self.rhook("headmenu-admin-forum.categories", self.headmenu_forum_categories)
         self.rhook("ext-admin-forum.category", self.admin_category)
+        self.rhook("headmenu-admin-forum.category", self.headmenu_forum_category)
+        self.rhook("ext-admin-forum.permissions", self.admin_permissions)
+        self.rhook("headmenu-admin-forum.permissions", self.headmenu_forum_permissions)
         self.rhook("permissions.list", self.permissions_list)
 
     def permissions_list(self, perms):
@@ -160,15 +192,6 @@ class ForumAdmin(Module):
     def menu_forum_index(self, menu):
         self.call("session.require_permission", "forum.categories")
         menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
-
-    def headmenu_forum_categories(self, args):
-        return self._("Forum categories")
-
-    def headmenu_forum_category(self, args):
-        cat = self.call("forum.category", args)
-        if cat is None:
-            return [self._("No such category"), "forum/categories"]
-        return [self._("Category %s") % cat["title"], "forum/categories"]
 
     def admin_categories(self):
         self.call("session.require_permission", "forum.categories")
@@ -185,8 +208,13 @@ class ForumAdmin(Module):
             "order": self._("Order"),
             "editing": self._("Editing"),
             "edit": self._("edit"),
+            "Permissions": self._("Permissions"),
+            "permissions": self._("permissions"),
             "categories": categories
         })
+
+    def headmenu_forum_categories(self, args):
+        return self._("Forum categories")
 
     def admin_category(self):
         self.call("session.require_permission", "forum.categories")
@@ -251,6 +279,19 @@ class ForumAdmin(Module):
             }
         ]
         return self.call("admin.form", fields=fields)
+
+    def headmenu_forum_category(self, args):
+        cat = self.call("forum.category", args)
+        if cat is None:
+            return [self._("No such category"), "forum/categories"]
+        return [self._("Category %s") % cat["title"], "forum/categories"]
+
+    def admin_permissions(self):
+        self.call("session.require_permission", "forum.categories")
+        PermissionsEditor(self, ForumPermissions, ForumPermissionsList).request()
+
+    def headmenu_forum_permissions(self, args):
+        return [self._("Permissions"), "forum/category/" + re.sub(r'/.*', '', args)]
 
 class Socio(Module):
     def register(self):
@@ -462,8 +503,11 @@ class Forum(Module):
     def objclasses_list(self, objclasses):
         objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)
         objclasses["ForumTopic"] = (ForumTopic, ForumTopicList)
+        objclasses["ForumTopicContent"] = (ForumTopicContent, ForumTopicContentList)
+        objclasses["ForumLastRead"] = (ForumLastRead, ForumLastReadList)
         objclasses["ForumPost"] = (ForumPost, ForumPostList)
         objclasses["SocioImage"] = (SocioImage, None)
+        objclasses["ForumPermissions"] = (ForumPermissions, ForumPermissionsList)
 
     def response(self, content, vars):
         topmenu = []
@@ -520,13 +564,36 @@ class Forum(Module):
 
     def ext_index(self):
         req = self.req()
-        user_id = req.user()
-        categories = [cat for cat in self.categories() if self.may_read(user_id, cat)]
-        entries = []
-        topcat = None
+        user_uuid = req.user()
+        categories = [cat for cat in self.categories() if self.may_read(user_uuid, cat)]
+        # category counters
         stat = self.objlist(ForumCategoryStatList, [cat["id"] for cat in categories])
         stat.load(silent=True)
         stat = dict([(s.uuid, s) for s in stat])
+        # unread topics
+        unread = {}
+        semi_user_uuid = req.session().semi_user()
+        if semi_user_uuid:
+            topics = self.objlist(ForumTopicList, query_index="updated-category", query_start=self.now(-31 * 86400))
+            re_updated = re.compile(r'^(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)-([a-f0-9]+)-[a-f0-9]+$')
+            top_updated = {}
+            for top in topics.index_data:
+                m = re_updated.match(top[0])
+                if m:
+                    upd, cat = m.group(1, 2)
+                    top_updated[top[1]] = (upd, cat)
+            lastread_list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal=["%s-%s" % (topic, semi_user_uuid) for topic in top_updated.iterkeys()])
+            lastread_list.load()
+            lastread = dict([(lr.get("topic"), lr) for lr in lastread_list])
+            for top, info in top_updated.iteritems():
+                upd, cat = info
+                if not unread.get(cat):
+                    lr = lastread.get(top)
+                    if lr is None or lr.get("last_post") < upd:
+                        unread[cat] = True
+        # generating template
+        entries = []
+        topcat = None
         for cat in categories:
             cat = cat.copy()
             if cat["topcat"] != topcat:
@@ -541,6 +608,8 @@ class Forum(Module):
                 if replies:
                     cat["replies"] = replies
                 cat["lastinfo"] = st.get("last")
+            if unread.get(cat["id"]):
+                cat["unread"] = True
             entries.append({"category": cat})
         vars = {
             "title": self._("Forum categories"),
@@ -650,7 +719,7 @@ class Forum(Module):
         cats.sort(key=itemgetter("order"))
         return cats
 
-    def may_read(self, user_id, cat):
+    def may_read(self, user_uuid, cat):
         return True
 
     def may_write(self, cat, topic=None):
@@ -713,11 +782,11 @@ class Forum(Module):
 
     def ext_category(self):
         req = self.req()
-        user_id = req.user()
+        user_uuid = req.user()
         cat = self.call("forum.category", req.args)
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_id, cat):
+        if not self.may_read(user_uuid, cat):
             self.call("web.forbidden")
         topics = self.topics(cat).data()
         self.topics_htmlencode(topics)
@@ -762,8 +831,6 @@ class Forum(Module):
             topic["author_html"] = topic.get("author_html")
             topic["author_icons"] = topic.get("author_icons")
             topic["posts"] = intz(topic.get("posts"))
-            if topic.get("content_html") is None:
-                topic["content_html"] = self.call("socio.format_text", topic.get("content"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
         req = self.req()
         user_uuid = req.session().semi_user()
@@ -825,6 +892,7 @@ class Forum(Module):
 
     def newtopic(self, cat, author, subject, content):
         topic = self.obj(ForumTopic)
+        topic_content = self.obj(ForumTopicContent, topic.uuid, {})
         now = self.now()
         topic.set("category", cat["id"])
         topic.set("created", now)
@@ -847,10 +915,11 @@ class Forum(Module):
             last["updated"] = self.call("l10n.timeencode2", now)
         catstat.set("last", last)
         topic.set("subject", subject)
-        topic.set("content", content)
-        topic.set("content_html", self.call("socio.format_text", content))
         topic.sync()
+        topic_content.set("content", content)
+        topic_content.set("content_html", self.call("socio.format_text", content))
         topic.store()
+        topic_content.store()
         if author is not None:
             self.subscribe(author.uuid, topic.uuid, now)
         catstat.store()
@@ -896,17 +965,20 @@ class Forum(Module):
 
     def ext_topic(self):
         req = self.req()
-        user_id = req.user()
+        user_uuid = req.user()
         try:
             topic = self.obj(ForumTopic, req.args)
+            topic_content = self.obj(ForumTopicContent, req.args)
         except ObjectNotFoundException:
             self.call("web.not_found")
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_id, cat):
+        if not self.may_read(user_uuid, cat):
             self.call("web.forbidden")
         topic_data = topic.data_copy()
+        topic_data["content"] = topic_content.get("content")
+        topic_data["content_html"] = topic_content.get("content_html")
         self.topics_htmlencode([topic_data], load_settings=True)
         may_write = self.may_write(cat, topic)
         # preparing menu
@@ -1127,7 +1199,8 @@ class Forum(Module):
         if post is not None:
             old_content = post.get("content")
         else:
-            old_content = topic.get("content")
+            topic_content = self.obj(ForumTopicContent, topic.uuid)
+            old_content = topic_content.get("content")
         topic_data = topic.data_copy()
         self.topics_htmlencode([topic_data])
         req = self.req()
@@ -1233,6 +1306,7 @@ class Forum(Module):
                 content = post.get("content")
             form.texteditor(None, "content", content)
         else:
+            topic_content = self.obj(ForumTopicContent, topic.uuid)
             vars["title"] = self._("Edit topic")
             subject = req.param("subject")
             content = req.param("content")
@@ -1244,13 +1318,14 @@ class Forum(Module):
                 if not form.errors:
                     with self.lock(["ForumTopic-" + topic.uuid]):
                         topic.set("subject", subject)
-                        topic.set("content", content)
-                        topic.set("content_html", self.call("socio.format_text", content))
+                        topic_content.set("content", content)
+                        topic_content.set("content_html", self.call("socio.format_text", content))
                         topic.store()
+                        topic_content.store()
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
-                content = topic.get("content")
                 subject = topic.get("subject")
+                content = topic_content.get("content")
             form.input(self._("Subject"), "subject", subject)
             form.texteditor(None, "content", content)
         form.submit(None, None, self._("Save"))
@@ -1259,15 +1334,15 @@ class Forum(Module):
     def ext_settings(self):
         self.call("session.require_login")
         req = self.req()
-        user_id = req.user()
+        user_uuid = req.user()
         try:
-            settings = self.obj(UserForumSettings, user_id)
+            settings = self.obj(UserForumSettings, user_uuid)
         except ObjectNotFoundException:
-            settings = self.obj(UserForumSettings, user_id, {})
+            settings = self.obj(UserForumSettings, user_uuid, {})
         vars = {
             "title": self._("Forum settings"),
         }
-        categories = [cat for cat in self.categories() if self.may_read(user_id, cat)]
+        categories = [cat for cat in self.categories() if self.may_read(user_uuid, cat)]
         form = self.call("web.form", "socio/form.html")
         form.textarea_rows = 4
         signature = req.param("signature")
@@ -1374,7 +1449,7 @@ class Forum(Module):
 
     def ext_subscribe(self):
         req = self.req()
-        user_id = req.user()
+        user_uuid = req.user()
         self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
@@ -1383,9 +1458,9 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_id, cat):
+        if not self.may_read(user_uuid, cat):
             self.call("web.forbidden")
-        self.subscribe(user_id, topic.uuid, self.now())
+        self.subscribe(user_uuid, topic.uuid, self.now())
         redirect = req.param("redirect")
         if redirect is not None and redirect != "":
             self.call("web.redirect", redirect)
@@ -1393,7 +1468,7 @@ class Forum(Module):
 
     def ext_unsubscribe(self):
         req = self.req()
-        user_id = req.user()
+        user_uuid = req.user()
         self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
@@ -1402,9 +1477,9 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_id, cat):
+        if not self.may_read(user_uuid, cat):
             self.call("web.forbidden")
-        self.unsubscribe(user_id, topic.uuid, self.now())
+        self.unsubscribe(user_uuid, topic.uuid, self.now())
         redirect = req.param("redirect")
         if redirect is not None and redirect != "":
             self.call("web.redirect", redirect)

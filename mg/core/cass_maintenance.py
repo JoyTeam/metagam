@@ -42,6 +42,8 @@ class CassandraMaintenance(Module):
                         obj = parser[2](db, uuid, json.loads(slice.columns[0].column.value), dbprefix=prefix)
                         index_values = obj.index_values()
                         update = False
+                        if obj.uuid == "080d14994ae8434cb3b67a16a963c3b7":
+                            print index_values
                         for index_name, index_info in index_values.iteritems():
                             key = "%s%s%s%s" % (prefix, obj.clsprefix, index_name, index_info[0])
                             index = slices_dict.get(key)

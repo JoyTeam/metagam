@@ -1,7 +1,7 @@
 <table class="list">
-	<tr class="header"><td class="header">[%code%]</td><td>[%title%]</td><td>[%order%]</td><td>[%editing%]</td></tr>
+	<tr class="header"><td class="header">[%code%]</td><td>[%title%]</td><td>[%order%]</td><td>[%editing%]</td><td>[%Permissions%]</tr>
 	[%foreach ent in categories%]
 	[%if ent.header%]<tr><td></td><td colspan="3" class="subheader">[%ent.header%]</td></tr>[%end%]
-	[%if ent.cat%]<tr><td>[%ent.cat.code%]</td><td>[%ent.cat.title%]<div class="description">[%ent.cat.description%]</div></td><td>[%ent.cat.order%]</td><td><hook:admin.link href="forum/category/[%ent.cat.id%]" title="[%edit%]" /></td></tr>[%end%]
+	[%if ent.cat%]<tr><td>[%ent.cat.code%]</td><td>[%ent.cat.title%]<div class="description">[%ent.cat.description%]</div></td><td>[%ent.cat.order%]</td><td><hook:admin.link href="forum/category/[%ent.cat.id%]" title="[%edit%]" /></td><td><hook:admin.link href="forum/permissions/[%ent.cat.id%]" title="[%permissions%]" /></td></tr>[%end%]
 	[%end%]
 </table>

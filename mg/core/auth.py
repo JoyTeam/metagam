@@ -162,7 +162,7 @@ class CookieSession(Module):
         return session
 
     def schedule(self, sched):
-        sched.add("session.cleanup", "* * * * *", priority=10)
+        sched.add("session.cleanup", "5 1 * * *", priority=10)
 
     def cleanup(self):
         sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
@@ -806,3 +806,32 @@ class Authorization(Module):
     def headmenu_edituserpermissions(self, args):
         user = self.obj(User, args)
         return [cgi.escape(user.get("name")), "auth/editpermissions"]
+
+re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
+
+class PermissionsEditor:
+    """ PermissionsEditor is a interface to grant and revoke permissions, view actual permissions """
+    def __init__(self, module, objclass, objlistclass):
+        self._mod = module
+        self._objclass = objclass
+        self._objlistclass = objlistclass
+
+    def request(self, args=None):
+        if args is None:
+            args = self._mod.req().args
+        m = re_permissions_args.match(args)
+        if not m:
+            self._mod.call("web.not_found")
+        uuid, args = m.group(1, 2)
+        if args == "" or args is None:
+            self.index()
+        self._mod.call("web.not_found")
+
+    def index(self):
+        self._mod.call("admin.response", "Permissions index", {})
+
+        # security.user-member(user, list)
+        # list: [ tag, ... ]
+
+        # security.member-info(tags)
+        # tags: { tag => { "name": None, ... }, ... }

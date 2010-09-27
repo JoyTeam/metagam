@@ -403,8 +403,8 @@ class Module(object):
     def nowdate(self):
         return datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
-    def now(self):
-        return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    def now(self, add=0):
+        return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
 
     def lock(self, *args, **kwargs):
         return self.app().lock(*args, **kwargs)
@@ -479,7 +479,10 @@ class Formatter(logging.Formatter):
             record.msg = "app:%s %s" % (record.app, record.msg)
         if record.__dict__.get("host"):
             record.msg = "host:%s %s" % (record.host, record.msg)
-        return logging.Formatter.format(self, record)
+        str = logging.Formatter.format(self, record)
+        if type(str) == unicode:
+            str = str.encode("utf-8")
+        return str
 
 class Filter(logging.Filter):
     def filter(self, record):
@@ -515,7 +518,7 @@ class Instance(object):
         # log channel
         if self.log_channel:
             modlogger.removeHandler(self.log_channel)
-        self.log_channel = logging.handlers.SysLogHandler((self.config.get("logger", "127.0.0.1"), 514))
+        self.log_channel = logging.handlers.SysLogHandler(address="/dev/log")
         self.log_channel.setLevel(logging.DEBUG)
         formatter = Formatter(self.logger_id + " cls:%(name)s %(message)s")
         self.log_channel.setFormatter(formatter)
