@@ -3,20 +3,49 @@ Form = Ext.extend(AdminResponse, {
 		Form.superclass.constructor.call(this, {
 		});
 		var i;
-		var items = new Array();
+		var rows = new Array();
+		var row = undefined;
 		for (i = 0; i < data.fields.length; i++) {
 			var it = data.fields[i];
-			items.push({
+			if (!row) {
+				row = new Array();
+			}
+			var elt = {
 				fieldLabel: it.label,
 				name: (it.name != undefined) ? it.name : '',
 				allowBlank: true,
 				value: it.value,
 				checked: it.checked,
 				xtype: (it.type == undefined) ? 'textfield' : it.type,
-				width: 825
+				anchor: '-10',
+			};
+			if (elt.xtype == 'checkbox') {
+				elt.fieldLabel = it.desc;
+				elt.boxLabel = it.label;
+			}
+			if (!elt.fieldLabel)
+				elt.hideLabel = true;
+			row.push({
+				items: [{
+					layout: 'form',
+					items: [elt]
+				}]
 			});
+			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
+				for (var j = 0; j < row.length; j++)
+					row[j].width = Math.round(100 / row.length) + '%';
+				rows.push({
+					flex: 1 / row.length,
+					layout: 'hbox',
+					layoutConfig: {
+						pack: 'start',
+					},
+					items: row,
+				});
+				row = undefined;
+			}
 		}
-		items.push({
+		rows.push({
 			xtype: 'hidden',
 			name: 'ok',
 			value: '1'
@@ -54,12 +83,13 @@ Form = Ext.extend(AdminResponse, {
 			});
 		}
 		form = new Ext.FormPanel({
-			width: 1020,
-			labelWidth: 150,
+			labelAlign: 'top',
 			frame: true,
-			items: items,
+			width: '100%',
+			labelWidth: 150,
+			items: rows,
 			buttons: buttons,
-			buttonAlign: 'left'
+			buttonAlign: 'left',
 		});
 		this.add(form);
 	}

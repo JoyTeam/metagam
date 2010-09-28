@@ -671,18 +671,19 @@ class ApplicationFactory(object):
     def reload(self):
         "Reload all modules and applications"
         errors = 0
-        for module_name in self.inst.modules:
-            module = sys.modules.get(module_name)
-            if module:
-                try:
-                    reload(module)
-                except BaseException as e:
-                    errors += 1
-                    module = sys.modules.get(module_name)
-                    if module:
-                        logging.getLogger("mg.core.Modules").exception(e)
-                    else:
-                        raise
+        for i in range(0, 2):
+            for module_name in self.inst.modules:
+                module = sys.modules.get(module_name)
+                if module:
+                    try:
+                        reload(module)
+                    except BaseException as e:
+                        errors += 1
+                        module = sys.modules.get(module_name)
+                        if module:
+                            logging.getLogger("mg.core.Modules").exception(e)
+                        else:
+                            raise
         errors = errors + self.reload_applications()
         return errors
 

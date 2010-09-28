@@ -809,26 +809,29 @@ class Authorization(Module):
 
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 
-class PermissionsEditor:
+class PermissionsEditor(Module):
     """ PermissionsEditor is a interface to grant and revoke permissions, view actual permissions """
-    def __init__(self, module, objclass, objlistclass):
-        self._mod = module
+    def __init__(self, app, objclass, objlistclass):
+        Module.__init__(self, app, "mg.core.PermissionsEditor")
         self._objclass = objclass
         self._objlistclass = objlistclass
 
     def request(self, args=None):
         if args is None:
-            args = self._mod.req().args
+            args = self.req().args
         m = re_permissions_args.match(args)
         if not m:
-            self._mod.call("web.not_found")
+            self.call("web.not_found")
         uuid, args = m.group(1, 2)
+        self.perms = self.obj(self._objclass, uuid, silent=True)
         if args == "" or args is None:
             self.index()
-        self._mod.call("web.not_found")
+        self.call("web.not_found")
 
     def index(self):
-        self._mod.call("admin.response", "Permissions index", {})
+        print "perms: %s" % self.perms
+        self.call("admin.response_template", "admin/auth/permissions.html", {
+        })
 
         # security.user-member(user, list)
         # list: [ tag, ... ]

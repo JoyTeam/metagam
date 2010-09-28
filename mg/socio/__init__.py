@@ -251,31 +251,33 @@ class ForumAdmin(Module):
 
         fields = [
             {
+                "name": "title",
+                "label": self._("Category title"),
+                "value": cat["title"],
+            },
+            {
                 "name": "topcat",
                 "label": self._("Top category title"),
                 "value": cat["topcat"],
-            },
-            {
-                "name": "title",
-                "label": self._("Category title"),
-                "value": cat["title"]
-            },
-            {
-                "name": "description",
-                "label": self._("Category description"),
-                "value": cat["description"]
+                "inline": True,
             },
             {
                 "name": "order",
                 "label": self._("Sort order"),
                 "value": cat["order"],
-                "type": "numberfield"
+                "type": "numberfield",
+                "inline": True,
+            },
+            {
+                "name": "description",
+                "label": self._("Category description"),
+                "value": cat["description"],
             },
             {
                 "name": "default_subscribe",
                 "label": self._("Notify users about new topics in this category by default"),
                 "checked": cat.get("default_subscribe"),
-                "type": "checkbox"
+                "type": "checkbox",
             }
         ]
         return self.call("admin.form", fields=fields)
@@ -288,7 +290,7 @@ class ForumAdmin(Module):
 
     def admin_permissions(self):
         self.call("session.require_permission", "forum.categories")
-        PermissionsEditor(self, ForumPermissions, ForumPermissionsList).request()
+        PermissionsEditor(self.app(), ForumPermissions, ForumPermissionsList).request()
 
     def headmenu_forum_permissions(self, args):
         return [self._("Permissions"), "forum/category/" + re.sub(r'/.*', '', args)]
@@ -1266,6 +1268,8 @@ class Forum(Module):
             lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic.uuid)
             lastread.remove()
             topic.remove()
+            topic_content = self.obj(ForumTopicContent, topic.uuid)
+            topic_content.remove()
             catstat = self.catstat(cat["id"])
             catstat.decr("topics")
             catstat.decr("replies", len(posts))
