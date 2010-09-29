@@ -22,6 +22,10 @@ function adm_success(response, opts)
 	current_page = opts.func;
 	if (response.getResponseHeader("Content-Type").match(/json/)) {
 		var res = Ext.util.JSON.decode(response.responseText);
+		if (res.redirect) {
+			adm(res.redirect);
+			return;
+		}
 		ver = res.ver + ver_suffix;
 		wait([res.script], function() {
 			adminmain.removeAll();
