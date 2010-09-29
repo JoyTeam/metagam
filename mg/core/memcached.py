@@ -83,6 +83,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return None
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -103,6 +105,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return {}
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -119,6 +123,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -135,6 +141,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -151,6 +159,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -167,6 +177,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -183,6 +195,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise
@@ -199,6 +213,8 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.pool.new()
             raise

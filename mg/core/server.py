@@ -21,7 +21,7 @@ class Server(Module):
         app = self.app()
         try:
             return app.running_workers
-        except:
+        except AttributeError:
             app.running_workers = {"count": 0}
             return app.running_workers
 
@@ -48,7 +48,7 @@ class Server(Module):
                 except OSError, e:
                     raise RuntimeError("Running %s: %s" % (self.executable, e))
             workers["count"] = new_count
-        return request.jresponse({"ok": 1})
+        self.call("web.response_json", {"ok": 1})
 
     def fastidle(self):
         workers = self.running_workers()
@@ -78,4 +78,4 @@ class Server(Module):
         except subprocess.CalledProcessError as e:
             self.error("Error reloading nginx: %s", e)
             return request.internal_server_error()
-        return request.jresponse({"ok": 1})
+        self.call("web.response_json", {"ok": 1})

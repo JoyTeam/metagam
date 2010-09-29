@@ -97,7 +97,7 @@ class AdminInterface(Module):
 
     def response_js(self, script, cls, data):
         req = self.req()
-        return req.jresponse({
+        self.call("web.response_json", {
             "ver": self.call("core.ver"),
             "script": script,
             "cls": cls,

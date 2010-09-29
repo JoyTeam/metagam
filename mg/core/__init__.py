@@ -299,6 +299,8 @@ class Config(object):
                                     int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
                                 except HTTPError as e:
                                     logging.getLogger("mg.core.Config").error(e)
+                                except (KeyboardInterrupt, SystemExit, TaskletExit):
+                                    raise
                                 except BaseException as e:
                                     logging.getLogger("mg.core.Config").exception(e)
 
@@ -384,7 +386,7 @@ class Module(object):
             if type(value) == str:
                 value = unicode(value, "utf-8")
             return value
-        except:
+        except AttributeError:
             pass
         return self.call("l10n.gettext", val)
 
@@ -448,6 +450,8 @@ class Modules(object):
                     try:
                         __import__(module_name, globals(), locals(), [], -1)
                         module = sys.modules.get(module_name)
+                    except (KeyboardInterrupt, SystemExit, TaskletExit):
+                        raise
                     except BaseException as e:
                         errors += 1
                         module = sys.modules.get(module_name)
@@ -509,22 +513,33 @@ class Instance(object):
         self.modules = set()
         self.server_id = uuid4().hex
         self.logger_id = self.server_id
-        self.log_channel = None
+        self.syslog_channel = None
+        self.stderr_channel = None
         self.setup_logger()
 
     def setup_logger(self):
         modlogger = logging.getLogger("")
         modlogger.setLevel(logging.DEBUG)
-        # log channel
-        if self.log_channel:
-            modlogger.removeHandler(self.log_channel)
-        self.log_channel = logging.handlers.SysLogHandler(address="/dev/log")
-        self.log_channel.setLevel(logging.DEBUG)
+        # syslog
+        if self.syslog_channel:
+            modlogger.removeHandler(self.syslog_channel)
+        self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
+        self.syslog_channel.setLevel(logging.DEBUG)
         formatter = Formatter(self.logger_id + " cls:%(name)s %(message)s")
-        self.log_channel.setFormatter(formatter)
+        self.syslog_channel.setFormatter(formatter)
         filter = Filter()
-        self.log_channel.addFilter(filter)
-        modlogger.addHandler(self.log_channel)
+        self.syslog_channel.addFilter(filter)
+        modlogger.addHandler(self.syslog_channel)
+        # stderr
+        if self.stderr_channel:
+            modlogger.removeHandler(self.stderr_channel)
+        self.stderr_channel = logging.StreamHandler()
+        self.stderr_channel.setLevel(logging.DEBUG)
+        formatter = Formatter("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s")
+        self.stderr_channel.setFormatter(formatter)
+        filter = Filter()
+        self.stderr_channel.addFilter(filter)
+        modlogger.addHandler(self.stderr_channel)
 
     def set_server_id(self, id, logger_id=None):
         self.server_id = id
@@ -550,6 +565,8 @@ class Instance(object):
         cnn = http.HTTPConnection()
         try:
             cnn.connect(("director", 3000))
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except BaseException as e:
             raise RuntimeError("Couldn't connect to director:3000: %s" % e)
         try:
@@ -677,6 +694,8 @@ class ApplicationFactory(object):
                 if module:
                     try:
                         reload(module)
+                    except (KeyboardInterrupt, SystemExit, TaskletExit):
+                        raise
                     except BaseException as e:
                         errors += 1
                         module = sys.modules.get(module_name)

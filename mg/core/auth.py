@@ -684,6 +684,7 @@ class Authorization(Module):
         self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions)
         self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
         self.rhook("permissions.list", self.permissions_list)
+        self.rhook("security.list-roles", self.list_roles)
 
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
@@ -758,13 +759,13 @@ class Authorization(Module):
                 if not user:
                     errors["name"] = self._("User not found")
                 else:
-                    return req.jresponse({"success": True, "redirect": "auth/edituserpermissions/%s" % user.uuid})
-            return req.jresponse({"success": False, "errors": errors})
+                    self.call("web.response_json", {"success": True, "redirect": "auth/edituserpermissions/%s" % user.uuid})
+            self.call("web.response_json", {"success": False, "errors": errors})
         fields = [
             {"name": "name", "label": self._("User name"), "value": name},
         ]
         buttons = [{"text": self._("Search")}]
-        return self.call("admin.form", fields=fields, buttons=buttons)
+        self.call("admin.form", fields=fields, buttons=buttons)
 
     def headmenu_editpermissions(self, args):
         return [self._("Edit permissions of a user"), "auth/permissions"]
@@ -793,7 +794,7 @@ class Authorization(Module):
                 user_permissions.store()
             else:
                 user_permissions.remove()
-            return req.jresponse({"success": True, "redirect": "auth/permissions"})
+            self.call("web.response_json", {"success": True, "redirect": "auth/permissions"})
         else:
             perm_values = user_permissions.get("perms")
             if not perm_values:
@@ -801,20 +802,37 @@ class Authorization(Module):
         fields = []
         for perm in perms:
             fields.append({"name": "perm%s" % perm["id"], "label": perm["name"], "type": "checkbox", "checked": perm_values.get(perm["id"])})
-        return self.call("admin.form", fields=fields)
+        self.call("admin.form", fields=fields)
 
     def headmenu_edituserpermissions(self, args):
         user = self.obj(User, args)
         return [cgi.escape(user.get("name")), "auth/editpermissions"]
 
+    def list_roles(self, roles):
+        permissions_list = []
+        self.call("permissions.list", permissions_list)
+        has_priv = self._("Privilege: %s")
+        for perm in permissions_list:
+            roles.append(("perm:%s" % perm["id"], has_priv % perm["name"]))
+
+# security.list-roles(list)
+# list: [(tag, name), ...]
+
+# security.user-roles(user, list)
+# list: [ tag, ... ]
+
+# security.roles-info(tags)
+# tags: { tag => { "name": None, ... }, ... }
+
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 
 class PermissionsEditor(Module):
     """ PermissionsEditor is a interface to grant and revoke permissions, view actual permissions """
-    def __init__(self, app, objclass, objlistclass):
+    def __init__(self, app, objclass, permissions, default_rules=None):
         Module.__init__(self, app, "mg.core.PermissionsEditor")
-        self._objclass = objclass
-        self._objlistclass = objlistclass
+        self.objclass = objclass
+        self.permissions = permissions
+        self.default_rules = default_rules
 
     def request(self, args=None):
         if args is None:
@@ -823,18 +841,61 @@ class PermissionsEditor(Module):
         if not m:
             self.call("web.not_found")
         uuid, args = m.group(1, 2)
-        self.perms = self.obj(self._objclass, uuid, silent=True)
+        try:
+            self.perms = self.obj(self.objclass, uuid)
+        except ObjectNotFoundException:
+            rules = []
+            if self.default_rules:
+                self.call(self.default_rules, rules)
+            self.perms = self.obj(self.objclass, uuid, {"rules": rules})
         if args == "" or args is None:
             self.index()
         self.call("web.not_found")
 
     def index(self):
-        print "perms: %s" % self.perms
-        self.call("admin.response_template", "admin/auth/permissions.html", {
-        })
-
-        # security.user-member(user, list)
-        # list: [ tag, ... ]
-
-        # security.member-info(tags)
-        # tags: { tag => { "name": None, ... }, ... }
+        roles = []
+        roles.append(("all", self._("Everybody")))
+        self.call("security.list-roles", roles)
+        fields = []
+        req = self.req()
+        if req.param("ok"):
+            roles_dict = dict(roles)
+            permissions_dict = dict(self.permissions)
+            errors = {}
+            rules_cnt = intz(req.param("rules"))
+            if rules_cnt > 1000:
+                rules_cnt = 1000
+            new_rules = []
+            for n in range(0, rules_cnt):
+                ord = intz(req.param("v_ord%d" % n))
+                role = req.param("v_role%d" % n)
+                perm = req.param("v_perm%d" % n)
+                if not role or not roles_dict.get(role):
+                    errors["role%d" % n] = self._("Select valid role")
+                if not perm or not permissions_dict.get(perm):
+                    errors["perm%d" % n] = self._("Select valid permission")
+            ord = intz(req.param("v_ord"))
+            role = req.param("v_role")
+            perm = req.param("v_perm")
+            if role or perm:
+                if not role or not roles_dict.get(role):
+                    errors["role"] = self._("Select valid role")
+                if not perm or not permissions_dict.get(perm):
+                    errors["perm"] = self._("Select valid permission")
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            self.call("web.response_json", {"success": True, "redirect": "_self"})
+        rules = self.perms.get("rules")
+        for n in range(0, len(rules)):
+            rule = rules[n]
+            fields.append({"name": "ord%d" % n, "width": 150, "value": n + 1})
+            fields.append({"name": "role%d" % n, "type": "combo", "values": roles, "value": rule[0], "inline": True})
+            fields.append({"name": "perm%d" % n, "type": "combo", "values": self.permissions, "value": rule[1], "inline": True})
+        fields.append({"name": "ord", "width": 150, "value": len(rules) + 1, "label": self._("Add new rule") if rules else None})
+        fields.append({"name": "role", "type": "combo", "values": roles, "label": "" if rules else None, "inline": True})
+        fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "" if rules else None, "inline": True})
+        fields[0]["label"] = self._("Sort order")
+        fields[1]["label"] = self._("Role")
+        fields[2]["label"] = self._("Permission")
+        fields.append({"type": "hidden", "name": "rules", "value": len(rules)})
+        self.call("admin.form", fields=fields)

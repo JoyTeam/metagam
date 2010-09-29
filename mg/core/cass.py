@@ -233,6 +233,8 @@ class CassandraConnection(object):
             self.cass = Client(proto)
             self.trans.open()
             self.actual_keyspace = None
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except:
             self.cass = None
             raise

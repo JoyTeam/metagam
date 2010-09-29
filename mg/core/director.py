@@ -40,9 +40,7 @@ class Director(Module):
         return self.queue_workers
 
     def int_director_reload(self):
-        request = self.req()
-        result = self.director_reload()
-        return request.jresponse(result)
+        self.call("web.response_json", self.director_reload())
 
     def director_reload(self):
         result = {}
@@ -65,6 +63,8 @@ class Director(Module):
                     errors = 0
                 else:
                     errors = err
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
+                raise
             except BaseException as e:
                 self.error("%s:%d - %s", info["host"], info["port"], e)
             tag = "%s (%s:%d)" % (server_id, info["host"], info["port"])
@@ -110,8 +110,7 @@ class Director(Module):
         return conf
 
     def director_config(self):
-        request = self.req()
-        return request.jresponse(self.config())
+        self.call("web.response_json", self.config())
 
     def split_host_port(self, str, defport):
         ent = re.split(':', str)
@@ -217,6 +216,8 @@ class Director(Module):
         try:
             self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
             return True
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
+            raise
         except BaseException as e:
             self.error("%s:%d - %s", host, port, e)
             return False
@@ -258,7 +259,7 @@ class Director(Module):
         self.servers_online[server_id] = conf
         self.store_servers_online()
         self.servers_online_updated()
-        return request.jresponse({ "ok": 1, "server_id": server_id })
+        self.call("web.response_json", {"ok": 1, "server_id": server_id})
 
     def monitor_check(self):
         for server_id, info in self.servers_online.items():
@@ -279,6 +280,8 @@ class Director(Module):
                                 success = True
                 finally:
                     cnn.close()
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
+                raise
             except BaseException as e:
                 logging.getLogger("mg.core.director.Director").info("%s - %s", server_id, e)
             if not success:

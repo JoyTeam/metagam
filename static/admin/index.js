@@ -13,11 +13,13 @@ if (i >= 0) {
 
 var admin_ajax_trans;
 var adminmain;
+var current_page;
 var ver_suffix = '-' + Math.round(Math.random() * 100000000);
 ver = ver + ver_suffix;
 
 function adm_success(response, opts)
 {
+	current_page = opts.func;
 	if (response.getResponseHeader("Content-Type").match(/json/)) {
 		var res = Ext.util.JSON.decode(response.responseText);
 		ver = res.ver + ver_suffix;

@@ -31,7 +31,7 @@ for lang in os.listdir(localedir):
     try:
         os.stat(localedir + "/" + lang + "/LC_MESSAGES")
         languages.add(lang)
-    except:
+    except OSError:
         pass
 
 re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
@@ -53,15 +53,15 @@ class L10n(Module):
     def l10n_lang(self):
         try:
             return self.req().lang
-        except:
+        except AttributeError:
             pass
         try:
             return self.app().lang
-        except:
+        except AttributeError:
             pass
         try:
             return self.app().inst.config["locale"]
-        except:
+        except KeyError:
             pass
         return None
 
@@ -88,7 +88,7 @@ class L10n(Module):
             if type(value) == str:
                 value = unicode(value, "utf-8")
             return value
-        except:
+        except AttributeError:
             pass
         lang = self.call("l10n.lang")
         if lang is None:
@@ -118,7 +118,7 @@ class L10n(Module):
                             subtokens = tokens[1].split("=")
                             if len(subtokens) == 2 and subtokens[0] == "q":
                                 weight.append((tokens[0], float(subtokens[1])))
-                except:
+                except ValueError:
                     pass
             if len(weight):
                 weight.sort(key=itemgetter(1), reverse=True)

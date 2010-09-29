@@ -7,9 +7,8 @@ Form = Ext.extend(AdminResponse, {
 		var row = undefined;
 		for (i = 0; i < data.fields.length; i++) {
 			var it = data.fields[i];
-			if (!row) {
+			if (!row)
 				row = new Array();
-			}
 			var elt = {
 				fieldLabel: it.label,
 				name: (it.name != undefined) ? it.name : '',
@@ -17,25 +16,32 @@ Form = Ext.extend(AdminResponse, {
 				value: it.value,
 				checked: it.checked,
 				xtype: (it.type == undefined) ? 'textfield' : it.type,
-				anchor: '-10',
+				anchor: '-30',
 			};
 			if (elt.xtype == 'checkbox') {
 				elt.fieldLabel = it.desc;
 				elt.boxLabel = it.label;
+			} else if (elt.xtype == 'combo') {
+				elt.store = it.values;
+				elt.forceSelection = true;
+				elt.triggerAction = 'all';
+				elt.hiddenName = 'v_' + elt.name;
+				elt.hiddenValue = elt.value;
 			}
-			if (!elt.fieldLabel)
+			if (elt.fieldLabel == undefined)
 				elt.hideLabel = true;
+			if (!it.width && !it.flex)
+				it.flex = 1;
 			row.push({
+				flex: it.flex,
+				width: it.width,
 				items: [{
 					layout: 'form',
 					items: [elt]
 				}]
 			});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
-				for (var j = 0; j < row.length; j++)
-					row[j].width = Math.round(100 / row.length) + '%';
 				rows.push({
-					flex: 1 / row.length,
 					layout: 'hbox',
 					layoutConfig: {
 						pack: 'start',
@@ -62,7 +68,10 @@ Form = Ext.extend(AdminResponse, {
 						waitMsg: gt.gettext('Sending data...'),
 						success: function(f, action) {
 							if (action.result.redirect) {
-								adm(action.result.redirect);
+								if (action.result.redirect == '_self')
+									adm(current_page);
+								else
+									adm(action.result.redirect);
 							} else {
 								adm_success(action.response, {
 									func: data.url

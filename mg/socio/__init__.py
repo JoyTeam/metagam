@@ -180,9 +180,11 @@ class ForumAdmin(Module):
         self.rhook("ext-admin-forum.permissions", self.admin_permissions)
         self.rhook("headmenu-admin-forum.permissions", self.headmenu_forum_permissions)
         self.rhook("permissions.list", self.permissions_list)
+        self.rhook("forum-admin.default_rules", self.default_rules)
 
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})
+        perms.append({"id": "forum.moderation", "name": self._("Forum moderation")})
 
     def menu_socio_index(self, menu):
         req = self.req()
@@ -238,7 +240,7 @@ class ForumAdmin(Module):
             elif not re.match(r'^-?(?:\d+|\d+\.\d+)$', order):
                 errors["order"] = self._("Invalid numeric format")
             if len(errors):
-                return req.jresponse({"success": False, "errors": errors})
+                self.call("web.response_json", {"success": False, "errors": errors})
             cat["title"] = title
             cat["topcat"] = topcat
             cat["description"] = description
@@ -247,7 +249,7 @@ class ForumAdmin(Module):
             conf = self.app().config
             conf.set("forum.categories", self.call("forum.categories"))
             conf.store()
-            return req.jresponse({"success": True, "redirect": "forum/categories"})
+            self.call("web.response_json", {"success": True, "redirect": "forum/categories"})
 
         fields = [
             {
@@ -280,7 +282,7 @@ class ForumAdmin(Module):
                 "type": "checkbox",
             }
         ]
-        return self.call("admin.form", fields=fields)
+        self.call("admin.form", fields=fields)
 
     def headmenu_forum_category(self, args):
         cat = self.call("forum.category", args)
@@ -290,7 +292,18 @@ class ForumAdmin(Module):
 
     def admin_permissions(self):
         self.call("session.require_permission", "forum.categories")
-        PermissionsEditor(self.app(), ForumPermissions, ForumPermissionsList).request()
+        permissions = []
+        permissions.append(("-R", self._("Deny reading and writing")))
+        permissions.append(("+R", self._("Allow reading")))
+        permissions.append(("-W", self._("Deny writing")))
+        permissions.append(("+W", self._("Allow reading and writing")))
+        permissions.append(("+M", self._("Allow moderation")))
+        permissions.append(("-M", self._("Deny moderation")))
+        PermissionsEditor(self.app(), ForumPermissions, permissions, "forum-admin.default_rules").request()
+
+    def default_rules(self, perms):
+        perms.append(("all", "+W"))
+        perms.append(("perm:forum.moderation", "+M"))
 
     def headmenu_forum_permissions(self, args):
         return [self._("Permissions"), "forum/category/" + re.sub(r'/.*', '', args)]
@@ -397,11 +410,15 @@ class Socio(Module):
                                 image_field = "url"
                     except TimeoutError as e:
                         form.error("url", self._("Timeout on downloading image. Time limit - 30 sec"))
+                    except (KeyboardInterrupt, SystemExit, TaskletExit):
+                        raise
                     except BaseException as e:
                         form.error("url", self._("Download error: %s") % cgi.escape(str(e)))
                     finally:
                         try:
                             cnn.close()
+                        except (KeyboardInterrupt, SystemExit, TaskletExit):
+                            raise
                         except:
                             pass
             if image:

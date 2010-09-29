@@ -210,7 +210,7 @@ class QueueRunner(Module):
                         Tasklet.sleep(5)
                 else:
                     Tasklet.sleep(1)
-            except TaskletExit:
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
                 raise
             except BaseException as e:
                 logging.getLogger("mg.core.queue.Queue").exception(e)
@@ -230,7 +230,7 @@ class QueueRunner(Module):
             success = True
         except HTTPError as e:
             self.error("Error executing task %s: %s" % (task.get("hook"), e))
-        except TaskletExit:
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
         except BaseException as e:
             self.exception(e)

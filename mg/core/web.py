@@ -95,7 +95,7 @@ class Request(object):
     def param_int(self, key):
         try:
             return int(self.param(key))
-        except:
+        except ValueError:
             return 0
 
     def load_cookies(self):
@@ -130,7 +130,7 @@ class Request(object):
     def host(self):
         host = self.environ.get("HTTP_X_REAL_HOST")
         if host is None:
-            raise RuntimeError("X-Real-Host HTTP header not configured")
+            return None
         return host.lower()
             
     def ok(self):
@@ -292,7 +292,7 @@ class WebDaemon(object):
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
             return self.request_uri(request, uri)
-        except SystemExit:
+        except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
         except BaseException as e:
             self.logger.exception(e)
@@ -402,19 +402,19 @@ class Web(Module):
             self.app().inst.config = json.loads(config)
         errors = self.app().inst.reload()
         if errors:
-            return request.jresponse({ "errors": errors })
+            self.call("web.response_json", { "errors": errors })
         else:
-            return request.jresponse({ "ok": 1 })
+            self.call("web.response_json", { "ok": 1 })
 
     def core_ping(self):
         request = self.req()
         response = {"ok": 1}
         try:
             response["server_id"] = self.app().inst.server_id
-        except:
+        except AttributeError:
             pass
         self.last_ping = time.time()
-        return request.jresponse(response)
+        self.call("web.response_json", response)
 
     def check_last_ping(self):
         if self.last_ping is None:
@@ -430,7 +430,7 @@ class Web(Module):
             factory.get_by_tag(req.args).reload()
         else:
             factory.remove_by_tag(req.args)
-        return req.jresponse({"ok": 1})
+        self.call("web.response_json", {"ok": 1})
 
     def core_ver(self):
         return ver
@@ -486,7 +486,7 @@ class Web(Module):
         global_html = None
         try:
             global_html = self.req().global_html
-        except:
+        except AttributeError:
             global_html = self.call("web.global_html")
         if global_html is None:
             global_html = "global.html"
@@ -517,6 +517,8 @@ class Web(Module):
             try:
                 res = self.call("hook-%s" % hook_name, vars, **args)
             except WebResponse:
+                raise
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
                 raise
             except BaseException as e:
                 self.error(traceback.format_exc())

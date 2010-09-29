@@ -13,7 +13,6 @@ class Constructor(Module):
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
-        self.rhook("ext-constructor.subscribe", self.subscribe)
         self.rhook("ext-cabinet.index", self.cabinet_index)
         self.rhook("auth.redirects", self.redirects)
         self.rhook("forum.topmenu", self.forum_topmenu)
@@ -69,21 +68,6 @@ class Constructor(Module):
         if req.user():
             vars["logged"] = True
         return self.call("web.response_template", "constructor/index.html", vars)
-
-    def subscribe(self):
-        request = self.req()
-        email = request.param("email")
-        errors = {}
-        if email is None or email == "":
-            errors["email"] = self._("Enter your e-mail address")
-        elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
-            errors["email"] = self._("Invalid e-mail format")
-        if len(errors):
-            return request.jresponse({"success": False, "errors": errors});
-        db = self.db()
-        timestamp = time.time() * 1000
-        db.insert("NewsSubscriptions", ColumnParent("Core"), Column(email, json.dumps({"lang": self.call("l10n.lang")}), Clock(timestamp)), ConsistencyLevel.ONE)
-        return request.jresponse({"success": True})
 
     def cabinet_index(self):
         req = self.req()
