@@ -293,16 +293,17 @@ class ForumAdmin(Module):
     def admin_permissions(self):
         self.call("session.require_permission", "forum.categories")
         permissions = []
-        permissions.append(("-R", self._("Deny reading and writing")))
+        permissions.append(("-R", self._("Deny reading, writing and moderation")))
         permissions.append(("+R", self._("Allow reading")))
-        permissions.append(("-W", self._("Deny writing")))
+        permissions.append(("-W", self._("Deny writing and moderation")))
         permissions.append(("+W", self._("Allow reading and writing")))
         permissions.append(("+M", self._("Allow moderation")))
         permissions.append(("-M", self._("Deny moderation")))
         PermissionsEditor(self.app(), ForumPermissions, permissions, "forum-admin.default_rules").request()
 
     def default_rules(self, perms):
-        perms.append(("all", "+W"))
+        perms.append(("logged", "+W"))
+        perms.append(("all", "+R"))
         perms.append(("perm:forum.moderation", "+M"))
 
     def headmenu_forum_permissions(self, args):
@@ -584,7 +585,16 @@ class Forum(Module):
     def ext_index(self):
         req = self.req()
         user_uuid = req.user()
-        categories = [cat for cat in self.categories() if self.may_read(user_uuid, cat)]
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        if user_uuid is None:
+            roles = ["notlogged", "all"]
+        else:
+            roles = {}
+            self.call("security.users-roles", [user_uuid], roles)
+            roles = roles.get(user_uuid, [])
+        print "rules: %s, roles: %s" % (rules, roles)
+        categories = [cat for cat in categories if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles)]
         # category counters
         stat = self.objlist(ForumCategoryStatList, [cat["id"] for cat in categories])
         stat.load(silent=True)
@@ -738,61 +748,107 @@ class Forum(Module):
         cats.sort(key=itemgetter("order"))
         return cats
 
-    def may_read(self, user_uuid, cat):
-        return True
+    def load_rules(self, cat_ids):
+        print "load_rules %s" % cat_ids
+        list = self.objlist(ForumPermissionsList, cat_ids)
+        list.load(silent=True)
+        rules = dict([(perm.uuid, perm.get("rules")) for perm in list])
+        for cat in cat_ids:
+            if not rules.get(cat):
+                list = []
+                self.call("forum-admin.default_rules", list)
+                rules[cat] = list
+        return rules
 
-    def may_write(self, cat, topic=None):
-        req = self.req()
-        user = req.user()
-        if user is None:
-            return False
-        return True
+    def load_rules_roles(self, user_uuid, cat, rules=None, roles=None):
+        if rules is None:
+            rules = self.load_rules([cat["id"]])[cat["id"]]
+        if roles is None:
+            if user_uuid is None:
+                roles = ["notlogged", "all"]
+            else:
+                roles = {}
+                self.call("security.users-roles", [user_uuid], roles)
+                roles = roles[user_uuid]
+        return (rules, roles)
 
-    def may_edit(self, cat, topic=None, post=None):
-        req = self.req()
-        user = req.user()
-        if user is None:
+    def may_read(self, user_uuid, cat, rules=None, roles=None):
+        rules, roles = self.load_rules_roles(user_uuid, cat, rules, roles)
+        if rules is None:
             return False
-        if post is None:
-            if topic.get("author") != user:
+        for role, perm in rules:
+            if (perm == "+R" or perm == "+W") and role in roles:
+                return True
+            if perm == "-R" and role in roles:
                 return False
-        else:
-            if post.get("author") != user:
-                return False
-        return True
-
-    def may_pin(self, cat, topic=None):
-        req = self.req()
-        user = req.user()
-        if user is None:
-            return False
-        if req.has_access("admin"):
-            return True
         return False
 
-    def may_move(self, cat, topic=None):
+    def may_write(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
         user = req.user()
         if user is None:
             return False
-        if req.has_access("admin"):
-            return True
+        rules, roles = self.load_rules_roles(user, cat, rules, roles)
+        if rules is None:
+            return False
+        for role, perm in rules:
+            if perm == "+W" and role in roles:
+                return True
+            if (perm == "-W" or perm == "-R") and role in roles:
+                return False
         return False
 
-    def may_delete(self, cat, topic=None, post=None):
+    def may_edit(self, cat, topic=None, post=None, rules=None, roles=None):
         req = self.req()
         user = req.user()
         if user is None:
             return False
-        if req.has_access("admin"):
-            return True
+        rules, roles = self.load_rules_roles(user, cat, rules, roles)
+        if rules is None:
+            return False
+        for role, perm in rules:
+            if (perm == "-W" or perm == "-R") and role in roles:
+                return False
+        for role, perm in rules:
+            if perm == "-M" and role in roles:
+                break
+            if perm == "+M" and role in roles:
+                return True
         if post is None:
-            if topic.get("author") != user:
-                return False
+            if topic.get("author") == user and topic.get("created") > self.now(-900):
+                return True
         else:
-            if post.get("author") != user:
+            if post.get("author") == user and post.get("created") > self.now(-900):
+                return True
+        return False
+
+    def may_moderate(self, cat, topic=None, rules=None, roles=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        rules, roles = self.load_rules_roles(user, cat, rules, roles)
+        if rules is None:
+            return False
+        print "rules: %s" % rules
+        for role, perm in rules:
+            if (perm == "-W" or perm == "-R") and role in roles:
                 return False
-        return True
+        for role, perm in rules:
+            if perm == "-M" and role in roles:
+                return False
+            if perm == "+M" and role in roles:
+                return True
+        return False
+
+    def may_pin(self, cat, topic=None, rules=None, roles=None):
+        return self.may_moderate(cat, topic, rules, roles)
+
+    def may_move(self, cat, topic=None, rules=None, roles=None):
+        return self.may_moderate(cat, topic, rules, roles)
+
+    def may_delete(self, cat, topic=None, post=None, rules=None, roles=None):
+        return self.may_moderate(cat, topic, rules, roles)
 
     def topics(self, cat, start=None):
         topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_reversed=True)
@@ -805,10 +861,18 @@ class Forum(Module):
         cat = self.call("forum.category", req.args)
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_uuid, cat):
+        # permissions
+        rules, roles = self.load_rules_roles(user_uuid, cat)
+        if not self.may_read(user_uuid, cat, rules=rules, roles=roles):
             self.call("web.forbidden")
         topics = self.topics(cat).data()
         self.topics_htmlencode(topics)
+        menu = [
+            { "href": "/forum", "html": self._("Forum categories") },
+            { "html": cat["title"] },
+        ]
+        if self.may_write(user_uuid, cat, rules=rules, roles=roles):
+            menu.append({"href": "/forum/newtopic/%s" % cat["id"], "html": self._("New topic"), "right": True})
         vars = {
             "title": cat["title"],
             "category": cat,
@@ -819,11 +883,7 @@ class Forum(Module):
             "last_reply": self._("Last reply"),
             "by": self._("by"),
             "to_page": self._("Pages"),
-            "menu": [
-                { "href": "/forum", "html": self._("Forum categories") },
-                { "html": cat["title"] },
-                { "href": "/forum/newtopic/%s" % cat["id"], "html": self._("New topic"), "right": True },
-            ],
+            "menu": menu,
         }
         self.call("forum.response_template", "socio/category.html", vars)
 
@@ -993,13 +1053,15 @@ class Forum(Module):
         cat = self.call("forum.category", topic.get("category"))
         if cat is None:
             self.call("web.not_found")
-        if not self.may_read(user_uuid, cat):
+        # permissions
+        rules, roles = self.load_rules_roles(user_uuid, cat)
+        if not self.may_read(user_uuid, cat, rules=rules, roles=roles):
             self.call("web.forbidden")
+        may_write = self.may_write(cat, topic, rules=rules, roles=roles)
         topic_data = topic.data_copy()
         topic_data["content"] = topic_content.get("content")
         topic_data["content_html"] = topic_content.get("content_html")
         self.topics_htmlencode([topic_data], load_settings=True)
-        may_write = self.may_write(cat, topic)
         # preparing menu
         menu = [
             { "href": "/forum", "html": self._("Forum categories") },
@@ -1007,9 +1069,9 @@ class Forum(Module):
             { "html": self._("Topic") },
         ]
         actions = []
-        if self.may_delete(cat, topic):
+        if self.may_delete(cat, topic, rules=rules, roles=roles):
             menu.append({"href": "/forum/delete/%s" % topic.uuid, "html": self._("delete"), "right": True})
-        if self.may_edit(cat, topic):
+        if self.may_edit(cat, topic, rules=rules, roles=roles):
             actions.append('<a href="/forum/edit/' + topic.uuid + '">' + self._("edit") + '</a>')
         if may_write:
             actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
@@ -1036,21 +1098,21 @@ class Forum(Module):
                     menu.append({"href": "/forum/unsubscribe/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unsubscribe"), "right": True})
                 else:
                     menu.append({"href": "/forum/subscribe/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("subscribe"), "right": True})
-                if self.may_pin(cat, topic):
+                if self.may_pin(cat, topic, rules=rules, roles=roles):
                     if topic.get("pinned"):
                         menu.append({"href": "/forum/unpin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unpin"), "right": True})
                     else:
                         menu.append({"href": "/forum/pin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("pin"), "right": True})
-                if self.may_move(cat, topic):
+                if self.may_move(cat, topic, rules=rules, roles=roles):
                     menu.append({"href": "/forum/move/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("move"), "right": True})
         # preparing posts to rendering
         posts = posts.data()
         self.posts_htmlencode(posts)
         for post in posts:
             actions = []
-            if self.may_delete(cat, topic, post):
+            if self.may_delete(cat, topic, post, rules=rules, roles=roles):
                 actions.append('<a href="/forum/delete/' + topic.uuid + '/' + post["uuid"] + '">' + self._("delete") + '</a>')
-            if self.may_edit(cat, topic, post):
+            if self.may_edit(cat, topic, post, rules=rules, roles=roles):
                 actions.append('<a href="/forum/edit/' + topic.uuid + '/' + post["uuid"] + '">' + self._("edit") + '</a>')
             if may_write:
                 actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
@@ -1062,7 +1124,7 @@ class Forum(Module):
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
-            elif not self.may_write(cat):
+            elif not self.may_write(cat, rules=rules, roles=roles):
                 form.error("content", self._("Access denied"))
             if not form.errors:
                 user = self.obj(User, req.user())
@@ -1083,7 +1145,7 @@ class Forum(Module):
             "posts": posts,
             "menu": menu,
         }
-        if req.ok() or (self.may_write(cat) and (page == pages)):
+        if req.ok() or (self.may_write(cat, rules=rules, roles=roles) and (page == pages)):
             form.texteditor(None, "content", content)
             form.submit(None, None, self._("Reply"))
             vars["new_post_form"] = form.html()
@@ -1285,7 +1347,7 @@ class Forum(Module):
             lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic.uuid)
             lastread.remove()
             topic.remove()
-            topic_content = self.obj(ForumTopicContent, topic.uuid)
+            topic_content = self.obj(ForumTopicContent, topic.uuid, {})
             topic_content.remove()
             catstat = self.catstat(cat["id"])
             catstat.decr("topics")
@@ -1363,7 +1425,14 @@ class Forum(Module):
         vars = {
             "title": self._("Forum settings"),
         }
-        categories = [cat for cat in self.categories() if self.may_read(user_uuid, cat)]
+        # categories list
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        roles = {}
+        self.call("security.users-roles", [user_uuid], roles)
+        roles = roles.get(user_uuid, [])
+        categories = [cat for cat in categories if self.may_read(user_uuid, cat, rules[cat["id"]], roles)]
+        # settings form
         form = self.call("web.form", "socio/form.html")
         form.textarea_rows = 4
         signature = req.param("signature")
@@ -1559,12 +1628,18 @@ class Forum(Module):
             cat = self.call("forum.category", topic.get("category"))
             if cat is None:
                 self.call("web.not_found")
-            if not self.may_move(cat, topic):
+            # permissions
+            user_uuid = req.user()
+            categories = self.categories()
+            rules = self.load_rules([cat["id"] for cat in categories])
+            roles = {}
+            self.call("security.users-roles", [user_uuid], roles)
+            roles = roles.get(user_uuid, [])
+            categories = [c for c in categories if c["id"] != cat["id"] and self.may_write(user_uuid, c, rules=rules[c["id"]], roles=roles)]
+            if not self.may_move(cat, topic, rules=rules[cat["id"]], roles=roles):
                 self.call("web.forbidden")
             form = self.call("web.form", "socio/form.html")
             newcat = req.param("newcat")
-            user_uuid = req.user()
-            categories = [c for c in self.categories() if c["id"] != cat["id"] and self.may_write(user_uuid, c)]
             allowed = dict([(c["id"], True) for c in categories])
             if req.ok():
                 if not allowed.get(newcat):
@@ -1598,7 +1673,13 @@ class Forum(Module):
 
     def auth_registered(self, user):
         settings = self.obj(UserForumSettings, user.uuid, {})
-        categories = [cat for cat in self.categories() if self.may_read(user.uuid, cat)]
+        # categories list
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        roles = {}
+        self.call("security.users-roles", [user.uuid], roles)
+        roles = roles.get(user.uuid, [])
+        categories = [cat for cat in categories if self.may_read(user.uuid, cat, rules[cat["id"]], roles)]
         for cat in categories:
             if cat.get("default_subscribe"):
                 settings.set("notify_%s" % cat["id"], True)
@@ -1615,8 +1696,10 @@ class Forum(Module):
         notify_str = "notify_%s" % topic.get("category")
         author = topic.get("author")
         users = []
+        cat = self.call("forum.category", topic.get("category"))
+        rules = self.load_rules([cat["id"]])
         for sub in subscribers:
-            if sub.get(notify_str) and self.may_read(sub.uuid, topic) and sub.uuid != author:
+            if sub.get(notify_str) and self.may_read(sub.uuid, cat, rules=rules[cat["id"]]) and sub.uuid != author:
                 users.append(sub.uuid)
         if len(users):
             vars = {
@@ -1646,6 +1729,8 @@ class Forum(Module):
         subscribers.load()
         author = post.get("author")
         users = []
+        cat = self.call("forum.category", topic.get("category"))
+        rules = self.load_rules([cat["id"]])
         now = time.time()
         for sub in subscribers:
             email_notified = sub.get("email_notified")
@@ -1662,7 +1747,7 @@ class Forum(Module):
             sets = dict([(set.uuid, set) for set in settings])
             for usr in users:
                 set = sets.get(usr)
-                if (set is None or set.get("notify_replies", True)) and self.may_read(usr, topic):
+                if (set is None or set.get("notify_replies", True)) and self.may_read(usr, cat, rules=rules[cat["id"]]):
                     notify_users.append(usr)
         if len(notify_users):
             vars = {

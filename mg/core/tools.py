@@ -17,7 +17,7 @@ def urlencode(str):
 def intz(str):
     try:
         return int(str)
-    except ValueError:
+    except (ValueError, TypeError):
         return 0
 
 def jsencode(str):

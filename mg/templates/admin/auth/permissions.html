@@ -1,0 +1,6 @@
+<div class="commands"><hook:admin.link href="auth/editpermissions" title="[%editpermissions%]" /></div>
+
+<table class="list">
+<tr class="header"><td>[%user_name%]</td><td>[%permissions%]</td><td>[%editing%]</td></tr>
+[%foreach user in users%]<tr><td>[%user.name%]</td><td>[%user.permissions%]</td><td><hook:admin.link href="auth/edituserpermissions/[%user.id%]" title="[%edit%]" /></td></tr>[%end%]
+</table>

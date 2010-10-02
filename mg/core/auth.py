@@ -686,6 +686,7 @@ class Authorization(Module):
         self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("security.list-roles", self.list_roles)
+        self.rhook("security.users-roles", self.users_roles)
 
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
@@ -811,19 +812,40 @@ class Authorization(Module):
 
     def list_roles(self, roles):
         permissions_list = []
+        roles.append(("all", self._("Everybody")))
+        roles.append(("logged", self._("Logged in")))
+        roles.append(("notlogged", self._("Not logged in")))
         self.call("permissions.list", permissions_list)
         has_priv = self._("Privilege: %s")
         for perm in permissions_list:
             roles.append(("perm:%s" % perm["id"], has_priv % perm["name"]))
 
+    def users_roles(self, users, roles):
+        list = self.objlist(UserPermissionsList, users)
+        list.load(silent=True)
+        perms = ["all", "logged"]
+        for user in users:
+            try:
+                roles[user].extend(perms)
+            except KeyError:
+                roles[user] = ["all", "logged"]
+        for user in list:
+            perms = user.get("perms")
+            if perms is not None:
+                perms = ["perm:%s" % perm for perm in perms.keys()]
+                try:
+                    roles[user.uuid].extend(perms)
+                except KeyError:
+                    roles[user.uuid] = perms
+
 # security.list-roles(list)
 # list: [(tag, name), ...]
 
-# security.user-roles(user, list)
-# list: [ tag, ... ]
+# security.users-roles(users, roles)
+# roles: {user: [role, ...], ...}
 
 # security.roles-info(tags)
-# tags: { tag => { "name": None, ... }, ... }
+# tags: {tag: {"name": None, ...}, ...}
 
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 
@@ -859,7 +881,6 @@ class PermissionsEditor(Module):
 
     def index(self):
         roles = []
-        roles.append(("all", self._("Everybody")))
         self.call("security.list-roles", roles)
         fields = []
         req = self.req()

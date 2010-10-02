@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-29 23:43+0400\n"
-"PO-Revision-Date: 2010-09-29 23:45+0300\n"
+"POT-Creation-Date: 2010-10-02 21:23+0400\n"
+"PO-Revision-Date: 2010-10-02 21:24+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -22,7 +22,7 @@ msgstr ""
 
 #: mg/core/web.py:623
 #: mg/core/director.py:169
-#: mg/socio/__init__.py:1352
+#: mg/socio/__init__.py:1414
 #: mg/admin/__init__.py:134
 msgid "Save"
 msgstr "Сохранить"
@@ -76,7 +76,7 @@ msgid "Orange"
 msgstr "Оранжевый"
 
 #: mg/core/web.py:645
-#: mg/socio/__init__.py:484
+#: mg/socio/__init__.py:485
 msgid "Image"
 msgstr "Картинка"
 
@@ -275,8 +275,8 @@ msgstr ""
 
 #: mg/core/auth.py:264
 #: mg/core/auth.py:532
-#: mg/core/auth.py:739
-#: mg/core/auth.py:766
+#: mg/core/auth.py:740
+#: mg/core/auth.py:767
 msgid "User name"
 msgstr "Имя пользователя"
 
@@ -378,7 +378,7 @@ msgid "Remind"
 msgstr "Напомнить"
 
 #: mg/core/auth.py:507
-#: mg/core/auth.py:761
+#: mg/core/auth.py:762
 msgid "User not found"
 msgstr "Пользователь не найден"
 
@@ -493,88 +493,96 @@ msgstr "Ваш текущий пароль"
 msgid "E-mail change"
 msgstr "Изменение e-mail"
 
-#: mg/core/auth.py:691
+#: mg/core/auth.py:692
 msgid "User permissions editor"
 msgstr "Редактор привилегий пользователей"
 
-#: mg/core/auth.py:712
+#: mg/core/auth.py:713
 msgid "Security"
 msgstr "Безопасность"
 
-#: mg/core/auth.py:717
-#: mg/core/auth.py:740
+#: mg/core/auth.py:718
+#: mg/core/auth.py:741
 #: mg/socio/__init__.py:213
-#: mg/socio/__init__.py:309
+#: mg/socio/__init__.py:310
 msgid "Permissions"
 msgstr "Привилегии"
 
-#: mg/core/auth.py:738
-#: mg/core/auth.py:772
+#: mg/core/auth.py:739
+#: mg/core/auth.py:773
 msgid "Edit permissions of a user"
 msgstr "Редактировать привилегии пользователя"
 
-#: mg/core/auth.py:741
+#: mg/core/auth.py:742
 #: mg/socio/__init__.py:212
-#: mg/socio/__init__.py:1013
-#: mg/socio/__init__.py:1054
+#: mg/socio/__init__.py:1075
+#: mg/socio/__init__.py:1116
 msgid "edit"
 msgstr "редактировать"
 
-#: mg/core/auth.py:742
+#: mg/core/auth.py:743
 #: mg/socio/__init__.py:211
-#: mg/socio/__init__.py:1307
+#: mg/socio/__init__.py:1369
 msgid "Editing"
 msgstr "Редактирование"
 
-#: mg/core/auth.py:748
+#: mg/core/auth.py:749
 msgid "User permissions"
 msgstr "Привилегии пользователя"
 
-#: mg/core/auth.py:757
+#: mg/core/auth.py:758
 msgid "Enter user name"
 msgstr "Введите имя пользователя"
 
-#: mg/core/auth.py:768
+#: mg/core/auth.py:769
 msgid "Search"
 msgstr "Искать"
 
 #: mg/core/auth.py:815
+msgid "Everybody"
+msgstr "Все"
+
+#: mg/core/auth.py:816
+msgid "Logged in"
+msgstr "Вошедший в систему"
+
+#: mg/core/auth.py:817
+msgid "Not logged in"
+msgstr "Не вошедший в систему"
+
+#: mg/core/auth.py:819
 #, python-format
 msgid "Privilege: %s"
 msgstr "Привилегия: %s"
 
-#: mg/core/auth.py:862
-msgid "Everybody"
-msgstr "Все"
-
-#: mg/core/auth.py:879
-#: mg/core/auth.py:888
+#: mg/core/auth.py:900
+#: mg/core/auth.py:909
 msgid "Select valid role"
 msgstr "Выберите роль"
 
-#: mg/core/auth.py:881
-#: mg/core/auth.py:890
+#: mg/core/auth.py:902
+#: mg/core/auth.py:911
 msgid "Select valid permission"
 msgstr "Выберите разрешение"
 
-#: mg/core/auth.py:905
+#: mg/core/auth.py:926
 msgid "Delete"
 msgstr "Удалить"
 
-#: mg/core/auth.py:906
+#: mg/core/auth.py:927
 msgid "Add new rule"
 msgstr "Добавить новое правило"
 
-#: mg/core/auth.py:910
+#: mg/core/auth.py:931
 #: mg/socio/__init__.py:268
 msgid "Sort order"
 msgstr "Порядок сортировки"
 
-#: mg/core/auth.py:911
+#: mg/core/auth.py:932
 msgid "Role"
 msgstr "Роль"
 
-#: mg/core/auth.py:912
+#: mg/core/auth.py:933
 msgid "Permission"
 msgstr "Разрешение"
 
@@ -664,7 +672,7 @@ msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
 #: mg/constructor/__init__.py:107
-#: mg/socio/__init__.py:1364
+#: mg/socio/__init__.py:1426
 msgid "Forum settings"
 msgstr "Настройки форума"
 
@@ -682,13 +690,13 @@ msgstr "Модерирование форума"
 
 #: mg/socio/__init__.py:196
 #: mg/socio/__init__.py:219
-#: mg/socio/__init__.py:634
-#: mg/socio/__init__.py:642
-#: mg/socio/__init__.py:823
-#: mg/socio/__init__.py:905
-#: mg/socio/__init__.py:1005
-#: mg/socio/__init__.py:1253
-#: mg/socio/__init__.py:1304
+#: mg/socio/__init__.py:644
+#: mg/socio/__init__.py:652
+#: mg/socio/__init__.py:871
+#: mg/socio/__init__.py:965
+#: mg/socio/__init__.py:1067
+#: mg/socio/__init__.py:1315
+#: mg/socio/__init__.py:1366
 msgid "Forum categories"
 msgstr "Разделы форума"
 
@@ -750,16 +758,16 @@ msgid "Category %s"
 msgstr "Раздел %s"
 
 #: mg/socio/__init__.py:296
-msgid "Deny reading and writing"
-msgstr "Запрещено читать и писать"
+msgid "Deny reading, writing and moderation"
+msgstr "Запрещено читать, писать и модерировать"
 
 #: mg/socio/__init__.py:297
 msgid "Allow reading"
 msgstr "Разрешено читать"
 
 #: mg/socio/__init__.py:298
-msgid "Deny writing"
-msgstr "Запрещено писать"
+msgid "Deny writing and moderation"
+msgstr "Запрещено писать и модерировать"
 
 #: mg/socio/__init__.py:299
 msgid "Allow reading and writing"
@@ -773,371 +781,371 @@ msgstr "Разрешено модерировать"
 msgid "Deny moderation"
 msgstr "Запрещено модерировать"
 
-#: mg/socio/__init__.py:319
+#: mg/socio/__init__.py:320
 msgid "Socio"
 msgstr "Социалка"
 
-#: mg/socio/__init__.py:385
+#: mg/socio/__init__.py:386
 #, python-format
 msgid "Scheme '%s' is not supported"
 msgstr "Схема '%s' не поддерживается"
 
-#: mg/socio/__init__.py:387
+#: mg/socio/__init__.py:388
 msgid "Enter correct URL"
 msgstr "Введите правильный адрес"
 
-#: mg/socio/__init__.py:401
+#: mg/socio/__init__.py:402
 msgid "Remote server response: Resource not found"
 msgstr "Ответ удалённого сервера: Ресурс не найден"
 
-#: mg/socio/__init__.py:403
+#: mg/socio/__init__.py:404
 msgid "Remote server response: Access denied"
 msgstr "Ответ удалённого сервера: Доступ запрещён"
 
-#: mg/socio/__init__.py:405
+#: mg/socio/__init__.py:406
 msgid "Remote server response: Internal server error"
 msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
 
-#: mg/socio/__init__.py:407
-#: mg/socio/__init__.py:416
+#: mg/socio/__init__.py:408
+#: mg/socio/__init__.py:417
 #, python-format
 msgid "Download error: %s"
 msgstr "Ошибка при скачивании: %s"
 
-#: mg/socio/__init__.py:412
+#: mg/socio/__init__.py:413
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
 
-#: mg/socio/__init__.py:428
-#: mg/socio/__init__.py:1395
+#: mg/socio/__init__.py:429
+#: mg/socio/__init__.py:1464
 msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
-#: mg/socio/__init__.py:482
+#: mg/socio/__init__.py:483
 msgid "Upload an image"
 msgstr "Загрузите изображение"
 
-#: mg/socio/__init__.py:485
+#: mg/socio/__init__.py:486
 msgid "Or Internet address"
 msgstr "Или введите Internet-адрес"
 
-#: mg/socio/__init__.py:486
+#: mg/socio/__init__.py:487
 msgid "Upload"
 msgstr "Загрузить"
 
-#: mg/socio/__init__.py:488
+#: mg/socio/__init__.py:489
 msgid "Upload image"
 msgstr "Загрузка изображения"
 
-#: mg/socio/__init__.py:636
+#: mg/socio/__init__.py:646
 msgid "Topics"
 msgstr "Тем"
 
-#: mg/socio/__init__.py:637
-#: mg/socio/__init__.py:818
+#: mg/socio/__init__.py:647
+#: mg/socio/__init__.py:882
 msgid "Replies"
 msgstr "Ответов"
 
-#: mg/socio/__init__.py:638
+#: mg/socio/__init__.py:648
 msgid "Unread"
 msgstr "Новые"
 
-#: mg/socio/__init__.py:639
+#: mg/socio/__init__.py:649
 msgid "Last message"
 msgstr "Последнее сообщение"
 
-#: mg/socio/__init__.py:640
-#: mg/socio/__init__.py:820
+#: mg/socio/__init__.py:650
+#: mg/socio/__init__.py:884
 msgid "by"
 msgstr "от"
 
-#: mg/socio/__init__.py:658
-#: mg/socio/__init__.py:666
-#: mg/socio/__init__.py:667
-#: mg/socio/__init__.py:673
-#: mg/socio/__init__.py:680
+#: mg/socio/__init__.py:668
+#: mg/socio/__init__.py:676
+#: mg/socio/__init__.py:677
+#: mg/socio/__init__.py:683
+#: mg/socio/__init__.py:690
 msgid "Game"
 msgstr "Игра"
 
-#: mg/socio/__init__.py:659
+#: mg/socio/__init__.py:669
 msgid "News"
 msgstr "Новости"
 
-#: mg/socio/__init__.py:660
+#: mg/socio/__init__.py:670
 msgid "Game news published by the administrators"
 msgstr "Игровые новости, публикуемые администрацией"
 
-#: mg/socio/__init__.py:668
+#: mg/socio/__init__.py:678
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
 
-#: mg/socio/__init__.py:674
+#: mg/socio/__init__.py:684
 msgid "Newbies"
 msgstr "Вопросы новичков"
 
-#: mg/socio/__init__.py:675
+#: mg/socio/__init__.py:685
 msgid "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
 
-#: mg/socio/__init__.py:681
+#: mg/socio/__init__.py:691
 msgid "Diplomacy"
 msgstr "Дипломатия"
 
-#: mg/socio/__init__.py:682
+#: mg/socio/__init__.py:692
 msgid "Authorized guild members can talk to each other about diplomacy and politics issues here"
 msgstr "В этом разделе уполномоченные члены кланов могут общаться на темы дипломатии, войн и политики"
 
-#: mg/socio/__init__.py:687
-#: mg/socio/__init__.py:694
-#: mg/socio/__init__.py:701
+#: mg/socio/__init__.py:697
+#: mg/socio/__init__.py:704
+#: mg/socio/__init__.py:711
 msgid "Admin"
 msgstr "Администрация"
 
-#: mg/socio/__init__.py:688
+#: mg/socio/__init__.py:698
 msgid "Admin talks"
 msgstr "Общение с администрацией"
 
-#: mg/socio/__init__.py:689
+#: mg/socio/__init__.py:699
 msgid "Discussions with the game administrators. Here you can discuss any issues related to the game itself."
 msgstr "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, связанные с игрой в целом."
 
-#: mg/socio/__init__.py:695
+#: mg/socio/__init__.py:705
 msgid "Reference manuals"
 msgstr "Справочная информация"
 
-#: mg/socio/__init__.py:696
+#: mg/socio/__init__.py:706
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
 
-#: mg/socio/__init__.py:702
+#: mg/socio/__init__.py:712
 msgid "Bug reports"
 msgstr "Сообщения об ошибках"
 
-#: mg/socio/__init__.py:703
+#: mg/socio/__init__.py:713
 msgid "Report any problems in the game here"
 msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
 
-#: mg/socio/__init__.py:708
-#: mg/socio/__init__.py:715
+#: mg/socio/__init__.py:718
+#: mg/socio/__init__.py:725
 msgid "Reallife"
 msgstr "Реальная жизнь"
 
-#: mg/socio/__init__.py:709
+#: mg/socio/__init__.py:719
 msgid "Smoking room"
 msgstr "Курилка"
 
-#: mg/socio/__init__.py:710
+#: mg/socio/__init__.py:720
 msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
 
-#: mg/socio/__init__.py:716
+#: mg/socio/__init__.py:726
 msgid "Art"
 msgstr "Творчество"
 
-#: mg/socio/__init__.py:717
+#: mg/socio/__init__.py:727
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
 
-#: mg/socio/__init__.py:722
-#: mg/socio/__init__.py:729
+#: mg/socio/__init__.py:732
+#: mg/socio/__init__.py:739
 msgid "Trading"
 msgstr "Торговля"
 
-#: mg/socio/__init__.py:723
+#: mg/socio/__init__.py:733
 msgid "Services"
 msgstr "Услуги"
 
-#: mg/socio/__init__.py:724
+#: mg/socio/__init__.py:734
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
 
-#: mg/socio/__init__.py:730
+#: mg/socio/__init__.py:740
 msgid "Market"
 msgstr "Рынок"
 
-#: mg/socio/__init__.py:731
+#: mg/socio/__init__.py:741
 msgid "Market place to sell and by any item"
 msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
 
-#: mg/socio/__init__.py:815
-#: mg/socio/__init__.py:825
-#: mg/socio/__init__.py:903
-#: mg/socio/__init__.py:907
+#: mg/socio/__init__.py:875
+#: mg/socio/__init__.py:879
+#: mg/socio/__init__.py:963
+#: mg/socio/__init__.py:967
 msgid "New topic"
 msgstr "Новая тема"
 
-#: mg/socio/__init__.py:817
+#: mg/socio/__init__.py:881
 msgid "Author"
 msgstr "Автор"
 
-#: mg/socio/__init__.py:819
+#: mg/socio/__init__.py:883
 msgid "Last reply"
 msgstr "Последний ответ"
 
-#: mg/socio/__init__.py:821
-#: mg/socio/__init__.py:1076
+#: mg/socio/__init__.py:885
+#: mg/socio/__init__.py:1138
 msgid "Pages"
 msgstr "На страницу"
 
-#: mg/socio/__init__.py:892
-#: mg/socio/__init__.py:1336
+#: mg/socio/__init__.py:952
+#: mg/socio/__init__.py:1398
 msgid "Enter topic subject"
 msgstr "Введите тему сообщения"
 
-#: mg/socio/__init__.py:894
-#: mg/socio/__init__.py:1338
+#: mg/socio/__init__.py:954
+#: mg/socio/__init__.py:1400
 msgid "Enter topic content"
 msgstr "Введите текст сообщения"
 
-#: mg/socio/__init__.py:899
-#: mg/socio/__init__.py:1350
+#: mg/socio/__init__.py:959
+#: mg/socio/__init__.py:1412
 msgid "Subject"
 msgstr "Тема"
 
-#: mg/socio/__init__.py:900
+#: mg/socio/__init__.py:960
 msgid "Content"
 msgstr "Содержание"
 
-#: mg/socio/__init__.py:1007
-#: mg/socio/__init__.py:1255
-#: mg/socio/__init__.py:1306
+#: mg/socio/__init__.py:1069
+#: mg/socio/__init__.py:1317
+#: mg/socio/__init__.py:1368
 msgid "Topic"
 msgstr "Тема"
 
-#: mg/socio/__init__.py:1011
-#: mg/socio/__init__.py:1052
+#: mg/socio/__init__.py:1073
+#: mg/socio/__init__.py:1114
 msgid "delete"
 msgstr "удалить"
 
-#: mg/socio/__init__.py:1015
-#: mg/socio/__init__.py:1056
+#: mg/socio/__init__.py:1077
+#: mg/socio/__init__.py:1118
 msgid "reply"
 msgstr "ответить"
 
-#: mg/socio/__init__.py:1036
+#: mg/socio/__init__.py:1098
 msgid "unsubscribe"
 msgstr "отписаться"
 
-#: mg/socio/__init__.py:1038
+#: mg/socio/__init__.py:1100
 msgid "subscribe"
 msgstr "подписаться"
 
-#: mg/socio/__init__.py:1041
+#: mg/socio/__init__.py:1103
 msgid "unpin"
 msgstr "открепить"
 
-#: mg/socio/__init__.py:1043
+#: mg/socio/__init__.py:1105
 msgid "pin"
 msgstr "закрепить"
 
-#: mg/socio/__init__.py:1045
+#: mg/socio/__init__.py:1107
 msgid "move"
 msgstr "перенести"
 
-#: mg/socio/__init__.py:1064
-#: mg/socio/__init__.py:1230
-#: mg/socio/__init__.py:1315
+#: mg/socio/__init__.py:1126
+#: mg/socio/__init__.py:1292
+#: mg/socio/__init__.py:1377
 msgid "Enter post content"
 msgstr "Введите текст сообщения"
 
-#: mg/socio/__init__.py:1066
+#: mg/socio/__init__.py:1128
 msgid "Access denied"
 msgstr "Доступ запрещён"
 
-#: mg/socio/__init__.py:1078
+#: mg/socio/__init__.py:1140
 msgid "topic started"
 msgstr "тема открыта"
 
-#: mg/socio/__init__.py:1079
+#: mg/socio/__init__.py:1141
 msgid "All posts"
 msgstr "Все сообщения"
 
-#: mg/socio/__init__.py:1080
+#: mg/socio/__init__.py:1142
 msgid "Search for all posts of this member"
 msgstr "Все сообщения этого пользователя"
 
-#: mg/socio/__init__.py:1081
+#: mg/socio/__init__.py:1143
 msgid "to the top"
 msgstr "наверх"
 
-#: mg/socio/__init__.py:1082
+#: mg/socio/__init__.py:1144
 msgid "written at"
 msgstr "написано"
 
-#: mg/socio/__init__.py:1088
-#: mg/socio/__init__.py:1247
-#: mg/socio/__init__.py:1251
-#: mg/socio/__init__.py:1256
+#: mg/socio/__init__.py:1150
+#: mg/socio/__init__.py:1309
+#: mg/socio/__init__.py:1313
+#: mg/socio/__init__.py:1318
 msgid "Reply"
 msgstr "Ответить"
 
-#: mg/socio/__init__.py:1311
+#: mg/socio/__init__.py:1373
 msgid "Edit post"
 msgstr "Редактирование ответа"
 
-#: mg/socio/__init__.py:1331
+#: mg/socio/__init__.py:1393
 msgid "Edit topic"
 msgstr "Редактирование темы"
 
-#: mg/socio/__init__.py:1383
+#: mg/socio/__init__.py:1452
 msgid "Signature can't contain more than 4 lines"
 msgstr "В подписи не может быть более 4 строк"
 
-#: mg/socio/__init__.py:1387
+#: mg/socio/__init__.py:1456
 msgid "Signature line couldn't be longer than 80 symbols"
 msgstr "Строка подписи не может быть длиннее 80 символов"
 
-#: mg/socio/__init__.py:1389
+#: mg/socio/__init__.py:1458
 msgid "Signature couldn't contain images"
 msgstr "В подпись нельзя вставлять картинки"
 
-#: mg/socio/__init__.py:1412
+#: mg/socio/__init__.py:1481
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
 
-#: mg/socio/__init__.py:1464
+#: mg/socio/__init__.py:1533
 msgid "Your forum signature"
 msgstr "Ваша подпись на форуме"
 
-#: mg/socio/__init__.py:1465
+#: mg/socio/__init__.py:1534
 msgid "Your avatar"
 msgstr "Ваш аватар"
 
-#: mg/socio/__init__.py:1466
+#: mg/socio/__init__.py:1535
 msgid "Replies in subscribed topics"
 msgstr "Ответы в подписанных темах"
 
-#: mg/socio/__init__.py:1466
+#: mg/socio/__init__.py:1535
 msgid "E-mail notifications"
 msgstr "Уведомления на почту"
 
-#: mg/socio/__init__.py:1468
+#: mg/socio/__init__.py:1537
 msgid "New topics in '{topcat} / {cat}'"
 msgstr "Новые темы в '{topcat} / {cat}'"
 
-#: mg/socio/__init__.py:1571
+#: mg/socio/__init__.py:1646
 msgid "Select category"
 msgstr "Выберите раздел"
 
-#: mg/socio/__init__.py:1592
+#: mg/socio/__init__.py:1667
 msgid "Category where to move"
 msgstr "Раздел, в который перенести"
 
-#: mg/socio/__init__.py:1593
+#: mg/socio/__init__.py:1668
 msgid "Move"
 msgstr "Перенести"
 
-#: mg/socio/__init__.py:1595
+#: mg/socio/__init__.py:1670
 #, python-format
 msgid "Move topic: %s"
 msgstr "Перемещение темы: %s"
 
-#: mg/socio/__init__.py:1633
+#: mg/socio/__init__.py:1716
 #, python-format
 msgid "New topic: %s"
 msgstr "Новая тема: %s"
 
-#: mg/socio/__init__.py:1633
+#: mg/socio/__init__.py:1716
 msgid ""
 "{author_name} has started new topic: {topic_subject}\n"
 "\n"
@@ -1147,12 +1155,12 @@ msgstr ""
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}"
 
-#: mg/socio/__init__.py:1681
+#: mg/socio/__init__.py:1766
 #, python-format
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
-#: mg/socio/__init__.py:1681
+#: mg/socio/__init__.py:1766
 msgid ""
 "{author_name} has replied in the topic: {topic_subject}\n"
 "\n"
@@ -1166,6 +1174,8 @@ msgstr ""
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
+#~ msgid "Deny writing"
+#~ msgstr "Запрещено писать"
 #~ msgid "Invalid e-mail format"
 #~ msgstr "Неверный формат e-mail"
 #~ msgid "<strong>Syslog server</strong> (host)"
