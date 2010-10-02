@@ -42,7 +42,9 @@ class Cluster(Module):
         """
         Returns list of internal servers currently online
         """
-        online = self.conf("director.servers", reset_cache=True)
+        config = self.app().inst.int_app.config
+        config.clear()
+        online = config.get("director.servers", {})
         if online is None:
             online = {}
         return online

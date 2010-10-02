@@ -613,6 +613,7 @@ class Application(object):
 
     def reload(self):
         "Reload all loaded modules"
+        self.config.clear()
         errors = 0
         errors += self.modules.reload()
         return errors
@@ -626,21 +627,6 @@ class Application(object):
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
-
-    def log_params(self, req):
-        d = {}
-        val = req.environ.get("HTTP_X_REAL_IP")
-        if val:
-            d["ip"] = val
-        val = req.environ.get("HTTP_X_REAL_HOST")
-        if val:
-            d["host"] = val
-        try:
-            d["app"] = self.app().tag
-        except AttributeError:
-            pass
-        print "log_params=%s" % d
-        return d
 
 class ApplicationFactory(object):
     """

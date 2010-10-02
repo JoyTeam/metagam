@@ -178,6 +178,7 @@ class Director(Module):
 
     def fastidle(self):
         if self.servers_online_modified:
+            print "storing director.servers %s" % self.servers_online
             self.app().config.set("director.servers", self.servers_online)
             self.app().config.store()
             try:

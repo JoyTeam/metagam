@@ -838,15 +838,6 @@ class Authorization(Module):
                 except KeyError:
                     roles[user.uuid] = perms
 
-# security.list-roles(list)
-# list: [(tag, name), ...]
-
-# security.users-roles(users, roles)
-# roles: {user: [role, ...], ...}
-
-# security.roles-info(tags)
-# tags: {tag: {"name": None, ...}, ...}
-
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 
 class PermissionsEditor(Module):
