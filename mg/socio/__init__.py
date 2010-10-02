@@ -325,7 +325,6 @@ class ForumAdmin(Module):
         cat = self.call("forum.category", self.req().args)
         if cat is None:
             self.call("web.response_json", {"redirect": "forum/categories"})
-        print "deleting %s" % cat
         categories = [c for c in self.call("forum.categories") if c["id"] != cat["id"]]
         conf = self.app().config
         conf.set("forum.categories", categories)
