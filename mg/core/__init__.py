@@ -17,6 +17,10 @@ import logging
 import logging.handlers
 import datetime
 
+re_hook_path = re.compile(r'^(.+?)\.(.+)$')
+re_config_path = re.compile(r'^(.+?)\.(.+)$')
+re_module_path = re.compile(r'^(.+)\.(.+)$')
+
 class HookFormatException(Exception):
     "Invalid hook format"
     pass
@@ -37,7 +41,6 @@ class Hooks(object):
         self._groups = dict()
         self._loaded_hooks = set()
         self.app = weakref.ref(app)
-        self._path_re = re.compile(r'^(.+?)\.(.+)$')
 
     def load_groups(self, groups):
         """
@@ -72,7 +75,7 @@ class Hooks(object):
                 load_groups = []
                 load_hooks_list = []
                 for name in load_hooks:
-                    m = self._path_re.match(name)
+                    m = re_hook_path.match(name)
                     if not m:
                         raise HookFormatException("Invalid hook name: %s" % name)
                     (hook_group, hook_name) = m.group(1, 2)
@@ -113,7 +116,7 @@ class Hooks(object):
         *args, **kwargs - arbitrary parameters that will be passed to the handlers
         Hook handler receives all parameters passed to the method
         """
-        m = self._path_re.match(name)
+        m = re_hook_path.match(name)
         if not m:
             raise HookFormatException("Invalid hook name: %s" % name)
         (hook_group, hook_name) = m.group(1, 2)
@@ -143,7 +146,7 @@ class Hooks(object):
         """
         rec = dict()
         for name, handlers in self.handlers.iteritems():
-            m = self._path_re.match(name)
+            m = re_hook_path.match(name)
             if not m:
                 raise HookFormatException("Invalid hook name: %s" % name)
             (hook_group, hook_name) = m.group(1, 2)
@@ -185,7 +188,6 @@ class Config(object):
     def __init__(self, app):
         self.clear()
         self.app = weakref.ref(app)
-        self._path_re = re.compile(r'^(.+?)\.(.+)$')
 
     def clear(self):
         self._config = {}
@@ -226,7 +228,7 @@ class Config(object):
         name - key identifier (format: "group.name")
         default - default value for the key
         """
-        m = self._path_re.match(name)
+        m = re_config_path.match(name)
         if not m:
             raise ModuleException("Invalid config key: %s" % name)
         (group, name) = m.group(1, 2)
@@ -243,7 +245,7 @@ class Config(object):
         """
         if type(value) == str:
             value = unicode(value, "utf-8")
-        m = self._path_re.match(name)
+        m = re_config_path.match(name)
         if not m:
             raise ModuleException("Invalid config key: %s" % name)
         (group, name) = m.group(1, 2)
@@ -259,7 +261,7 @@ class Config(object):
         name - key identifier (format: "group.name")
         Note: to store configuration in the database use store() method
         """
-        m = self._path_re.match(name)
+        m = re_config_path.match(name)
         if not m:
             raise ModuleException("Invalid config key: %s" % name)
         (group, name) = m.group(1, 2)
@@ -422,7 +424,6 @@ class Modules(object):
     """
     def __init__(self, app):
         self.app = weakref.ref(app)
-        self._path_re = re.compile(r'^(.+)\.(.+)$')
         self._loaded_modules = dict()
 
     def load(self, modules):
@@ -440,7 +441,7 @@ class Modules(object):
         app = self.app()
         for mod in modules:
             if mod not in self._loaded_modules:
-                m = self._path_re.match(mod)
+                m = re_module_path.match(mod)
                 if not m:
                     raise ModuleException("Invalid module name: %s" % mod)
                 (module_name, class_name) = m.group(1, 2)

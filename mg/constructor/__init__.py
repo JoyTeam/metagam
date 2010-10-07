@@ -19,6 +19,7 @@ class Constructor(Module):
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
         self.rhook("ext-documentation.index", self.documentation_index)
         self.rhook("ext-debug.validate", self.debug_validate)
+        self.rhook("ext-constructor.newgame", self.constructor_newgame)
 
     def web_global_html(self):
         return "constructor/global.html"
@@ -51,11 +52,6 @@ class Constructor(Module):
         req = self.req()
         vars = {
             "title": self._("Constructor of browser-based online games"),
-#            "blog": self._("Project blog"),
-#            "forum": self._("Project forum"),
-#            "subscribe": self._("Send me email on something interesting"),
-#            "project_info": self._("MMO Constructor is a web application giving everyone possibility to create their own browser-based online games. Creating a game is totally free. No subscription fees. We will share your games revenue with you on 50%/50% basis."),
-#            "under_construction": self._("The project is currently under construction. If you want to subscribe to the development status information leave us your e-mail"),
             "online_games_constructor": self._("Constructor of browser-based online games"),
             "games_constructor": self._("Games constructor"),
             "slogan": self._("Create the world of your dreams"),
@@ -127,3 +123,5 @@ class Constructor(Module):
         self.call("cassmaint.validate")
         self.call("web.response_json", {"ok": 1})
 
+    def constructor_newgame(self):
+        self.call("master.create", "
