@@ -111,42 +111,49 @@ class CookieSession(Module):
         self.rhook("all.schedule", self.schedule)
         self.rhook("session.cleanup", self.cleanup)
 
-    def get(self, create=False):
+    def get(self, create=False, cache=True, domain=None):
         req = self.req()
-        try:
-            return req._session
-        except AttributeError:
-            pass
-        sid = req.cookie("mgsess")
+        if cache:
+            try:
+                return req._session
+            except AttributeError:
+                pass
+        cookie_name = "mgsess-%s" % self.app().tag
+        sid = req.cookie(cookie_name)
         if sid is not None:
             mcid = "SessionCache-%s" % sid
             val = self.app().mc.get(mcid)
             if val is not None:
-                req._session = self.obj(Session, sid, val)
-                return req._session
+                session = self.obj(Session, sid, val)
+                if cache:
+                    req._session = session
+                return session
             session = self.find(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                 session.store()
                 self.app().mc.set(mcid, session.data)
-                req._session = session
+                if cache:
+                    req._session = session
                 return session
         sid = uuid4().hex
         args = {}
-        domain = req.environ.get("HTTP_X_REAL_HOST")
+        if domain is None:
+            domain = req.environ.get("HTTP_X_REAL_HOST")
         if domain is not None:
             domain = re.sub(r'^www\.', '', domain)
             args["domain"] = "." + domain
         args["path"] = "/"
         args["expires"] = format_date_time(time.mktime(datetime.now().timetuple()) + 90 * 86400)
-        req.set_cookie("mgsess", sid, **args)
+        req.set_cookie(cookie_name, sid, **args)
         session = self.obj(Session, sid, {})
         if create:
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
             session.store()
-        req._session = session
+        if cache:
+            req._session = session
         return session
 
     def find(self, sid):

@@ -15,11 +15,19 @@ class AdminInterface(Module):
         self.rhook("admin.response_js", self.response_js)
         self.rhook("admin.response", self.response)
         self.rhook("admin.response_template", self.response_template)
+        self.rhook("admin.update_menu", self.update_menu)
         self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
 
     def index(self):
+        self.call("auth.require_login")
         menu = self.makemenu("root.index", "Root")
+        wizards = []
+        self.call("wizards.call", "menu", wizards)
+        if wizards:
+            if not menu:
+                menu = {"text": "Root", "children": []}
+            menu["children"].insert(0, {"text": self._("Active wizards"), "children": wizards})
         if not menu:
             self.call("web.forbidden")
         vars = {
@@ -133,3 +141,6 @@ class AdminInterface(Module):
         if buttons is None:
             buttons = [{"text": self._("Save")}]
         self.call("admin.response_js", "admin/form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})
+
+    def update_menu(self):
+        self.req().headers.append(("X-Update-Menu", "yes"))

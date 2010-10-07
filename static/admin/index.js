@@ -94,6 +94,22 @@ function adm(node_id)
 	}
 }
 
+function find_default_page(menu)
+{
+	var i;
+	for (i = 0; i < menu.length; i++) {
+		var ent = menu[i];
+		if (ent.admin_index)
+			return ent.id;
+		if (ent.children) {
+			var id = find_default_page(ent.children);
+			if (id)
+				return id;
+		}
+	}
+	return undefined;
+}
+
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'side';
@@ -141,6 +157,8 @@ Ext.onReady(function() {
 		},
 		scope: menu
 	});
+	if (!default_page)
+		default_page = find_default_page(admin_menu.children)
 	if (default_page)
 		adm(default_page);
 });

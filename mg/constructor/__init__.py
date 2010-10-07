@@ -1,127 +1,115 @@
-from mg.core import Module
-from mg.core.tools import *
+from mg import *
+import mg.core
 import re
-import time
-from cassandra.ttypes import *
-import json
 
-class Constructor(Module):
-    def register(self):
-        Module.register(self)
-        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
-            "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
-            "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance"])
-        self.rhook("web.global_html", self.web_global_html)
-        self.rhook("ext-index.index", self.index)
-        self.rhook("ext-cabinet.index", self.cabinet_index)
-        self.rhook("auth.redirects", self.redirects)
-        self.rhook("forum.topmenu", self.forum_topmenu)
-        self.rhook("ext-cabinet.settings", self.cabinet_settings)
-        self.rhook("ext-documentation.index", self.documentation_index)
-        self.rhook("ext-debug.validate", self.debug_validate)
-        self.rhook("ext-constructor.newgame", self.constructor_newgame)
+class Project(CassandraObject):
+    _indexes = {
+        "created": [[""], "created"],
+        "owner": [["owner"], "created"],
+    }
 
-    def web_global_html(self):
-        return "constructor/global.html"
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Project-"
+        CassandraObject.__init__(self, *args, **kwargs)
 
-    def redirects(self, tbl):
-        tbl["login"] = "/cabinet"
-        tbl["register"] = "/cabinet"
-        tbl["change"] = "/cabinet/settings"
+    def indexes(self):
+        return Project._indexes
 
-    def forum_topmenu(self, topmenu):
-        req = self.req()
-        redirect = req.param("redirect")
-        redirect_param = True
-        if redirect is None or redirect == "":
-            redirect = req.uri()
-            redirect_param = False
-        redirect = urlencode(redirect)
-        if req.user():
-            topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "html": self._("Log out")})
-            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
-            topmenu.append({"href": "/cabinet", "html": self._("Cabinet"), "left": True})
-            topmenu.append({"href": "/documentation", "html": self._("Documentation"), "left": True})
-        else:
-            topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
-            topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
-        if redirect_param:
-            topmenu.append({"href": redirect, "html": self._("Cancel")})
+class ProjectList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Project-"
+        kwargs["cls"] = Project
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
-    def index(self):
-        req = self.req()
-        vars = {
-            "title": self._("Constructor of browser-based online games"),
-            "online_games_constructor": self._("Constructor of browser-based online games"),
-            "games_constructor": self._("Games constructor"),
-            "slogan": self._("Create the world of your dreams"),
-            "login": self._("log in"),
-            "register": self._("register"),
-            "forum": self._("forum"),
-            "cabinet": self._("cabinet"),
-            "logout": self._("log out"),
-        }
-        if req.user():
-            vars["logged"] = True
-        return self.call("web.response_template", "constructor/index.html", vars)
+    def tag_by_domain(self, domain):
+        tag = super(ApplicationFactory, self).tag_by_domain(domain)
+        if tag is not None:
+            return tag
+        m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["metagam_host"], domain)
+        if m:
+            return m.groups(1)[0]
+        return None
 
-    def cabinet_index(self):
-        req = self.req()
-        session = self.call("session.require_login")
-        perms = req.permissions()
-        menu1 = []
-        menu1.append({"href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation")})
-        if len(perms):
-            menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Administration")})
-        menu1.append({"href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum")})
-        menu2 = []
-        menu2.append({"href": "/constructor/newgame", "image": "constructor/cab_newgame.jpg", "text": self._("New game")})
-        vars = {
-            "title": self._("Cabinet"),
-            "menu": [
-                menu1,
-                menu2,
-                [
-                    { "href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings") },
-                    { "href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out") },
-                ],
-            ],
-        }
-        self.call("web.response_template", "constructor/cabinet.html", vars)
+class ApplicationFactory(mg.core.ApplicationFactory):
+    """
+    ApplicationFactory implementation based on config and database search
+    """
+    def __init__(self, inst, dbpool, mcpool):
+        super(ApplicationFactory, self).__init__(inst)
+        self.dbpool = dbpool
+        self.mcpool = mcpool
+        self.apps_by_domain = {}
 
-    def cabinet_settings(self):
-        session = self.call("session.require_login")
-        vars = {
-            "title": self._("Settings"),
-            "menu": [
-                [
-                    { "href": "/cabinet", "image": "constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
-                ],
-                [
-                    { "href": "/auth/change", "image": "constructor/cab_changepass.jpg", "text": self._("Change password") },
-                    { "href": "/auth/email", "image": "constructor/cab_changeemail.jpg", "text": self._("Change e-mail") },
-                    { "href": "/forum/settings", "image": "constructor/cab_forumsettings.jpg", "text": self._("Forum settings") },
-                    { "href": "/constructor/certificate", "image": "constructor/cab_certificate.jpg", "text": self._("WebMoney Certification") },
-                ],
-            ],
-        }
-        self.call("web.response_template", "constructor/cabinet.html", vars)
+    def tag_by_domain(self, domain):
+        metagam_host = self.inst.config["metagam_host"]
+        if domain == "www.%s" % metagam_host:
+            return "metagam"
+        elif domain == metagam_host:
+            return "metagam"
+        return None
 
-    def documentation_index(self):
-        session = self.call("session.require_login")
-        vars = {
-            "title": self._("Documentation"),
-            "menu": [
-                [
-                    { "href": "/cabinet", "image": "constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
-                ],
-            ],
-        }
-        self.call("web.response_template", "constructor/documentation.html", vars)
+    def get_by_domain(self, domain):
+        tag = self.tag_by_domain(domain)
+        if tag is None:
+            m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["metagam_host"], domain)
+            if not m:
+                return None
+            tag = m.groups(1)[0]
+        return self.get_by_tag(tag)
 
-    def debug_validate(self):
-        self.call("cassmaint.validate")
-        self.call("web.response_json", {"ok": 1})
+    def load(self, tag):
+        if tag == "metagam":
+            app = WebApplication(self.inst, self.dbpool, self.mcpool, tag, "ext")
+            app.domain = self.inst.config["metagam_host"]
+            app.modules.load(["mg.constructor.mod.Constructor"])
+            return app
+        try:
+            project = self.inst.int_app.obj(Project, tag)
+        except ObjectNotFoundException:
+            project = None
+        if project:
+            domain = project.get("domain")
+            if domain is None:
+                domain = "%s.%s" % (tag, self.inst.config["metagam_host"])
+            app = WebApplication(self.inst, self.dbpool, self.mcpool, tag, "ext")
+            app.domain = domain
+            app.project = project
+            app.modules.load(["mg.constructor.mod.ConstructorProject"])
+            return app
+        return None
 
-    def constructor_newgame(self):
-        self.call("master.create", "
+    def add(self, app):
+        super(ApplicationFactory, self).add(app)
+        try:
+            self.apps_by_domain[app.domain] = app
+        except AttributeError:
+            pass
+
+    def remove(self, app):
+        super(ApplicationFactory, self).remove(app)
+        try:
+            del self.apps_by_domain[app.domain]
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
+
+class MultiapplicationWebDaemon(WebDaemon):
+    "This is a WebDaemon that accesses application depending on HTTP host"
+    def __init__(self, inst, dbpool, mcpool):
+        """
+        inst - Instance reference
+        dbpool - CassandraPool reference
+        mcpool - MemcachedPool reference
+        """
+        super(MultiapplicationWebDaemon, self).__init__(inst)
+        self.dbpool = dbpool
+        self.mcpool = mcpool
+
+    def req_handler(self, request, group, hook, args):
+        host = request.host()
+        app = self.inst.appfactory.get_by_domain(host)
+        if app is None:
+            return request.redirect("http://www.%s" % str(self.inst.config["metagam_host"]))
+        #app.hooks.call("l10n.set_request_lang")
+        return app.http_request(request, group, hook, args)

@@ -1,5 +1,4 @@
-from mg.core import Module
-from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
+from mg import *
 import re
 import sys
 
@@ -46,7 +45,7 @@ class Wizard(Module):
 
     def request(self, cmd):
         "Handle HTTP request. Override to set your logic"
-        pass
+        self.call("web.not_implemented")
 
     def finish(self):
         "Commit wizard changes. Override to set your logic"
@@ -61,7 +60,8 @@ class Wizard(Module):
         self.config.remove()
 
 re_module_path = re.compile(r'^(.+)\.(.+)$')
-re_wizard_args = re.compile(r'^([0-9a-f]+)(?:/(.+)|)$')
+re_wizard_args_0 = re.compile(r'^([0-9a-f]+)$')
+re_wizard_args_1 = re.compile(r'^([0-9a-f]+)/(.+)$')
 
 class Wizards(Module):
     def register(self):
@@ -69,7 +69,11 @@ class Wizards(Module):
         self.rhook("wizards.new", self.wizards_new)
         self.rhook("wizards.list", self.wizards_list)
         self.rhook("wizards.call", self.wizards_call)
-        self.rhook("ext-wizard.call", self.wizard_call)
+        self.rhook("ext-admin-wizard.call", self.wizard_call)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["WizardConfig"] = (WizardConfig, WizardConfigList)
 
     def wizard_class(self, mod):
         app = self.app()
@@ -91,7 +95,10 @@ class Wizards(Module):
                     self.exception(e)
                 else:
                     raise
-        return module.__dict__[class_name]
+        try:
+            return module.__dict__[class_name]
+        except KeyError:
+            return None
 
     def wizards_new(self, mod, **kwargs):
         cls = self.wizard_class(mod)
@@ -119,10 +126,15 @@ class Wizards(Module):
 
     def wizard_call(self):
         req = self.req()
-        m = re_wizard_args.match(req.args)
-        if not m:
-            self.call("web.not_found")
-        uuid, cmd = m.groups(1, 2)
+        if re_wizard_args_0.match(req.args):
+            uuid = req.args
+            cmd = ""
+        else:
+            m = re_wizard_args_1.match(req.args)
+            if m:
+                uuid, cmd = m.groups(1, 2)
+            else:
+                self.call("web.not_found")
         try:
             config = self.obj(WizardConfig, uuid)
         except ObjectNotFoundException:

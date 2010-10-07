@@ -165,6 +165,10 @@ class Request(object):
         "Return 500 Internal Server Error"
         return self.send_response("500 Internal Server Error", self.headers, "<html><body><h1>500 Internal Server Error</h1></body></html>")
 
+    def not_implemented(self):
+        "Return 501 Not Implemented"
+        return self.send_response("501 Not Implemented", self.headers, "<html><body><h1>501 Not Implemented</h1></body></html>")
+
     def service_unavailable(self):
         "Return 503 Service Unavailable"
         return self.send_response("503 Service Unavailable", self.headers, "<html><body><h1>503 Service Unavailable</h1></body></html>")
@@ -392,6 +396,7 @@ class Web(Module):
         self.rhook("web.not_found", self.web_not_found)
         self.rhook("web.forbidden", self.web_forbidden)
         self.rhook("web.internal_server_error", self.web_internal_server_error)
+        self.rhook("web.not_implemented", self.web_not_implemented)
         self.rhook("web.service_unavailable", self.web_service_unavailable)
         self.rhook("web.redirect", self.web_redirect)
 
@@ -550,6 +555,9 @@ class Web(Module):
 
     def web_internal_server_error(self):
         raise WebResponse(self.req().internal_server_error())
+
+    def web_not_implemented(self):
+        raise WebResponse(self.req().not_implemented())
 
     def web_service_unavailable(self):
         raise WebResponse(self.req().service_unavailable())

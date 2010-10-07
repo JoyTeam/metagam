@@ -2,7 +2,7 @@
 
 from mg.core import Instance
 from mg.core.web import WebDaemon, WebApplication
-from mg.core.worker import MultiapplicationWebDaemon, ApplicationFactory
+from mg.constructor import ApplicationFactory, MultiapplicationWebDaemon
 from concurrence import dispatch, Tasklet
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool, Memcached
