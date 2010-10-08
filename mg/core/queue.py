@@ -67,7 +67,6 @@ class Schedule(CassandraObject):
             CassandraObject.store(self)
         else:
             self.remove()
-        self.app().hooks.call("cluster.query_director", "/schedule/update/%s" % self.uuid)
 
 class ScheduleList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
@@ -165,6 +164,7 @@ class Queue(Module):
         self.call("all.schedule", sched)
         self.debug("generated schedule: %s", sched.data["entries"])
         sched.store()
+        self.call("cluster.query_director", "/schedule/update/%s" % sched.uuid)
 
 class QueueRunner(Module):
     def register(self):

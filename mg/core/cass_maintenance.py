@@ -19,7 +19,7 @@ class CassandraMaintenance(Module):
         parsers = []
         re_prefix = re.compile('^%s' % prefix)
         for name, info in objclasses.iteritems():
-            parsers.append((re.compile('^%s%s-([0-9a-f]{32})$' % (prefix, name)), 1, info[0]))
+            parsers.append((re.compile('^%s%s-([0-9a-z]+)$' % (prefix, name)), 1, info[0]))
             if info[1]:
                 indexes = info[0](db, "", {}).indexes()
                 for index_name, index_info in indexes.iteritems():
@@ -39,35 +39,40 @@ class CassandraMaintenance(Module):
                     if m:
                         # checking object integrity
                         uuid = m.groups(1)[0]
-                        obj = parser[2](db, uuid, json.loads(slice.columns[0].column.value), dbprefix=prefix)
-                        index_values = obj.index_values()
-                        update = False
-                        if obj.uuid == "080d14994ae8434cb3b67a16a963c3b7":
-                            self.debug(index_values)
-                        for index_name, index_info in index_values.iteritems():
-                            key = "%s%s%s%s" % (prefix, obj.clsprefix, index_name, index_info[0])
-                            index = slices_dict.get(key)
-                            if index is None:
-                                self.debug("index %s is missing", key)
-                                update = True
-                                break
-                            else:
-                                index_ok = False
-                                for col in index:
-                                    if col.column.name == index_info[1] and col.column.value == uuid:
-                                        index_ok = True
-                                        # removing correct index value
-                                        index.remove(col)
-                                        break
-                                if not index_ok:
-                                    self.debug("in the index %s column %s is missing", key, index_info[1])
+                        try:
+                            data = json.loads(slice.columns[0].column.value)
+                        except (ValueError, IndexError):
+                            data = None
+                        if data:
+                            obj = parser[2](db, uuid, data, dbprefix=prefix)
+                            index_values = obj.index_values()
+                            update = False
+                            if obj.uuid == "080d14994ae8434cb3b67a16a963c3b7":
+                                self.debug(index_values)
+                            for index_name, index_info in index_values.iteritems():
+                                key = "%s%s%s%s" % (prefix, obj.clsprefix, index_name, index_info[0])
+                                index = slices_dict.get(key)
+                                if index is None:
+                                    self.debug("index %s is missing", key)
                                     update = True
                                     break
-                        if update:
-                            obj._indexes = {}
-                            obj.touch()
-                            obj.store()
-                        break
+                                else:
+                                    index_ok = False
+                                    for col in index:
+                                        if col.column.name == index_info[1] and col.column.value == uuid:
+                                            index_ok = True
+                                            # removing correct index value
+                                            index.remove(col)
+                                            break
+                                    if not index_ok:
+                                        self.debug("in the index %s column %s is missing", key, index_info[1])
+                                        update = True
+                                        break
+                            if update:
+                                obj._indexes = {}
+                                obj.touch()
+                                obj.store()
+                            break
         mutations = {}
         for slice in slices_list:
             key = slice.key
