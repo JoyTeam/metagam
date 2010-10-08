@@ -50,7 +50,7 @@ class Constructor(Module):
 
     def cleanup(self):
         inst = self.app().inst
-        projects = inst.int_app.objlist(ProjectList, query_index="inactive", query_equal="1", query_finish=self.now(-3))
+        projects = inst.int_app.objlist(ProjectList, query_index="inactive", query_equal="1", query_finish=self.now(-3 * 86400))
         for project in projects:
             self.info("Removing inactive project %s", project.uuid)
             app = inst.appfactory.get_by_tag(project.uuid)
