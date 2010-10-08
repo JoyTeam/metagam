@@ -536,10 +536,8 @@ class Instance(object):
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
-        formatter = Formatter("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s")
+        formatter = logging.Formatter("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s")
         self.stderr_channel.setFormatter(formatter)
-        filter = Filter()
-        self.stderr_channel.addFilter(filter)
         modlogger.addHandler(self.stderr_channel)
 
     def set_server_id(self, id, logger_id=None):

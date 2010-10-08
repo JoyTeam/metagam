@@ -1,5 +1,6 @@
 from mg import *
-from mg.core.auth import User, UserPermissions, Session
+from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
+from mg.core.queue import QueueTask, QueueTaskList, Schedule
 from mg.constructor import Project, ProjectList
 from uuid import uuid4
 import re
@@ -32,9 +33,43 @@ class Constructor(Module):
         self.rhook("ext-debug.validate", self.debug_validate)
         self.rhook("ext-constructor.newgame", self.constructor_newgame)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("applications.list", self.applications_list)
+        self.rhook("all.schedule", self.schedule)
+        self.rhook("projects.cleanup", self.cleanup)
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)
+
+    def applications_list(self, apps):
+        apps.append("metagam")
+        projects = self.objlist(ProjectList, query_index="created")
+        apps.extend(projects.uuids())
+
+    def schedule(self, sched):
+        sched.add("projects.cleanup", "10 1 * * *", priority=10)
+
+    def cleanup(self):
+        print "cleaning up"
+        inst = self.app().inst
+        projects = inst.int_app.objlist(ProjectList, query_index="inactive", query_equal="1", query_finish=self.now(-3))
+        for project in projects:
+            self.info("Removing inactive project %s", project.uuid)
+            app = inst.appfactory.get_by_tag(project.uuid)
+            if app is not None:
+                sessions = app.objlist(SessionList, query_index="valid_till")
+                self.debug("Removing sessions: %s", sessions)
+                sessions.remove()
+                users = app.objlist(UserList, query_index="created")
+                self.debug("Removing users: %s", users)
+                users.remove()
+                perms = app.objlist(UserPermissionsList, users.uuids())
+                perms.remove()
+                tasks = inst.int_app.objlist(QueueTaskList, query_index="app-at", query_equal=project.uuid)
+                self.debug("Removing tasks: %s", tasks)
+                tasks.remove()
+                sched = inst.int_app.obj(Schedule, project.uuid, silent=True)
+                sched.remove()
+        projects.remove()
 
     def web_global_html(self):
         return "constructor/global.html"
@@ -136,6 +171,7 @@ class Constructor(Module):
 
     def debug_validate(self):
         self.call("cassmaint.validate")
+        self.app().inst.int_app.hooks.call("cassmaint.validate")
         self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):
@@ -147,6 +183,7 @@ class Constructor(Module):
         project = int_app.obj(Project)
         project.set("created", self.now())
         project.set("owner", req.user())
+        project.set("inactive", 1)
         project.store()
         # accessing new application
         app = inst.appfactory.get_by_tag(project.uuid)
@@ -167,6 +204,8 @@ class Constructor(Module):
         new_session = app.hooks.call("session.get", create=True, cache=False)
         new_session.set("user", new_user.uuid)
         new_session.store()
+        # setting up everything
+        app.hooks.call("all.check")
         # creating setup wizard
         app.hooks.call("wizards.new", "mg.constructor.mod.ProjectSetupWizard")
         self.call("web.redirect", "http://%s/admin" % app.domain)

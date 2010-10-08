@@ -32,7 +32,7 @@ class CassandraMaintenance(Module):
         slices_dict = dict([(slice.key, slice.columns) for slice in slices_list])
         for slice in slices_list:
             key = slice.key
-            print key
+            self.debug(key)
             for parser in parsers:
                 if parser[1] == 1:
                     m = parser[0].match(key)
@@ -43,12 +43,12 @@ class CassandraMaintenance(Module):
                         index_values = obj.index_values()
                         update = False
                         if obj.uuid == "080d14994ae8434cb3b67a16a963c3b7":
-                            print index_values
+                            self.debug(index_values)
                         for index_name, index_info in index_values.iteritems():
                             key = "%s%s%s%s" % (prefix, obj.clsprefix, index_name, index_info[0])
                             index = slices_dict.get(key)
                             if index is None:
-                                print "index %s is missing" % key
+                                self.debug("index %s is missing", key)
                                 update = True
                                 break
                             else:
@@ -60,7 +60,7 @@ class CassandraMaintenance(Module):
                                         index.remove(col)
                                         break
                                 if not index_ok:
-                                    print "in the index %s column %s is missing" % (key, index_info[1])
+                                    self.debug("in the index %s column %s is missing", key, index_info[1])
                                     update = True
                                     break
                         if update:
@@ -77,8 +77,12 @@ class CassandraMaintenance(Module):
                     if m:
                         # checking index integrity
                         for col in slice.columns:
-                            print "in the index %s column %s is invalid" % (key, col.column.name)
-                            mutations[key] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=Clock(col.column.clock.timestamp+1)))]}
+                            self.debug("in the index %s column %s is invalid", key, col.column.name)
+                            mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=Clock(col.column.clock.timestamp+1)))
+                            try:
+                                mutations[key]["Objects"].append(mutation)
+                            except KeyError:
+                                mutations[key] = {"Objects": [mutation]}
                         break
         if len(mutations):
             db.batch_mutate(mutations, ConsistencyLevel.QUORUM)

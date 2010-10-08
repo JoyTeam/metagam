@@ -33,6 +33,42 @@ class QueueTaskList(CassandraObjectList):
         kwargs["cls"] = QueueTask
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class Schedule(CassandraObject):
+    _indexes = {
+        "updated": [[], "updated"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Schedule-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return Schedule._indexes
+
+    def add(self, hook, at, priority=50):
+        self.touch()
+        entries = self.data["entries"]
+        entries[hook] = {
+            "at": at,
+            "priority": priority,
+        }
+
+    def delete(self, hook):
+        self.touch()
+        entries = self.data["entries"]
+        try:
+            del entries[hook]
+        except KeyError:
+            pass
+
+    def store(self):
+        if self.get("entries") and len(self.get("entries")):
+            self.set("updated", "%020d" % time.time())
+            CassandraObject.store(self)
+        else:
+            self.remove()
+        self.app().hooks.call("cluster.query_director", "/schedule/update/%s" % self.uuid)
+
 class ScheduleList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "Schedule-"
@@ -130,42 +166,6 @@ class Queue(Module):
         self.debug("generated schedule: %s", sched.data["entries"])
         sched.store()
 
-class Schedule(CassandraObject):
-    _indexes = {
-        "updated": [[], "updated"],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Schedule-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Schedule._indexes
-
-    def add(self, hook, at, priority=50):
-        self.touch()
-        entries = self.data["entries"]
-        entries[hook] = {
-            "at": at,
-            "priority": priority,
-        }
-
-    def delete(self, hook):
-        self.touch()
-        entries = self.data["entries"]
-        try:
-            del entries[hook]
-        except KeyError:
-            pass
-
-    def store(self):
-        if self.get("entries") and len(self.get("entries")):
-            self.set("updated", "%020d" % time.time())
-            CassandraObject.store(self)
-        else:
-            self.remove()
-        self.app().hooks.call("cluster.query_director", "/schedule/update/%s" % self.uuid)
-
 class QueueRunner(Module):
     def register(self):
         Module.register(self)
@@ -179,8 +179,10 @@ class QueueRunner(Module):
 
     def check(self):
         self.info("Starting daily check")
-        # TODO: load application list
-        self.call("queue.add", "all.check", priority=20, app_tag="metagam")
+        apps = []
+        self.call("applications.list", apps)
+        for app in apps:
+            self.call("queue.add", "all.check", priority=20, app_tag=app)
 
     def queue_process(self):
         self.wait_free = channel()

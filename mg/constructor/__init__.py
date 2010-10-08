@@ -4,7 +4,8 @@ import re
 
 class Project(CassandraObject):
     _indexes = {
-        "created": [[""], "created"],
+        "created": [[], "created"],
+        "inactive": [["inactive"], "created"],
         "owner": [["owner"], "created"],
     }
 
@@ -46,15 +47,15 @@ class ApplicationFactory(mg.core.ApplicationFactory):
             return "metagam"
         elif domain == metagam_host:
             return "metagam"
+        m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["metagam_host"], domain)
+        if m:
+            return m.groups(1)[0]
         return None
 
     def get_by_domain(self, domain):
         tag = self.tag_by_domain(domain)
         if tag is None:
-            m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["metagam_host"], domain)
-            if not m:
-                return None
-            tag = m.groups(1)[0]
+            return None
         return self.get_by_tag(tag)
 
     def load(self, tag):

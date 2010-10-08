@@ -615,7 +615,7 @@ class CassandraObjectList(object):
                                 if len(mutations):
                                     self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
                         else:
-                            raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
+                            raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix %s) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
                     else:
                         obj.data = data
                         obj.dirty = False
@@ -739,8 +739,10 @@ class CassandraObjectList(object):
         return res
 
     def __str__(self):
-        return str([obj.uuid for obj in self.dict])
+        return str(self.uuids())
 
     def sort(self, *args, **kwargs):
         return self.dict.sort(*args, **kwargs)
 
+    def uuids(self):
+        return [obj.uuid for obj in self.dict]
