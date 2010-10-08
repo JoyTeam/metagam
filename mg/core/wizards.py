@@ -4,7 +4,7 @@ import sys
 
 class WizardConfig(CassandraObject):
     _indexes = {
-        "all": [["all"]],
+        "all": [[]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,6 @@ class Wizard(Module):
 
     def new(self, **kwargs):
         "Configure newly created wizard. Override to set your logic"
-        self.config.set("all", 1)
         self.config.set("mod", self.fqn)
 
     def load(self):
@@ -107,7 +106,7 @@ class Wizards(Module):
 
     def wizards_list(self):
         app = self.app()
-        list = self.objlist(WizardConfigList, query_index="all", query_equal="1")
+        list = self.objlist(WizardConfigList, query_index="all")
         list.load()
         wizs = []
         for config in list:

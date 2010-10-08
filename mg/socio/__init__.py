@@ -54,7 +54,7 @@ class UserForumSettingsList(CassandraObjectList):
 
 class ForumCategoryStat(CassandraObject):
     def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumCategory-"
+        kwargs["clsprefix"] = "ForumCategoryStat-"
         CassandraObject.__init__(self, *args, **kwargs)
 
 class ForumCategoryStatList(CassandraObjectList):

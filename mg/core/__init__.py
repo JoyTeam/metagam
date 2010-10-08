@@ -165,6 +165,7 @@ class Hooks(object):
 
 class ConfigGroup(CassandraObject):
     _indexes = {
+            "all": [[]],
     }
 
     def __init__(self, *args, **kwargs):

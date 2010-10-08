@@ -42,14 +42,13 @@ class Constructor(Module):
 
     def applications_list(self, apps):
         apps.append("metagam")
-        projects = self.objlist(ProjectList, query_index="created")
+        projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
         apps.extend(projects.uuids())
 
     def schedule(self, sched):
         sched.add("projects.cleanup", "10 1 * * *", priority=10)
 
     def cleanup(self):
-        print "cleaning up"
         inst = self.app().inst
         projects = inst.int_app.objlist(ProjectList, query_index="inactive", query_equal="1", query_finish=self.now(-3))
         for project in projects:
@@ -69,6 +68,12 @@ class Constructor(Module):
                 tasks.remove()
                 sched = inst.int_app.obj(Schedule, project.uuid, silent=True)
                 sched.remove()
+                wizards = app.objlist(WizardConfigList, query_index="all")
+                self.debug("Removing wizards: %s", wizards)
+                wizards.remove()
+                config = app.objlist(ConfigGroupList, query_index="all")
+                self.debug("Removing config groups: %s", config)
+                config.remove()
         projects.remove()
 
     def web_global_html(self):
@@ -170,8 +175,26 @@ class Constructor(Module):
         self.call("web.response_template", "constructor/documentation.html", vars)
 
     def debug_validate(self):
-        self.call("cassmaint.validate")
-        self.app().inst.int_app.hooks.call("cassmaint.validate")
+        slices_list = self.call("cassmaint.load_database")
+        inst = self.app().inst
+        valid_keys = inst.int_app.hooks.call("cassmaint.validate", slices_list)
+        slices_list = [row for row in slices_list if row.key not in valid_keys]
+        apps = []
+        self.call("applications.list", apps)
+        for tag in apps:
+            app = inst.appfactory.get_by_tag(tag)
+            if app is not None:
+                valid_keys = app.hooks.call("cassmaint.validate", slices_list)
+                slices_list = [row for row in slices_list if row.key not in valid_keys]
+        clock = Clock(time.time() * 1000)
+        mutations = {}
+        for row in slices_list:
+            if len(row.columns):
+                self.warning("Unknown database key %s", row.key)
+                #mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate(slice_range=SliceRange(start="", finish="")), clock=clock))]}
+                mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
+#       if len(mutations):
+#           self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):
