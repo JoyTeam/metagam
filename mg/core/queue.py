@@ -223,15 +223,19 @@ class QueueRunner(Module):
         if unique is not None:
             self.processing_uniques.add(unique)
         success = False
+        tag = str(task.get("app"))
         try:
-            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (str(task.get("app")), str(task.get("hook"))), {
+            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (tag, str(task.get("hook"))), {
                 "args": json.dumps(task.get("args")),
             })
             if res.get("error"):
-                self.warning("%s.%s(%s) - %s", task.get("app"), task.get("hook"), task.get("args"), res)
+                self.warning("%s.%s(%s) - %s", tag, task.get("hook"), task.get("args"), res)
             success = True
         except HTTPError as e:
             self.error("Error executing task %s: %s" % (task.get("hook"), e))
+            if self.call("project.missing", tag):
+                self.info("Removing missing project %s", tag)
+                self.call("project.cleanup", tag)
         except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
         except BaseException as e:

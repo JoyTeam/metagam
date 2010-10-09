@@ -1,7 +1,8 @@
 #!/usr/bin/python2.6
 
-from mg.core import Instance, ApplicationFactory
+from mg.core import Instance
 from mg.core.web import WebDaemon, WebApplication
+from mg.constructor import ApplicationFactory
 from concurrence import dispatch, Tasklet
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool, Memcached
@@ -27,7 +28,7 @@ def main():
         daemon.app = app
         port = daemon.serve(("0.0.0.0", 3000))
         # application factory
-        inst.appfactory = ApplicationFactory(inst)
+        inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
         inst.appfactory.add(app)
         # run
         Tasklet.new(monitor)(app)

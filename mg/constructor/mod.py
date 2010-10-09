@@ -35,7 +35,9 @@ class Constructor(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("applications.list", self.applications_list)
         self.rhook("all.schedule", self.schedule)
-        self.rhook("projects.cleanup", self.cleanup)
+        self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
+        self.rhook("project.cleanup", self.cleanup)
+        self.rhook("project.missing", self.missing)
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)
@@ -46,35 +48,45 @@ class Constructor(Module):
         apps.extend(projects.uuids())
 
     def schedule(self, sched):
-        sched.add("projects.cleanup", "10 1 * * *", priority=10)
+        sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
 
-    def cleanup(self):
+    def missing(self, tag):
+        app = self.app().inst.appfactory.get_by_tag(tag)
+        return app is None
+
+    def cleanup(self, tag):
+        inst = self.app().inst
+        app = inst.appfactory.get_by_tag(tag)
+        if app is not None:
+            sessions = app.objlist(SessionList, query_index="valid_till")
+            self.debug("Removing sessions: %s", sessions)
+            sessions.remove()
+            users = app.objlist(UserList, query_index="created")
+            self.debug("Removing users: %s", users)
+            users.remove()
+            perms = app.objlist(UserPermissionsList, users.uuids())
+            perms.remove()
+            wizards = app.objlist(WizardConfigList, query_index="all")
+            self.debug("Removing wizards: %s", wizards)
+            wizards.remove()
+            config = app.objlist(ConfigGroupList, query_index="all")
+            self.debug("Removing config groups: %s", config)
+            config.remove()
+        int_app = inst.int_app
+        tasks = int_app.objlist(QueueTaskList, query_index="app-at", query_equal=tag)
+        self.debug("Removing tasks: %s", tasks)
+        tasks.remove()
+        sched = int_app.obj(Schedule, tag, silent=True)
+        sched.remove()
+        project = int_app.obj(Project, tag, silent=True)
+        project.remove()
+
+    def cleanup_inactive(self):
         inst = self.app().inst
         projects = inst.int_app.objlist(ProjectList, query_index="inactive", query_equal="1", query_finish=self.now(-3 * 86400))
         for project in projects:
             self.info("Removing inactive project %s", project.uuid)
-            app = inst.appfactory.get_by_tag(project.uuid)
-            if app is not None:
-                sessions = app.objlist(SessionList, query_index="valid_till")
-                self.debug("Removing sessions: %s", sessions)
-                sessions.remove()
-                users = app.objlist(UserList, query_index="created")
-                self.debug("Removing users: %s", users)
-                users.remove()
-                perms = app.objlist(UserPermissionsList, users.uuids())
-                perms.remove()
-                tasks = inst.int_app.objlist(QueueTaskList, query_index="app-at", query_equal=project.uuid)
-                self.debug("Removing tasks: %s", tasks)
-                tasks.remove()
-                sched = inst.int_app.obj(Schedule, project.uuid, silent=True)
-                sched.remove()
-                wizards = app.objlist(WizardConfigList, query_index="all")
-                self.debug("Removing wizards: %s", wizards)
-                wizards.remove()
-                config = app.objlist(ConfigGroupList, query_index="all")
-                self.debug("Removing config groups: %s", config)
-                config.remove()
-        projects.remove()
+            self.call("project.cleanup", project.uuid)
 
     def web_global_html(self):
         return "constructor/global.html"
