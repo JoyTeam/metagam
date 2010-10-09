@@ -27,7 +27,7 @@ class AdminInterface(Module):
         if wizards:
             if not menu:
                 menu = {"text": "Root", "children": []}
-            menu["children"].insert(0, {"text": self._("Active wizards"), "children": wizards})
+            menu["children"] = wizards + menu["children"]
         if not menu:
             self.call("web.forbidden")
         vars = {

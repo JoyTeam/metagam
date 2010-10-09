@@ -183,6 +183,10 @@ class ForumAdmin(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.default_rules", self.default_rules)
         self.rhook("ext-admin-forum.delete", self.admin_delete)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+
+    def menu_root_index(self, menu):
+        menu.append({ "id": "socio.index", "text": self._("Socio") })
 
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})
@@ -342,12 +346,8 @@ class ForumAdmin(Module):
 class Socio(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("socio.format_text", self.format_text)
         self.rhook("ext-socio.image", self.ext_image)
-
-    def menu_root_index(self, menu):
-        menu.append({ "id": "socio.index", "text": self._("Socio") })
 
     def format_text(self, html, options={}):
         m = re_tag.match(html)

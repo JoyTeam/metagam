@@ -7,57 +7,19 @@ from uuid import uuid4
 import re
 import time
 
-class ConstructorProject(Module):
+class ConstructorUtils(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.web.Web", "mg.admin.AdminInterface", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession",
-            "mg.core.cluster.Cluster", "mg.core.auth.Authorization", "mg.core.emails.Email", "mg.core.queue.Queue",
-            "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards"])
-        self.rhook("web.global_html", self.web_global_html)
-
-    def web_global_html(self):
-        return "constructor/global.html"
-
-class Constructor(Module):
-    def register(self):
-        Module.register(self)
-        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
-            "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
-            "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards"])
-        self.rhook("web.global_html", self.web_global_html)
-        self.rhook("ext-index.index", self.index)
-        self.rhook("ext-cabinet.index", self.cabinet_index)
-        self.rhook("auth.redirects", self.redirects)
-        self.rhook("forum.topmenu", self.forum_topmenu)
-        self.rhook("ext-cabinet.settings", self.cabinet_settings)
-        self.rhook("ext-documentation.index", self.documentation_index)
-        self.rhook("ext-debug.validate", self.debug_validate)
-        self.rhook("ext-constructor.newgame", self.constructor_newgame)
-        self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("applications.list", self.applications_list)
-        self.rhook("all.schedule", self.schedule)
-        self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("project.cleanup", self.cleanup)
         self.rhook("project.missing", self.missing)
-        self.rhook("core.appfactory", self.appfactory)
-        self.rhook("core.webdaemon", self.webdaemon)
+        self.rhook("menu-admin-root.index", self.menu_root_index, priority=500)
+        self.rhook("ext-admin-cabinet.index", self.admin_cabinet)
 
-    def appfactory(self):
-        raise Hooks.Return(mg.constructor.ApplicationFactory(self.app().inst))
+    def menu_root_index(self, menu):
+        menu.append({"id": "cabinet/index", "text": self._("Return to the cabinet"), "leaf": True})
 
-    def webdaemon(self):
-        raise Hooks.Return(mg.constructor.MultiapplicationWebDaemon(self.app().inst))
-
-    def objclasses_list(self, objclasses):
-        objclasses["Project"] = (Project, ProjectList)
-
-    def applications_list(self, apps):
-        apps.append("main")
-        projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
-        apps.extend(projects.uuids())
-
-    def schedule(self, sched):
-        sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
+    def admin_cabinet(self):
+        self.call("web.response_json", {"redirect_top": "http://www.%s/cabinet" % self.app().inst.config["main_host"]})
 
     def missing(self, tag):
         app = self.app().inst.appfactory.get_by_tag(tag)
@@ -89,6 +51,79 @@ class Constructor(Module):
         sched.remove()
         project = int_app.obj(Project, tag, silent=True)
         project.remove()
+
+class ConstructorProject(Module):
+    def register(self):
+        Module.register(self)
+        self.rdep(["mg.core.web.Web", "mg.admin.AdminInterface", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession",
+            "mg.core.cluster.Cluster", "mg.core.auth.Authorization", "mg.core.emails.Email", "mg.core.queue.Queue",
+            "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards", "mg.constructor.mod.ConstructorProjectAdmin",
+            "mg.constructor.mod.ConstructorUtils"])
+        self.rhook("web.global_html", self.web_global_html)
+        self.rhook("permissions.list", self.permissions_list)
+
+    def web_global_html(self):
+        return "constructor/global.html"
+
+    def permissions_list(self, perms):
+        perms.append({"id": "project.admin", "name": self._("Project main administrator")})
+
+class ConstructorProjectAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-root.index", self.menu_root_index, priority=-500)
+        self.rhook("ext-admin-project.destroy", self.project_destroy)
+
+    def menu_root_index(self, menu):
+        req = self.req()
+        if self.app().project.get("inactive") and req.has_access("project.admin"):
+            menu.append({"id": "project/destroy", "text": self._("Destroy this project"), "leaf": True})
+
+    def project_destroy(self):
+        self.call("session.require_permission", "project.admin")
+        if self.app().project.get("inactive"):
+            self.call("project.cleanup", self.app().project.uuid)
+        self.call("web.response_json", {"redirect_top": "http://www.%s/cabinet" % self.app().inst.config["main_host"]})
+
+class Constructor(Module):
+    def register(self):
+        Module.register(self)
+        self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
+            "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
+            "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards",
+            "mg.constructor.mod.ConstructorUtils"])
+        self.rhook("web.global_html", self.web_global_html)
+        self.rhook("ext-index.index", self.index)
+        self.rhook("ext-cabinet.index", self.cabinet_index)
+        self.rhook("auth.redirects", self.redirects)
+        self.rhook("forum.topmenu", self.forum_topmenu)
+        self.rhook("ext-cabinet.settings", self.cabinet_settings)
+        self.rhook("ext-documentation.index", self.documentation_index)
+        self.rhook("ext-debug.validate", self.debug_validate)
+        self.rhook("ext-constructor.newgame", self.constructor_newgame)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("applications.list", self.applications_list)
+        self.rhook("all.schedule", self.schedule)
+        self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
+        self.rhook("core.appfactory", self.appfactory)
+        self.rhook("core.webdaemon", self.webdaemon)
+
+    def appfactory(self):
+        raise Hooks.Return(mg.constructor.ApplicationFactory(self.app().inst))
+
+    def webdaemon(self):
+        raise Hooks.Return(mg.constructor.MultiapplicationWebDaemon(self.app().inst))
+
+    def objclasses_list(self, objclasses):
+        objclasses["Project"] = (Project, ProjectList)
+
+    def applications_list(self, apps):
+        apps.append("main")
+        projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
+        apps.extend(projects.uuids())
+
+    def schedule(self, sched):
+        sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
 
     def cleanup_inactive(self):
         inst = self.app().inst
@@ -145,23 +180,41 @@ class Constructor(Module):
         req = self.req()
         session = self.call("session.require_login")
         perms = req.permissions()
+        menu = []
         menu1 = []
         menu1.append({"href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation")})
         if len(perms):
             menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Administration")})
         menu1.append({"href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum")})
+        menu1.append({"href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings")})
+        menu1.append({"href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out")})
+        menu.append(menu1)
         menu2 = []
         menu2.append({"href": "/constructor/newgame", "image": "constructor/cab_newgame.jpg", "text": self._("New game")})
+        menu.append(menu2)
+        # list of games
+        projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
+        projects.load(silent=True)
+        if len(projects):
+            menu_projects = []
+            for project in projects:
+                title = project.get("title")
+                if title is None:
+                    title = self._("Untitled game %s") % project.uuid
+                domain = project.get("domain")
+                if domain is None:
+                    domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
+                    menu_projects.append({"href": "http://%s/admin" % domain, "image": "constructor/cab_game.jpg", "text": title})
+                else:
+                    menu_projects.append({"href": "http://%s/" % domain, "image": "constructor/cab_game.jpg", "text": title})
+                if len(menu_projects) >= 4:
+                    menu.append(menu_projects)
+                    menu_projects = []
+            if len(menu_projects):
+                menu.append(menu_projects)
         vars = {
             "title": self._("Cabinet"),
-            "menu": [
-                menu1,
-                menu2,
-                [
-                    { "href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings") },
-                    { "href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out") },
-                ],
-            ],
+            "menu": menu,
         }
         self.call("web.response_template", "constructor/cabinet.html", vars)
 
@@ -241,7 +294,7 @@ class Constructor(Module):
             new_user.set(field, old_user.get(field))
         new_user.store()
         # giving permissions
-        perms = app.obj(UserPermissions, new_user.uuid, {"perms": {"permissions": True}})
+        perms = app.obj(UserPermissions, new_user.uuid, {"perms": {"project.admin": True}})
         perms.sync()
         perms.store()
         # creating new session
@@ -256,7 +309,7 @@ class Constructor(Module):
 
 class ProjectSetupWizard(Wizard):
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard %s") % uuid4().hex, "leaf": True, "admin_index": True})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True})
 
     def request(self, cmd):
         self.call("admin.update_menu")

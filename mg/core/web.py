@@ -304,7 +304,7 @@ class WebDaemon(object):
             raise
         except RuntimeError as e:
             self.logger.error(e)
-            return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % e)
+            return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % cgi.escape(str(e)))
         except BaseException as e:
             self.logger.exception(e)
             return request.internal_server_error()

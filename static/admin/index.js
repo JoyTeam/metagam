@@ -25,6 +25,9 @@ function adm_success(response, opts)
 		if (res.redirect) {
 			adm(res.redirect);
 			return;
+		} else if (res.redirect_top) {
+			window.location.href = res.redirect_top;
+			return;
 		}
 		ver = res.ver + ver_suffix;
 		wait([res.script], function() {
