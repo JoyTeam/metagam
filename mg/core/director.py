@@ -1,10 +1,8 @@
-from mg.core import Module
+from mg import *
 from concurrence import Tasklet, JoinError, Timeout
 from concurrence.http import HTTPConnection
 import re
 import json
-import logging
-import mg.core
 
 class CassandraStruct(Module):
     def register(self):
@@ -13,9 +11,12 @@ class CassandraStruct(Module):
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.constructor.mod.Constructor"])
+        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner"])
         self.config()
         self.app().inst.setup_logger()
+        modules = self.app().inst.config.get("modules")
+        if modules:
+            self.rdep(modules)
         self.servers_online = self.conf("director.servers", default={})
         self.servers_online_modified = True
         self.queue_workers = []
@@ -28,13 +29,79 @@ class Director(Module):
         self.rhook("int-director.config", self.director_config)
         self.rhook("director.reload_servers", self.reload_servers)
         self.rhook("core.fastidle", self.fastidle)
-        self.rhook("monitor.check", self.monitor_check)
         self.rhook("director.queue_workers", self.director_queue_workers)
         self.rhook("cluster.servers_online", self.cluster_servers_online, priority=10)
+        self.rhook("director.run", self.run)
+        self.rhook("core.appfactory", self.appfactory, priority=-10)
         self.servers_online_updated()
 
+    def run(self):
+        self.reload_servers()
+        # daemon
+        daemon = WebDaemon(self.app().inst)
+        daemon.app = self.app()
+        daemon.serve(("0.0.0.0", 3000))
+        # application factory
+        inst = self.app().inst
+        inst.appfactory = self.call("core.appfactory")
+        inst.appfactory.add(self.app())
+        # background tasks
+        Tasklet.new(self.monitor)()
+        Tasklet.new(self.call)("queue.process")
+        while True:
+            try:
+                self.call("core.fastidle")
+            except (SystemExit, KeyboardInterrupt, TaskletExit):
+                raise
+            except BaseException as e:
+                self.exception(e)
+            Tasklet.sleep(1)
+
+    def monitor(self):
+        while True:
+            try:
+                for server_id, info in self.servers_online.items():
+                    host = info.get("host")
+                    port = info.get("port")
+                    success = False
+                    try:
+                        cnn = HTTPConnection()
+                        cnn.connect((str(host), int(port)))
+                        try:
+                            with Timeout.push(20):
+                                request = cnn.get("/core/ping")
+                                request.add_header("Content-type", "application/x-www-form-urlencoded")
+                                response = cnn.perform(request)
+                                if response.status_code == 200 and response.get_header("Content-type") == "application/json":
+                                    body = json.loads(response.body)
+                                    if body.get("ok") and body.get("server_id") == server_id:
+                                        success = True
+                        finally:
+                            cnn.close()
+                    except (KeyboardInterrupt, SystemExit, TaskletExit):
+                        raise
+                    except BaseException as e:
+                        self.info("%s - %s", server_id, e)
+                    if not success:
+                        # at the moment failing server could be removed from the configuration already
+                        fact_server = self.servers_online.get(server_id)
+                        if fact_server is not None:
+                            fact_port = fact_server.get("port")
+                            if fact_port is None or fact_port == port:
+                                del self.servers_online[server_id]
+                                self.store_servers_online()
+                                self.servers_online_updated()
+            except (SystemExit, TaskletExit, KeyboardInterrupt):
+                raise
+            except BaseException as e:
+                self.exception(e)
+            Tasklet.sleep(10)
+
+    def appfactory(self):
+        raise Hooks.Return(ApplicationFactory(self.app().inst))
+
     def cluster_servers_online(self):
-        raise mg.core.Hooks.Return(self.servers_online)
+        raise Hooks.Return(self.servers_online)
 
     def director_queue_workers(self):
         return self.queue_workers
@@ -98,14 +165,16 @@ class Director(Module):
             conf["cassandra"] = [("director-db", 9160)]
         if conf.get("memcached") is None:
             conf["memcached"] = [("director-mc", 11211)]
-        if conf.get("metagam_host") is None:
-            conf["metagam_host"] = "metagam"
+        if conf.get("main_host") is None:
+            conf["main_host"] = "main"
         if conf.get("storage") is None:
             conf["storage"] = ["storage"]
         if conf.get("smtp_server") is None:
             conf["smtp_server"] = "localhost"
         if conf.get("locale") is None:
             conf["locale"] = "en"
+        if conf.get("modules") is None:
+            conf["modules"] = ["mg.constructor.mod.Constructor"]
         self.app().inst.config = conf
         return conf
 
@@ -124,7 +193,8 @@ class Director(Module):
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
         storage = request.param("storage")
-        metagam_host = request.param("metagam_host")
+        modules = request.param("modules")
+        main_host = request.param("main_host")
         admin_user = request.param("admin_user")
         smtp_server = request.param("smtp_server")
         locale = request.param("locale")
@@ -133,7 +203,8 @@ class Director(Module):
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
             config["storage"] = re.split('\s*,\s*', storage)
-            config["metagam_host"] = metagam_host
+            config["modules"] = [mod for mod in re.split('\s*,\s*', modules) if len(mod)]
+            config["main_host"] = main_host
             config["admin_user"] = admin_user
             config["smtp_server"] = smtp_server
             config["locale"] = locale
@@ -145,7 +216,8 @@ class Director(Module):
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             storage = ", ".join(config["storage"])
-            metagam_host = config["metagam_host"]
+            modules = ", ".join(config["modules"])
+            main_host = config["main_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")
             locale = config.get("locale")
@@ -158,14 +230,16 @@ class Director(Module):
                 "cassandra": cassandra,
                 "storage_desc": self._("<strong>Storage servers</strong> (host, host, ...)"),
                 "storage": storage,
-                "metagam_host_desc": self._("<strong>Main application host name</strong> (without www)"),
-                "metagam_host": metagam_host,
+                "main_host_desc": self._("<strong>Main application host name</strong> (without www)"),
+                "main_host": main_host,
                 "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),
                 "admin_user": admin_user,
                 "smtp_server_desc": self._("<strong>SMTP server</strong> (host)"),
                 "smtp_server": smtp_server,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
+                "modules_desc": self._("<strong>Preload modules</strong> (mod, mod, ...)"),
+                "modules": modules,
                 "submit_desc": self._("Save")
             }
         })
@@ -178,14 +252,14 @@ class Director(Module):
 
     def fastidle(self):
         if self.servers_online_modified:
-            print "storing director.servers %s" % self.servers_online
+            self.servers_online_modified = False
             self.app().config.set("director.servers", self.servers_online)
             self.app().config.store()
             try:
-                if self.configure_nginx():
-                    self.servers_online_modified = False
+                if not self.configure_nginx():
+                    self.servers_online_modified = True
             except JoinError:
-                pass
+                self.servers_online_modified = True
 
     def configure_nginx(self):
         nginx = set()
@@ -261,36 +335,3 @@ class Director(Module):
         self.store_servers_online()
         self.servers_online_updated()
         self.call("web.response_json", {"ok": 1, "server_id": server_id})
-
-    def monitor_check(self):
-        for server_id, info in self.servers_online.items():
-            host = info.get("host")
-            port = info.get("port")
-            success = False
-            try:
-                cnn = HTTPConnection()
-                cnn.connect((str(host), int(port)))
-                try:
-                    with Timeout.push(20):
-                        request = cnn.get("/core/ping")
-                        request.add_header("Content-type", "application/x-www-form-urlencoded")
-                        response = cnn.perform(request)
-                        if response.status_code == 200 and response.get_header("Content-type") == "application/json":
-                            body = json.loads(response.body)
-                            if body.get("ok") and body.get("server_id") == server_id:
-                                success = True
-                finally:
-                    cnn.close()
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
-                logging.getLogger("mg.core.director.Director").info("%s - %s", server_id, e)
-            if not success:
-                # at the moment failing server could be removed from the configuration already
-                fact_server = self.servers_online.get(server_id)
-                if fact_server is not None:
-                    fact_port = fact_server.get("port")
-                    if fact_port is None or fact_port == port:
-                        del self.servers_online[server_id]
-                        self.store_servers_online()
-                        self.servers_online_updated()

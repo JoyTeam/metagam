@@ -20,8 +20,10 @@ def main():
             print response.status
             print response.body
         cnn.close()
-    except IOError, e:
+    except IOError as e:
         print e
+    except (SystemExit, TaskletExit, KeyboardInterrupt):
+        raise
     finally:
         quit()
 

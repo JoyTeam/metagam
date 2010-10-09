@@ -1,6 +1,7 @@
 from mg import *
 from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
 from mg.core.queue import QueueTask, QueueTaskList, Schedule
+import mg.constructor
 from mg.constructor import Project, ProjectList
 from uuid import uuid4
 import re
@@ -38,12 +39,20 @@ class Constructor(Module):
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("project.cleanup", self.cleanup)
         self.rhook("project.missing", self.missing)
+        self.rhook("core.appfactory", self.appfactory)
+        self.rhook("core.webdaemon", self.webdaemon)
+
+    def appfactory(self):
+        raise Hooks.Return(mg.constructor.ApplicationFactory(self.app().inst))
+
+    def webdaemon(self):
+        raise Hooks.Return(mg.constructor.MultiapplicationWebDaemon(self.app().inst))
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)
 
     def applications_list(self, apps):
-        apps.append("metagam")
+        apps.append("main")
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
         apps.extend(projects.uuids())
 

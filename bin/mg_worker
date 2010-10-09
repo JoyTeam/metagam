@@ -1,65 +1,23 @@
 #!/usr/bin/python2.6
 
-from mg.core import Instance
-from mg.core.web import WebDaemon, WebApplication
-from mg.constructor import ApplicationFactory, MultiapplicationWebDaemon
-from concurrence import dispatch, Tasklet
-from mg.core.cass import CassandraPool
-from mg.core.memcached import MemcachedPool, Memcached
-import traceback
-import json
-import mg.core.cluster
-import sys
-import re
+from mg import *
+from concurrence import dispatch, quit
+import logging
 
 def main():
     try:
-        # instance
-        inst = Instance()
-        inst.set_server_id("worker")
-        conf = inst.download_config()
-        dbpool = CassandraPool((("director-db", 9160),))
-        mcpool = MemcachedPool(("director-mc", 11211))
-        # internal application
-        int_app = WebApplication(inst, dbpool, mcpool, "int", "int")
-        inst.int_app = int_app
+        inst = Instance("worker")
+        inst.download_config()
+        int_app = WebApplication(inst, "int", "int")
         int_app.modules.load(["mg.core.worker.Worker"])
-        # internal daemon
-        int_daemon = WebDaemon(inst)
-        int_daemon.app = int_app
-        int_port = int_daemon.serve_any_port("0.0.0.0")
-        # application factory
-        dbpool = CassandraPool(conf["cassandra"])
-        mcpool = MemcachedPool(conf["memcached"][0])
-        inst.appfactory = ApplicationFactory(inst, dbpool, mcpool)
-        inst.appfactory.add(int_app)
-        # external daemon
-        ext_daemon = MultiapplicationWebDaemon(inst, dbpool, mcpool)
-        ext_port = ext_daemon.serve_any_port("0.0.0.0")
-        # registering
-        res = mg.core.cluster.dir_query("/director/ready", {
-            "type": "worker",
-            "port": int_port,
-            "parent": sys.argv[1],
-            "id": sys.argv[2],
-            "params": json.dumps({
-                "ext_port": ext_port,
-                "class": "metagam",
-            }),
-        })
-        # run
-        inst.set_server_id(res["server_id"], re.sub(r'^\d+\.\d+\.\d+\.\d+-server-\d+-', '', res["server_id"]))
-        while True:
-            try:
-                int_app.hooks.call("core.fastidle")
-            except:
-                traceback.print_exc()
-            Tasklet.sleep(1)
+        int_app.hooks.call("worker.run", "metagam")
     except RuntimeError as e:
-        print e
+        logging.error(e)
         quit(1)
+    except (SystemExit, TaskletExit, KeyboardInterrupt):
+        raise
     except:
-        traceback.print_exc()
+        logging.exception(e)
         quit(1)
 
 dispatch(main)

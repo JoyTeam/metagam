@@ -63,7 +63,9 @@ class TestDatabase(unittest.TestCase):
     def cleanup(self):
         try:
             self.db.system_drop_keyspace("mgtest")
-        except Exception, e:
+        except (SystemExit, TaskletExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             pass
 
     def testputget(self):

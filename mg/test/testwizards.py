@@ -25,7 +25,10 @@ class Test2Wizard(Wizard):
 
 class TestWizards(unittest.TestCase):
     def setUp(self):
-        self.app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        self.inst = Instance()
+        self.inst.dbpool = CassandraPool((("director-db", 9160),))
+        self.inst.mcpool = MemcachedPool(("director-mc", 11211))
+        self.app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.app.modules.load(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.wizards.Wizards"])
         dbstruct = {}
         self.app.hooks.call("core.dbstruct", dbstruct)

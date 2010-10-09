@@ -182,7 +182,7 @@ class QueueRunner(Module):
         apps = []
         self.call("applications.list", apps)
         for app in apps:
-            self.call("queue.add", "all.check", priority=20, app_tag=app)
+            self.call("queue.add", "all.check", priority=20, app_tag=app, unique="all-check-%s" % app)
 
     def queue_process(self):
         self.wait_free = channel()
@@ -196,7 +196,7 @@ class QueueRunner(Module):
                     self.wait_free.receive()
                 tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
                 if len(tasks):
-                    tasks.load()
+                    tasks.load(silent=True)
                     tasks.sort(cmp=lambda x, y: cmp(x.get("priority"), y.get("priority")), reverse=True)
                     if len(tasks) > self.workers:
                         del tasks[self.workers:]

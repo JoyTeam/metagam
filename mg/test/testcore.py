@@ -92,17 +92,21 @@ class TestJoin(Module):
 
 class TestCore(unittest.TestCase):
     def setUp(self):
-        pass
+        self.inst = Instance()
+        self.inst.dbpool = CassandraPool((("director-db", 9160),))
+        self.inst.mcpool = MemcachedPool(("director-mc", 11211))
 
     def test00(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         try:
             app.db().system_drop_keyspace("mgtest")
-        except Exception, e:
+        except (SystemExit, TaskletExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             pass
 
     def test01(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         list = []
         app.hooks.call("core.loaded_modules", list)
         self.assertEqual(len(list), 0)
@@ -130,7 +134,7 @@ class TestCore(unittest.TestCase):
         app.config.store()
 
     def test02(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.assertEqual(app.config.get("a.key1"), "value1")
         app.config.set("a.key2", "value2")
         app.config.delete("a.key1")
@@ -139,7 +143,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(app.config.get("a.key2"), "value2")
 
     def test03(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.assertEqual(app.config.get("a.key1"), None)
         self.assertEqual(app.config.get("a.key2"), "value2")
         self.assertTrue("a" in app.config._config)
@@ -148,12 +152,12 @@ class TestCore(unittest.TestCase):
         self.assertFalse("d" in app.config._config)
 
     def test04(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         app.modules.load(["mg.test.testcore.Test1"])
         app.hooks.store()
 
     def test05(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.assertEqual(len(app.hooks._groups), 0)
         list = []
         app.hooks.call("core.loaded_modules", list)
@@ -167,12 +171,12 @@ class TestCore(unittest.TestCase):
         self.assertTrue("grp2" in app.hooks._groups)
 
     def test06(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         app.modules.load(["mg.test.testcore.Test2"])
         app.hooks.store()
 
     def test07(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.assertEqual(len(app.hooks._groups), 0)
         app.hooks.call("grp1.test1")
         self.assertEqual(len(app.hooks._groups), 1)
@@ -183,7 +187,7 @@ class TestCore(unittest.TestCase):
         app.hooks.store()
 
     def test08(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         self.assertEqual(len(app.hooks._groups), 0)
         app.hooks.call("grp1.test1")
         self.assertEqual(len(app.hooks._groups), 1)
@@ -192,7 +196,7 @@ class TestCore(unittest.TestCase):
         self.assertTrue("mg.test.testcore.Test2" in app.hooks._groups["grp1"]["test1"])
 
     def test09(self):
-        app = Application(Instance(), CassandraPool(), MemcachedPool(), "mgtest")
+        app = Application(self.inst, "mgtest", keyspace="mgtest")
         app.modules.load(["mg.test.testcore.TestJoin"])
         self.assertEqual(app.hooks.call("join.empty"), None)
         self.assertEqual(app.hooks.call("join.single"), "single")

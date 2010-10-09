@@ -1,72 +1,23 @@
 #!/usr/bin/python2.6
 
-from mg.core import Instance, ApplicationFactory
-from mg.core.web import WebDaemon, WebApplication
-from concurrence import dispatch, Tasklet, quit
-import concurrence.core
-from mg.core.cass import CassandraPool
-from mg.core.memcached import MemcachedPool, Memcached
-import traceback
-import json
-import optparse
+from mg import *
+from concurrence import dispatch, quit
+import logging
 
 def main():
     try:
-        # configuration
-        parser = optparse.OptionParser()
-        parser.add_option("-n", "--nginx", action="store_true", help="Manage nginx configuration")
-        parser.add_option("-q", "--queue", action="store_true", help="Take part in the global queue processing")
-        parser.add_option("-b", "--backends", type="int", help="Run the give quantity of backends")
-        (options, args) = parser.parse_args()
-        # configuration
-        inst = Instance()
-        inst.set_server_id('server')
-        conf = inst.download_config()
-        dbpool = CassandraPool((("director-db", 9160),))
-        mcpool = MemcachedPool(("director-mc", 11211))
-        # application
-        app = WebApplication(inst, dbpool, mcpool, "int", "int")
-        inst.int_app = app
+        inst = Instance("server")
+        inst.download_config()
+        app = WebApplication(inst, "int", "int")
         app.modules.load(["mg.core.server.Server"])
-        # daemon
-        daemon = WebDaemon(inst)
-        daemon.app = app
-        port = daemon.serve_any_port("0.0.0.0")
-        app.server_id = port
-        # application_factory
-        inst.appfactory = ApplicationFactory(inst)
-        inst.appfactory.add(app)
-        # default option set
-        if not options.backends and not options.nginx and not options.queue:
-            options.backends = 4
-            options.nginx = True
-            options.queue = True
-        # registering
-        res = app.hooks.call("cluster.query_director", "/director/ready", {
-            "type": "server",
-            "port": port,
-            "id": app.server_id,
-            "params": json.dumps({
-                "backends": options.backends,
-                "nginx": options.nginx,
-                "queue": options.queue,
-            })
-        })
-        # run
-        inst.set_server_id(res["server_id"], "server")
-        while True:
-            try:
-                app.hooks.call("core.fastidle")
-            except:
-                traceback.print_exc()
-            Tasklet.sleep(1)
-    except SystemExit:
-        quit(0)
+        app.hooks.call("server.run")
+    except (SystemExit, TaskletExit, KeyboardInterrupt):
+        raise
     except RuntimeError as e:
-        print e
+        logging.error(e)
         quit(1)
-    except:
-        traceback.print_exc()
+    except BaseException as e:
+        logging.exception(e)
         quit(1)
 
 dispatch(main)

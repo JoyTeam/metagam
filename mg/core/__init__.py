@@ -3,8 +3,8 @@ from concurrence import Tasklet, http
 from concurrence.http import HTTPError
 from cassandra.ttypes import *
 from operator import itemgetter
-from mg.core.memcached import MemcachedLock, Memcached
-from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
+from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
+from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException, CassandraPool
 from uuid import uuid4
 import weakref
 import re
@@ -135,7 +135,7 @@ class Hooks(object):
                         args = res
                     elif res is not None:
                         ret = res
-                except Hooks.Return, e:
+                except Hooks.Return as e:
                     return e.value
         return ret
 
@@ -508,16 +508,14 @@ class Instance(object):
     """
     This is an executable instance. It keeps references to all major objects
     """
-    def __init__(self):
+    def __init__(self, server_id=None):
         self.modules_lock = Lock()
         self.config = {}
         self.appfactory = None
         self.modules = set()
-        self.server_id = uuid4().hex
-        self.logger_id = self.server_id
         self.syslog_channel = None
         self.stderr_channel = None
-        self.setup_logger()
+        self.set_server_id(server_id if server_id else uuid4().hex)
 
     def setup_logger(self):
         modlogger = logging.getLogger("")
@@ -543,10 +541,7 @@ class Instance(object):
 
     def set_server_id(self, id, logger_id=None):
         self.server_id = id
-        if logger_id is None:
-            self.logger_id = id
-        else:
-            self.logger_id = id
+        self.logger_id = id
         self.setup_logger()
 
     def reload(self):
@@ -577,6 +572,8 @@ class Instance(object):
                 config[key] = [tuple(ent) for ent in config[key]]
             self.config = config
             self.setup_logger()
+            self.dbpool = CassandraPool(config["cassandra"])
+            self.mcpool = MemcachedPool(config["memcached"][0])
             return config
         finally:
             cnn.close()
@@ -587,16 +584,14 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, dbpool, mcpool, tag):
+    def __init__(self, inst, tag, keyspace="main"):
         """
         inst - Instance object
-        dbpool - CassandraPool object
-        mcpool - MemcachedPool object
         tag - Application tag
         """
         self.inst = inst
-        self.mc = Memcached(mcpool, prefix="%s-" % tag)
-        self.db = dbpool.dbget("metagam", self.mc)
+        self.mc = Memcached(inst.mcpool, prefix="%s-" % tag)
+        self.db = inst.dbpool.dbget(keyspace, self.mc)
         self.keyprefix = "%s-" % tag
         self.tag = tag
         self.hooks = Hooks(self)
@@ -619,10 +614,11 @@ class Application(object):
         return errors
 
     def obj(self, cls, uuid=None, data=None, silent=False):
-        "Access CassandraObject constructor"
+        "Create CassandraObject instance"
         return cls(self.db, uuid, data, dbprefix=self.keyprefix, silent=silent)
 
     def objlist(self, cls, uuids=None, **kwargs):
+        "Create CassandraObjectList instance"
         return cls(self.db, uuids, dbprefix=self.keyprefix, **kwargs)
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):

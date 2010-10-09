@@ -22,13 +22,13 @@ class Socket(TTransportBase):
                 try:
                     self.handle = concurrence.io.Socket.connect(host, self.timeout)
                     self.stream = concurrence.io.BufferedStream(self.handle)
-                except socket.error, e:
+                except socket.error as e:
                     if host is not self.hosts[-1]:
                         continue
                     else:
                         raise e
                     break
-        except socket.error, e:
+        except socket.error as e:
             message = "Could not connect to thrift socket"
             raise TTransportException(TTransportException.NOT_OPEN, message)
 

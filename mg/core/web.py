@@ -259,7 +259,9 @@ class WebDaemon(object):
         try:
             self.server.serve(addr)
             self.logger.info("serving %s:%d", addr[0], addr[1])
-        except Exception as err:
+        except (SystemExit, TaskletExit, KeyboardInterrupt):
+            raise
+        except BaseException as err:
             self.logger.error("Listen %s:%d: %s", addr[0], addr[1], err)
             quit(1)
 
@@ -276,7 +278,9 @@ class WebDaemon(object):
                         pass
                     else:
                         raise
-            except Exception as err:
+            except (SystemExit, TaskletExit, KeyboardInterrupt):
+                raise
+            except BaseException as err:
                 self.logger.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
                 quit(1)
         self.logger.error("Couldn't find any unused port")
@@ -298,6 +302,9 @@ class WebDaemon(object):
             return self.request_uri(request, uri)
         except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
+        except RuntimeError as e:
+            self.logger.error(e)
+            return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % e)
         except BaseException as e:
             self.logger.exception(e)
             return request.internal_server_error()
@@ -322,6 +329,8 @@ class WebDaemon(object):
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
+        if self.app is None:
+            raise RuntimeError("No applications configured. Specify appropriate modules in the director config")
         #self.app.hooks.call("l10n.set_request_lang")
         return self.app.http_request(request, group, hook, args)
 
@@ -335,17 +344,17 @@ class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
-    def __init__(self, inst, dbpool, mcpool, tag, hook_prefix):
+    def __init__(self, inst, tag, hook_prefix):
         """
         inst - Instance object
-        dbpool - CassandraPool object
-        mcpool - MemcachedPool object
         tag - application tag
         hook_prefix - prefix for hook names, i.e. prefix "web" means that
            URL /group/hook will be mapped to hook name web-group.hook
         """
-        Application.__init__(self, inst, dbpool, mcpool, tag)
+        Application.__init__(self, inst, tag)
         self.hook_prefix = hook_prefix
+        if tag == "int":
+            inst.int_app = self
 
     def http_request(self, request, group, hook, args):
         "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
@@ -431,8 +440,10 @@ class Web(Module):
     def core_appconfig(self):
         req = self.req()
         factory = self.app().inst.appfactory
-        if req.args == "int" or req.args == "metagam":
-            factory.get_by_tag(req.args).reload()
+        if req.args == "int" or req.args == "main":
+            app = factory.get_by_tag(req.args)
+            if app:
+                app.reload()
         else:
             factory.remove_by_tag(req.args)
         self.call("web.response_json", {"ok": 1})
