@@ -77,7 +77,7 @@ class AdminInterface(Module):
         while group is not None:
             res = self.call("headmenu-%s.%s" % (group, hook), args)
             if res is None:
-                menu.append(cgi.escape("headmenu-%s.%s" % (group, hook)))
+                #menu.append(cgi.escape("headmenu-%s.%s" % (group, hook)))
                 break
             else:
                 if type(res) == list:

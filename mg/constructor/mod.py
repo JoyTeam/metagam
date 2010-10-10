@@ -312,5 +312,7 @@ class ProjectSetupWizard(Wizard):
         menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True})
 
     def request(self, cmd):
-        self.call("admin.update_menu")
-        self.call("admin.response", "ProjectSetupWizard contents<br />wizard=%s<br />app=%s<br />session=%s<br />user=%s" % (self.uuid, self.app().tag, self.req().session().uuid, self.req().user()), {})
+        vars = {
+            "user": self.app().project.get("owner")
+        }
+        self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)

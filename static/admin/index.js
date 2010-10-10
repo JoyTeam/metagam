@@ -39,13 +39,15 @@ function adm_response(res)
 		admincontent = new Ext.Container({
 			autoScroll: true,
 			hidden: true,
-			items: [{
+			cls: 'admin-content'
+		});
+		if (res.headmenu)
+			admincontent.add({
 				border: false,
 				autoHeight: true,
-				html: '<div id="headmenu">' + res.headmenu + '</div>',
-				cls: 'admin-content',
-			}]
-		});
+				html: res.headmenu,
+				cls: 'admin-headmenu',
+			});
 		adminmain.add(admincontent);
 		adminmain.doLayout();
 		if (res.script) {
@@ -88,7 +90,24 @@ function adm_response(res)
 				});
 			}
 		}
-		advicecontent.doLayout()
+		advicecontent.doLayout();
+		var auto_panels = Ext.query('div.auto-panel', admincontent.dom);
+		for (var i = 0; i < auto_panels.length; i++) {
+			var div = auto_panels[i];
+			var content = div.innerHTML;
+			var title = div.title;
+			div.innerHTML = '';
+			div.title = undefined;
+			var panel = new Ext.Panel({
+				title: title,
+				html: content,
+				collapsible: true,
+				renderTo: div,
+				border: false,
+				collapsed: true,
+				titleCollapse: true
+			});
+		}
 	}
 }
 

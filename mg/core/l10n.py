@@ -52,15 +52,15 @@ class L10n(Module):
 
     def l10n_lang(self):
         try:
-            return self.req().lang
+            return str(self.req().lang)
         except AttributeError:
             pass
         try:
-            return self.app().lang
+            return str(self.app().lang)
         except AttributeError:
             pass
         try:
-            return self.app().inst.config["locale"]
+            return str(self.app().inst.config["locale"])
         except KeyError:
             pass
         return None
