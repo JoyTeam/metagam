@@ -16,27 +16,39 @@ class AdminInterface(Module):
         self.rhook("admin.response", self.response)
         self.rhook("admin.response_template", self.response_template)
         self.rhook("admin.update_menu", self.update_menu)
+        self.rhook("admin.redirect", self.redirect)
+        self.rhook("admin.redirect_top", self.redirect_top)
         self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
 
     def index(self):
         self.call("auth.require_login")
-        menu = self.makemenu("root.index", "Root")
-        wizards = []
-        self.call("wizards.call", "menu", wizards)
-        if wizards:
-            if not menu:
-                menu = {"text": "Root", "children": []}
-            menu["children"] = wizards + menu["children"]
-        if not menu:
-            self.call("web.forbidden")
+        menu = self.makemenu()
         vars = {
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
         }
         self.call("web.response_template", "admin/index.html", vars)
 
-    def makemenu(self, node, text):
+    def makemenu(self):
+        leftmenu = self.leftmenunode("root.index", "Root")
+        wizards = []
+        self.call("wizards.call", "menu", wizards)
+        if wizards:
+            if not leftmenu:
+                leftmenu = {"text": "Root", "children": []}
+            leftmenu["children"] = wizards + leftmenu["children"]
+        if not leftmenu:
+            self.call("web.forbidden")
+        topmenu = []
+        self.call("menu-admin-top.list", topmenu)
+        return {
+            "left": leftmenu,
+            "top": topmenu,
+            "title": self._("%s administration interface") % getattr(self.app(), "title", self.app().tag)
+        }
+
+    def leftmenunode(self, node, text):
         menu = []
         self.call("menu-admin-%s" % node, menu)
         result = []
@@ -44,7 +56,7 @@ class AdminInterface(Module):
             if ent.get("leaf"):
                 result.append(ent)
             else:
-                submenu = self.makemenu(ent["id"], ent["text"])
+                submenu = self.leftmenunode(ent["id"], ent["text"])
                 if submenu:
                     result.append(submenu)
         return {"text": text, "children": result} if len(result) else None
@@ -103,27 +115,50 @@ class AdminInterface(Module):
         menu.reverse()
         return " &bull; ".join(menu)
 
-    def response_js(self, script, cls, data):
-        req = self.req()
-        self.call("web.response_json", {
+    def response_params(self):
+        params = {
             "ver": self.call("core.ver"),
-            "script": script,
-            "cls": cls,
-            "data": data,
             "headmenu": self.headmenu()
-        })
+        }
+        if getattr(self.req(), "admin_update_menu", False):
+            params["menu"] = self.makemenu()
+            print "makemenu: %s" % params["menu"]
+        return params
+
+    def response_js(self, script, cls, data):
+        params = self.response_params()
+        params["script"] = script
+        params["cls"] = cls
+        params["data"] = data
+        self.call("web.response_json", params)
 
     def response(self, content, vars):
-        req = self.req()
-        req.global_html = "admin/response.html"
-        vars["headmenu"] = self.headmenu()
-        self.call("web.response_inline_layout", content, vars)
+        params = self.response_params()
+        params["content"] = self.call("web.parse_inline_layout", content, vars)
+        self.call("web.response_json", params)
 
     def response_template(self, filename, vars):
-        req = self.req()
-        req.global_html = "admin/response.html"
-        vars["headmenu"] = self.headmenu()
-        self.call("web.response_layout", filename, vars)
+        params = self.response_params()
+        params["content"] = self.call("web.parse_layout", filename, vars)
+        self.call("web.response_json", params)
+
+    def redirect(self, id):
+        params = self.response_params()
+        params["redirect"] = id
+        params["success"] = True
+        del params["headmenu"]
+        self.call("web.response_json", params)
+
+    def redirect_top(self, href):
+        params = self.response_params()
+        params["redirect_top"] = href
+        params["success"] = True
+        del params["headmenu"]
+        try:
+            del params["menu"]
+        except KeyError:
+            pass
+        self.call("web.response_json", params)
 
     def link(self, vars, href=None, title=None):
         if type(href) == unicode:
@@ -143,4 +178,4 @@ class AdminInterface(Module):
         self.call("admin.response_js", "admin/form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})
 
     def update_menu(self):
-        self.req().headers.append(("X-Update-Menu", "yes"))
+        self.req().admin_update_menu = True

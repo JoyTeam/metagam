@@ -265,7 +265,7 @@ class ForumAdmin(Module):
             conf = self.app().config
             conf.set("forum.categories", categories)
             conf.store()
-            self.call("web.response_json", {"success": True, "redirect": "forum/categories"})
+            self.call("admin.redirect", "forum/categories")
         fields = [
             {
                 "name": "title",
@@ -328,7 +328,7 @@ class ForumAdmin(Module):
         self.call("session.require_permission", "forum.categories")
         cat = self.call("forum.category", self.req().args)
         if cat is None:
-            self.call("web.response_json", {"redirect": "forum/categories"})
+            self.call("admin.redirect", "forum/categories")
         categories = [c for c in self.call("forum.categories") if c["id"] != cat["id"]]
         conf = self.app().config
         conf.set("forum.categories", categories)
@@ -341,7 +341,7 @@ class ForumAdmin(Module):
         list.remove()
         obj = self.obj(ForumPermissions, cat["id"], silent=True)
         obj.remove()
-        self.call("web.response_json", {"redirect": "forum/categories"})
+        self.call("admin.redirect", "forum/categories")
 
 class Socio(Module):
     def register(self):

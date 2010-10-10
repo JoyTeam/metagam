@@ -14,22 +14,25 @@ if (i >= 0) {
 var admin_ajax_trans;
 var adminmain;
 var current_page;
+var leftmenu;
+var topmenu;
 var ver_suffix = '-' + Math.round(Math.random() * 100000000);
 ver = ver + ver_suffix;
 
-function adm_success(response, opts)
+function adm_response(res)
 {
-	current_page = opts.func;
-	if (response.getResponseHeader("Content-Type").match(/json/)) {
-		var res = Ext.util.JSON.decode(response.responseText);
-		if (res.redirect) {
-			adm(res.redirect);
-			return;
-		} else if (res.redirect_top) {
-			window.location.href = res.redirect_top;
-			return;
-		}
+	if (res.ver)
 		ver = res.ver + ver_suffix;
+	if (res.menu)
+		update_menu(res.menu);
+	if (res.redirect) {
+		if (res.redirect == '_self')
+			adm(current_page);
+		else
+			adm(res.redirect);
+	} else if (res.redirect_top) {
+		window.location.href = res.redirect_top;
+	} else if (res.script) {
 		wait([res.script], function() {
 			adminmain.removeAll();
 			var obj = new (eval(res.cls))(res.data);
@@ -49,6 +52,25 @@ function adm_success(response, opts)
 			adminmain.add(obj);
 			adminmain.doLayout();
 		});
+	} else if (res.content) {
+		var panel = new AdminResponse({
+			border: false,
+			html: res.content,
+			autoScroll: true,
+			bodyStyle: 'padding: 10px'
+		});
+		adminmain.removeAll();
+		adminmain.add(panel);
+		adminmain.doLayout();
+	}
+}
+
+function adm_success(response, opts)
+{
+	current_page = opts.func;
+	if (response.getResponseHeader("Content-Type").match(/json/)) {
+		var res = Ext.util.JSON.decode(response.responseText);
+		adm_response(res);
 	} else {
 		var panel = new AdminResponse({
 			border: false,
@@ -113,6 +135,30 @@ function find_default_page(menu)
 	return undefined;
 }
 
+function button_handler(btn)
+{
+	if (btn.href)
+		window.location.href = btn.href;
+	else if (btn.id)
+		adm(btn.id);
+}
+
+function update_menu(menu)
+{
+	leftmenu.setRootNode(menu.left);
+	topmenu.removeAll();
+	topmenu.add({
+		id: 'projecttitle',
+		xtype: 'tbtext',
+		text: menu.title,
+	}, '->');
+	for (var i = 0; i < menu.top.length; i++) {
+		ent = menu.top[i];
+		topmenu.add({id: ent.id, href: ent.href, text: ent.text, tooltip: ent.tooltip, handler: button_handler});
+	}
+	topmenu.doLayout();
+}
+
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'side';
@@ -120,18 +166,52 @@ Ext.onReady(function() {
 		autoDestroy: true,
 		layout: 'fit'
 	});
-	var menu = new Ext.tree.TreePanel({
+	leftmenu = new Ext.tree.TreePanel({
+		id: 'leftmenu',
 		useArrows: true,
 		autoScroll: true,
 		animate: true,
 		containerScroll: true,
 		border: false,
 		rootVisible: false,
-		root: admin_menu,
+		root: {},
+	});
+	topmenu = new Ext.Toolbar({
+		id: 'topmenu',
+		border: false,
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
 		items: [
+/*			{
+				region: 'north',
+				height: 30,
+				border: false,
+				autoScroll: false,
+				layout: 'hbox',
+				layoutConfig: {
+					align: 'stretchmax',
+					pack: 'start'
+				},
+				items: [{
+					id: 'toptitle',
+					html: 'Project ABC',
+					border: false
+				}, {
+					flex: 1,
+					border: false,
+					layout: 'fit',
+					items: [topmenu]
+				}],
+			},*/
+			{
+				region: 'north',
+				height: 30,
+				autoScroll: false,
+				layout: 'fit',
+				border: false,
+				items: topmenu
+			},
 			{
 				region: 'west',
 				split: true,
@@ -140,7 +220,14 @@ Ext.onReady(function() {
 				maxSize: 400,
 				border: false,
 				autoScroll: true,
-				items: menu
+				items: leftmenu
+			},
+			{
+				region: 'east',
+				split: true,
+				width: 400,
+				border: false,
+				autoScroll: true,
 			},
 			{
 				region: 'center',
@@ -150,18 +237,19 @@ Ext.onReady(function() {
 			}
 		]
 	});
-	menu.getSelectionModel().on({
+	leftmenu.getSelectionModel().on({
 		'beforeselect' : function(sm, node) {
 			if (node && node.isLeaf())
-				adm(node.id);
+				button_handler(node);
 			else
 				adm(undefined);
 			return false;
 		},
-		scope: menu
+		scope: leftmenu
 	});
+	update_menu(admin_menu);
 	if (!default_page)
-		default_page = find_default_page(admin_menu.children)
+		default_page = find_default_page(admin_menu.left.children)
 	if (default_page)
 		adm(default_page);
 });

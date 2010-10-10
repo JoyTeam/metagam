@@ -12,14 +12,11 @@ class ConstructorUtils(Module):
         Module.register(self)
         self.rhook("project.cleanup", self.cleanup)
         self.rhook("project.missing", self.missing)
-        self.rhook("menu-admin-root.index", self.menu_root_index, priority=500)
-        self.rhook("ext-admin-cabinet.index", self.admin_cabinet)
+        self.rhook("menu-admin-top.list", self.menu_admin_top_list, priority=-500)
 
-    def menu_root_index(self, menu):
-        menu.append({"id": "cabinet/index", "text": self._("Return to the cabinet"), "leaf": True})
-
-    def admin_cabinet(self):
-        self.call("web.response_json", {"redirect_top": "http://www.%s/cabinet" % self.app().inst.config["main_host"]})
+    def menu_admin_top_list(self, topmenu):
+        topmenu.append({"href": "http://www.%s/forum" % self.app().inst.config["main_host"], "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
+        topmenu.append({"href": "http://www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Exit"), "tooltip": self._("Return to the Cabinet")})
 
     def missing(self, tag):
         app = self.app().inst.appfactory.get_by_tag(tag)
@@ -30,22 +27,17 @@ class ConstructorUtils(Module):
         app = inst.appfactory.get_by_tag(tag)
         if app is not None:
             sessions = app.objlist(SessionList, query_index="valid_till")
-            self.debug("Removing sessions: %s", sessions)
             sessions.remove()
             users = app.objlist(UserList, query_index="created")
-            self.debug("Removing users: %s", users)
             users.remove()
             perms = app.objlist(UserPermissionsList, users.uuids())
             perms.remove()
             wizards = app.objlist(WizardConfigList, query_index="all")
-            self.debug("Removing wizards: %s", wizards)
             wizards.remove()
             config = app.objlist(ConfigGroupList, query_index="all")
-            self.debug("Removing config groups: %s", config)
             config.remove()
         int_app = inst.int_app
         tasks = int_app.objlist(QueueTaskList, query_index="app-at", query_equal=tag)
-        self.debug("Removing tasks: %s", tasks)
         tasks.remove()
         sched = int_app.obj(Schedule, tag, silent=True)
         sched.remove()
@@ -71,19 +63,19 @@ class ConstructorProject(Module):
 class ConstructorProjectAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-root.index", self.menu_root_index, priority=-500)
+        self.rhook("menu-admin-top.list", self.menu_top_list, priority=10)
         self.rhook("ext-admin-project.destroy", self.project_destroy)
 
-    def menu_root_index(self, menu):
+    def menu_top_list(self, topmenu):
         req = self.req()
         if self.app().project.get("inactive") and req.has_access("project.admin"):
-            menu.append({"id": "project/destroy", "text": self._("Destroy this project"), "leaf": True})
+            topmenu.append({"id": "project/destroy", "text": self._("Destroy this game"), "tooltip": self._("You can destroy your game while not created")})
 
     def project_destroy(self):
         self.call("session.require_permission", "project.admin")
         if self.app().project.get("inactive"):
             self.call("project.cleanup", self.app().project.uuid)
-        self.call("web.response_json", {"redirect_top": "http://www.%s/cabinet" % self.app().inst.config["main_host"]})
+        self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
 
 class Constructor(Module):
     def register(self):

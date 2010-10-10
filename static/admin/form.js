@@ -99,16 +99,9 @@ Form = Ext.extend(AdminResponse, {
 						url: data.url,
 						waitMsg: gt.gettext('Sending data...'),
 						success: function(f, action) {
-							if (action.result.redirect) {
-								if (action.result.redirect == '_self')
-									adm(current_page);
-								else
-									adm(action.result.redirect);
-							} else {
-								adm_success(action.response, {
-									func: data.url
-								});
-							}
+							adm_success(action.response, {
+								func: data.url
+							});
 						},
 						failure: function(f, action) {
 							if (action.failureType === Ext.form.Action.SERVER_INVALID) {

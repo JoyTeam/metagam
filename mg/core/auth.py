@@ -768,7 +768,7 @@ class Authorization(Module):
                 if not user:
                     errors["name"] = self._("User not found")
                 else:
-                    self.call("web.response_json", {"success": True, "redirect": "auth/edituserpermissions/%s" % user.uuid})
+                    self.call("admin.redirect", "auth/edituserpermissions/%s" % user.uuid)
             self.call("web.response_json", {"success": False, "errors": errors})
         fields = [
             {"name": "name", "label": self._("User name"), "value": name},
@@ -803,7 +803,7 @@ class Authorization(Module):
                 user_permissions.store()
             else:
                 user_permissions.remove()
-            self.call("web.response_json", {"success": True, "redirect": "auth/permissions"})
+            self.call("admin.redirect", "auth/permissions")
         else:
             perm_values = user_permissions.get("perms")
             if not perm_values:
@@ -914,7 +914,7 @@ class PermissionsEditor(Module):
             new_rules = [(role, perm) for ord, role, perm in new_rules]
             self.perms.set("rules", new_rules)
             self.perms.store()
-            self.call("web.response_json", {"success": True, "redirect": "_self"})
+            self.call("admin.redirect", "_self")
         rules = self.perms.get("rules")
         for n in range(0, len(rules)):
             rule = rules[n]
@@ -941,4 +941,4 @@ class PermissionsEditor(Module):
             self.perms.store()
         except IndexError:
             pass
-        self.call("web.response_json", {"redirect": "forum/permissions/%s" % self.uuid})
+        self.call("admin.redirect", "forum/permissions/%s" % self.uuid)
