@@ -200,7 +200,7 @@ class Constructor(Module):
             for project in projects:
                 title = project.get("title")
                 if title is None:
-                    title = self._("Untitled game %s") % project.uuid
+                    title = self._("Untitled game")
                 domain = project.get("domain")
                 if domain is None:
                     domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
