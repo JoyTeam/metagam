@@ -13,9 +13,11 @@ if (i >= 0) {
 
 var admin_ajax_trans;
 var adminmain;
+var admincontent;
 var current_page;
 var leftmenu;
 var topmenu;
+var advicecontent;
 var ver_suffix = '-' + Math.round(Math.random() * 100000000);
 ver = ver + ver_suffix;
 
@@ -32,42 +34,68 @@ function adm_response(res)
 			adm(res.redirect);
 	} else if (res.redirect_top) {
 		window.location.href = res.redirect_top;
-	} else if (res.script) {
-		wait([res.script], function() {
-			adminmain.removeAll();
-			var obj = new (eval(res.cls))(res.data);
-			obj = new Ext.Container({
-				autoScroll: true,
-				items: [{
-					border: false,
-					autoHeight: true,
-					html: '<div id="headmenu">' + res.headmenu + '</div>',
-					bodyStyle: 'padding: 10px 10px 0px 10px'
-				}, {
-					border: false,
-					items: obj,
-					bodyStyle: 'padding: 0px 10px 10px 10px'
-				}]
-			});
-			adminmain.add(obj);
-			adminmain.doLayout();
-		});
-	} else if (res.content) {
-		var panel = new AdminResponse({
-			border: false,
-			html: res.content,
-			autoScroll: true,
-			bodyStyle: 'padding: 10px'
-		});
+	} else {
 		adminmain.removeAll();
-		adminmain.add(panel);
+		admincontent = new Ext.Container({
+			autoScroll: true,
+			hidden: true,
+			items: [{
+				border: false,
+				autoHeight: true,
+				html: '<div id="headmenu">' + res.headmenu + '</div>',
+				cls: 'admin-content',
+			}]
+		});
+		adminmain.add(admincontent);
 		adminmain.doLayout();
+		if (res.script) {
+			wait([res.script], function() {
+				var obj = new (eval(res.cls))(res.data);
+				admincontent.add({
+					border: false,
+					cls: 'admin-body',
+					items: obj
+				});
+				admincontent.doLayout();
+				adminmain.doLayout();
+				admincontent.show()
+			});
+		} else if (res.content) {
+			var panel = new AdminResponse({
+				border: false,
+				html: res.content,
+				cls: 'admin-body',
+			});
+			admincontent.add(panel);
+			admincontent.doLayout();
+			admincontent.show();
+		}
+		advicecontent.removeAll()
+		if (res.advice && res.advice.length) {
+			advicecontent.add({
+				html: gt.gettext('Guru advice'),
+				border: false,
+				cls: 'advice-banner',
+			});
+			for (var i = 0; i < res.advice.length; i++) {
+				var adv = res.advice[i];
+				advicecontent.add({
+					collapsible: true,
+					title: adv.title,
+					html: adv.content,
+					cls: 'advice',
+					bodyCssClass: 'advice-body',
+				});
+			}
+		}
+		advicecontent.doLayout()
 	}
 }
 
 function adm_success(response, opts)
 {
 	current_page = opts.func;
+	expand_menu(current_page);
 	if (response.getResponseHeader("Content-Type").match(/json/)) {
 		var res = Ext.util.JSON.decode(response.responseText);
 		adm_response(res);
@@ -145,7 +173,12 @@ function button_handler(btn)
 
 function update_menu(menu)
 {
+	leftmenu.animate = false;
 	leftmenu.setRootNode(menu.left);
+	leftmenu.expandAll();
+	leftmenu.collapseAll();
+	expand_menu(current_page);
+	leftmenu.animate = true;
 	topmenu.removeAll();
 	topmenu.add({
 		id: 'projecttitle',
@@ -159,6 +192,25 @@ function update_menu(menu)
 	topmenu.doLayout();
 }
 
+function expand_menu(page)
+{
+	expand_node(leftmenu.getRootNode(), page)
+}
+
+function expand_node(node, id)
+{
+	if (node.id == id) {
+		node.expand();
+		return true;
+	}
+	for (var i = 0; i < node.childNodes.length; i++)
+		if (expand_node(node.childNodes[i], id)) {
+			node.expand();
+			return true;
+		}
+
+}
+
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'side';
@@ -170,7 +222,6 @@ Ext.onReady(function() {
 		id: 'leftmenu',
 		useArrows: true,
 		autoScroll: true,
-		animate: true,
 		containerScroll: true,
 		border: false,
 		rootVisible: false,
@@ -180,30 +231,14 @@ Ext.onReady(function() {
 		id: 'topmenu',
 		border: false,
 	});
+	advicecontent = new Ext.Panel({
+		id: 'advicecontent',
+		border: false,
+		autoDestroy: true,
+	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
 		items: [
-/*			{
-				region: 'north',
-				height: 30,
-				border: false,
-				autoScroll: false,
-				layout: 'hbox',
-				layoutConfig: {
-					align: 'stretchmax',
-					pack: 'start'
-				},
-				items: [{
-					id: 'toptitle',
-					html: 'Project ABC',
-					border: false
-				}, {
-					flex: 1,
-					border: false,
-					layout: 'fit',
-					items: [topmenu]
-				}],
-			},*/
 			{
 				region: 'north',
 				height: 30,
@@ -216,7 +251,6 @@ Ext.onReady(function() {
 				region: 'west',
 				split: true,
 				width: 200,
-				minSize: 175,
 				maxSize: 400,
 				border: false,
 				autoScroll: true,
@@ -228,6 +262,8 @@ Ext.onReady(function() {
 				width: 400,
 				border: false,
 				autoScroll: true,
+				layout: 'fit',
+				items: advicecontent,
 			},
 			{
 				region: 'center',
@@ -239,10 +275,16 @@ Ext.onReady(function() {
 	});
 	leftmenu.getSelectionModel().on({
 		'beforeselect' : function(sm, node) {
-			if (node && node.isLeaf())
-				button_handler(node);
-			else
+			if (node) {
+		       		if (node.isLeaf())
+					button_handler(node);
+				else if (node.isExpanded())
+					node.collapse(true, true);
+				else
+					node.expand(false, true);
+			} else
 				adm(undefined);
+
 			return false;
 		},
 		scope: leftmenu

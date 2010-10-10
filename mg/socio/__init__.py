@@ -184,9 +184,14 @@ class ForumAdmin(Module):
         self.rhook("forum-admin.default_rules", self.default_rules)
         self.rhook("ext-admin-forum.delete", self.admin_delete)
         self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("advice-admin-forum.categories", self.advice_forum_categories)
+        self.rhook("advice-admin-forum.category", self.advice_forum_categories)
+
+    def advice_forum_categories(self, args, advice):
+        advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
 
     def menu_root_index(self, menu):
-        menu.append({ "id": "socio.index", "text": self._("Socio") })
+        menu.append({"id": "socio.index", "text": self._("Socio")})
 
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})

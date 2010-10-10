@@ -42,10 +42,13 @@ class AdminInterface(Module):
             self.call("web.forbidden")
         topmenu = []
         self.call("menu-admin-top.list", topmenu)
+        title = self.call("project.title")
+        if title is None:
+            title = self.app().tag
         return {
             "left": leftmenu,
             "top": topmenu,
-            "title": self._("%s administration interface") % getattr(self.app(), "title", self.app().tag)
+            "title": self._("%s administration interface") % title
         }
 
     def leftmenunode(self, node, text):
@@ -116,48 +119,56 @@ class AdminInterface(Module):
         return " &bull; ".join(menu)
 
     def response_params(self):
-        params = {
+        return {
             "ver": self.call("core.ver"),
-            "headmenu": self.headmenu()
         }
+
+    def params_page(self, params):
+        params["headmenu"] = self.headmenu()
+        req = self.req()
+        advice = []
+        self.call("advice-%s.%s" % (req.group, req.hook), req.args, advice)
+        self.call("advice-%s.index" % req.group, req.hook, req.args, advice)
+        params["advice"] = advice
+
+    def params_menu(self, params):
         if getattr(self.req(), "admin_update_menu", False):
             params["menu"] = self.makemenu()
-            print "makemenu: %s" % params["menu"]
-        return params
 
     def response_js(self, script, cls, data):
         params = self.response_params()
         params["script"] = script
         params["cls"] = cls
         params["data"] = data
+        self.params_page(params)
+        self.params_menu(params)
         self.call("web.response_json", params)
 
     def response(self, content, vars):
         params = self.response_params()
         params["content"] = self.call("web.parse_inline_layout", content, vars)
+        self.params_page(params)
+        self.params_menu(params)
         self.call("web.response_json", params)
 
     def response_template(self, filename, vars):
         params = self.response_params()
         params["content"] = self.call("web.parse_layout", filename, vars)
+        self.params_page(params)
+        self.params_menu(params)
         self.call("web.response_json", params)
 
     def redirect(self, id):
         params = self.response_params()
         params["redirect"] = id
         params["success"] = True
-        del params["headmenu"]
+        self.params_menu(params)
         self.call("web.response_json", params)
 
     def redirect_top(self, href):
         params = self.response_params()
         params["redirect_top"] = href
         params["success"] = True
-        del params["headmenu"]
-        try:
-            del params["menu"]
-        except KeyError:
-            pass
         self.call("web.response_json", params)
 
     def link(self, vars, href=None, title=None):

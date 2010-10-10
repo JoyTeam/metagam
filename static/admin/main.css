@@ -1,3 +1,10 @@
 #projecttitle{font-weight: bold; padding:3px 5px 0px 15px;font-size: 16px;}
-#headmenu{padding-bottom: 10px}
+#leftmenu{padding: 5px 0px 0px 0px}
+#headmenu{font-size: 20px; padding-bottom: 10px}
 .commands{margin:10px -2px 10px -2px;padding:4px 2px 4px 2px;background-color:#f8cab6}
+.advice{margin: 5px 10px 5px 10px}
+.advice-body{padding: 5px; font-size: 12px}
+.admin-content{padding: 5px 10px 0px 10px}
+.admin-body{padding: 0px 10px 10px 10px}
+.advice-banner{font-size: 20px; margin: 5px 10px 10px 10px}
+#topmenu{padding-right: 5px}

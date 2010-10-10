@@ -16,7 +16,7 @@ class ConstructorUtils(Module):
 
     def menu_admin_top_list(self, topmenu):
         topmenu.append({"href": "http://www.%s/forum" % self.app().inst.config["main_host"], "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
-        topmenu.append({"href": "http://www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Exit"), "tooltip": self._("Return to the Cabinet")})
+        topmenu.append({"href": "http://www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Cabinet"), "tooltip": self._("Return to the Cabinet")})
 
     def missing(self, tag):
         app = self.app().inst.appfactory.get_by_tag(tag)
@@ -53,6 +53,10 @@ class ConstructorProject(Module):
             "mg.constructor.mod.ConstructorUtils"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("permissions.list", self.permissions_list)
+        self.rhook("project.title", self.project_title)
+
+    def project_title(self):
+        return "New Game"
 
     def web_global_html(self):
         return "constructor/global.html"
@@ -99,6 +103,10 @@ class Constructor(Module):
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("core.appfactory", self.appfactory)
         self.rhook("core.webdaemon", self.webdaemon)
+        self.rhook("project.title", self.project_title)
+
+    def project_title(self):
+        return "MMO Constructor"
 
     def appfactory(self):
         raise Hooks.Return(mg.constructor.ApplicationFactory(self.app().inst))
