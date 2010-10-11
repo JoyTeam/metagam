@@ -131,7 +131,7 @@ class Wizards(Module):
         else:
             m = re_wizard_args_1.match(req.args)
             if m:
-                uuid, cmd = m.groups(1, 2)
+                uuid, cmd = m.group(1, 2)
             else:
                 self.call("web.not_found")
         try:

@@ -1,3 +1,5 @@
+var form;
+
 Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
@@ -44,6 +46,7 @@ Form = Ext.extend(AdminResponse, {
 					checked: it.checked,
 					xtype: (it.type == undefined) ? 'textfield' : it.type,
 					anchor: '-30',
+					border: false,
 				};
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
@@ -59,6 +62,8 @@ Form = Ext.extend(AdminResponse, {
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
 				elem = {
+					autoHeight: true,
+					border: false,
 					layout: 'form',
 					items: [elt],
 				};
@@ -69,10 +74,12 @@ Form = Ext.extend(AdminResponse, {
 				flex: it.flex,
 				width: it.width,
 				layout: 'fit',
+				border: false,
 				items: [elem],
 			});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
 				rows.push({
+					border: false,
 					layout: 'hbox',
 					layoutConfig: {
 						align: 'stretchmax',
@@ -96,7 +103,7 @@ Form = Ext.extend(AdminResponse, {
 				text: btn.text,
 				handler: function() {
 					form.getForm().submit({
-						url: data.url,
+						url: btn.url ? btn.url : data.url,
 						waitMsg: gt.gettext('Sending data...'),
 						success: function(f, action) {
 							adm_success(action.response, {
@@ -117,13 +124,15 @@ Form = Ext.extend(AdminResponse, {
 			});
 		}
 		form = new Ext.FormPanel({
+			cls: 'admin-form',
 			labelAlign: 'top',
-			frame: true,
+			border: false,
 			width: '100%',
 			labelWidth: 150,
 			items: rows,
 			buttons: buttons,
 			buttonAlign: 'left',
+			footerStyle: 'padding: 0',
 		});
 		this.add(form);
 	}

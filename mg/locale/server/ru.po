@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-10 19:23+0400\n"
-"PO-Revision-Date: 2010-10-10 19:23+0300\n"
+"POT-Creation-Date: 2010-10-11 16:35+0400\n"
+"PO-Revision-Date: 2010-10-11 16:35+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -20,81 +20,450 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: mg/core/web.py:642
-#: mg/core/director.py:243
-#: mg/socio/__init__.py:1446
-#: mg/admin/__init__.py:188
-msgid "Save"
-msgstr "Сохранить"
+#: mg/socio/__init__.py:191
+msgid "Defining categories"
+msgstr "Создание разделов"
 
-#: mg/core/web.py:652
-msgid "Bold"
-msgstr "Полужирный"
+#: mg/socio/__init__.py:191
+msgid "Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later."
+msgstr "Тщательно продумайте структуру разделов форума. Постарайтесь обойтись минимальным количеством разделов. Помните, что на выбор раздела, в который написать, пользователи будут тратить лишь несколько секунд. Описания должны быть простыми и понятными. Названия разделов - короткими и информативными. Не создавайте много разделов \"на будущее\". Лучше создать меньше разделов и разделить их позже."
 
-#: mg/core/web.py:653
-msgid "Italic"
-msgstr "Курсив"
+#: mg/socio/__init__.py:194
+msgid "Socio"
+msgstr "Социалка"
 
-#: mg/core/web.py:654
-msgid "Underline"
-msgstr "Подчёркивание"
+#: mg/socio/__init__.py:197
+msgid "Forum categories editor"
+msgstr "Редактор разделов форума"
 
-#: mg/core/web.py:655
-msgid "Strike"
-msgstr "Зачёркивание"
+#: mg/socio/__init__.py:198
+msgid "Forum moderation"
+msgstr "Модерирование форума"
 
-#: mg/core/web.py:656
-msgid "Quote"
-msgstr "Цитата"
+#: mg/socio/__init__.py:203
+#: mg/constructor/mod.py:19
+#: mg/constructor/mod.py:209
+msgid "Forum"
+msgstr "Форум"
 
-#: mg/core/web.py:657
-msgid "Red"
-msgstr "Красный"
+#: mg/socio/__init__.py:207
+#: mg/socio/__init__.py:233
+#: mg/socio/__init__.py:678
+#: mg/socio/__init__.py:686
+#: mg/socio/__init__.py:825
+#: mg/socio/__init__.py:919
+#: mg/socio/__init__.py:1021
+#: mg/socio/__init__.py:1269
+#: mg/socio/__init__.py:1320
+msgid "Forum categories"
+msgstr "Разделы форума"
 
-#: mg/core/web.py:658
-msgid "Green"
-msgstr "Зелёный"
+#: mg/socio/__init__.py:219
+msgid "Code"
+msgstr "Код"
 
-#: mg/core/web.py:659
-msgid "Blue"
-msgstr "Синий"
+#: mg/socio/__init__.py:220
+msgid "Title"
+msgstr "Название"
 
-#: mg/core/web.py:660
-msgid "Dark green"
-msgstr "Тёмно-зелёный"
+#: mg/socio/__init__.py:221
+msgid "Order"
+msgstr "Порядок"
 
-#: mg/core/web.py:661
-msgid "Magenta"
-msgstr "Фиолетовый"
+#: mg/socio/__init__.py:222
+#: mg/socio/__init__.py:1323
+#: mg/core/auth.py:750
+msgid "Editing"
+msgstr "Редактирование"
 
-#: mg/core/web.py:662
-msgid "Yellow"
-msgstr "Жёлтый"
+#: mg/socio/__init__.py:223
+#: mg/socio/__init__.py:1029
+#: mg/socio/__init__.py:1070
+#: mg/core/auth.py:749
+msgid "edit"
+msgstr "редактировать"
 
-#: mg/core/web.py:663
-msgid "Orange"
-msgstr "Оранжевый"
+#: mg/socio/__init__.py:224
+#: mg/socio/__init__.py:330
+msgid "Access"
+msgstr "Доступ"
 
-#: mg/core/web.py:664
+#: mg/socio/__init__.py:225
+msgid "access"
+msgstr "доступ"
+
+#: mg/socio/__init__.py:226
+msgid "Deletion"
+msgstr "Удаление"
+
+#: mg/socio/__init__.py:227
+#: mg/socio/__init__.py:1027
+#: mg/socio/__init__.py:1068
+msgid "delete"
+msgstr "удалить"
+
+#: mg/socio/__init__.py:228
+msgid "Create new category"
+msgstr "Создать новый раздел"
+
+#: mg/socio/__init__.py:252
+msgid "Enter category title"
+msgstr "Введите название раздела"
+
+#: mg/socio/__init__.py:254
+msgid "Enter top category title"
+msgstr "Введите названия раздела верхнего уровня"
+
+#: mg/socio/__init__.py:256
+msgid "Enter category order"
+msgstr "Введите порядок сортировки"
+
+#: mg/socio/__init__.py:258
+msgid "Invalid numeric format"
+msgstr "Неверный формат числа"
+
+#: mg/socio/__init__.py:277
+msgid "Category title"
+msgstr "Название раздела"
+
+#: mg/socio/__init__.py:282
+msgid "Top category title"
+msgstr "Раздел верхнего уровня"
+
+#: mg/socio/__init__.py:288
+#: mg/core/auth.py:929
+msgid "Sort order"
+msgstr "Порядок сортировки"
+
+#: mg/socio/__init__.py:295
+msgid "Category description"
+msgstr "Описание раздела"
+
+#: mg/socio/__init__.py:300
+msgid "Notify users about new topics in this category by default"
+msgstr "Уведомлять пользователей о новых темах в этом разделе по умолчанию"
+
+#: mg/socio/__init__.py:310
+msgid "No such category"
+msgstr "Нет такого раздела"
+
+#: mg/socio/__init__.py:311
+#, python-format
+msgid "Category %s"
+msgstr "Раздел %s"
+
+#: mg/socio/__init__.py:316
+msgid "Deny reading, writing and moderation"
+msgstr "Запрещено читать, писать и модерировать"
+
+#: mg/socio/__init__.py:317
+msgid "Allow reading"
+msgstr "Разрешено читать"
+
+#: mg/socio/__init__.py:318
+msgid "Deny writing and moderation"
+msgstr "Запрещено писать и модерировать"
+
+#: mg/socio/__init__.py:319
+msgid "Allow reading and writing"
+msgstr "Разрешено читать и писать"
+
+#: mg/socio/__init__.py:320
+msgid "Allow moderation"
+msgstr "Разрешено модерировать"
+
+#: mg/socio/__init__.py:321
+msgid "Deny moderation"
+msgstr "Запрещено модерировать"
+
+#: mg/socio/__init__.py:421
+#, python-format
+msgid "Scheme '%s' is not supported"
+msgstr "Схема '%s' не поддерживается"
+
+#: mg/socio/__init__.py:423
+msgid "Enter correct URL"
+msgstr "Введите правильный адрес"
+
+#: mg/socio/__init__.py:437
+msgid "Remote server response: Resource not found"
+msgstr "Ответ удалённого сервера: Ресурс не найден"
+
+#: mg/socio/__init__.py:439
+msgid "Remote server response: Access denied"
+msgstr "Ответ удалённого сервера: Доступ запрещён"
+
+#: mg/socio/__init__.py:441
+msgid "Remote server response: Internal server error"
+msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
+
+#: mg/socio/__init__.py:443
+#: mg/socio/__init__.py:452
+#, python-format
+msgid "Download error: %s"
+msgstr "Ошибка при скачивании: %s"
+
+#: mg/socio/__init__.py:448
+msgid "Timeout on downloading image. Time limit - 30 sec"
+msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
+
+#: mg/socio/__init__.py:464
+#: mg/socio/__init__.py:1418
+msgid "Image format not recognized"
+msgstr "Формат изображения не распознан"
+
+#: mg/socio/__init__.py:518
+msgid "Upload an image"
+msgstr "Загрузите изображение"
+
 #: mg/socio/__init__.py:520
+#: mg/core/web.py:664
 msgid "Image"
 msgstr "Картинка"
 
-#: mg/core/web.py:665
-msgid "Insert image"
-msgstr "Вставить изображение"
+#: mg/socio/__init__.py:521
+msgid "Or Internet address"
+msgstr "Или введите Internet-адрес"
 
-#: mg/core/web.py:666
-msgid "Translit"
-msgstr "Транслит"
+#: mg/socio/__init__.py:522
+msgid "Upload"
+msgstr "Загрузить"
 
-#: mg/core/web.py:667
-msgid "Transliterate to Russian"
-msgstr "Транслитерация на русский"
+#: mg/socio/__init__.py:524
+msgid "Upload image"
+msgstr "Загрузка изображения"
 
-#: mg/core/web.py:668
-msgid "Smiles"
-msgstr "Смайлики"
+#: mg/socio/__init__.py:680
+msgid "Topics"
+msgstr "Тем"
+
+#: mg/socio/__init__.py:681
+#: mg/socio/__init__.py:836
+msgid "Replies"
+msgstr "Ответов"
+
+#: mg/socio/__init__.py:682
+msgid "Unread"
+msgstr "Новые"
+
+#: mg/socio/__init__.py:683
+msgid "Last message"
+msgstr "Последнее сообщение"
+
+#: mg/socio/__init__.py:684
+#: mg/socio/__init__.py:838
+msgid "by"
+msgstr "от"
+
+#: mg/socio/__init__.py:829
+#: mg/socio/__init__.py:833
+#: mg/socio/__init__.py:917
+#: mg/socio/__init__.py:921
+msgid "New topic"
+msgstr "Новая тема"
+
+#: mg/socio/__init__.py:835
+msgid "Author"
+msgstr "Автор"
+
+#: mg/socio/__init__.py:837
+msgid "Last reply"
+msgstr "Последний ответ"
+
+#: mg/socio/__init__.py:839
+#: mg/socio/__init__.py:1092
+msgid "Pages"
+msgstr "На страницу"
+
+#: mg/socio/__init__.py:906
+#: mg/socio/__init__.py:1352
+msgid "Enter topic subject"
+msgstr "Введите тему сообщения"
+
+#: mg/socio/__init__.py:908
+#: mg/socio/__init__.py:1354
+msgid "Enter topic content"
+msgstr "Введите текст сообщения"
+
+#: mg/socio/__init__.py:913
+#: mg/socio/__init__.py:1366
+msgid "Subject"
+msgstr "Тема"
+
+#: mg/socio/__init__.py:914
+msgid "Content"
+msgstr "Содержание"
+
+#: mg/socio/__init__.py:1023
+#: mg/socio/__init__.py:1271
+#: mg/socio/__init__.py:1322
+msgid "Topic"
+msgstr "Тема"
+
+#: mg/socio/__init__.py:1031
+#: mg/socio/__init__.py:1072
+msgid "reply"
+msgstr "ответить"
+
+#: mg/socio/__init__.py:1052
+msgid "unsubscribe"
+msgstr "отписаться"
+
+#: mg/socio/__init__.py:1054
+msgid "subscribe"
+msgstr "подписаться"
+
+#: mg/socio/__init__.py:1057
+msgid "unpin"
+msgstr "открепить"
+
+#: mg/socio/__init__.py:1059
+msgid "pin"
+msgstr "закрепить"
+
+#: mg/socio/__init__.py:1061
+msgid "move"
+msgstr "перенести"
+
+#: mg/socio/__init__.py:1080
+#: mg/socio/__init__.py:1246
+#: mg/socio/__init__.py:1331
+msgid "Enter post content"
+msgstr "Введите текст сообщения"
+
+#: mg/socio/__init__.py:1082
+msgid "Access denied"
+msgstr "Доступ запрещён"
+
+#: mg/socio/__init__.py:1094
+msgid "topic started"
+msgstr "тема открыта"
+
+#: mg/socio/__init__.py:1095
+msgid "All posts"
+msgstr "Все сообщения"
+
+#: mg/socio/__init__.py:1096
+msgid "Search for all posts of this member"
+msgstr "Все сообщения этого пользователя"
+
+#: mg/socio/__init__.py:1097
+msgid "to the top"
+msgstr "наверх"
+
+#: mg/socio/__init__.py:1098
+msgid "written at"
+msgstr "написано"
+
+#: mg/socio/__init__.py:1104
+#: mg/socio/__init__.py:1263
+#: mg/socio/__init__.py:1267
+#: mg/socio/__init__.py:1272
+msgid "Reply"
+msgstr "Ответить"
+
+#: mg/socio/__init__.py:1327
+msgid "Edit post"
+msgstr "Редактирование ответа"
+
+#: mg/socio/__init__.py:1347
+msgid "Edit topic"
+msgstr "Редактирование темы"
+
+#: mg/socio/__init__.py:1368
+#: mg/core/web.py:642
+#: mg/core/director.py:243
+#: mg/admin/__init__.py:199
+msgid "Save"
+msgstr "Сохранить"
+
+#: mg/socio/__init__.py:1380
+#: mg/constructor/mod.py:253
+msgid "Forum settings"
+msgstr "Настройки форума"
+
+#: mg/socio/__init__.py:1406
+msgid "Signature can't contain more than 4 lines"
+msgstr "В подписи не может быть более 4 строк"
+
+#: mg/socio/__init__.py:1410
+msgid "Signature line couldn't be longer than 80 symbols"
+msgstr "Строка подписи не может быть длиннее 80 символов"
+
+#: mg/socio/__init__.py:1412
+msgid "Signature couldn't contain images"
+msgstr "В подпись нельзя вставлять картинки"
+
+#: mg/socio/__init__.py:1435
+msgid "Avatar has to be at least 100x100 pixels"
+msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
+
+#: mg/socio/__init__.py:1487
+msgid "Your forum signature"
+msgstr "Ваша подпись на форуме"
+
+#: mg/socio/__init__.py:1488
+msgid "Your avatar"
+msgstr "Ваш аватар"
+
+#: mg/socio/__init__.py:1489
+msgid "Replies in subscribed topics"
+msgstr "Ответы в подписанных темах"
+
+#: mg/socio/__init__.py:1489
+msgid "E-mail notifications"
+msgstr "Уведомления на почту"
+
+#: mg/socio/__init__.py:1491
+msgid "New topics in '{topcat} / {cat}'"
+msgstr "Новые темы в '{topcat} / {cat}'"
+
+#: mg/socio/__init__.py:1600
+msgid "Select category"
+msgstr "Выберите раздел"
+
+#: mg/socio/__init__.py:1621
+msgid "Category where to move"
+msgstr "Раздел, в который перенести"
+
+#: mg/socio/__init__.py:1622
+msgid "Move"
+msgstr "Перенести"
+
+#: mg/socio/__init__.py:1624
+#, python-format
+msgid "Move topic: %s"
+msgstr "Перемещение темы: %s"
+
+#: mg/socio/__init__.py:1670
+#, python-format
+msgid "New topic: %s"
+msgstr "Новая тема: %s"
+
+#: mg/socio/__init__.py:1670
+msgid ""
+"{author_name} has started new topic: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}"
+msgstr ""
+"{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}"
+
+#: mg/socio/__init__.py:1720
+#, python-format
+msgid "New replies: %s"
+msgstr "Новые ответы: %s"
+
+#: mg/socio/__init__.py:1720
+msgid ""
+"{author_name} has replied in the topic: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
+msgstr ""
+"{author_name} ответил[gender?а:] в тему: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 
 #: mg/core/l10n.py:12
 msgid "of January"
@@ -148,58 +517,74 @@ msgstr "декабря"
 msgid "at the {2:d}{4} {1}, {0} at {3}"
 msgstr "{2:02d} {1} {0} в {3}"
 
+#: mg/core/web.py:652
+msgid "Bold"
+msgstr "Полужирный"
+
+#: mg/core/web.py:653
+msgid "Italic"
+msgstr "Курсив"
+
+#: mg/core/web.py:654
+msgid "Underline"
+msgstr "Подчёркивание"
+
+#: mg/core/web.py:655
+msgid "Strike"
+msgstr "Зачёркивание"
+
+#: mg/core/web.py:656
+msgid "Quote"
+msgstr "Цитата"
+
+#: mg/core/web.py:657
+msgid "Red"
+msgstr "Красный"
+
+#: mg/core/web.py:658
+msgid "Green"
+msgstr "Зелёный"
+
+#: mg/core/web.py:659
+msgid "Blue"
+msgstr "Синий"
+
+#: mg/core/web.py:660
+msgid "Dark green"
+msgstr "Тёмно-зелёный"
+
+#: mg/core/web.py:661
+msgid "Magenta"
+msgstr "Фиолетовый"
+
+#: mg/core/web.py:662
+msgid "Yellow"
+msgstr "Жёлтый"
+
+#: mg/core/web.py:663
+msgid "Orange"
+msgstr "Оранжевый"
+
+#: mg/core/web.py:665
+msgid "Insert image"
+msgstr "Вставить изображение"
+
+#: mg/core/web.py:666
+msgid "Translit"
+msgstr "Транслит"
+
+#: mg/core/web.py:667
+msgid "Transliterate to Russian"
+msgstr "Транслитерация на русский"
+
+#: mg/core/web.py:668
+msgid "Smiles"
+msgstr "Смайлики"
+
 #: mg/core/cluster.py:69
 #, python-format
 msgid "Error storing object: %s"
 msgstr "Ошибка при сохранении объекта: %s"
-
-#: mg/core/director.py:148
-msgid "Welcome to the cluster control center"
-msgstr "Добро пожаловать в центр управления кластером"
-
-#: mg/core/director.py:149
-msgid "Change cluster settings"
-msgstr "Изменить настройки кластера"
-
-#: mg/core/director.py:155
-msgid "List of servers online"
-msgstr "Список серверов онлайн"
-
-#: mg/core/director.py:225
-msgid "Cluster settings"
-msgstr "Настройки кластера"
-
-#: mg/core/director.py:227
-msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
-msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
-
-#: mg/core/director.py:229
-msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
-msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
-
-#: mg/core/director.py:231
-msgid "<strong>Storage servers</strong> (host, host, ...)"
-msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
-
-#: mg/core/director.py:233
-msgid "<strong>Main application host name</strong> (without www)"
-msgstr "<strong>Домен основного сайта</strong> (без www)"
-
-#: mg/core/director.py:235
-msgid "<strong>Administrator</strong> (uuid)"
-msgstr "<strong>Администратор</strong> (uuid)"
-
-#: mg/core/director.py:237
-msgid "<strong>SMTP server</strong> (host)"
-msgstr "<strong>Сервер SMTP</strong> (host)"
-
-#: mg/core/director.py:239
-msgid "<strong>Global locale</strong> (en, ru)"
-msgstr "<strong>Глобальная локаль</strong> (en, ru)"
-
-#: mg/core/director.py:241
-msgid "<strong>Preload modules</strong> (mod, mod, ...)"
-msgstr "<strong>Загружаемые модули</strong> (mod, mod, ...)"
 
 #: mg/core/auth.py:213
 #: mg/core/auth.py:510
@@ -315,7 +700,7 @@ msgstr "Введите число (6 цифр) с картинки"
 
 #: mg/core/auth.py:277
 #: mg/core/auth.py:542
-#: mg/constructor/mod.py:158
+#: mg/constructor/mod.py:179
 msgid "Register"
 msgstr "Регистрация"
 
@@ -395,7 +780,7 @@ msgid "Incorrect password"
 msgstr "Неверный пароль"
 
 #: mg/core/auth.py:541
-#: mg/constructor/mod.py:157
+#: mg/constructor/mod.py:178
 msgid "Log in"
 msgstr "Вход"
 
@@ -515,22 +900,9 @@ msgstr "Привилегии"
 msgid "Edit permissions of a user"
 msgstr "Редактировать привилегии пользователя"
 
-#: mg/core/auth.py:749
-#: mg/socio/__init__.py:223
-#: mg/socio/__init__.py:1107
-#: mg/socio/__init__.py:1148
-msgid "edit"
-msgstr "редактировать"
-
-#: mg/core/auth.py:750
-#: mg/socio/__init__.py:222
-#: mg/socio/__init__.py:1401
-msgid "Editing"
-msgstr "Редактирование"
-
 #: mg/core/auth.py:756
 msgid "User permissions"
-msgstr "Привилегии пользователя"
+msgstr "Привилегии пользователей"
 
 #: mg/core/auth.py:765
 msgid "Enter user name"
@@ -575,11 +947,6 @@ msgstr "Удалить"
 msgid "Add new rule"
 msgstr "Добавить новое правило"
 
-#: mg/core/auth.py:929
-#: mg/socio/__init__.py:288
-msgid "Sort order"
-msgstr "Порядок сортировки"
-
 #: mg/core/auth.py:930
 msgid "Role"
 msgstr "Роль"
@@ -588,647 +955,353 @@ msgstr "Роль"
 msgid "Permission"
 msgstr "Разрешение"
 
-#: mg/constructor/mod.py:18
-#: mg/constructor/mod.py:188
-#: mg/socio/__init__.py:203
-msgid "Forum"
-msgstr "Форум"
-
-#: mg/constructor/mod.py:18
-msgid "Go to the Constructor forum"
-msgstr "Перейти на форум Конструктора"
-
-#: mg/constructor/mod.py:19
-#: mg/constructor/mod.py:154
-#: mg/constructor/mod.py:216
-msgid "Cabinet"
-msgstr "Кабинет"
-
-#: mg/constructor/mod.py:19
-#: mg/constructor/mod.py:227
-#: mg/constructor/mod.py:245
-msgid "Return to the Cabinet"
-msgstr "Возврат в кабинет"
-
-#: mg/constructor/mod.py:65
-msgid "Project main administrator"
-msgstr "Главный администратор проекта"
-
-#: mg/constructor/mod.py:76
-msgid "Destroy this game"
-msgstr "Уничтожить эту игру"
-
-#: mg/constructor/mod.py:76
-msgid "You can destroy your game while not created"
-msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
-
-#: mg/constructor/mod.py:152
-#: mg/constructor/mod.py:190
-msgid "Log out"
-msgstr "Выход"
-
-#: mg/constructor/mod.py:153
-#: mg/constructor/mod.py:189
-#: mg/constructor/mod.py:224
-msgid "Settings"
-msgstr "Настройки"
-
-#: mg/constructor/mod.py:155
-#: mg/constructor/mod.py:185
-#: mg/constructor/mod.py:242
-msgid "Documentation"
-msgstr "Документация"
-
-#: mg/constructor/mod.py:160
-msgid "Cancel"
-msgstr "Отмена"
-
-#: mg/constructor/mod.py:165
-#: mg/constructor/mod.py:166
-msgid "Constructor of browser-based online games"
-msgstr "Конструктор браузерных онлайн-игр"
-
-#: mg/constructor/mod.py:167
-msgid "Games constructor"
-msgstr "Конструктор игр"
-
-#: mg/constructor/mod.py:168
-msgid "Create the world of your dreams"
-msgstr "Создай мир своей мечты"
-
-#: mg/constructor/mod.py:169
-msgid "log in"
-msgstr "вход"
-
-#: mg/constructor/mod.py:170
-msgid "register"
-msgstr "регистрация"
-
-#: mg/constructor/mod.py:171
-msgid "forum"
-msgstr "форум"
-
-#: mg/constructor/mod.py:172
-msgid "cabinet"
-msgstr "кабинет"
-
-#: mg/constructor/mod.py:173
-msgid "log out"
-msgstr "выход"
-
-#: mg/constructor/mod.py:187
-msgid "Administration"
-msgstr "Администрирование"
-
-#: mg/constructor/mod.py:193
-msgid "New game"
-msgstr "Новая игра"
-
-#: mg/constructor/mod.py:203
-msgid "Untitled game"
-msgstr "Безымянная игра"
-
-#: mg/constructor/mod.py:230
-msgid "Change password"
-msgstr "Изменить пароль"
-
-#: mg/constructor/mod.py:231
-msgid "Change e-mail"
-msgstr "Изменить e-mail"
-
-#: mg/constructor/mod.py:232
-#: mg/socio/__init__.py:1458
-msgid "Forum settings"
-msgstr "Настройки форума"
-
-#: mg/constructor/mod.py:233
-msgid "WebMoney Certification"
-msgstr "Сертификат WebMoney"
-
-#: mg/constructor/mod.py:312
-msgid "Setup wizard"
-msgstr "Мастер установки"
-
-#: mg/socio/__init__.py:191
-msgid "Defining categories"
-msgstr "Создание разделов"
-
-#: mg/socio/__init__.py:191
-msgid "Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later."
-msgstr "Тщательно продумайте структуру разделов форума. Постарайтесь обойтись минимальным количеством разделов. Помните, что на выбор раздела, в который написать, пользователи будут тратить лишь несколько секунд. Описания должны быть простыми и понятными. Названия разделов - короткими и информативными. Не создавайте много разделов \"на будущее\". Лучше создать меньше разделов и разделить их позже."
-
-#: mg/socio/__init__.py:194
-msgid "Socio"
-msgstr "Социалка"
-
-#: mg/socio/__init__.py:197
-msgid "Forum categories editor"
-msgstr "Редактор разделов форума"
-
-#: mg/socio/__init__.py:198
-msgid "Forum moderation"
-msgstr "Модерирование форума"
-
-#: mg/socio/__init__.py:207
-#: mg/socio/__init__.py:233
-#: mg/socio/__init__.py:678
-#: mg/socio/__init__.py:686
-#: mg/socio/__init__.py:903
-#: mg/socio/__init__.py:997
-#: mg/socio/__init__.py:1099
-#: mg/socio/__init__.py:1347
-#: mg/socio/__init__.py:1398
-msgid "Forum categories"
-msgstr "Разделы форума"
-
-#: mg/socio/__init__.py:219
-msgid "Code"
-msgstr "Код"
-
-#: mg/socio/__init__.py:220
-msgid "Title"
-msgstr "Название"
-
-#: mg/socio/__init__.py:221
-msgid "Order"
-msgstr "Порядок"
-
-#: mg/socio/__init__.py:224
-#: mg/socio/__init__.py:330
-msgid "Access"
-msgstr "Доступ"
-
-#: mg/socio/__init__.py:225
-msgid "access"
-msgstr "доступ"
-
-#: mg/socio/__init__.py:226
-msgid "Deletion"
-msgstr "Удаление"
-
-#: mg/socio/__init__.py:227
-#: mg/socio/__init__.py:1105
-#: mg/socio/__init__.py:1146
-msgid "delete"
-msgstr "удалить"
-
-#: mg/socio/__init__.py:228
-msgid "Create new category"
-msgstr "Создать новый раздел"
-
-#: mg/socio/__init__.py:252
-msgid "Enter category title"
-msgstr "Введите название раздела"
-
-#: mg/socio/__init__.py:254
-msgid "Enter top category title"
-msgstr "Введите названия раздела верхнего уровня"
-
-#: mg/socio/__init__.py:256
-msgid "Enter category order"
-msgstr "Введите порядок сортировки"
-
-#: mg/socio/__init__.py:258
-msgid "Invalid numeric format"
-msgstr "Неверный формат числа"
-
-#: mg/socio/__init__.py:277
-msgid "Category title"
-msgstr "Название раздела"
-
-#: mg/socio/__init__.py:282
-msgid "Top category title"
-msgstr "Раздел верхнего уровня"
-
-#: mg/socio/__init__.py:295
-msgid "Category description"
-msgstr "Описание раздела"
-
-#: mg/socio/__init__.py:300
-msgid "Notify users about new topics in this category by default"
-msgstr "Уведомлять пользователей о новых темах в этом разделе по умолчанию"
-
-#: mg/socio/__init__.py:310
-msgid "No such category"
-msgstr "Нет такого раздела"
-
-#: mg/socio/__init__.py:311
-#, python-format
-msgid "Category %s"
-msgstr "Раздел %s"
-
-#: mg/socio/__init__.py:316
-msgid "Deny reading, writing and moderation"
-msgstr "Запрещено читать, писать и модерировать"
-
-#: mg/socio/__init__.py:317
-msgid "Allow reading"
-msgstr "Разрешено читать"
-
-#: mg/socio/__init__.py:318
-msgid "Deny writing and moderation"
-msgstr "Запрещено писать и модерировать"
-
-#: mg/socio/__init__.py:319
-msgid "Allow reading and writing"
-msgstr "Разрешено читать и писать"
-
-#: mg/socio/__init__.py:320
-msgid "Allow moderation"
-msgstr "Разрешено модерировать"
-
-#: mg/socio/__init__.py:321
-msgid "Deny moderation"
-msgstr "Запрещено модерировать"
-
-#: mg/socio/__init__.py:421
-#, python-format
-msgid "Scheme '%s' is not supported"
-msgstr "Схема '%s' не поддерживается"
-
-#: mg/socio/__init__.py:423
-msgid "Enter correct URL"
-msgstr "Введите правильный адрес"
-
-#: mg/socio/__init__.py:437
-msgid "Remote server response: Resource not found"
-msgstr "Ответ удалённого сервера: Ресурс не найден"
-
-#: mg/socio/__init__.py:439
-msgid "Remote server response: Access denied"
-msgstr "Ответ удалённого сервера: Доступ запрещён"
-
-#: mg/socio/__init__.py:441
-msgid "Remote server response: Internal server error"
-msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
-
-#: mg/socio/__init__.py:443
-#: mg/socio/__init__.py:452
-#, python-format
-msgid "Download error: %s"
-msgstr "Ошибка при скачивании: %s"
-
-#: mg/socio/__init__.py:448
-msgid "Timeout on downloading image. Time limit - 30 sec"
-msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
-
-#: mg/socio/__init__.py:464
-#: mg/socio/__init__.py:1496
-msgid "Image format not recognized"
-msgstr "Формат изображения не распознан"
-
-#: mg/socio/__init__.py:518
-msgid "Upload an image"
-msgstr "Загрузите изображение"
-
-#: mg/socio/__init__.py:521
-msgid "Or Internet address"
-msgstr "Или введите Internet-адрес"
-
-#: mg/socio/__init__.py:522
-msgid "Upload"
-msgstr "Загрузить"
-
-#: mg/socio/__init__.py:524
-msgid "Upload image"
-msgstr "Загрузка изображения"
-
-#: mg/socio/__init__.py:680
-msgid "Topics"
-msgstr "Тем"
-
-#: mg/socio/__init__.py:681
-#: mg/socio/__init__.py:914
-msgid "Replies"
-msgstr "Ответов"
-
-#: mg/socio/__init__.py:682
-msgid "Unread"
-msgstr "Новые"
-
-#: mg/socio/__init__.py:683
-msgid "Last message"
-msgstr "Последнее сообщение"
-
-#: mg/socio/__init__.py:684
-#: mg/socio/__init__.py:916
-msgid "by"
-msgstr "от"
-
-#: mg/socio/__init__.py:702
-#: mg/socio/__init__.py:710
-#: mg/socio/__init__.py:711
-#: mg/socio/__init__.py:717
-#: mg/socio/__init__.py:724
-msgid "Game"
-msgstr "Игра"
-
-#: mg/socio/__init__.py:703
-msgid "News"
-msgstr "Новости"
-
-#: mg/socio/__init__.py:704
-msgid "Game news published by the administrators"
-msgstr "Игровые новости, публикуемые администрацией"
-
-#: mg/socio/__init__.py:712
-msgid "Talks about game activities: gameplay, news, wars, politics etc."
-msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
-
-#: mg/socio/__init__.py:718
-msgid "Newbies"
-msgstr "Вопросы новичков"
-
-#: mg/socio/__init__.py:719
-msgid "Dear newbies, if you have any questions about the game, feel free to ask"
-msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
-
-#: mg/socio/__init__.py:725
-msgid "Diplomacy"
-msgstr "Дипломатия"
-
-#: mg/socio/__init__.py:726
-msgid "Authorized guild members can talk to each other about diplomacy and politics issues here"
-msgstr "В этом разделе уполномоченные члены кланов могут общаться на темы дипломатии, войн и политики"
-
-#: mg/socio/__init__.py:731
-#: mg/socio/__init__.py:738
-#: mg/socio/__init__.py:745
-msgid "Admin"
-msgstr "Администрация"
-
-#: mg/socio/__init__.py:732
-msgid "Admin talks"
-msgstr "Общение с администрацией"
-
-#: mg/socio/__init__.py:733
-msgid "Discussions with the game administrators. Here you can discuss any issues related to the game itself."
-msgstr "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, связанные с игрой в целом."
-
-#: mg/socio/__init__.py:739
-msgid "Reference manuals"
-msgstr "Справочная информация"
-
-#: mg/socio/__init__.py:740
-msgid "Actual reference documents about the game are placed here."
-msgstr "Здесь публикуется актуальная справочная информация об игре"
-
-#: mg/socio/__init__.py:746
-msgid "Bug reports"
-msgstr "Сообщения об ошибках"
-
-#: mg/socio/__init__.py:747
-msgid "Report any problems in the game here"
-msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
-
-#: mg/socio/__init__.py:752
-#: mg/socio/__init__.py:759
-msgid "Reallife"
-msgstr "Реальная жизнь"
-
-#: mg/socio/__init__.py:753
-msgid "Smoking room"
-msgstr "Курилка"
-
-#: mg/socio/__init__.py:754
-msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
-msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
-
-#: mg/socio/__init__.py:760
-msgid "Art"
-msgstr "Творчество"
-
-#: mg/socio/__init__.py:761
-msgid "Poems, prose, pictures, photos, music about the game"
-msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
-
-#: mg/socio/__init__.py:766
-#: mg/socio/__init__.py:773
-msgid "Trading"
-msgstr "Торговля"
-
-#: mg/socio/__init__.py:767
-msgid "Services"
-msgstr "Услуги"
-
-#: mg/socio/__init__.py:768
-msgid "Any game services: mercenaries, guardians, builders etc."
-msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
-
-#: mg/socio/__init__.py:774
-msgid "Market"
-msgstr "Рынок"
-
-#: mg/socio/__init__.py:775
-msgid "Market place to sell and by any item"
-msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
-
-#: mg/socio/__init__.py:907
-#: mg/socio/__init__.py:911
-#: mg/socio/__init__.py:995
-#: mg/socio/__init__.py:999
-msgid "New topic"
-msgstr "Новая тема"
-
-#: mg/socio/__init__.py:913
-msgid "Author"
-msgstr "Автор"
-
-#: mg/socio/__init__.py:915
-msgid "Last reply"
-msgstr "Последний ответ"
-
-#: mg/socio/__init__.py:917
-#: mg/socio/__init__.py:1170
-msgid "Pages"
-msgstr "На страницу"
-
-#: mg/socio/__init__.py:984
-#: mg/socio/__init__.py:1430
-msgid "Enter topic subject"
-msgstr "Введите тему сообщения"
-
-#: mg/socio/__init__.py:986
-#: mg/socio/__init__.py:1432
-msgid "Enter topic content"
-msgstr "Введите текст сообщения"
-
-#: mg/socio/__init__.py:991
-#: mg/socio/__init__.py:1444
-msgid "Subject"
-msgstr "Тема"
-
-#: mg/socio/__init__.py:992
-msgid "Content"
-msgstr "Содержание"
-
-#: mg/socio/__init__.py:1101
-#: mg/socio/__init__.py:1349
-#: mg/socio/__init__.py:1400
-msgid "Topic"
-msgstr "Тема"
-
-#: mg/socio/__init__.py:1109
-#: mg/socio/__init__.py:1150
-msgid "reply"
-msgstr "ответить"
-
-#: mg/socio/__init__.py:1130
-msgid "unsubscribe"
-msgstr "отписаться"
-
-#: mg/socio/__init__.py:1132
-msgid "subscribe"
-msgstr "подписаться"
-
-#: mg/socio/__init__.py:1135
-msgid "unpin"
-msgstr "открепить"
-
-#: mg/socio/__init__.py:1137
-msgid "pin"
-msgstr "закрепить"
-
-#: mg/socio/__init__.py:1139
-msgid "move"
-msgstr "перенести"
-
-#: mg/socio/__init__.py:1158
-#: mg/socio/__init__.py:1324
-#: mg/socio/__init__.py:1409
-msgid "Enter post content"
-msgstr "Введите текст сообщения"
-
-#: mg/socio/__init__.py:1160
-msgid "Access denied"
-msgstr "Доступ запрещён"
-
-#: mg/socio/__init__.py:1172
-msgid "topic started"
-msgstr "тема открыта"
-
-#: mg/socio/__init__.py:1173
-msgid "All posts"
-msgstr "Все сообщения"
-
-#: mg/socio/__init__.py:1174
-msgid "Search for all posts of this member"
-msgstr "Все сообщения этого пользователя"
-
-#: mg/socio/__init__.py:1175
-msgid "to the top"
-msgstr "наверх"
-
-#: mg/socio/__init__.py:1176
-msgid "written at"
-msgstr "написано"
-
-#: mg/socio/__init__.py:1182
-#: mg/socio/__init__.py:1341
-#: mg/socio/__init__.py:1345
-#: mg/socio/__init__.py:1350
-msgid "Reply"
-msgstr "Ответить"
-
-#: mg/socio/__init__.py:1405
-msgid "Edit post"
-msgstr "Редактирование ответа"
-
-#: mg/socio/__init__.py:1425
-msgid "Edit topic"
-msgstr "Редактирование темы"
-
-#: mg/socio/__init__.py:1484
-msgid "Signature can't contain more than 4 lines"
-msgstr "В подписи не может быть более 4 строк"
-
-#: mg/socio/__init__.py:1488
-msgid "Signature line couldn't be longer than 80 symbols"
-msgstr "Строка подписи не может быть длиннее 80 символов"
-
-#: mg/socio/__init__.py:1490
-msgid "Signature couldn't contain images"
-msgstr "В подпись нельзя вставлять картинки"
-
-#: mg/socio/__init__.py:1513
-msgid "Avatar has to be at least 100x100 pixels"
-msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
-
-#: mg/socio/__init__.py:1565
-msgid "Your forum signature"
-msgstr "Ваша подпись на форуме"
-
-#: mg/socio/__init__.py:1566
-msgid "Your avatar"
-msgstr "Ваш аватар"
-
-#: mg/socio/__init__.py:1567
-msgid "Replies in subscribed topics"
-msgstr "Ответы в подписанных темах"
-
-#: mg/socio/__init__.py:1567
-msgid "E-mail notifications"
-msgstr "Уведомления на почту"
-
-#: mg/socio/__init__.py:1569
-msgid "New topics in '{topcat} / {cat}'"
-msgstr "Новые темы в '{topcat} / {cat}'"
-
-#: mg/socio/__init__.py:1678
-msgid "Select category"
-msgstr "Выберите раздел"
-
-#: mg/socio/__init__.py:1699
-msgid "Category where to move"
-msgstr "Раздел, в который перенести"
-
-#: mg/socio/__init__.py:1700
-msgid "Move"
-msgstr "Перенести"
-
-#: mg/socio/__init__.py:1702
-#, python-format
-msgid "Move topic: %s"
-msgstr "Перемещение темы: %s"
-
-#: mg/socio/__init__.py:1748
-#, python-format
-msgid "New topic: %s"
-msgstr "Новая тема: %s"
-
-#: mg/socio/__init__.py:1748
-msgid ""
-"{author_name} has started new topic: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}"
-msgstr ""
-"{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}"
-
-#: mg/socio/__init__.py:1798
-#, python-format
-msgid "New replies: %s"
-msgstr "Новые ответы: %s"
-
-#: mg/socio/__init__.py:1798
-msgid ""
-"{author_name} has replied in the topic: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
-msgstr ""
-"{author_name} ответил[gender?а:] в тему: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
-
-#: mg/admin/__init__.py:29
+#: mg/core/director.py:148
+msgid "Welcome to the cluster control center"
+msgstr "Добро пожаловать в центр управления кластером"
+
+#: mg/core/director.py:149
+msgid "Change cluster settings"
+msgstr "Изменить настройки кластера"
+
+#: mg/core/director.py:155
+msgid "List of servers online"
+msgstr "Список серверов онлайн"
+
+#: mg/core/director.py:225
+msgid "Cluster settings"
+msgstr "Настройки кластера"
+
+#: mg/core/director.py:227
+msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
+msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
+
+#: mg/core/director.py:229
+msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
+msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
+
+#: mg/core/director.py:231
+msgid "<strong>Storage servers</strong> (host, host, ...)"
+msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
+
+#: mg/core/director.py:233
+msgid "<strong>Main application host name</strong> (without www)"
+msgstr "<strong>Домен основного сайта</strong> (без www)"
+
+#: mg/core/director.py:235
+msgid "<strong>Administrator</strong> (uuid)"
+msgstr "<strong>Администратор</strong> (uuid)"
+
+#: mg/core/director.py:237
+msgid "<strong>SMTP server</strong> (host)"
+msgstr "<strong>Сервер SMTP</strong> (host)"
+
+#: mg/core/director.py:239
+msgid "<strong>Global locale</strong> (en, ru)"
+msgstr "<strong>Глобальная локаль</strong> (en, ru)"
+
+#: mg/core/director.py:241
+msgid "<strong>Preload modules</strong> (mod, mod, ...)"
+msgstr "<strong>Загружаемые модули</strong> (mod, mod, ...)"
+
+#: mg/admin/__init__.py:30
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
-#: mg/admin/__init__.py:51
+#: mg/admin/__init__.py:52
 #, python-format
 msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
+
+#: mg/constructor/mod.py:19
+msgid "Go to the Constructor forum"
+msgstr "Перейти на форум Конструктора"
+
+#: mg/constructor/mod.py:20
+#: mg/constructor/mod.py:175
+#: mg/constructor/mod.py:237
+msgid "Cabinet"
+msgstr "Кабинет"
+
+#: mg/constructor/mod.py:20
+#: mg/constructor/mod.py:248
+#: mg/constructor/mod.py:266
+msgid "Return to the Cabinet"
+msgstr "Возврат в кабинет"
+
+#: mg/constructor/mod.py:67
+msgid "Project main administrator"
+msgstr "Главный администратор проекта"
+
+#: mg/constructor/mod.py:70
+#: mg/constructor/mod.py:71
+#: mg/constructor/mod.py:72
+#: mg/constructor/mod.py:73
+msgid "Game"
+msgstr "Игра"
+
+#: mg/constructor/mod.py:70
+#: mg/constructor/mod.py:125
+msgid "News"
+msgstr "Новости"
+
+#: mg/constructor/mod.py:70
+msgid "Game news published by the administrators"
+msgstr "Игровые новости, публикуемые администрацией"
+
+#: mg/constructor/mod.py:71
+msgid "Talks about game activities: gameplay, news, wars, politics etc."
+msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
+
+#: mg/constructor/mod.py:72
+msgid "Newbies"
+msgstr "Вопросы новичков"
+
+#: mg/constructor/mod.py:72
+msgid "Dear newbies, if you have any questions about the game, feel free to ask"
+msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
+
+#: mg/constructor/mod.py:73
+msgid "Diplomacy"
+msgstr "Дипломатия"
+
+#: mg/constructor/mod.py:73
+msgid "Authorized guild members can talk to each other about diplomacy and politics issues here"
+msgstr "В этом разделе уполномоченные члены кланов могут общаться на темы дипломатии, войн и политики"
+
+#: mg/constructor/mod.py:74
+#: mg/constructor/mod.py:75
+#: mg/constructor/mod.py:76
+msgid "Admin"
+msgstr "Администрация"
+
+#: mg/constructor/mod.py:74
+msgid "Admin talks"
+msgstr "Общение с администрацией"
+
+#: mg/constructor/mod.py:74
+msgid "Discussions with the game administrators. Here you can discuss any issues related to the game itself."
+msgstr "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, связанные с игрой в целом."
+
+#: mg/constructor/mod.py:75
+msgid "Reference manuals"
+msgstr "Справочная информация"
+
+#: mg/constructor/mod.py:75
+msgid "Actual reference documents about the game are placed here."
+msgstr "Здесь публикуется актуальная справочная информация об игре"
+
+#: mg/constructor/mod.py:76
+msgid "Bug reports"
+msgstr "Сообщения об ошибках"
+
+#: mg/constructor/mod.py:76
+msgid "Report any problems in the game here"
+msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
+
+#: mg/constructor/mod.py:77
+#: mg/constructor/mod.py:78
+msgid "Reallife"
+msgstr "Реальная жизнь"
+
+#: mg/constructor/mod.py:77
+msgid "Smoking room"
+msgstr "Курилка"
+
+#: mg/constructor/mod.py:77
+msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
+msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
+
+#: mg/constructor/mod.py:78
+msgid "Art"
+msgstr "Творчество"
+
+#: mg/constructor/mod.py:78
+msgid "Poems, prose, pictures, photos, music about the game"
+msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
+
+#: mg/constructor/mod.py:79
+#: mg/constructor/mod.py:80
+msgid "Trading"
+msgstr "Торговля"
+
+#: mg/constructor/mod.py:79
+msgid "Services"
+msgstr "Услуги"
+
+#: mg/constructor/mod.py:79
+msgid "Any game services: mercenaries, guardians, builders etc."
+msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
+
+#: mg/constructor/mod.py:80
+msgid "Market"
+msgstr "Рынок"
+
+#: mg/constructor/mod.py:80
+msgid "Market place to sell and by any item"
+msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
+
+#: mg/constructor/mod.py:91
+msgid "Destroy this game"
+msgstr "Уничтожить эту игру"
+
+#: mg/constructor/mod.py:91
+msgid "You can destroy your game while not created"
+msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
+
+#: mg/constructor/mod.py:125
+#: mg/constructor/mod.py:126
+msgid "Constructor"
+msgstr "Конструктор"
+
+#: mg/constructor/mod.py:125
+msgid "News related to the Constructor"
+msgstr "Новости Конструктора"
+
+#: mg/constructor/mod.py:126
+msgid "Support"
+msgstr "Техническая поддержка"
+
+#: mg/constructor/mod.py:126
+msgid "Constructor technical support"
+msgstr "Техническая поддержка Конструктора"
+
+#: mg/constructor/mod.py:127
+msgid "Game Development"
+msgstr "Разработка игр"
+
+#: mg/constructor/mod.py:127
+msgid "Developers club"
+msgstr "Клуб разработчиков"
+
+#: mg/constructor/mod.py:127
+msgid "Any talks related to the game development"
+msgstr "Общение на тему разработки игр"
+
+#: mg/constructor/mod.py:173
+#: mg/constructor/mod.py:211
+msgid "Log out"
+msgstr "Выход"
+
+#: mg/constructor/mod.py:174
+#: mg/constructor/mod.py:210
+#: mg/constructor/mod.py:245
+msgid "Settings"
+msgstr "Настройки"
+
+#: mg/constructor/mod.py:176
+#: mg/constructor/mod.py:206
+#: mg/constructor/mod.py:263
+msgid "Documentation"
+msgstr "Документация"
+
+#: mg/constructor/mod.py:181
+msgid "Cancel"
+msgstr "Отмена"
+
+#: mg/constructor/mod.py:186
+#: mg/constructor/mod.py:187
+msgid "Constructor of browser-based online games"
+msgstr "Конструктор браузерных онлайн-игр"
+
+#: mg/constructor/mod.py:188
+msgid "Games constructor"
+msgstr "Конструктор игр"
+
+#: mg/constructor/mod.py:189
+msgid "Create the world of your dreams"
+msgstr "Создай мир своей мечты"
+
+#: mg/constructor/mod.py:190
+msgid "log in"
+msgstr "вход"
+
+#: mg/constructor/mod.py:191
+msgid "register"
+msgstr "регистрация"
+
+#: mg/constructor/mod.py:192
+msgid "forum"
+msgstr "форум"
+
+#: mg/constructor/mod.py:193
+msgid "cabinet"
+msgstr "кабинет"
+
+#: mg/constructor/mod.py:194
+msgid "log out"
+msgstr "выход"
+
+#: mg/constructor/mod.py:208
+msgid "Administration"
+msgstr "Администрирование"
+
+#: mg/constructor/mod.py:214
+msgid "New game"
+msgstr "Новая игра"
+
+#: mg/constructor/mod.py:224
+msgid "Untitled game"
+msgstr "Безымянная игра"
+
+#: mg/constructor/mod.py:251
+msgid "Change password"
+msgstr "Изменить пароль"
+
+#: mg/constructor/mod.py:252
+msgid "Change e-mail"
+msgstr "Изменить e-mail"
+
+#: mg/constructor/mod.py:254
+msgid "WebMoney Certification"
+msgstr "Сертификат WebMoney"
+
+#: mg/constructor/mod.py:337
+msgid "Setup wizard"
+msgstr "Мастер установки"
+
+#: mg/constructor/mod.py:352
+msgid "I agree to the terms and conditions"
+msgstr "Я согласен с условиями"
+
+#: mg/constructor/mod.py:353
+msgid "I don't agree"
+msgstr "Я не согласен"
+
+#: mg/constructor/mod.py:363
+msgid "Enter full title"
+msgstr "Введите полное название"
+
+#: mg/constructor/mod.py:365
+msgid "Enter short title"
+msgstr "Введите короткое название"
+
+#: mg/constructor/mod.py:367
+msgid "Enter code"
+msgstr "Введите код"
+
+#: mg/constructor/mod.py:374
+msgid "Full title of your game (ex: Eternal Forces: call of daemons)"
+msgstr "Полное название вашей игры (напр: Вечные Силы: зов демонов)"
+
+#: mg/constructor/mod.py:379
+msgid "Short title of your game (ex: Eternal Forces)"
+msgstr "Короткое название вашей игры (напр: Вечные Силы)"
+
+#: mg/constructor/mod.py:384
+msgid "Short abbreviated code of the game (ex: EF)"
+msgstr "Короткое сокращённое название игры (напр: EF)"
+
+#: mg/constructor/mod.py:390
+msgid "Next"
+msgstr "Далее"
+
+#: mg/constructor/mod.py:392
+msgid "Choosing titles"
+msgstr "Выбор названий"
+
+#: mg/constructor/mod.py:392
+msgid "Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems"
+msgstr "Названия должны быть короткими и ясными. Постарайтесь избегать длинных слов, особенно в коротком названии. В противном случае, могут возникнуть проблемы с переносом строк"
 
 #~ msgid "Exit"
 #~ msgstr "Выход"

@@ -1,12 +1,12 @@
 #projecttitle{font-weight: bold; padding:3px 5px 0px 15px;font-size: 16px;}
-#leftmenu{padding: 5px 0px 0px 0px}
+#leftmenu{padding: 15px 0px 0px 0px}
 .commands{margin:10px -2px 10px -2px;padding:4px 2px 4px 2px;background-color:#f8cab6}
-.advice{margin: 5px 10px 5px 10px}
+.advice{margin: 15px 10px 5px 10px}
 .advice-body{padding: 5px; font-size: 12px}
-.admin-content{padding: 5px 10px 0px 10px}
+.admin-content{padding: 15px 10px 0px 10px}
 .admin-body{padding: 0px 10px 10px 0px}
-.admin-headmenu{font-size: 20px; padding-bottom: 10px}
-.advice-banner{font-size: 20px; margin: 5px 10px 10px 10px}
+.admin-headmenu{font-size: 20px; padding-bottom: 20px}
+.advice-banner{font-size: 20px; margin: 5px 10px 10px 10px; display: none}
 #topmenu{padding-right: 5px}
 .text h1{font-size: 20px}
 .text h2{font-size: 16px}
@@ -15,3 +15,7 @@
 .text ul{list-style: disc; margin: 10px 0px 10px 35px;}
 .text ol{list-style: none; margin: 10px 0px 10px 20px;}
 .auto-panel{margin: 3px 0px 3px 0px}
+.im .x-panel-header{background-image: url(/st/admin/panel-header-important.gif)}
+.im .x-panel-noborder .x-panel-header-noborder{border-bottom-color: #b04242}
+.bottom-form{margin-top: 10px}
+.admin-form .x-panel-btns .x-toolbar-cell{padding: 10px 15px 0px 0px;}

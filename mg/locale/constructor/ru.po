@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-10 19:23+0400\n"
+"POT-Creation-Date: 2010-10-11 16:33+0400\n"
 "PO-Revision-Date: 2010-10-10 19:11+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -30,8 +30,8 @@ msgstr "Подтверждение подписки"
 msgid "You have successfully subscribed to the project news"
 msgstr "Вы успешно подписались на новости проекта"
 
-#: static/constructor/index.js:26 static/admin/form.js:109
-#: static/admin/form.js:112
+#: static/constructor/index.js:26 static/admin/form.js:116
+#: static/admin/form.js:119
 msgid "Error"
 msgstr "Ошибка"
 
@@ -47,18 +47,18 @@ msgstr "Адрес e-mail"
 msgid "Subsciption to the project news"
 msgstr "Подписка на новости проекта"
 
-#: static/admin/form.js:100
+#: static/admin/index.js:78
+msgid "Guru advice"
+msgstr "Советы гуру"
+
+#: static/admin/form.js:107
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/admin/form.js:112
+#: static/admin/form.js:119
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
-
-#: static/admin/index.js:76
-msgid "Guru advice"
-msgstr "Советы гуру"
 
 #~ msgid "Error loading %s: %s"
 #~ msgstr "Ошибка при загрузке %s: %s"

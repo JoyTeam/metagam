@@ -65,12 +65,12 @@ function adm_response(res)
 		} else if (res.content) {
 			var panel = new AdminResponse({
 				border: false,
-				html: res.content,
 				cls: 'admin-body',
 			});
 			admincontent.add(panel);
 			admincontent.doLayout();
 			admincontent.show();
+			panel.update(res.content, true);
 		}
 		advicecontent.removeAll()
 		if (res.advice && res.advice.length) {
@@ -93,18 +93,18 @@ function adm_response(res)
 		advicecontent.doLayout();
 		var auto_panels = Ext.query('div.auto-panel', admincontent.dom);
 		for (var i = 0; i < auto_panels.length; i++) {
-			var div = auto_panels[i];
-			var content = div.innerHTML;
-			var title = div.title;
-			div.innerHTML = '';
-			div.title = undefined;
+			var div = new Ext.Element(auto_panels[i]);
+			var content = div.dom.innerHTML;
+			var title = div.dom.title;
+			div.dom.innerHTML = '';
+			div.dom.title = '';
 			var panel = new Ext.Panel({
 				title: title,
 				html: content,
 				collapsible: true,
 				renderTo: div,
 				border: false,
-				collapsed: true,
+				collapsed: !div.is('.expanded'),
 				titleCollapse: true
 			});
 		}
@@ -135,7 +135,7 @@ function adm_failure(response, opts)
 {
 	var panel = new AdminResponse({
 		border: false,
-		html: sprintf('%h: <strong>%h</strong>', opts.func, response.status + ' ' + response.statusText),
+		html: sprintf('<div class="text">%s</div>', response.responseText),
 		autoScroll: true,
 		bodyStyle: 'padding: 10px'
 	});

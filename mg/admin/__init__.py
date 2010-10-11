@@ -20,6 +20,7 @@ class AdminInterface(Module):
         self.rhook("admin.redirect_top", self.redirect_top)
         self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
+        self.rhook("admin.advice", self.advice)
 
     def index(self):
         self.call("auth.require_login")
@@ -123,10 +124,20 @@ class AdminInterface(Module):
             "ver": self.call("core.ver"),
         }
 
+    def advice(self, *args):
+        req = self.req()
+        try:
+            req.admin_advice.extend(args)
+        except AttributeError:
+            req.admin_advice = args
+
     def params_page(self, params):
         params["headmenu"] = self.headmenu()
         req = self.req()
         advice = []
+        admin_advice = getattr(req, "admin_advice", None)
+        if admin_advice is not None:
+            advice.extend(admin_advice)
         self.call("advice-%s.%s" % (req.group, req.hook), req.args, advice)
         self.call("advice-%s.index" % req.group, req.hook, req.args, advice)
         params["advice"] = advice

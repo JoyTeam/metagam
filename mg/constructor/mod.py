@@ -6,6 +6,7 @@ from mg.constructor import Project, ProjectList
 from uuid import uuid4
 import re
 import time
+import cgi
 
 class ConstructorUtils(Module):
     def register(self):
@@ -54,6 +55,7 @@ class ConstructorProject(Module):
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("project.title", self.project_title)
+        self.rhook("forum-admin.init-categories", self.forum_init_categories)
 
     def project_title(self):
         return "New Game"
@@ -63,6 +65,19 @@ class ConstructorProject(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "project.admin", "name": self._("Project main administrator")})
+
+    def forum_init_categories(self, cats):
+        cats.append({"id": uuid4().hex, "topcat": self._("Game"), "title": self._("News"), "description": self._("Game news published by the administrators"), "order": 10.0, "default_subscribe": True})
+        cats.append({"id": uuid4().hex, "topcat": self._("Game"), "title": self._("Game"), "description": self._("Talks about game activities: gameplay, news, wars, politics etc."), "order": 20.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Game"), "title": self._("Newbies"), "description": self._("Dear newbies, if you have any questions about the game, feel free to ask"), "order": 30.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Game"), "title": self._("Diplomacy"), "description": self._("Authorized guild members can talk to each other about diplomacy and politics issues here"), "order": 40.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Admin"), "title": self._("Admin talks"), "description": self._("Discussions with the game administrators. Here you can discuss any issues related to the game itself."), "order": 50.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Admin"), "title": self._("Reference manuals"), "description": self._("Actual reference documents about the game are placed here."), "order": 60.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Admin"), "title": self._("Bug reports"), "description": self._("Report any problems in the game here"), "order": 70.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Reallife"), "title": self._("Smoking room"), "description": self._("Everything not related to the game: humor, forum games, hobbies, sport etc."), "order": 80.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Reallife"), "title": self._("Art"), "description": self._("Poems, prose, pictures, photos, music about the game"), "order": 90.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Trading"), "title": self._("Services"), "description": self._("Any game services: mercenaries, guardians, builders etc."), "order": 100.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Trading"), "title": self._("Market"), "description": self._("Market place to sell and by any item"), "order": 110.0})
 
 class ConstructorProjectAdmin(Module):
     def register(self):
@@ -104,6 +119,12 @@ class Constructor(Module):
         self.rhook("core.appfactory", self.appfactory)
         self.rhook("core.webdaemon", self.webdaemon)
         self.rhook("project.title", self.project_title)
+        self.rhook("forum-admin.init-categories", self.forum_init_categories)
+
+    def forum_init_categories(self, cats):
+        cats.append({"id": uuid4().hex, "topcat": self._("Constructor"), "title": self._("News"), "description": self._("News related to the Constructor"), "order": 10.0, "default_subscribe": True})
+        cats.append({"id": uuid4().hex, "topcat": self._("Constructor"), "title": self._("Support"), "description": self._("Constructor technical support"), "order": 20.0})
+        cats.append({"id": uuid4().hex, "topcat": self._("Game Development"), "title": self._("Developers club"), "description": self._("Any talks related to the game development"), "order": 30.0})
 
     def project_title(self):
         return "MMO Constructor"
@@ -308,11 +329,68 @@ class Constructor(Module):
         self.call("web.redirect", "http://%s/admin" % app.domain)
 
 class ProjectSetupWizard(Wizard):
+    def new(self, **kwargs):
+        super(ProjectSetupWizard, self).new(**kwargs)
+        self.config.set("state", "offer")
+        
     def menu(self, menu):
         menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True})
 
     def request(self, cmd):
-        vars = {
-            "user": self.app().project.get("owner")
-        }
-        self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)
+        req = self.req()
+        state = self.config.get("state")
+        project = self.app().project
+        if state == "offer":
+            if cmd == "agree":
+                self.config.set("state", "name")
+                self.config.store()
+                self.call("admin.redirect", "wizard/call/%s" % self.uuid)
+            author = self.app().inst.appfactory.get_by_tag("main").obj(User, project.get("owner"))
+            vars = {
+                "author": cgi.escape(author.get("name")),
+                "wizard": self.uuid,
+                "Agree": jsencode(self._("I agree to the terms and conditions")),
+                "DontAgree": jsencode(self._("I don't agree")),
+            }
+            self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)
+        elif state == "name":
+            if cmd == "name-submit":
+                errors = {}
+                title_full = req.param("title_full")
+                title_short = req.param("title_short")
+                title_code = req.param("title_code")
+                if not title_full or title_full == "":
+                    errors["title_full"] = self._("Enter full title")
+                if not title_short or title_short == "":
+                    errors["title_short"] = self._("Enter short title")
+                if not title_code or title_code == "":
+                    errors["title_code"] = self._("Enter code")
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                self.call("web.response_json", {"success": True})
+            fields = [
+                {
+                    "name": "title_full",
+                    "label": self._("Full title of your game (ex: Eternal Forces: call of daemons)"),
+                    "value": project.get("title_full"),
+                },
+                {
+                    "name": "title_short",
+                    "label": self._("Short title of your game (ex: Eternal Forces)"),
+                    "value": project.get("title_short"),
+                },
+                {
+                    "name": "title_code",
+                    "label": self._("Short abbreviated code of the game (ex: EF)"),
+                    "value": project.get("title_code"),
+                    "inline": True,
+                },
+            ]
+            buttons = [
+                {"text": self._("Next"), "url": "admin-wizard/call/%s/name-submit" % self.uuid}
+            ]
+            self.call("admin.advice", {"title": self._("Choosing titles"), "content": self._("Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems")})
+            self.call("admin.form", fields=fields, buttons=buttons)
+        else:
+            raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
+
