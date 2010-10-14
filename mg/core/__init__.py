@@ -283,29 +283,7 @@ class Config(object):
                     list.append(obj)
                 list.store()
                 self._modified.clear()
-            tag = None
-            try:
-                tag = self.app().tag
-            except AttributeError:
-                pass
-            if tag is not None:
-                try:
-                    int_app = self.app().inst.int_app
-                except AttributeError:
-                    int_app = None
-                if int_app is not None:
-                    servers_online = int_app.hooks.call("cluster.servers_online")
-                    if servers_online is not None:
-                        for server, info in servers_online.items():
-                            if info["type"] == "worker":
-                                try:
-                                    int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
-                                except HTTPError as e:
-                                    logging.getLogger("mg.core.Config").error(e)
-                                except (KeyboardInterrupt, SystemExit, TaskletExit):
-                                    raise
-                                except BaseException as e:
-                                    logging.getLogger("mg.core.Config").exception(e)
+            self.app().hooks.call("cluster.appconfig_changed")
 
 class Module(object):
     """
@@ -636,7 +614,7 @@ class ApplicationFactory(object):
         "Add application to the factory"
         self.applications[app.tag] = app
 
-    def remove_tag(self, tag):
+    def remove_by_tag(self, tag):
         "Remove application from the factory by its tag"
         try:
             app = self.applications[tag]

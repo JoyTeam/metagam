@@ -8,6 +8,8 @@ import re
 import time
 import cgi
 
+re_bad_symbols = re.compile(r'.*[\'"<>&\\]')
+
 class ConstructorUtils(Module):
     def register(self):
         Module.register(self)
@@ -331,7 +333,7 @@ class Constructor(Module):
 class ProjectSetupWizard(Wizard):
     def new(self, **kwargs):
         super(ProjectSetupWizard, self).new(**kwargs)
-        self.config.set("state", "offer")
+        self.config.set("state", "intro")
         
     def menu(self, menu):
         menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True})
@@ -340,7 +342,18 @@ class ProjectSetupWizard(Wizard):
         req = self.req()
         state = self.config.get("state")
         project = self.app().project
-        if state == "offer":
+        if state == "intro":
+            if cmd == "next":
+                self.config.set("state", "offer")
+                self.config.store()
+                self.call("admin.redirect", "wizard/call/%s" % self.uuid)
+            vars = {
+                "wizard": self.uuid,
+                "next_text": jsencode(self._("Next")),
+            }
+            self.call("admin.advice", {"title": self._("Demo advice"), "content": self._("Look to the right to read some recommendations")})
+            self.call("admin.response_template", "constructor/intro.html", vars)
+        elif state == "offer":
             if cmd == "agree":
                 self.config.set("state", "name")
                 self.config.store()
@@ -352,6 +365,7 @@ class ProjectSetupWizard(Wizard):
                 "Agree": jsencode(self._("I agree to the terms and conditions")),
                 "DontAgree": jsencode(self._("I don't agree")),
             }
+            self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
             self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)
         elif state == "name":
             if cmd == "name-submit":
@@ -359,30 +373,51 @@ class ProjectSetupWizard(Wizard):
                 title_full = req.param("title_full")
                 title_short = req.param("title_short")
                 title_code = req.param("title_code")
+
                 if not title_full or title_full == "":
                     errors["title_full"] = self._("Enter full title")
+                elif len(title_full) > 50:
+                    errors["title_full"] = self._("Maximal length - 50 characters")
+                elif re_bad_symbols.match(title_full):
+                    errors["title_full"] = self._("Bad symbols in the title")
+
                 if not title_short or title_short == "":
                     errors["title_short"] = self._("Enter short title")
+                elif len(title_short) > 30:
+                    errors["title_short"] = self._("Maximal length - 30 characters")
+                elif re_bad_symbols.match(title_short):
+                    errors["title_short"] = self._("Bad symbols in the title")
+
                 if not title_code or title_code == "":
                     errors["title_code"] = self._("Enter code")
+                elif len(title_code) > 5:
+                    errors["title_code"] = self._("Maximal length - 5 characters")
+                elif re.match(r'[^a-z0-9A-Z]', title_code):
+                    errors["title_code"] = self._("You can use digits and latin letters only")
+
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
-                self.call("web.response_json", {"success": True})
+                self.config.set("title_full", title_full)
+                self.config.set("title_short", title_short)
+                self.config.set("title_code", title_code)
+                self.config.set("state", "logo")
+                self.config.store()
+                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
             fields = [
                 {
                     "name": "title_full",
                     "label": self._("Full title of your game (ex: Eternal Forces: call of daemons)"),
-                    "value": project.get("title_full"),
+                    "value": self.config.get("title_full"),
                 },
                 {
                     "name": "title_short",
                     "label": self._("Short title of your game (ex: Eternal Forces)"),
-                    "value": project.get("title_short"),
+                    "value": self.config.get("title_short"),
                 },
                 {
                     "name": "title_code",
                     "label": self._("Short abbreviated code of the game (ex: EF)"),
-                    "value": project.get("title_code"),
+                    "value": self.config.get("title_code"),
                     "inline": True,
                 },
             ]
@@ -391,6 +426,22 @@ class ProjectSetupWizard(Wizard):
             ]
             self.call("admin.advice", {"title": self._("Choosing titles"), "content": self._("Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems")})
             self.call("admin.form", fields=fields, buttons=buttons)
+        elif state == "logo":
+            if cmd == "upload":
+                image = req.param_raw("image")
+                if image is not None and len(image):
+                    uri = self.call("cluster.static_upload_temp", "logo", "jpg", "image/jpeg", image)
+                    print "uploaded %s" % uri
+                self.call("web.response_json_html", {"success": True})
+            vars = {
+                "GameLogo": self._("Game logo"),
+                "Upload": self._("Upload"),
+                "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
+                "FromFile": self._("Upload logo file"),
+                "FromConstructor": self._("Launch logo constructor"),
+                "wizard": self.uuid,
+            }
+            self.call("admin.response_template", "constructor/logo.html", vars)
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
 

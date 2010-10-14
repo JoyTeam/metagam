@@ -1,0 +1,21 @@
+<div class="text">
+<h1>Информация по навигации</h1>
+<ul>
+	<li>слева у вас всегда находится меню админки;</li>
+	<li>в центре экрана &mdash; основной интерфейс;</li>
+	<li>справа &mdash; советы по использованию открытого интерфейса;</li>
+	<li>сверху &mdash; меню с постоянными функциями.</li>
+</ul>
+</div>
+
+<div id="navi"></div>
+
+<script type="text/javascript">
+new Ext.Button({
+	renderTo: 'navi',
+	cls: 'bottom-form',
+	border: false,
+	text: gt.gettext('[%next_text%]'),
+	handler: function() { adm('wizard/call/[%wizard%]/next') }
+});
+</script>

@@ -401,6 +401,7 @@ class Web(Module):
         self.rhook("web.response_inline_layout", self.web_response_inline_layout)
         self.rhook("web.response_hook_layout", self.web_response_hook_layout)
         self.rhook("web.response_json", self.web_response_json)
+        self.rhook("web.response_json_html", self.web_response_json_html)
         self.rhook("web.form", self.web_form)
         self.rhook("web.not_found", self.web_not_found)
         self.rhook("web.forbidden", self.web_forbidden)
@@ -557,6 +558,9 @@ class Web(Module):
 
     def web_response_json(self, data):
         raise WebResponse(self.req().jresponse(data))
+
+    def web_response_json_html(self, data):
+        raise WebResponse(self.req().uresponse(cgi.escape(json.dumps(data))))
 
     def web_form(self, template, action=None):
         return WebForm(self, template, action)

@@ -16,7 +16,7 @@ def main():
         quit(1)
     except (SystemExit, TaskletExit, KeyboardInterrupt):
         raise
-    except:
+    except BaseException as e:
         logging.exception(e)
         quit(1)
 

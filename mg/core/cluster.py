@@ -1,4 +1,4 @@
-from mg.core import Module
+from mg import *
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from urllib import urlencode
 from uuid import uuid4
@@ -6,6 +6,24 @@ import json
 import random
 
 alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+class TempFile(CassandraObject):
+    _indexes = {
+        "created": [[], "created"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "TempFile-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return TempFile._indexes
+
+class TempFileList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "TempFile-"
+        kwargs["cls"] = TempFile
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class StaticUploadError(Exception):
     "Error uploading object to the static server"
@@ -18,6 +36,8 @@ class Cluster(Module):
         self.rhook("cluster.query_server", self.query_server)
         self.rhook("cluster.servers_online", self.servers_online)
         self.rhook("cluster.static_upload", self.static_upload)
+        self.rhook("cluster.appconfig_changed", self.appconfig_changed)
+        self.rhook("cluster.static_upload_temp", self.static_upload_temp)
 
     def query_director(self, uri, params={}):
         """
@@ -49,18 +69,18 @@ class Cluster(Module):
             online = {}
         return online
 
-    def static_upload(self, subdir, ext, content_type, data):
-        storage_server = str(random.choice(self.app().inst.config["storage"]))
+    def upload(self, subdir, ext, content_type, data):
+        host = str(random.choice(self.app().inst.config["storage"]))
         id = uuid4().hex
         url = "/%s/%s/%s%s/%s-%s.%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id, ext)
-        uri = "http://" + storage_server + url
+        uri = "http://" + host + url
         cnn = HTTPConnection()
-        cnn.connect((str(storage_server), 80))
+        cnn.connect((str(host), 80))
         try:
             request = HTTPRequest()
             request.method = "PUT"
             request.path = url
-            request.host = storage_server
+            request.host = host
             request.body = data
             request.add_header("Content-type", content_type)
             request.add_header("Content-length", len(request.body))
@@ -69,7 +89,36 @@ class Cluster(Module):
                 raise StaticUploadError(self._("Error storing object: %s") % response.status)
         finally:
             cnn.close()
+        return (uri, url, host)
+
+    def static_upload(self, subdir, ext, content_type, data):
+        uri, url, host = self.upload(subdir, ext, content_type, data)
         return uri
+
+    def static_upload_temp(self, subdir, ext, content_type, data):
+        uri, url, host = self.upload(subdir, ext, content_type, data)
+        self.app().inst.int_app.obj(TempFile, data={"uri": uri, "url": url, "host": host, "created": self.now()}).store()
+        return uri
+
+    def appconfig_changed(self):
+        tag = None
+        try:
+            tag = self.app().tag
+        except AttributeError:
+            pass
+        if tag is not None:
+            int_app = self.app().inst.int_app
+            servers_online = self.servers_online()
+            for server, info in servers_online.items():
+                if info["type"] == "worker":
+                    try:
+                        int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                    except HTTPError as e:
+                        self.error(e)
+                    except (KeyboardInterrupt, SystemExit, TaskletExit):
+                        raise
+                    except BaseException as e:
+                        self.exception(e)
 
 def dir_query(uri, params):
     return query("director", 3000, uri, params)
