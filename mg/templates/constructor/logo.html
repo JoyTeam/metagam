@@ -1,64 +1,112 @@
 <div class="text">
 <h1>[%GameLogo%]</h1>
 <p>[%HereYouCan%]</p>
+<div id="logo_preview"></div>
 <h2>[%FromFile%]</h2>
+<p>[%UploadNote%]</p>
 <div id="file_form"></div>
 <h2>[%FromConstructor%]</h2>
 <div id="constructor_form"></div>
+<div id="navi"></div>
 </div>
 
 <script type="text/javascript">
-var file_form = new Ext.FormPanel({
-	renderTo: 'file_form',
-	cls: 'bottom-form',
-	border: false,
-	layout: 'form',
-	fileUpload: true,
-	items: [{
+function show_logo(uri)
+{
+	Ext.fly('logo_preview').dom.innerHTML = '';
+	new Ext.Panel({
+		renderTo: 'logo_preview',
 		border: false,
 		layout: 'hbox',
 		layoutConfig: {
 			align: 'stretchmax',
-			pack: 'start',
+			pack: 'start'
 		},
 		items: [{
-			layout: 'fit',
 			border: false,
-			items: {
-				fieldLabel: 'Upload from your computer',
-				xtype: 'textfield',
-				name: 'image',
-				inputType: 'file',
-				anchor: '-30',
-				border: false,
-			}
+			flex: 1,
+			bodyCssClass: 'logo-demo-1',
+			html: '<img src="' + uri + '" alt="" width="100" height="100" />'
 		}, {
-			width: 100,
 			border: false,
-			items: {
-				style: 'margin-left: 20px',
-				xtype: 'button',
-       				text: '[%Upload%]',
-				handler: function() {file_form.getForm().submit({
-					url: '/admin-wizard/call/[%wizard%]/upload',
-					waitMsg: 'WAIT',
-					success: function(f, action) {
-						adm_success(action.response, {
-							func: "admin-wizard/call/[%wizard%]/upload"
-						});
-					},
-					failure: function(f, action) {
-						if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-							if (action.result.errormsg) {
-								Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
-							}
-						} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-							Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
-						}
-					},
-				})}
-			}
+			flex: 1,
+			bodyCssClass: 'logo-demo-2',
+			html: '<img src="' + uri + '" alt="" width="100" height="100" />'
 		}]
-	}]
+	});
+}
+wait(['admin/FileUploadField.js'], function() {
+	var file_form = new Ext.FormPanel({
+		renderTo: 'file_form',
+		cls: 'bottom-form',
+		border: false,
+		layout: 'form',
+		fileUpload: true,
+		waitTitle: gt.gettext('Please wait...'),
+		items: [{
+			border: false,
+			layout: 'hbox',
+			layoutConfig: {
+				align: 'stretchmax',
+				pack: 'start',
+			},
+			items: [{
+				flex: 1,
+				border: false,
+				layout: 'form',
+				items: {
+					width: 400,
+					fieldLabel: '[%ImageFormat%]',
+					xtype: 'fileuploadfield',
+					name: 'image',
+					anchor: '-30',
+					border: false,
+				}
+			}, {
+				width: 100,
+				border: false,
+				items: {
+					style: 'margin-left: 20px',
+					xtype: 'button',
+					text: '[%Upload%]',
+					handler: function() {file_form.getForm().submit({
+						url: '/admin-wizard/call/[%wizard%]/upload',
+						waitMsg: gt.gettext('[%UploadingData%]'),
+						success: function(f, action) {
+							var res = Ext.util.JSON.decode(action.response.responseText);
+							if (res && res.logo_preview)
+								show_logo(res.logo_preview);
+							adm_success(action.response, {
+								func: "admin-wizard/call/[%wizard%]/upload"
+							});
+						},
+						failure: function(f, action) {
+							if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+								if (action.result.errormsg) {
+									Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+								}
+							} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+								Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+							}
+						},
+					})}
+				}
+			}]
+		}]
+	});
+	[%if logo%]show_logo('[%logo%]');[%end%]
+	new Ext.Panel({
+		renderTo: 'navi',
+		cls: 'bottom-form',
+		border: false,
+		layout: 'form',
+		buttons: [{
+			text: gt.gettext('[%prev_text%]'),
+			handler: function() { adm('wizard/call/[%wizard%]/prev') }
+		}, {
+			text: gt.gettext('[%next_text%]'),
+			handler: function() { adm('wizard/call/[%wizard%]/next') }
+		}]
+	});
 });
 </script>

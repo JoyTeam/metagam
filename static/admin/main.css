@@ -19,3 +19,9 @@
 .im .x-panel-noborder .x-panel-header-noborder{border-bottom-color: #b04242}
 .bottom-form{margin-top: 10px}
 .admin-form .x-panel-btns .x-toolbar-cell{padding: 10px 15px 0px 0px;}
+.x-form-file-wrap { position: relative; height: 22px; }
+.x-form-file-wrap .x-form-file { position: absolute; right: 0; -moz-opacity: 0; filter:alpha(opacity: 0); opacity: 0; z-index: 2; height: 22px; }
+.x-form-file-wrap .x-form-file-btn { position: absolute; right: 0; z-index: 1; }
+.x-form-file-wrap .x-form-file-text { position: absolute; left: 0; z-index: 3; color: #777; }
+.logo-demo-1 { padding: 20px; text-align: center; }
+.logo-demo-2 { padding: 20px; background: url(/st/constructor/logo-demo.gif); text-align: center; }

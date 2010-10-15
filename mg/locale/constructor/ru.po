@@ -8,84 +8,71 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-11 16:33+0400\n"
-"PO-Revision-Date: 2010-10-10 19:11+0300\n"
+"POT-Creation-Date: 2010-10-15 18:59+0400\n"
+"PO-Revision-Date: 2010-10-15 18:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: static/constructor/index.js:12
-msgid "Subscribe"
-msgstr "Подписаться"
-
-#: static/constructor/index.js:20
-msgid "Subscription confirmation"
-msgstr "Подтверждение подписки"
-
-#: static/constructor/index.js:20
-msgid "You have successfully subscribed to the project news"
-msgstr "Вы успешно подписались на новости проекта"
-
-#: static/constructor/index.js:26 static/admin/form.js:116
-#: static/admin/form.js:119
-msgid "Error"
-msgstr "Ошибка"
-
-#: static/constructor/index.js:26
-msgid "Connection to the server failed"
-msgstr "Нет связи с сервером"
-
-#: static/constructor/index.js:52
-msgid "E-mail address"
-msgstr "Адрес e-mail"
-
-#: static/constructor/index.js:59
-msgid "Subsciption to the project news"
-msgstr "Подписка на новости проекта"
+#: static/admin/FileUploadField.js:21
+msgid "Browse..."
+msgstr "Обзор..."
 
 #: static/admin/index.js:78
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/admin/form.js:107
+#: static/admin/form.js:105
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/admin/form.js:119
+#: static/admin/form.js:114
+#: static/admin/form.js:117
+msgid "Error"
+msgstr "Ошибка"
+
+#: static/admin/form.js:117
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
+#: static/admin/form.js:134
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+#~ msgid "Subscribe"
+#~ msgstr "Подписаться"
+#~ msgid "Subscription confirmation"
+#~ msgstr "Подтверждение подписки"
+#~ msgid "You have successfully subscribed to the project news"
+#~ msgstr "Вы успешно подписались на новости проекта"
+#~ msgid "Connection to the server failed"
+#~ msgstr "Нет связи с сервером"
+#~ msgid "E-mail address"
+#~ msgstr "Адрес e-mail"
+#~ msgid "Subsciption to the project news"
+#~ msgstr "Подписка на новости проекта"
 #~ msgid "Error loading %s: %s"
 #~ msgstr "Ошибка при загрузке %s: %s"
-
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
-
 #~ msgid "Category description"
 #~ msgstr "Описание раздела"
-
 #~ msgid "Order"
 #~ msgstr "Порядок"
-
 #~ msgid "New category"
 #~ msgstr "Новый раздел"
-
 #~ msgid "Stay tuned"
 #~ msgstr "Хочу быть в курсе"
-
 #~ msgid "Project status notifications"
 #~ msgstr "Уведомление о статусе разработки"
-
 #~ msgid "Notify me on everything interesting"
 #~ msgstr "Сообщайте мне обо всём интересном"
-
 #~ msgid "Login"
 #~ msgstr "Вход"
-
 #~ msgid "Register"
 #~ msgstr "Регистрация"
+

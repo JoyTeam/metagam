@@ -1,5 +1,3 @@
-var form;
-
 Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
@@ -133,6 +131,7 @@ Form = Ext.extend(AdminResponse, {
 			buttons: buttons,
 			buttonAlign: 'left',
 			footerStyle: 'padding: 0',
+			waitTitle: gt.gettext('Please wait...'),
 		});
 		this.add(form);
 	}

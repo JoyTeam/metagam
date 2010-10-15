@@ -72,8 +72,8 @@ class Cluster(Module):
     def upload(self, subdir, ext, content_type, data):
         host = str(random.choice(self.app().inst.config["storage"]))
         id = uuid4().hex
-        url = "/%s/%s/%s%s/%s-%s.%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id, ext)
-        uri = "http://" + host + url
+        url = str("/%s/%s/%s%s/%s-%s.%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id, ext))
+        uri = str("http://" + host + url)
         cnn = HTTPConnection()
         cnn.connect((str(host), 80))
         try:

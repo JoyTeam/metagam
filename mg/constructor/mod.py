@@ -4,9 +4,11 @@ from mg.core.queue import QueueTask, QueueTaskList, Schedule
 import mg.constructor
 from mg.constructor import Project, ProjectList
 from uuid import uuid4
+from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 import re
 import time
 import cgi
+import cStringIO
 
 re_bad_symbols = re.compile(r'.*[\'"<>&\\]')
 
@@ -288,7 +290,6 @@ class Constructor(Module):
         for row in slices_list:
             if len(row.columns):
                 self.warning("Unknown database key %s", row.key)
-                #mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate(slice_range=SliceRange(start="", finish="")), clock=clock))]}
                 mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
 #       if len(mutations):
 #           self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
@@ -383,8 +384,8 @@ class ProjectSetupWizard(Wizard):
 
                 if not title_short or title_short == "":
                     errors["title_short"] = self._("Enter short title")
-                elif len(title_short) > 30:
-                    errors["title_short"] = self._("Maximal length - 30 characters")
+                elif len(title_short) > 17:
+                    errors["title_short"] = self._("Maximal length - 17 characters")
                 elif re_bad_symbols.match(title_short):
                     errors["title_short"] = self._("Bad symbols in the title")
 
@@ -429,17 +430,84 @@ class ProjectSetupWizard(Wizard):
         elif state == "logo":
             if cmd == "upload":
                 image = req.param_raw("image")
-                if image is not None and len(image):
-                    uri = self.call("cluster.static_upload_temp", "logo", "jpg", "image/jpeg", image)
-                    print "uploaded %s" % uri
-                self.call("web.response_json_html", {"success": True})
+                errors = {}
+                if image is None or not len(image):
+                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload logo image")}})
+                try:
+                    image_obj = Image.open(cStringIO.StringIO(image))
+                    if image_obj.load() is None:
+                        raise IOError;
+                except IOError:
+                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Image format not recognized")}})
+                try:
+                    image_obj.seek(1)
+                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Animated logos are not supported")}})
+                except EOFError:
+                    pass
+                image_obj = image_obj.convert("RGBA")
+                width, height = image_obj.size
+                if width != 100:
+                    height = height * 100 / width
+                    width = 100
+                    image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
+                if height < 100:
+                    box = (0, 0, 100, height)
+                else:
+                    box = (0, 0, 100, 100)
+                    if height > 100:
+                        image_obj = image_obj.crop((0, 0, 100, 100))
+                # putting image on the white background
+                background = Image.new("RGBA", (100, 100), (255, 255, 255))
+                background.paste(image_obj, box, image_obj)
+                # drawing image border
+                bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
+                background.paste(bord, None, bord)
+                # rounding corners
+                mask = Image.open(mg.__path__[0] + "/data/logo/logo-mask.png")
+                mask = mask.convert("RGBA")
+                mask.paste(background, None, mask)
+                # writing text
+                textpad = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
+                title = self.config.get("title_short")
+                font_size = 20
+                watchdog = 0
+                while font_size > 5:
+                    font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/arialn.ttf", font_size, encoding="unic")
+                    w, h = font.getsize(title)
+                    if w <= 92 and h <= 20:
+                        break
+                    font_size -= 1
+                draw = ImageDraw.Draw(textpad)
+                draw.text((50 - w / 2, 88 - h / 2), title, font=font)
+                enhancer = ImageEnhance.Sharpness(textpad)
+                textpad_blur = enhancer.enhance(0.5)
+                mask.paste(textpad_blur, None, textpad_blur)
+                mask.paste(textpad, None, textpad)
+
+                png = cStringIO.StringIO()
+                mask.save(png, "PNG")
+                png = png.getvalue()
+                uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png)
+                self.config.set("logo", uri)
+                self.config.store()
+                self.call("web.response_json_html", {"success": True, "logo_preview": uri})
+            elif cmd == "prev":
+                self.config.set("state", "name")
+                self.config.store()
+                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
             vars = {
                 "GameLogo": self._("Game logo"),
                 "Upload": self._("Upload"),
                 "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
-                "FromFile": self._("Upload logo file"),
-                "FromConstructor": self._("Launch logo constructor"),
+                "FromFile": self._("Alternative 1. Upload logo file"),
+                "FromConstructor": self._("Alternative 2. Launch logo constructor"),
+                "UploadingData": self._("Uploading data..."),
                 "wizard": self.uuid,
+                "logo": self.config.get("logo"),
+                "ImageFormat": self._("Upload image: 100x100, without animation"),
+                "UploadNote": self._("Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."),
+                "next_text": jsencode(self._("Next")),
+                "prev_text": jsencode(self._("Previous")),
             }
             self.call("admin.response_template", "constructor/logo.html", vars)
         else:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-14 17:59+0400\n"
+"POT-Creation-Date: 2010-10-15 18:59+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,44 +16,27 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/constructor/index.js:12
-msgid "Subscribe"
-msgstr ""
-
-#: static/constructor/index.js:20
-msgid "Subscription confirmation"
-msgstr ""
-
-#: static/constructor/index.js:20
-msgid "You have successfully subscribed to the project news"
-msgstr ""
-
-#: static/constructor/index.js:26 static/admin/form.js:116
-#: static/admin/form.js:119
-msgid "Error"
-msgstr ""
-
-#: static/constructor/index.js:26
-msgid "Connection to the server failed"
-msgstr ""
-
-#: static/constructor/index.js:52
-msgid "E-mail address"
-msgstr ""
-
-#: static/constructor/index.js:59
-msgid "Subsciption to the project news"
+#: static/admin/FileUploadField.js:21
+msgid "Browse..."
 msgstr ""
 
 #: static/admin/index.js:78
 msgid "Guru advice"
 msgstr ""
 
-#: static/admin/form.js:107
+#: static/admin/form.js:105
 msgid "Sending data..."
 msgstr ""
 
-#: static/admin/form.js:119
+#: static/admin/form.js:114 static/admin/form.js:117
+msgid "Error"
+msgstr ""
+
+#: static/admin/form.js:117
 #, python-format
 msgid "Server error: %s"
+msgstr ""
+
+#: static/admin/form.js:134
+msgid "Please wait..."
 msgstr ""
