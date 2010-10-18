@@ -63,38 +63,49 @@ class Director(Module):
                 for server_id, info in self.servers_online.items():
                     host = info.get("host")
                     port = info.get("port")
+                    self.debug("pinging %s:%s", host, port)
                     success = False
                     try:
+                        self.debug("connecting...")
                         cnn = HTTPConnection()
                         cnn.connect((str(host), int(port)))
                         try:
+                            self.debug("requesting...")
                             with Timeout.push(20):
                                 request = cnn.get("/core/ping")
                                 request.add_header("Content-type", "application/x-www-form-urlencoded")
+                                self.debug("waiting for response...")
                                 response = cnn.perform(request)
                                 if response.status_code == 200 and response.get_header("Content-type") == "application/json":
                                     body = json.loads(response.body)
                                     if body.get("ok") and body.get("server_id") == server_id:
                                         success = True
+                                self.debug("finished")
                         finally:
+                            self.debug("closing...")
                             cnn.close()
+                        self.debug("complete")
                     except (KeyboardInterrupt, SystemExit, TaskletExit):
                         raise
                     except BaseException as e:
                         self.info("%s - %s", server_id, e)
                     if not success:
+                        self.debug("not success")
                         # at the moment failing server could be removed from the configuration already
                         fact_server = self.servers_online.get(server_id)
                         if fact_server is not None:
                             fact_port = fact_server.get("port")
                             if fact_port is None or fact_port == port:
                                 del self.servers_online[server_id]
+                                self.debug("storing servers_online")
                                 self.store_servers_online()
                                 self.servers_online_updated()
+                                self.debug("stored")
             except (SystemExit, TaskletExit, KeyboardInterrupt):
                 raise
             except BaseException as e:
                 self.exception(e)
+            self.debug("sleeping...")
             Tasklet.sleep(10)
 
     def appfactory(self):

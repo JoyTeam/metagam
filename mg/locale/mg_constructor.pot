@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-15 18:59+0400\n"
+"POT-Creation-Date: 2010-10-17 14:28+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,10 +18,6 @@ msgstr ""
 
 #: static/admin/FileUploadField.js:21
 msgid "Browse..."
-msgstr ""
-
-#: static/admin/index.js:78
-msgid "Guru advice"
 msgstr ""
 
 #: static/admin/form.js:105
@@ -39,4 +35,8 @@ msgstr ""
 
 #: static/admin/form.js:134
 msgid "Please wait..."
+msgstr ""
+
+#: static/admin/index.js:78
+msgid "Guru advice"
 msgstr ""

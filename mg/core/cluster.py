@@ -10,6 +10,8 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 class TempFile(CassandraObject):
     _indexes = {
         "created": [[], "created"],
+        "wizard": [["wizard"]],
+        "app": [["app"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -18,6 +20,26 @@ class TempFile(CassandraObject):
 
     def indexes(self):
         return TempFile._indexes
+
+    def delete(self):
+        host = str(self.get("host"))
+        url = str(self.get("url"))
+        uri = str(self.get("uri"))
+        print "deleting static file %s" % uri
+        cnn = HTTPConnection()
+        cnn.connect((str(host), 80))
+        try:
+            request = HTTPRequest()
+            request.method = "DELETE"
+            request.path = url
+            request.host = host
+            cnn.perform(request)
+        except (SystemExit, KeyboardInterrupt, TaskletExit):
+            raise
+        except:
+            pass
+        finally:
+            cnn.close()
 
 class TempFileList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
@@ -95,9 +117,18 @@ class Cluster(Module):
         uri, url, host = self.upload(subdir, ext, content_type, data)
         return uri
 
-    def static_upload_temp(self, subdir, ext, content_type, data):
+    def static_upload_temp(self, subdir, ext, content_type, data, wizard=None):
         uri, url, host = self.upload(subdir, ext, content_type, data)
-        self.app().inst.int_app.obj(TempFile, data={"uri": uri, "url": url, "host": host, "created": self.now()}).store()
+        data = {
+            "uri": uri,
+            "url": url,
+            "host": host,
+            "created": self.now(),
+            "app": self.app().tag
+        }
+        if wizard is not None:
+            data["wizard"] = wizard
+        self.app().inst.int_app.obj(TempFile, data=data).store()
         return uri
 
     def appconfig_changed(self):

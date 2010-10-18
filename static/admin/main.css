@@ -23,5 +23,6 @@
 .x-form-file-wrap .x-form-file { position: absolute; right: 0; -moz-opacity: 0; filter:alpha(opacity: 0); opacity: 0; z-index: 2; height: 22px; }
 .x-form-file-wrap .x-form-file-btn { position: absolute; right: 0; z-index: 1; }
 .x-form-file-wrap .x-form-file-text { position: absolute; left: 0; z-index: 3; color: #777; }
-.logo-demo-1 { padding: 20px; text-align: center; }
-.logo-demo-2 { padding: 20px; background: url(/st/constructor/logo-demo.gif); text-align: center; }
+.logo-demo-1 { padding: 20px; background: url(/st/constructor/logo-demo.gif); text-align: center; }
+.logo-demo-2 { padding: 20px; }
+.logo-preview img { margin-bottom: 10px; border: solid 1px #e0e0e0; }

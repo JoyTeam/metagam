@@ -1,6 +1,7 @@
 from mg import *
 from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
 from mg.core.queue import QueueTask, QueueTaskList, Schedule
+from mg.core.cluster import TempFileList
 import mg.constructor
 from mg.constructor import Project, ProjectList
 from uuid import uuid4
@@ -29,7 +30,14 @@ class ConstructorUtils(Module):
 
     def cleanup(self, tag):
         inst = self.app().inst
+        int_app = inst.int_app
         app = inst.appfactory.get_by_tag(tag)
+        tasks = int_app.objlist(QueueTaskList, query_index="app-at", query_equal=tag)
+        tasks.remove()
+        sched = int_app.obj(Schedule, tag, silent=True)
+        sched.remove()
+        project = int_app.obj(Project, tag, silent=True)
+        project.remove()
         if app is not None:
             sessions = app.objlist(SessionList, query_index="valid_till")
             sessions.remove()
@@ -37,17 +45,15 @@ class ConstructorUtils(Module):
             users.remove()
             perms = app.objlist(UserPermissionsList, users.uuids())
             perms.remove()
-            wizards = app.objlist(WizardConfigList, query_index="all")
-            wizards.remove()
             config = app.objlist(ConfigGroupList, query_index="all")
             config.remove()
-        int_app = inst.int_app
-        tasks = int_app.objlist(QueueTaskList, query_index="app-at", query_equal=tag)
-        tasks.remove()
-        sched = int_app.obj(Schedule, tag, silent=True)
-        sched.remove()
-        project = int_app.obj(Project, tag, silent=True)
-        project.remove()
+            wizards = app.objlist(WizardConfigList, query_index="all")
+            wizards.remove()
+        temp_files = int_app.objlist(TempFileList, query_index="app", query_equal=tag)
+        temp_files.load(silent=True)
+        for file in temp_files:
+            file.delete()
+        temp_files.remove()
 
 class ConstructorProject(Module):
     def register(self):
@@ -337,7 +343,7 @@ class ProjectSetupWizard(Wizard):
         self.config.set("state", "intro")
         
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True, "ord": 10})
 
     def request(self, cmd):
         req = self.req()
@@ -353,7 +359,7 @@ class ProjectSetupWizard(Wizard):
                 "next_text": jsencode(self._("Next")),
             }
             self.call("admin.advice", {"title": self._("Demo advice"), "content": self._("Look to the right to read some recommendations")})
-            self.call("admin.response_template", "constructor/intro.html", vars)
+            self.call("admin.response_template", "constructor/intro-%s.html" % self.call("l10n.lang"), vars)
         elif state == "offer":
             if cmd == "agree":
                 self.config.set("state", "name")
@@ -428,9 +434,9 @@ class ProjectSetupWizard(Wizard):
             self.call("admin.advice", {"title": self._("Choosing titles"), "content": self._("Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems")})
             self.call("admin.form", fields=fields, buttons=buttons)
         elif state == "logo":
+            wizs = self.call("wizards.find", "logo")
             if cmd == "upload":
                 image = req.param_raw("image")
-                errors = {}
                 if image is None or not len(image):
                     self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload logo image")}})
                 try:
@@ -446,19 +452,23 @@ class ProjectSetupWizard(Wizard):
                     pass
                 image_obj = image_obj.convert("RGBA")
                 width, height = image_obj.size
-                if width != 100:
+                if width == 100 and height == 100:
+                    image_obj = image_obj.crop((0, 0, 100, 75))
+                elif width * 75 >= height * 100:
+                    width = width * 75 / height
+                    height = 75
+                    image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
+                    if width != 100:
+                        image_obj = image_obj.crop(((width - 100) / 2, 0, (width - 100) / 2 + 100, 75))
+                else:
                     height = height * 100 / width
                     width = 100
                     image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
-                if height < 100:
-                    box = (0, 0, 100, height)
-                else:
-                    box = (0, 0, 100, 100)
-                    if height > 100:
-                        image_obj = image_obj.crop((0, 0, 100, 100))
+                    if height != 75:
+                        image_obj = image_obj.crop((0, (height - 75) / 2, 100, (height - 75) / 2 + 75))
                 # putting image on the white background
                 background = Image.new("RGBA", (100, 100), (255, 255, 255))
-                background.paste(image_obj, box, image_obj)
+                background.paste(image_obj, (0, 0, 100, 75), image_obj)
                 # drawing image border
                 bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
                 background.paste(bord, None, bord)
@@ -483,11 +493,11 @@ class ProjectSetupWizard(Wizard):
                 textpad_blur = enhancer.enhance(0.5)
                 mask.paste(textpad_blur, None, textpad_blur)
                 mask.paste(textpad, None, textpad)
-
+                # generating png
                 png = cStringIO.StringIO()
                 mask.save(png, "PNG")
                 png = png.getvalue()
-                uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png)
+                uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
                 self.config.set("logo", uri)
                 self.config.store()
                 self.call("web.response_json_html", {"success": True, "logo_preview": uri})
@@ -495,6 +505,18 @@ class ProjectSetupWizard(Wizard):
                 self.config.set("state", "name")
                 self.config.store()
                 self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
+            elif cmd == "constructor":
+                if len(wizs):
+                    self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
+                wiz = self.call("wizards.new", "mg.constructor.logo.LogoWizard", target=["wizard", self.uuid, "constructed", ""], redirect_fail="wizard/call/%s" % self.uuid)
+                self.call("admin.update_menu")
+                self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
+            elif cmd == "next":
+                if self.config.get("logo"):
+                    if len(wizs):
+                        for wiz in wizs:
+                            wiz.abort()
+                        self.call("admin.update_menu")
             vars = {
                 "GameLogo": self._("Game logo"),
                 "Upload": self._("Upload"),
@@ -508,6 +530,7 @@ class ProjectSetupWizard(Wizard):
                 "UploadNote": self._("Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."),
                 "next_text": jsencode(self._("Next")),
                 "prev_text": jsencode(self._("Previous")),
+                "LaunchConstructor": self._("Launch constructor"),
             }
             self.call("admin.response_template", "constructor/logo.html", vars)
         else:

@@ -31,6 +31,13 @@ class AdminInterface(Module):
         }
         self.call("web.response_template", "admin/index.html", vars)
 
+    def sortleftmenu(self, menu):
+        children = menu.get("children")
+        if children is not None:
+            children.sort(cmp=lambda x, y: cmp(x.get("order"), y.get("order")))
+            for child in children:
+                self.sortleftmenu(child)
+
     def makemenu(self):
         leftmenu = self.leftmenunode("root.index", "Root")
         wizards = []
@@ -46,6 +53,7 @@ class AdminInterface(Module):
         title = self.call("project.title")
         if title is None:
             title = self.app().tag
+        self.sortleftmenu(leftmenu)
         return {
             "left": leftmenu,
             "top": topmenu,

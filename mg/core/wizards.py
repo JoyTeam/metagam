@@ -1,10 +1,12 @@
 from mg import *
+from mg.core.cluster import TempFileList
 import re
 import sys
 
 class WizardConfig(CassandraObject):
     _indexes = {
         "all": [[]],
+        "tag": [["tag"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -57,6 +59,11 @@ class Wizard(Module):
     def destroy(self):
         "Destroy wizard on destroy. Override to set your logic"
         self.config.remove()
+        temp_files = self.app().inst.int_app.objlist(TempFileList, query_index="wizard", query_equal=self.uuid)
+        temp_files.load(silent=True)
+        for file in temp_files:
+            file.delete()
+        temp_files.remove()
 
 re_module_path = re.compile(r'^(.+)\.(.+)$')
 re_wizard_args_0 = re.compile(r'^([0-9a-f]+)$')
@@ -70,6 +77,7 @@ class Wizards(Module):
         self.rhook("wizards.call", self.wizards_call)
         self.rhook("ext-admin-wizard.call", self.wizard_call)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("wizards.find", self.wizards_find)
 
     def objclasses_list(self, objclasses):
         objclasses["WizardConfig"] = (WizardConfig, WizardConfigList)
@@ -107,6 +115,19 @@ class Wizards(Module):
     def wizards_list(self):
         app = self.app()
         list = self.objlist(WizardConfigList, query_index="all")
+        list.load()
+        wizs = []
+        for config in list:
+            mod = config.get("mod")
+            if mod:
+                cls = self.wizard_class(mod)
+                if cls is not None:
+                    wizs.append(cls(app, mod, config.uuid, config))
+        return wizs
+
+    def wizards_find(self, tag):
+        app = self.app()
+        list = self.objlist(WizardConfigList, query_index="tag", query_equal=tag)
         list.load()
         wizs = []
         for config in list:

@@ -1,0 +1,203 @@
+<div class="text">
+<h1>[%LogoConstructor%]</h1>
+<p>[%HereYouCan%]</p>
+</div>
+<div id="constructor_form"></div>
+<div id="navi"></div>
+
+<script type="text/javascript">
+function show_logo(preview_id, uri)
+{
+	if (!uri)
+		return;
+	Ext.fly(preview_id).dom.innerHTML = '';
+	new Ext.Panel({
+		renderTo: preview_id,
+		border: false,
+		html: '<img src="' + uri + '" alt="" width="100" height="75" />'
+	});
+}
+function submit_form(form_id, url)
+{
+	Ext.ComponentMgr.get(form_id).getForm().submit({
+		url: url,
+		waitMsg: gt.gettext('Uploading data...'),
+		success: function(f, action) {
+			var res = Ext.util.JSON.decode(action.response.responseText);
+			if (res) {
+				show_logo('logo_preview', res.logo);
+				show_logo('background_preview', res.background);
+			}
+		},
+		failure: function(f, action) {
+			if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+				if (action.result.errormsg) {
+					Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+				}
+			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+			}
+		},
+	});
+}
+wait(['admin/FileUploadField.js'], function() {
+	var background_tab = [%if background_mode == "upload"%]1[%else%]0[%end%];
+	var padding_tab = [%if padding_mode == "upload"%]1[%else%]0[%end%];
+	new Ext.Panel({
+		renderTo: 'constructor_form',
+		border: false,
+		items: [{
+			border: false,
+			cls: 'text',
+			html: '<h1>[%Background%]</h1>',
+		}, {
+			id: 'background_preview',
+			cls: 'logo-preview',
+			width: 120,
+			border: false,
+		}, {
+			border: true,
+			xtype: 'tabpanel',
+			activeTab: background_tab,
+			defaults: {
+				bodyStyle: 'padding: 10px',
+				border: false,
+				waitTitle: gt.gettext('Please wait...'),
+				labelAlign: 'top',
+				xtype: 'form',
+				layout: 'auto',
+				autoHeight: true,
+			},
+			layoutConfig: {
+				titleCollapse: true,
+				animate: true,
+			},
+			items: [{
+				id: 'background_solid_form',
+				title: '[%SolidColor%]',
+				items: [{
+					border: false,
+					items: [{
+						xtype: 'colorpalette',
+						value: '[%background_color%]',
+						listeners: {
+							select: function(palette, color) { Ext.ComponentMgr.get('background_solid_color').setValue(color) }
+						},
+					}, {
+						id: 'background_solid_color',
+						border: false,
+						width: 400,
+						xtype: 'hidden',
+						hideLabel: true,
+						name: 'color',
+						value: '[%background_color%]',
+					}, {
+						border: false,
+						items: {
+							xtype: 'button',
+							text: '[%SetButton%]',
+							handler: function() { submit_form('background_solid_form', '/admin-wizard/call/[%wizard%]/background/solid') }
+						}
+					}]
+				}]
+			}, {
+				id: 'background_image_form',
+				title: '[%UploadFile%]',
+				fileUpload: true,
+				items: [{
+					border: false,
+					items: [{
+						border: false,
+						layout: 'form',
+						items: {
+							width: 400,
+							xtype: 'fileuploadfield',
+							hideLabel: true,
+							name: 'image',
+							anchor: '-30',
+							border: false,
+						}
+					}, {
+						border: false,
+						items: {
+							xtype: 'button',
+							text: '[%Upload%]',
+							handler: function() { submit_form('background_image_form', '/admin-wizard/call/[%wizard%]/background/upload') }
+						}
+					}]
+				}]
+			}]
+		}, {
+			border: false,
+			cls: 'text',
+			html: '<h1>[%Padding%]</h1>',
+		}, {
+			id: 'padding_preview',
+			cls: 'logo-preview',
+			width: 120,
+			border: false,
+		}, {
+			border: true,
+			xtype: 'tabpanel',
+			activeTab: padding_tab,
+			defaults: {
+				bodyStyle: 'padding: 10px',
+				border: false,
+				waitTitle: gt.gettext('Please wait...'),
+				labelAlign: 'top',
+				xtype: 'form',
+				layout: 'auto',
+				autoHeight: true,
+			},
+			layoutConfig: {
+				titleCollapse: true,
+				animate: true,
+			},
+			items: [[%foreach padding in paddings%]{
+				id: 'padding_[%padding.type%]_form',
+				title: '[%padding.title%]',
+				items: [{
+					border: false,
+					layout: 'form',	
+					items: [{
+						xtype: 'textfield',
+						name: 'size',
+						fieldLabel: '[%Size%]',
+						value: '[%padding.size%]',
+					}, {
+						border: false,
+						items: {
+							xtype: 'button',
+							text: '[%SetButton%]',
+							handler: function() { submit_form('padding_[%padding.type%]_form', '/admin-wizard/call/[%wizard%]/padding/[%padding.type%]') }
+						}
+					}]
+				}]
+			},[%end%]]
+		}, {
+			border: false,
+			cls: 'text',
+			html: '<h1>[%Icon%]</h1>',
+		}, {
+			border: false,
+			cls: 'text',
+			html: '<h1>[%Effects%]</h1>',
+		}]
+	});
+	[%if logo%]show_logo('logo_preview', '[%logo%]');[%end%]
+	[%if background%]show_logo('background_preview', '[%background%]');[%end%]
+	new Ext.Panel({
+		renderTo: 'navi',
+		cls: 'bottom-form',
+		border: false,
+		layout: 'form',
+		buttons: [{
+			text: gt.gettext('[%Apply%]'),
+			handler: function() { adm('wizard/call/[%wizard%]/apply') }
+		}, {
+			text: gt.gettext('[%Abort%]'),
+			handler: function() { adm('wizard/call/[%wizard%]/abort') }
+		}]
+	});
+});
+</script>
