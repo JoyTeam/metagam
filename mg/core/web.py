@@ -320,11 +320,22 @@ class WebDaemon(object):
             (group, hook, args) = m.group(1, 2, 3)
             if args is None:
                 args = ""
-            return self.req_handler(request, group, hook, args)
+            res = self.req_handler(request, group, hook, args)
+            if res is not None:
+                return res
+        # /group/<SOMETHING_UNPARSED>
+        m = re.match(r'^([a-z0-9\-]+)\/(.+)$', uri)
+        if m:
+            (group, args) = m.group(1, 2)
+            res = self.req_handler(request, group, "handler", args)
+            if res is not None:
+                return res
         # /group
         m = re.match(r'^[a-z0-9\-]+', uri)
         if m:
-            return self.req_handler(request, uri, "index", "")
+            res = self.req_handler(request, uri, "index", "")
+            if res is not None:
+                return res
         return request.not_found()
 
     def req_handler(self, request, group, hook, args):
@@ -366,10 +377,6 @@ class WebApplication(Application):
             self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         except WebResponse as res:
             return res.content
-        if request.headers_sent:
-            return [request.content]
-        else:
-            return request.not_found()
 
 re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
 re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
