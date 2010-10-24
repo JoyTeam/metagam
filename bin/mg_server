@@ -1,8 +1,9 @@
 #!/usr/bin/python2.6
 
 from mg import *
-from concurrence import dispatch, quit
+from concurrence import dispatch
 import logging
+import os
 
 def main():
     try:
@@ -15,10 +16,10 @@ def main():
         raise
     except RuntimeError as e:
         logging.error(e)
-        quit(1)
+        os._exit(1)
     except BaseException as e:
         logging.exception(e)
-        quit(1)
+        os._exit(1)
 
 dispatch(main)
 

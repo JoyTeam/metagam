@@ -1,8 +1,9 @@
 #!/usr/bin/python2.6
 
-from concurrence import dispatch, quit
+from concurrence import dispatch
 from concurrence.http import HTTPConnection
 import json
+import os
 
 def main():
     try:
@@ -25,6 +26,6 @@ def main():
     except (SystemExit, TaskletExit, KeyboardInterrupt):
         raise
     finally:
-        quit()
+        os._exit(0)
 
 dispatch(main)
