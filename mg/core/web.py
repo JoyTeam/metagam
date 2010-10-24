@@ -19,6 +19,7 @@ import traceback
 import Cookie
 import time
 import os
+import random
 
 ver = 1
 
@@ -383,7 +384,14 @@ class WebApplication(Application):
             res = res.content
         if getattr(request, "cache", None):
             res = ["".join([str(chunk) for chunk in res])]
-            self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
+            mcid = getattr(request, "web_cache_mcid", None)
+            if mcid:
+                self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
+                #print "storing web_cache_mcid %s" % request.web_cache_mcid
+                self.mc.set(request.web_cache_mcid, res[0])
+            lock = getattr(request, "web_cache_lock", None)
+            if lock:
+                lock.__exit__(None, None, None)
         return res
 
 re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
@@ -407,6 +415,7 @@ class Web(Module):
         self.rhook("int-core.appconfig", self.core_appconfig)
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.cache", self.web_cache)
+        self.rhook("web.cache_invalidate", self.web_cache_invalidate)
         self.rhook("web.response", self.web_response)
         self.rhook("web.response_global", self.web_response_global)
         self.rhook("web.response_template", self.web_response_template)
@@ -510,7 +519,41 @@ class Web(Module):
         return content
 
     def web_cache(self):
-        self.req().cache = True
+        req = self.req()
+        req.cache = True
+        uri = urldecode(req.uri()).encode("utf-8")
+        mc = self.app().mc
+        mcid_ver = "pagever%s" % uri
+        ver = mc.get(mcid_ver)
+        if ver is None:
+            ver = random.randrange(0, 1000000000)
+            mc.set(mcid_ver, ver)
+        mcid = "pagecache%d%s" % (ver, uri)
+        #print "attempting to use cached %s (mcid %s)" % (uri, mcid)
+        data = mc.get(mcid)
+        if data is not None:
+            req.cache = False
+            #print "data ok. len=%d" % len(data)
+            self.call("web.response", data, {})
+        #print "no data. acquiring lock %s" % uri
+        req.web_cache_lock = self.lock([uri], patience=random.randrange(15, 25))
+        req.web_cache_lock.__enter__()
+        #print "lock %s acquired" % uri
+        ver = mc.get(mcid_ver)
+        mcid = "pagecache%d%s" % (ver, uri)
+        data = mc.get(mcid)
+        if data is not None:
+            #print "data %s ok after lock. len=%d" % (mcid, len(data))
+            req.cache = False
+            self.call("web.response", data, {})
+        #print "reloading version of %s: %s" % (mcid_ver, ver)
+        req.web_cache_mcid = mcid
+        #print "web_cache_mcid=%s" % req.web_cache_mcid
+
+    def web_cache_invalidate(self, uri):
+        mc = self.app().mc
+        mc.incr("pagever%s" % uri)
+        mc.delete("page%s" % uri, 10)
 
     def web_response(self, content, content_type=None):
         if content_type is not None:

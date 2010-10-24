@@ -245,11 +245,14 @@ class MemcachedLock(object):
         self.ttl = ttl
         self.value = str(value_prefix) + str(id(Tasklet.current()))
 
+    def __del__(self):
+        self.__exit__(None, None, None)
+
     def __enter__(self):
+        start = None
         while True:
             locked = []
             success = True
-            start = None
             for key in self.keys:
                 if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
                     locked.append(key)
@@ -275,3 +278,4 @@ class MemcachedLock(object):
             if time.time() < self.locked + self.ttl:
                 for key in self.keys:
                     self.mc.delete(key)
+            self.locked = None
