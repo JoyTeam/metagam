@@ -24,7 +24,7 @@ class Worker(Module):
     def fastidle(self):
         self.call("core.check_last_ping")
 
-    def run(self, cls):
+    def run(self, cls, ext_app=None):
         inst = self.app().inst
         int_daemon = WebDaemon(inst, self.app())
         int_port = int_daemon.serve_any_port("0.0.0.0")
@@ -34,6 +34,7 @@ class Worker(Module):
         # external daemon
         ext_daemon = self.call("core.webdaemon")
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
+        ext_daemon.app = ext_app
         # registering
         res = self.call("cluster.query_director", "/director/ready", {
             "type": "worker",

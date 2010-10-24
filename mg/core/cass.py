@@ -403,7 +403,7 @@ class CassandraObject(object):
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
         self.db.mc.set(row_id, self.data, cache_interval)
-        #logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
+        logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
         self.dirty = False
         self.new = False
 

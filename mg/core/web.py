@@ -313,7 +313,9 @@ class WebDaemon(object):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
         # /
         if uri == "":
-            return self.req_handler(request, "index", "index", "")
+            res = self.req_handler(request, "index", "index", "")
+            if res is not None:
+                return res
         # /group/hook[/args]
         m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)', uri)
         if m:
@@ -374,7 +376,7 @@ class WebApplication(Application):
         request.hook = hook
         request.args = re_remove_ver.sub("", args)
         try:
-            self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
+            return self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         except WebResponse as res:
             return res.content
 
