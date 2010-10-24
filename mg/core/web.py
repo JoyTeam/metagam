@@ -3,6 +3,7 @@ from concurrence.http import server
 from mg.core.cass import Cassandra
 from mg.core.memcached import Memcached
 from mg.core import Application, Instance, Module
+from mg.core.tools import *
 from template import Template
 from template.provider import Provider
 import urlparse
@@ -377,9 +378,13 @@ class WebApplication(Application):
         request.hook = hook
         request.args = re_remove_ver.sub("", args)
         try:
-            return self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
+            res = self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         except WebResponse as res:
-            return res.content
+            res = res.content
+        if getattr(request, "cache", None):
+            res = ["".join([str(chunk) for chunk in res])]
+            self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
+        return res
 
 re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
 re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
@@ -401,6 +406,7 @@ class Web(Module):
         self.rhook("int-core.reload", self.core_reload)
         self.rhook("int-core.appconfig", self.core_appconfig)
         self.rhook("web.parse_template", self.web_parse_template)
+        self.rhook("web.cache", self.web_cache)
         self.rhook("web.response", self.web_response)
         self.rhook("web.response_global", self.web_response_global)
         self.rhook("web.response_template", self.web_response_template)
@@ -502,6 +508,9 @@ class Web(Module):
             else:
                 vars["head"] = vars["head"] + head
         return content
+
+    def web_cache(self):
+        self.req().cache = True
 
     def web_response(self, content, content_type=None):
         if content_type is not None:

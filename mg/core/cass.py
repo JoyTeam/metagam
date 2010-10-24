@@ -14,6 +14,7 @@ import time
 import random
 
 cache_interval = 3600
+max_index_length = 10000
 
 class CassandraError(Exception):
     "This exception can be raised during database queries"
@@ -402,8 +403,8 @@ class CassandraObject(object):
         # mutation of the object itself
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
+        #logging.getLogger("mg.core.cass.CassandraObject").info("STORE %s %s", row_id, self.data)
         self.db.mc.set(row_id, self.data, cache_interval)
-        logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
         self.dirty = False
         self.new = False
 
@@ -553,8 +554,11 @@ class CassandraObjectList(object):
                         self.index_rows.append(index_row)
                         self.index_data.extend(index_data)
                         mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid))
-#                       print "storing mcid %s = %s" % (mcid, index_data)
-                        self.db.mc.set(mcid, index_data)
+                        #logging.getLogger("mg.core.cass.CassandraObject").info("storing mcid %s = %s", mcid, index_data)
+                        if len(index_data) < max_index_length:
+                            self.db.mc.set(mcid, index_data)
+                        else:
+                            self.db.mc.delete(mcid)
                 self.index_data.sort(cmp=lambda x, y: cmp(x[0], y[0]), reverse=query_reversed)
                 self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
 #               print "loaded index data " % self.index_data
@@ -576,8 +580,11 @@ class CassandraObjectList(object):
                     d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
                     self.index_rows.append(index_row)
                     self.index_data = [[col.column.name, col.column.value] for col in d]
-#                   print "storing mcid %s = %s" % (mcid, self.index_data)
-                    self.db.mc.set(mcid, self.index_data)
+                    #logging.getLogger("mg.core.cass.CassandraObject").info("storing mcid %s = %s", mcid, self.index_data)
+                    if len(self.index_data) < max_index_length:
+                        self.db.mc.set(mcid, self.index_data)
+                    else:
+                        self.db.mc.delete(mcid)
 #               print "loaded index data " % self.index_data
                 self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
         else:

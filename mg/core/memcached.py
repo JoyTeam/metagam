@@ -9,7 +9,7 @@ class MemcachedPool(object):
     Handles pool of MemcacheConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=10):
+    def __init__(self, host=("127.0.0.1", 11211), size=50):
         """
         size - max amount of active memcached connections (None if no limit)
         """
@@ -106,6 +106,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.set(str(self.prefix + key), data, expiration, flags)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -124,6 +127,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.add(str(self.prefix + key), data, expiration, flags)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -142,6 +148,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.replace(str(self.prefix + key), data, expiration, flags)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -160,6 +169,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.incr(str(self.prefix + key), increment)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -178,6 +190,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.decr(str(self.prefix + key), decrement)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
@@ -196,6 +211,9 @@ class Memcached(object):
         connection = self.pool.get()
         try:
             res = connection.delete(str(self.prefix + key), expiration)
+            if res == MemcacheResult.ERROR:
+                self.pool.new()
+                return res
         except IOError:
             self.pool.new()
             return MemcacheResult.ERROR
