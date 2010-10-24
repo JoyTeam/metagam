@@ -1,4 +1,4 @@
-from concurrence import quit, Tasklet, http
+from concurrence import Tasklet, http
 from concurrence.http import server
 from mg.core.cass import Cassandra
 from mg.core.memcached import Memcached
@@ -17,6 +17,7 @@ import math
 import traceback
 import Cookie
 import time
+import os
 
 ver = 1
 
@@ -176,7 +177,7 @@ class Request(object):
     def response(self, content):
         "Return HTTP response. content will be returned to the client"
         self.headers.append(('Content-type', self.content_type))
-        self.headers.append(('Content-length', len(content)))
+        #self.headers.append(('Content-length', len(content)))
         return self.send_response("200 OK", self.headers, content)
 
     def uresponse(self, content):
@@ -263,7 +264,7 @@ class WebDaemon(object):
             raise
         except BaseException as err:
             self.logger.error("Listen %s:%d: %s", addr[0], addr[1], err)
-            quit(1)
+            os._exit(1)
 
     def serve_any_port(self, hostaddr):
         "Runs a WebDaemon instance listening arbitrarily selected port"
@@ -282,9 +283,9 @@ class WebDaemon(object):
                 raise
             except BaseException as err:
                 self.logger.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
-                quit(1)
+                os._exit(1)
         self.logger.error("Couldn't find any unused port")
-        quit(1)
+        os._exit(1)
 
     def req(self):
         try:
@@ -445,7 +446,7 @@ class Web(Module):
             self.last_ping = time.time()
         elif time.time() > self.last_ping + 300:
             self.error("Director missing since %d. Exiting", self.last_ping)
-            quit(2)
+            os._exit(2)
 
     def core_appconfig(self):
         req = self.req()

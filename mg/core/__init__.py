@@ -502,7 +502,7 @@ class Instance(object):
         if self.syslog_channel:
             modlogger.removeHandler(self.syslog_channel)
         self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
-        self.syslog_channel.setLevel(logging.DEBUG)
+        self.syslog_channel.setLevel(logging.INFO)
         formatter = Formatter(self.logger_id + " cls:%(name)s %(message)s")
         self.syslog_channel.setFormatter(formatter)
         filter = Filter()
