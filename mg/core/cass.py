@@ -12,6 +12,7 @@ import socket
 import logging
 import time
 import random
+import stackless
 
 cache_interval = 3600
 max_index_length = 10000

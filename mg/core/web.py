@@ -521,39 +521,33 @@ class Web(Module):
     def web_cache(self):
         req = self.req()
         req.cache = True
-        uri = urldecode(req.uri()).encode("utf-8")
-        mc = self.app().mc
-        mcid_ver = "pagever%s" % uri
-        ver = mc.get(mcid_ver)
-        if ver is None:
-            ver = random.randrange(0, 1000000000)
-            mc.set(mcid_ver, ver)
-        mcid = "pagecache%d%s" % (ver, uri)
-        #print "attempting to use cached %s (mcid %s)" % (uri, mcid)
-        data = mc.get(mcid)
-        if data is not None:
-            req.cache = False
-            #print "data ok. len=%d" % len(data)
-            self.call("web.response", data, {})
-        #print "no data. acquiring lock %s" % uri
-        req.web_cache_lock = self.lock([uri], patience=random.randrange(15, 25))
-        req.web_cache_lock.__enter__()
-        #print "lock %s acquired" % uri
-        ver = mc.get(mcid_ver)
-        mcid = "pagecache%d%s" % (ver, uri)
-        data = mc.get(mcid)
-        if data is not None:
-            #print "data %s ok after lock. len=%d" % (mcid, len(data))
-            req.cache = False
-            self.call("web.response", data, {})
-        #print "reloading version of %s: %s" % (mcid_ver, ver)
-        req.web_cache_mcid = mcid
-        #print "web_cache_mcid=%s" % req.web_cache_mcid
+        if False:
+            uri = urldecode(req.uri()).encode("utf-8")
+            mc = self.app().mc
+            mcid_ver = "pagever%s" % uri
+            ver = mc.get(mcid_ver)
+            if ver is None:
+                ver = random.randrange(0, 1000000000)
+                mc.set(mcid_ver, ver)
+            mcid = "pagecache%d%s" % (ver, uri)
+            data = mc.get(mcid)
+            if data is not None:
+                req.cache = False
+                self.call("web.response", data, {})
+            req.web_cache_lock = self.lock([uri], patience=random.randrange(15, 25))
+            req.web_cache_lock.__enter__()
+            ver = mc.get(mcid_ver)
+            mcid = "pagecache%d%s" % (ver, uri)
+            data = mc.get(mcid)
+            if data is not None:
+                req.cache = False
+                self.call("web.response", data, {})
+            req.web_cache_mcid = mcid
 
     def web_cache_invalidate(self, uri):
         mc = self.app().mc
-        mc.incr("pagever%s" % uri)
-        mc.delete("page%s" % uri, 10)
+        #mc.incr("pagever%s" % uri)
+        mc.delete("page%s" % uri)
 
     def web_response(self, content, content_type=None):
         if content_type is not None:
