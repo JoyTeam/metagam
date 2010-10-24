@@ -73,28 +73,17 @@ class Memcached(object):
         self.prefix = prefix
         self.prefix_re = re.compile("^" + prefix)
     
-    def get(self, keys, default=None):
-        connection = self.pool.get()
-        try:
-            res = connection.get(str(self.prefix + keys), default)
-        except IOError:
-            self.pool.new()
-            return None
-        except EOFError:
-            self.pool.new()
-            return None
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
-            self.pool.new()
-            raise
-        self.pool.put(connection)
-        return res
+    def get(self, key, default=None):
+        values = self.get_multi([key])
+        return values.get(key, default)
 
     def get_multi(self, keys):
         connection = self.pool.get()
         try:
             got = connection.get_multi(map(lambda key: str(self.prefix + key), keys))
+            if got[0] == MemcacheResult.ERROR:
+                self.pool.new()
+                return {}
             res = {}
             for item in got[1].iteritems():
                 (key, data) = item
