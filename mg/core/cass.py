@@ -15,7 +15,7 @@ import random
 import stackless
 
 cache_interval = 3600
-max_index_length = 10000
+max_index_length = 10000000
 
 class CassandraError(Exception):
     "This exception can be raised during database queries"
@@ -46,119 +46,163 @@ class Cassandra(object):
     def describe_keyspaces(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
-            return conn.cass.describe_keyspaces(*args, **kwargs)
-        finally:
+            res = conn.cass.describe_keyspaces(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def describe_keyspace(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
-            return conn.cass.describe_keyspace(*args, **kwargs)
-        finally:
+            res = conn.cass.describe_keyspace(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def system_add_keyspace(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
-            return conn.cass.system_add_keyspace(*args, **kwargs)
-        finally:
+            res = conn.cass.system_add_keyspace(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def system_drop_keyspace(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             conn.set_keyspace("system")
-            return conn.cass.system_drop_keyspace(*args, **kwargs)
-        finally:
+            res = conn.cass.system_drop_keyspace(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def system_add_column_family(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.system_add_column_family(*args, **kwargs)
-        finally:
+            res = conn.cass.system_add_column_family(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
 
     def system_drop_column_family(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.system_drop_column_family(*args, **kwargs)
-        finally:
+            res = conn.cass.system_drop_column_family(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def insert(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.insert(*args, **kwargs)
-        finally:
+            res = conn.cass.insert(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def get_slice(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.get_slice(*args, **kwargs)
-        finally:
+            res = conn.cass.get_slice(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def multiget_slice(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.multiget_slice(*args, **kwargs)
-        finally:
+            res = conn.cass.multiget_slice(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def batch_mutate(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.batch_mutate(*args, **kwargs)
-        finally:
+            res = conn.cass.batch_mutate(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def insert(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.insert(*args, **kwargs)
-        finally:
+            res = conn.cass.insert(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def remove(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.remove(*args, **kwargs)
-        finally:
+            res = conn.cass.remove(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def get(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.get(*args, **kwargs)
-        finally:
+            res = conn.cass.get(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def get_count(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.get_count(*args, **kwargs)
-        finally:
+            res = conn.cass.get_count(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
     def get_range_slices(self, *args, **kwargs):
         conn = self.pool.cget()
         try:
             self.apply_keyspace(conn)
-            return conn.cass.get_range_slices(*args, **kwargs)
-        finally:
+            res = conn.cass.get_range_slices(*args, **kwargs)
             self.pool.cput(conn)
+            return res
+        except:
+            self.pool.new()
+            raise
 
 class CassandraPool(object):
     """
