@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-17 14:28+0400\n"
+"POT-Creation-Date: 2010-10-30 11:14+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,76 +16,76 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/web.py:646 mg/core/director.py:254 mg/socio/__init__.py:1368
+#: mg/core/web.py:702 mg/core/director.py:241 mg/socio/__init__.py:1368
 #: mg/admin/__init__.py:207
 msgid "Save"
 msgstr ""
 
-#: mg/core/web.py:656
+#: mg/core/web.py:712
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:657
+#: mg/core/web.py:713
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:658
+#: mg/core/web.py:714
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:659
+#: mg/core/web.py:715
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:660
+#: mg/core/web.py:716
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:661
+#: mg/core/web.py:717
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:662
+#: mg/core/web.py:718
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:663
+#: mg/core/web.py:719
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:664
+#: mg/core/web.py:720
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:665
+#: mg/core/web.py:721
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:666
+#: mg/core/web.py:722
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:667
+#: mg/core/web.py:723
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:668 mg/socio/__init__.py:520
+#: mg/core/web.py:724 mg/socio/__init__.py:520
 msgid "Image"
 msgstr ""
 
-#: mg/core/web.py:669
+#: mg/core/web.py:725
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:670
+#: mg/core/web.py:726
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:671
+#: mg/core/web.py:727
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:672
+#: mg/core/web.py:728
 msgid "Smiles"
 msgstr ""
 
@@ -146,51 +146,51 @@ msgstr ""
 msgid "Error storing object: %s"
 msgstr ""
 
-#: mg/core/director.py:159
+#: mg/core/director.py:146
 msgid "Welcome to the cluster control center"
 msgstr ""
 
-#: mg/core/director.py:160
+#: mg/core/director.py:147
 msgid "Change cluster settings"
 msgstr ""
 
-#: mg/core/director.py:166
+#: mg/core/director.py:153
 msgid "List of servers online"
 msgstr ""
 
-#: mg/core/director.py:236
+#: mg/core/director.py:223
 msgid "Cluster settings"
 msgstr ""
 
-#: mg/core/director.py:238
+#: mg/core/director.py:225
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/core/director.py:240
+#: mg/core/director.py:227
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/core/director.py:242
+#: mg/core/director.py:229
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr ""
 
-#: mg/core/director.py:244
+#: mg/core/director.py:231
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:246
+#: mg/core/director.py:233
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr ""
 
-#: mg/core/director.py:248
+#: mg/core/director.py:235
 msgid "<strong>SMTP server</strong> (host)"
 msgstr ""
 
-#: mg/core/director.py:250
+#: mg/core/director.py:237
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr ""
 
-#: mg/core/director.py:252
+#: mg/core/director.py:239
 msgid "<strong>Preload modules</strong> (mod, mod, ...)"
 msgstr ""
 
@@ -542,7 +542,7 @@ msgstr ""
 msgid "Permission"
 msgstr ""
 
-#: mg/constructor/logo.py:22 mg/constructor/logo.py:91
+#: mg/constructor/logo.py:22 mg/constructor/logo.py:93
 msgid "Logo constructor"
 msgstr ""
 
@@ -563,55 +563,63 @@ msgstr ""
 msgid "Animated backgrounds are not supported"
 msgstr ""
 
-#: mg/constructor/logo.py:92
+#: mg/constructor/logo.py:91
+msgid "Circle"
+msgstr ""
+
+#: mg/constructor/logo.py:94
 msgid ""
 "Here you can construct your own simple 100x75 logo using several basic "
 "elements."
 msgstr ""
 
-#: mg/constructor/logo.py:93
+#: mg/constructor/logo.py:95
 msgid "Apply"
 msgstr ""
 
-#: mg/constructor/logo.py:94
+#: mg/constructor/logo.py:96
 msgid "Abort"
 msgstr ""
 
-#: mg/constructor/logo.py:95 mg/constructor/mod.py:520
+#: mg/constructor/logo.py:97 mg/constructor/mod.py:522
 #: mg/socio/__init__.py:522
 msgid "Upload"
 msgstr ""
 
-#: mg/constructor/logo.py:96
+#: mg/constructor/logo.py:98
 msgid "Background image"
 msgstr ""
 
-#: mg/constructor/logo.py:99
+#: mg/constructor/logo.py:101
 msgid "Background"
 msgstr ""
 
-#: mg/constructor/logo.py:100
+#: mg/constructor/logo.py:102
 msgid "Padding"
 msgstr ""
 
-#: mg/constructor/logo.py:101
+#: mg/constructor/logo.py:103
 msgid "Icon"
 msgstr ""
 
-#: mg/constructor/logo.py:102
+#: mg/constructor/logo.py:104
 msgid "Effects"
 msgstr ""
 
-#: mg/constructor/logo.py:103
+#: mg/constructor/logo.py:105
 msgid "Load from file"
 msgstr ""
 
-#: mg/constructor/logo.py:104
+#: mg/constructor/logo.py:106
 msgid "Solid color"
 msgstr ""
 
-#: mg/constructor/logo.py:105
+#: mg/constructor/logo.py:107
 msgid "Set"
+msgstr ""
+
+#: mg/constructor/logo.py:112
+msgid "Size"
 msgstr ""
 
 #: mg/constructor/mod.py:24 mg/constructor/mod.py:219 mg/socio/__init__.py:203
@@ -862,7 +870,7 @@ msgid "Setup wizard"
 msgstr ""
 
 #: mg/constructor/mod.py:359 mg/constructor/mod.py:432
-#: mg/constructor/mod.py:529
+#: mg/constructor/mod.py:531
 msgid "Next"
 msgstr ""
 
@@ -954,43 +962,43 @@ msgstr ""
 msgid "Animated logos are not supported"
 msgstr ""
 
-#: mg/constructor/mod.py:519
+#: mg/constructor/mod.py:521
 msgid "Game logo"
 msgstr ""
 
-#: mg/constructor/mod.py:521
+#: mg/constructor/mod.py:523
 msgid ""
 "Here you have to create unique logo for your project. You can either upload "
 "logo from your computer or create it using Constructor."
 msgstr ""
 
-#: mg/constructor/mod.py:522
+#: mg/constructor/mod.py:524
 msgid "Alternative 1. Upload logo file"
 msgstr ""
 
-#: mg/constructor/mod.py:523
+#: mg/constructor/mod.py:525
 msgid "Alternative 2. Launch logo constructor"
 msgstr ""
 
-#: mg/constructor/mod.py:524
+#: mg/constructor/mod.py:526
 msgid "Uploading data..."
 msgstr ""
 
-#: mg/constructor/mod.py:527
+#: mg/constructor/mod.py:529
 msgid "Upload image: 100x100, without animation"
 msgstr ""
 
-#: mg/constructor/mod.py:528
+#: mg/constructor/mod.py:530
 msgid ""
 "Note your image will be postprocessed - corners will be rounded, 1px border "
 "added, black padding added, title written on the black padding."
 msgstr ""
 
-#: mg/constructor/mod.py:530
+#: mg/constructor/mod.py:532
 msgid "Previous"
 msgstr ""
 
-#: mg/constructor/mod.py:531
+#: mg/constructor/mod.py:533
 msgid "Launch constructor"
 msgstr ""
 

@@ -3,7 +3,7 @@ import json
 import re
 import mg.core
 from mg.core.tools import *
-from mg.core.thr import Socket
+from concurrence.thr import Socket
 from thrift.transport import TTransport
 from cassandra.Cassandra import Client
 from cassandra.ttypes import *
@@ -448,7 +448,7 @@ class CassandraObject(object):
         # mutation of the object itself
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
-        #logging.getLogger("mg.core.cass.CassandraObject").info("STORE %s %s", row_id, self.data)
+        logging.getLogger("mg.core.cass.CassandraObject").info("STORE %s %s", row_id, self.data)
         self.db.mc.set(row_id, self.data, cache_interval)
         self.dirty = False
         self.new = False

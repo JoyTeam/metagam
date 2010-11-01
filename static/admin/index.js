@@ -37,9 +37,8 @@ function adm_response(res)
 	} else {
 		adminmain.removeAll();
 		admincontent = new Ext.Container({
-			autoScroll: true,
 			hidden: true,
-			cls: 'admin-content'
+			cls: 'admin-content',
 		});
 		if (res.headmenu)
 			admincontent.add({
@@ -122,7 +121,6 @@ function adm_success(response, opts)
 		var panel = new AdminResponse({
 			border: false,
 			html: response.responseText,
-			autoScroll: true,
 			bodyStyle: 'padding: 10px'
 		});
 		adminmain.removeAll();
@@ -136,7 +134,6 @@ function adm_failure(response, opts)
 	var panel = new AdminResponse({
 		border: false,
 		html: sprintf('<div class="text">%s</div>', response.responseText),
-		autoScroll: true,
 		bodyStyle: 'padding: 10px'
 	});
 	adminmain.removeAll();
@@ -235,13 +232,11 @@ Ext.onReady(function() {
 	Ext.form.Field.prototype.msgTarget = 'side';
 	adminmain = new Ext.Container({
 		autoDestroy: true,
-		layout: 'fit'
+		cls: 'admin-main',
 	});
 	leftmenu = new Ext.tree.TreePanel({
 		id: 'leftmenu',
 		useArrows: true,
-		autoScroll: true,
-		containerScroll: true,
 		border: false,
 		rootVisible: false,
 		root: {},
@@ -273,12 +268,12 @@ Ext.onReady(function() {
 				maxSize: 400,
 				border: false,
 				autoScroll: true,
-				items: leftmenu
+				items: leftmenu,
 			},
 			{
 				region: 'east',
 				split: true,
-				width: 400,
+				width: 200,
 				border: false,
 				autoScroll: true,
 				layout: 'fit',
@@ -287,8 +282,8 @@ Ext.onReady(function() {
 			{
 				region: 'center',
 				border: false,
-				layout: 'fit',
-				items: adminmain
+				autoScroll: true,
+				items: adminmain,
 			}
 		]
 	});

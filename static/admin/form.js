@@ -12,20 +12,22 @@ Form = Ext.extend(AdminResponse, {
 			var elem;
 			if (it.type == 'empty') {
 				elem = {
+					border: false,
 				};
 			} else if (it.type == 'button') {
 				elem = {
 					layout: 'border',
+					border: false,
 					items: [{
-						height: 31,
+						height: 40,
 						region: 'south',
 						split: false,
-						layout: 'anchor',
+						border: false,
 						items: [{
 							xtype: 'button',
+							border: false,
 							text: it.text,
 							height: 23,
-							anchor: '-30',
 							action: it.action,
 							handler: function(btn) {
 								adm(btn.action);
@@ -33,6 +35,7 @@ Form = Ext.extend(AdminResponse, {
 						}],
 					}, {
 						region: 'center',
+						border: false,
 					}],
 				};
 			} else {			
@@ -45,6 +48,7 @@ Form = Ext.extend(AdminResponse, {
 					xtype: (it.type == undefined) ? 'textfield' : it.type,
 					anchor: '-30',
 					border: false,
+					style: 'margin-bottom: 10px',
 				};
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
@@ -60,7 +64,6 @@ Form = Ext.extend(AdminResponse, {
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
 				elem = {
-					autoHeight: true,
 					border: false,
 					layout: 'form',
 					items: [elt],

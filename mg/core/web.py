@@ -125,7 +125,7 @@ class Request(object):
         if self._set_cookies is None:
             self._set_cookies = []
         cookie = Cookie.SimpleCookie()
-        cookie[name] = value
+        cookie[str(name)] = str(value)
         for key, val in kwargs.iteritems():
             cookie[name][key] = val
         self._set_cookies.append(cookie)
