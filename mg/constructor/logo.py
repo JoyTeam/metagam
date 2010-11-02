@@ -87,8 +87,9 @@ class LogoWizard(Wizard):
             self.config.set("background", uri)
             self.config.store()
             self.call("web.response_json_html", {"success": True, "background": uri})
-        paddings = []
-        paddings.append({"type": "circle", "title": self._("Circle"), "size": 70})
+        shapes = []
+        shapes.append({"type": "circle", "title": self._("Circle")})
+        shapes[-1]["lst"] = True
         vars = {
             "LogoConstructor": self._("Logo constructor"),
             "HereYouCan": self._("Here you can construct your own simple 100x75 logo using several basic elements."),
@@ -99,7 +100,7 @@ class LogoWizard(Wizard):
             "wizard": self.uuid,
             "logo": self.config.get("logo"),
             "Background": self._("Background"),
-            "Padding": self._("Padding"),
+            "Shape": self._("Shape"),
             "Icon": self._("Icon"),
             "Effects": self._("Effects"),
             "UploadFile": self._("Load from file"),
@@ -108,7 +109,7 @@ class LogoWizard(Wizard):
             "background_mode": self.config.get("background_mode"),
             "background_color": self.config.get("background_color", "FFFFFF"),
             "background": self.config.get("background"),
-            "paddings": paddings,
+            "shapes": shapes,
             "Size": self._("Size"),
         }
         self.call("admin.response_template", "constructor/logo-wizard.html", vars)

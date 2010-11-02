@@ -42,7 +42,6 @@ function submit_form(form_id, url)
 }
 wait(['admin/FileUploadField.js'], function() {
 	var background_tab = [%if background_mode == "upload"%]1[%else%]0[%end%];
-	var padding_tab = [%if padding_mode == "upload"%]1[%else%]0[%end%];
 	new Ext.Panel({
 		renderTo: 'constructor_form',
 		border: false,
@@ -114,7 +113,6 @@ wait(['admin/FileUploadField.js'], function() {
 							xtype: 'fileuploadfield',
 							hideLabel: true,
 							name: 'image',
-							anchor: '-30',
 							border: false,
 						}
 					}, {
@@ -130,50 +128,41 @@ wait(['admin/FileUploadField.js'], function() {
 		}, {
 			border: false,
 			cls: 'text',
-			html: '<h1>[%Padding%]</h1>',
+			html: '<h1>[%Shape%]</h1>',
 		}, {
-			id: 'padding_preview',
+			id: 'shape_preview',
 			cls: 'logo-preview',
 			width: 120,
 			border: false,
 		}, {
-			border: true,
-			xtype: 'tabpanel',
-			activeTab: padding_tab,
-			defaults: {
-				bodyStyle: 'padding: 10px',
+			border: false,
+			items: [{
+				id: 'shape_form',
+				xtype: 'form',
 				border: false,
 				waitTitle: gt.gettext('Please wait...'),
 				labelAlign: 'top',
-				xtype: 'form',
-				layout: 'auto',
 				autoHeight: true,
-			},
-			layoutConfig: {
-				titleCollapse: true,
-				animate: true,
-			},
-			items: [[%foreach padding in paddings%]{
-				id: 'padding_[%padding.type%]_form',
-				title: '[%padding.title%]',
-				items: [{
-					border: false,
-					layout: 'form',	
-					items: [{
-						xtype: 'textfield',
-						name: 'size',
-						fieldLabel: '[%Size%]',
-						value: '[%padding.size%]',
-					}, {
-						border: false,
-						items: {
-							xtype: 'button',
-							text: '[%SetButton%]',
-							handler: function() { submit_form('padding_[%padding.type%]_form', '/admin-wizard/call/[%wizard%]/padding/[%padding.type%]') }
-						}
-					}]
-				}]
-			},[%end%]]
+				items: {
+					xtype: 'combo',
+					name: 'shape',
+					hideLabel: true,
+					value: '[%shape%]',
+					store: [[%foreach sh in shapes%]['[%sh.type%]', '[%sh.title%]'],[%end%]],
+					forceSelection: true,
+					triggerAction: 'all',
+					hiddenName: 'v_shape',
+					hiddenValue: '[%shape%]',
+					allowBlank: true,
+				},
+			}, {
+				border: false,
+				items: {
+					xtype: 'button',
+					text: '[%SetButton%]',
+					handler: function() { submit_form('shape_form', '/admin-wizard/call/[%wizard%]/shape') }
+				}
+			}]
 		}, {
 			border: false,
 			cls: 'text',
