@@ -1,3 +1,5 @@
+var form_id = 0;
+
 Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
@@ -13,6 +15,18 @@ Form = Ext.extend(AdminResponse, {
 			if (it.type == 'empty') {
 				elem = {
 					border: false,
+				};
+			} else if (it.type == 'header') {
+				elem = {
+					border: false,
+					cls: 'text',
+					html: '<h1>' + it.html + '</h1>',
+				};
+			} else if (it.type == 'html') {
+				elem = {
+					border: false,
+					cls: 'text',
+					html: it.html,
 				};
 			} else if (it.type == 'button') {
 				elem = {
@@ -97,34 +111,39 @@ Form = Ext.extend(AdminResponse, {
 			value: '1'
 		});
 		var buttons = new Array();
-		var form;
+		form_id++;
 		for (i = 0; i < data.buttons.length; i++) {
-			var btn = data.buttons[i];
-			buttons.push({
-				text: btn.text,
-				handler: function() {
-					form.getForm().submit({
-						url: btn.url ? btn.url : data.url,
-						waitMsg: gt.gettext('Sending data...'),
-						success: function(f, action) {
-							adm_success(action.response, {
-								func: data.url
-							});
-						},
-						failure: function(f, action) {
-							if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-								if (action.result.errormsg) {
-									Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
-								}
-							} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-								Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
-							}
-						},
-					});
-				},
+			var btn_config = data.buttons[i];
+			var btn = new Ext.Button({
+				text: btn_config.text,
+				url: btn_config.url ? btn_config.url : data.url,
+				form_id: form_id,
 			});
+			btn.on('click', function(btn, e) {
+				var form = Ext.getCmp('admin-form-' + form_id);
+				form.getForm().submit({
+					url: btn.url,
+					waitMsg: gt.gettext('Sending data...'),
+					success: function(f, action) {
+						adm_success(action.response, {
+							func: btn.url
+						});
+					},
+					failure: function(f, action) {
+						if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+							if (action.result.errormsg) {
+								Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+							}
+						} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+							Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + btn.url));
+						}
+					},
+				});
+			}, btn);
+			buttons.push(btn);
 		}
-		form = new Ext.FormPanel({
+		var form = new Ext.FormPanel({
+			id: 'admin-form-' + form_id,
 			cls: 'admin-form',
 			labelAlign: 'top',
 			border: false,

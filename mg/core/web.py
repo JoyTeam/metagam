@@ -24,6 +24,9 @@ import random
 ver = 1
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
+re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
+re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
+re_group = re.compile(r'^[a-z0-9\-]+')
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -320,7 +323,7 @@ class WebDaemon(object):
             if res is not None:
                 return res
         # /group/hook[/args]
-        m = re.match(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)', uri)
+        m = re_group_hook_args.match(uri)
         if m:
             (group, hook, args) = m.group(1, 2, 3)
             if args is None:
@@ -329,14 +332,14 @@ class WebDaemon(object):
             if res is not None:
                 return res
         # /group/<SOMETHING_UNPARSED>
-        m = re.match(r'^([a-z0-9\-]+)\/(.+)$', uri)
+        m = re_group_something_unparsed.match(uri)
         if m:
             (group, args) = m.group(1, 2)
             res = self.req_handler(request, group, "handler", args)
             if res is not None:
                 return res
         # /group
-        m = re.match(r'^[a-z0-9\-]+', uri)
+        m = re_group.match(uri)
         if m:
             res = self.req_handler(request, uri, "index", "")
             if res is not None:

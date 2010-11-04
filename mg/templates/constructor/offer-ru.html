@@ -252,10 +252,10 @@ new Ext.Panel({
 	border: false,
 	layout: 'form',
 	buttons: [{
-		text: gt.gettext("[%Agree%]"),
+		text: gt.gettext('I agree to the terms and conditions'),
 		handler: function() { adm('wizard/call/[%wizard%]/agree') },
 	}, {
-		text: gt.gettext('[%DontAgree%]'),
+		text: gt.gettext("I don't agree"),
 		handler: function() { adm('project/destroy') },
 	}],
 });

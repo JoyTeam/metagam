@@ -25,4 +25,11 @@
 .x-form-file-wrap .x-form-file-text { position: absolute; left: 0; z-index: 3; color: #777; }
 .logo-demo-1 { padding: 20px; background: url(/st/constructor/logo-demo.gif); text-align: center; }
 .logo-demo-2 { padding: 20px; }
-.logo-preview img { margin-bottom: 10px; border: solid 1px #e0e0e0; }
+#background_preview { margin: 44px 0px 0px 20px; border: solid 1px #e0e0e0; }
+#logo_preview { margin: 20px 0px 20px 0px; border: solid 1px #e0e0e0; }
+.form-table { padding: 5px 15px 0px 0px; }
+.red { background: red }
+.red * { background: '#ff8080' }
+.multicolumn-cell { vertical-align: top }
+#logo-layers { margin: 20px 0px 10px 0px }
+.logo-image { width: 100px; height: 75px; border: solid 1px #e0e0e0; }

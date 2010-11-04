@@ -273,7 +273,7 @@ Ext.onReady(function() {
 			{
 				region: 'east',
 				split: true,
-				width: 200,
+				width: '30%',
 				border: false,
 				autoScroll: true,
 				layout: 'fit',

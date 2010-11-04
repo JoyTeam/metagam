@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-30 11:14+0400\n"
+"POT-Creation-Date: 2010-11-04 17:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -542,84 +542,178 @@ msgstr ""
 msgid "Permission"
 msgstr ""
 
-#: mg/constructor/logo.py:22 mg/constructor/logo.py:93
+#: mg/constructor/logo.py:50
+#, python-format
+msgid "Project code: Font %s"
+msgstr ""
+
+#: mg/constructor/logo.py:54 mg/constructor/logo.py:277
 msgid "Logo constructor"
 msgstr ""
 
-#: mg/constructor/logo.py:34
+#: mg/constructor/logo.py:126 mg/constructor/logo.py:141
+msgid "Remove"
+msgstr ""
+
+#: mg/constructor/logo.py:127
+msgid "Solid"
+msgstr ""
+
+#: mg/constructor/logo.py:128
+msgid "Circle"
+msgstr ""
+
+#: mg/constructor/logo.py:129
+msgid "Ring border"
+msgstr ""
+
+#: mg/constructor/logo.py:130
+msgid "Square"
+msgstr ""
+
+#: mg/constructor/logo.py:131
+msgid "Rectangle"
+msgstr ""
+
+#: mg/constructor/logo.py:132
+msgid "Triangle 1"
+msgstr ""
+
+#: mg/constructor/logo.py:133
+msgid "Triangle 2"
+msgstr ""
+
+#: mg/constructor/logo.py:142
+msgid "Bamboo #1"
+msgstr ""
+
+#: mg/constructor/logo.py:143
+msgid "Brick #1"
+msgstr ""
+
+#: mg/constructor/logo.py:144
+msgid "Brick #2"
+msgstr ""
+
+#: mg/constructor/logo.py:145
+msgid "Dirt #1"
+msgstr ""
+
+#: mg/constructor/logo.py:146
+msgid "Fur #1"
+msgstr ""
+
+#: mg/constructor/logo.py:147
+msgid "Grass #1"
+msgstr ""
+
+#: mg/constructor/logo.py:148
+msgid "Grass #2"
+msgstr ""
+
+#: mg/constructor/logo.py:149
+msgid "Grass #3"
+msgstr ""
+
+#: mg/constructor/logo.py:150
+msgid "Grass #4"
+msgstr ""
+
+#: mg/constructor/logo.py:151
+msgid "Leather #1"
+msgstr ""
+
+#: mg/constructor/logo.py:152
+msgid "Metal #1"
+msgstr ""
+
+#: mg/constructor/logo.py:153
+msgid "Metal #2"
+msgstr ""
+
+#: mg/constructor/logo.py:154
+msgid "Metal #3"
+msgstr ""
+
+#: mg/constructor/logo.py:155
+msgid "Sack #1"
+msgstr ""
+
+#: mg/constructor/logo.py:156
+msgid "Sack #2"
+msgstr ""
+
+#: mg/constructor/logo.py:157
+msgid "Sky #1"
+msgstr ""
+
+#: mg/constructor/logo.py:158
+msgid "Stones #1"
+msgstr ""
+
+#: mg/constructor/logo.py:159
+msgid "Wicker #1"
+msgstr ""
+
+#: mg/constructor/logo.py:160
+msgid "Wood #1"
+msgstr ""
+
+#: mg/constructor/logo.py:161
+msgid "Wood #2"
+msgstr ""
+
+#: mg/constructor/logo.py:162
+msgid "Wood #3"
+msgstr ""
+
+#: mg/constructor/logo.py:163
+msgid "Wood #4"
+msgstr ""
+
+#: mg/constructor/logo.py:164
+msgid "Wood #5"
+msgstr ""
+
+#: mg/constructor/logo.py:169
+msgid "Upload new custom 100x75 image..."
+msgstr ""
+
+#: mg/constructor/logo.py:170
+msgid "Select solid color..."
+msgstr ""
+
+#: mg/constructor/logo.py:182
 msgid "Invalid color"
 msgstr ""
 
-#: mg/constructor/logo.py:50
-msgid "Upload background image"
+#: mg/constructor/logo.py:194
+#, python-format
+msgid "Solid color #%d - %s"
 msgstr ""
 
-#: mg/constructor/logo.py:56 mg/constructor/mod.py:447
+#: mg/constructor/logo.py:201
+msgid "Upload your image"
+msgstr ""
+
+#: mg/constructor/logo.py:207 mg/constructor/mod.py:445
 #: mg/socio/__init__.py:464 mg/socio/__init__.py:1418
 msgid "Image format not recognized"
 msgstr ""
 
-#: mg/constructor/logo.py:59
-msgid "Animated backgrounds are not supported"
+#: mg/constructor/logo.py:210
+msgid "Animated images are not supported"
 msgstr ""
 
-#: mg/constructor/logo.py:91
-msgid "Circle"
+#: mg/constructor/logo.py:242
+#, python-format
+msgid "Custom image #%d"
 msgstr ""
 
-#: mg/constructor/logo.py:94
+#: mg/constructor/logo.py:278
 msgid ""
 "Here you can construct your own simple 100x75 logo using several basic "
 "elements."
-msgstr ""
-
-#: mg/constructor/logo.py:95
-msgid "Apply"
-msgstr ""
-
-#: mg/constructor/logo.py:96
-msgid "Abort"
-msgstr ""
-
-#: mg/constructor/logo.py:97 mg/constructor/mod.py:522
-#: mg/socio/__init__.py:522
-msgid "Upload"
-msgstr ""
-
-#: mg/constructor/logo.py:98
-msgid "Background image"
-msgstr ""
-
-#: mg/constructor/logo.py:101
-msgid "Background"
-msgstr ""
-
-#: mg/constructor/logo.py:102
-msgid "Padding"
-msgstr ""
-
-#: mg/constructor/logo.py:103
-msgid "Icon"
-msgstr ""
-
-#: mg/constructor/logo.py:104
-msgid "Effects"
-msgstr ""
-
-#: mg/constructor/logo.py:105
-msgid "Load from file"
-msgstr ""
-
-#: mg/constructor/logo.py:106
-msgid "Solid color"
-msgstr ""
-
-#: mg/constructor/logo.py:107
-msgid "Set"
-msgstr ""
-
-#: mg/constructor/logo.py:112
-msgid "Size"
 msgstr ""
 
 #: mg/constructor/mod.py:24 mg/constructor/mod.py:219 mg/socio/__init__.py:203
@@ -869,8 +963,8 @@ msgstr ""
 msgid "Setup wizard"
 msgstr ""
 
-#: mg/constructor/mod.py:359 mg/constructor/mod.py:432
-#: mg/constructor/mod.py:531
+#: mg/constructor/mod.py:359 mg/constructor/mod.py:430
+#: mg/constructor/mod.py:520
 msgid "Next"
 msgstr ""
 
@@ -882,124 +976,130 @@ msgstr ""
 msgid "Look to the right to read some recommendations"
 msgstr ""
 
-#: mg/constructor/mod.py:372
-msgid "I agree to the terms and conditions"
-msgstr ""
-
 #: mg/constructor/mod.py:373
-msgid "I don't agree"
-msgstr ""
-
-#: mg/constructor/mod.py:375
 msgid "Law importance"
 msgstr ""
 
-#: mg/constructor/mod.py:375
+#: mg/constructor/mod.py:373
 msgid ""
 "There are some very important points in the contract. At least read "
 "information in the red panel."
 msgstr ""
 
-#: mg/constructor/mod.py:385
+#: mg/constructor/mod.py:383
 msgid "Enter full title"
 msgstr ""
 
-#: mg/constructor/mod.py:387
+#: mg/constructor/mod.py:385
 msgid "Maximal length - 50 characters"
 msgstr ""
 
-#: mg/constructor/mod.py:389 mg/constructor/mod.py:396
+#: mg/constructor/mod.py:387 mg/constructor/mod.py:394
 msgid "Bad symbols in the title"
 msgstr ""
 
-#: mg/constructor/mod.py:392
+#: mg/constructor/mod.py:390
 msgid "Enter short title"
 msgstr ""
 
-#: mg/constructor/mod.py:394
+#: mg/constructor/mod.py:392
 msgid "Maximal length - 17 characters"
 msgstr ""
 
-#: mg/constructor/mod.py:399
+#: mg/constructor/mod.py:397
 msgid "Enter code"
 msgstr ""
 
-#: mg/constructor/mod.py:401
+#: mg/constructor/mod.py:399
 msgid "Maximal length - 5 characters"
 msgstr ""
 
-#: mg/constructor/mod.py:403
+#: mg/constructor/mod.py:401
 msgid "You can use digits and latin letters only"
 msgstr ""
 
-#: mg/constructor/mod.py:416
+#: mg/constructor/mod.py:414
 msgid "Full title of your game (ex: Eternal Forces: call of daemons)"
 msgstr ""
 
-#: mg/constructor/mod.py:421
+#: mg/constructor/mod.py:419
 msgid "Short title of your game (ex: Eternal Forces)"
 msgstr ""
 
-#: mg/constructor/mod.py:426
+#: mg/constructor/mod.py:424
 msgid "Short abbreviated code of the game (ex: EF)"
 msgstr ""
 
-#: mg/constructor/mod.py:434
+#: mg/constructor/mod.py:432
 msgid "Choosing titles"
 msgstr ""
 
-#: mg/constructor/mod.py:434
+#: mg/constructor/mod.py:432
 msgid ""
 "Titles should be short and descriptive. Try to avoid long words, especially "
 "in short title. Otherwize you can introduce lines wrapping problems"
 msgstr ""
 
-#: mg/constructor/mod.py:441
+#: mg/constructor/mod.py:439
 msgid "Upload logo image"
 msgstr ""
 
-#: mg/constructor/mod.py:450
+#: mg/constructor/mod.py:448
 msgid "Animated logos are not supported"
 msgstr ""
 
-#: mg/constructor/mod.py:521
+#: mg/constructor/mod.py:487
 msgid "Game logo"
 msgstr ""
 
-#: mg/constructor/mod.py:523
+#: mg/constructor/mod.py:488
 msgid ""
 "Here you have to create unique logo for your project. You can either upload "
 "logo from your computer or create it using Constructor."
 msgstr ""
 
-#: mg/constructor/mod.py:524
+#: mg/constructor/mod.py:489
 msgid "Alternative 1. Upload logo file"
 msgstr ""
 
-#: mg/constructor/mod.py:525
+#: mg/constructor/mod.py:490
 msgid "Alternative 2. Launch logo constructor"
 msgstr ""
 
-#: mg/constructor/mod.py:526
-msgid "Uploading data..."
-msgstr ""
-
-#: mg/constructor/mod.py:529
+#: mg/constructor/mod.py:493
 msgid "Upload image: 100x100, without animation"
 msgstr ""
 
-#: mg/constructor/mod.py:530
+#: mg/constructor/mod.py:494
 msgid ""
 "Note your image will be postprocessed - corners will be rounded, 1px border "
 "added, black padding added, title written on the black padding."
 msgstr ""
 
-#: mg/constructor/mod.py:532
-msgid "Previous"
+#: mg/constructor/mod.py:495
+msgid "Launch constructor"
 msgstr ""
 
-#: mg/constructor/mod.py:533
-msgid "Launch constructor"
+#: mg/constructor/mod.py:506
+msgid "Domain for your game"
+msgstr ""
+
+#: mg/constructor/mod.py:510
+msgid ""
+"<p>Now you have to assign a domain name to your game. Domain name is a very "
+"important part of your game marketing. Eye-candy names are more attractive. "
+"We don't offer free domain names &mdash; you have to register it manually.</"
+"p><p><strong>Register a domain name in any zone (ex: YOURDOMAIN.COM), set "
+"domain servers ns1.mmoconstructor.com, ns2.mmoconstructor.com and type your "
+"domain name without www here (ex: YOURDOMAIN.COM)</strong></p>"
+msgstr ""
+
+#: mg/constructor/mod.py:514
+msgid "Domain name for your game (without www)"
+msgstr ""
+
+#: mg/constructor/mod.py:519
+msgid "Previous"
 msgstr ""
 
 #: mg/socio/__init__.py:191
@@ -1169,6 +1269,10 @@ msgstr ""
 
 #: mg/socio/__init__.py:521
 msgid "Or Internet address"
+msgstr ""
+
+#: mg/socio/__init__.py:522
+msgid "Upload"
 msgstr ""
 
 #: mg/socio/__init__.py:524

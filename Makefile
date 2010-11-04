@@ -29,13 +29,13 @@ mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
 	msgfmt -o $@ $<
 
 # ============= MODULE: constructor ===============
-constructor_sources := $(shell find static/constructor static/admin -name '*.js' | egrep -v '/gettext-')
+constructor_sources := $(shell find static/constructor static/admin mg/templates -name '*.js' -or -name '*.html' | egrep -v '/gettext-')
 constructor_po_files := $(foreach lang,$(langs),mg/locale/constructor/$(lang).po)
 constructor_js_files := $(foreach lang,$(langs),static/constructor/gettext-$(lang).js)
 mg/locale/mg_constructor.pot: $(constructor_sources)
 	xgettext -d mg_constructor -L Python --copyright-holder=$(copyright) --force-po \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		-kgettext_noop \
+		-kgettext_noop --from-code=utf-8 \
 		$(constructor_sources)
 	mv mg_constructor.po mg/locale/mg_constructor.pot
 	mkdir -p mg/locale/constructor

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-17 14:28+0400\n"
+"POT-Creation-Date: 2010-11-04 17:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,23 +20,98 @@ msgstr ""
 msgid "Browse..."
 msgstr ""
 
-#: static/admin/form.js:105
+#: static/admin/form.js:126
 msgid "Sending data..."
 msgstr ""
 
-#: static/admin/form.js:114 static/admin/form.js:117
+#: static/admin/form.js:135 static/admin/form.js:138
+#: mg/templates/constructor/logo-wizard.html:63
+#: mg/templates/constructor/logo-wizard.html:66
+#: mg/templates/constructor/logo.html:77 mg/templates/constructor/logo.html:80
 msgid "Error"
 msgstr ""
 
-#: static/admin/form.js:117
+#: static/admin/form.js:138 mg/templates/constructor/logo-wizard.html:66
+#: mg/templates/constructor/logo.html:80
 #, python-format
 msgid "Server error: %s"
 msgstr ""
 
-#: static/admin/form.js:134
+#: static/admin/form.js:156 mg/templates/constructor/logo-wizard.html:80
+#: mg/templates/constructor/logo-wizard.html:119
+#: mg/templates/constructor/logo-wizard.html:230
+#: mg/templates/constructor/logo.html:44
 msgid "Please wait..."
 msgstr ""
 
-#: static/admin/index.js:78
+#: static/admin/index.js:77
 msgid "Guru advice"
+msgstr ""
+
+#: mg/templates/constructor/intro-en.html:12
+#: mg/templates/constructor/intro-ru.html:18
+#: mg/templates/constructor/logo.html:98
+msgid "Next"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:40
+#: mg/templates/constructor/logo.html:65
+msgid "Uploading data..."
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:74
+msgid "Upload file"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:102
+#: mg/templates/constructor/logo.html:62
+msgid "Upload"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:113
+msgid "Solid color"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:146
+msgid "Select"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:213
+msgid "Smooth contour"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:242
+msgid "Shape"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:246
+msgid "Fill"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:250
+msgid "Effects"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:258
+msgid "Preview"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:280
+msgid "Apply"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:283
+msgid "Abort"
+msgstr ""
+
+#: mg/templates/constructor/logo.html:95
+msgid "Previous"
+msgstr ""
+
+#: mg/templates/constructor/offer-ru.html:255
+msgid "I agree to the terms and conditions"
+msgstr ""
+
+#: mg/templates/constructor/offer-ru.html:258
+msgid "I don't agree"
 msgstr ""

@@ -6,6 +6,17 @@
 <div id="navi"></div>
 
 <script type="text/javascript">
+var shapes = new Ext.data.ArrayStore({
+	fields: ['key', 'title', 'html'],
+	idIndex: 0,
+	data: [[%foreach sh in shapes%]['[%sh.key%]', '[%sh.title%]', '[%sh.html%]'][%unless sh.lst%],[%end%][%end%]],
+});
+var fillers = new Ext.data.ArrayStore({
+	fields: ['key', 'title', 'html'],
+	idIndex: 0,
+	data: [[%foreach fl in fillers%]['[%fl.key%]', '[%fl.title%]', '[%fl.html%]'][%unless fl.lst%],[%end%][%end%]],
+});
+var win;
 function show_logo(preview_id, uri)
 {
 	if (!uri)
@@ -16,17 +27,34 @@ function show_logo(preview_id, uri)
 		border: false,
 		html: '<img src="' + uri + '" alt="" width="100" height="75" />'
 	});
+	if (preview_id == 'logo_preview') {
+		Ext.getCmp('logo-apply-button').show();
+	}
+	Ext.getCmp(preview_id).show();
 }
 function submit_form(form_id, url)
 {
-	Ext.ComponentMgr.get(form_id).getForm().submit({
+	var form = Ext.getCmp(form_id);
+	form.getForm().submit({
 		url: url,
 		waitMsg: gt.gettext('Uploading data...'),
 		success: function(f, action) {
-			var res = Ext.util.JSON.decode(action.response.responseText);
+			var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
 			if (res) {
-				show_logo('logo_preview', res.logo);
-				show_logo('background_preview', res.background);
+				show_logo('logo_preview', res.preview);
+				if (res.filler) {
+					fillers.insert(fillers.getCount() - 2, [new fillers.recordType({key: res.key, title: res.title, html: res.html}, res.key)]);
+					win.destroy();
+					Ext.getCmp('logo-filler-' + form.layer_id).setValue(res.key);
+					var shape = Ext.getCmp('logo-shape-' + form.layer_id);
+					if (shape.getValue() == '')
+						shape.setValue('solid');
+				}
+				if (res.add_layer) {
+					var layers = Ext.getCmp('logo-layers');
+					layer_add(layers);
+					layers.doLayout(false, true);
+				}
 			}
 		},
 		failure: function(f, action) {
@@ -40,153 +68,222 @@ function submit_form(form_id, url)
 		},
 	});
 }
-wait(['admin/FileUploadField.js'], function() {
-	var background_tab = [%if background_mode == "upload"%]1[%else%]0[%end%];
-	new Ext.Panel({
-		renderTo: 'constructor_form',
-		border: false,
-		items: [{
+function filler_upload(layer_id)
+{
+	win = new Ext.Window({
+		title: gt.gettext('Upload file'),
+		items: {
+			xtype: 'form',
+			id: 'filler_upload_form',
+			bodyStyle: 'padding: 10px',
 			border: false,
-			cls: 'text',
-			html: '<h1>[%Background%]</h1>',
-		}, {
-			id: 'background_preview',
-			cls: 'logo-preview',
-			width: 120,
-			border: false,
-		}, {
-			border: true,
-			xtype: 'tabpanel',
-			activeTab: background_tab,
-			defaults: {
-				bodyStyle: 'padding: 10px',
-				border: false,
-				waitTitle: gt.gettext('Please wait...'),
-				labelAlign: 'top',
-				xtype: 'form',
-				layout: 'auto',
-				autoHeight: true,
-			},
-			layoutConfig: {
-				titleCollapse: true,
-				animate: true,
-			},
+			waitTitle: gt.gettext('Please wait...'),
+			labelAlign: 'top',
+			layout: 'auto',
+			autoHeight: true,
+			fileUpload: true,
+			animate: true,
+			width: 250,
+			layer_id: layer_id,
 			items: [{
-				id: 'background_solid_form',
-				title: '[%SolidColor%]',
-				items: [{
-					border: false,
-					items: [{
-						xtype: 'colorpalette',
-						value: '[%background_color%]',
-						listeners: {
-							select: function(palette, color) { Ext.ComponentMgr.get('background_solid_color').setValue(color) }
-						},
-					}, {
-						id: 'background_solid_color',
-						border: false,
-						width: 400,
-						xtype: 'hidden',
-						hideLabel: true,
-						name: 'color',
-						value: '[%background_color%]',
-					}, {
-						border: false,
-						items: {
-							xtype: 'button',
-							text: '[%SetButton%]',
-							handler: function() { submit_form('background_solid_form', '/admin-wizard/call/[%wizard%]/background/solid') }
-						}
-					}]
-				}]
-			}, {
-				id: 'background_image_form',
-				title: '[%UploadFile%]',
-				fileUpload: true,
-				items: [{
-					border: false,
-					items: [{
-						border: false,
-						layout: 'form',
-						items: {
-							width: 400,
-							xtype: 'fileuploadfield',
-							hideLabel: true,
-							name: 'image',
-							border: false,
-						}
-					}, {
-						border: false,
-						items: {
-							xtype: 'button',
-							text: '[%Upload%]',
-							handler: function() { submit_form('background_image_form', '/admin-wizard/call/[%wizard%]/background/upload') }
-						}
-					}]
-				}]
-			}]
-		}, {
-			border: false,
-			cls: 'text',
-			html: '<h1>[%Shape%]</h1>',
-		}, {
-			id: 'shape_preview',
-			cls: 'logo-preview',
-			width: 120,
-			border: false,
-		}, {
-			border: false,
-			items: [{
-				id: 'shape_form',
-				xtype: 'form',
 				border: false,
-				waitTitle: gt.gettext('Please wait...'),
-				labelAlign: 'top',
-				autoHeight: true,
+				layout: 'form',
 				items: {
-					xtype: 'combo',
-					name: 'shape',
+					width: 200,
+					xtype: 'fileuploadfield',
 					hideLabel: true,
-					value: '[%shape%]',
-					store: [[%foreach sh in shapes%]['[%sh.type%]', '[%sh.title%]'],[%end%]],
-					forceSelection: true,
-					triggerAction: 'all',
-					hiddenName: 'v_shape',
-					hiddenValue: '[%shape%]',
-					allowBlank: true,
+					name: 'image',
+					border: false,
+				}
+			}, {
+				border: false,
+				items: {
+					xtype: 'button',
+					text: gt.gettext('Upload'),
+					handler: function() { submit_form('filler_upload_form', '/admin-wizard/call/[%wizard%]/filler/upload') }
+				}
+			}]
+		}
+	});
+	win.show();
+}
+function filler_solid(layer_id)
+{
+	win = new Ext.Window({
+		title: gt.gettext('Solid color'),
+		items: {
+			xtype: 'form',
+			id: 'filler_solid_form',
+			bodyStyle: 'padding: 10px',
+			border: false,
+			waitTitle: gt.gettext('Please wait...'),
+			labelAlign: 'top',
+			layout: 'auto',
+			autoHeight: true,
+			fileUpload: true,
+			animate: true,
+			width: 250,
+			layer_id: layer_id,
+			items: [{
+				border: false,
+				layout: 'form',
+				items: {
+					id: 'logo-filler-solid-color',
+					width: 200,
+					xtype: 'hidden',
+					name: 'color',
+					border: false,
+				}
+			}, {
+				xtype: 'colorpalette',
+				listeners: {
+					select: function(palette, color) { Ext.getCmp('logo-filler-solid-color').setValue(color) }
 				},
 			}, {
 				border: false,
 				items: {
 					xtype: 'button',
-					text: '[%SetButton%]',
-					handler: function() { submit_form('shape_form', '/admin-wizard/call/[%wizard%]/shape') }
+					text: gt.gettext('Select'),
+					handler: function() { submit_form('filler_solid_form', '/admin-wizard/call/[%wizard%]/filler/solid') }
 				}
 			}]
-		}, {
-			border: false,
-			cls: 'text',
-			html: '<h1>[%Icon%]</h1>',
-		}, {
-			border: false,
-			cls: 'text',
-			html: '<h1>[%Effects%]</h1>',
+		}
+	});
+	win.show();
+}
+function layer_add(layers, shape, filler, smooth)
+{
+	var next_id = Math.round(layers.items.getCount() / 3);
+	var shape_combo = layers.add({
+		xtype: 'combo',
+		hideLabel: true,
+		value: shape,
+		forceSelection: true,
+		triggerAction: 'all',
+		store: shapes,
+		mode: 'local',
+		layer_id: next_id,
+		id: 'logo-shape-' + next_id,
+		hiddenName: 'shape' + next_id,
+		allowBlank: true,
+		width: 150,
+		valueField: 'key',
+		displayField: 'title',
+		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>',
+	});
+	var filler_combo = layers.add({
+		xtype: 'combo',
+		hideLabel: true,
+		layer_id: next_id,
+		id: 'logo-filler-' + next_id,
+		value: filler,
+		forceSelection: true,
+		triggerAction: 'all',
+		store: fillers,
+		mode: 'local',
+		hiddenName: 'filler' + next_id,
+		allowBlank: true,
+		width: 250,
+		valueField: 'key',
+		displayField: 'title',
+		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>',
+	});
+	filler_combo.on('select', function(field, value) {
+		var shape_combo = Ext.getCmp('logo-shape-' + this.layer_id);
+		if (value.id == 'upload') {
+			filler_upload(this.layer_id);
+		} else if (value.id == 'solid') {
+			filler_solid(this.layer_id);
+		} else if (this.getValue() == '' && shape_combo.getValue() != '') {
+			shape_combo.setValue('');
+		} else if (shape_combo.getValue() == '') {
+			shape_combo.setValue('solid');
+		}
+	}, filler_combo);
+	shape_combo.on('select', function(field, value) {
+		var filler_combo = Ext.getCmp('logo-filler-' + this.layer_id);
+		if (this.getValue() == '' && filler_combo.getValue() != '') {
+			filler_combo.setValue('');
+		}
+	}, shape_combo);
+	layers.add({
+		layout: 'form',
+		border: false,
+		items: [{
+			boxLabel: gt.gettext('Smooth contour'),
+			xtype: 'checkbox',
+			name: 'smooth' + next_id,
+			checked: smooth,
+			hideLabel: true,
 		}]
 	});
-	[%if logo%]show_logo('logo_preview', '[%logo%]');[%end%]
-	[%if background%]show_logo('background_preview', '[%background%]');[%end%]
+}
+wait(['admin/FileUploadField.js'], function() {
+	new Ext.Panel({
+		id: 'logo-wizard-panel',
+		renderTo: 'constructor_form',
+		border: false,
+		items: [{
+			id: 'logo-layers',
+			border: false,
+			xtype: 'form',
+			waitTitle: gt.gettext('Please wait...'),
+			labelAlign: 'top',
+			autoHeight: true,
+			layout: 'table',
+			defaults: {
+				cellCls: 'form-table',
+			},
+			layoutConfig: {
+				columns: 3
+			},
+			items: [{
+				border: false,
+				html: '<h1>' + gt.gettext('Shape') + '</h1>',
+				width: 150,
+			}, {
+				border: false,
+				html: '<h1>' + gt.gettext('Fill') + '</h1>',
+				width: 250,
+			}, {
+				border: false,
+				html: '<h1>' + gt.gettext('Effects') + '</h1>',
+				width: 200,
+			}]
+		}, {
+			id: 'logo-preview-button',
+			border: false,
+			items: {
+				xtype: 'button',
+				text: gt.gettext('Preview'),
+				handler: function() { submit_form('logo-layers', '/admin-wizard/call/[%wizard%]/shapes') }
+			}
+		}, {
+			id: 'logo_preview',
+			hidden: true,
+			width: 102,
+			border: false,
+		}]
+	});
+	var layers = Ext.getCmp('logo-layers');
+	[%foreach layer in layers%]layer_add(layers, '[%layer.shape%]', '[%layer.filler%]', [%if layer.smooth%]true[%else%]false[%end%]);[%end%]
+	layer_add(layers);
+	layers.doLayout(false, true);
 	new Ext.Panel({
 		renderTo: 'navi',
 		cls: 'bottom-form',
 		border: false,
 		layout: 'form',
 		buttons: [{
-			text: gt.gettext('[%Apply%]'),
+			id: 'logo-apply-button',
+			hidden: true,
+			text: gt.gettext('Apply'),
 			handler: function() { adm('wizard/call/[%wizard%]/apply') }
 		}, {
-			text: gt.gettext('[%Abort%]'),
+			text: gt.gettext('Abort'),
 			handler: function() { adm('wizard/call/[%wizard%]/abort') }
 		}]
 	});
+	[%if preview%]show_logo('logo_preview', '[%preview%]');[%end%]
 });
 </script>

@@ -9,7 +9,7 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 class TempFile(CassandraObject):
     _indexes = {
-        "created": [[], "created"],
+        "till": [[], "till"],
         "wizard": [["wizard"]],
         "app": [["app"]],
     }
@@ -123,10 +123,11 @@ class Cluster(Module):
             "uri": uri,
             "url": url,
             "host": host,
-            "created": self.now(),
             "app": self.app().tag
         }
-        if wizard is not None:
+        if wizard is None:
+            data["till"] = self.now(86400)
+        else:
             data["wizard"] = wizard
         self.app().inst.int_app.obj(TempFile, data=data).store()
         return uri

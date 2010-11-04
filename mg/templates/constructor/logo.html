@@ -59,10 +59,10 @@ wait(['admin/FileUploadField.js'], function() {
 				border: false,
 				items: {
 					xtype: 'button',
-					text: '[%Upload%]',
+					text: gt.gettext('Upload'),
 					handler: function() {file_form.getForm().submit({
 						url: '/admin-wizard/call/[%wizard%]/upload',
-						waitMsg: gt.gettext('[%UploadingData%]'),
+						waitMsg: gt.gettext('Uploading data...'),
 						success: function(f, action) {
 							var res = Ext.util.JSON.decode(action.response.responseText);
 							if (res && res.logo_preview)
@@ -92,10 +92,10 @@ wait(['admin/FileUploadField.js'], function() {
 		border: false,
 		layout: 'form',
 		buttons: [{
-			text: gt.gettext('[%prev_text%]'),
+			text: gt.gettext('Previous'),
 			handler: function() { adm('wizard/call/[%wizard%]/prev') }
 		}, {
-			text: gt.gettext('[%next_text%]'),
+			text: gt.gettext('Next'),
 			handler: function() { adm('wizard/call/[%wizard%]/next') }
 		}]
 	});
@@ -105,7 +105,7 @@ wait(['admin/FileUploadField.js'], function() {
 		border: false,
 		items: [{
 			xtype: 'button',
-			text: gt.gettext('[%LaunchConstructor%]'),
+			text: '[%LaunchConstructor%]',
 			handler: function() { adm('wizard/call/[%wizard%]/constructor') }
 		}]
 	});

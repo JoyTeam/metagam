@@ -45,7 +45,8 @@ class ApplicationFactory(mg.core.ApplicationFactory):
             return "main"
         elif domain == main_host:
             return "main"
-        m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["main_host"], domain)
+        print "main_host=%s, domain=%s" % (main_host, domain)
+        m = re.match("^([0-9a-f]{32})\.%s" % main_host, domain)
         if m:
             return m.groups(1)[0]
         return None

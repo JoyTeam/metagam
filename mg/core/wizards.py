@@ -39,6 +39,7 @@ class Wizard(Module):
     def new(self, **kwargs):
         "Configure newly created wizard. Override to set your logic"
         self.config.set("mod", self.fqn)
+        self.call("admin.update_menu")
 
     def load(self):
         "Configure wizard just loaded. Override to set your logic"
@@ -64,6 +65,20 @@ class Wizard(Module):
         for file in temp_files:
             file.delete()
         temp_files.remove()
+        self.call("admin.update_menu")
+
+    def result(self, data):
+        target = self.config.get("target")
+        if target[0] == "wizard":
+            wiz = self.call("wizards.get", target[1])
+            if wiz is None:
+                raise RuntimeError("Target wizard doesn't exist")
+            method = getattr(wiz, target[2], None)
+            if method is None:
+                raise RuntimeError("Target wizard result method doesn't exist")
+            method(data, target[3])
+        else:
+            raise RuntimeError("Invalid result target: %s" % target[0])
 
 re_module_path = re.compile(r'^(.+)\.(.+)$')
 re_wizard_args_0 = re.compile(r'^([0-9a-f]+)$')
@@ -74,6 +89,7 @@ class Wizards(Module):
         Module.register(self)
         self.rhook("wizards.new", self.wizards_new)
         self.rhook("wizards.list", self.wizards_list)
+        self.rhook("wizards.get", self.wizards_get)
         self.rhook("wizards.call", self.wizards_call)
         self.rhook("ext-admin-wizard.call", self.wizard_call)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -144,6 +160,19 @@ class Wizards(Module):
             if callable(f):
                 f(*args, **kwargs)
 
+    def wizards_get(self, uuid):
+        try:
+            config = self.obj(WizardConfig, uuid)
+        except ObjectNotFoundException:
+            return None
+        mod = config.get("mod")
+        if mod is None:
+            raise RuntimeError("Invalid wizard configuration")
+        cls = self.wizard_class(mod)
+        if cls is None:
+            raise RuntimeError("Unknown wizard class")
+        return cls(self.app(), mod, config.uuid, config)
+
     def wizard_call(self):
         req = self.req()
         if re_wizard_args_0.match(req.args):
@@ -155,15 +184,7 @@ class Wizards(Module):
                 uuid, cmd = m.group(1, 2)
             else:
                 self.call("web.not_found")
-        try:
-            config = self.obj(WizardConfig, uuid)
-        except ObjectNotFoundException:
+        wiz = self.call("wizards.get", uuid)
+        if wiz is None:
             self.call("web.not_found")
-        mod = config.get("mod")
-        if mod is None:
-            self.call("web.internal_server_error")
-        cls = self.wizard_class(mod)
-        if cls is None:
-            self.call("web.internal_server_error")
-        wiz = cls(self.app(), mod, config.uuid, config)
         return wiz.request(cmd)
