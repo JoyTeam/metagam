@@ -112,7 +112,7 @@ class Constructor(Module):
         self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards",
-            "mg.constructor.mod.ConstructorUtils"])
+            "mg.constructor.mod.ConstructorUtils", "mg.game.Money"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
@@ -369,8 +369,6 @@ class ProjectSetupWizard(Wizard):
             vars = {
                 "author": cgi.escape(author.get("name")),
                 "wizard": self.uuid,
-                "Agree": jsencode(self._("I agree to the terms and conditions")),
-                "DontAgree": jsencode(self._("I don't agree")),
             }
             self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
             self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)
@@ -466,40 +464,7 @@ class ProjectSetupWizard(Wizard):
                     image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
                     if height != 75:
                         image_obj = image_obj.crop((0, (height - 75) / 2, 100, (height - 75) / 2 + 75))
-                # putting image on the white background
-                background = Image.new("RGBA", (100, 100), (255, 255, 255))
-                background.paste(image_obj, (0, 0, 100, 75), image_obj)
-                # drawing image border
-                bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
-                background.paste(bord, None, bord)
-                # rounding corners
-                mask = Image.open(mg.__path__[0] + "/data/logo/logo-mask.png")
-                mask = mask.convert("RGBA")
-                mask.paste(background, None, mask)
-                # writing text
-                textpad = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
-                title = self.config.get("title_short")
-                font_size = 20
-                watchdog = 0
-                while font_size > 5:
-                    font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/arialn.ttf", font_size, encoding="unic")
-                    w, h = font.getsize(title)
-                    if w <= 92 and h <= 20:
-                        break
-                    font_size -= 1
-                draw = ImageDraw.Draw(textpad)
-                draw.text((50 - w / 2, 88 - h / 2), title, font=font)
-                enhancer = ImageEnhance.Sharpness(textpad)
-                textpad_blur = enhancer.enhance(0.5)
-                mask.paste(textpad_blur, None, textpad_blur)
-                mask.paste(textpad, None, textpad)
-                # generating png
-                png = cStringIO.StringIO()
-                mask.save(png, "PNG")
-                png = png.getvalue()
-                uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
-                self.config.set("logo", uri)
-                self.config.store()
+                self.store_logo(image_obj)
                 self.call("web.response_json_html", {"success": True, "logo_preview": uri})
             elif cmd == "prev":
                 self.config.set("state", "name")
@@ -508,31 +473,91 @@ class ProjectSetupWizard(Wizard):
             elif cmd == "constructor":
                 if len(wizs):
                     self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
-                wiz = self.call("wizards.new", "mg.constructor.logo.LogoWizard", target=["wizard", self.uuid, "constructed", ""], redirect_fail="wizard/call/%s" % self.uuid)
-                self.call("admin.update_menu")
+                wiz = self.call("wizards.new", "mg.constructor.logo.LogoWizard", target=["wizard", self.uuid, "constructed", ""], redirect_fail="wizard/call/%s" % self.uuid, title_code=self.config.get("title_code"))
                 self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
             elif cmd == "next":
                 if self.config.get("logo"):
                     if len(wizs):
                         for wiz in wizs:
                             wiz.abort()
-                        self.call("admin.update_menu")
+                self.config.set("state", "domain")
+                self.config.store()
+                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
             vars = {
                 "GameLogo": self._("Game logo"),
-                "Upload": self._("Upload"),
                 "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
                 "FromFile": self._("Alternative 1. Upload logo file"),
                 "FromConstructor": self._("Alternative 2. Launch logo constructor"),
-                "UploadingData": self._("Uploading data..."),
                 "wizard": self.uuid,
                 "logo": self.config.get("logo"),
                 "ImageFormat": self._("Upload image: 100x100, without animation"),
                 "UploadNote": self._("Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."),
-                "next_text": jsencode(self._("Next")),
-                "prev_text": jsencode(self._("Previous")),
                 "LaunchConstructor": self._("Launch constructor"),
             }
             self.call("admin.response_template", "constructor/logo.html", vars)
+        elif state == "domain":
+            if cmd == "prev":
+                self.config.set("state", "logo")
+                self.config.store()
+                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
+            fields = [
+                {
+                    "type": "header",
+                    "html": self._("Domain for your game"),
+                },
+                {
+                    "type": "html",
+                    "html": self._("<p>Now you have to assign a domain name to your game. Domain name is a very important part of your game marketing. Eye-candy names are more attractive. We don't offer free domain names &mdash; you have to register it manually.</p><p><strong>Register a domain name in any zone (ex: YOURDOMAIN.COM), set domain servers ns1.mmoconstructor.com, ns2.mmoconstructor.com and type your domain name without www here (ex: YOURDOMAIN.COM)</strong></p>"),
+                },
+                {
+                    "name": "domain",
+                    "label": self._("Domain name for your game (without www)"),
+                    "value": self.config.get("domain"),
+                },
+            ]
+            buttons = [
+                {"text": self._("Previous"), "url": "admin-wizard/call/%s/prev" % self.uuid},
+                {"text": self._("Next"), "url": "admin-wizard/call/%s/domain-submit" % self.uuid}
+            ]
+            self.call("admin.form", fields=fields, buttons=buttons)
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
 
+    def constructed(self, logo, arg):
+        self.config.set("state", "logo")
+        self.store_logo(logo)
+
+    def store_logo(self, image_obj):
+        background = Image.new("RGBA", (100, 100), (255, 255, 255))
+        background.paste(image_obj, (0, 0, 100, 75), image_obj)
+        # drawing image border
+        bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
+        background.paste(bord, None, bord)
+        # rounding corners
+        mask = Image.open(mg.__path__[0] + "/data/logo/logo-mask.png")
+        mask = mask.convert("RGBA")
+        mask.paste(background, None, mask)
+        # writing text
+        textpad = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
+        title = self.config.get("title_short")
+        font_size = 20
+        watchdog = 0
+        while font_size > 5:
+            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/arialn.ttf", font_size, encoding="unic")
+            w, h = font.getsize(title)
+            if w <= 92 and h <= 20:
+                break
+            font_size -= 1
+        draw = ImageDraw.Draw(textpad)
+        draw.text((50 - w / 2, 88 - h / 2), title, font=font)
+        enhancer = ImageEnhance.Sharpness(textpad)
+        textpad_blur = enhancer.enhance(0.5)
+        mask.paste(textpad_blur, None, textpad_blur)
+        mask.paste(textpad, None, textpad)
+        # generating png
+        png = cStringIO.StringIO()
+        mask.save(png, "PNG")
+        png = png.getvalue()
+        uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
+        self.config.set("logo", uri)
+        self.config.store()
