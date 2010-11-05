@@ -1,0 +1,7 @@
+[%if settings%]
+<table class="list">
+<tr><td class="header">[%PaymentURL%]</td><td>[%settings.payment_url%]</td></tr>
+<tr><td class="header">[%SecretCode%]</td><td>[%settings.secret%]</td></tr>
+</table>
+[%end%]
+<p><hook:admin.link href="constructor/project-2pay/[%project.uuid%]/settings" title="[%EditSettings%]" /></p>

@@ -40,12 +40,13 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         self.apps_by_domain = {}
 
     def tag_by_domain(self, domain):
+        if domain is None:
+            return None
         main_host = self.inst.config["main_host"]
         if domain == "www.%s" % main_host:
             return "main"
         elif domain == main_host:
             return "main"
-        print "main_host=%s, domain=%s" % (main_host, domain)
         m = re.match("^([0-9a-f]{32})\.%s" % main_host, domain)
         if m:
             return m.groups(1)[0]

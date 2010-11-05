@@ -1,0 +1,5 @@
+<p><hook:admin.link href="money/account/[%account.uuid%]" title="[%Update%]" /></p>
+<table class="list">
+<tr class="header"><td>[%Performed%]</td><td>[%Amount%]</td><td>[%Balance%]</td><td>[%Description%]</td></tr>
+[%foreach operation in operations%]<tr><td>[%operation.performed%]</td><td>[%operation.amount%]</td><td>[%operation.balance%]</td><td>[%operation.description%]</td></tr>[%end%]
+</table>

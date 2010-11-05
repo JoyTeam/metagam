@@ -384,10 +384,10 @@ class Module(object):
             raise RuntimeError("Module.req() called outside of a web handler")
 
     def nowdate(self):
-        return datetime.datetime.utcnow().strftime("%Y-%m-%d")
+        return self.app().nowdate()
 
     def now(self, add=0):
-        return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
+        return self.app().now(add)
 
     def lock(self, *args, **kwargs):
         return self.app().lock(*args, **kwargs)
@@ -463,6 +463,8 @@ class Formatter(logging.Formatter):
             record.msg = "app:%s %s" % (record.app, record.msg)
         if record.__dict__.get("host"):
             record.msg = "host:%s %s" % (record.host, record.msg)
+        if type(record.msg) == unicode:
+            record.msg = record.msg.encode("utf-8")
         str = logging.Formatter.format(self, record)
         if type(str) == unicode:
             str = str.encode("utf-8")
@@ -502,8 +504,8 @@ class Instance(object):
         if self.syslog_channel:
             modlogger.removeHandler(self.syslog_channel)
         self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
-        self.syslog_channel.setLevel(logging.INFO)
-        formatter = Formatter(self.logger_id + " cls:%(name)s %(message)s")
+        self.syslog_channel.setLevel(logging.DEBUG)
+        formatter = Formatter(str(self.logger_id + " cls:%(name)s %(message)s"))
         self.syslog_channel.setFormatter(formatter)
         filter = Filter()
         self.syslog_channel.addFilter(filter)
@@ -513,7 +515,7 @@ class Instance(object):
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s")
+        formatter = logging.Formatter(str("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s"))
         self.stderr_channel.setFormatter(formatter)
         modlogger.addHandler(self.stderr_channel)
 
@@ -601,6 +603,12 @@ class Application(object):
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
+
+    def nowdate(self):
+        return datetime.datetime.utcnow().strftime("%Y-%m-%d")
+
+    def now(self, add=0):
+        return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
 
 class ApplicationFactory(object):
     """

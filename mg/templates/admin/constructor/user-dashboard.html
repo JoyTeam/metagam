@@ -1,0 +1,11 @@
+[%if projects%]
+<table class="list">
+<tr class="header"><td>[%ProjectId%]</td><td>[%ProjectName%]</td><td>[%ProjectCode%]</td></tr>
+[%foreach project in projects%]<tr><td><hook:admin.link href="constructor/project-dashboard/[%project.uuid%]" title="[%project.uuid%]" /></td><td>[%project.title_short%]</td><td>[%project.title_code%]</td></tr>[%end%]
+</table>
+[%end%]
+[%if options%]
+<table class="list">
+[%foreach option in options%]<tr><td class="header">[%option.title%]</td><td>[%option.value%]</td></tr>[%end%]
+</table>
+[%end%]

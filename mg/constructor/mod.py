@@ -112,7 +112,7 @@ class Constructor(Module):
         self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards",
-            "mg.constructor.mod.ConstructorUtils", "mg.game.money.Money"])
+            "mg.constructor.mod.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
@@ -130,6 +130,8 @@ class Constructor(Module):
         self.rhook("core.webdaemon", self.webdaemon)
         self.rhook("project.title", self.project_title)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
+        self.rhook("projects.list", self.projects_list)
+        self.rhook("projects.owned_by", self.projects_owned_by)
 
     def forum_init_categories(self, cats):
         cats.append({"id": uuid4().hex, "topcat": self._("Constructor"), "title": self._("News"), "description": self._("News related to the Constructor"), "order": 10.0, "default_subscribe": True})
@@ -152,6 +154,17 @@ class Constructor(Module):
         apps.append("main")
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
         apps.extend(projects.uuids())
+
+    def projects_list(self, projects):
+        projects.append({"uuid": "main"})
+        list = self.app().inst.int_app.objlist(ProjectList, query_index="created")
+        list.load(silent=True)
+        projects.extend(list.data())
+
+    def projects_owned_by(self, owner, projects):
+        list = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=owner)
+        list.load(silent=True)
+        projects.extend(list.data())
 
     def schedule(self, sched):
         sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
@@ -281,12 +294,15 @@ class Constructor(Module):
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")
+        for slice in slices_list:
+            self.debug("KEY: %s", slice.key)
         inst = self.app().inst
         valid_keys = inst.int_app.hooks.call("cassmaint.validate", slices_list)
         slices_list = [row for row in slices_list if row.key not in valid_keys]
         apps = []
         self.call("applications.list", apps)
         for tag in apps:
+            self.debug("validating application %s", tag)
             app = inst.appfactory.get_by_tag(tag)
             if app is not None:
                 valid_keys = app.hooks.call("cassmaint.validate", slices_list)

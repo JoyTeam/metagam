@@ -1,0 +1,12 @@
+<table class="list">
+<tr><td class="header">[%Id%]</td><td>[%project.uuid%]</td></tr>
+[%if project.title_full%]<tr><td class="header">[%TitleFull%]</td><td>[%project.title_full%]</td></tr>[%end%]
+[%if project.title_short%]<tr><td class="header">[%TitleShort%]</td><td>[%project.title_short%]</td></tr>[%end%]
+[%if project.title_code%]<tr><td class="header">[%TitleCode%]</td><td>[%project.title_code%]</td></tr>[%end%]
+[%if owner%]<tr><td class="header">[%Owner%]</td><td><hook:admin.link href="constructor/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>[%end%]
+</table>
+[%if options%]
+<table class="list">
+[%foreach option in options%]<tr><td class="header">[%option.title%]</td><td>[%option.value%]</td></tr>[%end%]
+</table>
+[%end%]

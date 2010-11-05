@@ -190,7 +190,7 @@ class LogoWizard(Wizard):
             solid_id = self.config.get_int("solids") + 1
             self.config.set("solids", solid_id)
             self.config.set("filler%d_uri" % filler_id, uri)
-            title = self._("Solid color #%d - %s") % (solid_id, color)
+            title = self._("Solid color #{0} - {1}").format(solid_id, color)
             self.config.set("filler%d_title" % filler_id, title)
             self.config.store()
             self.call("web.response_json_html", {"success": True, "filler": True, "key": "custom.%d" % filler_id, "title": title, "html": '<img src="%s" width="100" height="75" alt="" />' % uri})

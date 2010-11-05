@@ -233,7 +233,7 @@ class Request(object):
         perms = self.permissions()
         if perms.get(key):
             return True
-        return perms.get("admin")
+        return False
 
 class HTTPHandler(server.HTTPHandler):
     def handle(self, socket, application):

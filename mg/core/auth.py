@@ -721,11 +721,13 @@ class Authorization(Module):
 
     def menu_security_index(self, menu):
         req = self.req()
-        if req.has_access("permissions"):
+        if req.has_access("permissions") or req.has_access("admin"):
             menu.append({"id": "auth/permissions", "text": self._("Permissions"), "leaf": True})
 
     def admin_permissions(self):
-        self.call("session.require_permission", "permissions")
+        req = self.req()
+        if not req.has_access("permissions") and not req.has_access("admin"):
+            self.call("web.forbidden")
         permissions_list = []
         self.call("permissions.list", permissions_list)
         users = []
@@ -756,7 +758,9 @@ class Authorization(Module):
         return self._("User permissions")
 
     def admin_editpermissions(self):
-        self.call("session.require_permission", "permissions")
+        req = self.req()
+        if not req.has_access("permissions") and not req.has_access("admin"):
+            self.call("web.forbidden")
         req = self.req()
         name = req.param("name")
         if req.ok():
@@ -780,8 +784,9 @@ class Authorization(Module):
         return [self._("Edit permissions of a user"), "auth/permissions"]
 
     def admin_edituserpermissions(self):
-        self.call("session.require_permission", "permissions")
         req = self.req()
+        if not req.has_access("permissions") and not req.has_access("admin"):
+            self.call("web.forbidden")
         try:
             user = self.obj(User, req.args)
         except ObjectNotFoundException:
@@ -803,6 +808,9 @@ class Authorization(Module):
                 user_permissions.store()
             else:
                 user_permissions.remove()
+            if req.args == req.user():
+                del req._permissions
+                self.call("admin.update_menu")
             self.call("admin.redirect", "auth/permissions")
         else:
             perm_values = user_permissions.get("perms")

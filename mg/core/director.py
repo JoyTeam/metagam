@@ -17,8 +17,8 @@ class Director(Module):
         modules = self.app().inst.config.get("modules")
         if modules:
             self.rdep(modules)
-        self.servers_online = self.conf("director.servers", default={})
-        self.servers_online_modified = True
+        self.app().servers_online = self.conf("director.servers", default={})
+        self.app().servers_online_modified = True
         self.queue_workers = []
         self.workers_str = None
         self.rhook("web.global_html", self.web_global_html)
@@ -60,33 +60,34 @@ class Director(Module):
     def monitor(self):
         while True:
             try:
-                for server_id, info in self.servers_online.items():
+                for server_id, info in self.app().servers_online.items():
                     host = info.get("host")
                     port = info.get("port")
                     success = False
                     try:
-                        cnn = HTTPConnection()
-                        cnn.connect((str(host), int(port)))
-                        try:
-                            request = cnn.get("/core/ping")
-                            request.add_header("Content-type", "application/x-www-form-urlencoded")
-                            response = cnn.perform(request)
-                            if response.status_code == 200 and response.get_header("Content-type") == "application/json":
-                                body = json.loads(response.body)
-                                if body.get("ok") and body.get("server_id") == server_id:
-                                    success = True
-                        finally:
-                            cnn.close()
+                        with Timeout.push(30):
+                            cnn = HTTPConnection()
+                            cnn.connect((str(host), int(port)))
+                            try:
+                                request = cnn.get("/core/ping")
+                                request.add_header("Content-type", "application/x-www-form-urlencoded")
+                                response = cnn.perform(request)
+                                if response.status_code == 200 and response.get_header("Content-type") == "application/json":
+                                    body = json.loads(response.body)
+                                    if body.get("ok") and body.get("server_id") == server_id:
+                                        success = True
+                            finally:
+                                cnn.close()
                     except (KeyboardInterrupt, SystemExit, TaskletExit):
                         raise
                     except BaseException as e:
                         self.info("%s - %s", server_id, e)
                     if not success:
-                        fact_server = self.servers_online.get(server_id)
+                        fact_server = self.app().servers_online.get(server_id)
                         if fact_server is not None:
                             fact_port = fact_server.get("port")
                             if fact_port is None or fact_port == port:
-                                del self.servers_online[server_id]
+                                del self.app().servers_online[server_id]
                                 self.store_servers_online()
                                 self.servers_online_updated()
             except (SystemExit, TaskletExit, KeyboardInterrupt):
@@ -99,7 +100,7 @@ class Director(Module):
         raise Hooks.Return(ApplicationFactory(self.app().inst))
 
     def cluster_servers_online(self):
-        raise Hooks.Return(self.servers_online)
+        raise Hooks.Return(self.app().servers_online)
 
     def director_queue_workers(self):
         return self.queue_workers
@@ -119,10 +120,11 @@ class Director(Module):
 
     def reload_servers(self, result={}, errors={}):
         config = json.dumps(self.config())
-        for server_id, info in self.servers_online.items():
+        for server_id, info in self.app().servers_online.items():
             errors = 1
             try:
-                res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {"config": config})
+                with Timeout.push(20):
+                    res = self.call("cluster.query_server", info["host"], info["port"], "/core/reload", {"config": config})
                 err = res.get("errors")
                 if err is None:
                     errors = 0
@@ -146,12 +148,12 @@ class Director(Module):
             "title": self._("Welcome to the cluster control center"),
             "setup": self._("Change cluster settings")
         }
-        if len(self.servers_online):
-            hosts = self.servers_online.keys()
+        if len(self.app().servers_online):
+            hosts = self.app().servers_online.keys()
             hosts.sort()
             vars["servers_online"] = {
                 "title": self._("List of servers online"),
-                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in [(host, self.servers_online[host]) for host in hosts]]
+                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in [(host, self.app().servers_online[host]) for host in hosts]]
             }
         return self.call("web.response_template", "director/index.html", vars)
 
@@ -243,26 +245,26 @@ class Director(Module):
         })
 
     def store_servers_online(self):
-        self.servers_online_modified = True
+        self.app().servers_online_modified = True
 
     def servers_online_updated(self):
-        self.queue_workers = [srv for id, srv in self.servers_online.iteritems() if srv["type"] == "worker" and srv["params"].get("queue")]
+        self.queue_workers = [srv for id, srv in self.app().servers_online.items() if srv["type"] == "worker" and srv["params"].get("queue")]
 
     def fastidle(self):
-        if self.servers_online_modified:
-            self.servers_online_modified = False
-            self.app().config.set("director.servers", self.servers_online)
+        if self.app().servers_online_modified:
+            self.app().servers_online_modified = False
+            self.app().config.set("director.servers", self.app().servers_online)
             self.app().config.store()
             try:
                 if not self.configure_nginx():
-                    self.servers_online_modified = True
+                    self.app().servers_online_modified = True
             except JoinError:
-                self.servers_online_modified = True
+                self.app().servers_online_modified = True
 
     def configure_nginx(self):
         nginx = set()
         workers = {}
-        for server_id, info in self.servers_online.iteritems():
+        for server_id, info in self.app().servers_online.items():
             try:
                 if info["type"] == "server" and info["params"].get("nginx"):
                     nginx.add((info["host"], info["port"]))
@@ -287,7 +289,8 @@ class Director(Module):
 
     def configure_nginx_server(self, host, port, workers):
         try:
-            self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
+            with Timeout.push(20):
+                self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
             return True
         except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
@@ -304,9 +307,10 @@ class Director(Module):
 
         # sending configuration
         if params.get("backends"):
-            self.call("cluster.query_server", host, port, "/server/spawn", {
-                "workers": params.get("backends"),
-            })
+            with Timeout.push(20):
+                self.call("cluster.query_server", host, port, "/server/spawn", {
+                    "workers": params.get("backends"),
+                })
 
         # storing online list
         server_id = str(host)
@@ -320,7 +324,7 @@ class Director(Module):
         if parent:
             server_id = "%s-server-%s" % (server_id, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
-            parent_info = self.servers_online.get(params["parent"])
+            parent_info = self.app().servers_online.get(params["parent"])
             if parent_info is not None:
                 if parent_info["params"].get("queue"):
                     params["queue"] = True
@@ -329,7 +333,7 @@ class Director(Module):
         if id:
             server_id = "%s-%02d" % (server_id, int(id))
             conf["id"] = id
-        self.servers_online[server_id] = conf
+        self.app().servers_online[server_id] = conf
         self.store_servers_online()
         self.servers_online_updated()
         self.call("web.response_json", {"ok": 1, "server_id": server_id})

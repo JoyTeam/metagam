@@ -563,6 +563,7 @@ class Forum(Module):
         objclasses["ForumPost"] = (ForumPost, ForumPostList)
         objclasses["SocioImage"] = (SocioImage, None)
         objclasses["ForumPermissions"] = (ForumPermissions, ForumPermissionsList)
+        objclasses["ForumCategoryStat"] = (ForumCategoryStat, ForumCategoryStatList)
 
     def response(self, content, vars):
         topmenu = []

@@ -40,8 +40,8 @@ def format_gender(gender, str):
     return re.sub(r'\[gender\?([^:\]]*):([^:\]]*)\]', lambda m: m.group(1) if gender == 1 or gender == "1" else m.group(2), str)
 
 def parse_color(color):
-        m = re_color.match(color)
-        if not m:
-            return None
-        r, g, b = m.group(1, 2, 3)
-        return (int(r, 16), int(g, 16), int(b, 16))
+    m = re_color.match(color)
+    if not m:
+        return None
+    r, g, b = m.group(1, 2, 3)
+    return (int(r, 16), int(g, 16), int(b, 16))

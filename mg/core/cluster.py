@@ -1,4 +1,5 @@
 from mg import *
+from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from urllib import urlencode
 from uuid import uuid4
@@ -60,6 +61,7 @@ class Cluster(Module):
         self.rhook("cluster.static_upload", self.static_upload)
         self.rhook("cluster.appconfig_changed", self.appconfig_changed)
         self.rhook("cluster.static_upload_temp", self.static_upload_temp)
+        self.rhook("objclasses.list", self.objclasses_list)
 
     def query_director(self, uri, params={}):
         """
@@ -151,25 +153,32 @@ class Cluster(Module):
                         raise
                     except BaseException as e:
                         self.exception(e)
+    
+    def objclasses_list(self, objclasses):
+        objclasses["TempFile"] = (TempFile, TempFileList)
 
 def dir_query(uri, params):
     return query("director", 3000, uri, params)
 
 def query(host, port, uri, params):
-    cnn = HTTPConnection()
     try:
-        cnn.connect((str(host), int(port)))
-    except IOError as e:
-        raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
-    try:
-        request = cnn.post(str(uri), urlencode(params))
-        request.add_header("Content-type", "application/x-www-form-urlencoded")
-        response = cnn.perform(request)
-        if response.status_code != 200:
-            raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, response.status))
-        body = response.body
-        if response.get_header("Content-type") == "application/json":
-            body = json.loads(body)
-        return body
-    finally:
-        cnn.close()
+        with Timeout.push(20):
+            cnn = HTTPConnection()
+            try:
+                cnn.connect((str(host), int(port)))
+            except IOError as e:
+                raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
+            try:
+                request = cnn.post(str(uri), urlencode(params))
+                request.add_header("Content-type", "application/x-www-form-urlencoded")
+                response = cnn.perform(request)
+                if response.status_code != 200:
+                    raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, response.status))
+                body = response.body
+                if response.get_header("Content-type") == "application/json":
+                    body = json.loads(body)
+                return body
+            finally:
+                cnn.close()
+    except TimeoutError:
+        raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, uri))
