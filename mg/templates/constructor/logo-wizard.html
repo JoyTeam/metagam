@@ -233,20 +233,18 @@ wait(['admin/FileUploadField.js'], function() {
 			layout: 'table',
 			defaults: {
 				cellCls: 'form-table',
+				border: false,
 			},
 			layoutConfig: {
 				columns: 3
 			},
 			items: [{
-				border: false,
 				html: '<h1>' + gt.gettext('Shape') + '</h1>',
 				width: 150,
 			}, {
-				border: false,
 				html: '<h1>' + gt.gettext('Fill') + '</h1>',
 				width: 250,
 			}, {
-				border: false,
 				html: '<h1>' + gt.gettext('Effects') + '</h1>',
 				width: 200,
 			}]

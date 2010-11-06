@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-05 23:03+0300\n"
+"POT-Creation-Date: 2010-11-07 01:11+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,12 +27,15 @@ msgstr ""
 #: static/admin/form.js:135 static/admin/form.js:138
 #: mg/templates/constructor/logo-wizard.html:63
 #: mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/logo.html:77 mg/templates/constructor/logo.html:80
+#: mg/templates/constructor/domain.html:68
+#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/logo.html:84 mg/templates/constructor/logo.html:87
 msgid "Error"
 msgstr ""
 
 #: static/admin/form.js:138 mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/logo.html:80
+#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/logo.html:87
 #, python-format
 msgid "Server error: %s"
 msgstr ""
@@ -40,7 +43,8 @@ msgstr ""
 #: static/admin/form.js:156 mg/templates/constructor/logo-wizard.html:80
 #: mg/templates/constructor/logo-wizard.html:119
 #: mg/templates/constructor/logo-wizard.html:230
-#: mg/templates/constructor/logo.html:44
+#: mg/templates/constructor/domain.html:45
+#: mg/templates/constructor/logo.html:58
 msgid "Please wait..."
 msgstr ""
 
@@ -50,12 +54,12 @@ msgstr ""
 
 #: mg/templates/constructor/intro-en.html:12
 #: mg/templates/constructor/intro-ru.html:18
-#: mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo.html:118
 msgid "Next"
 msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:40
-#: mg/templates/constructor/logo.html:65
+#: mg/templates/constructor/logo.html:72
 msgid "Uploading data..."
 msgstr ""
 
@@ -64,7 +68,7 @@ msgid "Upload file"
 msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:102
-#: mg/templates/constructor/logo.html:62
+#: mg/templates/constructor/logo.html:69
 msgid "Upload"
 msgstr ""
 
@@ -84,27 +88,36 @@ msgstr ""
 msgid "Shape"
 msgstr ""
 
-#: mg/templates/constructor/logo-wizard.html:246
+#: mg/templates/constructor/logo-wizard.html:245
 msgid "Fill"
 msgstr ""
 
-#: mg/templates/constructor/logo-wizard.html:250
+#: mg/templates/constructor/logo-wizard.html:248
 msgid "Effects"
 msgstr ""
 
-#: mg/templates/constructor/logo-wizard.html:258
+#: mg/templates/constructor/logo-wizard.html:256
 msgid "Preview"
 msgstr ""
 
-#: mg/templates/constructor/logo-wizard.html:280
+#: mg/templates/constructor/logo-wizard.html:278
 msgid "Apply"
 msgstr ""
 
-#: mg/templates/constructor/logo-wizard.html:283
+#: mg/templates/constructor/logo-wizard.html:281
 msgid "Abort"
 msgstr ""
 
-#: mg/templates/constructor/logo.html:95
+#: mg/templates/constructor/domain.html:56
+msgid "[%CheckDomain%]"
+msgstr ""
+
+#: mg/templates/constructor/domain.html:59
+msgid "[%CheckingDomain%]"
+msgstr ""
+
+#: mg/templates/constructor/domain.html:84
+#: mg/templates/constructor/logo.html:115
 msgid "Previous"
 msgstr ""
 

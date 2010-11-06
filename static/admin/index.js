@@ -229,7 +229,7 @@ function expand_node(node, id)
 
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	Ext.form.Field.prototype.msgTarget = 'side';
+	Ext.form.Field.prototype.msgTarget = 'under';
 	adminmain = new Ext.Container({
 		autoDestroy: true,
 		cls: 'admin-main',
@@ -264,7 +264,7 @@ Ext.onReady(function() {
 			{
 				region: 'west',
 				split: true,
-				width: 200,
+				width: '20%',
 				maxSize: 400,
 				border: false,
 				autoScroll: true,
@@ -273,7 +273,7 @@ Ext.onReady(function() {
 			{
 				region: 'east',
 				split: true,
-				width: '30%',
+				width: '20%',
 				border: false,
 				autoScroll: true,
 				layout: 'fit',

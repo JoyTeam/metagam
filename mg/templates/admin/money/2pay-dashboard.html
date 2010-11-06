@@ -4,4 +4,11 @@
 <tr><td class="header">[%SecretCode%]</td><td>[%settings.secret%]</td></tr>
 </table>
 [%end%]
+<div class="text">
 <p><hook:admin.link href="constructor/project-2pay/[%project.uuid%]/settings" title="[%EditSettings%]" /></p>
+<p><hook:admin.link href="constructor/project-2pay/[%project.uuid%]" title="[%Update%]" /></p>
+</div>
+<table class="list">
+<tr class="header"><td>[%Id%]</td><td>[%Time2pay%]</td><td>[%OurTime%]</td><td>[%User%]</td><td>[%Amount%]</td><td>[%Chargeback%]</td></tr>
+[%foreach payment in payments%]<tr><td>[%payment.id%]</td><td>[%payment.date%]</td><td>[%payment.performed%]</td><td>[%payment.v1%]</td><td>[%payment.sum%]</td><td>[%payment.cancelled%]</td></tr>[%end%]
+</table>

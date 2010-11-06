@@ -6,12 +6,18 @@ import mg.constructor
 from mg.constructor import Project, ProjectList
 from uuid import uuid4
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
+from concurrence.dns import *
 import re
 import time
 import cgi
 import cStringIO
+import random
 
 re_bad_symbols = re.compile(r'.*[\'"<>&\\]')
+re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
+
+class DNSCheckError(Exception):
+    pass
 
 class ConstructorUtils(Module):
     def register(self):
@@ -228,7 +234,7 @@ class Constructor(Module):
         menu1 = []
         menu1.append({"href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation")})
         if len(perms):
-            menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Administration")})
+            menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Constructor administration")})
         menu1.append({"href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum")})
         menu1.append({"href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings")})
         menu1.append({"href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out")})
@@ -294,8 +300,8 @@ class Constructor(Module):
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")
-        for slice in slices_list:
-            self.debug("KEY: %s", slice.key)
+#        for slice in slices_list:
+#            self.debug("KEY: %s", slice.key)
         inst = self.app().inst
         valid_keys = inst.int_app.hooks.call("cassmaint.validate", slices_list)
         slices_list = [row for row in slices_list if row.key not in valid_keys]
@@ -313,8 +319,8 @@ class Constructor(Module):
             if len(row.columns):
                 self.warning("Unknown database key %s", row.key)
                 mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
-#       if len(mutations):
-#           self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
+#        if len(mutations):
+#            self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):
@@ -480,7 +486,7 @@ class ProjectSetupWizard(Wizard):
                     image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
                     if height != 75:
                         image_obj = image_obj.crop((0, (height - 75) / 2, 100, (height - 75) / 2 + 75))
-                self.store_logo(image_obj)
+                uri = self.store_logo(image_obj)
                 self.call("web.response_json_html", {"success": True, "logo_preview": uri})
             elif cmd == "prev":
                 self.config.set("state", "name")
@@ -502,42 +508,101 @@ class ProjectSetupWizard(Wizard):
             vars = {
                 "GameLogo": self._("Game logo"),
                 "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
-                "FromFile": self._("Alternative 1. Upload logo file"),
+                "FromFile": self._("Alternative 1. Upload pre-made logo file"),
                 "FromConstructor": self._("Alternative 2. Launch logo constructor"),
                 "wizard": self.uuid,
                 "logo": self.config.get("logo"),
                 "ImageFormat": self._("Upload image: 100x100, without animation"),
                 "UploadNote": self._("Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."),
-                "LaunchConstructor": self._("Launch constructor"),
+                "LaunchConstructor": self._("Launch the constructor"),
             }
             self.call("admin.response_template", "constructor/logo.html", vars)
         elif state == "domain":
+            main = self.app().inst.appfactory.get_by_tag("main")
+            ns1 = main.config.get("dns.ns1")
+            ns2 = main.config.get("dns.ns2")
             if cmd == "prev":
                 self.config.set("state", "logo")
                 self.config.store()
                 self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
-            fields = [
-                {
-                    "type": "header",
-                    "html": self._("Domain for your game"),
-                },
-                {
-                    "type": "html",
-                    "html": self._("<p>Now you have to assign a domain name to your game. Domain name is a very important part of your game marketing. Eye-candy names are more attractive. We don't offer free domain names &mdash; you have to register it manually.</p><p><strong>Register a domain name in any zone (ex: YOURDOMAIN.COM), set domain servers ns1.mmoconstructor.com, ns2.mmoconstructor.com and type your domain name without www here (ex: YOURDOMAIN.COM)</strong></p>"),
-                },
-                {
-                    "name": "domain",
-                    "label": self._("Domain name for your game (without www)"),
-                    "value": self.config.get("domain"),
-                },
-            ]
-            buttons = [
-                {"text": self._("Previous"), "url": "admin-wizard/call/%s/prev" % self.uuid},
-                {"text": self._("Next"), "url": "admin-wizard/call/%s/domain-submit" % self.uuid}
-            ]
-            self.call("admin.form", fields=fields, buttons=buttons)
+            elif cmd == "check":
+                domain = req.param("domain").strip().lower()
+                errors = {}
+                if domain == "":
+                    errors["domain"] = self._("Specify your domain name")
+                elif not re_domain.match(domain):
+                    errors["domain"] = self._("Invalid domain name")
+                elif len(domain) > 63:
+                    errors["domain"] = self._("Domain name is too long")
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                try:
+                    servers = self.dns_servers(domain)
+                except DNSCheckError as e:
+                    self.call("web.response_json", {"success": False, "errors": {"domain": unicode(e)}})
+                if ns1 in servers and ns2 in servers and len(servers) == 2:
+                    self.call("admin.response", self._("DNS check completed successfully"), {})
+                self.call("web.response_json", {"success": False, "errors": {"domain": self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)}})
+            vars = {
+                "GameDomain": self._("Domain for your game"),
+                "HereYouCan": self._("<p>We don't offer free domain names &mdash; you have to register it manually.</p>"),
+                "AlreadyRegistered": self._("Step 1. Alternative 1. Register domain yourself"),
+                "DomainSettings": "<ul><li>%s</li><li>%s</li><li>%s</li></ul>" % (self._("Register a new domain (or take any previously registered)"), self._("Specify the following DNS servers for your domain: <strong>{0}</strong> and <strong>{1}</strong>").format(ns1, ns2), self._("You may use any level domains")),
+                "RegisterWizard": self._("Step 1. Alternative 2. Let us register a domain for you"),
+                "wizard": self.uuid,
+                "LaunchWizard": self._("Launch the wizard"),
+                "DomainName": self._("Domain name (without www)"),
+                "CheckDomain": self._("Check domain and assign it to the game"),
+                "CheckingDomain": self._("Checking domain..."),
+                "DomainCheck": self._("Step 2. Check your configured domain and link it with your game"),
+            }
+            self.call("admin.response_template", "constructor/domain.html", vars)
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
+
+    def dns_servers(self, domain):
+        main = self.app().inst.appfactory.get_by_tag("main")
+        ns1 = main.config.get("dns.ns1")
+        ns2 = main.config.get("dns.ns2")
+        domains = domain.split(".")
+        domains.reverse()
+        game_domain = domains.pop()
+        checkdomain = None
+        configtext = None
+        dnsservers = None
+        for domain in domains:
+            checkdomain = domain + "." + checkdomain if checkdomain else domain
+            engine = QueryEngine(configtext=configtext)
+            result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
+            ips = []
+            names = []
+            for rr in result[3]:
+                names.append(rr[0])
+                for rr_a in rr[2]:
+                    ips.append(rr_a[1])
+            if not len(ips):
+                result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+                if len(result[3]):
+                    raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
+                elif dnsservers:
+                    raise DNSCheckError(self._("Domain {0} was not found by {1}. Check your configuration and try again in several hours &mdash; there can be caching issues").format(checkdomain, ", ".join(dnsservers)))
+                else:
+                    raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
+            configtext = "\n".join(["nameserver %s" % ip for ip in ips])
+            dnsservers = names
+            if ns1 in names or ns2 in names:
+                raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
+        checkdomain = game_domain + "." + checkdomain
+        engine = QueryEngine(configtext=configtext)
+        result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
+        servers = result[3]
+        if not len(servers):
+            result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+            if len(result[3]):
+                raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
+            else:
+                raise DNSCheckError(self._("Domain {0} was not found by {1}. Check your configuration and try again in several hours &mdash; there can be caching issues").format(checkdomain, ", ".join(dnsservers)))
+        return servers
 
     def constructed(self, logo, arg):
         self.config.set("state", "logo")
@@ -577,3 +642,4 @@ class ProjectSetupWizard(Wizard):
         uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
         self.config.set("logo", uri)
         self.config.store()
+        return uri

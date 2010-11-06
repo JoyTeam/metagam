@@ -2,11 +2,7 @@
 <h1>[%GameLogo%]</h1>
 <p>[%HereYouCan%]</p>
 <div id="logo_preview"></div>
-<h2>[%FromFile%]</h2>
-<p>[%UploadNote%]</p>
-<div id="file_form"></div>
-<h2>[%FromConstructor%]</h2>
-<div id="constructor_form"></div>
+<div id="variants"></div>
 <div id="navi"></div>
 </div>
 
@@ -34,33 +30,44 @@ function show_logo(uri)
 	});
 }
 wait(['admin/FileUploadField.js'], function() {
-	var file_form = new Ext.FormPanel({
-		renderTo: 'file_form',
-		cls: 'bottom-form',
+
+	new Ext.Panel({
+		renderTo: 'variants',
 		border: false,
-		layout: 'form',
-		fileUpload: true,
-		labelAlign: 'top',
-		waitTitle: gt.gettext('Please wait...'),
-		items: [{
+		layout: 'table',
+		autoHeight: true,
+		defaults: {
+			cellCls: 'form-table',
 			border: false,
-			items: [{
+			cls: 'bottom-form',
+		},
+		layoutConfig: {
+			columns: 2
+		},
+		items: [{
+			defaults: {
 				border: false,
+			},
+			items: [{
+				html: '<h2>[%FromFile%]</h2><p>[%UploadNote%]</p>',
+			}, {
+				id: 'file-form',
+				fileUpload: true,
 				layout: 'form',
-				items: {
-					width: 400,
+				labelAlign: 'top',
+				waitTitle: gt.gettext('Please wait...'),
+				xtype: 'form',
+				items: [{
+					border: false,
+					width: 200,
 					fieldLabel: '[%ImageFormat%]',
 					xtype: 'fileuploadfield',
 					name: 'image',
-					anchor: '-30',
 					border: false,
-				}
-			}, {
-				border: false,
-				items: {
+				}, {
 					xtype: 'button',
 					text: gt.gettext('Upload'),
-					handler: function() {file_form.getForm().submit({
+					handler: function() {Ext.getCmp('file-form').getForm().submit({
 						url: '/admin-wizard/call/[%wizard%]/upload',
 						waitMsg: gt.gettext('Uploading data...'),
 						success: function(f, action) {
@@ -81,7 +88,20 @@ wait(['admin/FileUploadField.js'], function() {
 							}
 						},
 					})}
-				}
+				}]
+			}],
+		}, {
+			defaults: {
+				border: false,
+			},
+			items: [{
+				html: '<h2>[%FromConstructor%]</h2>',
+			}, {
+				items: [{
+					xtype: 'button',
+					text: '[%LaunchConstructor%]',
+					handler: function() { adm('wizard/call/[%wizard%]/constructor') }
+				}]
 			}]
 		}]
 	});
@@ -97,16 +117,6 @@ wait(['admin/FileUploadField.js'], function() {
 		}, {
 			text: gt.gettext('Next'),
 			handler: function() { adm('wizard/call/[%wizard%]/next') }
-		}]
-	});
-	new Ext.Panel({
-		renderTo: 'constructor_form',
-		cls: 'bottom-form',
-		border: false,
-		items: [{
-			xtype: 'button',
-			text: '[%LaunchConstructor%]',
-			handler: function() { adm('wizard/call/[%wizard%]/constructor') }
 		}]
 	});
 });

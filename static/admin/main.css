@@ -27,7 +27,7 @@
 .logo-demo-2 { padding: 20px; }
 #background_preview { margin: 44px 0px 0px 20px; border: solid 1px #e0e0e0; }
 #logo_preview { margin: 20px 0px 20px 0px; border: solid 1px #e0e0e0; }
-.form-table { padding: 5px 15px 0px 0px; }
+.form-table { padding: 5px 25px 0px 0px; vertical-align: top }
 .red { background: red }
 .red * { background: '#ff8080' }
 .multicolumn-cell { vertical-align: top }

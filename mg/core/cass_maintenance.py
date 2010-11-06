@@ -41,7 +41,7 @@ class CassandraMaintenance(Module):
         valid_keys = set()
         for slice in slices_list:
             key = slice.key
-            self.debug(key)
+            #self.debug(key)
             for parser in parsers:
                 if parser[1] == 1:
                     m = parser[0].match(key)
@@ -52,7 +52,7 @@ class CassandraMaintenance(Module):
                             data = json.loads(slice.columns[0].column.value)
                         except (ValueError, IndexError):
                             data = None
-                        if data:
+                        if data and type(data) == dict:
                             valid_keys.add(key)
                             obj = parser[2](db, uuid, data, dbprefix=prefix)
                             index_values = obj.index_values()

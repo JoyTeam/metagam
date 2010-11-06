@@ -15,6 +15,7 @@ class ProjectDashboard(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("headmenu-admin-constructor.user-dashboard", self.headmenu_user_dashboard)
+        self.rhook("ext-admin-constructor.dns", self.ext_dns)
 
     def menu_root_index(self, menu):
         menu.append({"id": "constructor.index", "text": self._("Constructor")})
@@ -44,6 +45,27 @@ class ProjectDashboard(Module):
         if req.has_access("constructor.projects"):
             menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
+        if req.has_access("constructor.dns"):
+            menu.append({"id": "constructor/dns", "text": self._("DNS settings"), "leaf": True})
+
+    def ext_dns(self):
+        req = self.req()
+        ns1 = req.param("ns1")
+        ns2 = req.param("ns2")
+        if req.param("ok"):
+            config = self.app().config
+            config.set("dns.ns1", ns1)
+            config.set("dns.ns2", ns2)
+            config.store()
+            self.call("admin.response", self._("DNS settings stored"), {})
+        else:
+            ns1 = self.conf("dns.ns1")
+            ns2 = self.conf("dns.ns2")
+        fields = [
+            {"name": "ns1", "label": self._("DNS server 1"), "value": ns1},
+            {"name": "ns2", "label": self._("DNS server 2"), "value": ns2},
+        ]
+        self.call("admin.form", fields=fields)
 
     def ext_user_find(self):
         self.call("session.require_permission", "constructor.users")
@@ -154,4 +176,5 @@ class ProjectDashboard(Module):
     def permissions_list(self, perms):
         perms.append({"id": "constructor.users", "name": self._("Constructor users")})
         perms.append({"id": "constructor.projects", "name": self._("Constructor projects")})
+        perms.append({"id": "constructor.dns", "name": self._("Constructor DNS settings")})
 

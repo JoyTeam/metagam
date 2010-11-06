@@ -130,6 +130,7 @@ class AdminInterface(Module):
     def response_params(self):
         return {
             "ver": self.call("core.ver"),
+            "success": True,
         }
 
     def advice(self, *args):

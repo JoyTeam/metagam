@@ -1,0 +1,88 @@
+<div class="text">
+<h1>[%GameDomain%]</h1>
+[%HereYouCan%]
+<div id="variants"></div>
+<div id="navi"></div>
+</div>
+
+<script type="text/javascript">
+new Ext.Panel({
+	renderTo: 'variants',
+	border: false,
+	layout: 'table',
+	autoHeight: true,
+	defaults: {
+		cellCls: 'form-table',
+		border: false,
+		cls: 'bottom-form',
+	},
+	layoutConfig: {
+		columns: 2
+	},
+	items: [{
+		html: '<h2>[%AlreadyRegistered%]</h2>[%DomainSettings%]',
+	}, {
+		defaults: {
+			border: false,
+		},
+		items: [{
+			html: '<h2>[%RegisterWizard%]</h2>',
+		}, {
+			items: [{
+				xtype: 'button',
+				text: '[%LaunchWizard%]',
+				handler: function() { adm('wizard/call/[%wizard%]/register') }
+			}]
+		}]
+	}, {
+		colspan: 2,
+		html: '<h2>[%DomainCheck%]</h2>',
+	}, {
+		colspan: 2,
+		id: 'check-form',
+		layout: 'form',
+		labelAlign: 'top',
+		waitTitle: gt.gettext('Please wait...'),
+		xtype: 'form',
+		items: [{
+			border: false,
+			xtype: 'textfield',
+			width: 400,
+			fieldLabel: '[%DomainName%]',
+			name: 'domain',
+			border: false,
+		}, {
+			xtype: 'button',
+			text: gt.gettext('[%CheckDomain%]'),
+			handler: function() {Ext.getCmp('check-form').getForm().submit({
+				url: '/admin-wizard/call/[%wizard%]/check',
+				waitMsg: gt.gettext('[%CheckingDomain%]'),
+				success: function(f, action) {
+					adm_success(action.response, {
+						func: "admin-wizard/call/[%wizard%]/check"
+					});
+				},
+				failure: function(f, action) {
+					if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+						if (action.result.errormsg) {
+							Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+						}
+					} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+						Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+					}
+				},
+			})}
+		}]
+	}]
+});
+new Ext.Panel({
+	renderTo: 'navi',
+	cls: 'bottom-form',
+	border: false,
+	layout: 'form',
+	buttons: [{
+		text: gt.gettext('Previous'),
+		handler: function() { adm('wizard/call/[%wizard%]/prev') }
+	}]
+});
+</script>

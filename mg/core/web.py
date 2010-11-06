@@ -21,7 +21,7 @@ import time
 import os
 import random
 
-ver = 1
+ver = 2
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')

@@ -128,6 +128,7 @@ class Payment2pay(CassandraObject):
     _indexes = {
         "all": [[], "performed"],
         "user": [["user"], "performed"],
+        "date": [[], "date"],
     }
 
     def __init__(self, *args, **kwargs):
@@ -533,7 +534,7 @@ class Money(Module):
             return [self._("Settings editor"), "constructor/project-2pay/%s" % uuid]
 
     def objclasses_list(self, objclasses):
-        objclasses["Money2paySettings"] = (Money2paySettings,)
+        objclasses["Money2paySettings"] = (Money2paySettings, None)
         objclasses["Account"] = (Account, AccountList)
         objclasses["AccountLock"] = (AccountLock, AccountLockList)
         objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
@@ -551,6 +552,19 @@ class Money(Module):
         if app is None:
             self.call("web.not_found")
         if cmd == "":
+            payments = []
+            list = self.objlist(Payment2payList, query_index="date", query_reversed=True)
+            list.load(silent=True)
+            for pay in list:
+                payments.append({
+                    "id": pay.uuid,
+                    "performed": pay.get("performed"),
+                    "date": pay.get("date"),
+                    "user": pay.get("user"),
+                    "v1": cgi.escape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
+                    "sum": pay.get("sum"),
+                    "cancelled": pay.get("cancelled")
+                })
             vars = {
                 "project": {
                     "uuid": uuid
@@ -558,6 +572,14 @@ class Money(Module):
                 "EditSettings": self._("Edit settings"),
                 "PaymentURL": self._("Payment URL"),
                 "SecretCode": self._("Secret code"),
+                "Time2pay": self._("2pay time"),
+                "OurTime": self._("Our time"),
+                "User": self._("User"),
+                "Amount": self._("Amount"),
+                "Chargeback": self._("Chargeback"),
+                "payments": payments,
+                "Update": self._("Update"),
+                "Id": self._("Id"),
             }
             try:
                 settings = self.obj(Money2paySettings, "1")
@@ -633,6 +655,7 @@ class Money(Module):
                                 result = 0
                             except ObjectNotFoundException:
                                 payment = self.obj(Payment2pay, id, data={})
+                                payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
@@ -656,7 +679,7 @@ class Money(Module):
                             if payment.get("cancelled"):
                                 result = 0
                             else:
-                                payment.set("cancelled", True)
+                                payment.set("cancelled", self.now())
                                 member = MemberMoney(self.app(), payment.get("user"))
                                 member.force_debit(payment.get("sum"), "MM$", "2pay-chargeback", payment_id=id)
                                 payment.store()

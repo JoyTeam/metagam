@@ -82,14 +82,12 @@ class LogoWizard(Wizard):
         result_image = Image.new("RGBA", (100, 75), (255, 255, 255))
         if layers:
             for layer in layers:
-                print "rendering %s - %s" % (layer["shape"], layer["filler"])
                 shape_info = shapes[layer["shape"]]
                 if shape_info.get("uri"):
                     shape_mask = self.download_image(shape_info["uri"])
                 else:
                     shape_mask = self.open_image("shapes", shape_info["key"])
                 if layer.get("smooth"):
-                    print "smoothing mask"
                     shape_mask = ImageEnhance.Sharpness(shape_mask).enhance(0)
                     shape_mask = ImageEnhance.Sharpness(shape_mask).enhance(0)
                     shape_mask = ImageEnhance.Sharpness(shape_mask).enhance(0)
@@ -112,11 +110,6 @@ class LogoWizard(Wizard):
         uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
         self.config.set("preview", uri)
         return uri
-
-    def finish(self):
-        image = self.download_image(self.config.get("preview"))
-        self.result(image)
-        super(LogoWizard, self).finish()
 
     def request(self, cmd):
         req = self.req()
@@ -256,7 +249,6 @@ class LogoWizard(Wizard):
                     layers.append({"shape": shape, "filler": filler, "smooth": smooth})
                 else:
                     add_layer = False
-                print "layer %d - shape %s - filler %s - smooth %s" % (i, shape, filler, smooth)
                 i += 1
             if len(errors):
                 self.call("web.response_json_html", {"success": False, "errors": errors})
@@ -267,7 +259,8 @@ class LogoWizard(Wizard):
         elif cmd == "apply":
             if self.config.get("preview"):
                 target = self.config.get("target")
-                self.finish()
+                image = self.download_image(self.config.get("preview"))
+                self.result(image)
                 if target[0] == "wizard":
                     self.call("admin.redirect", "wizard/call/%s" % target[1])
                 else:
