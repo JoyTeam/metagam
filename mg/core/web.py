@@ -598,9 +598,12 @@ class Web(Module):
                 raise
             except BaseException as e:
                 self.error(traceback.format_exc())
-                res = "file=<strong>%s</strong><br />token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(filename), cgi.escape(tokens[i]), cgi.escape(str(e)))
-            tokens[i] = str(res)
+                res = "token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(tokens[i]), cgi.escape(str(e)))
+            tokens[i] = res
             i = i + 2
+        for i in range(0, len(tokens)):
+            if type(tokens[i]) == unicode:
+                tokens[i] = tokens[i].encode("utf-8")
         return "".join(tokens)
 
     def web_parse_hook_layout(self, hook, vars):

@@ -1,6 +1,0 @@
-[%if may_give%]<p><hook:admin.link href="money/give/[%member.uuid%]" title="[%GiveMoney%]" /> &middot; <hook:admin.link href="money/take/[%member.uuid%]" title="[%TakeMoney%]" /></p>[%end%]
-
-<table class="list">
-<tr class="header"><td>[%AccountId%]</td><td>[%Currency%]</td><td>[%Balance%]</td><td>[%Locked%]</td><td>[%LowLimit%]</td></tr>
-[%foreach account in accounts%]<tr><td><hook:admin.link href="money/account/[%account.uuid%]" title="[%account.uuid%]" /></td><td>[%account.currency%]</td><td>[%account.balance%]</td><td>[%account.locked%]</td><td>[%account.low_limit%]</td></tr>[%end%]
-</table>

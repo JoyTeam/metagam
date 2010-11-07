@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-07 01:04+0300\n"
-"PO-Revision-Date: 2010-11-04 17:05+0300\n"
+"POT-Creation-Date: 2010-11-08 00:29+0300\n"
+"PO-Revision-Date: 2010-11-07 22:36+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -22,30 +22,34 @@ msgstr ""
 msgid "Browse..."
 msgstr "Обзор..."
 
-#: static/admin/form.js:126
+#: static/admin/form.js:130
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/admin/form.js:135 static/admin/form.js:138
+#: static/admin/form.js:139 static/admin/form.js:142
 #: mg/templates/constructor/logo-wizard.html:63
 #: mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:68
-#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/domain.html:24
+#: mg/templates/constructor/domain.html:27
+#: mg/templates/constructor/domain-wizard.html:32
+#: mg/templates/constructor/domain-wizard.html:35
 #: mg/templates/constructor/logo.html:84 mg/templates/constructor/logo.html:87
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/admin/form.js:138 mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:71
+#: static/admin/form.js:142 mg/templates/constructor/logo-wizard.html:66
+#: mg/templates/constructor/domain.html:27
+#: mg/templates/constructor/domain-wizard.html:35
 #: mg/templates/constructor/logo.html:87
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: static/admin/form.js:156 mg/templates/constructor/logo-wizard.html:80
+#: static/admin/form.js:160 mg/templates/constructor/logo-wizard.html:80
 #: mg/templates/constructor/logo-wizard.html:119
 #: mg/templates/constructor/logo-wizard.html:230
-#: mg/templates/constructor/domain.html:45
+#: mg/templates/constructor/domain.html:66
+#: mg/templates/constructor/domain-wizard.html:73
 #: mg/templates/constructor/logo.html:58
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
@@ -107,21 +111,22 @@ msgid "Apply"
 msgstr "Применить"
 
 #: mg/templates/constructor/logo-wizard.html:281
-msgid "Abort"
-msgstr "Прервать"
+#: mg/templates/constructor/domain-wizard.html:254
+msgid "Abort wizard"
+msgstr "Прервать мастер"
 
-#: mg/templates/constructor/domain.html:56
-msgid "[%CheckDomain%]"
-msgstr ""
-
-#: mg/templates/constructor/domain.html:59
-msgid "[%CheckingDomain%]"
-msgstr ""
-
-#: mg/templates/constructor/domain.html:84
+#: mg/templates/constructor/domain.html:90
 #: mg/templates/constructor/logo.html:115
 msgid "Previous"
 msgstr "Назад"
+
+#: mg/templates/constructor/domain-wizard.html:117
+msgid "Check availability"
+msgstr "Проверить доступность"
+
+#: mg/templates/constructor/domain-wizard.html:155
+msgid "Buy MM$"
+msgstr "Купить MM$"
 
 #: mg/templates/constructor/offer-ru.html:255
 msgid "I agree to the terms and conditions"
@@ -130,6 +135,13 @@ msgstr "Я согласен с условиями соглашения"
 #: mg/templates/constructor/offer-ru.html:258
 msgid "I don't agree"
 msgstr "Я не согласен"
+
+#, fuzzy
+#~ msgid "[%RegisterDomain%]"
+#~ msgstr "Регистрация"
+
+#~ msgid "Abort"
+#~ msgstr "Прервать"
 
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
@@ -175,6 +187,3 @@ msgstr "Я не согласен"
 
 #~ msgid "Login"
 #~ msgstr "Вход"
-
-#~ msgid "Register"
-#~ msgstr "Регистрация"

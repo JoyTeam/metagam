@@ -67,7 +67,7 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web", "mg.admin.AdminInterface", "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession",
             "mg.core.cluster.Cluster", "mg.core.auth.Authorization", "mg.core.emails.Email", "mg.core.queue.Queue",
             "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards", "mg.constructor.mod.ConstructorProjectAdmin",
-            "mg.constructor.mod.ConstructorUtils"])
+            "mg.constructor.mod.ConstructorUtils", "mg.constructor.domains.Domains"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("project.title", self.project_title)
@@ -118,7 +118,8 @@ class Constructor(Module):
         self.rdep(["mg.core.web.Web", "mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards",
-            "mg.constructor.mod.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard"])
+            "mg.constructor.mod.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
+            "mg.constructor.domains.Domains"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
@@ -543,6 +544,12 @@ class ProjectSetupWizard(Wizard):
                 if ns1 in servers and ns2 in servers and len(servers) == 2:
                     self.call("admin.response", self._("DNS check completed successfully"), {})
                 self.call("web.response_json", {"success": False, "errors": {"domain": self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)}})
+            elif cmd == "register":
+                wizs = self.call("wizards.find", "domain-reg")
+                if len(wizs):
+                    self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
+                wiz = self.call("wizards.new", "mg.constructor.domains.DomainRegWizard", target=["wizard", self.uuid, "domain_registered", ""], redirect_fail="wizard/call/%s" % self.uuid)
+                self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
             vars = {
                 "GameDomain": self._("Domain for your game"),
                 "HereYouCan": self._("<p>We don't offer free domain names &mdash; you have to register it manually.</p>"),
@@ -550,21 +557,28 @@ class ProjectSetupWizard(Wizard):
                 "DomainSettings": "<ul><li>%s</li><li>%s</li><li>%s</li></ul>" % (self._("Register a new domain (or take any previously registered)"), self._("Specify the following DNS servers for your domain: <strong>{0}</strong> and <strong>{1}</strong>").format(ns1, ns2), self._("You may use any level domains")),
                 "RegisterWizard": self._("Step 1. Alternative 2. Let us register a domain for you"),
                 "wizard": self.uuid,
-                "LaunchWizard": self._("Launch the wizard"),
+                "LaunchWizard": self._("Launch domain registration wizard"),
                 "DomainName": self._("Domain name (without www)"),
                 "CheckDomain": self._("Check domain and assign it to the game"),
                 "CheckingDomain": self._("Checking domain..."),
                 "DomainCheck": self._("Step 2. Check your configured domain and link it with your game"),
+                "domain_name": self.config.get("domain"),
             }
             self.call("admin.response_template", "constructor/domain.html", vars)
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
+
+    def domain_registered(self, domain, arg):
+        self.config.set("domain", domain)
+        self.config.store()
 
     def dns_servers(self, domain):
         main = self.app().inst.appfactory.get_by_tag("main")
         ns1 = main.config.get("dns.ns1")
         ns2 = main.config.get("dns.ns2")
         domains = domain.split(".")
+        if "www" in domains:
+            raise DNSCheckError(self._("Domain name can't contain 'www'"))
         domains.reverse()
         game_domain = domains.pop()
         checkdomain = None
@@ -585,7 +599,7 @@ class ProjectSetupWizard(Wizard):
                 if len(result[3]):
                     raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
                 elif dnsservers:
-                    raise DNSCheckError(self._("Domain {0} was not found by {1}. Check your configuration and try again in several hours &mdash; there can be caching issues").format(checkdomain, ", ".join(dnsservers)))
+                    raise DNSCheckError(self._("Domain {0} was not found by {1}. Either domain is not registered or DNS data was not updated yet. It may take several hours. Try again later, please").format(checkdomain, ", ".join(dnsservers)))
                 else:
                     raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
             configtext = "\n".join(["nameserver %s" % ip for ip in ips])
@@ -601,7 +615,7 @@ class ProjectSetupWizard(Wizard):
             if len(result[3]):
                 raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
             else:
-                raise DNSCheckError(self._("Domain {0} was not found by {1}. Check your configuration and try again in several hours &mdash; there can be caching issues").format(checkdomain, ", ".join(dnsservers)))
+                raise DNSCheckError(self._("Domain {0} was not found by {1}. Either domain is not registered or DNS data was not updated yet. It may take several hours. Try again later, please").format(checkdomain, ", ".join(dnsservers)))
         return servers
 
     def constructed(self, logo, arg):

@@ -1,0 +1,259 @@
+<div class="text">
+<h1>[%DomainWizard%]</h1>
+</div>
+<div id="form"></div>
+<div id="navi"></div>
+
+<script type="text/javascript">
+var domain_price = 0;
+function submit_form(form_id, func, msg)
+{
+	var url = '/' + func;
+	var form = Ext.getCmp(form_id);
+	form.getForm().submit({
+		url: url,
+		func: func,
+		waitMsg: msg,
+		success: function(f, action) {
+			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
+				if (res)
+					update_stage(res);
+			}
+		},
+		failure: function(f, action) {
+			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
+				if (res)
+					update_stage(res);
+			}
+			if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+				if (action.result.errormsg) {
+					Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+				}
+			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+			}
+		},
+	});
+}
+function update_stage(res)
+{
+	if (res.content)
+		adm_response(res);
+	if (res.domain_name)
+		Ext.getCmp('domain-available-text').update(sprintf('<h1>[%DomainAvailable%]</h1><div>[%RegistrationPrice%]</div>', res.domain_name, res.price_text));
+	if (res.price)
+		domain_price = res.price;
+	if (res.balance != undefined) {
+		balance = Ext.getCmp('domain-available-balance');
+		if (res.balance >= domain_price) {
+			balance.removeClass('not-enough');
+			balance.addClass('enough');
+			Ext.getCmp('domain-pay-button').hide();
+			Ext.getCmp('domain-register-button').show();
+		} else {
+			balance.removeClass('enough');
+			balance.addClass('not-enough');
+			Ext.getCmp('domain-register-button').hide();
+			Ext.getCmp('domain-pay-button').show();
+		}
+		balance.update(sprintf('[%yourBalanceIs%]', res.balance_text));
+	}
+	if (res.stage == 'check') {
+		Ext.getCmp('domain-available').hide()
+	} else if (res.stage == 'register') {
+		Ext.getCmp('domain-available').show()
+	}
+}
+new Ext.FormPanel({
+	renderTo: 'form',
+	border: false,
+	id: 'wizard-form',
+	waitTitle: gt.gettext('Please wait...'),
+	labelAlign: 'top',
+	autoHeight: true,
+	layout: 'table',
+	timeout: 200,
+	defaults: {
+		border: false,
+	},
+	layoutConfig: {
+		columns: 2
+	},
+	items: [{
+		cellCls: 'form-table',
+		layout: 'form',
+		items: {
+			border: false,
+			fieldLabel: '[%DomainName%]',
+			xtype: 'textfield',
+			name: 'domain_name',
+			emptyText: '[%EnterDomain%]',
+			value: '[%domain_name%]',
+			width: 150,
+		}
+	}, {
+		cellCls: 'form-table',
+		layout: 'form',
+		items: {
+			border: false,
+			fieldLabel: '',
+			xtype: 'combo',
+			forceSelection: true,
+			triggerAction: 'all',
+			store: [[%foreach t in tlds%]['[%t.code%]', '[%t.value%]'][%unless t.lst%],[%end%][%end%]],
+			value: '[%tld%]',
+			hiddenName: 'tld',
+			width: 80,
+		}
+	}, {
+		colspan: 2,
+		cellCls: 'form-table',
+		layout: 'form',
+		items: {
+			border: false,
+			xtype: 'button',
+			text: gt.gettext('Check availability'),
+			handler: function() { submit_form('wizard-form', 'admin-wizard/call/[%wizard%]/check', '[%CheckingAvailability%]') }
+		}
+	}, {
+		id: 'domain-available',
+		hidden: true,
+		colspan: 2,
+		cellCls: 'form-table',
+		cls: 'text',
+		items: [{
+			id: 'domain-available-text',
+			border: false,
+		}, {
+			border: false,
+			layout: 'table',
+			autoHeight: true,
+			layoutConfig: {
+				columns: 2
+			},
+			defaults: {
+				border: false,
+			},
+			items: [{
+				id: 'domain-available-balance',
+				cellCls: 'form-table',
+			}, {
+				cellCls: 'form-table',
+				border: false,
+				xtype: 'button',
+				text: '[%UpdateBalance%]',
+				handler: function() { submit_form('wizard-form', 'admin-wizard/call/[%wizard%]/balance', '[%UpdatingBalance%]') }
+			}, {
+				colspan: 2,
+				id: 'domain-pay-button',
+				cellCls: 'form-table',
+				items: [{
+					border: false,
+					xtype: 'button',
+					text: gt.gettext('Buy MM$'),
+					handler: function() { submit_form('wizard-form', 'admin-wizard/call/[%wizard%]/buymoney') }
+				}],
+			}, {
+				colspan: 2,
+				id: 'domain-register-button',
+				cellCls: 'form-table',
+				layout: 'form',
+				items: [{
+					id: 'radio-owner-user',
+					xtype: 'radio',
+					hideLabel: true,
+					boxLabel: '[%MakeMeTheOwner%]',
+					name: 'owner',
+					inputValue: 'user',
+				}, {
+					border: false,
+					id: 'personal-data',
+					hidden: true,
+					layout: 'form',
+					items: [{
+						border: false,
+						fieldLabel: '[%PersonR%]',
+						xtype: 'textfield',
+						name: 'person-r',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%Person%]',
+						xtype: 'textfield',
+						name: 'person',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%Passport%]',
+						xtype: 'textfield',
+						name: 'passport',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%BirthDate%]',
+						xtype: 'textfield',
+						name: 'birth-date',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%AddressR%]',
+						xtype: 'textfield',
+						name: 'address-r',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%PAddr%]',
+						xtype: 'textfield',
+						name: 'p-addr',
+						width: 300,
+					}, {
+						border: false,
+						fieldLabel: '[%Phone%]',
+						xtype: 'textfield',
+						name: 'phone',
+						width: 300,
+					}],
+				}, {
+					id: 'radio-owner-admin',
+					xtype: 'radio',
+					name: 'owner',
+					inputValue: 'admin',
+					hideLabel: true,
+					boxLabel: '[%BeOwnerYourself%]',
+				}, {
+					id: 'register-button',
+					xtype: 'button',
+					text: '[%RegisterDomain%]',
+					disabled: true,
+					handler: function() { submit_form('wizard-form', 'admin-wizard/call/[%wizard%]/register', '[%RegisteringDomain%]') }
+				}]
+			}]
+		}]
+	}]
+});
+Ext.getCmp('radio-owner-user').on('check', function(cb, checked) {
+	if (checked) {
+		Ext.getCmp('register-button').enable()
+		Ext.getCmp('personal-data').show()
+	}
+});
+Ext.getCmp('radio-owner-admin').on('check', function(cb, checked) {
+	if (checked) {
+		Ext.getCmp('register-button').enable()
+		Ext.getCmp('personal-data').hide()
+	}
+});
+new Ext.Panel({
+	renderTo: 'navi',
+	cls: 'bottom-form',
+	border: false,
+	layout: 'form',
+	buttons: [{
+		text: gt.gettext('Abort wizard'),
+		handler: function() { adm('wizard/call/[%wizard%]/abort') }
+	}]
+});
+</script>
+

@@ -33,3 +33,10 @@
 .multicolumn-cell { vertical-align: top }
 #logo-layers { margin: 20px 0px 10px 0px }
 .logo-image { width: 100px; height: 75px; border: solid 1px #e0e0e0; }
+.enough { color: #208020 }
+.not-enough { color: #ff4040 }
+table.menu { margin: 10px 0px 10px 0px }
+table.menu td { padding: 5px; border: solid 1px #c0c0c0; vertical-align: top }
+table.menu tr.header td { background-color:#f0f0f0; padding: 5px; color: #000000; font-weight: bold }
+table.menu td.header { background-color:#f0f0f0; color: #000000; font-weight: bold }
+table.menu td.subheader { font-weight: bold; font-size: 16px }

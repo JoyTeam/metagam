@@ -43,6 +43,9 @@ class Account(CassandraObject):
     def locked(self):
         return float(self.get("locked"))
 
+    def available(self):
+        return self.balance() - self.locked()
+
     # credit and debit
 
     def credit(self, amount, currency_info):
@@ -52,7 +55,7 @@ class Account(CassandraObject):
         self.set("balance", currency_info["format"] % (self.balance() - amount))
 
     def debit(self, amount, currency_info):
-        if self.balance() - self.locked() - amount < self.low_limit():
+        if self.available() - amount < self.low_limit():
             return False
         self.force_debit(amount, currency_info)
         return True
@@ -69,7 +72,7 @@ class Account(CassandraObject):
         self.set("locked", currency_info["format"] % val)
 
     def lock(self, amount, currency_info):
-        if self.balance() - self.locked() - amount < self.low_limit():
+        if self.available() - amount < self.low_limit():
             return False
         self.force_lock(amount, currency_info)
         return True
@@ -83,6 +86,7 @@ class AccountList(CassandraObjectList):
 class AccountLock(CassandraObject):
     _indexes = {
         "account": [["account"], "created"],
+        "member": [["member"], "created"],
     }
 
     def __init__(self, *args, **kwargs):
@@ -161,6 +165,11 @@ class MemberMoney(object):
         list = self.app.objlist(AccountList, query_index="member", query_equal=self.member)
         list.load(silent=True)
         self._accounts = list
+        return list
+
+    def locks(self):
+        list = self.app.objlist(AccountLockList, query_index="member", query_equal=self.member)
+        list.load(silent=True)
         return list
 
     def account(self, currency, create=False):
@@ -298,19 +307,74 @@ class MemberMoney(object):
             op1.store()
             op2.store()
             return True
+
+    def lock(self, amount, currency, description, **kwargs):
+        self.description_validate(description, kwargs)
+        currencies = {}
+        self.app.hooks.call("currencies.list", currencies)
+        currency_info = currencies.get(currency)
+        if currency_info is None:
+            raise RuntimeError("Invalid currency")
+        with self.app.lock(["MemberMoney.%s" % self.member]):
+            account = self.account(currency, False)
+            if not account:
+                return None
+            lock = self.app.obj(AccountLock)
+            lock.set("member", self.member)
+            lock.set("account", account.uuid)
+            lock.set("amount", currency_info["format"] % amount)
+            lock.set("currency", currency)
+            lock.set("description", description)
+            lock.set("created", self.app.now())
+            for key, val in kwargs.iteritems():
+                lock.set(key, val)
+            if not account.lock(amount, currency_info):
+                return None
+            account.store()
+            lock.store()
+            return lock
+
+    def unlock(self, lock_uuid):
+        currencies = {}
+        self.app.hooks.call("currencies.list", currencies)
+        with self.app.lock(["MemberMoney.%s" % self.member]):
+            try:
+                lock = self.app.obj(AccountLock, lock_uuid)
+            except ObjectNotFoundException:
+                return None
+            else:
+                account = self.app.obj(Account, lock.get("account"))
+                currency_info = currencies.get(account.get("currency"))
+                if currency_info is None:
+                    return None
+                account.unlock(float(lock.get("amount")), currency_info)
+                account.store()
+                lock.remove()
+                return lock
+
+    def balance(self, currency):
+        account = self.account(currency)
+        if account is None:
+            return 0
+        return account.balance()
+    
+    def available(self, currency):
+        account = self.account(currency)
+        if account is None:
+            return 0
+        return account.available()
     
 class Money(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-ext-payment.2pay", self.payment_2pay)
+        self.rhook("constructor.user-tables", self.user_tables)
         self.rhook("constructor.user-options", self.user_options)
         self.rhook("constructor.project-options", self.project_options)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-constructor.project-2pay", self.project_2pay)
         self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("ext-admin-money.accounts", self.admin_money_accounts)
-        self.rhook("headmenu-admin-money.accounts", self.headmenu_money_accounts)
         self.rhook("ext-admin-money.give", self.admin_money_give)
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
         self.rhook("ext-admin-money.take", self.admin_money_take)
@@ -322,6 +386,7 @@ class Money(Module):
         self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
         self.rhook("ext-admin-money.account", self.admin_money_account)
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
+        self.rhook("money.member-money", self.member_money)
 
     def currencies_list(self, currencies):
         if self.app().tag == "main":
@@ -359,7 +424,7 @@ class Money(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Give money"), "money/accounts/%s" % args]
+        return [self._("Give money"), "constructor/user-dashboard/%s" % args]
 
     def admin_money_give(self):
         self.call("session.require_permission", "users.money.give")
@@ -389,7 +454,7 @@ class Money(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user())
-            self.call("admin.redirect", "money/accounts/%s" % user.uuid)
+            self.call("admin.redirect", "constructor/user-dashboard/%s" % user.uuid)
         else:
             amount = "0"
         fields = []
@@ -403,7 +468,7 @@ class Money(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Take money"), "money/accounts/%s" % args]
+        return [self._("Take money"), "constructor/user-dashboard/%s" % args]
 
     def admin_money_take(self):
         self.call("session.require_permission", "users.money.give")
@@ -433,7 +498,7 @@ class Money(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
             member.force_debit(amount, currency, "admin-take", admin=req.user())
-            self.call("admin.redirect", "money/accounts/%s" % user.uuid)
+            self.call("admin.redirect", "constructor/user-dashboard/%s" % user.uuid)
         else:
             amount = "0"
         fields = []
@@ -447,7 +512,7 @@ class Money(Module):
             acc = self.obj(Account, args)
         except ObjectNotFoundException:
             return
-        return [acc.uuid, "money/accounts/%s" % acc.get("member")]
+        return [acc.uuid, "constructor/user-dashboard/%s" % acc.get("member")]
 
     def admin_money_account(self):
         self.call("session.require_permission", "users.money")
@@ -467,7 +532,7 @@ class Money(Module):
                 "performed": op.get("performed"),
                 "amount": op.get("amount"),
                 "balance": op.get("balance"),
-                "description": description["text"] if description else op.get("description")
+                "description": description["text"] % op.data if description else op.get("description")
             })
         vars = {
             "Performed": self._("Performed"),
@@ -482,41 +547,36 @@ class Money(Module):
         }
         self.call("admin.response_template", "admin/money/account.html", vars)
 
-    def headmenu_money_accounts(self, args):
-        try:
-            user = self.obj(User, args)
-        except ObjectNotFoundException:
-            return
-        return [self._("Accounts"), "constructor/user-dashboard/%s" % args]
-
-    def admin_money_accounts(self):
-        self.call("session.require_permission", "users.money")
-        req = self.req()
-        try:
-            user = self.obj(User, req.args)
-        except ObjectNotFoundException:
-            self.call("web.not_found")
-        member = MemberMoney(self.app(), user.uuid)
-        accounts = member.accounts()
-        vars = {
-            "member": {
-                "uuid": user.uuid
-            },
-            "AccountId": self._("Account Id"),
-            "Balance": self._("Balance"),
-            "Locked": self._("Locked"),
-            "LowLimit": self._("Low limit"),
-            "accounts": accounts.data(),
-            "GiveMoney": self._("Give money"),
-            "TakeMoney": self._("Take money"),
-            "may_give": req.has_access("users.money.give"),
-            "Currency": self._("Currency"),
-        }
-        self.call("admin.response_template", "admin/money/member.html", vars)
+    def user_tables(self, user, tables):
+        if self.req().has_access("users.money"):
+            member = MemberMoney(self.app(), user.uuid)
+            accounts = member.accounts()
+            if len(accounts):
+                tables.append({
+                    "header": [self._("Account Id"), self._("Currency"), self._("Balance"), self._("Locked"), self._("Low limit")],
+                    "rows": [('<hook:admin.link href="money/account/{0}" title="{0}" />'.format(a.uuid), a.get("currency"), a.get("balance"), a.get("locked"), a.get("low_limit")) for a in accounts]
+                })
+            locks = member.locks()
+            if len(locks):
+                rows = []
+                for l in locks:
+                    description_info = member.description(l.get("description"))
+                    if description_info:
+                        desc = description_info["text"] % l.data
+                    else:
+                        desc = l.get("description")
+                    rows.append((l.uuid, l.get("amount"), l.get("currency"), desc))
+                tables.append({
+                    "header": [self._("Lock ID"), self._("Amount"), self._("Currency"), self._("Description")],
+                    "rows": rows
+                })
 
     def user_options(self, user, options):
-        if self.req().has_access("users.money"):
-            options.append({"title": self._("Money accounts"), "value": '<hook:admin.link href="money/accounts/%s" title="%s" />' % (user.uuid, self._("open list"))})
+        if self.req().has_access("users.money.give"):
+            options.append({
+                "title": self._("Money operations"),
+                "value": u'<hook:admin.link href="money/give/{0}" title="{1}" /> &bull; <hook:admin.link href="money/take/{0}" title="{2}" />'.format(user.uuid, self._("Give money"), self._("Take money"))
+            })
 
     def project_options(self, options):
         if self.req().has_access("constructor.projects-2pay"):
@@ -731,3 +791,5 @@ class Money(Module):
         perms.append({"id": "users.money", "name": self._("Constructor: access to users money")})
         perms.append({"id": "users.money.give", "name": self._("Constructor: giving and taking money")})
 
+    def member_money(self, member_uuid):
+        return MemberMoney(self.app(), member_uuid)

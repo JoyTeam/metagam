@@ -1,0 +1,4 @@
+<table class="menu">
+	<tr class="header"><td>[%Domain%]</td><td>[%Created%]</td><td>[%RegistrarID%]</td><td>[%RegistrarState%]</td><td>[%RegistrarCause%]</td><td>[%RegistrarInProgress%]</td><td>[%Confirm%]</td><td>[%Cancel%]</td><td>[%Recheck%]</td></tr>
+	[%foreach domain in domains%]<tr><td>[%domain.uuid%]</td><td>[%domain.created%]</td><td>[%domain.registrar_id%]</td><td>[%domain.registrar_state%]</td><td>[%domain.registrar_cause%]</td><td>[%domain.registrar_inprogress%]</td><td><hook:admin.link href="domains/pending/confirm/[%domain.uuid%]" title="[%confirm%]" /></td><td><hook:admin.link href="domains/pending/cancel/[%domain.uuid%]" title="[%cancel%]" /></td><td>[%if domain.registrar_id%]<hook:admin.link href="domains/pending/recheck/[%domain.uuid%]" title="[%recheck%]" />[%end%]</td></tr>[%end%]
+</table>

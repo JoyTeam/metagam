@@ -6,6 +6,29 @@
 </div>
 
 <script type="text/javascript">
+function form_submit()
+{
+	Ext.getCmp('check-form').getForm().submit({
+		url: '/admin-wizard/call/[%wizard%]/check',
+		waitMsg: '[%CheckingDomain%]',
+		success: function(f, action) {
+			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
+				if (res)
+					adm_response(res);
+			}
+		},
+		failure: function(f, action) {
+			if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+				if (action.result.errormsg) {
+					Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+				}
+			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+			}
+		},
+	});
+}
 new Ext.Panel({
 	renderTo: 'variants',
 	border: false,
@@ -17,7 +40,7 @@ new Ext.Panel({
 		cls: 'bottom-form',
 	},
 	layoutConfig: {
-		columns: 2
+		columns: 1
 	},
 	items: [{
 		html: '<h2>[%AlreadyRegistered%]</h2>[%DomainSettings%]',
@@ -35,10 +58,8 @@ new Ext.Panel({
 			}]
 		}]
 	}, {
-		colspan: 2,
 		html: '<h2>[%DomainCheck%]</h2>',
 	}, {
-		colspan: 2,
 		id: 'check-form',
 		layout: 'form',
 		labelAlign: 'top',
@@ -50,28 +71,13 @@ new Ext.Panel({
 			width: 400,
 			fieldLabel: '[%DomainName%]',
 			name: 'domain',
+			value: '[%domain_name%]',
 			border: false,
+			msgTarget: 'under',
 		}, {
 			xtype: 'button',
-			text: gt.gettext('[%CheckDomain%]'),
-			handler: function() {Ext.getCmp('check-form').getForm().submit({
-				url: '/admin-wizard/call/[%wizard%]/check',
-				waitMsg: gt.gettext('[%CheckingDomain%]'),
-				success: function(f, action) {
-					adm_success(action.response, {
-						func: "admin-wizard/call/[%wizard%]/check"
-					});
-				},
-				failure: function(f, action) {
-					if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-						if (action.result.errormsg) {
-							Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
-						}
-					} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-						Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
-					}
-				},
-			})}
+			text: '[%CheckDomain%]',
+			handler: form_submit
 		}]
 	}]
 });

@@ -7,11 +7,6 @@ import cgi
 
 class LogoWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):
-        """
-        target:
-            [wizard, "283746287348234", "constructed", "123"] - after completion call method "constructed" of wizard "283746287348234". And pass it args: ("123", uri)
-        redirect_fail - where to redirect user on failure
-        """
         super(LogoWizard, self).new(**kwargs)
         if target is None:
             raise RuntimeError("LogoWizard target not specified")
@@ -165,7 +160,6 @@ class LogoWizard(Wizard):
         # parsing command
         if cmd == "abort":
             self.abort()
-            self.call("admin.update_menu")
             self.call("admin.redirect", self.config.get("redirect_fail"))
         elif cmd == "filler/solid":
             color = req.param("color")

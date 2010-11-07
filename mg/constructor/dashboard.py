@@ -15,7 +15,6 @@ class ProjectDashboard(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("headmenu-admin-constructor.user-dashboard", self.headmenu_user_dashboard)
-        self.rhook("ext-admin-constructor.dns", self.ext_dns)
 
     def menu_root_index(self, menu):
         menu.append({"id": "constructor.index", "text": self._("Constructor")})
@@ -41,31 +40,11 @@ class ProjectDashboard(Module):
     def menu_constructor_index(self, menu):
         req = self.req()
         if req.has_access("constructor.users"):
+            menu.append({"id": "constructor/user-dashboard/%s" % req.user(), "text": self._("My dashboard"), "leaf": True})
             menu.append({"id": "constructor/user-find", "text": self._("Find user"), "leaf": True})
         if req.has_access("constructor.projects"):
             menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
-        if req.has_access("constructor.dns"):
-            menu.append({"id": "constructor/dns", "text": self._("DNS settings"), "leaf": True})
-
-    def ext_dns(self):
-        req = self.req()
-        ns1 = req.param("ns1")
-        ns2 = req.param("ns2")
-        if req.param("ok"):
-            config = self.app().config
-            config.set("dns.ns1", ns1)
-            config.set("dns.ns2", ns2)
-            config.store()
-            self.call("admin.response", self._("DNS settings stored"), {})
-        else:
-            ns1 = self.conf("dns.ns1")
-            ns2 = self.conf("dns.ns2")
-        fields = [
-            {"name": "ns1", "label": self._("DNS server 1"), "value": ns1},
-            {"name": "ns2", "label": self._("DNS server 2"), "value": ns2},
-        ]
-        self.call("admin.form", fields=fields)
 
     def ext_user_find(self):
         self.call("session.require_permission", "constructor.users")
@@ -99,16 +78,20 @@ class ProjectDashboard(Module):
             "user": {
                 "uuid": user.uuid,
             },
-            "User": self._("User"),
-            "ProjectId": self._("Project ID"),
-            "ProjectName": self._("Project name"),
-            "ProjectCode": self._("Project code"),
+            "Update": self._("Update"),
         }
+        tables = []
         if req.has_access("constructor.projects"):
             projects = []
             self.call("projects.owned_by", user.uuid, projects)
             if len(projects):
-                vars["projects"] = projects
+                tables.append({
+                    "header": [self._("Project ID"), self._("Project name"), self._("Project code")],
+                    "rows": [('<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(p.get("uuid")), p.get("title_short"), p.get("title_code")) for p in projects]
+                })
+        self.call("constructor.user-tables", user, tables)
+        if len(tables):
+            vars["tables"] = tables
         options = []
         self.call("constructor.user-options", user, options)
         if len(options):
@@ -176,5 +159,4 @@ class ProjectDashboard(Module):
     def permissions_list(self, perms):
         perms.append({"id": "constructor.users", "name": self._("Constructor users")})
         perms.append({"id": "constructor.projects", "name": self._("Constructor projects")})
-        perms.append({"id": "constructor.dns", "name": self._("Constructor DNS settings")})
 

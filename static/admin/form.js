@@ -63,6 +63,7 @@ Form = Ext.extend(AdminResponse, {
 					anchor: '-30',
 					border: false,
 					style: 'margin-bottom: 10px',
+					msgTarget: 'side',
 				};
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
@@ -74,6 +75,9 @@ Form = Ext.extend(AdminResponse, {
 					elt.hiddenName = 'v_' + elt.name;
 					elt.hiddenValue = elt.value;
 					elt.allowBlank = it.allow_blank;
+				} else if (elt.xtype == 'password') {
+					elt.xtype = 'textfield';
+					elt.inputType = 'password';
 				}
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
