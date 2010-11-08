@@ -589,6 +589,7 @@ class ProjectSetupWizard(Wizard):
         checkdomain = None
         configtext = None
         dnsservers = None
+        not_found = self._("Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please")
         for domain in domains:
             checkdomain = domain + "." + checkdomain if checkdomain else domain
             engine = QueryEngine(configtext=configtext)
@@ -604,7 +605,7 @@ class ProjectSetupWizard(Wizard):
                 if len(result[3]):
                     raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
                 elif dnsservers:
-                    raise DNSCheckError(self._("Domain {0} was not found by {1}. Either domain is not registered or DNS data was not updated yet. It may take several hours. Try again later, please").format(checkdomain, ", ".join(dnsservers)))
+                    raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
                 else:
                     raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
             configtext = "\n".join(["nameserver %s" % ip for ip in ips])
@@ -620,7 +621,7 @@ class ProjectSetupWizard(Wizard):
             if len(result[3]):
                 raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
             else:
-                raise DNSCheckError(self._("Domain {0} was not found by {1}. Either domain is not registered or DNS data was not updated yet. It may take several hours. Try again later, please").format(checkdomain, ", ".join(dnsservers)))
+                raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
         return servers
 
     def constructed(self, logo, arg):

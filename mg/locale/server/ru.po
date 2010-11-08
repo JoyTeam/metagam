@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 00:29+0300\n"
-"PO-Revision-Date: 2010-11-08 00:30+0300\n"
+"POT-Creation-Date: 2010-11-08 08:56+0300\n"
+"PO-Revision-Date: 2010-11-08 08:57+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1779,81 +1779,80 @@ msgstr "Неверное имя домена"
 msgid "Domain name is too long"
 msgstr "Доменное имя слишком длинное"
 
-#: mg/constructor/mod.py:545
-msgid "DNS check completed successfully"
-msgstr "Проверка DNS успешно пройдена"
-
-#: mg/constructor/mod.py:546
+#: mg/constructor/mod.py:547
 msgid "Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}"
 msgstr "Для {0} установлены серверы имён {1}. Правильно настройте свою зону: DNS-сервера должны быть {2} и {3}"
 
-#: mg/constructor/mod.py:554
+#: mg/constructor/mod.py:551
+msgid "DNS check completed successfully"
+msgstr "Проверка DNS успешно пройдена"
+
+#: mg/constructor/mod.py:559
 msgid "Domain for your game"
 msgstr "Домен для вашей игры"
 
-#: mg/constructor/mod.py:555
+#: mg/constructor/mod.py:560
 msgid "<p>We don't offer free domain names &mdash; you have to register it manually.</p>"
 msgstr "<p>Мы не предоставляем бесплатные доменные имена &mdash; вам нужно зарегистрировать имя самостоятельно.</p>"
 
-#: mg/constructor/mod.py:556
+#: mg/constructor/mod.py:561
 msgid "Step 1. Alternative 1. Register domain yourself"
 msgstr "Шаг 1. Вариант 1. Зарегистрируйте домен самостоятельно"
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid "Register a new domain (or take any previously registered)"
 msgstr "Зарегистрируйте новый домен (или возьмите любой ранее зарегистрированный)"
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid "Specify the following DNS servers for your domain: <strong>{0}</strong> and <strong>{1}</strong>"
 msgstr "Укажите следующие DNS-сервера для вашего домена: <strong>{0}</strong> и <strong>{1}</strong>"
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid "You may use any level domains"
 msgstr "Вы можете использовать домены любого уровня"
 
-#: mg/constructor/mod.py:558
+#: mg/constructor/mod.py:563
 msgid "Step 1. Alternative 2. Let us register a domain for you"
 msgstr "Шаг 1. Вариант 2. Позвольте нам зарегистрировать домен для вас"
 
-#: mg/constructor/mod.py:560
+#: mg/constructor/mod.py:565
 msgid "Launch domain registration wizard"
 msgstr "Запустить мастер регистрации доменов"
 
-#: mg/constructor/mod.py:561
+#: mg/constructor/mod.py:566
 msgid "Domain name (without www)"
 msgstr "Доменное имя (без www)"
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:567
 msgid "Check domain and assign it to the game"
 msgstr "Проверить домен и назначить его вашей игре"
 
-#: mg/constructor/mod.py:563
+#: mg/constructor/mod.py:568
 msgid "Checking domain..."
 msgstr "Проверка домена..."
 
-#: mg/constructor/mod.py:564
+#: mg/constructor/mod.py:569
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr "Шаг 2. Проверка вашего сконфигурированного домена и связь его с вашей игрой"
 
-#: mg/constructor/mod.py:581
+#: mg/constructor/mod.py:586
 msgid "Domain name can't contain 'www'"
 msgstr "Доменное имя не может содержать 'www'"
 
-#: mg/constructor/mod.py:600
-#: mg/constructor/mod.py:616
+#: mg/constructor/mod.py:592
+msgid "Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please"
+msgstr "Домен {0} не найден серверами {1}. Это означает, что либо домен ещё не зарегистрирован, либо данные DNS не успели обновиться. Если домен был зарегистрирован только что, то это нормальная ситуация. NS-серверам может потребоваться несколько часов (около 6) для того, чтобы обновиться. Пожалуйста, повторите попытку позже."
+
+#: mg/constructor/mod.py:606
+#: mg/constructor/mod.py:622
 msgid "Domain {0} has A records but no NS records. Configure your zone correctly"
 msgstr "Домен {0} имеет записи A, но не имеет записей NS. Правильно сконфигурируйте вашу зону"
 
-#: mg/constructor/mod.py:602
-#: mg/constructor/mod.py:618
-msgid "Domain {0} was not found by {1}. Either domain is not registered or DNS data was not updated yet. It may take several hours. Try again later, please"
-msgstr "Домен {0} не найден серверами {1}. Это означает, что либо домен не зарегистрирован, либо данные DNS ещё не успели обновиться. Это может занять несколько часов. Пожалуйста, повторите попытку позже"
-
-#: mg/constructor/mod.py:604
+#: mg/constructor/mod.py:610
 msgid "Domain {0} was not found by the root nameservers"
 msgstr "Домен {0} не найден корневыми серверами имён"
 
-#: mg/constructor/mod.py:608
+#: mg/constructor/mod.py:614
 msgid "{0} is already configured for the project. You may not use its subdomains"
 msgstr "{0} уже сконфигурирован для проекта. Вы не можете использовать его поддомены"
 

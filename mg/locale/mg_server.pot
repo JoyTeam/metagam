@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 00:29+0300\n"
+"POT-Creation-Date: 2010-11-08 08:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1725,88 +1725,90 @@ msgstr ""
 msgid "Domain name is too long"
 msgstr ""
 
-#: mg/constructor/mod.py:545
-msgid "DNS check completed successfully"
-msgstr ""
-
-#: mg/constructor/mod.py:546
+#: mg/constructor/mod.py:547
 msgid ""
 "Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must "
 "be {2} and {3}"
 msgstr ""
 
-#: mg/constructor/mod.py:554
+#: mg/constructor/mod.py:551
+msgid "DNS check completed successfully"
+msgstr ""
+
+#: mg/constructor/mod.py:559
 msgid "Domain for your game"
 msgstr ""
 
-#: mg/constructor/mod.py:555
+#: mg/constructor/mod.py:560
 msgid ""
 "<p>We don't offer free domain names &mdash; you have to register it manually."
 "</p>"
 msgstr ""
 
-#: mg/constructor/mod.py:556
+#: mg/constructor/mod.py:561
 msgid "Step 1. Alternative 1. Register domain yourself"
 msgstr ""
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid "Register a new domain (or take any previously registered)"
 msgstr ""
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid ""
 "Specify the following DNS servers for your domain: <strong>{0}</strong> and "
 "<strong>{1}</strong>"
 msgstr ""
 
-#: mg/constructor/mod.py:557
+#: mg/constructor/mod.py:562
 msgid "You may use any level domains"
 msgstr ""
 
-#: mg/constructor/mod.py:558
+#: mg/constructor/mod.py:563
 msgid "Step 1. Alternative 2. Let us register a domain for you"
 msgstr ""
 
-#: mg/constructor/mod.py:560
+#: mg/constructor/mod.py:565
 msgid "Launch domain registration wizard"
 msgstr ""
 
-#: mg/constructor/mod.py:561
+#: mg/constructor/mod.py:566
 msgid "Domain name (without www)"
 msgstr ""
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:567
 msgid "Check domain and assign it to the game"
 msgstr ""
 
-#: mg/constructor/mod.py:563
+#: mg/constructor/mod.py:568
 msgid "Checking domain..."
 msgstr ""
 
-#: mg/constructor/mod.py:564
+#: mg/constructor/mod.py:569
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr ""
 
-#: mg/constructor/mod.py:581
+#: mg/constructor/mod.py:586
 msgid "Domain name can't contain 'www'"
 msgstr ""
 
-#: mg/constructor/mod.py:600 mg/constructor/mod.py:616
+#: mg/constructor/mod.py:592
+msgid ""
+"Domain {0} was not found by {1}. Either domain is not registered yet or DNS "
+"data was not updated yet. If the domain was registered recently, it is "
+"normal situation. It may take several hours (about 6) for NS servers to "
+"update. Try again later, please"
+msgstr ""
+
+#: mg/constructor/mod.py:606 mg/constructor/mod.py:622
 msgid ""
 "Domain {0} has A records but no NS records. Configure your zone correctly"
 msgstr ""
 
-#: mg/constructor/mod.py:602 mg/constructor/mod.py:618
-msgid ""
-"Domain {0} was not found by {1}. Either domain is not registered or DNS data "
-"was not updated yet. It may take several hours. Try again later, please"
-msgstr ""
-
-#: mg/constructor/mod.py:604
+#: mg/constructor/mod.py:610
 msgid "Domain {0} was not found by the root nameservers"
 msgstr ""
 
-#: mg/constructor/mod.py:608
+#: mg/constructor/mod.py:614
 msgid ""
 "{0} is already configured for the project. You may not use its subdomains"
 msgstr ""
