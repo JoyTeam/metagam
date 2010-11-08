@@ -537,13 +537,18 @@ class ProjectSetupWizard(Wizard):
                     errors["domain"] = self._("Domain name is too long")
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
+                self.config.set("domain", domain)
+                self.config.store()
                 try:
                     servers = self.dns_servers(domain)
                 except DNSCheckError as e:
                     self.call("web.response_json", {"success": False, "errors": {"domain": unicode(e)}})
-                if ns1 in servers and ns2 in servers and len(servers) == 2:
-                    self.call("admin.response", self._("DNS check completed successfully"), {})
-                self.call("web.response_json", {"success": False, "errors": {"domain": self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)}})
+                if ns1 not in servers or ns2 not in servers or len(servers) != 2:
+                    self.call("web.response_json", {"success": False, "errors": {"domain": self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)}})
+                wizs = self.call("wizards.find", "domain-reg")
+                for wiz in wizs:
+                    wiz.abort()
+                self.call("admin.response", self._("DNS check completed successfully"), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):
