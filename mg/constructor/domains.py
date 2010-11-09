@@ -404,7 +404,7 @@ class DomainRegWizard(Wizard):
                 price = float(prices[tld])
                 balance = self.user_money_available()
                 if cmd == "check":
-                    self.call("web.response_json", {"success": True, "stage": "register", "domain_name": domain, "price": price, "price_text": "%.2f MM$ (approx %.2f USD)" % (price, price), "balance": balance, "balance_text": "%.2f" % balance})
+                    self.call("web.response_json", {"success": True, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%.2f MM$ (approx %.2f USD)") % (price, price), "balance": balance, "balance_text": "%.2f" % balance})
                 owner = req.param("owner")
                 main_config = self.app().inst.appfactory.get_by_tag("main").config
                 if owner == "admin":
@@ -438,7 +438,7 @@ class DomainRegWizard(Wizard):
                     if not re_phone.match(phone):
                         errors["phone"] = self._("Invalid phone format. Look at the example")
                     if len(errors):
-                        self.call("web.response_json", {"success": False, "stage": "register", "domain_name": domain, "price": price, "price_text": "%.2f MM$ (approx %.2f USD)" % (price, price), "balance": balance, "balance_text": "%.2f" % balance, "errors": errors})
+                        self.call("web.response_json", {"success": False, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%.2f MM$ (approx %.2f USD)") % (price, price), "balance": balance, "balance_text": "%.2f" % balance, "errors": errors})
                 else:
                     self.call("web.response_json", {"success": False, "errormsg": self._("Select an owner of the domain")})
                 # Registration request

@@ -119,7 +119,7 @@ class Constructor(Module):
             "mg.core.auth.PasswordAuthentication", "mg.core.auth.CookieSession", "mg.core.cluster.Cluster", "mg.core.auth.Authorization",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.wizards.Wizards",
             "mg.constructor.mod.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
-            "mg.constructor.domains.Domains"])
+            "mg.constructor.domains.Domains", "mg.game.money.TwoPay"])
         self.rhook("web.global_html", self.web_global_html)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
@@ -500,12 +500,11 @@ class ProjectSetupWizard(Wizard):
                 self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
             elif cmd == "next":
                 if self.config.get("logo"):
-                    if len(wizs):
-                        for wiz in wizs:
-                            wiz.abort()
+                    for wiz in wizs:
+                        wiz.finish()
                 self.config.set("state", "domain")
                 self.config.store()
-                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
+                self.call("admin.redirect", "wizard/call/%s" % self.uuid)
             vars = {
                 "GameLogo": self._("Game logo"),
                 "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),

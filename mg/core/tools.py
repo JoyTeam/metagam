@@ -1,6 +1,7 @@
 import urllib
 import string
 import re
+import cgi
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 
@@ -23,6 +24,8 @@ def intz(str):
         return 0
 
 def jsencode(str):
+    if str is None:
+        return ""
     str = string.replace(str, "\\", "\\\\")
     str = string.replace(str, "'", "\\'")
     str = string.replace(str, "\r", "\\r")
@@ -30,6 +33,8 @@ def jsencode(str):
     return str
 
 def jsdecode(str):
+    if str is None:
+        return ""
     str = string.replace(str, "\\n", "\n")
     str = string.replace(str, "\\r", "\r")
     str = string.replace(str, "\\'", "'")
@@ -45,3 +50,9 @@ def parse_color(color):
         return None
     r, g, b = m.group(1, 2, 3)
     return (int(r, 16), int(g, 16), int(b, 16))
+
+def htmlescape(str):
+    if str is None:
+        return ""
+    return cgi.escape(str)
+

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 00:29+0300\n"
+"POT-Creation-Date: 2010-11-09 16:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,15 +29,15 @@ msgstr ""
 #: mg/templates/constructor/logo-wizard.html:66
 #: mg/templates/constructor/domain.html:24
 #: mg/templates/constructor/domain.html:27
-#: mg/templates/constructor/domain-wizard.html:32
-#: mg/templates/constructor/domain-wizard.html:35
+#: mg/templates/constructor/domain-wizard.html:31
+#: mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/logo.html:84 mg/templates/constructor/logo.html:87
 msgid "Error"
 msgstr ""
 
 #: static/admin/form.js:142 mg/templates/constructor/logo-wizard.html:66
 #: mg/templates/constructor/domain.html:27
-#: mg/templates/constructor/domain-wizard.html:35
+#: mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/logo.html:87
 #, python-format
 msgid "Server error: %s"

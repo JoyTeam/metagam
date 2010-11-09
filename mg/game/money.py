@@ -6,17 +6,6 @@ import re
 
 re_uuid_cmd = re.compile(r'^([0-9a-z]+)/(.+)$')
 
-class Money2paySettings(CassandraObject):
-    _indexes = {
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Money2paySettings-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Money2paySettings._indexes
-
 class Account(CassandraObject):
     _indexes = {
         "all": [[]],
@@ -367,13 +356,9 @@ class MemberMoney(object):
 class Money(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-ext-payment.2pay", self.payment_2pay)
         self.rhook("constructor.user-tables", self.user_tables)
         self.rhook("constructor.user-options", self.user_options)
-        self.rhook("constructor.project-options", self.project_options)
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay)
-        self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-admin-money.give", self.admin_money_give)
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
@@ -382,8 +367,6 @@ class Money(Module):
         self.rhook("currencies.list", self.currencies_list)
         self.rhook("money-description.admin-give", self.money_description_admin_give)
         self.rhook("money-description.admin-take", self.money_description_admin_take)
-        self.rhook("money-description.2pay-pay", self.money_description_2pay_pay)
-        self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
         self.rhook("ext-admin-money.account", self.admin_money_account)
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
         self.rhook("money.member-money", self.member_money)
@@ -405,18 +388,6 @@ class Money(Module):
         return {
             "args": ["admin"],
             "text": self._("Taken by the administration"),
-        }
-
-    def money_description_2pay_pay(self):
-        return {
-            "args": ["payment_id", "payment_performed"],
-            "text": self._("2pay payment"),
-        }
-
-    def money_description_2pay_chargeback(self):
-        return {
-            "args": ["payment_id"],
-            "text": self._("2pay chargeback"),
         }
 
     def headmenu_money_give(self, args):
@@ -578,6 +549,44 @@ class Money(Module):
                 "value": u'<hook:admin.link href="money/give/{0}" title="{1}" /> &bull; <hook:admin.link href="money/take/{0}" title="{2}" />'.format(user.uuid, self._("Give money"), self._("Take money"))
             })
 
+    def objclasses_list(self, objclasses):
+        objclasses["Account"] = (Account, AccountList)
+        objclasses["AccountLock"] = (AccountLock, AccountLockList)
+        objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "users.money", "name": self._("Constructor: access to users money")})
+        perms.append({"id": "users.money.give", "name": self._("Constructor: giving and taking money")})
+
+    def member_money(self, member_uuid):
+        return MemberMoney(self.app(), member_uuid)
+
+class TwoPay(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("ext-ext-payment.2pay", self.payment_2pay)
+        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay)
+        self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
+        self.rhook("money-description.2pay-pay", self.money_description_2pay_pay)
+        self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
+        self.rhook("constructor.project-options", self.project_options)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("2pay.payport-params", self.payport_params)
+        self.rhook("2pay.payment-params", self.payment_params)
+
+    def money_description_2pay_pay(self):
+        return {
+            "args": ["payment_id", "payment_performed"],
+            "text": self._("2pay payment"),
+        }
+
+    def money_description_2pay_chargeback(self):
+        return {
+            "args": ["payment_id"],
+            "text": self._("2pay chargeback"),
+        }
+
     def project_options(self, options):
         if self.req().has_access("constructor.projects-2pay"):
             options.append({"title": self._("2pay integration"), "value": '<hook:admin.link href="constructor/project-2pay/%s" title="%s" />' % (self.app().tag, self._("open dashboard"))})
@@ -594,10 +603,6 @@ class Money(Module):
             return [self._("Settings editor"), "constructor/project-2pay/%s" % uuid]
 
     def objclasses_list(self, objclasses):
-        objclasses["Money2paySettings"] = (Money2paySettings, None)
-        objclasses["Account"] = (Account, AccountList)
-        objclasses["AccountLock"] = (AccountLock, AccountLockList)
-        objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
         objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
 
     def project_2pay(self):
@@ -640,26 +645,28 @@ class Money(Module):
                 "payments": payments,
                 "Update": self._("Update"),
                 "Id": self._("Id"),
+                "ProjectID": self._("Project ID"),
             }
-            try:
-                settings = self.obj(Money2paySettings, "1")
-                vars["settings"] = {
-                    "secret": cgi.escape(settings.get("secret")),
-                    "payment_url": "http://%s/ext-payment/2pay" % app.domain,
-                }
-            except ObjectNotFoundException:
-                pass
+            vars["settings"] = {
+                "secret": htmlescape(self.conf("2pay.secret")),
+                "project_id": htmlescape(self.conf("2pay.project-id")),
+                "payment_url": "http://%s/ext-payment/2pay" % app.domain,
+            }
             self.call("admin.response_template", "admin/money/2pay-dashboard.html", vars)
         elif cmd == "settings":
             secret = req.param("secret")
-            settings = self.obj(Money2paySettings, "1", silent=True)
+            project_id = req.param("project_id")
             if req.param("ok"):
-                settings.set("secret", secret)
-                settings.store()
+                config = self.app().config
+                config.set("2pay.secret", secret)
+                config.set("2pay.project-id", project_id)
+                config.store()
                 self.call("admin.redirect", "constructor/project-2pay/%s" % uuid)
             else:
-                secret = settings.get("secret")
+                secret = self.conf("2pay.secret")
+                project_id = self.conf("2pay.project-id")
             fields = []
+            fields.append({"name": "project_id", "label": self._("2pay project id"), "value": project_id})
             fields.append({"name": "secret", "label": self._("2pay secret"), "value": secret})
             self.call("admin.form", fields=fields)
         else:
@@ -675,8 +682,7 @@ class Money(Module):
         id_shop = None
         sum = None
         try:
-            settings = self.obj(Money2paySettings, "1", silent=True)
-            secret = settings.get("secret")
+            secret = self.conf("2pay.secret")
             if type(secret) == unicode:
                 secret = secret.encode("cp1251")
             if secret is None or secret == "":
@@ -788,8 +794,29 @@ class Money(Module):
     def permissions_list(self, perms):
         if self.app().tag == "main":
             perms.append({"id": "constructor.projects-2pay", "name": self._("Constructor: 2pay integration")})
-        perms.append({"id": "users.money", "name": self._("Constructor: access to users money")})
-        perms.append({"id": "users.money.give", "name": self._("Constructor: giving and taking money")})
 
-    def member_money(self, member_uuid):
-        return MemberMoney(self.app(), member_uuid)
+    def payport_params(self, params, owner_uuid):
+        payport = {}
+        try:
+            owner = self.obj(User, owner_uuid)
+        except ObjectNotFoundException:
+            owner = None
+        else:
+            payport["email"] = jsencode(owner.get("email"))
+            payport["name"] = jsencode(owner.get("name"))
+        payport["project_id"] = self.conf("2pay.project-id")
+        payport["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
+        params["twopay_payport"] = payport
+
+    def payment_params(self, params, owner_uuid):
+        payment = {}
+        try:
+            owner = self.obj(User, owner_uuid)
+        except ObjectNotFoundException:
+            owner = None
+        else:
+            payment["email"] = urlencode(owner.get("email").encode("cp1251"))
+            payment["name"] = urlencode(owner.get("name").encode("cp1251"))
+        payment["project_id"] = self.conf("2pay.project-id")
+        payment["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
+        params["twopay_payment"] = payment

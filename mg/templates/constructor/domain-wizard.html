@@ -3,7 +3,6 @@
 </div>
 <div id="form"></div>
 <div id="navi"></div>
-
 <script type="text/javascript">
 var domain_price = 0;
 function submit_form(form_id, func, msg)
@@ -149,12 +148,7 @@ new Ext.FormPanel({
 				colspan: 2,
 				id: 'domain-pay-button',
 				cellCls: 'form-table',
-				items: [{
-					border: false,
-					xtype: 'button',
-					text: gt.gettext('Buy MM$'),
-					handler: function() { submit_form('wizard-form', 'admin-wizard/call/[%wizard%]/buymoney') }
-				}],
+				html: '<a href="http://2pay.ru/oplata/?id=' + twopay_project_id + '&amp;new=1&v1=' + twopay_v1 + '&amp;country=0&amp;email=' + twopay_email + '" target="_blank">' + gt.gettext('Buy MM$') + '</a>',
 			}, {
 				colspan: 2,
 				id: 'domain-register-button',

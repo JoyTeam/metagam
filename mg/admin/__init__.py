@@ -29,6 +29,8 @@ class AdminInterface(Module):
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
         }
+        if self.app().project:
+            self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
         self.call("web.response_template", "admin/index.html", vars)
 
     def sortleftmenu(self, menu):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 08:56+0300\n"
+"POT-Creation-Date: 2010-11-09 16:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: mg/core/web.py:708 mg/core/director.py:243 mg/socio/__init__.py:1369
-#: mg/admin/__init__.py:208
+#: mg/admin/__init__.py:210
 msgid "Save"
 msgstr ""
 
@@ -543,169 +543,177 @@ msgstr ""
 msgid "Permission"
 msgstr ""
 
-#: mg/game/money.py:401
+#: mg/game/money.py:384
 msgid "Given by the administration"
 msgstr ""
 
-#: mg/game/money.py:407
+#: mg/game/money.py:390
 msgid "Taken by the administration"
 msgstr ""
 
-#: mg/game/money.py:413
-msgid "2pay payment"
-msgstr ""
-
-#: mg/game/money.py:419
-msgid "2pay chargeback"
-msgstr ""
-
-#: mg/game/money.py:427 mg/game/money.py:578
+#: mg/game/money.py:398 mg/game/money.py:549
 msgid "Give money"
 msgstr ""
 
-#: mg/game/money.py:444 mg/game/money.py:488
+#: mg/game/money.py:415 mg/game/money.py:459
 msgid "Invalid currency"
 msgstr ""
 
-#: mg/game/money.py:448 mg/game/money.py:492
+#: mg/game/money.py:419 mg/game/money.py:463
 msgid "Amount must be greater than 0"
 msgstr ""
 
-#: mg/game/money.py:450 mg/game/money.py:494
+#: mg/game/money.py:421 mg/game/money.py:465
 msgid "Invalid amount precision"
 msgstr ""
 
-#: mg/game/money.py:452 mg/game/money.py:496
+#: mg/game/money.py:423 mg/game/money.py:467
 msgid "Invalid number format"
 msgstr ""
 
-#: mg/game/money.py:461
+#: mg/game/money.py:432
 msgid "Give amount"
 msgstr ""
 
-#: mg/game/money.py:462 mg/game/money.py:506 mg/game/money.py:556
-#: mg/game/money.py:570
+#: mg/game/money.py:433 mg/game/money.py:477 mg/game/money.py:527
+#: mg/game/money.py:541
 msgid "Currency"
 msgstr ""
 
-#: mg/game/money.py:463
+#: mg/game/money.py:434
 msgid "Give"
 msgstr ""
 
-#: mg/game/money.py:471 mg/game/money.py:578
+#: mg/game/money.py:442 mg/game/money.py:549
 msgid "Take money"
 msgstr ""
 
-#: mg/game/money.py:505
+#: mg/game/money.py:476
 msgid "Take amount"
 msgstr ""
 
-#: mg/game/money.py:507
+#: mg/game/money.py:478
 msgid "Take"
 msgstr ""
 
-#: mg/game/money.py:538
+#: mg/game/money.py:509
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:539 mg/game/money.py:570 mg/game/money.py:638
+#: mg/game/money.py:510 mg/game/money.py:541 mg/game/money.py:642
 msgid "Amount"
 msgstr ""
 
-#: mg/game/money.py:540 mg/game/money.py:556
+#: mg/game/money.py:511 mg/game/money.py:527
 msgid "Balance"
 msgstr ""
 
-#: mg/game/money.py:541 mg/game/money.py:570
+#: mg/game/money.py:512 mg/game/money.py:541
 msgid "Description"
 msgstr ""
 
-#: mg/game/money.py:543 mg/game/money.py:641 mg/constructor/dashboard.py:81
+#: mg/game/money.py:514 mg/game/money.py:645 mg/constructor/dashboard.py:81
 msgid "Update"
 msgstr ""
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Account Id"
 msgstr ""
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Locked"
 msgstr ""
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Low limit"
 msgstr ""
 
-#: mg/game/money.py:570
+#: mg/game/money.py:541
 msgid "Lock ID"
 msgstr ""
 
-#: mg/game/money.py:577
+#: mg/game/money.py:548
 msgid "Money operations"
 msgstr ""
 
-#: mg/game/money.py:583
-msgid "2pay integration"
-msgstr ""
-
-#: mg/game/money.py:583
-msgid "open dashboard"
-msgstr ""
-
-#: mg/game/money.py:592
-msgid "2pay dashboard"
-msgstr ""
-
-#: mg/game/money.py:594
-msgid "Settings editor"
-msgstr ""
-
-#: mg/game/money.py:632
-msgid "Edit settings"
-msgstr ""
-
-#: mg/game/money.py:633
-msgid "Payment URL"
-msgstr ""
-
-#: mg/game/money.py:634
-msgid "Secret code"
-msgstr ""
-
-#: mg/game/money.py:635
-msgid "2pay time"
-msgstr ""
-
-#: mg/game/money.py:636
-msgid "Our time"
-msgstr ""
-
-#: mg/game/money.py:637
-msgid "User"
-msgstr ""
-
-#: mg/game/money.py:639
-msgid "Chargeback"
-msgstr ""
-
-#: mg/game/money.py:642 mg/constructor/dashboard.py:130
-msgid "Id"
-msgstr ""
-
-#: mg/game/money.py:663
-msgid "2pay secret"
-msgstr ""
-
-#: mg/game/money.py:790
-msgid "Constructor: 2pay integration"
-msgstr ""
-
-#: mg/game/money.py:791
+#: mg/game/money.py:558
 msgid "Constructor: access to users money"
 msgstr ""
 
-#: mg/game/money.py:792
+#: mg/game/money.py:559
 msgid "Constructor: giving and taking money"
+msgstr ""
+
+#: mg/game/money.py:580
+msgid "2pay payment"
+msgstr ""
+
+#: mg/game/money.py:586
+msgid "2pay chargeback"
+msgstr ""
+
+#: mg/game/money.py:591
+msgid "2pay integration"
+msgstr ""
+
+#: mg/game/money.py:591
+msgid "open dashboard"
+msgstr ""
+
+#: mg/game/money.py:600
+msgid "2pay dashboard"
+msgstr ""
+
+#: mg/game/money.py:602
+msgid "Settings editor"
+msgstr ""
+
+#: mg/game/money.py:636
+msgid "Edit settings"
+msgstr ""
+
+#: mg/game/money.py:637
+msgid "Payment URL"
+msgstr ""
+
+#: mg/game/money.py:638
+msgid "Secret code"
+msgstr ""
+
+#: mg/game/money.py:639
+msgid "2pay time"
+msgstr ""
+
+#: mg/game/money.py:640
+msgid "Our time"
+msgstr ""
+
+#: mg/game/money.py:641
+msgid "User"
+msgstr ""
+
+#: mg/game/money.py:643
+msgid "Chargeback"
+msgstr ""
+
+#: mg/game/money.py:646 mg/constructor/dashboard.py:130
+msgid "Id"
+msgstr ""
+
+#: mg/game/money.py:647 mg/constructor/dashboard.py:89
+msgid "Project ID"
+msgstr ""
+
+#: mg/game/money.py:668
+msgid "2pay project id"
+msgstr ""
+
+#: mg/game/money.py:669
+msgid "2pay secret"
+msgstr ""
+
+#: mg/game/money.py:795
+msgid "Constructor: 2pay integration"
 msgstr ""
 
 #: mg/constructor/dashboard.py:20 mg/constructor/mod.py:144
@@ -737,10 +745,6 @@ msgstr ""
 
 #: mg/constructor/dashboard.py:47
 msgid "Main project"
-msgstr ""
-
-#: mg/constructor/dashboard.py:89
-msgid "Project ID"
 msgstr ""
 
 #: mg/constructor/dashboard.py:89
@@ -1187,6 +1191,11 @@ msgstr ""
 
 #: mg/constructor/domains.py:401
 msgid "This domain name is occupied already. Choose another one"
+msgstr ""
+
+#: mg/constructor/domains.py:407 mg/constructor/domains.py:441
+#, python-format
+msgid "%.2f MM$ (approx %.2f USD)"
 msgstr ""
 
 #: mg/constructor/domains.py:427 mg/constructor/domains.py:429
@@ -1681,117 +1690,117 @@ msgstr ""
 msgid "Animated logos are not supported"
 msgstr ""
 
-#: mg/constructor/mod.py:510
+#: mg/constructor/mod.py:509
 msgid "Game logo"
 msgstr ""
 
-#: mg/constructor/mod.py:511
+#: mg/constructor/mod.py:510
 msgid ""
 "Here you have to create unique logo for your project. You can either upload "
 "logo from your computer or create it using Constructor."
 msgstr ""
 
-#: mg/constructor/mod.py:512
+#: mg/constructor/mod.py:511
 msgid "Alternative 1. Upload pre-made logo file"
 msgstr ""
 
-#: mg/constructor/mod.py:513
+#: mg/constructor/mod.py:512
 msgid "Alternative 2. Launch logo constructor"
 msgstr ""
 
-#: mg/constructor/mod.py:516
+#: mg/constructor/mod.py:515
 msgid "Upload image: 100x100, without animation"
 msgstr ""
 
-#: mg/constructor/mod.py:517
+#: mg/constructor/mod.py:516
 msgid ""
 "Note your image will be postprocessed - corners will be rounded, 1px border "
 "added, black padding added, title written on the black padding."
 msgstr ""
 
-#: mg/constructor/mod.py:518
+#: mg/constructor/mod.py:517
 msgid "Launch the constructor"
 msgstr ""
 
-#: mg/constructor/mod.py:533
+#: mg/constructor/mod.py:532
 msgid "Specify your domain name"
 msgstr ""
 
-#: mg/constructor/mod.py:535
+#: mg/constructor/mod.py:534
 msgid "Invalid domain name"
 msgstr ""
 
-#: mg/constructor/mod.py:537
+#: mg/constructor/mod.py:536
 msgid "Domain name is too long"
 msgstr ""
 
-#: mg/constructor/mod.py:547
+#: mg/constructor/mod.py:546
 msgid ""
 "Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must "
 "be {2} and {3}"
 msgstr ""
 
-#: mg/constructor/mod.py:551
+#: mg/constructor/mod.py:550
 msgid "DNS check completed successfully"
 msgstr ""
 
-#: mg/constructor/mod.py:559
+#: mg/constructor/mod.py:558
 msgid "Domain for your game"
 msgstr ""
 
-#: mg/constructor/mod.py:560
+#: mg/constructor/mod.py:559
 msgid ""
 "<p>We don't offer free domain names &mdash; you have to register it manually."
 "</p>"
 msgstr ""
 
-#: mg/constructor/mod.py:561
+#: mg/constructor/mod.py:560
 msgid "Step 1. Alternative 1. Register domain yourself"
 msgstr ""
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid "Register a new domain (or take any previously registered)"
 msgstr ""
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid ""
 "Specify the following DNS servers for your domain: <strong>{0}</strong> and "
 "<strong>{1}</strong>"
 msgstr ""
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid "You may use any level domains"
 msgstr ""
 
-#: mg/constructor/mod.py:563
+#: mg/constructor/mod.py:562
 msgid "Step 1. Alternative 2. Let us register a domain for you"
 msgstr ""
 
-#: mg/constructor/mod.py:565
+#: mg/constructor/mod.py:564
 msgid "Launch domain registration wizard"
 msgstr ""
 
-#: mg/constructor/mod.py:566
+#: mg/constructor/mod.py:565
 msgid "Domain name (without www)"
 msgstr ""
 
-#: mg/constructor/mod.py:567
+#: mg/constructor/mod.py:566
 msgid "Check domain and assign it to the game"
 msgstr ""
 
-#: mg/constructor/mod.py:568
+#: mg/constructor/mod.py:567
 msgid "Checking domain..."
 msgstr ""
 
-#: mg/constructor/mod.py:569
+#: mg/constructor/mod.py:568
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr ""
 
-#: mg/constructor/mod.py:586
+#: mg/constructor/mod.py:585
 msgid "Domain name can't contain 'www'"
 msgstr ""
 
-#: mg/constructor/mod.py:592
+#: mg/constructor/mod.py:591
 msgid ""
 "Domain {0} was not found by {1}. Either domain is not registered yet or DNS "
 "data was not updated yet. If the domain was registered recently, it is "
@@ -1799,16 +1808,16 @@ msgid ""
 "update. Try again later, please"
 msgstr ""
 
-#: mg/constructor/mod.py:606 mg/constructor/mod.py:622
+#: mg/constructor/mod.py:605 mg/constructor/mod.py:621
 msgid ""
 "Domain {0} has A records but no NS records. Configure your zone correctly"
 msgstr ""
 
-#: mg/constructor/mod.py:610
+#: mg/constructor/mod.py:609
 msgid "Domain {0} was not found by the root nameservers"
 msgstr ""
 
-#: mg/constructor/mod.py:614
+#: mg/constructor/mod.py:613
 msgid ""
 "{0} is already configured for the project. You may not use its subdomains"
 msgstr ""
@@ -2195,7 +2204,7 @@ msgstr ""
 msgid "Administration interface"
 msgstr ""
 
-#: mg/admin/__init__.py:60
+#: mg/admin/__init__.py:62
 #, python-format
 msgid "%s administration interface"
 msgstr ""

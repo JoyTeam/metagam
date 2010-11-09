@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-08 08:56+0300\n"
-"PO-Revision-Date: 2010-11-08 08:57+0300\n"
+"POT-Creation-Date: 2010-11-09 16:51+0300\n"
+"PO-Revision-Date: 2010-11-09 16:52+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -23,7 +23,7 @@ msgstr ""
 #: mg/core/web.py:708
 #: mg/core/director.py:243
 #: mg/socio/__init__.py:1369
-#: mg/admin/__init__.py:208
+#: mg/admin/__init__.py:210
 msgid "Save"
 msgstr "Сохранить"
 
@@ -593,185 +593,194 @@ msgstr "Роль"
 msgid "Permission"
 msgstr "Разрешение"
 
-#: mg/game/money.py:401
+#: mg/game/money.py:384
 msgid "Given by the administration"
 msgstr "Выдано администрацией"
 
-#: mg/game/money.py:407
+#: mg/game/money.py:390
 msgid "Taken by the administration"
 msgstr "Изъято администрацией"
 
-#: mg/game/money.py:413
-msgid "2pay payment"
-msgstr "Платёж 2pay"
-
-#: mg/game/money.py:419
-msgid "2pay chargeback"
-msgstr "Возврат платежа 2pay"
-
-#: mg/game/money.py:427
-#: mg/game/money.py:578
+#: mg/game/money.py:398
+#: mg/game/money.py:549
 msgid "Give money"
 msgstr "Выдать деньги"
 
-#: mg/game/money.py:444
-#: mg/game/money.py:488
+#: mg/game/money.py:415
+#: mg/game/money.py:459
 msgid "Invalid currency"
 msgstr "Неверная валюта"
 
-#: mg/game/money.py:448
-#: mg/game/money.py:492
+#: mg/game/money.py:419
+#: mg/game/money.py:463
 msgid "Amount must be greater than 0"
 msgstr "Количество должно быть больше 0"
 
-#: mg/game/money.py:450
-#: mg/game/money.py:494
+#: mg/game/money.py:421
+#: mg/game/money.py:465
 msgid "Invalid amount precision"
 msgstr "Неверная точность количества"
 
-#: mg/game/money.py:452
-#: mg/game/money.py:496
+#: mg/game/money.py:423
+#: mg/game/money.py:467
 msgid "Invalid number format"
 msgstr "Неверный формат числа"
 
-#: mg/game/money.py:461
+#: mg/game/money.py:432
 msgid "Give amount"
 msgstr "Сумма к выдаче"
 
-#: mg/game/money.py:462
-#: mg/game/money.py:506
-#: mg/game/money.py:556
-#: mg/game/money.py:570
+#: mg/game/money.py:433
+#: mg/game/money.py:477
+#: mg/game/money.py:527
+#: mg/game/money.py:541
 msgid "Currency"
 msgstr "Валюта"
 
-#: mg/game/money.py:463
+#: mg/game/money.py:434
 msgid "Give"
 msgstr "Выдать"
 
-#: mg/game/money.py:471
-#: mg/game/money.py:578
+#: mg/game/money.py:442
+#: mg/game/money.py:549
 msgid "Take money"
 msgstr "Взять деньги"
 
-#: mg/game/money.py:505
+#: mg/game/money.py:476
 msgid "Take amount"
 msgstr "Количество для взятия"
 
-#: mg/game/money.py:507
+#: mg/game/money.py:478
 msgid "Take"
 msgstr "Взять"
 
-#: mg/game/money.py:538
+#: mg/game/money.py:509
 msgid "Performed"
 msgstr "Исполнено"
 
-#: mg/game/money.py:539
-#: mg/game/money.py:570
-#: mg/game/money.py:638
+#: mg/game/money.py:510
+#: mg/game/money.py:541
+#: mg/game/money.py:642
 msgid "Amount"
 msgstr "Сумма"
 
-#: mg/game/money.py:540
-#: mg/game/money.py:556
+#: mg/game/money.py:511
+#: mg/game/money.py:527
 msgid "Balance"
 msgstr "Баланс"
 
+#: mg/game/money.py:512
 #: mg/game/money.py:541
-#: mg/game/money.py:570
 msgid "Description"
 msgstr "Описание"
 
-#: mg/game/money.py:543
-#: mg/game/money.py:641
+#: mg/game/money.py:514
+#: mg/game/money.py:645
 #: mg/constructor/dashboard.py:81
 msgid "Update"
 msgstr "Обновить"
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Account Id"
 msgstr "Идентификатор счёта"
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Locked"
 msgstr "Заблокировано"
 
-#: mg/game/money.py:556
+#: mg/game/money.py:527
 msgid "Low limit"
 msgstr "Нижний предел"
 
-#: mg/game/money.py:570
+#: mg/game/money.py:541
 msgid "Lock ID"
 msgstr "ID блокировки"
 
-#: mg/game/money.py:577
+#: mg/game/money.py:548
 msgid "Money operations"
 msgstr "Денежные операции"
 
-#: mg/game/money.py:583
+#: mg/game/money.py:558
+msgid "Constructor: access to users money"
+msgstr "Конструктор: доступ к деньгам пользователей"
+
+#: mg/game/money.py:559
+msgid "Constructor: giving and taking money"
+msgstr "Конструктор: выдача и взятие денег"
+
+#: mg/game/money.py:580
+msgid "2pay payment"
+msgstr "Платёж 2pay"
+
+#: mg/game/money.py:586
+msgid "2pay chargeback"
+msgstr "Возврат платежа 2pay"
+
+#: mg/game/money.py:591
 msgid "2pay integration"
 msgstr "Интеграция с 2pay"
 
-#: mg/game/money.py:583
+#: mg/game/money.py:591
 msgid "open dashboard"
 msgstr "открыть панель управления"
 
-#: mg/game/money.py:592
+#: mg/game/money.py:600
 msgid "2pay dashboard"
 msgstr "Панель управления 2pay"
 
-#: mg/game/money.py:594
+#: mg/game/money.py:602
 msgid "Settings editor"
 msgstr "Редактор настроек"
 
-#: mg/game/money.py:632
+#: mg/game/money.py:636
 msgid "Edit settings"
 msgstr "Редактировать настройки"
 
-#: mg/game/money.py:633
+#: mg/game/money.py:637
 msgid "Payment URL"
 msgstr "Платёжный URL"
 
-#: mg/game/money.py:634
+#: mg/game/money.py:638
 msgid "Secret code"
 msgstr "Секретный код"
 
-#: mg/game/money.py:635
+#: mg/game/money.py:639
 msgid "2pay time"
 msgstr "Время 2pay"
 
-#: mg/game/money.py:636
+#: mg/game/money.py:640
 msgid "Our time"
 msgstr "Наше время"
 
-#: mg/game/money.py:637
+#: mg/game/money.py:641
 msgid "User"
 msgstr "Пользователь"
 
-#: mg/game/money.py:639
+#: mg/game/money.py:643
 msgid "Chargeback"
 msgstr "Возврат платежа"
 
-#: mg/game/money.py:642
+#: mg/game/money.py:646
 #: mg/constructor/dashboard.py:130
 msgid "Id"
 msgstr "Id"
 
-#: mg/game/money.py:663
+#: mg/game/money.py:647
+#: mg/constructor/dashboard.py:89
+msgid "Project ID"
+msgstr "ID проекта"
+
+#: mg/game/money.py:668
+msgid "2pay project id"
+msgstr "ID проекта в 2pay"
+
+#: mg/game/money.py:669
 msgid "2pay secret"
 msgstr "Секретный код 2pay"
 
-#: mg/game/money.py:790
+#: mg/game/money.py:795
 msgid "Constructor: 2pay integration"
 msgstr "Конструктор: интеграция с 2pay"
-
-#: mg/game/money.py:791
-msgid "Constructor: access to users money"
-msgstr "Конструктор: доступ к деньгам пользователей"
-
-#: mg/game/money.py:792
-msgid "Constructor: giving and taking money"
-msgstr "Конструктор: выдача и взятие денег"
 
 #: mg/constructor/dashboard.py:20
 #: mg/constructor/mod.py:144
@@ -805,10 +814,6 @@ msgstr "Найти проект"
 #: mg/constructor/dashboard.py:47
 msgid "Main project"
 msgstr "Главный проект"
-
-#: mg/constructor/dashboard.py:89
-msgid "Project ID"
-msgstr "ID проекта"
 
 #: mg/constructor/dashboard.py:89
 msgid "Project name"
@@ -1254,6 +1259,12 @@ msgstr "Реестр %s временно недоступен. Попробуй�
 #: mg/constructor/domains.py:401
 msgid "This domain name is occupied already. Choose another one"
 msgstr "Это доменное имя уже занято. Выберите другое"
+
+#: mg/constructor/domains.py:407
+#: mg/constructor/domains.py:441
+#, python-format
+msgid "%.2f MM$ (approx %.2f USD)"
+msgstr "%.2f MM$ (приблизительно %.2f USD)"
 
 #: mg/constructor/domains.py:427
 #: mg/constructor/domains.py:429
@@ -1739,120 +1750,120 @@ msgstr "Загрузите файл с логотипом"
 msgid "Animated logos are not supported"
 msgstr "Анимированные логотипы не поддерживаются"
 
-#: mg/constructor/mod.py:510
+#: mg/constructor/mod.py:509
 msgid "Game logo"
 msgstr "Логотип игры"
 
-#: mg/constructor/mod.py:511
+#: mg/constructor/mod.py:510
 msgid "Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."
 msgstr "Теперь вам необходимо создать уникальный логотип для вашего проекта. Вы можете или загрузить логотип с вашего компьютера, или создать его при помощи Конструктора."
 
-#: mg/constructor/mod.py:512
+#: mg/constructor/mod.py:511
 msgid "Alternative 1. Upload pre-made logo file"
 msgstr "Вариант 1. Загрузить готовый файл с логотипом"
 
-#: mg/constructor/mod.py:513
+#: mg/constructor/mod.py:512
 msgid "Alternative 2. Launch logo constructor"
 msgstr "Вариант 2. Запустить конструктор логотипов"
 
-#: mg/constructor/mod.py:516
+#: mg/constructor/mod.py:515
 msgid "Upload image: 100x100, without animation"
 msgstr "Загрузите изображение 100x100 без анимации"
 
-#: mg/constructor/mod.py:517
+#: mg/constructor/mod.py:516
 msgid "Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."
 msgstr "Обратите внимание, что ваше изображение будет обработано: будут закруглены углы, добавлены 1px бордюр и чёрная подложка с названием игры."
 
-#: mg/constructor/mod.py:518
+#: mg/constructor/mod.py:517
 msgid "Launch the constructor"
 msgstr "Запустить конструктор"
 
-#: mg/constructor/mod.py:533
+#: mg/constructor/mod.py:532
 msgid "Specify your domain name"
 msgstr "Укажите ваше доменное имя"
 
-#: mg/constructor/mod.py:535
+#: mg/constructor/mod.py:534
 msgid "Invalid domain name"
 msgstr "Неверное имя домена"
 
-#: mg/constructor/mod.py:537
+#: mg/constructor/mod.py:536
 msgid "Domain name is too long"
 msgstr "Доменное имя слишком длинное"
 
-#: mg/constructor/mod.py:547
+#: mg/constructor/mod.py:546
 msgid "Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}"
 msgstr "Для {0} установлены серверы имён {1}. Правильно настройте свою зону: DNS-сервера должны быть {2} и {3}"
 
-#: mg/constructor/mod.py:551
+#: mg/constructor/mod.py:550
 msgid "DNS check completed successfully"
 msgstr "Проверка DNS успешно пройдена"
 
-#: mg/constructor/mod.py:559
+#: mg/constructor/mod.py:558
 msgid "Domain for your game"
 msgstr "Домен для вашей игры"
 
-#: mg/constructor/mod.py:560
+#: mg/constructor/mod.py:559
 msgid "<p>We don't offer free domain names &mdash; you have to register it manually.</p>"
 msgstr "<p>Мы не предоставляем бесплатные доменные имена &mdash; вам нужно зарегистрировать имя самостоятельно.</p>"
 
-#: mg/constructor/mod.py:561
+#: mg/constructor/mod.py:560
 msgid "Step 1. Alternative 1. Register domain yourself"
 msgstr "Шаг 1. Вариант 1. Зарегистрируйте домен самостоятельно"
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid "Register a new domain (or take any previously registered)"
 msgstr "Зарегистрируйте новый домен (или возьмите любой ранее зарегистрированный)"
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid "Specify the following DNS servers for your domain: <strong>{0}</strong> and <strong>{1}</strong>"
 msgstr "Укажите следующие DNS-сервера для вашего домена: <strong>{0}</strong> и <strong>{1}</strong>"
 
-#: mg/constructor/mod.py:562
+#: mg/constructor/mod.py:561
 msgid "You may use any level domains"
 msgstr "Вы можете использовать домены любого уровня"
 
-#: mg/constructor/mod.py:563
+#: mg/constructor/mod.py:562
 msgid "Step 1. Alternative 2. Let us register a domain for you"
 msgstr "Шаг 1. Вариант 2. Позвольте нам зарегистрировать домен для вас"
 
-#: mg/constructor/mod.py:565
+#: mg/constructor/mod.py:564
 msgid "Launch domain registration wizard"
 msgstr "Запустить мастер регистрации доменов"
 
-#: mg/constructor/mod.py:566
+#: mg/constructor/mod.py:565
 msgid "Domain name (without www)"
 msgstr "Доменное имя (без www)"
 
-#: mg/constructor/mod.py:567
+#: mg/constructor/mod.py:566
 msgid "Check domain and assign it to the game"
 msgstr "Проверить домен и назначить его вашей игре"
 
-#: mg/constructor/mod.py:568
+#: mg/constructor/mod.py:567
 msgid "Checking domain..."
 msgstr "Проверка домена..."
 
-#: mg/constructor/mod.py:569
+#: mg/constructor/mod.py:568
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr "Шаг 2. Проверка вашего сконфигурированного домена и связь его с вашей игрой"
 
-#: mg/constructor/mod.py:586
+#: mg/constructor/mod.py:585
 msgid "Domain name can't contain 'www'"
 msgstr "Доменное имя не может содержать 'www'"
 
-#: mg/constructor/mod.py:592
+#: mg/constructor/mod.py:591
 msgid "Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please"
 msgstr "Домен {0} не найден серверами {1}. Это означает, что либо домен ещё не зарегистрирован, либо данные DNS не успели обновиться. Если домен был зарегистрирован только что, то это нормальная ситуация. NS-серверам может потребоваться несколько часов (около 6) для того, чтобы обновиться. Пожалуйста, повторите попытку позже."
 
-#: mg/constructor/mod.py:606
-#: mg/constructor/mod.py:622
+#: mg/constructor/mod.py:605
+#: mg/constructor/mod.py:621
 msgid "Domain {0} has A records but no NS records. Configure your zone correctly"
 msgstr "Домен {0} имеет записи A, но не имеет записей NS. Правильно сконфигурируйте вашу зону"
 
-#: mg/constructor/mod.py:610
+#: mg/constructor/mod.py:609
 msgid "Domain {0} was not found by the root nameservers"
 msgstr "Домен {0} не найден корневыми серверами имён"
 
-#: mg/constructor/mod.py:614
+#: mg/constructor/mod.py:613
 msgid "{0} is already configured for the project. You may not use its subdomains"
 msgstr "{0} уже сконфигурирован для проекта. Вы не можете использовать его поддомены"
 
@@ -2259,7 +2270,7 @@ msgstr ""
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
-#: mg/admin/__init__.py:60
+#: mg/admin/__init__.py:62
 #, python-format
 msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
