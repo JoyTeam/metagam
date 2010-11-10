@@ -15,6 +15,7 @@ class ProjectDashboard(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("headmenu-admin-constructor.user-dashboard", self.headmenu_user_dashboard)
+        self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish)
 
     def menu_root_index(self, menu):
         menu.append({"id": "constructor.index", "text": self._("Constructor")})
@@ -119,6 +120,27 @@ class ProjectDashboard(Module):
         buttons = [{"text": self._("Search")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
+    def ext_project_unpublish(self):
+        self.call("session.require_permission", "constructor.projects.unpublish")
+        req = self.req()
+        try:
+            app = self.app().inst.appfactory.get_by_tag(req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        for wiz in app.hooks.call("wizards.list"):
+            wiz.abort()
+        project = app.project
+        project.delkey("domain")
+        project.delkey("title_full")
+        project.delkey("title_short")
+        project.delkey("title_code")
+        project.delkey("published")
+        project.delkey("logo")
+        project.store()
+        app.hooks.call("wizards.new", "mg.constructor.mod.ProjectSetupWizard")
+        app.hooks.call("cluster.appconfig_changed")
+        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+
     def ext_project_dashboard(self):
         self.call("session.require_permission", "constructor.projects")
         req = self.req()
@@ -132,19 +154,31 @@ class ProjectDashboard(Module):
             "TitleShort": self._("Short title"),
             "TitleCode": self._("Title code"),
             "Owner": self._("Owner"),
+            "Domain": self._("Domain"),
+            "Created": self._("Project created"),
+            "Published": self._("Project published"),
+            "unpublish": self._("unpublish"),
+            "ConfirmUnpublish": self._("Are you sure want to unpublish the project?"),
+            "Update": self._("Update"),
+            "Logo": self._("Logo"),
         }
         project = getattr(app, "project", None)
         if project:
             owner = self.obj(User, project.get("owner"))
             vars["project"] = {
                 "uuid": project.uuid,
-                "title_full": project.get("title_full"),
-                "title_short": project.get("title_short"),
-                "title_code": project.get("title_code"),
+                "title_full": htmlescape(project.get("title_full")),
+                "title_short": htmlescape(project.get("title_short")),
+                "title_code": htmlescape(project.get("title_code")),
+                "logo": htmlescape(project.get("logo")),
+                "domain": htmlescape(project.get("domain")),
+                "published": project.get("published"),
+                "created": project.get("created"),
+                "unpublish": req.has_access("constructor.projects.unpublish"),
             }
             vars["owner"] = {
                 "uuid": owner.uuid,
-                "name": cgi.escape(owner.get("name")),
+                "name": htmlescape(owner.get("name")),
             }
         else:
             vars["project"] = {
@@ -157,6 +191,7 @@ class ProjectDashboard(Module):
         self.call("admin.response_template", "admin/constructor/project-dashboard.html", vars)
 
     def permissions_list(self, perms):
-        perms.append({"id": "constructor.users", "name": self._("Constructor users")})
-        perms.append({"id": "constructor.projects", "name": self._("Constructor projects")})
+        perms.append({"id": "constructor.users", "name": self._("Constructor: users")})
+        perms.append({"id": "constructor.projects", "name": self._("Constructor: projects")})
+        perms.append({"id": "constructor.projects.unpublish", "name": self._("Constructor: unpublishing projects")})
 

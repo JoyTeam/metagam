@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-09 16:51+0300\n"
+"POT-Creation-Date: 2010-11-10 14:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,7 +47,7 @@ msgstr ""
 #: mg/templates/constructor/logo-wizard.html:119
 #: mg/templates/constructor/logo-wizard.html:230
 #: mg/templates/constructor/domain.html:66
-#: mg/templates/constructor/domain-wizard.html:73
+#: mg/templates/constructor/domain-wizard.html:72
 #: mg/templates/constructor/logo.html:58
 msgid "Please wait..."
 msgstr ""
@@ -109,7 +109,7 @@ msgid "Apply"
 msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:281
-#: mg/templates/constructor/domain-wizard.html:254
+#: mg/templates/constructor/domain-wizard.html:248
 msgid "Abort wizard"
 msgstr ""
 
@@ -118,11 +118,11 @@ msgstr ""
 msgid "Previous"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:117
+#: mg/templates/constructor/domain-wizard.html:116
 msgid "Check availability"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:155
+#: mg/templates/constructor/domain-wizard.html:151
 msgid "Buy MM$"
 msgstr ""
 

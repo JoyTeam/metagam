@@ -5,8 +5,10 @@ from urllib import urlencode
 from uuid import uuid4
 import json
 import random
+import re
 
 alphabet = "abcdefghijklmnopqrstuvwxyz"
+re_extract_uuid = re.compile(r'-([a-f0-9]{32})\.[a-z0-9]+$')
 
 class TempFile(CassandraObject):
     _indexes = {
@@ -26,7 +28,6 @@ class TempFile(CassandraObject):
         host = str(self.get("host"))
         url = str(self.get("url"))
         uri = str(self.get("uri"))
-        print "deleting static file %s" % uri
         cnn = HTTPConnection()
         cnn.connect((str(host), 80))
         try:
@@ -61,6 +62,7 @@ class Cluster(Module):
         self.rhook("cluster.static_upload", self.static_upload)
         self.rhook("cluster.appconfig_changed", self.appconfig_changed)
         self.rhook("cluster.static_upload_temp", self.static_upload_temp)
+        self.rhook("cluster.static_preserve", self.static_preserve)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def query_director(self, uri, params={}):
@@ -113,25 +115,26 @@ class Cluster(Module):
                 raise StaticUploadError(self._("Error storing object: %s") % response.status)
         finally:
             cnn.close()
-        return (uri, url, host)
+        return (uri, url, host, id)
 
     def static_upload(self, subdir, ext, content_type, data):
-        uri, url, host = self.upload(subdir, ext, content_type, data)
+        uri, url, host, id = self.upload(subdir, ext, content_type, data)
         return uri
 
     def static_upload_temp(self, subdir, ext, content_type, data, wizard=None):
-        uri, url, host = self.upload(subdir, ext, content_type, data)
+        uri, url, host, id = self.upload(subdir, ext, content_type, data)
         data = {
             "uri": uri,
             "url": url,
             "host": host,
             "app": self.app().tag
         }
+        tempfile = self.int_app().obj(TempFile, id, data=data)
         if wizard is None:
-            data["till"] = self.now(86400)
+            tempfile.set("till", self.now(86400))
         else:
-            data["wizard"] = wizard
-        self.app().inst.int_app.obj(TempFile, data=data).store()
+            tempfile.set("wizard", wizard)
+        tempfile.store()
         return uri
 
     def appconfig_changed(self):
@@ -156,6 +159,18 @@ class Cluster(Module):
     
     def objclasses_list(self, objclasses):
         objclasses["TempFile"] = (TempFile, TempFileList)
+
+    def static_preserve(self, uri):
+        m = re_extract_uuid.search(uri)
+        if not m:
+            return
+        uuid = m.groups()[0]
+        try:
+            tempfile = self.int_app().obj(TempFile, uuid)
+        except ObjectNotFoundException:
+            pass
+        else:
+            tempfile.remove()
 
 def dir_query(uri, params):
     return query("director", 3000, uri, params)

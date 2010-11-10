@@ -392,6 +392,22 @@ class Module(object):
     def lock(self, *args, **kwargs):
         return self.app().lock(*args, **kwargs)
 
+    def int_app(self):
+        try:
+            return self._int_app
+        except AttributeError:
+            pass
+        self._int_app = self.app().inst.appfactory.get_by_tag("int")
+        return self._int_app
+
+    def main_app(self):
+        try:
+            return self._main_app
+        except AttributeError:
+            pass
+        self._main_app = self.app().inst.appfactory.get_by_tag("main")
+        return self._main_app
+
 class ModuleException(Exception):
     "Error during module loading"
     pass

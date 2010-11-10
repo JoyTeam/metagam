@@ -483,7 +483,7 @@ class Money(Module):
             acc = self.obj(Account, args)
         except ObjectNotFoundException:
             return
-        return [acc.uuid, "constructor/user-dashboard/%s" % acc.get("member")]
+        return [self._("Account %s") % acc.uuid, "constructor/user-dashboard/%s" % acc.get("member")]
 
     def admin_money_account(self):
         self.call("session.require_permission", "users.money")

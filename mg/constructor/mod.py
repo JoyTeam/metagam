@@ -16,9 +16,6 @@ import random
 re_bad_symbols = re.compile(r'.*[\'"<>&\\]')
 re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
 
-class DNSCheckError(Exception):
-    pass
-
 class ConstructorUtils(Module):
     def register(self):
         Module.register(self)
@@ -233,15 +230,15 @@ class Constructor(Module):
         perms = req.permissions()
         menu = []
         menu1 = []
-        menu1.append({"href": "/documentation", "image": "constructor/cab_documentation.jpg", "text": self._("Documentation")})
+        menu1.append({"href": "/documentation", "image": "/st/constructor/cab_documentation.jpg", "text": self._("Documentation")})
         if len(perms):
-            menu1.append({"href": "/admin", "image": "constructor/cab_admin.jpg", "text": self._("Constructor administration")})
-        menu1.append({"href": "/forum", "image": "constructor/cab_forum.jpg", "text": self._("Forum")})
-        menu1.append({"href": "/cabinet/settings", "image": "constructor/cab_settings.jpg", "text": self._("Settings")})
-        menu1.append({"href": "/auth/logout", "image": "constructor/cab_logout.jpg", "text": self._("Log out")})
+            menu1.append({"href": "/admin", "image": "/st/constructor/cab_admin.jpg", "text": self._("Constructor administration")})
+        menu1.append({"href": "/forum", "image": "/st/constructor/cab_forum.jpg", "text": self._("Forum")})
+        menu1.append({"href": "/cabinet/settings", "image": "/st/constructor/cab_settings.jpg", "text": self._("Settings")})
+        menu1.append({"href": "/auth/logout", "image": "/st/constructor/cab_logout.jpg", "text": self._("Log out")})
         menu.append(menu1)
         menu2 = []
-        menu2.append({"href": "/constructor/newgame", "image": "constructor/cab_newgame.jpg", "text": self._("New game")})
+        menu2.append({"href": "/constructor/newgame", "image": "/st/constructor/cab_newgame.jpg", "text": self._("New game")})
         menu.append(menu2)
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
@@ -249,15 +246,16 @@ class Constructor(Module):
         if len(projects):
             menu_projects = []
             for project in projects:
-                title = project.get("title")
+                title = project.get("title_short")
                 if title is None:
                     title = self._("Untitled game")
                 domain = project.get("domain")
                 if domain is None:
                     domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
-                    menu_projects.append({"href": "http://%s/admin" % domain, "image": "constructor/cab_game.jpg", "text": title})
-                else:
-                    menu_projects.append({"href": "http://%s/" % domain, "image": "constructor/cab_game.jpg", "text": title})
+                logo = project.get("logo")
+                if logo is None:
+                    logo = "/st/constructor/cab_game.jpg"
+                menu_projects.append({"href": "http://%s/admin" % domain, "image": logo, "text": title})
                 if len(menu_projects) >= 4:
                     menu.append(menu_projects)
                     menu_projects = []
@@ -275,13 +273,13 @@ class Constructor(Module):
             "title": self._("Settings"),
             "menu": [
                 [
-                    { "href": "/cabinet", "image": "constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
+                    { "href": "/cabinet", "image": "/st/constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
                 ],
                 [
-                    { "href": "/auth/change", "image": "constructor/cab_changepass.jpg", "text": self._("Change password") },
-                    { "href": "/auth/email", "image": "constructor/cab_changeemail.jpg", "text": self._("Change e-mail") },
-                    { "href": "/forum/settings", "image": "constructor/cab_forumsettings.jpg", "text": self._("Forum settings") },
-                    { "href": "/constructor/certificate", "image": "constructor/cab_certificate.jpg", "text": self._("WebMoney Certification") },
+                    { "href": "/auth/change", "image": "/st/constructor/cab_changepass.jpg", "text": self._("Change password") },
+                    { "href": "/auth/email", "image": "/st/constructor/cab_changeemail.jpg", "text": self._("Change e-mail") },
+                    { "href": "/forum/settings", "image": "/st/constructor/cab_forumsettings.jpg", "text": self._("Forum settings") },
+                    { "href": "/constructor/certificate", "image": "/st/constructor/cab_certificate.jpg", "text": self._("WebMoney Certification") },
                 ],
             ],
         }
@@ -293,7 +291,7 @@ class Constructor(Module):
             "title": self._("Documentation"),
             "menu": [
                 [
-                    { "href": "/cabinet", "image": "constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
+                    { "href": "/cabinet", "image": "/st/constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
                 ],
             ],
         }
@@ -518,15 +516,14 @@ class ProjectSetupWizard(Wizard):
             }
             self.call("admin.response_template", "constructor/logo.html", vars)
         elif state == "domain":
-            main = self.app().inst.appfactory.get_by_tag("main")
-            ns1 = main.config.get("dns.ns1")
-            ns2 = main.config.get("dns.ns2")
             if cmd == "prev":
                 self.config.set("state", "logo")
                 self.config.store()
                 self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
             elif cmd == "check":
                 domain = req.param("domain").strip().lower()
+                self.config.set("domain", domain)
+                self.config.store()
                 errors = {}
                 if domain == "":
                     errors["domain"] = self._("Specify your domain name")
@@ -534,26 +531,35 @@ class ProjectSetupWizard(Wizard):
                     errors["domain"] = self._("Invalid domain name")
                 elif len(domain) > 63:
                     errors["domain"] = self._("Domain name is too long")
+                if not len(errors):
+                    self.call("domains.validate_new", domain, errors)
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
-                self.config.set("domain", domain)
-                self.config.store()
-                try:
-                    servers = self.dns_servers(domain)
-                except DNSCheckError as e:
-                    self.call("web.response_json", {"success": False, "errors": {"domain": unicode(e)}})
-                if ns1 not in servers or ns2 not in servers or len(servers) != 2:
-                    self.call("web.response_json", {"success": False, "errors": {"domain": self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)}})
                 wizs = self.call("wizards.find", "domain-reg")
                 for wiz in wizs:
                     wiz.abort()
-                self.call("admin.response", self._("DNS check completed successfully"), {})
+                # Saving logo
+                self.call("cluster.static_preserve", self.config.get("logo"))
+                # Creating project
+                self.call("domains.assign", domain)
+                project = self.app().project
+                for key in ("domain", "logo", "title_full", "title_short", "title_code"):
+                    project.set(key, self.config.get(key))
+                project.set("published", self.now())
+                project.delkey("inactive")
+                project.store()
+                self.finish()
+                self.call("cluster.appconfig_changed")
+                owner = self.main_app().obj(User, self.app().project.get("owner"))
+                self.call("admin.response", '<div class="text"><p>%s</p><p>%s: <a href="http://www.%s/admin">http://www.%s/admin</a><br />%s: admin<br />%s: &lt;%s&gt; (%s)</p></div>' % (self._("You have successfully completed registration of your game. And now get ready to enter your new admin panel:"), self._("Admin panel address"), domain, domain, self._("Login"), self._("Password"), self._("your_password"), owner.get("pass_reminder")), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):
                     self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
                 wiz = self.call("wizards.new", "mg.constructor.domains.DomainRegWizard", target=["wizard", self.uuid, "domain_registered", ""], redirect_fail="wizard/call/%s" % self.uuid)
                 self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
+            ns1 = self.main_app().config.get("dns.ns1")
+            ns2 = self.main_app().config.get("dns.ns2")
             vars = {
                 "GameDomain": self._("Domain for your game"),
                 "HereYouCan": self._("<p>We don't offer free domain names &mdash; you have to register it manually.</p>"),
@@ -566,7 +572,7 @@ class ProjectSetupWizard(Wizard):
                 "CheckDomain": self._("Check domain and assign it to the game"),
                 "CheckingDomain": self._("Checking domain..."),
                 "DomainCheck": self._("Step 2. Check your configured domain and link it with your game"),
-                "domain_name": self.config.get("domain"),
+                "domain_name": jsencode(self.config.get("domain")),
             }
             self.call("admin.response_template", "constructor/domain.html", vars)
         else:
@@ -575,53 +581,6 @@ class ProjectSetupWizard(Wizard):
     def domain_registered(self, domain, arg):
         self.config.set("domain", domain)
         self.config.store()
-
-    def dns_servers(self, domain):
-        main = self.app().inst.appfactory.get_by_tag("main")
-        ns1 = main.config.get("dns.ns1")
-        ns2 = main.config.get("dns.ns2")
-        domains = domain.split(".")
-        if "www" in domains:
-            raise DNSCheckError(self._("Domain name can't contain 'www'"))
-        domains.reverse()
-        game_domain = domains.pop()
-        checkdomain = None
-        configtext = None
-        dnsservers = None
-        not_found = self._("Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please")
-        for domain in domains:
-            checkdomain = domain + "." + checkdomain if checkdomain else domain
-            engine = QueryEngine(configtext=configtext)
-            result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
-            ips = []
-            names = []
-            for rr in result[3]:
-                names.append(rr[0])
-                for rr_a in rr[2]:
-                    ips.append(rr_a[1])
-            if not len(ips):
-                result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-                if len(result[3]):
-                    raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
-                elif dnsservers:
-                    raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
-                else:
-                    raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
-            configtext = "\n".join(["nameserver %s" % ip for ip in ips])
-            dnsservers = names
-            if ns1 in names or ns2 in names:
-                raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
-        checkdomain = game_domain + "." + checkdomain
-        engine = QueryEngine(configtext=configtext)
-        result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
-        servers = result[3]
-        if not len(servers):
-            result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-            if len(result[3]):
-                raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
-            else:
-                raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
-        return servers
 
     def constructed(self, logo, arg):
         self.config.set("state", "logo")

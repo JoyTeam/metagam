@@ -1,4 +1,4 @@
-from mg.core import Module
+from mg import *
 import cgi
 import random
 import re
@@ -29,7 +29,7 @@ class AdminInterface(Module):
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
         }
-        if self.app().project:
+        if getattr(self.app(), "project", None):
             self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
         self.call("web.response_template", "admin/index.html", vars)
 
@@ -49,13 +49,16 @@ class AdminInterface(Module):
                 leftmenu = {"text": "Root", "children": []}
             leftmenu["children"] = wizards + leftmenu["children"]
         if not leftmenu:
-            self.call("web.forbidden")
+            #self.call("web.forbidden")
+            #TEMP: DEBUG: FIXME
+            leftmenu = []
+        else:
+            self.sortleftmenu(leftmenu)
         topmenu = []
         self.call("menu-admin-top.list", topmenu)
         title = self.call("project.title")
         if title is None:
             title = self.app().tag
-        self.sortleftmenu(leftmenu)
         return {
             "left": leftmenu,
             "top": topmenu,
@@ -193,12 +196,15 @@ class AdminInterface(Module):
         params["success"] = True
         self.call("web.response_json", params)
 
-    def link(self, vars, href=None, title=None):
+    def link(self, vars, href=None, title=None, confirm=None):
         if type(href) == unicode:
             href = href.encode("utf-8")
         if type(title) == unicode:
             title = title.encode("utf-8")
-        return '<a href="/admin?_nd={2}#{0}" onclick="adm(\'{0}\');return false;">{1}</a>'.format(cgi.escape(href), cgi.escape(title), random.randrange(0, 1000000000))
+        onclick = "adm('%s');" % jsencode(href)
+        if confirm is not None:
+            onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
+        return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), htmlescape(title), random.randrange(0, 1000000000), onclick)
 
     def form(self, url=None, fields=None, buttons=None):
         if url is None:
