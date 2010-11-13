@@ -4,6 +4,7 @@ from mg.game.money import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
+from mg.constructor import Domain, DomainList
 
 re_price_value = re.compile(r'^(\d+|\d+\.\d{1,2})$')
 re_person_r = re.compile(r'^\w+( \w+)+$', re.UNICODE)
@@ -14,31 +15,6 @@ re_i7_response = re.compile(r'^<html><body>(\S*):\s*(\d*)\s+(\S*)\s+(\S*)(,\s*in
 
 class DNSCheckError(Exception):
     pass
-
-class Domain(CassandraObject):
-    _indexes = {
-        "all": [[], "created"],
-        "user": [["user"], "created"],
-        "registered": [["registered"], "created"],
-        "project": [["project"]],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Domain._indexes
-
-class DomainList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        kwargs["cls"] = Domain
-        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Domains(Module):
     def register(self):

@@ -2,6 +2,8 @@ from mg import *
 import mg.core
 import re
 
+re_remove_www = re.compile(r'^www.', re.IGNORECASE)
+
 class Project(CassandraObject):
     _indexes = {
         "created": [[], "created"],
@@ -31,6 +33,31 @@ class ProjectList(CassandraObjectList):
             return m.groups(1)[0]
         return None
 
+class Domain(CassandraObject):
+    _indexes = {
+        "all": [[], "created"],
+        "user": [["user"], "created"],
+        "registered": [["registered"], "created"],
+        "project": [["project"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Domain-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Domain-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return Domain._indexes
+
+class DomainList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Domain-"
+        kwargs["cls"] = Domain
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class ApplicationFactory(mg.core.ApplicationFactory):
     """
     ApplicationFactory implementation based on config and database search
@@ -42,14 +69,21 @@ class ApplicationFactory(mg.core.ApplicationFactory):
     def tag_by_domain(self, domain):
         if domain is None:
             return None
+        domain = re_remove_www.sub('', domain)
         main_host = self.inst.config["main_host"]
-        if domain == "www.%s" % main_host:
-            return "main"
-        elif domain == main_host:
+        if domain == main_host:
             return "main"
         m = re.match("^([0-9a-f]{32})\.%s" % main_host, domain)
         if m:
             return m.groups(1)[0]
+        try:
+            domain = self.get_by_tag("main").obj(Domain, domain)
+        except ObjectNotFoundException:
+            pass
+        else:
+            tag = domain.get("project_tag")
+            if tag is not None:
+                return tag
         return None
 
     def get_by_domain(self, domain):
