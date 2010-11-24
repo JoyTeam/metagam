@@ -87,7 +87,7 @@ class AdminInterface(Module):
         href = "%s/%s" % (re_remove_admin.sub('', group), hook)
         if args != "":
             href = "%s/%s" % (href, args)
-        first = True
+        first = Tru
         while group is not None:
             res = self.call("headmenu-%s.%s" % (group, hook), args)
             if res is None:

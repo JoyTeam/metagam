@@ -81,7 +81,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         except ObjectNotFoundException:
             pass
         else:
-            tag = domain.get("project_tag")
+            tag = domain.get("project")
             if tag is not None:
                 return tag
         return None

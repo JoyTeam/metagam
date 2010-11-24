@@ -1,9 +1,6 @@
 from concurrence import Tasklet, http
 from concurrence.http import server
-from mg.core.cass import Cassandra
-from mg.core.memcached import Memcached
-from mg.core import Application, Instance, Module
-from mg.core.tools import *
+from mg import *
 from template import Template
 from template.provider import Provider
 import urlparse
@@ -437,6 +434,10 @@ class Web(Module):
         self.rhook("web.not_implemented", self.web_not_implemented)
         self.rhook("web.service_unavailable", self.web_service_unavailable)
         self.rhook("web.redirect", self.web_redirect)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
 
     def core_reload(self):
         request = self.req()

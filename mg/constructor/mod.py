@@ -50,6 +50,8 @@ class ConstructorUtils(Module):
             perms.remove()
             config = app.objlist(ConfigGroupList, query_index="all")
             config.remove()
+            hook_modules = app.objlist(HookGroupModulesList, query_index="all")
+            hook_modules.remove()
             wizards = app.objlist(WizardConfigList, query_index="all")
             wizards.remove()
         temp_files = int_app.objlist(TempFileList, query_index="app", query_equal=tag)
@@ -71,7 +73,7 @@ class ConstructorProject(Module):
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
 
     def project_title(self):
-        return "New Game"
+        return self.app().project.get("title_short", "New Game")
 
     def web_global_html(self):
         return "constructor/global.html"

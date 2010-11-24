@@ -19,6 +19,7 @@ class CassandraMaintenance(Module):
     def validate(self, slices_list=None):
         objclasses = {}
         objclasses["ConfigGroup"] = (ConfigGroup, ConfigGroupList)
+        objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
         self.call("objclasses.list", objclasses)
         app = self.app()
         db = app.db

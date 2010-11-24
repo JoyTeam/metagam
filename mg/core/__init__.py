@@ -25,6 +25,24 @@ class HookFormatException(Exception):
     "Invalid hook format"
     pass
 
+class HookGroupModules(CassandraObject):
+    _indexes = {
+        "all": [[]]
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "HookGroupModules-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return HookGroupModules._indexes
+
+class HookGroupModulesList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "HookGroupModules-"
+        kwargs["cls"] = HookGroupModules
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Hooks(object):
     """
     This class is a hook manager for the application. It keeps list of loaded handlers
@@ -39,12 +57,11 @@ class Hooks(object):
     def __init__(self, app):
         self.handlers = dict()
         self._groups = dict()
-        self._loaded_hooks = set()
         self.app = weakref.ref(app)
 
     def load_groups(self, groups):
         """
-        Load all modules handling any hooks from the given groups
+        Load all modules handling any hooks in the given groups
         groups - list of hook group names
         """
         with self.app().hook_lock:
@@ -56,39 +73,13 @@ class Hooks(object):
         """
         load_groups = [g for g in groups if g not in self._groups]
         if len(load_groups):
-            db = self.app().db
-            data = db.get_slice("Hooks", ColumnParent(column_family="Core"), SlicePredicate(column_names=load_groups), ConsistencyLevel.ONE)
-            for col in data:
-                self._groups[col.column.name] = json.loads(col.column.value)
+            list = self.objlist(HookGroupModulesList, load_groups)
+            list.load(silent=True)
+            for obj in list:
+                self.modules.load(obj.get("list"))
             for g in load_groups:
                 if g not in self._groups:
                     self._groups[g] = {}
-
-    def load_handlers(self, names):
-        """
-        Load all modules handling any of listed hooks
-        names - list of hook names
-        """
-        with self.app().hook_lock:
-            load_hooks = [n for n in names if n not in self._loaded_hooks]
-            if len(load_hooks):
-                load_groups = []
-                load_hooks_list = []
-                for name in load_hooks:
-                    m = re_hook_path.match(name)
-                    if not m:
-                        raise HookFormatException("Invalid hook name: %s" % name)
-                    (hook_group, hook_name) = m.group(1, 2)
-                    if hook_group not in self._groups:
-                        load_groups.append(hook_group)
-                    load_hooks_list.append((hook_group, hook_name))
-                    self._loaded_hooks.add(name)
-                self._load_groups(load_groups)
-                modules = []
-                for hook_group, hook_name in load_hooks_list:
-                    modules = self._groups[hook_group].get(hook_name)
-                    if modules is not None:
-                        self.app().modules.load(modules)
 
     def register(self, module_name, hook_name, handler, priority=0):
         """
@@ -120,10 +111,9 @@ class Hooks(object):
         if not m:
             raise HookFormatException("Invalid hook name: %s" % name)
         (hook_group, hook_name) = m.group(1, 2)
-        # ensure modules are loaded
-        if hook_group != "core":
-            if name not in self._loaded_hooks:
-                self.load_handlers([name])
+        # ensure handling modules are loaded
+        if hook_group != "core" and hook_group not in self._loaded_group:
+            self.load_groups([name])
         # call handlers
         handlers = self.handlers.get(name)
         ret = None
@@ -144,24 +134,32 @@ class Hooks(object):
         This method iterates over installed handlers and stores group => struct(name => modules_list)
         into the database
         """
+        modules = self.config.get("modules.list")
+        if modules:
+            self.modules.load(modules)
         rec = dict()
-        for name, handlers in self.handlers.iteritems():
+        for name, handlers in self.handlers.items():
             m = re_hook_path.match(name)
             if not m:
                 raise HookFormatException("Invalid hook name: %s" % name)
             (hook_group, hook_name) = m.group(1, 2)
             if hook_group != "core":
-                grpdict = rec.get(hook_group)
-                if grpdict is None:
-                    grpdict = rec[hook_group] = dict()
-                grpdict[hook_name] = [handler[2] for handler in handlers]
+                grpset = rec.get(hook_group)
+                if grpset is None:
+                    grpset = rec[hook_group] = set()
+                for handler in handlers:
+                    grpset.add(handler[2])
         with self.app().hook_lock:
-            db = self.app().db
-            timestamp = time.time() * 1000
-            data = [(g, json.dumps(rec[g])) for g in rec]
-            mutations = [Mutation(column_or_supercolumn=ColumnOrSuperColumn(column=Column(name=g, value=v, clock=Clock(timestamp=timestamp)))) for (g, v) in data]
-            mutations.insert(0, Mutation(deletion=Deletion(clock=Clock(timestamp=timestamp-1))))
-            db.batch_mutate({"Hooks": {"Core": mutations}}, ConsistencyLevel.ALL)
+            old_groups = self.objlist(HookGroupModulesList, query_index="all")
+            for obj in old_groups:
+                if not obj.uuid in rec:
+                    obj.remove()
+            groups = self.objlist(HookGroupModulesList, [])
+            for group, grpset in rec.iteritems():
+                obj = self.obj(HookGroupModules, group, data={})
+                obj.set("list", list(grpset))
+                groups.append(obj)
+            groups.store()
 
 class ConfigGroup(CassandraObject):
     _indexes = {
