@@ -18,8 +18,6 @@ import time
 import os
 import random
 
-ver = 3
-
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
 re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
@@ -408,7 +406,6 @@ class Web(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
-        self.rhook("core.ver", self.core_ver)
         self.rhook("int-core.ping", self.core_ping)
         self.rhook("core.check_last_ping", self.check_last_ping)
         self.rhook("int-core.reload", self.core_reload)
@@ -478,9 +475,6 @@ class Web(Module):
             factory.remove_by_tag(req.args)
         self.call("web.response_json", {"ok": 1})
 
-    def core_ver(self):
-        return ver
-
     def web_parse_template(self, filename, vars):
         req = self.req()
         if req.templates_parsed >= 100:
@@ -503,7 +497,7 @@ class Web(Module):
                 conf["LOAD_TEMPLATES"] = provider
             self.tpl = Template(conf)
         if vars.get("universal_variables") is None:
-            vars["ver"] = self.call("core.ver")
+            vars["ver"] = self.int_app().config.get("application.version", 0)
             vars["universal_variables"] = True
             try:
                 vars["domain"] = self.app().domain

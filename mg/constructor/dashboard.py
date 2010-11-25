@@ -1,6 +1,6 @@
 from mg import *
 from mg.core.auth import User
-from mg.constructor import *
+from mg.constructor.common import *
 import cgi
 
 class ProjectDashboard(Module):
@@ -137,7 +137,7 @@ class ProjectDashboard(Module):
         project.delkey("published")
         project.delkey("logo")
         project.store()
-        app.hooks.call("wizards.new", "mg.constructor.mod.ProjectSetupWizard")
+        app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
         app.hooks.call("cluster.appconfig_changed")
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 

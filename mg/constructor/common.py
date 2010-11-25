@@ -96,7 +96,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         if tag == "main":
             app = WebApplication(self.inst, tag, "ext")
             app.domain = self.inst.config["main_host"]
-            app.modules.load(["mg.constructor.mod.Constructor"])
+            app.modules.load(["mg.constructor.Constructor"])
             return app
         try:
             project = self.inst.int_app.obj(Project, tag)
@@ -106,12 +106,34 @@ class ApplicationFactory(mg.core.ApplicationFactory):
             domain = project.get("domain")
             if domain is None:
                 domain = "%s.%s" % (tag, self.inst.config["main_host"])
+            print "creating application %s" % tag
             app = WebApplication(self.inst, tag, "ext")
+            app.hooks.dynamic = True
             app.domain = domain
             app.project = project
-            app.modules.load(["mg.constructor.mod.ConstructorProject"])
+            app.modules.load(["mg.constructor.project.ConstructorProject"])
             return app
         return None
+
+    def added(self, app):
+        project = getattr(app, "project", None)
+        if project:
+            ver = self.get_by_tag("int").config.get("application.version", 0)
+            if project.get("app_version") != ver:
+                print "Application %s (project %s) app_version=%s, current application.version=%s" % (app.tag, project.uuid, project.get("app_version"), ver)
+                print "waiting for a lock..."
+                with app.lock(["ReconfigureHooks"]):
+                    print "lock gained"
+                    project.load()
+                    if project.get("app_version") != ver:
+                        print "Rebuilding handlers database"
+                        app.store_config_hooks(notify=False)
+                        project.set("app_version", ver)
+                        project.store()
+                        app.hooks.call("cluster.appconfig_changed")
+                    else:
+                        print "app_version already in sync with application.version. Skipping"
+                    print "unlocking"
 
     def add(self, app):
         super(ApplicationFactory, self).add(app)

@@ -87,7 +87,7 @@ class AdminInterface(Module):
         href = "%s/%s" % (re_remove_admin.sub('', group), hook)
         if args != "":
             href = "%s/%s" % (href, args)
-        first = Tru
+        first = True
         while group is not None:
             res = self.call("headmenu-%s.%s" % (group, hook), args)
             if res is None:
@@ -134,7 +134,7 @@ class AdminInterface(Module):
 
     def response_params(self):
         return {
-            "ver": self.call("core.ver"),
+            "ver": self.int_app().config.get("application.version", 0),
             "success": True,
         }
 

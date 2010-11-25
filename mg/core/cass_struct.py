@@ -67,7 +67,6 @@ class CommonCassandraStruct(Module):
         self.rhook("core.dbapply", self.cassandra_apply)
 
     def cassandra_struct(self, dbstruct):
-        dbstruct["Core"] = CfDef()
         dbstruct["Objects"] = CfDef()
 
     def cassandra_apply(self, dbstruct):

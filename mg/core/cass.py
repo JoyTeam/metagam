@@ -704,8 +704,9 @@ class CassandraObjectList(object):
         if not self._loaded:
             self.load(silent);
 
-    def store(self):
-        self._load_if_not_yet()
+    def store(self, dont_load=False):
+        if not dont_load:
+            self._load_if_not_yet()
         if len(self.dict) > 0:
             mutations = {}
             mcgroups = set()

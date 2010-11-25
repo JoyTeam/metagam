@@ -4,7 +4,7 @@ from mg.game.money import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
-from mg.constructor import Domain, DomainList
+from mg.constructor.common import Domain, DomainList
 
 re_price_value = re.compile(r'^(\d+|\d+\.\d{1,2})$')
 re_person_r = re.compile(r'^\w+( \w+)+$', re.UNICODE)

@@ -56,8 +56,9 @@ class Hooks(object):
 
     def __init__(self, app):
         self.handlers = dict()
-        self._groups = dict()
+        self.loaded_groups = set()
         self.app = weakref.ref(app)
+        self.dynamic = False
 
     def load_groups(self, groups):
         """
@@ -71,15 +72,20 @@ class Hooks(object):
         """
         The same as load_groups but without locking
         """
-        load_groups = [g for g in groups if g not in self._groups]
+        load_groups = [g for g in groups if g not in self.loaded_groups]
         if len(load_groups):
-            list = self.objlist(HookGroupModulesList, load_groups)
-            list.load(silent=True)
-            for obj in list:
-                self.modules.load(obj.get("list"))
+            lst = self.app().objlist(HookGroupModulesList, load_groups)
+            lst.load(silent=True)
+            modules = set()
+            for obj in lst:
+                if obj.get("list"):
+                    for mod in obj.get("list"):
+                        modules.add(mod)
+            modules = list(modules)
+            if len(modules):
+                self.app().modules.load(modules)
             for g in load_groups:
-                if g not in self._groups:
-                    self._groups[g] = {}
+                self.loaded_groups.add(g)
 
     def register(self, module_name, hook_name, handler, priority=0):
         """
@@ -89,31 +95,31 @@ class Hooks(object):
         handler - will be called on hook calls
         priority - order of hooks execution
         """
-        list = self.handlers.get(hook_name)
-        if list is None:
-            list = []
-            self.handlers[hook_name] = list
-        list.append((handler, priority, module_name))
-        list.sort(key=itemgetter(1), reverse=True)
+        lst = self.handlers.get(hook_name)
+        if lst is None:
+            lst = []
+            self.handlers[hook_name] = lst
+        lst.append((handler, priority, module_name))
+        lst.sort(key=itemgetter(1), reverse=True)
 
     def unregister_all(self):
         "Unregister all registered hooks"
         self.handlers.clear()
+        self.loaded_groups.clear()
 
     def call(self, name, *args, **kwargs):
         """
-        Call hook
-        name - hook name (format: "group.name")
-        *args, **kwargs - arbitrary parameters that will be passed to the handlers
-        Hook handler receives all parameters passed to the method
+        Call handlers of the hook
+        name - hook name ("group.name")
+        *args, **kwargs - arbitrary parameters passed to the handlers
         """
         m = re_hook_path.match(name)
         if not m:
             raise HookFormatException("Invalid hook name: %s" % name)
         (hook_group, hook_name) = m.group(1, 2)
-        # ensure handling modules are loaded
-        if hook_group != "core" and hook_group not in self._loaded_group:
-            self.load_groups([name])
+        # ensure handling modules are loaded. "core" handlers are not loaded automatically
+        if self.dynamic and hook_group != "core" and hook_group not in self.loaded_groups:
+            self.load_groups([hook_group])
         # call handlers
         handlers = self.handlers.get(name)
         ret = None
@@ -134,9 +140,8 @@ class Hooks(object):
         This method iterates over installed handlers and stores group => struct(name => modules_list)
         into the database
         """
-        modules = self.config.get("modules.list")
-        if modules:
-            self.modules.load(modules)
+        if not self.dynamic:
+            return
         rec = dict()
         for name, handlers in self.handlers.items():
             m = re_hook_path.match(name)
@@ -150,16 +155,16 @@ class Hooks(object):
                 for handler in handlers:
                     grpset.add(handler[2])
         with self.app().hook_lock:
-            old_groups = self.objlist(HookGroupModulesList, query_index="all")
+            old_groups = self.app().objlist(HookGroupModulesList, query_index="all")
             for obj in old_groups:
                 if not obj.uuid in rec:
                     obj.remove()
-            groups = self.objlist(HookGroupModulesList, [])
+            groups = self.app().objlist(HookGroupModulesList, [])
             for group, grpset in rec.iteritems():
-                obj = self.obj(HookGroupModules, group, data={})
+                obj = self.app().obj(HookGroupModules, group, data={})
                 obj.set("list", list(grpset))
                 groups.append(obj)
-            groups.store()
+            groups.store(dont_load=True)
 
 class ConfigGroup(CassandraObject):
     _indexes = {
@@ -270,7 +275,7 @@ class Config(object):
             del self._config[group][name]
             self._modified.add(group)
 
-    def store(self):
+    def store(self, notify=True):
         if len(self._modified):
             with self.app().config_lock:
                 list = self.app().objlist(ConfigGroupList, [])
@@ -281,7 +286,8 @@ class Config(object):
                     list.append(obj)
                 list.store()
                 self._modified.clear()
-            self.app().hooks.call("cluster.appconfig_changed")
+            if notify:
+                self.app().hooks.call("cluster.appconfig_changed")
 
 class Module(object):
     """
@@ -391,6 +397,7 @@ class Module(object):
         return self.app().lock(*args, **kwargs)
 
     def int_app(self):
+        "Returns reference to the application 'int'"
         try:
             return self._int_app
         except AttributeError:
@@ -399,12 +406,16 @@ class Module(object):
         return self._int_app
 
     def main_app(self):
+        "Returns reference to the application 'main'"
         try:
             return self._main_app
         except AttributeError:
             pass
         self._main_app = self.app().inst.appfactory.get_by_tag("main")
         return self._main_app
+
+    def child_modules(self):
+        return []
 
 class ModuleException(Exception):
     "Error during module loading"
@@ -417,7 +428,7 @@ class Modules(object):
     """
     def __init__(self, app):
         self.app = weakref.ref(app)
-        self._loaded_modules = dict()
+        self.loaded_modules = dict()
 
     def load(self, modules):
         """
@@ -433,7 +444,8 @@ class Modules(object):
         errors = 0
         app = self.app()
         for mod in modules:
-            if mod not in self._loaded_modules:
+            if mod not in self.loaded_modules:
+                logging.getLogger("mg.core.Modules").debug("LOAD MODULE %s", mod)
                 m = re_module_path.match(mod)
                 if not m:
                     raise ModuleException("Invalid module name: %s" % mod)
@@ -455,17 +467,30 @@ class Modules(object):
                             raise
                 cls = module.__dict__[class_name]
                 obj = cls(app, mod)
-                self._loaded_modules[mod] = obj
+                self.loaded_modules[mod] = obj
                 obj.register()
         return errors
 
     def reload(self):
         "Reload all modules"
         with self.app().inst.modules_lock:
-            modules = self._loaded_modules.keys()
-            self._loaded_modules.clear()
+            modules = self.loaded_modules.keys()
+            self.loaded_modules.clear()
             self.app().hooks.unregister_all()
             return self._load(modules)
+
+    def load_all(self):
+        "Load all available modules"
+        with self.app().inst.modules_lock:
+            complete = set()
+            repeat = True
+            while repeat:
+                repeat = False
+                for name, mod in self.loaded_modules.items():
+                    if name not in complete:
+                        self._load(mod.child_modules())
+                        complete.add(name)
+                        repeat = True
 
 class Formatter(logging.Formatter):
     def format(self, record):
@@ -624,6 +649,13 @@ class Application(object):
     def now(self, add=0):
         return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
 
+    def store_config_hooks(self, notify=True):
+        self.config.store(notify=False)
+        self.modules.load_all()
+        self.hooks.store()
+        if notify:
+            self.hooks.call("cluster.appconfig_changed")
+
 class ApplicationFactory(object):
     """
     ApplicationFactory returns Application object by it's tag
@@ -635,6 +667,10 @@ class ApplicationFactory(object):
     def add(self, app):
         "Add application to the factory"
         self.applications[app.tag] = app
+        self.added(app)
+
+    def added(self, app):
+        pass
 
     def remove_by_tag(self, tag):
         "Remove application from the factory by its tag"

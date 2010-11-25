@@ -103,15 +103,21 @@ class CaptchaList(CassandraObjectList):
         kwargs["cls"] = Captcha
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class CookieSession(Module):
+class Sessions(Module):
+    "The mostly used authentication functions. It must load very fast"
     def register(self):
         Module.register(self)
-        self.rhook("session.get", self.get)
+        self.rhook("session.get", self.get_session)
         self.rhook("session.require_login", self.require_login)
-        self.rhook("all.schedule", self.schedule)
-        self.rhook("session.cleanup", self.cleanup)
+        self.rhook("session.find_user", self.find_user)
 
-    def get(self, create=False, cache=True, domain=None):
+    def find_session(self, sid):
+        try:
+            return self.obj(Session, sid)
+        except ObjectNotFoundException:
+            return None
+
+    def get_session(self, create=False, cache=True, domain=None):
         req = self.req()
         if cache:
             try:
@@ -128,7 +134,7 @@ class CookieSession(Module):
                 if cache:
                     req._session = session
                 return session
-            session = self.find(sid)
+            session = self.find_session(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                 session.store()
@@ -156,12 +162,6 @@ class CookieSession(Module):
             req._session = session
         return session
 
-    def find(self, sid):
-        try:
-            return self.obj(Session, sid)
-        except ObjectNotFoundException:
-            return None
-
     def require_login(self):
         session = self.call("session.get")
         if session is None or session.get("user") is None:
@@ -169,16 +169,33 @@ class CookieSession(Module):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
         return session
 
-    def schedule(self, sched):
-        sched.add("session.cleanup", "5 1 * * *", priority=10)
+    def find_user(self, name):
+        users = self.objlist(UserList, query_index="name", query_equal=name.lower())
+        if len(users):
+            users.load()
+            return users[0]
+        else:
+            return None
 
-    def cleanup(self):
-        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
-        sessions.remove()
-
-class PasswordAuthentication(Module):
+class Interface(Module):
+    "Functions used in special interfaces (user and admin)"
     def register(self):
         Module.register(self)
+        self.rhook("auth.permissions", self.auth_permissions)
+        self.rhook("session.require_permission", self.require_permission)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-security.index", self.menu_security_index)
+        self.rhook("ext-admin-auth.permissions", self.admin_permissions)
+        self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
+        self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions)
+        self.rhook("headmenu-admin-auth.editpermissions", self.headmenu_editpermissions)
+        self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions)
+        self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("security.list-roles", self.list_roles)
+        self.rhook("security.users-roles", self.users_roles)
+        self.rhook("all.schedule", self.schedule)
+        self.rhook("session.cleanup", self.cleanup)
         self.rhook("ext-auth.register", self.ext_register)
         self.rhook("ext-auth.captcha", self.ext_captcha)
         self.rhook("ext-auth.logout", self.ext_logout)
@@ -187,9 +204,18 @@ class PasswordAuthentication(Module):
         self.rhook("ext-auth.remind", self.ext_remind)
         self.rhook("ext-auth.change", self.ext_change)
         self.rhook("ext-auth.email", self.ext_email)
-        self.rhook("session.find_user", self.find_user)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("session.cleanup", self.cleanup)
+
+    def schedule(self, sched):
+        sched.add("session.cleanup", "5 1 * * *", priority=10)
+
+    def cleanup(self):
+        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
+        sessions.remove()
+        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
+        captchas.remove()
+        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
+        users.remove()
 
     def objclasses_list(self, objclasses):
         objclasses["User"] = (User, UserList)
@@ -213,7 +239,7 @@ class PasswordAuthentication(Module):
                 form.error("name", self._("Enter your user name"))
             elif not re.match(r'^[A-Za-z0-9_-]+$', name):
                 form.error("name", self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"))
-            elif self.find_user(name):
+            elif self.call("session.find_user", name):
                 form.error("name", self._("This name is taken already"))
             if not password1:
                 form.error("password1", self._("Enter your password"))
@@ -279,12 +305,6 @@ class PasswordAuthentication(Module):
             "title": self._("User registration"),
         }
         self.call("web.response_global", form.html(), vars)
-
-    def cleanup(self):
-        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
-        captchas.remove()
-        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
-        users.remove()
 
     def ext_activate(self):
         req = self.req()
@@ -477,14 +497,6 @@ class PasswordAuthentication(Module):
         image.save(data, "JPEG")
         self.call("web.response", data.getvalue(), "image/jpeg")
 
-    def find_user(self, name):
-        users = self.objlist(UserList, query_index="name", query_equal=name.lower())
-        if len(users):
-            users.load()
-            return users[0]
-        else:
-            return None
-
     def ext_logout(self):
         session = self.call("session.get")
         user = session.get("user")
@@ -509,7 +521,7 @@ class PasswordAuthentication(Module):
             if not name:
                 form.error("name", self._("Enter your user name"))
             else:
-                user = self.find_user(name)
+                user = self.call("session.find_user", name)
                 if user is None:
                     form.error("name", self._("User not found"))
                 elif user.get("inactive"):
@@ -677,23 +689,6 @@ class PasswordAuthentication(Module):
             "title": self._("E-mail change"),
         }
         self.call("web.response_global", form.html(), vars)
-
-class Authorization(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("auth.permissions", self.auth_permissions)
-        self.rhook("session.require_permission", self.require_permission)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-security.index", self.menu_security_index)
-        self.rhook("ext-admin-auth.permissions", self.admin_permissions)
-        self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
-        self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions)
-        self.rhook("headmenu-admin-auth.editpermissions", self.headmenu_editpermissions)
-        self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions)
-        self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
-        self.rhook("permissions.list", self.permissions_list)
-        self.rhook("security.list-roles", self.list_roles)
-        self.rhook("security.users-roles", self.users_roles)
 
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
