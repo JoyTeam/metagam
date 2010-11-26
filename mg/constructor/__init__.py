@@ -99,7 +99,7 @@ class Constructor(Module):
         print "%s - %s" % (req.group, req.hook)
         if req.group == "index" and req.hook == "index":
             return "constructor/index_global.html"
-        elif req.group == "auth" and (req.hook == "login" or req.hook == "register"):
+        elif req.group == "auth":
             return "constructor/index_global.html"
         else:
             return "constructor/global.html"
