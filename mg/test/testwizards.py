@@ -4,7 +4,7 @@
 import unittest
 from concurrence import dispatch, Tasklet
 from mg.core import *
-from mg.core.wizards import Wizard
+from mg.admin.wizards import Wizard
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
 from cassandra.ttypes import *
@@ -29,7 +29,7 @@ class TestWizards(unittest.TestCase):
         self.inst.dbpool = CassandraPool((("director-db", 9160),))
         self.inst.mcpool = MemcachedPool(("director-mc", 11211))
         self.app = Application(self.inst, "mgtest", keyspace="mgtest")
-        self.app.modules.load(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.wizards.Wizards"])
+        self.app.modules.load(["mg.core.cass_struct.CommonCassandraStruct", "mg.admin.wizards.Wizards"])
         dbstruct = {}
         self.app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)

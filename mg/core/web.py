@@ -441,6 +441,7 @@ class Web(Module):
         config = request.param("config")
         if config:
             self.app().inst.config = json.loads(config)
+        self.debug("RELOADING APPLICATIONS")
         errors = self.app().inst.reload()
         if errors:
             self.call("web.response_json", { "errors": errors })

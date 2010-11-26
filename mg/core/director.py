@@ -18,7 +18,7 @@ class Director(Module):
         if modules:
             self.rdep(modules)
         self.app().servers_online = self.conf("director.servers", default={})
-        self.app().servers_online_modified = True
+        self.app().servers_online_modified = False
         self.queue_workers = []
         self.workers_str = None
         self.rhook("web.global_html", self.web_global_html)
@@ -110,11 +110,18 @@ class Director(Module):
 
     def director_reload(self):
         result = {}
+        # incrementing application.version
+        config = self.int_app().config
+        ver = config.get("application.version", 0) + 1
+        config.set("application.version", ver)
+        config.store(notify=False)
+        # reloading ourselves
         errors = self.app().reload()
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
-            result["director"] = "ok"
+            result["director"] = "ok: application.version=%d" % ver
+        # reloading cluster
         self.reload_servers(result, errors)
         return result
 

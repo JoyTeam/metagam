@@ -83,7 +83,7 @@ class Hooks(object):
                         modules.add(mod)
             modules = list(modules)
             if len(modules):
-                self.app().modules.load(modules)
+                self.app().modules.load(modules, silent=True)
             for g in load_groups:
                 self.loaded_groups.add(g)
 
@@ -190,12 +190,13 @@ class Config(object):
     config groups and can perform get operation on the configuration.
     """
     def __init__(self, app):
-        self.clear()
         self.app = weakref.ref(app)
+        self.clear()
 
     def clear(self):
         self._config = {}
         self._modified = set()
+        logging.getLogger("mg.core.Modules").debug("CLEARING CONFIG FOR APP %s", self.app().tag)
 
     def _load_groups(self, groups):
         """
@@ -208,6 +209,7 @@ class Config(object):
             list.load(silent=True)
             for g in list:
                 self._config[g.uuid] = g.data
+                logging.getLogger("mg.core.Modules").debug("  - loaded config for app %s: %s => %s", self.app().tag, g.uuid, g.data)
             for g in load_groups:
                 if not g in self._config:
                     self._config[g] = {}
@@ -430,16 +432,17 @@ class Modules(object):
         self.app = weakref.ref(app)
         self.loaded_modules = dict()
 
-    def load(self, modules):
+    def load(self, modules, silent=False):
         """
         Load requested modules.
         modules - list of module names (format: "mg.group.Class" means
+        silent - don't fail on ImportError
         "import Class from mg.group")
         """
         with self.app().inst.modules_lock:
-            return self._load(modules)
+            return self._load(modules, silent)
 
-    def _load(self, modules):
+    def _load(self, modules, silent=False):
         "The same as load but without locking"
         errors = 0
         app = self.app()
@@ -454,7 +457,13 @@ class Modules(object):
                 app.inst.modules.add(module_name)
                 if not module:
                     try:
-                        __import__(module_name, globals(), locals(), [], -1)
+                        try:
+                            __import__(module_name, globals(), locals(), [], -1)
+                        except ImportError as e:
+                            if silent:
+                                logging.getLogger("%s:mg.core.Modules" % self.app().inst.server_id).exception(e)
+                            else:
+                                raise
                         module = sys.modules.get(module_name)
                     except (KeyboardInterrupt, SystemExit, TaskletExit):
                         raise
@@ -465,10 +474,14 @@ class Modules(object):
                             logging.getLogger("%s:mg.core.Modules" % self.app().inst.server_id).exception(e)
                         else:
                             raise
-                cls = module.__dict__[class_name]
-                obj = cls(app, mod)
-                self.loaded_modules[mod] = obj
-                obj.register()
+                if module:
+                    cls = module.__dict__[class_name]
+                    obj = cls(app, mod)
+                    self.loaded_modules[mod] = obj
+                    obj.register()
+                else:
+                    print "silently ignoring failed module %s" % module_name
+                    app.inst.modules.remove(module_name)
         return errors
 
     def reload(self):
