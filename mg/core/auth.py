@@ -110,6 +110,7 @@ class Sessions(Module):
         self.rhook("session.get", self.get_session)
         self.rhook("session.require_login", self.require_login)
         self.rhook("session.find_user", self.find_user)
+        self.rhook("session.require_permission", self.require_permission)
 
     def find_session(self, sid):
         try:
@@ -177,12 +178,16 @@ class Sessions(Module):
         else:
             return None
 
+    def require_permission(self, perm):
+        req = self.req()
+        if not req.has_access(perm):
+            self.call("web.forbidden")
+
 class Interface(Module):
     "Functions used in special interfaces (user and admin)"
     def register(self):
         Module.register(self)
         self.rhook("auth.permissions", self.auth_permissions)
-        self.rhook("session.require_permission", self.require_permission)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-security.index", self.menu_security_index)
         self.rhook("ext-admin-auth.permissions", self.admin_permissions)
@@ -195,7 +200,7 @@ class Interface(Module):
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
         self.rhook("all.schedule", self.schedule)
-        self.rhook("session.cleanup", self.cleanup)
+        self.rhook("auth.cleanup", self.cleanup)
         self.rhook("ext-auth.register", self.ext_register)
         self.rhook("ext-auth.captcha", self.ext_captcha)
         self.rhook("ext-auth.logout", self.ext_logout)
@@ -207,7 +212,7 @@ class Interface(Module):
         self.rhook("objclasses.list", self.objclasses_list)
 
     def schedule(self, sched):
-        sched.add("session.cleanup", "5 1 * * *", priority=10)
+        sched.add("auth.cleanup", "5 1 * * *", priority=10)
 
     def cleanup(self):
         sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
@@ -558,7 +563,7 @@ class Interface(Module):
         self.call("web.response_global", form.html(), vars)
 
     def ext_change(self):
-        self.call("auth.require_login")
+        self.call("session.require_login")
         req = self.req()
         form = self.call("web.form", "socio/form.html")
         if req.ok():
@@ -625,7 +630,7 @@ class Interface(Module):
         self.call("web.response_global", form.html(), vars)
 
     def ext_email(self):
-        self.call("auth.require_login")
+        self.call("session.require_login")
         req = self.req()
         user = self.obj(User, req.user())
         if req.args == "confirm":
@@ -705,11 +710,6 @@ class Interface(Module):
             except ObjectNotFoundException:
                 pass
         return perms
-
-    def require_permission(self, perm):
-        req = self.req()
-        if not req.has_access(perm):
-            self.call("web.forbidden")
 
     def menu_root_index(self, menu):
         menu.append({"id": "security.index", "text": self._("Security")})

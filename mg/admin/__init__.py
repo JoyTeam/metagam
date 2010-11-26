@@ -23,7 +23,7 @@ class AdminInterface(Module):
         self.rhook("admin.advice", self.advice)
 
     def index(self):
-        self.call("auth.require_login")
+        self.call("session.require_login")
         menu = self.makemenu()
         vars = {
             "menu": json.dumps(menu),
@@ -71,6 +71,7 @@ class AdminInterface(Module):
         result = []
         for ent in menu:
             if ent.get("leaf"):
+                ent["href"] = "/admin#%s" % ent.get("id")
                 result.append(ent)
             else:
                 submenu = self.leftmenunode(ent["id"], ent["text"])

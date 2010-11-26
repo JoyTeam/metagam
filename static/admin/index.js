@@ -165,6 +165,8 @@ function adm(node_id)
 
 function find_default_page(menu)
 {
+	if (!menu)
+		return undefined;
 	var i;
 	for (i = 0; i < menu.length; i++) {
 		var ent = menu[i];

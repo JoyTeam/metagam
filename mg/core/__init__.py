@@ -631,6 +631,7 @@ class Application(object):
         self.modules = Modules(self)
         self.config_lock = Lock()
         self.hook_lock = Lock()
+        self.dynamic = False
 
     def dbrestruct(self):
         "Check database structure and update if necessary"
@@ -743,5 +744,8 @@ class ApplicationFactory(object):
         # and reloading not unloadable ones
         errors = 0
         for app in self.applications.values():
-            errors = errors + app.reload()
+            if app.dynamic:
+                self.remove(app)
+            else:
+                errors = errors + app.reload()
         return errors
