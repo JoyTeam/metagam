@@ -1,8 +1,10 @@
+<div class="form">
+<div class="form-top"></div>
+<div class="form-content">
 <div style="width: 350px"></div>
 [%if form_texteditors%]<script type="text/javascript" src="/st/[%ver%]/js/texteditor.js"></script>[%end%]
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="std" name="stdform">
 [%if form_top%]<div class="list_messages_top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
-<div>[%for hidden in form_hidden%]<input type="hidden" name="[%hidden.name%]" value="[%hidden.value%]" />[%end%]</div>
 [%for row in form_rows%]
 <table class="std_form_row">
 [%if row.show_header%]
@@ -68,5 +70,9 @@
 </tr>
 </table>
 [%end%]
+<div>[%for hidden in form_hidden%]<input type="hidden" name="[%hidden.name%]" value="[%hidden.value%]" />[%end%]</div>
 [%if form_bottom%]<div class="list_messages_bottom">[%for html in form_bottom%]<div>[%html%]</div>[%end%]</div>[%end%]
 </form>
+</div>
+<div class="form-bottom"></div>
+</div>

@@ -410,7 +410,7 @@ class Socio(Module):
         req = self.req()
         if not re.match(r'^[a-z0-9_]+$', req.args):
             self.call("web.not_found")
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         url = req.param("url")
         image_field = "image"
         if req.ok():
@@ -901,7 +901,7 @@ class Forum(Module):
             self.call("web.forbidden")
         subject = req.param("subject")
         content = req.param("content")
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         if req.ok():
             if not subject:
                 form.error("subject", self._("Enter topic subject"))
@@ -1075,7 +1075,7 @@ class Forum(Module):
                 post["post_actions"] = " &bull; ".join(actions)
         # reply form
         content = req.param("content")
-        form = self.call("web.form", "socio/form.html", "/forum/topic/" + topic.uuid + "#post_form")
+        form = self.call("web.form", "common/form.html", "/forum/topic/" + topic.uuid + "#post_form")
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
@@ -1241,7 +1241,7 @@ class Forum(Module):
         self.topics_htmlencode([topic_data])
         req = self.req()
         content = req.param("content")
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
@@ -1315,7 +1315,7 @@ class Forum(Module):
         if not self.may_edit(cat, topic, post):
             self.call("web.forbidden")
         req = self.req()
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         vars = {
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
@@ -1388,7 +1388,7 @@ class Forum(Module):
         roles = roles.get(user_uuid, [])
         categories = [cat for cat in categories if self.may_read(user_uuid, cat, rules[cat["id"]], roles)]
         # settings form
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         form.textarea_rows = 4
         signature = req.param("signature")
         avatar = req.param_raw("avatar")
@@ -1593,7 +1593,7 @@ class Forum(Module):
             categories = [c for c in categories if c["id"] != cat["id"] and self.may_write(user_uuid, c, rules=rules[c["id"]], roles=roles)]
             if not self.may_move(cat, topic, rules=rules[cat["id"]], roles=roles):
                 self.call("web.forbidden")
-            form = self.call("web.form", "socio/form.html")
+            form = self.call("web.form", "common/form.html")
             newcat = req.param("newcat")
             allowed = dict([(c["id"], True) for c in categories])
             if req.ok():

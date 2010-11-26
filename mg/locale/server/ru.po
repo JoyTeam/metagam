@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-26 11:58+0300\n"
-"PO-Revision-Date: 2010-11-26 11:58+0300\n"
+"POT-Creation-Date: 2010-11-26 17:37+0300\n"
+"PO-Revision-Date: 2010-11-26 17:39+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -42,7 +42,7 @@ msgstr "Модерирование форума"
 
 #: mg/socio/__init__.py:203
 #: mg/constructor/__init__.py:16
-#: mg/constructor/__init__.py:150
+#: mg/constructor/__init__.py:154
 msgid "Forum"
 msgstr "Форум"
 
@@ -72,14 +72,14 @@ msgstr "Порядок"
 
 #: mg/socio/__init__.py:222
 #: mg/socio/__init__.py:1324
-#: mg/core/auth.py:747
+#: mg/core/auth.py:748
 msgid "Editing"
 msgstr "Редактирование"
 
 #: mg/socio/__init__.py:223
 #: mg/socio/__init__.py:1030
 #: mg/socio/__init__.py:1071
-#: mg/core/auth.py:746
+#: mg/core/auth.py:747
 msgid "edit"
 msgstr "редактировать"
 
@@ -131,7 +131,7 @@ msgid "Top category title"
 msgstr "Раздел верхнего уровня"
 
 #: mg/socio/__init__.py:288
-#: mg/core/auth.py:932
+#: mg/core/auth.py:933
 msgid "Sort order"
 msgstr "Порядок сортировки"
 
@@ -219,7 +219,7 @@ msgid "Upload an image"
 msgstr "Загрузите изображение"
 
 #: mg/socio/__init__.py:520
-#: mg/core/web.py:726
+#: mg/core/web.py:728
 msgid "Image"
 msgstr "Картинка"
 
@@ -373,14 +373,14 @@ msgid "Edit topic"
 msgstr "Редактирование темы"
 
 #: mg/socio/__init__.py:1369
-#: mg/core/web.py:704
+#: mg/core/web.py:706
 #: mg/core/director.py:250
 #: mg/admin/__init__.py:217
 msgid "Save"
 msgstr "Сохранить"
 
 #: mg/socio/__init__.py:1381
-#: mg/constructor/__init__.py:197
+#: mg/constructor/__init__.py:201
 msgid "Forum settings"
 msgstr "Настройки форума"
 
@@ -519,67 +519,67 @@ msgstr "декабря"
 msgid "at the {2:d}{4} {1}, {0} at {3}"
 msgstr "{2:02d} {1} {0} в {3}"
 
-#: mg/core/web.py:714
+#: mg/core/web.py:716
 msgid "Bold"
 msgstr "Полужирный"
 
-#: mg/core/web.py:715
+#: mg/core/web.py:717
 msgid "Italic"
 msgstr "Курсив"
 
-#: mg/core/web.py:716
+#: mg/core/web.py:718
 msgid "Underline"
 msgstr "Подчёркивание"
 
-#: mg/core/web.py:717
+#: mg/core/web.py:719
 msgid "Strike"
 msgstr "Зачёркивание"
 
-#: mg/core/web.py:718
+#: mg/core/web.py:720
 msgid "Quote"
 msgstr "Цитата"
 
-#: mg/core/web.py:719
+#: mg/core/web.py:721
 msgid "Red"
 msgstr "Красный"
 
-#: mg/core/web.py:720
+#: mg/core/web.py:722
 msgid "Green"
 msgstr "Зелёный"
 
-#: mg/core/web.py:721
+#: mg/core/web.py:723
 msgid "Blue"
 msgstr "Синий"
 
-#: mg/core/web.py:722
+#: mg/core/web.py:724
 msgid "Dark green"
 msgstr "Тёмно-зелёный"
 
-#: mg/core/web.py:723
+#: mg/core/web.py:725
 msgid "Magenta"
 msgstr "Фиолетовый"
 
-#: mg/core/web.py:724
+#: mg/core/web.py:726
 msgid "Yellow"
 msgstr "Жёлтый"
 
-#: mg/core/web.py:725
+#: mg/core/web.py:727
 msgid "Orange"
 msgstr "Оранжевый"
 
-#: mg/core/web.py:727
+#: mg/core/web.py:729
 msgid "Insert image"
 msgstr "Вставить изображение"
 
-#: mg/core/web.py:728
+#: mg/core/web.py:730
 msgid "Translit"
 msgstr "Транслит"
 
-#: mg/core/web.py:729
+#: mg/core/web.py:731
 msgid "Transliterate to Russian"
 msgstr "Транслитерация на русский"
 
-#: mg/core/web.py:730
+#: mg/core/web.py:732
 msgid "Smiles"
 msgstr "Смайлики"
 
@@ -607,7 +607,7 @@ msgid "Enter your password"
 msgstr "Введите ваш пароль"
 
 #: mg/core/auth.py:252
-#: mg/core/auth.py:588
+#: mg/core/auth.py:589
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
 
@@ -616,7 +616,7 @@ msgid "Retype your password"
 msgstr "Повторите пароль"
 
 #: mg/core/auth.py:256
-#: mg/core/auth.py:592
+#: mg/core/auth.py:593
 msgid "Password don't match. Try again, please"
 msgstr "Пароли не совпадают. Пожалуйста, попробуйте снова"
 
@@ -629,7 +629,7 @@ msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
 
 #: mg/core/auth.py:264
-#: mg/core/auth.py:681
+#: mg/core/auth.py:682
 msgid "Enter correct e-mail"
 msgstr "Введите правильный адрес e-mail"
 
@@ -666,8 +666,8 @@ msgstr ""
 
 #: mg/core/auth.py:302
 #: mg/core/auth.py:556
-#: mg/core/auth.py:744
-#: mg/core/auth.py:773
+#: mg/core/auth.py:745
+#: mg/core/auth.py:774
 #: mg/constructor/dashboard.py:66
 msgid "User name"
 msgstr "Имя пользователя"
@@ -703,8 +703,7 @@ msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
 #: mg/core/auth.py:308
-#: mg/core/auth.py:559
-#: mg/constructor/__init__.py:120
+#: mg/constructor/__init__.py:127
 msgid "Register"
 msgstr "Регистрация"
 
@@ -771,7 +770,7 @@ msgid "Remind"
 msgstr "Напомнить"
 
 #: mg/core/auth.py:531
-#: mg/core/auth.py:768
+#: mg/core/auth.py:769
 #: mg/constructor/dashboard.py:61
 msgid "User not found"
 msgstr "Пользователь не найден"
@@ -785,79 +784,88 @@ msgid "Incorrect password"
 msgstr "Неверный пароль"
 
 #: mg/core/auth.py:558
-#: mg/constructor/__init__.py:119
+#: mg/constructor/__init__.py:126
 msgid "Log in"
 msgstr "Вход"
 
 #: mg/core/auth.py:559
-msgid "Remind my password"
-msgstr "Напомнить пароль"
+#, python-format
+msgid "If this is your first visit, %s."
+msgstr "Если вы первый раз на сайте, то вы должны %s."
 
-#: mg/core/auth.py:561
+#: mg/core/auth.py:559
+msgid "register please"
+msgstr "зарегистрироваться"
+
+#: mg/core/auth.py:560
+msgid "Forgotten your password?"
+msgstr "Забыли ваш пароль?"
+
+#: mg/core/auth.py:562
 msgid "User login"
 msgstr "Вход пользователя"
 
-#: mg/core/auth.py:579
-#: mg/core/auth.py:672
+#: mg/core/auth.py:580
+#: mg/core/auth.py:673
 msgid "Enter your old password"
 msgstr "Введите ваш старый пароль"
 
-#: mg/core/auth.py:584
-#: mg/core/auth.py:677
+#: mg/core/auth.py:585
+#: mg/core/auth.py:678
 msgid "Incorrect old password"
 msgstr "Неверный старый пароль"
 
-#: mg/core/auth.py:586
+#: mg/core/auth.py:587
 msgid "Enter your new password"
 msgstr "Введите ваш новый пароль"
 
-#: mg/core/auth.py:590
+#: mg/core/auth.py:591
 msgid "Retype your new password"
 msgstr "Повторите ваш новый пароль"
 
-#: mg/core/auth.py:623
+#: mg/core/auth.py:624
 msgid "Old password"
 msgstr "Старый пароль"
 
-#: mg/core/auth.py:624
+#: mg/core/auth.py:625
 msgid "New password"
 msgstr "Новый пароль"
 
-#: mg/core/auth.py:625
+#: mg/core/auth.py:626
 msgid "Confirm new password"
 msgstr "Подтвердите новый пароль"
 
-#: mg/core/auth.py:626
-#: mg/core/auth.py:692
+#: mg/core/auth.py:627
+#: mg/core/auth.py:693
 msgid "Change"
 msgstr "Изменить"
 
-#: mg/core/auth.py:628
+#: mg/core/auth.py:629
 msgid "Password change"
 msgstr "Изменение пароля"
 
-#: mg/core/auth.py:642
+#: mg/core/auth.py:643
 msgid "Enter your code"
 msgstr "Введите ваш код"
 
-#: mg/core/auth.py:657
+#: mg/core/auth.py:658
 msgid "Confirmation code from your post box"
 msgstr "Введите код подтверждения, отправленный вам на почту"
 
-#: mg/core/auth.py:658
+#: mg/core/auth.py:659
 msgid "Confirm e-mail change"
 msgstr "Подтвердите изменение e-mail"
 
-#: mg/core/auth.py:660
-#: mg/core/auth.py:687
+#: mg/core/auth.py:661
+#: mg/core/auth.py:688
 msgid "E-mail confirmation"
 msgstr "Подтверждение e-mail"
 
-#: mg/core/auth.py:679
+#: mg/core/auth.py:680
 msgid "Enter new e-mail address"
 msgstr "Введите новый адрес e-mail"
 
-#: mg/core/auth.py:687
+#: mg/core/auth.py:688
 msgid ""
 "Someone possibly you requested e-mail change on the MMOConstructor site. If you really want to do this enter the following confirmation code on the site:\n"
 "\n"
@@ -875,91 +883,91 @@ msgstr ""
 "\n"
 "http://{host}/auth/email/confirm?code={code}"
 
-#: mg/core/auth.py:690
+#: mg/core/auth.py:691
 msgid "New e-mail address"
 msgstr "Новый адрес e-mail"
 
-#: mg/core/auth.py:691
+#: mg/core/auth.py:692
 msgid "Your current password"
 msgstr "Ваш текущий пароль"
 
-#: mg/core/auth.py:694
+#: mg/core/auth.py:695
 msgid "E-mail change"
 msgstr "Изменение e-mail"
 
-#: mg/core/auth.py:699
+#: mg/core/auth.py:700
 msgid "User permissions editor"
 msgstr "Редактор привилегий пользователей"
 
-#: mg/core/auth.py:715
+#: mg/core/auth.py:716
 msgid "Security"
 msgstr "Безопасность"
 
-#: mg/core/auth.py:720
-#: mg/core/auth.py:745
+#: mg/core/auth.py:721
+#: mg/core/auth.py:746
 msgid "Permissions"
 msgstr "Привилегии"
 
-#: mg/core/auth.py:743
-#: mg/core/auth.py:779
+#: mg/core/auth.py:744
+#: mg/core/auth.py:780
 msgid "Edit permissions of a user"
 msgstr "Редактировать привилегии пользователя"
 
-#: mg/core/auth.py:753
+#: mg/core/auth.py:754
 msgid "User permissions"
 msgstr "Привилегии пользователей"
 
-#: mg/core/auth.py:764
+#: mg/core/auth.py:765
 #: mg/constructor/dashboard.py:57
 msgid "Enter user name"
 msgstr "Введите имя пользователя"
 
-#: mg/core/auth.py:775
+#: mg/core/auth.py:776
 #: mg/constructor/dashboard.py:68
 #: mg/constructor/dashboard.py:120
 msgid "Search"
 msgstr "Искать"
 
-#: mg/core/auth.py:825
+#: mg/core/auth.py:826
 msgid "Everybody"
 msgstr "Все"
 
-#: mg/core/auth.py:826
+#: mg/core/auth.py:827
 msgid "Logged in"
 msgstr "Вошедший в систему"
 
-#: mg/core/auth.py:827
+#: mg/core/auth.py:828
 msgid "Not logged in"
 msgstr "Не вошедший в систему"
 
-#: mg/core/auth.py:829
+#: mg/core/auth.py:830
 #, python-format
 msgid "Privilege: %s"
 msgstr "Привилегия: %s"
 
-#: mg/core/auth.py:901
-#: mg/core/auth.py:910
+#: mg/core/auth.py:902
+#: mg/core/auth.py:911
 msgid "Select valid role"
 msgstr "Выберите роль"
 
-#: mg/core/auth.py:903
-#: mg/core/auth.py:912
+#: mg/core/auth.py:904
+#: mg/core/auth.py:913
 msgid "Select valid permission"
 msgstr "Выберите разрешение"
 
-#: mg/core/auth.py:927
+#: mg/core/auth.py:928
 msgid "Delete"
 msgstr "Удалить"
 
-#: mg/core/auth.py:928
+#: mg/core/auth.py:929
 msgid "Add new rule"
 msgstr "Добавить новое правило"
 
-#: mg/core/auth.py:933
+#: mg/core/auth.py:934
 msgid "Role"
 msgstr "Роль"
 
-#: mg/core/auth.py:934
+#: mg/core/auth.py:935
 msgid "Permission"
 msgstr "Разрешение"
 
@@ -1410,14 +1418,14 @@ msgid "Go to the Constructor forum"
 msgstr "Перейти на форум Конструктора"
 
 #: mg/constructor/__init__.py:17
-#: mg/constructor/__init__.py:116
-#: mg/constructor/__init__.py:181
+#: mg/constructor/__init__.py:123
+#: mg/constructor/__init__.py:185
 msgid "Cabinet"
 msgstr "Кабинет"
 
 #: mg/constructor/__init__.py:17
-#: mg/constructor/__init__.py:192
-#: mg/constructor/__init__.py:210
+#: mg/constructor/__init__.py:196
+#: mg/constructor/__init__.py:214
 msgid "Return to the Cabinet"
 msgstr "Возврат в кабинет"
 
@@ -1456,82 +1464,73 @@ msgstr "Клуб разработчиков"
 msgid "Any talks related to the game development"
 msgstr "Общение на тему разработки игр"
 
-#: mg/constructor/__init__.py:114
-#: mg/constructor/__init__.py:152
+#: mg/constructor/__init__.py:121
+#: mg/constructor/__init__.py:156
 msgid "Log out"
 msgstr "Выход"
 
-#: mg/constructor/__init__.py:115
-#: mg/constructor/__init__.py:151
-#: mg/constructor/__init__.py:189
+#: mg/constructor/__init__.py:122
+#: mg/constructor/__init__.py:155
+#: mg/constructor/__init__.py:193
 msgid "Settings"
 msgstr "Настройки"
 
-#: mg/constructor/__init__.py:117
-#: mg/constructor/__init__.py:147
-#: mg/constructor/__init__.py:207
+#: mg/constructor/__init__.py:124
+#: mg/constructor/__init__.py:151
+#: mg/constructor/__init__.py:211
 msgid "Documentation"
 msgstr "Документация"
 
-#: mg/constructor/__init__.py:122
+#: mg/constructor/__init__.py:129
 #: mg/constructor/domains.py:270
 msgid "Cancel"
 msgstr "Отмена"
 
-#: mg/constructor/__init__.py:127
-#: mg/constructor/__init__.py:128
+#: mg/constructor/__init__.py:134
 msgid "Constructor of browser-based online games"
 msgstr "Конструктор браузерных онлайн-игр"
 
-#: mg/constructor/__init__.py:129
-msgid "Games constructor"
-msgstr "Конструктор игр"
-
-#: mg/constructor/__init__.py:130
-msgid "Create the world of your dreams"
-msgstr "Создай мир своей мечты"
-
-#: mg/constructor/__init__.py:131
+#: mg/constructor/__init__.py:135
 msgid "log in"
 msgstr "вход"
 
-#: mg/constructor/__init__.py:132
+#: mg/constructor/__init__.py:136
 msgid "register"
 msgstr "регистрация"
 
-#: mg/constructor/__init__.py:133
+#: mg/constructor/__init__.py:137
 msgid "forum"
 msgstr "форум"
 
-#: mg/constructor/__init__.py:134
+#: mg/constructor/__init__.py:138
 msgid "cabinet"
 msgstr "кабинет"
 
-#: mg/constructor/__init__.py:135
+#: mg/constructor/__init__.py:139
 msgid "log out"
 msgstr "выход"
 
-#: mg/constructor/__init__.py:149
+#: mg/constructor/__init__.py:153
 msgid "Constructor administration"
 msgstr "Администрирование конструктора"
 
-#: mg/constructor/__init__.py:155
+#: mg/constructor/__init__.py:159
 msgid "New game"
 msgstr "Новая игра"
 
-#: mg/constructor/__init__.py:165
+#: mg/constructor/__init__.py:169
 msgid "Untitled game"
 msgstr "Безымянная игра"
 
-#: mg/constructor/__init__.py:195
+#: mg/constructor/__init__.py:199
 msgid "Change password"
 msgstr "Изменить пароль"
 
-#: mg/constructor/__init__.py:196
+#: mg/constructor/__init__.py:200
 msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
-#: mg/constructor/__init__.py:198
+#: mg/constructor/__init__.py:202
 msgid "WebMoney Certification"
 msgstr "Аттестат WebMoney"
 
@@ -2332,6 +2331,12 @@ msgstr "Конструктор: проекты"
 msgid "Constructor: unpublishing projects"
 msgstr "Конструктор: снятие проектов с публикации"
 
+#~ msgid "Remind my password"
+#~ msgstr "Напомнить пароль"
+#~ msgid "Games constructor"
+#~ msgstr "Конструктор игр"
+#~ msgid "Create the world of your dreams"
+#~ msgstr "Создай мир своей мечты"
 #~ msgid "Project created"
 #~ msgstr "Проект создан"
 #~ msgid "DNS check completed successfully"

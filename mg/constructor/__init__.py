@@ -95,7 +95,14 @@ class Constructor(Module):
             self.call("project.cleanup", project.uuid)
 
     def web_global_html(self):
-        return "constructor/global.html"
+        req = self.req()
+        print "%s - %s" % (req.group, req.hook)
+        if req.group == "index" and req.hook == "index":
+            return "constructor/index_global.html"
+        elif req.group == "auth" and (req.hook == "login" or req.hook == "register"):
+            return "constructor/index_global.html"
+        else:
+            return "constructor/global.html"
 
     def redirects(self, tbl):
         tbl["login"] = "/cabinet"
@@ -125,9 +132,6 @@ class Constructor(Module):
         req = self.req()
         vars = {
             "title": self._("Constructor of browser-based online games"),
-            "online_games_constructor": self._("Constructor of browser-based online games"),
-            "games_constructor": self._("Games constructor"),
-            "slogan": self._("Create the world of your dreams"),
             "login": self._("log in"),
             "register": self._("register"),
             "forum": self._("forum"),

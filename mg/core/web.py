@@ -489,6 +489,8 @@ class Web(Module):
             conf = {
                 "INCLUDE_PATH": include_path,
                 "ANYCASE": True,
+                "PRE_CHOMP": 1,
+                "POST_CHOMP": 1,
             }
             try:
                 conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider

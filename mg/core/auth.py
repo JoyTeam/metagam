@@ -231,7 +231,7 @@ class Interface(Module):
     def ext_register(self):
         req = self.req()
         session = self.call("session.get", True)
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         name = req.param("name")
         sex = req.param("sex")
         email = req.param("email")
@@ -324,7 +324,7 @@ class Interface(Module):
                 self.call("web.redirect", redirects["register"])
             self.call("web.redirect", "/")
         session = self.call("session.get", True)
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         code = req.param("code")
         if req.ok():
             if not code:
@@ -358,7 +358,7 @@ class Interface(Module):
 
     def ext_remind(self):
         req = self.req()
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         email = req.param("email")
         redirect = req.param("redirect")
         if req.ok():
@@ -391,7 +391,7 @@ class Interface(Module):
         session = self.call("session.get")
         if session is None:
             self.call("web.forbidden")
-        field = 20
+        field = 25
         char_w = 35
         char_h = 40
         step = 20
@@ -488,7 +488,7 @@ class Interface(Module):
                 xys = [(x * char_w + off_x, y * char_h + off_y) for x, y in xys]
                 bezier = make_bezier(xys)
                 points.extend(bezier(ts))
-            draw.line(points, fill=(0, 0, 0), width=1)
+            draw.line(points, fill=(119, 119, 119), width=1)
         del draw
         try:
             captcha = self.obj(Captcha, session.uuid)
@@ -518,7 +518,7 @@ class Interface(Module):
 
     def ext_login(self):
         req = self.req()
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         name = req.param("name")
         password = req.param("password")
         redirect = req.param("redirect")
@@ -556,7 +556,8 @@ class Interface(Module):
         form.input(self._("User name"), "name", name)
         form.password(self._("Password"), "password", password)
         form.submit(None, None, self._("Log in"))
-        form.add_message_bottom('<a href="/auth/register?redirect=%s">%s</a> &middot; <a href="/auth/remind?redirect=%s">%s</a>' % (urlencode(redirect), self._("Register"), urlencode(redirect), self._("Remind my password")))
+        form.add_message_bottom(self._("If this is your first visit, %s.") % ('<a href="/auth/register?redirect=%s">%s</a>' % (urlencode(redirect), self._("register please"))))
+        form.add_message_bottom('<a href="/auth/remind?redirect=%s">%s</a>' % (urlencode(redirect), self._("Forgotten your password?")))
         vars = {
             "title": self._("User login"),
         }
@@ -565,7 +566,7 @@ class Interface(Module):
     def ext_change(self):
         self.call("session.require_login")
         req = self.req()
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         if req.ok():
             prefix = req.param("prefix")
         else:
@@ -634,7 +635,7 @@ class Interface(Module):
         req = self.req()
         user = self.obj(User, req.user())
         if req.args == "confirm":
-            form = self.call("web.form", "socio/form.html")
+            form = self.call("web.form", "common/form.html")
             code = req.param("code")
             redirect = req.param("redirect")
             if req.ok():
@@ -660,7 +661,7 @@ class Interface(Module):
                 "title": self._("E-mail confirmation"),
             }
             self.call("web.response_global", form.html(), vars)
-        form = self.call("web.form", "socio/form.html")
+        form = self.call("web.form", "common/form.html")
         if req.ok():
             prefix = req.param("prefix")
         else:
