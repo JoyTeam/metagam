@@ -4,9 +4,10 @@ table { border-spacing: 0; padding: 0; border-collapse: collapse; }
 td { font-size: 13px }
 img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
-#page-td {vertical-align: middle; text-align: center; }
-#page-toplogo { height: 220px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 80%; background-repeat: no-repeat; }
-#page-bottom { height: 100px; vertical-align: middle; text-align: center; color: #80b8cd; font-size: 11px }
+#page-td {vertical-align: middle; text-align: center }
+#page-td-cabinet { vertical-align: top; text-align: center }
+#page-toplogo { height: 260px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 60%; background-repeat: no-repeat; }
+#page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
 #index-pad { padding-top: 445px; }
@@ -51,5 +52,9 @@ a:hover, a:active { color: #f4a377 }
 #cab-right-menu .c3 { background-image: url(/st/constructor/cabinet/rt.gif); background-repeat: no-repeat; background-position: 100% 0% }
 #cab-right-menu .c4 { background-image: url(/st/constructor/cabinet/lb.gif); background-repeat: no-repeat; background-position: 0% 100% }
 #cab-right-menu .c5 { background-image: url(/st/constructor/cabinet/rb.gif); background-repeat: no-repeat; background-position: 100% 100%; padding: 15px 25px 15px 25px; }
-#cab-right-icons td { text-align: center: vertical-align: top; padding: 20px 10px 0px 10px }
+#cab-right-icons td { text-align: center; vertical-align: top; padding: 20px 10px 0px 10px; width: 135px }
 #cab-right-icons .text td { padding: 10px 10px 20px 10px }
+#cab-menu td { color: #01709a; font-weight: bold }
+#cab-menu a:link, #cab-menu a:visited { font-weight: normal; color: #01709a; }
+#cab-menu a:hover, #cab-menu a:active { font-weight: normal; color: #0390ca; }
+.form-ret { text-align: center; padding: 0px 20px 20px 20px }

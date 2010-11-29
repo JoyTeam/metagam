@@ -103,7 +103,7 @@ class Constructor(Module):
             return "constructor/index_global.html"
         elif req.group == "auth":
             return "constructor/index_global.html"
-        elif req.group == "cabinet":
+        elif req.group == "cabinet" or req.group == "documentation":
             return "constructor/cabinet_global.html"
         else:
             return "constructor/global.html"
@@ -195,23 +195,34 @@ class Constructor(Module):
             "leftbtn": {
                 "href": "/constructor/newgame",
                 "title": self._("Create a new game")
-            }
+            },
+            "cabmenu_left": [
+                {"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/documentation", "delim": True},
+                {"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "delim": True},
+                {"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum"},
+            ],
+            "cabmenu_right": [
+                {"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"},
+            ]
         }
         self.call("web.response_template", "constructor/cabinet.html", vars)
 
     def cabinet_settings(self):
         session = self.call("session.require_login")
         vars = {
-            "title": self._("Settings"),
+            "title": self._("MMO Constructor Settings"),
+            "cabmenu_left": [
+                {"title": self._("Settings")},
+            ],
+            "cabmenu_right": [
+                {"title": self._("Return to the Cabinet"), "href": "/cabinet"},
+            ],
             "menu": [
                 [
-                    { "href": "/cabinet", "image": "/st/constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
-                ],
-                [
-                    { "href": "/auth/change", "image": "/st/constructor/cab_changepass.jpg", "text": self._("Change password") },
-                    { "href": "/auth/email", "image": "/st/constructor/cab_changeemail.jpg", "text": self._("Change e-mail") },
-                    { "href": "/forum/settings", "image": "/st/constructor/cab_forumsettings.jpg", "text": self._("Forum settings") },
-                    { "href": "/constructor/certificate", "image": "/st/constructor/cab_certificate.jpg", "text": self._("WebMoney Certification") },
+                    { "href": "/auth/change", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change password") },
+                    { "href": "/auth/email", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change e-mail") },
+                    { "href": "/forum/settings", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Forum settings") },
+                    { "href": "/constructor/certificate", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("WebMoney Certification") },
                 ],
             ],
         }
@@ -220,14 +231,15 @@ class Constructor(Module):
     def documentation_index(self):
         session = self.call("session.require_login")
         vars = {
-            "title": self._("Documentation"),
-            "menu": [
-                [
-                    { "href": "/cabinet", "image": "/st/constructor/cab_return.jpg", "text": self._("Return to the Cabinet") },
-                ],
+            "title": self._("MMO Constructor Documentation"),
+            "cabmenu_left": [
+                {"title": self._("Documentation")},
             ],
+            "cabmenu_right": [
+                {"title": self._("Return to the Cabinet"), "href": "/cabinet"},
+            ]
         }
-        self.call("web.response_template", "constructor/documentation.html", vars)
+        self.call("web.response_template", "constructor/cabinet.html", vars)
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")

@@ -308,8 +308,12 @@ class Interface(Module):
         form.submit(None, None, self._("Register"))
         vars = {
             "title": self._("User registration"),
+            "ret": {
+                "href": "/",
+                "title": self._("Cancel"),
+            },
         }
-        self.call("web.response_global", form.html(), vars)
+        self.call("web.response_global", form.html(vars), vars)
 
     def ext_activate(self):
         req = self.req()
@@ -560,11 +564,20 @@ class Interface(Module):
         form.add_message_bottom('<a href="/auth/remind?redirect=%s">%s</a>' % (urlencode(redirect), self._("Forgotten your password?")))
         vars = {
             "title": self._("User login"),
+            "ret": {
+                "href": "/",
+                "title": self._("Cancel"),
+            },
         }
-        self.call("web.response_global", form.html(), vars)
+        self.call("web.response_global", form.html(vars), vars)
 
     def ext_change(self):
         self.call("session.require_login")
+        ret = "/"
+        redirects = {}
+        self.call("auth.redirects", redirects)
+        if redirects.has_key("change"):
+            ret = redirects["change"]
         req = self.req()
         form = self.call("web.form", "common/form.html")
         if req.ok():
@@ -615,11 +628,7 @@ class Interface(Module):
                 for sess in sessions:
                     if sess.uuid != my_session.uuid:
                         self.app().mc.delete("SessionCache-%s" % sess.uuid)
-                redirects = {}
-                self.call("auth.redirects", redirects)
-                if redirects.has_key("change"):
-                    self.call("web.redirect", redirects["change"])
-                self.call("web.redirect", "/")
+                self.call("web.redirect", ret)
         form.hidden("prefix", prefix)
         form.password(self._("Old password"), prefix + "_p", password)
         form.password(self._("New password"), prefix + "_p1", password1)
@@ -627,8 +636,12 @@ class Interface(Module):
         form.submit(None, None, self._("Change"))
         vars = {
             "title": self._("Password change"),
+            "ret": {
+                "href": cgi.escape(ret),
+                "title": self._("Cancel"),
+            },
         }
-        self.call("web.response_global", form.html(), vars)
+        self.call("web.response_global", form.html(vars), vars)
 
     def ext_email(self):
         self.call("session.require_login")
@@ -691,10 +704,19 @@ class Interface(Module):
         form.input(self._("New e-mail address"), "email", email)
         form.password(self._("Your current password"), prefix + "_p", password)
         form.submit(None, None, self._("Change"))
+        ret = "/"
+        redirects = {}
+        self.call("auth.redirects", redirects)
+        if redirects.has_key("change"):
+            ret = redirects["change"]
         vars = {
             "title": self._("E-mail change"),
+            "ret": {
+                "href": cgi.escape(ret),
+                "title": self._("Cancel"),
+            },
         }
-        self.call("web.response_global", form.html(), vars)
+        self.call("web.response_global", form.html(vars), vars)
 
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})

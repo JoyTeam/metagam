@@ -698,7 +698,7 @@ class WebForm(object):
         if kwargs.get("desc") or kwargs.get("error") or kwargs.get("element_submit"):
             last_row["show_header"] = True
 
-    def html(self):
+    def html(self, add_vars={}):
         """
         Return cooked HTML form
         """
@@ -731,6 +731,8 @@ class WebForm(object):
             "transliterate_to_russian": self.module._("Transliterate to Russian"),
             "smiles": self.module._("Smiles"),
         }
+        for k, v in add_vars.iteritems():
+            vars[k] = v
         if self.texteditors:
             smiles = self.module.call("smiles.list")
             if smiles is not None:

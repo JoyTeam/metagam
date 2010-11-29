@@ -4,6 +4,7 @@
 <div style="width: 350px"></div>
 [%if form_texteditors%]<script type="text/javascript" src="/st/[%ver%]/js/texteditor.js"></script>[%end%]
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="std" name="stdform">
+[%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
 [%if form_top%]<div class="list_messages_top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
 [%for row in form_rows%]
 <table class="std_form_row">

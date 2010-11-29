@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-11-26 17:37+0300\n"
+"POT-Creation-Date: 2010-11-29 17:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,8 +42,8 @@ msgstr ""
 msgid "Forum moderation"
 msgstr ""
 
-#: mg/socio/__init__.py:203 mg/constructor/__init__.py:16
-#: mg/constructor/__init__.py:154
+#: mg/socio/__init__.py:203 mg/constructor/__init__.py:17
+#: mg/constructor/__init__.py:202
 msgid "Forum"
 msgstr ""
 
@@ -66,12 +66,12 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: mg/socio/__init__.py:222 mg/socio/__init__.py:1324 mg/core/auth.py:748
+#: mg/socio/__init__.py:222 mg/socio/__init__.py:1324 mg/core/auth.py:770
 msgid "Editing"
 msgstr ""
 
 #: mg/socio/__init__.py:223 mg/socio/__init__.py:1030
-#: mg/socio/__init__.py:1071 mg/core/auth.py:747
+#: mg/socio/__init__.py:1071 mg/core/auth.py:769
 msgid "edit"
 msgstr ""
 
@@ -120,7 +120,7 @@ msgstr ""
 msgid "Top category title"
 msgstr ""
 
-#: mg/socio/__init__.py:288 mg/core/auth.py:933
+#: mg/socio/__init__.py:288 mg/core/auth.py:955
 msgid "Sort order"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: mg/socio/__init__.py:1381 mg/constructor/__init__.py:201
+#: mg/socio/__init__.py:1381 mg/constructor/__init__.py:224
 msgid "Forum settings"
 msgstr ""
 
@@ -551,7 +551,7 @@ msgstr ""
 msgid "Error storing object: %s"
 msgstr ""
 
-#: mg/core/auth.py:244 mg/core/auth.py:527
+#: mg/core/auth.py:244 mg/core/auth.py:531
 msgid "Enter your user name"
 msgstr ""
 
@@ -565,11 +565,11 @@ msgstr ""
 msgid "This name is taken already"
 msgstr ""
 
-#: mg/core/auth.py:250 mg/core/auth.py:535
+#: mg/core/auth.py:250 mg/core/auth.py:539
 msgid "Enter your password"
 msgstr ""
 
-#: mg/core/auth.py:252 mg/core/auth.py:589
+#: mg/core/auth.py:252 mg/core/auth.py:602
 msgid "Minimal password length - 6 characters"
 msgstr ""
 
@@ -577,7 +577,7 @@ msgstr ""
 msgid "Retype your password"
 msgstr ""
 
-#: mg/core/auth.py:256 mg/core/auth.py:593
+#: mg/core/auth.py:256 mg/core/auth.py:606
 msgid "Password don't match. Try again, please"
 msgstr ""
 
@@ -589,7 +589,7 @@ msgstr ""
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/core/auth.py:264 mg/core/auth.py:682
+#: mg/core/auth.py:264 mg/core/auth.py:695
 msgid "Enter correct e-mail"
 msgstr ""
 
@@ -617,8 +617,8 @@ msgid ""
 "http://{host}/auth/activate/{user}?code={code}"
 msgstr ""
 
-#: mg/core/auth.py:302 mg/core/auth.py:556 mg/core/auth.py:745
-#: mg/core/auth.py:774 mg/constructor/dashboard.py:66
+#: mg/core/auth.py:302 mg/core/auth.py:560 mg/core/auth.py:767
+#: mg/core/auth.py:796 mg/constructor/dashboard.py:66
 msgid "User name"
 msgstr ""
 
@@ -638,7 +638,7 @@ msgstr ""
 msgid "E-mail"
 msgstr ""
 
-#: mg/core/auth.py:305 mg/core/auth.py:557 mg/constructor/setup.py:206
+#: mg/core/auth.py:305 mg/core/auth.py:561 mg/constructor/setup.py:206
 msgid "Password"
 msgstr ""
 
@@ -650,7 +650,7 @@ msgstr ""
 msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
-#: mg/core/auth.py:308 mg/constructor/__init__.py:127
+#: mg/core/auth.py:308 mg/constructor/__init__.py:135
 msgid "Register"
 msgstr ""
 
@@ -658,43 +658,49 @@ msgstr ""
 msgid "User registration"
 msgstr ""
 
-#: mg/core/auth.py:331
+#: mg/core/auth.py:313 mg/core/auth.py:569 mg/core/auth.py:641
+#: mg/core/auth.py:716 mg/constructor/__init__.py:137
+#: mg/constructor/domains.py:270
+msgid "Cancel"
+msgstr ""
+
+#: mg/core/auth.py:335
 msgid "Enter activation code from your e-mail box"
 msgstr ""
 
-#: mg/core/auth.py:333
+#: mg/core/auth.py:337
 msgid "Invalid activation code"
 msgstr ""
 
-#: mg/core/auth.py:352
+#: mg/core/auth.py:356
 msgid "Activation code"
 msgstr ""
 
-#: mg/core/auth.py:353
+#: mg/core/auth.py:357
 msgid "Activate"
 msgstr ""
 
-#: mg/core/auth.py:355
+#: mg/core/auth.py:359
 msgid "User activation"
 msgstr ""
 
-#: mg/core/auth.py:366
+#: mg/core/auth.py:370
 msgid "Enter your e-mail"
 msgstr ""
 
-#: mg/core/auth.py:370
+#: mg/core/auth.py:374
 msgid "No users with this e-mail"
 msgstr ""
 
-#: mg/core/auth.py:376
+#: mg/core/auth.py:380
 msgid "User '{user}' has password '{password}'\n"
 msgstr ""
 
-#: mg/core/auth.py:378 mg/core/auth.py:386
+#: mg/core/auth.py:382 mg/core/auth.py:390
 msgid "Password reminder"
 msgstr ""
 
-#: mg/core/auth.py:378
+#: mg/core/auth.py:382
 #, python-format
 msgid ""
 "Someone possibly you requested password recovery on the MMOConstructor site. "
@@ -704,104 +710,104 @@ msgid ""
 "If you still can't remember your password feel free to contact our support."
 msgstr ""
 
-#: mg/core/auth.py:383
+#: mg/core/auth.py:387
 msgid "Your e-mail"
 msgstr ""
 
-#: mg/core/auth.py:384
+#: mg/core/auth.py:388
 msgid "Remind"
 msgstr ""
 
-#: mg/core/auth.py:531 mg/core/auth.py:769 mg/constructor/dashboard.py:61
+#: mg/core/auth.py:535 mg/core/auth.py:791 mg/constructor/dashboard.py:61
 msgid "User not found"
 msgstr ""
 
-#: mg/core/auth.py:533
+#: mg/core/auth.py:537
 msgid "User is not active. Check your e-mail and enter activation code"
 msgstr ""
 
-#: mg/core/auth.py:540
+#: mg/core/auth.py:544
 msgid "Incorrect password"
 msgstr ""
 
-#: mg/core/auth.py:558 mg/constructor/__init__.py:126
+#: mg/core/auth.py:562 mg/constructor/__init__.py:134
 msgid "Log in"
 msgstr ""
 
-#: mg/core/auth.py:559
+#: mg/core/auth.py:563
 #, python-format
 msgid "If this is your first visit, %s."
 msgstr ""
 
-#: mg/core/auth.py:559
+#: mg/core/auth.py:563
 msgid "register please"
 msgstr ""
 
-#: mg/core/auth.py:560
+#: mg/core/auth.py:564
 msgid "Forgotten your password?"
 msgstr ""
 
-#: mg/core/auth.py:562
+#: mg/core/auth.py:566
 msgid "User login"
 msgstr ""
 
-#: mg/core/auth.py:580 mg/core/auth.py:673
+#: mg/core/auth.py:593 mg/core/auth.py:686
 msgid "Enter your old password"
 msgstr ""
 
-#: mg/core/auth.py:585 mg/core/auth.py:678
+#: mg/core/auth.py:598 mg/core/auth.py:691
 msgid "Incorrect old password"
 msgstr ""
 
-#: mg/core/auth.py:587
+#: mg/core/auth.py:600
 msgid "Enter your new password"
 msgstr ""
 
-#: mg/core/auth.py:591
+#: mg/core/auth.py:604
 msgid "Retype your new password"
 msgstr ""
 
-#: mg/core/auth.py:624
+#: mg/core/auth.py:633
 msgid "Old password"
 msgstr ""
 
-#: mg/core/auth.py:625
+#: mg/core/auth.py:634
 msgid "New password"
 msgstr ""
 
-#: mg/core/auth.py:626
+#: mg/core/auth.py:635
 msgid "Confirm new password"
 msgstr ""
 
-#: mg/core/auth.py:627 mg/core/auth.py:693
+#: mg/core/auth.py:636 mg/core/auth.py:706
 msgid "Change"
 msgstr ""
 
-#: mg/core/auth.py:629
+#: mg/core/auth.py:638
 msgid "Password change"
 msgstr ""
 
-#: mg/core/auth.py:643
+#: mg/core/auth.py:656
 msgid "Enter your code"
 msgstr ""
 
-#: mg/core/auth.py:658
+#: mg/core/auth.py:671
 msgid "Confirmation code from your post box"
 msgstr ""
 
-#: mg/core/auth.py:659
+#: mg/core/auth.py:672
 msgid "Confirm e-mail change"
 msgstr ""
 
-#: mg/core/auth.py:661 mg/core/auth.py:688
+#: mg/core/auth.py:674 mg/core/auth.py:701
 msgid "E-mail confirmation"
 msgstr ""
 
-#: mg/core/auth.py:680
+#: mg/core/auth.py:693
 msgid "Enter new e-mail address"
 msgstr ""
 
-#: mg/core/auth.py:688
+#: mg/core/auth.py:701
 msgid ""
 "Someone possibly you requested e-mail change on the MMOConstructor site. If "
 "you really want to do this enter the following confirmation code on the "
@@ -814,85 +820,85 @@ msgid ""
 "http://{host}/auth/email/confirm?code={code}"
 msgstr ""
 
-#: mg/core/auth.py:691
+#: mg/core/auth.py:704
 msgid "New e-mail address"
 msgstr ""
 
-#: mg/core/auth.py:692
+#: mg/core/auth.py:705
 msgid "Your current password"
 msgstr ""
 
-#: mg/core/auth.py:695
+#: mg/core/auth.py:713
 msgid "E-mail change"
 msgstr ""
 
-#: mg/core/auth.py:700
+#: mg/core/auth.py:722
 msgid "User permissions editor"
 msgstr ""
 
-#: mg/core/auth.py:716
+#: mg/core/auth.py:738
 msgid "Security"
 msgstr ""
 
-#: mg/core/auth.py:721 mg/core/auth.py:746
+#: mg/core/auth.py:743 mg/core/auth.py:768
 msgid "Permissions"
 msgstr ""
 
-#: mg/core/auth.py:744 mg/core/auth.py:780
+#: mg/core/auth.py:766 mg/core/auth.py:802
 msgid "Edit permissions of a user"
 msgstr ""
 
-#: mg/core/auth.py:754
+#: mg/core/auth.py:776
 msgid "User permissions"
 msgstr ""
 
-#: mg/core/auth.py:765 mg/constructor/dashboard.py:57
+#: mg/core/auth.py:787 mg/constructor/dashboard.py:57
 msgid "Enter user name"
 msgstr ""
 
-#: mg/core/auth.py:776 mg/constructor/dashboard.py:68
+#: mg/core/auth.py:798 mg/constructor/dashboard.py:68
 #: mg/constructor/dashboard.py:120
 msgid "Search"
 msgstr ""
 
-#: mg/core/auth.py:826
+#: mg/core/auth.py:848
 msgid "Everybody"
 msgstr ""
 
-#: mg/core/auth.py:827
+#: mg/core/auth.py:849
 msgid "Logged in"
 msgstr ""
 
-#: mg/core/auth.py:828
+#: mg/core/auth.py:850
 msgid "Not logged in"
 msgstr ""
 
-#: mg/core/auth.py:830
+#: mg/core/auth.py:852
 #, python-format
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:902 mg/core/auth.py:911
+#: mg/core/auth.py:924 mg/core/auth.py:933
 msgid "Select valid role"
 msgstr ""
 
-#: mg/core/auth.py:904 mg/core/auth.py:913
+#: mg/core/auth.py:926 mg/core/auth.py:935
 msgid "Select valid permission"
 msgstr ""
 
-#: mg/core/auth.py:928
+#: mg/core/auth.py:950
 msgid "Delete"
 msgstr ""
 
-#: mg/core/auth.py:929
+#: mg/core/auth.py:951
 msgid "Add new rule"
 msgstr ""
 
-#: mg/core/auth.py:934
+#: mg/core/auth.py:956
 msgid "Role"
 msgstr ""
 
-#: mg/core/auth.py:935
+#: mg/core/auth.py:957
 msgid "Permission"
 msgstr ""
 
@@ -1334,117 +1340,130 @@ msgstr ""
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr ""
 
-#: mg/constructor/__init__.py:16
+#: mg/constructor/__init__.py:17
 msgid "Go to the Constructor forum"
 msgstr ""
 
-#: mg/constructor/__init__.py:17 mg/constructor/__init__.py:123
-#: mg/constructor/__init__.py:185
+#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:131
+#: mg/constructor/__init__.py:193
 msgid "Cabinet"
 msgstr ""
 
-#: mg/constructor/__init__.py:17 mg/constructor/__init__.py:196
-#: mg/constructor/__init__.py:214
+#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:218
+#: mg/constructor/__init__.py:239
 msgid "Return to the Cabinet"
 msgstr ""
 
-#: mg/constructor/__init__.py:55 mg/constructor/__init__.py:56
+#: mg/constructor/__init__.py:57 mg/constructor/__init__.py:58
 #: mg/constructor/dashboard.py:21
 msgid "Constructor"
 msgstr ""
 
-#: mg/constructor/__init__.py:55 mg/constructor/project.py:47
+#: mg/constructor/__init__.py:57 mg/constructor/project.py:47
 msgid "News"
 msgstr ""
 
-#: mg/constructor/__init__.py:55
+#: mg/constructor/__init__.py:57
 msgid "News related to the Constructor"
 msgstr ""
 
-#: mg/constructor/__init__.py:56
+#: mg/constructor/__init__.py:58
 msgid "Support"
 msgstr ""
 
-#: mg/constructor/__init__.py:56
+#: mg/constructor/__init__.py:58
 msgid "Constructor technical support"
 msgstr ""
 
-#: mg/constructor/__init__.py:57
+#: mg/constructor/__init__.py:59
 msgid "Game Development"
 msgstr ""
 
-#: mg/constructor/__init__.py:57
+#: mg/constructor/__init__.py:59
 msgid "Developers club"
 msgstr ""
 
-#: mg/constructor/__init__.py:57
+#: mg/constructor/__init__.py:59
 msgid "Any talks related to the game development"
 msgstr ""
 
-#: mg/constructor/__init__.py:121 mg/constructor/__init__.py:156
+#: mg/constructor/__init__.py:112
+msgid "Browser-based Games Constructor"
+msgstr ""
+
+#: mg/constructor/__init__.py:113
+#, python-format
+msgid "Copyright &copy; Joy Team, 2009-%s"
+msgstr ""
+
+#: mg/constructor/__init__.py:129
 msgid "Log out"
 msgstr ""
 
-#: mg/constructor/__init__.py:122 mg/constructor/__init__.py:155
-#: mg/constructor/__init__.py:193
+#: mg/constructor/__init__.py:130 mg/constructor/__init__.py:201
+#: mg/constructor/__init__.py:215
 msgid "Settings"
 msgstr ""
 
-#: mg/constructor/__init__.py:124 mg/constructor/__init__.py:151
-#: mg/constructor/__init__.py:211
+#: mg/constructor/__init__.py:132 mg/constructor/__init__.py:200
+#: mg/constructor/__init__.py:236
 msgid "Documentation"
 msgstr ""
 
-#: mg/constructor/__init__.py:129 mg/constructor/domains.py:270
-msgid "Cancel"
-msgstr ""
-
-#: mg/constructor/__init__.py:134
+#: mg/constructor/__init__.py:142
 msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/constructor/__init__.py:135
+#: mg/constructor/__init__.py:143
 msgid "log in"
 msgstr ""
 
-#: mg/constructor/__init__.py:136
+#: mg/constructor/__init__.py:144
 msgid "register"
 msgstr ""
 
-#: mg/constructor/__init__.py:137
+#: mg/constructor/__init__.py:145
 msgid "forum"
 msgstr ""
 
-#: mg/constructor/__init__.py:138
+#: mg/constructor/__init__.py:146
 msgid "cabinet"
 msgstr ""
 
-#: mg/constructor/__init__.py:139
+#: mg/constructor/__init__.py:147
 msgid "log out"
 msgstr ""
 
-#: mg/constructor/__init__.py:153
-msgid "Constructor administration"
-msgstr ""
-
-#: mg/constructor/__init__.py:159
-msgid "New game"
-msgstr ""
-
-#: mg/constructor/__init__.py:169
+#: mg/constructor/__init__.py:177
 msgid "Untitled game"
 msgstr ""
 
-#: mg/constructor/__init__.py:199
+#: mg/constructor/__init__.py:197
+msgid "Create a new game"
+msgstr ""
+
+#: mg/constructor/__init__.py:205
+msgid "Logout"
+msgstr ""
+
+#: mg/constructor/__init__.py:213
+msgid "MMO Constructor Settings"
+msgstr ""
+
+#: mg/constructor/__init__.py:222
 msgid "Change password"
 msgstr ""
 
-#: mg/constructor/__init__.py:200
+#: mg/constructor/__init__.py:223
 msgid "Change e-mail"
 msgstr ""
 
-#: mg/constructor/__init__.py:202
+#: mg/constructor/__init__.py:225
 msgid "WebMoney Certification"
+msgstr ""
+
+#: mg/constructor/__init__.py:234
+msgid "MMO Constructor Documentation"
 msgstr ""
 
 #: mg/constructor/project.py:35

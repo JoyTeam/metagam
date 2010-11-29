@@ -4,13 +4,12 @@
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/index.css" />
 [%head%]</head><body>
-<table id="page-table"><tr><td id="page-toplogo"></td></tr><tr><td id="page-td">
+<table id="page-table"><tr><td id="page-td-cabinet">
+<div id="page-toplogo"></div>
 <table id="cab-menu"><tr><td id="cab-menu-left">
-<img src="/st/constructor/cabinet/doc.gif" alt="" /> Документация <img src="/st/constructor/cabinet/delim.gif" alt="" />
-<img src="/st/constructor/cabinet/settings.gif" alt="" /> Настройки <img src="/st/constructor/cabinet/delim.gif" alt="" />
-<img src="/st/constructor/cabinet/forum.gif" alt="" /> Форум
+[%for ent in cabmenu_left%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end%] [%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td><td id="cab-menu-right">
-<img src="/st/constructor/cabinet/logout.gif" alt="" /> Выход
+[%for ent in cabmenu_right%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end%] [%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td></tr></table>
 <div id="cab-content">[%content%]</div>
 </td></tr><tr><td id="page-bottom"><div>[%ConstructorTitle%]</div><div>[%ConstructorCopyright%]</div></td></tr></table>
