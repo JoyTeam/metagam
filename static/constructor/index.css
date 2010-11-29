@@ -2,8 +2,11 @@ html { height: 100%; font-family: Verdana; font-size: 13px }
 body { background-image: url(/st/constructor/index/bg.gif); background-repeat: repeat; margin: 0 auto; height: 100%; }
 table { border-spacing: 0; padding: 0; border-collapse: collapse; }
 td { font-size: 13px }
+img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
 #page-td {vertical-align: middle; text-align: center; }
+#page-toplogo { height: 220px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 80%; background-repeat: no-repeat; }
+#page-bottom { height: 100px; vertical-align: middle; text-align: center; color: #80b8cd; font-size: 11px }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
 #index-pad { padding-top: 445px; }
@@ -30,3 +33,23 @@ input.bg, select.bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px
 .error { color: #ff6347; font-size: 11px }
 a:link, a:visited { color: #e48347 }
 a:hover, a:active { color: #f4a377 }
+#cab-menu { width: 905px; height: 75px; margin: 0 auto; background-image: url(/st/constructor/cabinet/menu.png); background-repeat: no-repeat; background-position: 50% 0% }
+#cab-menu img { vertical-align: middle }
+#cab-menu-left { text-align: left; padding: 0px 10px 10px 40px }
+#cab-menu-right { text-align: right; padding: 0px 40px 10px 0px }
+#cab-content { width: 855px; margin: 0 auto; background-image: url(/st/constructor/cabinet/bg.gif) }
+#cab-layout { margin: 0 auto; }
+#cab-layout td { vertical-align: top }
+#cab-leftbtn-td { padding: 14px 10px 25px 10px; }
+#cab-leftbtn { width: 127px; height: 202px; margin: 0 auto; background-image: url(/st/constructor/cabinet/leftbtn.gif); background-repeat: no-repeat; background-position: 50% 0% }
+#cab-leftbtn div { padding: 130px 15px 5px 15px }
+#cab-leftbtn a:link, #cab-leftbtn a:visited { color: #ffffff }
+#cab-leftbtn a:hover, #cab-leftbtn a:active { color: #eeddd3 }
+#cab-right-menu { padding: 14px 10px 25px 10px }
+#cab-right-menu .c1 { background-color: #ffffff }
+#cab-right-menu .c2 { background-image: url(/st/constructor/cabinet/lt.gif); background-repeat: no-repeat; background-position: 0% 0% }
+#cab-right-menu .c3 { background-image: url(/st/constructor/cabinet/rt.gif); background-repeat: no-repeat; background-position: 100% 0% }
+#cab-right-menu .c4 { background-image: url(/st/constructor/cabinet/lb.gif); background-repeat: no-repeat; background-position: 0% 100% }
+#cab-right-menu .c5 { background-image: url(/st/constructor/cabinet/rb.gif); background-repeat: no-repeat; background-position: 100% 100%; padding: 15px 25px 15px 25px; }
+#cab-right-icons td { text-align: center: vertical-align: top; padding: 20px 10px 0px 10px }
+#cab-right-icons .text td { padding: 10px 10px 20px 10px }

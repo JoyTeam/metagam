@@ -6,6 +6,7 @@ import mg.constructor.common
 from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
 import time
+import datetime
 
 class ConstructorUtils(Module):
     def register(self):
@@ -46,6 +47,7 @@ class Constructor(Module):
         self.rhook("projects.owned_by", self.projects_owned_by)
         self.rhook("project.cleanup", self.cleanup)
         self.rhook("project.missing", self.missing)
+        self.rhook("web.universal_variables", self.universal_variables)
 
     def missing(self, tag):
         app = self.app().inst.appfactory.get_by_tag(tag)
@@ -101,8 +103,14 @@ class Constructor(Module):
             return "constructor/index_global.html"
         elif req.group == "auth":
             return "constructor/index_global.html"
+        elif req.group == "cabinet":
+            return "constructor/cabinet_global.html"
         else:
             return "constructor/global.html"
+
+    def universal_variables(self, vars):
+        vars["ConstructorTitle"] = self._("Browser-based Games Constructor")
+        vars["ConstructorCopyright"] = self._("Copyright &copy; Joy Team, 2009-%s") % datetime.datetime.utcnow().strftime("%Y")
 
     def redirects(self, tbl):
         tbl["login"] = "/cabinet"
@@ -147,17 +155,17 @@ class Constructor(Module):
         session = self.call("session.require_login")
         perms = req.permissions()
         menu = []
-        menu1 = []
-        menu1.append({"href": "/documentation", "image": "/st/constructor/cab_documentation.jpg", "text": self._("Documentation")})
-        if len(perms):
-            menu1.append({"href": "/admin", "image": "/st/constructor/cab_admin.jpg", "text": self._("Constructor administration")})
-        menu1.append({"href": "/forum", "image": "/st/constructor/cab_forum.jpg", "text": self._("Forum")})
-        menu1.append({"href": "/cabinet/settings", "image": "/st/constructor/cab_settings.jpg", "text": self._("Settings")})
-        menu1.append({"href": "/auth/logout", "image": "/st/constructor/cab_logout.jpg", "text": self._("Log out")})
-        menu.append(menu1)
-        menu2 = []
-        menu2.append({"href": "/constructor/newgame", "image": "/st/constructor/cab_newgame.jpg", "text": self._("New game")})
-        menu.append(menu2)
+#       menu1 = []
+#       menu1.append({"href": "/documentation", "image": "/st/constructor/cab_documentation.jpg", "text": self._("Documentation")})
+#       if len(perms):
+#           menu1.append({"href": "/admin", "image": "/st/constructor/cab_admin.jpg", "text": self._("Constructor administration")})
+#       menu1.append({"href": "/forum", "image": "/st/constructor/cab_forum.jpg", "text": self._("Forum")})
+#       menu1.append({"href": "/cabinet/settings", "image": "/st/constructor/cab_settings.jpg", "text": self._("Settings")})
+#       menu1.append({"href": "/auth/logout", "image": "/st/constructor/cab_logout.jpg", "text": self._("Log out")})
+#       menu.append(menu1)
+#       menu2 = []
+#       menu2.append({"href": "/constructor/newgame", "image": "/st/constructor/cab_newgame.jpg", "text": self._("New game")})
+#       menu.append(menu2)
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
         projects.load(silent=True)
@@ -174,7 +182,7 @@ class Constructor(Module):
                     domain = "www.%s" % domain
                 logo = project.get("logo")
                 if logo is None:
-                    logo = "/st/constructor/cab_game.jpg"
+                    logo = "/st/constructor/cabinet/untitled.gif"
                 menu_projects.append({"href": "http://%s/admin" % domain, "image": logo, "text": title})
                 if len(menu_projects) >= 4:
                     menu.append(menu_projects)
@@ -183,7 +191,11 @@ class Constructor(Module):
                 menu.append(menu_projects)
         vars = {
             "title": self._("Cabinet"),
-            "menu": menu,
+            "menu": menu if len(menu) else None,
+            "leftbtn": {
+                "href": "/constructor/newgame",
+                "title": self._("Create a new game")
+            }
         }
         self.call("web.response_template", "constructor/cabinet.html", vars)
 
