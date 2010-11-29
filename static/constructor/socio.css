@@ -1,0 +1,13 @@
+html { height: 100%; font-family: Verdana; font-size: 13px }
+body { background: #fbfbfb; margin: 0 auto; height: 100%; }
+table { border-spacing: 0; border-collapse: collapse; }
+td { font-size: 13px; padding: 0; }
+img { border: none }
+#page-layout1 { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; height: 100%; }
+#page-layout2 { background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; height: 100%; width: 100%; }
+#page-layout-td { vertical-align: top; }
+#page-content { padding: 5px 150px 5px 150px; }
+#page-top { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
+#page-top1 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
+#page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 350px; height: 57px }
+#topmenu { height: 43px; width: 100%; }

@@ -1,6 +1,6 @@
 body, h1, h2, h3, h4, h5, h6, p, form, ul, img {margin:0px;padding:0px;}
 body{font-size:14px;color:#000000}
-body, h1, h2, h3{font-family:"Arial";}
+body, h1, h2, h3{font-family:Verdana;}
 table{border-spacing:0px;padding:0px;border-collapse:collapse}
 a{text-decoration:underline;color:#0099cc;}
 ul{list-style:none;}

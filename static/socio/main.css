@@ -46,7 +46,6 @@ table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115;
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
 table.std_form_row { width: 100%; }
 table.std_form_row td.control { padding-right: 10px; vertical-align: top; }
-#topmenu { width: 100%; background-color: #ebcb88; }
 #menu { width: 100%; margin-top: 10px; }
 #menu * { font-size: 14px; }
 .menu_left { padding: 5px 10px 5px 13px; }

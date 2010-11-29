@@ -1,16 +1,1 @@
-<link rel="stylesheet" type="text/css"	href="/st/[%ver%]/socio/main.css" />
-===HEAD===
-[%if topmenu_left or topmenu_right%]
-<table id="topmenu"><tr>
-[%if topmenu_left%]<td class="menu_left">[%for ent in topmenu_left%][%if ent.delim%] &bull; [%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
-[%if topmenu_right%]<td class="menu_right">[%for ent in topmenu_right%][%if ent.delim%] &bull; [%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
-</tr></table>
-[%end%]
-
-[%if menu_left or menu_right%]
-<table id="menu"><tr>
-[%if menu_left%]<td class="menu_left">[%for ent in menu_left%][%if ent.delim%] &bull; [%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
-[%if menu_right%]<td class="menu_right">[%for ent in menu_right%][%if ent.delim%] &bull; [%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
-</tr></table>
-[%end%]
 <div id="page_content">[%forum_content%]</div>

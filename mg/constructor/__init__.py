@@ -105,6 +105,8 @@ class Constructor(Module):
             return "constructor/index_global.html"
         elif req.group == "cabinet" or req.group == "documentation":
             return "constructor/cabinet_global.html"
+        elif req.group == "forum":
+            return "constructor/socio_global.html"
         else:
             return "constructor/global.html"
 
