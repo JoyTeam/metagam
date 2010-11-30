@@ -1,32 +1,3 @@
-table.categories { width: 100% }
-tr.cathead td { padding-bottom: 2px; }
-tr.cathead td { font-size: 11px; vertical-align: bottom; color: #614115; }
-tr.cathead td.catgroup { padding-top: 10px; font-size: 15px; font-weight: bold; width: 40%; }
-tr.cathead td.catevents { width: 10%; text-align: center; padding-right: 40px; }
-tr.cathead td.catcomments { width: 10%; text-align: center; padding-right: 40px; }
-tr.cathead td.catlast { width: 30%; }
-tr.catdelim div.head { background-color: #ebcb88; border: solid 1px #f0d69d; padding: 0px 10px 0px 13px; }
-tr.catdelim div.top_cat { margin-top: 5px; padding: 3px 5px 3px 15px; background-color: #ebcb88; color: #614115; font-size: 16px; font-weight: bold; }
-tr.catdelim div.head img { vertical-align: middle; }
-div.thick { height: 13px; background-color: #ebcb88; }
-div.thin { height: 3px; background-color: #ebcb88; }
-div.thin2 { height: 4px; background-color: #ebcb88; }
-div.thin3 { height: 4px; background-color: #ebcb88; margin-top: 20px; }
-tr.category_pinned td { vertical-align: top; background-color: #e8ca86; padding: 9px 50px 9px 0px; }
-tr.category td { vertical-align: top; padding: 9px 10px 9px 0px; }
-tr.category td.name { padding: 9px 50px 9px 13px; }
-tr.category_pinned td.counter { padding: 9px 40px 9px 0px; text-align: center; }
-tr.category td.counter { padding: 9px 40px 9px 0px; text-align: center; }
-tr.category_pinned td.name { padding: 9px 50px 9px 15px; }
-div.catname { font-size: 14px; font-weight: bold; }
-#page_head { background-image: url("/st/socio/test/head1.gif"); background-repeat: repeat-x; background-position: 0% 0%; }
-#page_head1 { margin: 0px auto 0px auto; }
-#page_head2 { background-image: url("/st/socio/test/head2.gif"); background-repeat: no-repeat; background-position: 0% 0%; padding-left: 258px; vertical-align: top; }
-#page_head3 { background-image: url("/st/socio/test/head4.gif"); background-repeat: no-repeat; background-position: 100% 0%; padding-right: 258px; }
-#page_head4 { background-image: url("/st/socio/test/head3.gif"); background-repeat: repeat-x; background-position: 0% 0%; height: 165px; text-align: center; }
-#page_head5 { padding-top: 135px; }
-div#page_content { margin: 10px 0px 0px 0px; }
-div.topic_name { font-size: 16px; font-weight: bold; color: #614115; margin: 10px 0px 0px 11px; padding-bottom: 15px; }
 tr.category td.avatar { padding: 7px 10px 30px 13px; vertical-align: top; width: 150px; }
 div.avatar img { border: solid 1px #614115; }
 div.member_name { font-weight: bold; color: #364b52; padding: 10px 0px 3px 0px; }
@@ -39,14 +10,8 @@ table.actions td.right { text-align: right; vertical-align: bottom; }
 div.signature { font-size: 12px; padding-top: 15px; }
 div.quote { background-color: #e8ddc4; border: solid 1px #b59c69; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
 div.quote div.author { font-size: 10px; color: #808080; margin-bottom: 5px; }
-div.socio_pages { margin: 5px 0px 0px 0px; background-color: #ebcb88; border: solid 1px #f0d69d; font-size: 12px; text-align: right; padding-right: 10px; }
-span.page { font-weight: bold; color: #614115; }
 table.delim { width: 100%; }
 table.delim td.left { padding: 3px 0px 3px 0px; font-size: 11px; color: #614115; }
 table.delim td.right { text-align: right; padding: 3px 0px 3px 20px; font-size: 11px; color: #614115; white-space: nowrap; }
 table.std_form_row { width: 100%; }
 table.std_form_row td.control { padding-right: 10px; vertical-align: top; }
-#menu { width: 100%; margin-top: 10px; }
-#menu * { font-size: 14px; }
-.menu_left { padding: 5px 10px 5px 13px; }
-.menu_right { padding: 5px 10px 5px 13px; text-align: right; }

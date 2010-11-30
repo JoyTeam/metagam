@@ -15,6 +15,7 @@ import urlparse
 import time
 
 posts_per_page = 20
+topics_per_page = 20
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
@@ -805,10 +806,19 @@ class Forum(Module):
     def may_delete(self, cat, topic=None, post=None, rules=None, roles=None):
         return self.may_moderate(cat, topic, rules, roles)
 
-    def topics(self, cat, start=None):
+    def topics(self, cat, page=1):
         topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_reversed=True)
+        pages = (len(topics) - 1) / topics_per_page + 1
+        if pages < 1:
+            pages = 1
+        if page < 1:
+            page = 1
+        elif page > pages:
+            page = pages
+        del topics[0:(page - 1) * topics_per_page]
+        del topics[page * topics_per_page:]
         topics.load()
-        return topics
+        return topics, page, pages
 
     def ext_category(self):
         req = self.req()
@@ -820,8 +830,13 @@ class Forum(Module):
         rules, roles = self.load_rules_roles(user_uuid, cat)
         if not self.may_read(user_uuid, cat, rules=rules, roles=roles):
             self.call("web.forbidden")
-        topics = self.topics(cat).data()
+        # getting list of topics
+        page = intz(req.param("page"))
+        topics, page, pages = self.topics(cat, page)
+        topics = topics.data()
         self.topics_htmlencode(topics)
+        if len(topics):
+            topics[-1]["lst"] = True
         menu = [
             { "href": "/forum", "html": self._("Forum categories") },
             { "html": cat["title"] },
@@ -832,7 +847,7 @@ class Forum(Module):
             "title": cat["title"],
             "category": cat,
             "new_topic": self._("New topic"),
-            "topics": topics,
+            "topics": topics if len(topics) else None,
             "author": self._("Author"),
             "replies": self._("Replies"),
             "last_reply": self._("Last reply"),
@@ -840,6 +855,21 @@ class Forum(Module):
             "to_page": self._("Pages"),
             "menu": menu,
         }
+        if pages > 1:
+            pages_list = []
+            last_show = None
+            for i in range(1, pages + 1):
+                show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                if show:
+                    if len(pages_list):
+                        pages_list.append({"delim": True})
+                    pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/cat/%s?page=%d" % (cat["id"], i)}}})
+                elif last_show:
+                    if len(pages_list):
+                        pages_list.append({"delim": True})
+                    pages_list.append({"entry": {"text": "..."}})
+                last_show = show
+            vars["pages"] = pages_list
         self.call("forum.response_template", "socio/category.html", vars)
 
     def load_settings(self, list, signatures, avatars):
@@ -1031,7 +1061,7 @@ class Forum(Module):
         if may_write:
             actions.append('<a href="/forum/reply/' + topic.uuid + '">' + self._("reply") + '</a>')
         if len(actions):
-            topic_data["topic_actions"] = " &bull; ".join(actions)
+            topic_data["topic_actions"] = " / ".join(actions)
         # getting list of posts
         page = intz(req.param("page"))
         posts, page, pages, last_post = self.posts(topic, page)
@@ -1072,7 +1102,7 @@ class Forum(Module):
             if may_write:
                 actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
-                post["post_actions"] = " &bull; ".join(actions)
+                post["post_actions"] = " / ".join(actions)
         # reply form
         content = req.param("content")
         form = self.call("web.form", "common/form.html", "/forum/topic/" + topic.uuid + "#post_form")
