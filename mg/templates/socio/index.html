@@ -1,24 +1,26 @@
-<table class="categories">
+<table id="socio-categories">
 
-<tr class="cathead">
-<td class="catgroup"></td>
-<td class="catevents">[%topics%]</td>
-<td class="catcomments">[%replies%]</td>
-<td class="catcomments">[%unread%]</td>
-<td class="catlast">[%last_message%]</td>
+<tr>
+<td class="socio-cathead socio-catgroup"></td>
+<td class="socio-cathead socio-catevents">[%topics%]</td>
+<td class="socio-cathead socio-catcomments">[%replies%]</td>
+<td class="socio-cathead socio-catcomments">[%unread%]</td>
+<td class="socio-cathead socio-catlast">[%last_message%]</td>
 </tr>
+
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-thick"></div></td></tr>
 
 [%for ent in categories%]
 
 [%if ent.category%]
-<tr class="category">
-<td class="name">
-<div class="catname"><a href="/forum/cat/[%ent.category.id%]">[%ent.category.title%]</a></div>
-<div class="catdescription">[%ent.category.description%]</div>
+<tr class="socio-category">
+<td class="socio-name">
+<div class="socio-catname"><a href="/forum/cat/[%ent.category.id%]">[%ent.category.title%]</a></div>
+<div class="socio-catdescription">[%ent.category.description%]</div>
 </td>
-<td class="counter">[%ent.category.topics%]</td>
-<td class="counter">[%ent.category.replies%]</td>
-<td class="counter">[%if ent.category.unread%]<img src="/st/[%ver%]/socio/box.gif" alt="" />[%end%]</td>
+<td class="socio-counter">[%ent.category.topics%]</td>
+<td class="socio-counter">[%ent.category.replies%]</td>
+<td class="socio-counter">[%if ent.category.unread%]<img src="/st/[%ver%]/socio/box.gif" alt="" />[%end%]</td>
 <td>
 [%if ent.category.lastinfo%]
 <div><a href="/forum/topic/[%ent.category.lastinfo.topic%][%if ent.category.lastinfo.post%]?page=[%ent.category.lastinfo.page%]#[%ent.category.lastinfo.post%][%end%]">[%ent.category.lastinfo.subject_html%]</a></div>
@@ -26,17 +28,21 @@
 <div>[%by%] [%ent.category.lastinfo.author_html%]</div>
 [%end%]
 </td></tr>
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-thin"></div></td></tr>
 [%end%]
 
 [%if ent.header%]
-<tr class="catdelim"><td colspan="5"><div class="top_cat">[%ent.header%]</div></td></tr>
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-top-cat">[%ent.header%]</div></td></tr>
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-thin"></div></td></tr>
 [%end%]
 
 [%if ent.delim%]
-<tr class="catdelim"><td colspan="5"><div class="thin"></div></td></tr>
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-thin"></div></td></tr>
 [%end%]
 
 [%end%]
+
+<tr class="socio-catdelim"><td colspan="5"><div class="socio-semithick"></div></td></tr>
 
 </table>
 

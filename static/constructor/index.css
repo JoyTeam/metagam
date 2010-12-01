@@ -6,7 +6,7 @@ img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
 #page-td {vertical-align: middle; text-align: center }
 #page-td-cabinet { vertical-align: top; text-align: center }
-#page-toplogo { height: 260px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 60%; background-repeat: no-repeat; }
+#page-toplogo { height: 200px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 50%; background-repeat: no-repeat; }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }

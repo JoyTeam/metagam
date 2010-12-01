@@ -1,65 +1,62 @@
 [%if pages%]
-<div class="socio_pages">
+<div class="socio-pages">
 [%to_page%]: [%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%]<span class="page">[%ent.entry.text%]</span>[%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]
 </div>
 [%end%]
 
-<div class="topic_name">[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="mark" />[%end%]</div>
+<div class="socio-topic-title">[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>
 
-<table class="categories">
+<table class="socio-categories">
 
 [%if show_topic%]
-<tr class="catdelim"><td colspan="2"><div class="head"><table class="delim"><tr><td class="left"></td><td class="right"><img src="/st/[%ver%]/socio/down.gif" alt="" /> [%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
+<tr class="socio-catdelim"><td colspan="2"><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%topic_started%] [%topic.literal_created%]</td></tr></table></div></td></tr>
 
-<tr class="category">
+<tr class="socio-category">
 
-<td class="avatar" rowspan="2">
-<div class="avatar">[%if topic.avatar%]<img src="[%topic.avatar%]" alt="" />[%end%]</div>
-<div class="member_name">[%topic.author_html%]</div>
-<div class="member_icons">[%topic.author_icons%] [%if topic.author_search%]<a href="/forum/search?query=author:[%author_search%]"><img src="/st/[%ver%]/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
+<td class="socio-avatar-row" rowspan="2">
+<div class="socio-avatar">[%if topic.avatar%]<img src="[%topic.avatar%]" alt="" />[%end%]</div>
+<div class="socio-member-name">[%topic.author_html%]</div>
+<div class="socio-member-icons">[%topic.author_icons%] [%if topic.author_search%]<a href="/forum/search?query=author:[%author_search%]"><img src="/st/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
 </td>
 
-<td class="post_actions">
+<td class="socio-post-actions">
 [%topic.content_html%]
 </td>
 
 </tr><tr>
 
-<td class="actions">
-<table class="actions"><tr><td class="left">
-[%if topic.signature%]<div class="signature">----------------------------------------------------<br />[%topic.signature%]</div>[%end%]
-</td><td class="right">
-[%if topic.topic_actions%]<div class="actions">[%topic.topic_actions%]</div>[%end%]
+<td class="socio-actions-row">
+<table class="socio-actions"><tr><td class="socio-actions-left">
+[%if topic.signature%]<div class="socio-signature">----------------------------------------------------<br />[%topic.signature%]</div>[%end%]
+</td><td class="socio-actions-right">
+[%if topic.topic_actions%]<div class="socio-actions">[%topic.topic_actions%]</div>[%end%]
 </td></tr></table>
 </td>
 </tr>
 [%end%]
 
 [%foreach post in posts%]
-<tr class="catdelim"><td colspan="2">
-<a name="[%post.uuid%]"></a>
-<div class="head"><table class="delim"><tr><td class="left"><img src="/st/[%ver%]/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a></td><td class="right"><img src="/st/[%ver%]/socio/down.gif" alt="" /> [%written_at%] [%post.literal_created%]</td></tr></table></div></td></tr>
+<tr class="socio-catdelim"><td colspan="2"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%written_at%] [%post.literal_created%]</td><td class="socio-delim-right"><img src="/st/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a></td></tr></table></div></td></tr>
 
-<tr class="category">
+<tr class="socio-category">
 
-<td class="avatar" rowspan="2">
-<div class="avatar"><img src="[%post.avatar%]" alt="" /></div>
-<div class="member_name">[%post.author_html%]</div>
-<div class="member_icons">[%post.author_icons%] [%if post.author_search%]<a href="/forum/search?query=author:[%post.author_search%]"><img src="/st/[%ver%]/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
+<td class="socio-avatar-row" rowspan="2">
+<div class="socio-avatar"><img src="[%post.avatar%]" alt="" /></div>
+<div class="socio-member-name">[%post.author_html%]</div>
+<div class="socio-member-icons">[%post.author_icons%] [%if post.author_search%]<a href="/forum/search?query=author:[%post.author_search%]"><img src="/st/[%ver%]/socio/all_posts.gif" alt="[%all_posts%]" title="[%search_all_posts%]" /></a>[%end%]</div>
 </td>
 
-<td class="post_actions">
+<td class="socio-post-actions">
 [%post.content_html%]
 </td>
 
-</tr>
+</tr> <tr>
 
-<tr>
-<td class="actions">
-<table class="actions"><tr><td class="left">
-[%if post.signature%]<div class="signature">----------------------------------------------------<br />[%post.signature%]</div>[%end%]
-</td><td class="right">
-[%if post.post_actions%]<div class="actions">[%post.post_actions%]</div>[%end%]
+<td class="socio-actions-row">
+<table class="socio-actions"><tr><td class="socio-actions-left">
+[%if post.signature%]<div class="socio-signature">----------------------------------------------------<br />[%post.signature%]</div>[%end%]
+</td><td class="socio-actions-right">
+[%if post.post_actions%]<div class="socio-actions">[%post.post_actions%]</div>[%end%]
 </td></tr></table>
 </td>
 </tr>
@@ -67,10 +64,10 @@
 </table>
 
 [%if pages%]
-<div class="socio_pages">
+<div class="socio-pages">
 [%to_page%]: [%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%]<span class="page">[%ent.entry.text%]</span>[%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]
 </div>
 [%end%]
 
-<a name="post_form"></a>
+<a name="post-form"></a>
 [%new_post_form%]

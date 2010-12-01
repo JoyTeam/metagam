@@ -9,8 +9,8 @@
 <div id="page-top"><div id="page-top1"><div id="page-top2">
 [%if topmenu_left or topmenu_right%]
 <table id="socio-topmenu"><tr>
-[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.delim +%] / [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
-[%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.delim +%] / [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
+[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.delim +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
+[%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.delim +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%if ent.image%][%if ent.href%]<a href="[%ent.href%]">[%end%]<img src="[%ent.image%]" alt="" />[%if ent.href%]</a>[%end +%] [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
 </tr></table>
 [%end%]
 </div></div></div>

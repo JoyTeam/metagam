@@ -10,9 +10,12 @@ img { border: none }
 #page-layout-content { vertical-align: top; padding: 25px 96px 5px 96px; }
 #page-top { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
 #page-top1 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
-#page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 350px; height: 57px }
-#socio-topmenu { height: 43px; width: 100%; }
+#page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 200px; height: 57px }
+#socio-topmenu { height: 46px; width: 100%; }
 #socio-topmenu-right { text-align: right; padding-left: 20px }
+#socio-topmenu img { vertical-align: middle }
+#socio-topmenu a:link, #socio-topmenu a:visited { color: #1078a0 }
+#socio-topmenu a:hover, #socio-topmenu a:active { color: #3088d0 }
 #socio-menu { width: 100%; color: #dd6419; }
 #socio-menu a:link, #socio-menu a:visited { color: #dd6419 }
 #socio-menu a:hover, #socio-menu a:active { color: #ed8449 }
@@ -36,3 +39,5 @@ img { border: none }
 .socio-pages-list { color: #dd6419 }
 .socio-pages-list a:link, .socio-pages-list a:visited { color: #dd6419 }
 .socio-pages-list a:hover, .socio-pages-list a:active { color: #ed8439 }
+.socio-top-cat { background-color: #ececec }
+.socio-mark { vertical-align: middle }

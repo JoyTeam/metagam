@@ -128,10 +128,10 @@ class Constructor(Module):
             redirect_param = False
         redirect = urlencode(redirect)
         if req.user():
-            topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "html": self._("Log out")})
-            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
-            topmenu.append({"href": "/cabinet", "html": self._("Cabinet"), "left": True})
-            topmenu.append({"href": "/documentation", "html": self._("Documentation"), "left": True})
+            topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
+            topmenu.append({"href": "/documentation", "image": "/st/constructor/cabinet/doc.gif", "html": self._("Documentation")})
+            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/forum.gif", "html": self._("Settings")})
+            topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
             topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})

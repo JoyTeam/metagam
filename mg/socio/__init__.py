@@ -1105,7 +1105,7 @@ class Forum(Module):
                 post["post_actions"] = " / ".join(actions)
         # reply form
         content = req.param("content")
-        form = self.call("web.form", "common/form.html", "/forum/topic/" + topic.uuid + "#post_form")
+        form = self.call("web.form", "common/form.html", "/forum/topic/" + topic.uuid + "#post-form")
         if req.ok():
             if not content:
                 form.error("content", self._("Enter post content"))
