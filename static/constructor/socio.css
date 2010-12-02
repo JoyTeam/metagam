@@ -26,7 +26,15 @@ h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
 .socio-cathead { padding: 0px 4px 7px 4px; font-size: 10px; vertical-align: bottom; color: #535c5f; text-align: center }
 #socio-top-search { margin-right: 10px; vertical-align: middle; }
 /* INDEX */
-.socio-top-cat { background-color: #ececec }
+.socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
+.socio-index-title { font-size: 14px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
+.socio-catlast { text-align: left; padding: 0px 4px 7px 30px }
+td.socio-catname { padding: 9px 4px 9px 0px }
+td.socio-catname a:link, .socio-catname a:visited { color: #026691 }
+td.socio-catname a:hover, .socio-catname a:active { color: #0386b1 }
+.socio-last { padding-left: 30px; font-size: 11px }
+.socio-last a:link, .socio-last a:visited { color: #026691 }
+.socio-last a:hover, .socio-last a:active { color: #0386b1 }
 /* CATEGORY */
 .socio-catauthor { width: 20% }
 .socio-catcomments { width: 8% }

@@ -698,9 +698,7 @@ class Forum(Module):
             "unread": self._("Unread"),
             "last_message": self._("Last message"),
             "by": self._("by"),
-            "menu": [
-                { "html": self._("Forum categories") },
-            ],
+            "ForumCategories": self._("Forum categories"),
         }
         self.call("forum.response_template", "socio/index.html", vars)
 
