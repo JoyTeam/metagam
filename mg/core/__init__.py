@@ -20,6 +20,7 @@ import datetime
 re_hook_path = re.compile(r'^(.+?)\.(.+)$')
 re_config_path = re.compile(r'^(.+?)\.(.+)$')
 re_module_path = re.compile(r'^(.+)\.(.+)$')
+re_remove_domain = re.compile(r'^.{,10}///')
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -372,10 +373,10 @@ class Module(object):
             value = self.req().trans.gettext(val)
             if type(value) == str:
                 value = unicode(value, "utf-8")
-            return value
+            return re_remove_domain.sub('', value)
         except AttributeError:
             pass
-        return self.call("l10n.gettext", val)
+        return re_remove_domain.sub('', self.call("l10n.gettext", val))
 
     def obj(self, *args, **kwargs):
         return self.app().obj(*args, **kwargs)
@@ -418,6 +419,21 @@ class Module(object):
 
     def child_modules(self):
         return []
+
+    def stemmer(self):
+        try:
+            return self.req()._stemmer
+        except AttributeError:
+            pass
+        st = self.call("l10n.stemmer")
+        try:
+            self.req()._stemmer = st
+        except AttributeError:
+            pass
+        return st
+
+    def stem(self, word):
+        return self.stemmer().stemWord(word)
 
 class ModuleException(Exception):
     "Error during module loading"

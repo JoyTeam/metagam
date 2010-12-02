@@ -1,5 +1,6 @@
 from mg.core import Module
 from operator import itemgetter
+import Stemmer
 import gettext
 import mg
 import os
@@ -46,6 +47,7 @@ class L10n(Module):
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("l10n.timeencode2", self.l10n_timeencode2)
+        self.rhook("l10n.stemmer", self.l10n_stemmer)
 
     def l10n_domain(self):
         return "mg_server"
@@ -80,6 +82,13 @@ class L10n(Module):
         except IOError as e:
             self.error("Error loading language %s in %s: %s", lang, localedir, e)
             return l10n_translation(domain, "en")
+
+    def l10n_stemmer(self):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            return Stemmer.Stemmer("russian")
+        else:
+            return Stemmer.Stemmer("english")
 
     def l10n_gettext(self, value):
         request = self.req()

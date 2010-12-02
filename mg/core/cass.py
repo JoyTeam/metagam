@@ -650,14 +650,14 @@ class CassandraObjectList(object):
 #                   print "LOAD(MC) %s %s" % (obj.uuid, data)
                     if data == "tomb":
                         if silent:
+                            obj.valid = False
+                            recovered = True
                             if len(self.index_rows):
                                 mutations = []
                                 mcgroups = set()
                                 clock = None
                                 for col in self.index_data:
                                     if col[1] == obj.uuid:
-                                        obj.valid = False
-                                        recovered = True
                                         #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                         if clock is None:
                                             clock = Clock(time.time() * 1000)
@@ -679,13 +679,13 @@ class CassandraObjectList(object):
                         self.db.mc.add(row_id, obj.data, cache_interval)
 #                        print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
                     elif silent:
+                        obj.valid = False
+                        recovered = True
                         if len(self.index_rows):
                             mutations = []
                             clock = None
                             for col in self.index_data:
                                 if col[1] == obj.uuid:
-                                    obj.valid = False
-                                    recovered = True
                                     #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                     if clock is None:
                                         clock = Clock(time.time() * 1000)

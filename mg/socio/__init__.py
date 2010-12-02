@@ -1,13 +1,14 @@
-from mg.core import Module, Hooks
+# -*- coding: utf-8 -*-
+
+from mg import *
 from operator import itemgetter
 from uuid import uuid4
-from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
-from mg.core.tools import *
 from mg.core.cluster import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
 from mg.core.auth import User, PermissionsEditor
+from itertools import *
 import re
 import cgi
 import cStringIO
@@ -16,6 +17,9 @@ import time
 
 posts_per_page = 20
 topics_per_page = 20
+max_word_len = 30
+max_tag_len = 30
+search_results_per_page = 5
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
@@ -34,6 +38,12 @@ re_linebreak = re.compile(r'\n')
 re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
 valid = r'\/\w\/\+\%\#\$\&=\?#'
 re_urls = re.compile(r'(.*?)((?:http|ftp|https):\/\/[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
+re_split_tags = re.compile(r'\s*(,\s*)+')
+re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
+delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
+re_word_symbol = re.compile(r'[^%s]' % delimiters)
+re_not_word_symbol = re.compile(r'[%s]' % delimiters)
+re_remove_word = re.compile(r'^.*\/\/')
 
 class UserForumSettings(CassandraObject):
     _indexes = {
@@ -356,6 +366,8 @@ class Socio(Module):
         self.rhook("ext-socio.image", self.ext_image)
 
     def format_text(self, html, options={}):
+        if html is None:
+            return None
         m = re_tag.match(html)
         if m:
             before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
@@ -552,6 +564,8 @@ class Forum(Module):
         self.rhook("ext-forum.pin", self.ext_pin)
         self.rhook("ext-forum.unpin", self.ext_unpin)
         self.rhook("ext-forum.move", self.ext_move)
+        self.rhook("ext-forum.tag", self.ext_tag)
+        self.rhook("ext-forum.search", self.ext_search)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("all.schedule", self.schedule)
@@ -882,7 +896,7 @@ class Forum(Module):
                 avatars[obj.uuid] = obj.get("avatar")
         for ent in list:
             author = ent.get("author")
-            ent["avatar"] = avatars.get(author) if avatars.get(author) is not None else "/st/socio/default_avatar.gif"
+            ent["avatar"] = avatars.get(author)
             ent["signature"] = signatures.get(author)
 
     def topics_htmlencode(self, topics, load_settings=False):
@@ -893,9 +907,11 @@ class Forum(Module):
         for topic in topics:
             topic["subject_html"] = cgi.escape(topic.get("subject"))
             topic["author_html"] = topic.get("author_html")
-            topic["author_icons"] = topic.get("author_icons")
             topic["posts"] = intz(topic.get("posts"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
+            menu = []
+            menu.append({"title": self._("Profile"), "href": "/forum/user/%s" % topic.get("author")})
+            topic["author_menu"] = menu
         req = self.req()
         user_uuid = req.session().semi_user()
         if user_uuid is not None:
@@ -916,11 +932,13 @@ class Forum(Module):
         self.load_settings(posts, signatures, avatars)
         for post in posts:
             post["author_html"] = post.get("author_html")
-            post["author_icons"] = post.get("author_icons")
             post["posts"] = intz(post.get("posts"))
             if post.get("content_html") is None:
                 post["content_html"] = self.call("socio.format_text", post.get("content"))
             post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
+            menu = []
+            menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % post.get("author")})
+            post["author_menu"] = menu
 
     def ext_newtopic(self):
         req = self.req()
@@ -931,6 +949,7 @@ class Forum(Module):
             self.call("web.forbidden")
         subject = req.param("subject")
         content = req.param("content")
+        tags = req.param("tags")
         form = self.call("web.form", "common/form.html")
         if req.ok():
             if not subject:
@@ -939,10 +958,11 @@ class Forum(Module):
                 form.error("content", self._("Enter topic content"))
             if not form.errors:
                 user = self.obj(User, req.user())
-                topic = self.call("forum.newtopic", cat, user, subject, content)
+                topic = self.call("forum.newtopic", cat, user, subject, content, tags)
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
+        form.input(self._("Tags"), "tags", tags)
         vars = {
             "category": cat,
             "title": u"%s: %s" % (self._("New topic"), cat["title"]),
@@ -954,7 +974,7 @@ class Forum(Module):
         }
         self.call("forum.response", form.html(), vars)
 
-    def newtopic(self, cat, author, subject, content):
+    def newtopic(self, cat, author, subject, content, tags=""):
         topic = self.obj(ForumTopic)
         topic_content = self.obj(ForumTopicContent, topic.uuid, {})
         now = self.now()
@@ -973,7 +993,6 @@ class Forum(Module):
             topic.set("author", author.uuid)
             topic.set("author_name", author_name)
             topic.set("author_html", author_html)
-            topic.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
             last["author_html"] = author_html
             last["subject_html"] = cgi.escape(subject)
             last["updated"] = self.call("l10n.timeencode2", now)
@@ -982,6 +1001,13 @@ class Forum(Module):
         topic.sync()
         topic_content.set("content", content)
         topic_content.set("content_html", self.call("socio.format_text", content))
+        # tags index
+        tags = self.tags_store(topic.uuid, tags)
+        # fulltext index
+        words = list(chain(self.word_extractor(subject), self.word_extractor(content)))
+        self.fulltext_store(topic.uuid, words)
+        # storing objects
+        topic_content.set("tags", tags)
         topic.store()
         topic_content.store()
         if author is not None:
@@ -989,6 +1015,93 @@ class Forum(Module):
         catstat.store()
         self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
         return topic
+
+    def tags_parse(self, tags_str):
+        raw_tags = re_split_tags.split(tags_str) if len(tags_str) else []
+        tags = set()
+        for i in range(0, len(raw_tags)):
+            if i % 2 == 0:
+                tag = raw_tags[i]
+                tags.add(raw_tags[i].lower())
+        return list(tags)
+
+    def tags_store(self, uuid, tags_str):
+        if tags_str is None:
+            return
+        tags = self.tags_parse(tags_str)
+        mutations = {}
+        mutations_tags = []
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        for tag in tags:
+            tag_short = tag
+            if len(tag_short) > max_tag_len:
+                tag_short = tag_short[0:max_tag_len]
+            tag = tag.encode("utf-8")
+            tag_short = tag_short.encode("utf-8")
+            mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=cgi.escape(tag), clock=clock))))
+            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", clock=clock)))]}
+        if len(mutations):
+            mutations["%s-ForumTags" % app_tag] = {"Indexes": mutations_tags}
+            self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+        return tags
+
+    def tags_remove(self, uuid, tags_str):
+        if type(tags_str) == list:
+            tags = tags_str
+        else:
+            tags = self.tags_parse(tags_str)
+        mutations = {}
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        for tag in tags:
+            tag_short = tag
+            if len(tag_short) > max_tag_len:
+                tag_short = tag_short[0:max_tag_len]
+            tag = tag.encode("utf-8")
+            tag_short = tag_short.encode("utf-8")
+            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), clock=clock))]}
+        if len(mutations):
+            self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+        return tags
+
+    def fulltext_store(self, uuid, words):
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        cnt = dict()
+        for word in words:
+            if len(word) > max_word_len:
+                word = word[0:max_word_len]
+            try:
+                cnt[word] += 1
+            except KeyError:
+                cnt[word] = 1
+        mutations_search = []
+        mutations_list = []
+        mutations = {
+            "%s-ForumSearch" % app_tag: {"Indexes": mutations_search},
+            "%s-ForumSearch-%s" % (app_tag, uuid): {"Indexes": mutations_list},
+        }
+        for word, count in cnt.iteritems():
+            mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), clock=clock))))
+            mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), clock=clock))))
+            if len(mutations_search) >= 1000:
+                self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                mutations_search = []
+                mutations_list = []
+        if len(mutations_search):
+            self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+
+    def fulltext_remove(self, uuid):
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        words = self.app().db.get_slice("%s-ForumSearch-%s" % (app_tag, uuid), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        mutations = []
+        for word in words:
+            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), clock=clock)))
+        if len(mutations):
+            self.db().batch_mutate({"%s-ForumSearch" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
+            self.db().remove("%s-ForumSearch-%s" % (app_tag, uuid), ColumnPath("Indexes"), clock, ConsistencyLevel.QUORUM)
 
     def reply(self, cat, topic, author, content):
         with self.lock(["ForumTopic-" + topic.uuid]):
@@ -1010,7 +1123,6 @@ class Forum(Module):
                 post.set("author", author.uuid)
                 post.set("author_name", author_name)
                 post.set("author_html", author_html)
-                post.set("author_icons", '<img src="/st/socio/test/blog.gif" alt="" />')
                 last["author_html"] = author_html
                 last["subject_html"] = cgi.escape(topic.get("subject"))
                 last["updated"] = self.call("l10n.timeencode2", now)
@@ -1025,6 +1137,7 @@ class Forum(Module):
             last["page"] = page
             catstat.store()
             self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
+            self.fulltext_store(post.uuid, self.word_extractor(content))
             raise Hooks.Return((post, page))
 
     def ext_topic(self):
@@ -1046,6 +1159,8 @@ class Forum(Module):
         topic_data = topic.data_copy()
         topic_data["content"] = topic_content.get("content")
         topic_data["content_html"] = topic_content.get("content_html")
+        if topic_content.get("tags"):
+            topic_data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [cgi.escape(tag) for tag in topic_content.get("tags")]])
         self.topics_htmlencode([topic_data], load_settings=True)
         # preparing menu
         menu = [
@@ -1129,6 +1244,7 @@ class Forum(Module):
             "written_at": self._("written at"),
             "posts": posts,
             "menu": menu,
+            "Tags": self._("Tags"),
         }
         if req.ok() or (self.may_write(cat, rules=rules, roles=roles) and (page == pages)):
             form.texteditor(None, "content", content)
@@ -1364,6 +1480,8 @@ class Forum(Module):
                     post.set("content", content)
                     post.set("content_html", self.call("socio.format_text", content))
                     post.store()
+                    self.fulltext_remove(post.uuid)
+                    self.fulltext_store(post.uuid, self.word_extractor(content))
                     posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
                     for i in range(0, len(posts)):
                         if posts[i].uuid == post.uuid:
@@ -1378,6 +1496,7 @@ class Forum(Module):
             vars["title"] = self._("Edit topic")
             subject = req.param("subject")
             content = req.param("content")
+            tags = req.param("tags")
             if req.ok():
                 if not subject:
                     form.error("subject", self._("Enter topic subject"))
@@ -1388,14 +1507,21 @@ class Forum(Module):
                         topic.set("subject", subject)
                         topic_content.set("content", content)
                         topic_content.set("content_html", self.call("socio.format_text", content))
+                        self.tags_remove(topic.uuid, topic_content.get("tags"))
+                        tags = self.tags_store(topic.uuid, tags)
+                        topic_content.set("tags", tags)
                         topic.store()
                         topic_content.store()
+                        self.fulltext_remove(topic.uuid)
+                        self.fulltext_store(topic.uuid, self.word_extractor(content))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
                 subject = topic.get("subject")
                 content = topic_content.get("content")
+                tags = ", ".join(topic_content.get("tags")) if topic_content.get("tags") else ""
             form.input(self._("Subject"), "subject", subject)
             form.texteditor(None, "content", content)
+            form.input(self._("Tags"), "tags", tags)
         form.submit(None, None, self._("Save"))
         self.call("forum.response", form.html(), vars)
 
@@ -1801,3 +1927,178 @@ class Forum(Module):
                 })
             stat.store()
         self.call("web.response_json", {"ok": 1})
+
+    def ext_tag(self):
+        req = self.req()
+        user_uuid = req.user()
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        if user_uuid is None:
+            roles = ["notlogged", "all"]
+        else:
+            roles = {}
+            self.call("security.users-roles", [user_uuid], roles)
+            roles = roles.get(user_uuid, [])
+        may_read_category = set()
+        for cat in categories:
+            if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
+                may_read_category.add(cat["id"])
+        # querying tag
+        tag = req.args
+        tag_utf8 = tag
+        if len(tag_utf8) > max_tag_len:
+            tag_utf8 = tag_utf8[0:max_tag_len]
+        tag_utf8 = tag_utf8.encode("utf-8")
+        app_tag = str(self.app().tag)
+        topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        # loading topics
+        render_topics = [topic.column.name for topic in topics]
+        render_topics = self.objlist(ForumTopicList, render_topics)
+        render_topics.load(silent=True)
+        topics = [topic for topic in render_topics.data() if topic["category"] in may_read_category]
+        self.topics_htmlencode(topics)
+        if len(topics):
+            topics[-1]["lst"] = True
+        vars = {
+            "tag": cgi.escape(tag),
+            "topics": topics if len(topics) else None,
+            "Tag": self._("Tag"),
+            "author": self._("Author"),
+            "replies": self._("Replies"),
+            "last_reply": self._("Last reply"),
+            "by": self._("by"),
+            "title": cgi.escape(tag),
+            "comment": "" if len(topics) else self._("Nothing found"),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("Tags") },
+                { "html": cgi.escape(tag) },
+            ],
+        }
+        self.call("forum.response_template", "socio/tag.html", vars)
+
+    def word_extractor(self, text):
+        for chunk in re_text_chunks.finditer(text):
+            text = chunk.group()
+            while True:
+                m = re_word_symbol.search(text)
+                if not m:
+                    break
+                start = m.start()
+                m = re_not_word_symbol.search(text, start)
+                if m:
+                    end = m.end()
+                    if end - start > 3:
+                        w = self.stem(text[start:end-1].lower())
+                        if len(w) >= 3:
+                            yield w
+                    text = text[end:]
+                else:
+                    text = text[start:]
+                    if len(text) >= 3:
+                        w = self.stem(text.lower())
+                        if len(w) >= 3:
+                            yield w
+                    break
+
+    def ext_search(self):
+        req = self.req()
+        user_uuid = req.user()
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        if user_uuid is None:
+            roles = ["notlogged", "all"]
+        else:
+            roles = {}
+            self.call("security.users-roles", [user_uuid], roles)
+            roles = roles.get(user_uuid, [])
+        may_read_category = set()
+        for cat in categories:
+            if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
+                may_read_category.add(cat["id"])
+        # querying
+        query = req.args.lower().strip()
+        words = list(self.word_extractor(query))
+        app_tag = str(self.app().tag)
+        render_objects = None
+        for word in words:
+            query_search = word
+            if len(query_search) > max_word_len:
+                query_search = query_search[0:max_word_len]
+            start = (query_search + "//").encode("utf-8")
+            finish = (query_search + "/=").encode("utf-8")
+            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-ForumSearch" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
+            if render_objects is None:
+                render_objects = objs
+            else:
+                for k, v in render_objects.items():
+                    try:
+                        render_objects[k] += objs[k]
+                    except KeyError:
+                        del render_objects[k]
+        # loading and rendering posts and topics
+        if render_objects is None:
+            render_objects = []
+        else:
+            render_objects = [(v, k) for k, v in render_objects.iteritems()]
+            render_objects.sort(reverse=True)
+        posts = []
+        while len(posts) < search_results_per_page and len(render_objects):
+            get_cnt = search_results_per_page-len(render_objects)
+            if get_cnt > len(render_objects):
+                get_cnt = len(render_objects)
+            bucket = [render_objects[i][1] for i in range(0, get_cnt)]
+            del render_objects[0:get_cnt]
+            loaded = dict()
+            posts_list = self.objlist(ForumPostList, bucket)
+            posts_list.load(silent=True)
+            for post in posts_list:
+                loaded[post.uuid] = post
+            remain = [uuid for uuid in bucket if uuid not in loaded]
+            if len(remain):
+                topics_list = self.objlist(ForumTopicList, remain)
+                topics_list.load(silent=True)
+                topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
+                topics_content_list.load(silent=True)
+                topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
+                for topic in topics_list:
+                    loaded[topic.uuid] = topic
+            bucket = [loaded.get(uuid) for uuid in bucket if loaded.get(uuid) and loaded.get(uuid).get("category") in may_read_category]
+            for obj in bucket:
+                data = obj.data_copy()
+                if type(obj) == ForumTopic:
+                    content = topics_content.get(obj.uuid)
+                    if content is not None:
+                        data["content_html"] = content.get("content_html")
+                        self.topics_htmlencode([data], load_settings=True)
+                        data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
+                        data["post_title"] = data.get("subject_html")
+                        if content.get("tags"):
+                            data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [cgi.escape(tag) for tag in content.get("tags")]])
+                        posts.append(data)
+                else:
+                    self.posts_htmlencode([data])
+                    topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
+                    page = ""
+                    for i in range(0, len(topic_posts)):
+                        if topic_posts[i].uuid == data.get("uuid"):
+                            page = "?page=%d" % (i / posts_per_page + 1)
+                            break
+                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), page, data.get("uuid"), self._("open"))
+                    posts.append(data)
+        if len(posts):
+            posts[-1]["lst"] = True
+        vars = {
+            "search_query": cgi.escape(query),
+            "title": cgi.escape(query),
+            "posts": posts,
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("results///Search") },
+                { "html": cgi.escape(query) },
+            ],
+            "Tags": self._("Tags"),
+            "new_post_form": "" if len(posts) else self._("Nothing found")
+        }
+        self.call("forum.response_template", "socio/topic.html", vars)
+

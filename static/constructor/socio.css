@@ -3,11 +3,12 @@ body { background: #fbfbfb; margin: 0 auto; height: 100%; }
 table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 13px; padding: 0; }
 img { border: none }
+h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
 #page-layout { height: 100%; width: 100%; }
 #page-layout-top { height: 57px }
 #page-layout-left { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; width: 53px; }
 #page-layout-right { background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; width: 55px; }
-#page-layout-content { vertical-align: top; padding: 25px 96px 5px 96px; }
+#page-layout-content { vertical-align: top; padding: 25px 96px 25px 96px; }
 #page-top { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
 #page-top1 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
 #page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 200px; height: 57px }
@@ -20,9 +21,13 @@ img { border: none }
 #socio-menu a:link, #socio-menu a:visited { color: #dd6419 }
 #socio-menu a:hover, #socio-menu a:active { color: #ed8449 }
 #socio-menu-left { padding: 0px 10px 5px 0px; }
-#socio-menu-right { padding: 0px 10px 5px 0px; text-align: right; }
+#socio-menu-right { padding: 0px 0px 5px 0px; text-align: right; }
 #socio-categories { width: 100% }
 .socio-cathead { padding: 0px 4px 7px 4px; font-size: 10px; vertical-align: bottom; color: #535c5f; text-align: center }
+#socio-top-search { margin-right: 10px; vertical-align: middle; }
+/* INDEX */
+.socio-top-cat { background-color: #ececec }
+/* CATEGORY */
 .socio-catauthor { width: 20% }
 .socio-catcomments { width: 8% }
 .socio-catlastcomment { width: 30% }
@@ -39,5 +44,53 @@ img { border: none }
 .socio-pages-list { color: #dd6419 }
 .socio-pages-list a:link, .socio-pages-list a:visited { color: #dd6419 }
 .socio-pages-list a:hover, .socio-pages-list a:active { color: #ed8439 }
-.socio-top-cat { background-color: #ececec }
+/* TOPIC */
 .socio-mark { vertical-align: middle }
+#socio-topic-head { width: 100% }
+#socio-topic-title { color: #0078ac; font-size: 14px; font-weight: 900; vertical-align: bottom; padding-top: 10px }
+.socio-post-title { color: #0078ac; font-size: 14px; font-weight: 900; padding-bottom: 10px }
+.socio-topic-pages { vertical-align: bottom; text-align: right; font-size: 11px; color: #81878a; padding: 10px 0px 0px 20px; }
+.socio-catdelim { padding: 10px 0px 10px 0px }
+.socio-post-head { background-color: #eaeaea; }
+.socio-post-delim { width: 100% }
+.socio-delim-left { color: #0078ac; font-size: 10px; padding: 1px 16px 1px 16px }
+.socio-delim-right { color: #0078ac; font-size: 10px; padding: 0px 16px 3px 16px; text-align: right }
+.socio-delim-right a:link, .socio-delim-right a:visited { color: #0078ac }
+.socio-delim-right a:hover, .socio-delim-right a:active { color: #0098ec }
+.socio-delim-right img { vertical-align: bottom }
+.socio-avatar-row { width: 180px; vertical-align: top; padding-bottom: 5px }
+.socio-avatar { padding: 5px 10px 9px 33px }
+.socio-avatar img { border: solid 1px #614115 }
+.socio-member-name { color: #dd6419; font-size: 12px; font-weight: bold; padding: 0px 10px 5px 33px; }
+.socio-member-menu { font-size: 10px; color: #0078ac; padding: 0px 10px 5px 33px }
+.socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
+.socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
+.socio-post-content { padding: 0px 33px 5px 0px; font-size: 12px; text-align: justify }
+.socio-post-actions-row { vertical-align: bottom; padding-bottom: 15px }
+.socio-post-actions { width: 100% }
+.socio-post-actions-left { vertical-align: bottom; padding-bottom: 8px }
+.socio-post-actions-right { text-align: right; padding: 0px 33px 8px 10px; vertical-align: bottom; font-size: 11px }
+.socio-actions { color: #dd6419; white-space: nowrap }
+.socio-actions a:link, .socio-actions a:visited { color: #dd6419 }
+.socio-actions a:hover, .socio-actions a:active { color: #ed8439 }
+.socio-signature { font-size: 11px; color: #81878a; line-height: 110%; padding-top: 10px }
+.quote { background-color: #eaeaea; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
+.quote .author { color: #dd6419; font-size: 10px; padding-bottom: 5px; }
+#socio-topic-bottom { width: 100%; border-top: solid 1px #dd6419; margin-top: 30px }
+#socio-topic-bottom .socio-topic-pages { padding-top: 5px }
+/* FORM */
+.form { margin-top: 30px }
+.form-desc { color: #0078ac; font-size: 16px; font-weight: bold; padding: 10px 0px 10px 0px }
+.form-w100 { width: 100% }
+.form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
+input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 20px 0px }
+.form-std-form-row { width: 100% }
+.form-list-messages-bottom { padding-top: 15px; color: #898989; }
+.form-list-messages-bottom div { padding-top: 5px; color: #898989; }
+.form-error { color: #ff6347; font-size: 11px }
+.form-editor-toolbox td { padding: 0px 4px 10px 0px }
+.form-submit { margin-top: 10px }
+.socio-tags { padding-top: 10px; color: #81878a }
+.socio-tags-list { color: #dd6419 }
+.socio-tags-list a:link, .socio-tags-list a:visited { color: #dd6419 }
+.socio-tags-list a:hover, .socio-tags-list a:active { color: #ed8439 }

@@ -98,7 +98,6 @@ class Constructor(Module):
 
     def web_global_html(self):
         req = self.req()
-        print "%s - %s" % (req.group, req.hook)
         if req.group == "index" and req.hook == "index":
             return "constructor/index_global.html"
         elif req.group == "auth":
@@ -127,10 +126,10 @@ class Constructor(Module):
             redirect = req.uri()
             redirect_param = False
         redirect = urlencode(redirect)
+        topmenu.append({"search": True, "button": self._("socio-top///Search")})
         if req.user():
             topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
             topmenu.append({"href": "/documentation", "image": "/st/constructor/cabinet/doc.gif", "html": self._("Documentation")})
-            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/forum.gif", "html": self._("Settings")})
             topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})

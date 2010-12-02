@@ -68,6 +68,7 @@ class CommonCassandraStruct(Module):
 
     def cassandra_struct(self, dbstruct):
         dbstruct["Objects"] = CfDef()
+        dbstruct["Indexes"] = CfDef()
 
     def cassandra_apply(self, dbstruct):
         db = self.db()
