@@ -129,7 +129,7 @@ class Constructor(Module):
         topmenu.append({"search": True, "button": self._("socio-top///Search")})
         if req.user():
             topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
-            topmenu.append({"href": "/documentation", "image": "/st/constructor/cabinet/doc.gif", "html": self._("Documentation")})
+            topmenu.append({"href": "/forum/settings", "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
             topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
