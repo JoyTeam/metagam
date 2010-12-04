@@ -565,7 +565,9 @@ class Forum(Module):
         self.rhook("ext-forum.unpin", self.ext_unpin)
         self.rhook("ext-forum.move", self.ext_move)
         self.rhook("ext-forum.tag", self.ext_tag)
+        self.rhook("ext-forum.tags", self.ext_tags)
         self.rhook("ext-forum.search", self.ext_search)
+        self.rhook("ext-forum.subscribed", self.ext_subscribed)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("all.schedule", self.schedule)
@@ -699,6 +701,10 @@ class Forum(Module):
             "last_message": self._("Last message"),
             "by": self._("by"),
             "ForumCategories": self._("Forum categories"),
+            "menu": [
+                { "html": self._("Forum categories") },
+                { "href": "/forum/subscribed", "html": self._("Subscribed topics") },
+            ],
         }
         self.call("forum.response_template", "socio/index.html", vars)
 
@@ -1547,6 +1553,8 @@ class Forum(Module):
         signature = req.param("signature")
         avatar = req.param_raw("avatar")
         redirect = req.param("redirect")
+        if redirect is None or redirect == "":
+            redirect = "/forum"
         notify_replies = req.param("notify_replies")
         notify = {}
         for cat in categories:
@@ -1630,9 +1638,7 @@ class Forum(Module):
                     settings.delkey("notify_any")
                 settings.set("notify_replies", True if notify_replies else False)
                 settings.store()
-                if redirect is not None and redirect != "":
-                    self.call("web.redirect", redirect)
-                self.call("web.redirect", "/cabinet/settings")
+                self.call("web.redirect", redirect)
         else:
             signature = settings.get("signature")
             notify_replies = settings.get("notify_replies", True)
@@ -1644,6 +1650,7 @@ class Forum(Module):
         form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
         for cat in categories:
             form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
+        form.add_message_top('<a href="%s">%s</a>' % (redirect, self._("Return")))
         self.call("forum.response", form.html(), vars)
 
     def ext_subscribe(self):
@@ -1954,26 +1961,24 @@ class Forum(Module):
         render_topics = self.objlist(ForumTopicList, render_topics)
         render_topics.load(silent=True)
         topics = [topic for topic in render_topics.data() if topic["category"] in may_read_category]
-        self.topics_htmlencode(topics)
+        self.topics_htmlencode(topics, load_settings=True)
         if len(topics):
             topics[-1]["lst"] = True
         vars = {
-            "tag": cgi.escape(tag),
             "topics": topics if len(topics) else None,
-            "Tag": self._("Tag"),
             "author": self._("Author"),
             "replies": self._("Replies"),
             "last_reply": self._("Last reply"),
             "by": self._("by"),
             "title": cgi.escape(tag),
-            "comment": "" if len(topics) else self._("Nothing found"),
+            "message": "" if len(topics) else self._("Nothing found"),
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
-                { "html": self._("Tags") },
+                { "href": "/forum/tags", "html": self._("Tags") },
                 { "html": cgi.escape(tag) },
             ],
         }
-        self.call("forum.response_template", "socio/tag.html", vars)
+        self.call("forum.response_template", "socio/category.html", vars)
 
     def word_extractor(self, text):
         for chunk in re_text_chunks.finditer(text):
@@ -2100,3 +2105,55 @@ class Forum(Module):
         }
         self.call("forum.response_template", "socio/topic.html", vars)
 
+    def ext_subscribed(self):
+        self.call("session.require_login")
+        req = self.req()
+        user_uuid = req.user()
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        roles = {}
+        self.call("security.users-roles", [user_uuid], roles)
+        roles = roles.get(user_uuid, [])
+        may_read_category = set()
+        for cat in categories:
+            if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
+                may_read_category.add(cat["id"])
+        # querying
+        lastreadlist = self.objlist(ForumLastReadList, query_index="user-subscribed", query_equal="%s-1" % user_uuid)
+        lastreadlist.load(silent=True)
+        topic_uuids = [lr.get("topic") for lr in lastreadlist if lr.get("category") in may_read_category]
+        # loading topics
+        topics = self.objlist(ForumTopicList, topic_uuids)
+        topics.load(silent=True)
+        topics = topics.data()
+        self.topics_htmlencode(topics, load_settings=True)
+        if len(topics):
+            topics[-1]["lst"] = True
+        vars = {
+            "title": self._("Subscribed topics"),
+            "author": self._("Author"),
+            "replies": self._("Replies"),
+            "last_reply": self._("Last reply"),
+            "by": self._("by"),
+            "topics": topics if len(topics) else None,
+            "message": None if len(topics) else self._("You have not subscribed to any topic"),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("Subscribed topics") },
+            ],
+        }
+        self.call("forum.response_template", "socio/category.html", vars)
+
+    def ext_tags(self):
+        app_tag = str(self.app().tag)
+        tags = self.app().db.get_slice("%s-ForumTags" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        tags = [tag.column.value for tag in tags]
+        vars = {
+            "tags": tags,
+            "title": self._("Forum tags"),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("Tags") },
+            ],
+        }
+        self.call("forum.response_template", "socio/tags.html", vars)

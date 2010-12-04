@@ -128,8 +128,8 @@ class Constructor(Module):
         redirect = urlencode(redirect)
         topmenu.append({"search": True, "button": self._("socio-top///Search")})
         if req.user():
-            topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
-            topmenu.append({"href": "/forum/settings", "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
+            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
+            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
             topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
@@ -222,7 +222,7 @@ class Constructor(Module):
                 [
                     { "href": "/auth/change", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change password") },
                     { "href": "/auth/email", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change e-mail") },
-                    { "href": "/forum/settings", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Forum settings") },
+                    { "href": "/forum/settings?redirect=/cabinet/settings", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Forum settings") },
                     { "href": "/constructor/certificate", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("WebMoney Certification") },
                 ],
             ],

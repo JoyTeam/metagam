@@ -23,8 +23,10 @@ h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
 #socio-menu-left { padding: 0px 10px 5px 0px; }
 #socio-menu-right { padding: 0px 0px 5px 0px; text-align: right; }
 #socio-categories { width: 100% }
+.socio-categories-index { margin-top: 20px }
 .socio-cathead { padding: 0px 4px 7px 4px; font-size: 10px; vertical-align: bottom; color: #535c5f; text-align: center }
 #socio-top-search { margin-right: 10px; vertical-align: middle; }
+.socio-message { margin-top: 20px }
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
 .socio-index-title { font-size: 14px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
@@ -98,7 +100,10 @@ input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; m
 .form-error { color: #ff6347; font-size: 11px }
 .form-editor-toolbox td { padding: 0px 4px 10px 0px }
 .form-submit { margin-top: 10px }
+/* TAGS */
 .socio-tags { padding-top: 10px; color: #81878a }
 .socio-tags-list { color: #dd6419 }
 .socio-tags-list a:link, .socio-tags-list a:visited { color: #dd6419 }
 .socio-tags-list a:hover, .socio-tags-list a:active { color: #ed8439 }
+.socio-tags-list .socio-thick { margin: 20px 0px 15px 0px; }
+.socio-tags-list .socio-semithick { margin-top: 20px }
