@@ -316,6 +316,8 @@ class ForumAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def headmenu_forum_category(self, args):
+        if args == "new":
+            return [self._("New category"), "forum/categories"]
         cat = self.call("forum.category", args)
         if cat is None:
             return [self._("No such category"), "forum/categories"]

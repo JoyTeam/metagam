@@ -131,7 +131,7 @@ class AdminInterface(Module):
                     break
             first = False
         menu.reverse()
-        return " &bull; ".join(menu)
+        return " / ".join(menu)
 
     def response_params(self):
         return {
@@ -155,6 +155,8 @@ class AdminInterface(Module):
             advice.extend(admin_advice)
         self.call("advice-%s.%s" % (req.group, req.hook), req.args, advice)
         self.call("advice-%s.index" % req.group, req.hook, req.args, advice)
+        if len(advice):
+            advice[-1]["lst"] = True
         params["advice"] = advice
 
     def params_menu(self, params):

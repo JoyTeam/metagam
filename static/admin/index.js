@@ -76,16 +76,21 @@ function adm_response(res)
 			advicecontent.add({
 				html: gt.gettext('Guru advice'),
 				border: false,
-				cls: 'advice-banner',
+				bodyCfg: {
+					cls: 'admin-advice-header',
+				},
 			});
 			for (var i = 0; i < res.advice.length; i++) {
 				var adv = res.advice[i];
 				advicecontent.add({
-					collapsible: true,
 					title: adv.title,
 					html: adv.content,
-					cls: 'advice',
-					bodyCssClass: 'advice-body',
+					bodyCfg: {
+						cls: adv.lst ? 'admin-advice-body-last' : 'admin-advice-body'
+					},
+					headerCfg: {
+						cls: 'admin-advice-title',
+					}
 				});
 			}
 		}
@@ -199,13 +204,16 @@ function update_menu(menu)
 	leftmenu.animate = true;
 	topmenu.removeAll();
 	topmenu.add({
-		id: 'projecttitle',
+		id: 'admin-project-title',
 		xtype: 'tbtext',
 		text: menu.title,
 	}, '->');
 	for (var i = 0; i < menu.top.length; i++) {
 		ent = menu.top[i];
-		topmenu.add({id: ent.id, href: ent.href, text: ent.text, tooltip: ent.tooltip, handler: button_handler});
+		topmenu.add({
+			xtype: 'tbtext',
+			text: (ent.href ? '<a href="' + ent.href + '" title="' + ent.tooltip + '">' : '<a href="javascript:void(0)" title="' + ent.tooltip + '" onclick="adm(\'' + ent.id + '\'); return 0;">') + ent.text + '</a>'
+		});
 	}
 	topmenu.doLayout();
 }
@@ -234,57 +242,71 @@ Ext.onReady(function() {
 	Ext.form.Field.prototype.msgTarget = 'under';
 	adminmain = new Ext.Container({
 		autoDestroy: true,
-		cls: 'admin-main',
 	});
 	leftmenu = new Ext.tree.TreePanel({
-		id: 'leftmenu',
 		useArrows: true,
 		border: false,
 		rootVisible: false,
 		root: {},
 	});
 	topmenu = new Ext.Toolbar({
-		id: 'topmenu',
+		id: 'admin-topmenu',
 		border: false,
+		height: 45,
 	});
 	advicecontent = new Ext.Panel({
-		id: 'advicecontent',
+		id: 'admin-advicecontent',
 		border: false,
 		autoDestroy: true,
+		autoScroll: true,
+		bodyCfg: {
+			cls: 'admin-advicecontent'
+		},
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
 		items: [
 			{
 				region: 'north',
-				height: 30,
+				height: 45,
 				autoScroll: false,
 				layout: 'fit',
 				border: false,
 				items: topmenu
 			},
 			{
+				id: 'admin-leftmenu',
 				region: 'west',
 				split: true,
 				width: '20%',
 				maxSize: 400,
 				border: false,
 				autoScroll: true,
+				bodyCfg: {
+					cls: 'admin-leftmenu'
+				},
 				items: leftmenu,
 			},
 			{
+				id: 'admin-advicecontent1',
+				border: false,
+				items: advicecontent,
 				region: 'east',
 				split: true,
-				width: '20%',
-				border: false,
-				autoScroll: true,
+				width: '25%',
 				layout: 'fit',
-				items: advicecontent,
+				bodyCfg: {
+					cls: 'admin-advicecontent1',
+				},
 			},
 			{
 				region: 'center',
 				border: false,
 				autoScroll: true,
+				id: 'admin-main',
+				bodyCfg: {
+					cls: 'admin-main'
+				},
 				items: adminmain,
 			}
 		]

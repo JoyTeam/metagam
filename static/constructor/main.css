@@ -6,10 +6,3 @@ a{text-decoration:underline;color:#0099cc;}
 ul{list-style:none;}
 img{border:0px;}
 .clear{clear:both;}
-table.list { margin: 10px 0px 10px 0px }
-table.list td{ padding:1px 5px 1px 5px; border: solid 1px #c0c0c0; vertical-align: top }
-table.list tr.header td { background-color:#f0f0f0; padding: 5px; color: #000000; font-weight: bold }
-table.list td.header { background-color:#f0f0f0; color: #000000; font-weight: bold }
-table.list td.subheader { font-weight: bold; font-size: 16px }
-.description { font-size: 12px; color:#808080 }
-div.error { color: red; font-size: 11px }

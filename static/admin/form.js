@@ -62,7 +62,6 @@ Form = Ext.extend(AdminResponse, {
 					xtype: (it.type == undefined) ? 'textfield' : it.type,
 					anchor: '-30',
 					border: false,
-					style: 'margin-bottom: 10px',
 					msgTarget: 'side',
 				};
 				if (elt.xtype == 'checkbox') {
