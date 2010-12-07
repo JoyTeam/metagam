@@ -33,15 +33,21 @@ Form = Ext.extend(AdminResponse, {
 					layout: 'border',
 					border: false,
 					items: [{
-						height: 40,
 						region: 'south',
 						split: false,
 						border: false,
+						layout: 'table',
+						layoutConfig: {
+							tableAttrs: {
+								style: {
+									height: '100%'
+								}
+							},
+						},
 						items: [{
 							xtype: 'button',
 							border: false,
 							text: it.text,
-							height: 23,
 							action: it.action,
 							handler: function(btn) {
 								adm(btn.action);
