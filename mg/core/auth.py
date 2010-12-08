@@ -940,22 +940,22 @@ class PermissionsEditor(Module):
             new_rules = [(role, perm) for ord, role, perm in new_rules]
             self.perms.set("rules", new_rules)
             self.perms.store()
-            self.call("admin.redirect", "_self")
+            self.call("admin.redirect", "forum/access/%s" % self.uuid)
         rules = self.perms.get("rules")
         for n in range(0, len(rules)):
             rule = rules[n]
-            fields.append({"name": "ord%d" % n, "width": 150, "value": n + 1})
+            fields.append({"name": "ord%d" % n, "value": n + 1, "width": 100})
             fields.append({"name": "role%d" % n, "type": "combo", "values": roles, "value": rule[0], "inline": True})
             fields.append({"name": "perm%d" % n, "type": "combo", "values": self.permissions, "value": rule[1], "inline": True})
-            fields.append({"type": "button", "width": 150, "text": self._("Delete"), "action": "forum/permissions/%s/del/%d" % (self.uuid, n), "inline": True})
-        fields.append({"name": "ord", "width": 150, "value": len(rules) + 1, "label": self._("Add new rule") if rules else None})
-        fields.append({"name": "role", "type": "combo", "values": roles, "label": "" if rules else None, "allow_blank": True, "inline": True})
-        fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "" if rules else None, "allow_blank": True, "inline": True})
-        fields.append({"type": "empty", "width": 150, "inline": True})
-        fields[0]["label"] = self._("Sort order")
+            fields.append({"type": "button", "width": 100, "text": self._("Delete"), "action": "forum/access/%s/del/%d" % (self.uuid, n), "inline": True})
+        fields.append({"name": "ord", "value": len(rules) + 1, "label": self._("Add") if rules else None, "width": 100})
+        fields.append({"name": "role", "type": "combo", "values": roles, "label": "&nbsp;" if rules else None, "allow_blank": True, "inline": True})
+        fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "&nbsp;" if rules else None, "allow_blank": True, "inline": True})
+        fields.append({"type": "empty", "width": 100, "inline": True})
+        fields[0]["label"] = self._("Order")
         fields[1]["label"] = self._("Role")
         fields[2]["label"] = self._("Permission")
-        fields[3]["desc"] = "&nbsp;"
+        fields[3]["label"] = "&nbsp;"
         fields.append({"type": "hidden", "name": "rules", "value": len(rules)})
         self.call("admin.form", fields=fields)
 
@@ -967,4 +967,4 @@ class PermissionsEditor(Module):
             self.perms.store()
         except IndexError:
             pass
-        self.call("admin.redirect", "forum/permissions/%s" % self.uuid)
+        self.call("admin.redirect", "forum/access/%s" % self.uuid)

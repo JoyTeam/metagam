@@ -17,7 +17,7 @@
     background-color: #eee;
     border-color:#a3bad9;
     color:#222;
-    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .x-mask-loading div {
@@ -110,7 +110,7 @@ ul.x-tab-strip-bottom{
 }
 
 .x-tab-strip span.x-tab-strip-text {
-	font:normal 11px tahoma,arial,helvetica;
+	font:normal 11px verdana;
 	color:#416aa3;
 }
 
@@ -200,14 +200,16 @@ ul.x-tab-strip-bottom{
 
 .x-tab-panel-bbar .x-toolbar, .x-tab-panel-tbar .x-toolbar {
     border-color:#99bbe8;
-}.x-form-field {
-    font:normal 12px tahoma, arial, helvetica, sans-serif;
 }
 
 .x-form-text, textarea.x-form-field {
     background-color:#fff;
     background-image:url(../images/default/form/text-bg.gif);
     border-color:#b5b8c8;
+}
+
+.x-form-field {
+    background: #f9f9f9; border: solid 1px #e5e5e5; font-size: 15px; color: #4d5456
 }
 
 .x-form-select-one {
@@ -280,16 +282,16 @@ ul.x-tab-strip-bottom{
 }
 
 .x-form-grow-sizer {
-	font:normal 12px tahoma, arial, helvetica, sans-serif;
+	font:normal 12px verdana;
 }
 
 .x-form-item {
-    font:normal 12px tahoma, arial, helvetica, sans-serif;
+    font:normal 12px verdana;
 }
 
 .x-form-invalid-msg {
     color:#c0272b;
-    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    font:normal 11px verdana;
     background-image:url(../images/default/shared/warning.gif);
 }
 
@@ -298,11 +300,11 @@ ul.x-tab-strip-bottom{
 }
 
 .x-small-editor .x-form-field {
-    font:normal 11px arial, tahoma, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .ext-webkit .x-small-editor .x-form-field {
-    font:normal 11px arial, tahoma, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .x-form-invalid-icon {
@@ -314,15 +316,15 @@ ul.x-tab-strip-bottom{
 }
 
 .x-fieldset legend {
-    font:bold 11px tahoma, arial, helvetica, sans-serif;
+    font:bold 11px verdana;
     color:#15428b;
 }
 .x-btn{
-	font:normal 11px tahoma, verdana, helvetica;
+	font:normal 11px verdana;
 }
 
 .x-btn button{
-    font:normal 11px arial,tahoma,verdana,helvetica;
+    font:normal 11px verdana;
     color:#333;
 }
 
@@ -411,7 +413,7 @@ ul.x-tab-strip-bottom{
 }
 
 .x-toolbar td,.x-toolbar span,.x-toolbar input,.x-toolbar div,.x-toolbar select,.x-toolbar label{
-    font:normal 11px arial,tahoma, helvetica, sans-serif;
+    font:normal 10px verdana;
 }
 
 .x-toolbar .x-item-disabled {
@@ -538,11 +540,11 @@ ul.x-tab-strip-bottom{
 }
 
 .x-grid3-row td, .x-grid3-summary-row td{
-	font:normal 11px/13px arial, tahoma, helvetica, sans-serif;
+	font:normal 11px/13px verdana;
 }
 
 .x-grid3-hd-row td {
-	font:normal 11px/15px arial, tahoma, helvetica, sans-serif;
+	font:normal 11px/15px verdana;
 }
 
 
@@ -678,7 +680,7 @@ td.grid-hd-group-cell {
 }
 
 .x-grid3-topbar, .x-grid3-bottombar{
-	font:normal 11px arial, tahoma, helvetica, sans-serif;
+	font:normal 11px verdana;
 }
 
 .x-grid3-bottombar .x-toolbar{
@@ -769,7 +771,7 @@ td.grid-hd-group-cell {
 .x-grid-group-hd div.x-grid-group-title {
     background-image:url(../images/default/grid/group-collapse.gif);
     color:#3764a0;
-    font:bold 11px tahoma, arial, helvetica, sans-serif;
+    font:bold 11px verdana;
 }
 
 .x-grid-group-collapsed .x-grid-group-hd div.x-grid-group-title {
@@ -790,7 +792,7 @@ td.grid-hd-group-cell {
 
 .x-grid-empty {
     color:gray;
-    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .x-grid-with-col-lines .x-grid3-row td.x-grid3-cell {
@@ -801,8 +803,8 @@ td.grid-hd-group-cell {
 	border-top-color:#a3bae9;
 }.x-dd-drag-ghost{
 	color:#000;
-	font: normal 11px arial, helvetica, sans-serif;
-    border-color: #ddd #bbb #bbb #ddd;
+	font: normal 11px verdana;
+	border-color: #ddd #bbb #bbb #ddd;
 	background-color:#fff;
 }
 
@@ -908,7 +910,7 @@ td.grid-hd-group-cell {
 
 .x-tree-node{
 	color:#000;
-	font: normal 11px arial, tahoma, helvetica, sans-serif;
+	font: normal 11px verdana;
 }
 
 .x-tree-node a, .x-dd-drag-ghost a{
@@ -974,7 +976,7 @@ td.grid-hd-group-cell {
 .x-date-middle,.x-date-left,.x-date-right {
 	background-image: url(../images/default/shared/hd-sprite.gif);
 	color:#fff;
-	font:bold 11px "sans serif", tahoma, verdana, helvetica;
+	font:bold 11px verdana;
 }
 
 .x-date-middle .x-btn .x-btn-text {
@@ -997,7 +999,7 @@ td.grid-hd-group-cell {
     background-color:#dfecfb;
     background-image:url(../images/default/shared/glass-bg.gif);
 	border-bottom-color:#a3bad9;
-    font:normal 10px arial, helvetica,tahoma,sans-serif;
+    font:normal 10px verdana;
 	color:#233d6d;
 }
 
@@ -1006,7 +1008,7 @@ td.grid-hd-group-cell {
 }
 
 .x-date-inner a {
-    font:normal 11px arial, helvetica,tahoma,sans-serif;
+    font:normal 11px verdana;
     color:#000;
 }
 
@@ -1062,14 +1064,14 @@ td.grid-hd-group-cell {
 }
 
 .x-date-mp td {
-	font:normal 11px arial, helvetica,tahoma,sans-serif;
+	font:normal 11px verdana;
 }
 
 .x-date-mp-btns button {
 	background-color:#083772;
 	color:#fff;
 	border-color: #3366cc #000055 #000055 #3366cc;
-	font:normal 11px arial, helvetica,tahoma,sans-serif;
+	font:normal 11px verdana;
 }
 
 .x-date-mp-btns {
@@ -1111,19 +1113,19 @@ td.x-date-mp-sep {
 }
 
 .x-tip .x-tip-mc {
-    font: normal 11px tahoma,arial,helvetica,sans-serif;
+    font: normal 11px verdana;
 }
 .x-tip .x-tip-ml {
 	background-color: #fff;
 }
 
 .x-tip .x-tip-header-text {
-    font: bold 11px tahoma,arial,helvetica,sans-serif;
+    font: bold 11px verdana;
     color:#444;
 }
 
 .x-tip .x-tip-body {
-    font: normal 11px tahoma,arial,helvetica,sans-serif;
+    font: normal 11px verdana;
     color:#444;
 }
 
@@ -1153,7 +1155,7 @@ td.x-date-mp-sep {
 }
 
 .x-menu-list-item{
-	font:normal 11px arial,tahoma,sans-serif;
+	font:normal 11px verdana;
 }
 
 .x-menu-item-arrow{
@@ -1239,7 +1241,7 @@ a.x-menu-item {
 .x-box-mc {
 	background-color: #eee;
     background-image: url(../images/default/box/tb.gif);
-	font-family: "Myriad Pro","Myriad Web","Tahoma","Helvetica","Arial",sans-serif;
+	font-family: Verdana;
 	color: #393939;
 	font-size: 12px;
 }
@@ -1290,7 +1292,7 @@ a.x-menu-item {
 }.x-combo-list {
     border-color:#98c0f4;
     background-color:#ddecfe;
-    font:normal 12px tahoma, arial, helvetica, sans-serif;
+    font:normal 12px verdana;
 }
 
 .x-combo-list-inner {
@@ -1298,7 +1300,7 @@ a.x-menu-item {
 }
 
 .x-combo-list-hd {
-    font:bold 11px tahoma, arial, helvetica, sans-serif;
+    font:bold 11px verdana;
     color:#15428b;
     background-image: url(../images/default/layout/panel-title-light-bg.gif);
     border-bottom-color:#98c0f4;
@@ -1322,7 +1324,7 @@ a.x-menu-item {
 }
 
 .x-combo-list-small {
-    font:normal 11px tahoma, arial, helvetica, sans-serif;
+    font:normal 11px verdana;
 }.x-panel {
     border-color: #99bbe8;
 }
@@ -1331,7 +1333,7 @@ a.x-menu-item {
     color:#15428b;
 	font-weight:bold; 
     font-size: 11px;
-    font-family: tahoma,arial,verdana,sans-serif;
+    font-family: verdana;
     border-color:#99bbe8;
     background-image: url(../images/default/panel/white-top-bottom.gif);
 }
@@ -1355,7 +1357,7 @@ a.x-menu-item {
 
 .x-panel-tl .x-panel-header {
     color:#15428b;
-	font:bold 11px tahoma,arial,verdana,sans-serif;
+	font:bold 11px verdana;
 }
 
 .x-panel-tc {
@@ -1372,7 +1374,7 @@ a.x-menu-item {
 }
 
 .x-panel-mc {
-    font: normal 11px tahoma,arial,helvetica,sans-serif;
+    font: normal 11px verdana;
     background-color:#dfe8f6;
 }
 
@@ -1402,7 +1404,7 @@ a.x-menu-item {
 }
 
 .x-panel-fbar td,.x-panel-fbar span,.x-panel-fbar input,.x-panel-fbar div,.x-panel-fbar select,.x-panel-fbar label{
-    font:normal 11px arial,tahoma, helvetica, sans-serif;
+    font:normal 10px verdana;
 }
 .x-window-proxy {
     background-color:#c7dffc;
@@ -1411,7 +1413,7 @@ a.x-menu-item {
 
 .x-window-tl .x-window-header {
     color:#15428b;
-	font:bold 11px tahoma,arial,verdana,sans-serif;
+	font:bold 11px verdana;
 }
 
 .x-window-tc {
@@ -1440,7 +1442,7 @@ a.x-menu-item {
 
 .x-window-mc {
     border-color:#99bbe8;
-    font: normal 11px tahoma,arial,helvetica,sans-serif;
+    font: normal 11px verdana;
     background-color:#dfe8f6;
 }
 
@@ -1585,11 +1587,11 @@ body.x-body-masked .x-window-plain .x-window-mc {
 
 .x-list-header-inner div em {
     border-left-color:#ddd;
-    font:normal 11px arial, tahoma, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .x-list-body dt em {
-    font:normal 11px arial, tahoma, helvetica, sans-serif;
+    font:normal 11px verdana;
 }
 
 .x-list-over {
@@ -1628,7 +1630,7 @@ body.x-body-masked .x-window-plain .x-window-mc {
 }
 
 .x-window-dlg .ext-mb-textarea {
-    font:normal 12px tahoma,arial,helvetica,sans-serif;
+    font:normal 12px verdana;
 }
 
 .x-window-dlg .x-msg-box-wait {
@@ -1650,3 +1652,10 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .x-window-dlg .ext-mb-error {
     background-image:url(../images/default/window/icon-error.gif);
 }
+
+.x-form-item-label { color: #0078ac; font-size: 11px }
+.x-form-text, .ext-gecko .x-form-text, .ext-ie8 .x-form-text { height: 27px; padding: 2px 4px 2px 4px; }
+.x-form-checkbox { vertical-align: middle; margin-bottom: 2px }
+.x-form-field-wrap .x-form-trigger { border-bottom: solid 1px #e5e5e5; height: 26px }
+.x-btn-noicon .x-btn-small .x-btn-text { height: 23px; margin-left: 10px; margin-right: 10px; }
+

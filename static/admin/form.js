@@ -30,34 +30,22 @@ Form = Ext.extend(AdminResponse, {
 				};
 			} else if (it.type == 'button') {
 				elem = {
-					layout: 'border',
 					border: false,
-					items: [{
-						region: 'south',
-						split: false,
+					layout: 'form',
+					items: {
+						xtype: 'button',
 						border: false,
-						layout: 'table',
-						layoutConfig: {
-							tableAttrs: {
-								style: {
-									height: '100%'
-								}
-							},
+						text: it.text,
+						action: it.action,
+						fieldLabel: it.label,
+						hideLabel: (it.label == undefined) ? true : false,
+						handler: function(btn) {
+							adm(btn.action);
 						},
-						items: [{
-							xtype: 'button',
-							border: false,
-							text: it.text,
-							action: it.action,
-							handler: function(btn) {
-								adm(btn.action);
-							},
-						}],
-					}, {
-						region: 'center',
-						border: false,
-					}],
+					},
 				};
+				if (it.label == '&nbsp;')
+					elem.items.labelSeparator = '';
 			} else {			
 				var elt = {
 					fieldLabel: it.label,
@@ -80,34 +68,37 @@ Form = Ext.extend(AdminResponse, {
 					elt.hiddenName = 'v_' + elt.name;
 					elt.hiddenValue = elt.value;
 					elt.allowBlank = it.allow_blank;
+					elt.listWidth = 600;
 				} else if (elt.xtype == 'password') {
 					elt.xtype = 'textfield';
 					elt.inputType = 'password';
 				}
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
+				if (elt.fieldLabel == '&nbsp;')
+					elt.labelSeparator = '';
 				elem = {
 					border: false,
 					layout: 'form',
-					items: [elt],
+					items: elt,
 				};
 			}
 			if (!it.width && !it.flex)
 				it.flex = 1;
 			row.push({
+				autoHeight: true,
 				flex: it.flex,
 				width: it.width,
-				layout: 'fit',
 				border: false,
-				items: [elem],
+				items: elem,
 			});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
 				rows.push({
 					border: false,
 					layout: 'hbox',
-					layoutConfig: {
-						align: 'stretchmax',
-						pack: 'start',
+					autoHeight: true,
+					defaults: {
+						autoHeight: true,
 					},
 					items: row,
 				});
@@ -163,6 +154,7 @@ Form = Ext.extend(AdminResponse, {
 			buttonAlign: 'left',
 			footerStyle: 'padding: 0',
 			waitTitle: gt.gettext('Please wait...'),
+			layout: 'auto',
 		});
 		this.add(form);
 	}

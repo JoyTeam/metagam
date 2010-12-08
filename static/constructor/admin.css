@@ -31,17 +31,9 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .list td.subheader { color: #dd6419; padding: 10px 10px 10px 20px }
 .description { font-size: 12px; color: #8f9da3 }
 .error { color: #ff6419; font-size: 11px }
-/* FORMS */
-.x-form-item-label { color: #0078ac; }
-.x-form-field { background: #f9f9f9; border: solid 1px #e5e5e5; font-family: Verdana; font-size: 15px; color: #4d5456 }
-.x-form-text, .ext-gecko .x-form-text, .ext-ie8 .x-form-text { height: 27px; padding: 2px 4px 2px 4px; }
-.x-form-checkbox { vertical-align: middle; }
-.x-form-field-wrap .x-form-trigger { border-bottom: solid 1px #e5e5e5; height: 26px }
-.x-btn-noicon .x-btn-small .x-btn-text { height: 22px; margin-left: 10px; margin-right: 10px; }
-.x-table-layout .x-btn { margin-bottom: 8px }
 
+.admin-actions { margin-bottom: 10px }
 
-.commands{margin:10px -2px 10px -2px;padding:4px 2px 4px 2px;background-color:#f8cab6}
 .advice{margin: 15px 10px 5px 10px}
 .text h1{font-size: 20px; margin: 10px 0px 10px 0px}
 .text h2{font-size: 16px; margin: 10px 0px 10px 0px}

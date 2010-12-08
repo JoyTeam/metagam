@@ -130,9 +130,9 @@ class Constructor(Module):
         redirect = urlencode(redirect)
         topmenu.append({"search": True, "button": self._("socio-top///Search")})
         if req.user():
+            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Forum settings")})
             topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
-            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
-            topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
+            #topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
         else:
             topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
             topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
@@ -218,7 +218,7 @@ class Constructor(Module):
                 {"title": self._("Settings")},
             ],
             "cabmenu_right": [
-                {"title": self._("Return to the Cabinet"), "href": "/cabinet"},
+                {"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"},
             ],
             "menu": [
                 [
