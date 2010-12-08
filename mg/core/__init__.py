@@ -496,7 +496,6 @@ class Modules(object):
                     self.loaded_modules[mod] = obj
                     obj.register()
                 else:
-                    print "silently ignoring failed module %s" % module_name
                     app.inst.modules.remove(module_name)
         return errors
 

@@ -385,7 +385,6 @@ class WebApplication(Application):
             mcid = getattr(request, "web_cache_mcid", None)
             if mcid:
                 self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
-                #print "storing web_cache_mcid %s" % request.web_cache_mcid
                 self.mc.set(request.web_cache_mcid, res[0])
             lock = getattr(request, "web_cache_lock", None)
             if lock:

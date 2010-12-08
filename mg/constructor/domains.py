@@ -277,32 +277,24 @@ class Domains(Module):
         self.call("admin.response_template", "admin/constructor/domains-pending.html", vars)
 
     def money_unlock(self, domain):
-        print "unlocking money for domain %s" % domain.uuid
         money_lock = domain.get("money_lock")
-        print "money_lock=%s" % money_lock
         if money_lock is None:
             return None
         money = self.call("money.member-money", domain.get("user"))
         lock = money.unlock(money_lock)
         if lock:
-            print "unlocked"
             domain.delkey("money_lock")
             return lock
         else:
-            print "not unlocked"
             return None
 
     def money_charge(self, domain):
-        print "charging money for domain %s" % domain.uuid
         money = self.call("money.member-money", domain.get("user"))
         lock = self.money_unlock(domain)
         if not lock:
-            print "not unlocked"
             return
-        print "unlocked. charging..."
         domain.delkey("money_lock")
         money.force_debit(float(lock.get("amount")), lock.get("currency"), "domain-reg", domain=domain.uuid)
-        print "charged ok"
         domain.set("registered", "yes")
 
     def user_tables(self, user, tables):
