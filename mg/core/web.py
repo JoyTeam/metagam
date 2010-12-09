@@ -440,7 +440,6 @@ class Web(Module):
         config = request.param("config")
         if config:
             self.app().inst.config = json.loads(config)
-        self.debug("RELOADING APPLICATIONS")
         errors = self.app().inst.reload()
         if errors:
             self.call("web.response_json", { "errors": errors })
@@ -466,12 +465,10 @@ class Web(Module):
 
     def core_appconfig(self):
         req = self.req()
-        self.debug("RECEIVED APPCONFIG %s", req.args)
         factory = self.app().inst.appfactory
         if req.args == "int" or req.args == "main":
             app = factory.get_by_tag(req.args)
             if app:
-                self.debug("RELOADING APP %s", app.tag)
                 app.reload()
         else:
             factory.remove_by_tag(req.args)

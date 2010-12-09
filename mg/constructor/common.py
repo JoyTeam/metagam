@@ -64,7 +64,9 @@ class ApplicationFactory(mg.core.ApplicationFactory):
     """
     def __init__(self, inst):
         super(ApplicationFactory, self).__init__(inst)
-        self.apps_by_domain = {}
+        self.apps_by_domain = WeakValueDictionary()
+        # to avoid garbage collection
+        self.main_app = self.get_by_tag("main")
 
     def tag_by_domain(self, domain):
         if domain is None:

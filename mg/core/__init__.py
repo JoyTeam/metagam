@@ -6,6 +6,7 @@ from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException, CassandraPool
 from uuid import uuid4
+from weakref import WeakValueDictionary
 import weakref
 import re
 import sys
@@ -197,7 +198,7 @@ class Config(object):
     def clear(self):
         self._config = {}
         self._modified = set()
-        logging.getLogger("mg.core.Modules").debug("CLEARING CONFIG FOR APP %s", self.app().tag)
+        #logging.getLogger("mg.core.Modules").debug("CLEARING CONFIG FOR APP %s", self.app().tag)
 
     def _load_groups(self, groups):
         """
@@ -210,7 +211,7 @@ class Config(object):
             list.load(silent=True)
             for g in list:
                 self._config[g.uuid] = g.data
-                logging.getLogger("mg.core.Modules").debug("  - loaded config for app %s: %s => %s", self.app().tag, g.uuid, g.data)
+                #logging.getLogger("mg.core.Modules").debug("  - loaded config for app %s: %s => %s", self.app().tag, g.uuid, g.data)
             for g in load_groups:
                 if not g in self._config:
                     self._config[g] = {}
@@ -464,7 +465,7 @@ class Modules(object):
         app = self.app()
         for mod in modules:
             if mod not in self.loaded_modules:
-                logging.getLogger("mg.core.Modules").debug("LOAD MODULE %s", mod)
+                #logging.getLogger("mg.core.Modules").debug("LOAD MODULE %s", mod)
                 m = re_module_path.match(mod)
                 if not m:
                     raise ModuleException("Invalid module name: %s" % mod)
@@ -685,13 +686,36 @@ class Application(object):
         if notify:
             self.hooks.call("cluster.appconfig_changed")
 
+class TaskletLock(Lock):
+    def __init__(self):
+        Lock.__init__(self)
+        self.locked_by = None
+        self.depth = None
+
+    def __enter__(self):
+        task = id(Tasklet.current())
+        if self.locked_by and self.locked_by == task:
+            self.depth += 1
+            return self
+        Lock.__enter__(self)
+        self.locked_by = task
+        self.depth = 0
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.depth -= 1
+        if self.depth <= 0:
+            self.locked_by = None
+            Lock.__exit__(self, type, value, traceback)
+
 class ApplicationFactory(object):
     """
     ApplicationFactory returns Application object by it's tag
     """
     def __init__(self, inst):
         self.inst = inst
-        self.applications = {}
+        self.applications = WeakValueDictionary()
+        self.lock = TaskletLock()
 
     def add(self, app):
         "Add application to the factory"
@@ -718,22 +742,22 @@ class ApplicationFactory(object):
 
     def get_by_tag(self, tag):
         "Find application by tag and load it"
-        try:
-            return self.applications[tag]
-        except KeyError:
-            pass
-        app = self.load(tag)
-        if app is None:
-            return None
-        self.add(app)
-        return app
+        with self.lock:
+            try:
+                return self.applications[tag]
+            except KeyError:
+                pass
+            app = self.load(tag)
+            if app is None:
+                return None
+            self.add(app)
+            return app
 
     def load(self, tag):
         "Load application if not yet"
         return None
 
-    def reload(self):
-        "Reload all modules and applications"
+    def _reload(self):
         errors = 0
         for i in range(0, 2):
             for module_name in self.inst.modules:
@@ -750,13 +774,15 @@ class ApplicationFactory(object):
                             logging.getLogger("mg.core.Modules").exception(e)
                         else:
                             raise
-        errors = errors + self.reload_applications()
+        errors = errors + self._reload_applications()
         return errors
 
-    def reload_applications(self):
-        "Reload all applications"
-        # NOTE: if this will be very slow, it can be replaced with unloading unloadable modules
-        # and reloading not unloadable ones
+    def reload(self):
+        "Reload all modules and applications"
+        with self.lock:
+            return self._reload()
+
+    def _reload_applications(self):
         errors = 0
         for app in self.applications.values():
             if app.dynamic:
@@ -764,3 +790,8 @@ class ApplicationFactory(object):
             else:
                 errors = errors + app.reload()
         return errors
+
+    def reload_applications(self):
+        "Reload all applications"
+        with self.lock:
+            return self._reload_applications()
