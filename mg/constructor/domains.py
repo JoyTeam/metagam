@@ -358,10 +358,18 @@ class Domains(Module):
             result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
             ips = []
             names = []
+            print "querying %s about domain %s: %s" % (configtext, checkdomain, [result])
             for rr in result[3]:
                 names.append(rr[0])
-                for rr_a in rr[2]:
-                    ips.append(rr_a[1])
+                if rr[2]:
+                    for rr_a in rr[2]:
+                        ips.append(rr_a[1])
+                elif rr[0]:
+                    engine = QueryEngine()
+                    result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+                    print "querying main DNS about domain %s: %s" % (rr[0], [result])
+                    for rr in result[3]:
+                        ips.append(rr[1])
             if not len(ips):
                 result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
                 if len(result[3]):

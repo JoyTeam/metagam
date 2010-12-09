@@ -203,22 +203,18 @@ class ProjectSetupWizard(Wizard):
                 self.finish()
                 self.app().store_config_hooks()
                 owner = self.main_app().obj(User, self.app().project.get("owner"))
-                # creating admin user
-                new_user = self.obj(User)
-                new_user.set("created", "%020d" % time.time())
-                for field in ["name", "name_lower", "sex", "email", "salt", "pass_reminder", "pass_hash"]:
-                    new_user.set(field, owner.get(field))
-                new_user.set("inactive", 1)
-                activation_code = uuid4().hex
-                new_user.set("activation_code", activation_code)
-                new_user.set("activation_redirect", "/admin")
-                new_user.store()
-                # giving permissions
-                perms = self.obj(UserPermissions, new_user.uuid, {"perms": {"project.admin": True}})
-                perms.sync()
-                perms.store()
-                # entering the new project
-                self.call("admin.redirect_top", "http://www.%s/auth/activate/%s?ok=1&code=%s" % (domain, new_user.uuid, activation_code))
+                # searching admin user in the new project
+                admin = self.call("session.find_user", owner.get("name"))
+                if admin:
+                    # entering the new project
+                    activation_code = uuid4().hex
+                    admin.set("inactive", 1)
+                    admin.set("activation_code", activation_code)
+                    admin.set("activation_redirect", "/admin")
+                    admin.store()
+                    self.call("admin.redirect_top", "http://www.%s/auth/activate/%s?ok=1&code=%s" % (domain, admin.uuid, activation_code))
+                else:
+                    self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

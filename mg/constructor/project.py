@@ -21,8 +21,8 @@ class ConstructorProject(Module):
 
     def web_setup_design(self, vars):
         req = self.req()
-        if req.group == "admin":
-            vars["global_html"] = "constructor/admin_global.html"
+        #if req.group == "admin":
+        vars["global_html"] = "constructor/admin_global.html"
 
 class ConstructorProjectAdmin(Module):
     def register(self):
