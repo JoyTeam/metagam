@@ -28,8 +28,9 @@ function show_logo(uri)
 			html: '<img src="' + uri + '" alt="" width="100" height="100" />'
 		}]
 	});
+	Ext.getCmp('logo-next-button').show();
 }
-wait(['admin/FileUploadField.js'], function() {
+wait(['js/FileUploadField.js'], function() {
 
 	new Ext.Panel({
 		renderTo: 'variants',
@@ -105,7 +106,6 @@ wait(['admin/FileUploadField.js'], function() {
 			}]
 		}]
 	});
-	[%if logo%]show_logo('[%logo%]');[%end%]
 	new Ext.Panel({
 		renderTo: 'navi',
 		cls: 'bottom-form',
@@ -115,9 +115,12 @@ wait(['admin/FileUploadField.js'], function() {
 			text: gt.gettext('Previous'),
 			handler: function() { adm('wizard/call/[%wizard%]/prev') }
 		}, {
+			id: 'logo-next-button',
 			text: gt.gettext('Next'),
-			handler: function() { adm('wizard/call/[%wizard%]/next') }
+			handler: function() { adm('wizard/call/[%wizard%]/next') },
+			hidden: true,
 		}]
 	});
+	[%if logo%]show_logo('[%logo%]');[%end%]
 });
 </script>

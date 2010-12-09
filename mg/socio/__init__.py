@@ -585,30 +585,6 @@ class Forum(Module):
         objclasses["ForumCategoryStat"] = (ForumCategoryStat, ForumCategoryStatList)
 
     def response(self, content, vars):
-        topmenu = []
-        self.call("forum.topmenu", topmenu)
-        if len(topmenu):
-            topmenu_left = []
-            topmenu_right = []
-            first_left = True
-            first_right = True
-            for ent in topmenu:
-                if ent.get("left"):
-                    if first_left:
-                        first_left = False
-                    else:
-                        topmenu_left.append({"delim": True})
-                    topmenu_left.append(ent)
-                else:
-                    if first_right:
-                        first_right = False
-                    else:
-                        topmenu_right.append({"delim": True})
-                    topmenu_right.append(ent)
-            if len(topmenu_left):
-                vars["topmenu_left"] = topmenu_left
-            if len(topmenu_right):
-                vars["topmenu_right"] = topmenu_right
         if vars.get("menu") and len(vars["menu"]):
             menu_left = []
             menu_right = []

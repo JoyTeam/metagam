@@ -2,8 +2,8 @@
 <html><head>
 <title>[%title%]</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/socio.css" />
-<script type="text/javascript" src="/st/[%ver%]/constructor/socio.js"></script>
+<link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/socio/main.css" />
+<script type="text/javascript" src="/st/[%ver%]/js/socio.js"></script>
 [%head%]</head><body>
 <form method="post" id="search-form"></form>
 <table id="page-layout"><tr><td id="page-layout-top" colspan="3">
@@ -11,7 +11,7 @@
 [%if topmenu_left or topmenu_right%]
 <form onsubmit="return run_search();">
 <table id="socio-topmenu"><tr>
-[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.delim +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%end%]</td>[%end%]
+[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.delim +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%if ent.header%]<span class="socio-topmenu-header">[%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%if ent.header%]</span>[%end%][%end%]</td>[%end%]
 [%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.delim +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%if ent.image%][%if ent.href%]<a href="[%ent.href%]">[%end%]<img src="[%ent.image%]" alt="" />[%if ent.href%]</a>[%end +%] [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%if ent.search%]<input id="socio-top-search" value="[%search_query%]" /> <a href="javascript:void(0)" onclick="return run_search();">[%ent.button%]</a>[%end%][%end%]</td>[%end%]
 </tr></table>
 </form>

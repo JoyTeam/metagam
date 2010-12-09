@@ -28,6 +28,7 @@ class AdminInterface(Module):
         vars = {
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
+            "main_host": self.app().inst.config["main_host"],
         }
         if getattr(self.app(), "project", None):
             self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
@@ -217,7 +218,7 @@ class AdminInterface(Module):
             fields = []
         if buttons is None:
             buttons = [{"text": self._("Save")}]
-        self.call("admin.response_js", "admin/form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})
+        self.call("admin.response_js", "js/admin-form.js", "Form", {"url": url, "fields": fields, "buttons": buttons})
 
     def update_menu(self):
         self.req().admin_update_menu = True

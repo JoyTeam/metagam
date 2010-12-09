@@ -33,7 +33,7 @@ function adm_response(res)
 		else
 			adm(res.redirect);
 	} else if (res.redirect_top) {
-		window.location.href = res.redirect_top;
+		window.location = res.redirect_top;
 	} else {
 		adminmain.removeAll();
 		admincontent = new Ext.Container({
@@ -107,7 +107,6 @@ function adm_response(res)
 				html: content,
 				collapsible: true,
 				renderTo: div,
-				border: false,
 				collapsed: !div.is('.expanded'),
 				titleCollapse: true
 			});
@@ -155,12 +154,8 @@ function adm(node_id)
 		admin_ajax_trans = Ext.Ajax.request({
 			url: '/admin-' + node_id + '/ver' + ver,
 			func: node_id,
-			success: function(response, opts) {
-				adm_success(response, opts);
-			},
-			failure: function(response, opts) {
-				adm_failure(response, opts);
-			}
+			success: adm_success,
+			failure: adm_failure
 		});
 	} else {
 		document.location.replace(base_url + '#');
@@ -189,7 +184,7 @@ function find_default_page(menu)
 function button_handler(btn)
 {
 	if (btn.href)
-		window.location.href = btn.href;
+		window.location = btn.href;
 	else if (btn.id)
 		adm(btn.id);
 }
@@ -203,6 +198,11 @@ function update_menu(menu)
 	expand_menu(current_page);
 	leftmenu.animate = true;
 	topmenu.removeAll();
+	topmenu.add({
+		id: 'admin-logo',
+		xtype: 'tbtext',
+		text: '<a href="' + constructor_index_page + '"><img src="/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>',
+	});
 	topmenu.add({
 		id: 'admin-project-title',
 		xtype: 'tbtext',
@@ -253,6 +253,7 @@ Ext.onReady(function() {
 		id: 'admin-topmenu',
 		border: false,
 		height: 45,
+		autoWidth: true,
 	});
 	advicecontent = new Ext.Panel({
 		id: 'admin-advicecontent',

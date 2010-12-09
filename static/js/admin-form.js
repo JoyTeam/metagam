@@ -160,5 +160,5 @@ Form = Ext.extend(AdminResponse, {
 	}
 });
 
-loaded('admin/form.js');
+loaded('js/admin-form.js');
 

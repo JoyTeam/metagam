@@ -144,12 +144,11 @@ class Cluster(Module):
         except AttributeError:
             pass
         if tag is not None:
-            int_app = self.app().inst.int_app
             servers_online = self.servers_online()
             for server, info in servers_online.items():
                 if info["type"] == "worker":
                     try:
-                        int_app.hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                        self.int_app().hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
                     except HTTPError as e:
                         self.error(e)
                     except (KeyboardInterrupt, SystemExit, TaskletExit):

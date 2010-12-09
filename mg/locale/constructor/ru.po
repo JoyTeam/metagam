@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-08 14:43+0300\n"
-"PO-Revision-Date: 2010-11-07 22:36+0300\n"
+"POT-Creation-Date: 2010-12-09 14:13+0300\n"
+"PO-Revision-Date: 2010-12-09 12:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -25,6 +25,10 @@ msgstr "Обзор..."
 #: static/admin/index.js:77
 msgid "Guru advice"
 msgstr "Советы гуру"
+
+#: static/admin/index.js:208
+msgid "To the main page"
+msgstr "На главную страницу"
 
 #: static/admin/form.js:126
 msgid "Sending data..."
@@ -77,11 +81,11 @@ msgstr "Купить MM$"
 msgid "Abort wizard"
 msgstr "Прервать мастер"
 
-#: mg/templates/constructor/offer-ru.html:255
+#: mg/templates/constructor/offer-ru.html:253
 msgid "I agree to the terms and conditions"
-msgstr "Я согласен с условиями соглашения"
+msgstr "Я принимаю условия соглашения и договора"
 
-#: mg/templates/constructor/offer-ru.html:258
+#: mg/templates/constructor/offer-ru.html:256
 msgid "I don't agree"
 msgstr "Я не согласен"
 

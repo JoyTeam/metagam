@@ -636,10 +636,6 @@ class Interface(Module):
         form.submit(None, None, self._("Change"))
         vars = {
             "title": self._("Password change"),
-            "ret": {
-                "href": cgi.escape(ret),
-                "title": self._("Cancel"),
-            },
         }
         self.call("web.response_global", form.html(vars), vars)
 
@@ -711,10 +707,6 @@ class Interface(Module):
             ret = redirects["change"]
         vars = {
             "title": self._("E-mail change"),
-            "ret": {
-                "href": cgi.escape(ret),
-                "title": self._("Cancel"),
-            },
         }
         self.call("web.response_global", form.html(vars), vars)
 

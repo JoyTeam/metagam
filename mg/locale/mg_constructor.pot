@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-08 14:43+0300\n"
+"POT-Creation-Date: 2010-12-09 14:13+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,10 @@ msgstr ""
 
 #: static/admin/index.js:77
 msgid "Guru advice"
+msgstr ""
+
+#: static/admin/index.js:208
+msgid "To the main page"
 msgstr ""
 
 #: static/admin/form.js:126
@@ -75,11 +79,11 @@ msgstr ""
 msgid "Abort wizard"
 msgstr ""
 
-#: mg/templates/constructor/offer-ru.html:255
+#: mg/templates/constructor/offer-ru.html:253
 msgid "I agree to the terms and conditions"
 msgstr ""
 
-#: mg/templates/constructor/offer-ru.html:258
+#: mg/templates/constructor/offer-ru.html:256
 msgid "I don't agree"
 msgstr ""
 

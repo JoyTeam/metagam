@@ -466,10 +466,12 @@ class Web(Module):
 
     def core_appconfig(self):
         req = self.req()
+        self.debug("RECEIVED APPCONFIG %s", req.args)
         factory = self.app().inst.appfactory
         if req.args == "int" or req.args == "main":
             app = factory.get_by_tag(req.args)
             if app:
+                self.debug("RELOADING APP %s", app.tag)
                 app.reload()
         else:
             factory.remove_by_tag(req.args)
@@ -556,17 +558,12 @@ class Web(Module):
 
     def web_response_global(self, content, vars):
         vars["content"] = content
-        global_html = None
-        try:
-            global_html = self.req().global_html
-        except AttributeError:
-            global_html = self.call("web.global_html")
-        if global_html is None:
-            global_html = "global.html"
-        if global_html == "":
-            self.call("web.response", content)
+        vars["global_html"] = "global.html"
+        self.call("web.setup_design", vars)
+        if vars["global_html"] is None:
+            self.call("web.response", vars["content"])
         else:
-            self.call("web.response", self.call("web.parse_template", global_html, vars))
+            self.call("web.response", self.call("web.parse_template", vars["global_html"], vars))
 
     def web_response_template(self, filename, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_template", filename, vars), vars))

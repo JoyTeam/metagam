@@ -5,20 +5,24 @@ class ConstructorProject(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.web.Web"])
-        self.rhook("web.global_html", self.web_global_html)
+        self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
 
     def child_modules(self):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains"]
         if not self.app().project.get("inactive"):
             lst.extend(["mg.constructor.index.IndexPage", "mg.constructor.index.IndexPageAdmin"])
+        print self.app().project
+        print lst
         return lst
 
     def project_title(self):
         return self.app().project.get("title_short", "New Game")
 
-    def web_global_html(self):
-        return "constructor/global.html"
+    def web_setup_design(self, vars):
+        req = self.req()
+        if req.group == "admin":
+            vars["global_html"] = "constructor/admin_global.html"
 
 class ConstructorProjectAdmin(Module):
     def register(self):

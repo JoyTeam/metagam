@@ -26,7 +26,7 @@
 	[%if col.element_range%]<input id="[%col.name%]_min" name="[%col.name%]_min" value="[%col.value_min%]" size="[%form_cols%]" class="form-bg" /> &mdash; <input id="[%col.name%]_max" name="[%col.name%]_max" value="[%col.value_max%]" size="[%form_cols%]" class="form-bg" />[%end%]
 	[%if col.element_checkbox%]<table><tr valign="top"><td><input type="checkbox" class="form-checkbox" name="[%col.name%]" value="1"[%if col.checked%] checked="checked"[%end%] /></td><td class="form-checkbox-text">[%col.text%]</td></tr></table>[%end%]
 	[%if col.element_radio%]<table><tr><td><input type="radio" class="form-radio" id="[%col.form_control_id%]" name="[%col.name%]" value="[%col.value%]" [%if col.checked%] checked="checked"[%end%] /></td><td style="padding: 3px 0px 0px 4px;" class="form-clickable">[%col.text%]</td></tr></table>[%end%]
-	[%if col.element_file%]<input type="file" name="[%col.name%]" size="[%form_cols%]" class="form-bg" />[%end%]
+	[%if col.element_file%]<input type="file" name="[%col.name%]" size="[%form_cols%]" class="form-bg form-file" />[%end%]
 	[%if col.element_password%]<input type="password" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="form-w100 form-bg" />[%end%]
 	[%if col.element_select%]<select name="[%col.name%]" class="form-w100 form-bg">[%for opt in col.options%]<option value="[%opt.value%]"[%if opt.selected%] selected="selected"[%end%][%if opt.bgcolor%] style="background-color: [%opt.bgcolor%]"[%end%]>[%opt.text%]</option>[%end%]</select>[%end%]
 	[%if col.element_textarea%]<textarea name="[%col.name%]" class="form-w100 form-bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]">[%col.value%]</textarea>[%end%]

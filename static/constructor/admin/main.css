@@ -5,16 +5,18 @@ a:hover, a:active { color: #ed9439 }
 table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 #admin-project-title { font-weight: bold; padding: 3px 5px 0px 15px; font-size: 16px; color: #6a7274 }
 .x-border-layout-ct .x-splitbar-h { background-color: #d8d8d8 }
-#admin-topmenu { background: #ffffff; padding: 0px 35px 0px 250px; background-image: url(/st/admin/top-left-logo.gif); background-repeat: no-repeat; background-position: 0% 50%; border: none }
+#admin-topmenu { background: #ffffff; padding: 0px 35px 0px 50px; border: none }
+#admin-logo { padding: 0px 34px 2px 0px }
+#admin-logo img { vertical-align: middle }
 #admin-topmenu .x-toolbar-cell div.xtb-text { line-height: 40px }
 #admin-topmenu .xtb-text a { color: #1078a0; font-size: 17px; padding-right: 35px }
-#admin-leftmenu { background-image: url(/st/admin/workarea-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 10px; }
+#admin-leftmenu { background-image: url(/st/constructor/admin/workarea-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 10px; }
 .admin-leftmenu { padding: 20px 0px 0px 20px; background-color: #ffffff; }
-#admin-advicecontent1 { background-color: #e5f1f7; background-image: url(/st/admin/advice-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
-.admin-advicecontent1 { background-image: url(/st/admin/advice-logo.gif); background-repeat: no-repeat; background-position: 100% 0% }
+#admin-advicecontent1 { background-color: #e5f1f7; background-image: url(/st/constructor/admin/advice-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
+.admin-advicecontent1 { background-image: url(/st/constructor/admin/advice-logo.gif); background-repeat: no-repeat; background-position: 100% 0% }
 #admin-advicecontent { padding-top: 10px; }
 .admin-advicecontent { padding: 0px 20px 0px 20px; }
-#admin-main { background-image: url(/st/admin/workarea-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 10px; }
+#admin-main { background-image: url(/st/constructor/admin/workarea-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 10px; }
 .admin-main { background-color: #ffffff }
 .admin-content { padding: 20px 20px 0px 20px }
 .admin-advice-header { font-size: 18px; color: #0078ac; padding-top: 20px }
@@ -31,9 +33,8 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .list td.subheader { color: #dd6419; padding: 10px 10px 10px 20px }
 .description { font-size: 12px; color: #8f9da3 }
 .error { color: #ff6419; font-size: 11px }
-
+.auto-panel .x-panel-body { padding: 0px 5px 0px 5px }
 .admin-actions { margin-bottom: 10px }
-
 .advice{margin: 15px 10px 5px 10px}
 .text h1{font-size: 20px; margin: 10px 0px 10px 0px}
 .text h2{font-size: 16px; margin: 10px 0px 10px 0px}
@@ -42,8 +43,6 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .text ul{list-style: disc; margin: 10px 0px 10px 35px;}
 .text ol{list-style: none; margin: 10px 0px 10px 20px;}
 .auto-panel{margin: 3px 0px 3px 0px}
-.im .x-panel-header{background-image: url(/st/admin/panel-header-important.gif)}
-.im .x-panel-noborder .x-panel-header-noborder{border-bottom-color: #b04242}
 .bottom-form{margin-top: 10px}
 .admin-form .x-panel-btns .x-toolbar-cell{padding: 10px 15px 0px 0px;}
 .x-form-file-wrap { position: relative; height: 22px; }

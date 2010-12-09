@@ -21,7 +21,7 @@ class Director(Module):
         self.app().servers_online_modified = False
         self.queue_workers = []
         self.workers_str = None
-        self.rhook("web.global_html", self.web_global_html)
+        self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("int-director.ready", self.director_ready)
         self.rhook("int-director.reload", self.int_director_reload)
         self.rhook("int-index.index", self.director_index)
@@ -147,8 +147,8 @@ class Director(Module):
             else:
                 result[tag] = "ok"
 
-    def web_global_html(self):
-        return "director/global.html"
+    def web_setup_design(self, vars):
+        vars["global_html"] = "director/global.html"
 
     def director_index(self):
         vars = {

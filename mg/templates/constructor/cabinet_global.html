@@ -2,16 +2,29 @@
 <html><head>
 <title>[%title%]</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/index.css" />
+<link rel="stylesheet" type="text/css" href="/st/[%ver%]/constructor/index/main.css" />
 [%head%]</head><body>
 <table id="page-table"><tr><td id="page-td-cabinet">
-<div id="page-toplogo"></div>
+<table id="cab-toplogo"><tr><td><a href="/"><img src="/st/constructor/cabinet/logo.gif" alt="" title="[%ToTheMainPage%]" /></a></td></tr></table>
 <table id="cab-menu"><tr><td id="cab-menu-left">
-[%for ent in cabmenu_left%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end%] [%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
+[%for ent in cabmenu_left%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end +%] [%+ if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td><td id="cab-menu-right">
-[%for ent in cabmenu_right%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end%] [%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
+[%for ent in cabmenu_right%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end +%] [%+ if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ if ent.delim%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td></tr></table>
-<div id="cab-content">[%content%]</div>
+<div id="cab-content">
+	<table id="cab-layout"><tr>
+			[%if cabinet_leftbtn%]<td id="cab-leftbtn-td"><div id="cab-leftbtn"><div id="cab-leftbtn-in"><div><a href="[%cabinet_leftbtn.href%]"><img src="/st/constructor/cabinet/leftbtn-logo.gif" alt="" /></a></div><a href="[%cabinet_leftbtn.href%]">[%cabinet_leftbtn.title%]</a></div></div></td>[%end%]
+	[%if content%]<td id="cab-right-menu"><div class="c1"><div class="c2"><div class="c3"><div class="c4"><div class="c5">[%content%]</div></div></div></div></div></td>[%end%]
+	[%if cabinet_menu%]<td id="cab-right-menu"><div class="c1"><div class="c2"><div class="c3"><div class="c4"><div class="c5">
+	<table id="cab-right-icons">
+	[%foreach m in cabinet_menu%]
+	<tr class="images">[%foreach ent in m%]<td><a href="[%ent.href%]"><img src="[%ent.image%]" alt="" /></a></td>[%end%]</tr>
+	<tr class="text">[%foreach ent in m%]<td><a href="[%ent.href%]">[%ent.text%]</a></td>[%end%]</tr>
+	[%end%]
+	</table>
+	</div></div></div></div></div></td>[%end%]
+	</tr></table>
+</div>
 </td></tr><tr><td id="page-bottom"><div>[%ConstructorTitle%]</div><div>[%ConstructorCopyright%]</div></td></tr></table>
 <div id="page-beta"></div>
 <script type="text/javascript">try { document.getElementsByTagName('input')[0].focus(); } catch (e) {}</script>

@@ -6,7 +6,8 @@ img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
 #page-td {vertical-align: middle; text-align: center }
 #page-td-cabinet { vertical-align: top; text-align: center }
-#page-toplogo { height: 200px; background-image: url(/st/constructor/cabinet/logo.gif); background-position: 50% 50%; background-repeat: no-repeat; }
+#cab-toplogo { height: 200px; width: 100% }
+#cab-toplogo td { text-align: center }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
@@ -21,6 +22,9 @@ img { border: none }
 .form-top { height: 27px; background-image: url(/st/constructor/index/form_top.png); background-repeat: no-repeat; background-position: 0% 100% }
 .form-content { background-image: url(/st/constructor/index/form_bg.png); background-repeat: repeat-y; background-position: 0% 0%; padding: 20px 80px 20px 80px; text-align: left; }
 .form-bottom { height: 32px; background-image: url(/st/constructor/index/form_bottom.png); background-repeat: no-repeat; background-position: 0% 0% }
+#cab-content .form-top { height: auto; background: none; }
+#cab-content .form-content { background: none; padding: 30px 0px 30px 0px }
+#cab-content .form-bottom { height: auto; background: none; }
 .form-desc { color: #777777 }
 .form-w100 { width: 100% }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
@@ -34,18 +38,19 @@ input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; m
 .form-error { color: #ff6347; font-size: 11px }
 a:link, a:visited { color: #e48347 }
 a:hover, a:active { color: #f4a377 }
-#cab-menu { width: 905px; height: 75px; margin: 0 auto; background-image: url(/st/constructor/cabinet/menu.png); background-repeat: no-repeat; background-position: 50% 0% }
+#cab-menu { width: 925px; height: 75px; margin: 0 auto; background-image: url(/st/constructor/cabinet/menu.png); background-repeat: no-repeat; background-position: 50% 0% }
 #cab-menu img { vertical-align: middle }
 #cab-menu-left { text-align: left; padding: 0px 10px 10px 40px }
 #cab-menu-right { text-align: right; padding: 0px 40px 10px 0px }
-#cab-content { width: 855px; margin: 0 auto; background-image: url(/st/constructor/cabinet/bg.gif) }
+#cab-content { width: 875px; margin: 0 auto; background-image: url(/st/constructor/cabinet/bg.gif) }
 #cab-layout { margin: 0 auto; }
 #cab-layout td { vertical-align: top }
 #cab-leftbtn-td { padding: 14px 10px 25px 10px; }
 #cab-leftbtn { width: 127px; height: 202px; margin: 0 auto; background-image: url(/st/constructor/cabinet/leftbtn.gif); background-repeat: no-repeat; background-position: 50% 0% }
-#cab-leftbtn div { padding: 130px 15px 5px 15px }
-#cab-leftbtn a:link, #cab-leftbtn a:visited { color: #ffffff }
-#cab-leftbtn a:hover, #cab-leftbtn a:active { color: #eeddd3 }
+#cab-leftbtn-in { padding: 33px 15px 5px 15px }
+#cab-leftbtn-in div { padding-bottom: 33px }
+#cab-leftbtn-in a:link, #cab-leftbtn a:visited { color: #ffffff }
+#cab-leftbtn-in a:hover, #cab-leftbtn a:active { color: #eeddd3 }
 #cab-right-menu { padding: 14px 10px 25px 10px }
 #cab-right-menu .c1 { background-color: #ffffff }
 #cab-right-menu .c2 { background-image: url(/st/constructor/cabinet/lt.gif); background-repeat: no-repeat; background-position: 0% 0% }

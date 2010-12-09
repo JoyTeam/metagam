@@ -26,11 +26,10 @@ class Constructor(Module):
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.game.money.TwoPay"])
-        self.rhook("web.global_html", self.web_global_html)
+        self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
         self.rhook("auth.redirects", self.redirects)
-        self.rhook("forum.topmenu", self.forum_topmenu)
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
         self.rhook("ext-documentation.index", self.documentation_index)
         self.rhook("ext-debug.validate", self.debug_validate)
@@ -96,20 +95,101 @@ class Constructor(Module):
             self.info("Removing inactive project %s", project.uuid)
             self.call("project.cleanup", project.uuid)
 
-    def web_global_html(self):
+    def web_setup_design(self, vars):
         req = self.req()
+        topmenu = []
+        cabmenu = []
         if req.group == "index" and req.hook == "index":
-            return "constructor/index_global.html"
+            vars["global_html"] = "constructor/index_global.html"
         elif req.group == "auth":
-            return "constructor/index_global.html"
-        elif req.group == "cabinet" or req.group == "documentation":
-            return "constructor/cabinet_global.html"
+            if req.hook == "change" or req.hook == "email":
+                vars["global_html"] = "constructor/cabinet_global.html"
+                vars["ToTheMainPage"] = self._("To the main page")
+                if req.hook == "change":
+                    cabmenu.append({"title": self._("Password changing"), "left": True})
+                elif req.hook == "email":
+                    cabmenu.append({"title": self._("E-mail changing"), "left": True})
+                cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Return to the Settings"), "href": "/cabinet/settings"})
+            else:
+                vars["global_html"] = "constructor/index_global.html"
+        elif req.group == "cabinet":
+            vars["global_html"] = "constructor/cabinet_global.html"
+            vars["ToTheMainPage"] = self._("To the main page")
+            if req.hook == "settings":
+                cabmenu.append({"title": self._("Settings"), "left": True})
+                cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
+            elif req.hook == "index":
+                cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/documentation", "left": True})
+                cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
+                cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
+                cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"})
         elif req.group == "forum":
-            return "constructor/socio_global.html"
+            vars["global_html"] = "constructor/socio_global.html"
+            redirect = req.param("redirect")
+            redirect_param = True
+            if redirect is None or redirect == "":
+                redirect = req.uri()
+                redirect_param = False
+            redirect = urlencode(redirect)
+            if req.hook == "settings":
+                pass
+            else:
+                topmenu.append({"search": True, "button": self._("socio-top///Search")})
+                if req.user():
+                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Forum settings")})
+                    topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
+                else:
+                    topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
+                    topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
+            if redirect_param:
+                topmenu.append({"href": redirect, "html": self._("Cancel")})
+        elif req.group == "documentation":
+            vars["global_html"] = "constructor/socio_global.html"
+            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
+            topmenu.append({"html": self._("MMO Constructor Documentation"), "header": True, "left": True})
         elif req.group == "admin":
-            return "constructor/admin_global.html"
-        else:
-            return "constructor/global.html"
+            vars["global_html"] = "constructor/admin_global.html"
+        # Topmenu
+        if len(topmenu):
+            topmenu_left = []
+            topmenu_right = []
+            first_left = True
+            first_right = True
+            for ent in topmenu:
+                if ent.get("left"):
+                    if first_left:
+                        first_left = False
+                    else:
+                        topmenu_left.append({"delim": True})
+                    topmenu_left.append(ent)
+                else:
+                    if first_right:
+                        first_right = False
+                    else:
+                        topmenu_right.append({"delim": True})
+                    topmenu_right.append(ent)
+            if len(topmenu_left):
+                vars["topmenu_left"] = topmenu_left
+            if len(topmenu_right):
+                vars["topmenu_right"] = topmenu_right
+        # Cabmenu
+        if len(cabmenu):
+            cabmenu_left = []
+            cabmenu_right = []
+            first_left = True
+            first_right = True
+            for ent in cabmenu:
+                ent["delim"] = True
+                if ent.get("left"):
+                    cabmenu_left.append(ent)
+                else:
+                    cabmenu_right.append(ent)
+            if len(cabmenu_left):
+                vars["cabmenu_left"] = cabmenu_left
+                cabmenu_left[-1]["delim"] = False
+            if len(cabmenu_right):
+                vars["cabmenu_right"] = cabmenu_right
+                cabmenu_right[-1]["delim"] = False
 
     def universal_variables(self, vars):
         vars["ConstructorTitle"] = self._("Browser-based Games Constructor")
@@ -119,25 +199,6 @@ class Constructor(Module):
         tbl["login"] = "/cabinet"
         tbl["register"] = "/cabinet"
         tbl["change"] = "/cabinet/settings"
-
-    def forum_topmenu(self, topmenu):
-        req = self.req()
-        redirect = req.param("redirect")
-        redirect_param = True
-        if redirect is None or redirect == "":
-            redirect = req.uri()
-            redirect_param = False
-        redirect = urlencode(redirect)
-        topmenu.append({"search": True, "button": self._("socio-top///Search")})
-        if req.user():
-            topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Forum settings")})
-            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
-            #topmenu.append({"href": "/auth/logout?redirect=%s" % redirect, "image": "/st/constructor/cabinet/logout.gif", "html": self._("Log out")})
-        else:
-            topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
-            topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
-        if redirect_param:
-            topmenu.append({"href": redirect, "html": self._("Cancel")})
 
     def index(self):
         req = self.req()
@@ -156,24 +217,16 @@ class Constructor(Module):
     def cabinet_index(self):
         req = self.req()
         session = self.call("session.require_login")
-        perms = req.permissions()
         menu = []
-#       menu1 = []
-#       menu1.append({"href": "/documentation", "image": "/st/constructor/cab_documentation.jpg", "text": self._("Documentation")})
-#       if len(perms):
-#           menu1.append({"href": "/admin", "image": "/st/constructor/cab_admin.jpg", "text": self._("Constructor administration")})
-#       menu1.append({"href": "/forum", "image": "/st/constructor/cab_forum.jpg", "text": self._("Forum")})
-#       menu1.append({"href": "/cabinet/settings", "image": "/st/constructor/cab_settings.jpg", "text": self._("Settings")})
-#       menu1.append({"href": "/auth/logout", "image": "/st/constructor/cab_logout.jpg", "text": self._("Log out")})
-#       menu.append(menu1)
-#       menu2 = []
-#       menu2.append({"href": "/constructor/newgame", "image": "/st/constructor/cab_newgame.jpg", "text": self._("New game")})
-#       menu.append(menu2)
+        menu_projects = []
+        # constructor admin
+        perms = req.permissions()
+        if len(perms):
+            menu_projects.append({"href": "/admin", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Constructor administration")})
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
         projects.load(silent=True)
         if len(projects):
-            menu_projects = []
             for project in projects:
                 title = project.get("title_short")
                 if title is None:
@@ -190,37 +243,23 @@ class Constructor(Module):
                 if len(menu_projects) >= 4:
                     menu.append(menu_projects)
                     menu_projects = []
-            if len(menu_projects):
-                menu.append(menu_projects)
+        if len(menu_projects):
+            menu.append(menu_projects)
         vars = {
             "title": self._("Cabinet"),
-            "menu": menu if len(menu) else None,
-            "leftbtn": {
+            "cabinet_menu": menu if len(menu) else None,
+            "cabinet_leftbtn": {
                 "href": "/constructor/newgame",
                 "title": self._("Create a new game")
             },
-            "cabmenu_left": [
-                {"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/documentation", "delim": True},
-                {"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "delim": True},
-                {"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum"},
-            ],
-            "cabmenu_right": [
-                {"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"},
-            ]
         }
-        self.call("web.response_template", "constructor/cabinet.html", vars)
+        self.call("web.response_global", None, vars)
 
     def cabinet_settings(self):
         session = self.call("session.require_login")
         vars = {
             "title": self._("MMO Constructor Settings"),
-            "cabmenu_left": [
-                {"title": self._("Settings")},
-            ],
-            "cabmenu_right": [
-                {"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"},
-            ],
-            "menu": [
+            "cabinet_menu": [
                 [
                     { "href": "/auth/change", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change password") },
                     { "href": "/auth/email", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change e-mail") },
@@ -229,20 +268,14 @@ class Constructor(Module):
                 ],
             ],
         }
-        self.call("web.response_template", "constructor/cabinet.html", vars)
+        self.call("web.response_global", None, vars)
 
     def documentation_index(self):
         session = self.call("session.require_login")
         vars = {
             "title": self._("MMO Constructor Documentation"),
-            "cabmenu_left": [
-                {"title": self._("Documentation")},
-            ],
-            "cabmenu_right": [
-                {"title": self._("Return to the Cabinet"), "href": "/cabinet"},
-            ]
         }
-        self.call("web.response_template", "constructor/cabinet.html", vars)
+        self.call("web.response_template", "constructor/documentation.html", vars)
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")
@@ -282,23 +315,6 @@ class Constructor(Module):
         project.store()
         # accessing new application
         app = inst.appfactory.get_by_tag(project.uuid)
-        # creating admin user
-        old_user = self.obj(User, req.user())
-        new_user = app.obj(User)
-        new_user.set("created", "%020d" % time.time())
-        new_user.set("name", "admin")
-        new_user.set("name_lower", "admin")
-        for field in ["sex", "email", "salt", "pass_reminder", "pass_hash"]:
-            new_user.set(field, old_user.get(field))
-        new_user.store()
-        # giving permissions
-        perms = app.obj(UserPermissions, new_user.uuid, {"perms": {"project.admin": True}})
-        perms.sync()
-        perms.store()
-        # creating new session
-        new_session = app.hooks.call("session.get", create=True, cache=False)
-        new_session.set("user", new_user.uuid)
-        new_session.store()
         # setting up everything
         app.hooks.call("all.check")
         # creating setup wizard

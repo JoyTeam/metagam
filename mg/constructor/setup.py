@@ -38,7 +38,7 @@ class ProjectSetupWizard(Wizard):
                 self.config.set("state", "name")
                 self.config.store()
                 self.call("admin.redirect", "wizard/call/%s" % self.uuid)
-            author = self.app().inst.appfactory.get_by_tag("main").obj(User, project.get("owner"))
+            author = self.main_app().obj(User, project.get("owner"))
             vars = {
                 "author": cgi.escape(author.get("name")),
                 "wizard": self.uuid,
@@ -152,9 +152,9 @@ class ProjectSetupWizard(Wizard):
                 if self.config.get("logo"):
                     for wiz in wizs:
                         wiz.finish()
-                self.config.set("state", "domain")
-                self.config.store()
-                self.call("admin.redirect", "wizard/call/%s" % self.uuid)
+                    self.config.set("state", "domain")
+                    self.config.store()
+                    self.call("admin.redirect", "wizard/call/%s" % self.uuid)
             vars = {
                 "GameLogo": self._("Game logo"),
                 "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
@@ -190,10 +190,10 @@ class ProjectSetupWizard(Wizard):
                 wizs = self.call("wizards.find", "domain-reg")
                 for wiz in wizs:
                     wiz.abort()
-                # Saving logo
+                # saving wizard data
                 self.call("cluster.static_preserve", self.config.get("logo"))
-                # Creating project
                 self.call("domains.assign", domain)
+                # creating project
                 project = self.app().project
                 for key in ("domain", "logo", "title_full", "title_short", "title_code"):
                     project.set(key, self.config.get(key))
@@ -201,9 +201,24 @@ class ProjectSetupWizard(Wizard):
                 project.delkey("inactive")
                 project.store()
                 self.finish()
-                self.call("cluster.appconfig_changed")
+                self.app().store_config_hooks()
                 owner = self.main_app().obj(User, self.app().project.get("owner"))
-                self.call("admin.response", '<div class="text"><p>%s</p><p>%s: <a href="http://www.%s/admin">http://www.%s/admin</a><br />%s: admin<br />%s: &lt;%s&gt; (%s)</p></div>' % (self._("You have successfully completed registration of your game. And now get ready to enter your new admin panel:"), self._("Admin panel address"), domain, domain, self._("Login"), self._("Password"), self._("your_password"), owner.get("pass_reminder")), {})
+                # creating admin user
+                new_user = self.obj(User)
+                new_user.set("created", "%020d" % time.time())
+                for field in ["name", "name_lower", "sex", "email", "salt", "pass_reminder", "pass_hash"]:
+                    new_user.set(field, owner.get(field))
+                new_user.set("inactive", 1)
+                activation_code = uuid4().hex
+                new_user.set("activation_code", activation_code)
+                new_user.set("activation_redirect", "/admin")
+                new_user.store()
+                # giving permissions
+                perms = self.obj(UserPermissions, new_user.uuid, {"perms": {"project.admin": True}})
+                perms.sync()
+                perms.store()
+                # entering the new project
+                self.call("admin.redirect_top", "http://www.%s/auth/activate/%s?ok=1&code=%s" % (domain, new_user.uuid, activation_code))
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

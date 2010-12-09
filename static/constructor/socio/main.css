@@ -13,7 +13,9 @@ h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
 #page-top1 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
 #page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 200px; height: 57px }
 #socio-topmenu { height: 46px; width: 100%; }
+#socio-topmenu-left { padding-left: 70px }
 #socio-topmenu-right { text-align: right; padding-left: 20px }
+.socio-topmenu-header { font-weight: bold; font-size: 16px; color: #6a7274 }
 #socio-topmenu img { vertical-align: middle }
 #socio-topmenu a:link, #socio-topmenu a:visited { color: #1078a0 }
 #socio-topmenu a:hover, #socio-topmenu a:active { color: #3088d0 }
@@ -31,7 +33,8 @@ h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
 .socio-index-title { font-size: 14px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
 .socio-catlast { text-align: left; padding: 0px 4px 7px 30px }
-td.socio-catname { padding: 9px 4px 9px 0px }
+td.socio-catname { padding: 9px 4px 9px 0px; font-size: 11px; }
+td.socio-catname a { font-size: 13px }
 td.socio-catname a:link, .socio-catname a:visited { color: #026691 }
 td.socio-catname a:hover, .socio-catname a:active { color: #0386b1 }
 .socio-last { padding-left: 30px; font-size: 11px }
@@ -94,6 +97,7 @@ td.socio-catname a:hover, .socio-catname a:active { color: #0386b1 }
 .form-w100 { width: 100% }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
 input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 20px 0px }
+input.form-file { font-size: 13px }
 .form-std-form-row { width: 100% }
 .form-list-messages-top a:link, .form-list-messages-top a:visited { color: #dd6419 }
 .form-list-messages-top a:hover, .form-list-messages-top a:active { color: #ed8439 }
