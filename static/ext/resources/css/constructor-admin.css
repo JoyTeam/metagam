@@ -1663,7 +1663,7 @@ body.x-body-masked .x-window-plain .x-window-mc {
 }
 
 .x-form-item-label { color: #0078ac; font-size: 11px }
-.x-form-text, .ext-gecko .x-form-text, .ext-ie8 .x-form-text { height: 27px; padding: 2px 4px 2px 4px; }
+.x-form-text, .ext-gecko .x-form-text, .ext-ie8 .x-form-text { padding: 4px 4px 3px 4px; }
 .x-form-checkbox { vertical-align: middle; margin-bottom: 2px }
 .x-form-field-wrap .x-form-trigger { border-bottom: solid 1px #e5e5e5; height: 26px }
 .x-btn-noicon .x-btn-small .x-btn-text { height: 23px; margin-left: 10px; margin-right: 10px; }

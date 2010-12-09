@@ -1,6 +1,6 @@
-AdminResponse = Ext.extend(Ext.Panel, {
+var AdminResponse = Ext.extend(Ext.Panel, {
 	border: false,
-	region: 'center',
+	region: 'center'
 });
 
 var base_url = document.URL;
@@ -38,14 +38,14 @@ function adm_response(res)
 		adminmain.removeAll();
 		admincontent = new Ext.Container({
 			hidden: true,
-			cls: 'admin-content',
+			cls: 'admin-content'
 		});
 		if (res.headmenu)
 			admincontent.add({
 				border: false,
 				autoHeight: true,
 				html: res.headmenu,
-				cls: 'admin-headmenu',
+				cls: 'admin-headmenu'
 			});
 		adminmain.add(admincontent);
 		adminmain.doLayout();
@@ -64,7 +64,7 @@ function adm_response(res)
 		} else if (res.content) {
 			var panel = new AdminResponse({
 				border: false,
-				cls: 'admin-body',
+				cls: 'admin-body'
 			});
 			admincontent.add(panel);
 			admincontent.doLayout();
@@ -77,8 +77,8 @@ function adm_response(res)
 				html: gt.gettext('Guru advice'),
 				border: false,
 				bodyCfg: {
-					cls: 'admin-advice-header',
-				},
+					cls: 'admin-advice-header'
+				}
 			});
 			for (var i = 0; i < res.advice.length; i++) {
 				var adv = res.advice[i];
@@ -89,7 +89,7 @@ function adm_response(res)
 						cls: adv.lst ? 'admin-advice-body-last' : 'admin-advice-body'
 					},
 					headerCfg: {
-						cls: 'admin-advice-title',
+						cls: 'admin-advice-title'
 					}
 				});
 			}
@@ -201,12 +201,12 @@ function update_menu(menu)
 	topmenu.add({
 		id: 'admin-logo',
 		xtype: 'tbtext',
-		text: '<a href="' + constructor_index_page + '"><img src="/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>',
+		text: '<a href="' + constructor_index_page + '"><img src="/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>'
 	});
 	topmenu.add({
 		id: 'admin-project-title',
 		xtype: 'tbtext',
-		text: menu.title,
+		text: menu.title
 	}, '->');
 	for (var i = 0; i < menu.top.length; i++) {
 		ent = menu.top[i];
@@ -241,19 +241,19 @@ Ext.onReady(function() {
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'under';
 	adminmain = new Ext.Container({
-		autoDestroy: true,
+		autoDestroy: true
 	});
 	leftmenu = new Ext.tree.TreePanel({
 		useArrows: true,
 		border: false,
 		rootVisible: false,
-		root: {},
+		root: {}
 	});
 	topmenu = new Ext.Toolbar({
 		id: 'admin-topmenu',
 		border: false,
 		height: 45,
-		autoWidth: true,
+		autoWidth: true
 	});
 	advicecontent = new Ext.Panel({
 		id: 'admin-advicecontent',
@@ -262,7 +262,7 @@ Ext.onReady(function() {
 		autoScroll: true,
 		bodyCfg: {
 			cls: 'admin-advicecontent'
-		},
+		}
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
@@ -286,7 +286,7 @@ Ext.onReady(function() {
 				bodyCfg: {
 					cls: 'admin-leftmenu'
 				},
-				items: leftmenu,
+				items: leftmenu
 			},
 			{
 				id: 'admin-advicecontent1',
@@ -297,8 +297,8 @@ Ext.onReady(function() {
 				width: '25%',
 				layout: 'fit',
 				bodyCfg: {
-					cls: 'admin-advicecontent1',
-				},
+					cls: 'admin-advicecontent1'
+				}
 			},
 			{
 				region: 'center',
@@ -308,7 +308,7 @@ Ext.onReady(function() {
 				bodyCfg: {
 					cls: 'admin-main'
 				},
-				items: adminmain,
+				items: adminmain
 			}
 		]
 	});

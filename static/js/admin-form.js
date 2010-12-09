@@ -14,19 +14,19 @@ Form = Ext.extend(AdminResponse, {
 			var elem;
 			if (it.type == 'empty') {
 				elem = {
-					border: false,
+					border: false
 				};
 			} else if (it.type == 'header') {
 				elem = {
 					border: false,
 					cls: 'text',
-					html: '<h1>' + it.html + '</h1>',
+					html: '<h1>' + it.html + '</h1>'
 				};
 			} else if (it.type == 'html') {
 				elem = {
 					border: false,
 					cls: 'text',
-					html: it.html,
+					html: it.html
 				};
 			} else if (it.type == 'button') {
 				elem = {
@@ -41,8 +41,8 @@ Form = Ext.extend(AdminResponse, {
 						hideLabel: (it.label == undefined) ? true : false,
 						handler: function(btn) {
 							adm(btn.action);
-						},
-					},
+						}
+					}
 				};
 				if (it.label == '&nbsp;')
 					elem.items.labelSeparator = '';
@@ -56,7 +56,7 @@ Form = Ext.extend(AdminResponse, {
 					xtype: (it.type == undefined) ? 'textfield' : it.type,
 					anchor: '-30',
 					border: false,
-					msgTarget: 'side',
+					msgTarget: 'side'
 				};
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
@@ -80,7 +80,7 @@ Form = Ext.extend(AdminResponse, {
 				elem = {
 					border: false,
 					layout: 'form',
-					items: elt,
+					items: elt
 				};
 			}
 			if (!it.width && !it.flex)
@@ -90,7 +90,7 @@ Form = Ext.extend(AdminResponse, {
 				flex: it.flex,
 				width: it.width,
 				border: false,
-				items: elem,
+				items: elem
 			});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
 				rows.push({
@@ -98,9 +98,9 @@ Form = Ext.extend(AdminResponse, {
 					layout: 'hbox',
 					autoHeight: true,
 					defaults: {
-						autoHeight: true,
+						autoHeight: true
 					},
-					items: row,
+					items: row
 				});
 				row = undefined;
 			}
@@ -117,7 +117,7 @@ Form = Ext.extend(AdminResponse, {
 			var btn = new Ext.Button({
 				text: btn_config.text,
 				url: btn_config.url ? btn_config.url : data.url,
-				form_id: form_id,
+				form_id: form_id
 			});
 			btn.on('click', function(btn, e) {
 				var form = Ext.getCmp('admin-form-' + form_id);
@@ -137,7 +137,7 @@ Form = Ext.extend(AdminResponse, {
 						} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 							Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + btn.url));
 						}
-					},
+					}
 				});
 			}, btn);
 			buttons.push(btn);
@@ -154,7 +154,7 @@ Form = Ext.extend(AdminResponse, {
 			buttonAlign: 'left',
 			footerStyle: 'padding: 0',
 			waitTitle: gt.gettext('Please wait...'),
-			layout: 'auto',
+			layout: 'auto'
 		});
 		this.add(form);
 	}

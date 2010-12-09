@@ -1,18 +1,18 @@
 html { height: 100%; font-family: Verdana; font-size: 13px }
-body { background: #fbfbfb; margin: 0 auto; height: 100%; }
+body { background: #fbfbfb; margin: 0 auto; height: 100%; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; padding: 0}
 table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 13px; padding: 0; }
 img { border: none }
 h1 { color: #0078ac; font-size: 20px; font-weight: bold; }
-#page-layout { height: 100%; width: 100%; }
-#page-layout-top { height: 57px }
-#page-layout-left { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; width: 53px; }
-#page-layout-right { background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; width: 55px; }
-#page-layout-content { vertical-align: top; padding: 25px 96px 25px 96px; }
-#page-top { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; }
-#page-top1 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
-#page-top2 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; padding: 0px 55px 0px 200px; height: 57px }
-#socio-topmenu { height: 46px; width: 100%; }
+#page-layout1 { height: 100%; width: 100%}
+#page-layout1-div { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; min-height: 100% }
+#page-layout1-td { vertical-align: top }
+#page-top1 { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; position: absolute; left: 0px; top: 0px; width: 100%; }
+#page-top2 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
+#page-top3 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; height: 57px }
+#page-top4 { padding: 0px 55px 0px 70px }
+#page-layout-content { padding: 82px 96px 25px 96px }
+#socio-topmenu { height: 46px; width: 100% }
 #socio-topmenu-left { padding-left: 70px }
 #socio-topmenu-right { text-align: right; padding-left: 20px }
 .socio-topmenu-header { font-weight: bold; font-size: 16px; color: #6a7274 }
