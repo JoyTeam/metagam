@@ -103,7 +103,7 @@ class ProjectSetupWizard(Wizard):
                 {"text": self._("Next"), "url": "admin-wizard/call/%s/name-submit" % self.uuid}
             ]
             self.call("admin.advice", {"title": self._("Choosing titles"), "content": self._("Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems")})
-            self.call("admin.form", fields=fields, buttons=buttons)
+            self.call("admin.form", fields=fields, buttons=buttons, title=self._("Title of the game"))
         elif state == "logo":
             wizs = self.call("wizards.find", "logo")
             if cmd == "upload":
@@ -157,8 +157,8 @@ class ProjectSetupWizard(Wizard):
                     self.call("admin.redirect", "wizard/call/%s" % self.uuid)
             vars = {
                 "GameLogo": self._("Game logo"),
-                "HereYouCan": self._("Here you have to create unique logo for your project. You can either upload logo from your computer or create it using Constructor."),
-                "FromFile": self._("Alternative 1. Upload pre-made logo file"),
+                "HereYouCan": self._("Here you have to create unique logo for your project."),
+                "FromFile": self._("Upload pre-made logo file"),
                 "FromConstructor": self._("Alternative 2. Launch logo constructor"),
                 "wizard": self.uuid,
                 "logo": self.config.get("logo"),

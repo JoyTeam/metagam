@@ -1,6 +1,6 @@
 <div class="text">
 <h1>[%GameLogo%]</h1>
-<p>[%HereYouCan%]</p>
+<p>[%HereYouCan%]. [%UploadNote%]</p>
 <div id="logo_preview"></div>
 <div id="variants"></div>
 <div id="navi"></div>
@@ -50,48 +50,59 @@ wait(['js/FileUploadField.js'], function() {
 				border: false,
 			},
 			items: [{
-				html: '<h2>[%FromFile%]</h2><p>[%UploadNote%]</p>',
-			}, {
 				id: 'file-form',
 				fileUpload: true,
-				layout: 'form',
+				layout: 'table',
 				labelAlign: 'top',
 				waitTitle: gt.gettext('Please wait...'),
 				xtype: 'form',
+				autoHeight: true,
 				items: [{
+					width: 300,
 					border: false,
-					width: 200,
-					fieldLabel: '[%ImageFormat%]',
-					xtype: 'fileuploadfield',
-					name: 'image',
-					border: false,
+					layout: 'form',
+					items: {
+						width: 250,
+						fieldLabel: '[%ImageFormat%]',
+						xtype: 'fileuploadfield',
+						name: 'image',
+						border: false
+					},
 				}, {
-					xtype: 'button',
-					text: gt.gettext('Upload'),
-					handler: function() {Ext.getCmp('file-form').getForm().submit({
-						url: '/admin-wizard/call/[%wizard%]/upload',
-						waitMsg: gt.gettext('Uploading data...'),
-						success: function(f, action) {
-							var res = Ext.util.JSON.decode(action.response.responseText);
-							if (res && res.logo_preview)
-								show_logo(res.logo_preview);
-							adm_success(action.response, {
-								func: "admin-wizard/call/[%wizard%]/upload"
-							});
-						},
-						failure: function(f, action) {
-							if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-								if (action.result.errormsg) {
-									Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+					border: false,
+					layout: 'form',
+					items: {
+						width: 100,
+						xtype: 'button',
+						style: 'margin-top: 10px',
+						fieldLabel: '&nbsp;',
+						labelSeparator: '',
+						text: gt.gettext('Upload'),
+						handler: function() {Ext.getCmp('file-form').getForm().submit({
+							url: '/admin-wizard/call/[%wizard%]/upload',
+							waitMsg: gt.gettext('Uploading data...'),
+							success: function(f, action) {
+								var res = Ext.util.JSON.decode(action.response.responseText);
+								if (res && res.logo_preview)
+									show_logo(res.logo_preview);
+								adm_success(action.response, {
+									func: "admin-wizard/call/[%wizard%]/upload"
+								});
+							},
+							failure: function(f, action) {
+								if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+									if (action.result.errormsg) {
+										Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+									}
+								} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+									Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
 								}
-							} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-								Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
 							}
-						},
-					})}
+						})}
+					}
 				}]
 			}],
-		}, {
+		}/*, {
 			defaults: {
 				border: false,
 			},
@@ -104,7 +115,7 @@ wait(['js/FileUploadField.js'], function() {
 					handler: function() { adm('wizard/call/[%wizard%]/constructor') }
 				}]
 			}]
-		}]
+		}*/]
 	});
 	new Ext.Panel({
 		renderTo: 'navi',

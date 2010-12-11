@@ -6,6 +6,12 @@ Form = Ext.extend(AdminResponse, {
 		});
 		var i;
 		var rows = new Array();
+		if (data.title) {
+			rows.push({
+				border: false,
+				html: '<div class="text"><h1>' + data.title + '</h1></div>'
+			});
+		}
 		var row = undefined;
 		for (i = 0; i < data.fields.length; i++) {
 			var it = data.fields[i];

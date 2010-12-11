@@ -1,5 +1,5 @@
 from mg import *
-from mg.core.auth import User
+from mg.core.auth import User, UserList
 from mg.constructor.common import *
 import cgi
 
@@ -10,6 +10,7 @@ class ProjectDashboard(Module):
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
         self.rhook("ext-admin-constructor.user-find", self.ext_user_find)
         self.rhook("ext-admin-constructor.user-dashboard", self.ext_user_dashboard)
+        self.rhook("ext-admin-constructor.user-lastreg", self.ext_user_lastreg)
         self.rhook("ext-admin-constructor.project-find", self.ext_project_find)
         self.rhook("ext-admin-constructor.project-dashboard", self.ext_project_dashboard)
         self.rhook("permissions.list", self.permissions_list)
@@ -43,6 +44,7 @@ class ProjectDashboard(Module):
         if req.has_access("constructor.users"):
             menu.append({"id": "constructor/user-dashboard/%s" % req.user(), "text": self._("My dashboard"), "leaf": True})
             menu.append({"id": "constructor/user-find", "text": self._("Find user"), "leaf": True})
+            menu.append({"id": "constructor/user-lastreg", "text": self._("Last registered users"), "leaf": True})
         if req.has_access("constructor.projects"):
             menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
@@ -203,4 +205,18 @@ class ProjectDashboard(Module):
         perms.append({"id": "constructor.users", "name": self._("Constructor: users")})
         perms.append({"id": "constructor.projects", "name": self._("Constructor: projects")})
         perms.append({"id": "constructor.projects.unpublish", "name": self._("Constructor: unpublishing projects")})
+
+    def ext_user_lastreg(self):
+        self.call("session.require_permission", "constructor.users")
+        tables = []
+        users = self.objlist(UserList, query_index="created", query_reversed=True, query_limit=30)
+        users.load()
+        tables.append({
+            "header": [self._("ID"), self._("Name"), self._("Active"), self._("E-mail")],
+            "rows": [('<hook:admin.link href="constructor/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes"), htmlescape(u.get("email"))) for u in users]
+        })
+        vars = {
+            "tables": tables
+        }
+        self.call("admin.response_template", "admin/constructor/tables.html", vars)
 

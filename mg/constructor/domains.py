@@ -337,7 +337,7 @@ class Domains(Module):
         ns1 = self.main_app().config.get("dns.ns1")
         ns2 = self.main_app().config.get("dns.ns2")
         if ns1 not in servers or ns2 not in servers or len(servers) != 2:
-            errors["domain"] = self._("Domain servers for {0} are {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)
+            errors["domain"] = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)
 
     def dns_servers(self, domain):
         main = self.app().inst.appfactory.get_by_tag("main")
