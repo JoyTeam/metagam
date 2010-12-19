@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-11 00:09+0300\n"
+"POT-Creation-Date: 2010-12-19 16:08+0300\n"
 "PO-Revision-Date: 2010-12-09 12:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -18,52 +18,78 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
 "10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/templates/constructor/intro-en.html:12
 #: mg/templates/constructor/intro-ru.html:18
-#: mg/templates/constructor/logo.html:119
+#: mg/templates/constructor/intro-en.html:12
+#: mg/templates/constructor/logo.html:130
 msgid "Next"
 msgstr "Далее"
 
-#: mg/templates/constructor/logo-wizard.html:40
-#: mg/templates/constructor/logo.html:73
-msgid "Uploading data..."
-msgstr "Отправка данных..."
-
-#: mg/templates/constructor/logo-wizard.html:63
-#: mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:24
-#: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/domain-wizard.html:31
 #: mg/templates/constructor/domain-wizard.html:34
-#: mg/templates/constructor/logo.html:85 mg/templates/constructor/logo.html:88
+#: mg/templates/constructor/domain.html:24
+#: mg/templates/constructor/domain.html:27
+#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo-wizard.html:63
+#: mg/templates/constructor/logo-wizard.html:66
 msgid "Error"
 msgstr "Ошибка"
 
-#: mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/domain-wizard.html:34
-#: mg/templates/constructor/logo.html:88
+#: mg/templates/constructor/domain.html:27
+#: mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo-wizard.html:66
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: mg/templates/constructor/logo-wizard.html:74
-msgid "Upload file"
-msgstr "Загрузить файл"
-
+#: mg/templates/constructor/domain-wizard.html:72
+#: mg/templates/constructor/domain.html:66
+#: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
 #: mg/templates/constructor/logo-wizard.html:119
 #: mg/templates/constructor/logo-wizard.html:230
-#: mg/templates/constructor/domain.html:66
-#: mg/templates/constructor/domain-wizard.html:72
-#: mg/templates/constructor/logo.html:58
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
 
+#: mg/templates/constructor/domain-wizard.html:116
+msgid "Check availability"
+msgstr "Проверить доступность"
+
+#: mg/templates/constructor/domain-wizard.html:151
+msgid "Buy MM$"
+msgstr "Купить MM$"
+
+#: mg/templates/constructor/domain-wizard.html:248
+#: mg/templates/constructor/logo-wizard.html:281
+msgid "Abort wizard"
+msgstr "Прервать мастер"
+
+#: mg/templates/constructor/offer-ru.html:253
+msgid "I agree to the terms and conditions"
+msgstr "Я принимаю условия соглашения и договора"
+
+#: mg/templates/constructor/offer-ru.html:256
+msgid "I don't agree"
+msgstr "Я не согласен"
+
+#: mg/templates/constructor/domain.html:90
+#: mg/templates/constructor/logo.html:126
+msgid "Previous"
+msgstr "Назад"
+
+#: mg/templates/constructor/logo.html:80
 #: mg/templates/constructor/logo-wizard.html:102
-#: mg/templates/constructor/logo.html:70
 msgid "Upload"
 msgstr "Загрузить"
+
+#: mg/templates/constructor/logo.html:83
+#: mg/templates/constructor/logo-wizard.html:40
+msgid "Uploading data..."
+msgstr "Отправка данных..."
+
+#: mg/templates/constructor/logo-wizard.html:74
+msgid "Upload file"
+msgstr "Загрузить файл"
 
 #: mg/templates/constructor/logo-wizard.html:113
 msgid "Solid color"
@@ -96,32 +122,6 @@ msgstr "Предварительный просмотр"
 #: mg/templates/constructor/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
-
-#: mg/templates/constructor/logo-wizard.html:281
-#: mg/templates/constructor/domain-wizard.html:248
-msgid "Abort wizard"
-msgstr "Прервать мастер"
-
-#: mg/templates/constructor/domain.html:90
-#: mg/templates/constructor/logo.html:115
-msgid "Previous"
-msgstr "Назад"
-
-#: mg/templates/constructor/domain-wizard.html:116
-msgid "Check availability"
-msgstr "Проверить доступность"
-
-#: mg/templates/constructor/domain-wizard.html:151
-msgid "Buy MM$"
-msgstr "Купить MM$"
-
-#: mg/templates/constructor/offer-ru.html:253
-msgid "I agree to the terms and conditions"
-msgstr "Я принимаю условия соглашения и договора"
-
-#: mg/templates/constructor/offer-ru.html:256
-msgid "I don't agree"
-msgstr "Я не согласен"
 
 #~ msgid "Browse..."
 #~ msgstr "Обзор..."
