@@ -226,7 +226,7 @@ class Request(object):
 
     def has_access(self, key):
         perms = self.permissions()
-        if perms.get(key):
+        if perms.get(key) or perms.get("project.admin"):
             return True
         return False
 
@@ -352,7 +352,7 @@ class WebResponse(Exception):
     def __init__(self, content):
         self.content = content
 
-re_remove_ver = re.compile(r'/ver\d+(?:-\d+)?$')
+re_remove_ver = re.compile(r'(?:/|^)ver\d+(?:-\d+)?$')
 
 class WebApplication(Application):
     """

@@ -4,7 +4,7 @@ Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
 		});
-		var i;
+		var upload = false;
 		var rows = new Array();
 		if (data.title) {
 			rows.push({
@@ -13,11 +13,13 @@ Form = Ext.extend(AdminResponse, {
 			});
 		}
 		var row = undefined;
-		for (i = 0; i < data.fields.length; i++) {
+		for (var i = 0; i < data.fields.length; i++) {
 			var it = data.fields[i];
 			if (!row)
 				row = new Array();
 			var elem;
+			if (it.type == 'fileuploadfield')
+				upload = true;
 			if (it.type == 'empty') {
 				elem = {
 					border: false
@@ -118,7 +120,7 @@ Form = Ext.extend(AdminResponse, {
 		});
 		var buttons = new Array();
 		form_id++;
-		for (i = 0; i < data.buttons.length; i++) {
+		for (var i = 0; i < data.buttons.length; i++) {
 			var btn_config = data.buttons[i];
 			var btn = new Ext.Button({
 				text: btn_config.text,
@@ -131,9 +133,15 @@ Form = Ext.extend(AdminResponse, {
 					url: btn.url,
 					waitMsg: gt.gettext('Sending data...'),
 					success: function(f, action) {
-						adm_success(action.response, {
-							func: btn.url
-						});
+						if (form.fileUpload) {
+							adm_success_json(action.response, {
+								func: btn.url
+							});
+						} else {
+							adm_success(action.response, {
+								func: btn.url
+							});
+						}
 					},
 					failure: function(f, action) {
 						if (action.failureType === Ext.form.Action.SERVER_INVALID) {
@@ -160,7 +168,8 @@ Form = Ext.extend(AdminResponse, {
 			buttonAlign: 'left',
 			footerStyle: 'padding: 0',
 			waitTitle: gt.gettext('Please wait...'),
-			layout: 'auto'
+			layout: 'auto',
+			fileUpload: upload
 		});
 		this.add(form);
 	}

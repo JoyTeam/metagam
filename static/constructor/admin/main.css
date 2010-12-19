@@ -54,8 +54,8 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 #background_preview { margin: 44px 0px 0px 20px; border: solid 1px #e0e0e0; }
 #logo_preview { margin: 20px 0px 20px 0px; }
 .form-table { padding: 5px 25px 0px 0px; vertical-align: top }
-.red { background: red }
-.red * { background: '#ff8080' }
+.red { background: #ff8080 }
+.red * { background: #ff8080 }
 .multicolumn-cell { vertical-align: top }
 #logo-layers { margin: 20px 0px 10px 0px }
 .logo-image { width: 100px; height: 75px; border: solid 1px #e0e0e0; }
@@ -66,3 +66,4 @@ table.menu td { padding: 3px 10px 3px 5px; vertical-align: top }
 table.menu tr.header td { background-color:#f0f0f0; padding: 5px 10px 5px 5px; color: #000000; font-weight: bold }
 table.menu td.header { background-color:#f0f0f0; color: #000000; font-weight: bold }
 table.menu td.subheader { font-weight: bold; font-size: 16px }
+.admin-delim { margin-top: 5px; padding-top: 5px; border-top: solid 1px #ff6419 }

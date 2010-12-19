@@ -55,4 +55,3 @@ def htmlescape(str):
     if str is None:
         return ""
     return cgi.escape(str)
-

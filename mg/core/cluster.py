@@ -63,6 +63,7 @@ class Cluster(Module):
         self.rhook("cluster.appconfig_changed", self.appconfig_changed)
         self.rhook("cluster.static_upload_temp", self.static_upload_temp)
         self.rhook("cluster.static_preserve", self.static_preserve)
+        self.rhook("cluster.static_upload_zip", self.static_upload_zip)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def query_director(self, uri, params={}):
@@ -116,6 +117,29 @@ class Cluster(Module):
         finally:
             cnn.close()
         return (uri, url, host, id)
+
+    def static_upload_zip(self, subdir, zip, upload_list):
+        host = str(random.choice(self.app().inst.config["storage"]))
+        id = uuid4().hex
+        url = str("/%s/%s/%s%s/%s-%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id))
+        uri = str("http://" + host + url)
+        for ent in upload_list:
+            cnn = HTTPConnection()
+            cnn.connect((str(host), 80))
+            try:
+                request = HTTPRequest()
+                request.method = "PUT"
+                request.path = str("%s/%s" % (url, ent["filename"]))
+                request.host = host
+                request.body = zip.read(ent["zipname"])
+                request.add_header("Content-type", str(ent["content-type"]))
+                request.add_header("Content-length", len(request.body))
+                response = cnn.perform(request)
+                if response.status_code != 201:
+                    raise StaticUploadError(self._("Error storing object: %s") % response.status)
+            finally:
+                cnn.close()
+        return uri
 
     def static_upload(self, subdir, ext, content_type, data):
         uri, url, host, id = self.upload(subdir, ext, content_type, data)

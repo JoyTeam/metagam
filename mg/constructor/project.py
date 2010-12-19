@@ -9,9 +9,9 @@ class ConstructorProject(Module):
         self.rhook("project.title", self.project_title)
 
     def child_modules(self):
-        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains"]
+        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils"]
         if not self.app().project.get("inactive"):
-            lst.extend(["mg.constructor.index.IndexPage", "mg.constructor.index.IndexPageAdmin"])
+            lst.extend(["mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin", "mg.constructor.design.DesignAdmin"])
         return lst
 
     def project_title(self):

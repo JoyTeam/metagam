@@ -1,0 +1,8 @@
+<p class="admin-submenu"><hook:admin.link href="[%group%]/design/new" title="[%UploadNewDesign%]" /></p>
+
+<table class="list">
+	<tr class="header"><td class="header">[%Uploaded%]</td><td>[%Title%]</td><td>[%Preview%]</td><td>[%Deletion%]</td><td>[%Installation%]</td></tr>
+	[%foreach ent in designs%] 
+	<tr><td>[%ent.uploaded%]</td><td>[%ent.title%]</td><td><a href="/admin/[%group%]/design/preview/[%ent.uuid%]" target="_blank">[%preview%]</a></td><td><hook:admin.link href="[%group%]/design/delete/[%ent.uuid%]" title="[%delete%]" confirm="[%ConfirmDelete%]" /></td><td><hook:admin.link href="[%group%]/design/install/[%ent.uuid%]" title="[%install%]" confirm="[%ConfirmInstall%]" /></td></tr>
+	[%end%]
+</table>

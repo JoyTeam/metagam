@@ -50,7 +50,11 @@ function adm_response(res)
 		adminmain.add(admincontent);
 		adminmain.doLayout();
 		if (res.script) {
-			wait([res.script], function() {
+			var wait_modules = res.data.modules;
+			if (!wait_modules)
+				wait_modules = new Array();
+			wait_modules.push(res.script);
+			wait(wait_modules, function() {
 				var obj = new (eval(res.cls))(res.data);
 				admincontent.add({
 					border: false,
@@ -112,6 +116,14 @@ function adm_response(res)
 			});
 		}
 	}
+}
+
+function adm_success_json(response, opts)
+{
+	current_page = opts.func;
+	expand_menu(current_page);
+	var res = Ext.util.JSON.decode(response.responseText);
+	adm_response(res);
 }
 
 function adm_success(response, opts)
