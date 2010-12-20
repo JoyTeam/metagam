@@ -210,7 +210,7 @@ class AdminInterface(Module):
             onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
         return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), htmlescape(title), random.randrange(0, 1000000000), onclick)
 
-    def form(self, url=None, fields=None, buttons=None, title=None, modules=None):
+    def form(self, url=None, fields=None, buttons=None, title=None, modules=None, menu=None):
         if url is None:
             req = self.req()
             url = "/%s/%s/%s" % (req.group, req.hook, req.args)
@@ -218,7 +218,7 @@ class AdminInterface(Module):
             fields = []
         if buttons is None:
             buttons = [{"text": self._("Save")}]
-        self.call("admin.response_js", "js/admin-form.js", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules})
+        self.call("admin.response_js", "js/admin-form.js", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
 
     def update_menu(self):
         self.req().admin_update_menu = True

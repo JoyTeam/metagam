@@ -118,6 +118,12 @@ class IndexPageAdmin(Module):
         Module.register(self)
         self.rhook("menu-admin-design.index", self.menu_design_index)
         self.rhook("ext-admin-indexpage.design", self.ext_design)
+        self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
+
+    def headmenu_design(self, args):
+        if args == "new":
+            return [self._("New design"), "indexpage/design"]
+        return self._("Index page design")
 
     def menu_design_index(self, menu):
         menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True})
