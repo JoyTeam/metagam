@@ -99,6 +99,8 @@ class Constructor(Module):
         req = self.req()
         topmenu = []
         cabmenu = []
+        if vars.get("global_html"):
+            return
         if req.group == "index" and req.hook == "index":
             vars["global_html"] = "constructor/index_global.html"
         elif req.group == "auth":

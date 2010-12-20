@@ -2,6 +2,7 @@ from mg import *
 import re
 import zipfile
 import cStringIO
+import HTMLParser
 
 max_design_size = 10000000
 max_design_files = 100
@@ -10,13 +11,15 @@ permitted_extensions = {
     "png": "image/png",
     "jpg": "image/jpeg",
     "jpeg": "image/jpeg",
-    "swf": "",
-    "flv": "",
+    "swf": "application/x-shockwave-flash",
+    "flv": "video/x-flv",
     "css": "text/css",
     "html": "text/html"
 }
 
 re_valid_filename = re.compile(r'^(?:.*[/\\]|)([a-z0-9_\-]+)\.([a-z0-9]+)$')
+re_proto = re.compile(r'^[a-z]+://')
+re_slash = re.compile(r'^/')
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -38,6 +41,67 @@ class DesignList(CassandraObjectList):
         kwargs["clsprefix"] = "Design-"
         kwargs["cls"] = Design
         CassandraObjectList.__init__(self, *args, **kwargs)
+
+class DesignHTMLParser(HTMLParser.HTMLParser):
+    def __init__(self):
+        HTMLParser.HTMLParser.__init__(self)
+        self.output = ""
+        self.tagstack = []
+
+    def handle_starttag(self, tag, attrs):
+        self.process_tag(tag, attrs)
+        html = "<%s" % tag
+        for key, val in attrs:
+            html += ' %s="%s"' % (key, htmlescape(value))
+        html += ">";
+        self.output += html
+        self.tagstack.append(tag)
+
+    def handle_endtag(self, tag):
+        expected = self.tagstack.pop() if len(self.tagstack) else None
+        if expected != tag:
+            raise HTMLParser.HTMLParseError(self._("Closing tag </{0}> doesn't match opening tag <{1}>").format(tag, expected), (self.lineno, self.offset))
+        self.output += "</%s>" % tag
+
+    def handle_startendtag(self, tag, attrs):
+        self.process_tag(tag, attrs)
+        html = "<%s" % tag
+        for key, val in attrs:
+            html += ' %s="%s"' % (key, htmlescape(val))
+        html += " />";
+        self.output += html
+
+    def handle_data(self, data):
+        self.output += data
+
+    def handle_charref(self, name):
+        self.output += "&#%s;" % name
+
+    def handle_entityref(self, name):
+        self.output += "&%s;" % name
+
+    def handle_comment(self, data):
+        self.output += "<!--%s-->" % data
+
+    def handle_decl(self, decl):
+        self.output += "<!%s>" % decl
+
+    def close(self):
+        HTMLParser.HTMLParser.close(self)
+        if len(self.tagstack):
+            raise HTMLParser.HTMLParseError(self._("Not closed tags at the end of file: %s") % (", ".join(self.tagstack)))
+
+    def process_tag(self, tag, attrs):
+        if tag == "img" or tag == "link":
+            attrs_dict = dict(attrs)
+            att = "href" if tag == "link" else "src"
+            href = attrs_dict.get(att)
+            if not href:
+                raise HTMLParser.HTMLParseError(self._("Mandatory attribute '{0}' missing in tag '{1}'").format(att, tag), (self.lineno, self.offset))
+            if not re_proto.match(href) and not re_slash.match(href):
+                for i in range(0, len(attrs)):
+                    if attrs[i][0] == att:
+                        attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
 
 class DesignZip(Module):
     "Uploaded ZIP file with a design package"
@@ -95,23 +159,41 @@ class DesignZip(Module):
             errors.append(self._("Design package must not contain more than 1 CSS file"))
         elif len(css) == 0:
             errors.append(self._("Design package must contain at least 1 CSS file"))
-        if len(errors):
-            return errors
-        uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+        if not len(errors):
+            for file in upload_list:
+                if file["content-type"] == "text/html":
+                    data = self.zip.read(file["zipname"])
+                    print "parsing %s:\n===\n%s===" % (file["zipname"], data)
+                    parser = DesignHTMLParser()
+                    parser.feed(data)
+                    parser.close()
+                    print "result:\n===\n%s===" % parser.output
+                    file["data"] = parser.output
         design = self.obj(Design)
         design.set("group", group)
         design.set("uploaded", self.now())
-        design.set("uri", uri)
         design.set("files", files)
         if len(html):
             design.set("html", html[0])
         if len(css):
             design.set("css", css[0])
+        # 3rd party validation
+        self.call("admin-%s.validate" % group, design, errors)
+        if len(errors):
+            return errors
+        uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+        design.set("uri", uri)
         return design
         
 class IndexPage(Module):
     def register(self):
         Module.register(self)
+        self.rhook("indexpage.response", self.response)
+
+    def response(self, design, content, vars):
+        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), design.get("html")))
+        vars["design_root"] = design.get("uri")
+        self.call("web.response_global", content, vars)
 
 class IndexPageAdmin(Module):
     def register(self):
@@ -119,6 +201,7 @@ class IndexPageAdmin(Module):
         self.rhook("menu-admin-design.index", self.menu_design_index)
         self.rhook("ext-admin-indexpage.design", self.ext_design)
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
+        self.rhook("admin-indexpage.validate", self.validate)
 
     def headmenu_design(self, args):
         if args == "new":
@@ -130,6 +213,10 @@ class IndexPageAdmin(Module):
 
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
+
+    def validate(self, design, errors):
+        if not design.get("html"):
+            errors.append(self._("Index page design package must contain at least 1 HTML file"))
 
 class DesignAdmin(Module):
     def register(self):
@@ -144,6 +231,7 @@ class DesignAdmin(Module):
 
     def editor(self, group):
         self.call("session.require_permission", "design")
+        self.call("admin.advice", {"title": self._("Preview feature"), "content": self._('Use "preview" feature to check your design before installing it to the project. Then press "Reload" several times to check design on arbitrary data.')}, {"title": self._("Multiple browsers"), "content": self._('Check your design in the most popular browsers.') + u' <a href="http://www.google.com/search?q={0}" target="_blank">{1}</a>.'.format(urlencode(self._("google///browser statistics")), self._("Find the most popular browsers"))})
         with self.lock(["DesignAdmin-%s" % group]):
             req = self.req()
             if req.args == "":
@@ -211,5 +299,10 @@ class DesignAdmin(Module):
                 elif cmd == "install":
                     pass
                 elif cmd == "preview":
-                    pass
+                    try:
+                        design = self.obj(Design, uuid)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        self.call("%s.response" % group, design, "Some response", {})
             self.call("web.not_found")

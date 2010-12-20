@@ -1,6 +1,6 @@
 from concurrence.extra import Lock
-from concurrence import Tasklet, http
-from concurrence.http import HTTPError
+from concurrence import Tasklet, http, Timeout, TimeoutError
+from concurrence.http import HTTPConnection, HTTPError
 from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
@@ -17,6 +17,8 @@ import gettext
 import logging
 import logging.handlers
 import datetime
+import urlparse
+import cStringIO
 
 re_hook_path = re.compile(r'^(.+?)\.(.+)$')
 re_config_path = re.compile(r'^(.+?)\.(.+)$')
@@ -435,6 +437,47 @@ class Module(object):
 
     def stem(self, word):
         return self.stemmer().stemWord(word)
+
+    def httpfile(self, url):
+        "Downloads given URL and returns is wrapped in cStringIO"
+        if url is None:
+            return cStringIO.StringIO("")
+        if type(url) == unicode:
+            url = url.encode("utf-8")
+        url_obj = urlparse.urlparse(url, "http", False)
+        if url_obj.scheme != "http":
+            self.error("Scheme '%s' is not supported", url_obj.scheme)
+        elif url_obj.hostname is None:
+            self.error("Empty hostname: %s", url)
+        else:
+            cnn = HTTPConnection()
+            try:
+                with Timeout.push(50):
+                    cnn.set_limit(20000000)
+                    port = url_obj.port
+                    if port is None:
+                        port = 80
+                    cnn.connect((url_obj.hostname, port))
+                    request = cnn.get(url_obj.path + url_obj.query)
+                    response = cnn.perform(request)
+                    if response.status_code != 200:
+                        self.error("Error download %s: %s %s", url, response.status_code, response.status)
+                        return ""
+                    return cStringIO.StringIO(response.body)
+            except TimeoutError:
+                self.error("Timeout downloading %s", url)
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
+                raise
+            except BaseException as e:
+                self.error("Error downloading %s: %s", url, str(e))
+            finally:
+                try:
+                    cnn.close()
+                except (KeyboardInterrupt, SystemExit, TaskletExit):
+                    raise
+                except:
+                    pass
+        return cStringIO.StringIO("")
 
 class ModuleException(Exception):
     "Error during module loading"

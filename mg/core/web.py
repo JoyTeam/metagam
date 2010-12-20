@@ -352,7 +352,7 @@ class WebResponse(Exception):
     def __init__(self, content):
         self.content = content
 
-re_remove_ver = re.compile(r'(?:/|^)ver\d+(?:-\d+)?$')
+re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
 
 class WebApplication(Application):
     """
@@ -555,12 +555,11 @@ class Web(Module):
 
     def web_response_global(self, content, vars):
         vars["content"] = content
-        vars["global_html"] = "global.html"
         self.call("web.setup_design", vars)
-        if vars["global_html"] is None:
-            self.call("web.response", vars["content"])
-        else:
+        if vars.get("global_html"):
             self.call("web.response", self.call("web.parse_template", vars["global_html"], vars))
+        else:
+            self.call("web.response", vars["content"])
 
     def web_response_template(self, filename, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_template", filename, vars), vars))

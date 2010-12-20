@@ -131,9 +131,12 @@ class Cluster(Module):
                 request.method = "PUT"
                 request.path = str("%s/%s" % (url, ent["filename"]))
                 request.host = host
-                request.body = zip.read(ent["zipname"])
+                data = ent.get("data")
+                if data is None:
+                    data = zip.read(ent["zipname"])
+                request.body = data
                 request.add_header("Content-type", str(ent["content-type"]))
-                request.add_header("Content-length", len(request.body))
+                request.add_header("Content-length", len(data))
                 response = cnn.perform(request)
                 if response.status_code != 201:
                     raise StaticUploadError(self._("Error storing object: %s") % response.status)
