@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 15:56+0300\n"
-"PO-Revision-Date: 2010-12-21 15:56+0300\n"
+"POT-Creation-Date: 2010-12-21 16:12+0300\n"
+"PO-Revision-Date: 2010-12-21 16:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -68,7 +68,7 @@ msgid "Code"
 msgstr "Код"
 
 #: mg/socio/__init__.py:231
-#: mg/constructor/design.py:350
+#: mg/constructor/design.py:351
 msgid "Title"
 msgstr "Название"
 
@@ -100,14 +100,14 @@ msgid "access"
 msgstr "доступ"
 
 #: mg/socio/__init__.py:237
-#: mg/constructor/design.py:352
+#: mg/constructor/design.py:353
 msgid "Deletion"
 msgstr "Удаление"
 
 #: mg/socio/__init__.py:238
 #: mg/socio/__init__.py:1155
 #: mg/socio/__init__.py:1196
-#: mg/constructor/design.py:355
+#: mg/constructor/design.py:356
 msgid "delete"
 msgstr "удалить"
 
@@ -240,7 +240,7 @@ msgid "Or Internet address"
 msgstr "Или введите Internet-адрес"
 
 #: mg/socio/__init__.py:537
-#: mg/constructor/design.py:390
+#: mg/constructor/design.py:391
 msgid "Upload"
 msgstr "Загрузить"
 
@@ -1743,195 +1743,195 @@ msgstr "Рынок"
 msgid "Market place to sell and by any item"
 msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
 
-#: mg/constructor/design.py:71
+#: mg/constructor/design.py:72
 msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
 msgstr "Закрывающий тег '{0}' не соответствует открывающему тегу '{1}'"
 
-#: mg/constructor/design.py:97
+#: mg/constructor/design.py:98
 msgid "Valid HTML doctype required"
 msgstr "Требуется правильный HTML doctype"
 
-#: mg/constructor/design.py:103
+#: mg/constructor/design.py:104
 #, python-format
 msgid "Not closed tags at the end of file: %s"
 msgstr "Незакрытые теги в конце файла: %s"
 
-#: mg/constructor/design.py:105
+#: mg/constructor/design.py:106
 msgid "DOCTYPE not specified"
 msgstr "DOCTYPE не указан"
 
-#: mg/constructor/design.py:107
+#: mg/constructor/design.py:108
 msgid "Content-type not specified. Add <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" /> into the head tag"
 msgstr "Content-type не указан. Добавьте <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" /> в тег head"
 
-#: mg/constructor/design.py:115
+#: mg/constructor/design.py:116
 msgid "Mandatory attribute '{0}' missing in tag '{1}'"
 msgstr "В теге '{1}' отсутствует обязательный атрибут '{0}'"
 
-#: mg/constructor/design.py:127
+#: mg/constructor/design.py:128
 msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
 msgstr "Неверная кодировка. Укажите: content=\"text/html; charset=utf-8\""
 
-#: mg/constructor/design.py:215
+#: mg/constructor/design.py:216
 #, python-format
 msgid "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)"
 msgstr "Неверное имя файла: '%s' . Допустимы только маленькие латинские буквы (a-z), цифры (0-9), подчёркивание (_) и минус (-). Файл должен иметь расширение из символов a-z, 0-9"
 
-#: mg/constructor/design.py:221
+#: mg/constructor/design.py:222
 msgid "Filename '{0}' has unsupported extension: {1}. Permitted extensions are: {2}"
 msgstr "Имя файла '{0}' имеет неподдерживаемое расширение: {1}. Допустимые разрешения: {2}"
 
-#: mg/constructor/design.py:224
+#: mg/constructor/design.py:225
 #, python-format
 msgid "Several files with the same name '%s' encountered"
 msgstr "Найдено несколько файлов с одинаковым именем: '%s'"
 
-#: mg/constructor/design.py:233
+#: mg/constructor/design.py:234
 #, python-format
 msgid "Design package couldn't contain more than %d files"
 msgstr "Пакет с оформлением не может содержать более %d файлов"
 
-#: mg/constructor/design.py:235
+#: mg/constructor/design.py:236
 #, python-format
 msgid "Design package contents couldn't be more than %d bytes"
 msgstr "Содержимое пакета с оформлением не может быть более %d байт"
 
-#: mg/constructor/design.py:238
+#: mg/constructor/design.py:239
 msgid "Design package must not contain more than 1 HTML file"
 msgstr "Пакет с оформлением не может содержать более 1 HTML-файла"
 
-#: mg/constructor/design.py:240
+#: mg/constructor/design.py:241
 msgid "Design package must not contain more than 1 CSS file"
 msgstr "Пакет с оформлением не может содержать более 1 CSS-файла"
 
-#: mg/constructor/design.py:253
+#: mg/constructor/design.py:254
 #, python-format
 msgid ", at line %d"
 msgstr ", в строке %d"
 
-#: mg/constructor/design.py:255
+#: mg/constructor/design.py:256
 #, python-format
 msgid ", column %d"
 msgstr ", в колонке %d"
 
-#: mg/constructor/design.py:256
+#: mg/constructor/design.py:257
 msgid "Error parsing {0}: {1}"
 msgstr "Ошибка парсера {0}: {1}"
 
-#: mg/constructor/design.py:293
+#: mg/constructor/design.py:294
 msgid "New design"
 msgstr "Новое оформление"
 
-#: mg/constructor/design.py:295
+#: mg/constructor/design.py:296
 msgid "Renaming"
 msgstr "Переименование"
 
-#: mg/constructor/design.py:296
+#: mg/constructor/design.py:297
 msgid "Index page design"
 msgstr "Оформление титульной страницы"
 
-#: mg/constructor/design.py:299
+#: mg/constructor/design.py:300
 msgid "Index page"
 msgstr "Титульная страница"
 
-#: mg/constructor/design.py:306
+#: mg/constructor/design.py:307
 msgid "Index page design package must contain at least 1 HTML file"
 msgstr "Пакет с оформлением титульной страницы должен содержать, как минимум, 1 HTML-файл"
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:319
 msgid "Design"
 msgstr "Оформление"
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "Preview feature"
 msgstr "Предварительный просмотр"
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "Multiple browsers"
 msgstr "Различные браузеры"
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "Check your design in the most popular browsers."
 msgstr "Проверяйте ваше оформление в наиболее популярных браузерах."
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "google///browser statistics"
 msgstr "статистика браузеров"
 
-#: mg/constructor/design.py:322
+#: mg/constructor/design.py:323
 msgid "Find the most popular browsers"
 msgstr "Найти наиболее популярные браузеры"
 
-#: mg/constructor/design.py:334
+#: mg/constructor/design.py:335
 msgid "Untitled"
 msgstr "Без имени"
 
-#: mg/constructor/design.py:348
+#: mg/constructor/design.py:349
 msgid "Upload new design"
 msgstr "Загрузить новое оформление"
 
-#: mg/constructor/design.py:349
+#: mg/constructor/design.py:350
 msgid "Uploaded"
 msgstr "Загружено"
 
-#: mg/constructor/design.py:351
+#: mg/constructor/design.py:352
 msgid "Preview"
 msgstr "Предпросмотр"
 
-#: mg/constructor/design.py:353
+#: mg/constructor/design.py:354
 msgid "Installation"
 msgstr "Инсталляция"
 
-#: mg/constructor/design.py:354
+#: mg/constructor/design.py:355
 msgid "preview"
 msgstr "просмотреть"
 
-#: mg/constructor/design.py:356
-msgid "install to the project"
-msgstr "установить в проект"
-
 #: mg/constructor/design.py:357
+msgid "install"
+msgstr "установить"
+
+#: mg/constructor/design.py:358
 msgid "Do you really want to delete this design?"
 msgstr "Вы уверены, что хотите удалить это оформление?"
 
-#: mg/constructor/design.py:358
+#: mg/constructor/design.py:359
 msgid "Do you really want to install this design?"
 msgstr "Вы уверены, что хотите установить это оформление?"
 
-#: mg/constructor/design.py:360
-msgid "download zip"
-msgstr "скачать zip"
-
 #: mg/constructor/design.py:361
-msgid "rename"
-msgstr "переименовать"
+msgid "zip"
+msgstr "zip"
 
-#: mg/constructor/design.py:369
+#: mg/constructor/design.py:362
+msgid "rename///ren"
+msgstr "переим"
+
+#: mg/constructor/design.py:370
 msgid "Provide a ZIP archive"
 msgstr "Загрузите ZIP-архив"
 
-#: mg/constructor/design.py:377
+#: mg/constructor/design.py:378
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
 
-#: mg/constructor/design.py:379
+#: mg/constructor/design.py:380
 msgid "ZIP64 is not supported"
 msgstr "ZIP64 не поддерживается"
 
-#: mg/constructor/design.py:386
+#: mg/constructor/design.py:387
 msgid "Zipped design package"
 msgstr "Пакет с оформлением в формате ZIP"
 
-#: mg/constructor/design.py:387
-#: mg/constructor/design.py:419
+#: mg/constructor/design.py:388
+#: mg/constructor/design.py:420
 msgid "Design title"
 msgstr "Название оформления"
 
-#: mg/constructor/design.py:422
+#: mg/constructor/design.py:423
 msgid "Rename"
 msgstr "Переименовать"
 
@@ -2638,6 +2638,10 @@ msgstr "Активен"
 msgid "yes"
 msgstr "да"
 
+#~ msgid "install to the project"
+#~ msgstr "установить в проект"
+#~ msgid "download zip"
+#~ msgstr "скачать zip"
 #~ msgid "Design package must contain at least 1 CSS file"
 #~ msgstr "Пакет с оформлением должен содержать, как минимум, 1 CSS-файл"
 #~ msgid ""

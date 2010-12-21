@@ -24,6 +24,7 @@ re_valid_decl = re.compile(r'^DOCTYPE (?:html|HTML)')
 re_make_filename = re.compile(r'\W+', re.UNICODE)
 re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
 re_rename = re.compile('^rename\/[a-f0-9]{32}$')
+re_remove_time = re.compile(' \d\d:\d\d:\d\d')
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -339,7 +340,7 @@ class DesignAdmin(Module):
                     filename = re_make_filename.sub('-', filename.lower()) + ".zip"
                     designs.append({
                         "uuid": ent.uuid,
-                        "uploaded": ent.get("uploaded"),
+                        "uploaded": re_remove_time.sub("", ent.get("uploaded")),
                         "title": htmlescape(title),
                         "filename": htmlescape(filename)
                     })
@@ -353,12 +354,12 @@ class DesignAdmin(Module):
                     "Installation": self._("Installation"),
                     "preview": self._("preview"),
                     "delete": self._("delete"),
-                    "install": self._("install to the project"),
+                    "install": self._("install"),
                     "ConfirmDelete": self._("Do you really want to delete this design?"),
                     "ConfirmInstall": self._("Do you really want to install this design?"),
                     "designs": designs,
-                    "download": self._("download zip"),
-                    "rename": self._("rename")
+                    "download": self._("zip"),
+                    "rename": self._("rename///ren")
                 }
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
