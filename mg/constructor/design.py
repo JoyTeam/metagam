@@ -307,6 +307,7 @@ class DesignAdmin(Module):
         Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("design-admin.editor", self.editor)
+        self.rhook("design-admin.delete", self.delete)
 
     def menu_root_index(self, menu):
         req = self.req()
@@ -387,8 +388,13 @@ class DesignAdmin(Module):
             if m:
                 cmd, uuid = m.group(1, 2)
                 if cmd == "delete":
-                    design = self.obj(Design, uuid, data={})
-                    design.remove()
+                    try:
+                        design = self.obj(Design, uuid)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        self.call("design-admin.delete", design)
+                        design.remove()
                     self.call("admin.redirect", "%s/design" % group)
                 elif cmd == "install":
                     pass
@@ -425,3 +431,9 @@ class DesignAdmin(Module):
                     self.call("web.response", output.getvalue(), "application/zip")
 
             self.call("web.not_found")
+
+    def delete(self, design):
+        uri = design.get("uri")
+        for ent in design.get("files"):
+            self.webdav_delete(uri + "/" + ent.get("filename"))
+

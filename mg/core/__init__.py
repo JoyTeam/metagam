@@ -1,6 +1,6 @@
 from concurrence.extra import Lock
 from concurrence import Tasklet, http, Timeout, TimeoutError
-from concurrence.http import HTTPConnection, HTTPError
+from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
@@ -489,6 +489,44 @@ class Module(object):
                 except:
                     pass
         raise DownloadError()
+
+    def webdav_delete(self, url):
+        "Downloads given URL and returns it"
+        if url is None:
+            return
+        if type(url) == unicode:
+            url = url.encode("utf-8")
+        url_obj = urlparse.urlparse(url, "http", False)
+        if url_obj.scheme != "http":
+            self.error("Scheme '%s' is not supported", url_obj.scheme)
+        elif url_obj.hostname is None:
+            self.error("Empty hostname: %s", url)
+        else:
+            cnn = HTTPConnection()
+            try:
+                with Timeout.push(50):
+                    port = url_obj.port
+                    if port is None:
+                        port = 80
+                    cnn.connect((url_obj.hostname, port))
+                    request = HTTPRequest()
+                    request.method = "DELETE"
+                    request.path = url_obj.path + url_obj.query
+                    request.host = url_obj.hostname
+                    cnn.perform(request)
+            except TimeoutError:
+                self.error("Timeout deleting %s", url)
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
+                raise
+            except BaseException as e:
+                self.error("Error deleting %s: %s", url, str(e))
+            finally:
+                try:
+                    cnn.close()
+                except (KeyboardInterrupt, SystemExit, TaskletExit):
+                    raise
+                except:
+                    pass
 
 class ModuleException(Exception):
     "Error during module loading"
