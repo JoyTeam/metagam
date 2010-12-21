@@ -23,6 +23,7 @@ re_slash = re.compile(r'^/')
 re_valid_decl = re.compile(r'^DOCTYPE (?:html|HTML)')
 re_make_filename = re.compile(r'\W+', re.UNICODE)
 re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
+re_rename = re.compile('^rename\/[a-f0-9]{32}$')
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -290,6 +291,8 @@ class IndexPageAdmin(Module):
     def headmenu_design(self, args):
         if args == "new":
             return [self._("New design"), "indexpage/design"]
+        elif re_rename.match(args):
+            return [self._("Renaming"), "indexpage/design"]
         return self._("Index page design")
 
     def menu_design_index(self, menu):
@@ -326,17 +329,18 @@ class DesignAdmin(Module):
                 for ent in lst:
                     title = ent.get("title")
                     if title is not None:
-                        if len(title) > 20:
-                            title = title[0:20]
                         title = title.strip()
                     if title is None or title == "":
-                        title = "untitled"
-                    title = "%s-%s" % (title, ent.get("uploaded"))
-                    filename = re_make_filename.sub('-', title.lower()) + ".zip"
+                        title = self._("Untitled")
+                    filename = title
+                    if len(filename) > 20:
+                        filename = filename[0:20]
+                    filename += "-%s" % ent.get("uploaded")
+                    filename = re_make_filename.sub('-', filename.lower()) + ".zip"
                     designs.append({
                         "uuid": ent.uuid,
                         "uploaded": ent.get("uploaded"),
-                        "title": htmlescape(ent.get("title")),
+                        "title": htmlescape(title),
                         "filename": htmlescape(filename)
                     })
                 vars = {
@@ -353,6 +357,8 @@ class DesignAdmin(Module):
                     "ConfirmDelete": self._("Do you really want to delete this design?"),
                     "ConfirmInstall": self._("Do you really want to install this design?"),
                     "designs": designs,
+                    "download": self._("download zip"),
+                    "rename": self._("rename")
                 }
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
@@ -396,6 +402,26 @@ class DesignAdmin(Module):
                         self.call("design-admin.delete", design)
                         design.remove()
                     self.call("admin.redirect", "%s/design" % group)
+                elif cmd == "rename":
+                    try:
+                        design = self.obj(Design, uuid)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        if req.ok():
+                            title = req.param("title")
+                            design.set("title", title)
+                            design.store()
+                            self.call("admin.redirect", "%s/design" % group)
+                        else:
+                            title = design.get("title")
+                        fields = [
+                            {"name": "title", "label": self._("Design title"), "value": title}
+                        ]
+                        buttons = [
+                            {"text": self._("Rename")}
+                        ]
+                        self.call("admin.form", fields=fields, buttons=buttons)
                 elif cmd == "install":
                     pass
                 elif cmd == "preview":

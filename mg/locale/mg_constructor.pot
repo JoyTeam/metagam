@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 13:02+0300\n"
+"POT-Creation-Date: 2010-12-21 15:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,12 +16,23 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/templates/constructor/intro-ru.html:18
-#: mg/templates/constructor/intro-en.html:12
-#: mg/templates/constructor/logo.html:130
-msgid "Next"
+#: static/js/admin.js:81
+msgid "Guru advice"
 msgstr ""
 
+#: static/js/admin.js:216
+msgid "To the main page"
+msgstr ""
+
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
+msgstr ""
+
+#: static/js/admin-form.js:134
+msgid "Sending data..."
+msgstr ""
+
+#: static/js/admin-form.js:149 static/js/admin-form.js:152
 #: mg/templates/constructor/domain-wizard.html:31
 #: mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:24
@@ -32,7 +43,7 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:34
+#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
@@ -40,13 +51,19 @@ msgstr ""
 msgid "Server error: %s"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:72
+#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:72
 #: mg/templates/constructor/domain.html:66
 #: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
 #: mg/templates/constructor/logo-wizard.html:119
 #: mg/templates/constructor/logo-wizard.html:230
 msgid "Please wait..."
+msgstr ""
+
+#: mg/templates/constructor/intro-ru.html:18
+#: mg/templates/constructor/intro-en.html:12
+#: mg/templates/constructor/logo.html:130
+msgid "Next"
 msgstr ""
 
 #: mg/templates/constructor/domain-wizard.html:116

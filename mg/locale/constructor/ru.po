@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-19 16:08+0300\n"
+"POT-Creation-Date: 2010-12-21 15:47+0300\n"
 "PO-Revision-Date: 2010-12-09 12:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -18,12 +18,23 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
 "10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/templates/constructor/intro-ru.html:18
-#: mg/templates/constructor/intro-en.html:12
-#: mg/templates/constructor/logo.html:130
-msgid "Next"
-msgstr "Далее"
+#: static/js/admin.js:81
+msgid "Guru advice"
+msgstr "Советы гуру"
 
+#: static/js/admin.js:216
+msgid "To the main page"
+msgstr "На главную страницу"
+
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
+msgstr "Обзор..."
+
+#: static/js/admin-form.js:134
+msgid "Sending data..."
+msgstr "Отправка данных..."
+
+#: static/js/admin-form.js:149 static/js/admin-form.js:152
 #: mg/templates/constructor/domain-wizard.html:31
 #: mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:24
@@ -34,7 +45,7 @@ msgstr "Далее"
 msgid "Error"
 msgstr "Ошибка"
 
-#: mg/templates/constructor/domain-wizard.html:34
+#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
@@ -42,7 +53,7 @@ msgstr "Ошибка"
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: mg/templates/constructor/domain-wizard.html:72
+#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:72
 #: mg/templates/constructor/domain.html:66
 #: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
@@ -50,6 +61,12 @@ msgstr "Ошибка на сервере: %s"
 #: mg/templates/constructor/logo-wizard.html:230
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
+
+#: mg/templates/constructor/intro-ru.html:18
+#: mg/templates/constructor/intro-en.html:12
+#: mg/templates/constructor/logo.html:130
+msgid "Next"
+msgstr "Далее"
 
 #: mg/templates/constructor/domain-wizard.html:116
 msgid "Check availability"
@@ -122,18 +139,6 @@ msgstr "Предварительный просмотр"
 #: mg/templates/constructor/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
-
-#~ msgid "Browse..."
-#~ msgstr "Обзор..."
-
-#~ msgid "Guru advice"
-#~ msgstr "Советы гуру"
-
-#~ msgid "To the main page"
-#~ msgstr "На главную страницу"
-
-#~ msgid "Sending data..."
-#~ msgstr "Отправка данных..."
 
 #, fuzzy
 #~ msgid "[%RegisterDomain%]"

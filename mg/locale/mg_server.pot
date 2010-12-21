@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 13:02+0300\n"
+"POT-Creation-Date: 2010-12-21 15:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,7 +60,7 @@ msgstr ""
 msgid "Code"
 msgstr ""
 
-#: mg/socio/__init__.py:231 mg/constructor/design.py:345
+#: mg/socio/__init__.py:231 mg/constructor/design.py:350
 msgid "Title"
 msgstr ""
 
@@ -85,12 +85,12 @@ msgstr ""
 msgid "access"
 msgstr ""
 
-#: mg/socio/__init__.py:237 mg/constructor/design.py:347
+#: mg/socio/__init__.py:237 mg/constructor/design.py:352
 msgid "Deletion"
 msgstr ""
 
 #: mg/socio/__init__.py:238 mg/socio/__init__.py:1155
-#: mg/socio/__init__.py:1196 mg/constructor/design.py:350
+#: mg/socio/__init__.py:1196 mg/constructor/design.py:355
 msgid "delete"
 msgstr ""
 
@@ -218,7 +218,7 @@ msgstr ""
 msgid "Or Internet address"
 msgstr ""
 
-#: mg/socio/__init__.py:537 mg/constructor/design.py:383
+#: mg/socio/__init__.py:537 mg/constructor/design.py:390
 msgid "Upload"
 msgstr ""
 
@@ -1632,38 +1632,38 @@ msgstr ""
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/constructor/design.py:70
+#: mg/constructor/design.py:71
 msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
 msgstr ""
 
-#: mg/constructor/design.py:96
+#: mg/constructor/design.py:97
 msgid "Valid HTML doctype required"
 msgstr ""
 
-#: mg/constructor/design.py:102
+#: mg/constructor/design.py:103
 #, python-format
 msgid "Not closed tags at the end of file: %s"
 msgstr ""
 
-#: mg/constructor/design.py:104
+#: mg/constructor/design.py:105
 msgid "DOCTYPE not specified"
 msgstr ""
 
-#: mg/constructor/design.py:106
+#: mg/constructor/design.py:107
 msgid ""
 "Content-type not specified. Add <meta http-equiv=\"Content-type\" content="
 "\"text/html; charset=utf-8\" /> into the head tag"
 msgstr ""
 
-#: mg/constructor/design.py:114
+#: mg/constructor/design.py:115
 msgid "Mandatory attribute '{0}' missing in tag '{1}'"
 msgstr ""
 
-#: mg/constructor/design.py:126
+#: mg/constructor/design.py:127
 msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
 msgstr ""
 
-#: mg/constructor/design.py:214
+#: mg/constructor/design.py:215
 #, python-format
 msgid ""
 "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), "
@@ -1671,145 +1671,165 @@ msgid ""
 "(a-z, 0-9 symbols)"
 msgstr ""
 
-#: mg/constructor/design.py:220
+#: mg/constructor/design.py:221
 msgid ""
 "Filename '{0}' has unsupported extension: {1}. Permitted extensions are: {2}"
 msgstr ""
 
-#: mg/constructor/design.py:223
+#: mg/constructor/design.py:224
 #, python-format
 msgid "Several files with the same name '%s' encountered"
 msgstr ""
 
-#: mg/constructor/design.py:232
+#: mg/constructor/design.py:233
 #, python-format
 msgid "Design package couldn't contain more than %d files"
 msgstr ""
 
-#: mg/constructor/design.py:234
+#: mg/constructor/design.py:235
 #, python-format
 msgid "Design package contents couldn't be more than %d bytes"
 msgstr ""
 
-#: mg/constructor/design.py:237
+#: mg/constructor/design.py:238
 msgid "Design package must not contain more than 1 HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:239
+#: mg/constructor/design.py:240
 msgid "Design package must not contain more than 1 CSS file"
 msgstr ""
 
-#: mg/constructor/design.py:252
+#: mg/constructor/design.py:253
 #, python-format
 msgid ", at line %d"
 msgstr ""
 
-#: mg/constructor/design.py:254
+#: mg/constructor/design.py:255
 #, python-format
 msgid ", column %d"
 msgstr ""
 
-#: mg/constructor/design.py:255
+#: mg/constructor/design.py:256
 msgid "Error parsing {0}: {1}"
 msgstr ""
 
-#: mg/constructor/design.py:292
+#: mg/constructor/design.py:293
 msgid "New design"
 msgstr ""
 
-#: mg/constructor/design.py:293
-msgid "Index page design"
+#: mg/constructor/design.py:295
+msgid "Renaming"
 msgstr ""
 
 #: mg/constructor/design.py:296
+msgid "Index page design"
+msgstr ""
+
+#: mg/constructor/design.py:299
 msgid "Index page"
 msgstr ""
 
-#: mg/constructor/design.py:303
+#: mg/constructor/design.py:306
 msgid "Index page design package must contain at least 1 HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:314
+#: mg/constructor/design.py:318
 msgid "Design"
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid "Preview feature"
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid ""
 "Use \"preview\" feature to check your design before installing it to the "
 "project. Then press \"Reload\" several times to check design on arbitrary "
 "data."
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid "Multiple browsers"
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid "Check your design in the most popular browsers."
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid "google///browser statistics"
 msgstr ""
 
-#: mg/constructor/design.py:318
+#: mg/constructor/design.py:322
 msgid "Find the most popular browsers"
 msgstr ""
 
-#: mg/constructor/design.py:343
-msgid "Upload new design"
-msgstr ""
-
-#: mg/constructor/design.py:344
-msgid "Uploaded"
-msgstr ""
-
-#: mg/constructor/design.py:346
-msgid "Preview"
+#: mg/constructor/design.py:334
+msgid "Untitled"
 msgstr ""
 
 #: mg/constructor/design.py:348
-msgid "Installation"
+msgid "Upload new design"
 msgstr ""
 
 #: mg/constructor/design.py:349
-msgid "preview"
+msgid "Uploaded"
 msgstr ""
 
 #: mg/constructor/design.py:351
-msgid "install to the project"
-msgstr ""
-
-#: mg/constructor/design.py:352
-msgid "Do you really want to delete this design?"
+msgid "Preview"
 msgstr ""
 
 #: mg/constructor/design.py:353
+msgid "Installation"
+msgstr ""
+
+#: mg/constructor/design.py:354
+msgid "preview"
+msgstr ""
+
+#: mg/constructor/design.py:356
+msgid "install to the project"
+msgstr ""
+
+#: mg/constructor/design.py:357
+msgid "Do you really want to delete this design?"
+msgstr ""
+
+#: mg/constructor/design.py:358
 msgid "Do you really want to install this design?"
 msgstr ""
 
-#: mg/constructor/design.py:362
+#: mg/constructor/design.py:360
+msgid "download zip"
+msgstr ""
+
+#: mg/constructor/design.py:361
+msgid "rename"
+msgstr ""
+
+#: mg/constructor/design.py:369
 msgid "Provide a ZIP archive"
 msgstr ""
 
-#: mg/constructor/design.py:370
+#: mg/constructor/design.py:377
 msgid "This is not a ZIP file"
 msgstr ""
 
-#: mg/constructor/design.py:372
+#: mg/constructor/design.py:379
 msgid "ZIP64 is not supported"
 msgstr ""
 
-#: mg/constructor/design.py:379
+#: mg/constructor/design.py:386
 msgid "Zipped design package"
 msgstr ""
 
-#: mg/constructor/design.py:380
+#: mg/constructor/design.py:387 mg/constructor/design.py:419
 msgid "Design title"
+msgstr ""
+
+#: mg/constructor/design.py:422
+msgid "Rename"
 msgstr ""
 
 #: mg/constructor/logo.py:45
