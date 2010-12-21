@@ -47,6 +47,10 @@ class HookGroupModulesList(CassandraObjectList):
         kwargs["cls"] = HookGroupModules
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DownloadError(Exception):
+    "Failed Module().download()"
+    pass
+
 class Hooks(object):
     """
     This class is a hook manager for the application. It keeps list of loaded handlers
@@ -439,9 +443,16 @@ class Module(object):
         return self.stemmer().stemWord(word)
 
     def httpfile(self, url):
-        "Downloads given URL and returns is wrapped in cStringIO"
-        if url is None:
+        "Downloads given URL and returns it wrapped in StringIO"
+        try:
+            return cStringIO.StringIO(self.download(url))
+        except DownloadError:
             return cStringIO.StringIO("")
+
+    def download(self, url):
+        "Downloads given URL and returns it"
+        if url is None:
+            raise DownloadError()
         if type(url) == unicode:
             url = url.encode("utf-8")
         url_obj = urlparse.urlparse(url, "http", False)
@@ -461,9 +472,9 @@ class Module(object):
                     request = cnn.get(url_obj.path + url_obj.query)
                     response = cnn.perform(request)
                     if response.status_code != 200:
-                        self.error("Error download %s: %s %s", url, response.status_code, response.status)
+                        self.error("Error downloading %s: %s %s", url, response.status_code, response.status)
                         return ""
-                    return cStringIO.StringIO(response.body)
+                    return response.body
             except TimeoutError:
                 self.error("Timeout downloading %s", url)
             except (KeyboardInterrupt, SystemExit, TaskletExit):
@@ -477,7 +488,7 @@ class Module(object):
                     raise
                 except:
                     pass
-        return cStringIO.StringIO("")
+        raise DownloadError()
 
 class ModuleException(Exception):
     "Error during module loading"

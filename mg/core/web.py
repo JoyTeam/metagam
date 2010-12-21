@@ -532,7 +532,7 @@ class Web(Module):
             data = mc.get(mcid)
             if data is not None:
                 req.cache = False
-                self.call("web.response", data, {})
+                self.call("web.response", data)
             req.web_cache_lock = self.lock([uri], patience=random.randrange(15, 25))
             req.web_cache_lock.__enter__()
             ver = mc.get(mcid_ver)
@@ -540,7 +540,7 @@ class Web(Module):
             data = mc.get(mcid)
             if data is not None:
                 req.cache = False
-                self.call("web.response", data, {})
+                self.call("web.response", data)
             req.web_cache_mcid = mcid
 
     def web_cache_invalidate(self, uri):
@@ -550,7 +550,7 @@ class Web(Module):
 
     def web_response(self, content, content_type=None):
         if content_type is not None:
-            self.content_type = content_type
+            self.req().content_type = content_type
         raise WebResponse(self.req().response(content))
 
     def web_response_global(self, content, vars):

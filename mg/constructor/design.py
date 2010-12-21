@@ -20,6 +20,9 @@ permitted_extensions = {
 re_valid_filename = re.compile(r'^(?:.*[/\\]|)([a-z0-9_\-]+)\.([a-z0-9]+)$')
 re_proto = re.compile(r'^[a-z]+://')
 re_slash = re.compile(r'^/')
+re_valid_decl = re.compile(r'^DOCTYPE (?:html|HTML)')
+re_make_filename = re.compile(r'\W+', re.UNICODE)
+re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -42,11 +45,15 @@ class DesignList(CassandraObjectList):
         kwargs["cls"] = Design
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class DesignHTMLParser(HTMLParser.HTMLParser):
-    def __init__(self):
+class DesignHTMLParser(HTMLParser.HTMLParser, Module):
+    "HTML parser validating HTML file received from the user and modifying it adding [%design_root%] prefixes"
+    def __init__(self, app):
         HTMLParser.HTMLParser.__init__(self)
+        Module.__init__(self, app, "mg.constructor.design.DesignHTMLParser")
         self.output = ""
         self.tagstack = []
+        self.decl_ok = False
+        self.content_type_ok = False
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
@@ -60,7 +67,81 @@ class DesignHTMLParser(HTMLParser.HTMLParser):
     def handle_endtag(self, tag):
         expected = self.tagstack.pop() if len(self.tagstack) else None
         if expected != tag:
-            raise HTMLParser.HTMLParseError(self._("Closing tag </{0}> doesn't match opening tag <{1}>").format(tag, expected), (self.lineno, self.offset))
+            raise HTMLParser.HTMLParseError(self._("Closing tag '{0}' doesn't match opening tag '{1}'").format(tag, expected), (self.lineno, self.offset))
+        self.output += "</%s>" % tag
+
+    def handle_startendtag(self, tag, attrs):
+        self.process_tag(tag, attrs)
+        html = "<%s" % tag
+        for key, val in attrs:
+            html += ' %s="%s"' % (key, htmlescape(val))
+        html += " />";
+        self.output += html
+
+    def handle_data(self, data):
+        self.output += data
+
+    def handle_charref(self, name):
+        self.output += "&#%s;" % name
+
+    def handle_entityref(self, name):
+        self.output += "&%s;" % name
+
+    def handle_comment(self, data):
+        self.output += "<!--%s-->" % data
+
+    def handle_decl(self, decl):
+        self.output += "<!%s>" % decl
+        if not re_valid_decl.match(decl):
+            raise HTMLParser.HTMLParseError(self._("Valid HTML doctype required"), (self.lineno, self.offset))
+        self.decl_ok = True
+
+    def close(self):
+        HTMLParser.HTMLParser.close(self)
+        if len(self.tagstack):
+            raise HTMLParser.HTMLParseError(self._("Not closed tags at the end of file: %s") % (", ".join(self.tagstack)))
+        if not self.decl_ok:
+            raise HTMLParser.HTMLParseError(self._("DOCTYPE not specified"))
+        if not self.content_type_ok:
+            raise HTMLParser.HTMLParseError(self._('Content-type not specified. Add <meta http-equiv="Content-type" content="text/html; charset=utf-8" /> into the head tag'))
+
+    def process_tag(self, tag, attrs):
+        if tag == "img" or tag == "link":
+            attrs_dict = dict(attrs)
+            att = "href" if tag == "link" else "src"
+            href = attrs_dict.get(att)
+            if not href:
+                raise HTMLParser.HTMLParseError(self._("Mandatory attribute '{0}' missing in tag '{1}'").format(att, tag), (self.lineno, self.offset))
+            if not re_proto.match(href) and not re_slash.match(href):
+                for i in range(0, len(attrs)):
+                    if attrs[i][0] == att:
+                        attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
+        elif tag == "meta":
+            attrs_dict = dict(attrs)
+            key = attrs_dict.get("http-equiv")
+            val = attrs_dict.get("content")
+            if key is not None and val is not None:
+                if key.lower() == "content-type":
+                    if val.lower() != "text/html; charset=utf-8":
+                        raise HTMLParser.HTMLParseError(self._('Invalid character set. Specify: content="text/html; charset=utf-8"'), (self.lineno, self.offset))
+                    self.content_type_ok = True
+
+class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
+    "HTML parser modifying HTML files before sending it to the user by removing [%design_root%] prefixes"
+    def __init__(self, app):
+        HTMLParser.HTMLParser.__init__(self)
+        Module.__init__(self, app, "mg.constructor.design.DesignHTMLUnparser")
+        self.output = ""
+
+    def handle_starttag(self, tag, attrs):
+        self.process_tag(tag, attrs)
+        html = "<%s" % tag
+        for key, val in attrs:
+            html += ' %s="%s"' % (key, htmlescape(value))
+        html += ">";
+        self.output += html
+
+    def handle_endtag(self, tag):
         self.output += "</%s>" % tag
 
     def handle_startendtag(self, tag, attrs):
@@ -88,20 +169,19 @@ class DesignHTMLParser(HTMLParser.HTMLParser):
 
     def close(self):
         HTMLParser.HTMLParser.close(self)
-        if len(self.tagstack):
-            raise HTMLParser.HTMLParseError(self._("Not closed tags at the end of file: %s") % (", ".join(self.tagstack)))
 
     def process_tag(self, tag, attrs):
         if tag == "img" or tag == "link":
             attrs_dict = dict(attrs)
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
-            if not href:
-                raise HTMLParser.HTMLParseError(self._("Mandatory attribute '{0}' missing in tag '{1}'").format(att, tag), (self.lineno, self.offset))
-            if not re_proto.match(href) and not re_slash.match(href):
-                for i in range(0, len(attrs)):
-                    if attrs[i][0] == att:
-                        attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
+            if href:
+                m = re_design_root_prefix.match(href)
+                if m:
+                    href = m.group(1)
+                    for i in range(0, len(attrs)):
+                        if attrs[i][0] == att:
+                            attrs[i] = (att, href)
 
 class DesignZip(Module):
     "Uploaded ZIP file with a design package"
@@ -157,18 +237,22 @@ class DesignZip(Module):
             errors.append(self._("Design package must not contain more than 1 HTML file"))
         if len(css) > 1:
             errors.append(self._("Design package must not contain more than 1 CSS file"))
-        elif len(css) == 0:
-            errors.append(self._("Design package must contain at least 1 CSS file"))
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
                     data = self.zip.read(file["zipname"])
-                    print "parsing %s:\n===\n%s===" % (file["zipname"], data)
-                    parser = DesignHTMLParser()
-                    parser.feed(data)
-                    parser.close()
-                    print "result:\n===\n%s===" % parser.output
-                    file["data"] = parser.output
+                    try:
+                        parser = DesignHTMLParser(self.app())
+                        parser.feed(data)
+                        parser.close()
+                        file["data"] = parser.output
+                    except HTMLParser.HTMLParseError as e:
+                        msg = e.msg
+                        if e.lineno is not None:
+                            msg += self._(", at line %d") % e.lineno
+                        if e.offset is not None:
+                            msg += self._(", column %d") % (e.offset + 1)
+                        errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
         design = self.obj(Design)
         design.set("group", group)
         design.set("uploaded", self.now())
@@ -239,10 +323,20 @@ class DesignAdmin(Module):
                 lst.load(silent=True)
                 designs = []
                 for ent in lst:
+                    title = ent.get("title")
+                    if title is not None:
+                        if len(title) > 20:
+                            title = title[0:20]
+                        title = title.strip()
+                    if title is None or title == "":
+                        title = "untitled"
+                    title = "%s-%s" % (title, ent.get("uploaded"))
+                    filename = re_make_filename.sub('-', title.lower()) + ".zip"
                     designs.append({
                         "uuid": ent.uuid,
                         "uploaded": ent.get("uploaded"),
                         "title": htmlescape(ent.get("title")),
+                        "filename": htmlescape(filename)
                     })
                 vars = {
                     "group": group,
@@ -305,4 +399,29 @@ class DesignAdmin(Module):
                         pass
                     else:
                         self.call("%s.response" % group, design, "Some response", {})
+            m = re.match(r'^download/([a-f0-9]{32})/.+\.zip$', req.args)
+            if m:
+                uuid = m.group(1)
+                try:
+                    design = self.obj(Design, uuid)
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    output = cStringIO.StringIO()
+                    zip = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
+                    for ent in design.get("files"):
+                        try:
+                            uri = design.get("uri") + "/" + ent.get("filename")
+                            data = self.download(uri)
+                            if ent.get("content-type") == "text/html":
+                                unparser = DesignHTMLUnparser(self.app())
+                                unparser.feed(data)
+                                unparser.close()
+                                data = unparser.output
+                            zip.writestr(ent.get("filename"), data)
+                        except DownloadError:
+                            pass
+                    zip.close()
+                    self.call("web.response", output.getvalue(), "application/zip")
+
             self.call("web.not_found")
