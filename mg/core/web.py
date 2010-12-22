@@ -1,7 +1,7 @@
 from concurrence import Tasklet, http
 from concurrence.http import server
 from mg import *
-from template import Template
+from template import Template, TemplateException
 from template.provider import Provider
 import urlparse
 import cgi

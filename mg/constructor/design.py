@@ -61,7 +61,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.process_tag(tag, attrs)
         html = "<%s" % tag
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(value))
+            html += ' %s="%s"' % (key, htmlescape(val))
         html += ">";
         self.output += html
         self.tagstack.append(tag)
@@ -108,13 +108,11 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
             raise HTMLParser.HTMLParseError(self._('Content-type not specified. Add <meta http-equiv="Content-type" content="text/html; charset=utf-8" /> into the head tag'))
 
     def process_tag(self, tag, attrs):
-        if tag == "img" or tag == "link":
+        if tag == "img" or tag == "link" or tag == "input":
             attrs_dict = dict(attrs)
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
-            if not href:
-                raise HTMLParser.HTMLParseError(self._("Mandatory attribute '{0}' missing in tag '{1}'").format(att, tag), (self.lineno, self.offset))
-            if not re_proto.match(href) and not re_slash.match(href):
+            if href and not re_proto.match(href) and not re_slash.match(href):
                 for i in range(0, len(attrs)):
                     if attrs[i][0] == att:
                         attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
@@ -139,7 +137,7 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
         self.process_tag(tag, attrs)
         html = "<%s" % tag
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(value))
+            html += ' %s="%s"' % (key, htmlescape(val))
         html += ">";
         self.output += html
 
@@ -247,7 +245,14 @@ class DesignZip(Module):
                         parser = DesignHTMLParser(self.app())
                         parser.feed(data)
                         parser.close()
-                        file["data"] = parser.output
+                        vars = {}
+                        self.call("admin-%s.preview-data" % group, vars)
+                        try:
+                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
+                        except TemplateException as e:
+                            errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
+                        else:
+                            file["data"] = parser.output
                     except HTMLParser.HTMLParseError as e:
                         msg = e.msg
                         if e.lineno is not None:
@@ -274,12 +279,6 @@ class DesignZip(Module):
 class IndexPage(Module):
     def register(self):
         Module.register(self)
-        self.rhook("indexpage.response", self.response)
-
-    def response(self, design, content, vars):
-        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), design.get("html")))
-        vars["design_root"] = design.get("uri")
-        self.call("web.response_global", content, vars)
 
 class IndexPageAdmin(Module):
     def register(self):
@@ -288,6 +287,7 @@ class IndexPageAdmin(Module):
         self.rhook("ext-admin-indexpage.design", self.ext_design)
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
         self.rhook("admin-indexpage.validate", self.validate)
+        self.rhook("admin-indexpage.preview-data", self.preview_data)
 
     def headmenu_design(self, args):
         if args == "new":
@@ -305,6 +305,89 @@ class IndexPageAdmin(Module):
     def validate(self, design, errors):
         if not design.get("html"):
             errors.append(self._("Index page design package must contain at least 1 HTML file"))
+
+    def preview_data(self, vars):
+        vars["game"] = {
+            "title_full": random.choice([self._("Some title"), self._("Very cool game with very long title")]),
+            "title_short": random.choice([self._("Some title"), self._("Very cool game")]),
+            "description": random.choice([self._("<p>This game is a very good sample of games with very long descriptions. In this game you become a strong warrior, a mighty wizard, a rich merchant or anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh vehicula porttitor. Donec vitae elit tellus.</p>"), self._("This game has a very short description. It was written in hurry by a young game designer.")])
+        }
+        if random.random() < 0.8:
+            vars["news"] = []
+            for i in range(0, random.randrange(1, 10)):
+                vars["news"].append({
+                    "created": "%02d.%02d.%04d" % (random.randrange(1, 29), random.randrange(1, 13), random.randrange(2000, 2011)),
+                    "subject": random.choice([self._("Breaking news"), self._("New updates related to the abandoned dungeon"), self._("Eternal shadow returns"), self._("Epic war event")]),
+                    "announce": random.choice([self._("South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."), self._("Europe travel chaos starts to clear"), self._('Even with legal protection, women victims of rape still face a social stigma that is hard to overcome. He said: "Women are still afraid to complain if they are victims of rape because there is an attitude from the society."</p><p>Coulibaly added: "There is no law to define rape but there will be one. And work is being done with police officers and judges ... to let them understand the problem is not the woman, but the perpetrator of the rape."')]),
+                    "more": "#"
+                })
+            vars["news"][-1]["lst"] = True
+        vars["htmlmeta"] = {
+            "description": self._("This is a sample meta description"),
+            "keywords": self._("online games, keyword 1, keyword 2"),
+        }
+        vars["year"] = "2099"
+        vars["copyright"] = random.choice([self._("Joy Team, Author"), self._("Joy Team, Very Long Author Name Even So Long")])
+        vars["links"] = random.sample([
+            {
+                "href": "#",
+                "title": self._("Enter invisible"),
+            },
+            {
+                "href": "#",
+                "title": self._("Library"),
+            },
+            {
+                "href": "#",
+                "title": self._("World history"),
+            },
+            {
+                "href": "#",
+                "title": self._("Registration"),
+            },
+            {
+                "href": "/forum",
+                "title": self._("Game forum"),
+                "target": "_blank",
+            },
+            {
+                "href": "/screenshots",
+                "title": self._("Screenshots"),
+                "target": "_blank",
+            },
+            {
+                "href": "#",
+                "title": self._("Secure entrance"),
+            },
+        ], random.randrange(1, 8))
+        vars["links"][-1]["lst"] = True
+        if random.random() < 0.8:
+            vars["ratings"] = []
+            for i in range(0, random.randrange(1, 6)):
+                lst = []
+                vars["ratings"].append({
+                    "href": "#",
+                    "title": random.choice([self._("The biggest glory"), self._("The richest"), self._("Top clan"), self._("The best dragon hunter")]),
+                    "list": lst,
+                })
+                for j in range(0, random.randrange(1, 20)):
+                    lst.append({
+                        "name": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                        "value": random.randrange(1, random.choice([10, 100, 1000, 10000, 100000, 1000000, 10000000])),
+                        "class": "rating-even" if j % 2 else "rating-odd",
+                    })
+                    lst[-1]["lst"] = True
+            vars["ratings"][-1]["lst"] = True
+
+class DesignMod(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("design.response", self.response)
+
+    def response(self, design, content, vars):
+        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), design.get("html")))
+        vars["design_root"] = design.get("uri")
+        self.call("web.response_global", content, vars)
 
 class DesignAdmin(Module):
     def register(self):
@@ -431,7 +514,9 @@ class DesignAdmin(Module):
                     except ObjectNotFoundException:
                         pass
                     else:
-                        self.call("%s.response" % group, design, "Some response", {})
+                        vars = {}
+                        self.call("admin-%s.preview-data" % group, vars)
+                        self.call("design.response", design, "", vars)
             m = re.match(r'^download/([a-f0-9]{32})/.+\.zip$', req.args)
             if m:
                 uuid = m.group(1)
