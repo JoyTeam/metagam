@@ -25,7 +25,7 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
-            "mg.constructor.domains.Domains", "mg.game.money.TwoPay"])
+            "mg.constructor.domains.Domains", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)

@@ -607,8 +607,7 @@ class Forum(Module):
                 vars["menu_left"] = menu_left
             if len(menu_right):
                 vars["menu_right"] = menu_right
-        vars["forum_content"] = content
-        self.call("web.response_layout", "socio/layout_forum.html", vars)
+        self.call("web.response_global", content, vars)
 
     def response_template(self, template, vars):
         self.call("forum.response", self.call("web.parse_template", template, vars), vars)
@@ -671,19 +670,13 @@ class Forum(Module):
                 cat["unread"] = True
             entries.append({"category": cat})
         vars = {
-            "title": self._("Forum categories"),
             "categories": entries,
-            "topics": self._("Topics"),
-            "replies": self._("Replies"),
-            "unread": self._("Unread"),
-            "last_message": self._("Last message"),
-            "by": self._("by"),
-            "ForumCategories": self._("Forum categories"),
             "menu": [
                 { "html": self._("Forum categories") },
                 { "href": "/forum/subscribed", "html": self._("Subscribed topics") },
             ],
         }
+        self.call("forum.vars-index", vars)
         self.call("forum.response_template", "socio/index.html", vars)
 
     def category(self, id):
@@ -842,13 +835,7 @@ class Forum(Module):
         vars = {
             "title": cat["title"],
             "category": cat,
-            "new_topic": self._("New topic"),
             "topics": topics if len(topics) else None,
-            "author": self._("Author"),
-            "replies": self._("Replies"),
-            "last_reply": self._("Last reply"),
-            "by": self._("by"),
-            "to_page": self._("Pages"),
             "menu": menu,
         }
         if pages > 1:
@@ -866,6 +853,7 @@ class Forum(Module):
                     pages_list.append({"entry": {"text": "..."}})
                 last_show = show
             vars["pages"] = pages_list
+        self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
 
     def load_settings(self, list, signatures, avatars):
@@ -894,6 +882,14 @@ class Forum(Module):
             menu = []
             menu.append({"title": self._("Profile"), "href": "/forum/user/%s" % topic.get("author")})
             topic["author_menu"] = menu
+            pages = (topic["posts"] - 1) / posts_per_page + 1
+            if pages > 1:
+                pages_list = []
+                for i in range(1, pages + 1):
+                    if len(pages_list):
+                        pages_list.append({"delim": True})
+                    pages_list.append({"entry": {"text": i, "a": {"href": "/forum/topic/%s?page=%d" % (topic["uuid"], i)}}})
+                topic["pages"] = pages_list
         req = self.req()
         user_uuid = req.session().semi_user()
         if user_uuid is not None:
@@ -1217,16 +1213,9 @@ class Forum(Module):
             "topic": topic_data,
             "category": cat,
             "title": topic_data.get("subject_html"),
-            "to_page": self._("Pages"),
             "show_topic": page <= 1,
-            "topic_started": self._("topic started"),
-            "all_posts": self._("All posts"),
-            "search_all_posts": self._("Search for all posts of this member"),
-            "to_the_top": self._("to the top"),
-            "written_at": self._("written at"),
             "posts": posts,
             "menu": menu,
-            "Tags": self._("Tags"),
         }
         if req.ok() or (self.may_write(cat, rules=rules, roles=roles) and (page == pages)):
             form.texteditor(None, "content", content)
@@ -1247,6 +1236,7 @@ class Forum(Module):
                     pages_list.append({"entry": {"text": "..."}})
                 last_show = show
             vars["pages"] = pages_list
+        self.call("forum.vars-topic", vars)
         self.call("forum.response_template", "socio/topic.html", vars)
 
     def lastread(self, user_uuid, topic_uuid, category_uuid):
@@ -1956,6 +1946,7 @@ class Forum(Module):
                 { "html": cgi.escape(tag) },
             ],
         }
+        self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
 
     def word_extractor(self, text):
@@ -2109,10 +2100,6 @@ class Forum(Module):
             topics[-1]["lst"] = True
         vars = {
             "title": self._("Subscribed topics"),
-            "author": self._("Author"),
-            "replies": self._("Replies"),
-            "last_reply": self._("Last reply"),
-            "by": self._("by"),
             "topics": topics if len(topics) else None,
             "message": None if len(topics) else self._("You have not subscribed to any topic"),
             "menu": [
@@ -2120,6 +2107,7 @@ class Forum(Module):
                 { "html": self._("Subscribed topics") },
             ],
         }
+        self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
 
     def ext_tags(self):
@@ -2128,10 +2116,10 @@ class Forum(Module):
         tags = [tag.column.value for tag in tags]
         vars = {
             "tags": tags,
-            "title": self._("Forum tags"),
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "html": self._("Tags") },
             ],
         }
+        self.call("forum.vars-tags", vars)
         self.call("forum.response_template", "socio/tags.html", vars)

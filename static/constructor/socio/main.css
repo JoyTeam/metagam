@@ -19,7 +19,7 @@ h1 { color: #0078ac; font-size: 21px; font-weight: bold; }
 #socio-topmenu img { vertical-align: middle }
 #socio-topmenu a:link, #socio-topmenu a:visited { color: #1078a0 }
 #socio-topmenu a:hover, #socio-topmenu a:active { color: #3088d0 }
-#socio-menu { width: 100%; color: #dd6419; }
+#socio-menu { width: 100%; color: #dd6419; margin-bottom: 10px }
 #socio-menu a:link, #socio-menu a:visited { color: #dd6419 }
 #socio-menu a:hover, #socio-menu a:active { color: #ed8449 }
 #socio-menu-left { padding: 0px 10px 5px 0px; }
@@ -33,10 +33,11 @@ h1 { color: #0078ac; font-size: 21px; font-weight: bold; }
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
 .socio-index-title { font-size: 15px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
 .socio-catlast { text-align: left; padding: 0px 4px 7px 30px }
-td.socio-catname { padding: 9px 4px 9px 0px; font-size: 12px; }
+.socio-counter { width: 8% }
+td.socio-catname { padding: 9px 4px 9px 0px; font-size: 12px; width: 50% }
 td.socio-catname a { font-size: 14px }
-td.socio-catname a:link, .socio-catname a:visited { color: #026691 }
-td.socio-catname a:hover, .socio-catname a:active { color: #0386b1 }
+td.socio-catname a:link, td.socio-catname a:visited { color: #026691 }
+td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-last { padding-left: 30px; font-size: 12px }
 .socio-last a:link, .socio-last a:visited { color: #026691 }
 .socio-last a:hover, .socio-last a:active { color: #0386b1 }
@@ -57,6 +58,8 @@ td.socio-catname a:hover, .socio-catname a:active { color: #0386b1 }
 .socio-pages-list { color: #dd6419 }
 .socio-pages-list a:link, .socio-pages-list a:visited { color: #dd6419 }
 .socio-pages-list a:hover, .socio-pages-list a:active { color: #ed8439 }
+.socio-topic-created { color: #535c5f; font-size: 11px }
+.socio-topiclist-pages { font-size: 11px }
 /* TOPIC */
 .socio-mark { vertical-align: middle }
 #socio-topic-head { width: 100% }

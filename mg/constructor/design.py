@@ -14,13 +14,15 @@ permitted_extensions = {
     "swf": "application/x-shockwave-flash",
     "flv": "video/x-flv",
     "css": "text/css",
-    "html": "text/html"
+    "html": "text/html",
+    "js": "text/javascript"
 }
 
 re_valid_filename = re.compile(r'^(?:.*[/\\]|)([a-z0-9_\-]+)\.([a-z0-9]+)$')
 re_proto = re.compile(r'^[a-z]+://')
 re_slash = re.compile(r'^/')
-re_valid_decl = re.compile(r'^DOCTYPE (?:html|HTML)')
+re_template = re.compile(r'\[%')
+re_valid_decl = re.compile(r'^DOCTYPE (?:html|HTML).*XHTML')
 re_make_filename = re.compile(r'\W+', re.UNICODE)
 re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
 re_rename = re.compile('^rename\/[a-f0-9]{32}$')
@@ -95,7 +97,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     def handle_decl(self, decl):
         self.output += "<!%s>" % decl
         if not re_valid_decl.match(decl):
-            raise HTMLParser.HTMLParseError(self._("Valid HTML doctype required"), (self.lineno, self.offset))
+            raise HTMLParser.HTMLParseError(self._("Valid XHTML doctype required"), (self.lineno, self.offset))
         self.decl_ok = True
 
     def close(self):
@@ -108,11 +110,11 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
             raise HTMLParser.HTMLParseError(self._('Content-type not specified. Add <meta http-equiv="Content-type" content="text/html; charset=utf-8" /> into the head tag'))
 
     def process_tag(self, tag, attrs):
-        if tag == "img" or tag == "link" or tag == "input":
+        if tag == "img" or tag == "link" or tag == "input" or tag == "script":
             attrs_dict = dict(attrs)
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
-            if href and not re_proto.match(href) and not re_slash.match(href):
+            if href and not re_proto.match(href) and not re_slash.match(href) and not re_template.search(href):
                 for i in range(0, len(attrs)):
                     if attrs[i][0] == att:
                         attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
@@ -171,7 +173,7 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
         HTMLParser.HTMLParser.close(self)
 
     def process_tag(self, tag, attrs):
-        if tag == "img" or tag == "link":
+        if tag == "img" or tag == "link" or tag == "input" or tag == "script":
             attrs_dict = dict(attrs)
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
@@ -204,7 +206,7 @@ class DesignZip(Module):
         html = []
         css = []
         upload_list = []
-        files = []
+        files = {}
         for ent in self.zip.infolist():
             zip_filename = ent.filename.decode("utf-8")
             count += 1
@@ -227,16 +229,8 @@ class DesignZip(Module):
             if ext == "css":
                 css.append(filename)
             upload_list.append({"zipname": zip_filename, "filename": filename, "content-type": content_type})
-            files.append({"filename": filename, "content-type": content_type})
-        if count >= max_design_files:
-            errors.append(self._("Design package couldn't contain more than %d files") % max_design_files)
-        if size >= max_design_size:
-            errors.append(self._("Design package contents couldn't be more than %d bytes") % max_design_size)
+            files[filename] = {"content-type": content_type}
         errors.extend(list_errors)
-        if len(html) > 1:
-            errors.append(self._("Design package must not contain more than 1 HTML file"))
-        if len(css) > 1:
-            errors.append(self._("Design package must not contain more than 1 CSS file"))
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
@@ -265,9 +259,9 @@ class DesignZip(Module):
         design.set("uploaded", self.now())
         design.set("files", files)
         if len(html):
-            design.set("html", html[0])
+            design.set("html", html)
         if len(css):
-            design.set("css", css[0])
+            design.set("css", css)
         # 3rd party validation
         self.call("admin-%s.validate" % group, design, errors)
         if len(errors):
@@ -276,118 +270,23 @@ class DesignZip(Module):
         design.set("uri", uri)
         return design
         
-class IndexPage(Module):
-    def register(self):
-        Module.register(self)
-
-class IndexPageAdmin(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-indexpage.design", self.ext_design)
-        self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
-        self.rhook("admin-indexpage.validate", self.validate)
-        self.rhook("admin-indexpage.preview-data", self.preview_data)
-
-    def headmenu_design(self, args):
-        if args == "new":
-            return [self._("New design"), "indexpage/design"]
-        elif re_rename.match(args):
-            return [self._("Renaming"), "indexpage/design"]
-        return self._("Index page design")
-
-    def menu_design_index(self, menu):
-        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True})
-
-    def ext_design(self):
-        self.call("design-admin.editor", "indexpage")
-
-    def validate(self, design, errors):
-        if not design.get("html"):
-            errors.append(self._("Index page design package must contain at least 1 HTML file"))
-
-    def preview_data(self, vars):
-        vars["game"] = {
-            "title_full": random.choice([self._("Some title"), self._("Very cool game with very long title")]),
-            "title_short": random.choice([self._("Some title"), self._("Very cool game")]),
-            "description": random.choice([self._("<p>This game is a very good sample of games with very long descriptions. In this game you become a strong warrior, a mighty wizard, a rich merchant or anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh vehicula porttitor. Donec vitae elit tellus.</p>"), self._("This game has a very short description. It was written in hurry by a young game designer.")])
-        }
-        if random.random() < 0.8:
-            vars["news"] = []
-            for i in range(0, random.randrange(1, 10)):
-                vars["news"].append({
-                    "created": "%02d.%02d.%04d" % (random.randrange(1, 29), random.randrange(1, 13), random.randrange(2000, 2011)),
-                    "subject": random.choice([self._("Breaking news"), self._("New updates related to the abandoned dungeon"), self._("Eternal shadow returns"), self._("Epic war event")]),
-                    "announce": random.choice([self._("South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."), self._("Europe travel chaos starts to clear"), self._('Even with legal protection, women victims of rape still face a social stigma that is hard to overcome. He said: "Women are still afraid to complain if they are victims of rape because there is an attitude from the society."</p><p>Coulibaly added: "There is no law to define rape but there will be one. And work is being done with police officers and judges ... to let them understand the problem is not the woman, but the perpetrator of the rape."')]),
-                    "more": "#"
-                })
-            vars["news"][-1]["lst"] = True
-        vars["htmlmeta"] = {
-            "description": self._("This is a sample meta description"),
-            "keywords": self._("online games, keyword 1, keyword 2"),
-        }
-        vars["year"] = "2099"
-        vars["copyright"] = random.choice([self._("Joy Team, Author"), self._("Joy Team, Very Long Author Name Even So Long")])
-        vars["links"] = random.sample([
-            {
-                "href": "#",
-                "title": self._("Enter invisible"),
-            },
-            {
-                "href": "#",
-                "title": self._("Library"),
-            },
-            {
-                "href": "#",
-                "title": self._("World history"),
-            },
-            {
-                "href": "#",
-                "title": self._("Registration"),
-            },
-            {
-                "href": "/forum",
-                "title": self._("Game forum"),
-                "target": "_blank",
-            },
-            {
-                "href": "/screenshots",
-                "title": self._("Screenshots"),
-                "target": "_blank",
-            },
-            {
-                "href": "#",
-                "title": self._("Secure entrance"),
-            },
-        ], random.randrange(1, 8))
-        vars["links"][-1]["lst"] = True
-        if random.random() < 0.8:
-            vars["ratings"] = []
-            for i in range(0, random.randrange(1, 6)):
-                lst = []
-                vars["ratings"].append({
-                    "href": "#",
-                    "title": random.choice([self._("The biggest glory"), self._("The richest"), self._("Top clan"), self._("The best dragon hunter")]),
-                    "list": lst,
-                })
-                for j in range(0, random.randrange(1, 20)):
-                    lst.append({
-                        "name": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
-                        "value": random.randrange(1, random.choice([10, 100, 1000, 10000, 100000, 1000000, 10000000])),
-                        "class": "rating-even" if j % 2 else "rating-odd",
-                    })
-                    lst[-1]["lst"] = True
-            vars["ratings"][-1]["lst"] = True
-
 class DesignMod(Module):
     def register(self):
         Module.register(self)
         self.rhook("design.response", self.response)
 
-    def response(self, design, content, vars):
-        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), design.get("html")))
+    def response(self, design, template, content, vars):
+        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), template))
         vars["design_root"] = design.get("uri")
         self.call("web.response_global", content, vars)
+
+    def child_modules(self):
+        return [
+            "mg.constructor.design.DesignAdmin",
+            "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
+            "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
+            "mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"
+        ]
 
 class DesignAdmin(Module):
     def register(self):
@@ -407,7 +306,7 @@ class DesignAdmin(Module):
         with self.lock(["DesignAdmin-%s" % group]):
             req = self.req()
             if req.args == "":
-                lst = self.objlist(DesignList, query_index="all")
+                lst = self.objlist(DesignList, query_index="group", query_equal=group)
                 lst.load(silent=True)
                 designs = []
                 for ent in lst:
@@ -421,11 +320,16 @@ class DesignAdmin(Module):
                         filename = filename[0:20]
                     filename += "-%s" % ent.get("uploaded")
                     filename = re_make_filename.sub('-', filename.lower()) + ".zip"
+                    previews = []
+                    self.call("admin-%s.previews" % group, previews)
+                    if not len(previews):
+                        previews.append({"filename": "index.html", "title": self._("preview")})
                     designs.append({
                         "uuid": ent.uuid,
                         "uploaded": re_remove_time.sub("", ent.get("uploaded")),
                         "title": htmlescape(title),
-                        "filename": htmlescape(filename)
+                        "filename": htmlescape(filename),
+                        "previews": previews
                     })
                 vars = {
                     "group": group,
@@ -508,15 +412,19 @@ class DesignAdmin(Module):
                         self.call("admin.form", fields=fields, buttons=buttons)
                 elif cmd == "install":
                     pass
-                elif cmd == "preview":
-                    try:
-                        design = self.obj(Design, uuid)
-                    except ObjectNotFoundException:
-                        pass
-                    else:
+            m = re.match(r'^preview/([a-f0-9]{32})/([a-z]+\.html)$', req.args)
+            if m:
+                uuid, template = m.group(1, 2)
+                try:
+                    design = self.obj(Design, uuid)
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    self.call("admin-%s.preview" % group, design, template.encode("utf-8"))
+                    if design.get("files").get(template, None):
                         vars = {}
                         self.call("admin-%s.preview-data" % group, vars)
-                        self.call("design.response", design, "", vars)
+                        self.call("design.response", design, template, "", vars)
             m = re.match(r'^download/([a-f0-9]{32})/.+\.zip$', req.args)
             if m:
                 uuid = m.group(1)
@@ -527,9 +435,9 @@ class DesignAdmin(Module):
                 else:
                     output = cStringIO.StringIO()
                     zip = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
-                    for ent in design.get("files"):
+                    for filename, ent in design.get("files").items():
                         try:
-                            uri = design.get("uri") + "/" + ent.get("filename")
+                            uri = design.get("uri") + "/" + filename
                             data = self.download(uri)
                             if ent.get("content-type") == "text/html":
                                 unparser = DesignHTMLUnparser(self.app())
@@ -546,6 +454,365 @@ class DesignAdmin(Module):
 
     def delete(self, design):
         uri = design.get("uri")
-        for ent in design.get("files"):
-            self.webdav_delete(uri + "/" + ent.get("filename"))
+        for filename, ent in design.get("files").items():
+            self.webdav_delete(uri + "/" + filename)
 
+class IndexPage(Module):
+    def register(self):
+        Module.register(self)
+
+class IndexPageAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("ext-admin-indexpage.design", self.ext_design)
+        self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
+        self.rhook("admin-indexpage.validate", self.validate)
+        self.rhook("admin-indexpage.preview-data", self.preview_data)
+
+    def headmenu_design(self, args):
+        if args == "new":
+            return [self._("New design"), "indexpage/design"]
+        elif re_rename.match(args):
+            return [self._("Renaming"), "indexpage/design"]
+        return self._("Index page design")
+
+    def menu_design_index(self, menu):
+        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True})
+
+    def ext_design(self):
+        self.call("design-admin.editor", "indexpage")
+
+    def validate(self, design, errors):
+        html = design.get("html")
+        if not html:
+            errors.append(self._("Index page design package must contain an HTML file"))
+        elif len(html) > 1:
+            errors.append(self._("Index page design package must not contain more than one HTML file"))
+        files = design.get("files")
+        if not files.get("index.html", None):
+            errors.append(self._("index.html must exist in the index page design package"))
+        if not design.get("css"):
+            errors.append(self._("Index page design package must contain a CSS file"))
+
+    def preview_data(self, vars):
+        vars["game"] = {
+            "title_full": random.choice([self._("Some title"), self._("Very cool game with very long title")]),
+            "title_short": random.choice([self._("Some title"), self._("Very cool game")]),
+            "description": random.choice([self._("<p>This game is a very good sample of games with very long descriptions. In this game you become a strong warrior, a mighty wizard, a rich merchant or anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh vehicula porttitor. Donec vitae elit tellus.</p>"), self._("This game has a very short description. It was written in hurry by a young game designer.")])
+        }
+        if random.random() < 0.8:
+            vars["news"] = []
+            for i in range(0, random.randrange(1, 10)):
+                vars["news"].append({
+                    "created": "%02d.%02d.%04d" % (random.randrange(1, 29), random.randrange(1, 13), random.randrange(2000, 2011)),
+                    "subject": random.choice([self._("Breaking news"), self._("New updates related to the abandoned dungeon"), self._("Eternal shadow returns"), self._("Epic war event")]),
+                    "announce": random.choice([self._("South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."), self._("Europe travel chaos starts to clear"), self._('Even with legal protection, women victims of rape still face a social stigma that is hard to overcome. He said: "Women are still afraid to complain if they are victims of rape because there is an attitude from the society."</p><p>Coulibaly added: "There is no law to define rape but there will be one. And work is being done with police officers and judges ... to let them understand the problem is not the woman, but the perpetrator of the rape."')]),
+                    "more": "#"
+                })
+            vars["news"][-1]["lst"] = True
+        vars["htmlmeta"] = {
+            "description": self._("This is a sample meta description"),
+            "keywords": self._("online games, keyword 1, keyword 2"),
+        }
+        vars["year"] = "2099"
+        vars["copyright"] = random.choice([self._("Joy Team, Author"), self._("Joy Team, Very Long Author Name Even So Long")])
+        vars["links"] = random.sample([
+            {
+                "href": "#",
+                "title": self._("Enter invisible"),
+            },
+            {
+                "href": "#",
+                "title": self._("Library"),
+            },
+            {
+                "href": "#",
+                "title": self._("World history"),
+            },
+            {
+                "href": "#",
+                "title": self._("Registration"),
+            },
+            {
+                "href": "/forum",
+                "title": self._("Game forum"),
+                "target": "_blank",
+            },
+            {
+                "href": "/screenshots",
+                "title": self._("Screenshots"),
+                "target": "_blank",
+            },
+            {
+                "href": "#",
+                "title": self._("Secure entrance"),
+            },
+        ], random.randrange(1, 8))
+        vars["links"][-1]["lst"] = True
+        if random.random() < 0.8:
+            vars["ratings"] = []
+            for i in range(0, random.randrange(1, 6)):
+                lst = []
+                vars["ratings"].append({
+                    "href": "#",
+                    "title": random.choice([self._("The biggest glory"), self._("The richest"), self._("Top clan"), self._("The best dragon hunter")]),
+                    "list": lst,
+                })
+                for j in range(0, random.randrange(1, 20)):
+                    lst.append({
+                        "name": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                        "value": random.randrange(1, random.choice([10, 100, 1000, 10000, 100000, 1000000, 10000000])),
+                        "class": "rating-even" if j % 2 else "rating-odd",
+                    })
+                    lst[-1]["lst"] = True
+            vars["ratings"][-1]["lst"] = True
+
+class GameInterface(Module):
+    def register(self):
+        Module.register(self)
+
+class GameInterfaceAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("ext-admin-gameinterface.design", self.ext_design)
+        self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)
+        self.rhook("admin-gameinterface.validate", self.validate)
+        self.rhook("admin-gameinterface.preview-data", self.preview_data)
+
+    def headmenu_design(self, args):
+        if args == "new":
+            return [self._("New design"), "gameinterface/design"]
+        elif re_rename.match(args):
+            return [self._("Renaming"), "gameinterface/design"]
+        return self._("Game interface design")
+
+    def menu_design_index(self, menu):
+        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True})
+
+    def ext_design(self):
+        self.call("design-admin.editor", "gameinterface")
+
+    def validate(self, design, errors):
+        if not design.get("css"):
+            errors.append(self._("Game interface design package must contain a CSS file"))
+        if design.get("html"):
+            errors.append(self._("Game interface design package must not contain HTML files"))
+
+    def preview_data(self, vars):
+        pass
+
+class SocioInterface(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("forum.vars-index", self.forum_vars_index)
+        self.rhook("forum.vars-category", self.forum_vars_category)
+        self.rhook("forum.vars-topic", self.forum_vars_topic)
+        self.rhook("forum.vars-tags", self.forum_vars_tags)
+
+    def forum_vars_index(self, vars):
+        vars["title"] = self._("Forum categories")
+        vars["topics"] = self._("Topics")
+        vars["replies"] = self._("Replies")
+        vars["unread"] = self._("Unread")
+        vars["last_message"] = self._("Last message")
+        vars["by"] = self._("by")
+        vars["ForumCategories"] = self._("Forum categories")
+
+    def forum_vars_category(self, vars):
+        vars["new_topic"] = self._("New topic")
+        vars["author"] = self._("Author")
+        vars["replies"] = self._("Replies")
+        vars["last_reply"] = self._("Last reply")
+        vars["by"] = self._("by")
+        vars["to_page"] = self._("Pages")
+        vars["created_at"] = self._("Created at")
+        vars["Pages"] = self._("Pages")
+
+    def forum_vars_topic(self, vars):
+        vars["to_page"] = self._("Pages")
+        vars["topic_started"] = self._("topic started")
+        vars["all_posts"] = self._("All posts")
+        vars["search_all_posts"] = self._("Search for all posts of this member")
+        vars["to_the_top"] = self._("to the top")
+        vars["written_at"] = self._("written at")
+        vars["Tags"] = self._("Tags")
+
+    def forum_vars_tags(self, vars):
+        vars["title"] = self._("Forum tags")
+
+class SocioInterfaceAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("ext-admin-sociointerface.design", self.ext_design)
+        self.rhook("headmenu-admin-sociointerface.design", self.headmenu_design)
+        self.rhook("admin-sociointerface.validate", self.validate)
+        self.rhook("admin-sociointerface.previews", self.previews)
+        self.rhook("admin-sociointerface.preview", self.preview)
+
+    def headmenu_design(self, args):
+        if args == "new":
+            return [self._("New design"), "sociointerface/design"]
+        elif re_rename.match(args):
+            return [self._("Renaming"), "sociointerface/design"]
+        return self._("Socio interface design")
+
+    def menu_design_index(self, menu):
+        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True})
+
+    def ext_design(self):
+        self.call("design-admin.editor", "sociointerface")
+
+    def validate(self, design, errors):
+        html = design.get("html")
+        if not html:
+            errors.append(self._("Socio interface design package must contain an HTML file"))
+        elif len(html) > 1:
+            errors.append(self._("Socio interface design package must not contain more than one HTML file"))
+        files = design.get("files")
+        if not files.get("index.html", None):
+            errors.append(self._("index.html must exist in the socio interface design package"))
+        if not design.get("css"):
+            errors.append(self._("Socio interface design package must contain a CSS file"))
+
+    def previews(self, previews):
+        previews.append({"filename": "index.html", "title": self._("Forum categories")})
+        previews.append({"filename": "category.html", "title": self._("Forum category")})
+        previews.append({"filename": "topic.html", "title": self._("Forum topic")})
+        previews.append({"filename": "tags.html", "title": self._("Tags cloud")})
+
+    def preview(self, design, filename):
+        vars = {}
+        if filename == "index.html":
+            self.call("forum.vars-index", vars)
+            cats = []
+            vars["categories"] = cats
+            for i in range(0, random.randrange(1, 30)):
+                if i == 0 or random.random() < 0.2:
+                    cats.append({
+                        "header": random.choice([self._("Main group"), self._("Additional categories"), self._("Important"), self._("Technical reference")]),
+                    })
+                cats.append({
+                    "category": {
+                        "title": random.choice([self._("News"), self._("Technical support"), self._("A very long forum category title"), self._("Developers club")]),
+                        "description": random.choice(["", self._("This is a short category description"), self._("This is a very long category description. It can be very-very long. And even longer. It can take several lines. Most of us know him as the big jolly man with a white beard and red suit, but who was - or were - the real Santa Claus? Ivan Watson goes to Demre in Turkey to find out more about the legend of Saint Nicholas.")]),
+                        "topics": random.randrange(0, random.choice([10, 100, 1000, 10000, 100000])) if random.random() < 0.9 else None,
+                        "replies": random.randrange(0, random.choice([10, 100, 1000, 10000, 100000])) if random.random() < 0.9 else None,
+                        "unread": random.random() < 0.5,
+                        "lastinfo": {
+                            "topic": "topic",
+                            "post": "post",
+                            "page": "page",
+                            "subject_html": random.choice([self._("Unknown problem"), self._("Very important combat will take place tomorrow"), self._("Not so important but a very large forum topic title")]),
+                            "updated": self._("8th of December, 2010 at 11:54"),
+                            "author_html": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                        } if random.random() < 0.5 else None,
+                    }
+                })
+        elif filename == "category.html":
+            self.call("forum.vars-category", vars)
+            topics = []
+            vars["title"] = self._("Forum category")
+            vars["topics"] = topics
+            pinned = True
+            for i in range(0, random.choice([0, 3, 10, 20])):
+                if random.random() < 0.5:
+                    pinned = False
+                topics.append({
+                    "pinned": pinned,
+                    "unread": random.random() < 0.5,
+                    "subject_html": random.choice([self._("Unknown problem"), self._("Very important combat will take place tomorrow"), self._("Not so important but a very large forum topic title")]),
+                    "subscribed": random.random() < 0.5,
+                    "literal_created": self._("6th of December, 2010 at 12:01"),
+                    "author_html": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                    "posts": random.randrange(0, random.choice([10, 100, 1000, 10000, 100000])) if random.random() < 0.9 else None,
+                    "uuid": "topic",
+                })
+                if random.random() < 0.5:
+                    topic = topics[-1]
+                    topic["last_post"] = "post"
+                    topic["last_post_page"] = "page"
+                    topic["last_post_created"] = self._("8th of December, 2010 at 11:54")
+                    topic["last_post_author_html"] = random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")])
+                if random.random() < 0.5:
+                    pages = []
+                    topics[-1]["pages"] = pages
+                    for i in range(0, random.randrange(2, random.choice([3, 5, 10, 20, 50]))):
+                        if len(pages):
+                            pages.append({"delim": True})
+                        pages.append({"entry": {"text": i + 1, "a": {"href": "#"}}})
+            if len(topics):
+                topics[-1]["lst"] = True
+            if random.random() < 0.5:
+                pages_list = []
+                pages = random.choice([2, 5, 10, 30])
+                page = random.randrange(1, pages)
+                last_show = None
+                for i in range(1, pages + 1):
+                    show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                    if show:
+                        if len(pages_list):
+                            pages_list.append({"delim": True})
+                        pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "#"}}})
+                    elif last_show:
+                        if len(pages_list):
+                            pages_list.append({"delim": True})
+                        pages_list.append({"entry": {"text": "..."}})
+                    last_show = show
+                vars["pages"] = pages_list
+        elif filename == "topic.html":
+            self.call("forum.vars-topic", vars)
+        elif filename == "tags.html":
+            self.call("forum.vars-tags", vars)
+        else:
+            self.call("web.not_found")
+        if random.random() < 0.9:
+            if random.random() < 0.5:
+                vars["topmenu_left"] = [{"header": True, "html": self._("Some header")}]
+            else:
+                lst = []
+                vars["topmenu_left"] = lst
+                for i in range(0, random.randrange(1, 3)):
+                    lst.append({
+                        "html": self._("Menu item"),
+                        "href": "#" if random.random() < 0.8 else None,
+                        "delim": True,
+                    })
+                lst[0]["delim"] = False
+        lst = []
+        vars["topmenu_right"] = lst
+        for i in range(0, random.randrange(1, 3)):
+            lst.append({
+                "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
+                "href": "#" if random.random() < 0.8 else None,
+                "image": "http://%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
+                "delim": True,
+            })
+            print lst[-1]["image"]
+        if random.random() < 0.8:
+            lst.insert(0, {"search": True, "button": self._("Search")})
+        lst[0]["delim"] = False
+        if random.random() < 0.8:
+            lst = []
+            vars["menu_left"] = lst
+            for i in range(0, random.randrange(1, 4)):
+                lst.append({
+                    "html": self._("Menu item"),
+                    "href": "#" if random.random() < 0.8 else None,
+                    "delim": True,
+                })
+            lst[0]["delim"] = False
+        if random.random() < 0.8:
+            lst = []
+            vars["menu_right"] = lst
+            for i in range(0, random.randrange(1, 5)):
+                lst.append({
+                    "html": random.choice([self._("Move"), self._("Pin"), self._("Unpin"), self._("Close"), self._("Open"), self._("New topic")]),
+                    "href": "#" if random.random() < 0.8 else None,
+                    "delim": True,
+                })
+            lst[0]["delim"] = False
+        content = self.call("web.parse_template", "socio/%s" % filename, vars)
+        self.call("design.response", design, "index.html", content, vars)
