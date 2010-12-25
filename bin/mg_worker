@@ -4,14 +4,15 @@ from mg import *
 from concurrence import dispatch
 import logging
 import os
+import sys
 
 def main():
     try:
         inst = Instance("worker")
         inst.download_config()
         int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.worker.Worker"])
-        int_app.hooks.call("worker.run", "metagam")
+        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.Constructor"])
+        int_app.hooks.call("worker.run", "metagam", sys.argv[1], sys.argv[2])
     except RuntimeError as e:
         logging.error(e)
         os._exit(1)

@@ -7,6 +7,8 @@ import re
 import json
 import optparse
 
+re_class = re.compile('^upstream (\S+) {')
+
 class Server(Module):
     def register(self):
         Module.register(self)
@@ -110,12 +112,30 @@ class Server(Module):
         request = self.req()
         workers = json.loads(request.param("workers"))
         filename = "/etc/nginx/nginx-metagam.conf"
+        classes = set()
+        try:
+            with open(filename, "r") as f:
+                for line in f:
+                    m = re_class.match(line)
+                    if m:
+                        cls = m.group(1)
+                        classes.add(cls)
+        except IOError as e:
+            pass
         try:
             with open(filename, "w") as f:
                 for cls, list in workers.iteritems():
+                    try:
+                        classes.remove(cls)
+                    except KeyError:
+                        pass
                     print("upstream %s {" % cls, file=f)
                     for srv in list:
                         print("\tserver %s:%d;" % (srv[0], srv[1]), file=f)
+                    print("}", file=f)
+                for cls in classes:
+                    print("upstream %s {" % cls, file=f)
+                    print("\tserver 127.0.0.1:65534;", file=f)
                     print("}", file=f)
             subprocess.check_call(["/usr/bin/sudo", "/etc/init.d/nginx", "reload"])
         except IOError as e:

@@ -1,15 +1,11 @@
 from mg import *
 from concurrence import Tasklet
-import sys
 import json
 
 class Worker(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance"])
-        modules = self.app().inst.config.get("modules")
-        if modules:
-            self.rdep(modules)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("worker.run", self.run)
         self.rhook("core.appfactory", self.appfactory, priority=-10)
@@ -24,7 +20,7 @@ class Worker(Module):
     def fastidle(self):
         self.call("core.check_last_ping")
 
-    def run(self, cls, ext_app=None):
+    def run(self, cls, parent="", id="", ext_app=None):
         inst = self.app().inst
         int_daemon = WebDaemon(inst, self.app())
         int_port = int_daemon.serve_any_port("0.0.0.0")
@@ -39,8 +35,8 @@ class Worker(Module):
         res = self.call("cluster.query_director", "/director/ready", {
             "type": "worker",
             "port": int_port,
-            "parent": sys.argv[1],
-            "id": sys.argv[2],
+            "parent": parent,
+            "id": id,
             "params": json.dumps({
                 "ext_port": ext_port,
                 "class": cls,

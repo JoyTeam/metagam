@@ -14,9 +14,6 @@ class Director(Module):
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner"])
         self.config()
         self.app().inst.setup_logger()
-        modules = self.app().inst.config.get("modules")
-        if modules:
-            self.rdep(modules)
         self.app().servers_online = self.conf("director.servers", default={})
         self.app().servers_online_modified = False
         self.queue_workers = []
@@ -180,8 +177,6 @@ class Director(Module):
             conf["smtp_server"] = "localhost"
         if conf.get("locale") is None:
             conf["locale"] = "en"
-        if conf.get("modules") is None:
-            conf["modules"] = []
         self.app().inst.config = conf
         return conf
 
@@ -200,7 +195,6 @@ class Director(Module):
         memcached = request.param("memcached")
         cassandra = request.param("cassandra")
         storage = request.param("storage")
-        modules = request.param("modules")
         main_host = request.param("main_host")
         admin_user = request.param("admin_user")
         smtp_server = request.param("smtp_server")
@@ -210,7 +204,6 @@ class Director(Module):
             config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
             config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
             config["storage"] = re.split('\s*,\s*', storage)
-            config["modules"] = [mod for mod in re.split('\s*,\s*', modules) if len(mod)]
             config["main_host"] = main_host
             config["admin_user"] = admin_user
             config["smtp_server"] = smtp_server
@@ -223,7 +216,6 @@ class Director(Module):
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
             cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
             storage = ", ".join(config["storage"])
-            modules = ", ".join(config["modules"])
             main_host = config["main_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")
@@ -245,8 +237,6 @@ class Director(Module):
                 "smtp_server": smtp_server,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
-                "modules_desc": self._("<strong>Preload modules</strong> (mod, mod, ...)"),
-                "modules": modules,
                 "submit_desc": self._("Save")
             }
         })
@@ -328,7 +318,7 @@ class Director(Module):
             "params": params
         }
         parent = request.param("parent")
-        if parent:
+        if parent and parent != "":
             server_id = "%s-server-%s" % (server_id, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
             parent_info = self.app().servers_online.get(params["parent"])
@@ -337,7 +327,7 @@ class Director(Module):
                     params["queue"] = True
         server_id = "%s-%s" % (server_id, type)
         id = request.param("id")
-        if id:
+        if id and id != "":
             server_id = "%s-%02d" % (server_id, int(id))
             conf["id"] = id
         self.app().servers_online[server_id] = conf

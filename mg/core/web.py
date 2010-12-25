@@ -344,7 +344,7 @@ class WebDaemon(object):
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
         if self.app is None:
-            raise RuntimeError("No applications configured. Specify appropriate modules in the director config")
+            raise RuntimeError("No applications configured. Load some payload modules")
         #self.app.hooks.call("l10n.set_request_lang")
         return self.app.http_request(request, group, hook, args)
 
