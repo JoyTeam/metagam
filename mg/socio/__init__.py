@@ -1017,7 +1017,7 @@ class Forum(Module):
                 tag_short = tag_short[0:max_tag_len]
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
-            mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=cgi.escape(tag), clock=clock))))
+            mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=tag, clock=clock))))
             mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", clock=clock)))]}
         if len(mutations):
             mutations["%s-ForumTags" % app_tag] = {"Indexes": mutations_tags}
@@ -2113,7 +2113,11 @@ class Forum(Module):
     def ext_tags(self):
         app_tag = str(self.app().tag)
         tags = self.app().db.get_slice("%s-ForumTags" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
-        tags = [tag.column.value for tag in tags]
+        tags = [{"html": htmlescape(tag.column.value), "url": urlencode(tag.column.value)} for tag in tags]
+        # It seems Cassandra always returns sorted results
+        # tags.sort(cmp=lambda x, y: cmp(x["html"], y["html"]))
+        if len(tags):
+            tags[-1]["lst"] = True
         vars = {
             "tags": tags,
             "menu": [

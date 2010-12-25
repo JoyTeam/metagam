@@ -81,7 +81,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-member-menu { font-size: 11px; color: #0078ac; padding: 0px 10px 5px 33px }
 .socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
 .socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
-.socio-post-content { padding: 0px 33px 5px 0px; font-size: 14px; text-align: justify }
+.socio-post-content { padding: 0px 33px 5px 0px; font-size: 14px; text-align: justify; vertical-align: top }
 .socio-post-actions-row { vertical-align: bottom; padding-bottom: 15px }
 .socio-post-actions { width: 100% }
 .socio-post-actions-left { vertical-align: bottom; padding-bottom: 8px }

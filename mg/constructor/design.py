@@ -262,7 +262,6 @@ class DesignZip(Module):
             design.set("html", html)
         if len(css):
             design.set("css", css)
-        # 3rd party validation
         self.call("admin-%s.validate" % group, design, errors)
         if len(errors):
             return errors
@@ -496,6 +495,7 @@ class IndexPageAdmin(Module):
             errors.append(self._("Index page design package must contain a CSS file"))
 
     def preview_data(self, vars):
+        demo_authors = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]
         vars["game"] = {
             "title_full": random.choice([self._("Some title"), self._("Very cool game with very long title")]),
             "title_short": random.choice([self._("Some title"), self._("Very cool game")]),
@@ -561,7 +561,7 @@ class IndexPageAdmin(Module):
                 })
                 for j in range(0, random.randrange(1, 20)):
                     lst.append({
-                        "name": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                        "name": random.choice(demo_authors),
                         "value": random.randrange(1, random.choice([10, 100, 1000, 10000, 100000, 1000000, 10000000])),
                         "class": "rating-even" if j % 2 else "rating-odd",
                     })
@@ -685,6 +685,14 @@ class SocioInterfaceAdmin(Module):
 
     def preview(self, design, filename):
         vars = {}
+        demo_contents = ["The most popular type of MMOG, and the sub-genre that pioneered the category, is the massively multiplayer online role playing game (MMORPG), which descended from university mainframe computer MUD and adventure games such as Rogue and Dungeon on the PDP-10. These games predate the commercial gaming industry and the Internet, but still featured persistent worlds and other elements of MMOGs still used today.", "The first graphical MMOG, and a major milestone in the creation of the genre, was the multi-player flight combat simulation game Air Warrior by Kesmai on the GEnie online service, which first appeared in 1986.<br /><br />Commercial MMORPGs gained early acceptance in the late 1980s and early 1990s. The genre was pioneered by the GemStone series on GEnie, also created by Kesmai, and Neverwinter Nights, the first such game to include graphics, which debuted on AOL in 1991.<br /><br />As computer game developers applied MMOG ideas to other computer and video game genres, new acronyms started to develop, such as MMORTS. MMOG emerged as a generic term to cover this growing class of games. These games became so popular that a magazine, called Massive Online Gaming, released an issue in October 2002 hoping to cover MMOG topics exclusively, but it never released its second issue.", "There are a number of factors shared by most MMOGs that make them different from other types of games. MMOGs create a persistent universe where the game milieu continues regardless of interaction. Since these games emphasize multiplayer gameplay, many have only basic single-player aspects and the artificial intelligence on the server is primarily designed to support group play. As a result, players cannot \"finish\" MMOGs in the typical sense of single-player games.<br /><br />However single player game play is quite viable, although this may result in the player being unable to experience all content. This is especially the case for content designed for a multiplayer group commonly called a \"party\" or \"raid party\" in the case of the largest player groups which are required for the most significant and potentially rewarding play experiences and \"boss fights\" which are often designed to require multiple players to ensure the creature or NPC is killed.<br /><br />Most MMOGs also share other characteristics that make them different from other multiplayer online games. MMOGs host a large number of players in a single game world, and all of those players can interact with each other at any given time. Popular MMOGs might have thousands of players online at any given time, usually on a company owned server. Non-MMOGs, such as Battlefield 1942 or Half-Life usually have fewer than 50 players online (per server) and are usually played on private servers. Also, MMOGs usually do not have any significant mods since the game must work on company servers. There is some debate if a high head-count is the requirement to be an MMOG. Some say that it is the size of the game world and its capability to support a large number of players that should matter. For example, despite technology and content constraints, most MMOGs can fit up to a few thousand players on a single game server at a time.<br /><br />To support all those players, MMOGs need large-scale game worlds, and servers to connect players to those worlds. Sometimes a game features a universe which is copied onto different servers, separating players, and this is called a \"sharded\" universe. Other games will feature a single universe which is divided among servers, and requires players to switch. Still others will only use one part of the universe at any time. For example, Tribes (which is not an MMOG) comes with a number of large maps, which are played in rotation (one at a time). In contrast, the similar title PlanetSide uses the second model, and allows all map-like areas of the game to be reached via flying, driving, or teleporting.<br /><br />MMORPGs usually have sharded universes, as they provide the most flexible solution to the server load problem, but not always. For example, the space sim Eve Online uses only one large cluster server peaking at over 51,500 simultaneous players.<br /><br />There are also a few more common differences between MMOGs and other online games. Most MMOGs charge the player a monthly or bimonthly fee to have access to the game's servers, and therefore to online play. Also, the game state in an MMOG rarely ever resets. This means that a level gained by a player today will still be there tomorrow when the player logs back on. MMOGs often feature in-game support for clans and guilds. The members of a clan or a guild may participate in activities with one another, or show some symbols of membership to the clan or guild."]
+        demo_subjects = [self._("Unknown problem"), self._("Very important combat will take place tomorrow"), self._("Not so important but a very large forum topic title")]
+        demo_authors = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]
+        demo_dates = [self._("6th of December, 2010 at 12:01"), self._("13th of June, 2008 at 02:11"), self._("7th of February, 2011 at 23:17"), self._("21th of October, 2010 at 17:00")]
+        demo_signatures = [self._("This is a sample signature line"), self._("Some another line"), self._("Very strange signature"), self._("Absolutely crazy signature line")]
+        demo_tags = [self._("game"), self._("mmo"), self._("constructor"), self._("people"), self._("online games"), self._("game industry"), self._("game engine")]
+        demo_author_menu = [self._("Profile"), self._("All posts"), self._("Rating"), self._("Projects"), self._("Wishlist")]
+        demo_forum_actions = [self._("delete"), self._("edit"), self._("reply"), self._("ignore")]
         if filename == "index.html":
             self.call("forum.vars-index", vars)
             cats = []
@@ -705,9 +713,9 @@ class SocioInterfaceAdmin(Module):
                             "topic": "topic",
                             "post": "post",
                             "page": "page",
-                            "subject_html": random.choice([self._("Unknown problem"), self._("Very important combat will take place tomorrow"), self._("Not so important but a very large forum topic title")]),
-                            "updated": self._("8th of December, 2010 at 11:54"),
-                            "author_html": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                            "subject_html": random.choice(demo_subjects),
+                            "updated": random.choice(demo_dates),
+                            "author_html": random.choice(demo_authors),
                         } if random.random() < 0.5 else None,
                     }
                 })
@@ -723,10 +731,10 @@ class SocioInterfaceAdmin(Module):
                 topics.append({
                     "pinned": pinned,
                     "unread": random.random() < 0.5,
-                    "subject_html": random.choice([self._("Unknown problem"), self._("Very important combat will take place tomorrow"), self._("Not so important but a very large forum topic title")]),
+                    "subject_html": random.choice(demo_subjects),
                     "subscribed": random.random() < 0.5,
-                    "literal_created": self._("6th of December, 2010 at 12:01"),
-                    "author_html": random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]),
+                    "literal_created": random.choice(demo_dates),
+                    "author_html": random.choice(demo_authors),
                     "posts": random.randrange(0, random.choice([10, 100, 1000, 10000, 100000])) if random.random() < 0.9 else None,
                     "uuid": "topic",
                 })
@@ -734,8 +742,8 @@ class SocioInterfaceAdmin(Module):
                     topic = topics[-1]
                     topic["last_post"] = "post"
                     topic["last_post_page"] = "page"
-                    topic["last_post_created"] = self._("8th of December, 2010 at 11:54")
-                    topic["last_post_author_html"] = random.choice([self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")])
+                    topic["last_post_created"] = random.choice(demo_dates)
+                    topic["last_post_author_html"] = random.choice(demo_authors)
                 if random.random() < 0.5:
                     pages = []
                     topics[-1]["pages"] = pages
@@ -745,6 +753,83 @@ class SocioInterfaceAdmin(Module):
                         pages.append({"entry": {"text": i + 1, "a": {"href": "#"}}})
             if len(topics):
                 topics[-1]["lst"] = True
+        elif filename == "topic.html":
+            self.call("forum.vars-topic", vars)
+            vars["show_topic"] = random.random() < 0.8,
+            vars["topic"] = {
+                "subject_html": random.choice(demo_subjects),
+                "subscribed": random.random() < 0.5,
+                "literal_created": random.choice(demo_dates),
+                "avatar": "http://%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                "author_html": random.choice(demo_authors),
+                "content_html": random.choice(demo_contents),
+            }
+            vars["title"] = vars["topic"]["subject_html"]
+            if random.random() < 0.5:
+                tags = []
+                for i in range(0, random.randrange(1, 20)):
+                    tags.append('<a href="#">%s</a>' % random.choice(demo_tags))
+                vars["topic"]["tags_html"] = ", ".join(tags)
+            if random.random() < 0.5:
+                signature = random.sample(demo_signatures, random.randrange(1, 5))
+                vars["topic"]["signature"] = "<br />".join(signature)
+            if random.random() < 0.8:
+                menu = []
+                vars["topic"]["author_menu"] = menu
+                for i in range(0, random.randrange(1, 6)):
+                    menu.append({
+                        "href": "#",
+                        "title": random.choice(demo_author_menu),
+                    })
+            if random.random() < 0.8:
+                actions = []
+                for i in range(0, random.randrange(1, 4)):
+                    actions.append('<a href="#">%s</a>' % random.choice(demo_forum_actions))
+                vars["topic"]["topic_actions"] = " / ".join(actions)
+            if random.random() < 0.75:
+                vars["posts"] = []
+                for i in range(0, random.choice([1, 5, 20])):
+                    post = {
+                        "literal_created": random.choice(demo_dates),
+                        "avatar": "http://%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                        "author_html": random.choice(demo_authors),
+                        "content_html": random.choice(demo_contents),
+                    }
+                    vars["posts"].append(post)
+                    if random.random() < 0.4:
+                        post["post_title"] = random.choice(demo_subjects)
+                        post["subscribed"] = random.random() < 0.5
+                    if random.random() < 0.2:
+                        tags = []
+                        for i in range(0, random.randrange(1, 20)):
+                            tags.append('<a href="#">%s</a>' % random.choice(demo_tags))
+                        post["tags_html"] = ", ".join(tags)
+                    if random.random() < 0.5:
+                        signature = random.sample(demo_signatures, random.randrange(1, 5))
+                        post["signature"] = "<br />".join(signature)
+                    if random.random() < 0.8:
+                        menu = []
+                        post["author_menu"] = menu
+                        for i in range(0, random.randrange(1, 6)):
+                            menu.append({
+                                "href": "#",
+                                "title": random.choice(demo_author_menu),
+                            })
+                    if random.random() < 0.8:
+                        actions = []
+                        for i in range(0, random.randrange(1, 4)):
+                            actions.append('<a href="#">%s</a>' % random.choice(demo_forum_actions))
+                        post["topic_actions"] = " / ".join(actions)
+        elif filename == "tags.html":
+            self.call("forum.vars-tags", vars)
+            tags = []
+            vars["tags"] = tags
+            for i in range(0, random.randrange(1, 1000)):
+                tags.append({"url": "#", "html": htmlescape(random.choice(demo_tags))})
+            tags[-1]["lst"] = True
+        else:
+            self.call("web.not_found")
+        if filename == "category.html" or filename == "topic.html":
             if random.random() < 0.5:
                 pages_list = []
                 pages = random.choice([2, 5, 10, 30])
@@ -762,12 +847,6 @@ class SocioInterfaceAdmin(Module):
                         pages_list.append({"entry": {"text": "..."}})
                     last_show = show
                 vars["pages"] = pages_list
-        elif filename == "topic.html":
-            self.call("forum.vars-topic", vars)
-        elif filename == "tags.html":
-            self.call("forum.vars-tags", vars)
-        else:
-            self.call("web.not_found")
         if random.random() < 0.9:
             if random.random() < 0.5:
                 vars["topmenu_left"] = [{"header": True, "html": self._("Some header")}]
