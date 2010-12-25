@@ -44,7 +44,7 @@ function entry_ready(wait_entry)
 				var hd = document.getElementsByTagName('head')[0];
 				var newScript = document.createElement('script');
 				newScript.type = 'text/javascript';
-				newScript.src = '/st/' + ver + '/' + module;
+				newScript.src = admin_root + '/st/' + ver + '/' + module;
 				hd.appendChild(newScript);
 			}
 		}

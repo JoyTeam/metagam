@@ -213,7 +213,7 @@ function update_menu(menu)
 	topmenu.add({
 		id: 'admin-logo',
 		xtype: 'tbtext',
-		text: '<a href="' + constructor_index_page + '"><img src="/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>'
+		text: '<a href="' + constructor_index_page + '"><img src="' + admin_root + '/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>'
 	});
 	topmenu.add({
 		id: 'admin-project-title',
