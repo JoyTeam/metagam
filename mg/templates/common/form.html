@@ -3,7 +3,7 @@
 <div class="form-top"></div>
 <div class="form-content">
 <div style="width: 350px"></div>
-[%if form_texteditors%]<script type="text/javascript" src="/st/[%ver%]/js/texteditor.js"></script>[%end%]
+[%if form_texteditors%]<script type="text/javascript" src="/st-mg/[%ver%]/js/texteditor.js"></script>[%end%]
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="form-std" name="stdform">
 [%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
 [%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
@@ -36,20 +36,20 @@
 	[%if col.element_generic_submit%]<input type="submit"[%if col.name%] name="[%col.name.text%]"[%end%] value="[%col.value%]" class="form-submit" />[%end%]
 	[%if col.element_texteditor%]
 	<table class="form-editor-toolbox"><tr>
-	<td><img class="form-clickable" src="/st/form/bold.gif" alt="B" title="[%bold%]" onclick="add_code('[%col.name%]', this, '[b]','[/b]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/italic.gif" alt="I" title="[%italic%]" onclick="add_code('[%col.name%]', this, '[i]','[/i]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/underline.gif" alt="U" title="[%underline%]" onclick="add_code('[%col.name%]', this, '[u]','[/u]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/strike.gif" alt="S" title="[%strike%]" onclick="add_code('[%col.name%]', this, '[s]','[/s]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/quote.gif" alt="Q" title="[%quote%]" onclick="add_code('[%col.name%]', this, '[quote]','[/quote]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/red.gif" alt="RD" title="[%red%]" onclick="add_code('[%col.name%]', this, '[color=#ff0000]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/green.gif" alt="GR" title="[%green%]" onclick="add_code('[%col.name%]', this, '[color=#00c000]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/blue.gif" alt="BL" title="[%blue%]" onclick="add_code('[%col.name%]', this, '[color=#0000ff]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/dark_green.gif" alt="DG" title="[%dark_green%]" onclick="add_code('[%col.name%]', this, '[color=#009a00]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/magenta.gif" alt="MG" title="[%magenta%]" onclick="add_code('[%col.name%]', this, '[color=#e909f1]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/yellow.gif" alt="YL" title="[%yellow%]" onclick="add_code('[%col.name%]', this, '[color=#f1f100]','[/color]', 1)" /></td>
-	<td><img class="form-clickable" src="/st/form/orange.gif" alt="OR" title="[%orange%]" onclick="add_code('[%col.name%]', this, '[color=#ff9600]','[/color]', 1)" /></td>
-	[%if col.attaches%]<td><img class="form-clickable" src="/st/form/image.gif" alt="IMG" title="[%insert_image%]" onclick="add_img('[%col.name%]')" /></td>[%end%]
-	<td><img class="form-clickable" src="/st/form/translit.gif" alt="TR" title="[%transliterate_to_russian%]" onclick="translit('[%col.name%]')" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/bold.gif" alt="B" title="[%bold%]" onclick="add_code('[%col.name%]', this, '[b]','[/b]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/italic.gif" alt="I" title="[%italic%]" onclick="add_code('[%col.name%]', this, '[i]','[/i]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/underline.gif" alt="U" title="[%underline%]" onclick="add_code('[%col.name%]', this, '[u]','[/u]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/strike.gif" alt="S" title="[%strike%]" onclick="add_code('[%col.name%]', this, '[s]','[/s]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/quote.gif" alt="Q" title="[%quote%]" onclick="add_code('[%col.name%]', this, '[quote]','[/quote]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/red.gif" alt="RD" title="[%red%]" onclick="add_code('[%col.name%]', this, '[color=#ff0000]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/green.gif" alt="GR" title="[%green%]" onclick="add_code('[%col.name%]', this, '[color=#00c000]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/blue.gif" alt="BL" title="[%blue%]" onclick="add_code('[%col.name%]', this, '[color=#0000ff]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/dark_green.gif" alt="DG" title="[%dark_green%]" onclick="add_code('[%col.name%]', this, '[color=#009a00]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/magenta.gif" alt="MG" title="[%magenta%]" onclick="add_code('[%col.name%]', this, '[color=#e909f1]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/yellow.gif" alt="YL" title="[%yellow%]" onclick="add_code('[%col.name%]', this, '[color=#f1f100]','[/color]', 1)" /></td>
+	<td><img class="form-clickable" src="/st-mg/form/orange.gif" alt="OR" title="[%orange%]" onclick="add_code('[%col.name%]', this, '[color=#ff9600]','[/color]', 1)" /></td>
+	[%if col.attaches%]<td><img class="form-clickable" src="/st-mg/form/image.gif" alt="IMG" title="[%insert_image%]" onclick="add_img('[%col.name%]')" /></td>[%end%]
+	<td><img class="form-clickable" src="/st-mg/form/translit.gif" alt="TR" title="[%transliterate_to_russian%]" onclick="translit('[%col.name%]')" /></td>
 	</tr></table>
 	<textarea id="[%col.name%]" name="[%col.name%]" class="[%if col.fixed_not_ok%]form-w100 [%end%]form-bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]"[%if fixed_ok%] wrap="hard"[%end%]>[%col.value%]</textarea>
 	[%if col.show_smiles and smile_categories%]

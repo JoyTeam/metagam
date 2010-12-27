@@ -31,6 +31,8 @@ class Worker(Module):
         ext_daemon = self.call("core.webdaemon")
         ext_port = ext_daemon.serve_any_port("0.0.0.0")
         ext_daemon.app = ext_app
+        if ext_app:
+            inst.appfactory.add(ext_app)
         # registering
         res = self.call("cluster.query_director", "/director/ready", {
             "type": "worker",

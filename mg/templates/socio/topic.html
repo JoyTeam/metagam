@@ -1,5 +1,5 @@
 <table id="socio-topic-head"><tr><td id="socio-topic-title">
-[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
 </td>[%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
@@ -31,7 +31,7 @@
 [%end%]
 
 [%foreach post in posts%]
-<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%written_at +%] [%+ post.literal_created%]</td><td class="socio-delim-right">[%if to_the_top%]<img src="/st/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
+<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%written_at +%] [%+ post.literal_created%]</td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
 
 <tr class="socio-category">
 
@@ -41,7 +41,7 @@
 [%if post.author_menu%]<div class="socio-member-menu">[%foreach ent in post.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
 
-<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%][%if post.subscribed%]&nbsp;<img src="/st/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>[%end%]
+<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%][%if post.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>[%end%]
 [%post.content_html%]
 [%if post.tags_html%]<div class="socio-tags">[%Tags%]: <span class="socio-tags-list">[%post.tags_html%]</span></div>[%end%]
 </td>
