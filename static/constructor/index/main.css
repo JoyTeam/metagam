@@ -9,6 +9,7 @@ img { border: none }
 #cab-toplogo { height: 200px; width: 100% }
 #cab-toplogo td { text-align: center }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
+#page-alpha { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/alpha.gif); background-repeat: no-repeat; }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
 #index-pad { padding-top: 445px; }
