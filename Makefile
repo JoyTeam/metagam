@@ -72,5 +72,5 @@ deploy: translations
 	for m in director reload server worker ; do cp bin/mg_$$m bin/*.sh depl/bin/ ; done
 	cp -R mg static depl/
 	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
-	rsync -r depl/* f0.mmoconstructor.com:/home/mg/
-	ssh f0.mmoconstructor.com 'cd /home/mg;rsync -r * d0:/home/mg/'
+	rsync --delete -r depl/* admin.mmoconstructor.ru:/home/mg/
+	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --delete -r * metagam@mg-frontend-1:/home/mg/'

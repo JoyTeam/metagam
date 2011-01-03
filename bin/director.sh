@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export LC_CTYPE=ru_RU.UTF-8
-export HOME=/home/aml
+export HOME=/home/metagam
 export PYTHONPATH=/home/mg
 
 cd /home/mg
