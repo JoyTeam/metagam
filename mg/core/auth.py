@@ -295,12 +295,12 @@ class Interface(Module):
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
                 user.store()
-                activation = {
+                params = {
                     "subject": self._("Account activation"),
                     "content": self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
                 }
-                self.call("auth.activation_email", activation)
-                self.call("email.send", email, name, activation["subject"], activation["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("auth.activation_email", params)
+                self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         if redirect is not None:
             form.hidden("redirect", redirect)
@@ -385,7 +385,12 @@ class Interface(Module):
                 for user in list:
                     content += self._("User '{user}' has password '{password}'\n").format(user=user.get("name"), password=user.get("pass_reminder"))
                     name = user.get("name")
-                self.call("email.send", email, name, self._("Password reminder"), self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your e-mail are:\n\n%s\nIf you still can't remember your password feel free to contact our support.") % content)
+                params = {
+                    "subject": self._("Password reminder"),
+                    "content": self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
+                }
+                self.call("auth.remind_email", params)
+                self.call("email.send", email, name, params["subject"], params["content"].format(content=content.encode("utf-8")))
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
                 self.call("web.redirect", "/auth/login")
@@ -659,19 +664,20 @@ class Interface(Module):
                 else:
                     if user.get("email_change"):
                         if user.get("email_confirmation_code") != code:
-                            form.error("Invalid code")
+                            form.error("code", self._("Invalid code"))
                         else:
                             user.set("email", user.get("email_change"))
                             user.delkey("email_change")
                             user.delkey("email_confirmation_code")
                             user.store()
-                redirects = {}
-                self.call("auth.redirects", redirects)
-                if redirects.has_key("change"):
-                    self.call("web.redirect", redirects["change"])
-                self.call("web.redirect", "/")
+                if not form.errors:
+                    redirects = {}
+                    self.call("auth.redirects", redirects)
+                    if redirects.has_key("change"):
+                        self.call("web.redirect", redirects["change"])
+                    self.call("web.redirect", "/")
             form.input(self._("Confirmation code from your post box"), "code", code)
-            form.submit(None, None, self._("Confirm e-mail change"))
+            form.submit(None, None, self._("btn///Confirm"))
             vars = {
                 "title": self._("E-mail confirmation"),
             }
@@ -700,7 +706,12 @@ class Interface(Module):
                 code = uuid4().hex
                 user.set("email_confirmation_code", code)
                 user.store()
-                self.call("email.send", email, user.get("name"), self._("E-mail confirmation"), self._("Someone possibly you requested e-mail change on the MMOConstructor site. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}").format(code=code, host=req.host()))
+                params = {
+                    "subject": self._("E-mail confirmation"),
+                    "content": self._("Someone possibly you requested e-mail change on the MMOConstructor site. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}"),
+                }
+                self.call("auth.email_change_email", params)
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host()))
                 self.call("web.redirect", "/auth/email/confirm")
         form.hidden("prefix", prefix)
         form.input(self._("New e-mail address"), "email", email)
