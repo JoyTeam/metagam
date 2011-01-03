@@ -328,8 +328,9 @@ class Director(Module):
         if parent and parent != "":
             server_id = "%s-server-%s" % (server_id, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
-            params["queue"] = request.param("queue")
-            if params["queue"] is None:
+            if request.param("queue") != "":
+                params["queue"] = request.param("queue")
+            if params.get("queue") is None:
                 parent_info = self.app().servers_online.get(params["parent"])
                 if parent_info is not None:
                     if parent_info["params"].get("queue"):

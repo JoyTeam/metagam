@@ -25,15 +25,15 @@ class Email(Module):
                 "from_name": from_name,
                 "immediately": True,
             }, retry_on_fail=True)
+        params = {
+            "email": "aml@rulezz.ru",
+            "name": "MG Robot",
+            "prefix": "[mg] ",
+        }
+        self.call("email.sender", params)
         if from_email is None or from_name is None:
-            params = {}
-            self.call("email.sender", params)
-            if params.get("email") is None or params.get("name") is None:
-                from_email = "aml@rulezz.ru"
-                from_name = "sender"
-            else:
-                from_email = params["email"]
-                from_name = params["name"]
+            from_email = params["email"]
+            from_name = params["name"]
         self.info("To %s <%s>: %s", to_name, to_email, subject)
         s = SMTP(self.app().inst.config["smtp_server"])
         try:
@@ -44,9 +44,9 @@ class Email(Module):
             if type(to_email) == unicode:
                 to_email = to_email.encode("utf-8")
             msg = MIMEText(content, _charset="utf-8")
-            msg['Subject'] = "[mg] %s" % Header(subject, "utf-8")
-            msg['From'] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
-            msg['To'] = "%s <%s>" % (Header(to_name, "utf-8"), to_email)
+            msg["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
+            msg["From"] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
+            msg["To"] = "%s <%s>" % (Header(to_name, "utf-8"), to_email)
             s.sendmail("<%s>" % from_email, ["<%s>" % to_email], msg.as_string())
         except SMTPRecipientsRefused as e:
             self.warning(e)

@@ -239,11 +239,16 @@ class Interface(Module):
         password2 = req.param("password2")
         captcha = req.param("captcha")
         redirect = req.param("redirect")
+        params = {
+            "name_re": r'^[A-Za-z0-9_-]+$',
+            "name_invalid_re": self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"),
+        }
+        self.call("auth.form_params", params)
         if req.ok():
             if not name:
                 form.error("name", self._("Enter your user name"))
-            elif not re.match(r'^[A-Za-z0-9_-]+$', name):
-                form.error("name", self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"))
+            elif not re.match(params["name_re"], name, re.UNICODE):
+                form.error("name", params["name_invalid_re"])
             elif self.call("session.find_user", name):
                 form.error("name", self._("This name is taken already"))
             if not password1:
@@ -262,6 +267,11 @@ class Interface(Module):
                 form.error("email", self._("Enter your e-mail address"))
             elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
                 form.error("email", self._("Enter correct e-mail"))
+            else:
+                existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
+                existing_email.load(silent=True)
+                if len(existing_email):
+                    form.error("email", self._("There is another user with this email"))
             if not captcha:
                 form.error("captcha", self._("Enter numbers from the picture"))
             else:
@@ -280,7 +290,7 @@ class Interface(Module):
                 user.set("sex", sex)
                 user.set("name", name)
                 user.set("name_lower", name.lower())
-                user.set("email", email)
+                user.set("email", email.lower())
                 user.set("inactive", 1)
                 activation_code = uuid4().hex
                 user.set("activation_code", activation_code)
@@ -666,10 +676,15 @@ class Interface(Module):
                         if user.get("email_confirmation_code") != code:
                             form.error("code", self._("Invalid code"))
                         else:
-                            user.set("email", user.get("email_change"))
-                            user.delkey("email_change")
-                            user.delkey("email_confirmation_code")
-                            user.store()
+                            existing_email = self.objlist(UserList, query_index="email", query_equal=user.get("email_change"))
+                            existing_email.load(silent=True)
+                            if len(existing_email):
+                                form.error("code", self._("There is another user with this email"))
+                            else:
+                                user.set("email", user.get("email_change"))
+                                user.delkey("email_change")
+                                user.delkey("email_confirmation_code")
+                                user.store()
                 if not form.errors:
                     redirects = {}
                     self.call("auth.redirects", redirects)
@@ -701,8 +716,13 @@ class Interface(Module):
                 form.error("email", self._("Enter new e-mail address"))
             elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
                 form.error("email", self._("Enter correct e-mail"))
+            else:
+                existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
+                existing_email.load(silent=True)
+                if len(existing_email):
+                    form.error("email", self._("There is another user with this email"))
             if not form.errors:
-                user.set("email_change", email)
+                user.set("email_change", email.lower())
                 code = uuid4().hex
                 user.set("email_confirmation_code", code)
                 user.store()
