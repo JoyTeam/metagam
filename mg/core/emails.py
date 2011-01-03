@@ -25,10 +25,15 @@ class Email(Module):
                 "from_name": from_name,
                 "immediately": True,
             }, retry_on_fail=True)
-        if from_email is None:
-            from_email = "aml@rulezz.ru"
-        if from_name is None:
-            from_name = "sender"
+        if from_email is None or from_name is None:
+            params = {}
+            self.call("email.sender", params)
+            if params.get("email") is None or params.get("name") is None:
+                from_email = "aml@rulezz.ru"
+                from_name = "sender"
+            else:
+                from_email = params["email"]
+                from_name = params["name"]
         self.info("To %s <%s>: %s", to_name, to_email, subject)
         s = SMTP(self.app().inst.config["smtp_server"])
         try:

@@ -295,7 +295,12 @@ class Interface(Module):
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
                 user.store()
-                self.call("email.send", email, name, self._("Account activation"), self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}").format(code=activation_code, host=req.host(), user=user.uuid))
+                activation = {
+                    "subject": self._("Account activation"),
+                    "content": self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                }
+                self.call("auth.activation_email", activation)
+                self.call("email.send", email, name, activation["subject"], activation["content"].format(code=activation_code, host=req.host(), user=user.uuid))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         if redirect is not None:
             form.hidden("redirect", redirect)
@@ -355,6 +360,7 @@ class Interface(Module):
                 self.call("web.redirect", "/")
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
+        form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
         vars = {
             "title": self._("User activation"),
         }
