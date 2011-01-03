@@ -22,6 +22,7 @@ class Worker(Module):
 
     def run(self, cls, parent="", id="", ext_app=None):
         inst = self.app().inst
+        inst.cls = cls
         int_daemon = WebDaemon(inst, self.app())
         int_port = int_daemon.serve_any_port("0.0.0.0")
         # application factory
@@ -34,16 +35,19 @@ class Worker(Module):
         if ext_app:
             inst.appfactory.add(ext_app)
         # registering
-        res = self.call("cluster.query_director", "/director/ready", {
+        params = {
             "type": "worker",
             "port": int_port,
             "parent": parent,
             "id": id,
-            "params": json.dumps({
+            "params": {
                 "ext_port": ext_port,
                 "class": cls,
-            }),
-        })
+            },
+        }
+        self.call("core.worker_params", params)
+        params["params"] = json.dumps(params["params"])
+        res = self.call("cluster.query_director", "/director/ready", params)
         # background tasks
         inst.set_server_id(res["server_id"], re.sub(r'^\d+\.\d+\.\d+\.\d+-server-\d+-', '', res["server_id"]))
         while True:

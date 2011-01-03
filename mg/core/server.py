@@ -109,8 +109,8 @@ class Server(Module):
         self.call("core.check_last_ping")
 
     def nginx(self):
-        request = self.req()
-        workers = json.loads(request.param("workers"))
+        req = self.req()
+        workers = json.loads(req.param("workers"))
         filename = "/etc/nginx/nginx-metagam.conf"
         classes = set()
         try:
@@ -140,8 +140,8 @@ class Server(Module):
             subprocess.check_call(["/usr/bin/sudo", "/etc/init.d/nginx", "reload"])
         except IOError as e:
             self.error("Error writing %s: %s", filename, e)
-            return request.internal_server_error()
+            self.call("web.internal_server_error")
         except subprocess.CalledProcessError as e:
             self.error("Error reloading nginx: %s", e)
-            return request.internal_server_error()
+            self.call("web.internal_server_error")
         self.call("web.response_json", {"ok": 1})

@@ -16,7 +16,7 @@ class Director(Module):
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", default={})
         self.app().servers_online_modified = False
-        self.queue_workers = []
+        self.queue_workers = {}
         self.workers_str = None
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("int-director.ready", self.director_ready)
@@ -245,7 +245,14 @@ class Director(Module):
         self.app().servers_online_modified = True
 
     def servers_online_updated(self):
-        self.queue_workers = [srv for id, srv in self.app().servers_online.items() if srv["type"] == "worker" and srv["params"].get("queue")]
+        self.queue_workers = {}
+        for id, srv in self.app().servers_online.items():
+            if srv["type"] == "worker" and srv["params"].get("queue"):
+                cls = srv["params"].get("class")
+                try:
+                    self.queue_workers[cls].append(srv)
+                except KeyError:
+                    self.queue_workers[cls] = [srv]
 
     def fastidle(self):
         if self.app().servers_online_modified:
@@ -274,6 +281,7 @@ class Director(Module):
                 pass
         workers_str = json.dumps(workers, sort_keys=True)
         if workers_str != self.workers_str:
+            self.workers_str = workers_str
             tasklets = []
             for host, port in nginx:
                 tasklet = Tasklet.new(self.configure_nginx_server)(host, port, workers_str)
@@ -281,7 +289,6 @@ class Director(Module):
             for tasklet in tasklets:
                 if not Tasklet.join(tasklet):
                     return False
-            self.workers_str = workers_str
         return True
 
     def configure_nginx_server(self, host, port, workers):
@@ -321,10 +328,12 @@ class Director(Module):
         if parent and parent != "":
             server_id = "%s-server-%s" % (server_id, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
-            parent_info = self.app().servers_online.get(params["parent"])
-            if parent_info is not None:
-                if parent_info["params"].get("queue"):
-                    params["queue"] = True
+            params["queue"] = request.param("queue")
+            if params["queue"] is None:
+                parent_info = self.app().servers_online.get(params["parent"])
+                if parent_info is not None:
+                    if parent_info["params"].get("queue"):
+                        params["queue"] = True
         server_id = "%s-%s" % (server_id, type)
         id = request.param("id")
         if id and id != "":
@@ -333,4 +342,6 @@ class Director(Module):
         self.app().servers_online[server_id] = conf
         self.store_servers_online()
         self.servers_online_updated()
+        if type == "server" and self.workers_str != None:
+            Tasklet.new(self.configure_nginx_server)(host, port, self.workers_str)
         self.call("web.response_json", {"ok": 1, "server_id": server_id})

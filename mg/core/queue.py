@@ -88,26 +88,27 @@ class Queue(Module):
         objclasses["QueueTask"] = (QueueTask, QueueTaskList)
         objclasses["Schedule"] = (Schedule, ScheduleList)
 
-    def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False, app_tag=None):
+    def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False, app_tag=None, app_cls=None):
         int_app = self.app().inst.int_app
         with int_app.lock(["queue"]):
             if app_tag is None:
                 app_tag = self.app().tag
+            if app_cls is None:
+                app_cls = self.app().inst.cls
             if at is None:
                 at = time.time()
             else:
-#               print "scheduling queue event at %s" % at
                 ct = CronTime(at)
                 if ct.valid:
                     next = ct.next()
                     if next is None:
                         raise CronError("Invalid cron time")
                     at = calendar.timegm(next.utctimetuple())
-#                   print "calculated time: %s" % at
                 else:
                     raise CronError("Invalid cron time")
             data = {
                 "app": app_tag,
+                "cls": app_cls,
                 "at": "%020d" % at,
                 "priority": int(priority),
                 "hook": hook,
@@ -141,14 +142,17 @@ class Queue(Module):
 
     def queue_schedule(self, empty=False):
         int_app = self.app().inst.int_app
+        app_cls = self.app().inst.cls
         app_tag = self.app().tag
         if empty:
             sched = int_app.obj(Schedule, app_tag, data={
+                "cls": app_cls,
                 "entries": {},
             })
         else:
             try:
                 sched = int_app.obj(Schedule, app_tag)
+                sched.set("cls", app_cls)
             except ObjectNotFoundException:
                 sched = int_app.obj(Schedule, app_tag, data={
                     "entries": {},
@@ -167,6 +171,7 @@ class Queue(Module):
         self.call("cluster.query_director", "/schedule/update/%s" % sched.uuid)
 
 class QueueRunner(Module):
+    "This module runs on the Director and controls schedule execution"
     def register(self):
         Module.register(self)
         self.rhook("queue.process", self.queue_process)
@@ -202,12 +207,17 @@ class QueueRunner(Module):
                         del tasks[self.workers:]
                     queue_workers = self.call("director.queue_workers")
                     if len(queue_workers):
-                        tasks.remove()
                         for task in tasks:
-                            worker = queue_workers.pop(0)
-                            queue_workers.append(worker)
-                            self.workers = self.workers - 1
-                            Tasklet.new(self.queue_run)(task, worker)
+                            if task.get("cls"):
+                                workers = queue_workers.get(task.get("cls"), None)
+                                if workers and len(workers):
+                                    task.remove()
+                                    worker = workers.pop(0)
+                                    workers.append(worker)
+                                    self.workers = self.workers - 1
+                                    Tasklet.new(self.queue_run)(task, worker)
+                            else:
+                                task.remove()
                     else:
                         Tasklet.sleep(5)
                 else:
@@ -259,7 +269,7 @@ class QueueRunner(Module):
                 entries = {}
             params = entries.get(task.get("hook"))
             if params is not None:
-                self.schedule_task(task.get("app"), task.get("hook"), params)
+                self.schedule_task(task.get("cls"), task.get("app"), task.get("hook"), params)
 
     def queue_processing(self):
         return (self.processing, self.processing_uniques, self.workers)
@@ -272,28 +282,23 @@ class QueueRunner(Module):
             entries = sched.get("entries")
         except ObjectNotFoundException:
             entries = {}
-#       print "schedule for %s: %s" % (app_tag, entries)
         existing = self.objlist(QueueTaskList, query_index="app-at", query_equal=app_tag)
         existing.load()
         existing = dict([(task.get("unique"), task) for task in existing if task.get("args").get("schedule")])
-#       print "existing: %s" % existing
         for hook, params in entries.iteritems():
             existing_params = existing.get(hook)
             if not existing_params:
-#               print "adding task %s to the queue" % hook
-                self.schedule_task(app_tag, hook, params)
+                self.schedule_task(sched.get("cls"), app_tag, hook, params)
             elif existing_params.get("priority") != params.get("priority") or existing_params.get("args").get("at") != params.get("at"):
-#               print "rescheduling task %s in the queue" % hook
-                self.schedule_task(app_tag, hook, params)
+                self.schedule_task(sched.get("cls"), app_tag, hook, params)
         for hook, task in existing.iteritems():
             if not entries.get(hook):
-#               print "removing task %s from the queue" % hook
                 task.remove()
         self.call("web.response_json", {"ok": 1})
 
-    def schedule_task(self, app, hook, params):
-#       print "scheduling task %s.%s, params=%s" % (app, hook, params)
-        self.call("queue.add", hook, {"schedule": True, "at": params["at"]}, at=params["at"], priority=params["priority"], unique=hook, retry_on_fail=False, app_tag=app)
+    def schedule_task(self, cls, app, hook, params):
+        if cls is not None:
+            self.call("queue.add", hook, {"schedule": True, "at": params["at"]}, at=params["at"], priority=params["priority"], unique="%s.%s.%s" % (cls, app, hook), retry_on_fail=False, app_tag=app, app_cls=cls)
 
 re_cron_num = re.compile('^\d+$')
 re_cron_interval = re.compile('^(\d+)-(\d+)$')
@@ -368,7 +373,6 @@ class CronTime(object):
     def next(self):
         if not self.valid:
             return None
-#       print "now: %s" % datetime.datetime.utcfromtimestamp(time.time())
         tm = datetime.datetime.utcfromtimestamp(time.time() + 60).replace(microsecond=0, second=0)
         done = False
         while not done:
