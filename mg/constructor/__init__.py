@@ -214,7 +214,7 @@ class Constructor(Module):
         }
         if req.user():
             vars["logged"] = True
-        return self.call("web.response_template", "constructor/index.html", vars)
+        self.call("web.response_template", "constructor/index.html", vars)
 
     def cabinet_index(self):
         req = self.req()

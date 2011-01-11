@@ -46,6 +46,7 @@ class L10n(Module):
         self.rhook("l10n.gettext", self.l10n_gettext)
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
+        self.rhook("l10n.dateencode2", self.l10n_dateencode2)
         self.rhook("l10n.timeencode2", self.l10n_timeencode2)
         self.rhook("l10n.stemmer", self.l10n_stemmer)
 
@@ -155,3 +156,22 @@ class L10n(Module):
             elif day10 == 3:
                 th = "rd"
         return self._("at the {2:d}{4} {1}, {0} at {3}").format(year, self._(timeencode2_month.get(month)), day, time, th)
+
+    def l10n_dateencode2(self, time):
+        m = re_timeencode2.match(time)
+        if not m:
+            return ""
+        year, month, day, time = m.group(1, 2, 3, 4)
+        year = int(year)
+        day = int(day)
+        th = "th"
+        day100 = day % 100
+        if day100 <= 10 or day100 >= 20:
+            day10 = day % 10
+            if day10 == 1:
+                th = "st"
+            elif day10 == 2:
+                th = "nd"
+            elif day10 == 3:
+                th = "rd"
+        return self._("{2:d}{3} {1}, {0}").format(year, self._(timeencode2_month.get(month)), day, th)

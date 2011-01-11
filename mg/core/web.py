@@ -557,7 +557,7 @@ class Web(Module):
         vars["content"] = content
         self.call("web.setup_design", vars)
         if vars.get("global_html"):
-            self.call("web.response", self.call("web.parse_template", vars["global_html"], vars))
+            self.call("web.response", self.call("web.parse_layout", vars["global_html"], vars))
         else:
             self.call("web.response", vars["content"])
 
@@ -588,7 +588,9 @@ class Web(Module):
                 raise
             except BaseException as e:
                 self.error(traceback.format_exc())
-                res = "token=<strong>%s</strong><br />error=<strong>%s</strong>" % (cgi.escape(tokens[i]), cgi.escape(str(e)))
+                res = ""
+            if res is None:
+                res = ""
             tokens[i] = res
             i = i + 2
         for i in range(0, len(tokens)):

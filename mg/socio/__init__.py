@@ -44,6 +44,7 @@ delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
 re_word_symbol = re.compile(r'[^%s]' % delimiters)
 re_not_word_symbol = re.compile(r'[%s]' % delimiters)
 re_remove_word = re.compile(r'^.*\/\/')
+re_format_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) \d\d:\d\d:\d\d$')
 
 class UserForumSettings(CassandraObject):
     _indexes = {
@@ -257,6 +258,7 @@ class ForumAdmin(Module):
             title = req.param("title")
             topcat = req.param("topcat")
             description = req.param("description")
+            tag = req.param("tag")
             order = req.param("order")
             default_subscribe = req.param("default_subscribe")
             if title is None or title == "":
@@ -276,6 +278,7 @@ class ForumAdmin(Module):
             cat["title"] = title
             cat["topcat"] = topcat
             cat["description"] = description
+            cat["tag"] = tag
             cat["order"] = float(order)
             cat["default_subscribe"] = True if default_subscribe else False
             conf = self.app().config
@@ -305,6 +308,14 @@ class ForumAdmin(Module):
                 "name": "description",
                 "label": self._("Category description"),
                 "value": cat.get("description"),
+                "flex": 2,
+            },
+            {
+                "name": "tag",
+                "label": self._("Category tag"),
+                "value": cat.get("tag"),
+                "inline": True,
+                "flex": 1,
             },
             {
                 "name": "default_subscribe",
@@ -544,10 +555,11 @@ class Forum(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.socio.Socio"])
-        self.rhook("forum.category", self.category)         # get forum category by id
-        self.rhook("forum.categories", self.categories)     # get list of forum categories
-        self.rhook("forum.newtopic", self.newtopic)         # create new topic
-        self.rhook("forum.reply", self.reply)               # reply in the topic
+        self.rhook("forum.category", self.category)                     # get forum category by id
+        self.rhook("forum.category-by-tag", self.category_by_tag)       # get forum category by tag
+        self.rhook("forum.categories", self.categories)                 # get list of forum categories
+        self.rhook("forum.newtopic", self.newtopic)                     # create new topic
+        self.rhook("forum.reply", self.reply)                           # reply in the topic
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
         self.rhook("forum.response", self.response)
@@ -573,6 +585,7 @@ class Forum(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("all.schedule", self.schedule)
+        self.rhook("hook-forum.news", self.news)
 
     def objclasses_list(self, objclasses):
         objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)
@@ -682,6 +695,13 @@ class Forum(Module):
     def category(self, id):
         for cat in self.categories():
             if cat["id"] == id:
+                return cat
+
+    def category_by_tag(self, tag):
+        if not tag:
+            return None
+        for cat in self.categories():
+            if cat.get("tag") == tag:
                 return cat
 
     def categories(self):
@@ -795,17 +815,17 @@ class Forum(Module):
     def may_delete(self, cat, topic=None, post=None, rules=None, roles=None):
         return self.may_moderate(cat, topic, rules, roles)
 
-    def topics(self, cat, page=1):
+    def topics(self, cat, page=1, tpp=topics_per_page):
         topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_reversed=True)
-        pages = (len(topics) - 1) / topics_per_page + 1
+        pages = (len(topics) - 1) / tpp + 1
         if pages < 1:
             pages = 1
         if page < 1:
             page = 1
         elif page > pages:
             page = pages
-        del topics[0:(page - 1) * topics_per_page]
-        del topics[page * topics_per_page:]
+        del topics[0:(page - 1) * tpp]
+        del topics[page * tpp:]
         topics.load()
         return topics, page, pages
 
@@ -879,6 +899,10 @@ class Forum(Module):
             topic["author_html"] = topic.get("author_html")
             topic["posts"] = intz(topic.get("posts"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
+            topic["literal_created_date"] = self.call("l10n.dateencode2", topic.get("created"))
+            topic["created_date"] = re_format_date.sub(r'\3.\2.\1', topic.get("created"))
+            if topic.get("last_post_created"):
+                topic["last_post_created"] = self.call("l10n.timeencode2", topic["last_post_created"])
             menu = []
             menu.append({"title": self._("Profile"), "href": "/forum/user/%s" % topic.get("author")})
             topic["author_menu"] = menu
@@ -1183,6 +1207,7 @@ class Forum(Module):
                         menu.append({"href": "/forum/pin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("pin"), "right": True})
                 if self.may_move(cat, topic, rules=rules, roles=roles):
                     menu.append({"href": "/forum/move/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("move"), "right": True})
+        self.call("forum.topic-menu", topic, menu)
         # preparing posts to rendering
         posts = posts.data()
         self.posts_htmlencode(posts)
@@ -2127,3 +2152,41 @@ class Forum(Module):
         }
         self.call("forum.vars-tags", vars)
         self.call("forum.response_template", "socio/tags.html", vars)
+
+    def template(self, name, default=None):
+        templates = {}
+        self.call("forum.design", templates)
+        return templates.get(name, default)
+
+    def news(self, vars, category, limit=5, template=None):
+        req = self.req()
+        user_uuid = req.user()
+        cat = self.call("forum.category-by-tag", category)
+        if not cat:
+            return ""
+        topics, page, pages = self.topics(cat, 1, limit)
+        # loading content
+        topics_content_list = self.objlist(ForumTopicContentList, topics.uuids())
+        topics_content_list.load(silent=True)
+        topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
+        # preparing output
+        topics = topics.data()
+        self.topics_htmlencode(topics)
+        if len(topics):
+            topics[-1]["lst"] = True
+        for topic in topics:
+            topic["comments"] = topic["posts"] - 1
+            content = topics_content.get(topic["uuid"])
+            if content:
+                topic["content"] = content.get("content")
+                if topic["content"]:
+                    m = re_cut.search(topic["content"])
+                    if m:
+                        topic["more"] = True
+                        topic["content"] = topic["content"][0:m.start()]
+        vars["news"] = topics
+        vars["ReadMore"] = self._("Read more")
+        vars["Comment"] = self._("Comment")
+        if template is None:
+            template = self.template("news", "socio/news.html")
+        return self.call("web.parse_template", template, vars)

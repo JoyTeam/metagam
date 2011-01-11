@@ -4,6 +4,6 @@
 	<tr class="header"><td class="header">[%title%]</td><td>[%order%]</td><td>[%editing%]</td><td>[%Access%]</td><td>[%Deletion%]</td></tr>
 	[%foreach ent in categories%]
 	[%if ent.header%]<tr><td colspan="5" class="subheader">[%ent.header%]</td></tr>[%end%]
-	[%if ent.cat%]<tr><td>[%ent.cat.title%]<div class="description">[%ent.cat.description%]</div></td><td>[%ent.cat.order%]</td><td><hook:admin.link href="forum/category/[%ent.cat.id%]" title="[%edit%]" /></td><td><hook:admin.link href="forum/access/[%ent.cat.id%]" title="[%access%]" /></td><td><hook:admin.link href="forum/delete/[%ent.cat.id%]" title="[%delete%]" /></td></tr>[%end%]
+	[%if ent.cat%]<tr><td>[%if ent.cat.tag%][[%ent.cat.tag%]] [%+ end%][%ent.cat.title%]<div class="description">[%ent.cat.description%]</div></td><td>[%ent.cat.order%]</td><td><hook:admin.link href="forum/category/[%ent.cat.id%]" title="[%edit%]" /></td><td><hook:admin.link href="forum/access/[%ent.cat.id%]" title="[%access%]" /></td><td><hook:admin.link href="forum/delete/[%ent.cat.id%]" title="[%delete%]" /></td></tr>[%end%]
 	[%end%]
 </table>

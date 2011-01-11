@@ -21,9 +21,7 @@
 </td>
 <td class="socio-author">[%topic.author_html%]</td>
 <td class="socio-counter">[%topic.posts%]</td>
-<td class="socio-lastcomment">
-	[%if topic.last_post%]<div><a href="/forum/topic/[%topic.uuid%]?page=[%topic.last_post_page%]#[%topic.last_post%]">[%topic.last_post_created%]</a></div><div>[%by +%] [%+ topic.last_post_author_html%]</div>[%end%]
-</td>
+<td class="socio-lastcomment">[%if topic.last_post%]<div><a href="/forum/topic/[%topic.uuid%]?page=[%topic.last_post_page%]#[%topic.last_post%]">[%topic.last_post_created%]</a></div><div>[%by +%] [%+ topic.last_post_author_html%]</div>[%end%]</td>
 </tr>
 [%unless topic.lst%]
 <tr class="socio-catdelim"><td colspan="4"><div class="socio-thin"></div></td></tr>
