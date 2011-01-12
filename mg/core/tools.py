@@ -5,6 +5,7 @@ import cgi
 import datetime
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
+re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
 
 def urldecode(str):
     if str is None:
@@ -59,3 +60,10 @@ def htmlescape(str):
 
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
+
+def date_from_human(str):
+    m = re_human_time.match(str)
+    if not m:
+        return None
+    d, m, y, t = m.group(1, 2, 3, 4)
+    return "%04d-%02d-%02d %s" % (int(y), int(m), int(d), t if t else "00:00:00")

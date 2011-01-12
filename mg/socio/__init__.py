@@ -45,6 +45,7 @@ re_word_symbol = re.compile(r'[^%s]' % delimiters)
 re_not_word_symbol = re.compile(r'[%s]' % delimiters)
 re_remove_word = re.compile(r'^.*\/\/')
 re_format_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) \d\d:\d\d:\d\d$')
+re_valid_date = re.compile(r'^(\d\d\.\d\d\.\d\d\d\d|\d\d\.\d\d\.\d\d\d\d \d\d:\d\d:\d\d)$')
 
 class UserForumSettings(CassandraObject):
     _indexes = {
@@ -264,6 +265,7 @@ class ForumAdmin(Module):
             tag = req.param("tag")
             order = req.param("order")
             default_subscribe = req.param("default_subscribe")
+            manual_date = req.param("manual_date")
             if title is None or title == "":
                 errors["title"] = self._("Enter category title")
             if topcat is None or topcat == "":
@@ -284,6 +286,7 @@ class ForumAdmin(Module):
             cat["tag"] = tag
             cat["order"] = float(order)
             cat["default_subscribe"] = True if default_subscribe else False
+            cat["manual_date"] = True if manual_date else False
             conf = self.app().config
             conf.set("forum.categories", categories)
             conf.store()
@@ -325,7 +328,13 @@ class ForumAdmin(Module):
                 "label": self._("Notify users about new topics in this category by default"),
                 "checked": cat.get("default_subscribe"),
                 "type": "checkbox",
-            }
+            },
+            {
+                "name": "manual_date",
+                "label": self._("Allow users to enter topic dates manually"),
+                "checked": cat.get("manual_date"),
+                "type": "checkbox",
+            },
         ]
         self.call("admin.form", fields=fields)
 
@@ -1049,6 +1058,10 @@ class Forum(Module):
             self.call("web.forbidden")
         subject = req.param("subject")
         content = req.param("content")
+        if cat.get("manual_date"):
+            created = req.param("created")
+        else:
+            created = None
         tags = req.param("tags")
         form = self.call("web.form", "common/form.html")
         if req.ok():
@@ -1056,10 +1069,17 @@ class Forum(Module):
                 form.error("subject", self._("Enter topic subject"))
             if not content:
                 form.error("content", self._("Enter topic content"))
+            if cat.get("manual_date") and created:
+                if created == "":
+                    created = None
+                elif not re_valid_date.match(created):
+                    form.error("created", self._("Invalid datetime format"))
             if not form.errors:
                 user = self.obj(User, req.user())
-                topic = self.call("forum.newtopic", cat, user, subject, content, tags)
+                topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created))
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+        if cat.get("manual_date"):
+            form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         form.input(self._("Tags"), "tags", tags)
@@ -1074,13 +1094,14 @@ class Forum(Module):
         }
         self.call("forum.response", form.html(), vars)
 
-    def newtopic(self, cat, author, subject, content, tags=""):
+    def newtopic(self, cat, author, subject, content, tags="", created=None):
         topic = self.obj(ForumTopic)
         topic_content = self.obj(ForumTopicContent, topic.uuid, {})
-        now = self.now()
+        if created is None:
+            created = self.now()
         topic.set("category", cat["id"])
-        topic.set("created", now)
-        topic.set("updated", now)
+        topic.set("created", created)
+        topic.set("updated", created)
         catstat = self.catstat(cat["id"])
         catstat.set("updated", time.time())
         catstat.incr("topics")
@@ -1095,7 +1116,7 @@ class Forum(Module):
             topic.set("author_html", author_html)
             last["author_html"] = author_html
             last["subject_html"] = cgi.escape(subject)
-            last["updated"] = self.call("l10n.timeencode2", now)
+            last["updated"] = self.call("l10n.timeencode2", created)
         catstat.set("last", last)
         topic.set("subject", subject)
         topic.sync()
@@ -1111,7 +1132,7 @@ class Forum(Module):
         topic.store()
         topic_content.store()
         if author is not None:
-            self.subscribe(author.uuid, topic.uuid, cat["id"], now)
+            self.subscribe(author.uuid, topic.uuid, cat["id"], created)
         catstat.store()
         self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
         return topic
