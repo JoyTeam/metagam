@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-12 10:05+0300\n"
+"POT-Creation-Date: 2011-01-12 11:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -446,11 +446,11 @@ msgstr ""
 msgid "You have not subscribed to any topic"
 msgstr ""
 
-#: mg/socio/__init__.py:2188
+#: mg/socio/__init__.py:2187
 msgid "Read more"
 msgstr ""
 
-#: mg/socio/__init__.py:2189
+#: mg/socio/__init__.py:2188
 msgid "Comment"
 msgstr ""
 

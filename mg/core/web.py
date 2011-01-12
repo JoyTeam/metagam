@@ -459,7 +459,7 @@ class Web(Module):
     def check_last_ping(self):
         if self.last_ping is None:
             self.last_ping = time.time()
-        elif time.time() > self.last_ping + 300:
+        elif time.time() > self.last_ping + 86400:
             self.error("Director missing since %d. Exiting", self.last_ping)
             os._exit(2)
 

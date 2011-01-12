@@ -1,0 +1,31 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from mg.core.queue import QueueTaskList
+from concurrence import dispatch, quit
+import os
+import logging
+
+def main():
+    try:
+        inst = Instance("worker")
+        inst.download_config()
+        int_app = WebApplication(inst, "int", "int")
+        tasks = int_app.objlist(QueueTaskList, query_index="at")
+        tasks.load(silent=True)
+        for task in tasks:
+            at = from_unixtime(task.get("at"))
+            print "%s - %s.%s.%s - %s" % (at, task.get("cls"), task.get("app"), task.get("hook"), task.get("args"))
+        quit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except (SystemExit, TaskletExit, KeyboardInterrupt):
+        raise
+    except BaseException as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+

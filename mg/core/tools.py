@@ -2,6 +2,7 @@ import urllib
 import string
 import re
 import cgi
+import datetime
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 
@@ -55,3 +56,6 @@ def htmlescape(str):
     if str is None:
         return ""
     return cgi.escape(str)
+
+def from_unixtime(ts):
+    return datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")

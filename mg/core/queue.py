@@ -200,24 +200,24 @@ class QueueRunner(Module):
                 while self.workers <= 0:
                     self.wait_free.receive()
                 tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
+                tasks.load(silent=True)
                 if len(tasks):
-                    tasks.load(silent=True)
                     tasks.sort(cmp=lambda x, y: cmp(x.get("priority"), y.get("priority")), reverse=True)
                     if len(tasks) > self.workers:
                         del tasks[self.workers:]
                     queue_workers = self.call("director.queue_workers")
-                    if len(queue_workers):
-                        for task in tasks:
-                            if task.get("cls"):
-                                workers = queue_workers.get(task.get("cls"), None)
-                                if workers and len(workers):
-                                    task.remove()
-                                    worker = workers.pop(0)
-                                    workers.append(worker)
-                                    self.workers = self.workers - 1
-                                    Tasklet.new(self.queue_run)(task, worker)
-                            else:
+                    for task in tasks:
+                        if task.get("cls"):
+                            workers = queue_workers.get(task.get("cls"), None)
+                            if workers and len(workers):
                                 task.remove()
+                                worker = workers.pop(0)
+                                workers.append(worker)
+                                self.workers = self.workers - 1
+                                Tasklet.new(self.queue_run)(task, worker)
+                        else:
+                            self.error("Missing cls: %s" % task.data)
+                            task.remove()
                     else:
                         Tasklet.sleep(5)
                 else:
