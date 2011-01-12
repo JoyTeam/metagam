@@ -66,8 +66,9 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-avatar-row { width: 180px; vertical-align: top; padding-bottom: 5px }
 .socio-avatar { padding: 5px 10px 9px 33px }
 .socio-avatar img { border: solid 1px #614115 }
-.socio-member-name { color: #dd6419; font-size: 13px; font-weight: bold; padding: 0px 10px 5px 33px; }
-.socio-member-menu { font-size: 11px; color: #0078ac; padding: 0px 10px 5px 33px }
+.socio-member-name { color: #dd6419; font-size: 13px; font-weight: bold; padding: 0px 10px 0px 33px; }
+.socio-member-status { font-size: 11px; padding: 0px 10px 5px 33px }
+.socio-member-menu { font-size: 11px; color: #0078ac; padding: 5px 10px 5px 33px }
 .socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
 .socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
 .socio-post-content { padding: 0px 33px 5px 0px; font-size: 14px; text-align: justify; vertical-align: top }
@@ -88,3 +89,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-news-head { font-weight: bold; padding-bottom: 5px }
 .socio-news-date { color: #007cbf }
 .socio-news-actions { font-size: 12px; text-align: right; padding-top: 5px }
+/* USER PROFILE */
+.socio-user-name { font-size: 16px; font-weight: bold; padding-bottom: 20px }
+.socio-user-param { font-weight: bold }
+.socio-user-param-name { font-weight: normal }

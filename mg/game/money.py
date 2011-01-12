@@ -356,8 +356,8 @@ class MemberMoney(object):
 class Money(Module):
     def register(self):
         Module.register(self)
-        self.rhook("constructor.user-tables", self.user_tables)
-        self.rhook("constructor.user-options", self.user_options)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("auth.user-options", self.user_options)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-admin-money.give", self.admin_money_give)
@@ -395,7 +395,7 @@ class Money(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Give money"), "constructor/user-dashboard/%s" % args]
+        return [self._("Give money"), "auth/user-dashboard/%s" % args]
 
     def admin_money_give(self):
         self.call("session.require_permission", "users.money.give")
@@ -425,7 +425,7 @@ class Money(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user())
-            self.call("admin.redirect", "constructor/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
         else:
             amount = "0"
         fields = []
@@ -439,7 +439,7 @@ class Money(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Take money"), "constructor/user-dashboard/%s" % args]
+        return [self._("Take money"), "auth/user-dashboard/%s" % args]
 
     def admin_money_take(self):
         self.call("session.require_permission", "users.money.give")
@@ -469,7 +469,7 @@ class Money(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
             member.force_debit(amount, currency, "admin-take", admin=req.user())
-            self.call("admin.redirect", "constructor/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
         else:
             amount = "0"
         fields = []
@@ -483,7 +483,7 @@ class Money(Module):
             acc = self.obj(Account, args)
         except ObjectNotFoundException:
             return
-        return [self._("Account %s") % acc.uuid, "constructor/user-dashboard/%s" % acc.get("member")]
+        return [self._("Account %s") % acc.uuid, "auth/user-dashboard/%s" % acc.get("member")]
 
     def admin_money_account(self):
         self.call("session.require_permission", "users.money")

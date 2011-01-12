@@ -32,7 +32,7 @@ class Domains(Module):
         self.rhook("domains.money_unlock", self.money_unlock)
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("money-description.domain-reg", self.money_description_domain_reg)
-        self.rhook("constructor.user-tables", self.user_tables)
+        self.rhook("auth.user-tables", self.user_tables)
         self.rhook("domains.validate_new", self.validate_new)
         self.rhook("domains.assign", self.assign)
 

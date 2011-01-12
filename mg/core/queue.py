@@ -243,9 +243,11 @@ class QueueRunner(Module):
             success = True
         except HTTPError as e:
             self.error("Error executing task %s: %s" % (task.get("hook"), e))
-            if self.main_app().hooks.call("project.missing", tag):
-                self.info("Removing missing project %s", tag)
-                self.main_app().hooks.call("project.cleanup", tag)
+            main_app = self.main_app()
+            if main_app:
+                if main_app.hooks.call("project.missing", tag):
+                    self.info("Removing missing project %s", tag)
+                    self.main_app().hooks.call("project.cleanup", tag)
         except (KeyboardInterrupt, SystemExit, TaskletExit):
             raise
         except BaseException as e:

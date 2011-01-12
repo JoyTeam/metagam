@@ -1,0 +1,6 @@
+<div class="socio-user-name">[%name%]</div>
+[%if params%]
+<div class="socio-user-params">
+[%foreach param in params%]<div class="socio-user-param"><span class="socio-user-param-name">[%param.name%]:</span> [%param.value%]</div>[%end%]
+</div>
+[%end%]

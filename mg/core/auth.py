@@ -151,7 +151,7 @@ class Sessions(Module):
             domain = re.sub(r'^www\.', '', domain)
             args["domain"] = "." + domain
         args["path"] = "/"
-        args["expires"] = format_date_time(time.mktime(datetime.now().timetuple()) + 90 * 86400)
+        args["expires"] = format_date_time(time.mktime(datetime.datetime.now().timetuple()) + 90 * 86400)
         req.set_cookie(cookie_name, sid, **args)
         session = self.obj(Session, sid, {})
         if create:
@@ -189,7 +189,7 @@ class Interface(Module):
         Module.register(self)
         self.rhook("auth.permissions", self.auth_permissions)
         self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-security.index", self.menu_security_index)
+        self.rhook("menu-admin-users.index", self.menu_users_index)
         self.rhook("ext-admin-auth.permissions", self.admin_permissions)
         self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
         self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions)
@@ -210,6 +210,10 @@ class Interface(Module):
         self.rhook("ext-auth.change", self.ext_change)
         self.rhook("ext-auth.email", self.ext_email)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("ext-admin-auth.user-find", self.ext_user_find)
+        self.rhook("ext-admin-auth.user-dashboard", self.ext_user_dashboard)
+        self.rhook("ext-admin-auth.user-lastreg", self.ext_user_lastreg)
+        self.rhook("headmenu-admin-auth.user-dashboard", self.headmenu_user_dashboard)
 
     def schedule(self, sched):
         sched.add("auth.cleanup", "5 1 * * *", priority=10)
@@ -307,7 +311,7 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("Account activation"),
-                    "content": self._("Someone possibly you requested registration on the MMOConstructor site. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
                 }
                 self.call("auth.activation_email", params)
                 self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
@@ -397,10 +401,10 @@ class Interface(Module):
                     name = user.get("name")
                 params = {
                     "subject": self._("Password reminder"),
-                    "content": self._("Someone possibly you requested password recovery on the MMOConstructor site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
+                    "content": self._("Someone possibly you requested password recovery on the {host} site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
                 }
                 self.call("auth.remind_email", params)
-                self.call("email.send", email, name, params["subject"], params["content"].format(content=content.encode("utf-8")))
+                self.call("email.send", email, name, params["subject"], params["content"].format(content=content.encode("utf-8"), host=req.host()))
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
                 self.call("web.redirect", "/auth/login")
@@ -728,7 +732,7 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("E-mail confirmation"),
-                    "content": self._("Someone possibly you requested e-mail change on the MMOConstructor site. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}"),
+                    "content": self._("Someone possibly you requested e-mail change on the {host}. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}"),
                 }
                 self.call("auth.email_change_email", params)
                 self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host()))
@@ -749,6 +753,7 @@ class Interface(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
+        perms.append({"id": "users", "name": self._("User profiles")})
 
     def auth_permissions(self, user_id):
         perms = {}
@@ -764,12 +769,16 @@ class Interface(Module):
         return perms
 
     def menu_root_index(self, menu):
-        menu.append({"id": "security.index", "text": self._("Security")})
+        menu.append({"id": "users.index", "text": self._("Users")})
 
-    def menu_security_index(self, menu):
+    def menu_users_index(self, menu):
         req = self.req()
         if req.has_access("permissions") or req.has_access("admin"):
             menu.append({"id": "auth/permissions", "text": self._("Permissions"), "leaf": True})
+        if req.has_access("users"):
+            menu.append({"id": "auth/user-dashboard/%s" % req.user(), "text": self._("My dashboard"), "leaf": True})
+            menu.append({"id": "auth/user-find", "text": self._("Find user"), "leaf": True})
+            menu.append({"id": "auth/user-lastreg", "text": self._("Last registered users"), "leaf": True})
 
     def admin_permissions(self):
         req = self.req()
@@ -899,6 +908,71 @@ class Interface(Module):
                     roles[user.uuid].extend(perms)
                 except KeyError:
                     roles[user.uuid] = perms
+
+    def headmenu_user_dashboard(self, args):
+        try:
+            user = self.obj(User, args)
+        except ObjectNotFoundException:
+            return
+        return [self._("User %s") % cgi.escape(user.get("name"))]
+
+    def ext_user_find(self):
+        self.call("session.require_permission", "users")
+        req = self.req()
+        name = req.param("name")
+        if req.ok():
+            errors = {}
+            if not name:
+                errors["name"] = self._("Enter user name")
+            else:
+                user = self.call("session.find_user", name)
+                if not user:
+                    errors["name"] = self._("User not found")
+                else:
+                    self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            self.call("web.response_json", {"success": False, "errors": errors})
+        fields = [
+            {"name": "name", "label": self._("User name"), "value": name},
+        ]
+        buttons = [{"text": self._("Search")}]
+        self.call("admin.form", fields=fields, buttons=buttons)
+
+    def ext_user_dashboard(self):
+        self.call("session.require_permission", "users")
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        vars = {
+            "user": {
+                "uuid": user.uuid,
+            },
+            "Update": self._("Update"),
+        }
+        tables = []
+        self.call("auth.user-tables", user, tables)
+        if len(tables):
+            vars["tables"] = tables
+        options = []
+        self.call("auth.user-options", user, options)
+        if len(options):
+            vars["options"] = options
+        self.call("admin.response_template", "admin/auth/user-dashboard.html", vars)
+
+    def ext_user_lastreg(self):
+        self.call("session.require_permission", "users")
+        tables = []
+        users = self.objlist(UserList, query_index="created", query_reversed=True, query_limit=30)
+        users.load()
+        tables.append({
+            "header": [self._("ID"), self._("Name"), self._("Active"), self._("E-mail")],
+            "rows": [('<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes"), htmlescape(u.get("email"))) for u in users]
+        })
+        vars = {
+            "tables": tables
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 

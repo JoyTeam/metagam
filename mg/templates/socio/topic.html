@@ -5,7 +5,7 @@
 [%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
-<div id="socio-topic-facebook"><script src="http://connect.facebook.net/ru_RU/all.js#xfbml=1"></script><fb:like show_faces="false" width="450" font="verdana"></fb:like></div>
+<div id="socio-topic-facebook"><script src="http://connect.facebook.net/ru_RU/all.js#xfbml=1"></script><fb:like show_faces="false" width="850" font="verdana"></fb:like></div>
 
 <table id="socio-categories">
 
@@ -17,6 +17,7 @@
 <td class="socio-avatar-row" rowspan="2">
 [%if topic.avatar%]<div class="socio-avatar"><img src="[%topic.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%topic.author_html%]</div>
+[%if topic.status%]<div class="socio-member-status">[%topic.status%]</div>[%end%]
 [%if topic.author_menu%]<div class="socio-member-menu">[%foreach ent in topic.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
 
@@ -41,6 +42,7 @@
 <td class="socio-avatar-row" rowspan="2">
 [%if post.avatar%]<div class="socio-avatar"><img src="[%post.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%post.author_html%]</div>
+[%if post.status%]<div class="socio-member-status">[%post.status%]</div>[%end%]
 [%if post.author_menu%]<div class="socio-member-menu">[%foreach ent in post.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
 

@@ -29,7 +29,7 @@ re_images = re.compile(r'\[img:[0-9a-f]+\]')
 re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
 re_color = re.compile(r'^#[0-9a-f]{6}$')
 re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
-re_cut = re.compile(r'\[cut\]')
+re_cut = re.compile(r'\s*\[cut\]')
 re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
 re_mdash = re.compile(r' +-( +|$)', re.MULTILINE)
 re_bull = re.compile(r'^\*( +|$)', re.MULTILINE)
@@ -198,6 +198,9 @@ class ForumAdmin(Module):
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("advice-admin-forum.categories", self.advice_forum_categories)
         self.rhook("advice-admin-forum.category", self.advice_forum_categories)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("headmenu-admin-socio.user", self.headmenu_user)
+        self.rhook("ext-admin-socio.user", self.user)
 
     def advice_forum_categories(self, args, advice):
         advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
@@ -337,16 +340,19 @@ class ForumAdmin(Module):
     def admin_access(self):
         self.call("session.require_permission", "forum.categories")
         permissions = []
-        permissions.append(("-R", self._("Deny reading, writing and moderation")))
+        permissions.append(("-R", self._("Deny everything")))
         permissions.append(("+R", self._("Allow reading")))
-        permissions.append(("-W", self._("Deny writing and moderation")))
-        permissions.append(("+W", self._("Allow reading and writing")))
+        permissions.append(("-C", self._("Deny creating topics")))
+        permissions.append(("+C", self._("Allow creating topics")))
+        permissions.append(("-W", self._("Deny replying")))
+        permissions.append(("+W", self._("Allow reading and replying")))
         permissions.append(("+M", self._("Allow moderation")))
         permissions.append(("-M", self._("Deny moderation")))
         PermissionsEditor(self.app(), ForumPermissions, permissions, "forum-admin.default_rules").request()
 
     def default_rules(self, perms):
         perms.append(("logged", "+W"))
+        perms.append(("logged", "+C"))
         perms.append(("all", "+R"))
         perms.append(("perm:forum.moderation", "+M"))
 
@@ -372,11 +378,64 @@ class ForumAdmin(Module):
         obj.remove()
         self.call("admin.redirect", "forum/categories")
 
+    def user_tables(self, user, tables):
+        settings = self.obj(UserForumSettings, user.uuid, silent=True)
+        params = []
+        params.append((self._("Status"), htmlescape(settings.get("status"))))
+        params.append((self._("Signature"), self.call("socio.format_text", settings.get("signature"))))
+        avatar = settings.get("avatar")
+        if avatar:
+            params.append((self._("Avatar"), '<img src="%s" alt="" />' % avatar))
+        if len(params):
+            tables.append({
+                "title": self._("Socio settings"),
+                "links": [{"hook": "socio/user/%s" % user.uuid, "text": self._("edit"), "lst": True}],
+                "header": [self._("Parameter"), self._("Value")],
+                "rows": params,
+            })
+
+    def user(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        settings = self.obj(UserForumSettings, user.uuid, silent=True)
+        if req.param("ok"):
+            settings.set("signature", req.param("signature"))
+            settings.set("status", req.param("status"))
+            settings.store()
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+        fields = [
+            {
+                "name": "status",
+                "label": self._("Status"),
+                "value": settings.get("status"),
+            },
+            {
+                "type": "textarea",
+                "name": "signature",
+                "label": self._("Signature"),
+                "value": settings.get("signature"),
+            },
+        ]
+        self.call("admin.form", fields=fields)
+
+    def headmenu_user(self, args):
+        return [self._("Socio settings"), "auth/user-dashboard/%s" % args]
+
 class Socio(Module):
     def register(self):
         Module.register(self)
         self.rhook("socio.format_text", self.format_text)
         self.rhook("ext-socio.image", self.ext_image)
+        self.rhook("ext-socio.user", self.ext_user)
+        self.rhook("socio.template", self.template)
+
+    def template(self, name, default=None):
+        templates = {}
+        self.call("socio.design", templates)
+        return templates.get(name, default)
 
     def format_text(self, html, options={}):
         if html is None:
@@ -550,6 +609,26 @@ class Socio(Module):
             "title": self._("Upload image")
         }
         self.call("web.response_global", form.html(), vars)
+
+    def ext_user(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        settings = self.obj(UserForumSettings, user.uuid, silent=True)
+        name = htmlescape(user.get("name"))
+        params = []
+        params.append({"name": self._("user///Registered"), "value": self.call("l10n.dateencode2", from_unixtime(user.get("created")))})
+        status = settings.get("status")
+        if status:
+            params.append({"name": self._("Status"), "value": htmlescape(status)})
+        vars = {
+                "title": self._("User %s") % name,
+                "name": name,
+                "params": params,
+        }
+        self.call("web.response_template", self.call("socio.template", "user", "socio/user.html"), vars)
 
 class Forum(Module):
     def register(self):
@@ -764,6 +843,21 @@ class Forum(Module):
                 return False
         return False
 
+    def may_create_topic(self, cat, topic=None, rules=None, roles=None):
+        req = self.req()
+        user = req.user()
+        if user is None:
+            return False
+        rules, roles = self.load_rules_roles(user, cat, rules, roles)
+        if rules is None:
+            return False
+        for role, perm in rules:
+            if (perm == "+C") and role in roles:
+                return True
+            if (perm == "-C" or perm == "-R") and role in roles:
+                return False
+        return False
+
     def may_edit(self, cat, topic=None, post=None, rules=None, roles=None):
         req = self.req()
         user = req.user()
@@ -850,7 +944,7 @@ class Forum(Module):
             { "href": "/forum", "html": self._("Forum categories") },
             { "html": cat["title"] },
         ]
-        if self.may_write(user_uuid, cat, rules=rules, roles=roles):
+        if self.may_create_topic(user_uuid, cat, rules=rules, roles=roles):
             menu.append({"href": "/forum/newtopic/%s" % cat["id"], "html": self._("New topic"), "right": True})
         vars = {
             "title": cat["title"],
@@ -876,7 +970,7 @@ class Forum(Module):
         self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
 
-    def load_settings(self, list, signatures, avatars):
+    def load_settings(self, list, signatures, avatars, statuses):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
         if len(authors):
             authors_list = self.objlist(UserForumSettingsList, authors)
@@ -884,16 +978,19 @@ class Forum(Module):
             for obj in authors_list:
                 signatures[obj.uuid] = obj.get("signature_html")
                 avatars[obj.uuid] = obj.get("avatar")
+                statuses[obj.uuid] = obj.get("status")
         for ent in list:
             author = ent.get("author")
             ent["avatar"] = avatars.get(author)
             ent["signature"] = signatures.get(author)
+            ent["status"] = statuses.get(author)
 
     def topics_htmlencode(self, topics, load_settings=False):
         signatures = {}
         avatars = {}
+        statuses = {}
         if load_settings:
-            self.load_settings(topics, signatures, avatars)
+            self.load_settings(topics, signatures, avatars, statuses)
         for topic in topics:
             topic["subject_html"] = cgi.escape(topic.get("subject"))
             topic["author_html"] = topic.get("author_html")
@@ -904,7 +1001,7 @@ class Forum(Module):
             if topic.get("last_post_created"):
                 topic["last_post_created"] = self.call("l10n.timeencode2", topic["last_post_created"])
             menu = []
-            menu.append({"title": self._("Profile"), "href": "/forum/user/%s" % topic.get("author")})
+            menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % topic.get("author")})
             topic["author_menu"] = menu
             pages = (topic["posts"] - 1) / posts_per_page + 1
             if pages > 1:
@@ -931,7 +1028,8 @@ class Forum(Module):
     def posts_htmlencode(self, posts):
         signatures = {}
         avatars = {}
-        self.load_settings(posts, signatures, avatars)
+        statuses = {}
+        self.load_settings(posts, signatures, avatars, statuses)
         for post in posts:
             post["author_html"] = post.get("author_html")
             post["posts"] = intz(post.get("posts"))
@@ -947,7 +1045,7 @@ class Forum(Module):
         cat = self.call("forum.category", req.args)
         if cat is None:
             self.call("web.not_found")
-        if not self.may_write(cat):
+        if not self.may_create_topic(cat):
             self.call("web.forbidden")
         subject = req.param("subject")
         content = req.param("content")
@@ -1745,7 +1843,7 @@ class Forum(Module):
             self.call("security.users-roles", [user_uuid], roles)
             roles = roles.get(user_uuid, [])
             categories = [c for c in categories if c["id"] != cat["id"] and self.may_write(user_uuid, c, rules=rules[c["id"]], roles=roles)]
-            if not self.may_move(cat, topic, rules=rules[cat["id"]], roles=roles):
+            if not self.may_create_topic(cat, topic, rules=rules[cat["id"]], roles=roles):
                 self.call("web.forbidden")
             form = self.call("web.form", "common/form.html")
             newcat = req.param("newcat")
@@ -2153,11 +2251,6 @@ class Forum(Module):
         self.call("forum.vars-tags", vars)
         self.call("forum.response_template", "socio/tags.html", vars)
 
-    def template(self, name, default=None):
-        templates = {}
-        self.call("forum.design", templates)
-        return templates.get(name, default)
-
     def news(self, vars, category, limit=5, template=None):
         req = self.req()
         user_uuid = req.user()
@@ -2177,15 +2270,16 @@ class Forum(Module):
         for topic in topics:
             content = topics_content.get(topic["uuid"])
             if content:
-                topic["content"] = self.call("socio.format_text", content.get("content"))
-                if topic["content"]:
-                    m = re_cut.search(topic["content"])
+                content = content.get("content")
+                if content:
+                    m = re_cut.search(content)
                     if m:
                         topic["more"] = True
-                        topic["content"] = topic["content"][0:m.start()]
+                        content = content[0:m.start()]
+                topic["content"] = self.call("socio.format_text", content)
         vars["news"] = topics
         vars["ReadMore"] = self._("Read more")
         vars["Comment"] = self._("Comment")
         if template is None:
-            template = self.template("news", "socio/news.html")
+            template = self.call("socio.template", "news", "socio/news.html")
         return self.call("web.parse_template", template, vars)

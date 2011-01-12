@@ -1,7 +1,7 @@
 <div class="text">
 <p><hook:admin.link href="constructor/project-dashboard/[%project.uuid%]" title="[%Update%]" /></p>
 <table class="menu">
-[%if owner%]<tr><td class="header">[%Owner%]</td><td><hook:admin.link href="constructor/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>[%end%]
+[%if owner%]<tr><td class="header">[%Owner%]</td><td><hook:admin.link href="auth/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>[%end%]
 <tr><td class="header">[%Id%]</td><td>[%project.uuid%]</td></tr>
 [%if project.created%]<tr><td class="header">[%Created%]</td><td>[%project.created%]</td></tr>[%end%]
 <tr><td class="header">[%Published%]</td><td>[%if project.published%][%project.published%][%else%][%no%][%end%][%if project.unpublish%] &bull; <hook:admin.link href="constructor/project-unpublish/[%project.uuid%]" title="[%unpublish%]" confirm="[%ConfirmUnpublish%]" />[%end%]</td></tr>
