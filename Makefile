@@ -69,7 +69,7 @@ deploy: translations
 	find -name '*.pyc' -exec rm {} \;
 	bin/mg_compile .
 	mkdir -p depl/bin
-	for m in director reload server worker ; do cp bin/mg_$$m bin/*.sh depl/bin/ ; done
+	cp bin/* depl/bin/
 	cp -R mg static depl/
 	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
 	rsync --delete -r depl/* admin.mmoconstructor.ru:/home/mg/

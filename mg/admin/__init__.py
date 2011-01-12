@@ -50,8 +50,7 @@ class AdminInterface(Module):
                 leftmenu = {"text": "Root", "children": []}
             leftmenu["children"] = wizards + leftmenu["children"]
         if not leftmenu:
-            #self.call("web.forbidden")
-            #TEMP: DEBUG: FIXME
+            self.call("web.forbidden")
             leftmenu = []
         else:
             self.sortleftmenu(leftmenu)

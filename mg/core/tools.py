@@ -58,4 +58,4 @@ def htmlescape(str):
     return cgi.escape(str)
 
 def from_unixtime(ts):
-    return datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
