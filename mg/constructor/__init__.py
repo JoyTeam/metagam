@@ -144,7 +144,7 @@ class Constructor(Module):
                     topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
             if redirect_param:
-                topmenu.append({"href": redirect, "html": self._("Cancel")})
+                topmenu.append({"href": htmlescape(req.parama("redirect")), "html": self._("Cancel")})
         elif req.group == "documentation":
             vars["global_html"] = "constructor/socio_global.html"
             topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})

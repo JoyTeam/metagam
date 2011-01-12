@@ -85,8 +85,8 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 #socio-topic-bottom { width: 100%; border-top: solid 1px #dd6419; margin-top: 30px }
 #socio-topic-bottom .socio-topic-pages { padding-top: 5px }
 /* NEWS */
-.socio-news { padding: 10px 0px 0px 0px }
-.socio-news-head { font-weight: bold; padding-bottom: 5px }
+.socio-news { padding: 10px 0px 5px 0px }
+.socio-news-head { font-weight: bold; padding-bottom: 15px }
 .socio-news-date { color: #007cbf }
 .socio-news-actions { font-size: 12px; text-align: right; padding-top: 5px }
 /* USER PROFILE */
