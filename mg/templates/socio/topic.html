@@ -1,8 +1,11 @@
 <table id="socio-topic-head"><tr><td id="socio-topic-title">
 [%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
-</td>[%if pages%]<td class="socio-topic-pages">
+</td>
+<td id="socio-topic-tweet"><a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-via="alourier">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script></td>
+[%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
+<div id="socio-topic-facebook"><script src="http://connect.facebook.net/ru_RU/all.js#xfbml=1"></script><fb:like show_faces="false" width="450" font="verdana"></fb:like></div>
 
 <table id="socio-categories">
 
@@ -31,7 +34,7 @@
 [%end%]
 
 [%foreach post in posts%]
-<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%written_at +%] [%+ post.literal_created%]</td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
+<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left">[%written_at +%] <a href="#[%post.uuid%]">[%post.literal_created%]</a></td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
 
 <tr class="socio-category">
 

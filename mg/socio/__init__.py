@@ -2175,10 +2175,9 @@ class Forum(Module):
         if len(topics):
             topics[-1]["lst"] = True
         for topic in topics:
-            topic["comments"] = topic["posts"] - 1
             content = topics_content.get(topic["uuid"])
             if content:
-                topic["content"] = content.get("content")
+                topic["content"] = self.call("socio.format_text", content.get("content"))
                 if topic["content"]:
                     m = re_cut.search(topic["content"])
                     if m:

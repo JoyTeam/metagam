@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-11 18:28+0300\n"
-"PO-Revision-Date: 2011-01-11 18:30+0300\n"
+"POT-Creation-Date: 2011-01-12 10:05+0300\n"
+"PO-Revision-Date: 2011-01-12 10:05+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -508,34 +508,6 @@ msgstr "Читать далее"
 #: mg/socio/__init__.py:2189
 msgid "Comment"
 msgstr "Комментировать"
-
-#: mg/socio/ext.py:17
-msgid "Twitter settings"
-msgstr "Настройки Twitter"
-
-#: mg/socio/ext.py:20
-msgid "Twitter posting"
-msgstr "Twitter: постинг"
-
-#: mg/socio/ext.py:21
-msgid "Twitter configuration"
-msgstr "Twitter: конфигурирование"
-
-#: mg/socio/ext.py:36
-msgid "Twitter credentials saved"
-msgstr "Данные Twitter сохранены"
-
-#: mg/socio/ext.py:47
-msgid "Registering application"
-msgstr "Регистрация приложения"
-
-#: mg/socio/ext.py:47
-msgid "Go to the <a href=\"http://dev.twitter.com/apps\" target=\"_blank\">Twitter Applications</a> page and follow instructions there to get your authentication credentials. Register as \"Desktop application\"."
-msgstr "Перейдите на страницу <a href=\"http://dev.twitter.com/apps\" target=\"_blank\">Twitter Applications</a> и следуйте инструкциям, чтобы получить ключи для аутентификации. Зарегистрируйтесь как \"Desktop application\"."
-
-#: mg/socio/ext.py:54
-msgid "tweet"
-msgstr "tweet"
 
 #: mg/core/l10n.py:13
 msgid "of January"
@@ -2124,8 +2096,8 @@ msgid "Pages"
 msgstr "На страницу"
 
 #: mg/constructor/design.py:630
-msgid "Created at"
-msgstr "Создано"
+msgid "topic///Opened"
+msgstr "Открыта"
 
 #: mg/constructor/design.py:635
 msgid "topic started"
@@ -3041,6 +3013,29 @@ msgstr "Активен"
 msgid "yes"
 msgstr "да"
 
+#~ msgid "Twitter settings"
+#~ msgstr "Настройки Twitter"
+#~ msgid "Twitter posting"
+#~ msgstr "Twitter: постинг"
+#~ msgid "Twitter configuration"
+#~ msgstr "Twitter: конфигурирование"
+#~ msgid "Twitter credentials saved"
+#~ msgstr "Данные Twitter сохранены"
+#~ msgid "Registering application"
+#~ msgstr "Регистрация приложения"
+#~ msgid ""
+#~ "Go to the <a href=\"http://dev.twitter.com/apps\" target=\"_blank"
+#~ "\">Twitter Applications</a> page and follow instructions there to get "
+#~ "your authentication credentials. Register as \"Desktop application\"."
+#~ msgstr ""
+#~ "Перейдите на страницу <a href=\"http://dev.twitter.com/apps\" target="
+#~ "\"_blank\">Twitter Applications</a> и следуйте инструкциям, чтобы "
+#~ "получить ключи для аутентификации. Зарегистрируйтесь как \"Desktop "
+#~ "application\"."
+#~ msgid "tweet"
+#~ msgstr "tweet"
+#~ msgid "Created at"
+#~ msgstr "Создано"
 #~ msgid "Confirm e-mail change"
 #~ msgstr "Подтвердите изменение e-mail"
 #~ msgid "<strong>Preload modules</strong> (mod, mod, ...)"

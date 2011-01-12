@@ -466,12 +466,12 @@ class Web(Module):
     def core_appconfig(self):
         req = self.req()
         factory = self.app().inst.appfactory
-        if req.args == "int" or req.args == "main":
-            app = factory.get_by_tag(req.args)
-            if app:
+        app = factory.get_by_tag(req.args)
+        if app:
+            if app.dynamic:
+                factory.remove_by_tag(req.args)
+            else:
                 app.reload()
-        else:
-            factory.remove_by_tag(req.args)
         self.call("web.response_json", {"ok": 1})
 
     def web_parse_template(self, filename, vars):

@@ -627,7 +627,7 @@ class SocioInterface(Module):
         vars["last_reply"] = self._("Last reply")
         vars["by"] = self._("by")
         vars["to_page"] = self._("Pages")
-        vars["created_at"] = self._("Created at")
+        vars["created_at"] = self._("topic///Opened")
         vars["Pages"] = self._("Pages")
 
     def forum_vars_topic(self, vars):

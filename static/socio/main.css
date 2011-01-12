@@ -1,0 +1,90 @@
+#socio-topmenu { height: 46px; width: 100% }
+#socio-topmenu-left { padding-left: 70px }
+#socio-topmenu-right { text-align: right; padding-left: 20px }
+.socio-topmenu-header { font-weight: bold; font-size: 17px; color: #6a7274 }
+#socio-topmenu img { vertical-align: middle }
+#socio-topmenu a:link, #socio-topmenu a:visited { color: #1078a0 }
+#socio-topmenu a:hover, #socio-topmenu a:active { color: #3088d0 }
+#socio-menu { width: 100%; color: #dd6419; margin-bottom: 10px }
+#socio-menu a:link, #socio-menu a:visited { color: #dd6419 }
+#socio-menu a:hover, #socio-menu a:active { color: #ed8449 }
+#socio-menu-left { padding: 0px 10px 5px 0px; }
+#socio-menu-right { padding: 0px 0px 5px 0px; text-align: right; }
+#socio-categories { width: 100% }
+.socio-categories-index { margin-top: 20px }
+.socio-cathead { padding: 0px 4px 7px 4px; font-size: 11px; vertical-align: bottom; color: #535c5f; text-align: center }
+#socio-top-search { margin-right: 10px; vertical-align: middle; }
+.socio-message { margin-top: 20px }
+/* INDEX */
+.socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
+.socio-index-title { font-size: 15px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
+.socio-catlast { text-align: left; padding: 0px 4px 7px 30px }
+.socio-counter { width: 8% }
+td.socio-catname { padding: 9px 4px 9px 0px; font-size: 12px; width: 50% }
+td.socio-catname a { font-size: 14px }
+td.socio-catname a:link, td.socio-catname a:visited { color: #026691 }
+td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
+.socio-last { padding-left: 30px; font-size: 12px }
+.socio-last a:link, .socio-last a:visited { color: #026691 }
+.socio-last a:hover, .socio-last a:active { color: #0386b1 }
+/* CATEGORY */
+.socio-catauthor { width: 20% }
+.socio-catcomments { width: 8% }
+.socio-catlastcomment { width: 30% }
+.socio-thick { font-size: 3px; height: 15px; background-color: #ececec; border-top: solid 1px #dd6419 }
+.socio-semithick { font-size: 3px; height: 10px; background-color: #ececec; border-bottom: solid 1px #dd6419 }
+.socio-thin { font-size: 3px; height: 4px; background-color: #ececec; }
+.socio-name { padding: 9px 4px 9px 4px }
+.socio-author, .socio-counter, .socio-lastcomment { padding: 9px 4px 9px 4px; text-align: center }
+.socio-name a:link, .socio-name a:visited { color: #026691 }
+.socio-name a:hover, .socio-name a:active { color: #0386b1 }
+.socio-lastcomment { font-size: 12px }
+.socio-lastcomment a:link, .socio-lastcomment a:visited { color: #535c5f }
+.socio-lastcomment a:hover, .socio-lastcomment a:active { color: #838c8f }
+.socio-pages { padding: 20px 0px 20px 0px; text-align: center; font-weight: bold; color: #81878a; }
+.socio-pages-list { color: #dd6419 }
+.socio-pages-list a:link, .socio-pages-list a:visited { color: #dd6419 }
+.socio-pages-list a:hover, .socio-pages-list a:active { color: #ed8439 }
+.socio-topic-created { color: #535c5f; font-size: 11px }
+.socio-topiclist-pages { font-size: 11px }
+/* TOPIC */
+.socio-mark { vertical-align: middle }
+#socio-topic-head { width: 100% }
+#socio-topic-title { color: #0078ac; font-size: 16px; font-weight: 900; padding-top: 10px; vertical-align: bottom; }
+#socio-topic-tweet { padding: 10px 0px 0px 30px; vertical-align: bottom; }
+#socio-topic-facebook { padding: 10px 0px 0px 0px }
+.socio-topic-pages { text-align: right; font-size: 12px; color: #81878a; padding: 10px 0px 0px 20px; vertical-align: bottom; }
+.socio-post-title { color: #0078ac; font-size: 16px; font-weight: 900; padding-bottom: 10px }
+.socio-catdelim { padding: 10px 0px 10px 0px }
+.socio-post-head { background-color: #eaeaea; }
+.socio-post-delim { width: 100% }
+.socio-delim-left { color: #0078ac; font-size: 11px; padding: 1px 16px 1px 16px }
+.socio-delim-right { color: #0078ac; font-size: 11px; padding: 0px 16px 3px 16px; text-align: right }
+.socio-delim-right a:link, .socio-delim-right a:visited { color: #0078ac }
+.socio-delim-right a:hover, .socio-delim-right a:active { color: #0098ec }
+.socio-delim-right img { vertical-align: bottom }
+.socio-avatar-row { width: 180px; vertical-align: top; padding-bottom: 5px }
+.socio-avatar { padding: 5px 10px 9px 33px }
+.socio-avatar img { border: solid 1px #614115 }
+.socio-member-name { color: #dd6419; font-size: 13px; font-weight: bold; padding: 0px 10px 5px 33px; }
+.socio-member-menu { font-size: 11px; color: #0078ac; padding: 0px 10px 5px 33px }
+.socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
+.socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
+.socio-post-content { padding: 0px 33px 5px 0px; font-size: 14px; text-align: justify; vertical-align: top }
+.socio-post-actions-row { vertical-align: bottom; padding-bottom: 15px }
+.socio-post-actions { width: 100% }
+.socio-post-actions-left { vertical-align: bottom; padding-bottom: 8px }
+.socio-post-actions-right { text-align: right; padding: 0px 33px 8px 10px; vertical-align: bottom; font-size: 12px }
+.socio-actions { color: #dd6419; white-space: nowrap }
+.socio-actions a:link, .socio-actions a:visited { color: #dd6419 }
+.socio-actions a:hover, .socio-actions a:active { color: #ed8439 }
+.socio-signature { font-size: 12px; color: #81878a; line-height: 110%; padding-top: 10px }
+.quote { background-color: #eaeaea; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
+.quote .author { color: #dd6419; font-size: 11px; padding-bottom: 5px; }
+#socio-topic-bottom { width: 100%; border-top: solid 1px #dd6419; margin-top: 30px }
+#socio-topic-bottom .socio-topic-pages { padding-top: 5px }
+/* NEWS */
+.socio-news { padding: 10px 0px 0px 0px }
+.socio-news-head { font-weight: bold; padding-bottom: 5px }
+.socio-news-date { color: #007cbf }
+.socio-news-actions { font-size: 12px; text-align: right; padding-top: 5px }

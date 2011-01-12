@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-11 18:28+0300\n"
+"POT-Creation-Date: 2011-01-12 10:05+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -452,37 +452,6 @@ msgstr ""
 
 #: mg/socio/__init__.py:2189
 msgid "Comment"
-msgstr ""
-
-#: mg/socio/ext.py:17
-msgid "Twitter settings"
-msgstr ""
-
-#: mg/socio/ext.py:20
-msgid "Twitter posting"
-msgstr ""
-
-#: mg/socio/ext.py:21
-msgid "Twitter configuration"
-msgstr ""
-
-#: mg/socio/ext.py:36
-msgid "Twitter credentials saved"
-msgstr ""
-
-#: mg/socio/ext.py:47
-msgid "Registering application"
-msgstr ""
-
-#: mg/socio/ext.py:47
-msgid ""
-"Go to the <a href=\"http://dev.twitter.com/apps\" target=\"_blank\">Twitter "
-"Applications</a> page and follow instructions there to get your "
-"authentication credentials. Register as \"Desktop application\"."
-msgstr ""
-
-#: mg/socio/ext.py:54
-msgid "tweet"
 msgstr ""
 
 #: mg/core/l10n.py:13
@@ -2039,7 +2008,7 @@ msgid "Pages"
 msgstr ""
 
 #: mg/constructor/design.py:630
-msgid "Created at"
+msgid "topic///Opened"
 msgstr ""
 
 #: mg/constructor/design.py:635
