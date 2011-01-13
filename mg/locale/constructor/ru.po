@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 12:14+0300\n"
+"POT-Creation-Date: 2011-01-13 13:41+0300\n"
 "PO-Revision-Date: 2010-12-09 12:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -35,8 +35,8 @@ msgid "Sending data..."
 msgstr "Отправка данных..."
 
 #: static/js/admin-form.js:149 static/js/admin-form.js:152
-#: mg/templates/constructor/domain-wizard.html:31
-#: mg/templates/constructor/domain-wizard.html:34
+#: mg/templates/constructor/domain-wizard.html:35
+#: mg/templates/constructor/domain-wizard.html:38
 #: mg/templates/constructor/domain.html:24
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
@@ -45,7 +45,7 @@ msgstr "Отправка данных..."
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:34
+#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:38
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
@@ -53,7 +53,7 @@ msgstr "Ошибка"
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:72
+#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:76
 #: mg/templates/constructor/domain.html:66
 #: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
@@ -68,15 +68,15 @@ msgstr "Пожалуйста, подождите..."
 msgid "Next"
 msgstr "Далее"
 
-#: mg/templates/constructor/domain-wizard.html:116
+#: mg/templates/constructor/domain-wizard.html:120
 msgid "Check availability"
 msgstr "Проверить доступность"
 
-#: mg/templates/constructor/domain-wizard.html:151
+#: mg/templates/constructor/domain-wizard.html:155
 msgid "Buy MM$"
 msgstr "Купить MM$"
 
-#: mg/templates/constructor/domain-wizard.html:248
+#: mg/templates/constructor/domain-wizard.html:252
 #: mg/templates/constructor/logo-wizard.html:281
 msgid "Abort wizard"
 msgstr "Прервать мастер"

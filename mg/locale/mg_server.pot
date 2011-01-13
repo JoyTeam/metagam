@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 11:27+0300\n"
+"POT-Creation-Date: 2011-01-13 13:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -750,7 +750,7 @@ msgid "User registration"
 msgstr ""
 
 #: mg/core/auth.py:332 mg/core/auth.py:594 mg/constructor/__init__.py:152
-#: mg/constructor/domains.py:270
+#: mg/constructor/domains.py:269
 msgid "Cancel"
 msgstr ""
 
@@ -2051,7 +2051,7 @@ msgstr ""
 msgid "World history"
 msgstr ""
 
-#: mg/constructor/design.py:535 mg/constructor/domains.py:311
+#: mg/constructor/design.py:535 mg/constructor/domains.py:310
 msgid "Registration"
 msgstr ""
 
@@ -2558,147 +2558,147 @@ msgstr ""
 msgid "DNS server 2"
 msgstr ""
 
-#: mg/constructor/domains.py:136
+#: mg/constructor/domains.py:135
 msgid "Invalid price format"
 msgstr ""
 
-#: mg/constructor/domains.py:142
+#: mg/constructor/domains.py:141
 msgid "Domain registration prices stored"
 msgstr ""
 
-#: mg/constructor/domains.py:179
+#: mg/constructor/domains.py:178
 msgid "Personal data saved"
 msgstr ""
 
-#: mg/constructor/domains.py:192
+#: mg/constructor/domains.py:191
 msgid "Person name (in the native language)"
 msgstr ""
 
-#: mg/constructor/domains.py:193
+#: mg/constructor/domains.py:192
 msgid "Person name (in English)"
 msgstr ""
 
-#: mg/constructor/domains.py:194
+#: mg/constructor/domains.py:193
 msgid "Passport number"
 msgstr ""
 
-#: mg/constructor/domains.py:195
+#: mg/constructor/domains.py:194
 msgid "Birthday"
 msgstr ""
 
-#: mg/constructor/domains.py:196
+#: mg/constructor/domains.py:195
 msgid "Registration address"
 msgstr ""
 
-#: mg/constructor/domains.py:197
+#: mg/constructor/domains.py:196
 msgid "Postal address"
 msgstr ""
 
-#: mg/constructor/domains.py:198
+#: mg/constructor/domains.py:197
 msgid "Phone"
 msgstr ""
 
-#: mg/constructor/domains.py:199
+#: mg/constructor/domains.py:198
 msgid "E-mail address"
 msgstr ""
 
-#: mg/constructor/domains.py:200
+#: mg/constructor/domains.py:199
 msgid "Registrar login"
 msgstr ""
 
-#: mg/constructor/domains.py:201
+#: mg/constructor/domains.py:200
 msgid "Registrar password"
 msgstr ""
 
-#: mg/constructor/domains.py:263 mg/constructor/domains.py:311
+#: mg/constructor/domains.py:262 mg/constructor/domains.py:310
 #: mg/constructor/dashboard.py:116
 msgid "Domain"
 msgstr ""
 
-#: mg/constructor/domains.py:264 mg/constructor/dashboard.py:117
+#: mg/constructor/domains.py:263 mg/constructor/dashboard.py:117
 msgid "Created"
 msgstr ""
 
-#: mg/constructor/domains.py:265
+#: mg/constructor/domains.py:264
 msgid "Request"
 msgstr ""
 
-#: mg/constructor/domains.py:266
+#: mg/constructor/domains.py:265
 msgid "State"
 msgstr ""
 
-#: mg/constructor/domains.py:267
+#: mg/constructor/domains.py:266
 msgid "Cause"
 msgstr ""
 
-#: mg/constructor/domains.py:268
+#: mg/constructor/domains.py:267
 msgid "In&nbsp;progress"
 msgstr ""
 
-#: mg/constructor/domains.py:269
+#: mg/constructor/domains.py:268
 msgid "Confirm"
 msgstr ""
 
-#: mg/constructor/domains.py:271
+#: mg/constructor/domains.py:270
 msgid "confirm"
 msgstr ""
 
-#: mg/constructor/domains.py:272
+#: mg/constructor/domains.py:271
 msgid "cancel"
 msgstr ""
 
-#: mg/constructor/domains.py:273
+#: mg/constructor/domains.py:272
 msgid "Recheck"
 msgstr ""
 
-#: mg/constructor/domains.py:274
+#: mg/constructor/domains.py:273
 msgid "recheck"
 msgstr ""
 
-#: mg/constructor/domains.py:306
+#: mg/constructor/domains.py:305
 msgid "external"
 msgstr ""
 
-#: mg/constructor/domains.py:307
+#: mg/constructor/domains.py:306
 msgid "completed"
 msgstr ""
 
-#: mg/constructor/domains.py:308
+#: mg/constructor/domains.py:307
 msgid "pending"
 msgstr ""
 
-#: mg/constructor/domains.py:311
+#: mg/constructor/domains.py:310
 msgid "Project"
 msgstr ""
 
-#: mg/constructor/domains.py:312
+#: mg/constructor/domains.py:311
 msgid "unknown"
 msgstr ""
 
-#: mg/constructor/domains.py:325
+#: mg/constructor/domains.py:324
 msgid "This domain is already bound to another MMO Constructor project"
 msgstr ""
 
-#: mg/constructor/domains.py:327
+#: mg/constructor/domains.py:326
 msgid ""
 "This domain is a subject to the manual check. This may take up to 3 days"
 msgstr ""
 
-#: mg/constructor/domains.py:329
+#: mg/constructor/domains.py:328
 msgid "This domain was not registered by you. You can't use for your project"
 msgstr ""
 
-#: mg/constructor/domains.py:340
+#: mg/constructor/domains.py:339
 msgid ""
 "Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must "
 "be {2} and {3}"
 msgstr ""
 
-#: mg/constructor/domains.py:348
+#: mg/constructor/domains.py:347
 msgid "Domain name can't contain 'www'"
 msgstr ""
 
-#: mg/constructor/domains.py:354
+#: mg/constructor/domains.py:353
 msgid ""
 "Domain {0} was not found by {1}. Either domain is not registered yet or DNS "
 "data was not updated yet. If the domain was registered recently, it is "
@@ -2706,40 +2706,40 @@ msgid ""
 "update. Try again later, please"
 msgstr ""
 
-#: mg/constructor/domains.py:376 mg/constructor/domains.py:392
+#: mg/constructor/domains.py:375 mg/constructor/domains.py:391
 msgid ""
 "Domain {0} has A records but no NS records. Configure your zone correctly"
 msgstr ""
 
-#: mg/constructor/domains.py:380
+#: mg/constructor/domains.py:379
 msgid "Domain {0} was not found by the root nameservers"
 msgstr ""
 
-#: mg/constructor/domains.py:384
+#: mg/constructor/domains.py:383
 msgid ""
 "{0} is already configured for the project. You may not use its subdomains"
 msgstr ""
 
-#: mg/constructor/domains.py:416 mg/constructor/domains.py:611
+#: mg/constructor/domains.py:415 mg/constructor/domains.py:613
 msgid "Domain registration wizard"
 msgstr ""
 
-#: mg/constructor/domains.py:433
+#: mg/constructor/domains.py:432
 msgid ""
 "Invalid domain name. It must begin with letter a-z or digit 0-9 and contain "
 "letters, digits and '-' sign"
 msgstr ""
 
-#: mg/constructor/domains.py:435
+#: mg/constructor/domains.py:434
 msgid "Select top level domain"
 msgstr ""
 
-#: mg/constructor/domains.py:447
+#: mg/constructor/domains.py:446
 msgid ""
 "This domain is already registered by another user of the MMO Constructor"
 msgstr ""
 
-#: mg/constructor/domains.py:449
+#: mg/constructor/domains.py:448
 #, python-format
 msgid ""
 "This domain is in the pending state. We don't know the result of the "
@@ -2747,93 +2747,93 @@ msgid ""
 "details. registrar_id=%s"
 msgstr ""
 
-#: mg/constructor/domains.py:451
+#: mg/constructor/domains.py:450
 msgid "This domain is already assigned to a project"
 msgstr ""
 
-#: mg/constructor/domains.py:453
-msgid "This domain is already registered by you but not assigned to a project"
+#: mg/constructor/domains.py:452
+msgid "This domain is registered by you but not assigned to a project"
 msgstr ""
 
-#: mg/constructor/domains.py:453
+#: mg/constructor/domains.py:452
 msgid "Go to the domain checker"
 msgstr ""
 
-#: mg/constructor/domains.py:453
+#: mg/constructor/domains.py:452
 msgid "to assign the domain"
 msgstr ""
 
-#: mg/constructor/domains.py:461
+#: mg/constructor/domains.py:460
 #, python-format
 msgid "%s registry is temporarily unavailable. Try again later"
 msgstr ""
 
-#: mg/constructor/domains.py:463
+#: mg/constructor/domains.py:462
 msgid "This domain name is occupied already. Choose another one"
 msgstr ""
 
-#: mg/constructor/domains.py:469 mg/constructor/domains.py:503
+#: mg/constructor/domains.py:468 mg/constructor/domains.py:502
 #, python-format
 msgid "%(price).2f MM$ (approx %(price).2f USD)"
 msgstr ""
 
-#: mg/constructor/domains.py:489 mg/constructor/domains.py:491
+#: mg/constructor/domains.py:488 mg/constructor/domains.py:490
 msgid "Invalid field format"
 msgstr ""
 
-#: mg/constructor/domains.py:493
+#: mg/constructor/domains.py:492
 msgid "Enter your passport number"
 msgstr ""
 
-#: mg/constructor/domains.py:495
+#: mg/constructor/domains.py:494
 msgid "Enter birthday in format DD.MM.YYYY"
 msgstr ""
 
-#: mg/constructor/domains.py:497 mg/constructor/domains.py:499
+#: mg/constructor/domains.py:496 mg/constructor/domains.py:498
 msgid "Enter valid address"
 msgstr ""
 
-#: mg/constructor/domains.py:501
+#: mg/constructor/domains.py:500
 msgid "Invalid phone format. Look at the example"
 msgstr ""
 
-#: mg/constructor/domains.py:505
+#: mg/constructor/domains.py:504
 msgid "Select an owner of the domain"
 msgstr ""
 
-#: mg/constructor/domains.py:545
+#: mg/constructor/domains.py:544
 msgid "Error connecting to the registrar. Try again please"
 msgstr ""
 
-#: mg/constructor/domains.py:550
+#: mg/constructor/domains.py:549
 msgid "You have not enough money"
 msgstr ""
 
-#: mg/constructor/domains.py:559
+#: mg/constructor/domains.py:558
 msgid ""
 "Error getting response from the registrar. Your request was not processed"
 msgstr ""
 
-#: mg/constructor/domains.py:566
+#: mg/constructor/domains.py:568
 msgid ""
 "Invalid response from the registrar. We don't know whether your request was "
 "processed, so we remain payment for the domain in the locked state. Result "
 "of the operation will be checked by the technical support manually."
 msgstr ""
 
-#: mg/constructor/domains.py:579
+#: mg/constructor/domains.py:581
 #, python-format
 msgid "You have successfully registered domain <strong>%s</strong>"
 msgstr ""
 
-#: mg/constructor/domains.py:581
+#: mg/constructor/domains.py:583
 #, python-format
 msgid ""
 "Now <hook:admin.link href=\"wizard/call/%s\" title=\"check your domain "
 "settings\" />"
 msgstr ""
 
-#: mg/constructor/domains.py:590
+#: mg/constructor/domains.py:592
 msgid ""
 "Your domain was not registered due to temporary problems. We don't know "
 "whether your request was processed, so we remain payment for the domain in "
@@ -2841,108 +2841,108 @@ msgid ""
 "support manually."
 msgstr ""
 
-#: mg/constructor/domains.py:592
+#: mg/constructor/domains.py:594
 #, python-format
 msgid "Error registering domain: %s"
 msgstr ""
 
-#: mg/constructor/domains.py:599
+#: mg/constructor/domains.py:601
 msgid ""
 "Request to the registrar timed out. We don't know whether your request was "
 "processed, so we remain payment for the domain in the locked state. Result "
 "of the operation will be checked by the technical support manually."
 msgstr ""
 
-#: mg/constructor/domains.py:602
+#: mg/constructor/domains.py:604
 #, python-format
 msgid "Registering for the name: %s"
 msgstr ""
 
-#: mg/constructor/domains.py:612
+#: mg/constructor/domains.py:614
 msgid "Domain name"
 msgstr ""
 
-#: mg/constructor/domains.py:614
+#: mg/constructor/domains.py:616
 msgid "Enter domain name"
-msgstr ""
-
-#: mg/constructor/domains.py:618
-#, python-format
-msgid "Domain %s is available for registration"
-msgstr ""
-
-#: mg/constructor/domains.py:619
-#, python-format
-msgid "for %s"
 msgstr ""
 
 #: mg/constructor/domains.py:620
 #, python-format
-msgid "your current balance is %s MM$"
+msgid "Domain %s is available for registration"
 msgstr ""
 
 #: mg/constructor/domains.py:621
-msgid "Here you can register a domain"
+#, python-format
+msgid "for %s"
 msgstr ""
 
 #: mg/constructor/domains.py:622
-msgid "Register this domain"
+#, python-format
+msgid "your current balance is %s MM$"
 msgstr ""
 
 #: mg/constructor/domains.py:623
-msgid "Update balance"
+msgid "Here you can register a domain"
 msgstr ""
 
 #: mg/constructor/domains.py:624
-msgid ""
-"You will be the owner of the domain (in this case provide your personal data)"
+msgid "Register this domain"
 msgstr ""
 
 #: mg/constructor/domains.py:625
-msgid "MMO Constructor will be the owner of the domain"
+msgid "Update balance"
 msgstr ""
 
 #: mg/constructor/domains.py:626
 msgid ""
-"Your name (in your language). For example: <strong>John A Smith</strong>"
+"You will be the owner of the domain (in this case provide your personal data)"
 msgstr ""
 
 #: mg/constructor/domains.py:627
-msgid "Your name (in English). For example: <strong>John A Smith</strong>"
+msgid "MMO Constructor will be the owner of the domain"
 msgstr ""
 
 #: mg/constructor/domains.py:628
-msgid "Your passport number"
+msgid ""
+"Your name (in your language). For example: <strong>John A Smith</strong>"
 msgstr ""
 
 #: mg/constructor/domains.py:629
+msgid "Your name (in English). For example: <strong>John A Smith</strong>"
+msgstr ""
+
+#: mg/constructor/domains.py:630
+msgid "Your passport number"
+msgstr ""
+
+#: mg/constructor/domains.py:631
 msgid ""
 "Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"
 msgstr ""
 
-#: mg/constructor/domains.py:630
+#: mg/constructor/domains.py:632
 msgid "Your official registration address (in your language)"
 msgstr ""
 
-#: mg/constructor/domains.py:631
+#: mg/constructor/domains.py:633
 msgid "Your postal address (in your language)"
 msgstr ""
 
-#: mg/constructor/domains.py:632
+#: mg/constructor/domains.py:634
 msgid ""
 "Your phone number in the international format. For example: <strong>+1 800 "
 "5555555</strong>"
 msgstr ""
 
-#: mg/constructor/domains.py:633
+#: mg/constructor/domains.py:635
 msgid "Checking domain availability..."
 msgstr ""
 
-#: mg/constructor/domains.py:634
+#: mg/constructor/domains.py:636
 msgid "Updating balance..."
 msgstr ""
 
-#: mg/constructor/domains.py:635
+#: mg/constructor/domains.py:637
 msgid "Registering domain. It may take several minutes. Be patient please..."
 msgstr ""
 

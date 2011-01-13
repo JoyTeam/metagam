@@ -69,7 +69,7 @@ class Domains(Module):
     def ext_dns(self):
         self.call("session.require_permission", "domains.dns")
         req = self.req()
-        main = self.app().inst.appfactory.get_by_tag("main")
+        main = self.main_app()
         ns1 = req.param("ns1")
         ns2 = req.param("ns2")
         if req.param("ok"):
@@ -91,8 +91,7 @@ class Domains(Module):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
 
     def get_prices(self):
-        main = self.app().inst.appfactory.get_by_tag("main")
-        prices = main.config.get("domains.prices")
+        prices = self.main_app().config.get("domains.prices")
         if prices is not None:
             return prices
         return {
@@ -340,7 +339,7 @@ class Domains(Module):
             errors["domain"] = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)
 
     def dns_servers(self, domain):
-        main = self.app().inst.appfactory.get_by_tag("main")
+        main = self.main_app()
         ns1 = main.config.get("dns.ns1")
         ns2 = main.config.get("dns.ns2")
         domains = domain.split(".")
@@ -437,9 +436,9 @@ class DomainRegWizard(Wizard):
                 self.call("web.response_json", {"success": False, "errors": errors, "stage": "check"})
             domain = str("%s.%s" % (domain_name, tld))
             # locked operations
-            with self.app().inst.appfactory.get_by_tag("main").lock(["DomainReg.%s" % domain], patience=190, delay=3, ttl=185):
+            with self.main_app().lock(["DomainReg.%s" % domain], patience=190, delay=3, ttl=185):
                 try:
-                    rec = self.app().inst.appfactory.get_by_tag("main").obj(Domain, domain)
+                    rec = self.main_app().obj(Domain, domain)
                 except ObjectNotFoundException:
                     pass
                 else:
@@ -450,7 +449,7 @@ class DomainRegWizard(Wizard):
                     elif rec.get("project"):
                         errors["domain_name"] = self._("This domain is already assigned to a project")
                     else:
-                        errors["domain_name"] = self.call("web.parse_inline_layout", '%s. <hook:admin.link href="wizard/call/%s/abort" title="%s" /> %s' % (self._("This domain is already registered by you but not assigned to a project"), self.uuid, self._("Go to the domain checker"), self._("to assign the domain")), {})
+                        errors["domain_name"] = self.call("web.parse_inline_layout", '%s. <hook:admin.link href="wizard/call/%s/abort" title="%s" /> %s' % (self._("This domain is registered by you but not assigned to a project"), self.uuid, self._("Go to the domain checker"), self._("to assign the domain")), {})
                 if not len(errors):
                     self.config.set("domain_name", domain_name)
                     self.config.set("tld", tld)
@@ -468,7 +467,7 @@ class DomainRegWizard(Wizard):
                 if cmd == "check":
                     self.call("web.response_json", {"success": True, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%(price).2f MM$ (approx %(price).2f USD)") % {"price": price}, "balance": balance, "balance_text": "%.2f" % balance})
                 owner = req.param("owner")
-                main_config = self.app().inst.appfactory.get_by_tag("main").config
+                main_config = self.main_app().config
                 if owner == "admin":
                     person_r = main_config.get("domains.person-r")
                     person = main_config.get("domains.person")
@@ -526,7 +525,7 @@ class DomainRegWizard(Wizard):
                 error = None
                 try:
                     with Timeout.push(180):
-                        rec = self.app().inst.appfactory.get_by_tag("main").obj(Domain, domain, data={})
+                        rec = self.main_app().obj(Domain, domain, data={})
                         rec.set("user", self.app().project.get("owner"))
                         rec.set("registered", "pending")
                         rec.set("created", self.now())
@@ -552,12 +551,12 @@ class DomainRegWizard(Wizard):
                         rec.set("money_lock", lock.uuid)
                         rec.store()
                         try:
-                            request = cnn.get("/c/registrar?%s" % params)
+                            request = cnn.get("/c/registrar%s" % params)
                             response = cnn.perform(request)
                             if response.status_code != 200:
                                 self.error("Registrar response: %s", response.status)
                                 error = self._("Error getting response from the registrar. Your request was not processed")
-                                self.app().inst.appfactory.get_by_tag("main").hooks.call("domains.money_unlock", rec)
+                                self.main_app().hooks.call("domains.money_unlock", rec)
                                 rec.remove()
                             else:
                                 m = re_i7_response.match(response.body)
@@ -571,16 +570,16 @@ class DomainRegWizard(Wizard):
                                     if state == "done" or state == "dns_check":
                                         rec.set("registered", "yes")
                                         rec.set("registrar_id", id)
-                                        self.app().inst.appfactory.get_by_tag("main").hooks.call("domains.money_charge", rec)
+                                        self.main_app().hooks.call("domains.money_charge", rec)
                                         rec.store()
                                         target = self.config.get("target")
                                         self.result(domain)
                                         self.finish()
                                         msg1 = self._("You have successfully registered domain <strong>%s</strong>")
                                         if target[0] == "wizard":
-                                            self.call("admin.response",  "%s. %s." % (msg1 % domain, self._('Now <hook:admin.link href="wizard/call/%s" title="check your domain settings" />') % target[1]), {})
+                                            self.call("admin.response", "%s. %s." % ((msg1 % domain), (self._('Now <hook:admin.link href="wizard/call/%s" title="check your domain settings" />') % target[1])), {})
                                         else:
-                                            self.call("admin.response",  "%s." % msg1, {})
+                                            self.call("admin.response", "%s." % msg1, {})
                                     elif state == "money_wait" or state == "tc_wait" or inprogress:
                                         rec.set("registrar_id", id)
                                         rec.set("registrar_state", state)
@@ -590,7 +589,7 @@ class DomainRegWizard(Wizard):
                                         error = self._("Your domain was not registered due to temporary problems. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
                                     else:
                                         error = self._("Error registering domain: %s" % cause)
-                                        self.app().inst.appfactory.get_by_tag("main").hooks.call("domains.money_unlock", rec)
+                                        self.main_app().hooks.call("domains.money_unlock", rec)
                                         rec.remove()
                         finally:
                             cnn.close()
@@ -637,7 +636,7 @@ class DomainRegWizard(Wizard):
             self.call("admin.response_template", "constructor/domain-wizard.html", vars)
 
     def user_money(self):
-        return self.app().inst.appfactory.get_by_tag("main").hooks.call("money.member-money", self.app().project.get("owner"))
+        return self.main_app().hooks.call("money.member-money", self.app().project.get("owner"))
 
     def user_money_available(self):
         return self.user_money().available("MM$")

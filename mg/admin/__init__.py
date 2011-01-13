@@ -13,6 +13,7 @@ class AdminInterface(Module):
         Module.register(self)
         self.rhook("ext-admin.index", self.index)
         self.rhook("admin.response_js", self.response_js)
+        self.rhook("admin.response_json", self.response_json)
         self.rhook("admin.response", self.response)
         self.rhook("admin.response_template", self.response_template)
         self.rhook("admin.update_menu", self.update_menu)
@@ -169,6 +170,14 @@ class AdminInterface(Module):
         params["script"] = script
         params["cls"] = cls
         params["data"] = data
+        self.params_page(params)
+        self.params_menu(params)
+        self.call("web.response_json", params)
+
+    def response_json(self, data):
+        params = self.response_params()
+        for key, val in data.iteritems():
+            params[key] = val
         self.params_page(params)
         self.params_menu(params)
         self.call("web.response_json", params)
