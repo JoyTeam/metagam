@@ -76,6 +76,7 @@ class AdminInterface(Module):
             else:
                 submenu = self.leftmenunode(ent["id"], ent["text"])
                 if submenu:
+                    submenu["order"] = ent.get("order", 0)
                     result.append(submenu)
         return {"text": text, "children": result} if len(result) else None
 
