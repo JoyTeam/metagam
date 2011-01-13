@@ -636,6 +636,7 @@ class Socio(Module):
                 "title": self._("User %s") % name,
                 "name": name,
                 "params": params,
+                "User": self._("User"),
         }
         self.call("web.response_template", self.call("socio.template", "user", "socio/user.html"), vars)
 
