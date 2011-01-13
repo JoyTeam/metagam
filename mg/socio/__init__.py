@@ -1076,7 +1076,7 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             if not form.errors:
                 user = self.obj(User, req.user())
-                topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created))
+                topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         if cat.get("manual_date"):
             form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)

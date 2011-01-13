@@ -12,6 +12,7 @@ h1 { color: #0078ac; font-size: 21px; font-weight: bold; }
 #page-top3 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; height: 57px }
 #page-top4 { padding: 0px 55px 0px 70px }
 #page-layout-content { padding: 82px 96px 25px 96px }
+#page-layout-simple-content { padding: 25px 96px 25px 96px }
 /* FORM */
 .form { margin-top: 30px }
 .form-desc { color: #0078ac; font-size: 17px; font-weight: bold; padding: 10px 0px 10px 0px }

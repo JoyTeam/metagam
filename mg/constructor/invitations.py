@@ -81,7 +81,7 @@ class Invitations(Module):
             user = inv.get("user")
             if user:
                 userobj = self.obj(User, user, silent=True)
-                user = '<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (user, htmlescape(user.get("name")))
+                user = '<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (user, htmlescape(userobj.get("name")))
             rows.append((inv.uuid, inv.get("type"), htmlescape(inv.get("person")), user))
         vars = {
             "tables": [

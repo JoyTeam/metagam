@@ -106,6 +106,8 @@ class Constructor(Module):
         elif req.group == "constructor" and req.hook == "newgame":
             vars["global_html"] = "constructor/cabinet_global.html"
             cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
+        elif req.group == "socio" and req.hook == "image":
+            vars["global_html"] = "constructor/socio_simple_global.html"
         elif req.group == "auth":
             if req.hook == "change" or req.hook == "email":
                 vars["global_html"] = "constructor/cabinet_global.html"
@@ -128,7 +130,7 @@ class Constructor(Module):
                 cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"})
-        elif req.group == "forum":
+        elif req.group == "forum" or req.group == "socio":
             vars["global_html"] = "constructor/socio_global.html"
             redirect = req.param("redirect")
             redirect_param = True
