@@ -25,7 +25,7 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
-            "mg.constructor.domains.Domains", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface"])
+            "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
@@ -152,7 +152,9 @@ class Constructor(Module):
                 topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
         elif req.group == "documentation":
             vars["global_html"] = "constructor/socio_global.html"
-            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
+            topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
+            if req.user():
+                topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
             topmenu.append({"html": self._("MMO Constructor Documentation"), "header": True, "left": True})
         elif req.group == "admin":
             vars["global_html"] = "constructor/admin_global.html"
@@ -216,6 +218,7 @@ class Constructor(Module):
             "forum": self._("forum"),
             "cabinet": self._("cabinet"),
             "logout": self._("log out"),
+            "documentation": self._("documentation"),
         }
         if req.user():
             vars["logged"] = True
@@ -233,20 +236,32 @@ class Constructor(Module):
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
         projects.load(silent=True)
+        comment = None
         if len(projects):
             for project in projects:
                 title = project.get("title_short")
                 if title is None:
                     title = self._("Untitled game")
+                href = None
                 domain = project.get("domain")
                 if domain is None:
                     domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
                 else:
                     domain = "www.%s" % domain
+                    if not project.get("auth_confirmed"):
+                        app = self.app().inst.appfactory.get_by_tag(project.uuid)
+                        users = app.objlist(UserList, query_index="inactive", query_equal="1", query_limit=1)
+                        users.load(silent=True)
+                        if len(users):
+                            admin = users[0]
+                            href = "http://%s/auth/activate/%s?code=%s&ok=1" % (domain, admin.uuid, admin.get("activation_code"))
+                        comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
+                if href is None:
+                    href = "http://%s/admin" % domain
                 logo = project.get("logo")
                 if logo is None:
                     logo = "/st/constructor/cabinet/untitled.gif"
-                menu_projects.append({"href": "http://%s/admin" % domain, "image": logo, "text": title})
+                menu_projects.append({"href": href, "image": logo, "text": title})
                 if len(menu_projects) >= 4:
                     menu.append(menu_projects)
                     menu_projects = []
@@ -259,6 +274,7 @@ class Constructor(Module):
                 "href": "/constructor/newgame",
                 "title": self._("Create a new game")
             },
+            "cabinet_comment": comment,
         }
         self.call("web.response_global", None, vars)
 
@@ -278,7 +294,6 @@ class Constructor(Module):
         self.call("web.response_global", None, vars)
 
     def documentation_index(self):
-        session = self.call("session.require_login")
         vars = {
             "title": self._("MMO Constructor Documentation"),
         }

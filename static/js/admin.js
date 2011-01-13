@@ -130,7 +130,15 @@ function adm_success(response, opts)
 {
 	current_page = opts.func;
 	expand_menu(current_page);
-	if (response.getResponseHeader("Content-Type").match(/json/)) {
+	if (!response) {
+		var panel = new AdminResponse({
+			border: false,
+			bodyStyle: 'padding: 10px'
+		});
+		adminmain.removeAll();
+		adminmain.add(panel);
+		adminmain.doLayout();
+	} else if (response.getResponseHeader("Content-Type").match(/json/)) {
 		var res = Ext.util.JSON.decode(response.responseText);
 		adm_response(res);
 	} else {

@@ -7,6 +7,7 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
+        self.rhook("auth.registered", self.auth_registered)
 
     def child_modules(self):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains"]
@@ -24,6 +25,12 @@ class ConstructorProject(Module):
         #if req.group == "admin":
         vars["global_html"] = "constructor/admin_global.html"
 
+    def auth_registered(self, user):
+        project = self.app().project
+        if not project.get("auth_confirmed") and project.get("domain"):
+            project.set("auth_confirmed", True)
+            project.store()
+
 class ConstructorProjectAdmin(Module):
     def register(self):
         Module.register(self)
@@ -31,6 +38,12 @@ class ConstructorProjectAdmin(Module):
         self.rhook("ext-admin-project.destroy", self.project_destroy)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
+        self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
+
+    def menu_root_index(self, menu):
+        a = [menu]
+        if not self.app().project.get("auth_confirmed"):
+            menu[:] = [ent for ent in menu if ent.get("leaf")]
 
     def menu_top_list(self, topmenu):
         req = self.req()

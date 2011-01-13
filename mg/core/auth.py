@@ -966,8 +966,8 @@ class Interface(Module):
         users = self.objlist(UserList, query_index="created", query_reversed=True, query_limit=30)
         users.load()
         tables.append({
-            "header": [self._("ID"), self._("Name"), self._("Active"), self._("E-mail")],
-            "rows": [('<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes"), htmlescape(u.get("email"))) for u in users]
+            "header": [self._("ID"), self._("Name"), self._("Active")],
+            "rows": [('<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes")) for u in users]
         })
         vars = {
             "tables": tables

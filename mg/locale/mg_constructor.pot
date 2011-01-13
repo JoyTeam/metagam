@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 13:41+0300\n"
+"POT-Creation-Date: 2011-01-13 15:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:216
+#: static/js/admin.js:224
 msgid "To the main page"
 msgstr ""
 
@@ -33,8 +33,8 @@ msgid "Sending data..."
 msgstr ""
 
 #: static/js/admin-form.js:149 static/js/admin-form.js:152
-#: mg/templates/constructor/domain-wizard.html:35
-#: mg/templates/constructor/domain-wizard.html:38
+#: mg/templates/constructor/domain-wizard.html:31
+#: mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:24
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
@@ -43,7 +43,7 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:38
+#: static/js/admin-form.js:152 mg/templates/constructor/domain-wizard.html:34
 #: mg/templates/constructor/domain.html:27
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Server error: %s"
 msgstr ""
 
-#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:76
+#: static/js/admin-form.js:170 mg/templates/constructor/domain-wizard.html:72
 #: mg/templates/constructor/domain.html:66
 #: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
@@ -66,15 +66,15 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:120
+#: mg/templates/constructor/domain-wizard.html:116
 msgid "Check availability"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:155
+#: mg/templates/constructor/domain-wizard.html:151
 msgid "Buy MM$"
 msgstr ""
 
-#: mg/templates/constructor/domain-wizard.html:252
+#: mg/templates/constructor/domain-wizard.html:248
 #: mg/templates/constructor/logo-wizard.html:281
 msgid "Abort wizard"
 msgstr ""

@@ -19,73 +19,8 @@ class DNSCheckError(Exception):
 class Domains(Module):
     def register(self):
         Module.register(self)
-        self.rhook("permissions.list", self.permissions_list)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-domains.index", self.menu_domains_index)
-        self.rhook("ext-admin-domains.dns", self.ext_dns)
-        self.rhook("ext-admin-domains.prices", self.ext_prices)
         self.rhook("domains.tlds", self.tlds)
         self.rhook("domains.prices", self.prices)
-        self.rhook("ext-admin-domains.personal-data", self.ext_personal_data)
-        self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("ext-admin-domains.pending", self.ext_pending)
-        self.rhook("domains.money_unlock", self.money_unlock)
-        self.rhook("domains.money_charge", self.money_charge)
-        self.rhook("money-description.domain-reg", self.money_description_domain_reg)
-        self.rhook("auth.user-tables", self.user_tables)
-        self.rhook("domains.validate_new", self.validate_new)
-        self.rhook("domains.assign", self.assign)
-
-    def money_description_domain_reg(self):
-        return {
-            "args": ["domain"],
-            "text": self._("Domain registration: %(domain)s"),
-        }
-
-    def objclasses_list(self, objclasses):
-        objclasses["Domain"] = (Domain, DomainList)
-
-    def menu_root_index(self, menu):
-        menu.append({"id": "domains.index", "text": self._("Domains")})
-
-    def menu_domains_index(self, menu):
-        req = self.req()
-        if req.has_access("domains"):
-            menu.append({"id": "domains/pending", "text": self._("List of pending domains"), "leaf": True})
-        if req.has_access("domains.prices"):
-            menu.append({"id": "domains/prices", "text": self._("Registration prices"), "leaf": True})
-        if req.has_access("domains.personal-data"):
-            menu.append({"id": "domains/personal-data", "text": self._("Administrator's personal data"), "leaf": True})
-        if req.has_access("domains.dns"):
-            menu.append({"id": "domains/dns", "text": self._("DNS settings"), "leaf": True})
-
-    def permissions_list(self, perms):
-        if self.app().tag == "main":
-            perms.append({"id": "domains", "name": self._("Domains: administration")})
-            perms.append({"id": "domains.dns", "name": self._("Domains: DNS settings")})
-            perms.append({"id": "domains.prices", "name": self._("Domains: registration prices")})
-            perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
-
-    def ext_dns(self):
-        self.call("session.require_permission", "domains.dns")
-        req = self.req()
-        main = self.main_app()
-        ns1 = req.param("ns1")
-        ns2 = req.param("ns2")
-        if req.param("ok"):
-            config = main.config
-            config.set("dns.ns1", ns1)
-            config.set("dns.ns2", ns2)
-            config.store()
-            self.call("admin.response", self._("DNS settings stored"), {})
-        else:
-            ns1 = main.config.get("dns.ns1")
-            ns2 = main.config.get("dns.ns2")
-        fields = [
-            {"name": "ns1", "label": self._("DNS server 1"), "value": ns1},
-            {"name": "ns2", "label": self._("DNS server 2"), "value": ns2},
-        ]
-        self.call("admin.form", fields=fields)
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -119,6 +54,321 @@ class Domains(Module):
         for tld, price in self.get_prices().iteritems():
             if price != "":
                 prices[tld] = price
+
+class DomainRegWizard(Wizard):
+    def new(self, target=None, redirect_fail=None, **kwargs):
+        super(DomainRegWizard, self).new(**kwargs)
+        if target is None:
+            raise RuntimeError("DomainRegWizard target not specified")
+        if redirect_fail is None:
+            raise RuntimeError("DomainRegWizard redirect_fail not specified")
+        self.config.set("tag", "domain-reg")
+        self.config.set("target", target)
+        self.config.set("redirect_fail", redirect_fail)
+
+    def menu(self, menu):
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain registration wizard"), "leaf": True, "order": 20})
+
+    def request(self, cmd):
+        req = self.req()
+        tlds = []
+        self.call("domains.tlds", tlds)
+        prices = {}
+        self.call("domains.prices", prices)
+        tlds = [tld for tld in tlds if prices.get(tld)]
+        if cmd == "abort":
+            self.abort()
+            self.call("admin.redirect", self.config.get("redirect_fail"))
+        elif cmd == "check" or cmd == "register":
+            domain_name = req.param("domain_name").lower()
+            tld = req.param("tld").lower()
+            errors = {}
+            if not re.match(r'^[a-z0-9][a-z0-9\-]*$', domain_name):
+                errors["domain_name"] = self._("Invalid domain name. It must begin with letter a-z or digit 0-9 and contain letters, digits and '-' sign")
+            if not tld in tlds:
+                errors["tld"] = self._("Select top level domain")
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors, "stage": "check"})
+            domain = str("%s.%s" % (domain_name, tld))
+            # locked operations
+            with self.main_app().lock(["DomainReg.%s" % domain], patience=190, delay=3, ttl=185):
+                try:
+                    rec = self.main_app().obj(Domain, domain)
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    if rec.get("user") != self.app().project.get("owner"):
+                        errors["domain_name"] = self._("This domain is already registered by another user of the MMO Constructor")
+                    elif rec.get("registered") == "pending":
+                        errors["domain_name"] = self._("This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s" % rec.get("registrar_id"))
+                    elif rec.get("project"):
+                        errors["domain_name"] = self._("This domain is already assigned to a project")
+                    else:
+                        errors["domain_name"] = self.call("web.parse_inline_layout", '%s. <hook:admin.link href="wizard/call/%s/abort" title="%s" /> %s' % (self._("This domain is registered by you but not assigned to a project"), self.uuid, self._("Go to the domain checker"), self._("to assign the domain")), {})
+                if not len(errors):
+                    self.config.set("domain_name", domain_name)
+                    self.config.set("tld", tld)
+                    self.config.store()
+                    whois = NICClient()
+                    reg = whois.registered(domain)
+                    if reg is None:
+                        errors["domain_name"] = self._("%s registry is temporarily unavailable. Try again later", tld.upper())
+                    elif reg:
+                        errors["domain_name"] = self._("This domain name is occupied already. Choose another one")
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors, "stage": "check"})
+                price = float(prices[tld])
+                balance = self.user_money_available()
+                if cmd == "check":
+                    self.call("web.response_json", {"success": True, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%(price).2f MM$ (approx %(price).2f USD)") % {"price": price}, "balance": balance, "balance_text": "%.2f" % balance})
+                owner = req.param("owner")
+                main_config = self.main_app().config
+                if owner == "admin":
+                    person_r = main_config.get("domains.person-r")
+                    person = main_config.get("domains.person")
+                    passport = main_config.get("domains.passport")
+                    birth_date = main_config.get("domains.birth-date")
+                    address_r = main_config.get("domains.address-r")
+                    p_addr = main_config.get("domains.p-addr")
+                    phone = main_config.get("domains.phone")
+                elif owner == "user":
+                    person_r = req.param("person-r").strip()
+                    person = req.param("person").strip()
+                    passport = req.param("passport").strip()
+                    birth_date = req.param("birth-date").strip()
+                    address_r = req.param("address-r").strip()
+                    p_addr = req.param("p-addr").strip()
+                    phone = req.param("phone").strip()
+                    if not re_person_r.match(person_r):
+                        errors["person-r"] = self._("Invalid field format")
+                    if not re_person.match(person):
+                        errors["person"] = self._("Invalid field format")
+                    if passport == "":
+                        errors["passport"] = self._("Enter your passport number")
+                    if not re_birth_date.match(birth_date):
+                        errors["birth-date"] = self._("Enter birthday in format DD.MM.YYYY")
+                    if address_r == "":
+                        errors["address-r"] = self._("Enter valid address")
+                    if p_addr == "":
+                        errors["p-addr"] = self._("Enter valid address")
+                    if not re_phone.match(phone):
+                        errors["phone"] = self._("Invalid phone format. Look at the example")
+                    if len(errors):
+                        self.call("web.response_json", {"success": False, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%(price).2f MM$ (approx %(price).2f USD)") % {"price": price}, "balance": balance, "balance_text": "%.2f" % balance, "errors": errors})
+                else:
+                    self.call("web.response_json", {"success": False, "errormsg": self._("Select an owner of the domain")})
+                # Registration request
+                params = []
+                params.append(("action", "NEW"))
+                params.append(("login", main_config.get("domains.login")))
+                params.append(("passwd", main_config.get("domains.password")))
+                params.append(("domain", domain))
+                params.append(("state", "DELEGATED"))
+                params.append(("nserver", main_config.get("dns.ns1")))
+                params.append(("nserver", main_config.get("dns.ns2")))
+                params.append(("person", person))
+                params.append(("person-r", person_r))
+                params.append(("passport", passport))
+                params.append(("birth-date", birth_date))
+                params.append(("address-r", address_r))
+                params.append(("p-addr", p_addr))
+                params.append(("phone", phone))
+                params.append(("e-mail", main_config.get("domains.email")))
+                params.append(("private-whois", "yes"))
+                self.info("Querying registrar: %s", params)
+                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r"))) for key, val in params])
+                error = None
+                try:
+                    with Timeout.push(180):
+                        rec = self.main_app().obj(Domain, domain, data={})
+                        rec.set("user", self.app().project.get("owner"))
+                        rec.set("registered", "pending")
+                        rec.set("created", self.now())
+                        rec.set("person", person)
+                        rec.set("person-r", person_r)
+                        rec.set("passport", passport)
+                        rec.set("birth-date", birth_date)
+                        rec.set("address-r", address_r)
+                        rec.set("p-addr", p_addr)
+                        rec.set("phone", phone)
+                        # Connecting
+                        cnn = HTTPConnection()
+                        try:
+                            cnn.connect(("my.i7.ru", 80))
+                        except IOError as e:
+                            self.call("web.response_json", {"success": False, "errormsg": self._("Error connecting to the registrar. Try again please")})
+                        # Locking money
+                        money = self.user_money()
+                        lock = money.lock(price, "MM$", "domain-reg", domain=domain)
+                        if not lock:
+                            self.call("web.response_json", {"success": False, "errormsg": self._("You have not enough money"), "balance": balance, "balance_text": "%.2f" % balance})
+                        # Storing domain record
+                        rec.set("money_lock", lock.uuid)
+                        rec.store()
+                        try:
+                            self.info("Registrar request: %s", params)
+                            request = cnn.get("/c/registrar?%s" % params_url)
+                            response = cnn.perform(request)
+                            #class Response(object):
+                            #    pass
+                            #response = Response()
+                            #response.status_code = 200
+                            #response.body = '<html><body>NEW:10 done cause</body></html>'
+                            if response.status_code != 200:
+                                self.error("Registrar response: %s", response.status)
+                                error = self._("Error getting response from the registrar. Your request was not processed")
+                                self.main_app().hooks.call("domains.money_unlock", rec)
+                                rec.remove()
+                            else:
+                                m = re_i7_response.match(response.body)
+                                if not m:
+                                    self.error("Invalid response from the registrar: %s", urlencode(response.body))
+                                    error = self._("Invalid response from the registrar. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
+                                else:
+                                    action, id, state, cause, inprogress = m.groups()
+                                    inprogress = True if len(inprogress) else False
+                                    self.info("Registrar response: action=%s, id=%s, state=%s, cause=%s, inprogress=%s", action, id, state, cause, inprogress)
+                                    if state == "done" or state == "dns_check":
+                                        rec.set("registered", "yes")
+                                        rec.set("registrar_id", id)
+                                        self.main_app().hooks.call("domains.money_charge", rec)
+                                        rec.store()
+                                        target = self.config.get("target")
+                                        self.result(domain)
+                                        self.finish()
+                                        msg1 = self._("You have successfully registered domain <strong>%s</strong>")
+                                        if target[0] == "wizard":
+                                            self.call("admin.response", "%s. %s." % ((msg1 % domain), (self._('Now <hook:admin.link href="wizard/call/%s" title="check your domain settings" />') % target[1])), {})
+                                        else:
+                                            self.call("admin.response", "%s." % msg1, {})
+                                    elif state == "money_wait" or state == "tc_wait" or inprogress:
+                                        rec.set("registrar_id", id)
+                                        rec.set("registrar_state", state)
+                                        rec.set("registrar_cause", cause)
+                                        rec.set("registrar_inprogress", inprogress)
+                                        rec.store()
+                                        error = self._("Your domain was not registered due to temporary problems. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
+                                    else:
+                                        error = self._("Error registering domain: %s" % cause)
+                                        self.main_app().hooks.call("domains.money_unlock", rec)
+                                        rec.remove()
+                        finally:
+                            cnn.close()
+                except TimeoutError:
+                    self.error("Timeout querying registrar")
+                    error = self._("Request to the registrar timed out. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
+                if error:
+                    self.call("web.response_json", {"success": False, "errormsg": self._(error), "stage": "check"})
+                self.call("web.response_json", {"success": False, "errormsg": self._("Registering for the name: %s" % person_r)})
+        elif cmd == "balance":
+            balance = self.user_money_available()
+            self.call("web.response_json", {"success": True, "balance": balance, "balance_text": "%.2f" % balance})
+        elif cmd == "":
+            tlds_store = [{"code": tld, "value": "." + tld} for tld in tlds]
+            if len(tlds_store):
+                tlds_store[-1]["lst"] = True
+            vars = {
+                "DomainWizard": self._("Domain registration wizard"),
+                "DomainName": self._("Domain name"),
+                "wizard": self.uuid,
+                "EnterDomain": self._("Enter domain name"),
+                "domain_name": self.config.get("domain_name"),
+                "tld": self.config.get("tld", "ru"),
+                "tlds": tlds_store,
+                "DomainAvailable": self._("Domain %s is available for registration"),
+                "RegistrationPrice": self._("for %s"),
+                "yourBalanceIs": self._("your current balance is %s MM$"),
+                "HereYouCan": self._("Here you can register a domain"),
+                "RegisterDomain": self._("Register this domain"),
+                "UpdateBalance": self._("Update balance"),
+                "MakeMeTheOwner": self._("You will be the owner of the domain (in this case provide your personal data)"),
+                "BeOwnerYourself": self._("MMO Constructor will be the owner of the domain"),
+                "PersonR": self._("Your name (in your language). For example: <strong>John A Smith</strong>"),
+                "Person": self._("Your name (in English). For example: <strong>John A Smith</strong>"),
+                "Passport": self._("Your passport number"),
+                "BirthDate": self._("Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"),
+                "AddressR": self._("Your official registration address (in your language)"),
+                "PAddr": self._("Your postal address (in your language)"),
+                "Phone": self._("Your phone number in the international format. For example: <strong>+1 800 5555555</strong>"),
+                "CheckingAvailability": self._("Checking domain availability..."),
+                "UpdatingBalance": self._("Updating balance..."),
+                "RegisteringDomain": self._("Registering domain. It may take several minutes. Be patient please..."),
+            }
+            self.call("admin.response_template", "constructor/domain-wizard.html", vars)
+
+    def user_money(self):
+        return self.main_app().hooks.call("money.member-money", self.app().project.get("owner"))
+
+    def user_money_available(self):
+        return self.user_money().available("MM$")
+
+class DomainsAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("money-description.domain-reg", self.money_description_domain_reg)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-domains.index", self.menu_domains_index)
+        self.rhook("ext-admin-domains.dns", self.ext_dns)
+        self.rhook("ext-admin-domains.prices", self.ext_prices)
+        self.rhook("ext-admin-domains.personal-data", self.ext_personal_data)
+        self.rhook("ext-admin-domains.pending", self.ext_pending)
+        self.rhook("domains.money_unlock", self.money_unlock)
+        self.rhook("domains.money_charge", self.money_charge)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("domains.validate_new", self.validate_new)
+        self.rhook("domains.assign", self.assign)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "domains", "name": self._("Domains: administration")})
+        perms.append({"id": "domains.dns", "name": self._("Domains: DNS settings")})
+        perms.append({"id": "domains.prices", "name": self._("Domains: registration prices")})
+        perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
+
+    def money_description_domain_reg(self):
+        return {
+            "args": ["domain"],
+            "text": self._("Domain registration: %(domain)s"),
+        }
+
+    def objclasses_list(self, objclasses):
+        objclasses["Domain"] = (Domain, DomainList)
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "domains.index", "text": self._("Domains")})
+
+    def menu_domains_index(self, menu):
+        req = self.req()
+        if req.has_access("domains"):
+            menu.append({"id": "domains/pending", "text": self._("List of pending domains"), "leaf": True})
+        if req.has_access("domains.prices"):
+            menu.append({"id": "domains/prices", "text": self._("Registration prices"), "leaf": True})
+        if req.has_access("domains.personal-data"):
+            menu.append({"id": "domains/personal-data", "text": self._("Administrator's personal data"), "leaf": True})
+        if req.has_access("domains.dns"):
+            menu.append({"id": "domains/dns", "text": self._("DNS settings"), "leaf": True})
+
+    def ext_dns(self):
+        self.call("session.require_permission", "domains.dns")
+        req = self.req()
+        main = self.main_app()
+        ns1 = req.param("ns1")
+        ns2 = req.param("ns2")
+        if req.param("ok"):
+            config = main.config
+            config.set("dns.ns1", ns1)
+            config.set("dns.ns2", ns2)
+            config.store()
+            self.call("admin.response", self._("DNS settings stored"), {})
+        else:
+            ns1 = main.config.get("dns.ns1")
+            ns2 = main.config.get("dns.ns2")
+        fields = [
+            {"name": "ns1", "label": self._("DNS server 1"), "value": ns1},
+            {"name": "ns2", "label": self._("DNS server 2"), "value": ns2},
+        ]
+        self.call("admin.form", fields=fields)
 
     def ext_prices(self):
         self.call("session.require_permission", "domains.prices")
@@ -399,244 +649,3 @@ class Domains(Module):
         rec.set("project", self.app().project.uuid)
         rec.set("created", self.now())
         rec.store()
-
-class DomainRegWizard(Wizard):
-    def new(self, target=None, redirect_fail=None, **kwargs):
-        super(DomainRegWizard, self).new(**kwargs)
-        if target is None:
-            raise RuntimeError("DomainRegWizard target not specified")
-        if redirect_fail is None:
-            raise RuntimeError("DomainRegWizard redirect_fail not specified")
-        self.config.set("tag", "domain-reg")
-        self.config.set("target", target)
-        self.config.set("redirect_fail", redirect_fail)
-
-    def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain registration wizard"), "leaf": True, "order": 20})
-
-    def request(self, cmd):
-        req = self.req()
-        tlds = []
-        self.call("domains.tlds", tlds)
-        prices = {}
-        self.call("domains.prices", prices)
-        tlds = [tld for tld in tlds if prices.get(tld)]
-        if cmd == "abort":
-            self.abort()
-            self.call("admin.redirect", self.config.get("redirect_fail"))
-        elif cmd == "check" or cmd == "register":
-            domain_name = req.param("domain_name").lower()
-            tld = req.param("tld").lower()
-            errors = {}
-            if not re.match(r'^[a-z0-9][a-z0-9\-]*$', domain_name):
-                errors["domain_name"] = self._("Invalid domain name. It must begin with letter a-z or digit 0-9 and contain letters, digits and '-' sign")
-            if not tld in tlds:
-                errors["tld"] = self._("Select top level domain")
-            if len(errors):
-                self.call("web.response_json", {"success": False, "errors": errors, "stage": "check"})
-            domain = str("%s.%s" % (domain_name, tld))
-            # locked operations
-            with self.main_app().lock(["DomainReg.%s" % domain], patience=190, delay=3, ttl=185):
-                try:
-                    rec = self.main_app().obj(Domain, domain)
-                except ObjectNotFoundException:
-                    pass
-                else:
-                    if rec.get("user") != self.app().project.get("owner"):
-                        errors["domain_name"] = self._("This domain is already registered by another user of the MMO Constructor")
-                    elif rec.get("registered") == "pending":
-                        errors["domain_name"] = self._("This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s" % rec.get("registrar_id"))
-                    elif rec.get("project"):
-                        errors["domain_name"] = self._("This domain is already assigned to a project")
-                    else:
-                        errors["domain_name"] = self.call("web.parse_inline_layout", '%s. <hook:admin.link href="wizard/call/%s/abort" title="%s" /> %s' % (self._("This domain is registered by you but not assigned to a project"), self.uuid, self._("Go to the domain checker"), self._("to assign the domain")), {})
-                if not len(errors):
-                    self.config.set("domain_name", domain_name)
-                    self.config.set("tld", tld)
-                    self.config.store()
-                    whois = NICClient()
-                    reg = whois.registered(domain)
-                    if reg is None:
-                        errors["domain_name"] = self._("%s registry is temporarily unavailable. Try again later", tld.upper())
-                    elif reg:
-                        errors["domain_name"] = self._("This domain name is occupied already. Choose another one")
-                if len(errors):
-                    self.call("web.response_json", {"success": False, "errors": errors, "stage": "check"})
-                price = float(prices[tld])
-                balance = self.user_money_available()
-                if cmd == "check":
-                    self.call("web.response_json", {"success": True, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%(price).2f MM$ (approx %(price).2f USD)") % {"price": price}, "balance": balance, "balance_text": "%.2f" % balance})
-                owner = req.param("owner")
-                main_config = self.main_app().config
-                if owner == "admin":
-                    person_r = main_config.get("domains.person-r")
-                    person = main_config.get("domains.person")
-                    passport = main_config.get("domains.passport")
-                    birth_date = main_config.get("domains.birth-date")
-                    address_r = main_config.get("domains.address-r")
-                    p_addr = main_config.get("domains.p-addr")
-                    phone = main_config.get("domains.phone")
-                elif owner == "user":
-                    person_r = req.param("person-r").strip()
-                    person = req.param("person").strip()
-                    passport = req.param("passport").strip()
-                    birth_date = req.param("birth-date").strip()
-                    address_r = req.param("address-r").strip()
-                    p_addr = req.param("p-addr").strip()
-                    phone = req.param("phone").strip()
-                    if not re_person_r.match(person_r):
-                        errors["person-r"] = self._("Invalid field format")
-                    if not re_person.match(person):
-                        errors["person"] = self._("Invalid field format")
-                    if passport == "":
-                        errors["passport"] = self._("Enter your passport number")
-                    if not re_birth_date.match(birth_date):
-                        errors["birth-date"] = self._("Enter birthday in format DD.MM.YYYY")
-                    if address_r == "":
-                        errors["address-r"] = self._("Enter valid address")
-                    if p_addr == "":
-                        errors["p-addr"] = self._("Enter valid address")
-                    if not re_phone.match(phone):
-                        errors["phone"] = self._("Invalid phone format. Look at the example")
-                    if len(errors):
-                        self.call("web.response_json", {"success": False, "stage": "register", "domain_name": domain, "price": price, "price_text": self._("%(price).2f MM$ (approx %(price).2f USD)") % {"price": price}, "balance": balance, "balance_text": "%.2f" % balance, "errors": errors})
-                else:
-                    self.call("web.response_json", {"success": False, "errormsg": self._("Select an owner of the domain")})
-                # Registration request
-                params = []
-                params.append(("action", "NEW"))
-                params.append(("login", main_config.get("domains.login")))
-                params.append(("passwd", main_config.get("domains.password")))
-                params.append(("domain", domain))
-                params.append(("state", "DELEGATED"))
-                params.append(("nserver", main_config.get("dns.ns1")))
-                params.append(("nserver", main_config.get("dns.ns2")))
-                params.append(("person", person))
-                params.append(("person-r", person_r))
-                params.append(("passport", passport))
-                params.append(("birth-date", birth_date))
-                params.append(("address-r", address_r))
-                params.append(("p-addr", p_addr))
-                params.append(("phone", phone))
-                params.append(("e-mail", main_config.get("domains.email")))
-                params.append(("private-whois", "yes"))
-                self.info("Querying registrar: %s", params)
-                params = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r"))) for key, val in params])
-                error = None
-                try:
-                    with Timeout.push(180):
-                        rec = self.main_app().obj(Domain, domain, data={})
-                        rec.set("user", self.app().project.get("owner"))
-                        rec.set("registered", "pending")
-                        rec.set("created", self.now())
-                        rec.set("person", person)
-                        rec.set("person-r", person_r)
-                        rec.set("passport", passport)
-                        rec.set("birth-date", birth_date)
-                        rec.set("address-r", address_r)
-                        rec.set("p-addr", p_addr)
-                        rec.set("phone", phone)
-                        # Connecting
-                        cnn = HTTPConnection()
-                        try:
-                            cnn.connect(("my.i7.ru", 80))
-                        except IOError as e:
-                            self.call("web.response_json", {"success": False, "errormsg": self._("Error connecting to the registrar. Try again please")})
-                        # Locking money
-                        money = self.user_money()
-                        lock = money.lock(price, "MM$", "domain-reg", domain=domain)
-                        if not lock:
-                            self.call("web.response_json", {"success": False, "errormsg": self._("You have not enough money"), "balance": balance, "balance_text": "%.2f" % balance})
-                        # Storing domain record
-                        rec.set("money_lock", lock.uuid)
-                        rec.store()
-                        try:
-                            request = cnn.get("/c/registrar%s" % params)
-                            response = cnn.perform(request)
-                            if response.status_code != 200:
-                                self.error("Registrar response: %s", response.status)
-                                error = self._("Error getting response from the registrar. Your request was not processed")
-                                self.main_app().hooks.call("domains.money_unlock", rec)
-                                rec.remove()
-                            else:
-                                m = re_i7_response.match(response.body)
-                                if not m:
-                                    self.error("Invalid response from the registrar: %s", response.body)
-                                    error = self._("Invalid response from the registrar. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
-                                else:
-                                    action, id, state, cause, inprogress = m.groups()
-                                    inprogress = True if len(inprogress) else False
-                                    self.info("Registrar response: action=%s, id=%s, state=%s, cause=%s, inprogress=%s", action, id, state, cause, inprogress)
-                                    if state == "done" or state == "dns_check":
-                                        rec.set("registered", "yes")
-                                        rec.set("registrar_id", id)
-                                        self.main_app().hooks.call("domains.money_charge", rec)
-                                        rec.store()
-                                        target = self.config.get("target")
-                                        self.result(domain)
-                                        self.finish()
-                                        msg1 = self._("You have successfully registered domain <strong>%s</strong>")
-                                        if target[0] == "wizard":
-                                            self.call("admin.response", "%s. %s." % ((msg1 % domain), (self._('Now <hook:admin.link href="wizard/call/%s" title="check your domain settings" />') % target[1])), {})
-                                        else:
-                                            self.call("admin.response", "%s." % msg1, {})
-                                    elif state == "money_wait" or state == "tc_wait" or inprogress:
-                                        rec.set("registrar_id", id)
-                                        rec.set("registrar_state", state)
-                                        rec.set("registrar_cause", cause)
-                                        rec.set("registrar_inprogress", inprogress)
-                                        rec.store()
-                                        error = self._("Your domain was not registered due to temporary problems. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
-                                    else:
-                                        error = self._("Error registering domain: %s" % cause)
-                                        self.main_app().hooks.call("domains.money_unlock", rec)
-                                        rec.remove()
-                        finally:
-                            cnn.close()
-                except TimeoutError:
-                    self.error("Timeout querying registrar")
-                    error = self._("Request to the registrar timed out. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
-                if error:
-                    self.call("web.response_json", {"success": False, "errormsg": self._(error), "stage": "check"})
-                self.call("web.response_json", {"success": False, "errormsg": self._("Registering for the name: %s" % person_r)})
-        elif cmd == "balance":
-            balance = self.user_money_available()
-            self.call("web.response_json", {"success": True, "balance": balance, "balance_text": "%.2f" % balance})
-        elif cmd == "":
-            tlds_store = [{"code": tld, "value": "." + tld} for tld in tlds]
-            if len(tlds_store):
-                tlds_store[-1]["lst"] = True
-            vars = {
-                "DomainWizard": self._("Domain registration wizard"),
-                "DomainName": self._("Domain name"),
-                "wizard": self.uuid,
-                "EnterDomain": self._("Enter domain name"),
-                "domain_name": self.config.get("domain_name"),
-                "tld": self.config.get("tld", "ru"),
-                "tlds": tlds_store,
-                "DomainAvailable": self._("Domain %s is available for registration"),
-                "RegistrationPrice": self._("for %s"),
-                "yourBalanceIs": self._("your current balance is %s MM$"),
-                "HereYouCan": self._("Here you can register a domain"),
-                "RegisterDomain": self._("Register this domain"),
-                "UpdateBalance": self._("Update balance"),
-                "MakeMeTheOwner": self._("You will be the owner of the domain (in this case provide your personal data)"),
-                "BeOwnerYourself": self._("MMO Constructor will be the owner of the domain"),
-                "PersonR": self._("Your name (in your language). For example: <strong>John A Smith</strong>"),
-                "Person": self._("Your name (in English). For example: <strong>John A Smith</strong>"),
-                "Passport": self._("Your passport number"),
-                "BirthDate": self._("Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"),
-                "AddressR": self._("Your official registration address (in your language)"),
-                "PAddr": self._("Your postal address (in your language)"),
-                "Phone": self._("Your phone number in the international format. For example: <strong>+1 800 5555555</strong>"),
-                "CheckingAvailability": self._("Checking domain availability..."),
-                "UpdatingBalance": self._("Updating balance..."),
-                "RegisteringDomain": self._("Registering domain. It may take several minutes. Be patient please..."),
-            }
-            self.call("admin.response_template", "constructor/domain-wizard.html", vars)
-
-    def user_money(self):
-        return self.main_app().hooks.call("money.member-money", self.app().project.get("owner"))
-
-    def user_money_available(self):
-        return self.user_money().available("MM$")

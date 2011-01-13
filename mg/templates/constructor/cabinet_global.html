@@ -13,9 +13,10 @@
 </td></tr></table>
 <div id="cab-content">
 	<table id="cab-layout"><tr>
-			[%if cabinet_leftbtn%]<td id="cab-leftbtn-td"><div id="cab-leftbtn"><div id="cab-leftbtn-in"><div><a href="[%cabinet_leftbtn.href%]"><img src="/st/constructor/cabinet/leftbtn-logo.gif" alt="" /></a></div><a href="[%cabinet_leftbtn.href%]">[%cabinet_leftbtn.title%]</a></div></div></td>[%end%]
+	[%if cabinet_leftbtn%]<td id="cab-leftbtn-td"><div id="cab-leftbtn"><div id="cab-leftbtn-in"><div><a href="[%cabinet_leftbtn.href%]"><img src="/st/constructor/cabinet/leftbtn-logo.gif" alt="" /></a></div><a href="[%cabinet_leftbtn.href%]">[%cabinet_leftbtn.title%]</a></div></div></td>[%end%]
 	[%if content%]<td id="cab-right-menu"><div class="c1"><div class="c2"><div class="c3"><div class="c4"><div class="c5">[%content%]</div></div></div></div></div></td>[%end%]
 	[%if cabinet_menu%]<td id="cab-right-menu"><div class="c1"><div class="c2"><div class="c3"><div class="c4"><div class="c5">
+	[%if cabinet_comment%]<div id="cab-comment">[%cabinet_comment%]</div>[%end%]
 	<table id="cab-right-icons">
 	[%foreach m in cabinet_menu%]
 	<tr class="images">[%foreach ent in m%]<td><a href="[%ent.href%]"><img src="[%ent.image%]" alt="" /></a></td>[%end%]</tr>

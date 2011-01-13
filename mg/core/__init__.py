@@ -665,7 +665,7 @@ class Instance(object):
             modlogger.removeHandler(self.syslog_channel)
         self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
         self.syslog_channel.setLevel(logging.DEBUG)
-        formatter = Formatter(str(self.logger_id + " cls:%(name)s %(message)s"))
+        formatter = Formatter(unicode(self.logger_id + " cls:%(name)s %(message)s"))
         self.syslog_channel.setFormatter(formatter)
         filter = Filter()
         self.syslog_channel.addFilter(filter)
@@ -675,7 +675,7 @@ class Instance(object):
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(str("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s"))
+        formatter = logging.Formatter(unicode("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s"))
         self.stderr_channel.setFormatter(formatter)
         modlogger.addHandler(self.stderr_channel)
 

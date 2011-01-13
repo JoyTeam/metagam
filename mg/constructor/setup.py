@@ -212,9 +212,7 @@ class ProjectSetupWizard(Wizard):
                     admin.set("activation_code", activation_code)
                     admin.set("activation_redirect", "/admin")
                     admin.store()
-                    self.call("admin.redirect_top", "http://www.%s/auth/activate/%s?ok=1&code=%s" % (domain, admin.uuid, activation_code))
-                else:
-                    self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
+                self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):
