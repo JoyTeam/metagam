@@ -26,7 +26,7 @@ function form_submit()
 			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
 			}
-		},
+		}
 	});
 }
 new Ext.Panel({
@@ -37,19 +37,19 @@ new Ext.Panel({
 	defaults: {
 		cellCls: 'form-table',
 		border: false,
-		cls: 'bottom-form',
+		cls: 'bottom-form'
 	},
 	layoutConfig: {
 		columns: 1
 	},
 	items: [{
-		html: '<h2>[%AlreadyRegistered%]</h2>[%DomainSettings%]',
+		html: '<h2>[%AlreadyRegistered%]</h2>[%DomainSettings%]'
 	}, {
 		defaults: {
-			border: false,
+			border: false
 		},
 		items: [{
-			html: '<h2>[%RegisterWizard%]</h2>',
+			html: '<h2>[%RegisterWizard%]</h2>'
 		}, {
 			items: [{
 				xtype: 'button',
@@ -58,7 +58,7 @@ new Ext.Panel({
 			}]
 		}]
 	}, {
-		html: '<h2>[%DomainCheck%]</h2>',
+		html: '<h2>[%DomainCheck%]</h2>'
 	}, {
 		id: 'check-form',
 		layout: 'form',
@@ -73,7 +73,7 @@ new Ext.Panel({
 			name: 'domain',
 			value: '[%domain_name%]',
 			border: false,
-			msgTarget: 'under',
+			msgTarget: 'under'
 		}, {
 			xtype: 'button',
 			text: '[%CheckDomain%]',

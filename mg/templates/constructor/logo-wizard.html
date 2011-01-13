@@ -9,12 +9,12 @@
 var shapes = new Ext.data.ArrayStore({
 	fields: ['key', 'title', 'html'],
 	idIndex: 0,
-	data: [[%foreach sh in shapes%]['[%sh.key%]', '[%sh.title%]', '[%sh.html%]'][%unless sh.lst%],[%end%][%end%]],
+	data: [[%foreach sh in shapes%]['[%sh.key%]', '[%sh.title%]', '[%sh.html%]'][%unless sh.lst%],[%end%][%end%]]
 });
 var fillers = new Ext.data.ArrayStore({
 	fields: ['key', 'title', 'html'],
 	idIndex: 0,
-	data: [[%foreach fl in fillers%]['[%fl.key%]', '[%fl.title%]', '[%fl.html%]'][%unless fl.lst%],[%end%][%end%]],
+	data: [[%foreach fl in fillers%]['[%fl.key%]', '[%fl.title%]', '[%fl.html%]'][%unless fl.lst%],[%end%][%end%]]
 });
 var win;
 function show_logo(preview_id, uri)
@@ -65,7 +65,7 @@ function submit_form(form_id, url)
 			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
 			}
-		},
+		}
 	});
 }
 function filler_upload(layer_id)
@@ -93,7 +93,7 @@ function filler_upload(layer_id)
 					xtype: 'fileuploadfield',
 					hideLabel: true,
 					name: 'image',
-					border: false,
+					border: false
 				}
 			}, {
 				border: false,
@@ -132,13 +132,13 @@ function filler_solid(layer_id)
 					width: 200,
 					xtype: 'hidden',
 					name: 'color',
-					border: false,
+					border: false
 				}
 			}, {
 				xtype: 'colorpalette',
 				listeners: {
 					select: function(palette, color) { Ext.getCmp('logo-filler-solid-color').setValue(color) }
-				},
+				}
 			}, {
 				border: false,
 				items: {
@@ -169,7 +169,7 @@ function layer_add(layers, shape, filler, smooth)
 		width: 150,
 		valueField: 'key',
 		displayField: 'title',
-		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>',
+		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>'
 	});
 	var filler_combo = layers.add({
 		xtype: 'combo',
@@ -186,7 +186,7 @@ function layer_add(layers, shape, filler, smooth)
 		width: 250,
 		valueField: 'key',
 		displayField: 'title',
-		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>',
+		tpl: '<tpl for="."><div ext:qtip="{title}" class="x-combo-list-item">{html}</div></tpl>'
 	});
 	filler_combo.on('select', function(field, value) {
 		var shape_combo = Ext.getCmp('logo-shape-' + this.layer_id);
@@ -214,7 +214,7 @@ function layer_add(layers, shape, filler, smooth)
 			xtype: 'checkbox',
 			name: 'smooth' + next_id,
 			checked: smooth,
-			hideLabel: true,
+			hideLabel: true
 		}]
 	});
 }
@@ -233,20 +233,20 @@ wait(['js/FileUploadField.js'], function() {
 			layout: 'table',
 			defaults: {
 				cellCls: 'form-table',
-				border: false,
+				border: false
 			},
 			layoutConfig: {
 				columns: 3
 			},
 			items: [{
 				html: '<h1>' + gt.gettext('Shape') + '</h1>',
-				width: 150,
+				width: 150
 			}, {
 				html: '<h1>' + gt.gettext('Fill') + '</h1>',
-				width: 250,
+				width: 250
 			}, {
 				html: '<h1>' + gt.gettext('Effects') + '</h1>',
-				width: 200,
+				width: 200
 			}]
 		}, {
 			id: 'logo-preview-button',
@@ -260,7 +260,7 @@ wait(['js/FileUploadField.js'], function() {
 			id: 'logo_preview',
 			hidden: true,
 			width: 102,
-			border: false,
+			border: false
 		}]
 	});
 	var layers = Ext.getCmp('logo-layers');

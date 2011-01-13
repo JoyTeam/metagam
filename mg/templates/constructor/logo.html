@@ -40,14 +40,14 @@ wait(['js/FileUploadField.js'], function() {
 		defaults: {
 			cellCls: 'form-table',
 			border: false,
-			cls: 'bottom-form',
+			cls: 'bottom-form'
 		},
 		layoutConfig: {
 			columns: 2
 		},
 		items: [{
 			defaults: {
-				border: false,
+				border: false
 			},
 			items: [{
 				id: 'file-form',
@@ -67,7 +67,7 @@ wait(['js/FileUploadField.js'], function() {
 						xtype: 'fileuploadfield',
 						name: 'image',
 						border: false
-					},
+					}
 				}, {
 					border: false,
 					layout: 'form',
@@ -101,13 +101,13 @@ wait(['js/FileUploadField.js'], function() {
 						})}
 					}
 				}]
-			}],
+			}]
 		}/*, {
 			defaults: {
-				border: false,
+				border: false
 			},
 			items: [{
-				html: '<h2>[%FromConstructor%]</h2>',
+				html: '<h2>[%FromConstructor%]</h2>'
 			}, {
 				items: [{
 					xtype: 'button',
@@ -129,7 +129,7 @@ wait(['js/FileUploadField.js'], function() {
 			id: 'logo-next-button',
 			text: gt.gettext('Next'),
 			handler: function() { adm('wizard/call/[%wizard%]/next') },
-			hidden: true,
+			hidden: true
 		}]
 	});
 	[%if logo%]show_logo('[%logo%]');[%end%]

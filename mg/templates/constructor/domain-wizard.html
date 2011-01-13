@@ -33,7 +33,7 @@ function submit_form(form_id, func, msg)
 			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
 			}
-		},
+		}
 	});
 }
 function update_stage(res)
@@ -75,7 +75,7 @@ new Ext.FormPanel({
 	layout: 'table',
 	timeout: 200,
 	defaults: {
-		border: false,
+		border: false
 	},
 	layoutConfig: {
 		columns: 2
@@ -90,7 +90,7 @@ new Ext.FormPanel({
 			name: 'domain_name',
 			emptyText: '[%EnterDomain%]',
 			value: '[%domain_name%]',
-			width: 150,
+			width: 150
 		}
 	}, {
 		cellCls: 'form-table',
@@ -104,7 +104,7 @@ new Ext.FormPanel({
 			store: [[%foreach t in tlds%]['[%t.code%]', '[%t.value%]'][%unless t.lst%],[%end%][%end%]],
 			value: '[%tld%]',
 			hiddenName: 'tld',
-			width: 80,
+			width: 80
 		}
 	}, {
 		colspan: 2,
@@ -124,7 +124,7 @@ new Ext.FormPanel({
 		cls: 'text',
 		items: [{
 			id: 'domain-available-text',
-			border: false,
+			border: false
 		}, {
 			border: false,
 			layout: 'table',
@@ -133,11 +133,11 @@ new Ext.FormPanel({
 				columns: 2
 			},
 			defaults: {
-				border: false,
+				border: false
 			},
 			items: [{
 				id: 'domain-available-balance',
-				cellCls: 'form-table',
+				cellCls: 'form-table'
 			}, {
 				cellCls: 'form-table',
 				border: false,
@@ -148,7 +148,7 @@ new Ext.FormPanel({
 				colspan: 2,
 				id: 'domain-pay-button',
 				cellCls: 'form-table',
-				html: '<a href="http://2pay.ru/oplata/?id=' + twopay_project_id + '&amp;new=1&v1=' + twopay_v1 + '&amp;country=0&amp;email=' + twopay_email + '" target="_blank">' + gt.gettext('Buy MM$') + '</a>',
+				html: '<a href="http://2pay.ru/oplata/?id=' + twopay_project_id + '&amp;new=1&v1=' + twopay_v1 + '&amp;country=0&amp;email=' + twopay_email + '" target="_blank">' + gt.gettext('Buy MM$') + '</a>'
 			}, {
 				colspan: 2,
 				id: 'domain-register-button',
@@ -160,7 +160,7 @@ new Ext.FormPanel({
 					hideLabel: true,
 					boxLabel: '[%MakeMeTheOwner%]',
 					name: 'owner',
-					inputValue: 'user',
+					inputValue: 'user'
 				}, {
 					border: false,
 					id: 'personal-data',
@@ -171,51 +171,51 @@ new Ext.FormPanel({
 						fieldLabel: '[%PersonR%]',
 						xtype: 'textfield',
 						name: 'person-r',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%Person%]',
 						xtype: 'textfield',
 						name: 'person',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%Passport%]',
 						xtype: 'textfield',
 						name: 'passport',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%BirthDate%]',
 						xtype: 'textfield',
 						name: 'birth-date',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%AddressR%]',
 						xtype: 'textfield',
 						name: 'address-r',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%PAddr%]',
 						xtype: 'textfield',
 						name: 'p-addr',
-						width: 300,
+						width: 300
 					}, {
 						border: false,
 						fieldLabel: '[%Phone%]',
 						xtype: 'textfield',
 						name: 'phone',
-						width: 300,
-					}],
+						width: 300
+					}]
 				}, {
 					id: 'radio-owner-admin',
 					xtype: 'radio',
 					name: 'owner',
 					inputValue: 'admin',
 					hideLabel: true,
-					boxLabel: '[%BeOwnerYourself%]',
+					boxLabel: '[%BeOwnerYourself%]'
 				}, {
 					id: 'register-button',
 					xtype: 'button',
