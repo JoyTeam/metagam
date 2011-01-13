@@ -259,6 +259,7 @@ Ext.onReady(function() {
 		useArrows: true,
 		border: false,
 		rootVisible: false,
+		id: 'admin-leftmenu-tree',
 		root: {}
 	});
 	topmenu = new Ext.Toolbar({
@@ -294,11 +295,15 @@ Ext.onReady(function() {
 				width: '20%',
 				maxSize: 400,
 				border: false,
-				autoScroll: true,
+				layout: 'fit',
 				bodyCfg: {
 					cls: 'admin-leftmenu'
 				},
-				items: leftmenu
+				items: {
+					autoScroll: true,
+					border: false,
+					items: leftmenu
+				}
 			},
 			{
 				id: 'admin-advicecontent1',
@@ -318,7 +323,7 @@ Ext.onReady(function() {
 				autoScroll: true,
 				id: 'admin-main',
 				bodyCfg: {
-					cls: 'admin-main'
+					cls: 'x-panel-body admin-main'
 				},
 				items: adminmain
 			}
