@@ -207,7 +207,7 @@ class ForumAdmin(Module):
         advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
 
     def menu_root_index(self, menu):
-        menu.append({"id": "socio.index", "text": self._("Socio")})
+        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})

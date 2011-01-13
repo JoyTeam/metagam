@@ -38,6 +38,7 @@ input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; m
 .form-list-messages-bottom div { padding-top: 5px; color: #898989; }
 .form-error { color: #ff6347; font-size: 11px }
 .form-ret { text-align: center; padding: 0px 20px 20px 20px }
+.form-list-messages-top { padding-bottom: 10px }
 a:link, a:visited { color: #e48347 }
 a:hover, a:active { color: #f4a377 }
 #cab-menu { width: 925px; height: 75px; margin: 0 auto; background-image: url(/st/constructor/cabinet/menu.png); background-repeat: no-repeat; background-position: 50% 0% }

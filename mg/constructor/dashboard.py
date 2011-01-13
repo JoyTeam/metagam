@@ -6,6 +6,7 @@ import cgi
 class ProjectDashboard(Module):
     def register(self):
         Module.register(self)
+        self.rdep(["mg.constructor.invitations.Invitations"])
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
         self.rhook("ext-admin-constructor.project-find", self.ext_project_find)
@@ -14,6 +15,7 @@ class ProjectDashboard(Module):
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings)
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -27,7 +29,7 @@ class ProjectDashboard(Module):
                 })
 
     def menu_root_index(self, menu):
-        menu.append({"id": "constructor.index", "text": self._("Constructor")})
+        menu.append({"id": "constructor.index", "text": self._("Constructor"), "order": -100})
 
     def headmenu_project_dashboard(self, args):
         app = self.app().inst.appfactory.get_by_tag(args)
@@ -42,6 +44,8 @@ class ProjectDashboard(Module):
 
     def menu_constructor_index(self, menu):
         req = self.req()
+        if req.has_access("constructor.settings"):
+            menu.append({"id": "constructor/settings", "text": self._("Global settings"), "leaf": True})
         if req.has_access("constructor.projects"):
             menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
@@ -147,6 +151,26 @@ class ProjectDashboard(Module):
         self.call("admin.response_template", "admin/constructor/project-dashboard.html", vars)
 
     def permissions_list(self, perms):
+        perms.append({"id": "constructor.settings", "name": self._("Constructor: global settings")})
         perms.append({"id": "constructor.projects", "name": self._("Constructor: projects")})
         perms.append({"id": "constructor.projects.unpublish", "name": self._("Constructor: unpublishing projects")})
+
+    def ext_constructor_settings(self):
+        self.call("session.require_permission", "constructor.settings")
+        req = self.req()
+        config = self.main_app().config
+        invitations = True if req.param("invitations") else False
+        if req.param("ok"):
+            changed = False
+            if config.get("constructor.invitations") != invitations:
+                self.call("admin.update_menu")
+            config.set("constructor.invitations", invitations)
+            config.store()
+            self.call("admin.response", self._("Constructor settings stored"), {})
+        else:
+            invitations = config.get("constructor.invitations")
+        fields = [
+            {"type": "checkbox", "name": "invitations", "label": self._("Registration on invitations"), "checked": invitations},
+        ]
+        self.call("admin.form", fields=fields)
 

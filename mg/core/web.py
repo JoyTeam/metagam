@@ -616,7 +616,7 @@ class Web(Module):
     def web_response_json_html(self, data):
         raise WebResponse(self.req().uresponse(cgi.escape(json.dumps(data))))
 
-    def web_form(self, template, action=None):
+    def web_form(self, template="common/form.html", action=None):
         return WebForm(self, template, action)
 
     def web_forbidden(self):

@@ -769,7 +769,7 @@ class Interface(Module):
         return perms
 
     def menu_root_index(self, menu):
-        menu.append({"id": "users.index", "text": self._("Users")})
+        menu.append({"id": "users.index", "text": self._("Users"), "order": 500})
 
     def menu_users_index(self, menu):
         req = self.req()

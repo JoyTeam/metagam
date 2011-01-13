@@ -103,6 +103,9 @@ class Constructor(Module):
             return
         if req.group == "index" and req.hook == "index":
             vars["global_html"] = "constructor/index_global.html"
+        elif req.group == "constructor" and req.hook == "newgame":
+            vars["global_html"] = "constructor/cabinet_global.html"
+            cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
         elif req.group == "auth":
             if req.hook == "change" or req.hook == "email":
                 vars["global_html"] = "constructor/cabinet_global.html"
@@ -144,7 +147,7 @@ class Constructor(Module):
                     topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
             if redirect_param:
-                topmenu.append({"href": htmlescape(req.parama("redirect")), "html": self._("Cancel")})
+                topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
         elif req.group == "documentation":
             vars["global_html"] = "constructor/socio_global.html"
             topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
@@ -266,7 +269,7 @@ class Constructor(Module):
                     { "href": "/auth/change", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change password") },
                     { "href": "/auth/email", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change e-mail") },
                     { "href": "/forum/settings?redirect=/cabinet/settings", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Forum settings") },
-                    { "href": "/constructor/certificate", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("WebMoney Certification") },
+#                    { "href": "/constructor/certificate", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("WebMoney Certification") },
                 ],
             ],
         }
@@ -307,6 +310,27 @@ class Constructor(Module):
     def constructor_newgame(self):
         self.call("session.require_login")
         req = self.req()
+        # Registration on invitations
+        if self.conf("constructor.invitations"):
+            if not self.call("invitation.ok", req.user(), "newproject"):
+                invitation = req.param("invitation")
+                form = self.call("web.form")
+                if req.param("ok"):
+                    if not invitation or invitation == "":
+                        form.error("invitation", self._("Enter invitation code"))
+                    else:
+                        err = self.call("invitation.enter", req.user(), "newproject", invitation)
+                        if err:
+                            form.error("invitation", err)
+                    if not form.errors:
+                        self.call("web.redirect", "/constructor/newgame")
+                form.input(self._("Invitation code"), "invitation", invitation)
+                form.submit(None, None, self._("Proceed"))
+                form.add_message_top(self._("Open registration of new games is unavailable at the moment. If you have an invitation code enter it now"))
+                vars = {
+                    "title": self._("Invitation required"),
+                }
+                self.call("web.response_global", form.html(), vars)
         inst = self.app().inst
         # creating new project and application
         int_app = inst.int_app
