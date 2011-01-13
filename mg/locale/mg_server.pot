@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 10:23+0300\n"
+"POT-Creation-Date: 2011-01-13 10:47+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1226,7 +1226,7 @@ msgstr ""
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:642 mg/constructor/invitations.py:84
+#: mg/game/money.py:642 mg/constructor/invitations.py:92
 msgid "User"
 msgstr ""
 
@@ -1591,21 +1591,25 @@ msgstr ""
 msgid "Change e-mail"
 msgstr ""
 
-#: mg/constructor/__init__.py:318 mg/constructor/invitations.py:84
+#: mg/constructor/__init__.py:320
+msgid "Enter invitation code"
+msgstr ""
+
+#: mg/constructor/__init__.py:327 mg/constructor/invitations.py:92
 msgid "Invitation code"
 msgstr ""
 
-#: mg/constructor/__init__.py:319
+#: mg/constructor/__init__.py:328
 msgid "Proceed"
 msgstr ""
 
-#: mg/constructor/__init__.py:320
+#: mg/constructor/__init__.py:329
 msgid ""
 "Open registration of new games is unavailable at the moment. If you have an "
 "invitation code enter it now"
 msgstr ""
 
-#: mg/constructor/__init__.py:322
+#: mg/constructor/__init__.py:331
 msgid "Invitation required"
 msgstr ""
 
@@ -2941,44 +2945,56 @@ msgstr ""
 msgid "Registering domain. It may take several minutes. Be patient please..."
 msgstr ""
 
-#: mg/constructor/invitations.py:33
+#: mg/constructor/invitations.py:40
 msgid "Invitations"
 msgstr ""
 
-#: mg/constructor/invitations.py:36
+#: mg/constructor/invitations.py:43
 msgid "Constructor: giving invitations"
 msgstr ""
 
-#: mg/constructor/invitations.py:40
+#: mg/constructor/invitations.py:47
 msgid "New invitation"
 msgstr ""
 
-#: mg/constructor/invitations.py:41
+#: mg/constructor/invitations.py:48
 msgid "Invitations for the registration"
 msgstr ""
 
-#: mg/constructor/invitations.py:53
+#: mg/constructor/invitations.py:60
 msgid "Enter recipient name"
 msgstr ""
 
-#: mg/constructor/invitations.py:63
+#: mg/constructor/invitations.py:71
 msgid "Person name"
 msgstr ""
 
-#: mg/constructor/invitations.py:66
+#: mg/constructor/invitations.py:74
 msgid "Generate invitation code"
 msgstr ""
 
-#: mg/constructor/invitations.py:82
+#: mg/constructor/invitations.py:90
 msgid "Give a new invitation"
 msgstr ""
 
-#: mg/constructor/invitations.py:84
+#: mg/constructor/invitations.py:92
 msgid "Type"
 msgstr ""
 
-#: mg/constructor/invitations.py:84
+#: mg/constructor/invitations.py:92
 msgid "Person"
+msgstr ""
+
+#: mg/constructor/invitations.py:108 mg/constructor/invitations.py:113
+msgid "Invalid invitation code"
+msgstr ""
+
+#: mg/constructor/invitations.py:115
+msgid "This code is redeemed already"
+msgstr ""
+
+#: mg/constructor/invitations.py:117
+msgid "This code in inappropriate for this action"
 msgstr ""
 
 #: mg/constructor/dashboard.py:27

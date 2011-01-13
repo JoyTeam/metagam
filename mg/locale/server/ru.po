@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 10:23+0300\n"
-"PO-Revision-Date: 2011-01-13 10:23+0300\n"
+"POT-Creation-Date: 2011-01-13 10:47+0300\n"
+"PO-Revision-Date: 2011-01-13 10:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1345,7 +1345,7 @@ msgid "Our time"
 msgstr "Наше время"
 
 #: mg/game/money.py:642
-#: mg/constructor/invitations.py:84
+#: mg/constructor/invitations.py:92
 msgid "User"
 msgstr "Пользователь"
 
@@ -1714,20 +1714,24 @@ msgstr "Изменить пароль"
 msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
-#: mg/constructor/__init__.py:318
-#: mg/constructor/invitations.py:84
+#: mg/constructor/__init__.py:320
+msgid "Enter invitation code"
+msgstr "Введите пригласительный код"
+
+#: mg/constructor/__init__.py:327
+#: mg/constructor/invitations.py:92
 msgid "Invitation code"
 msgstr "Код приглашения"
 
-#: mg/constructor/__init__.py:319
+#: mg/constructor/__init__.py:328
 msgid "Proceed"
 msgstr "Продолжить"
 
-#: mg/constructor/__init__.py:320
+#: mg/constructor/__init__.py:329
 msgid "Open registration of new games is unavailable at the moment. If you have an invitation code enter it now"
 msgstr "В данный момент свободная регистрация игр невозможна. Если у вас есть код приглашения, введите его прямо сейчас"
 
-#: mg/constructor/__init__.py:322
+#: mg/constructor/__init__.py:331
 msgid "Invitation required"
 msgstr "Требуется приглашение"
 
@@ -3008,45 +3012,58 @@ msgstr "Обновление баланса..."
 msgid "Registering domain. It may take several minutes. Be patient please..."
 msgstr "Регистрируем домен. Это может занять несколько минут. Пожалуйста, подождите..."
 
-#: mg/constructor/invitations.py:33
+#: mg/constructor/invitations.py:40
 msgid "Invitations"
 msgstr "Приглашения"
 
-#: mg/constructor/invitations.py:36
+#: mg/constructor/invitations.py:43
 msgid "Constructor: giving invitations"
 msgstr "Конструктор: выдача приглашений"
 
-#: mg/constructor/invitations.py:40
+#: mg/constructor/invitations.py:47
 msgid "New invitation"
 msgstr "Новое приглашение"
 
-#: mg/constructor/invitations.py:41
+#: mg/constructor/invitations.py:48
 msgid "Invitations for the registration"
 msgstr "Приглашения на регистрацию"
 
-#: mg/constructor/invitations.py:53
+#: mg/constructor/invitations.py:60
 msgid "Enter recipient name"
 msgstr "Введите имя получателя"
 
-#: mg/constructor/invitations.py:63
+#: mg/constructor/invitations.py:71
 msgid "Person name"
 msgstr "Имя персоны"
 
-#: mg/constructor/invitations.py:66
+#: mg/constructor/invitations.py:74
 msgid "Generate invitation code"
 msgstr "Сгенерировать пригласительный код"
 
-#: mg/constructor/invitations.py:82
+#: mg/constructor/invitations.py:90
 msgid "Give a new invitation"
 msgstr "Выдать новое приглашение"
 
-#: mg/constructor/invitations.py:84
+#: mg/constructor/invitations.py:92
 msgid "Type"
 msgstr "Тип"
 
-#: mg/constructor/invitations.py:84
+#: mg/constructor/invitations.py:92
 msgid "Person"
 msgstr "Персона"
+
+#: mg/constructor/invitations.py:108
+#: mg/constructor/invitations.py:113
+msgid "Invalid invitation code"
+msgstr "Неверный пригласительный код"
+
+#: mg/constructor/invitations.py:115
+msgid "This code is redeemed already"
+msgstr "Этот код уже погашен"
+
+#: mg/constructor/invitations.py:117
+msgid "This code in inappropriate for this action"
+msgstr "Этот код не подходит для этого действия"
 
 #: mg/constructor/dashboard.py:27
 msgid "Project name"
