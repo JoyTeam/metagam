@@ -684,7 +684,7 @@ class TwoPay(Module):
         try:
             secret = self.conf("2pay.secret")
             if type(secret) == unicode:
-                secret = secret.encode("cp1251")
+                secret = secret.encode("windows-1251")
             if secret is None or secret == "":
                 result = 5
                 comment = "Payments are not accepted for this project"
@@ -694,7 +694,7 @@ class TwoPay(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    v1 = v1.decode("cp1251")
+                    v1 = v1.decode("windows-1251")
                     self.debug("2pay Request: command=check, v1=%s", v1)
                     if self.call("session.find_user", v1):
                         result = 0
@@ -710,7 +710,7 @@ class TwoPay(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    v1 = v1.decode("cp1251")
+                    v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
                     self.debug("2pay Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
                     user = self.call("session.find_user", v1)
@@ -789,7 +789,7 @@ class TwoPay(Module):
             elt.appendChild(doc.createTextNode(comment))
             response.appendChild(elt)
         self.debug("2pay Response: %s", response.toxml("utf-8"))
-        self.call("web.response", doc.toxml("cp1251"), {})
+        self.call("web.response", doc.toxml("windows-1251"), {})
 
     def permissions_list(self, perms):
         if self.app().tag == "main":
@@ -815,8 +815,8 @@ class TwoPay(Module):
         except ObjectNotFoundException:
             owner = None
         else:
-            payment["email"] = urlencode(owner.get("email").encode("cp1251"))
-            payment["name"] = urlencode(owner.get("name").encode("cp1251"))
+            payment["email"] = urlencode(owner.get("email").encode("windows-1251"))
+            payment["name"] = urlencode(owner.get("name").encode("windows-1251"))
         payment["project_id"] = self.conf("2pay.project-id")
         payment["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
         params["twopay_payment"] = payment
