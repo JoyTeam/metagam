@@ -132,6 +132,7 @@ class Constructor(Module):
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"})
         elif req.group == "forum" or req.group == "socio":
             vars["global_html"] = "constructor/socio_global.html"
+            vars["title_suffix"] = " - %s" % self._("MMO Constructor Forum")
             redirect = req.param("redirect")
             redirect_param = True
             if redirect is None or redirect == "":

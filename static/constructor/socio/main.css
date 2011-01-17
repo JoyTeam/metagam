@@ -3,7 +3,7 @@ body { background: #fbfbfb; margin: 0 auto; height: 100%; background-image: url(
 table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 14px; padding: 0; }
 img { border: none }
-h1 { color: #0078ac; font-size: 21px; font-weight: bold; }
+h1 { color: #0078ac; font-size: 21px; font-weight: bold }
 #page-layout1 { height: 100%; width: 100%}
 #page-layout1-div { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; min-height: 100% }
 #page-layout1-td { vertical-align: top }
@@ -37,3 +37,6 @@ input.form-file { font-size: 13px }
 .socio-tags-list a:hover, .socio-tags-list a:active { color: #ed8439 }
 .socio-tags-list .socio-thick { margin: 20px 0px 15px 0px; }
 .socio-tags-list .socio-semithick { margin-top: 20px }
+/* DOCUMENTATION */
+.doc-content a:link, .doc-content a:visited { color: #dd6419 }
+.doc-content a:hover, .doc-content a:active { color: #ed8439 }
