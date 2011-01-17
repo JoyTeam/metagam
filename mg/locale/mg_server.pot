@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-13 15:49+0300\n"
+"POT-Creation-Date: 2011-01-17 17:07+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,16 +43,16 @@ msgid "Forum moderation"
 msgstr ""
 
 #: mg/socio/__init__.py:219 mg/constructor/__init__.py:17
-#: mg/constructor/__init__.py:131 mg/constructor/__init__.py:155
+#: mg/constructor/__init__.py:131 mg/constructor/__init__.py:156
 msgid "Forum"
 msgstr ""
 
-#: mg/socio/__init__.py:223 mg/socio/__init__.py:249 mg/socio/__init__.py:777
-#: mg/socio/__init__.py:954 mg/socio/__init__.py:1091
-#: mg/socio/__init__.py:1289 mg/socio/__init__.py:1533
-#: mg/socio/__init__.py:1584 mg/socio/__init__.py:2089
-#: mg/socio/__init__.py:2213 mg/socio/__init__.py:2251
-#: mg/socio/__init__.py:2269 mg/constructor/design.py:615
+#: mg/socio/__init__.py:223 mg/socio/__init__.py:249 mg/socio/__init__.py:769
+#: mg/socio/__init__.py:946 mg/socio/__init__.py:1079
+#: mg/socio/__init__.py:1277 mg/socio/__init__.py:1518
+#: mg/socio/__init__.py:1569 mg/socio/__init__.py:2074
+#: mg/socio/__init__.py:2198 mg/socio/__init__.py:2236
+#: mg/socio/__init__.py:2254 mg/constructor/design.py:615
 #: mg/constructor/design.py:621 mg/constructor/design.py:681
 msgid "Forum categories"
 msgstr ""
@@ -69,12 +69,12 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: mg/socio/__init__.py:238 mg/socio/__init__.py:1587 mg/core/auth.py:808
+#: mg/socio/__init__.py:238 mg/socio/__init__.py:1572 mg/core/auth.py:808
 msgid "Editing"
 msgstr ""
 
-#: mg/socio/__init__.py:239 mg/socio/__init__.py:401 mg/socio/__init__.py:1297
-#: mg/socio/__init__.py:1339 mg/core/auth.py:807 mg/constructor/design.py:695
+#: mg/socio/__init__.py:239 mg/socio/__init__.py:401 mg/socio/__init__.py:1285
+#: mg/socio/__init__.py:1327 mg/core/auth.py:807 mg/constructor/design.py:695
 msgid "edit"
 msgstr ""
 
@@ -90,8 +90,8 @@ msgstr ""
 msgid "Deletion"
 msgstr ""
 
-#: mg/socio/__init__.py:243 mg/socio/__init__.py:1295
-#: mg/socio/__init__.py:1337 mg/constructor/design.py:342
+#: mg/socio/__init__.py:243 mg/socio/__init__.py:1283
+#: mg/socio/__init__.py:1325 mg/constructor/design.py:342
 #: mg/constructor/design.py:695
 msgid "delete"
 msgstr ""
@@ -243,7 +243,7 @@ msgstr ""
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
-#: mg/socio/__init__.py:558 mg/socio/__init__.py:1694
+#: mg/socio/__init__.py:558 mg/socio/__init__.py:1679
 #: mg/constructor/setup.py:118 mg/constructor/logo.py:193
 msgid "Image format not recognized"
 msgstr ""
@@ -252,7 +252,7 @@ msgstr ""
 msgid "Upload an image"
 msgstr ""
 
-#: mg/socio/__init__.py:614 mg/core/web.py:722
+#: mg/socio/__init__.py:614 mg/core/web.py:724
 msgid "Image"
 msgstr ""
 
@@ -282,234 +282,234 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: mg/socio/__init__.py:778 mg/socio/__init__.py:2247
-#: mg/socio/__init__.py:2252
+#: mg/socio/__init__.py:770 mg/socio/__init__.py:2232
+#: mg/socio/__init__.py:2237
 msgid "Subscribed topics"
 msgstr ""
 
-#: mg/socio/__init__.py:958 mg/socio/__init__.py:1089
-#: mg/socio/__init__.py:1093 mg/constructor/design.py:624
+#: mg/socio/__init__.py:950 mg/socio/__init__.py:1077
+#: mg/socio/__init__.py:1081 mg/constructor/design.py:624
 #: mg/constructor/design.py:891
 msgid "New topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1014 mg/socio/__init__.py:1050
+#: mg/socio/__init__.py:1003 mg/socio/__init__.py:1038
 #: mg/constructor/design.py:694
 msgid "Profile"
 msgstr ""
 
-#: mg/socio/__init__.py:1070 mg/socio/__init__.py:1619
+#: mg/socio/__init__.py:1058 mg/socio/__init__.py:1604
 msgid "Enter topic subject"
 msgstr ""
 
-#: mg/socio/__init__.py:1072 mg/socio/__init__.py:1621
+#: mg/socio/__init__.py:1060 mg/socio/__init__.py:1606
 msgid "Enter topic content"
 msgstr ""
 
-#: mg/socio/__init__.py:1077
+#: mg/socio/__init__.py:1065
 msgid "Invalid datetime format"
 msgstr ""
 
-#: mg/socio/__init__.py:1083
+#: mg/socio/__init__.py:1071
 msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
 msgstr ""
 
-#: mg/socio/__init__.py:1084 mg/socio/__init__.py:1639
+#: mg/socio/__init__.py:1072 mg/socio/__init__.py:1624
 msgid "Subject"
 msgstr ""
 
-#: mg/socio/__init__.py:1085
+#: mg/socio/__init__.py:1073
 msgid "Content"
 msgstr ""
 
-#: mg/socio/__init__.py:1086 mg/socio/__init__.py:1641
-#: mg/socio/__init__.py:2090 mg/socio/__init__.py:2217
-#: mg/socio/__init__.py:2270 mg/constructor/design.py:640
+#: mg/socio/__init__.py:1074 mg/socio/__init__.py:1626
+#: mg/socio/__init__.py:2075 mg/socio/__init__.py:2202
+#: mg/socio/__init__.py:2255 mg/constructor/design.py:640
 msgid "Tags"
 msgstr ""
 
-#: mg/socio/__init__.py:1291 mg/socio/__init__.py:1535
-#: mg/socio/__init__.py:1586
+#: mg/socio/__init__.py:1279 mg/socio/__init__.py:1520
+#: mg/socio/__init__.py:1571
 msgid "Topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1299 mg/socio/__init__.py:1341
+#: mg/socio/__init__.py:1287 mg/socio/__init__.py:1329
 #: mg/constructor/design.py:695
 msgid "reply"
 msgstr ""
 
-#: mg/socio/__init__.py:1320
+#: mg/socio/__init__.py:1308
 msgid "unsubscribe"
 msgstr ""
 
-#: mg/socio/__init__.py:1322
+#: mg/socio/__init__.py:1310
 msgid "subscribe"
 msgstr ""
 
-#: mg/socio/__init__.py:1325
+#: mg/socio/__init__.py:1313
 msgid "unpin"
 msgstr ""
 
-#: mg/socio/__init__.py:1327
+#: mg/socio/__init__.py:1315
 msgid "pin"
 msgstr ""
 
-#: mg/socio/__init__.py:1329
+#: mg/socio/__init__.py:1317
 msgid "move"
 msgstr ""
 
-#: mg/socio/__init__.py:1349 mg/socio/__init__.py:1510
-#: mg/socio/__init__.py:1595
+#: mg/socio/__init__.py:1337 mg/socio/__init__.py:1495
+#: mg/socio/__init__.py:1580
 msgid "Enter post content"
 msgstr ""
 
-#: mg/socio/__init__.py:1351
+#: mg/socio/__init__.py:1339
 msgid "Access denied"
 msgstr ""
 
-#: mg/socio/__init__.py:1367 mg/socio/__init__.py:1527
-#: mg/socio/__init__.py:1531 mg/socio/__init__.py:1536
+#: mg/socio/__init__.py:1355 mg/socio/__init__.py:1512
+#: mg/socio/__init__.py:1516 mg/socio/__init__.py:1521
 msgid "Reply"
 msgstr ""
 
-#: mg/socio/__init__.py:1591
+#: mg/socio/__init__.py:1576
 msgid "Edit post"
 msgstr ""
 
-#: mg/socio/__init__.py:1613
+#: mg/socio/__init__.py:1598
 msgid "Edit topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1642 mg/core/web.py:700 mg/core/director.py:240
+#: mg/socio/__init__.py:1627 mg/core/web.py:702 mg/core/director.py:240
 #: mg/admin/__init__.py:229
 msgid "Save"
 msgstr ""
 
-#: mg/socio/__init__.py:1654 mg/constructor/__init__.py:146
-#: mg/constructor/__init__.py:289
+#: mg/socio/__init__.py:1639 mg/constructor/__init__.py:147
+#: mg/constructor/__init__.py:281
 msgid "Forum settings"
 msgstr ""
 
-#: mg/socio/__init__.py:1682
+#: mg/socio/__init__.py:1667
 msgid "Signature can't contain more than 4 lines"
 msgstr ""
 
-#: mg/socio/__init__.py:1686
+#: mg/socio/__init__.py:1671
 msgid "Signature line couldn't be longer than 80 symbols"
 msgstr ""
 
-#: mg/socio/__init__.py:1688
+#: mg/socio/__init__.py:1673
 msgid "Signature couldn't contain images"
 msgstr ""
 
-#: mg/socio/__init__.py:1711
+#: mg/socio/__init__.py:1696
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr ""
 
-#: mg/socio/__init__.py:1761
+#: mg/socio/__init__.py:1746
 msgid "Your forum signature"
 msgstr ""
 
-#: mg/socio/__init__.py:1762
+#: mg/socio/__init__.py:1747
 msgid "Your avatar"
 msgstr ""
 
-#: mg/socio/__init__.py:1763
+#: mg/socio/__init__.py:1748
 msgid "Replies in subscribed topics"
 msgstr ""
 
-#: mg/socio/__init__.py:1763
+#: mg/socio/__init__.py:1748
 msgid "E-mail notifications"
 msgstr ""
 
-#: mg/socio/__init__.py:1765
+#: mg/socio/__init__.py:1750
 msgid "New topics in '{topcat} / {cat}'"
 msgstr ""
 
-#: mg/socio/__init__.py:1766
+#: mg/socio/__init__.py:1751
 msgid "Return"
 msgstr ""
 
-#: mg/socio/__init__.py:1875
+#: mg/socio/__init__.py:1860
 msgid "Select category"
 msgstr ""
 
-#: mg/socio/__init__.py:1896
+#: mg/socio/__init__.py:1881
 msgid "Category where to move"
 msgstr ""
 
-#: mg/socio/__init__.py:1897 mg/constructor/design.py:891
+#: mg/socio/__init__.py:1882 mg/constructor/design.py:891
 msgid "Move"
 msgstr ""
 
-#: mg/socio/__init__.py:1899
+#: mg/socio/__init__.py:1884
 #, python-format
 msgid "Move topic: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:1945
+#: mg/socio/__init__.py:1930
 #, python-format
 msgid "New topic: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:1945
+#: mg/socio/__init__.py:1930
 msgid ""
 "{author_name} has started new topic: {topic_subject}\n"
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}"
 msgstr ""
 
-#: mg/socio/__init__.py:1995
+#: mg/socio/__init__.py:1980
 #, python-format
 msgid "New replies: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:1995
+#: mg/socio/__init__.py:1980
 msgid ""
 "{author_name} has replied in the topic: {topic_subject}\n"
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 msgstr ""
 
-#: mg/socio/__init__.py:2082 mg/constructor/design.py:625
+#: mg/socio/__init__.py:2067 mg/constructor/design.py:625
 msgid "Author"
 msgstr ""
 
-#: mg/socio/__init__.py:2083 mg/constructor/design.py:617
+#: mg/socio/__init__.py:2068 mg/constructor/design.py:617
 #: mg/constructor/design.py:626
 msgid "Replies"
 msgstr ""
 
-#: mg/socio/__init__.py:2084 mg/constructor/design.py:627
+#: mg/socio/__init__.py:2069 mg/constructor/design.py:627
 msgid "Last reply"
 msgstr ""
 
-#: mg/socio/__init__.py:2085 mg/constructor/design.py:620
+#: mg/socio/__init__.py:2070 mg/constructor/design.py:620
 #: mg/constructor/design.py:628
 msgid "by"
 msgstr ""
 
-#: mg/socio/__init__.py:2087 mg/socio/__init__.py:2218
+#: mg/socio/__init__.py:2072 mg/socio/__init__.py:2203
 msgid "Nothing found"
 msgstr ""
 
-#: mg/socio/__init__.py:2191 mg/socio/__init__.py:2204
+#: mg/socio/__init__.py:2176 mg/socio/__init__.py:2189
 msgid "open"
 msgstr ""
 
-#: mg/socio/__init__.py:2214
+#: mg/socio/__init__.py:2199
 msgid "results///Search"
 msgstr ""
 
-#: mg/socio/__init__.py:2249
+#: mg/socio/__init__.py:2234
 msgid "You have not subscribed to any topic"
 msgstr ""
 
-#: mg/socio/__init__.py:2303
+#: mg/socio/__init__.py:2288
 msgid "Read more"
 msgstr ""
 
-#: mg/socio/__init__.py:2304
+#: mg/socio/__init__.py:2289
 msgid "Comment"
 msgstr ""
 
@@ -569,67 +569,67 @@ msgstr ""
 msgid "{2:d}{3} {1}, {0}"
 msgstr ""
 
-#: mg/core/web.py:710
+#: mg/core/web.py:712
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:711
+#: mg/core/web.py:713
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:712
+#: mg/core/web.py:714
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:713
+#: mg/core/web.py:715
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:714
+#: mg/core/web.py:716
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:715
+#: mg/core/web.py:717
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:716
+#: mg/core/web.py:718
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:717
+#: mg/core/web.py:719
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:718
+#: mg/core/web.py:720
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:719
+#: mg/core/web.py:721
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:720
+#: mg/core/web.py:722
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:721
+#: mg/core/web.py:723
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:723
+#: mg/core/web.py:725
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:724
+#: mg/core/web.py:726
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:725
+#: mg/core/web.py:727
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:726
+#: mg/core/web.py:728
 msgid "Smiles"
 msgstr ""
 
@@ -741,7 +741,7 @@ msgstr ""
 msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
-#: mg/core/auth.py:327 mg/constructor/__init__.py:150
+#: mg/core/auth.py:327 mg/constructor/__init__.py:151
 msgid "Register"
 msgstr ""
 
@@ -749,7 +749,7 @@ msgstr ""
 msgid "User registration"
 msgstr ""
 
-#: mg/core/auth.py:332 mg/core/auth.py:594 mg/constructor/__init__.py:152
+#: mg/core/auth.py:332 mg/core/auth.py:594 mg/constructor/__init__.py:153
 #: mg/constructor/domains.py:519
 msgid "Cancel"
 msgstr ""
@@ -825,7 +825,7 @@ msgstr ""
 msgid "Incorrect password"
 msgstr ""
 
-#: mg/core/auth.py:587 mg/constructor/__init__.py:149
+#: mg/core/auth.py:587 mg/constructor/__init__.py:150
 msgid "Log in"
 msgstr ""
 
@@ -1454,13 +1454,13 @@ msgstr ""
 msgid "Go to the Constructor forum"
 msgstr ""
 
-#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:271
+#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:263
 msgid "Cabinet"
 msgstr ""
 
 #: mg/constructor/__init__.py:18 mg/constructor/__init__.py:108
-#: mg/constructor/__init__.py:127 mg/constructor/__init__.py:147
-#: mg/constructor/__init__.py:157
+#: mg/constructor/__init__.py:127 mg/constructor/__init__.py:148
+#: mg/constructor/__init__.py:158
 msgid "Return to the Cabinet"
 msgstr ""
 
@@ -1527,60 +1527,64 @@ msgstr ""
 msgid "Logout"
 msgstr ""
 
-#: mg/constructor/__init__.py:144
+#: mg/constructor/__init__.py:135
+msgid "MMO Constructor Forum"
+msgstr ""
+
+#: mg/constructor/__init__.py:145
 msgid "socio-top///Search"
 msgstr ""
 
-#: mg/constructor/__init__.py:158 mg/constructor/__init__.py:298
+#: mg/constructor/__init__.py:159
 msgid "MMO Constructor Documentation"
 msgstr ""
 
-#: mg/constructor/__init__.py:204
+#: mg/constructor/__init__.py:196
 msgid "Browser-based Games Constructor"
 msgstr ""
 
-#: mg/constructor/__init__.py:205
+#: mg/constructor/__init__.py:197
 #, python-format
 msgid "Copyright &copy; Joy Team, 2009-%s"
 msgstr ""
 
-#: mg/constructor/__init__.py:215
+#: mg/constructor/__init__.py:207
 msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/constructor/__init__.py:216
+#: mg/constructor/__init__.py:208
 msgid "log in"
 msgstr ""
 
-#: mg/constructor/__init__.py:217
+#: mg/constructor/__init__.py:209
 msgid "register"
 msgstr ""
 
-#: mg/constructor/__init__.py:218
+#: mg/constructor/__init__.py:210
 msgid "forum"
 msgstr ""
 
-#: mg/constructor/__init__.py:219
+#: mg/constructor/__init__.py:211
 msgid "cabinet"
 msgstr ""
 
-#: mg/constructor/__init__.py:220
+#: mg/constructor/__init__.py:212
 msgid "log out"
 msgstr ""
 
-#: mg/constructor/__init__.py:221
+#: mg/constructor/__init__.py:213
 msgid "documentation"
 msgstr ""
 
-#: mg/constructor/__init__.py:235
+#: mg/constructor/__init__.py:227
 msgid "Constructor administration"
 msgstr ""
 
-#: mg/constructor/__init__.py:244
+#: mg/constructor/__init__.py:236
 msgid "Untitled game"
 msgstr ""
 
-#: mg/constructor/__init__.py:258
+#: mg/constructor/__init__.py:250
 msgid ""
 "Congratulations! Your game was registered successfully. Now you can enter "
 "administration panel and configure your game. Don't worry if you can't open "
@@ -1588,41 +1592,41 @@ msgid ""
 "or even days for your domain to work."
 msgstr ""
 
-#: mg/constructor/__init__.py:275
+#: mg/constructor/__init__.py:267
 msgid "Create a new game"
 msgstr ""
 
-#: mg/constructor/__init__.py:284
+#: mg/constructor/__init__.py:276
 msgid "MMO Constructor Settings"
 msgstr ""
 
-#: mg/constructor/__init__.py:287
+#: mg/constructor/__init__.py:279
 msgid "Change password"
 msgstr ""
 
-#: mg/constructor/__init__.py:288
+#: mg/constructor/__init__.py:280
 msgid "Change e-mail"
 msgstr ""
 
-#: mg/constructor/__init__.py:337
+#: mg/constructor/__init__.py:323
 msgid "Enter invitation code"
 msgstr ""
 
-#: mg/constructor/__init__.py:344 mg/constructor/invitations.py:92
+#: mg/constructor/__init__.py:330 mg/constructor/invitations.py:92
 msgid "Invitation code"
 msgstr ""
 
-#: mg/constructor/__init__.py:345
+#: mg/constructor/__init__.py:331
 msgid "Proceed"
 msgstr ""
 
-#: mg/constructor/__init__.py:346
+#: mg/constructor/__init__.py:332
 msgid ""
 "Open registration of new games is unavailable at the moment. If you have an "
 "invitation code enter it now"
 msgstr ""
 
-#: mg/constructor/__init__.py:348
+#: mg/constructor/__init__.py:334
 msgid "Invitation required"
 msgstr ""
 

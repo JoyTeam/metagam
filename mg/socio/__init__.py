@@ -37,7 +37,7 @@ re_parbreak = re.compile(r'(\n\s*){2,}')
 re_linebreak = re.compile(r'\n')
 re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
 valid = r'\/\w\/\+\%\#\$\&=\?#'
-re_urls = re.compile(r'(.*?)((?:http|ftp|https):\/\/[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
+re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|)[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
 re_split_tags = re.compile(r'\s*(,\s*)+')
 re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
 delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
@@ -81,7 +81,7 @@ class ForumTopic(CassandraObject):
         "category-created": [["category"], "pinned-created"],
         "category-updated": [["category"], "pinned-updated"],
         "updated-category": [[], "updated", "category"],
-        "category-list": [["category"], "updated"],
+        "category-list": [["category"], "created"],
         "author": [["author"], "created"],
         "tag": [["tag"]],
     }
@@ -457,14 +457,14 @@ class Socio(Module):
                     return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
             elif tag == "url":
                 if re_url.match(arg):
-                    arg = cgi.escape(arg)
+                    arg = htmlescape(arg)
                     return self.format_text(before, options) + ('<a href="%s" target="_blank">' % arg) + self.format_text(inner, options) + '</a>' + self.format_text(after, options)
             elif tag == "quote":
                 before = self.format_text(re_trim.sub(r'\1', before), options)
                 inner = self.format_text(re_trim.sub(r'\1', inner), options)
                 after = self.format_text(re_trim.sub(r'\1', after), options)
                 if arg is not None:
-                    inner = '<div class="author">%s</div>%s' % (cgi.escape(arg), inner)
+                    inner = '<div class="author">%s</div>%s' % (htmlescape(arg), inner)
                 return '%s<div class="quote">%s</div>%s' % (before, inner, after)
             else:
                 if tag == "s":
@@ -486,13 +486,15 @@ class Socio(Module):
                 return '%s <a href="%s" target="_blank"><img src="%s" alt="" /></a> %s' % (self.format_text(before, options), image, thumbnail, self.format_text(after, options))
         m = re_urls.match(html)
         if m:
-            before, inner, after = m.group(1, 2, 3)
-            inner_show = cgi.escape(re_softhyphen.sub(r'\1' + u"\u200b", inner))
-            inner = cgi.escape(inner)
+            before, inner, protocol, after = m.group(1, 2, 3, 4)
+            inner_show = htmlescape(re_softhyphen.sub(r'\1' + u"\u200b", inner))
+            inner = htmlescape(inner)
+            if protocol == "":
+                inner = "http://%s" % inner
             return '%s<a href="%s" target="_blank">%s</a>%s' % (self.format_text(before, options), inner, inner_show, self.format_text(after, options))
         html = re_cut.sub("\n", html)
         html = re_softhyphen.sub(r'\1' + u"\u200b", html)
-        html = cgi.escape(html)
+        html = htmlescape(html)
         html = re_mdash.sub("&nbsp;&mdash; ", html)
         html = re_bull.sub("&bull; ", html)
         html = re_parbreak.sub("\n\n", html)
@@ -512,7 +514,7 @@ class Socio(Module):
             if not image and url:
                 url_obj = urlparse.urlparse(url.encode("utf-8"), "http", False)
                 if url_obj.scheme != "http":
-                    form.error("url", self._("Scheme '%s' is not supported") % cgi.escape(url_obj.scheme))
+                    form.error("url", self._("Scheme '%s' is not supported") % htmlescape(url_obj.scheme))
                 elif url_obj.hostname is None:
                     form.error("url", self._("Enter correct URL"))
                 else:
@@ -534,7 +536,7 @@ class Socio(Module):
                                 elif response.status_code == 500:
                                     form.error("url", self._("Remote server response: Internal server error"))
                                 else:
-                                    form.error("url", self._("Download error: %s") % cgi.escape(response.status))
+                                    form.error("url", self._("Download error: %s") % htmlescape(response.status))
                             else:
                                 image = response.body
                                 image_field = "url"
@@ -543,7 +545,7 @@ class Socio(Module):
                     except (KeyboardInterrupt, SystemExit, TaskletExit):
                         raise
                     except BaseException as e:
-                        form.error("url", self._("Download error: %s") % cgi.escape(str(e)))
+                        form.error("url", self._("Download error: %s") % htmlescape(str(e)))
                     finally:
                         try:
                             cnn.close()
@@ -991,7 +993,7 @@ class Forum(Module):
         if load_settings:
             self.load_settings(topics, signatures, avatars, statuses)
         for topic in topics:
-            topic["subject_html"] = cgi.escape(topic.get("subject"))
+            topic["subject_html"] = htmlescape(topic.get("subject"))
             topic["author_html"] = topic.get("author_html")
             topic["posts"] = intz(topic.get("posts"))
             topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
@@ -1099,12 +1101,12 @@ class Forum(Module):
         }
         if author is not None:
             author_name = author.get("name")
-            author_html = cgi.escape(author_name.encode("utf-8"))
+            author_html = htmlescape(author_name.encode("utf-8"))
             topic.set("author", author.uuid)
             topic.set("author_name", author_name)
             topic.set("author_html", author_html)
             last["author_html"] = author_html
-            last["subject_html"] = cgi.escape(subject)
+            last["subject_html"] = htmlescape(subject)
             last["updated"] = self.call("l10n.timeencode2", created)
         catstat.set("last", last)
         topic.set("subject", subject)
@@ -1229,12 +1231,12 @@ class Forum(Module):
             }
             if author is not None:
                 author_name = author.get("name")
-                author_html = cgi.escape(author_name.encode("utf-8"))
+                author_html = htmlescape(author_name.encode("utf-8"))
                 post.set("author", author.uuid)
                 post.set("author_name", author_name)
                 post.set("author_html", author_html)
                 last["author_html"] = author_html
-                last["subject_html"] = cgi.escape(topic.get("subject"))
+                last["subject_html"] = htmlescape(topic.get("subject"))
                 last["updated"] = self.call("l10n.timeencode2", now)
             catstat.set("last", last)
             post.set("content", content)
@@ -1244,7 +1246,6 @@ class Forum(Module):
                 self.subscribe(author.uuid, topic.uuid, cat["id"], now)
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
             page = (posts - 1) / posts_per_page + 1
-            last["page"] = page
             catstat.store()
             self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
             self.fulltext_store(post.uuid, self.word_extractor(content))
@@ -1265,12 +1266,24 @@ class Forum(Module):
         rules, roles = self.load_rules_roles(user_uuid, cat)
         if not self.may_read(user_uuid, cat, rules=rules, roles=roles):
             self.call("web.forbidden")
+        # find a post
+        if req.param("post"):
+            uuid = req.param("post")
+            posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
+            for i in range(0, len(posts)):
+                if posts[i].uuid == uuid:
+                    self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, (i / posts_per_page + 1), uuid))
+            if len(posts):
+                self.call("web.redirect", "/forum/topic/%s?page=%d" % (topic.uuid, uuid))
+            else:
+                self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+        # topic contents
         may_write = self.may_write(cat, topic, rules=rules, roles=roles)
         topic_data = topic.data_copy()
         topic_data["content"] = topic_content.get("content")
         topic_data["content_html"] = topic_content.get("content_html")
         if topic_content.get("tags"):
-            topic_data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [cgi.escape(tag) for tag in topic_content.get("tags")]])
+            topic_data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in topic_content.get("tags")]])
         self.topics_htmlencode([topic_data], load_settings=True)
         # preparing menu
         menu = [
@@ -1409,7 +1422,7 @@ class Forum(Module):
                 topic.set("last_post_created", last_post.get("created"))
                 topic.set("last_post_author", last_post.get("author"))
                 topic.set("last_post_author_name", last_post.get("author_name"))
-                topic.set("last_post_author_html", cgi.escape(last_post.get("author_name")))
+                topic.set("last_post_author_html", htmlescape(last_post.get("author_name")))
             updated = last_post.get("created")
         else:
             last_post = None
@@ -1523,6 +1536,32 @@ class Forum(Module):
         }
         self.call("forum.response", form.html(), vars)
 
+    def update_last(self, cat, stat):
+        topics = self.objlist(ForumTopicList, query_index="category-list", query_equal=cat["id"], query_reversed=True, query_limit=1)
+        topics.load(silent=True)
+        posts = self.objlist(ForumPostList, query_index="category", query_equal=cat["id"], query_reversed=True, query_limit=1)
+        posts.load(silent=True)
+        last_topic = topics[0] if len(topics) else None
+        last_post = posts[0] if len(posts) else None
+        if last_topic is None:
+            stat.delkey("last")
+        elif last_post is not None and last_post.get("created") > last_topic.get("created"):
+            topic = self.obj(ForumTopic, last_post.get("topic"))
+            stat.set("last", {
+                "topic": topic.uuid,
+                "post": last_post.uuid,
+                "author_html": last_post.get("author_html"),
+                "subject_html": htmlescape(topic.get("subject")),
+                "updated": self.call("l10n.timeencode2", last_post.get("created")),
+            })
+        else:
+            stat.set("last", {
+                "topic": last_topic.uuid,
+                "author_html": last_topic.get("author_html"),
+                "subject_html": htmlescape(last_topic.get("subject")),
+                "updated": self.call("l10n.timeencode2", last_topic.get("created")),
+            })
+
     def ext_delete(self):
         cat, topic, post = self.category_or_topic_args()
         if not self.may_delete(cat, topic, post):
@@ -1542,6 +1581,8 @@ class Forum(Module):
             post.remove()
             catstat = self.catstat(cat["id"])
             catstat.decr("replies")
+            if catstat.get("last") and catstat.get("last").get("post") == post.uuid:
+                self.update_last(cat, catstat)
             catstat.store()
             self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, prev))
         else:
@@ -1555,6 +1596,8 @@ class Forum(Module):
             catstat = self.catstat(cat["id"])
             catstat.decr("topics")
             catstat.decr("replies", len(posts))
+            if catstat.get("last") and catstat.get("last").get("topic") == topic.uuid:
+                self.update_last(cat, catstat)
             catstat.store()
             self.call("web.redirect", "/forum/cat/%s" % cat["id"])
 
@@ -2007,25 +2050,18 @@ class Forum(Module):
                 stat.delkey("last")
             elif last_post is not None and last_post.get("created") > last_topic.get("created"):
                 topic = self.obj(ForumTopic, last_post.get("topic"))
-                posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
-                page = None
-                for i in range(0, len(posts)):
-                    if posts[i].uuid == last_post.uuid:
-                        page = i / posts_per_page + 1
-                        break
                 stat.set("last", {
                     "topic": topic.uuid,
                     "post": last_post.uuid,
-                    "page": page,
                     "author_html": last_post.get("author_html"),
-                    "subject_html": cgi.escape(topic.get("subject")),
+                    "subject_html": htmlescape(topic.get("subject")),
                     "updated": self.call("l10n.timeencode2", last_post.get("created")),
                 })
             else:
                 stat.set("last", {
                     "topic": last_topic.uuid,
                     "author_html": last_topic.get("author_html"),
-                    "subject_html": cgi.escape(last_topic.get("subject")),
+                    "subject_html": htmlescape(last_topic.get("subject")),
                     "updated": self.call("l10n.timeencode2", last_topic.get("created")),
                 })
             stat.store()
@@ -2068,12 +2104,12 @@ class Forum(Module):
             "replies": self._("Replies"),
             "last_reply": self._("Last reply"),
             "by": self._("by"),
-            "title": cgi.escape(tag),
+            "title": htmlescape(tag),
             "message": "" if len(topics) else self._("Nothing found"),
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "href": "/forum/tags", "html": self._("Tags") },
-                { "html": cgi.escape(tag) },
+                { "html": htmlescape(tag) },
             ],
         }
         self.call("forum.vars-category", vars)
@@ -2176,7 +2212,7 @@ class Forum(Module):
                         data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
                         data["post_title"] = data.get("subject_html")
                         if content.get("tags"):
-                            data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [cgi.escape(tag) for tag in content.get("tags")]])
+                            data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
                         posts.append(data)
                 else:
                     self.posts_htmlencode([data])
@@ -2191,13 +2227,13 @@ class Forum(Module):
         if len(posts):
             posts[-1]["lst"] = True
         vars = {
-            "search_query": cgi.escape(query),
-            "title": cgi.escape(query),
+            "search_query": htmlescape(query),
+            "title": htmlescape(query),
             "posts": posts,
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "html": self._("results///Search") },
-                { "html": cgi.escape(query) },
+                { "html": htmlescape(query) },
             ],
             "Tags": self._("Tags"),
             "new_post_form": "" if len(posts) else self._("Nothing found")
