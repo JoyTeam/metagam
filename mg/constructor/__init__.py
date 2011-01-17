@@ -7,6 +7,9 @@ from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
 import time
 import datetime
+import re
+
+re_valid_docfile = re.compile(r'^[a-z0-9\-]+(/[a-z0-9\-]+)*/?$')
 
 class ConstructorUtils(Module):
     def register(self):
@@ -32,6 +35,7 @@ class Constructor(Module):
         self.rhook("auth.redirects", self.redirects)
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
         self.rhook("ext-documentation.index", self.documentation_index)
+        self.rhook("ext-documentation.handler", self.documentation_handler)
         self.rhook("ext-debug.validate", self.debug_validate)
         self.rhook("ext-constructor.newgame", self.constructor_newgame)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -294,10 +298,21 @@ class Constructor(Module):
         self.call("web.response_global", None, vars)
 
     def documentation_index(self):
+        lang = self.call("l10n.lang")
         vars = {
-            "title": self._("MMO Constructor Documentation"),
+            "lang": lang
         }
-        self.call("web.response_template", "constructor/documentation.html", vars)
+        self.call("web.response_template", "constructor/docs/%s/index.html" % lang, vars)
+
+    def documentation_handler(self, args):
+        m = re_valid_docfile(args)
+        if not m:
+            self.call("web.not_found")
+        lang = self.call("l10n.lang")
+        vars = {
+            "lang": lang
+        }
+        self.call("web.response_template", "constructor/docs/%s/%s.html" % (lang, args), vars)
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")
