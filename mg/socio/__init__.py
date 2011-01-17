@@ -690,24 +690,16 @@ class Forum(Module):
         if vars.get("menu") and len(vars["menu"]):
             menu_left = []
             menu_right = []
-            first_left = True
-            first_right = True
             for ent in vars["menu"]:
                 if ent.get("right"):
-                    if first_right:
-                        first_right = False
-                    else:
-                        menu_right.append({"delim": True})
                     menu_right.append(ent)
                 else:
-                    if first_left:
-                        first_left = False
-                    else:
-                        menu_left.append({"delim": True})
                     menu_left.append(ent)
             if len(menu_left):
+                menu_left[-1]["lst"] = True
                 vars["menu_left"] = menu_left
             if len(menu_right):
+                menu_right[-1]["lst"] = True
                 vars["menu_right"] = menu_right
         self.call("web.response_global", content, vars)
 
@@ -968,14 +960,11 @@ class Forum(Module):
             for i in range(1, pages + 1):
                 show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
                 if show:
-                    if len(pages_list):
-                        pages_list.append({"delim": True})
                     pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/cat/%s?page=%d" % (cat["id"], i)}}})
                 elif last_show:
-                    if len(pages_list):
-                        pages_list.append({"delim": True})
                     pages_list.append({"entry": {"text": "..."}})
                 last_show = show
+            pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
         self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
@@ -1017,9 +1006,8 @@ class Forum(Module):
             if pages > 1:
                 pages_list = []
                 for i in range(1, pages + 1):
-                    if len(pages_list):
-                        pages_list.append({"delim": True})
                     pages_list.append({"entry": {"text": i, "a": {"href": "/forum/topic/%s?page=%d" % (topic["uuid"], i)}}})
+                pages_list[-1]["lst"] = True
                 topic["pages"] = pages_list
         req = self.req()
         user_uuid = req.session().semi_user()
@@ -1372,14 +1360,11 @@ class Forum(Module):
             for i in range(1, pages + 1):
                 show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
                 if show:
-                    if len(pages_list):
-                        pages_list.append({"delim": True})
                     pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/topic/%s?page=%d" % (topic.uuid, i)}}})
                 elif last_show:
-                    if len(pages_list):
-                        pages_list.append({"delim": True})
                     pages_list.append({"entry": {"text": "..."}})
                 last_show = show
+            pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
         self.call("forum.vars-topic", vars)
         self.call("forum.response_template", "socio/topic.html", vars)

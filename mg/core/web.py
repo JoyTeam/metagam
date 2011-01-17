@@ -505,6 +505,8 @@ class Web(Module):
             except AttributeError:
                 pass
             self.call("web.universal_variables", vars)
+        if type(filename) == unicode:
+            filename = filename.encode("utf-8")
         content = self.tpl.process(filename, vars)
         req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)

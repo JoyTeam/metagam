@@ -3,7 +3,7 @@
 </td>
 <td id="socio-topic-tweet"><a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script></td>
 [%if pages%]<td class="socio-topic-pages">
-[%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]</span>
+[%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
 <div id="socio-topic-facebook"><script src="http://connect.facebook.net/ru_RU/all.js#xfbml=1"></script><fb:like show_faces="false" width="850" font="verdana"></fb:like></div>
 
@@ -61,7 +61,7 @@
 </table>
 
 [%if pages%]<table id="socio-topic-bottom"><tr><td class="socio-topic-pages">
-[%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%if ent.delim%], [%end%][%end%]</span>
+[%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td></tr></table>[%end%]
 
 <a name="post-form"></a>

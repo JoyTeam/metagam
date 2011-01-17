@@ -7,9 +7,6 @@ from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
 import time
 import datetime
-import re
-
-re_valid_docfile = re.compile(r'^[a-z0-9\-]+(/[a-z0-9\-]+)*/?$')
 
 class ConstructorUtils(Module):
     def register(self):
@@ -28,14 +25,13 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
-            "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface"])
+            "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
+            "mg.constructor.doc.Documentation"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)
         self.rhook("auth.redirects", self.redirects)
         self.rhook("ext-cabinet.settings", self.cabinet_settings)
-        self.rhook("ext-documentation.index", self.documentation_index)
-        self.rhook("ext-documentation.handler", self.documentation_handler)
         self.rhook("ext-debug.validate", self.debug_validate)
         self.rhook("ext-constructor.newgame", self.constructor_newgame)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -130,7 +126,7 @@ class Constructor(Module):
                 cabmenu.append({"title": self._("Settings"), "left": True})
                 cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
             elif req.hook == "index":
-                cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/documentation", "left": True})
+                cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/doc", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"})
@@ -154,7 +150,7 @@ class Constructor(Module):
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
             if redirect_param:
                 topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
-        elif req.group == "documentation":
+        elif req.group == "doc":
             vars["global_html"] = "constructor/socio_global.html"
             topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
             if req.user():
@@ -166,24 +162,16 @@ class Constructor(Module):
         if len(topmenu):
             topmenu_left = []
             topmenu_right = []
-            first_left = True
-            first_right = True
             for ent in topmenu:
                 if ent.get("left"):
-                    if first_left:
-                        first_left = False
-                    else:
-                        topmenu_left.append({"delim": True})
                     topmenu_left.append(ent)
                 else:
-                    if first_right:
-                        first_right = False
-                    else:
-                        topmenu_right.append({"delim": True})
                     topmenu_right.append(ent)
             if len(topmenu_left):
+                topmenu_left[-1]["lst"] = True
                 vars["topmenu_left"] = topmenu_left
             if len(topmenu_right):
+                topmenu_right[-1]["lst"] = True
                 vars["topmenu_right"] = topmenu_right
         # Cabmenu
         if len(cabmenu):
@@ -192,17 +180,16 @@ class Constructor(Module):
             first_left = True
             first_right = True
             for ent in cabmenu:
-                ent["delim"] = True
                 if ent.get("left"):
                     cabmenu_left.append(ent)
                 else:
                     cabmenu_right.append(ent)
             if len(cabmenu_left):
+                cabmenu_left[-1]["lst"] = True
                 vars["cabmenu_left"] = cabmenu_left
-                cabmenu_left[-1]["delim"] = False
             if len(cabmenu_right):
+                cabmenu_right[-1]["lst"] = True
                 vars["cabmenu_right"] = cabmenu_right
-                cabmenu_right[-1]["delim"] = False
 
     def universal_variables(self, vars):
         vars["ConstructorTitle"] = self._("Browser-based Games Constructor")
@@ -296,23 +283,6 @@ class Constructor(Module):
             ],
         }
         self.call("web.response_global", None, vars)
-
-    def documentation_index(self):
-        lang = self.call("l10n.lang")
-        vars = {
-            "lang": lang
-        }
-        self.call("web.response_template", "constructor/docs/%s/index.html" % lang, vars)
-
-    def documentation_handler(self, args):
-        m = re_valid_docfile(args)
-        if not m:
-            self.call("web.not_found")
-        lang = self.call("l10n.lang")
-        vars = {
-            "lang": lang
-        }
-        self.call("web.response_template", "constructor/docs/%s/%s.html" % (lang, args), vars)
 
     def debug_validate(self):
         slices_list = self.call("cassmaint.load_database")
