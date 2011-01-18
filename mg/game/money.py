@@ -719,7 +719,7 @@ class TwoPay(Module):
                                 existing = self.obj(Payment2pay, id)
                                 result = 0
                                 id_shop = id
-                                sum = existing.get("sum")
+                                sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
                                 payment = self.obj(Payment2pay, id, data={})
                                 payment.set("v1", v1)
