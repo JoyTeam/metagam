@@ -702,7 +702,6 @@ class TwoPay(Module):
                         result = 2
             elif command == "pay":
                 id = req.param_raw("id")
-                id_shop = req.param_raw("id_shop")
                 sum = req.param_raw("sum")
                 date = req.param_raw("date")
                 v1 = req.param_raw("v1")
@@ -719,6 +718,8 @@ class TwoPay(Module):
                             try:
                                 existing = self.obj(Payment2pay, id)
                                 result = 0
+                                id_shop = id
+                                sum = existing.get("sum")
                             except ObjectNotFoundException:
                                 payment = self.obj(Payment2pay, id, data={})
                                 payment.set("v1", v1)
@@ -730,6 +731,7 @@ class TwoPay(Module):
                                 member.credit(sum_v, "MM$", "2pay-pay", payment_id=id, payment_performed=date)
                                 payment.store()
                                 result = 0
+                                id_shop = id
                     else:
                         result = 2
             elif command == "cancel":
