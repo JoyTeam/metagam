@@ -21,6 +21,7 @@ class Domains(Module):
         Module.register(self)
         self.rhook("domains.tlds", self.tlds)
         self.rhook("domains.prices", self.prices)
+        self.rhook("domains.assign", self.assign)
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -54,6 +55,14 @@ class Domains(Module):
         for tld, price in self.get_prices().iteritems():
             if price != "":
                 prices[tld] = price
+
+    def assign(self, domain):
+        self.debug("Assigning domain %s to the project %s", domain, self.app().project.uuid)
+        rec = self.main_app().obj(Domain, domain, silent=True)
+        rec.set("user", self.app().project.get("owner"))
+        rec.set("project", self.app().project.uuid)
+        rec.set("created", self.now())
+        rec.store()
 
 class DomainRegWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):
@@ -112,7 +121,7 @@ class DomainRegWizard(Wizard):
                     whois = NICClient()
                     reg = whois.registered(domain)
                     if reg is None:
-                        errors["domain_name"] = self._("%s registry is temporarily unavailable. Try again later", tld.upper())
+                        errors["domain_name"] = self._("%s registry is temporarily unavailable. Try again later") % tld.upper()
                     elif reg:
                         errors["domain_name"] = self._("This domain name is occupied already. Choose another one")
                 if len(errors):
@@ -318,7 +327,6 @@ class DomainsAdmin(Module):
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("domains.validate_new", self.validate_new)
-        self.rhook("domains.assign", self.assign)
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
@@ -642,10 +650,3 @@ class DomainsAdmin(Module):
             else:
                 raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
         return servers
-
-    def assign(self, domain):
-        rec = self.main_app().obj(Domain, domain, data={})
-        rec.set("user", self.app().project.get("owner"))
-        rec.set("project", self.app().project.uuid)
-        rec.set("created", self.now())
-        rec.store()

@@ -11,7 +11,7 @@ class ConstructorProject(Module):
 
     def child_modules(self):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains"]
-        if not self.app().project.get("inactive"):
+        if self.app().project.get("admin_confirmed"):
             lst.append("mg.constructor.design.DesignMod")
         return lst
 
@@ -26,10 +26,12 @@ class ConstructorProject(Module):
         vars["global_html"] = "constructor/admin_global.html"
 
     def auth_registered(self, user):
+        req = self.req()
         project = self.app().project
-        if not project.get("auth_confirmed") and project.get("domain"):
-            project.set("auth_confirmed", True)
+        if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
+            project.set("admin_confirmed", True)
             project.store()
+            self.app().store_config_hooks()
 
 class ConstructorProjectAdmin(Module):
     def register(self):
@@ -42,7 +44,7 @@ class ConstructorProjectAdmin(Module):
 
     def menu_root_index(self, menu):
         a = [menu]
-        if not self.app().project.get("auth_confirmed"):
+        if not self.app().project.get("admin_confirmed"):
             menu[:] = [ent for ent in menu if ent.get("leaf")]
 
     def menu_top_list(self, topmenu):

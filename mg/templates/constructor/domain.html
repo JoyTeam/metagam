@@ -12,7 +12,12 @@ function form_submit()
 		url: '/admin-wizard/call/[%wizard%]/check',
 		waitMsg: '[%CheckingDomain%]',
 		success: function(f, action) {
-			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+			var is_json = false;
+			try {
+				is_json = action.response.getResponseHeader("Content-Type").match(/json/);
+			} catch (e) {
+			}
+			if (is_json) {
 				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
 				if (res)
 					adm_response(res);
@@ -24,7 +29,7 @@ function form_submit()
 					Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
 				}
 			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText));
 			}
 		}
 	});

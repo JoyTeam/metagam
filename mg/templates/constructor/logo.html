@@ -91,11 +91,11 @@ wait(['js/FileUploadField.js'], function() {
 							},
 							failure: function(f, action) {
 								if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-									if (action.result.errormsg) {
+									if (action.result && action.result.errormsg) {
 										Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
 									}
 								} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-									Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+									Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText));
 								}
 							}
 						})}

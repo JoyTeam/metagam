@@ -212,6 +212,10 @@ class ProjectSetupWizard(Wizard):
                     admin.set("activation_code", activation_code)
                     admin.set("activation_redirect", "/admin")
                     admin.store()
+                    # giving permissions
+                    perms = self.obj(UserPermissions, admin.uuid, {"perms": {"project.admin": True}})
+                    perms.sync()
+                    perms.store()
                 self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")

@@ -81,6 +81,10 @@ class ProjectDashboard(Module):
         for wiz in app.hooks.call("wizards.list"):
             wiz.abort()
         project = app.project
+        domain = project.get("domain")
+        if domain:
+            dom = self.obj(Domain, domain, silent=True)
+            dom.remove()
         project.delkey("domain")
         project.delkey("title_full")
         project.delkey("title_short")
@@ -90,14 +94,6 @@ class ProjectDashboard(Module):
         project.store()
         app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
         app.hooks.call("cluster.appconfig_changed")
-        admin = app.hooks.call("session.find_user", "admin")
-        if not admin:
-            old_user = self.obj(User, project.get("owner"))
-            new_user = app.obj(User)
-            new_user.set("created", "%020d" % time.time())
-            for field in ["name", "name_lower", "sex", "email", "salt", "pass_reminder", "pass_hash"]:
-                new_user.set(field, old_user.get(field))
-            new_user.store()
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
     def ext_project_dashboard(self):

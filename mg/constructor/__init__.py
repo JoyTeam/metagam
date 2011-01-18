@@ -250,7 +250,7 @@ class Constructor(Module):
                     domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
                 else:
                     domain = "www.%s" % domain
-                    if not project.get("auth_confirmed"):
+                    if not project.get("admin_confirmed"):
                         app = self.app().inst.appfactory.get_by_tag(project.uuid)
                         users = app.objlist(UserList, query_index="inactive", query_equal="1", query_limit=1)
                         users.load(silent=True)

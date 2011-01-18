@@ -14,24 +14,34 @@ function submit_form(form_id, func, msg)
 		func: func,
 		waitMsg: msg,
 		success: function(f, action) {
-			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+			var is_json = false;
+			try {
+				is_json = action.response.getResponseHeader("Content-Type").match(/json/);
+			} catch (e) {
+			}
+			if (is_json) {
 				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
 				if (res)
 					update_stage(res);
 			}
 		},
 		failure: function(f, action) {
-			if (action.response.getResponseHeader("Content-Type").match(/json/)) {
+			var is_json = false;
+			try {
+				is_json = action.response.getResponseHeader("Content-Type").match(/json/);
+			} catch (e) {
+			}
+			if (is_json) {
 				var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
 				if (res)
 					update_stage(res);
 			}
 			if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-				if (action.result.errormsg) {
+				if (action.result && action.result.errormsg) {
 					Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
 				}
 			} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + data.url));
+				Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText));
 			}
 		}
 	});
