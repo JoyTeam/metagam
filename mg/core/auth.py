@@ -285,6 +285,7 @@ class Interface(Module):
                         form.error("captcha", self._("Incorrect number"))
                 except ObjectNotFoundException:
                     form.error("captcha", self._("Incorrect number"))
+            self.call("auth.register-form", form, "validate")
             if not form.errors:
                 email = email.lower()
                 user = self.obj(User)
@@ -324,6 +325,7 @@ class Interface(Module):
         form.password(self._("Password"), "password1", password1)
         form.password(self._("Confirm password"), "password2", password2)
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        self.call("auth.register-form", form, "render")
         form.submit(None, None, self._("Register"))
         vars = {
             "title": self._("User registration"),

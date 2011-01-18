@@ -47,6 +47,16 @@ class Constructor(Module):
         self.rhook("project.cleanup", self.cleanup)
         self.rhook("project.missing", self.missing)
         self.rhook("web.universal_variables", self.universal_variables)
+        self.rhook("auth.register-form", self.register_form)
+
+    def register_form(self, form, mode):
+        req = self.req()
+        age18 = req.param("age18")
+        if mode == "validate":
+            if not age18:
+                form.error("age18", self._("You must confirm you are of the full legal age"))
+        elif mode == "render":
+            form.checkbox(self._("I confirm I'm of the full legal age"), "age18", age18)
 
     def missing(self, tag):
         app = self.app().inst.appfactory.get_by_tag(tag)
