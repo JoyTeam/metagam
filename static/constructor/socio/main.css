@@ -40,3 +40,7 @@ input.form-file { font-size: 13px }
 /* DOCUMENTATION */
 .doc-content a:link, .doc-content a:visited { color: #dd6419 }
 .doc-content a:hover, .doc-content a:active { color: #ed8439 }
+.doc-code { vertical-align: top }
+.doc-code .doc-code-sample { width: 500px }
+.doc-code-sample { font-size: 11px; background-color: #ffffe0; padding: 5px }
+.doc-code-preview { vertical-align: top; padding-left: 50px }

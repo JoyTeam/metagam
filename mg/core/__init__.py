@@ -642,6 +642,8 @@ class Filter(logging.Filter):
             try:
                 if record.args[0] == "200 OK" and record.args[1] == "/core/ping":
                     return 0
+            except KeyError:
+                pass
             except IndexError:
                 pass
             except AttributeError:

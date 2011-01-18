@@ -1,0 +1,70 @@
+<!-- doc.title HTML-шаблоны для конструктора -->
+<!-- doc.parent index -->
+<h1>HTML-шаблоны для конструктора</h1>
+
+<p>Оформление браузерной игры состоит из трёх основных частей:</p>
+<ul>
+	<li>оформления титульной страницы;</li>
+	<li>оформления самой игры;</li>
+	<li>оформления социальных разделов (форума, блога и т.п.).</li>
+</ul>
+<p>Каждая из этих частей настраивается индивидуально и представляет собой HTML-страницу, свёрстанную при помощи инструкций шаблонизатора. Шаблонизатор&nbsp;&mdash; это программный компонент, подставляющий данные, которые нужно отобразить на странице, в шаблон оформления. Работа шаблонизатора будет рассмотрена подробнее.</p>
+
+<h1>Подготовка страницы для шаблонизатора</h1>
+
+<p>В качестве примера попробуем сделать простую титульную страницу для игры. Оформление намеренно сделаем упрощённым, чтобы не перегружать пример деталями. Для начала сделаем простую заготовку:</p>
+
+<pre class="doc-code-sample">
+<strong>index.html</strong>
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru"&gt;
+        &lt;head&gt;
+                &lt;meta http-equiv="Content-type" content="text/html; charset=utf-8" /&gt;
+                &lt;link rel="stylesheet" href="index.css" type="text/css" /&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+                Пример титульной страницы
+        &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+<pre class="doc-code-sample">
+<strong>index.css</strong>
+body { background-color: #c0c0c0 }
+</pre>
+
+<p>Каждый HTML-файл в шаблоне для конструктора должен:</p>
+<ul>
+	<li>быть корректным XHTML-документом и иметь правильный заголовок &lt;!DOCTYPE ...&gt;;</li>
+	<li>быть написан в кодировке utf-8 и иметь соответствующую запись &lt;meta http-equiv="Content-type" content="text/html; charset=utf-8" /&gt;.</li>
+</ul>
+
+<p>После того, как шаблон подготовлен, его следует упаковать в zip-архив и загрузить в конструктор. Когда шаблон загрузится в конструктор, вы сможете посмотреть, как он будет отображаться, при помощи ссылки "предварительный просмотр". В дальнейших примерах будем показывать только текст, размещённый между тегами &lt;body&body; и &lt;/body&gt;. Посмотрим, что получится из нашего примера:</p>
+
+<table class="doc-code-table">
+	<tr>
+		<td class="doc-code">
+<pre class="doc-code-sample">
+Пример титульной страницы
+</pre>
+		</td>
+		<td class="doc-code-preview">
+			<img src="/st/constructor/doc/design/sample-1.png" alt="" />
+		</td>
+	</tr>
+</table>
+
+<p>Теперь можно усложнить пример и добавить в статичную HTML-страницу немного магии. Допустим, мы хотим вставить информацию о копирайте: "&copy; Ваше имя, 2010-2011". Причём сделать, чтобы вместо 2011 автоматически показывался текущий год. Нет ничего проще:</p>
+
+<table class="doc-code-table">
+	<tr>
+		<td class="doc-code">
+<pre class="doc-code-sample">
+Пример титульной страницы
+&lt;div&gt;&amp;copy; Ваше имя, 2010-&#x5b;%year%]&lt;/div&gt;
+</pre>
+		</td>
+		<td class="doc-code-preview">
+			<img src="/st/constructor/doc/design/sample-2.png" alt="" />
+		</td>
+	</tr>
+</table>
