@@ -1,4 +1,5 @@
 from mg import *
+from mg.core.auth import User
 
 class ConstructorProject(Module):
     "This is the main module of every project. It must load very fast"
@@ -7,7 +8,8 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
-        self.rhook("auth.registered", self.auth_registered)
+        self.rhook("auth.registered", self.admin_confirmed)
+        self.rhook("project.admin_confirmed", self.admin_confirmed)
 
     def child_modules(self):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains"]
@@ -25,7 +27,7 @@ class ConstructorProject(Module):
         #if req.group == "admin":
         vars["global_html"] = "constructor/admin_global.html"
 
-    def auth_registered(self, user):
+    def admin_confirmed(self, user):
         req = self.req()
         project = self.app().project
         if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
@@ -44,7 +46,13 @@ class ConstructorProjectAdmin(Module):
 
     def menu_root_index(self, menu):
         a = [menu]
-        if not self.app().project.get("admin_confirmed"):
+        req = self.req()
+        project = self.app().project
+        if not project.get("admin_confirmed"):
+            if project.get("domain") and req.has_access("project.admin"):
+                admin = self.obj(User, req.user())
+                self.call("project.admin_confirmed", admin)
+                self.call("web.redirect", "/admin")
             menu[:] = [ent for ent in menu if ent.get("leaf")]
 
     def menu_top_list(self, topmenu):

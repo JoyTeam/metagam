@@ -1,4 +1,5 @@
 from mg import *
+from mg.core.cluster import StaticUploadError
 import re
 import zipfile
 import cStringIO
@@ -265,7 +266,12 @@ class DesignZip(Module):
         self.call("admin-%s.validate" % group, design, errors)
         if len(errors):
             return errors
-        uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+        try:
+            uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+        except StaticUploadError as e:
+            errors.append(unicode(e))
+        if len(errors):
+            return errors
         design.set("uri", uri)
         return design
         
@@ -443,7 +449,7 @@ class DesignAdmin(Module):
                                 unparser.feed(data)
                                 unparser.close()
                                 data = unparser.output
-                            zip.writestr(ent.get("filename"), data)
+                            zip.writestr(filename, data)
                         except DownloadError:
                             pass
                     zip.close()
@@ -477,7 +483,7 @@ class IndexPageAdmin(Module):
         return self._("Index page design")
 
     def menu_design_index(self, menu):
-        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True})
+        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "admin_index": not self.conf("index.design"), "order": 1})
 
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
@@ -589,7 +595,7 @@ class GameInterfaceAdmin(Module):
         return self._("Game interface design")
 
     def menu_design_index(self, menu):
-        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True})
+        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("game.design"), "order": 2})
 
     def ext_design(self):
         self.call("design-admin.editor", "gameinterface")
@@ -660,7 +666,7 @@ class SocioInterfaceAdmin(Module):
         return self._("Socio interface design")
 
     def menu_design_index(self, menu):
-        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True})
+        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("socio.design"), "order": 3})
 
     def ext_design(self):
         self.call("design-admin.editor", "sociointerface")
@@ -748,9 +754,8 @@ class SocioInterfaceAdmin(Module):
                     pages = []
                     topics[-1]["pages"] = pages
                     for i in range(0, random.randrange(2, random.choice([3, 5, 10, 20, 50]))):
-                        if len(pages):
-                            pages.append({"delim": True})
                         pages.append({"entry": {"text": i + 1, "a": {"href": "#"}}})
+                    pages[-1]["lst"] = True
             if len(topics):
                 topics[-1]["lst"] = True
         elif filename == "topic.html":
@@ -838,14 +843,11 @@ class SocioInterfaceAdmin(Module):
                 for i in range(1, pages + 1):
                     show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
                     if show:
-                        if len(pages_list):
-                            pages_list.append({"delim": True})
                         pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "#"}}})
                     elif last_show:
-                        if len(pages_list):
-                            pages_list.append({"delim": True})
                         pages_list.append({"entry": {"text": "..."}})
                     last_show = show
+                pages_list[-1]["lst"] = True
                 vars["pages"] = pages_list
         if random.random() < 0.9:
             if random.random() < 0.5:
@@ -857,9 +859,8 @@ class SocioInterfaceAdmin(Module):
                     lst.append({
                         "html": self._("Menu item"),
                         "href": "#" if random.random() < 0.8 else None,
-                        "delim": True,
                     })
-                lst[0]["delim"] = False
+                lst[-1]["lst"] = True
         lst = []
         vars["topmenu_right"] = lst
         for i in range(0, random.randrange(1, 3)):
@@ -867,12 +868,10 @@ class SocioInterfaceAdmin(Module):
                 "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
                 "href": "#" if random.random() < 0.8 else None,
                 "image": "http://%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
-                "delim": True,
             })
-            print lst[-1]["image"]
         if random.random() < 0.8:
             lst.insert(0, {"search": True, "button": self._("Search")})
-        lst[0]["delim"] = False
+        lst[-1]["lst"] = True
         if random.random() < 0.8:
             lst = []
             vars["menu_left"] = lst
@@ -880,9 +879,8 @@ class SocioInterfaceAdmin(Module):
                 lst.append({
                     "html": self._("Menu item"),
                     "href": "#" if random.random() < 0.8 else None,
-                    "delim": True,
                 })
-            lst[0]["delim"] = False
+            lst[-1]["lst"] = True
         if random.random() < 0.8:
             lst = []
             vars["menu_right"] = lst
@@ -890,8 +888,7 @@ class SocioInterfaceAdmin(Module):
                 lst.append({
                     "html": random.choice([self._("Move"), self._("Pin"), self._("Unpin"), self._("Close"), self._("Open"), self._("New topic")]),
                     "href": "#" if random.random() < 0.8 else None,
-                    "delim": True,
                 })
-            lst[0]["delim"] = False
+            lst[-1]["lst"] = True
         content = self.call("web.parse_template", "socio/%s" % filename, vars)
         self.call("design.response", design, "index.html", content, vars)

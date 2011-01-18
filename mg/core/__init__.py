@@ -5,6 +5,7 @@ from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException, CassandraPool
+from mg.core.classes import *
 from uuid import uuid4
 from weakref import WeakValueDictionary
 import weakref
@@ -615,6 +616,13 @@ class Modules(object):
 
 class Formatter(logging.Formatter):
     def format(self, record):
+        if type(record.msg) != type("") and type(record.msg) != unicode:
+            record.msg = unicode(record.msg)
+        if type(self._fmt) == unicode:
+            self._fmt = self._fmt.encode("utf-8")
+        for key, value in record.__dict__.items():
+            if type(value) == unicode:
+                record.__dict__[key] = value.encode("utf-8")
         if record.__dict__.get("user"):
             record.msg = "user:%s %s" % (record.user, record.msg)
         if record.__dict__.get("ip"):
@@ -623,8 +631,6 @@ class Formatter(logging.Formatter):
             record.msg = "app:%s %s" % (record.app, record.msg)
         if record.__dict__.get("host"):
             record.msg = "host:%s %s" % (record.host, record.msg)
-        if type(record.msg) == unicode:
-            record.msg = record.msg.encode("utf-8")
         str = logging.Formatter.format(self, record)
         if type(str) == unicode:
             str = str.encode("utf-8")
@@ -633,6 +639,13 @@ class Formatter(logging.Formatter):
 class Filter(logging.Filter):
     def filter(self, record):
         try:
+            try:
+                if record.args[0] == "200 OK" and record.args[1] == "/core/ping":
+                    return 0
+            except IndexError:
+                pass
+            except AttributeError:
+                pass
             req = Tasklet.current().req
             record.host = req.environ.get("HTTP_X_REAL_HOST")
             record.ip = req.environ.get("HTTP_X_REAL_IP")
@@ -675,7 +688,8 @@ class Instance(object):
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(unicode("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s"))
+        self.stderr_channel.addFilter(filter)
+        formatter = Formatter(unicode("%(asctime)s " + self.logger_id + " cls:%(name)s %(message)s"))
         self.stderr_channel.setFormatter(formatter)
         modlogger.addHandler(self.stderr_channel)
 

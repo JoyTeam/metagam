@@ -37,8 +37,8 @@ class ProjectDashboard(Module):
             return
         project = getattr(app, "project", None)
         if project:
-            project = self.app().inst.int_app.obj(Project, args)
-            return [self._("Project %s") % project.get("title_short", project.uuid)]
+            project = self.int_app().obj(Project, args)
+            return [self._("Project %s") % project.get("title_short", project.uuid), "auth/user-dashboard/%s" % project.get("owner")]
         else:
             return [self._("Project %s") % app.tag]
 

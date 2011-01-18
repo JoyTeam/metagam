@@ -49,10 +49,6 @@ class TempFileList(CassandraObjectList):
         kwargs["cls"] = TempFile
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class StaticUploadError(Exception):
-    "Error uploading object to the static server"
-    pass
-
 class Cluster(Module):
     def register(self):
         Module.register(self)
