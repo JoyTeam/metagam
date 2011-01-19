@@ -514,7 +514,7 @@ class IndexPageAdmin(Module):
                     "created": "%02d.%02d.%04d" % (random.randrange(1, 29), random.randrange(1, 13), random.randrange(2000, 2011)),
                     "subject": random.choice([self._("Breaking news"), self._("New updates related to the abandoned dungeon"), self._("Eternal shadow returns"), self._("Epic war event")]),
                     "announce": random.choice([self._("South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."), self._("Europe travel chaos starts to clear"), self._('Even with legal protection, women victims of rape still face a social stigma that is hard to overcome. He said: "Women are still afraid to complain if they are victims of rape because there is an attitude from the society."</p><p>Coulibaly added: "There is no law to define rape but there will be one. And work is being done with police officers and judges ... to let them understand the problem is not the woman, but the perpetrator of the rape."')]),
-                    "more": "#"
+                    "more": "#" if random.random() < 0.5 else None
                 })
             vars["news"][-1]["lst"] = True
         vars["htmlmeta"] = {
@@ -527,6 +527,8 @@ class IndexPageAdmin(Module):
             {
                 "href": "#",
                 "title": self._("Enter invisible"),
+            } if random.random() < 0.5 else {
+                "title": self._("Already invisible"),
             },
             {
                 "href": "#",
@@ -553,6 +555,8 @@ class IndexPageAdmin(Module):
             {
                 "href": "#",
                 "title": self._("Secure entrance"),
+            } if random.random() < 0.5 else {
+                "title": self._("Connection secured"),
             },
         ], random.randrange(1, 8))
         vars["links"][-1]["lst"] = True

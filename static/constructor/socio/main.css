@@ -44,3 +44,4 @@ input.form-file { font-size: 13px }
 .doc-code .doc-code-sample { width: 500px }
 .doc-code-sample { font-size: 11px; background-color: #ffffe0; padding: 5px }
 .doc-code-preview { vertical-align: top; padding-left: 50px }
+.doc-code-preview img { margin: 10px 0px 10px 0px }
