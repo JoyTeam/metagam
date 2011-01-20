@@ -45,6 +45,23 @@
 	</ul></li>
 </ul>
 
+<p>На странице должна присутствовать форма для входа в игру. Форма должна передаваться на адрес "/" и иметь два параметра&nbsp;&mdash; email и password. Поле email предназначено для ввода e-mail игрока или имени его персонажа. Password&nbsp;&mdash; его пароль. Пример формы:</p>
+
+<pre class="doc-code-sample">
+&lt;form action="/" method="post" name="loginform"&gt;
+	&lt;input name="email" value="" title="Имя персонажа или e-mail" /&gt;
+	&lt;input type="password" name="password" value="" title="Твой пароль" /&gt;
+	&lt;input type="submit" value="Войти в игру" /&gt;
+&lt;/form&gt;
+</pre>
+
+<p>Кроме того, следует где-либо на странице разместить ссылки на адреса:</p>
+
+<ul>
+	<li>/auth/remind &mdash; восстановление пароля;</li>
+	<li>/auth/register &mdash; регистрация в игре.</li>
+</ul>
+
 <h1>Скачивание файлов</h1>
 
 <ul>
