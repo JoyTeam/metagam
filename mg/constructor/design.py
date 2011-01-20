@@ -620,6 +620,15 @@ class SocioInterface(Module):
         self.rhook("forum.vars-category", self.forum_vars_category)
         self.rhook("forum.vars-topic", self.forum_vars_topic)
         self.rhook("forum.vars-tags", self.forum_vars_tags)
+        self.rhook("ext-admin-sociointerface.templates", self.templates)
+
+    def templates(self):
+        output = cStringIO.StringIO()
+        zip = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
+        for filename in ["index.html", "category.html", "topic.html", "tags.html"]:
+            zip.write("%s/templates/socio/%s" % (mg.__path__[0], filename), filename)
+        zip.close()
+        self.call("web.response", output.getvalue(), "application/zip")
 
     def forum_vars_index(self, vars):
         vars["title"] = self._("Forum categories")
