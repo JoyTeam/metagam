@@ -1133,8 +1133,9 @@ class Forum(Module):
         tags = set()
         for i in range(0, len(raw_tags)):
             if i % 2 == 0:
-                tag = raw_tags[i]
-                tags.add(raw_tags[i].lower())
+                tag = raw_tags[i].strip()
+                if len(tag):
+                    tags.add(tag.lower())
         return list(tags)
 
     def tags_store(self, uuid, tags_str):
