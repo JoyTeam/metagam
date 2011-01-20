@@ -25,7 +25,8 @@ class Documentation(Module):
             self.call("web.not_found")
         lang = self.call("l10n.lang")
         vars = {
-            "lang": lang
+            "lang": lang,
+            "htmlmeta": {}
         }
         try:
             content = self.call("web.parse_template", "constructor/docs/%s/%s.html" % (lang, req.args), vars)
@@ -39,7 +40,10 @@ class Documentation(Module):
             if not m:
                 break
             tag, value, content = m.group(1, 2, 3)
-            vars[tag] = value
+            if tag == "keywords" or tag == "description":
+                vars["htmlmeta"][tag] = value
+            else:
+                vars[tag] = value
         menu = []
         while vars.get("parent"):
             try:
