@@ -13,6 +13,7 @@ img { border: none }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
 #index-pad { padding-top: 445px; }
+#index-counters { position: absolute; right: 20px; top: 20px }
 #menu { margin: 0 auto; }
 #menu a:link, #menu a:visited { color: #dd6419; }
 #menu a:hover, #menu a:active { color: #ed8469; }

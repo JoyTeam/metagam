@@ -521,6 +521,9 @@ class IndexPageAdmin(Module):
             "description": self._("This is a sample meta description"),
             "keywords": self._("online games, keyword 1, keyword 2"),
         }
+        vars["counters"] = ""
+        for i in range(0, random.randrange(0, 5)):
+            vars["counters"] += ' <img src="/st/constructor/design/counter%d.gif" alt="" />' % random.randrange(0, 4)
         vars["year"] = "2099"
         vars["copyright"] = random.choice([self._("Joy Team, Author"), self._("Joy Team, Very Long Author Name Even So Long")])
         vars["links"] = random.sample([
@@ -903,5 +906,8 @@ class SocioInterfaceAdmin(Module):
                     "href": "#" if random.random() < 0.8 else None,
                 })
             lst[-1]["lst"] = True
+        vars["counters"] = ""
+        for i in range(0, random.randrange(0, 5)):
+            vars["counters"] += ' <img src="/st/constructor/design/counter%d.gif" alt="" />' % random.randrange(0, 4)
         content = self.call("web.parse_template", "socio/%s" % filename, vars)
         self.call("design.response", design, "index.html", content, vars)

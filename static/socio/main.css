@@ -15,6 +15,7 @@
 .socio-cathead { padding: 0px 4px 7px 4px; font-size: 11px; vertical-align: bottom; color: #535c5f; text-align: center }
 #socio-top-search { margin-right: 10px; vertical-align: middle; }
 .socio-message { margin-top: 20px }
+#socio-counters { padding-top: 50px; text-align: right }
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
 .socio-index-title { font-size: 15px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
