@@ -1,0 +1,12 @@
+<div class="text">
+	<p>[%Choose%]</p>
+</div>
+
+<div class="design-templates">
+	[%foreach gen in gens%]
+	<div class="design-template">
+		<img src="[%gen.preview%]" alt="" class="design-template-preview" />
+		<div class="design-template-name"><hook:admin.link href="[%group%]/design/gen/[%gen.id%]" title="[%gen.name%]" /></div>
+	</div>
+	[%end%]
+</div>

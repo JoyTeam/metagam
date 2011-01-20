@@ -68,4 +68,7 @@ table.menu td { padding: 3px 10px 3px 5px; vertical-align: top }
 table.menu tr.header td { background-color:#f0f0f0; padding: 5px 10px 5px 5px; color: #000000; font-weight: bold }
 table.menu td.header { background-color:#f0f0f0; color: #000000; font-weight: bold }
 table.menu td.subheader { font-weight: bold; font-size: 16px }
-.admin-delim { margin-top: 5px; padding-top: 5px; border-top: solid 1px #ff6419 }
+.admin-delim { margin-top: 15px; padding-top: 15px; border-top: solid 1px #dd6419 }
+/* DESIGN TEMPLATES */
+.design-template { width: 180px; float: left }
+.design-template-name { padding: 10px 0px 30px 0px }

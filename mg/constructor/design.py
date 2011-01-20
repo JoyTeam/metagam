@@ -275,6 +275,24 @@ class DesignZip(Module):
         design.set("uri", uri)
         return design
         
+class DesignGenerator(Module):
+    def __init__(self, app):
+        Module.__init__(self, app, "mg.constructor.design.DesignGenerator")
+
+    def info(self):
+        info = {}
+        self.makeinfo(info)
+        return info
+
+    def makeinfo(self, info):
+        pass
+
+class DesignIndexMagicLands(DesignGenerator):
+    def makeinfo(self, info):
+        info["id"] = "magiclands"
+        info["name"] = "Magic Lands"
+        info["preview"] = "/st/constructor/design/gen/magiclands.jpg"
+
 class DesignMod(Module):
     def register(self):
         Module.register(self)
@@ -299,6 +317,7 @@ class DesignAdmin(Module):
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("design-admin.editor", self.editor)
         self.rhook("design-admin.delete", self.delete)
+        self.rhook("design-admin.headmenu", self.headmenu)
 
     def menu_root_index(self, menu):
         req = self.req()
@@ -338,7 +357,7 @@ class DesignAdmin(Module):
                     })
                 vars = {
                     "group": group,
-                    "UploadNewDesign": self._("Upload new design"),
+                    "UploadNewDesign": self._("Upload design package from your computer"),
                     "Uploaded": self._("Uploaded"),
                     "Title": self._("Title"),
                     "Preview": self._("Preview"),
@@ -351,7 +370,8 @@ class DesignAdmin(Module):
                     "ConfirmInstall": self._("Do you really want to install this design?"),
                     "designs": designs,
                     "download": self._("zip"),
-                    "rename": self._("rename///ren")
+                    "rename": self._("rename///ren"),
+                    "SelectDesignTemplate": self._("Select from the list of templates")
                 }
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
@@ -383,6 +403,16 @@ class DesignAdmin(Module):
                     {"text": self._("Upload")}
                 ]
                 self.call("admin.form", fields=fields, buttons=buttons, modules=["js/FileUploadField.js"])
+            elif req.args == "gen":
+                gens = []
+                self.call("admin-%s.generators" % group, gens)
+                vars = {
+                    "Choose": self._("Choose any template you want. Then setup its parameters and you will get a personalised variant of the template."),
+                    "group": group,
+                }
+                if len(gens):
+                    vars["gens"] = [gen(self.app()).info() for gen in gens]
+                self.call("admin.response_template", "admin/design/generators.html", vars)
             m = re.match(r'^([a-z]+)/([a-f0-9]{32})$', req.args)
             if m:
                 cmd, uuid = m.group(1, 2)
@@ -462,6 +492,14 @@ class DesignAdmin(Module):
         for filename, ent in design.get("files").items():
             self.webdav_delete(uri + "/" + filename)
 
+    def headmenu(self, group, args):
+        if args == "new":
+            return [self._("New design"), "%s/design" % group]
+        elif args == "gen":
+            return [self._("Design templates"), "%s/design" % group]
+        elif re_rename.match(args):
+            return [self._("Renaming"), "%s/design" % group]
+
 class IndexPage(Module):
     def register(self):
         Module.register(self)
@@ -474,13 +512,13 @@ class IndexPageAdmin(Module):
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
         self.rhook("admin-indexpage.validate", self.validate)
         self.rhook("admin-indexpage.preview-data", self.preview_data)
+        self.rhook("admin-indexpage.generators", self.generators)
 
     def headmenu_design(self, args):
-        if args == "new":
-            return [self._("New design"), "indexpage/design"]
-        elif re_rename.match(args):
-            return [self._("Renaming"), "indexpage/design"]
-        return self._("Index page design")
+        if args == "":
+            return self._("Index page design")
+        else:
+            return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
         menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "admin_index": not self.conf("index.design"), "order": 1})
@@ -581,6 +619,9 @@ class IndexPageAdmin(Module):
                     lst[-1]["lst"] = True
             vars["ratings"][-1]["lst"] = True
 
+    def generators(self, gens):
+        gens.append(DesignIndexMagicLands)
+
 class GameInterface(Module):
     def register(self):
         Module.register(self)
@@ -595,11 +636,10 @@ class GameInterfaceAdmin(Module):
         self.rhook("admin-gameinterface.preview-data", self.preview_data)
 
     def headmenu_design(self, args):
-        if args == "new":
-            return [self._("New design"), "gameinterface/design"]
-        elif re_rename.match(args):
-            return [self._("Renaming"), "gameinterface/design"]
-        return self._("Game interface design")
+        if args == "":
+            return self._("Game interface design")
+        else:
+            return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
         menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("game.design"), "order": 2})
@@ -675,11 +715,10 @@ class SocioInterfaceAdmin(Module):
         self.rhook("admin-sociointerface.preview", self.preview)
 
     def headmenu_design(self, args):
-        if args == "new":
-            return [self._("New design"), "sociointerface/design"]
-        elif re_rename.match(args):
-            return [self._("Renaming"), "sociointerface/design"]
-        return self._("Socio interface design")
+        if args == "":
+            return self._("Socio interface design")
+        else:
+            return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
         menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("socio.design"), "order": 3})
