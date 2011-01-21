@@ -58,6 +58,15 @@ def htmlescape(str):
         return ""
     return cgi.escape(str)
 
+def htmldecode(str):
+    if str is None:
+        return ""
+    str = string.replace(str, "&quot;", '"')
+    str = string.replace(str, "&lt;", "<")
+    str = string.replace(str, "&gt;", ">")
+    str = string.replace(str, "&amp;", "&")
+    return str
+
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
 

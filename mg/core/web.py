@@ -6,10 +6,10 @@ from template.provider import Provider
 import urlparse
 import cgi
 import re
-import mg.core.tools
 import json
 import socket
 import mg
+import mg.core.tools
 import logging
 import math
 import traceback
@@ -384,7 +384,7 @@ class WebApplication(Application):
             res = ["".join([str(chunk) for chunk in res])]
             mcid = getattr(request, "web_cache_mcid", None)
             if mcid:
-                self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
+                self.mc.set("page%s" % mg.core.tools.urldecode(request.uri()).encode("utf-8"), res[0])
                 self.mc.set(request.web_cache_mcid, res[0])
             lock = getattr(request, "web_cache_lock", None)
             if lock:
@@ -523,7 +523,7 @@ class Web(Module):
         req = self.req()
         req.cache = True
         if False:
-            uri = urldecode(req.uri()).encode("utf-8")
+            uri = mg.core.tools.urldecode(req.uri()).encode("utf-8")
             mc = self.app().mc
             mcid_ver = "pagever%s" % uri
             ver = mc.get(mcid_ver)
@@ -580,7 +580,7 @@ class Web(Module):
             (hook_name, hook_args) = m.group(1, 2)
             args = {}
             for key, value in re_hook_args.findall(hook_args):
-                args[key] = value
+                args[key] = mg.core.tools.htmldecode(value)
             res = None
             try:
                 res = self.call("hook-%s" % hook_name, vars, **args)

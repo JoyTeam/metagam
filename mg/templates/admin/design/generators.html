@@ -5,7 +5,7 @@
 <div class="design-templates">
 	[%foreach gen in gens%]
 	<div class="design-template">
-		<img src="[%gen.preview%]" alt="" class="design-template-preview" />
+		<hook:admin.link href="[%group%]/design/gen/[%gen.id%]" title="&lt;img src=&quot;[%gen.preview%]&quot; alt=&quot;&quot; class=&quot;design-template-preview&quot; /&gt;" />
 		<div class="design-template-name"><hook:admin.link href="[%group%]/design/gen/[%gen.id%]" title="[%gen.name%]" /></div>
 	</div>
 	[%end%]

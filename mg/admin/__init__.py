@@ -219,7 +219,7 @@ class AdminInterface(Module):
         onclick = "adm('%s');" % jsencode(href)
         if confirm is not None:
             onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
-        return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), htmlescape(title), random.randrange(0, 1000000000), onclick)
+        return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), title, random.randrange(0, 1000000000), onclick)
 
     def form(self, url=None, fields=None, buttons=None, title=None, modules=None, menu=None):
         if url is None:

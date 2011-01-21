@@ -4,6 +4,7 @@ import re
 import zipfile
 import cStringIO
 import HTMLParser
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 max_design_size = 10000000
 max_design_files = 100
@@ -28,6 +29,7 @@ re_make_filename = re.compile(r'\W+', re.UNICODE)
 re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
 re_rename = re.compile('^rename\/[a-f0-9]{32}$')
 re_remove_time = re.compile(' \d\d:\d\d:\d\d')
+re_generator = re.compile('^gen\/.+$')
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -287,11 +289,46 @@ class DesignGenerator(Module):
     def makeinfo(self, info):
         pass
 
+    def form_fields(self, fields):
+        pass
+
+    def form_validate(self, errors):
+        pass
+
+    def upload_image(self, param, errors):
+        req = self.req()
+        image = req.param_raw(param)
+        if image is None or not len(image):
+            errors[param] = self._("Upload an image")
+            return None
+        try:
+            image_obj = Image.open(cStringIO.StringIO(image))
+            if image_obj.load() is None:
+                raise IOError
+        except IOError:
+            errors[param] = self._("Image format not recognized")
+            return None
+        try:
+            image_obj.seek(1)
+            errors[param] = self._("Animated images are not supported")
+            return None
+        except EOFError:
+            pass
+        return image_obj.convert("RGBA")
+
 class DesignIndexMagicLands(DesignGenerator):
     def makeinfo(self, info):
         info["id"] = "magiclands"
         info["name"] = "Magic Lands"
         info["preview"] = "/st/constructor/design/gen/magiclands.jpg"
+
+    def form_fields(self, fields):
+        fields.append({"name": "image", "type": "fileuploadfield", "label": self._("Base image")})
+
+    def form_validate(self, errors):
+        self.image = self.upload_image("image", errors)
+        if self.image:
+            width, height = self.image.size
 
 class DesignMod(Module):
     def register(self):
@@ -413,6 +450,28 @@ class DesignAdmin(Module):
                 if len(gens):
                     vars["gens"] = [gen(self.app()).info() for gen in gens]
                 self.call("admin.response_template", "admin/design/generators.html", vars)
+            m = re.match(r'^gen/(.+)$', req.args)
+            if m:
+                id = m.group(1)
+                gens = []
+                self.call("admin-%s.generators" % group, gens)
+                for gen in gens:
+                    obj = gen(self.app())
+                    info = obj.info()
+                    if info["id"] == id:
+                        if req.param("ok"):
+                            errors = {}
+                            obj.form_validate(errors)
+                            if len(errors):
+                                self.call("web.response_json_html", {"success": False, "errors": errors})
+                            self.call("web.response_json_html", {"success": True, "redirect": "%s/design" % group})
+                        fields = []
+                        obj.form_fields(fields)
+                        buttons = [
+                            {"text": self._("Generate design template")}
+                        ]
+                        self.call("admin.form", fields=fields, buttons=buttons, modules=["js/FileUploadField.js"])
+                self.call("web.not_found")
             m = re.match(r'^([a-z]+)/([a-f0-9]{32})$', req.args)
             if m:
                 cmd, uuid = m.group(1, 2)
@@ -499,6 +558,8 @@ class DesignAdmin(Module):
             return [self._("Design templates"), "%s/design" % group]
         elif re_rename.match(args):
             return [self._("Renaming"), "%s/design" % group]
+        elif re_generator.match(args):
+            return [self._("Settings"), "%s/design/gen" % group]
 
 class IndexPage(Module):
     def register(self):
