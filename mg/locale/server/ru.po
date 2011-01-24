@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-20 16:03+0300\n"
+"POT-Creation-Date: 2011-01-21 21:25+0300\n"
 "PO-Revision-Date: 2011-01-20 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -21,514 +21,78 @@ msgstr ""
 "10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: mg/socio/__init__.py:207
-msgid "Defining categories"
-msgstr "Создание разделов"
-
-#: mg/socio/__init__.py:207
-msgid ""
-"Think over forum categories carefully. Try to create minimal quantity of "
-"categories. Keep in mind that users will spend just few seconds to choose a "
-"category to write. Descriptions should be short and simple. Titles should be "
-"short and self explanatory. Don't create many categories for future "
-"reference. It's better to create several more common categories and split "
-"them later."
-msgstr ""
-"Тщательно продумайте структуру разделов форума. Постарайтесь обойтись "
-"минимальным количеством разделов. Помните, что на выбор раздела, в который "
-"написать, пользователи будут тратить лишь несколько секунд. Описания должны "
-"быть простыми и понятными. Названия разделов - короткими и информативными. "
-"Не создавайте много разделов \"на будущее\". Лучше создать меньше разделов и "
-"разделить их позже."
-
-#: mg/socio/__init__.py:210
-msgid "Socio"
-msgstr "Социалка"
-
-#: mg/socio/__init__.py:213
-msgid "Forum categories editor"
-msgstr "Редактор разделов форума"
-
-#: mg/socio/__init__.py:214
-msgid "Forum moderation"
-msgstr "Модерирование форума"
-
-#: mg/socio/__init__.py:219 mg/constructor/__init__.py:17
-#: mg/constructor/__init__.py:141 mg/constructor/__init__.py:166
-msgid "Forum"
-msgstr "Форум"
-
-#: mg/socio/__init__.py:223 mg/socio/__init__.py:249 mg/socio/__init__.py:771
-#: mg/socio/__init__.py:948 mg/socio/__init__.py:1081
-#: mg/socio/__init__.py:1291 mg/socio/__init__.py:1532
-#: mg/socio/__init__.py:1613 mg/socio/__init__.py:2111
-#: mg/socio/__init__.py:2235 mg/socio/__init__.py:2273
-#: mg/socio/__init__.py:2291 mg/constructor/design.py:677
-#: mg/constructor/design.py:683 mg/constructor/design.py:742
-msgid "Forum categories"
-msgstr "Разделы форума"
-
-#: mg/socio/__init__.py:235
-msgid "Code"
-msgstr "Код"
-
-#: mg/socio/__init__.py:236 mg/constructor/design.py:362
-msgid "Title"
-msgstr "Название"
-
-#: mg/socio/__init__.py:237 mg/core/auth.py:1060
-msgid "Order"
-msgstr "Порядок"
-
-#: mg/socio/__init__.py:238 mg/socio/__init__.py:1616 mg/core/auth.py:810
-msgid "Editing"
-msgstr "Редактирование"
-
-#: mg/socio/__init__.py:239 mg/socio/__init__.py:401 mg/socio/__init__.py:1299
-#: mg/socio/__init__.py:1341 mg/core/auth.py:809 mg/constructor/design.py:756
-msgid "edit"
-msgstr "редактировать"
-
-#: mg/socio/__init__.py:240 mg/socio/__init__.py:369
-msgid "Access"
-msgstr "Доступ"
-
-#: mg/socio/__init__.py:241
-msgid "access"
-msgstr "доступ"
-
-#: mg/socio/__init__.py:242 mg/constructor/design.py:364
-msgid "Deletion"
-msgstr "Удаление"
-
-#: mg/socio/__init__.py:243 mg/socio/__init__.py:1297
-#: mg/socio/__init__.py:1339 mg/constructor/design.py:367
-#: mg/constructor/design.py:756
-msgid "delete"
-msgstr "удалить"
-
-#: mg/socio/__init__.py:244
-msgid "Create new category"
-msgstr "Создать новый раздел"
-
-#: mg/socio/__init__.py:270
-msgid "Enter category title"
-msgstr "Введите название раздела"
-
-#: mg/socio/__init__.py:272
-msgid "Enter top category title"
-msgstr "Введите названия раздела верхнего уровня"
-
-#: mg/socio/__init__.py:274
-msgid "Enter category order"
-msgstr "Введите порядок сортировки"
-
-#: mg/socio/__init__.py:276
-msgid "Invalid numeric format"
-msgstr "Неверный формат числа"
-
-#: mg/socio/__init__.py:297
-msgid "Category title"
-msgstr "Название раздела"
-
-#: mg/socio/__init__.py:302
-msgid "Top category title"
-msgstr "Раздел верхнего уровня"
-
-#: mg/socio/__init__.py:308
-msgid "Sort order"
-msgstr "Порядок сортировки"
-
-#: mg/socio/__init__.py:315
-msgid "Category description"
-msgstr "Описание раздела"
-
-#: mg/socio/__init__.py:321
-msgid "Category tag"
-msgstr "Тег раздела"
-
-#: mg/socio/__init__.py:328
-msgid "Notify users about new topics in this category by default"
-msgstr "Уведомлять пользователей о новых темах в этом разделе по умолчанию"
-
-#: mg/socio/__init__.py:334
-msgid "Allow users to enter topic dates manually"
-msgstr "Разрешить пользователям вводить даты тем вручную"
-
-#: mg/socio/__init__.py:343
-msgid "New category"
-msgstr "Новый раздел"
-
-#: mg/socio/__init__.py:346
-msgid "No such category"
-msgstr "Нет такого раздела"
-
-#: mg/socio/__init__.py:347
-#, python-format
-msgid "Category %s"
-msgstr "Раздел %s"
-
-#: mg/socio/__init__.py:352
-msgid "Deny everything"
-msgstr "Запрещено всё"
-
-#: mg/socio/__init__.py:353
-msgid "Allow reading"
-msgstr "Разрешено читать"
-
-#: mg/socio/__init__.py:354
-msgid "Deny creating topics"
-msgstr "Запрещено создавать темы"
-
-#: mg/socio/__init__.py:355
-msgid "Allow creating topics"
-msgstr "Разрешено создавать темы"
-
-#: mg/socio/__init__.py:356
-msgid "Deny replying"
-msgstr "Запрещено отвечать"
-
-#: mg/socio/__init__.py:357
-msgid "Allow reading and replying"
-msgstr "Разрешено читать и отвечать"
-
-#: mg/socio/__init__.py:358
-msgid "Allow moderation"
-msgstr "Разрешено модерировать"
-
-#: mg/socio/__init__.py:359
-msgid "Deny moderation"
-msgstr "Запрещено модерировать"
-
-#: mg/socio/__init__.py:393 mg/socio/__init__.py:421 mg/socio/__init__.py:636
-msgid "Status"
-msgstr "Статус"
-
-#: mg/socio/__init__.py:394 mg/socio/__init__.py:427
-msgid "Signature"
-msgstr "Подпись"
-
-#: mg/socio/__init__.py:397
-msgid "Avatar"
-msgstr "Аватар"
-
-#: mg/socio/__init__.py:400 mg/socio/__init__.py:434
-msgid "Socio settings"
-msgstr "Социальные настройки"
-
-#: mg/socio/__init__.py:402
-msgid "Parameter"
-msgstr "Параметр"
-
-#: mg/socio/__init__.py:402
-msgid "Value"
-msgstr "Значение"
-
-#: mg/socio/__init__.py:517
-#, python-format
-msgid "Scheme '%s' is not supported"
-msgstr "Схема '%s' не поддерживается"
-
-#: mg/socio/__init__.py:519
-msgid "Enter correct URL"
-msgstr "Введите правильный адрес"
-
-#: mg/socio/__init__.py:533
-msgid "Remote server response: Resource not found"
-msgstr "Ответ удалённого сервера: Ресурс не найден"
-
-#: mg/socio/__init__.py:535
-msgid "Remote server response: Access denied"
-msgstr "Ответ удалённого сервера: Доступ запрещён"
-
-#: mg/socio/__init__.py:537
-msgid "Remote server response: Internal server error"
-msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
-
-#: mg/socio/__init__.py:539 mg/socio/__init__.py:548
-#, python-format
-msgid "Download error: %s"
-msgstr "Ошибка при скачивании: %s"
-
-#: mg/socio/__init__.py:544
-msgid "Timeout on downloading image. Time limit - 30 sec"
-msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
-
-#: mg/socio/__init__.py:560 mg/socio/__init__.py:1723
-#: mg/constructor/setup.py:118 mg/constructor/logo.py:193
-msgid "Image format not recognized"
-msgstr "Формат изображения не распознан"
-
-#: mg/socio/__init__.py:614
-msgid "Upload an image"
-msgstr "Загрузите изображение"
-
-#: mg/socio/__init__.py:616 mg/core/web.py:724
-msgid "Image"
-msgstr "Картинка"
-
-#: mg/socio/__init__.py:617
-msgid "Or Internet address"
-msgstr "Или введите Internet-адрес"
-
-#: mg/socio/__init__.py:618 mg/constructor/design.py:403
-msgid "Upload"
-msgstr "Загрузить"
-
-#: mg/socio/__init__.py:620
-msgid "Upload image"
-msgstr "Загрузка изображения"
-
-#: mg/socio/__init__.py:633
-msgid "user///Registered"
-msgstr "Регистрация"
-
-#: mg/socio/__init__.py:638 mg/core/auth.py:919
-#, python-format
-msgid "User %s"
-msgstr "Пользователь %s"
-
-#: mg/socio/__init__.py:641 mg/game/money.py:642
-#: mg/constructor/invitations.py:92
-msgid "User"
-msgstr "Пользователь"
-
-#: mg/socio/__init__.py:772 mg/socio/__init__.py:2269
-#: mg/socio/__init__.py:2274
-msgid "Subscribed topics"
-msgstr "Подписанные темы"
-
-#: mg/socio/__init__.py:952 mg/socio/__init__.py:1079
-#: mg/socio/__init__.py:1083 mg/constructor/design.py:686
-#: mg/constructor/design.py:944
-msgid "New topic"
-msgstr "Новая тема"
-
-#: mg/socio/__init__.py:1005 mg/socio/__init__.py:1040
-#: mg/constructor/design.py:755
-msgid "Profile"
-msgstr "Профиль"
-
-#: mg/socio/__init__.py:1060 mg/socio/__init__.py:1648
-msgid "Enter topic subject"
-msgstr "Введите тему сообщения"
-
-#: mg/socio/__init__.py:1062 mg/socio/__init__.py:1650
-msgid "Enter topic content"
-msgstr "Введите текст сообщения"
-
-#: mg/socio/__init__.py:1067
-msgid "Invalid datetime format"
-msgstr "Неверный формат даты и времени"
-
-#: mg/socio/__init__.py:1073
-msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
-msgstr "Дата темы (дд.мм.гггг или дд.мм.гггг чч:мм:сс)"
-
-#: mg/socio/__init__.py:1074 mg/socio/__init__.py:1668
-msgid "Subject"
-msgstr "Тема"
-
-#: mg/socio/__init__.py:1075
-msgid "Content"
-msgstr "Содержание"
-
-#: mg/socio/__init__.py:1076 mg/socio/__init__.py:1670
-#: mg/socio/__init__.py:2112 mg/socio/__init__.py:2239
-#: mg/socio/__init__.py:2292 mg/constructor/design.py:702
-msgid "Tags"
-msgstr "Теги"
-
-#: mg/socio/__init__.py:1293 mg/socio/__init__.py:1534
-#: mg/socio/__init__.py:1615
-msgid "Topic"
-msgstr "Тема"
-
-#: mg/socio/__init__.py:1301 mg/socio/__init__.py:1343
-#: mg/constructor/design.py:756
-msgid "reply"
-msgstr "ответить"
-
-#: mg/socio/__init__.py:1322
-msgid "unsubscribe"
-msgstr "отписаться"
-
-#: mg/socio/__init__.py:1324
-msgid "subscribe"
-msgstr "подписаться"
-
-#: mg/socio/__init__.py:1327
-msgid "unpin"
-msgstr "открепить"
-
-#: mg/socio/__init__.py:1329
-msgid "pin"
-msgstr "закрепить"
-
-#: mg/socio/__init__.py:1331
-msgid "move"
-msgstr "перенести"
-
-#: mg/socio/__init__.py:1351 mg/socio/__init__.py:1509
-#: mg/socio/__init__.py:1624
-msgid "Enter post content"
-msgstr "Введите текст сообщения"
-
-#: mg/socio/__init__.py:1353
-msgid "Access denied"
-msgstr "Доступ запрещён"
-
-#: mg/socio/__init__.py:1369 mg/socio/__init__.py:1526
-#: mg/socio/__init__.py:1530 mg/socio/__init__.py:1535
-msgid "Reply"
-msgstr "Ответить"
-
-#: mg/socio/__init__.py:1620
-msgid "Edit post"
-msgstr "Редактирование ответа"
-
-#: mg/socio/__init__.py:1642
-msgid "Edit topic"
-msgstr "Редактирование темы"
-
-#: mg/socio/__init__.py:1671 mg/core/web.py:702 mg/core/director.py:240
+#: mg/core/web.py:702 mg/core/director.py:240 mg/socio/__init__.py:1671
 #: mg/admin/__init__.py:231
 msgid "Save"
 msgstr "Сохранить"
 
-#: mg/socio/__init__.py:1683 mg/constructor/__init__.py:157
-#: mg/constructor/__init__.py:291
-msgid "Forum settings"
-msgstr "Настройки форума"
+#: mg/core/web.py:712
+msgid "Bold"
+msgstr "Полужирный"
 
-#: mg/socio/__init__.py:1711
-msgid "Signature can't contain more than 4 lines"
-msgstr "В подписи не может быть более 4 строк"
+#: mg/core/web.py:713
+msgid "Italic"
+msgstr "Курсив"
 
-#: mg/socio/__init__.py:1715
-msgid "Signature line couldn't be longer than 80 symbols"
-msgstr "Строка подписи не может быть длиннее 80 символов"
+#: mg/core/web.py:714
+msgid "Underline"
+msgstr "Подчёркивание"
 
-#: mg/socio/__init__.py:1717
-msgid "Signature couldn't contain images"
-msgstr "В подпись нельзя вставлять картинки"
+#: mg/core/web.py:715
+msgid "Strike"
+msgstr "Зачёркивание"
 
-#: mg/socio/__init__.py:1740
-msgid "Avatar has to be at least 100x100 pixels"
-msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
+#: mg/core/web.py:716
+msgid "Quote"
+msgstr "Цитата"
 
-#: mg/socio/__init__.py:1790
-msgid "Your forum signature"
-msgstr "Ваша подпись на форуме"
+#: mg/core/web.py:717
+msgid "Red"
+msgstr "Красный"
 
-#: mg/socio/__init__.py:1791
-msgid "Your avatar"
-msgstr "Ваш аватар"
+#: mg/core/web.py:718
+msgid "Green"
+msgstr "Зелёный"
 
-#: mg/socio/__init__.py:1792
-msgid "Replies in subscribed topics"
-msgstr "Ответы в подписанных темах"
+#: mg/core/web.py:719
+msgid "Blue"
+msgstr "Синий"
 
-#: mg/socio/__init__.py:1792
-msgid "E-mail notifications"
-msgstr "Уведомления на почту"
+#: mg/core/web.py:720
+msgid "Dark green"
+msgstr "Тёмно-зелёный"
 
-#: mg/socio/__init__.py:1794
-msgid "New topics in '{topcat} / {cat}'"
-msgstr "Новые темы в '{topcat} / {cat}'"
+#: mg/core/web.py:721
+msgid "Magenta"
+msgstr "Фиолетовый"
 
-#: mg/socio/__init__.py:1795
-msgid "Return"
-msgstr "Возврат"
+#: mg/core/web.py:722
+msgid "Yellow"
+msgstr "Жёлтый"
 
-#: mg/socio/__init__.py:1904
-msgid "Select category"
-msgstr "Выберите раздел"
+#: mg/core/web.py:723
+msgid "Orange"
+msgstr "Оранжевый"
 
-#: mg/socio/__init__.py:1925
-msgid "Category where to move"
-msgstr "Раздел, в который перенести"
+#: mg/core/web.py:724 mg/socio/__init__.py:616
+msgid "Image"
+msgstr "Картинка"
 
-#: mg/socio/__init__.py:1926 mg/constructor/design.py:944
-msgid "Move"
-msgstr "Перенести"
+#: mg/core/web.py:725
+msgid "Insert image"
+msgstr "Вставить изображение"
 
-#: mg/socio/__init__.py:1928
-#, python-format
-msgid "Move topic: %s"
-msgstr "Перемещение темы: %s"
+#: mg/core/web.py:726
+msgid "Translit"
+msgstr "Транслит"
 
-#: mg/socio/__init__.py:1974
-#, python-format
-msgid "New topic: %s"
-msgstr "Новая тема: %s"
+#: mg/core/web.py:727
+msgid "Transliterate to Russian"
+msgstr "Транслитерация на русский"
 
-#: mg/socio/__init__.py:1974
-msgid ""
-"{author_name} has started new topic: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}"
-msgstr ""
-"{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}"
-
-#: mg/socio/__init__.py:2024
-#, python-format
-msgid "New replies: %s"
-msgstr "Новые ответы: %s"
-
-#: mg/socio/__init__.py:2024
-msgid ""
-"{author_name} has replied in the topic: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
-msgstr ""
-"{author_name} ответил[gender?а:] в тему: {topic_subject}\n"
-"\n"
-"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
-
-#: mg/socio/__init__.py:2104 mg/constructor/design.py:687
-msgid "Author"
-msgstr "Автор"
-
-#: mg/socio/__init__.py:2105 mg/constructor/design.py:679
-#: mg/constructor/design.py:688
-msgid "Replies"
-msgstr "Ответов"
-
-#: mg/socio/__init__.py:2106 mg/constructor/design.py:689
-msgid "Last reply"
-msgstr "Последний ответ"
-
-#: mg/socio/__init__.py:2107 mg/constructor/design.py:682
-#: mg/constructor/design.py:690
-msgid "by"
-msgstr "от"
-
-#: mg/socio/__init__.py:2109 mg/socio/__init__.py:2240
-msgid "Nothing found"
-msgstr "Ничего не найдено"
-
-#: mg/socio/__init__.py:2213 mg/socio/__init__.py:2226
-msgid "open"
-msgstr "открыть"
-
-#: mg/socio/__init__.py:2236
-msgid "results///Search"
-msgstr "Поиск"
-
-#: mg/socio/__init__.py:2271
-msgid "You have not subscribed to any topic"
-msgstr "Вы не подписаны ни на одну тему"
-
-#: mg/socio/__init__.py:2325
-msgid "Read more"
-msgstr "Читать далее"
-
-#: mg/socio/__init__.py:2326
-msgid "Comment"
-msgstr "Комментировать"
+#: mg/core/web.py:728
+msgid "Smiles"
+msgstr "Смайлики"
 
 #: mg/core/l10n.py:13
 msgid "of January"
@@ -586,75 +150,6 @@ msgstr "{2:02d} {1} {0} в {3}"
 msgid "{2:d}{3} {1}, {0}"
 msgstr "{2:02d} {1} {0}"
 
-#: mg/core/web.py:712
-msgid "Bold"
-msgstr "Полужирный"
-
-#: mg/core/web.py:713
-msgid "Italic"
-msgstr "Курсив"
-
-#: mg/core/web.py:714
-msgid "Underline"
-msgstr "Подчёркивание"
-
-#: mg/core/web.py:715
-msgid "Strike"
-msgstr "Зачёркивание"
-
-#: mg/core/web.py:716
-msgid "Quote"
-msgstr "Цитата"
-
-#: mg/core/web.py:717
-msgid "Red"
-msgstr "Красный"
-
-#: mg/core/web.py:718
-msgid "Green"
-msgstr "Зелёный"
-
-#: mg/core/web.py:719
-msgid "Blue"
-msgstr "Синий"
-
-#: mg/core/web.py:720
-msgid "Dark green"
-msgstr "Тёмно-зелёный"
-
-#: mg/core/web.py:721
-msgid "Magenta"
-msgstr "Фиолетовый"
-
-#: mg/core/web.py:722
-msgid "Yellow"
-msgstr "Жёлтый"
-
-#: mg/core/web.py:723
-msgid "Orange"
-msgstr "Оранжевый"
-
-#: mg/core/web.py:725
-msgid "Insert image"
-msgstr "Вставить изображение"
-
-#: mg/core/web.py:726
-msgid "Translit"
-msgstr "Транслит"
-
-#: mg/core/web.py:727
-msgid "Transliterate to Russian"
-msgstr "Транслитерация на русский"
-
-#: mg/core/web.py:728
-msgid "Smiles"
-msgstr "Смайлики"
-
-#: mg/core/cluster.py:112 mg/core/cluster.py:138
-#, python-format
-msgid "Error storing object: %s"
-msgstr "Ошибка при сохранении объекта: %s"
-
 #: mg/core/sites.py:9
 msgid "Site"
 msgstr "Сайт"
@@ -674,6 +169,55 @@ msgstr "Счётчики сохранены"
 #: mg/core/sites.py:47
 msgid "Counters HTML code"
 msgstr "HTML-код счётчиков"
+
+#: mg/core/cluster.py:112 mg/core/cluster.py:138
+#, python-format
+msgid "Error storing object: %s"
+msgstr "Ошибка при сохранении объекта: %s"
+
+#: mg/core/director.py:152
+msgid "Welcome to the cluster control center"
+msgstr "Добро пожаловать в центр управления кластером"
+
+#: mg/core/director.py:153
+msgid "Change cluster settings"
+msgstr "Изменить настройки кластера"
+
+#: mg/core/director.py:159
+msgid "List of servers online"
+msgstr "Список серверов онлайн"
+
+#: mg/core/director.py:224
+msgid "Cluster settings"
+msgstr "Настройки кластера"
+
+#: mg/core/director.py:226
+msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
+msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
+
+#: mg/core/director.py:228
+msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
+msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
+
+#: mg/core/director.py:230
+msgid "<strong>Storage servers</strong> (host, host, ...)"
+msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
+
+#: mg/core/director.py:232
+msgid "<strong>Main application host name</strong> (without www)"
+msgstr "<strong>Домен основного сайта</strong> (без www)"
+
+#: mg/core/director.py:234
+msgid "<strong>Administrator</strong> (uuid)"
+msgstr "<strong>Администратор</strong> (uuid)"
+
+#: mg/core/director.py:236
+msgid "<strong>SMTP server</strong> (host)"
+msgstr "<strong>Сервер SMTP</strong> (host)"
+
+#: mg/core/director.py:238
+msgid "<strong>Global locale</strong> (en, ru)"
+msgstr "<strong>Глобальная локаль</strong> (en, ru)"
 
 #: mg/core/auth.py:248
 msgid ""
@@ -796,8 +340,8 @@ msgstr "Регистрация"
 msgid "User registration"
 msgstr "Регистрация пользователя"
 
-#: mg/core/auth.py:334 mg/core/auth.py:596 mg/constructor/__init__.py:163
-#: mg/constructor/domains.py:527
+#: mg/core/auth.py:334 mg/core/auth.py:596 mg/constructor/domains.py:609
+#: mg/constructor/__init__.py:163
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -1025,6 +569,16 @@ msgstr "Последние зарегистрированные"
 msgid "Edit permissions of a user"
 msgstr "Редактировать привилегии пользователя"
 
+#: mg/core/auth.py:809 mg/constructor/design.py:817 mg/socio/__init__.py:239
+#: mg/socio/__init__.py:401 mg/socio/__init__.py:1299
+#: mg/socio/__init__.py:1341
+msgid "edit"
+msgstr "редактировать"
+
+#: mg/core/auth.py:810 mg/socio/__init__.py:238 mg/socio/__init__.py:1616
+msgid "Editing"
+msgstr "Редактирование"
+
 #: mg/core/auth.py:816
 msgid "User permissions"
 msgstr "Привилегии пользователей"
@@ -1033,8 +587,8 @@ msgstr "Привилегии пользователей"
 msgid "Enter user name"
 msgstr "Введите имя пользователя"
 
-#: mg/core/auth.py:838 mg/core/auth.py:939 mg/constructor/design.py:928
-#: mg/constructor/dashboard.py:71
+#: mg/core/auth.py:838 mg/core/auth.py:939 mg/constructor/dashboard.py:71
+#: mg/constructor/design.py:989
 msgid "Search"
 msgstr "Искать"
 
@@ -1054,6 +608,11 @@ msgstr "Не вошедший в систему"
 #, python-format
 msgid "Privilege: %s"
 msgstr "Привилегия: %s"
+
+#: mg/core/auth.py:919 mg/socio/__init__.py:638
+#, python-format
+msgid "User %s"
+msgstr "Пользователь %s"
 
 #: mg/core/auth.py:953 mg/game/money.py:514 mg/game/money.py:646
 #: mg/constructor/dashboard.py:118
@@ -1096,6 +655,10 @@ msgstr "Удалить"
 msgid "Add"
 msgstr "Добавить"
 
+#: mg/core/auth.py:1060 mg/socio/__init__.py:237
+msgid "Order"
+msgstr "Порядок"
+
 #: mg/core/auth.py:1061
 msgid "Role"
 msgstr "Роль"
@@ -1103,50 +666,6 @@ msgstr "Роль"
 #: mg/core/auth.py:1062
 msgid "Permission"
 msgstr "Разрешение"
-
-#: mg/core/director.py:152
-msgid "Welcome to the cluster control center"
-msgstr "Добро пожаловать в центр управления кластером"
-
-#: mg/core/director.py:153
-msgid "Change cluster settings"
-msgstr "Изменить настройки кластера"
-
-#: mg/core/director.py:159
-msgid "List of servers online"
-msgstr "Список серверов онлайн"
-
-#: mg/core/director.py:224
-msgid "Cluster settings"
-msgstr "Настройки кластера"
-
-#: mg/core/director.py:226
-msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
-msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
-
-#: mg/core/director.py:228
-msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
-msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
-
-#: mg/core/director.py:230
-msgid "<strong>Storage servers</strong> (host, host, ...)"
-msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
-
-#: mg/core/director.py:232
-msgid "<strong>Main application host name</strong> (without www)"
-msgstr "<strong>Домен основного сайта</strong> (без www)"
-
-#: mg/core/director.py:234
-msgid "<strong>Administrator</strong> (uuid)"
-msgstr "<strong>Администратор</strong> (uuid)"
-
-#: mg/core/director.py:236
-msgid "<strong>SMTP server</strong> (host)"
-msgstr "<strong>Сервер SMTP</strong> (host)"
-
-#: mg/core/director.py:238
-msgid "<strong>Global locale</strong> (en, ru)"
-msgstr "<strong>Глобальная локаль</strong> (en, ru)"
 
 #: mg/game/money.py:384
 msgid "Given by the administration"
@@ -1294,6 +813,11 @@ msgstr "Время 2pay"
 msgid "Our time"
 msgstr "Наше время"
 
+#: mg/game/money.py:642 mg/constructor/invitations.py:92
+#: mg/socio/__init__.py:641
+msgid "User"
+msgstr "Пользователь"
+
 #: mg/game/money.py:644
 msgid "Chargeback"
 msgstr "Возврат платежа"
@@ -1318,14 +842,1890 @@ msgstr "Секретный код 2pay"
 msgid "Constructor: 2pay integration"
 msgstr "Конструктор: интеграция с 2pay"
 
-#: mg/admin/__init__.py:31
-msgid "Administration interface"
-msgstr "Административный интерфейс"
+#: mg/constructor/dashboard.py:27
+msgid "Project name"
+msgstr "Название проекта"
 
-#: mg/admin/__init__.py:68
+#: mg/constructor/dashboard.py:27
+msgid "Project code"
+msgstr "Код проекта"
+
+#: mg/constructor/dashboard.py:32 mg/constructor/__init__.py:66
+#: mg/constructor/__init__.py:67
+msgid "Constructor"
+msgstr "Конструктор"
+
+#: mg/constructor/dashboard.py:41 mg/constructor/dashboard.py:43
 #, python-format
-msgid "%s administration interface"
-msgstr "Административный интерфейс %s"
+msgid "Project %s"
+msgstr "Проект %s"
+
+#: mg/constructor/dashboard.py:48
+msgid "Global settings"
+msgstr "Глобальные настройки"
+
+#: mg/constructor/dashboard.py:50
+msgid "Find project"
+msgstr "Найти проект"
+
+#: mg/constructor/dashboard.py:51
+msgid "Main project"
+msgstr "Главный проект"
+
+#: mg/constructor/dashboard.py:60
+msgid "Enter project uuid"
+msgstr "Введите UUID проекта"
+
+#: mg/constructor/dashboard.py:64
+msgid "Project not found"
+msgstr "Проект не найден"
+
+#: mg/constructor/dashboard.py:69
+msgid "Project uuid"
+msgstr "UUID проекта"
+
+#: mg/constructor/dashboard.py:108
+msgid "Full title"
+msgstr "Полное название"
+
+#: mg/constructor/dashboard.py:109
+msgid "Short title"
+msgstr "Короткое название"
+
+#: mg/constructor/dashboard.py:110
+msgid "Title code"
+msgstr "Код названия"
+
+#: mg/constructor/dashboard.py:111
+msgid "Owner"
+msgstr "Владелец"
+
+#: mg/constructor/dashboard.py:112 mg/constructor/domains.py:602
+#: mg/constructor/domains.py:650
+msgid "Domain"
+msgstr "Домен"
+
+#: mg/constructor/dashboard.py:113 mg/constructor/domains.py:603
+msgid "Created"
+msgstr "Создано"
+
+#: mg/constructor/dashboard.py:114
+msgid "Published"
+msgstr "Опубликовано"
+
+#: mg/constructor/dashboard.py:115
+msgid "unpublish"
+msgstr "снять с публикации"
+
+#: mg/constructor/dashboard.py:117
+msgid "Are you sure want to unpublish the project?"
+msgstr "Вы уверены, что хотите снять проект с публикации?"
+
+#: mg/constructor/dashboard.py:119
+msgid "Logo"
+msgstr "Логотип"
+
+#: mg/constructor/dashboard.py:150
+msgid "Constructor: global settings"
+msgstr "Конструктор: глобальные настройки"
+
+#: mg/constructor/dashboard.py:151
+msgid "Constructor: projects"
+msgstr "Конструктор: проекты"
+
+#: mg/constructor/dashboard.py:152
+msgid "Constructor: unpublishing projects"
+msgstr "Конструктор: снятие проектов с публикации"
+
+#: mg/constructor/dashboard.py:165
+msgid "Constructor settings stored"
+msgstr "Настройки конструктора сохранены"
+
+#: mg/constructor/dashboard.py:169
+msgid "Registration on invitations"
+msgstr "Регистрация по приглашениям"
+
+#: mg/constructor/design.py:77
+msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
+msgstr "Закрывающий тег '{0}' не соответствует открывающему тегу '{1}'"
+
+#: mg/constructor/design.py:103
+msgid "Valid XHTML doctype required"
+msgstr "Требуется правильный XHTML doctype"
+
+#: mg/constructor/design.py:109
+#, python-format
+msgid "Not closed tags at the end of file: %s"
+msgstr "Незакрытые теги в конце файла: %s"
+
+#: mg/constructor/design.py:111
+msgid "DOCTYPE not specified"
+msgstr "DOCTYPE не указан"
+
+#: mg/constructor/design.py:113
+msgid ""
+"Content-type not specified. Add <meta http-equiv=\"Content-type\" content="
+"\"text/html; charset=utf-8\" /> into the head tag"
+msgstr ""
+"Content-type не указан. Добавьте <meta http-equiv=\"Content-type\" content="
+"\"text/html; charset=utf-8\" /> в тег head"
+
+#: mg/constructor/design.py:131
+msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
+msgstr "Неверная кодировка. Укажите: content=\"text/html; charset=utf-8\""
+
+#: mg/constructor/design.py:219
+#, python-format
+msgid ""
+"Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), "
+"underscore (_) and minus(-) are permitted. Filename must have an extention "
+"(a-z, 0-9 symbols)"
+msgstr ""
+"Неверное имя файла: '%s' . Допустимы только маленькие латинские буквы (a-z), "
+"цифры (0-9), подчёркивание (_) и минус (-). Файл должен иметь расширение из "
+"символов a-z, 0-9"
+
+#: mg/constructor/design.py:225
+msgid ""
+"Filename '{0}' has unsupported extension: {1}. Permitted extensions are: {2}"
+msgstr ""
+"Имя файла '{0}' имеет неподдерживаемое расширение: {1}. Допустимые "
+"разрешения: {2}"
+
+#: mg/constructor/design.py:228
+#, python-format
+msgid "Several files with the same name '%s' encountered"
+msgstr "Найдено несколько файлов с одинаковым именем: '%s'"
+
+#: mg/constructor/design.py:250
+msgid "Error parsing template {0}: {1}"
+msgstr "Ошибка парсинга шаблона {0}: {1}"
+
+#: mg/constructor/design.py:256
+#, python-format
+msgid ", at line %d"
+msgstr ", в строке %d"
+
+#: mg/constructor/design.py:258
+#, python-format
+msgid ", column %d"
+msgstr ", в колонке %d"
+
+#: mg/constructor/design.py:259
+msgid "Error parsing {0}: {1}"
+msgstr "Ошибка парсера {0}: {1}"
+
+#: mg/constructor/design.py:302 mg/socio/__init__.py:614
+msgid "Upload an image"
+msgstr "Загрузите изображение"
+
+#: mg/constructor/design.py:309 mg/constructor/logo.py:193
+#: mg/constructor/setup.py:118 mg/socio/__init__.py:560
+#: mg/socio/__init__.py:1723
+msgid "Image format not recognized"
+msgstr "Формат изображения не распознан"
+
+#: mg/constructor/design.py:313 mg/constructor/logo.py:196
+msgid "Animated images are not supported"
+msgstr "Анимированные картинки не поддерживаются"
+
+#: mg/constructor/design.py:326
+#, fuzzy
+msgid "Base image"
+msgstr "Вставить изображение"
+
+#: mg/constructor/design.py:362
+msgid "Design"
+msgstr "Оформление"
+
+#: mg/constructor/design.py:366
+msgid "Preview feature"
+msgstr "Предварительный просмотр"
+
+#: mg/constructor/design.py:366
+msgid ""
+"Use \"preview\" feature to check your design before installing it to the "
+"project. Then press \"Reload\" several times to check design on arbitrary "
+"data."
+msgstr ""
+"Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь "
+"функцией предварительного просмотра. Затем несколько раз нажмите кнопку "
+"\"Обновить\", чтобы проверить оформление на различных данных."
+
+#: mg/constructor/design.py:366
+msgid "Multiple browsers"
+msgstr "Различные браузеры"
+
+#: mg/constructor/design.py:366
+msgid "Check your design in the most popular browsers."
+msgstr "Проверяйте ваше оформление в наиболее популярных браузерах."
+
+#: mg/constructor/design.py:366
+msgid "google///browser statistics"
+msgstr "статистика браузеров"
+
+#: mg/constructor/design.py:366
+msgid "Find the most popular browsers"
+msgstr "Найти наиболее популярные браузеры"
+
+#: mg/constructor/design.py:378
+msgid "Untitled"
+msgstr "Без имени"
+
+#: mg/constructor/design.py:387 mg/constructor/design.py:403
+msgid "preview"
+msgstr "просмотреть"
+
+#: mg/constructor/design.py:397
+msgid "Upload design package from your computer"
+msgstr "Загрузить пакет оформления с вашего компьютера"
+
+#: mg/constructor/design.py:398
+msgid "Uploaded"
+msgstr "Загружено"
+
+#: mg/constructor/design.py:399 mg/socio/__init__.py:236
+msgid "Title"
+msgstr "Название"
+
+#: mg/constructor/design.py:400
+msgid "Preview"
+msgstr "Предпросмотр"
+
+#: mg/constructor/design.py:401 mg/socio/__init__.py:242
+msgid "Deletion"
+msgstr "Удаление"
+
+#: mg/constructor/design.py:402
+msgid "Installation"
+msgstr "Инсталляция"
+
+#: mg/constructor/design.py:404 mg/constructor/design.py:817
+#: mg/socio/__init__.py:243 mg/socio/__init__.py:1297
+#: mg/socio/__init__.py:1339
+msgid "delete"
+msgstr "удалить"
+
+#: mg/constructor/design.py:405
+msgid "install"
+msgstr "установить"
+
+#: mg/constructor/design.py:406
+msgid "Do you really want to delete this design?"
+msgstr "Вы уверены, что хотите удалить это оформление?"
+
+#: mg/constructor/design.py:407
+msgid "Do you really want to install this design?"
+msgstr "Вы уверены, что хотите установить это оформление?"
+
+#: mg/constructor/design.py:409
+msgid "zip"
+msgstr "zip"
+
+#: mg/constructor/design.py:410
+msgid "rename///ren"
+msgstr "переим"
+
+#: mg/constructor/design.py:411
+msgid "Select from the list of templates"
+msgstr "Выбрать из списка шаблонов"
+
+#: mg/constructor/design.py:419
+msgid "Provide a ZIP archive"
+msgstr "Загрузите ZIP-архив"
+
+#: mg/constructor/design.py:427
+msgid "This is not a ZIP file"
+msgstr "Это не ZIP-архив"
+
+#: mg/constructor/design.py:429
+msgid "ZIP64 is not supported"
+msgstr "ZIP64 не поддерживается"
+
+#: mg/constructor/design.py:436
+msgid "Zipped design package"
+msgstr "Пакет с оформлением в формате ZIP"
+
+#: mg/constructor/design.py:437 mg/constructor/design.py:501
+msgid "Design title"
+msgstr "Название оформления"
+
+#: mg/constructor/design.py:440 mg/socio/__init__.py:618
+msgid "Upload"
+msgstr "Загрузить"
+
+#: mg/constructor/design.py:447
+msgid ""
+"Choose any template you want. Then setup its parameters and you will get a "
+"personalised variant of the template."
+msgstr ""
+"Выберите любой шаблон, который вам нравится. Затем настройте его параметры, "
+"и вы получите персонализированный вариант шаблона."
+
+#: mg/constructor/design.py:471
+#, fuzzy
+msgid "Generate design template"
+msgstr "Шаблоны оформления"
+
+#: mg/constructor/design.py:504
+msgid "Rename"
+msgstr "Переименовать"
+
+#: mg/constructor/design.py:556
+msgid "New design"
+msgstr "Новое оформление"
+
+#: mg/constructor/design.py:558
+msgid "Design templates"
+msgstr "Шаблоны оформления"
+
+#: mg/constructor/design.py:560
+msgid "Renaming"
+msgstr "Переименование"
+
+#: mg/constructor/design.py:562 mg/constructor/design.py:984
+#: mg/constructor/__init__.py:136 mg/constructor/__init__.py:140
+msgid "Settings"
+msgstr "Настройки"
+
+#: mg/constructor/design.py:580
+msgid "Index page design"
+msgstr "Оформление титульной страницы"
+
+#: mg/constructor/design.py:585
+msgid "Index page"
+msgstr "Титульная страница"
+
+#: mg/constructor/design.py:593
+msgid "Index page design package must contain an HTML file"
+msgstr "Пакет с оформлением титульной страницы должен содержать HTML-файл"
+
+#: mg/constructor/design.py:595
+msgid "Index page design package must not contain more than one HTML file"
+msgstr ""
+"Пакет с оформлением титульной страницы не может содержать более 1 HTML-файла"
+
+#: mg/constructor/design.py:598
+msgid "index.html must exist in the index page design package"
+msgstr "В пакете оформления титульной страницы должен быть файл index.html"
+
+#: mg/constructor/design.py:600
+msgid "Index page design package must contain a CSS file"
+msgstr "Пакет с оформлением титульной страницы должен содержать CSS-файл"
+
+#: mg/constructor/design.py:603 mg/constructor/design.py:812
+msgid "Mike"
+msgstr "Mike"
+
+#: mg/constructor/design.py:603 mg/constructor/design.py:812
+msgid "Ivan Ivanov"
+msgstr "Иван Иванов"
+
+#: mg/constructor/design.py:603 mg/constructor/design.py:812
+msgid "John Smith"
+msgstr "John Smith"
+
+#: mg/constructor/design.py:603 mg/constructor/design.py:812
+msgid "Lizard the killer"
+msgstr "Lizard the killer"
+
+#: mg/constructor/design.py:603 mg/constructor/design.py:812
+msgid "Cult of the dead cow"
+msgstr "Культ мёртвой коровы"
+
+#: mg/constructor/design.py:605 mg/constructor/design.py:606
+msgid "Some title"
+msgstr "Некое название"
+
+#: mg/constructor/design.py:605
+msgid "Very cool game with very long title"
+msgstr "Очень крутая игра с очень длинным названием"
+
+#: mg/constructor/design.py:606
+msgid "Very cool game"
+msgstr "Очень крутая игра"
+
+#: mg/constructor/design.py:607
+msgid ""
+"<p>This game is a very good sample of games with very long descriptions. In "
+"this game you become a strong warrior, a mighty wizard, a rich merchant or "
+"anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit "
+"amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer "
+"aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet "
+"auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt "
+"vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec "
+"at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, "
+"tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium "
+"dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec "
+"lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis "
+"elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam "
+"aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus "
+"lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada "
+"tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere "
+"lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, "
+"dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh "
+"vehicula porttitor. Donec vitae elit tellus.</p>"
+msgstr ""
+"<p>Эта игра - отличный пример игр с очень длинными описаниями. В этой игре "
+"вы можете стать сильным воином, могущественным чародеем, богатым купцом или "
+"кем угодно ещё. Это ваш выбор. Это ваш путь.</p><p>Lorem ipsum dolor sit "
+"amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer "
+"aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet "
+"auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt "
+"vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec "
+"at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, "
+"tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium "
+"dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec "
+"lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis "
+"elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam "
+"aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus "
+"lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada "
+"tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere "
+"lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, "
+"dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh "
+"vehicula porttitor. Donec vitae elit tellus.</p>"
+
+#: mg/constructor/design.py:607
+msgid ""
+"This game has a very short description. It was written in hurry by a young "
+"game designer."
+msgstr ""
+"У этой игры очень короткое описание. Оно было написано в спешке молодым гейм-"
+"дизайнером."
+
+#: mg/constructor/design.py:614
+msgid "Breaking news"
+msgstr "Срочно в номер"
+
+#: mg/constructor/design.py:614
+msgid "New updates related to the abandoned dungeon"
+msgstr "Новые обновления, связанные с заброшенным подземельем"
+
+#: mg/constructor/design.py:614
+msgid "Eternal shadow returns"
+msgstr "Вечная тень возвращается"
+
+#: mg/constructor/design.py:614
+msgid "Epic war event"
+msgstr "Эпическое событие: война"
+
+#: mg/constructor/design.py:615
+msgid ""
+"South Korea will hold its largest-ever winter live-fire drills Thursday in "
+"an area adjacent to North Korea, amid heightened tensions, the South Korean "
+"Army says."
+msgstr ""
+"Баварские фермеры отказались уступать землю под олимпийские объекты. По всей "
+"Европе вводятся новые сборы с туристов."
+
+#: mg/constructor/design.py:615
+msgid "Europe travel chaos starts to clear"
+msgstr "Перепись населения откатила США к временам Великой депрессии"
+
+#: mg/constructor/design.py:615
+msgid ""
+"Even with legal protection, women victims of rape still face a social stigma "
+"that is hard to overcome. He said: \"Women are still afraid to complain if "
+"they are victims of rape because there is an attitude from the society.\"</"
+"p><p>Coulibaly added: \"There is no law to define rape but there will be "
+"one. And work is being done with police officers and judges ... to let them "
+"understand the problem is not the woman, but the perpetrator of the rape.\""
+msgstr ""
+"На сайте госкорпорации \"Роснано\" появился рекламный ролик, приуроченный к "
+"открытию первого завода, созданного при участии \"Роснано\" в городе "
+"Рыбинске Ярославской области.</p><p>В ролике, показывающем возможности "
+"продукции первого нанопроизводства, звучит фраза, которую выбрали в качестве "
+"слогана акции: \"Ну ты, нано, даешь!\". На заводе планируют производить "
+"\"износостойкие инструменты\", в том числе сверла с прочным нанопокрытием."
+
+#: mg/constructor/design.py:620
+msgid "This is a sample meta description"
+msgstr "Это пример meta-описания"
+
+#: mg/constructor/design.py:621
+msgid "online games, keyword 1, keyword 2"
+msgstr "онлайн-игры, ключевое слово 1, ключевое слово 2"
+
+#: mg/constructor/design.py:627
+msgid "Joy Team, Author"
+msgstr "Joy Team, Автор"
+
+#: mg/constructor/design.py:627
+msgid "Joy Team, Very Long Author Name Even So Long"
+msgstr "Joy Team, Очень Длинное Имя Автора и Ещё Длиннее"
+
+#: mg/constructor/design.py:631
+msgid "Enter invisible"
+msgstr "Вход в невидимости"
+
+#: mg/constructor/design.py:633
+msgid "Already invisible"
+msgstr "Уже в невидимости"
+
+#: mg/constructor/design.py:637
+msgid "Library"
+msgstr "Библиотека"
+
+#: mg/constructor/design.py:641
+msgid "World history"
+msgstr "История мира"
+
+#: mg/constructor/design.py:645 mg/constructor/domains.py:650
+msgid "Registration"
+msgstr "Регистрация"
+
+#: mg/constructor/design.py:649
+msgid "Game forum"
+msgstr "Форум игры"
+
+#: mg/constructor/design.py:654
+msgid "Screenshots"
+msgstr "Скриншоты"
+
+#: mg/constructor/design.py:659
+msgid "Secure entrance"
+msgstr "Безопасный вход"
+
+#: mg/constructor/design.py:661
+msgid "Connection secured"
+msgstr "Установлено безопасное соединение"
+
+#: mg/constructor/design.py:671
+msgid "The biggest glory"
+msgstr "Самая большая слава"
+
+#: mg/constructor/design.py:671
+msgid "The richest"
+msgstr "Самые богатые"
+
+#: mg/constructor/design.py:671
+msgid "Top clan"
+msgstr "Топ-клан"
+
+#: mg/constructor/design.py:671
+msgid "The best dragon hunter"
+msgstr "Лучший охотник на драконов"
+
+#: mg/constructor/design.py:701
+msgid "Game interface design"
+msgstr "Оформление интерфейса игры"
+
+#: mg/constructor/design.py:706
+msgid "Game interface"
+msgstr "Интерфейс игры"
+
+#: mg/constructor/design.py:713
+msgid "Game interface design package must contain a CSS file"
+msgstr "Пакет с оформлением игры должен содержать CSS-файл"
+
+#: mg/constructor/design.py:715
+msgid "Game interface design package must not contain HTML files"
+msgstr "Пакет с оформлением игры не может содержать HTML-файлов"
+
+#: mg/constructor/design.py:738 mg/constructor/design.py:744
+#: mg/constructor/design.py:803 mg/socio/__init__.py:223
+#: mg/socio/__init__.py:249 mg/socio/__init__.py:771 mg/socio/__init__.py:948
+#: mg/socio/__init__.py:1081 mg/socio/__init__.py:1291
+#: mg/socio/__init__.py:1532 mg/socio/__init__.py:1613
+#: mg/socio/__init__.py:2111 mg/socio/__init__.py:2235
+#: mg/socio/__init__.py:2273 mg/socio/__init__.py:2291
+msgid "Forum categories"
+msgstr "Разделы форума"
+
+#: mg/constructor/design.py:739
+msgid "Topics"
+msgstr "Тем"
+
+#: mg/constructor/design.py:740 mg/constructor/design.py:749
+#: mg/socio/__init__.py:2105
+msgid "Replies"
+msgstr "Ответов"
+
+#: mg/constructor/design.py:741
+msgid "Unread"
+msgstr "Новые"
+
+#: mg/constructor/design.py:742
+msgid "Last message"
+msgstr "Последнее сообщение"
+
+#: mg/constructor/design.py:743 mg/constructor/design.py:751
+#: mg/socio/__init__.py:2107
+msgid "by"
+msgstr "от"
+
+#: mg/constructor/design.py:747 mg/constructor/design.py:1005
+#: mg/socio/__init__.py:952 mg/socio/__init__.py:1079
+#: mg/socio/__init__.py:1083
+msgid "New topic"
+msgstr "Новая тема"
+
+#: mg/constructor/design.py:748 mg/socio/__init__.py:2104
+msgid "Author"
+msgstr "Автор"
+
+#: mg/constructor/design.py:750 mg/socio/__init__.py:2106
+msgid "Last reply"
+msgstr "Последний ответ"
+
+#: mg/constructor/design.py:752 mg/constructor/design.py:754
+#: mg/constructor/design.py:757
+msgid "Pages"
+msgstr "На страницу"
+
+#: mg/constructor/design.py:753
+msgid "topic///Opened"
+msgstr "Открыта"
+
+#: mg/constructor/design.py:758
+msgid "topic started"
+msgstr "тема открыта"
+
+#: mg/constructor/design.py:759 mg/constructor/design.py:816
+msgid "All posts"
+msgstr "Все сообщения"
+
+#: mg/constructor/design.py:760
+msgid "Search for all posts of this member"
+msgstr "Все сообщения этого пользователя"
+
+#: mg/constructor/design.py:761
+msgid "to the top"
+msgstr "наверх"
+
+#: mg/constructor/design.py:762
+msgid "written at"
+msgstr "написано"
+
+#: mg/constructor/design.py:763 mg/socio/__init__.py:1076
+#: mg/socio/__init__.py:1670 mg/socio/__init__.py:2112
+#: mg/socio/__init__.py:2239 mg/socio/__init__.py:2292
+msgid "Tags"
+msgstr "Теги"
+
+#: mg/constructor/design.py:766
+msgid "Forum tags"
+msgstr "Теги форума"
+
+#: mg/constructor/design.py:780
+msgid "Socio interface design"
+msgstr "Оформление интерфейса социалки"
+
+#: mg/constructor/design.py:785
+msgid "Socio interface"
+msgstr "Интерфейс социалки"
+
+#: mg/constructor/design.py:793
+msgid "Socio interface design package must contain an HTML file"
+msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
+
+#: mg/constructor/design.py:795
+msgid "Socio interface design package must not contain more than one HTML file"
+msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
+
+#: mg/constructor/design.py:798
+msgid "index.html must exist in the socio interface design package"
+msgstr "В пакете оформления интерфейса социалки должен быть файл index.html"
+
+#: mg/constructor/design.py:800
+msgid "Socio interface design package must contain a CSS file"
+msgstr "Пакет с оформлением социалки должен содержать CSS-файл"
+
+#: mg/constructor/design.py:804 mg/constructor/design.py:847
+msgid "Forum category"
+msgstr "Раздел форума"
+
+#: mg/constructor/design.py:805
+msgid "Forum topic"
+msgstr "Тема на форуме"
+
+#: mg/constructor/design.py:806
+msgid "Tags cloud"
+msgstr "Облако тегов"
+
+#: mg/constructor/design.py:811
+msgid "Unknown problem"
+msgstr "Неизвестная проблема"
+
+#: mg/constructor/design.py:811
+msgid "Very important combat will take place tomorrow"
+msgstr "Завтра состоится очень важное сражение"
+
+#: mg/constructor/design.py:811
+msgid "Not so important but a very large forum topic title"
+msgstr "Не очень важный, но очень длинный заголовок темы на форуме"
+
+#: mg/constructor/design.py:813
+msgid "6th of December, 2010 at 12:01"
+msgstr "6 декабря 2010 в 12:01"
+
+#: mg/constructor/design.py:813
+msgid "13th of June, 2008 at 02:11"
+msgstr "13 июня 2008 года в 02:11"
+
+#: mg/constructor/design.py:813
+msgid "7th of February, 2011 at 23:17"
+msgstr "7 февраля 2011 года в 23:17"
+
+#: mg/constructor/design.py:813
+msgid "21th of October, 2010 at 17:00"
+msgstr "21 октября 2010 года в 17:00"
+
+#: mg/constructor/design.py:814
+msgid "This is a sample signature line"
+msgstr "Это пример строки подписи"
+
+#: mg/constructor/design.py:814
+msgid "Some another line"
+msgstr "Какая-то другая строка"
+
+#: mg/constructor/design.py:814
+msgid "Very strange signature"
+msgstr "Очень странная подпись"
+
+#: mg/constructor/design.py:814
+msgid "Absolutely crazy signature line"
+msgstr "Абсолютно сумасшедшая строка подписи"
+
+#: mg/constructor/design.py:815
+msgid "game"
+msgstr "игра"
+
+#: mg/constructor/design.py:815
+msgid "mmo"
+msgstr "mmo"
+
+#: mg/constructor/design.py:815
+msgid "constructor"
+msgstr "конструктор"
+
+#: mg/constructor/design.py:815
+msgid "people"
+msgstr "люди"
+
+#: mg/constructor/design.py:815
+msgid "online games"
+msgstr "онлайн-игры"
+
+#: mg/constructor/design.py:815
+msgid "game industry"
+msgstr "игровая индустрия"
+
+#: mg/constructor/design.py:815
+msgid "game engine"
+msgstr "игровой движок"
+
+#: mg/constructor/design.py:816 mg/socio/__init__.py:1005
+#: mg/socio/__init__.py:1040
+msgid "Profile"
+msgstr "Профиль"
+
+#: mg/constructor/design.py:816
+msgid "Rating"
+msgstr "Рейтинг"
+
+#: mg/constructor/design.py:816
+msgid "Projects"
+msgstr "Проекты"
+
+#: mg/constructor/design.py:816
+msgid "Wishlist"
+msgstr "Вишлист"
+
+#: mg/constructor/design.py:817 mg/socio/__init__.py:1301
+#: mg/socio/__init__.py:1343
+msgid "reply"
+msgstr "ответить"
+
+#: mg/constructor/design.py:817
+msgid "ignore"
+msgstr "игнорировать"
+
+#: mg/constructor/design.py:825
+msgid "Main group"
+msgstr "Главная группа"
+
+#: mg/constructor/design.py:825
+msgid "Additional categories"
+msgstr "Дополнительные разделы"
+
+#: mg/constructor/design.py:825
+msgid "Important"
+msgstr "Важное"
+
+#: mg/constructor/design.py:825
+msgid "Technical reference"
+msgstr "Техническое руководство"
+
+#: mg/constructor/design.py:829 mg/constructor/project.py:73
+#: mg/constructor/__init__.py:66
+msgid "News"
+msgstr "Новости"
+
+#: mg/constructor/design.py:829
+msgid "Technical support"
+msgstr "Техническая поддержка"
+
+#: mg/constructor/design.py:829
+msgid "A very long forum category title"
+msgstr "Очень длинное название раздела на форуме"
+
+#: mg/constructor/design.py:829 mg/constructor/__init__.py:68
+msgid "Developers club"
+msgstr "Клуб разработчиков"
+
+#: mg/constructor/design.py:830
+msgid "This is a short category description"
+msgstr "Это очень короткое описание раздела"
+
+#: mg/constructor/design.py:830
+msgid ""
+"This is a very long category description. It can be very-very long. And even "
+"longer. It can take several lines. Most of us know him as the big jolly man "
+"with a white beard and red suit, but who was - or were - the real Santa "
+"Claus? Ivan Watson goes to Demre in Turkey to find out more about the legend "
+"of Saint Nicholas."
+msgstr ""
+"Это очень длинное описание раздела. Оно может быть очень-очень длинным. И "
+"даже ещё длиннее. Оно может занимать несколько строк. Большинство из нас "
+"знает его как большого мужчину с белой бородой и в красной шубе. Но кто он, "
+"или кем он был знает только наш корреспондент, который отправился в Турцию, "
+"чтобы больше узнать о легенде Святого Николая."
+
+#: mg/constructor/design.py:970
+msgid "Some header"
+msgstr "Некий заголовок"
+
+#: mg/constructor/design.py:976 mg/constructor/design.py:996
+msgid "Menu item"
+msgstr "Пункт меню"
+
+#: mg/constructor/design.py:984
+msgid "Login"
+msgstr "Имя"
+
+#: mg/constructor/design.py:984 mg/constructor/__init__.py:142
+msgid "Logout"
+msgstr "Завершение сеанса"
+
+#: mg/constructor/design.py:984
+msgid "Friends"
+msgstr "Друзья"
+
+#: mg/constructor/design.py:1005 mg/socio/__init__.py:1926
+msgid "Move"
+msgstr "Перенести"
+
+#: mg/constructor/design.py:1005
+msgid "Pin"
+msgstr "Закрепить"
+
+#: mg/constructor/design.py:1005
+msgid "Unpin"
+msgstr "Открепить"
+
+#: mg/constructor/design.py:1005
+msgid "Close"
+msgstr "Закрыть"
+
+#: mg/constructor/design.py:1005
+msgid "Open"
+msgstr "Открыть"
+
+#: mg/constructor/logo.py:45
+#, python-format
+msgid "Project code: Font %s"
+msgstr "Код проекта: Шрифт %s"
+
+#: mg/constructor/logo.py:49 mg/constructor/logo.py:263
+msgid "Logo constructor"
+msgstr "Конструктор логотипов"
+
+#: mg/constructor/logo.py:113 mg/constructor/logo.py:128
+msgid "Remove"
+msgstr "Удалить"
+
+#: mg/constructor/logo.py:114
+msgid "Solid"
+msgstr "Сплошной"
+
+#: mg/constructor/logo.py:115
+msgid "Circle"
+msgstr "Круг"
+
+#: mg/constructor/logo.py:116
+msgid "Ring border"
+msgstr "Кольцевая рамка"
+
+#: mg/constructor/logo.py:117
+msgid "Square"
+msgstr "Квадрат"
+
+#: mg/constructor/logo.py:118
+msgid "Rectangle"
+msgstr "Прямоугольник"
+
+#: mg/constructor/logo.py:119
+msgid "Triangle 1"
+msgstr "Треугольник 1"
+
+#: mg/constructor/logo.py:120
+msgid "Triangle 2"
+msgstr "Треугольник 2"
+
+#: mg/constructor/logo.py:129
+msgid "Bamboo #1"
+msgstr "Бамбук №1"
+
+#: mg/constructor/logo.py:130
+msgid "Brick #1"
+msgstr "Кирпич №1"
+
+#: mg/constructor/logo.py:131
+msgid "Brick #2"
+msgstr "Кирпич №2"
+
+#: mg/constructor/logo.py:132
+msgid "Dirt #1"
+msgstr "Земля №1"
+
+#: mg/constructor/logo.py:133
+msgid "Fur #1"
+msgstr "Мех №1"
+
+#: mg/constructor/logo.py:134
+msgid "Grass #1"
+msgstr "Трава №1"
+
+#: mg/constructor/logo.py:135
+msgid "Grass #2"
+msgstr "Трава №2"
+
+#: mg/constructor/logo.py:136
+msgid "Grass #3"
+msgstr "Трава №3"
+
+#: mg/constructor/logo.py:137
+msgid "Grass #4"
+msgstr "Трава №4"
+
+#: mg/constructor/logo.py:138
+msgid "Leather #1"
+msgstr "Кожа №1"
+
+#: mg/constructor/logo.py:139
+msgid "Metal #1"
+msgstr "Металл №1"
+
+#: mg/constructor/logo.py:140
+msgid "Metal #2"
+msgstr "Металл №2"
+
+#: mg/constructor/logo.py:141
+msgid "Metal #3"
+msgstr "Металл №3"
+
+#: mg/constructor/logo.py:142
+msgid "Sack #1"
+msgstr "Мешковина №1"
+
+#: mg/constructor/logo.py:143
+msgid "Sack #2"
+msgstr "Мешковина №2"
+
+#: mg/constructor/logo.py:144
+msgid "Sky #1"
+msgstr "Небо №1"
+
+#: mg/constructor/logo.py:145
+msgid "Stones #1"
+msgstr "Камни №1"
+
+#: mg/constructor/logo.py:146
+msgid "Wicker #1"
+msgstr "Плетёнка №1"
+
+#: mg/constructor/logo.py:147
+msgid "Wood #1"
+msgstr "Дерево №1"
+
+#: mg/constructor/logo.py:148
+msgid "Wood #2"
+msgstr "Дерево №2"
+
+#: mg/constructor/logo.py:149
+msgid "Wood #3"
+msgstr "Дерево №3"
+
+#: mg/constructor/logo.py:150
+msgid "Wood #4"
+msgstr "Дерево №4"
+
+#: mg/constructor/logo.py:151
+msgid "Wood #5"
+msgstr "Дерево №5"
+
+#: mg/constructor/logo.py:156
+msgid "Upload new custom 100x75 image..."
+msgstr "Загрузить новую картинку 100x75..."
+
+#: mg/constructor/logo.py:157
+msgid "Select solid color..."
+msgstr "Выберите сплошной цвет"
+
+#: mg/constructor/logo.py:168
+msgid "Invalid color"
+msgstr "Неверный цвет"
+
+#: mg/constructor/logo.py:180
+msgid "Solid color #{0} - {1}"
+msgstr "Сплошной цвет №{0} - {1}"
+
+#: mg/constructor/logo.py:187
+msgid "Upload your image"
+msgstr "Загрузите ваше изображение"
+
+#: mg/constructor/logo.py:228
+#, python-format
+msgid "Custom image #%d"
+msgstr "Пользовательская картинка №%d"
+
+#: mg/constructor/logo.py:264
+msgid ""
+"Here you can construct your own simple 100x75 logo using several basic "
+"elements."
+msgstr ""
+"Здесь, используя несколько базовых элементов, вы можете сконструировать себе "
+"простой логотип 100x75."
+
+#: mg/constructor/domains.py:78
+msgid "This domain is already bound to another MMO Constructor project"
+msgstr "Этот домен уже привязан к другому проекту MMO Constructor"
+
+#: mg/constructor/domains.py:80
+msgid ""
+"This domain is a subject to the manual check. This may take up to 3 days"
+msgstr "Этот домен подлежит ручной проверке. Это может занять до 3 дней"
+
+#: mg/constructor/domains.py:82
+msgid "This domain was not registered by you. You can't use for your project"
+msgstr ""
+"Этот домен был зарегистрирован не вами. Вы не можете использовать его для "
+"своего проекта"
+
+#: mg/constructor/domains.py:93
+msgid ""
+"Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must "
+"be {2} and {3}"
+msgstr ""
+"Для {0} установлены серверы имён: {1}. Правильно настройте свою зону: DNS-"
+"сервера должны быть: {2} и {3}"
+
+#: mg/constructor/domains.py:101
+msgid "Domain name can't contain 'www'"
+msgstr "Доменное имя не может содержать 'www'"
+
+#: mg/constructor/domains.py:107
+msgid ""
+"Domain {0} was not found by {1}. Either domain is not registered yet or DNS "
+"data was not updated yet. If the domain was registered recently, it is "
+"normal situation. It may take several hours (about 6) for NS servers to "
+"update. Try again later, please"
+msgstr ""
+"Домен {0} не найден серверами {1}. Это означает, что либо домен ещё не "
+"зарегистрирован, либо данные DNS не успели обновиться. Если домен был "
+"зарегистрирован только что, то это нормальная ситуация. NS-серверам может "
+"потребоваться несколько часов (около 6) для того, чтобы обновиться. "
+"Пожалуйста, повторите попытку позже."
+
+#: mg/constructor/domains.py:129 mg/constructor/domains.py:145
+msgid ""
+"Domain {0} has A records but no NS records. Configure your zone correctly"
+msgstr ""
+"Домен {0} имеет записи A, но не имеет записей NS. Правильно сконфигурируйте "
+"вашу зону"
+
+#: mg/constructor/domains.py:133
+msgid "Domain {0} was not found by the root nameservers"
+msgstr "Домен {0} не найден корневыми серверами имён"
+
+#: mg/constructor/domains.py:137
+msgid ""
+"{0} is already configured for the project. You may not use its subdomains"
+msgstr ""
+"{0} уже сконфигурирован для проекта. Вы не можете использовать его поддомены"
+
+#: mg/constructor/domains.py:162 mg/constructor/domains.py:363
+msgid "Domain registration wizard"
+msgstr "Мастер регистрации доменов"
+
+#: mg/constructor/domains.py:179
+msgid ""
+"Invalid domain name. It must begin with letter a-z or digit 0-9 and contain "
+"letters, digits and '-' sign"
+msgstr ""
+"Неверное имя домена. Оно должно начинаться с букв a-z или цифр 0-9 и "
+"содержать только буквы, цифры и знак '-'"
+
+#: mg/constructor/domains.py:181
+msgid "Select top level domain"
+msgstr "Выберите домен верхнего уровня"
+
+#: mg/constructor/domains.py:193
+msgid ""
+"This domain is already registered by another user of the MMO Constructor"
+msgstr "Этот домен уже зарегистрирован другим пользователем MMO Constructor"
+
+#: mg/constructor/domains.py:195
+#, python-format
+msgid ""
+"This domain is in the pending state. We don't know the result of the "
+"registration. Please contact MMO Constructor administration to get more "
+"details. registrar_id=%s"
+msgstr ""
+"Этот домен находится в процессе регистрации. Мы пока точно не знаем, каков "
+"результат регистрации. Пожалуйста, свяжитесь с администрацией MMO "
+"Constructor, чтобы получить более подробные данные. registrar_id=%s"
+
+#: mg/constructor/domains.py:197
+msgid "This domain is already assigned to a project"
+msgstr "Этот домен уже назначен одному из проектов"
+
+#: mg/constructor/domains.py:199
+msgid "This domain is registered by you but not assigned to a project"
+msgstr "Этот домен зарегистрирован вами, но ещё не назначен проекту"
+
+#: mg/constructor/domains.py:199
+msgid "Go to the domain checker"
+msgstr "Перейдите к проверке домена"
+
+#: mg/constructor/domains.py:199
+msgid "to assign the domain"
+msgstr "для назначения домена"
+
+#: mg/constructor/domains.py:207
+#, python-format
+msgid "%s registry is temporarily unavailable. Try again later"
+msgstr "Реестр %s временно недоступен. Попробуйте позже"
+
+#: mg/constructor/domains.py:209
+msgid "This domain name is occupied already. Choose another one"
+msgstr "Это доменное имя уже занято. Выберите другое"
+
+#: mg/constructor/domains.py:215 mg/constructor/domains.py:249
+#, python-format
+msgid "%(price).2f MM$ (approx %(price).2f USD)"
+msgstr "%(price).2f MM$ (приблизительно %(price).2f USD)"
+
+#: mg/constructor/domains.py:235 mg/constructor/domains.py:237
+msgid "Invalid field format"
+msgstr "Неверный формат поля"
+
+#: mg/constructor/domains.py:239
+msgid "Enter your passport number"
+msgstr "Введите ваши паспортные данные"
+
+#: mg/constructor/domains.py:241
+msgid "Enter birthday in format DD.MM.YYYY"
+msgstr "Введите день рождения в формате ДД.ММ.ГГГГ"
+
+#: mg/constructor/domains.py:243 mg/constructor/domains.py:245
+msgid "Enter valid address"
+msgstr "Введите корректный адрес"
+
+#: mg/constructor/domains.py:247
+msgid "Invalid phone format. Look at the example"
+msgstr "Неверный формат телефона. Посмотрите на пример"
+
+#: mg/constructor/domains.py:251
+msgid "Select an owner of the domain"
+msgstr "Выберите владельца домена"
+
+#: mg/constructor/domains.py:291
+msgid "Error connecting to the registrar. Try again please"
+msgstr "Ошибка соединения с регистратором. Пожалуйста, попробуйте позже"
+
+#: mg/constructor/domains.py:296
+msgid "You have not enough money"
+msgstr "У вас недостаточно средств"
+
+#: mg/constructor/domains.py:311
+msgid ""
+"Error getting response from the registrar. Your request was not processed"
+msgstr ""
+"Ошибка при получении ответа от регистратора. Ваш запрос не был обработан"
+
+#: mg/constructor/domains.py:318
+msgid ""
+"Invalid response from the registrar. We don't know whether your request was "
+"processed, so we remain payment for the domain in the locked state. Result "
+"of the operation will be checked by the technical support manually."
+msgstr ""
+"Неверный ответ от регистратора. Мы точно не знаем, удалось ли обработать ваш "
+"запрос, поэтому мы оставляем деньги за домен в заблокированном состоянии. "
+"Результат операции будет перепроверен вручную техническими специалистами."
+
+#: mg/constructor/domains.py:331
+#, python-format
+msgid "You have successfully registered domain <strong>%s</strong>"
+msgstr "Вы успешно зарегистрировали домен <strong>%s</strong>"
+
+#: mg/constructor/domains.py:333
+#, python-format
+msgid ""
+"Now <hook:admin.link href=\"wizard/call/%s\" title=\"check your domain "
+"settings\" />"
+msgstr ""
+"Теперь <hook:admin.link href=\"wizard/call/%s\" title=\"пройдите проверку "
+"настроек домена\" />"
+
+#: mg/constructor/domains.py:342
+msgid ""
+"Your domain was not registered due to temporary problems. We don't know "
+"whether your request was processed, so we remain payment for the domain in "
+"the locked state. Result of the operation will be checked by the technical "
+"support manually."
+msgstr ""
+"Ваш домен не был зарегистрирован из-за временных технических проблем. Мы "
+"точно не знаем, удалось ли обработать ваш запрос, поэтому мы оставляем "
+"деньги за домен в заблокированном состоянии. Результат операции будет "
+"перепроверен вручную техническими специалистами."
+
+#: mg/constructor/domains.py:344
+#, python-format
+msgid "Error registering domain: %s"
+msgstr "Ошибка регистрации домена: %s"
+
+#: mg/constructor/domains.py:351
+msgid ""
+"Request to the registrar timed out. We don't know whether your request was "
+"processed, so we remain payment for the domain in the locked state. Result "
+"of the operation will be checked by the technical support manually."
+msgstr ""
+"Запрос к регистратору прерван по таймауту. Мы точно не знаем, удалось ли "
+"обработать ваш запрос, поэтому мы оставляем деньги за домен в "
+"заблокированном состоянии. Результат операции будет перепроверен вручную "
+"техническими специалистами."
+
+#: mg/constructor/domains.py:354
+#, python-format
+msgid "Registering for the name: %s"
+msgstr "Регистрируем для лица: %s"
+
+#: mg/constructor/domains.py:364
+msgid "Domain name"
+msgstr "Доменное имя"
+
+#: mg/constructor/domains.py:366
+msgid "Enter domain name"
+msgstr "Введите доменное имя"
+
+#: mg/constructor/domains.py:370
+#, python-format
+msgid "Domain %s is available for registration"
+msgstr "Домен %s доступен для регистрации"
+
+#: mg/constructor/domains.py:371
+#, python-format
+msgid "for %s"
+msgstr "за %s"
+
+#: mg/constructor/domains.py:372
+#, python-format
+msgid "your current balance is %s MM$"
+msgstr "ваш текущий баланс &mdash; %s MM$"
+
+#: mg/constructor/domains.py:373
+msgid "Here you can register a domain"
+msgstr "Здесь мы можете зарегистрировать домен"
+
+#: mg/constructor/domains.py:374
+msgid "Register this domain"
+msgstr "Зарегистрировать домен"
+
+#: mg/constructor/domains.py:375
+msgid "Update balance"
+msgstr "Обновить баланс"
+
+#: mg/constructor/domains.py:376
+msgid ""
+"You will be the owner of the domain (in this case provide your personal data)"
+msgstr ""
+"Вы сами будете владельцем домена (в этом случае нам потребуются ваши "
+"персональные данные)"
+
+#: mg/constructor/domains.py:377
+msgid "MMO Constructor will be the owner of the domain"
+msgstr "Владельцем домена будет MMO Constructor"
+
+#: mg/constructor/domains.py:378
+msgid ""
+"Your name (in your language). For example: <strong>John A Smith</strong>"
+msgstr ""
+"Ваше имя (на родном языке, как в паспорте). Например: <strong>Сидоров Иван "
+"Петрович</strong>"
+
+#: mg/constructor/domains.py:379
+msgid "Your name (in English). For example: <strong>John A Smith</strong>"
+msgstr ""
+"Ваше имя (на английском языке). Например: <strong>Ivan P Sidorov</strong>"
+
+#: mg/constructor/domains.py:380
+msgid "Your passport number"
+msgstr "Ваши паспортные данные"
+
+#: mg/constructor/domains.py:381
+msgid ""
+"Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"
+msgstr ""
+"Ваш день рождения в формате ДД.ММ.ГГГГ. Например: <strong>31.12.1980</strong>"
+
+#: mg/constructor/domains.py:382
+msgid "Your official registration address (in your language)"
+msgstr "Ваш официальный адрес регистрации (на вашем языке)"
+
+#: mg/constructor/domains.py:383
+msgid "Your postal address (in your language)"
+msgstr "Ваш почтовый адрес (на вашем языке)"
+
+#: mg/constructor/domains.py:384
+msgid ""
+"Your phone number in the international format. For example: <strong>+1 800 "
+"5555555</strong>"
+msgstr ""
+"Ваш телефонный номер в международном формате. Например: <strong>+7 495 "
+"0000000</strong>"
+
+#: mg/constructor/domains.py:385
+msgid "Checking domain availability..."
+msgstr "Проверка доступности домена..."
+
+#: mg/constructor/domains.py:386
+msgid "Updating balance..."
+msgstr "Обновление баланса..."
+
+#: mg/constructor/domains.py:387
+msgid "Registering domain. It may take several minutes. Be patient please..."
+msgstr ""
+"Регистрируем домен. Это может занять несколько минут. Пожалуйста, "
+"подождите..."
+
+#: mg/constructor/domains.py:414
+msgid "Domains: administration"
+msgstr "Домены: администрирование"
+
+#: mg/constructor/domains.py:415
+msgid "Domains: DNS settings"
+msgstr "Домены: настройки DNS"
+
+#: mg/constructor/domains.py:416
+msgid "Domains: registration prices"
+msgstr "Домены: цены на регистрацию"
+
+#: mg/constructor/domains.py:417
+msgid "Domains: administrator's personal data"
+msgstr "Домены: персональные данные администратора"
+
+#: mg/constructor/domains.py:422
+#, python-format
+msgid "Domain registration: %(domain)s"
+msgstr "Регистрация домена: %(domain)s"
+
+#: mg/constructor/domains.py:429
+msgid "Domains"
+msgstr "Домены"
+
+#: mg/constructor/domains.py:434
+msgid "List of pending domains"
+msgstr "Список ожидающих доменов"
+
+#: mg/constructor/domains.py:436
+msgid "Registration prices"
+msgstr "Цены на регистрацию"
+
+#: mg/constructor/domains.py:438
+msgid "Administrator's personal data"
+msgstr "Персональные данные администратора"
+
+#: mg/constructor/domains.py:440
+msgid "DNS settings"
+msgstr "Настройки DNS"
+
+#: mg/constructor/domains.py:453
+msgid "DNS settings stored"
+msgstr "Настройки DNS сохранены"
+
+#: mg/constructor/domains.py:458
+msgid "DNS server 1"
+msgstr "DNS-сервер 1"
+
+#: mg/constructor/domains.py:459
+msgid "DNS server 2"
+msgstr "DNS-сервер 2"
+
+#: mg/constructor/domains.py:475
+msgid "Invalid price format"
+msgstr "Неверный формат цены"
+
+#: mg/constructor/domains.py:481
+msgid "Domain registration prices stored"
+msgstr "Цены на регистрацию доменов сохранены"
+
+#: mg/constructor/domains.py:518
+msgid "Personal data saved"
+msgstr "Персональные данные сохранены"
+
+#: mg/constructor/domains.py:531
+msgid "Person name (in the native language)"
+msgstr "Имя владельца (на родном языке)"
+
+#: mg/constructor/domains.py:532
+msgid "Person name (in English)"
+msgstr "Имя владельца (на английском)"
+
+#: mg/constructor/domains.py:533
+msgid "Passport number"
+msgstr "Номер паспорта"
+
+#: mg/constructor/domains.py:534
+msgid "Birthday"
+msgstr "День рождения"
+
+#: mg/constructor/domains.py:535
+msgid "Registration address"
+msgstr "Адрес регистрации"
+
+#: mg/constructor/domains.py:536
+msgid "Postal address"
+msgstr "Почтовый адрес"
+
+#: mg/constructor/domains.py:537
+msgid "Phone"
+msgstr "Телефон"
+
+#: mg/constructor/domains.py:538
+msgid "E-mail address"
+msgstr "Адрес e-mail"
+
+#: mg/constructor/domains.py:539
+msgid "Registrar login"
+msgstr "Login для регистратора"
+
+#: mg/constructor/domains.py:540
+msgid "Registrar password"
+msgstr "Пароль для регистратора"
+
+#: mg/constructor/domains.py:604
+msgid "Request"
+msgstr "Запрос"
+
+#: mg/constructor/domains.py:605
+msgid "State"
+msgstr "Состояние"
+
+#: mg/constructor/domains.py:606
+msgid "Cause"
+msgstr "Причина"
+
+#: mg/constructor/domains.py:607
+msgid "In&nbsp;progress"
+msgstr "В&nbsp;работе"
+
+#: mg/constructor/domains.py:608
+msgid "Confirm"
+msgstr "Подтверждение"
+
+#: mg/constructor/domains.py:610
+msgid "confirm"
+msgstr "подтвердить"
+
+#: mg/constructor/domains.py:611
+msgid "cancel"
+msgstr "отменить"
+
+#: mg/constructor/domains.py:612
+msgid "Recheck"
+msgstr "Перепроверка"
+
+#: mg/constructor/domains.py:613
+msgid "recheck"
+msgstr "перепроверить"
+
+#: mg/constructor/domains.py:645
+msgid "external"
+msgstr "внешняя"
+
+#: mg/constructor/domains.py:646
+msgid "completed"
+msgstr "завершена"
+
+#: mg/constructor/domains.py:647
+msgid "pending"
+msgstr "в процессе"
+
+#: mg/constructor/domains.py:650
+msgid "Project"
+msgstr "Проект"
+
+#: mg/constructor/domains.py:651
+msgid "unknown"
+msgstr "неизвестно"
+
+#: mg/constructor/project.py:61
+msgid "Destroy this game"
+msgstr "Уничтожить эту игру"
+
+#: mg/constructor/project.py:61
+msgid "You can destroy your game while not created"
+msgstr ""
+"Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
+
+#: mg/constructor/project.py:70
+msgid "Project main administrator"
+msgstr "Главный администратор проекта"
+
+#: mg/constructor/project.py:73 mg/constructor/project.py:74
+#: mg/constructor/project.py:75 mg/constructor/project.py:76
+msgid "Game"
+msgstr "Игра"
+
+#: mg/constructor/project.py:73
+msgid "Game news published by the administrators"
+msgstr "Игровые новости, публикуемые администрацией"
+
+#: mg/constructor/project.py:74
+msgid "Talks about game activities: gameplay, news, wars, politics etc."
+msgstr ""
+"Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, "
+"политику и т.д."
+
+#: mg/constructor/project.py:75
+msgid "Newbies"
+msgstr "Вопросы новичков"
+
+#: mg/constructor/project.py:75
+msgid ""
+"Dear newbies, if you have any questions about the game, feel free to ask"
+msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
+
+#: mg/constructor/project.py:76
+msgid "Diplomacy"
+msgstr "Дипломатия"
+
+#: mg/constructor/project.py:76
+msgid ""
+"Authorized guild members can talk to each other about diplomacy and politics "
+"issues here"
+msgstr ""
+"В этом разделе уполномоченные члены кланов могут общаться на темы "
+"дипломатии, войн и политики"
+
+#: mg/constructor/project.py:77 mg/constructor/project.py:78
+#: mg/constructor/project.py:79
+msgid "Admin"
+msgstr "Администрация"
+
+#: mg/constructor/project.py:77
+msgid "Admin talks"
+msgstr "Общение с администрацией"
+
+#: mg/constructor/project.py:77
+msgid ""
+"Discussions with the game administrators. Here you can discuss any issues "
+"related to the game itself."
+msgstr ""
+"Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, "
+"связанные с игрой в целом."
+
+#: mg/constructor/project.py:78
+msgid "Reference manuals"
+msgstr "Справочная информация"
+
+#: mg/constructor/project.py:78
+msgid "Actual reference documents about the game are placed here."
+msgstr "Здесь публикуется актуальная справочная информация об игре"
+
+#: mg/constructor/project.py:79
+msgid "Bug reports"
+msgstr "Сообщения об ошибках"
+
+#: mg/constructor/project.py:79
+msgid "Report any problems in the game here"
+msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
+
+#: mg/constructor/project.py:80 mg/constructor/project.py:81
+msgid "Reallife"
+msgstr "Реальная жизнь"
+
+#: mg/constructor/project.py:80
+msgid "Smoking room"
+msgstr "Курилка"
+
+#: mg/constructor/project.py:80
+msgid ""
+"Everything not related to the game: humor, forum games, hobbies, sport etc."
+msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
+
+#: mg/constructor/project.py:81
+msgid "Art"
+msgstr "Творчество"
+
+#: mg/constructor/project.py:81
+msgid "Poems, prose, pictures, photos, music about the game"
+msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
+
+#: mg/constructor/project.py:82 mg/constructor/project.py:83
+msgid "Trading"
+msgstr "Торговля"
+
+#: mg/constructor/project.py:82
+msgid "Services"
+msgstr "Услуги"
+
+#: mg/constructor/project.py:82
+msgid "Any game services: mercenaries, guardians, builders etc."
+msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
+
+#: mg/constructor/project.py:83
+msgid "Market"
+msgstr "Рынок"
+
+#: mg/constructor/project.py:83
+msgid "Market place to sell and by any item"
+msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
+
+#: mg/constructor/__init__.py:17 mg/constructor/__init__.py:141
+#: mg/constructor/__init__.py:166 mg/socio/__init__.py:219
+msgid "Forum"
+msgstr "Форум"
+
+#: mg/constructor/__init__.py:17
+msgid "Go to the Constructor forum"
+msgstr "Перейти на форум Конструктора"
+
+#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:273
+msgid "Cabinet"
+msgstr "Кабинет"
+
+#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:118
+#: mg/constructor/__init__.py:137 mg/constructor/__init__.py:158
+#: mg/constructor/__init__.py:168
+msgid "Return to the Cabinet"
+msgstr "Возврат в кабинет"
+
+#: mg/constructor/__init__.py:57
+msgid "You must confirm you are of the full legal age"
+msgstr "Вы должны подтвердить, что являетесь совершеннолетним"
+
+#: mg/constructor/__init__.py:59
+msgid "I confirm I'm of the full legal age"
+msgstr "Я подтверждаю, что являюсь совершеннолетним и дееспособным лицом"
+
+#: mg/constructor/__init__.py:66
+msgid "News related to the Constructor"
+msgstr "Новости Конструктора"
+
+#: mg/constructor/__init__.py:67
+msgid "Support"
+msgstr "Техническая поддержка"
+
+#: mg/constructor/__init__.py:67
+msgid "Constructor technical support"
+msgstr "Техническая поддержка Конструктора"
+
+#: mg/constructor/__init__.py:68
+msgid "Game Development"
+msgstr "Разработка игр"
+
+#: mg/constructor/__init__.py:68
+msgid "Any talks related to the game development"
+msgstr "Общение на тему разработки игр"
+
+#: mg/constructor/__init__.py:124 mg/constructor/__init__.py:134
+msgid "To the main page"
+msgstr "На главную страницу"
+
+#: mg/constructor/__init__.py:126
+msgid "Password changing"
+msgstr "Изменение пароля"
+
+#: mg/constructor/__init__.py:128
+msgid "E-mail changing"
+msgstr "Изменение e-mail"
+
+#: mg/constructor/__init__.py:129
+msgid "Return to the Settings"
+msgstr "Возврат к настройкам"
+
+#: mg/constructor/__init__.py:139
+msgid "Documentation"
+msgstr "Документация"
+
+#: mg/constructor/__init__.py:145
+msgid "MMO Constructor Forum"
+msgstr "Форум MMO Constructor"
+
+#: mg/constructor/__init__.py:155
+msgid "socio-top///Search"
+msgstr "Поиск"
+
+#: mg/constructor/__init__.py:157 mg/constructor/__init__.py:291
+#: mg/socio/__init__.py:1683
+msgid "Forum settings"
+msgstr "Настройки форума"
+
+#: mg/constructor/__init__.py:169
+msgid "MMO Constructor Documentation"
+msgstr "Документация на конструктор"
+
+#: mg/constructor/__init__.py:206
+msgid "Browser-based Games Constructor"
+msgstr "Конструктор браузерных игр"
+
+#: mg/constructor/__init__.py:207
+#, python-format
+msgid "Copyright &copy; Joy Team, 2009-%s"
+msgstr "Copyright &copy; Joy Team, 2009-%s"
+
+#: mg/constructor/__init__.py:217
+msgid "Constructor of browser-based online games"
+msgstr "Конструктор браузерных онлайн-игр"
+
+#: mg/constructor/__init__.py:218
+msgid "log in"
+msgstr "вход"
+
+#: mg/constructor/__init__.py:219
+msgid "register"
+msgstr "регистрация"
+
+#: mg/constructor/__init__.py:220
+msgid "forum"
+msgstr "форум"
+
+#: mg/constructor/__init__.py:221
+msgid "cabinet"
+msgstr "кабинет"
+
+#: mg/constructor/__init__.py:222
+msgid "log out"
+msgstr "выход"
+
+#: mg/constructor/__init__.py:223
+msgid "documentation"
+msgstr "документация"
+
+#: mg/constructor/__init__.py:237
+msgid "Constructor administration"
+msgstr "Администрирование конструктора"
+
+#: mg/constructor/__init__.py:246
+msgid "Untitled game"
+msgstr "Безымянная игра"
+
+#: mg/constructor/__init__.py:260
+msgid ""
+"Congratulations! Your game was registered successfully. Now you can enter "
+"administration panel and configure your game. Don't worry if you can't open "
+"your game right now. DNS system is quite slow and it may take several hours "
+"or even days for your domain to work."
+msgstr ""
+"Поздравляем! Ваша игра успешно зарегистрирована. Чтобы настроить её, зайдите "
+"в административную панель. Если вы не можете попасть в игру прямо сейчас, не "
+"беспокойтесь. Система DNS довольно медленная, и ей может потребоваться "
+"несколько часов или даже дней, чтобы ваш домен заработал."
+
+#: mg/constructor/__init__.py:277
+msgid "Create a new game"
+msgstr "Создать новую игру"
+
+#: mg/constructor/__init__.py:286
+msgid "MMO Constructor Settings"
+msgstr "Настройки конструктора"
+
+#: mg/constructor/__init__.py:289
+msgid "Change password"
+msgstr "Изменить пароль"
+
+#: mg/constructor/__init__.py:290
+msgid "Change e-mail"
+msgstr "Изменить e-mail"
+
+#: mg/constructor/__init__.py:333
+msgid "Enter invitation code"
+msgstr "Введите пригласительный код"
+
+#: mg/constructor/__init__.py:340 mg/constructor/invitations.py:92
+msgid "Invitation code"
+msgstr "Код приглашения"
+
+#: mg/constructor/__init__.py:341
+msgid "Proceed"
+msgstr "Продолжить"
+
+#: mg/constructor/__init__.py:342
+msgid ""
+"Open registration of new games is unavailable at the moment. If you have an "
+"invitation code enter it now"
+msgstr ""
+"В данный момент свободная регистрация игр невозможна. Если у вас есть код "
+"приглашения, введите его прямо сейчас"
+
+#: mg/constructor/__init__.py:344
+msgid "Invitation required"
+msgstr "Требуется приглашение"
+
+#: mg/constructor/invitations.py:40
+msgid "Invitations"
+msgstr "Приглашения"
+
+#: mg/constructor/invitations.py:43
+msgid "Constructor: giving invitations"
+msgstr "Конструктор: выдача приглашений"
+
+#: mg/constructor/invitations.py:47
+msgid "New invitation"
+msgstr "Новое приглашение"
+
+#: mg/constructor/invitations.py:48
+msgid "Invitations for the registration"
+msgstr "Приглашения на регистрацию"
+
+#: mg/constructor/invitations.py:60
+msgid "Enter recipient name"
+msgstr "Введите имя получателя"
+
+#: mg/constructor/invitations.py:71
+msgid "Person name"
+msgstr "Имя персоны"
+
+#: mg/constructor/invitations.py:74
+msgid "Generate invitation code"
+msgstr "Сгенерировать пригласительный код"
+
+#: mg/constructor/invitations.py:90
+msgid "Give a new invitation"
+msgstr "Выдать новое приглашение"
+
+#: mg/constructor/invitations.py:92
+msgid "Type"
+msgstr "Тип"
+
+#: mg/constructor/invitations.py:92
+msgid "Person"
+msgstr "Персона"
+
+#: mg/constructor/invitations.py:108 mg/constructor/invitations.py:113
+msgid "Invalid invitation code"
+msgstr "Неверный пригласительный код"
+
+#: mg/constructor/invitations.py:115
+msgid "This code is redeemed already"
+msgstr "Этот код уже погашен"
+
+#: mg/constructor/invitations.py:117
+msgid "This code in inappropriate for this action"
+msgstr "Этот код не подходит для этого действия"
 
 #: mg/constructor/setup.py:19
 msgid "Setup wizard"
@@ -1526,1788 +2926,400 @@ msgid "Step 2. Check your configured domain and link it with your game"
 msgstr ""
 "Шаг 2. Проверка вашего сконфигурированного домена и связь его с вашей игрой"
 
-#: mg/constructor/__init__.py:17
-msgid "Go to the Constructor forum"
-msgstr "Перейти на форум Конструктора"
+#: mg/socio/__init__.py:207
+msgid "Defining categories"
+msgstr "Создание разделов"
 
-#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:273
-msgid "Cabinet"
-msgstr "Кабинет"
+#: mg/socio/__init__.py:207
+msgid ""
+"Think over forum categories carefully. Try to create minimal quantity of "
+"categories. Keep in mind that users will spend just few seconds to choose a "
+"category to write. Descriptions should be short and simple. Titles should be "
+"short and self explanatory. Don't create many categories for future "
+"reference. It's better to create several more common categories and split "
+"them later."
+msgstr ""
+"Тщательно продумайте структуру разделов форума. Постарайтесь обойтись "
+"минимальным количеством разделов. Помните, что на выбор раздела, в который "
+"написать, пользователи будут тратить лишь несколько секунд. Описания должны "
+"быть простыми и понятными. Названия разделов - короткими и информативными. "
+"Не создавайте много разделов \"на будущее\". Лучше создать меньше разделов и "
+"разделить их позже."
 
-#: mg/constructor/__init__.py:18 mg/constructor/__init__.py:118
-#: mg/constructor/__init__.py:137 mg/constructor/__init__.py:158
-#: mg/constructor/__init__.py:168
-msgid "Return to the Cabinet"
-msgstr "Возврат в кабинет"
+#: mg/socio/__init__.py:210
+msgid "Socio"
+msgstr "Социалка"
 
-#: mg/constructor/__init__.py:57
-msgid "You must confirm you are of the full legal age"
-msgstr "Вы должны подтвердить, что являетесь совершеннолетним"
+#: mg/socio/__init__.py:213
+msgid "Forum categories editor"
+msgstr "Редактор разделов форума"
 
-#: mg/constructor/__init__.py:59
-msgid "I confirm I'm of the full legal age"
-msgstr "Я подтверждаю, что являюсь совершеннолетним и дееспособным лицом"
+#: mg/socio/__init__.py:214
+msgid "Forum moderation"
+msgstr "Модерирование форума"
 
-#: mg/constructor/__init__.py:66 mg/constructor/__init__.py:67
-#: mg/constructor/dashboard.py:32
-msgid "Constructor"
-msgstr "Конструктор"
+#: mg/socio/__init__.py:235
+msgid "Code"
+msgstr "Код"
 
-#: mg/constructor/__init__.py:66 mg/constructor/project.py:73
-#: mg/constructor/design.py:768
-msgid "News"
-msgstr "Новости"
+#: mg/socio/__init__.py:240 mg/socio/__init__.py:369
+msgid "Access"
+msgstr "Доступ"
 
-#: mg/constructor/__init__.py:66
-msgid "News related to the Constructor"
-msgstr "Новости Конструктора"
+#: mg/socio/__init__.py:241
+msgid "access"
+msgstr "доступ"
 
-#: mg/constructor/__init__.py:67
-msgid "Support"
-msgstr "Техническая поддержка"
+#: mg/socio/__init__.py:244
+msgid "Create new category"
+msgstr "Создать новый раздел"
 
-#: mg/constructor/__init__.py:67
-msgid "Constructor technical support"
-msgstr "Техническая поддержка Конструктора"
+#: mg/socio/__init__.py:270
+msgid "Enter category title"
+msgstr "Введите название раздела"
 
-#: mg/constructor/__init__.py:68
-msgid "Game Development"
-msgstr "Разработка игр"
+#: mg/socio/__init__.py:272
+msgid "Enter top category title"
+msgstr "Введите названия раздела верхнего уровня"
 
-#: mg/constructor/__init__.py:68 mg/constructor/design.py:768
-msgid "Developers club"
-msgstr "Клуб разработчиков"
+#: mg/socio/__init__.py:274
+msgid "Enter category order"
+msgstr "Введите порядок сортировки"
 
-#: mg/constructor/__init__.py:68
-msgid "Any talks related to the game development"
-msgstr "Общение на тему разработки игр"
+#: mg/socio/__init__.py:276
+msgid "Invalid numeric format"
+msgstr "Неверный формат числа"
 
-#: mg/constructor/__init__.py:124 mg/constructor/__init__.py:134
-msgid "To the main page"
-msgstr "На главную страницу"
+#: mg/socio/__init__.py:297
+msgid "Category title"
+msgstr "Название раздела"
 
-#: mg/constructor/__init__.py:126
-msgid "Password changing"
-msgstr "Изменение пароля"
+#: mg/socio/__init__.py:302
+msgid "Top category title"
+msgstr "Раздел верхнего уровня"
 
-#: mg/constructor/__init__.py:128
-msgid "E-mail changing"
-msgstr "Изменение e-mail"
+#: mg/socio/__init__.py:308
+msgid "Sort order"
+msgstr "Порядок сортировки"
 
-#: mg/constructor/__init__.py:129
-msgid "Return to the Settings"
-msgstr "Возврат к настройкам"
+#: mg/socio/__init__.py:315
+msgid "Category description"
+msgstr "Описание раздела"
 
-#: mg/constructor/__init__.py:136 mg/constructor/__init__.py:140
-#: mg/constructor/design.py:923
-msgid "Settings"
-msgstr "Настройки"
+#: mg/socio/__init__.py:321
+msgid "Category tag"
+msgstr "Тег раздела"
 
-#: mg/constructor/__init__.py:139
-msgid "Documentation"
-msgstr "Документация"
+#: mg/socio/__init__.py:328
+msgid "Notify users about new topics in this category by default"
+msgstr "Уведомлять пользователей о новых темах в этом разделе по умолчанию"
 
-#: mg/constructor/__init__.py:142 mg/constructor/design.py:923
-msgid "Logout"
-msgstr "Завершение сеанса"
+#: mg/socio/__init__.py:334
+msgid "Allow users to enter topic dates manually"
+msgstr "Разрешить пользователям вводить даты тем вручную"
 
-#: mg/constructor/__init__.py:145
-msgid "MMO Constructor Forum"
-msgstr "Форум MMO Constructor"
+#: mg/socio/__init__.py:343
+msgid "New category"
+msgstr "Новый раздел"
 
-#: mg/constructor/__init__.py:155
-msgid "socio-top///Search"
-msgstr "Поиск"
+#: mg/socio/__init__.py:346
+msgid "No such category"
+msgstr "Нет такого раздела"
 
-#: mg/constructor/__init__.py:169
-msgid "MMO Constructor Documentation"
-msgstr "Документация на конструктор"
-
-#: mg/constructor/__init__.py:206
-msgid "Browser-based Games Constructor"
-msgstr "Конструктор браузерных игр"
-
-#: mg/constructor/__init__.py:207
+#: mg/socio/__init__.py:347
 #, python-format
-msgid "Copyright &copy; Joy Team, 2009-%s"
-msgstr "Copyright &copy; Joy Team, 2009-%s"
+msgid "Category %s"
+msgstr "Раздел %s"
 
-#: mg/constructor/__init__.py:217
-msgid "Constructor of browser-based online games"
-msgstr "Конструктор браузерных онлайн-игр"
+#: mg/socio/__init__.py:352
+msgid "Deny everything"
+msgstr "Запрещено всё"
 
-#: mg/constructor/__init__.py:218
-msgid "log in"
-msgstr "вход"
+#: mg/socio/__init__.py:353
+msgid "Allow reading"
+msgstr "Разрешено читать"
 
-#: mg/constructor/__init__.py:219
-msgid "register"
-msgstr "регистрация"
+#: mg/socio/__init__.py:354
+msgid "Deny creating topics"
+msgstr "Запрещено создавать темы"
 
-#: mg/constructor/__init__.py:220
-msgid "forum"
-msgstr "форум"
+#: mg/socio/__init__.py:355
+msgid "Allow creating topics"
+msgstr "Разрешено создавать темы"
 
-#: mg/constructor/__init__.py:221
-msgid "cabinet"
-msgstr "кабинет"
+#: mg/socio/__init__.py:356
+msgid "Deny replying"
+msgstr "Запрещено отвечать"
 
-#: mg/constructor/__init__.py:222
-msgid "log out"
-msgstr "выход"
+#: mg/socio/__init__.py:357
+msgid "Allow reading and replying"
+msgstr "Разрешено читать и отвечать"
 
-#: mg/constructor/__init__.py:223
-msgid "documentation"
-msgstr "документация"
+#: mg/socio/__init__.py:358
+msgid "Allow moderation"
+msgstr "Разрешено модерировать"
 
-#: mg/constructor/__init__.py:237
-msgid "Constructor administration"
-msgstr "Администрирование конструктора"
+#: mg/socio/__init__.py:359
+msgid "Deny moderation"
+msgstr "Запрещено модерировать"
 
-#: mg/constructor/__init__.py:246
-msgid "Untitled game"
-msgstr "Безымянная игра"
+#: mg/socio/__init__.py:393 mg/socio/__init__.py:421 mg/socio/__init__.py:636
+msgid "Status"
+msgstr "Статус"
 
-#: mg/constructor/__init__.py:260
-msgid ""
-"Congratulations! Your game was registered successfully. Now you can enter "
-"administration panel and configure your game. Don't worry if you can't open "
-"your game right now. DNS system is quite slow and it may take several hours "
-"or even days for your domain to work."
-msgstr ""
-"Поздравляем! Ваша игра успешно зарегистрирована. Чтобы настроить её, зайдите "
-"в административную панель. Если вы не можете попасть в игру прямо сейчас, не "
-"беспокойтесь. Система DNS довольно медленная, и ей может потребоваться "
-"несколько часов или даже дней, чтобы ваш домен заработал."
+#: mg/socio/__init__.py:394 mg/socio/__init__.py:427
+msgid "Signature"
+msgstr "Подпись"
 
-#: mg/constructor/__init__.py:277
-msgid "Create a new game"
-msgstr "Создать новую игру"
+#: mg/socio/__init__.py:397
+msgid "Avatar"
+msgstr "Аватар"
 
-#: mg/constructor/__init__.py:286
-msgid "MMO Constructor Settings"
-msgstr "Настройки конструктора"
+#: mg/socio/__init__.py:400 mg/socio/__init__.py:434
+msgid "Socio settings"
+msgstr "Социальные настройки"
 
-#: mg/constructor/__init__.py:289
-msgid "Change password"
-msgstr "Изменить пароль"
+#: mg/socio/__init__.py:402
+msgid "Parameter"
+msgstr "Параметр"
 
-#: mg/constructor/__init__.py:290
-msgid "Change e-mail"
-msgstr "Изменить e-mail"
+#: mg/socio/__init__.py:402
+msgid "Value"
+msgstr "Значение"
 
-#: mg/constructor/__init__.py:333
-msgid "Enter invitation code"
-msgstr "Введите пригласительный код"
-
-#: mg/constructor/__init__.py:340 mg/constructor/invitations.py:92
-msgid "Invitation code"
-msgstr "Код приглашения"
-
-#: mg/constructor/__init__.py:341
-msgid "Proceed"
-msgstr "Продолжить"
-
-#: mg/constructor/__init__.py:342
-msgid ""
-"Open registration of new games is unavailable at the moment. If you have an "
-"invitation code enter it now"
-msgstr ""
-"В данный момент свободная регистрация игр невозможна. Если у вас есть код "
-"приглашения, введите его прямо сейчас"
-
-#: mg/constructor/__init__.py:344
-msgid "Invitation required"
-msgstr "Требуется приглашение"
-
-#: mg/constructor/project.py:61
-msgid "Destroy this game"
-msgstr "Уничтожить эту игру"
-
-#: mg/constructor/project.py:61
-msgid "You can destroy your game while not created"
-msgstr ""
-"Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
-
-#: mg/constructor/project.py:70
-msgid "Project main administrator"
-msgstr "Главный администратор проекта"
-
-#: mg/constructor/project.py:73 mg/constructor/project.py:74
-#: mg/constructor/project.py:75 mg/constructor/project.py:76
-msgid "Game"
-msgstr "Игра"
-
-#: mg/constructor/project.py:73
-msgid "Game news published by the administrators"
-msgstr "Игровые новости, публикуемые администрацией"
-
-#: mg/constructor/project.py:74
-msgid "Talks about game activities: gameplay, news, wars, politics etc."
-msgstr ""
-"Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, "
-"политику и т.д."
-
-#: mg/constructor/project.py:75
-msgid "Newbies"
-msgstr "Вопросы новичков"
-
-#: mg/constructor/project.py:75
-msgid ""
-"Dear newbies, if you have any questions about the game, feel free to ask"
-msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
-
-#: mg/constructor/project.py:76
-msgid "Diplomacy"
-msgstr "Дипломатия"
-
-#: mg/constructor/project.py:76
-msgid ""
-"Authorized guild members can talk to each other about diplomacy and politics "
-"issues here"
-msgstr ""
-"В этом разделе уполномоченные члены кланов могут общаться на темы "
-"дипломатии, войн и политики"
-
-#: mg/constructor/project.py:77 mg/constructor/project.py:78
-#: mg/constructor/project.py:79
-msgid "Admin"
-msgstr "Администрация"
-
-#: mg/constructor/project.py:77
-msgid "Admin talks"
-msgstr "Общение с администрацией"
-
-#: mg/constructor/project.py:77
-msgid ""
-"Discussions with the game administrators. Here you can discuss any issues "
-"related to the game itself."
-msgstr ""
-"Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, "
-"связанные с игрой в целом."
-
-#: mg/constructor/project.py:78
-msgid "Reference manuals"
-msgstr "Справочная информация"
-
-#: mg/constructor/project.py:78
-msgid "Actual reference documents about the game are placed here."
-msgstr "Здесь публикуется актуальная справочная информация об игре"
-
-#: mg/constructor/project.py:79
-msgid "Bug reports"
-msgstr "Сообщения об ошибках"
-
-#: mg/constructor/project.py:79
-msgid "Report any problems in the game here"
-msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
-
-#: mg/constructor/project.py:80 mg/constructor/project.py:81
-msgid "Reallife"
-msgstr "Реальная жизнь"
-
-#: mg/constructor/project.py:80
-msgid "Smoking room"
-msgstr "Курилка"
-
-#: mg/constructor/project.py:80
-msgid ""
-"Everything not related to the game: humor, forum games, hobbies, sport etc."
-msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
-
-#: mg/constructor/project.py:81
-msgid "Art"
-msgstr "Творчество"
-
-#: mg/constructor/project.py:81
-msgid "Poems, prose, pictures, photos, music about the game"
-msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
-
-#: mg/constructor/project.py:82 mg/constructor/project.py:83
-msgid "Trading"
-msgstr "Торговля"
-
-#: mg/constructor/project.py:82
-msgid "Services"
-msgstr "Услуги"
-
-#: mg/constructor/project.py:82
-msgid "Any game services: mercenaries, guardians, builders etc."
-msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
-
-#: mg/constructor/project.py:83
-msgid "Market"
-msgstr "Рынок"
-
-#: mg/constructor/project.py:83
-msgid "Market place to sell and by any item"
-msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
-
-#: mg/constructor/design.py:75
-msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
-msgstr "Закрывающий тег '{0}' не соответствует открывающему тегу '{1}'"
-
-#: mg/constructor/design.py:101
-msgid "Valid XHTML doctype required"
-msgstr "Требуется правильный XHTML doctype"
-
-#: mg/constructor/design.py:107
+#: mg/socio/__init__.py:517
 #, python-format
-msgid "Not closed tags at the end of file: %s"
-msgstr "Незакрытые теги в конце файла: %s"
+msgid "Scheme '%s' is not supported"
+msgstr "Схема '%s' не поддерживается"
 
-#: mg/constructor/design.py:109
-msgid "DOCTYPE not specified"
-msgstr "DOCTYPE не указан"
+#: mg/socio/__init__.py:519
+msgid "Enter correct URL"
+msgstr "Введите правильный адрес"
 
-#: mg/constructor/design.py:111
-msgid ""
-"Content-type not specified. Add <meta http-equiv=\"Content-type\" content="
-"\"text/html; charset=utf-8\" /> into the head tag"
-msgstr ""
-"Content-type не указан. Добавьте <meta http-equiv=\"Content-type\" content="
-"\"text/html; charset=utf-8\" /> в тег head"
+#: mg/socio/__init__.py:533
+msgid "Remote server response: Resource not found"
+msgstr "Ответ удалённого сервера: Ресурс не найден"
 
-#: mg/constructor/design.py:129
-msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
-msgstr "Неверная кодировка. Укажите: content=\"text/html; charset=utf-8\""
+#: mg/socio/__init__.py:535
+msgid "Remote server response: Access denied"
+msgstr "Ответ удалённого сервера: Доступ запрещён"
 
-#: mg/constructor/design.py:217
+#: mg/socio/__init__.py:537
+msgid "Remote server response: Internal server error"
+msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
+
+#: mg/socio/__init__.py:539 mg/socio/__init__.py:548
 #, python-format
-msgid ""
-"Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), "
-"underscore (_) and minus(-) are permitted. Filename must have an extention "
-"(a-z, 0-9 symbols)"
-msgstr ""
-"Неверное имя файла: '%s' . Допустимы только маленькие латинские буквы (a-z), "
-"цифры (0-9), подчёркивание (_) и минус (-). Файл должен иметь расширение из "
-"символов a-z, 0-9"
-
-#: mg/constructor/design.py:223
-msgid ""
-"Filename '{0}' has unsupported extension: {1}. Permitted extensions are: {2}"
-msgstr ""
-"Имя файла '{0}' имеет неподдерживаемое расширение: {1}. Допустимые "
-"разрешения: {2}"
-
-#: mg/constructor/design.py:226
-#, python-format
-msgid "Several files with the same name '%s' encountered"
-msgstr "Найдено несколько файлов с одинаковым именем: '%s'"
-
-#: mg/constructor/design.py:248
-msgid "Error parsing template {0}: {1}"
-msgstr "Ошибка парсинга шаблона {0}: {1}"
-
-#: mg/constructor/design.py:254
-#, python-format
-msgid ", at line %d"
-msgstr ", в строке %d"
-
-#: mg/constructor/design.py:256
-#, python-format
-msgid ", column %d"
-msgstr ", в колонке %d"
-
-#: mg/constructor/design.py:257
-msgid "Error parsing {0}: {1}"
-msgstr "Ошибка парсера {0}: {1}"
-
-#: mg/constructor/design.py:325
-msgid "Design"
-msgstr "Оформление"
-
-#: mg/constructor/design.py:329
-msgid "Preview feature"
-msgstr "Предварительный просмотр"
-
-#: mg/constructor/design.py:329
-msgid ""
-"Use \"preview\" feature to check your design before installing it to the "
-"project. Then press \"Reload\" several times to check design on arbitrary "
-"data."
-msgstr ""
-"Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь "
-"функцией предварительного просмотра. Затем несколько раз нажмите кнопку "
-"\"Обновить\", чтобы проверить оформление на различных данных."
-
-#: mg/constructor/design.py:329
-msgid "Multiple browsers"
-msgstr "Различные браузеры"
-
-#: mg/constructor/design.py:329
-msgid "Check your design in the most popular browsers."
-msgstr "Проверяйте ваше оформление в наиболее популярных браузерах."
-
-#: mg/constructor/design.py:329
-msgid "google///browser statistics"
-msgstr "статистика браузеров"
-
-#: mg/constructor/design.py:329
-msgid "Find the most popular browsers"
-msgstr "Найти наиболее популярные браузеры"
-
-#: mg/constructor/design.py:341
-msgid "Untitled"
-msgstr "Без имени"
-
-#: mg/constructor/design.py:350 mg/constructor/design.py:366
-msgid "preview"
-msgstr "просмотреть"
-
-#: mg/constructor/design.py:360
-msgid "Upload design package from your computer"
-msgstr "Загрузить пакет оформления с вашего компьютера"
-
-#: mg/constructor/design.py:361
-msgid "Uploaded"
-msgstr "Загружено"
-
-#: mg/constructor/design.py:363
-msgid "Preview"
-msgstr "Предпросмотр"
-
-#: mg/constructor/design.py:365
-msgid "Installation"
-msgstr "Инсталляция"
-
-#: mg/constructor/design.py:368
-msgid "install"
-msgstr "установить"
-
-#: mg/constructor/design.py:369
-msgid "Do you really want to delete this design?"
-msgstr "Вы уверены, что хотите удалить это оформление?"
-
-#: mg/constructor/design.py:370
-msgid "Do you really want to install this design?"
-msgstr "Вы уверены, что хотите установить это оформление?"
-
-#: mg/constructor/design.py:372
-msgid "zip"
-msgstr "zip"
-
-#: mg/constructor/design.py:373
-msgid "rename///ren"
-msgstr "переим"
-
-#: mg/constructor/design.py:374
-msgid "Select from the list of templates"
-msgstr "Выбрать из списка шаблонов"
-
-#: mg/constructor/design.py:382
-msgid "Provide a ZIP archive"
-msgstr "Загрузите ZIP-архив"
-
-#: mg/constructor/design.py:390
-msgid "This is not a ZIP file"
-msgstr "Это не ZIP-архив"
-
-#: mg/constructor/design.py:392
-msgid "ZIP64 is not supported"
-msgstr "ZIP64 не поддерживается"
-
-#: mg/constructor/design.py:399
-msgid "Zipped design package"
-msgstr "Пакет с оформлением в формате ZIP"
-
-#: mg/constructor/design.py:400 mg/constructor/design.py:442
-msgid "Design title"
-msgstr "Название оформления"
-
-#: mg/constructor/design.py:410
-msgid ""
-"Choose any template you want. Then setup its parameters and you will get a "
-"personalised variant of the template."
-msgstr ""
-"Выберите любой шаблон, который вам нравится. Затем настройте его параметры, "
-"и вы получите персонализированный вариант шаблона."
-
-#: mg/constructor/design.py:445
-msgid "Rename"
-msgstr "Переименовать"
-
-#: mg/constructor/design.py:497
-msgid "New design"
-msgstr "Новое оформление"
-
-#: mg/constructor/design.py:499
-msgid "Design templates"
-msgstr "Шаблоны оформления"
-
-#: mg/constructor/design.py:501
-msgid "Renaming"
-msgstr "Переименование"
-
-#: mg/constructor/design.py:519
-msgid "Index page design"
-msgstr "Оформление титульной страницы"
-
-#: mg/constructor/design.py:524
-msgid "Index page"
-msgstr "Титульная страница"
-
-#: mg/constructor/design.py:532
-msgid "Index page design package must contain an HTML file"
-msgstr "Пакет с оформлением титульной страницы должен содержать HTML-файл"
-
-#: mg/constructor/design.py:534
-msgid "Index page design package must not contain more than one HTML file"
-msgstr ""
-"Пакет с оформлением титульной страницы не может содержать более 1 HTML-файла"
-
-#: mg/constructor/design.py:537
-msgid "index.html must exist in the index page design package"
-msgstr "В пакете оформления титульной страницы должен быть файл index.html"
-
-#: mg/constructor/design.py:539
-msgid "Index page design package must contain a CSS file"
-msgstr "Пакет с оформлением титульной страницы должен содержать CSS-файл"
-
-#: mg/constructor/design.py:542 mg/constructor/design.py:751
-msgid "Mike"
-msgstr "Mike"
-
-#: mg/constructor/design.py:542 mg/constructor/design.py:751
-msgid "Ivan Ivanov"
-msgstr "Иван Иванов"
-
-#: mg/constructor/design.py:542 mg/constructor/design.py:751
-msgid "John Smith"
-msgstr "John Smith"
-
-#: mg/constructor/design.py:542 mg/constructor/design.py:751
-msgid "Lizard the killer"
-msgstr "Lizard the killer"
-
-#: mg/constructor/design.py:542 mg/constructor/design.py:751
-msgid "Cult of the dead cow"
-msgstr "Культ мёртвой коровы"
-
-#: mg/constructor/design.py:544 mg/constructor/design.py:545
-msgid "Some title"
-msgstr "Некое название"
-
-#: mg/constructor/design.py:544
-msgid "Very cool game with very long title"
-msgstr "Очень крутая игра с очень длинным названием"
-
-#: mg/constructor/design.py:545
-msgid "Very cool game"
-msgstr "Очень крутая игра"
-
-#: mg/constructor/design.py:546
-msgid ""
-"<p>This game is a very good sample of games with very long descriptions. In "
-"this game you become a strong warrior, a mighty wizard, a rich merchant or "
-"anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit "
-"amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer "
-"aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet "
-"auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt "
-"vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec "
-"at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, "
-"tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium "
-"dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec "
-"lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis "
-"elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam "
-"aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus "
-"lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada "
-"tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere "
-"lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, "
-"dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh "
-"vehicula porttitor. Donec vitae elit tellus.</p>"
-msgstr ""
-"<p>Эта игра - отличный пример игр с очень длинными описаниями. В этой игре "
-"вы можете стать сильным воином, могущественным чародеем, богатым купцом или "
-"кем угодно ещё. Это ваш выбор. Это ваш путь.</p><p>Lorem ipsum dolor sit "
-"amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer "
-"aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet "
-"auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt "
-"vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec "
-"at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, "
-"tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium "
-"dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec "
-"lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis "
-"elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam "
-"aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus "
-"lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada "
-"tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere "
-"lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, "
-"dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh "
-"vehicula porttitor. Donec vitae elit tellus.</p>"
-
-#: mg/constructor/design.py:546
-msgid ""
-"This game has a very short description. It was written in hurry by a young "
-"game designer."
-msgstr ""
-"У этой игры очень короткое описание. Оно было написано в спешке молодым гейм-"
-"дизайнером."
-
-#: mg/constructor/design.py:553
-msgid "Breaking news"
-msgstr "Срочно в номер"
-
-#: mg/constructor/design.py:553
-msgid "New updates related to the abandoned dungeon"
-msgstr "Новые обновления, связанные с заброшенным подземельем"
-
-#: mg/constructor/design.py:553
-msgid "Eternal shadow returns"
-msgstr "Вечная тень возвращается"
-
-#: mg/constructor/design.py:553
-msgid "Epic war event"
-msgstr "Эпическое событие: война"
-
-#: mg/constructor/design.py:554
-msgid ""
-"South Korea will hold its largest-ever winter live-fire drills Thursday in "
-"an area adjacent to North Korea, amid heightened tensions, the South Korean "
-"Army says."
-msgstr ""
-"Баварские фермеры отказались уступать землю под олимпийские объекты. По всей "
-"Европе вводятся новые сборы с туристов."
-
-#: mg/constructor/design.py:554
-msgid "Europe travel chaos starts to clear"
-msgstr "Перепись населения откатила США к временам Великой депрессии"
-
-#: mg/constructor/design.py:554
-msgid ""
-"Even with legal protection, women victims of rape still face a social stigma "
-"that is hard to overcome. He said: \"Women are still afraid to complain if "
-"they are victims of rape because there is an attitude from the society.\"</"
-"p><p>Coulibaly added: \"There is no law to define rape but there will be "
-"one. And work is being done with police officers and judges ... to let them "
-"understand the problem is not the woman, but the perpetrator of the rape.\""
-msgstr ""
-"На сайте госкорпорации \"Роснано\" появился рекламный ролик, приуроченный к "
-"открытию первого завода, созданного при участии \"Роснано\" в городе "
-"Рыбинске Ярославской области.</p><p>В ролике, показывающем возможности "
-"продукции первого нанопроизводства, звучит фраза, которую выбрали в качестве "
-"слогана акции: \"Ну ты, нано, даешь!\". На заводе планируют производить "
-"\"износостойкие инструменты\", в том числе сверла с прочным нанопокрытием."
-
-#: mg/constructor/design.py:559
-msgid "This is a sample meta description"
-msgstr "Это пример meta-описания"
-
-#: mg/constructor/design.py:560
-msgid "online games, keyword 1, keyword 2"
-msgstr "онлайн-игры, ключевое слово 1, ключевое слово 2"
-
-#: mg/constructor/design.py:566
-msgid "Joy Team, Author"
-msgstr "Joy Team, Автор"
-
-#: mg/constructor/design.py:566
-msgid "Joy Team, Very Long Author Name Even So Long"
-msgstr "Joy Team, Очень Длинное Имя Автора и Ещё Длиннее"
-
-#: mg/constructor/design.py:570
-msgid "Enter invisible"
-msgstr "Вход в невидимости"
-
-#: mg/constructor/design.py:572
-msgid "Already invisible"
-msgstr "Уже в невидимости"
-
-#: mg/constructor/design.py:576
-msgid "Library"
-msgstr "Библиотека"
-
-#: mg/constructor/design.py:580
-msgid "World history"
-msgstr "История мира"
-
-#: mg/constructor/design.py:584 mg/constructor/domains.py:568
-msgid "Registration"
+msgid "Download error: %s"
+msgstr "Ошибка при скачивании: %s"
+
+#: mg/socio/__init__.py:544
+msgid "Timeout on downloading image. Time limit - 30 sec"
+msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
+
+#: mg/socio/__init__.py:617
+msgid "Or Internet address"
+msgstr "Или введите Internet-адрес"
+
+#: mg/socio/__init__.py:620
+msgid "Upload image"
+msgstr "Загрузка изображения"
+
+#: mg/socio/__init__.py:633
+msgid "user///Registered"
 msgstr "Регистрация"
 
-#: mg/constructor/design.py:588
-msgid "Game forum"
-msgstr "Форум игры"
-
-#: mg/constructor/design.py:593
-msgid "Screenshots"
-msgstr "Скриншоты"
-
-#: mg/constructor/design.py:598
-msgid "Secure entrance"
-msgstr "Безопасный вход"
-
-#: mg/constructor/design.py:600
-msgid "Connection secured"
-msgstr "Установлено безопасное соединение"
-
-#: mg/constructor/design.py:610
-msgid "The biggest glory"
-msgstr "Самая большая слава"
-
-#: mg/constructor/design.py:610
-msgid "The richest"
-msgstr "Самые богатые"
-
-#: mg/constructor/design.py:610
-msgid "Top clan"
-msgstr "Топ-клан"
-
-#: mg/constructor/design.py:610
-msgid "The best dragon hunter"
-msgstr "Лучший охотник на драконов"
-
-#: mg/constructor/design.py:640
-msgid "Game interface design"
-msgstr "Оформление интерфейса игры"
-
-#: mg/constructor/design.py:645
-msgid "Game interface"
-msgstr "Интерфейс игры"
-
-#: mg/constructor/design.py:652
-msgid "Game interface design package must contain a CSS file"
-msgstr "Пакет с оформлением игры должен содержать CSS-файл"
-
-#: mg/constructor/design.py:654
-msgid "Game interface design package must not contain HTML files"
-msgstr "Пакет с оформлением игры не может содержать HTML-файлов"
-
-#: mg/constructor/design.py:678
-msgid "Topics"
-msgstr "Тем"
-
-#: mg/constructor/design.py:680
-msgid "Unread"
-msgstr "Новые"
-
-#: mg/constructor/design.py:681
-msgid "Last message"
-msgstr "Последнее сообщение"
-
-#: mg/constructor/design.py:691 mg/constructor/design.py:693
-#: mg/constructor/design.py:696
-msgid "Pages"
-msgstr "На страницу"
-
-#: mg/constructor/design.py:692
-msgid "topic///Opened"
-msgstr "Открыта"
-
-#: mg/constructor/design.py:697
-msgid "topic started"
-msgstr "тема открыта"
-
-#: mg/constructor/design.py:698 mg/constructor/design.py:755
-msgid "All posts"
-msgstr "Все сообщения"
-
-#: mg/constructor/design.py:699
-msgid "Search for all posts of this member"
-msgstr "Все сообщения этого пользователя"
-
-#: mg/constructor/design.py:700
-msgid "to the top"
-msgstr "наверх"
-
-#: mg/constructor/design.py:701
-msgid "written at"
-msgstr "написано"
-
-#: mg/constructor/design.py:705
-msgid "Forum tags"
-msgstr "Теги форума"
-
-#: mg/constructor/design.py:719
-msgid "Socio interface design"
-msgstr "Оформление интерфейса социалки"
-
-#: mg/constructor/design.py:724
-msgid "Socio interface"
-msgstr "Интерфейс социалки"
-
-#: mg/constructor/design.py:732
-msgid "Socio interface design package must contain an HTML file"
-msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
-
-#: mg/constructor/design.py:734
-msgid "Socio interface design package must not contain more than one HTML file"
-msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
-
-#: mg/constructor/design.py:737
-msgid "index.html must exist in the socio interface design package"
-msgstr "В пакете оформления интерфейса социалки должен быть файл index.html"
-
-#: mg/constructor/design.py:739
-msgid "Socio interface design package must contain a CSS file"
-msgstr "Пакет с оформлением социалки должен содержать CSS-файл"
-
-#: mg/constructor/design.py:743 mg/constructor/design.py:786
-msgid "Forum category"
-msgstr "Раздел форума"
-
-#: mg/constructor/design.py:744
-msgid "Forum topic"
-msgstr "Тема на форуме"
-
-#: mg/constructor/design.py:745
-msgid "Tags cloud"
-msgstr "Облако тегов"
-
-#: mg/constructor/design.py:750
-msgid "Unknown problem"
-msgstr "Неизвестная проблема"
-
-#: mg/constructor/design.py:750
-msgid "Very important combat will take place tomorrow"
-msgstr "Завтра состоится очень важное сражение"
-
-#: mg/constructor/design.py:750
-msgid "Not so important but a very large forum topic title"
-msgstr "Не очень важный, но очень длинный заголовок темы на форуме"
-
-#: mg/constructor/design.py:752
-msgid "6th of December, 2010 at 12:01"
-msgstr "6 декабря 2010 в 12:01"
-
-#: mg/constructor/design.py:752
-msgid "13th of June, 2008 at 02:11"
-msgstr "13 июня 2008 года в 02:11"
-
-#: mg/constructor/design.py:752
-msgid "7th of February, 2011 at 23:17"
-msgstr "7 февраля 2011 года в 23:17"
-
-#: mg/constructor/design.py:752
-msgid "21th of October, 2010 at 17:00"
-msgstr "21 октября 2010 года в 17:00"
-
-#: mg/constructor/design.py:753
-msgid "This is a sample signature line"
-msgstr "Это пример строки подписи"
-
-#: mg/constructor/design.py:753
-msgid "Some another line"
-msgstr "Какая-то другая строка"
-
-#: mg/constructor/design.py:753
-msgid "Very strange signature"
-msgstr "Очень странная подпись"
-
-#: mg/constructor/design.py:753
-msgid "Absolutely crazy signature line"
-msgstr "Абсолютно сумасшедшая строка подписи"
-
-#: mg/constructor/design.py:754
-msgid "game"
-msgstr "игра"
-
-#: mg/constructor/design.py:754
-msgid "mmo"
-msgstr "mmo"
-
-#: mg/constructor/design.py:754
-msgid "constructor"
-msgstr "конструктор"
-
-#: mg/constructor/design.py:754
-msgid "people"
-msgstr "люди"
-
-#: mg/constructor/design.py:754
-msgid "online games"
-msgstr "онлайн-игры"
-
-#: mg/constructor/design.py:754
-msgid "game industry"
-msgstr "игровая индустрия"
-
-#: mg/constructor/design.py:754
-msgid "game engine"
-msgstr "игровой движок"
-
-#: mg/constructor/design.py:755
-msgid "Rating"
-msgstr "Рейтинг"
-
-#: mg/constructor/design.py:755
-msgid "Projects"
-msgstr "Проекты"
-
-#: mg/constructor/design.py:755
-msgid "Wishlist"
-msgstr "Вишлист"
-
-#: mg/constructor/design.py:756
-msgid "ignore"
-msgstr "игнорировать"
-
-#: mg/constructor/design.py:764
-msgid "Main group"
-msgstr "Главная группа"
-
-#: mg/constructor/design.py:764
-msgid "Additional categories"
-msgstr "Дополнительные разделы"
-
-#: mg/constructor/design.py:764
-msgid "Important"
-msgstr "Важное"
-
-#: mg/constructor/design.py:764
-msgid "Technical reference"
-msgstr "Техническое руководство"
-
-#: mg/constructor/design.py:768
-msgid "Technical support"
-msgstr "Техническая поддержка"
-
-#: mg/constructor/design.py:768
-msgid "A very long forum category title"
-msgstr "Очень длинное название раздела на форуме"
-
-#: mg/constructor/design.py:769
-msgid "This is a short category description"
-msgstr "Это очень короткое описание раздела"
-
-#: mg/constructor/design.py:769
-msgid ""
-"This is a very long category description. It can be very-very long. And even "
-"longer. It can take several lines. Most of us know him as the big jolly man "
-"with a white beard and red suit, but who was - or were - the real Santa "
-"Claus? Ivan Watson goes to Demre in Turkey to find out more about the legend "
-"of Saint Nicholas."
-msgstr ""
-"Это очень длинное описание раздела. Оно может быть очень-очень длинным. И "
-"даже ещё длиннее. Оно может занимать несколько строк. Большинство из нас "
-"знает его как большого мужчину с белой бородой и в красной шубе. Но кто он, "
-"или кем он был знает только наш корреспондент, который отправился в Турцию, "
-"чтобы больше узнать о легенде Святого Николая."
-
-#: mg/constructor/design.py:909
-msgid "Some header"
-msgstr "Некий заголовок"
-
-#: mg/constructor/design.py:915 mg/constructor/design.py:935
-msgid "Menu item"
-msgstr "Пункт меню"
-
-#: mg/constructor/design.py:923
-msgid "Login"
-msgstr "Имя"
-
-#: mg/constructor/design.py:923
-msgid "Friends"
-msgstr "Друзья"
-
-#: mg/constructor/design.py:944
-msgid "Pin"
-msgstr "Закрепить"
-
-#: mg/constructor/design.py:944
-msgid "Unpin"
-msgstr "Открепить"
-
-#: mg/constructor/design.py:944
-msgid "Close"
-msgstr "Закрыть"
-
-#: mg/constructor/design.py:944
-msgid "Open"
-msgstr "Открыть"
-
-#: mg/constructor/logo.py:45
+#: mg/socio/__init__.py:772 mg/socio/__init__.py:2269
+#: mg/socio/__init__.py:2274
+msgid "Subscribed topics"
+msgstr "Подписанные темы"
+
+#: mg/socio/__init__.py:1060 mg/socio/__init__.py:1648
+msgid "Enter topic subject"
+msgstr "Введите тему сообщения"
+
+#: mg/socio/__init__.py:1062 mg/socio/__init__.py:1650
+msgid "Enter topic content"
+msgstr "Введите текст сообщения"
+
+#: mg/socio/__init__.py:1067
+msgid "Invalid datetime format"
+msgstr "Неверный формат даты и времени"
+
+#: mg/socio/__init__.py:1073
+msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
+msgstr "Дата темы (дд.мм.гггг или дд.мм.гггг чч:мм:сс)"
+
+#: mg/socio/__init__.py:1074 mg/socio/__init__.py:1668
+msgid "Subject"
+msgstr "Тема"
+
+#: mg/socio/__init__.py:1075
+msgid "Content"
+msgstr "Содержание"
+
+#: mg/socio/__init__.py:1293 mg/socio/__init__.py:1534
+#: mg/socio/__init__.py:1615
+msgid "Topic"
+msgstr "Тема"
+
+#: mg/socio/__init__.py:1322
+msgid "unsubscribe"
+msgstr "отписаться"
+
+#: mg/socio/__init__.py:1324
+msgid "subscribe"
+msgstr "подписаться"
+
+#: mg/socio/__init__.py:1327
+msgid "unpin"
+msgstr "открепить"
+
+#: mg/socio/__init__.py:1329
+msgid "pin"
+msgstr "закрепить"
+
+#: mg/socio/__init__.py:1331
+msgid "move"
+msgstr "перенести"
+
+#: mg/socio/__init__.py:1351 mg/socio/__init__.py:1509
+#: mg/socio/__init__.py:1624
+msgid "Enter post content"
+msgstr "Введите текст сообщения"
+
+#: mg/socio/__init__.py:1353
+msgid "Access denied"
+msgstr "Доступ запрещён"
+
+#: mg/socio/__init__.py:1369 mg/socio/__init__.py:1526
+#: mg/socio/__init__.py:1530 mg/socio/__init__.py:1535
+msgid "Reply"
+msgstr "Ответить"
+
+#: mg/socio/__init__.py:1620
+msgid "Edit post"
+msgstr "Редактирование ответа"
+
+#: mg/socio/__init__.py:1642
+msgid "Edit topic"
+msgstr "Редактирование темы"
+
+#: mg/socio/__init__.py:1711
+msgid "Signature can't contain more than 4 lines"
+msgstr "В подписи не может быть более 4 строк"
+
+#: mg/socio/__init__.py:1715
+msgid "Signature line couldn't be longer than 80 symbols"
+msgstr "Строка подписи не может быть длиннее 80 символов"
+
+#: mg/socio/__init__.py:1717
+msgid "Signature couldn't contain images"
+msgstr "В подпись нельзя вставлять картинки"
+
+#: mg/socio/__init__.py:1740
+msgid "Avatar has to be at least 100x100 pixels"
+msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
+
+#: mg/socio/__init__.py:1790
+msgid "Your forum signature"
+msgstr "Ваша подпись на форуме"
+
+#: mg/socio/__init__.py:1791
+msgid "Your avatar"
+msgstr "Ваш аватар"
+
+#: mg/socio/__init__.py:1792
+msgid "Replies in subscribed topics"
+msgstr "Ответы в подписанных темах"
+
+#: mg/socio/__init__.py:1792
+msgid "E-mail notifications"
+msgstr "Уведомления на почту"
+
+#: mg/socio/__init__.py:1794
+msgid "New topics in '{topcat} / {cat}'"
+msgstr "Новые темы в '{topcat} / {cat}'"
+
+#: mg/socio/__init__.py:1795
+msgid "Return"
+msgstr "Возврат"
+
+#: mg/socio/__init__.py:1904
+msgid "Select category"
+msgstr "Выберите раздел"
+
+#: mg/socio/__init__.py:1925
+msgid "Category where to move"
+msgstr "Раздел, в который перенести"
+
+#: mg/socio/__init__.py:1928
 #, python-format
-msgid "Project code: Font %s"
-msgstr "Код проекта: Шрифт %s"
+msgid "Move topic: %s"
+msgstr "Перемещение темы: %s"
 
-#: mg/constructor/logo.py:49 mg/constructor/logo.py:263
-msgid "Logo constructor"
-msgstr "Конструктор логотипов"
-
-#: mg/constructor/logo.py:113 mg/constructor/logo.py:128
-msgid "Remove"
-msgstr "Удалить"
-
-#: mg/constructor/logo.py:114
-msgid "Solid"
-msgstr "Сплошной"
-
-#: mg/constructor/logo.py:115
-msgid "Circle"
-msgstr "Круг"
-
-#: mg/constructor/logo.py:116
-msgid "Ring border"
-msgstr "Кольцевая рамка"
-
-#: mg/constructor/logo.py:117
-msgid "Square"
-msgstr "Квадрат"
-
-#: mg/constructor/logo.py:118
-msgid "Rectangle"
-msgstr "Прямоугольник"
-
-#: mg/constructor/logo.py:119
-msgid "Triangle 1"
-msgstr "Треугольник 1"
-
-#: mg/constructor/logo.py:120
-msgid "Triangle 2"
-msgstr "Треугольник 2"
-
-#: mg/constructor/logo.py:129
-msgid "Bamboo #1"
-msgstr "Бамбук №1"
-
-#: mg/constructor/logo.py:130
-msgid "Brick #1"
-msgstr "Кирпич №1"
-
-#: mg/constructor/logo.py:131
-msgid "Brick #2"
-msgstr "Кирпич №2"
-
-#: mg/constructor/logo.py:132
-msgid "Dirt #1"
-msgstr "Земля №1"
-
-#: mg/constructor/logo.py:133
-msgid "Fur #1"
-msgstr "Мех №1"
-
-#: mg/constructor/logo.py:134
-msgid "Grass #1"
-msgstr "Трава №1"
-
-#: mg/constructor/logo.py:135
-msgid "Grass #2"
-msgstr "Трава №2"
-
-#: mg/constructor/logo.py:136
-msgid "Grass #3"
-msgstr "Трава №3"
-
-#: mg/constructor/logo.py:137
-msgid "Grass #4"
-msgstr "Трава №4"
-
-#: mg/constructor/logo.py:138
-msgid "Leather #1"
-msgstr "Кожа №1"
-
-#: mg/constructor/logo.py:139
-msgid "Metal #1"
-msgstr "Металл №1"
-
-#: mg/constructor/logo.py:140
-msgid "Metal #2"
-msgstr "Металл №2"
-
-#: mg/constructor/logo.py:141
-msgid "Metal #3"
-msgstr "Металл №3"
-
-#: mg/constructor/logo.py:142
-msgid "Sack #1"
-msgstr "Мешковина №1"
-
-#: mg/constructor/logo.py:143
-msgid "Sack #2"
-msgstr "Мешковина №2"
-
-#: mg/constructor/logo.py:144
-msgid "Sky #1"
-msgstr "Небо №1"
-
-#: mg/constructor/logo.py:145
-msgid "Stones #1"
-msgstr "Камни №1"
-
-#: mg/constructor/logo.py:146
-msgid "Wicker #1"
-msgstr "Плетёнка №1"
-
-#: mg/constructor/logo.py:147
-msgid "Wood #1"
-msgstr "Дерево №1"
-
-#: mg/constructor/logo.py:148
-msgid "Wood #2"
-msgstr "Дерево №2"
-
-#: mg/constructor/logo.py:149
-msgid "Wood #3"
-msgstr "Дерево №3"
-
-#: mg/constructor/logo.py:150
-msgid "Wood #4"
-msgstr "Дерево №4"
-
-#: mg/constructor/logo.py:151
-msgid "Wood #5"
-msgstr "Дерево №5"
-
-#: mg/constructor/logo.py:156
-msgid "Upload new custom 100x75 image..."
-msgstr "Загрузить новую картинку 100x75..."
-
-#: mg/constructor/logo.py:157
-msgid "Select solid color..."
-msgstr "Выберите сплошной цвет"
-
-#: mg/constructor/logo.py:168
-msgid "Invalid color"
-msgstr "Неверный цвет"
-
-#: mg/constructor/logo.py:180
-msgid "Solid color #{0} - {1}"
-msgstr "Сплошной цвет №{0} - {1}"
-
-#: mg/constructor/logo.py:187
-msgid "Upload your image"
-msgstr "Загрузите ваше изображение"
-
-#: mg/constructor/logo.py:196
-msgid "Animated images are not supported"
-msgstr "Анимированные картинки не поддерживаются"
-
-#: mg/constructor/logo.py:228
+#: mg/socio/__init__.py:1974
 #, python-format
-msgid "Custom image #%d"
-msgstr "Пользовательская картинка №%d"
+msgid "New topic: %s"
+msgstr "Новая тема: %s"
 
-#: mg/constructor/logo.py:264
+#: mg/socio/__init__.py:1974
 msgid ""
-"Here you can construct your own simple 100x75 logo using several basic "
-"elements."
+"{author_name} has started new topic: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}"
 msgstr ""
-"Здесь, используя несколько базовых элементов, вы можете сконструировать себе "
-"простой логотип 100x75."
+"{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}"
 
-#: mg/constructor/domains.py:79 mg/constructor/domains.py:280
-msgid "Domain registration wizard"
-msgstr "Мастер регистрации доменов"
-
-#: mg/constructor/domains.py:96
-msgid ""
-"Invalid domain name. It must begin with letter a-z or digit 0-9 and contain "
-"letters, digits and '-' sign"
-msgstr ""
-"Неверное имя домена. Оно должно начинаться с букв a-z или цифр 0-9 и "
-"содержать только буквы, цифры и знак '-'"
-
-#: mg/constructor/domains.py:98
-msgid "Select top level domain"
-msgstr "Выберите домен верхнего уровня"
-
-#: mg/constructor/domains.py:110
-msgid ""
-"This domain is already registered by another user of the MMO Constructor"
-msgstr "Этот домен уже зарегистрирован другим пользователем MMO Constructor"
-
-#: mg/constructor/domains.py:112
+#: mg/socio/__init__.py:2024
 #, python-format
+msgid "New replies: %s"
+msgstr "Новые ответы: %s"
+
+#: mg/socio/__init__.py:2024
 msgid ""
-"This domain is in the pending state. We don't know the result of the "
-"registration. Please contact MMO Constructor administration to get more "
-"details. registrar_id=%s"
+"{author_name} has replied in the topic: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 msgstr ""
-"Этот домен находится в процессе регистрации. Мы пока точно не знаем, каков "
-"результат регистрации. Пожалуйста, свяжитесь с администрацией MMO "
-"Constructor, чтобы получить более подробные данные. registrar_id=%s"
+"{author_name} ответил[gender?а:] в тему: {topic_subject}\n"
+"\n"
+"http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 
-#: mg/constructor/domains.py:114
-msgid "This domain is already assigned to a project"
-msgstr "Этот домен уже назначен одному из проектов"
+#: mg/socio/__init__.py:2109 mg/socio/__init__.py:2240
+msgid "Nothing found"
+msgstr "Ничего не найдено"
 
-#: mg/constructor/domains.py:116
-msgid "This domain is registered by you but not assigned to a project"
-msgstr "Этот домен зарегистрирован вами, но ещё не назначен проекту"
+#: mg/socio/__init__.py:2213 mg/socio/__init__.py:2226
+msgid "open"
+msgstr "открыть"
 
-#: mg/constructor/domains.py:116
-msgid "Go to the domain checker"
-msgstr "Перейдите к проверке домена"
+#: mg/socio/__init__.py:2236
+msgid "results///Search"
+msgstr "Поиск"
 
-#: mg/constructor/domains.py:116
-msgid "to assign the domain"
-msgstr "для назначения домена"
+#: mg/socio/__init__.py:2271
+msgid "You have not subscribed to any topic"
+msgstr "Вы не подписаны ни на одну тему"
 
-#: mg/constructor/domains.py:124
+#: mg/socio/__init__.py:2325
+msgid "Read more"
+msgstr "Читать далее"
+
+#: mg/socio/__init__.py:2326
+msgid "Comment"
+msgstr "Комментировать"
+
+#: mg/admin/__init__.py:31
+msgid "Administration interface"
+msgstr "Административный интерфейс"
+
+#: mg/admin/__init__.py:68
 #, python-format
-msgid "%s registry is temporarily unavailable. Try again later"
-msgstr "Реестр %s временно недоступен. Попробуйте позже"
-
-#: mg/constructor/domains.py:126
-msgid "This domain name is occupied already. Choose another one"
-msgstr "Это доменное имя уже занято. Выберите другое"
-
-#: mg/constructor/domains.py:132 mg/constructor/domains.py:166
-#, python-format
-msgid "%(price).2f MM$ (approx %(price).2f USD)"
-msgstr "%(price).2f MM$ (приблизительно %(price).2f USD)"
-
-#: mg/constructor/domains.py:152 mg/constructor/domains.py:154
-msgid "Invalid field format"
-msgstr "Неверный формат поля"
-
-#: mg/constructor/domains.py:156
-msgid "Enter your passport number"
-msgstr "Введите ваши паспортные данные"
-
-#: mg/constructor/domains.py:158
-msgid "Enter birthday in format DD.MM.YYYY"
-msgstr "Введите день рождения в формате ДД.ММ.ГГГГ"
-
-#: mg/constructor/domains.py:160 mg/constructor/domains.py:162
-msgid "Enter valid address"
-msgstr "Введите корректный адрес"
-
-#: mg/constructor/domains.py:164
-msgid "Invalid phone format. Look at the example"
-msgstr "Неверный формат телефона. Посмотрите на пример"
-
-#: mg/constructor/domains.py:168
-msgid "Select an owner of the domain"
-msgstr "Выберите владельца домена"
-
-#: mg/constructor/domains.py:208
-msgid "Error connecting to the registrar. Try again please"
-msgstr "Ошибка соединения с регистратором. Пожалуйста, попробуйте позже"
-
-#: mg/constructor/domains.py:213
-msgid "You have not enough money"
-msgstr "У вас недостаточно средств"
-
-#: mg/constructor/domains.py:228
-msgid ""
-"Error getting response from the registrar. Your request was not processed"
-msgstr ""
-"Ошибка при получении ответа от регистратора. Ваш запрос не был обработан"
-
-#: mg/constructor/domains.py:235
-msgid ""
-"Invalid response from the registrar. We don't know whether your request was "
-"processed, so we remain payment for the domain in the locked state. Result "
-"of the operation will be checked by the technical support manually."
-msgstr ""
-"Неверный ответ от регистратора. Мы точно не знаем, удалось ли обработать ваш "
-"запрос, поэтому мы оставляем деньги за домен в заблокированном состоянии. "
-"Результат операции будет перепроверен вручную техническими специалистами."
-
-#: mg/constructor/domains.py:248
-#, python-format
-msgid "You have successfully registered domain <strong>%s</strong>"
-msgstr "Вы успешно зарегистрировали домен <strong>%s</strong>"
-
-#: mg/constructor/domains.py:250
-#, python-format
-msgid ""
-"Now <hook:admin.link href=\"wizard/call/%s\" title=\"check your domain "
-"settings\" />"
-msgstr ""
-"Теперь <hook:admin.link href=\"wizard/call/%s\" title=\"пройдите проверку "
-"настроек домена\" />"
-
-#: mg/constructor/domains.py:259
-msgid ""
-"Your domain was not registered due to temporary problems. We don't know "
-"whether your request was processed, so we remain payment for the domain in "
-"the locked state. Result of the operation will be checked by the technical "
-"support manually."
-msgstr ""
-"Ваш домен не был зарегистрирован из-за временных технических проблем. Мы "
-"точно не знаем, удалось ли обработать ваш запрос, поэтому мы оставляем "
-"деньги за домен в заблокированном состоянии. Результат операции будет "
-"перепроверен вручную техническими специалистами."
-
-#: mg/constructor/domains.py:261
-#, python-format
-msgid "Error registering domain: %s"
-msgstr "Ошибка регистрации домена: %s"
-
-#: mg/constructor/domains.py:268
-msgid ""
-"Request to the registrar timed out. We don't know whether your request was "
-"processed, so we remain payment for the domain in the locked state. Result "
-"of the operation will be checked by the technical support manually."
-msgstr ""
-"Запрос к регистратору прерван по таймауту. Мы точно не знаем, удалось ли "
-"обработать ваш запрос, поэтому мы оставляем деньги за домен в "
-"заблокированном состоянии. Результат операции будет перепроверен вручную "
-"техническими специалистами."
-
-#: mg/constructor/domains.py:271
-#, python-format
-msgid "Registering for the name: %s"
-msgstr "Регистрируем для лица: %s"
-
-#: mg/constructor/domains.py:281
-msgid "Domain name"
-msgstr "Доменное имя"
-
-#: mg/constructor/domains.py:283
-msgid "Enter domain name"
-msgstr "Введите доменное имя"
-
-#: mg/constructor/domains.py:287
-#, python-format
-msgid "Domain %s is available for registration"
-msgstr "Домен %s доступен для регистрации"
-
-#: mg/constructor/domains.py:288
-#, python-format
-msgid "for %s"
-msgstr "за %s"
-
-#: mg/constructor/domains.py:289
-#, python-format
-msgid "your current balance is %s MM$"
-msgstr "ваш текущий баланс &mdash; %s MM$"
-
-#: mg/constructor/domains.py:290
-msgid "Here you can register a domain"
-msgstr "Здесь мы можете зарегистрировать домен"
-
-#: mg/constructor/domains.py:291
-msgid "Register this domain"
-msgstr "Зарегистрировать домен"
-
-#: mg/constructor/domains.py:292
-msgid "Update balance"
-msgstr "Обновить баланс"
-
-#: mg/constructor/domains.py:293
-msgid ""
-"You will be the owner of the domain (in this case provide your personal data)"
-msgstr ""
-"Вы сами будете владельцем домена (в этом случае нам потребуются ваши "
-"персональные данные)"
-
-#: mg/constructor/domains.py:294
-msgid "MMO Constructor will be the owner of the domain"
-msgstr "Владельцем домена будет MMO Constructor"
-
-#: mg/constructor/domains.py:295
-msgid ""
-"Your name (in your language). For example: <strong>John A Smith</strong>"
-msgstr ""
-"Ваше имя (на родном языке, как в паспорте). Например: <strong>Сидоров Иван "
-"Петрович</strong>"
-
-#: mg/constructor/domains.py:296
-msgid "Your name (in English). For example: <strong>John A Smith</strong>"
-msgstr ""
-"Ваше имя (на английском языке). Например: <strong>Ivan P Sidorov</strong>"
-
-#: mg/constructor/domains.py:297
-msgid "Your passport number"
-msgstr "Ваши паспортные данные"
-
-#: mg/constructor/domains.py:298
-msgid ""
-"Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"
-msgstr ""
-"Ваш день рождения в формате ДД.ММ.ГГГГ. Например: <strong>31.12.1980</strong>"
-
-#: mg/constructor/domains.py:299
-msgid "Your official registration address (in your language)"
-msgstr "Ваш официальный адрес регистрации (на вашем языке)"
-
-#: mg/constructor/domains.py:300
-msgid "Your postal address (in your language)"
-msgstr "Ваш почтовый адрес (на вашем языке)"
-
-#: mg/constructor/domains.py:301
-msgid ""
-"Your phone number in the international format. For example: <strong>+1 800 "
-"5555555</strong>"
-msgstr ""
-"Ваш телефонный номер в международном формате. Например: <strong>+7 495 "
-"0000000</strong>"
-
-#: mg/constructor/domains.py:302
-msgid "Checking domain availability..."
-msgstr "Проверка доступности домена..."
-
-#: mg/constructor/domains.py:303
-msgid "Updating balance..."
-msgstr "Обновление баланса..."
-
-#: mg/constructor/domains.py:304
-msgid "Registering domain. It may take several minutes. Be patient please..."
-msgstr ""
-"Регистрируем домен. Это может занять несколько минут. Пожалуйста, "
-"подождите..."
-
-#: mg/constructor/domains.py:332
-msgid "Domains: administration"
-msgstr "Домены: администрирование"
-
-#: mg/constructor/domains.py:333
-msgid "Domains: DNS settings"
-msgstr "Домены: настройки DNS"
-
-#: mg/constructor/domains.py:334
-msgid "Domains: registration prices"
-msgstr "Домены: цены на регистрацию"
-
-#: mg/constructor/domains.py:335
-msgid "Domains: administrator's personal data"
-msgstr "Домены: персональные данные администратора"
-
-#: mg/constructor/domains.py:340
-#, python-format
-msgid "Domain registration: %(domain)s"
-msgstr "Регистрация домена: %(domain)s"
-
-#: mg/constructor/domains.py:347
-msgid "Domains"
-msgstr "Домены"
-
-#: mg/constructor/domains.py:352
-msgid "List of pending domains"
-msgstr "Список ожидающих доменов"
-
-#: mg/constructor/domains.py:354
-msgid "Registration prices"
-msgstr "Цены на регистрацию"
-
-#: mg/constructor/domains.py:356
-msgid "Administrator's personal data"
-msgstr "Персональные данные администратора"
-
-#: mg/constructor/domains.py:358
-msgid "DNS settings"
-msgstr "Настройки DNS"
-
-#: mg/constructor/domains.py:371
-msgid "DNS settings stored"
-msgstr "Настройки DNS сохранены"
-
-#: mg/constructor/domains.py:376
-msgid "DNS server 1"
-msgstr "DNS-сервер 1"
-
-#: mg/constructor/domains.py:377
-msgid "DNS server 2"
-msgstr "DNS-сервер 2"
-
-#: mg/constructor/domains.py:393
-msgid "Invalid price format"
-msgstr "Неверный формат цены"
-
-#: mg/constructor/domains.py:399
-msgid "Domain registration prices stored"
-msgstr "Цены на регистрацию доменов сохранены"
-
-#: mg/constructor/domains.py:436
-msgid "Personal data saved"
-msgstr "Персональные данные сохранены"
-
-#: mg/constructor/domains.py:449
-msgid "Person name (in the native language)"
-msgstr "Имя владельца (на родном языке)"
-
-#: mg/constructor/domains.py:450
-msgid "Person name (in English)"
-msgstr "Имя владельца (на английском)"
-
-#: mg/constructor/domains.py:451
-msgid "Passport number"
-msgstr "Номер паспорта"
-
-#: mg/constructor/domains.py:452
-msgid "Birthday"
-msgstr "День рождения"
-
-#: mg/constructor/domains.py:453
-msgid "Registration address"
-msgstr "Адрес регистрации"
-
-#: mg/constructor/domains.py:454
-msgid "Postal address"
-msgstr "Почтовый адрес"
-
-#: mg/constructor/domains.py:455
-msgid "Phone"
-msgstr "Телефон"
-
-#: mg/constructor/domains.py:456
-msgid "E-mail address"
-msgstr "Адрес e-mail"
-
-#: mg/constructor/domains.py:457
-msgid "Registrar login"
-msgstr "Login для регистратора"
-
-#: mg/constructor/domains.py:458
-msgid "Registrar password"
-msgstr "Пароль для регистратора"
-
-#: mg/constructor/domains.py:520 mg/constructor/domains.py:568
-#: mg/constructor/dashboard.py:112
-msgid "Domain"
-msgstr "Домен"
-
-#: mg/constructor/domains.py:521 mg/constructor/dashboard.py:113
-msgid "Created"
-msgstr "Создано"
-
-#: mg/constructor/domains.py:522
-msgid "Request"
-msgstr "Запрос"
-
-#: mg/constructor/domains.py:523
-msgid "State"
-msgstr "Состояние"
-
-#: mg/constructor/domains.py:524
-msgid "Cause"
-msgstr "Причина"
-
-#: mg/constructor/domains.py:525
-msgid "In&nbsp;progress"
-msgstr "В&nbsp;работе"
-
-#: mg/constructor/domains.py:526
-msgid "Confirm"
-msgstr "Подтверждение"
-
-#: mg/constructor/domains.py:528
-msgid "confirm"
-msgstr "подтвердить"
-
-#: mg/constructor/domains.py:529
-msgid "cancel"
-msgstr "отменить"
-
-#: mg/constructor/domains.py:530
-msgid "Recheck"
-msgstr "Перепроверка"
-
-#: mg/constructor/domains.py:531
-msgid "recheck"
-msgstr "перепроверить"
-
-#: mg/constructor/domains.py:563
-msgid "external"
-msgstr "внешняя"
-
-#: mg/constructor/domains.py:564
-msgid "completed"
-msgstr "завершена"
-
-#: mg/constructor/domains.py:565
-msgid "pending"
-msgstr "в процессе"
-
-#: mg/constructor/domains.py:568
-msgid "Project"
-msgstr "Проект"
-
-#: mg/constructor/domains.py:569
-msgid "unknown"
-msgstr "неизвестно"
-
-#: mg/constructor/domains.py:582
-msgid "This domain is already bound to another MMO Constructor project"
-msgstr "Этот домен уже привязан к другому проекту MMO Constructor"
-
-#: mg/constructor/domains.py:584
-msgid ""
-"This domain is a subject to the manual check. This may take up to 3 days"
-msgstr "Этот домен подлежит ручной проверке. Это может занять до 3 дней"
-
-#: mg/constructor/domains.py:586
-msgid "This domain was not registered by you. You can't use for your project"
-msgstr ""
-"Этот домен был зарегистрирован не вами. Вы не можете использовать его для "
-"своего проекта"
-
-#: mg/constructor/domains.py:597
-msgid ""
-"Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must "
-"be {2} and {3}"
-msgstr ""
-"Для {0} установлены серверы имён: {1}. Правильно настройте свою зону: DNS-"
-"сервера должны быть: {2} и {3}"
-
-#: mg/constructor/domains.py:605
-msgid "Domain name can't contain 'www'"
-msgstr "Доменное имя не может содержать 'www'"
-
-#: mg/constructor/domains.py:611
-msgid ""
-"Domain {0} was not found by {1}. Either domain is not registered yet or DNS "
-"data was not updated yet. If the domain was registered recently, it is "
-"normal situation. It may take several hours (about 6) for NS servers to "
-"update. Try again later, please"
-msgstr ""
-"Домен {0} не найден серверами {1}. Это означает, что либо домен ещё не "
-"зарегистрирован, либо данные DNS не успели обновиться. Если домен был "
-"зарегистрирован только что, то это нормальная ситуация. NS-серверам может "
-"потребоваться несколько часов (около 6) для того, чтобы обновиться. "
-"Пожалуйста, повторите попытку позже."
-
-#: mg/constructor/domains.py:633 mg/constructor/domains.py:649
-msgid ""
-"Domain {0} has A records but no NS records. Configure your zone correctly"
-msgstr ""
-"Домен {0} имеет записи A, но не имеет записей NS. Правильно сконфигурируйте "
-"вашу зону"
-
-#: mg/constructor/domains.py:637
-msgid "Domain {0} was not found by the root nameservers"
-msgstr "Домен {0} не найден корневыми серверами имён"
-
-#: mg/constructor/domains.py:641
-msgid ""
-"{0} is already configured for the project. You may not use its subdomains"
-msgstr ""
-"{0} уже сконфигурирован для проекта. Вы не можете использовать его поддомены"
-
-#: mg/constructor/invitations.py:40
-msgid "Invitations"
-msgstr "Приглашения"
-
-#: mg/constructor/invitations.py:43
-msgid "Constructor: giving invitations"
-msgstr "Конструктор: выдача приглашений"
-
-#: mg/constructor/invitations.py:47
-msgid "New invitation"
-msgstr "Новое приглашение"
-
-#: mg/constructor/invitations.py:48
-msgid "Invitations for the registration"
-msgstr "Приглашения на регистрацию"
-
-#: mg/constructor/invitations.py:60
-msgid "Enter recipient name"
-msgstr "Введите имя получателя"
-
-#: mg/constructor/invitations.py:71
-msgid "Person name"
-msgstr "Имя персоны"
-
-#: mg/constructor/invitations.py:74
-msgid "Generate invitation code"
-msgstr "Сгенерировать пригласительный код"
-
-#: mg/constructor/invitations.py:90
-msgid "Give a new invitation"
-msgstr "Выдать новое приглашение"
-
-#: mg/constructor/invitations.py:92
-msgid "Type"
-msgstr "Тип"
-
-#: mg/constructor/invitations.py:92
-msgid "Person"
-msgstr "Персона"
-
-#: mg/constructor/invitations.py:108 mg/constructor/invitations.py:113
-msgid "Invalid invitation code"
-msgstr "Неверный пригласительный код"
-
-#: mg/constructor/invitations.py:115
-msgid "This code is redeemed already"
-msgstr "Этот код уже погашен"
-
-#: mg/constructor/invitations.py:117
-msgid "This code in inappropriate for this action"
-msgstr "Этот код не подходит для этого действия"
-
-#: mg/constructor/dashboard.py:27
-msgid "Project name"
-msgstr "Название проекта"
-
-#: mg/constructor/dashboard.py:27
-msgid "Project code"
-msgstr "Код проекта"
-
-#: mg/constructor/dashboard.py:41 mg/constructor/dashboard.py:43
-#, python-format
-msgid "Project %s"
-msgstr "Проект %s"
-
-#: mg/constructor/dashboard.py:48
-msgid "Global settings"
-msgstr "Глобальные настройки"
-
-#: mg/constructor/dashboard.py:50
-msgid "Find project"
-msgstr "Найти проект"
-
-#: mg/constructor/dashboard.py:51
-msgid "Main project"
-msgstr "Главный проект"
-
-#: mg/constructor/dashboard.py:60
-msgid "Enter project uuid"
-msgstr "Введите UUID проекта"
-
-#: mg/constructor/dashboard.py:64
-msgid "Project not found"
-msgstr "Проект не найден"
-
-#: mg/constructor/dashboard.py:69
-msgid "Project uuid"
-msgstr "UUID проекта"
-
-#: mg/constructor/dashboard.py:108
-msgid "Full title"
-msgstr "Полное название"
-
-#: mg/constructor/dashboard.py:109
-msgid "Short title"
-msgstr "Короткое название"
-
-#: mg/constructor/dashboard.py:110
-msgid "Title code"
-msgstr "Код названия"
-
-#: mg/constructor/dashboard.py:111
-msgid "Owner"
-msgstr "Владелец"
-
-#: mg/constructor/dashboard.py:114
-msgid "Published"
-msgstr "Опубликовано"
-
-#: mg/constructor/dashboard.py:115
-msgid "unpublish"
-msgstr "снять с публикации"
-
-#: mg/constructor/dashboard.py:117
-msgid "Are you sure want to unpublish the project?"
-msgstr "Вы уверены, что хотите снять проект с публикации?"
-
-#: mg/constructor/dashboard.py:119
-msgid "Logo"
-msgstr "Логотип"
-
-#: mg/constructor/dashboard.py:150
-msgid "Constructor: global settings"
-msgstr "Конструктор: глобальные настройки"
-
-#: mg/constructor/dashboard.py:151
-msgid "Constructor: projects"
-msgstr "Конструктор: проекты"
-
-#: mg/constructor/dashboard.py:152
-msgid "Constructor: unpublishing projects"
-msgstr "Конструктор: снятие проектов с публикации"
-
-#: mg/constructor/dashboard.py:165
-msgid "Constructor settings stored"
-msgstr "Настройки конструктора сохранены"
-
-#: mg/constructor/dashboard.py:169
-msgid "Registration on invitations"
-msgstr "Регистрация по приглашениям"
+msgid "%s administration interface"
+msgstr "Административный интерфейс %s"
 
 #~ msgid "Upload new design"
 #~ msgstr "Загрузить новое оформление"

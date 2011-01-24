@@ -22,6 +22,7 @@ class Domains(Module):
         self.rhook("domains.tlds", self.tlds)
         self.rhook("domains.prices", self.prices)
         self.rhook("domains.assign", self.assign)
+        self.rhook("domains.validate_new", self.validate_new)
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -63,6 +64,88 @@ class Domains(Module):
         rec.set("project", self.app().project.uuid)
         rec.set("created", self.now())
         rec.store()
+
+    def validate_new(self, domain, errors):
+        try:
+            rec = self.main_app().obj(Domain, domain)
+        except ObjectNotFoundException:
+            pass
+        else:
+            if rec.get("project"):
+                if self.app().project.uuid == rec.get("project"):
+                    return
+                else:
+                    errors["domain"] = self._("This domain is already bound to another MMO Constructor project")
+            elif rec.get("registered") == "pending":
+                errors["domain"] = self._("This domain is a subject to the manual check. This may take up to 3 days")
+            elif rec.get("registered") == "yes" and rec.get("user") != self.app().project.get("owner"):
+                errors["domain"] = self._("This domain was not registered by you. You can't use for your project")
+            if len(errors):
+                return
+        try:
+            servers = self.dns_servers(domain)
+        except DNSCheckError as e:
+            errors["domain"] = unicode(e)
+            return
+        ns1 = self.main_app().config.get("dns.ns1")
+        ns2 = self.main_app().config.get("dns.ns2")
+        if ns1 not in servers or ns2 not in servers or len(servers) != 2:
+            errors["domain"] = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)
+
+    def dns_servers(self, domain):
+        main = self.main_app()
+        ns1 = main.config.get("dns.ns1")
+        ns2 = main.config.get("dns.ns2")
+        domains = domain.split(".")
+        if "www" in domains:
+            raise DNSCheckError(self._("Domain name can't contain 'www'"))
+        domains.reverse()
+        game_domain = domains.pop()
+        checkdomain = None
+        configtext = None
+        dnsservers = None
+        not_found = self._("Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please")
+        for domain in domains:
+            checkdomain = domain + "." + checkdomain if checkdomain else domain
+            engine = QueryEngine(configtext=configtext)
+            result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
+            ips = []
+            names = []
+            print "querying %s about domain %s: %s" % (configtext, checkdomain, [result])
+            for rr in result[3]:
+                names.append(rr[0])
+                if rr[2]:
+                    for rr_a in rr[2]:
+                        ips.append(rr_a[1])
+                elif rr[0]:
+                    engine = QueryEngine()
+                    result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+                    print "querying main DNS about domain %s: %s" % (rr[0], [result])
+                    for rr in result[3]:
+                        ips.append(rr[1])
+            if not len(ips):
+                result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+                if len(result[3]):
+                    raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
+                elif dnsservers:
+                    raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
+                else:
+                    raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
+            configtext = "\n".join(["nameserver %s" % ip for ip in ips])
+            dnsservers = names
+            if ns1 in names or ns2 in names:
+                raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
+        checkdomain = game_domain + "." + checkdomain
+        engine = QueryEngine(configtext=configtext)
+        result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
+        servers = result[3]
+        if not len(servers):
+            result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+            if len(result[3]):
+                raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
+            else:
+                raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
+        return servers
 
 class DomainRegWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):
@@ -326,7 +409,6 @@ class DomainsAdmin(Module):
         self.rhook("domains.money_unlock", self.money_unlock)
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
-        self.rhook("domains.validate_new", self.validate_new)
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
@@ -568,85 +650,3 @@ class DomainsAdmin(Module):
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
                     "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
                 })
-
-    def validate_new(self, domain, errors):
-        try:
-            rec = self.main_app().obj(Domain, domain)
-        except ObjectNotFoundException:
-            pass
-        else:
-            if rec.get("project"):
-                if self.app().project.uuid == rec.get("project"):
-                    return
-                else:
-                    errors["domain"] = self._("This domain is already bound to another MMO Constructor project")
-            elif rec.get("registered") == "pending":
-                errors["domain"] = self._("This domain is a subject to the manual check. This may take up to 3 days")
-            elif rec.get("registered") == "yes" and rec.get("user") != self.app().project.get("owner"):
-                errors["domain"] = self._("This domain was not registered by you. You can't use for your project")
-            if len(errors):
-                return
-        try:
-            servers = self.dns_servers(domain)
-        except DNSCheckError as e:
-            errors["domain"] = unicode(e)
-            return
-        ns1 = self.main_app().config.get("dns.ns1")
-        ns2 = self.main_app().config.get("dns.ns2")
-        if ns1 not in servers or ns2 not in servers or len(servers) != 2:
-            errors["domain"] = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain, ", ".join(servers), ns1, ns2)
-
-    def dns_servers(self, domain):
-        main = self.main_app()
-        ns1 = main.config.get("dns.ns1")
-        ns2 = main.config.get("dns.ns2")
-        domains = domain.split(".")
-        if "www" in domains:
-            raise DNSCheckError(self._("Domain name can't contain 'www'"))
-        domains.reverse()
-        game_domain = domains.pop()
-        checkdomain = None
-        configtext = None
-        dnsservers = None
-        not_found = self._("Domain {0} was not found by {1}. Either domain is not registered yet or DNS data was not updated yet. If the domain was registered recently, it is normal situation. It may take several hours (about 6) for NS servers to update. Try again later, please")
-        for domain in domains:
-            checkdomain = domain + "." + checkdomain if checkdomain else domain
-            engine = QueryEngine(configtext=configtext)
-            result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
-            ips = []
-            names = []
-            print "querying %s about domain %s: %s" % (configtext, checkdomain, [result])
-            for rr in result[3]:
-                names.append(rr[0])
-                if rr[2]:
-                    for rr_a in rr[2]:
-                        ips.append(rr_a[1])
-                elif rr[0]:
-                    engine = QueryEngine()
-                    result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-                    print "querying main DNS about domain %s: %s" % (rr[0], [result])
-                    for rr in result[3]:
-                        ips.append(rr[1])
-            if not len(ips):
-                result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-                if len(result[3]):
-                    raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
-                elif dnsservers:
-                    raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
-                else:
-                    raise DNSCheckError(self._("Domain {0} was not found by the root nameservers").format(checkdomain))
-            configtext = "\n".join(["nameserver %s" % ip for ip in ips])
-            dnsservers = names
-            if ns1 in names or ns2 in names:
-                raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
-        checkdomain = game_domain + "." + checkdomain
-        engine = QueryEngine(configtext=configtext)
-        result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
-        servers = result[3]
-        if not len(servers):
-            result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-            if len(result[3]):
-                raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
-            else:
-                raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
-        return servers
