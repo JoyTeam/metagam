@@ -128,8 +128,11 @@ class Cluster(Module):
                 request.path = str("%s/%s" % (url, ent["filename"]))
                 request.host = host
                 data = ent.get("data")
-                if data is None:
+                if data is None and zip:
                     data = zip.read(ent["zipname"])
+                if data is None and ent.get("path"):
+                    with open(ent.get("path")) as f:
+                        data = f.read()
                 request.body = data
                 request.add_header("Content-type", str(ent["content-type"]))
                 request.add_header("Content-length", len(data))

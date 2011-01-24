@@ -5,6 +5,8 @@ import zipfile
 import cStringIO
 import HTMLParser
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+import dircache
+import mg
 
 max_design_size = 10000000
 max_design_files = 100
@@ -276,23 +278,39 @@ class DesignZip(Module):
             return errors
         design.set("uri", uri)
         return design
-        
+
+class Puzzle(object):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.image = Image.new("RGB", (width, height))
+        self.elements = []
+
+    def add_element(self, image, left, top):
+        self.elements.append((image, left, top))
+        self.image.paste(image, (left, top))
+
+    def update_elements(self):
+        for image, left, top in self.elements:
+            width, height = image.size
+            image.paste(self.image.crop((left, top, left + width, top + height)), None)
+
 class DesignGenerator(Module):
     def __init__(self, app):
         Module.__init__(self, app, "mg.constructor.design.DesignGenerator")
 
     def info(self):
-        info = {}
-        self.makeinfo(info)
-        return info
-
-    def makeinfo(self, info):
-        pass
+        return {
+            "id": self.id(),
+            "group": self.group(),
+            "name": self.name(),
+            "preview": self.preview(),
+        }
 
     def form_fields(self, fields):
         pass
 
-    def form_validate(self, errors):
+    def form_parse(self, errors):
         pass
 
     def upload_image(self, param, errors):
@@ -316,19 +334,128 @@ class DesignGenerator(Module):
             pass
         return image_obj.convert("RGBA")
 
+    def load(self):
+        design = self.obj(Design)
+        design.set("group", self.group())
+        design.set("uploaded", self.now())
+        dir = "%s/data/design/%s/%s" % (mg.__path__[0], self.group(), self.id())
+        html = []
+        css = []
+        files = {}
+        upload_list = []
+        for filename in dircache.listdir(dir):
+            m = re_valid_filename.match(filename)
+            if not m:
+                raise RuntimeError("Filename '%s' is invalid" % filename)
+            basename, ext = m.group(1, 2)
+            content_type = permitted_extensions.get(ext)
+            if not content_type:
+                raise RuntimeError("Unsupported extension: %s" % ext)
+            if ext == "html":
+                html.append(filename)
+            if ext == "css":
+                css.append(filename)
+            upload_list.append({"filename": filename, "content-type": content_type, "path": "%s/%s" % (dir, filename)})
+            files[filename] = {"content-type": content_type}
+        design.set("files", files)
+        if len(html):
+            design.set("html", html)
+        if len(css):
+            design.set("css", css)
+        errors = []
+        self.call("admin-%s.validate" % self.group(), design, errors)
+        if len(errors):
+            raise RuntimeError(", ".join(errors))
+        for file in upload_list:
+            if file["content-type"] == "text/html":
+                with open(file["path"], "r") as f:
+                    data = f.read()
+                try:
+                    parser = DesignHTMLParser(self.app())
+                    parser.feed(data)
+                    parser.close()
+                    vars = {}
+                    self.call("admin-%s.preview-data" % self.group(), vars)
+                    try:
+                        self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
+                    except TemplateException as e:
+                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
+                    else:
+                        file["data"] = parser.output
+                except HTMLParser.HTMLParseError as e:
+                    msg = e.msg
+                    if e.lineno is not None:
+                        msg += self._(", at line %d") % e.lineno
+                    if e.offset is not None:
+                        msg += self._(", column %d") % (e.offset + 1)
+                    errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
+        if len(errors):
+            raise RuntimeError(", ".join(errors))
+        self.design = design
+        self.upload_list = upload_list
+        self.puzzle = Puzzle(1280, 1024)
+        self.elements = {}
+        self.image = self.puzzle.image
+        return design
+
+    def load_image(self, filename):
+        return Image.open("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename)).convert("RGBA")
+
+    def add_element(self, filename, format, left, top):
+        image = self.load_image(filename)
+        self.elements[filename] = (image, format)
+        self.puzzle.add_element(image, left, top)
+        return image
+
+    def temp_image(self, filename):
+        self.upload_list[:] = [ent for ent in self.upload_list if ent["filename"] != filename]
+        return self.load_image(filename)
+
+    def process(self):
+        pass
+
+    def store(self):
+        self.puzzle.update_elements()
+        for ent in self.upload_list:
+            el = self.elements.get(ent["filename"])
+            if el:
+                image, format = el
+                stream = cStringIO.StringIO()
+                image.save(stream, format, quality=95)
+                ent["data"] = stream.getvalue()
+        uri = self.call("cluster.static_upload_zip", "design-%s" % self.group(), None, self.upload_list)
+        self.design.set("uri", uri)
+        self.design.set("title", self.name())
+        self.design.store()
+
 class DesignIndexMagicLands(DesignGenerator):
-    def makeinfo(self, info):
-        info["id"] = "magiclands"
-        info["name"] = "Magic Lands"
-        info["preview"] = "/st/constructor/design/gen/magiclands.jpg"
+    def group(self): return "indexpage"
+    def id(self): return "magiclands"
+    def name(self): return "Magic Lands"
+    def preview(self): return "/st/constructor/design/gen/magiclands.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "image", "type": "fileuploadfield", "label": self._("Base image")})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image")})
 
-    def form_validate(self, errors):
-        self.image = self.upload_image("image", errors)
-        if self.image:
-            width, height = self.image.size
+    def form_parse(self, errors):
+        self.base_image = self.upload_image("base-image", errors)
+
+    def process(self):
+        self.add_element("index_top.jpg", "JPEG", 0, 0)
+        width, height = self.base_image.size
+        if width != 902:
+            height = height * 902.0 / width
+            width = 902
+        if height < 404:
+            width = width * 404.0 / height
+            height = 404
+        width = int(width + 0.5)
+        height = int(height + 0.5)
+        self.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, 0))
+        over = self.temp_image("index_top-over.png")
+        self.image.paste(over, (0, 297), over)
+        login = self.temp_image("login.png")
+        self.image.paste(login, (802, 85), login)
 
 class DesignMod(Module):
     def register(self):
@@ -457,13 +584,15 @@ class DesignAdmin(Module):
                 self.call("admin-%s.generators" % group, gens)
                 for gen in gens:
                     obj = gen(self.app())
-                    info = obj.info()
-                    if info["id"] == id:
+                    if obj.id() == id and obj.group() == group:
                         if req.param("ok"):
                             errors = {}
-                            obj.form_validate(errors)
+                            obj.form_parse(errors)
                             if len(errors):
                                 self.call("web.response_json_html", {"success": False, "errors": errors})
+                            design = obj.load()
+                            obj.process()
+                            obj.store()
                             self.call("web.response_json_html", {"success": True, "redirect": "%s/design" % group})
                         fields = []
                         obj.form_fields(fields)

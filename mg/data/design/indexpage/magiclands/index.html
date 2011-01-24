@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<title>[%game.title_full%]</title>
+<link rel="stylesheet" href="index.css" type="text/css" />
+<meta http-equiv="MSThemeCompatible" content="No" />
+<meta http-equiv="description" content="[%htmlmeta.description%]" />
+<meta http-equiv="keywords" content="[%htmlmeta.keywords%]" />
+</head><body>
+
+<table id="layout">
+	<tr>
+		<td id="sky_left" rowspan="2">&nbsp;</td>
+		<td id="sky_center">
+			<div id="register">
+				<a href="/auth/register"><img src="register.gif" alt="" title="Регистрация" /></a>
+			</div>
+			<div id="login">
+				<form action="/" method="post" name="loginform">
+					<div id="email">
+						<input name="email" value="" title="Имя персонажа или e-mail" />
+					</div>
+					<div id="password">
+						<input type="password" name="password" value="" title="Твой пароль" />
+					</div>
+					<div id="remind">
+						<div><a href="/auth/register"><strong>регистрация</strong></a></div>
+						<div><a href="/auth/remind">забыли пароль?</a></div>
+					</div>
+					<div id="submit">
+						<input type="image" src="submit.gif" alt="Войти в игру" title="Войти в игру" />
+					</div>
+				</form>
+			</div>
+		</td>
+		<td id="sky_right" rowspan="2">&nbsp;</td>
+	</tr>
+	<tr>
+		<td id="content_box">
+			<div id="content1">
+				<div id="content2">
+					<div id="content3">
+						<div id="content">
+							<table id="content_layout">
+								<tr>
+									<td id="news">
+										<div class="links">
+											<div>Об игре</div>
+										</div>
+										<div class="news_list">
+										<div class="news">
+											<p>[%game.description%]</p>
+										</div>
+										</div>
+										[%if news%]
+										<div class="links2"><div>Новое в игре</div></div>
+										<div class="news_list">
+										[%foreach n in news%]
+										<div class="news">
+										<div class="title"><span class="date">[%n.created%]</span> &mdash; [%n.subject%]</div>
+										<p>[%n.announce%][%if n.more +%] <a href="[%n.more%]">Читать далее...</a>[%end%]</p>
+										</div>
+										[%unless n.lst%]<div class="news_delim"></div>[%end%]
+										[%end%]
+										</div>
+										[%end%]
+									</td>
+									<td id="ratings">
+										<div class="links">
+											[%for link in links%]
+											[%if link.href%]
+											[%if link.target%]
+											<div><a href="[%link.href%]" target="[%link.target%]">[%link.title%]</a></div>
+											[%else%]
+											<div><a href="[%link.href%]">[%link.title%]</a></div>
+											[%end%]
+											[%else%]
+											<div>[%link.title%]</div>
+											[%end%]
+											[%end%]
+										</div>
+										[%if ratings%]
+										<div id="rating1"><div id="rating2"><div id="rating3">
+										[%foreach rating in ratings%]
+										<div class="rating">
+											<div class="title"><a href="[%rating.href%]" target="_blank">[%rating.title%]</a></div>
+											<table class="rating">
+											[%for ent in rating.list%]
+											<tr class="[%ent.class%]">
+												<td>[%ent.name%]</td>
+												<td class="value">[%ent.value%]</td>
+											</tr>
+											[%end%]
+											</table>
+										</div>
+										[%end%]
+										</div></div></div>
+										[%end%]
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="bottom1">
+				<div id="bottom2">
+					<div id="bottom3">
+					</div>
+				</div>
+			</div>
+			<table id="bottom">
+				<tr>
+					<td id="logo"><img src="bottom_logo.gif" alt="" /></td>
+					<td id="copyright">[%game.title_full%]<br />Copyright &copy; [%copyright%], 2007-[%year%]</td>
+					<td id="counters">[%counters%]</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+[%if alert%]alert('[%message%]');[%end%]
+</script>
+
+</body></html>
+
