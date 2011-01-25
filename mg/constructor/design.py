@@ -451,11 +451,11 @@ class DesignIndexMagicLands(DesignGenerator):
             height = 404
         width = int(width + 0.5)
         height = int(height + 0.5)
-        self.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, 0))
+        self.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, (404 - height) / 3))
         over = self.temp_image("index_top-over.png")
         self.image.paste(over, (0, 297), over)
         login = self.temp_image("login.png")
-        self.image.paste(login, (802, 85), login)
+        self.image.paste(login, (792, 85), login)
 
 class DesignMod(Module):
     def register(self):
