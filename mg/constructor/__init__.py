@@ -35,7 +35,6 @@ class Constructor(Module):
         self.rhook("ext-debug.validate", self.debug_validate)
         self.rhook("ext-constructor.newgame", self.constructor_newgame)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("applications.list", self.applications_list)
         self.rhook("all.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("core.appfactory", self.appfactory)
@@ -78,11 +77,6 @@ class Constructor(Module):
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)
-
-    def applications_list(self, apps):
-        apps.append("main")
-        projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
-        apps.extend(projects.uuids())
 
     def projects_list(self, projects):
         projects.append({"uuid": "main"})
@@ -304,7 +298,8 @@ class Constructor(Module):
         slices_list = [row for row in slices_list if row.key not in valid_keys]
         apps = []
         self.call("applications.list", apps)
-        for tag in apps:
+        for ent in apps:
+            tag = ent["tag"]
             self.debug("validating application %s", tag)
             app = inst.appfactory.get_by_tag(tag)
             if app is not None:

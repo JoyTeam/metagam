@@ -11,7 +11,7 @@ class CassandraStruct(Module):
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner"])
+        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects"])
         self.config()
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", default={})

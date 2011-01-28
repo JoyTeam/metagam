@@ -186,8 +186,9 @@ class QueueRunner(Module):
         self.info("Starting daily check")
         apps = []
         self.call("applications.list", apps)
+        self.info("Applications list: %s", apps)
         for app in apps:
-            self.call("queue.add", "all.check", priority=20, app_tag=app, unique="all-check-%s" % app)
+            self.call("queue.add", "all.check", priority=20, app_tag=app["tag"], unique="all-check-%s" % app, app_cls=app["cls"])
 
     def queue_process(self):
         self.wait_free = channel()
