@@ -749,6 +749,14 @@ class WebForm(object):
         """
         self._hidden.append({"name": name, "value": cgi.escape(str(value)) if value is not None else None})
 
+    def raw(self, desc, name, html, **kwargs):
+        """
+        raw html control
+        """
+        kwargs["html"] = html
+        kwargs["element_html"] = True
+        self.control(desc, name, **kwargs)
+
     def input(self, desc, name, value, **kwargs):
         """
         <input />
