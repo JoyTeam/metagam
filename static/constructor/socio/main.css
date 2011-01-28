@@ -45,3 +45,5 @@ input.form-file { font-size: 13px }
 .doc-code-sample { font-size: 11px; background-color: #ffffe0; padding: 5px }
 .doc-code-preview { vertical-align: top; padding-left: 50px }
 .doc-code-preview img { margin: 10px 0px 10px 0px }
+.float-block { float: left; padding: 0px 30px 15px 0px }
+.float-end { clear: both }
