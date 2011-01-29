@@ -416,13 +416,14 @@ class CassandraObject(object):
         old_index_values = self.index_values()
         self.calculate_indexes()
         index_values = self.index_values()
-#       print "storing indexes %s (old %s)" % (index_values, old_index_values)
+#       print "storing indexes\n\told: %s\n\tnew: %s" % (old_index_values, index_values)
         for index_name, columns in self.indexes().iteritems():
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)
             if old_key != key:
                 mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
-                #print "%s: %s => %s" % (index_name, old_key, key)
+#               print "\t\t%s: %s => %s" % (index_name, old_key, key)
+                # deleting old index entry if exists
                 if old_key is not None:
                     mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([old_key[1].encode("utf-8")]), clock=clock))
                     index_row = (self.dbprefix + self.clsprefix + index_name + old_key[0]).encode("utf-8")
@@ -432,10 +433,12 @@ class CassandraObject(object):
                         exists["Objects"].append(mutation)
                     else:
                         mutations[index_row] = {"Objects": [mutation]}
+                # creating new index entry if needed
                 if key is None:
-                    del old_index_values[index_name]
+#                   del old_index_values[index_name]
+                    pass
                 else:
-                    old_index_values[index_name] = key
+#                   old_index_values[index_name] = key
                     mutation = Mutation(ColumnOrSuperColumn(Column(name=key[1].encode("utf-8"), value=self.uuid, clock=clock)))
                     index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
                     #print [ index_row, key[1] ]
