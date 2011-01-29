@@ -326,6 +326,9 @@ class DesignGenerator(Module):
         except IOError:
             errors[param] = self._("Image format not recognized")
             return None
+        except OverflowError:
+            errors[param] = self._("Image format not recognized")
+            return None
         try:
             image_obj.seek(1)
             errors[param] = self._("Animated images are not supported")

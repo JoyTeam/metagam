@@ -80,13 +80,13 @@ class Request(object):
             return None
         return val[0]
 
-    def param(self, key):
+    def param(self, key, default=u''):
         "Get specific parameter (both GET and POST)"
         if self._params_loaded is None:
             self.load_params()
         val = self._params.get(key)
         if val is None:
-            return u''
+            return default
         else:
             try:
                 return unicode(val[0], "utf-8")
@@ -817,7 +817,7 @@ class WebForm(object):
         """
         kwargs["value"] = cgi.escape(value) if value is not None else None
         if name is not None:
-            kwargs["name"] = {"text": name}
+            kwargs["submit_name"] = name
         kwargs["element_submit"] = True
         self.control(desc, name, **kwargs)
         self.submit_created = True

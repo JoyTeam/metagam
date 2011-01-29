@@ -19,11 +19,11 @@ def urlencode(str):
         str = str.encode("utf-8")
     return urllib.quote(str)
 
-def intz(str):
+def intz(str, onerror=0):
     try:
         return int(str)
     except (ValueError, TypeError):
-        return 0
+        return onerror
 
 def jsencode(str):
     if str is None:
