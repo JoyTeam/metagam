@@ -434,11 +434,7 @@ class CassandraObject(object):
                     else:
                         mutations[index_row] = {"Objects": [mutation]}
                 # creating new index entry if needed
-                if key is None:
-#                   del old_index_values[index_name]
-                    pass
-                else:
-#                   old_index_values[index_name] = key
+                if key is not None:
                     mutation = Mutation(ColumnOrSuperColumn(Column(name=key[1].encode("utf-8"), value=self.uuid, clock=clock)))
                     index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
                     #print [ index_row, key[1] ]
