@@ -1,6 +1,7 @@
 from concurrence import Tasklet, http
 from concurrence.http import server
 from mg import *
+from mg.core.tools import *
 from template import Template, TemplateException
 from template.provider import Provider
 import urlparse
@@ -796,6 +797,21 @@ class WebForm(object):
         kwargs["checked"] = True if value else None
         kwargs["text"] = desc
         kwargs["element_checkbox"] = True
+        if kwargs.has_key("description"):
+            desc = kwargs["description"]
+            del kwargs["description"]
+        else:
+            desc = None
+        self.control(desc, name, **kwargs)
+
+    def radio(self, desc, name, this_value, value, **kwargs):
+        """
+        <input type="radio" />
+        """
+        kwargs["checked"] = True if value == this_value else None
+        kwargs["text"] = desc
+        kwargs["element_radio"] = True
+        kwargs["value"] = htmlescape(unicode(this_value))
         if kwargs.has_key("description"):
             desc = kwargs["description"]
             del kwargs["description"]
