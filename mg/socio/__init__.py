@@ -440,6 +440,98 @@ class Socio(Module):
         self.rhook("ext-socio.image", self.ext_image)
         self.rhook("ext-socio.user", self.ext_user)
         self.rhook("socio.template", self.template)
+        self.rhook("socio.word_extractor", self.word_extractor)
+        self.rhook("socio.fulltext_store", self.fulltext_store)
+        self.rhook("socio.fulltext_remove", self.fulltext_remove)
+        self.rhook("socio.fulltext_search", self.fulltext_search)
+
+    def word_extractor(self, text):
+        for chunk in re_text_chunks.finditer(text):
+            text = chunk.group()
+            while True:
+                m = re_word_symbol.search(text)
+                if not m:
+                    break
+                start = m.start()
+                m = re_not_word_symbol.search(text, start)
+                if m:
+                    end = m.end()
+                    if end - start > 3:
+                        w = self.stem(text[start:end-1].lower())
+                        if len(w) >= 3:
+                            yield w
+                    text = text[end:]
+                else:
+                    text = text[start:]
+                    if len(text) >= 3:
+                        w = self.stem(text.lower())
+                        if len(w) >= 3:
+                            yield w
+                    break
+
+    def fulltext_store(self, group, uuid, words):
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        cnt = dict()
+        for word in words:
+            if len(word) > max_word_len:
+                word = word[0:max_word_len]
+            try:
+                cnt[word] += 1
+            except KeyError:
+                cnt[word] = 1
+        mutations_search = []
+        mutations_list = []
+        mutations = {
+            "%s-%s" % (app_tag, group): {"Indexes": mutations_search},
+            "%s-%s-%s" % (app_tag, group, uuid): {"Indexes": mutations_list},
+        }
+        for word, count in cnt.iteritems():
+            mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), clock=clock))))
+            mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), clock=clock))))
+            if len(mutations_search) >= 1000:
+                self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                mutations_search = []
+                mutations_list = []
+        if len(mutations_search):
+            self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+
+    def fulltext_remove(self, group, uuid):
+        clock = Clock(time.time() * 1000)
+        app_tag = str(self.app().tag)
+        words = self.app().db.get_slice("%s-%s-%s" % (app_tag, group, uuid), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        mutations = []
+        for word in words:
+            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), clock=clock)))
+        if len(mutations):
+            self.db().batch_mutate({"%s-%s" % (app_tag, group): {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
+            self.db().remove("%s-%s-%s" % (app_tag, group, uuid), ColumnPath("Indexes"), clock, ConsistencyLevel.QUORUM)
+
+    def fulltext_search(self, group, words):
+        app_tag = str(self.app().tag)
+        render_objects = None
+        for word in words:
+            query_search = word
+            if len(query_search) > max_word_len:
+                query_search = query_search[0:max_word_len]
+            start = (query_search + "//").encode("utf-8")
+            finish = (query_search + "/=").encode("utf-8")
+            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-%s" % (app_tag, group), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
+            if render_objects is None:
+                render_objects = objs
+            else:
+                for k, v in render_objects.items():
+                    try:
+                        render_objects[k] += objs[k]
+                    except KeyError:
+                        del render_objects[k]
+        # loading and rendering posts and topics
+        if render_objects is None:
+            render_objects = []
+        else:
+            render_objects = [(v, k) for k, v in render_objects.iteritems()]
+            render_objects.sort(reverse=True)
+        return render_objects
 
     def template(self, name, default=None):
         templates = {}
@@ -1116,8 +1208,8 @@ class Forum(Module):
         # tags index
         tags = self.tags_store(topic.uuid, tags)
         # fulltext index
-        words = list(chain(self.word_extractor(subject), self.word_extractor(content)))
-        self.fulltext_store(topic.uuid, words)
+        words = list(chain(self.call("socio.word_extractor", subject), self.call("socio.word_extractor", content)))
+        self.call("socio.fulltext_store", "ForumSearch", topic.uuid, words)
         # storing objects
         topic_content.set("tags", tags)
         topic.store()
@@ -1178,44 +1270,6 @@ class Forum(Module):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         return tags
 
-    def fulltext_store(self, uuid, words):
-        clock = Clock(time.time() * 1000)
-        app_tag = str(self.app().tag)
-        cnt = dict()
-        for word in words:
-            if len(word) > max_word_len:
-                word = word[0:max_word_len]
-            try:
-                cnt[word] += 1
-            except KeyError:
-                cnt[word] = 1
-        mutations_search = []
-        mutations_list = []
-        mutations = {
-            "%s-ForumSearch" % app_tag: {"Indexes": mutations_search},
-            "%s-ForumSearch-%s" % (app_tag, uuid): {"Indexes": mutations_list},
-        }
-        for word, count in cnt.iteritems():
-            mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), clock=clock))))
-            mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), clock=clock))))
-            if len(mutations_search) >= 1000:
-                self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-                mutations_search = []
-                mutations_list = []
-        if len(mutations_search):
-            self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-
-    def fulltext_remove(self, uuid):
-        clock = Clock(time.time() * 1000)
-        app_tag = str(self.app().tag)
-        words = self.app().db.get_slice("%s-ForumSearch-%s" % (app_tag, uuid), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
-        mutations = []
-        for word in words:
-            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), clock=clock)))
-        if len(mutations):
-            self.db().batch_mutate({"%s-ForumSearch" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
-            self.db().remove("%s-ForumSearch-%s" % (app_tag, uuid), ColumnPath("Indexes"), clock, ConsistencyLevel.QUORUM)
-
     def reply(self, cat, topic, author, content):
         with self.lock(["ForumTopic-" + topic.uuid]):
             post = self.obj(ForumPost)
@@ -1249,7 +1303,7 @@ class Forum(Module):
             page = (posts - 1) / posts_per_page + 1
             catstat.store()
             self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
-            self.fulltext_store(post.uuid, self.word_extractor(content))
+            self.call("socio.fulltext_store", "ForumSearch", post.uuid, self.call("socio.word_extractor", content))
             raise Hooks.Return((post, page))
 
     def ext_topic(self):
@@ -1626,8 +1680,8 @@ class Forum(Module):
                     post.set("content", content)
                     post.set("content_html", self.call("socio.format_text", content))
                     post.store()
-                    self.fulltext_remove(post.uuid)
-                    self.fulltext_store(post.uuid, self.word_extractor(content))
+                    self.call("socio.fulltext_remove", "ForumSearch", post.uuid)
+                    self.call("socio.fulltext_store", "ForumSearch", post.uuid, self.call("socio.word_extractor", content))
                     posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
                     for i in range(0, len(posts)):
                         if posts[i].uuid == post.uuid:
@@ -1658,8 +1712,8 @@ class Forum(Module):
                         topic_content.set("tags", tags)
                         topic.store()
                         topic_content.store()
-                        self.fulltext_remove(topic.uuid)
-                        self.fulltext_store(topic.uuid, self.word_extractor(content))
+                        self.call("socio.fulltext_remove", "ForumSearch", topic.uuid)
+                        self.call("socio.fulltext_store", "ForumSearch", topic.uuid, self.call("socio.word_extractor", content))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
                 subject = topic.get("subject")
@@ -2116,30 +2170,6 @@ class Forum(Module):
         self.call("forum.vars-category", vars)
         self.call("forum.response_template", "socio/category.html", vars)
 
-    def word_extractor(self, text):
-        for chunk in re_text_chunks.finditer(text):
-            text = chunk.group()
-            while True:
-                m = re_word_symbol.search(text)
-                if not m:
-                    break
-                start = m.start()
-                m = re_not_word_symbol.search(text, start)
-                if m:
-                    end = m.end()
-                    if end - start > 3:
-                        w = self.stem(text[start:end-1].lower())
-                        if len(w) >= 3:
-                            yield w
-                    text = text[end:]
-                else:
-                    text = text[start:]
-                    if len(text) >= 3:
-                        w = self.stem(text.lower())
-                        if len(w) >= 3:
-                            yield w
-                    break
-
     def ext_search(self):
         req = self.req()
         user_uuid = req.user()
@@ -2157,30 +2187,8 @@ class Forum(Module):
                 may_read_category.add(cat["id"])
         # querying
         query = req.args.lower().strip()
-        words = list(self.word_extractor(query))
-        app_tag = str(self.app().tag)
-        render_objects = None
-        for word in words:
-            query_search = word
-            if len(query_search) > max_word_len:
-                query_search = query_search[0:max_word_len]
-            start = (query_search + "//").encode("utf-8")
-            finish = (query_search + "/=").encode("utf-8")
-            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-ForumSearch" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
-            if render_objects is None:
-                render_objects = objs
-            else:
-                for k, v in render_objects.items():
-                    try:
-                        render_objects[k] += objs[k]
-                    except KeyError:
-                        del render_objects[k]
-        # loading and rendering posts and topics
-        if render_objects is None:
-            render_objects = []
-        else:
-            render_objects = [(v, k) for k, v in render_objects.iteritems()]
-            render_objects.sort(reverse=True)
+        words = list(self.call("socio.word_extractor", query))
+        render_objects = self.call("socio.fulltext_search", "ForumSearch", words)
         posts = []
         while len(posts) < search_results_per_page and len(render_objects):
             get_cnt = search_results_per_page-len(render_objects)
