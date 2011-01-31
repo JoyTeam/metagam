@@ -671,6 +671,7 @@ class WebForm(object):
         self.messages_bottom = None
         self.texteditors = False
         self.errors = False
+        self.errors_on_top = False
 
     def control(self, desc, name, **kwargs):
         """
@@ -735,6 +736,7 @@ class WebForm(object):
             "translit": self.module._("Translit"),
             "transliterate_to_russian": self.module._("Transliterate to Russian"),
             "smiles": self.module._("Smiles"),
+            "errors_on_top": self.errors_on_top,
         }
         for k, v in add_vars.iteritems():
             vars[k] = v

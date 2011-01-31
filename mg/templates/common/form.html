@@ -7,6 +7,13 @@
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="form-std" name="stdform">
 [%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
 [%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
+[%if errors_on_top%]
+	[%for row in form_rows%]
+		[%for col in row.cols%]
+			[%if col.error%]<div class="form-error">[%if col.desc%]<strong>[%col.desc%]: </strong>[%end%][%col.error.text%]</div>[%end%]
+		[%end%]
+	[%end%]
+[%end%]
 [%for row in form_rows%]
 <table class="form-std-form-row">
 [%if row.show_header%]
