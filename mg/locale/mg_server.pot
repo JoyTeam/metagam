@@ -8,7 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< /home/mg/mg/locale/mg_server.pot
+"POT-Creation-Date: 2011-01-25 12:13+0300\n"
+=======
 "POT-Creation-Date: 2011-01-30 11:50+0300\n"
+>>>>>>> /tmp/mg_server.pot~other.PkUflD
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
