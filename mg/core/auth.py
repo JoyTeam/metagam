@@ -171,12 +171,16 @@ class Sessions(Module):
         return session
 
     def find_user(self, name):
-        users = self.objlist(UserList, query_index="name", query_equal=name.lower())
+        name = name.lower()
+        users = self.objlist(UserList, query_index="name", query_equal=name)
         if len(users):
             users.load()
             return users[0]
-        else:
-            return None
+        users = self.objlist(UserList, query_index="email", query_equal=name)
+        if len(users):
+            users.load()
+            return users[0]
+        return None
 
     def require_permission(self, perm):
         req = self.req()

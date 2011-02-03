@@ -489,7 +489,7 @@ class DesignAdmin(Module):
     def menu_root_index(self, menu):
         req = self.req()
         if req.has_access("design"):
-            menu.append({"id": "design.index", "text": self._("Design")})
+            menu.append({"id": "design.index", "text": self._("Design"), "order": 20})
 
     def editor(self, group):
         self.call("session.require_permission", "design")
@@ -497,6 +497,7 @@ class DesignAdmin(Module):
         with self.lock(["DesignAdmin-%s" % group]):
             req = self.req()
             if req.args == "":
+                installed = self.conf("%s.design" % group)
                 lst = self.objlist(DesignList, query_index="group", query_equal=group)
                 lst.load(silent=True)
                 designs = []
@@ -520,7 +521,8 @@ class DesignAdmin(Module):
                         "uploaded": re_remove_time.sub("", ent.get("uploaded")),
                         "title": htmlescape(title),
                         "filename": htmlescape(filename),
-                        "previews": previews
+                        "previews": previews,
+                        "installed": 1 if installed == ent.uuid else 0,
                     })
                 vars = {
                     "group": group,
@@ -538,7 +540,8 @@ class DesignAdmin(Module):
                     "designs": designs,
                     "download": self._("zip"),
                     "rename": self._("rename///ren"),
-                    "SelectDesignTemplate": self._("Select from the list of templates")
+                    "SelectDesignTemplate": self._("Select from the list of templates"),
+                    "installed": self._("installed"),
                 }
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
@@ -613,8 +616,9 @@ class DesignAdmin(Module):
                     except ObjectNotFoundException:
                         pass
                     else:
-                        self.call("design-admin.delete", design)
-                        design.remove()
+                        if self.conf("%s.design" % group) != uuid:
+                            self.call("design-admin.delete", design)
+                            design.remove()
                     self.call("admin.redirect", "%s/design" % group)
                 elif cmd == "rename":
                     try:
@@ -637,7 +641,15 @@ class DesignAdmin(Module):
                         ]
                         self.call("admin.form", fields=fields, buttons=buttons)
                 elif cmd == "install":
-                    pass
+                    try:
+                        design = self.obj(Design, uuid)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        if self.conf("%s.design" % group) != uuid:
+                            self.app().config.set("%s.design" % group, uuid)
+                            self.app().config.store()
+                    self.call("admin.redirect", "%s/design" % group)
             m = re.match(r'^preview/([a-f0-9]{32})/([a-z]+\.html)$', req.args)
             if m:
                 uuid, template = m.group(1, 2)
@@ -675,7 +687,6 @@ class DesignAdmin(Module):
                             pass
                     zip.close()
                     self.call("web.response", output.getvalue(), "application/zip")
-
             self.call("web.not_found")
 
     def delete(self, design):
@@ -714,7 +725,7 @@ class IndexPageAdmin(Module):
             return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "admin_index": not self.conf("index.design"), "order": 1})
+        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "admin_index": not self.conf("indexpage.design"), "order": 1})
 
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
@@ -835,7 +846,7 @@ class GameInterfaceAdmin(Module):
             return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("game.design"), "order": 2})
+        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("gameinterface.design"), "order": 2})
 
     def ext_design(self):
         self.call("design-admin.editor", "gameinterface")
@@ -914,7 +925,7 @@ class SocioInterfaceAdmin(Module):
             return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("socio.design"), "order": 3})
+        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("sociointerface.design"), "order": 3})
 
     def ext_design(self):
         self.call("design-admin.editor", "sociointerface")
