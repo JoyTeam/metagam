@@ -1,0 +1,58 @@
+html,body,table,tr,td,form,input { padding: 0; margin: 0; border: 0; font-size: 13px; font-family: Verdana; }
+table { border-collapse: collapse; }
+body { background-image: url(body-bg.png); background-position: 50% 0% }
+a, a:visited { color: #af0341 }
+a:hover { color: #ff1061 }
+/* LAYOUT */
+#page-layout1 { margin: 0 auto 0 auto; width: 1024px; background-image: url(border-bg.png); background-position: 0% 0%; background-repeat: repeat-y }
+#page-layout2 { background-image: url(border-bg.png); background-position: 100% 0%; background-repeat: repeat-y }
+#page-layout { background-image: url(body-top.png); background-position: 50% 0%; background-repeat: no-repeat; padding-top: 400px }
+#page-left { float: left; width: 540px; padding: 10px }
+#page-left-2 { padding-left: 107px }
+#page-right { float: right; width: 450px; padding-top: 10px }
+#page-right-content { padding-right: 160px }
+#border-bottom { clear: both; height: 57px; background-image: url(border-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; }
+/* ENTER */
+#enter { width: 241px; height: 225px; position: relative; left: 690px; top: 0px; background-image: url(enter.png); background-repeat: no-repeat; text-align: center; }
+#enter input { width: 166px; border: solid 1px #5d5c5c; font-size: 15px; padding: 2px; text-align: center }
+#enter-email { padding-top: 35px }
+#enter-password { padding-top: 8px }
+#enter-remind { padding-top: 3px }
+#enter-remind a { color: #000000; text-decoration: none; font-size: 11px }
+#enter-remind a:hover { color: #808080 }
+#enter-submit { padding: 35px 2px 0 0 }
+#enter-submit a { color: #ffffff; font-size: 12px; font-weight: bold }
+#enter-submit a:hover { color: #ffe0e0 }
+/* LINKS */
+#links { background-image: url(block.png); width: 239px; margin: 0 0 0 auto }
+.link-inactive { padding: 2px 8px 2px 8px; text-align: right; font-family: Times; font-size: 24px; color: #413a36 }
+a.link-active { display: block; padding: 2px 8px 2px 8px; text-align: right; font-family: Times; font-size: 24px; color: #413a36; text-decoration: none }
+a.link-active:hover { background-image: url(block-sel.png); color: #960036 }
+.link-delim { height: 1px; background-color: #cfcfcf; border-top: solid 1px #787371 }
+/* RATINGS */
+#ratings { width: 290px; margin: 0 0 0 auto }
+.rating-title { padding: 30px 0px 20px 0px; text-align: right; font-family: Times; font-size: 24px; color: #272727 }
+.rating-table { width: 290px }
+.rating-table div { padding: 5px }
+.rating-table .rating-member div { padding-left: 8px }
+.rating-member { font-size: 12px; font-weight: bold; color: #272727; padding-right: 8px; }
+.rating-score { font-size: 12px; font-weight: bold; color: #960036; text-align: center }
+.rating-odd div { background-image: url(rating-sel.png); }
+/* VINTAGE */
+.vintage { width: 100% }
+.vintage-left { background-image: url(vintage-left.png); background-repeat: repeat-x; background-position: 100% 50%; width: 50% }
+.vintage-right { background-image: url(vintage-right.png); background-repeat: repeat-x; background-position: 0% 50%; width: 50% }
+.vintage-title { white-space: nowrap; font-family: Times; font-size: 30px; padding: 0px 15px 0px 15px; color: #39322d }
+/* ABOUT */
+#about { background-image: url(about-sel.png); border: solid 1px #939393; padding: 16px 24px 16px 24px; margin: 10px 0px 20px 0px }
+/* NEWS */
+#news { background-image: url(about-sel.png); border: solid 1px #939393; padding: 16px 24px 16px 24px; margin: 10px 0px 20px 0px }
+.news p { margin: 3px 0px 3px 0px }
+.news-title { font-size: 14px; font-weight: bold; padding-bottom: 5px }
+.news-date { background-color: #ae003f; color: #ffffff; font-size: 11px; padding: 1px }
+.news-delim { border-top: solid 1px #272727; margin-top: 15px; padding-top: 15px }
+/* FOOTER */
+#footer { width: 1024px; margin: 15px auto 0 auto }
+#footer-copyright { vertical-align: bottom; padding: 0px 0px 15px 85px; font-size: 12px; font-weight: bold }
+#footer-counters { vertical-align: bottom; padding: 0px 80px 15px 0px; text-align: right }
+.game-title { color: #960036 }

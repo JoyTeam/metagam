@@ -4,7 +4,7 @@ import re
 import zipfile
 import cStringIO
 import HTMLParser
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
 import dircache
 import mg
 
@@ -283,17 +283,24 @@ class Puzzle(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.image = Image.new("RGB", (width, height))
+        self.image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         self.elements = []
 
-    def add_element(self, image, left, top):
+    def register_element(self, image, left, top):
         self.elements.append((image, left, top))
+
+    def paste_element(self, image, left, top):
         self.image.paste(image, (left, top))
+        self.register_element(image, left, top)
 
     def update_elements(self):
         for image, left, top in self.elements:
             width, height = image.size
-            image.paste(self.image.crop((left, top, left + width, top + height)), None)
+            draw = ImageDraw.Draw(image)
+            draw.rectangle((0, 0, width, height), fill=(0, 0, 0, 0), outline=(0, 0, 0, 0))
+            del draw
+            img = self.image.crop((left, top, left + width, top + height))
+            image.paste(img, None, img)
 
 class DesignGenerator(Module):
     def __init__(self, app):
@@ -373,6 +380,7 @@ class DesignGenerator(Module):
             if file["content-type"] == "text/html":
                 with open(file["path"], "r") as f:
                     data = f.read()
+                stackless.schedule()
                 try:
                     parser = DesignHTMLParser(self.app())
                     parser.feed(data)
@@ -392,6 +400,7 @@ class DesignGenerator(Module):
                     if e.offset is not None:
                         msg += self._(", column %d") % (e.offset + 1)
                     errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
+                stackless.schedule()
         if len(errors):
             raise RuntimeError(", ".join(errors))
         self.design = design
@@ -402,16 +411,41 @@ class DesignGenerator(Module):
         return design
 
     def load_image(self, filename):
-        return Image.open("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename)).convert("RGBA")
+        image = Image.open("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename)).convert("RGBA")
+        stackless.schedule()
+        return image
 
-    def add_element(self, filename, format, left, top):
-        image = self.load_image(filename)
+    def store_image(self, image, filename, format):
         self.elements[filename] = (image, format)
-        self.puzzle.add_element(image, left, top)
+
+    def register_element(self, filename, format, left, top):
+        image = self.load_image(filename)
+        self.puzzle.register_element(image, left, top)
+        self.store_image(image, filename, format)
+        return image
+
+    def paste_element(self, filename, format, left, top):
+        image = self.load_image(filename)
+        self.puzzle.paste_element(image, left, top)
+        self.store_image(image, filename, format)
+        return image
+
+    def create_element(self, filename, format, left, top, width, height):
+        image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        self.puzzle.paste_element(image, left, top)
+        self.store_image(image, filename, format)
+        m = re_valid_filename.match(filename)
+        if not m:
+            raise RuntimeError("Filename '%s' is invalid" % filename)
+        basename, ext = m.group(1, 2)
+        content_type = permitted_extensions.get(ext)
+        self.upload_list.append({"filename": filename, "content-type": content_type})
+        self.design.get("files")[filename] = {"content-type": content_type}
         return image
 
     def temp_image(self, filename):
         self.upload_list[:] = [ent for ent in self.upload_list if ent["filename"] != filename]
+        del self.design.get("files")[filename]
         return self.load_image(filename)
 
     def process(self):
@@ -425,6 +459,7 @@ class DesignGenerator(Module):
                 image, format = el
                 stream = cStringIO.StringIO()
                 image.save(stream, format, quality=95)
+                stackless.schedule()
                 ent["data"] = stream.getvalue()
         uri = self.call("cluster.static_upload_zip", "design-%s" % self.group(), None, self.upload_list)
         self.design.set("uri", uri)
@@ -444,7 +479,7 @@ class DesignIndexMagicLands(DesignGenerator):
         self.base_image = self.upload_image("base-image", errors)
 
     def process(self):
-        self.add_element("index_top.jpg", "JPEG", 0, 0)
+        self.paste_element("index_top.jpg", "JPEG", 0, 0)
         width, height = self.base_image.size
         if width != 902:
             height = height * 902.0 / width
@@ -459,6 +494,45 @@ class DesignIndexMagicLands(DesignGenerator):
         self.image.paste(over, (0, 297), over)
         login = self.temp_image("login.png")
         self.image.paste(login, (792, 85), login)
+
+class DesignIndexBrokenStones(DesignGenerator):
+    def group(self): return "indexpage"
+    def id(self): return "broken-stones"
+    def name(self): return self._("Broken Stones")
+    def preview(self): return "/st/constructor/design/gen/broken-stones.jpg"
+
+    def form_fields(self, fields):
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image")})
+
+    def form_parse(self, errors):
+        self.base_image = self.upload_image("base-image", errors)
+
+    def colorize(self, image, black, white):
+        image = image.convert("RGBA")
+        new_image = Image.new("RGBA", image.size, (0, 0, 0, 0))
+        new_image.paste(ImageOps.colorize(ImageOps.grayscale(image), black, white), (0, 0), image)
+        return new_image
+
+    def process(self):
+        width, height = self.base_image.size
+        if width != 880:
+            height = height * 880.0 / width
+            width = 880
+        if height < 476:
+            width = width * 476.0 / height
+            height = 476
+        width = int(width + 0.5)
+        height = int(height + 0.5)
+        base_image = self.base_image.resize((width, height), Image.ANTIALIAS)
+        base_image = base_image.crop((width / 2 - 440, 0, width / 2 + 440, 476))
+        self.image.paste(base_image, (512 - 880 / 2, 0))
+        body_top = self.register_element("body-top.png", "PNG", 0, 0)
+        body_top_colorized = self.colorize(body_top, (0, 0, 0), (255, 0, 0))
+        self.image.paste(body_top_colorized, (0, 0), body_top)
+        band = self.temp_image("band.png")
+        self.image.paste(band, (0, 0), band)
+        for file in ["border-bg.png", "border-bottom.png", "body-bg.png", "vintage-left.png", "vintage-right.png"]:
+            self.store_image(self.colorize(self.load_image(file), (0, 0, 0), (255, 0, 0)), file, "PNG")
 
 class DesignMod(Module):
     def register(self):
@@ -825,6 +899,7 @@ class IndexPageAdmin(Module):
 
     def generators(self, gens):
         gens.append(DesignIndexMagicLands)
+        gens.append(DesignIndexBrokenStones)
 
 class GameInterface(Module):
     def register(self):
