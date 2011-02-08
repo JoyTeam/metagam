@@ -7,6 +7,8 @@ import HTMLParser
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
 import dircache
 import mg
+import cssutils
+from cssutils import *
 
 max_design_size = 10000000
 max_design_files = 100
@@ -32,6 +34,10 @@ re_design_root_prefix = re.compile(r'^\[%design_root%\]\/(.*)')
 re_rename = re.compile('^rename\/[a-f0-9]{32}$')
 re_remove_time = re.compile(' \d\d:\d\d:\d\d')
 re_generator = re.compile('^gen\/.+$')
+re_valid_color = re.compile('^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$')
+
+cssutils.ser.prefs.lineSeparator = u' '
+cssutils.ser.prefs.indent = u''
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
@@ -344,6 +350,28 @@ class DesignGenerator(Module):
             pass
         return image_obj.convert("RGBA")
 
+    def color_param(self, param, errors):
+        req = self.req()
+        val = req.param(param)
+        m = re_valid_color.match(val)
+        if not m:
+            errors[param] = self._("Invalid color format")
+            return None
+        r, g, b = m.group(1, 2, 3)
+        return (int(r, 16), int(g, 16), int(b, 16))
+
+    def css_color(self, col):
+        return "#%02x%02x%02x" % col
+
+    def merge_color(self, ratio, col0, col1):
+        return (
+            int(col0[0] * (1 - ratio) + col1[0] * ratio + 0.5),
+            int(col0[1] * (1 - ratio) + col1[1] * ratio + 0.5),
+            int(col0[2] * (1 - ratio) + col1[2] * ratio + 0.5))
+
+    def brightness(self, color):
+        return ((color[0] / 255) ** 2 + (color[1] / 255) ** 2 + (color[2] / 255) ** 2) / 3
+
     def load(self):
         design = self.obj(Design)
         design.set("group", self.group())
@@ -356,7 +384,8 @@ class DesignGenerator(Module):
         for filename in dircache.listdir(dir):
             m = re_valid_filename.match(filename)
             if not m:
-                raise RuntimeError("Filename '%s' is invalid" % filename)
+                self.warning("Filename '%s' is invalid", filename)
+                continue
             basename, ext = m.group(1, 2)
             content_type = permitted_extensions.get(ext)
             if not content_type:
@@ -408,7 +437,14 @@ class DesignGenerator(Module):
         self.puzzle = Puzzle(1280, 1024)
         self.elements = {}
         self.image = self.puzzle.image
+        self.css = {}
         return design
+
+    def edit_css(self, filename):
+        parser = CSSParser()
+        css = parser.parseFile("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename), "utf-8")
+        self.css[filename] = css
+        return css
 
     def load_image(self, filename):
         image = Image.open("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename)).convert("RGBA")
@@ -432,7 +468,7 @@ class DesignGenerator(Module):
 
     def create_element(self, filename, format, left, top, width, height):
         image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        self.puzzle.paste_element(image, left, top)
+        self.puzzle.register_element(image, left, top)
         self.store_image(image, filename, format)
         m = re_valid_filename.match(filename)
         if not m:
@@ -461,6 +497,9 @@ class DesignGenerator(Module):
                 image.save(stream, format, quality=95)
                 stackless.schedule()
                 ent["data"] = stream.getvalue()
+            css = self.css.get(ent["filename"])
+            if css:
+                ent["data"] = ("".join(["%s\n" % rule.cssText for rule in css.cssRules])).encode("utf-8")
         uri = self.call("cluster.static_upload_zip", "design-%s" % self.group(), None, self.upload_list)
         self.design.set("uri", uri)
         self.design.set("title", self.name())
@@ -503,9 +542,19 @@ class DesignIndexBrokenStones(DesignGenerator):
 
     def form_fields(self, fields):
         fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image")})
+        fields.append({"name": "body_light", "label": self._("Light color"), "value": "#ffffff"})
+        fields.append({"name": "body_dark", "label": self._("Dark color"), "value": "#000000"})
+        fields.append({"name": "text_color", "label": self._("Text color"), "value": "#000000"})
+        fields.append({"name": "headers_color", "label": self._("Headers color"), "value": "#39322d"})
+        fields.append({"name": "links_color", "label": self._("Links color"), "value": "#af0341"})
 
     def form_parse(self, errors):
         self.base_image = self.upload_image("base-image", errors)
+        self.body_light = self.color_param("body_light", errors)
+        self.body_dark = self.color_param("body_dark", errors)
+        self.text_color = self.color_param("text_color", errors)
+        self.headers_color = self.color_param("headers_color", errors)
+        self.links_color = self.color_param("links_color", errors)
 
     def colorize(self, image, black, white):
         image = image.convert("RGBA")
@@ -514,6 +563,15 @@ class DesignIndexBrokenStones(DesignGenerator):
         return new_image
 
     def process(self):
+        # minor images
+        for file in ["border-bg.png", "border-bottom.png", "body-bg.png", "vintage-left.png", "vintage-right.png", "block.png", "block-sel.png", "rating-sel.png", "about-sel.png", "enter.png"]:
+            self.store_image(self.colorize(self.load_image(file), self.body_dark, self.body_light), file, "PNG")
+        # background
+        body_bg = self.elements["body-bg.png"][0]
+        for y in range(0, 3):
+            for x in range(-2, 3):
+                self.image.paste(body_bg, (512 - 252 / 2 + 252 * x, 252 * y))
+        # main image
         width, height = self.base_image.size
         if width != 880:
             height = height * 880.0 / width
@@ -526,13 +584,29 @@ class DesignIndexBrokenStones(DesignGenerator):
         base_image = self.base_image.resize((width, height), Image.ANTIALIAS)
         base_image = base_image.crop((width / 2 - 440, 0, width / 2 + 440, 476))
         self.image.paste(base_image, (512 - 880 / 2, 0))
-        body_top = self.register_element("body-top.png", "PNG", 0, 0)
-        body_top_colorized = self.colorize(body_top, (0, 0, 0), (255, 0, 0))
+        body_top = self.temp_image("body-top.png")
+        body_top_colorized = self.colorize(body_top, self.body_dark, self.body_light)
         self.image.paste(body_top_colorized, (0, 0), body_top)
         band = self.temp_image("band.png")
         self.image.paste(band, (0, 0), band)
-        for file in ["border-bg.png", "border-bottom.png", "body-bg.png", "vintage-left.png", "vintage-right.png"]:
-            self.store_image(self.colorize(self.load_image(file), (0, 0, 0), (255, 0, 0)), file, "PNG")
+        self.create_element("body-top.jpg", "JPEG", 0, 0, 1024, 627)
+        # CSS
+        css = self.edit_css("index.css")
+        for rule in css.cssRules:
+            if rule.type == cssutils.css.CSSRule.STYLE_RULE:
+                if rule.selectorText == ".link-delim":
+                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.8, self.body_dark, self.body_light)))
+                    rule.style.setProperty("border-top", "solid 1px %s" % self.css_color(self.merge_color(0.1, self.body_dark, self.body_light)))
+                elif rule.selectorText == "#about" or rule.selectorText == "#news":
+                    rule.style.setProperty("border", "solid 1px %s" % self.css_color(self.merge_color(0.58, self.body_dark, self.body_light)))
+                elif rule.selectorText == "html, body, table, tr, td, form, input":
+                    rule.style.setProperty("color", self.css_color(self.text_color))
+                elif rule.selectorText == "a, a:visited":
+                    rule.style.setProperty("color", self.css_color(self.links_color))
+                elif rule.selectorText == "a:hover":
+                    rule.style.setProperty("color", self.css_color(self.merge_color(0.5, self.links_color, (255, 255, 255))))
+                elif rule.selectorText == ".vintage-title":
+                    rule.style.setProperty("color", self.css_color(self.headers_color))
 
 class DesignMod(Module):
     def register(self):
