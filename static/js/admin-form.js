@@ -54,7 +54,7 @@ Form = Ext.extend(AdminResponse, {
 				};
 				if (it.label == '&nbsp;')
 					elem.items.labelSeparator = '';
-			} else {			
+			} else {
 				var elt = {
 					fieldLabel: it.label,
 					name: (it.name != undefined) ? it.name : '',
@@ -66,6 +66,8 @@ Form = Ext.extend(AdminResponse, {
 					border: false,
 					msgTarget: 'side'
 				};
+				if (it.name)
+					elt.id = 'form-field-' + it.name;
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
 					elt.boxLabel = it.label;

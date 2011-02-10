@@ -9,6 +9,7 @@ import dircache
 import mg
 import cssutils
 from cssutils import *
+import mg
 
 max_design_size = 10000000
 max_design_files = 100
@@ -512,7 +513,7 @@ class DesignIndexMagicLands(DesignGenerator):
     def preview(self): return "/st/constructor/design/gen/magiclands.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image")})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image (normal %dx%d, will be resized if not match)") % (902, 404)})
 
     def form_parse(self, errors):
         self.base_image = self.upload_image("base-image", errors)
@@ -541,20 +542,26 @@ class DesignIndexBrokenStones(DesignGenerator):
     def preview(self): return "/st/constructor/design/gen/broken-stones.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image")})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image (normal %dx%d, will be resized if not match)") % (880, 476)})
         fields.append({"name": "body_light", "label": self._("Light color"), "value": "#ffffff"})
         fields.append({"name": "body_dark", "label": self._("Dark color"), "value": "#000000"})
         fields.append({"name": "text_color", "label": self._("Text color"), "value": "#000000"})
+        fields.append({"name": "about_text_color", "label": self._("About and news text color"), "value": "#000000"})
         fields.append({"name": "headers_color", "label": self._("Headers color"), "value": "#39322d"})
-        fields.append({"name": "links_color", "label": self._("Links color"), "value": "#af0341"})
+        fields.append({"name": "href_color", "label": self._("Hrefs color"), "value": "#af0341"})
+        fields.append({"name": "links_color", "label": self._("Text color in the Links block"), "value": "#413a36"})
+        fields.append({"name": "rating_score_color", "label": self._("Text color of rating score values"), "value": "#960036"})
 
     def form_parse(self, errors):
         self.base_image = self.upload_image("base-image", errors)
         self.body_light = self.color_param("body_light", errors)
         self.body_dark = self.color_param("body_dark", errors)
         self.text_color = self.color_param("text_color", errors)
+        self.about_text_color = self.color_param("about_text_color", errors)
         self.headers_color = self.color_param("headers_color", errors)
+        self.href_color = self.color_param("href_color", errors)
         self.links_color = self.color_param("links_color", errors)
+        self.rating_score_color = self.color_param("rating_score_color", errors)
 
     def colorize(self, image, black, white):
         image = image.convert("RGBA")
@@ -587,6 +594,33 @@ class DesignIndexBrokenStones(DesignGenerator):
         body_top = self.temp_image("body-top.png")
         body_top_colorized = self.colorize(body_top, self.body_dark, self.body_light)
         self.image.paste(body_top_colorized, (0, 0), body_top)
+        game_logo = self.temp_image("game-logo.png")
+        game_logo_colorized = self.colorize(game_logo, self.body_dark, self.body_light)
+        self.image.paste(game_logo_colorized, (512 - 301 / 2, 300), game_logo)
+        text = ["This is", "a sample", "text string"]
+        textpad = Image.new("RGBA", game_logo.size, (255, 255, 255, 0))
+        font_size = 65
+        watchdog = 0
+        while font_size > 5:
+            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/beresta.ttf", font_size, encoding="unic")
+            w = 0
+            h = 0
+            for line in text:
+                wl, hl = font.getsize(line)
+                if wl > w:
+                    w = wl
+                h += hl
+            if w < 243 and h < 80:
+                break
+            font_size -= 1
+        draw = ImageDraw.Draw(textpad)
+        y = 13
+        for line in text:
+            wl, hl = font.getsize(line)
+            draw.text((150 - wl / 2, y), line, font=font, fill=(self.headers_color[0], self.headers_color[1], self.headers_color[2], 255))
+            y += hl
+        del draw
+        self.image.paste(textpad, (512 - 301 / 2, 300), textpad)
         band = self.temp_image("band.png")
         self.image.paste(band, (0, 0), band)
         self.create_element("body-top.jpg", "JPEG", 0, 0, 1024, 627)
@@ -599,14 +633,23 @@ class DesignIndexBrokenStones(DesignGenerator):
                     rule.style.setProperty("border-top", "solid 1px %s" % self.css_color(self.merge_color(0.1, self.body_dark, self.body_light)))
                 elif rule.selectorText == "#about" or rule.selectorText == "#news":
                     rule.style.setProperty("border", "solid 1px %s" % self.css_color(self.merge_color(0.58, self.body_dark, self.body_light)))
-                elif rule.selectorText == "html, body, table, tr, td, form, input":
+                    rule.style.setProperty("color", self.css_color(self.about_text_color))
+                elif rule.selectorText == "html, body, table, tr, td, form, input" or rule.selectorText == "#enter-remind a" or rule.selectorText == ".rating-member":
                     rule.style.setProperty("color", self.css_color(self.text_color))
+                elif rule.selectorText == "#enter-remind a:hover":
+                    rule.style.setProperty("color", self.css_color(self.merge_color(0.5, self.text_color, (255, 255, 255))))
                 elif rule.selectorText == "a, a:visited":
-                    rule.style.setProperty("color", self.css_color(self.links_color))
+                    rule.style.setProperty("color", self.css_color(self.href_color))
                 elif rule.selectorText == "a:hover":
-                    rule.style.setProperty("color", self.css_color(self.merge_color(0.5, self.links_color, (255, 255, 255))))
-                elif rule.selectorText == ".vintage-title":
+                    rule.style.setProperty("color", self.css_color(self.merge_color(0.5, self.href_color, (255, 255, 255))))
+                elif rule.selectorText == ".vintage-title" or rule.selectorText == ".rating-title a":
                     rule.style.setProperty("color", self.css_color(self.headers_color))
+                elif rule.selectorText == ".link-inactive" or rule.selectorText == "a.link-active":
+                    rule.style.setProperty("color", self.css_color(self.links_color))
+                elif rule.selectorText == "a.link-active:hover":
+                    rule.style.setProperty("color", self.css_color(self.rating_score_color))
+                elif rule.selectorText == ".rating-score" or rule.selectorText == "a.link-active:hover" or rule.selectorText == ".game-title":
+                    rule.style.setProperty("color", self.css_color(self.rating_score_color))
 
 class DesignMod(Module):
     def register(self):
@@ -753,7 +796,64 @@ class DesignAdmin(Module):
                         buttons = [
                             {"text": self._("Generate design template")}
                         ]
-                        self.call("admin.form", fields=fields, buttons=buttons, modules=["js/FileUploadField.js"])
+                        presets = []
+                        presets.append({"title": self._("Grey"), "fields": [
+                            {"name": "body_light", "value": "#ffffff"},
+                            {"name": "body_dark", "value": "#000000"},
+                            {"name": "text_color", "value": "#000000"},
+                            {"name": "about_text_color", "value": "#000000"},
+                            {"name": "headers_color", "value": "#39322d"},
+                            {"name": "href_color", "value": "#af0341"},
+                            {"name": "links_color", "value": "#413a36"},
+                            {"name": "rating_score_color", "value": "#960036"},
+                        ]})
+                        presets.append({"title": self._("White"), "fields": [
+                            {"name": "body_light", "value": "#ffffff"},
+                            {"name": "body_dark", "value": "#808080"},
+                            {"name": "text_color", "value": "#808080"},
+                            {"name": "about_text_color", "value": "#ffffff"},
+                            {"name": "headers_color", "value": "#383838"},
+                            {"name": "href_color", "value": "#8f0681"},
+                            {"name": "links_color", "value": "#816a66"},
+                            {"name": "rating_score_color", "value": "#c60056"},
+                        ]})
+                        presets.append({"title": self._("Dark"), "fields": [
+                            {"name": "body_light", "value": "#606060"},
+                            {"name": "body_dark", "value": "#000000"},
+                            {"name": "text_color", "value": "#c0c0c0"},
+                            {"name": "about_text_color", "value": "#c0c0c0"},
+                            {"name": "headers_color", "value": "#c0c0c0"},
+                            {"name": "href_color", "value": "#c63066"},
+                            {"name": "links_color", "value": "#c0c0c0"},
+                            {"name": "rating_score_color", "value": "#c63066"},
+                        ]})
+                        presets.append({"title": self._("Brick"), "fields": [
+                            {"name": "body_light", "value": "#e3520f"},
+                            {"name": "body_dark", "value": "#000000"},
+                            {"name": "text_color", "value": "#f4ba8f"},
+                            {"name": "about_text_color", "value": "#f4ba8f"},
+                            {"name": "headers_color", "value": "#f4ba8f"},
+                            {"name": "href_color", "value": "#d6b60a"},
+                            {"name": "links_color", "value": "#f4ba8f"},
+                            {"name": "rating_score_color", "value": "#ffffff"},
+                        ]})
+                        presets.append({"title": self._("Night"), "fields": [
+                            {"name": "body_light", "value": "#101060"},
+                            {"name": "body_dark", "value": "#000000"},
+                            {"name": "text_color", "value": "#e0e0e0"},
+                            {"name": "about_text_color", "value": "#a9a9a9"},
+                            {"name": "headers_color", "value": "#6c73a4"},
+                            {"name": "href_color", "value": "#9ea9ff"},
+                            {"name": "links_color", "value": "#a9a9a9"},
+                            {"name": "rating_score_color", "value": "#ffffff"},
+                        ]})
+                        self.call("admin.response_js", "js/admin-form-presets.js", "FormPresets", {
+                            "url": "/%s/%s/%s" % (req.group, req.hook, req.args),
+                            "fields": fields,
+                            "buttons": buttons,
+                            "modules": ["js/FileUploadField.js"],
+                            "presets": presets,
+                        })
                 self.call("web.not_found")
             m = re.match(r'^([a-z]+)/([a-f0-9]{32})$', req.args)
             if m:
