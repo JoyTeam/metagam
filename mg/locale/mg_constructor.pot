@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-11 14:57+0300\n"
+"POT-Creation-Date: 2011-02-11 15:14+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/js/admin.js:77
+#: static/js/admin.js:81
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:215
+#: static/js/admin.js:218
 msgid "To the main page"
 msgstr ""
 

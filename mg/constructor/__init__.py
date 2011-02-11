@@ -47,6 +47,7 @@ class Constructor(Module):
         self.rhook("project.missing", self.missing)
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("auth.register-form", self.register_form)
+        self.rhook("auth.password-changed", self.password_changed)
 
     def register_form(self, form, mode):
         req = self.req()
@@ -130,10 +131,11 @@ class Constructor(Module):
                 cabmenu.append({"title": self._("Settings"), "left": True})
                 cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
             elif req.hook == "index":
+                user = self.obj(User, req.user())
                 cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/doc", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
-                cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout"), "href": "/auth/logout"})
+                cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout %s") % htmlescape(user.get("name")), "href": "/auth/logout"})
         elif req.group == "forum" or req.group == "socio":
             vars["global_html"] = "constructor/socio_global.html"
             vars["title_suffix"] = " - %s" % self._("MMO Constructor Forum")
@@ -399,3 +401,17 @@ class Constructor(Module):
             file.delete()
         temp_files.remove()
 
+    def password_changed(self, user, password):
+        self.info("Changed password of user %s", user.uuid)
+        projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=user.uuid)
+        projects.load(silent=True)
+        for project in projects:
+            app = self.app().inst.appfactory.get_by_tag(project.uuid)
+            users = app.objlist(UserList, query_index="name", query_equal=user.get("name"))
+            users.load(silent=True)
+            for u in users:
+                self.info("Replicated password to the user %s in the project %s", u.uuid, project.uuid)
+                u.set("salt", user.get("salt"))
+                u.set("pass_reminder", user.get("pass_reminder"))
+                u.set("pass_hash", user.get("pass_hash"))
+                u.store()

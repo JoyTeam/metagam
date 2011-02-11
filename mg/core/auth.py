@@ -659,6 +659,7 @@ class Interface(Module):
                 for sess in sessions:
                     if sess.uuid != my_session.uuid:
                         self.app().mc.delete("SessionCache-%s" % sess.uuid)
+                self.call("auth.password-changed", user, password1)
                 self.call("web.redirect", ret)
         form.hidden("prefix", prefix)
         form.password(self._("Old password"), prefix + "_p", password)
