@@ -4,7 +4,7 @@ import re
 import zipfile
 import cStringIO
 import HTMLParser
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import dircache
 import mg
 import cssutils
@@ -36,6 +36,7 @@ re_rename = re.compile('^rename\/[a-f0-9]{32}$')
 re_remove_time = re.compile(' \d\d:\d\d:\d\d')
 re_generator = re.compile('^gen\/.+$')
 re_valid_color = re.compile('^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$')
+re_newlines = re.compile(r'\r?\n\r?')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -513,7 +514,7 @@ class DesignIndexMagicLands(DesignGenerator):
     def preview(self): return "/st/constructor/design/gen/magiclands.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image (normal %dx%d, will be resized if not match)") % (902, 404)})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is %dx%d, will be automatically resized if not match)") % (902, 404)})
 
     def form_parse(self, errors):
         self.base_image = self.upload_image("base-image", errors)
@@ -542,18 +543,26 @@ class DesignIndexBrokenStones(DesignGenerator):
     def preview(self): return "/st/constructor/design/gen/broken-stones.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Base image (normal %dx%d, will be resized if not match)") % (880, 476)})
-        fields.append({"name": "body_light", "label": self._("Light color"), "value": "#ffffff"})
-        fields.append({"name": "body_dark", "label": self._("Dark color"), "value": "#000000"})
-        fields.append({"name": "text_color", "label": self._("Text color"), "value": "#000000"})
-        fields.append({"name": "about_text_color", "label": self._("About and news text color"), "value": "#000000"})
-        fields.append({"name": "headers_color", "label": self._("Headers color"), "value": "#39322d"})
-        fields.append({"name": "href_color", "label": self._("Hrefs color"), "value": "#af0341"})
-        fields.append({"name": "links_color", "label": self._("Text color in the Links block"), "value": "#413a36"})
-        fields.append({"name": "rating_score_color", "label": self._("Text color of rating score values"), "value": "#960036"})
+        project = self.app().project
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is %dx%d, will be automatically resized if not match)") % (880, 476)})
+        fields.append({"name": "body_dark", "label": self._("Background dark color"), "value": "#000000"})
+        fields.append({"name": "body_light", "label": self._("Background light color"), "value": "#ffffff", "inline": True})
+        fields.append({"name": "game_title", "label": self._("Game title (multiline permitted)"), "value": project.get("title_short"), "type": "textarea"})
+        fields.append({"name": "game_title_color", "label": self._("Game title color"), "value": "#272727"})
+        fields.append({"name": "game_title_glow", "label": self._("Game title glow color"), "value": "#ffffff", "inline": True})
+        fields.append({"name": "about_text_color", "label": self._("Text color in the 'About' and 'News' blocks"), "value": "#000000"})
+        fields.append({"name": "text_color", "label": self._("Text color of the footer, rating participants"), "value": "#000000", "inline": True})
+        fields.append({"name": "href_color", "label": self._("Hyperlinks color"), "value": "#af0341"})
+        fields.append({"name": "headers_color", "label": self._("Color of block headers"), "value": "#39322d", "inline": True})
+        fields.append({"name": "rating_score_color", "label": self._("Color of rating score values"), "value": "#960036"})
+        fields.append({"name": "links_color", "label": self._("Text color in the 'Links' block"), "value": "#413a36", "inline": True})
 
     def form_parse(self, errors):
+        req = self.req()
         self.base_image = self.upload_image("base-image", errors)
+        self.game_title = req.param("game_title")
+        self.game_title_color = self.color_param("game_title_color", errors)
+        self.game_title_glow = self.color_param("game_title_glow", errors)
         self.body_light = self.color_param("body_light", errors)
         self.body_dark = self.color_param("body_dark", errors)
         self.text_color = self.color_param("text_color", errors)
@@ -588,39 +597,53 @@ class DesignIndexBrokenStones(DesignGenerator):
             height = 476
         width = int(width + 0.5)
         height = int(height + 0.5)
+        # base image
         base_image = self.base_image.resize((width, height), Image.ANTIALIAS)
         base_image = base_image.crop((width / 2 - 440, 0, width / 2 + 440, 476))
         self.image.paste(base_image, (512 - 880 / 2, 0))
         body_top = self.temp_image("body-top.png")
         body_top_colorized = self.colorize(body_top, self.body_dark, self.body_light)
         self.image.paste(body_top_colorized, (0, 0), body_top)
+        # game logo
         game_logo = self.temp_image("game-logo.png")
         game_logo_colorized = self.colorize(game_logo, self.body_dark, self.body_light)
-        self.image.paste(game_logo_colorized, (512 - 301 / 2, 300), game_logo)
-        text = ["This is", "a sample", "text string"]
-        textpad = Image.new("RGBA", game_logo.size, (255, 255, 255, 0))
+        text = re_newlines.split(self.game_title.strip())
         font_size = 65
         watchdog = 0
         while font_size > 5:
             font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/beresta.ttf", font_size, encoding="unic")
-            w = 0
             h = 0
+            overflow = False
             for line in text:
                 wl, hl = font.getsize(line)
-                if wl > w:
-                    w = wl
+                wmax = 240 - h * 60 / 76
+                if wl > wmax:
+                    overflow = True
+                    break
                 h += hl
-            if w < 243 and h < 80:
+            if h > 76:
+                overflow = True
+            if not overflow:
                 break
             font_size -= 1
-        draw = ImageDraw.Draw(textpad)
-        y = 13
+        # backgrounds
+        game_logo_color = Image.new("RGBA", game_logo.size, (self.game_title_color[0], self.game_title_color[1], self.game_title_color[2], 255))
+        game_logo_glow = Image.new("RGBA", game_logo.size, (self.game_title_glow[0], self.game_title_glow[1], self.game_title_glow[2], 255))
+        # mask
+        game_logo_mask = Image.new("RGBA", game_logo.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(game_logo_mask)
+        y = (76 - h) / 2 + 18
         for line in text:
             wl, hl = font.getsize(line)
-            draw.text((150 - wl / 2, y), line, font=font, fill=(self.headers_color[0], self.headers_color[1], self.headers_color[2], 255))
+            x = 145 - wl / 2
+            draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
             y += hl
         del draw
-        self.image.paste(textpad, (512 - 301 / 2, 300), textpad)
+        game_logo_glow_mask = game_logo_mask.filter(ImageFilter.BLUR).filter(ImageFilter.BLUR)
+        game_logo_colorized.paste(game_logo_glow, (0, 0), game_logo_glow_mask)
+        game_logo_colorized.paste(game_logo_color, (0, 0), game_logo_mask)
+        self.image.paste(game_logo_colorized, (350, 300), game_logo)
+        # band
         band = self.temp_image("band.png")
         self.image.paste(band, (0, 0), band)
         self.create_element("body-top.jpg", "JPEG", 0, 0, 1024, 627)
@@ -806,6 +829,8 @@ class DesignAdmin(Module):
                             {"name": "href_color", "value": "#af0341"},
                             {"name": "links_color", "value": "#413a36"},
                             {"name": "rating_score_color", "value": "#960036"},
+                            {"name": "game_title_color", "value": "#272727"},
+                            {"name": "game_title_glow", "value": "#ffffff"},
                         ]})
                         presets.append({"title": self._("White"), "fields": [
                             {"name": "body_light", "value": "#ffffff"},
@@ -816,9 +841,11 @@ class DesignAdmin(Module):
                             {"name": "href_color", "value": "#8f0681"},
                             {"name": "links_color", "value": "#816a66"},
                             {"name": "rating_score_color", "value": "#c60056"},
+                            {"name": "game_title_color", "value": "#808080"},
+                            {"name": "game_title_glow", "value": "#ffffff"},
                         ]})
                         presets.append({"title": self._("Dark"), "fields": [
-                            {"name": "body_light", "value": "#606060"},
+                            {"name": "body_light", "value": "#404040"},
                             {"name": "body_dark", "value": "#000000"},
                             {"name": "text_color", "value": "#c0c0c0"},
                             {"name": "about_text_color", "value": "#c0c0c0"},
@@ -826,6 +853,8 @@ class DesignAdmin(Module):
                             {"name": "href_color", "value": "#c63066"},
                             {"name": "links_color", "value": "#c0c0c0"},
                             {"name": "rating_score_color", "value": "#c63066"},
+                            {"name": "game_title_color", "value": "#ffffff"},
+                            {"name": "game_title_glow", "value": "#c0c0c0"},
                         ]})
                         presets.append({"title": self._("Brick"), "fields": [
                             {"name": "body_light", "value": "#e3520f"},
@@ -836,6 +865,8 @@ class DesignAdmin(Module):
                             {"name": "href_color", "value": "#d6b60a"},
                             {"name": "links_color", "value": "#f4ba8f"},
                             {"name": "rating_score_color", "value": "#ffffff"},
+                            {"name": "game_title_color", "value": "#ffffff"},
+                            {"name": "game_title_glow", "value": "#f4ba8f"},
                         ]})
                         presets.append({"title": self._("Night"), "fields": [
                             {"name": "body_light", "value": "#101060"},
@@ -846,6 +877,8 @@ class DesignAdmin(Module):
                             {"name": "href_color", "value": "#9ea9ff"},
                             {"name": "links_color", "value": "#a9a9a9"},
                             {"name": "rating_score_color", "value": "#ffffff"},
+                            {"name": "game_title_color", "value": "#ffffff"},
+                            {"name": "game_title_glow", "value": "#6c73ff"},
                         ]})
                         self.call("admin.response_js", "js/admin-form-presets.js", "FormPresets", {
                             "url": "/%s/%s/%s" % (req.group, req.hook, req.args),

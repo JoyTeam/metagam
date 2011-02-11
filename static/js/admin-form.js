@@ -13,6 +13,7 @@ Form = Ext.extend(AdminResponse, {
 			});
 		}
 		var row = undefined;
+		var flex_total = 0;
 		for (var i = 0; i < data.fields.length; i++) {
 			var it = data.fields[i];
 			if (!row)
@@ -89,12 +90,15 @@ Form = Ext.extend(AdminResponse, {
 					elt.labelSeparator = '';
 				elem = {
 					border: false,
+					autoHeight: true,
 					layout: 'form',
 					items: elt
 				};
 			}
 			if (!it.width && !it.flex)
 				it.flex = 1;
+			if (it.flex)
+				flex_total += it.flex;
 			row.push({
 				autoHeight: true,
 				flex: it.flex,
@@ -103,9 +107,15 @@ Form = Ext.extend(AdminResponse, {
 				items: elem
 			});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
+				for (var j = 0; j < row.length; j++) {
+					if (row[j].flex)
+						row[j].columnWidth = row[j].flex / flex_total;
+					row[j].flex = undefined;
+				}
+				flex_total = 0;
 				rows.push({
 					border: false,
-					layout: 'hbox',
+					layout: 'column',
 					autoHeight: true,
 					defaults: {
 						autoHeight: true
@@ -127,7 +137,8 @@ Form = Ext.extend(AdminResponse, {
 			var btn = new Ext.Button({
 				text: btn_config.text,
 				url: btn_config.url ? btn_config.url : data.url,
-				form_id: form_id
+				form_id: form_id,
+				autoHeight: true
 			});
 			btn.on('click', function(btn, e) {
 				var form = Ext.getCmp('admin-form-' + form_id);

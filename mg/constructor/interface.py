@@ -32,7 +32,7 @@ class IndexPage(Module):
             owner = self.main_app().obj(User, project.get("owner"))
             author_name = owner.get("name")
         vars = {
-            "title": htmlescape(project.get("title")),
+            "title": htmlescape(project.get("title_full")),
             "game": {
                 "title_full": htmlescape(project.get("title_full")),
                 "title_short": htmlescape(project.get("title_short")),

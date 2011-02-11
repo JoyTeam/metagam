@@ -16,20 +16,19 @@ FormPresets = Ext.extend(AdminResponse, {
 		form_presets = data.presets;
 		var panel = new Ext.Panel({
 			border: false,
-			layout: 'hbox',
+			layout: 'column',
 			items: [{
 				border: false,
-				flex: 1,
-				autoHeight: true,
+				columnWidth: 1,
 				items: form
 			}, {
+				width: 150,
 				border: false,
-				flex: 1,
-				autoHeight: true,
 				html: presets.join('<br />')
 			}]
 		});
 		this.add(panel);
+		form.doLayout();
 	}
 });
 
