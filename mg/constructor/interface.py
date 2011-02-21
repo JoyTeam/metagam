@@ -3,6 +3,32 @@ from mg.constructor.design import Design
 from mg.core.auth import User
 import re
 import hashlib
+import mg
+
+class JavaScript(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js)
+
+    def indexpage_js(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        ver = self.int_app().config.get("application.version", 0)
+        mcid = "indexpage-js-%s-%s-%s" % (main_host, lang, ver)
+        data = self.app().mc.get(mcid)
+        if not data:
+            mg_path = mg.__path__[0]
+            vars = {
+                "includes": [
+                    "%s/../static/js/prototype.js" % mg_path,
+                    "%s/../static/js/gettext.js" % mg_path,
+                    "%s/../static/constructor/gettext-%s.js" % (mg_path, lang),
+                ],
+                "main_host": main_host
+            }
+            data = self.call("web.parse_template", "constructor/index/indexpage.js", vars)
+            self.app().mc.set(mcid, data)
+        self.call("web.response", data, "text/javascript; charset=utf-8")
 
 class IndexPage(Module):
     def register(self):
@@ -10,9 +36,24 @@ class IndexPage(Module):
         self.rhook("ext-index.index", self.index)
         self.rhook("indexpage.error", self.error)
         self.rhook("indexpage.response_template", self.response_template)
+        self.rhook("auth.messages", self.auth_messages)
+
+    def auth_messages(self, msg):
+        msg["name_unknown"] = self._("Character not found")
+        msg["user_inactive"] = self._("Character is not active. Check your e-mail and enter activation code")
 
     def index(self):
         req = self.req()
+        session_param = req.param("session")
+        if session_param:
+            session = self.call("session.get")
+            if session.uuid != session_param:
+                self.call("web.redirect", "/")
+            user = session.get("user")
+            if not user:
+                self.call("web.redirect", "/")
+            return self.game_interface(user)
+
         email = req.param("email")
         if email:
             user = self.call("session.find_user", email)
@@ -63,3 +104,6 @@ class IndexPage(Module):
     def response_template(self, template, vars):
         content = self.call("web.parse_template", template, vars)
         self.call("web.response_global", content, vars)
+
+    def game_interface(self, user_uuid):
+        self.call("web.response_global", "Game Interface", {})

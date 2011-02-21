@@ -495,6 +495,7 @@ class Web(Module):
                 "ANYCASE": True,
                 "PRE_CHOMP": 1,
                 "POST_CHOMP": 1,
+                "ABSOLUTE": True
             }
             try:
                 conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider

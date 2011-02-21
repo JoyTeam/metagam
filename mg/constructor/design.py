@@ -37,6 +37,8 @@ re_remove_time = re.compile(' \d\d:\d\d:\d\d')
 re_generator = re.compile('^gen\/.+$')
 re_valid_color = re.compile('^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$')
 re_newlines = re.compile(r'\r?\n\r?')
+re_st_mg = re.compile(r'/st-mg(?:/\[%ver%\])?(/.*)')
+re_dyn_mg = re.compile(r'/dyn-mg(/.*)')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -71,6 +73,9 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.tagstack = []
         self.decl_ok = False
         self.content_type_ok = False
+        self.scripts = set()
+        self.forms = []
+        self.in_form = None
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
@@ -80,12 +85,19 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         html += ">";
         self.output += html
         self.tagstack.append(tag)
+        if tag == "form":
+            if self.in_form:
+                raise HTMLParser.HTMLParseError(self._("Forms inside forms are not allowed"), (self.lineno, self.offset))
+            self.in_form = dict(attrs)
+            self.in_form["inputs"] = {}
+            self.forms.append(self.in_form)
 
     def handle_endtag(self, tag):
         expected = self.tagstack.pop() if len(self.tagstack) else None
         if expected != tag:
             raise HTMLParser.HTMLParseError(self._("Closing tag '{0}' doesn't match opening tag '{1}'").format(tag, expected), (self.lineno, self.offset))
         self.output += "</%s>" % tag
+        self.in_form = None
 
     def handle_startendtag(self, tag, attrs):
         self.process_tag(tag, attrs)
@@ -127,10 +139,26 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
             attrs_dict = dict(attrs)
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
-            if href and not re_proto.match(href) and not re_slash.match(href) and not re_template.search(href):
-                for i in range(0, len(attrs)):
-                    if attrs[i][0] == att:
-                        attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
+            if href:
+                m = re_st_mg.search(href)
+                if m:
+                    href = m.group(1)
+                    for i in range(0, len(attrs)):
+                        if attrs[i][0] == att:
+                            attrs[i] = (att, "/st-mg/[%%ver%%]%s" % href)
+                    self.scripts.add(href)
+                else:
+                    m = re_dyn_mg.search(href)
+                    if m:
+                        href = m.group(1)
+                        for i in range(0, len(attrs)):
+                            if attrs[i][0] == att:
+                                attrs[i] = (att, "/dyn-mg%s" % href)
+                        self.scripts.add(href)
+                    elif not re_proto.match(href) and not re_slash.match(href) and not re_template.search(href):
+                        for i in range(0, len(attrs)):
+                            if attrs[i][0] == att:
+                                attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
         elif tag == "meta":
             attrs_dict = dict(attrs)
             key = attrs_dict.get("http-equiv")
@@ -140,6 +168,11 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
                     if val.lower() != "text/html; charset=utf-8":
                         raise HTMLParser.HTMLParseError(self._('Invalid character set. Specify: content="text/html; charset=utf-8"'), (self.lineno, self.offset))
                     self.content_type_ok = True
+        elif tag == "input":
+            if self.in_form:
+                if not attrs.get("name"):
+                    raise HTMLParser.HTMLParseError(self._('Form input must have "name" attribute'), (self.lineno, self.offset))
+                self.in_form["inputs"][attrs["name"]] = attrs
 
 class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
     "HTML parser modifying HTML files before sending it to the user by removing [%design_root%] prefixes"
@@ -191,12 +224,26 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
             att = "href" if tag == "link" else "src"
             href = attrs_dict.get(att)
             if href:
-                m = re_design_root_prefix.match(href)
+                m = re_st_mg.match(href)
                 if m:
                     href = m.group(1)
                     for i in range(0, len(attrs)):
                         if attrs[i][0] == att:
-                            attrs[i] = (att, href)
+                            attrs[i] = (att, "http://www.%s/st-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                else:
+                    m = re_dyn_mg.match(href)
+                    if m:
+                        href = m.group(1)
+                        for i in range(0, len(attrs)):
+                            if attrs[i][0] == att:
+                                attrs[i] = (att, "http://www.%s/dyn-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                    else:
+                        m = re_design_root_prefix.match(href)
+                        if m:
+                            href = m.group(1)
+                            for i in range(0, len(attrs)):
+                                if attrs[i][0] == att:
+                                    attrs[i] = (att, href)
 
 class DesignZip(Module):
     "Uploaded ZIP file with a design package"
@@ -244,6 +291,7 @@ class DesignZip(Module):
             upload_list.append({"zipname": zip_filename, "filename": filename, "content-type": content_type})
             files[filename] = {"content-type": content_type}
         errors.extend(list_errors)
+        parsed_html = {}
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
@@ -260,6 +308,7 @@ class DesignZip(Module):
                             errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                         else:
                             file["data"] = parser.output
+                        parsed_html[file["filename"]] = parser
                     except HTMLParser.HTMLParseError as e:
                         msg = e.msg
                         if e.lineno is not None:
@@ -275,7 +324,7 @@ class DesignZip(Module):
             design.set("html", html)
         if len(css):
             design.set("css", css)
-        self.call("admin-%s.validate" % group, design, errors)
+        self.call("admin-%s.validate" % group, design, parsed_html, errors)
         if len(errors):
             return errors
         try:
@@ -404,7 +453,7 @@ class DesignGenerator(Module):
         if len(css):
             design.set("css", css)
         errors = []
-        self.call("admin-%s.validate" % self.group(), design, errors)
+        self.call("admin-%s.validate" % self.group(), design, {}, errors)
         if len(errors):
             raise RuntimeError(", ".join(errors))
         for file in upload_list:
@@ -635,7 +684,7 @@ class DesignIndexBrokenStones(DesignGenerator):
         y = (76 - h) / 2 + 18
         for line in text:
             wl, hl = font.getsize(line)
-            x = 145 - wl / 2
+            x = 148 - wl / 2
             draw.text((x, y), line, font=font, fill=(255, 255, 255, 255))
             y += hl
         del draw
@@ -673,6 +722,17 @@ class DesignIndexBrokenStones(DesignGenerator):
                     rule.style.setProperty("color", self.css_color(self.rating_score_color))
                 elif rule.selectorText == ".rating-score" or rule.selectorText == "a.link-active:hover" or rule.selectorText == ".game-title":
                     rule.style.setProperty("color", self.css_color(self.rating_score_color))
+                elif rule.selectorText == ".message-window":
+                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.7, self.body_dark, self.body_light)))
+                    rule.style.setProperty("border", "solid 1px %s" % self.css_color(self.merge_color(0.1, self.body_dark, self.body_light)))
+                elif rule.selectorText == ".message-text-td":
+                    rule.style.setProperty("color", self.css_color(self.text_color))
+                elif rule.selectorText == ".message-button a":
+                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.3, self.body_dark, self.body_light)))
+                    rule.style.setProperty("color", self.css_color(self.text_color))
+                elif rule.selectorText == ".message-button a:hover":
+                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.5, self.body_dark, self.body_light)))
+                    rule.style.setProperty("color", self.css_color(self.text_color))
 
 class DesignMod(Module):
     def register(self):
@@ -1011,7 +1071,7 @@ class IndexPageAdmin(Module):
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
 
-    def validate(self, design, errors):
+    def validate(self, design, parsed_html, errors):
         html = design.get("html")
         if not html:
             errors.append(self._("Index page design package must contain an HTML file"))
@@ -1022,6 +1082,30 @@ class IndexPageAdmin(Module):
             errors.append(self._("index.html must exist in the index page design package"))
         if not design.get("css"):
             errors.append(self._("Index page design package must contain a CSS file"))
+        for filename, parser in parsed_html.iteritems():
+            if filename == "index.html":
+                if not "/indexpage.js" in parser.scripts:
+                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<script type="text/javascript" src="http://www.%s/dyn-mg/indexpage.js"></script>'))
+                loginform_ok = False
+                for form in parser.forms:
+                    if form["name"] == "loginform" and form["id"] == "loginform":
+                        loginform_ok = True
+                        if form["onsubmit"] != "return auth_login();":
+                            errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
+                        email_ok = False
+                        password_ok = False
+                        for inp in form["inputs"]:
+                            if inp["name"] == "email":
+                                email_ok = True
+                                if inp.get("id") != "email":
+                                    errors.append(self._('Email input field must have id="email" and name="email"'))
+                            if inp["name"] == "password":
+                                password_ok = True
+                                if inp.get("id") != "password":
+                                    errors.append(self._('Password input field must have id="password" and name="password"'))
+                        break
+                if not loginform_ok:
+                    errors.append(self._('Your page must have HTML form with id="loginform" and name="loginform"'))
 
     def preview_data(self, vars):
         demo_authors = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]
@@ -1067,6 +1151,7 @@ class IndexPageAdmin(Module):
             {
                 "href": "#",
                 "title": self._("Registration"),
+                "onsubmit": "return auth_register()",
             },
             {
                 "href": "/forum",
@@ -1105,7 +1190,7 @@ class IndexPageAdmin(Module):
             vars["ratings"][-1]["lst"] = True
 
     def generators(self, gens):
-        gens.append(DesignIndexMagicLands)
+        #gens.append(DesignIndexMagicLands)
         gens.append(DesignIndexBrokenStones)
 
 class GameInterface(Module):
@@ -1133,7 +1218,7 @@ class GameInterfaceAdmin(Module):
     def ext_design(self):
         self.call("design-admin.editor", "gameinterface")
 
-    def validate(self, design, errors):
+    def validate(self, design, parsed_html, errors):
         if not design.get("css"):
             errors.append(self._("Game interface design package must contain a CSS file"))
         if design.get("html"):
@@ -1212,7 +1297,7 @@ class SocioInterfaceAdmin(Module):
     def ext_design(self):
         self.call("design-admin.editor", "sociointerface")
 
-    def validate(self, design, errors):
+    def validate(self, design, parsed_html, errors):
         html = design.get("html")
         if not html:
             errors.append(self._("Socio interface design package must contain an HTML file"))

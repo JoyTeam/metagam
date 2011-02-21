@@ -170,16 +170,17 @@ class Sessions(Module):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
         return session
 
-    def find_user(self, name):
+    def find_user(self, name, allow_email=False):
         name = name.lower()
         users = self.objlist(UserList, query_index="name", query_equal=name)
         if len(users):
             users.load()
             return users[0]
-        users = self.objlist(UserList, query_index="email", query_equal=name)
-        if len(users):
-            users.load()
-            return users[0]
+        if allow_email:
+            users = self.objlist(UserList, query_index="email", query_equal=name)
+            if len(users):
+                users.load()
+                return users[0]
         return None
 
     def require_permission(self, perm):
@@ -209,6 +210,8 @@ class Interface(Module):
         self.rhook("ext-auth.captcha", self.ext_captcha)
         self.rhook("ext-auth.logout", self.ext_logout)
         self.rhook("ext-auth.login", self.ext_login)
+        self.rhook("auth.messages", self.messages, priority=10)
+        self.rhook("ext-auth.ajax-login", self.ext_ajax_login)
         self.rhook("ext-auth.activate", self.ext_activate)
         self.rhook("ext-auth.remind", self.ext_remind)
         self.rhook("ext-auth.change", self.ext_change)
@@ -257,7 +260,7 @@ class Interface(Module):
                 form.error("name", self._("Enter your user name"))
             elif not re.match(params["name_re"], name, re.UNICODE):
                 form.error("name", params["name_invalid_re"])
-            elif self.call("session.find_user", name):
+            elif self.call("session.find_user", name, allow_email=True):
                 form.error("name", self._("This name is taken already"))
             if not password1:
                 form.error("password1", self._("Enter your password"))
@@ -551,28 +554,63 @@ class Interface(Module):
                 self.call("web.redirect", redirect)
         self.call("web.redirect", "/")
 
+    def ext_ajax_login(self):
+        req = self.req()
+        name = req.param("email")
+        password = req.param("password")
+        msg = {}
+        self.call("auth.messages", msg)
+        if not name:
+            self.call("web.response_json", {"error": msg["name_empty"]})
+        user = self.call("session.find_user", name, allow_email=True)
+        if user is None:
+            self.call("web.response_json", {"error": msg["name_unknown"]})
+        elif user.get("inactive"):
+            self.call("web.response_json", {"error": msg["name_inactive"]})
+        if not password:
+            self.call("web.response_json", {"error": msg["password_empty"]})
+        m = hashlib.md5()
+        m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+        if m.hexdigest() != user.get("pass_hash"):
+            self.call("web.response_json", {"error": msg["password_incorrect"]})
+        session = self.call("session.get", True)
+        session.set("user", user.uuid)
+        session.delkey("semi_user")
+        session.store()
+        self.app().mc.delete("SessionCache-%s" % session.uuid)
+        self.call("web.response_json", {"ok": 1, "session": session.uuid})
+
+    def messages(self, msg):
+        msg["name_empty"] = self._("Enter your name or email")
+        msg["name_unknown"] = self._("User not found")
+        msg["user_inactive"] = self._("User is not active. Check your e-mail and enter activation code")
+        msg["password_empty"] = self._("Enter your password")
+        msg["password_incorrect"] = self._("Incorrect password")
+
     def ext_login(self):
         req = self.req()
         form = self.call("web.form", "common/form.html")
         name = req.param("name")
         password = req.param("password")
         redirect = req.param("redirect")
+        msg = {}
+        self.call("auth.messages", msg)
         if req.ok():
             if not name:
-                form.error("name", self._("Enter your user name"))
+                form.error("name", msg["name_empty"])
             else:
                 user = self.call("session.find_user", name)
                 if user is None:
-                    form.error("name", self._("User not found"))
+                    form.error("name", msg["user_unknown"])
                 elif user.get("inactive"):
-                    form.error("name", self._("User is not active. Check your e-mail and enter activation code"))
+                    form.error("name", msg["user_inactive"])
             if not password:
-                form.error("password", self._("Enter your password"))
+                form.error("password", msg["password_empty"])
             if not form.errors:
                 m = hashlib.md5()
                 m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
                 if m.hexdigest() != user.get("pass_hash"):
-                    form.error("password", self._("Incorrect password"))
+                    form.error("password", msg["password_incorrect"])
             if not form.errors:
                 session = self.call("session.get", True)
                 session.set("user", user.uuid)

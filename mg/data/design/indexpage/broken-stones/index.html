@@ -7,23 +7,25 @@
 <meta http-equiv="MSThemeCompatible" content="No" />
 <meta http-equiv="description" content="[%htmlmeta.description%]" />
 <meta http-equiv="keywords" content="[%htmlmeta.keywords%]" />
+<script type="text/javascript" src="http://www.mmoconstructor.ru/dyn-mg/indexpage.js"></script>
 </head><body>
 <div id="page-layout1"><div id="page-layout2"><div id="page-layout">
 	<div id="enter">
-		<form action="/" method="post" name="loginform">
+		<form action="/" method="post" id="loginform" name="loginform" onsubmit="return auth_login();">
 			<div id="enter-title">Вход в игру</div>
 			<div id="enter-email">
-				<input name="email" value="" title="Имя персонажа или e-mail" />
+				<input id="email" name="email" value="" title="Имя персонажа или e-mail" />
 			</div>
 			<div id="enter-password">
-				<input type="password" name="password" value="" title="Пароль" />
+				<input id="password" type="password" name="password" value="" title="Пароль" />
 			</div>
 			<div id="enter-remind">
-				<div><a href="/auth/register"><strong>регистрация</strong></a></div>
-				<div><a href="/auth/remind">забыли пароль?</a></div>
+				<div><a href="javascript:void(0)" onclick="return auth_register();"><strong>регистрация</strong></a></div>
+				<div><a href="javascript:void(0)" onclick="return auth_remind();">забыли пароль?</a></div>
 			</div>
 			<div id="enter-submit">
-				<a href="javascript:void(0)" onclick="return false">вход</a>
+				<a href="javascript:void(0)" onclick="return auth_login();">вход</a><br />
+				<input type="image" src="/st-mg/img/null.gif" />
 			</div>
 		</form>
 	</div>
