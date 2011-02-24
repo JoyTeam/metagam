@@ -566,7 +566,7 @@ class Interface(Module):
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
         elif user.get("inactive"):
-            self.call("web.response_json", {"error": msg["name_inactive"]})
+            self.call("web.response_json", {"error": msg["user_inactive"]})
         if not password:
             self.call("web.response_json", {"error": msg["password_empty"]})
         m = hashlib.md5()
@@ -601,7 +601,7 @@ class Interface(Module):
             else:
                 user = self.call("session.find_user", name)
                 if user is None:
-                    form.error("name", msg["user_unknown"])
+                    form.error("name", msg["name_unknown"])
                 elif user.get("inactive"):
                     form.error("name", msg["user_inactive"])
             if not password:
