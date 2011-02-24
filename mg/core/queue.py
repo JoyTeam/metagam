@@ -198,7 +198,6 @@ class QueueRunner(Module):
                 if nd != self.last_check:
                     self.last_check = nd
                     Tasklet.new(self.check)()
-                logging.getLogger("mg.core.queue.Queue").debug("queue_process. workers=%s", self.workers)
                 while self.workers <= 0:
                     self.wait_free.receive()
                 tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
@@ -209,10 +208,8 @@ class QueueRunner(Module):
                         del tasks[self.workers:]
                     queue_workers = self.call("director.queue_workers")
                     for task in tasks:
-                        logging.getLogger("mg.core.queue.Queue").debug("task %s: cls=%s", task.uuid, task.get("cls"))
                         if task.get("cls"):
                             workers = queue_workers.get(task.get("cls"), None)
-                            logging.getLogger("mg.core.queue.Queue").debug("workers: %s, queue_workers: %s", workers, queue_workers)
                             if workers and len(workers):
                                 task.remove()
                                 worker = workers.pop(0)
