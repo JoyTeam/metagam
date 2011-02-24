@@ -413,7 +413,8 @@ class Interface(Module):
                     "content": self._("Someone possibly you requested password recovery on the {host} site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
                 }
                 self.call("auth.remind_email", params)
-                self.call("email.send", email, name, params["subject"], params["content"].format(content=content.encode("utf-8"), host=req.host()))
+                print "params=%s" % params
+                self.call("email.send", email, name, params["subject"], params["content"].format(content=content, host=req.host()))
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
                 self.call("web.redirect", "/auth/login")

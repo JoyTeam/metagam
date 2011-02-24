@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-24 15:30+0300\n"
+"POT-Creation-Date: 2011-02-24 16:06+0300\n"
 "PO-Revision-Date: 2011-02-21 15:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -77,16 +77,16 @@ msgstr "Код"
 msgid "Title"
 msgstr "Название"
 
-#: mg/socio/__init__.py:237 mg/core/auth.py:1103
+#: mg/socio/__init__.py:237 mg/core/auth.py:1104
 msgid "Order"
 msgstr "Порядок"
 
-#: mg/socio/__init__.py:238 mg/socio/__init__.py:1670 mg/core/auth.py:853
+#: mg/socio/__init__.py:238 mg/socio/__init__.py:1670 mg/core/auth.py:854
 msgid "Editing"
 msgstr "Редактирование"
 
 #: mg/socio/__init__.py:239 mg/socio/__init__.py:401 mg/socio/__init__.py:1353
-#: mg/socio/__init__.py:1395 mg/core/auth.py:852 mg/constructor/design.py:1327
+#: mg/socio/__init__.py:1395 mg/core/auth.py:853 mg/constructor/design.py:1327
 msgid "edit"
 msgstr "редактировать"
 
@@ -285,7 +285,7 @@ msgstr "Загрузка изображения"
 msgid "user///Registered"
 msgstr "Регистрация"
 
-#: mg/socio/__init__.py:730 mg/core/auth.py:962
+#: mg/socio/__init__.py:730 mg/core/auth.py:963
 #, python-format
 msgid "User %s"
 msgstr "Пользователь %s"
@@ -693,11 +693,11 @@ msgstr "Введите ваше имя пользователя"
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
-#: mg/core/auth.py:266 mg/core/auth.py:587
+#: mg/core/auth.py:266 mg/core/auth.py:588
 msgid "Enter your password"
 msgstr "Введите ваш пароль"
 
-#: mg/core/auth.py:268 mg/core/auth.py:671
+#: mg/core/auth.py:268 mg/core/auth.py:672
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
 
@@ -705,7 +705,7 @@ msgstr "Минимальная длина пароля - 6 символов"
 msgid "Retype your password"
 msgstr "Повторите пароль"
 
-#: mg/core/auth.py:272 mg/core/auth.py:675
+#: mg/core/auth.py:272 mg/core/auth.py:676
 msgid "Password don't match. Try again, please"
 msgstr "Пароли не совпадают. Пожалуйста, попробуйте снова"
 
@@ -717,11 +717,11 @@ msgstr "Укажите ваш пол"
 msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
 
-#: mg/core/auth.py:280 mg/core/auth.py:767
+#: mg/core/auth.py:280 mg/core/auth.py:768
 msgid "Enter correct e-mail"
 msgstr "Введите правильный адрес e-mail"
 
-#: mg/core/auth.py:285 mg/core/auth.py:731 mg/core/auth.py:772
+#: mg/core/auth.py:285 mg/core/auth.py:732 mg/core/auth.py:773
 msgid "There is another user with this email"
 msgstr "Уже есть пользователь с этим e-mail"
 
@@ -757,8 +757,8 @@ msgstr ""
 "\n"
 "http://{host}/auth/activate/{user}?code={code}"
 
-#: mg/core/auth.py:329 mg/core/auth.py:629 mg/core/auth.py:850
-#: mg/core/auth.py:879 mg/core/auth.py:980
+#: mg/core/auth.py:329 mg/core/auth.py:630 mg/core/auth.py:851
+#: mg/core/auth.py:880 mg/core/auth.py:981
 msgid "User name"
 msgstr "Имя пользователя"
 
@@ -778,7 +778,7 @@ msgstr "Женский"
 msgid "E-mail"
 msgstr "E-mail"
 
-#: mg/core/auth.py:332 mg/core/auth.py:630
+#: mg/core/auth.py:332 mg/core/auth.py:631
 msgid "Password"
 msgstr "Пароль"
 
@@ -798,7 +798,7 @@ msgstr "Регистрация"
 msgid "User registration"
 msgstr "Регистрация пользователя"
 
-#: mg/core/auth.py:341 mg/core/auth.py:638 mg/constructor/__init__.py:160
+#: mg/core/auth.py:341 mg/core/auth.py:639 mg/constructor/__init__.py:160
 #: mg/constructor/domains.py:609
 msgid "Cancel"
 msgstr "Отмена"
@@ -843,7 +843,7 @@ msgstr "Пользователей с этим e-mail не найдено"
 msgid "User '{user}' has password '{password}'\n"
 msgstr "Пользователь '{user}' имеет пароль '{password}'\n"
 
-#: mg/core/auth.py:412 mg/core/auth.py:424
+#: mg/core/auth.py:412 mg/core/auth.py:425
 msgid "Password reminder"
 msgstr "Напоминание пароля"
 
@@ -862,112 +862,112 @@ msgstr ""
 "Если вы всё равно не можете вспомнить ваш пароль, обратитесь в нашу службу "
 "технической поддержки."
 
-#: mg/core/auth.py:421
+#: mg/core/auth.py:422
 msgid "Your e-mail"
 msgstr "Ваш e-mail"
 
-#: mg/core/auth.py:422
+#: mg/core/auth.py:423
 msgid "Remind"
 msgstr "Напомнить"
 
-#: mg/core/auth.py:584
+#: mg/core/auth.py:585
 msgid "Enter your name or email"
 msgstr "Введите ваше имя или e-mail"
 
-#: mg/core/auth.py:585 mg/core/auth.py:874 mg/core/auth.py:975
+#: mg/core/auth.py:586 mg/core/auth.py:875 mg/core/auth.py:976
 msgid "User not found"
 msgstr "Пользователь не найден"
 
-#: mg/core/auth.py:586
+#: mg/core/auth.py:587
 msgid "User is not active. Check your e-mail and enter activation code"
 msgstr "Пользователь неактивен. Проверьте почту и введите код активации"
 
-#: mg/core/auth.py:588
+#: mg/core/auth.py:589
 msgid "Incorrect password"
 msgstr "Неверный пароль"
 
-#: mg/core/auth.py:631 mg/constructor/__init__.py:157
+#: mg/core/auth.py:632 mg/constructor/__init__.py:157
 msgid "Log in"
 msgstr "Вход"
 
-#: mg/core/auth.py:632
+#: mg/core/auth.py:633
 #, python-format
 msgid "If this is your first visit, %s."
 msgstr "Если вы первый раз на сайте, то вы должны %s."
 
-#: mg/core/auth.py:632
+#: mg/core/auth.py:633
 msgid "register please"
 msgstr "зарегистрироваться"
 
-#: mg/core/auth.py:633
+#: mg/core/auth.py:634
 msgid "Forgotten your password?"
 msgstr "Забыли ваш пароль?"
 
-#: mg/core/auth.py:635
+#: mg/core/auth.py:636
 msgid "User login"
 msgstr "Вход пользователя"
 
-#: mg/core/auth.py:662 mg/core/auth.py:758
+#: mg/core/auth.py:663 mg/core/auth.py:759
 msgid "Enter your old password"
 msgstr "Введите ваш старый пароль"
 
-#: mg/core/auth.py:667 mg/core/auth.py:763
+#: mg/core/auth.py:668 mg/core/auth.py:764
 msgid "Incorrect old password"
 msgstr "Неверный старый пароль"
 
-#: mg/core/auth.py:669
+#: mg/core/auth.py:670
 msgid "Enter your new password"
 msgstr "Введите ваш новый пароль"
 
-#: mg/core/auth.py:673
+#: mg/core/auth.py:674
 msgid "Retype your new password"
 msgstr "Повторите ваш новый пароль"
 
-#: mg/core/auth.py:703
+#: mg/core/auth.py:704
 msgid "Old password"
 msgstr "Старый пароль"
 
-#: mg/core/auth.py:704
+#: mg/core/auth.py:705
 msgid "New password"
 msgstr "Новый пароль"
 
-#: mg/core/auth.py:705
+#: mg/core/auth.py:706
 msgid "Confirm new password"
 msgstr "Подтвердите новый пароль"
 
-#: mg/core/auth.py:706 mg/core/auth.py:788
+#: mg/core/auth.py:707 mg/core/auth.py:789
 msgid "Change"
 msgstr "Изменить"
 
-#: mg/core/auth.py:708
+#: mg/core/auth.py:709
 msgid "Password change"
 msgstr "Изменение пароля"
 
-#: mg/core/auth.py:722
+#: mg/core/auth.py:723
 msgid "Enter your code"
 msgstr "Введите ваш код"
 
-#: mg/core/auth.py:726
+#: mg/core/auth.py:727
 msgid "Invalid code"
 msgstr "Неверный код"
 
-#: mg/core/auth.py:743
+#: mg/core/auth.py:744
 msgid "Confirmation code from your post box"
 msgstr "Введите код подтверждения, отправленный вам на почту"
 
-#: mg/core/auth.py:744
+#: mg/core/auth.py:745
 msgid "btn///Confirm"
 msgstr "Подтвердить"
 
-#: mg/core/auth.py:746 mg/core/auth.py:779
+#: mg/core/auth.py:747 mg/core/auth.py:780
 msgid "E-mail confirmation"
 msgstr "Подтверждение e-mail"
 
-#: mg/core/auth.py:765
+#: mg/core/auth.py:766
 msgid "Enter new e-mail address"
 msgstr "Введите новый адрес e-mail"
 
-#: mg/core/auth.py:780
+#: mg/core/auth.py:781
 msgid ""
 "Someone possibly you requested e-mail change on the {host}. If you really "
 "want to do this enter the following confirmation code on the site:\n"
@@ -987,126 +987,126 @@ msgstr ""
 "\n"
 "http://{host}/auth/email/confirm?code={code}"
 
-#: mg/core/auth.py:786
+#: mg/core/auth.py:787
 msgid "New e-mail address"
 msgstr "Новый адрес e-mail"
 
-#: mg/core/auth.py:787
+#: mg/core/auth.py:788
 msgid "Your current password"
 msgstr "Ваш текущий пароль"
 
-#: mg/core/auth.py:795
+#: mg/core/auth.py:796
 msgid "E-mail change"
 msgstr "Изменение e-mail"
 
-#: mg/core/auth.py:800
+#: mg/core/auth.py:801
 msgid "User permissions editor"
 msgstr "Редактор привилегий пользователей"
 
-#: mg/core/auth.py:801
+#: mg/core/auth.py:802
 msgid "User profiles"
 msgstr "Профили пользователей"
 
-#: mg/core/auth.py:817
+#: mg/core/auth.py:818
 msgid "Users"
 msgstr "Пользователи"
 
-#: mg/core/auth.py:822 mg/core/auth.py:851
+#: mg/core/auth.py:823 mg/core/auth.py:852
 msgid "Permissions"
 msgstr "Привилегии"
 
-#: mg/core/auth.py:824
+#: mg/core/auth.py:825
 msgid "My dashboard"
 msgstr "Моя информация"
 
-#: mg/core/auth.py:825
+#: mg/core/auth.py:826
 msgid "Find user"
 msgstr "Найти пользователя"
 
-#: mg/core/auth.py:826
+#: mg/core/auth.py:827
 msgid "Last registered users"
 msgstr "Последние зарегистрированные"
 
-#: mg/core/auth.py:849 mg/core/auth.py:885
+#: mg/core/auth.py:850 mg/core/auth.py:886
 msgid "Edit permissions of a user"
 msgstr "Редактировать привилегии пользователя"
 
-#: mg/core/auth.py:859
+#: mg/core/auth.py:860
 msgid "User permissions"
 msgstr "Привилегии пользователей"
 
-#: mg/core/auth.py:870 mg/core/auth.py:971
+#: mg/core/auth.py:871 mg/core/auth.py:972
 msgid "Enter user name"
 msgstr "Введите имя пользователя"
 
-#: mg/core/auth.py:881 mg/core/auth.py:982 mg/constructor/design.py:1499
+#: mg/core/auth.py:882 mg/core/auth.py:983 mg/constructor/design.py:1499
 #: mg/constructor/dashboard.py:71
 msgid "Search"
 msgstr "Искать"
 
-#: mg/core/auth.py:931
+#: mg/core/auth.py:932
 msgid "Everybody"
 msgstr "Все"
 
-#: mg/core/auth.py:932
+#: mg/core/auth.py:933
 msgid "Logged in"
 msgstr "Вошедший в систему"
 
-#: mg/core/auth.py:933
+#: mg/core/auth.py:934
 msgid "Not logged in"
 msgstr "Не вошедший в систему"
 
-#: mg/core/auth.py:935
+#: mg/core/auth.py:936
 #, python-format
 msgid "Privilege: %s"
 msgstr "Привилегия: %s"
 
-#: mg/core/auth.py:996 mg/game/money.py:514 mg/game/money.py:646
+#: mg/core/auth.py:997 mg/game/money.py:514 mg/game/money.py:646
 #: mg/constructor/dashboard.py:118
 msgid "Update"
 msgstr "Обновить"
 
-#: mg/core/auth.py:1014
+#: mg/core/auth.py:1015
 msgid "ID"
 msgstr "ID"
 
-#: mg/core/auth.py:1014
+#: mg/core/auth.py:1015
 msgid "Name"
 msgstr "Имя"
 
-#: mg/core/auth.py:1014
+#: mg/core/auth.py:1015
 msgid "Active"
 msgstr "Активен"
 
-#: mg/core/auth.py:1015 mg/constructor/dashboard.py:116
+#: mg/core/auth.py:1016 mg/constructor/dashboard.py:116
 msgid "no"
 msgstr "нет"
 
-#: mg/core/auth.py:1015
+#: mg/core/auth.py:1016
 msgid "yes"
 msgstr "да"
 
-#: mg/core/auth.py:1072 mg/core/auth.py:1081
+#: mg/core/auth.py:1073 mg/core/auth.py:1082
 msgid "Select valid role"
 msgstr "Выберите роль"
 
-#: mg/core/auth.py:1074 mg/core/auth.py:1083
+#: mg/core/auth.py:1075 mg/core/auth.py:1084
 msgid "Select valid permission"
 msgstr "Выберите разрешение"
 
-#: mg/core/auth.py:1098
+#: mg/core/auth.py:1099
 msgid "Delete"
 msgstr "Удалить"
 
-#: mg/core/auth.py:1099
+#: mg/core/auth.py:1100
 msgid "Add"
 msgstr "Добавить"
 
-#: mg/core/auth.py:1104
+#: mg/core/auth.py:1105
 msgid "Role"
 msgstr "Роль"
 
-#: mg/core/auth.py:1105
+#: mg/core/auth.py:1106
 msgid "Permission"
 msgstr "Разрешение"
 
