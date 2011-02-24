@@ -17,6 +17,9 @@ def main():
         for task in tasks:
             at = from_unixtime(task.get("at"))
             print "%s - %s.%s.%s - %s" % (at, task.get("cls"), task.get("app"), task.get("hook"), task.get("args"))
+            if task.get("cls") == "main":
+                task.set("cls", "metagam")
+                task.store()
         quit(0)
     except RuntimeError as e:
         logging.error(e)
