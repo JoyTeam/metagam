@@ -221,10 +221,7 @@ class QueueRunner(Module):
                                 Tasklet.new(self.queue_run)(task, worker)
                         else:
                             self.error("Missing cls: %s" % task.data)
-                            # TEMP
-                            task.set("cls", "metagam")
-                            task.store()
-                            #task.remove()
+                            task.remove()
                     else:
                         Tasklet.sleep(5)
                 else:

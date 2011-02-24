@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-21 15:01+0300\n"
+"POT-Creation-Date: 2011-02-24 15:30+0300\n"
 "PO-Revision-Date: 2011-02-16 14:18+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -73,7 +73,12 @@ msgstr "Пожалуйста, подождите..."
 msgid "Next"
 msgstr "Далее"
 
-#: mg/templates/constructor/index/indexpage.js:44
+#: mg/templates/constructor/index/indexpage.js:74
+#, fuzzy
+msgid "Server is in the local mode"
+msgstr "Сервер недоступен"
+
+#: mg/templates/constructor/index/indexpage.js:105
 msgid "Server is unavailable"
 msgstr "Сервер недоступен"
 
