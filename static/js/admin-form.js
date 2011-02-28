@@ -4,6 +4,7 @@ Form = Ext.extend(AdminResponse, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
 		});
+		this.conditions = new Array();
 		var upload = false;
 		var rows = new Array();
 		if (data.title) {
@@ -65,7 +66,8 @@ Form = Ext.extend(AdminResponse, {
 					xtype: (it.type == undefined) ? 'textfield' : it.type,
 					anchor: '-30',
 					border: false,
-					msgTarget: 'side'
+					msgTarget: 'side',
+					listeners: {}
 				};
 				if (it.name)
 					elt.id = 'form-field-' + it.name;
@@ -88,6 +90,18 @@ Form = Ext.extend(AdminResponse, {
 					elt.hideLabel = true;
 				if (elt.fieldLabel == '&nbsp;')
 					elt.labelSeparator = '';
+				if (elt.xtype != 'textarea' && elt.xtype != 'combo') {
+					elt.listeners.specialkey = function(field, e) {
+						if (e.getKey() == e.ENTER) {
+							var form = Ext.getCmp('admin-form-' + form_id);
+							form.ownerCt.custom_submit(form.url);
+						}
+					};
+				}
+				elt.listeners.select = elt.listeners.change = function(field, newval, oldval) {
+					var form = Ext.getCmp('admin-form-' + form_id);
+					form.ownerCt.enforce_conditions();
+				};
 				elem = {
 					border: false,
 					autoHeight: true,
@@ -100,12 +114,15 @@ Form = Ext.extend(AdminResponse, {
 			if (it.flex)
 				flex_total += it.flex;
 			row.push({
+				id: 'elem_' + it.name,
 				autoHeight: true,
 				flex: it.flex,
 				width: it.width,
 				border: false,
 				items: elem
 			});
+			if (it.condition)
+				this.conditions.push({id: 'elem_' + it.name, condition: it.condition});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
 				for (var j = 0; j < row.length; j++) {
 					if (row[j].flex)
@@ -122,6 +139,11 @@ Form = Ext.extend(AdminResponse, {
 					},
 					items: row
 				});
+				/* single column rows */
+				if (row.length == 1) {
+					rows[rows.length - 1].id = row[0].id;
+					row[0].id = undefined;
+				}
 				row = undefined;
 			}
 		}
@@ -142,30 +164,7 @@ Form = Ext.extend(AdminResponse, {
 			});
 			btn.on('click', function(btn, e) {
 				var form = Ext.getCmp('admin-form-' + form_id);
-				form.getForm().submit({
-					url: btn.url,
-					waitMsg: gt.gettext('Sending data...'),
-					success: function(f, action) {
-						if (form.fileUpload) {
-							adm_success_json(action.response, {
-								func: btn.url
-							});
-						} else {
-							adm_success(action.response, {
-								func: btn.url
-							});
-						}
-					},
-					failure: function(f, action) {
-						if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-							if (action.result.errormsg) {
-								Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
-							}
-						} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-							Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + btn.url));
-						}
-					}
-				});
+				form.ownerCt.custom_submit(btn.url);
 			}, btn);
 			buttons.push(btn);
 		}
@@ -182,11 +181,57 @@ Form = Ext.extend(AdminResponse, {
 			footerStyle: 'padding: 0',
 			waitTitle: gt.gettext('Please wait...'),
 			layout: 'auto',
-			fileUpload: upload
+			fileUpload: upload,
+			url: data.url
 		});
 		this.add(form);
+		this.enforce_conditions();
+	},
+	enforce_conditions: function() {
+		for (var i = 0; i < this.conditions.length; i++) {
+			var cond = this.conditions[i];
+			var visible = false;
+			try {
+				visible = eval(cond.condition);
+			} catch (e) {
+			}
+			Ext.getCmp(cond.id).setVisible(visible);
+		}
+	},
+	custom_submit: function(url) {
+		var form = Ext.getCmp('admin-form-' + form_id);
+		form.getForm().submit({
+			url: url,
+			waitMsg: gt.gettext('Sending data...'),
+			success: function(f, action) {
+				if (form.fileUpload) {
+					adm_success_json(action.response, {
+						func: url
+					});
+				} else {
+					adm_success(action.response, {
+						func: url
+					});
+				}
+			},
+			failure: function(f, action) {
+				if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+					if (action.result.errormsg) {
+						Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+					}
+				} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+					Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + url));
+				}
+			}
+		});
 	}
 });
+
+function form_value(id)
+{
+	var cmp = Ext.getCmp('form-field-' + id);
+	return cmp.getValue();
+}
 
 loaded('js/admin-form.js');
 

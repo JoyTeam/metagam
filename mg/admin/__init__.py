@@ -7,6 +7,7 @@ import json
 re_remove_admin = re.compile(r'^admin-')
 re_split_3 = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
 re_split_2 = re.compile(r'^([^/]+)/([^/]+)$')
+re_form_condition = re.compile(r'\[([a-z_][a-z0-9_]*)\]')
 
 class AdminInterface(Module):
     def register(self):
@@ -35,10 +36,16 @@ class AdminInterface(Module):
             self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
         self.call("web.response_template", "admin/index.html", vars)
 
+    def menu_compare(self, x, y):
+        res = cmp(x.get("order"), y.get("order"))
+        if res:
+            return res
+        return cmp(x.get("text"), y.get("text"))
+
     def sortleftmenu(self, menu):
         children = menu.get("children")
         if children is not None:
-            children.sort(cmp=lambda x, y: cmp(x.get("order"), y.get("order")))
+            children.sort(cmp=self.menu_compare)
             for child in children:
                 self.sortleftmenu(child)
 
@@ -221,6 +228,9 @@ class AdminInterface(Module):
             onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
         return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), title, random.randrange(0, 1000000000), onclick)
 
+    def form_condition(self, m):
+        return "form_value('%s')" % m.group(1)
+
     def form(self, url=None, fields=None, buttons=None, title=None, modules=None, menu=None):
         if url is None:
             req = self.req()
@@ -229,6 +239,10 @@ class AdminInterface(Module):
             fields = []
         if buttons is None:
             buttons = [{"text": self._("Save")}]
+        for field in fields:
+            condition = field.get("condition")
+            if condition is not None:
+                field["condition"] = re_form_condition.sub(self.form_condition, condition)
         self.call("admin.response_js", "js/admin-form.js", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
 
     def update_menu(self):

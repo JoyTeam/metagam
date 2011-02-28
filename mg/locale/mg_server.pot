@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-24 16:06+0300\n"
+"POT-Creation-Date: 2011-02-28 16:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -383,7 +383,7 @@ msgid "Edit topic"
 msgstr ""
 
 #: mg/socio/__init__.py:1725 mg/core/web.py:713 mg/core/director.py:240
-#: mg/admin/__init__.py:231
+#: mg/admin/__init__.py:241
 msgid "Save"
 msgstr ""
 
@@ -1281,13 +1281,49 @@ msgstr ""
 msgid "Constructor: 2pay integration"
 msgstr ""
 
-#: mg/admin/__init__.py:31
+#: mg/admin/__init__.py:32
 msgid "Administration interface"
 msgstr ""
 
-#: mg/admin/__init__.py:68
+#: mg/admin/__init__.py:75
 #, python-format
 msgid "%s administration interface"
+msgstr ""
+
+#: mg/constructor/players.py:12 mg/constructor/players.py:20
+msgid "Players authentication settings"
+msgstr ""
+
+#: mg/constructor/players.py:17
+msgid "Players authentication"
+msgstr ""
+
+#: mg/constructor/players.py:34
+msgid "Settings stored"
+msgstr ""
+
+#: mg/constructor/players.py:40
+msgid "Are players allowed to play more than 1 character"
+msgstr ""
+
+#: mg/constructor/players.py:40
+msgid "No"
+msgstr ""
+
+#: mg/constructor/players.py:40
+msgid "Yes, but play them by turn"
+msgstr ""
+
+#: mg/constructor/players.py:40
+msgid "Yes, play them simultaneously"
+msgstr ""
+
+#: mg/constructor/players.py:41
+msgid "Number of characters per player allowed for free"
+msgstr ""
+
+#: mg/constructor/players.py:42
+msgid "Maximal number of characters per player allowed"
 msgstr ""
 
 #: mg/constructor/setup.py:19
@@ -1878,9 +1914,9 @@ msgid "Invalid color format"
 msgstr ""
 
 #: mg/constructor/design.py:566 mg/constructor/design.py:596
-#, python-format
 msgid ""
-"Main image (normal size is %dx%d, will be automatically resized if not match)"
+"Main image (normal size is {0}x{1}, will be automatically resized if not "
+"match)"
 msgstr ""
 
 #: mg/constructor/design.py:591

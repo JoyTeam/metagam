@@ -12,9 +12,9 @@ class ConstructorProject(Module):
         self.rhook("project.admin_confirmed", self.admin_confirmed)
 
     def child_modules(self):
-        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains", "mg.constructor.interface.IndexPage", "mg.socio.Socio"]
+        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains", "mg.socio.Socio"]
         if self.app().project.get("admin_confirmed"):
-            lst.extend(["mg.constructor.design.DesignMod", "mg.constructor.game.Game", "mg.constructor.interface.JavaScript"])
+            lst.extend(["mg.constructor.design.DesignMod", "mg.constructor.game.Game", "mg.constructor.interface.JavaScript", "mg.constructor.interface.IndexPage", "mg.constructor.players.Auth"])
         return lst
 
     def project_title(self):

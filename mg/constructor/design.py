@@ -563,7 +563,7 @@ class DesignIndexMagicLands(DesignGenerator):
     def preview(self): return "/st/constructor/design/gen/magiclands.jpg"
 
     def form_fields(self, fields):
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is %dx%d, will be automatically resized if not match)") % (902, 404)})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is {0}x{1}, will be automatically resized if not match)").format(902, 404)})
 
     def form_parse(self, errors):
         self.base_image = self.upload_image("base-image", errors)
@@ -593,7 +593,7 @@ class DesignIndexBrokenStones(DesignGenerator):
 
     def form_fields(self, fields):
         project = self.app().project
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is %dx%d, will be automatically resized if not match)") % (880, 476)})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is {0}x{1}, will be automatically resized if not match)").format(880, 476)})
         fields.append({"name": "body_dark", "label": self._("Background dark color"), "value": "#000000"})
         fields.append({"name": "body_light", "label": self._("Background light color"), "value": "#ffffff", "inline": True})
         fields.append({"name": "game_title", "label": self._("Game title (multiline permitted)"), "value": project.get("title_short"), "type": "textarea"})

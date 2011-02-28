@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-24 15:30+0300\n"
+"POT-Creation-Date: 2011-02-28 16:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,11 +33,20 @@ msgstr ""
 msgid "Presets:"
 msgstr ""
 
-#: static/js/admin-form.js:147
+#: static/js/admin-form.js:182 mg/templates/constructor/domain-wizard.html:82
+#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/logo.html:57
+#: mg/templates/constructor/logo-wizard.html:80
+#: mg/templates/constructor/logo-wizard.html:119
+#: mg/templates/constructor/logo-wizard.html:230
+msgid "Please wait..."
+msgstr ""
+
+#: static/js/admin-form.js:205
 msgid "Sending data..."
 msgstr ""
 
-#: static/js/admin-form.js:162 static/js/admin-form.js:165
+#: static/js/admin-form.js:220 static/js/admin-form.js:223
 #: mg/templates/constructor/domain-wizard.html:41
 #: mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:29
@@ -48,21 +57,12 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: static/js/admin-form.js:165 mg/templates/constructor/domain-wizard.html:44
+#: static/js/admin-form.js:223 mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:32
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
 #, python-format
 msgid "Server error: %s"
-msgstr ""
-
-#: static/js/admin-form.js:183 mg/templates/constructor/domain-wizard.html:82
-#: mg/templates/constructor/domain.html:71
-#: mg/templates/constructor/logo.html:57
-#: mg/templates/constructor/logo-wizard.html:80
-#: mg/templates/constructor/logo-wizard.html:119
-#: mg/templates/constructor/logo-wizard.html:230
-msgid "Please wait..."
 msgstr ""
 
 #: mg/templates/constructor/intro-ru.html:18
