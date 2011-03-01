@@ -98,7 +98,7 @@ Form = Ext.extend(AdminResponse, {
 						}
 					};
 				}
-				elt.listeners.select = elt.listeners.change = function(field, newval, oldval) {
+				elt.listeners.select = elt.listeners.change = elt.listeners.check = function(field, newval, oldval) {
 					var form = Ext.getCmp('admin-form-' + form_id);
 					form.ownerCt.enforce_conditions();
 				};
@@ -185,9 +185,10 @@ Form = Ext.extend(AdminResponse, {
 			url: data.url
 		});
 		this.add(form);
-		this.enforce_conditions();
+		this.enforce_conditions(true);
 	},
-	enforce_conditions: function() {
+	enforce_conditions: function(force) {
+		var changed = false;
 		for (var i = 0; i < this.conditions.length; i++) {
 			var cond = this.conditions[i];
 			var visible = false;
@@ -195,8 +196,14 @@ Form = Ext.extend(AdminResponse, {
 				visible = eval(cond.condition);
 			} catch (e) {
 			}
-			Ext.getCmp(cond.id).setVisible(visible);
+			var cmp = Ext.getCmp(cond.id);
+			if (cmp.isVisible() != visible || force) {
+				cmp.setVisible(visible);
+				changed = true;
+			}
 		}
+		if (changed)
+			this.doLayout();
 	},
 	custom_submit: function(url) {
 		var form = Ext.getCmp('admin-form-' + form_id);

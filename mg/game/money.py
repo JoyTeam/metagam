@@ -364,18 +364,24 @@ class Money(Module):
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
         self.rhook("ext-admin-money.take", self.admin_money_take)
         self.rhook("headmenu-admin-money.take", self.headmenu_money_take)
-        self.rhook("currencies.list", self.currencies_list)
+        self.rhook("currencies.list", self.currencies_list, priority=-1000)
         self.rhook("money-description.admin-give", self.money_description_admin_give)
         self.rhook("money-description.admin-take", self.money_description_admin_take)
         self.rhook("ext-admin-money.account", self.admin_money_account)
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
         self.rhook("money.member-money", self.member_money)
+        self.rhook("money.valid_amount", self.valid_amount)
 
     def currencies_list(self, currencies):
         if self.app().tag == "main":
             currencies["MM$"] = {
                 "format": "%.2f",
                 "description": "MM$",
+            }
+        if not len(currencies):
+            currencies["GLD"] = {
+                "format": "%d",
+                "description": self._("Gold")
             }
 
     def money_description_admin_give(self):
@@ -397,6 +403,34 @@ class Money(Module):
             return
         return [self._("Give money"), "auth/user-dashboard/%s" % args]
 
+    def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
+        print "called_valid_amount"
+        valid = True
+        # checking currency
+        currencies = {}
+        self.call("currencies.list", currencies)
+        currency_info = currencies.get(currency)
+        if currency_info is None:
+            valid = False
+            if errors is not None and currency_field:
+                errors[currency_field] = self._("Invalid currency")
+        # checking amount
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Amount must be greater than 0")
+            elif currency_info is not None and amount != float(currency_info["format"] % amount):
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Invalid amount precision")
+        except ValueError:
+            valid = False
+            if errors is not None and amount_field:
+                errors[amount_field] = self._("Invalid number format")
+        return valid
+
     def admin_money_give(self):
         self.call("session.require_permission", "users.money.give")
         req = self.req()
@@ -410,17 +444,7 @@ class Money(Module):
         currency = req.param("v_currency")
         if req.param("ok"):
             errors = {}
-            currency_info = currencies.get(currency)
-            if currency_info is None:
-                errors["v_currency"] = self._("Invalid currency")
-            try:
-                amount = float(amount)
-                if amount <= 0:
-                    errors["amount"] = self._("Amount must be greater than 0")
-                elif currency_info is not None and amount != float(currency_info["format"] % amount):
-                    errors["amount"] = self._("Invalid amount precision")
-            except ValueError:
-                errors["amount"] = self._("Invalid number format")
+            self.call("money.valid_amount", amount, currency, errors, "amount", "v_currency")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)

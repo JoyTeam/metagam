@@ -6,6 +6,7 @@ import datetime
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
+re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
 
 def urldecode(str):
     if str is None:
@@ -24,6 +25,15 @@ def intz(str, onerror=0):
         return int(str)
     except (ValueError, TypeError):
         return onerror
+
+def floatz(str, onerror=0):
+    try:
+        return float(str)
+    except (ValueError, TypeError):
+        return onerror
+
+def valid_nonnegative_int(str):
+    return re_valid_nonnegative_int.match(str)
 
 def jsencode(str):
     if str is None:

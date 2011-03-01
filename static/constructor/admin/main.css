@@ -52,6 +52,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .x-form-file-wrap .x-form-file-btn { position: absolute; right: 0; z-index: 1; }
 .x-form-file-wrap .x-form-file-text { position: absolute; left: 0; z-index: 3; color: #777; }
 .x-form-item { padding-bottom: 15px }
+.x-form .x-form-item .x-form-item-label { padding-right: 28px }
 .logo-demo-1 { padding: 20px; background: url(/st/constructor/admin/logo-demo.gif); text-align: center; }
 .logo-demo-2 { padding: 20px; }
 #background_preview { margin: 44px 0px 0px 20px; border: solid 1px #e0e0e0; }

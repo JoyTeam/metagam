@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-28 16:44+0300\n"
+"POT-Creation-Date: 2011-03-01 10:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -279,7 +279,7 @@ msgstr ""
 msgid "User %s"
 msgstr ""
 
-#: mg/socio/__init__.py:733 mg/game/money.py:642
+#: mg/socio/__init__.py:733 mg/game/money.py:666
 #: mg/constructor/invitations.py:92
 msgid "User"
 msgstr ""
@@ -1018,7 +1018,7 @@ msgstr ""
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:997 mg/game/money.py:514 mg/game/money.py:646
+#: mg/core/auth.py:997 mg/game/money.py:538 mg/game/money.py:670
 #: mg/constructor/dashboard.py:118
 msgid "Update"
 msgstr ""
@@ -1112,172 +1112,176 @@ msgid "<strong>Global locale</strong> (en, ru)"
 msgstr ""
 
 #: mg/game/money.py:384
-msgid "Given by the administration"
+msgid "Gold"
 msgstr ""
 
 #: mg/game/money.py:390
+msgid "Given by the administration"
+msgstr ""
+
+#: mg/game/money.py:396
 msgid "Taken by the administration"
 msgstr ""
 
-#: mg/game/money.py:398 mg/game/money.py:549
+#: mg/game/money.py:404 mg/game/money.py:573
 msgid "Give money"
 msgstr ""
 
-#: mg/game/money.py:415 mg/game/money.py:459
+#: mg/game/money.py:416 mg/game/money.py:483
 msgid "Invalid currency"
 msgstr ""
 
-#: mg/game/money.py:419 mg/game/money.py:463
+#: mg/game/money.py:423 mg/game/money.py:487
 msgid "Amount must be greater than 0"
 msgstr ""
 
-#: mg/game/money.py:421 mg/game/money.py:465
+#: mg/game/money.py:427 mg/game/money.py:489
 msgid "Invalid amount precision"
 msgstr ""
 
-#: mg/game/money.py:423 mg/game/money.py:467
+#: mg/game/money.py:431 mg/game/money.py:491
 msgid "Invalid number format"
 msgstr ""
 
-#: mg/game/money.py:432
+#: mg/game/money.py:456
 msgid "Give amount"
 msgstr ""
 
-#: mg/game/money.py:433 mg/game/money.py:477 mg/game/money.py:527
-#: mg/game/money.py:541
+#: mg/game/money.py:457 mg/game/money.py:501 mg/game/money.py:551
+#: mg/game/money.py:565 mg/constructor/players.py:108
 msgid "Currency"
 msgstr ""
 
-#: mg/game/money.py:434
+#: mg/game/money.py:458
 msgid "Give"
 msgstr ""
 
-#: mg/game/money.py:442 mg/game/money.py:549
+#: mg/game/money.py:466 mg/game/money.py:573
 msgid "Take money"
 msgstr ""
 
-#: mg/game/money.py:476
+#: mg/game/money.py:500
 msgid "Take amount"
 msgstr ""
 
-#: mg/game/money.py:478
+#: mg/game/money.py:502
 msgid "Take"
 msgstr ""
 
-#: mg/game/money.py:486
+#: mg/game/money.py:510
 #, python-format
 msgid "Account %s"
 msgstr ""
 
-#: mg/game/money.py:509
+#: mg/game/money.py:533
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:510 mg/game/money.py:541 mg/game/money.py:643
+#: mg/game/money.py:534 mg/game/money.py:565 mg/game/money.py:667
 msgid "Amount"
 msgstr ""
 
-#: mg/game/money.py:511 mg/game/money.py:527
+#: mg/game/money.py:535 mg/game/money.py:551
 msgid "Balance"
 msgstr ""
 
-#: mg/game/money.py:512 mg/game/money.py:541
+#: mg/game/money.py:536 mg/game/money.py:565
 msgid "Description"
 msgstr ""
 
-#: mg/game/money.py:527
+#: mg/game/money.py:551
 msgid "Account Id"
 msgstr ""
 
-#: mg/game/money.py:527
+#: mg/game/money.py:551
 msgid "Locked"
 msgstr ""
 
-#: mg/game/money.py:527
+#: mg/game/money.py:551
 msgid "Low limit"
 msgstr ""
 
-#: mg/game/money.py:541
+#: mg/game/money.py:565
 msgid "Lock ID"
 msgstr ""
 
-#: mg/game/money.py:548
+#: mg/game/money.py:572
 msgid "Money operations"
 msgstr ""
 
-#: mg/game/money.py:558
+#: mg/game/money.py:582
 msgid "Constructor: access to users money"
 msgstr ""
 
-#: mg/game/money.py:559
+#: mg/game/money.py:583
 msgid "Constructor: giving and taking money"
 msgstr ""
 
-#: mg/game/money.py:581
+#: mg/game/money.py:605
 msgid "2pay payment"
 msgstr ""
 
-#: mg/game/money.py:587
+#: mg/game/money.py:611
 msgid "2pay chargeback"
 msgstr ""
 
-#: mg/game/money.py:592
+#: mg/game/money.py:616
 msgid "2pay integration"
 msgstr ""
 
-#: mg/game/money.py:592
+#: mg/game/money.py:616
 msgid "open dashboard"
 msgstr ""
 
-#: mg/game/money.py:601
+#: mg/game/money.py:625
 msgid "2pay dashboard"
 msgstr ""
 
-#: mg/game/money.py:603
+#: mg/game/money.py:627
 msgid "Settings editor"
 msgstr ""
 
-#: mg/game/money.py:637
+#: mg/game/money.py:661
 msgid "Edit settings"
 msgstr ""
 
-#: mg/game/money.py:638
+#: mg/game/money.py:662
 msgid "Payment URL"
 msgstr ""
 
-#: mg/game/money.py:639
+#: mg/game/money.py:663
 msgid "Secret code"
 msgstr ""
 
-#: mg/game/money.py:640
+#: mg/game/money.py:664
 msgid "2pay time"
 msgstr ""
 
-#: mg/game/money.py:641
+#: mg/game/money.py:665
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:644
+#: mg/game/money.py:668
 msgid "Chargeback"
 msgstr ""
 
-#: mg/game/money.py:647 mg/constructor/dashboard.py:107
+#: mg/game/money.py:671 mg/constructor/dashboard.py:107
 msgid "Id"
 msgstr ""
 
-#: mg/game/money.py:648 mg/constructor/dashboard.py:27
+#: mg/game/money.py:672 mg/constructor/dashboard.py:27
 msgid "Project ID"
 msgstr ""
 
-#: mg/game/money.py:669
+#: mg/game/money.py:693
 msgid "2pay project id"
 msgstr ""
 
-#: mg/game/money.py:670
+#: mg/game/money.py:694
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:798
+#: mg/game/money.py:822
 msgid "Constructor: 2pay integration"
 msgstr ""
 
@@ -1298,32 +1302,85 @@ msgstr ""
 msgid "Players authentication"
 msgstr ""
 
-#: mg/constructor/players.py:34
+#: mg/constructor/players.py:33
+msgid "Make valid selection"
+msgstr ""
+
+#: mg/constructor/players.py:41 mg/constructor/players.py:49
+#: mg/constructor/players.py:74 mg/constructor/players.py:80
+msgid "Invalid number"
+msgstr ""
+
+#: mg/constructor/players.py:45 mg/constructor/players.py:53
+msgid "Minimal value is 1"
+msgstr ""
+
+#: mg/constructor/players.py:57
+msgid "Free characters can't be greater than max characters"
+msgstr ""
+
+#: mg/constructor/players.py:91
 msgid "Settings stored"
 msgstr ""
 
-#: mg/constructor/players.py:40
+#: mg/constructor/players.py:104
 msgid "Are players allowed to play more than 1 character"
 msgstr ""
 
-#: mg/constructor/players.py:40
+#: mg/constructor/players.py:104
 msgid "No"
 msgstr ""
 
-#: mg/constructor/players.py:40
+#: mg/constructor/players.py:104
 msgid "Yes, but play them by turn"
 msgstr ""
 
-#: mg/constructor/players.py:40
+#: mg/constructor/players.py:104
 msgid "Yes, play them simultaneously"
 msgstr ""
 
-#: mg/constructor/players.py:41
+#: mg/constructor/players.py:105
 msgid "Number of characters per player allowed for free"
 msgstr ""
 
-#: mg/constructor/players.py:42
+#: mg/constructor/players.py:106
 msgid "Maximal number of characters per player allowed"
+msgstr ""
+
+#: mg/constructor/players.py:107
+msgid "Price for one extra character over free limit"
+msgstr ""
+
+#: mg/constructor/players.py:109
+msgid "Login sequence"
+msgstr ""
+
+#: mg/constructor/players.py:109
+msgid "Enter the game immediately after login"
+msgstr ""
+
+#: mg/constructor/players.py:109
+msgid "Open player cabinet after login"
+msgstr ""
+
+#: mg/constructor/players.py:110
+msgid "Require email activation"
+msgstr ""
+
+#: mg/constructor/players.py:111
+msgid ""
+"Activation is required after this character level ('0' if require on "
+"registration)"
+msgstr ""
+
+#: mg/constructor/players.py:112
+msgid ""
+"Activation is required after this number of days ('0' if require on "
+"registration)"
+msgstr ""
+
+#: mg/constructor/players.py:113
+msgid "Manual validation of every character name"
 msgstr ""
 
 #: mg/constructor/setup.py:19

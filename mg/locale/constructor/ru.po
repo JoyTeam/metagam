@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-02-28 16:38+0300\n"
+"POT-Creation-Date: 2011-03-01 10:30+0300\n"
 "PO-Revision-Date: 2011-02-16 14:18+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -44,11 +44,11 @@ msgstr "Предустановки:"
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
 
-#: static/js/admin-form.js:205
+#: static/js/admin-form.js:212
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:220 static/js/admin-form.js:223
+#: static/js/admin-form.js:227 static/js/admin-form.js:230
 #: mg/templates/constructor/domain-wizard.html:41
 #: mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:29
@@ -59,7 +59,7 @@ msgstr "Отправка данных..."
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/js/admin-form.js:223 mg/templates/constructor/domain-wizard.html:44
+#: static/js/admin-form.js:230 mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:32
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66

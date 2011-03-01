@@ -29,7 +29,7 @@ mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
 	msgfmt -o $@ $<
 
 # ============= MODULE: constructor ===============
-constructor_sources := $(shell find static/js mg/templates -name '*.js' -or -name '*.html' | egrep -v '/gettext-')
+constructor_sources := $(shell find static/js mg/templates -name '*.js' -or -name '*.html' | egrep -v '/(gettext-|prototype.js|gettext.js|texteditor.js)')
 constructor_po_files := $(foreach lang,$(langs),mg/locale/constructor/$(lang).po)
 constructor_js_files := $(foreach lang,$(langs),static/constructor/gettext-$(lang).js)
 mg/locale/mg_constructor.pot: $(constructor_sources)
