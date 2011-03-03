@@ -7,6 +7,8 @@ class Auth(Module):
         self.rhook("ext-admin-players.auth", self.admin_players_auth)
         self.rhook("headmenu-admin-players.auth", self.headmenu_players_auth)
         self.rhook("permissions.list", self.permissions_list)
+        self.rhook("ext-admin-players.form", self.admin_players_form)
+        self.rhook("headmenu-admin-players.form", self.headmenu_players_form)
 
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
@@ -15,6 +17,7 @@ class Auth(Module):
         req = self.req()
         if req.has_access("players.auth"):
             menu.append({"id": "players/auth", "text": self._("Players authentication"), "leaf": True})
+            menu.append({"id": "players/form", "text": self._("Player form"), "leaf": True})
 
     def headmenu_players_auth(self, args):
         return self._("Players authentication settings")
@@ -113,3 +116,10 @@ class Auth(Module):
             {"name": "validate_names", "type": "checkbox", "label": self._("Manual validation of every character name"), "checked": validate_names},
         ]
         self.call("admin.form", fields=fields)
+
+    def admin_players_form(self):
+        self.call("session.require_permission", "players.auth")
+        self.call("admin.response_template", "admin/auth/player-form.html", {
+            "fields": self.conf("auth.player_form"),
+            "NewField": self._("New field"),
+        })
