@@ -333,7 +333,7 @@ class CassandraObject(object):
                         raise
             else:
                 self.data = data
-                self._indexes = None
+                self._indexes = {}
 
     def indexes(self):
         """
@@ -416,7 +416,7 @@ class CassandraObject(object):
         old_index_values = self.index_values()
         self.calculate_indexes()
         index_values = self.index_values()
-#       print "storing indexes\n\told: %s\n\tnew: %s" % (old_index_values, index_values)
+#        print "storing indexes\n\told: %s\n\tnew: %s" % (old_index_values, index_values)
         for index_name, columns in self.indexes().iteritems():
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)

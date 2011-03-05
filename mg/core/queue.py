@@ -286,7 +286,7 @@ class QueueRunner(Module):
         except ObjectNotFoundException:
             entries = {}
         existing = self.objlist(QueueTaskList, query_index="app-at", query_equal=app_tag)
-        existing.load()
+        existing.load(silent=True)
         existing = dict([(task.get("unique"), task) for task in existing if task.get("args").get("schedule")])
         for hook, params in entries.iteritems():
             existing_params = existing.get(hook)

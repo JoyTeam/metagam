@@ -1,6 +1,7 @@
 from mg import *
 from concurrence import Tasklet, JoinError, Timeout
 from concurrence.http import HTTPConnection
+from mg.core.classes import *
 import re
 import json
 
@@ -57,6 +58,7 @@ class Director(Module):
     def monitor(self):
         while True:
             try:
+                # pinging servers
                 for server_id, info in self.app().servers_online.items():
                     host = info.get("host")
                     port = info.get("port")
@@ -87,6 +89,37 @@ class Director(Module):
                                 del self.app().servers_online[server_id]
                                 self.store_servers_online()
                                 self.servers_online_updated()
+                                # removing status object
+                                st = self.obj(WorkerStatus, server_id, silent=True)
+                                st.remove()
+                # examining WorkerStatus records
+                lst = self.objlist(WorkerStatusList, query_index="all")
+                lst.load(silent=True)
+                expire = self.now(-180)
+                for st in lst:
+                    info = self.app().servers_online.get(st.uuid)
+                    if st.get("updated") < expire:
+                        self.warning("WorkerStatus %s expired: %s < %s", st.uuid, st.get("updated"), expire)
+                        st.remove()
+                    else:
+                        abort = False
+                        if not info:
+                            self.warning("WorkerStatus %s doesn't match any registered server. Killing %s:%d", st.uuid, st.get("host"), st.get("port"))
+                            abort = True
+                        elif info["params"]["class"] != st.get("cls"):
+                            self.warning("WorkerStatus %s class is %s, although registered one is %s. Killing %s:%d", st.uuid, st.get("cls"), info["params"]["class"], st.get("host"), st.get("port"))
+                            abort = True
+                        if abort:
+                            with Timeout.push(30):
+                                cnn = HTTPConnection()
+                                cnn.connect((str(st.get("host")), int(st.get("port"))))
+                                try:
+                                    request = cnn.get("/core/abort")
+                                    cnn.perform(request)
+                                    # will be reached unless timed out
+                                    st.remove()
+                                finally:
+                                    cnn.close()
             except (SystemExit, TaskletExit, KeyboardInterrupt):
                 raise
             except BaseException as e:
@@ -345,4 +378,4 @@ class Director(Module):
         self.servers_online_updated()
         if type == "server" and self.workers_str != None:
             Tasklet.new(self.configure_nginx_server)(host, port, self.workers_str)
-        self.call("web.response_json", {"ok": 1, "server_id": server_id})
+        self.call("web.response_json", {"ok": 1, "server_id": server_id, "host": host})

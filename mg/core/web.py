@@ -411,6 +411,7 @@ class Web(Module):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
         self.rhook("int-core.ping", self.core_ping)
+        self.rhook("int-core.abort", self.core_abort)
         self.rhook("core.check_last_ping", self.check_last_ping)
         self.rhook("int-core.reload", self.core_reload)
         self.rhook("int-core.appconfig", self.core_appconfig)
@@ -451,6 +452,9 @@ class Web(Module):
             self.call("web.response_json", { "errors": errors })
         else:
             self.call("web.response_json", { "ok": 1 })
+
+    def core_abort(self):
+        os._exit(3)
 
     def core_ping(self):
         request = self.req()
