@@ -173,9 +173,12 @@ class Director(Module):
         self.info("Hard reload: %s", ver)
         lst = self.objlist(WorkerStatusList, query_index="all")
         lst.load(silent=True)
+        lst.sort(cmp=lambda x, y: cmp(x.get("cls"), y.get("cls")))
         print "Workers: %s" % lst
-        if len(lst) > 1:
-            del lst[len(lst) * 2 / 3:]
+        i = 0
+        while i < len(lst):
+            del lst[i:i + 1]
+            i += 2
         print "Reloading 2/3 of workers: %s" % lst
         for st in lst:
             print "reloading worker %s" % st.uuid
