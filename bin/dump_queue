@@ -9,7 +9,7 @@ import logging
 
 def main():
     try:
-        inst = Instance("worker")
+        inst = Instance("dump")
         inst.download_config()
         int_app = WebApplication(inst, "int", "int")
         tasks = int_app.objlist(QueueTaskList, query_index="at")

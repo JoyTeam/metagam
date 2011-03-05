@@ -34,7 +34,6 @@ class Director(Module):
         self.servers_online_updated()
 
     def run(self):
-        self.reload_servers()
         # daemon
         daemon = WebDaemon(self.app().inst)
         daemon.app = self.app()
@@ -43,6 +42,7 @@ class Director(Module):
         inst = self.app().inst
         inst.appfactory = self.call("core.appfactory")
         inst.appfactory.add(self.app())
+        inst.reloading_hard = 0
         # background tasks
         Tasklet.new(self.monitor)()
         Tasklet.new(self.call)("queue.process")
@@ -75,6 +75,13 @@ class Director(Module):
                                     body = json.loads(response.body)
                                     if body.get("ok") and body.get("server_id") == server_id:
                                         success = True
+                                        if info["type"] == "worker":
+                                            try:
+                                                st = self.obj(WorkerStatus, server_id)
+                                            except ObjectNotFoundException:
+                                                success = False
+                                                request = cnn.get("/core/abort")
+                                                cnn.perform(request)
                             finally:
                                 cnn.close()
                     except (KeyboardInterrupt, SystemExit, TaskletExit):
@@ -98,28 +105,36 @@ class Director(Module):
                 expire = self.now(-180)
                 for st in lst:
                     info = self.app().servers_online.get(st.uuid)
+                    abort = False
                     if st.get("updated") < expire:
                         self.warning("WorkerStatus %s expired: %s < %s", st.uuid, st.get("updated"), expire)
                         st.remove()
+                        # checking existing servers
+                        abort = True
+                        for server_id, info in self.app().servers_online.items():
+                            host = info.get("host")
+                            port = info.get("port")
+                            if host == st.get("host") and (port == st.get("port") or info["params"].get("ext_port") == st.get("ext_port")) and server_id != st.uuid:
+                                abort = False
+                                break
                     else:
-                        abort = False
                         if not info:
                             self.warning("WorkerStatus %s doesn't match any registered server. Killing %s:%d", st.uuid, st.get("host"), st.get("port"))
                             abort = True
                         elif info["params"]["class"] != st.get("cls"):
                             self.warning("WorkerStatus %s class is %s, although registered one is %s. Killing %s:%d", st.uuid, st.get("cls"), info["params"]["class"], st.get("host"), st.get("port"))
                             abort = True
-                        if abort:
-                            with Timeout.push(30):
-                                cnn = HTTPConnection()
-                                cnn.connect((str(st.get("host")), int(st.get("port"))))
-                                try:
-                                    request = cnn.get("/core/abort")
-                                    cnn.perform(request)
-                                    # will be reached unless timed out
-                                    st.remove()
-                                finally:
-                                    cnn.close()
+                    if abort:
+                        with Timeout.push(30):
+                            cnn = HTTPConnection()
+                            cnn.connect((str(st.get("host")), int(st.get("port"))))
+                            try:
+                                request = cnn.get("/core/abort")
+                                cnn.perform(request)
+                                # will be reached unless timed out
+                                st.remove()
+                            finally:
+                                cnn.close()
             except (SystemExit, TaskletExit, KeyboardInterrupt):
                 raise
             except BaseException as e:
@@ -136,26 +151,137 @@ class Director(Module):
         return self.queue_workers
 
     def int_director_reload(self):
-        self.call("web.response_json", self.director_reload())
-
-    def director_reload(self):
-        result = {}
         # incrementing application.version
         config = self.int_app().config
         ver = config.get("application.version", 0) + 1
         config.set("application.version", ver)
         config.store(notify=False)
         # reloading ourselves
+        result = self.director_reload()
+        req = self.req()
+        hard = req.param("hard")
+        # reloading cluster
+        if hard == "1":
+            result["enqueued"] = ver
+            self.app().inst.reloading_hard = ver
+            Tasklet.new(self.hard_reload)(ver)
+        else:
+            self.reload_servers(result)
+        self.call("web.response_json", result)
+
+    def hard_reload(self, ver):
+        self.info("Hard reload: %s", ver)
+        lst = self.objlist(WorkerStatusList, query_index="all")
+        lst.load(silent=True)
+        print "Workers: %s" % lst
+        if len(lst) > 1:
+            del lst[len(lst) * 2 / 3:]
+        print "Reloading 2/3 of workers: %s" % lst
+        for st in lst:
+            print "reloading worker %s" % st.uuid
+            try:
+                with Timeout.push(30):
+                    cnn = HTTPConnection()
+                    cnn.connect((str(st.get("host")), int(st.get("port"))))
+                    try:
+                        request = cnn.get("/core/reload-hard")
+                        cnn.perform(request)
+                    finally:
+                        cnn.close()
+            except (SystemExit, TaskletExit, KeyboardInterrupt):
+                raise
+            except BaseException as e:
+                self.exception(e)
+        self.store_servers_online()
+        self.servers_online_updated()
+        start = time.time()
+        while True:
+            Tasklet.sleep(1)
+            if self.conf("application.version") > ver:
+                self.debug("Application version changed during reloading: %s => %s", ver, self.conf("application.version"))
+                return
+            lst = self.objlist(WorkerStatusList, query_index="all")
+            lst.load(silent=True)
+            reloaded = 0
+            for st in lst:
+                if st.get("ver") >= ver:
+                    reloaded += 1
+            if reloaded >= len(lst) / 3:
+                self.debug("1/3 of workers reloaded successfully")
+                break
+            if time.time() > start + 60:
+                self.debug("1/3 of workers hasn't reloaded. Reloading remaining")
+                break
+        self.debug("reloading all workers not reloaded yet")
+        lst = self.objlist(WorkerStatusList, query_index="all")
+        lst.load(silent=True)
+        for st in lst:
+            if st.get("ver") < ver:
+                self.debug("reloading worker %s", st.uuid)
+                try:
+                    with Timeout.push(30):
+                        cnn = HTTPConnection()
+                        cnn.connect((str(st.get("host")), int(st.get("port"))))
+                        try:
+                            request = cnn.get("/core/reload-hard")
+                            cnn.perform(request)
+                        finally:
+                            cnn.close()
+                except (SystemExit, TaskletExit, KeyboardInterrupt):
+                    raise
+                except BaseException as e:
+                    self.exception(e)
+        self.store_servers_online()
+        self.servers_online_updated()
+        self.debug("waiting until all workers reload")
+        while True:
+            Tasklet.sleep(1)
+            if self.conf("application.version") > ver:
+                self.debug("Application version changed during reloading: %s => %s", ver, self.conf("application.version"))
+                return
+            lst = self.objlist(WorkerStatusList, query_index="all")
+            lst.load(silent=True)
+            reloaded = 0
+            for st in lst:
+                if st.get("ver") >= ver:
+                    reloaded += 1
+            if reloaded > len(lst):
+                self.info("Hard reload to version %s completed", ver)
+                self.app().inst.reloading_hard = 0
+                return
+            if time.time() > start + 3600:
+                self.error("Hard reload timeout. Forcing abort to every not reloaded worker")
+                for st in lst:
+                    if st.get("ver") < ver:
+                        self.debug("aborting worker %s", st.uuid)
+                        try:
+                            with Timeout.push(30):
+                                cnn = HTTPConnection()
+                                cnn.connect((str(st.get("host")), int(st.get("port"))))
+                                try:
+                                    request = cnn.get("/core/abort")
+                                    cnn.perform(request)
+                                finally:
+                                    cnn.close()
+                        except (SystemExit, TaskletExit, KeyboardInterrupt):
+                            raise
+                        except BaseException as e:
+                            self.exception(e)
+                break
+        self.store_servers_online()
+        self.servers_online_updated()
+        self.app().inst.reloading_hard = 0
+
+    def director_reload(self):
+        result = {}
         errors = self.app().reload()
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
-            result["director"] = "ok: application.version=%d" % ver
-        # reloading cluster
-        self.reload_servers(result, errors)
+            result["director"] = "ok: application.version=%d" % self.conf("application.version")
         return result
 
-    def reload_servers(self, result={}, errors={}):
+    def reload_servers(self, result={}):
         config = json.dumps(self.config())
         for server_id, info in self.app().servers_online.items():
             errors = 1
@@ -302,6 +428,10 @@ class Director(Module):
         nginx = set()
         workers = {}
         for server_id, info in self.app().servers_online.items():
+            if self.app().inst.reloading_hard:
+                st = self.obj(WorkerStatus, server_id, silent=True)
+                if st.get("reloading"):
+                    continue
             try:
                 if info["type"] == "server" and info["params"].get("nginx"):
                     nginx.add((info["host"], info["port"]))
@@ -374,6 +504,10 @@ class Director(Module):
             server_id = "%s-%02d" % (server_id, int(id))
             conf["id"] = id
         self.app().servers_online[server_id] = conf
+        # clearing possibly "reloading" state
+        obj = self.obj(WorkerStatus, server_id, {}, silent=True)
+        obj.remove()
+        # updating nginx
         self.store_servers_online()
         self.servers_online_updated()
         if type == "server" and self.workers_str != None:

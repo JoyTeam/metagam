@@ -4,12 +4,21 @@ from concurrence import dispatch
 from concurrence.http import HTTPConnection
 import json
 import os
+import optparse
+import sys
+from mg import *
+
+sys.exit = os._exit
 
 def main():
+    # configuration
+    parser = optparse.OptionParser()
+    parser.add_option("-s", "--soft", action="store_true", help="Soft reload")
+    (options, args) = parser.parse_args()
     try:
         cnn = HTTPConnection()
         cnn.connect(("director", 3000))
-        request = cnn.get("/director/reload")
+        request = cnn.get("/director/reload?hard=" + ("0" if options.soft else "1"))
         response = cnn.perform(request)
         if response.status_code == 200:
             result = json.loads(response.body)
@@ -17,14 +26,40 @@ def main():
             server_ids.sort()
             for server_id in server_ids:
                 print "%-45s - %s" % (server_id, result[server_id])
+            if result.get("enqueued"):
+                ver = result["enqueued"]
+                inst = Instance("reload")
+                inst.download_config()
+                int_app = WebApplication(inst, "int", "int")
+                total = 0
+                while True:
+                    lst = int_app.objlist(WorkerStatusList, query_index="all")
+                    lst.load(silent=True)
+                    if len(lst) > total:
+                        total = len(lst)
+                    ok = 0
+                    waiting = []
+                    old = 0
+                    for st in lst:
+                        if st.get("reloading"):
+                            waiting.append(st.get("active_requests"))
+                        elif st.get("ver") >= ver:
+                            ok += 1
+                        else:
+                            old += 1
+                    print "OK: %d/%d, OLD: %d, WAITING: %s" % (ok, total, old, ("%d (%s)" % (len(waiting), waiting)) if len(waiting) else "0")
+                    if ok == total:
+                        break
+                    Tasklet.sleep(1)
+                quit(0)
         else:
             print response.status
             print response.body
         cnn.close()
-    except IOError as e:
-        print e
     except (SystemExit, TaskletExit, KeyboardInterrupt):
         raise
+    except Exception as e:
+        print e
     finally:
         os._exit(0)
 

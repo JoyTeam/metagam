@@ -259,6 +259,7 @@ class WebDaemon(object):
         self.inst = inst
         self.app = app
         self.logger = logging.getLogger("mg.core.web.WebDaemon")
+        self.active_requests = 0
 
     def serve(self, addr):
         "Runs a WebDaemon instance listening given port"
@@ -300,20 +301,24 @@ class WebDaemon(object):
 
     def request(self, environ, start_response):
         "Process single HTTP request"
-        request = Request(environ, start_response)
-        Tasklet.current().req = request
         try:
-            # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-            uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
-            return self.request_uri(request, uri)
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except RuntimeError as e:
-            self.logger.error(e)
-            return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % cgi.escape(str(e)))
-        except BaseException as e:
-            self.logger.exception(e)
-            return request.internal_server_error()
+            self.active_requests += 1
+            request = Request(environ, start_response)
+            Tasklet.current().req = request
+            try:
+                # remove doubling, leading and trailing slashes, unquote and convert to utf-8
+                uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
+                return self.request_uri(request, uri)
+            except (KeyboardInterrupt, SystemExit, TaskletExit):
+                raise
+            except RuntimeError as e:
+                self.logger.error(e)
+                return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % cgi.escape(str(e)))
+            except BaseException as e:
+                self.logger.exception(e)
+                return request.internal_server_error()
+        finally:
+            self.active_requests -= 1
 
     def request_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
@@ -414,6 +419,7 @@ class Web(Module):
         self.rhook("int-core.abort", self.core_abort)
         self.rhook("core.check_last_ping", self.check_last_ping)
         self.rhook("int-core.reload", self.core_reload)
+        self.rhook("int-core.reload-hard", self.core_reload_hard)
         self.rhook("int-core.appconfig", self.core_appconfig)
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.cache", self.web_cache)
@@ -451,7 +457,29 @@ class Web(Module):
         if errors:
             self.call("web.response_json", { "errors": errors })
         else:
+            self.call("core.application_reloaded")
             self.call("web.response_json", { "ok": 1 })
+
+    def reload_hard(self):
+        self.call("core.reloading_hard")
+        Tasklet.sleep(5);
+        for i in range(0, 60):
+            active_requests = self.call("web.active_requests")
+            print "active_requests=%s" % active_requests
+            if active_requests == None or active_requests == 0:
+                break
+            Tasklet.sleep(1)
+        os._exit(0)
+
+    def core_reload_hard(self):
+        try:
+            if self.app().inst.reloading:
+                self.call("web.response_json", { "ok": 1 })
+        except AttributeError:
+            pass
+        self.app().inst.reloading = True
+        Tasklet.new(self.reload_hard)()
+        self.call("web.response_json", { "ok": 1 })
 
     def core_abort(self):
         os._exit(3)

@@ -49,6 +49,11 @@ class Constructor(Module):
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("auth.register-form", self.register_form)
         self.rhook("auth.password-changed", self.password_changed)
+        self.rhook("ext-test.delay", self.test_delay)
+
+    def test_delay(self):
+        Tasklet.sleep(20)
+        self.call("web.response", "ok\n")
 
     def register_form(self, form, mode):
         req = self.req()
