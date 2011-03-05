@@ -413,7 +413,6 @@ class Interface(Module):
                     "content": self._("Someone possibly you requested password recovery on the {host} site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
                 }
                 self.call("auth.remind_email", params)
-                print "params=%s" % params
                 self.call("email.send", email, name, params["subject"], params["content"].format(content=content, host=req.host()))
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
@@ -1012,8 +1011,8 @@ class Interface(Module):
         users = self.objlist(UserList, query_index="created", query_reversed=True, query_limit=30)
         users.load()
         tables.append({
-            "header": [self._("ID"), self._("Name"), self._("Active")],
-            "rows": [('<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes")) for u in users]
+            "header": [self._("Registration"), self._("ID"), self._("Name"), self._("Active")],
+            "rows": [(datetime_to_human(from_unixtime(u.get("created"))), '<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(u.uuid), htmlescape(u.get("name")), self._("no") if u.get("inactive") else self._("yes")) for u in users]
         })
         vars = {
             "tables": tables

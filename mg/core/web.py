@@ -465,7 +465,6 @@ class Web(Module):
         Tasklet.sleep(5);
         for i in range(0, 60):
             active_requests = self.call("web.active_requests")
-            print "active_requests=%s" % active_requests
             if active_requests == None or active_requests == 0:
                 break
             Tasklet.sleep(1)

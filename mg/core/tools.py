@@ -7,6 +7,8 @@ import datetime
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
 re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
+re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d:\d\d)$')
+re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 
 def urldecode(str):
     if str is None:
@@ -79,6 +81,20 @@ def htmldecode(str):
 
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
+
+def datetime_to_human(str):
+    m = re_datetime.match(str)
+    if not m:
+        return None
+    y, m, d, t = m.group(1, 2, 3, 4)
+    return "%02d.%02d.%04d %s" % (int(d), int(m), int(y), t)
+
+def date_to_human(str):
+    m = re_date.match(str)
+    if not m:
+        return None
+    y, m, d = m.group(1, 2, 3)
+    return "%02d.%02d.%04d" % (int(d), int(m), int(y))
 
 def date_from_human(str):
     m = re_human_time.match(str)
