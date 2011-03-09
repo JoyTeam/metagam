@@ -29,6 +29,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .admin-headmenu a:link, .admin-headmenu a:visited { color: #0078ac }
 .admin-headmenu a:hover, .admin-headmenu a:active { color: #0098ec }
 .admin-submenu { padding-bottom: 10px }
+.admin-description { padding-bottom: 20px }
 .list { margin: 10px 0px 10px 0px }
 .list td { padding: 2px 10px 2px 20px; border-bottom: solid 1px #e5f1f7; vertical-align: top }
 .list .header { background-color: #e5f1f7; color: #0078ac }

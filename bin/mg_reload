@@ -14,7 +14,14 @@ def main():
     # configuration
     parser = optparse.OptionParser()
     parser.add_option("-s", "--soft", action="store_true", help="Soft reload")
+    parser.add_option("-H", "--hard", action="store_true", help="Hard reload")
     (options, args) = parser.parse_args()
+    if not options.soft and not options.hard:
+        print "-s or -H option is required"
+        sys.exit(1)
+    elif options.soft and options.hard:
+        print "-s and -H options are mutually exclusive"
+        sys.exit(1)
     try:
         cnn = HTTPConnection()
         cnn.connect(("director", 3000))

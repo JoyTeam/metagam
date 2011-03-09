@@ -1,0 +1,11 @@
+<p class="admin-description">[%Description%]</p>
+
+<p class="admin-submenu"><hook:admin.link href="characters/form/new" title="[%NewField%]" /></p>
+
+<table class="list">
+	<tr class="header"><td class="header">[%Name%]</td><td>[%Order%]</td><td>[%Editing%]</td><td>[%Deletion%]</td></tr>
+	[%foreach ent in fields%]
+	<tr><td>[%if ent.deleted%]<strike>[%ent.name%]</strike>[%else%][%ent.name%][%end%]</div></td><td>[%ent.order%]</td><td><hook:admin.link href="characters/form/[%ent.code%]" title="[%edit%]" /></td><td>[%unless ent.std%][%if ent.deleted%]<hook:admin.link href="characters/form/recover/[%ent.code%]" title="[%recover%]" />[%else%]<hook:admin.link href="characters/form/delete/[%ent.code%]" title="[%delete%]" />[%end%][%end%]</td></tr>
+	[%end%]
+</table>
+

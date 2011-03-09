@@ -462,7 +462,7 @@ class Web(Module):
 
     def reload_hard(self):
         self.call("core.reloading_hard")
-        Tasklet.sleep(5);
+        Tasklet.sleep(2);
         for i in range(0, 60):
             active_requests = self.call("web.active_requests")
             if active_requests == None or active_requests == 0:

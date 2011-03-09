@@ -1,9 +1,0 @@
-<p class="admin-submenu"><hook:admin.link href="players/form/new" title="[%NewField%]" /></p>
-
-<table class="list">
-	<tr class="header"><td class="header">[%Code%]</td><td>[%Name%]</td><td>[%Order%]</td><td>[%Deletion%]</td></tr>
-	[%foreach ent in fields%]
-	<tr><td>[%if ent.code%]</td><td>[%ent.name%]<div class="description">[%ent.description%]</div></td><td>[%ent.order%]</td><td><hook:admin.link href="players/form/[%ent.id%]" title="[%edit%]" /></td><td><hook:admin.link href="players/form/delete/[%ent.id%]" title="[%delete%]" /></td></tr>
-	[%end%]
-</table>
-
