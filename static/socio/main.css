@@ -1,4 +1,4 @@
-#socio-topmenu { height: 46px; width: 100% }
+#socio-topmenu { height: 46px; width: 100%; white-space: nowrap }
 #socio-topmenu-left { padding-left: 70px }
 #socio-topmenu-right { text-align: right; padding-left: 20px }
 .socio-topmenu-header { font-weight: bold; font-size: 17px; color: #6a7274 }

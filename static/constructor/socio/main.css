@@ -1,10 +1,11 @@
 html { height: 100%; font-family: Verdana; font-size: 14px }
-body { background: #fbfbfb; margin: 0 auto; height: 100%; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; padding: 0}
+body { width: 100%; background: #fbfbfb; margin: 0 auto; height: 100%; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; padding: 0 }
 table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 14px; padding: 0; }
 img { border: none }
 h1 { color: #0078ac; font-size: 21px; font-weight: bold }
-#page-layout1 { height: 100%; width: 100%}
+#page-width { width: 1024px }
+#page-layout1 { height: 100%; width: 100% }
 #page-layout1-div { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; min-height: 100% }
 #page-layout1-td { vertical-align: top }
 #page-top1 { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; position: absolute; left: 0px; top: 0px; width: 100%; }

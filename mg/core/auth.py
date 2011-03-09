@@ -434,7 +434,7 @@ class Interface(Module):
         char_h = 40
         step = 20
         digits = 6
-        jitter = 0.15
+        jitter = 0.1 # 0.15
         image = Image.new("RGB", (step * (digits - 1) + char_w + field * 2, char_h + field * 2), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         number = ""
