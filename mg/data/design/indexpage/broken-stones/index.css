@@ -59,8 +59,16 @@ a.link-active:hover { background-image: url(block-sel.png); color: #960036 }
 #footer-counters { vertical-align: bottom; padding: 0px 80px 15px 0px; text-align: right }
 .game-title { color: #960036 }
 /* MESSAGES */
-.message-window { margin: 0 auto 0 auto; background: #c0c0c0; border: solid 1px #404040 }
+.message-window { width: 600px; margin: 0 auto 0 auto; background: #c0c0c0; border: solid 1px #1a1a1a; background-color: #b3b3b3 }
 .message-window-td { padding: 20px }
-.message-text-td { color: #000000; font-size: 16px }
-.message-button a { display: block; font-size: 16px; text-align: center; background-color: #808080; padding: 3px; margin-top: 20px; color: #ffffff; text-decoration: none }
-.message-button a:hover { color: #c0c0c0 }
+.message-text-td { color: #000; font-size: 16px }
+.message-button a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
+.message-button a:hover { color: #000; background-color: #808080 }
+#registerform { width: 560px }
+#field-prompt { text-align: center }
+.field-input-div { text-align: center; padding: 15px 0 0px 0 }
+#field-input, #field-input2 { width: 500px; font-size: 20px }
+.field-edit { padding: 3px; border: solid 1px #808080 }
+#field-submit-a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
+#field-submit-a:hover { color: #000; background-color: #808080 }
+#field-error { color: #c00000; text-align: center }

@@ -66,6 +66,17 @@ function report_close()
 	return false;
 }
 
+function htmlencode(s)
+{
+	if (s == undefined)
+		return '';
+	s = s.replace(/\046/g, '\&amp;');
+	s = s.replace(/\074/g, '\&lt;');
+	s = s.replace(/\076/g, '\&gt;');
+	s = s.replace(/\012/g, '\&quot;');
+	return s;
+}
+
 function auth_login()
 {
 	if (in_dialog)
@@ -102,9 +113,137 @@ function auth_login()
 		},
 		onFailure: function (response) {
 			if (response.request.options.request_id == last_request_id) {
-				report_failure(gt.gettext('Server is unavailable'));
+				report_failure(gt.gettext('Server is temporarily unavailable'));
 			}
 		}
 	});
+	return false;
+}
+
+var register_fields = new Array();
+var fld_index = 0;
+[%+ foreach fld in register_fields%]
+register_fields.push({'prompt': '[%fld.prompt%]', 'code': '[%fld.code%]', 'type': '[%fld.type%]'[%if fld.type == 1%], 'values': [[%foreach v in fld.values%]['[%v.0%]', '[%v.1%]'][%unless v.2%], [%end%][%end%]][%end%]});
+[%+ end%]
+
+function auth_register()
+{
+	if (in_dialog)
+		return false;
+	var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
+	report_failure(html);
+	auth_register_field(0);
+	return false;
+}
+
+function auth_register_field(i)
+{
+	fld_index = i;
+	var fld = register_fields[fld_index];
+	var inp_html;
+	if (fld.type == 1) {
+		inp_html = '<div class="field-input-div"><select id="field-input">';
+		for (var i = 0; i < fld.values.length; i++) {
+			inp_html += '<option value="' + fld.values[i][0] + '"' + (fld.value == fld.values[i][0] ? ' selected="selected"' : '') + '>' + fld.values[i][1] + '</option>';
+		}
+		inp_html += '</select></div>';
+	} else if (fld.type == 2) {
+		inp_html = '<div class="field-input-div"><textarea id="field-input" class="field-edit">' + htmlencode(fld.value) + '</textarea></div>';
+	} else if (fld.code == 'password') {
+		inp_html = '<div class="field-input-div"><input id="field-input" type="password" class="field-edit" /></div>';
+		inp_html += '<div class="field-input-div"><input id="field-input2" type="password" class="field-edit" /></div>';
+	} else {
+		inp_html = '<div class="field-input-div"><input id="field-input" value="' + htmlencode(fld.value) + '" class="field-edit" /></div>';
+	}
+	var html = '<div id="field-prompt">' + fld['prompt'] + '</div>' + inp_html + '<div id="field-error">' + (fld.error ? fld.error : '') + '</div>';
+	fld.error = undefined;
+	$('field-submit-a').innerHTML = (fld_index < register_fields.length - 1) ? gt.gettext('Next >') : gt.gettext('Register');
+	$('registerform-content').innerHTML = html;
+	$('field-input').focus();
+}
+
+function auth_register_next()
+{
+	var val = $('field-input').value;
+	if (!val) {
+		$('field-error').innerHTML = gt.gettext('This field may not be empty');
+		$('field-input').focus();
+		return false;
+	}
+	var fld = register_fields[fld_index];
+	if (fld.code == 'password') {
+		var val2 = $('field-input2').value;
+		if (!val2) {
+			$('field-error').innerHTML = gt.gettext('Type your password twice');
+			$('field-input2').focus();
+			return false;
+		} else if (val != val2) {
+			$('field-error').innerHTML = gt.gettext('Passwords don\'t match');
+			$('field-input').value = '';
+			$('field-input2').value = '';
+			$('field-input').focus();
+			return false;
+		}
+	}
+	fld.value = val;
+
+	if (fld_index < register_fields.length - 1)
+		auth_register_field(fld_index + 1);
+	else {
+		if ((document.location + '').match('^file://')) {
+			report_failure(gt.gettext('Server is in the local mode'));
+			return false;
+		}
+		var params = {};
+		for (var i = 0; i < register_fields.length; i++) {
+			var fld = register_fields[i];
+			params[fld.code] = fld.value;
+		}
+		new Ajax.Request('/player/register', {
+			'method': 'post',
+			request_id: ++last_request_id,
+			parameters: params,
+			onSuccess: function(response) {
+				if (response.request.options.request_id == last_request_id) {
+					var json = response.responseText.evalJSON();
+					if (json.error) {
+						report_failure(json.error);
+					} else if (json.errors) {
+						var index = -1;
+						for (var i = 0; i < register_fields.length; i++) {
+							var fld = register_fields[i];
+							if (json.errors[fld.code]) {
+								if (index < 0)
+									index = i;
+								fld.error = json.errors[fld.code];
+							}
+						}
+						if (index < 0) {
+							report_failure(gt.gettext('Error during registration'));
+						} else {
+							auth_register_field(index);
+						}
+					} else if (json.ok) {
+						var frm = document.createElement('form');
+						frm.method = 'get';
+						frm.action = '/';
+						var inp = document.createElement('input');
+						inp.type = 'hidden';
+						inp.name = 'session';
+						inp.value = json.session;
+						frm.appendChild(inp);
+						$$('body')[0].appendChild(frm);
+						frm.submit();
+					}
+				}
+			},
+			onFailure: function (response) {
+				if (response.request.options.request_id == last_request_id) {
+					report_failure(gt.gettext('Server is temporarily unavailable'));
+				}
+			}
+		});
+	}
+
 	return false;
 }

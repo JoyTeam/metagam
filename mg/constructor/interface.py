@@ -5,16 +5,27 @@ import re
 import hashlib
 import mg
 
-class JavaScript(Module):
+class Dynamic(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js)
+        self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css)
+        self.rhook("auth.char-form-changed", self.char_form_changed)
+
+    def indexpage_js_mcid(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        ver = self.int_app().config.get("application.version", 0)
+        return "indexpage-js-%s-%s-%s" % (main_host, lang, ver)
+
+    def char_form_changed(self):
+        mcid = self.indexpage_js_mcid()
+        self.app().mc.delete(mcid)
 
     def indexpage_js(self):
         main_host = self.app().inst.config["main_host"]
         lang = self.call("l10n.lang")
-        ver = self.int_app().config.get("application.version", 0)
-        mcid = "indexpage-js-%s-%s-%s" % (main_host, lang, ver)
+        mcid = self.indexpage_js_mcid()
         data = self.app().mc.get(mcid)
         if not data:
             mg_path = mg.__path__[0]
@@ -26,9 +37,29 @@ class JavaScript(Module):
                 ],
                 "main_host": main_host
             }
+            self.call("indexpage.render", vars)
             data = self.call("web.parse_template", "constructor/index/indexpage.js", vars)
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/javascript; charset=utf-8")
+
+    def indexpage_css_mcid(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        ver = self.int_app().config.get("application.version", 0)
+        return "indexpage-css-%s-%s-%s" % (main_host, lang, ver)
+
+    def indexpage_css(self):
+        main_host = self.app().inst.config["main_host"]
+        mcid = self.indexpage_css_mcid()
+        data = self.app().mc.get(mcid)
+        if not data:
+            mg_path = mg.__path__[0]
+            vars = {
+                "main_host": main_host
+            }
+            data = self.call("web.parse_template", "constructor/index/indexpage.css", vars)
+            self.app().mc.set(mcid, data)
+        self.call("web.response", data, "text/css")
 
 class IndexPage(Module):
     def register(self):

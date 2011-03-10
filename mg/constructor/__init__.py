@@ -26,7 +26,7 @@ class Constructor(Module):
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
-            "mg.constructor.interface.JavaScript",
+            "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
@@ -50,6 +50,7 @@ class Constructor(Module):
         self.rhook("auth.register-form", self.register_form)
         self.rhook("auth.password-changed", self.password_changed)
         self.rhook("ext-test.delay", self.test_delay)
+        self.rhook("indexpage.render", self.indexpage_render)
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -421,3 +422,12 @@ class Constructor(Module):
                 u.set("pass_reminder", user.get("pass_reminder"))
                 u.set("pass_hash", user.get("pass_hash"))
                 u.store()
+
+    def indexpage_render(self, vars):
+        fields = [
+            {"code": "name", "prompt": self._("Enter your name, please"), "type": 0},
+            {"code": "sex", "prompt": self._("What\\'s your sex"), "type": 1, "values": [[0, "Male"], [1, "Female", True]]},
+            {"code": "motto", "prompt": self._("This is a very long text asking you to enter your motto. So be so kind entering your motto"), "type": 2},
+            {"code": "password", "prompt": self._("Enter your password")},
+        ]
+        vars["register_fields"] = fields

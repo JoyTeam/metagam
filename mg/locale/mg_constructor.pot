@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-09 11:49+0300\n"
+"POT-Creation-Date: 2011-03-10 16:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,12 +71,39 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-#: mg/templates/constructor/index/indexpage.js:74
+#: mg/templates/constructor/index/indexpage.js:85
+#: mg/templates/constructor/index/indexpage.js:194
 msgid "Server is in the local mode"
 msgstr ""
 
-#: mg/templates/constructor/index/indexpage.js:105
-msgid "Server is unavailable"
+#: mg/templates/constructor/index/indexpage.js:116
+#: mg/templates/constructor/index/indexpage.js:242
+msgid "Server is temporarily unavailable"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:133
+#: mg/templates/constructor/index/indexpage.js:160
+msgid "Next >"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:160
+msgid "Register"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:169
+msgid "This field may not be empty"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:177
+msgid "Type your password twice"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:181
+msgid "Passwords don't match"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:222
+msgid "Error during registration"
 msgstr ""
 
 #: mg/templates/constructor/domain-wizard.html:126

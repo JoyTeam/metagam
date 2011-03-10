@@ -8,16 +8,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-01 10:30+0300\n"
-"PO-Revision-Date: 2011-02-16 14:18+0300\n"
+"POT-Creation-Date: 2011-03-10 16:17+0300\n"
+"PO-Revision-Date: 2011-03-10 16:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: static/js/admin.js:81
 msgid "Guru advice"
@@ -35,7 +34,8 @@ msgstr "Обзор..."
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: static/js/admin-form.js:182 mg/templates/constructor/domain-wizard.html:82
+#: static/js/admin-form.js:182
+#: mg/templates/constructor/domain-wizard.html:82
 #: mg/templates/constructor/domain.html:71
 #: mg/templates/constructor/logo.html:57
 #: mg/templates/constructor/logo-wizard.html:80
@@ -48,18 +48,21 @@ msgstr "Пожалуйста, подождите..."
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:227 static/js/admin-form.js:230
+#: static/js/admin-form.js:227
+#: static/js/admin-form.js:230
 #: mg/templates/constructor/domain-wizard.html:41
 #: mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:29
 #: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo.html:95
+#: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:63
 #: mg/templates/constructor/logo-wizard.html:66
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/js/admin-form.js:230 mg/templates/constructor/domain-wizard.html:44
+#: static/js/admin-form.js:230
+#: mg/templates/constructor/domain-wizard.html:44
 #: mg/templates/constructor/domain.html:32
 #: mg/templates/constructor/logo.html:98
 #: mg/templates/constructor/logo-wizard.html:66
@@ -73,14 +76,41 @@ msgstr "Ошибка на сервере: %s"
 msgid "Next"
 msgstr "Далее"
 
-#: mg/templates/constructor/index/indexpage.js:74
-#, fuzzy
+#: mg/templates/constructor/index/indexpage.js:85
+#: mg/templates/constructor/index/indexpage.js:194
 msgid "Server is in the local mode"
-msgstr "Сервер недоступен"
+msgstr "Сервер находится в локальном режиме"
 
-#: mg/templates/constructor/index/indexpage.js:105
-msgid "Server is unavailable"
-msgstr "Сервер недоступен"
+#: mg/templates/constructor/index/indexpage.js:116
+#: mg/templates/constructor/index/indexpage.js:242
+msgid "Server is temporarily unavailable"
+msgstr "Сервер временно недоступен"
+
+#: mg/templates/constructor/index/indexpage.js:133
+#: mg/templates/constructor/index/indexpage.js:160
+msgid "Next >"
+msgstr "Далее >"
+
+#: mg/templates/constructor/index/indexpage.js:160
+#, fuzzy
+msgid "Register"
+msgstr "Регистрация"
+
+#: mg/templates/constructor/index/indexpage.js:169
+msgid "This field may not be empty"
+msgstr "Это поле не может быть пустым"
+
+#: mg/templates/constructor/index/indexpage.js:177
+msgid "Type your password twice"
+msgstr "Введите свой пароль дважды"
+
+#: mg/templates/constructor/index/indexpage.js:181
+msgid "Passwords don't match"
+msgstr "Пароли не совпадают"
+
+#: mg/templates/constructor/index/indexpage.js:222
+msgid "Error during registration"
+msgstr "Ошибка во время регистрации"
 
 #: mg/templates/constructor/domain-wizard.html:126
 msgid "Check availability"
@@ -154,54 +184,36 @@ msgstr "Предварительный просмотр"
 msgid "Apply"
 msgstr "Применить"
 
-#, fuzzy
-#~ msgid "[%RegisterDomain%]"
-#~ msgstr "Регистрация"
-
 #~ msgid "Abort"
 #~ msgstr "Прервать"
-
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
-
 #~ msgid "Subscription confirmation"
 #~ msgstr "Подтверждение подписки"
-
 #~ msgid "You have successfully subscribed to the project news"
 #~ msgstr "Вы успешно подписались на новости проекта"
-
 #~ msgid "Connection to the server failed"
 #~ msgstr "Нет связи с сервером"
-
 #~ msgid "E-mail address"
 #~ msgstr "Адрес e-mail"
-
 #~ msgid "Subsciption to the project news"
 #~ msgstr "Подписка на новости проекта"
-
 #~ msgid "Error loading %s: %s"
 #~ msgstr "Ошибка при загрузке %s: %s"
-
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
-
 #~ msgid "Category description"
 #~ msgstr "Описание раздела"
-
 #~ msgid "Order"
 #~ msgstr "Порядок"
-
 #~ msgid "New category"
 #~ msgstr "Новый раздел"
-
 #~ msgid "Stay tuned"
 #~ msgstr "Хочу быть в курсе"
-
 #~ msgid "Project status notifications"
 #~ msgstr "Уведомление о статусе разработки"
-
 #~ msgid "Notify me on everything interesting"
 #~ msgstr "Сообщайте мне обо всём интересном"
-
 #~ msgid "Login"
 #~ msgstr "Вход"
+

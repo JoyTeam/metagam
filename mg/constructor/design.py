@@ -660,7 +660,7 @@ class DesignIndexBrokenStones(DesignGenerator):
         font_size = 65
         watchdog = 0
         while font_size > 5:
-            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/beresta.ttf", font_size, encoding="unic")
+            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/globus.ttf", font_size, encoding="unic")
             h = 0
             overflow = False
             for line in text:
@@ -727,11 +727,11 @@ class DesignIndexBrokenStones(DesignGenerator):
                     rule.style.setProperty("border", "solid 1px %s" % self.css_color(self.merge_color(0.1, self.body_dark, self.body_light)))
                 elif rule.selectorText == ".message-text-td":
                     rule.style.setProperty("color", self.css_color(self.text_color))
-                elif rule.selectorText == ".message-button a":
-                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.3, self.body_dark, self.body_light)))
-                    rule.style.setProperty("color", self.css_color(self.text_color))
-                elif rule.selectorText == ".message-button a:hover":
+                elif rule.selectorText == ".message-button a" or rule.selectorText == "#field-submit-a":
                     rule.style.setProperty("background-color", self.css_color(self.merge_color(0.5, self.body_dark, self.body_light)))
+                    rule.style.setProperty("color", self.css_color(self.text_color))
+                elif rule.selectorText == ".message-button a:hover" or rule.selectorText == "#field-submit-a:hover":
+                    rule.style.setProperty("background-color", self.css_color(self.merge_color(0.3, self.body_dark, self.body_light)))
                     rule.style.setProperty("color", self.css_color(self.text_color))
 
 class DesignMod(Module):
@@ -1086,6 +1086,8 @@ class IndexPageAdmin(Module):
             if filename == "index.html":
                 if not "/indexpage.js" in parser.scripts:
                     errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<script type="text/javascript" src="http://www.%s/dyn-mg/indexpage.js"></script>'))
+                if not "/indexpage.css" in parser.scripts:
+                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<link rel="stylesheet" href="http://www.%s/dyn-mg/indexpage.css" />'))
                 loginform_ok = False
                 for form in parser.forms:
                     if form["name"] == "loginform" and form["id"] == "loginform":
