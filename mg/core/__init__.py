@@ -324,7 +324,7 @@ class Module(object):
         "Register module dependency. This module will be loaded automatically"
         self.app().modules._load(modules)
 
-    def conf(self, key, reset_cache=False, default=None):
+    def conf(self, key, default=None, reset_cache=False):
         "Syntactic sugar for app.config.get(key)"
         conf = self.app().config
         if reset_cache:

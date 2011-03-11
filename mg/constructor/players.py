@@ -1,9 +1,71 @@
+# -*- coding: utf-8 -*-
+
 from mg import *
+from mg.core.auth import User, UserList, Captcha
+from uuid import uuid4
 import re
 import copy
+import time
+import random
+import hashlib
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
+
+class Player(CassandraObject):
+    _indexes = {
+        "created": [[], "created"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Player-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return Player._indexes
+
+class PlayerList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Player-"
+        kwargs["cls"] = Player
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class Character(CassandraObject):
+    _indexes = {
+        "created": [[], "created"],
+        "name": [["name_lower"]],
+        "player": [["player"], "created"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Character-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return Character._indexes
+
+class CharacterList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "Character-"
+        kwargs["cls"] = Character
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class CharacterForm(CassandraObject):
+    _indexes = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterForm-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return CharacterForm._indexes
+
+class CharacterFormList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterForm-"
+        kwargs["cls"] = CharacterForm
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Auth(Module):
     def register(self):
@@ -15,6 +77,15 @@ class Auth(Module):
         self.rhook("ext-admin-characters.form", self.admin_characters_form)
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("indexpage.render", self.indexpage_render)
+        self.rhook("ext-player.register", self.player_register)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("auth.form_params", self.auth_form_params)
+        self.rhook("ext-player.login", self.player_login)
+
+    def objclasses_list(self, objclasses):
+        objclasses["Player"] = (Player, PlayerList)
+        objclasses["Character"] = (Character, CharacterList)
+        objclasses["CharacterForm"] = (CharacterForm, CharacterFormList)
 
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
@@ -301,14 +372,177 @@ class Auth(Module):
                 fld["values"][-1].append(True)
 
     def character_form(self):
-        fields = self.conf("auth.char_form", default=[])
+        fields = self.conf("auth.char_form", [])
         if not len(fields):
-            fields.append({"std": 1, "code": "name", "name": self._("Character name"), "order": 10.0, "reg": True})
-            fields.append({"std": 2, "code": "sex", "name": self._("Character sex"), "type": "combo", "values": [[0, self._("Male")], [1, self._("Female")]], "order": 20.0, "reg": True})
+            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True})
+            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [[0, self._("Male")], [1, self._("Female")]], "order": 20.0, "reg": True})
         return copy.deepcopy(fields)
 
     def indexpage_render(self, vars):
-        character_form = self.character_form()
-        character_form = [fld for fld in character_form if not fld.get("deleted") and fld.get("reg")]
-        self.jsencode_character_form(character_form)
-        vars["register_fields"] = character_form
+        fields = self.character_form()
+        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
+        self.jsencode_character_form(fields)
+        fields.append({"code": "email", "prompt": self._("Your e-mail address")})
+        fields.append({"code": "password", "prompt": self._("Your password")})
+        fields.append({"code": "captcha", "prompt": self._("Enter numbers from the picture")})
+        vars["register_fields"] = fields
+
+    def player_register(self):
+        req = self.req()
+        session = self.call("session.get", True)
+        # registragion form
+        fields = self.character_form()
+        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
+        # auth params
+        params = {
+            "name_re": r'^[A-Za-z0-9_-]+$',
+            "name_invalid_re": self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"),
+        }
+        self.call("auth.form_params", params)
+        # validating
+        errors = {}
+        values = {}
+        for fld in fields:
+            code = fld["code"]
+            val = req.param(code).strip()
+            if fld.get("mandatory_level") and not val:
+                errors[code] = self._("This field is mandatory")
+            elif fld["std"] == 1:
+                # character name. checking validity
+                if not re.match(params["name_re"], val, re.UNICODE):
+                    errors[code] = params["name_invalid_re"]
+                elif self.call("session.find_user", val, allow_email=True):
+                    errors[code] = self._("This name is taken already")
+            elif fld["type"] == 1:
+                if not val and not std and not fld.get("mandatory_level"):
+                    # empty value is ok
+                    val = None
+                else:
+                    # checking acceptable values
+                    ok = False
+                    for v in fld["values"]:
+                        if v[0] == val:
+                            ok = True
+                            break
+                    if not ok:
+                        errors[code] = self._("Make a valid selection")
+            values[code] = val
+        email = req.param("email")
+        if not email:
+            errors["email"] = self._("Enter your e-mail address")
+        elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
+            errors["email"] = self._("Enter correct e-mail")
+        else:
+            existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
+            existing_email.load(silent=True)
+            if len(existing_email):
+                errors["email"] = self._("There is another user with this email")
+        password = req.param("password")
+        if not password:
+            errors["password"] = self._("Enter your password")
+        elif len(password) < 6:
+            errors["password"] = self._("Minimal password length - 6 characters")
+        captcha = req.param("captcha")
+        if not captcha:
+            errors["captcha"] = self._("Enter numbers from the picture")
+        else:
+            try:
+                cap = self.obj(Captcha, session.uuid)
+                if cap.get("number") != captcha:
+                    errors["captcha"] = self._("Incorrect number")
+            except ObjectNotFoundException:
+                errors["captcha"] = self._("Incorrect number")
+        if len(errors):
+            self.call("web.response_json", {"success": False, "errors": errors})
+        # Registering player and character
+        now = self.now()
+        now_ts = "%020d" % time.time()
+        # Creating player
+        player = self.obj(Player)
+        player.set("created", now)
+        player_user = self.obj(User, player.uuid, {})
+        player_user.set("created", now_ts)
+        player_user.set("last_login", now_ts)
+        player_user.set("email", email.lower())
+        player_user.set("inactive", 1)
+        # Activation code
+        if self.conf("auth.activate_email") and (not self.conf("auth.activate_email_level") or not self.conf("auth.activate_email_days")):
+            activation_code = uuid4().hex
+            player_user.set("activation_code", activation_code)
+            player_user.set("activation_redirect", "/player/login")
+        else:
+            activation_code = None
+        # Password
+        salt = ""
+        letters = "abcdefghijklmnopqrstuvwxyz"
+        for i in range(0, 10):
+            salt += random.choice(letters)
+        player_user.set("salt", salt)
+        player_user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password))
+        m = hashlib.md5()
+        m.update(salt + password.encode("utf-8"))
+        player_user.set("pass_hash", m.hexdigest())
+        # Creating character
+        character = self.obj(Character)
+        character.set("created", now)
+        character.set("player", player.uuid)
+        character_user = self.obj(User, character.uuid, {})
+        character_user.set("created", now_ts)
+        character_user.set("last_login", now_ts)
+        character_user.set("name", values["name"])
+        character_user.set("name_lower", values["name"].lower())
+        character_form = self.obj(CharacterForm, character.uuid, {})
+        for fld in fields:
+            code = fld["code"]
+            if code == "name":
+                continue
+            val = values.get(code)
+            if val is None:
+                continue
+            character_form.set(code, val)
+        # Storing objects
+        player.store()
+        player_user.store()
+        character.store()
+        character_user.store()
+        # Sending activation e-mail
+        if activation_code:
+            params = {
+                "subject": self._("Account activation"),
+                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+            }
+            self.call("auth.activation_email", params)
+            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
+        # Responding
+        self.call("web.response_json", {"ok": 1, "session": session.uuid})
+
+    def auth_form_params(self, params):
+        params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
+        params["name_invalid_re"] = self._("Invalid characters in the name. Only latin and russian letters, numbers, spaces, symbols '_', and '-' are allowed")
+
+    def player_login(self):
+        req = self.req()
+        name = req.param("email")
+        password = req.param("password")
+        msg = {}
+        self.call("auth.messages", msg)
+        if not name:
+            self.call("web.response_json", {"error": msg["name_empty"]})
+        user = self.call("session.find_user", name, allow_email=True)
+        if user is None:
+            self.call("web.response_json", {"error": msg["name_unknown"]})
+        elif user.get("inactive"):
+            self.call("web.response_json", {"error": msg["user_inactive"]})
+        if not password:
+            self.call("web.response_json", {"error": msg["password_empty"]})
+        m = hashlib.md5()
+        m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+        if m.hexdigest() != user.get("pass_hash"):
+            self.call("web.response_json", {"error": msg["password_incorrect"]})
+        session = self.call("session.get", True)
+        session.set("user", user.uuid)
+        session.delkey("semi_user")
+        session.store()
+        self.app().mc.delete("SessionCache-%s" % session.uuid)
+        self.call("web.response_json", {"ok": 1, "session": session.uuid})
+

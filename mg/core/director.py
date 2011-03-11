@@ -15,7 +15,7 @@ class Director(Module):
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects"])
         self.config()
         self.app().inst.setup_logger()
-        self.app().servers_online = self.conf("director.servers", default={})
+        self.app().servers_online = self.conf("director.servers", {})
         self.app().servers_online_modified = False
         self.queue_workers = {}
         self.workers_str = None

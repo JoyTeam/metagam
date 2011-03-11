@@ -1482,7 +1482,7 @@ msgstr "Нет"
 
 #: mg/constructor/players.py:113
 msgid "Yes, but play them by turn"
-msgstr "Да, но играть ими по очереди"
+msgstr "Да, но играть ими только по очереди"
 
 #: mg/constructor/players.py:113
 msgid "Yes, play them simultaneously"

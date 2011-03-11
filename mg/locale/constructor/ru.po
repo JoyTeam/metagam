@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-10 16:17+0300\n"
-"PO-Revision-Date: 2011-03-10 16:19+0300\n"
+"PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -92,7 +92,6 @@ msgid "Next >"
 msgstr "Далее >"
 
 #: mg/templates/constructor/index/indexpage.js:160
-#, fuzzy
 msgid "Register"
 msgstr "Регистрация"
 

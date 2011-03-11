@@ -6,6 +6,7 @@
 /* common variables */
 var last_request_id = 0;
 var in_dialog = false;
+var in_report = false;
 
 function get_viewport()
 {
@@ -30,7 +31,7 @@ function report_failure(text)
 	img.style.width = viewport.width + 'px';
 	img.style.height = viewport.height + 'px';
 	img.style.zIndex = 2000;
-	img.className = 'message-overlay';
+	img.className = 'report-overlay';
 	img.src = 'http://www.[%main_host%]/st-mg/img/dark.png';
 	$$('body')[0].appendChild(img);
 
@@ -41,12 +42,58 @@ function report_failure(text)
 	table.style.width = (viewport.width - 20) + 'px';
 	table.style.height = (viewport.height - 20) + 'px';
 	table.style.zIndex = 2001;
-	table.className = 'message-overlay';
+	table.className = 'report-overlay';
 	var tbody = document.createElement('tbody');
 	var tr = document.createElement('tr');
 	var td = document.createElement('td');
-	td.className = 'message-overlay-td';
+	td.className = 'report-overlay-td';
 	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a href="javascript:void(0)" onclick="return report_close();">Закрыть</a></div>' + '</td></tr></table>';
+	tr.appendChild(td);
+	tbody.appendChild(tr);
+	table.appendChild(tbody);
+	$$('body')[0].appendChild(table);
+
+	in_report = true;
+}
+
+function report_close()
+{
+	in_report = false;
+	var lst = $$('.report-overlay');
+	for (var i = 0; i < lst.length; i++) {
+		var msg = lst[i];
+		msg.parentNode.removeChild(msg);
+	}
+	return false;
+}
+
+function dialog(text)
+{
+	var viewport = get_viewport();
+	var img = document.createElement('img');
+	img.style.position = 'absolute';
+	img.style.left = viewport.left + 'px';
+	img.style.top = viewport.top + 'px';
+	img.style.width = viewport.width + 'px';
+	img.style.height = viewport.height + 'px';
+	img.style.zIndex = 2000;
+	img.className = 'dialog-overlay';
+	img.src = 'http://www.[%main_host%]/st-mg/img/dark.png';
+	$$('body')[0].appendChild(img);
+
+	var table = document.createElement('table');
+	table.style.position = 'absolute';
+	table.style.left = (viewport.left + 10) + 'px';
+	table.style.top = (viewport.top + 10) + 'px';
+	table.style.width = (viewport.width - 20) + 'px';
+	table.style.height = (viewport.height - 20) + 'px';
+	table.style.zIndex = 2001;
+	table.className = 'dialog-overlay';
+	var tbody = document.createElement('tbody');
+	var tr = document.createElement('tr');
+	var td = document.createElement('td');
+	td.className = 'dialog-overlay-td';
+	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a href="javascript:void(0)" onclick="return dialog_close();">Закрыть</a></div>' + '</td></tr></table>';
 	tr.appendChild(td);
 	tbody.appendChild(tr);
 	table.appendChild(tbody);
@@ -55,10 +102,10 @@ function report_failure(text)
 	in_dialog = true;
 }
 
-function report_close()
+function dialog_close()
 {
 	in_dialog = false;
-	var lst = $$('.message-overlay');
+	var lst = $$('.dialog-overlay');
 	for (var i = 0; i < lst.length; i++) {
 		var msg = lst[i];
 		msg.parentNode.removeChild(msg);
@@ -79,13 +126,13 @@ function htmlencode(s)
 
 function auth_login()
 {
-	if (in_dialog)
+	if (in_dialog || in_report)
 		return false;
 	if ((document.location + '').match('^file://')) {
 		report_failure(gt.gettext('Server is in the local mode'));
 		return false;
 	}
-	new Ajax.Request('/auth/ajax-login', {
+	new Ajax.Request('/player/login', {
 		'method': 'post',
 		request_id: ++last_request_id,
 		parameters: {
@@ -128,10 +175,10 @@ register_fields.push({'prompt': '[%fld.prompt%]', 'code': '[%fld.code%]', 'type'
 
 function auth_register()
 {
-	if (in_dialog)
+	if (in_dialog || in_report)
 		return false;
 	var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
-	report_failure(html);
+	dialog(html);
 	auth_register_field(0);
 	return false;
 }
@@ -152,6 +199,9 @@ function auth_register_field(i)
 	} else if (fld.code == 'password') {
 		inp_html = '<div class="field-input-div"><input id="field-input" type="password" class="field-edit" /></div>';
 		inp_html += '<div class="field-input-div"><input id="field-input2" type="password" class="field-edit" /></div>';
+	} else if (fld.code == 'captcha') {
+		inp_html = '<div class="field-input-div"><img id="captcha" src="/auth/captcha?rnd=' + Math.random() + '" alt="" /></div>';
+		inp_html += '<div class="field-input-div"><input id="field-input" type="captcha" class="field-edit" /></div>';
 	} else {
 		inp_html = '<div class="field-input-div"><input id="field-input" value="' + htmlencode(fld.value) + '" class="field-edit" /></div>';
 	}
@@ -225,7 +275,7 @@ function auth_register_next()
 						}
 					} else if (json.ok) {
 						var frm = document.createElement('form');
-						frm.method = 'get';
+						frm.method = 'post';
 						frm.action = '/';
 						var inp = document.createElement('input');
 						inp.type = 'hidden';
@@ -246,4 +296,8 @@ function auth_register_next()
 	}
 
 	return false;
+}
+
+function auth_remind()
+{
 }

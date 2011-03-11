@@ -61,6 +61,8 @@ class Session(CassandraObject):
     _indexes = {
         "valid_till": [[], "valid_till"],
         "user": [["user"]],
+        "authorized": [["authorized"], "updated"],
+        "online": [["online"], "updated"],
     }
 
     def __init__(self, *args, **kwargs):
@@ -138,6 +140,7 @@ class Sessions(Module):
             session = self.find_session(sid)
             if session is not None:
                 session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
+                session.set("updated", self.now())
                 session.store()
                 self.app().mc.set(mcid, session.data)
                 if cache:
@@ -158,6 +161,7 @@ class Sessions(Module):
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
+            session.set("updated", self.now())
             session.store()
         if cache:
             req._session = session
@@ -211,7 +215,6 @@ class Interface(Module):
         self.rhook("ext-auth.logout", self.ext_logout)
         self.rhook("ext-auth.login", self.ext_login)
         self.rhook("auth.messages", self.messages, priority=10)
-        self.rhook("ext-auth.ajax-login", self.ext_ajax_login)
         self.rhook("ext-auth.activate", self.ext_activate)
         self.rhook("ext-auth.remind", self.ext_remind)
         self.rhook("ext-auth.change", self.ext_change)
@@ -553,32 +556,6 @@ class Interface(Module):
             if redirect is not None and redirect != "":
                 self.call("web.redirect", redirect)
         self.call("web.redirect", "/")
-
-    def ext_ajax_login(self):
-        req = self.req()
-        name = req.param("email")
-        password = req.param("password")
-        msg = {}
-        self.call("auth.messages", msg)
-        if not name:
-            self.call("web.response_json", {"error": msg["name_empty"]})
-        user = self.call("session.find_user", name, allow_email=True)
-        if user is None:
-            self.call("web.response_json", {"error": msg["name_unknown"]})
-        elif user.get("inactive"):
-            self.call("web.response_json", {"error": msg["user_inactive"]})
-        if not password:
-            self.call("web.response_json", {"error": msg["password_empty"]})
-        m = hashlib.md5()
-        m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
-        if m.hexdigest() != user.get("pass_hash"):
-            self.call("web.response_json", {"error": msg["password_incorrect"]})
-        session = self.call("session.get", True)
-        session.set("user", user.uuid)
-        session.delkey("semi_user")
-        session.store()
-        self.app().mc.delete("SessionCache-%s" % session.uuid)
-        self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
     def messages(self, msg):
         msg["name_empty"] = self._("Enter your name or email")

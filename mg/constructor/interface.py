@@ -1,6 +1,7 @@
 from mg import *
 from mg.constructor.design import Design
 from mg.core.auth import User
+from mg.constructor.players import Player, Character, CharacterList
 import re
 import hashlib
 import mg
@@ -83,7 +84,10 @@ class IndexPage(Module):
             user = session.get("user")
             if not user:
                 self.call("web.redirect", "/")
-            return self.game_interface(user)
+            if self.conf("auth.multicharing") or self.conf("auth.cabinet"):
+                return self.game_cabinet(user)
+            else:
+                return self.game_interface_default_character(user)
 
         email = req.param("email")
         if email:
@@ -136,5 +140,22 @@ class IndexPage(Module):
         content = self.call("web.parse_template", template, vars)
         self.call("web.response_global", content, vars)
 
-    def game_interface(self, user_uuid):
-        self.call("web.response_global", "Game Interface", {})
+    def game_cabinet(self, player_uuid):
+        self.error("The cabinet is not implemented yet")
+
+    def game_interface_default_character(self, player_uuid):
+        try:
+            player = self.obj(Player, player_uuid)
+        except ObjectNotFoundException:
+            self.error(self._("Missing player record in the database"))
+        chars = self.objlist(CharacterList, query_index="player", query_equal=player_uuid, query_reversed=True)
+        if not len(chars):
+            self.call("web.redirect", "/character/create")
+        return game_interface(chars[0].uuid)
+
+    def game_interface(self, character_uuid):
+        try:
+            character = self.obj(Character, character_uuid)
+        except ObjectNotFoundException:
+            self.error(self._("Missing character record in the database"))
+        self.call("web.response_global", "Game Interface: %s" % character.get("name"), {})

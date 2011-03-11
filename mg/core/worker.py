@@ -34,7 +34,7 @@ class Worker(Module):
     def fastidle(self):
         self.call("core.check_last_ping")
         now = time.time()
-        if self.last_status is None or now > self.last_status + 300:
+        if self.last_status is None or now > self.last_status + 120:
             self.last_status = now
             self.store_status()
 
