@@ -633,6 +633,8 @@ class CassandraObjectList(object):
                 self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
         else:
             raise RuntimeError("Invalid usage of CassandraObjectList")
+        for obj in self.dict:
+            obj._indexes = None
 
     def load(self, silent=False):
         if len(self.dict) > 0:
@@ -728,6 +730,7 @@ class CassandraObjectList(object):
             mcgroups = set()
             for obj in self.dict:
                 old_index_values = obj.index_values()
+#               print "deleting %s. data: %s. index_values: %s" % (obj.uuid, obj.data, old_index_values)
                 for index_name, key in old_index_values.iteritems():
                     index_row = (obj.dbprefix + obj.clsprefix + index_name + key[0]).encode("utf-8")
                     m = mutations.get(index_row)

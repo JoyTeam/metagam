@@ -191,9 +191,13 @@ class TestORM(unittest.TestCase):
         lst = TestObjectList(self.db, query_index="created", query_equal="Другой-топик")
         lst.remove()
 
-        obj1 = TestObject(self.db)
-        obj1.set("created", "2011-01-01")
-        obj1.set("topic", "Топик")
+        lst = TestObjectList(self.db, query_index="created", query_equal="Топик")
+        self.assertEqual(len(lst), 0)
+
+        obj1 = TestObject(self.db, data={
+            "topic": u"Топик",
+            "created": "2011-01-01"
+        })
         obj1.store()
         obj2 = TestObject(self.db)
         obj2.set("created", "2011-01-01")
