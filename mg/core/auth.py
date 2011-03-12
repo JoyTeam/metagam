@@ -21,6 +21,7 @@ class User(CassandraObject):
         "name": [["name_lower"]],
         "inactive": [["inactive"], "created"],
         "email": [["email"]],
+        "tag": [["tag"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -397,6 +398,9 @@ class Interface(Module):
         form = self.call("web.form", "common/form.html")
         email = req.param("email")
         redirect = req.param("redirect")
+        vars = {
+            "title": self._("Password reminder"),
+        }
         if req.ok():
             if not email:
                 form.error("email", self._("Enter your e-mail"))
@@ -417,15 +421,15 @@ class Interface(Module):
                 }
                 self.call("auth.remind_email", params)
                 self.call("email.send", email, name, params["subject"], params["content"].format(content=content, host=req.host()))
-                if redirect is not None and redirect != "":
-                    self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(redirect))
-                self.call("web.redirect", "/auth/login")
+                vars["message"] = self._("We have sent you an e-mail with your password reminder")
+                vars["ret"] = {
+                    "href": redirect if redirect else "/auth/login",
+                    "html": self._("Return")
+                }
+                self.call("web.response_template", "common/message.html", vars)
         form.hidden("redirect", redirect)
         form.input(self._("Your e-mail"), "email", email)
         form.submit(None, None, self._("Remind"))
-        vars = {
-            "title": self._("Password reminder"),
-        }
         self.call("web.response_global", form.html(), vars)
 
     def ext_captcha(self):

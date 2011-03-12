@@ -7,6 +7,9 @@ from concurrence.smtp import *
 import sys
 from email.mime.text import MIMEText
 from email.header import Header
+from email.utils import formatdate
+import datetime
+import time
 
 class Email(Module):
     def register(self):
@@ -47,6 +50,9 @@ class Email(Module):
             msg["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
             msg["From"] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
             msg["To"] = "%s <%s>" % (Header(to_name, "utf-8"), to_email)
+            now = datetime.datetime.now()
+            stamp = time.mktime(now.timetuple())
+            msg["Date"] = formatdate(timeval=stamp, localtime=False, usegmt=True)
             s.sendmail("<%s>" % from_email, ["<%s>" % to_email], msg.as_string())
         except SMTPRecipientsRefused as e:
             self.warning(e)

@@ -313,7 +313,10 @@ class WebDaemon(object):
                 raise
             except RuntimeError as e:
                 self.logger.error(e)
-                return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % cgi.escape(str(e)))
+                e = "%s" % e
+                if type(e) == unicode:
+                    e = e.encode("utf-8")
+                return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
             except BaseException as e:
                 self.logger.exception(e)
                 return request.internal_server_error()
@@ -654,7 +657,7 @@ class Web(Module):
         raise WebResponse(self.req().jresponse(data))
 
     def web_response_json_html(self, data):
-        raise WebResponse(self.req().uresponse(cgi.escape(json.dumps(data))))
+        raise WebResponse(self.req().uresponse(htmlescape(json.dumps(data))))
 
     def web_form(self, template="common/form.html", action=None):
         return WebForm(self, template, action)
@@ -790,7 +793,7 @@ class WebForm(object):
         """
         <input type="hidden" />
         """
-        self._hidden.append({"name": name, "value": cgi.escape(str(value)) if value is not None else None})
+        self._hidden.append({"name": name, "value": htmlescape(unicode(value))})
 
     def raw(self, desc, name, html, **kwargs):
         """
@@ -804,7 +807,7 @@ class WebForm(object):
         """
         <input />
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         kwargs["element_input"] = True
         self.control(desc, name, **kwargs)
 
@@ -812,7 +815,7 @@ class WebForm(object):
         """
         <select />
         """
-        kwargs["options"] = [{"value": opt.get("value", ""), "text": cgi.escape(opt.get("description", "")), "selected": (unicode(opt.get("value", "")) == unicode(value)), "bgcolor": opt.get("bgcolor")} for opt in options]
+        kwargs["options"] = [{"value": opt.get("value", ""), "text": htmlescape(opt.get("description")), "selected": (unicode(opt.get("value", "")) == unicode(value)), "bgcolor": opt.get("bgcolor")} for opt in options]
         kwargs["element_select"] = True
         self.control(desc, name, **kwargs)
 
@@ -820,7 +823,7 @@ class WebForm(object):
         """
         <input type="password" />
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         kwargs["element_password"] = True
         self.control(desc, name, **kwargs)
 
@@ -857,7 +860,7 @@ class WebForm(object):
         """
         <textarea />
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         kwargs["element_textarea"] = True
         self.control(desc, name, **kwargs)
 
@@ -865,7 +868,7 @@ class WebForm(object):
         """
         <textarea />
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         kwargs["element_textarea_fixed"] = True
         self.control(desc, name, **kwargs)
 
@@ -873,7 +876,7 @@ class WebForm(object):
         """
         <input type="submit" />
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         if name is not None:
             kwargs["submit_name"] = name
         kwargs["element_submit"] = True
@@ -884,7 +887,7 @@ class WebForm(object):
         """
         <textarea /> with formatting buttons
         """
-        kwargs["value"] = cgi.escape(value) if value is not None else None
+        kwargs["value"] = htmlescape(value)
         kwargs["attaches"] = not kwargs.get("no_attaches")
         kwargs["show_smiles"] = not kwargs.get("no_smiles")
         if kwargs.get("fixed"):

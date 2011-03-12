@@ -100,3 +100,6 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-user-name { font-size: 16px; font-weight: bold; padding-bottom: 20px }
 .socio-user-param { font-weight: bold }
 .socio-user-param-name { font-weight: normal }
+/* LISTS */
+.socio-list-header td { vertical-align: top; padding: 3px 40px 3px 0px; font-weight: bold }
+.socio-list-cell { vertical-align: top; padding: 3px 40px 3px 0px }
