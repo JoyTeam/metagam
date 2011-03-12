@@ -216,6 +216,9 @@ class QueueRunner(Module):
                                 workers.append(worker)
                                 self.workers = self.workers - 1
                                 Tasklet.new(self.queue_run)(task, worker)
+                            else:
+                                task.set("priority", task.get("priority") - 1)
+                                task.store()
                         else:
                             self.error("Missing cls: %s" % task.data)
                             task.remove()

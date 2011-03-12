@@ -39,6 +39,6 @@ class Projects(Module):
         apps.append({"cls": "metagam", "tag": "main"})
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
         projects.load(silent=True)
+        print projects.data()
         for proj in projects:
-            apps.append({"cls": proj.get("cls") if proj.get("cls") else "main", "tag": proj.uuid})
-
+            apps.append({"cls": proj.get("cls") if proj.get("cls") else "metagam", "tag": proj.uuid})
