@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-10 16:17+0300\n"
+"POT-Creation-Date: 2011-03-13 01:19+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,42 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
+msgstr ""
+
+#: static/js/admin-form.js:182 mg/templates/constructor/logo-wizard.html:80
+#: mg/templates/constructor/logo-wizard.html:119
+#: mg/templates/constructor/logo-wizard.html:230
+#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/domain-wizard.html:82
+#: mg/templates/constructor/logo.html:57
+msgid "Please wait..."
+msgstr ""
+
+#: static/js/admin-form.js:212
+msgid "Sending data..."
+msgstr ""
+
+#: static/js/admin-form.js:227 static/js/admin-form.js:230
+#: mg/templates/constructor/logo-wizard.html:63
+#: mg/templates/constructor/logo-wizard.html:66
+#: mg/templates/constructor/domain.html:29
+#: mg/templates/constructor/domain.html:32
+#: mg/templates/constructor/domain-wizard.html:41
+#: mg/templates/constructor/domain-wizard.html:44
+#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
+msgid "Error"
+msgstr ""
+
+#: static/js/admin-form.js:230 mg/templates/constructor/logo-wizard.html:66
+#: mg/templates/constructor/domain.html:32
+#: mg/templates/constructor/domain-wizard.html:44
+#: mg/templates/constructor/logo.html:98
+#, python-format
+msgid "Server error: %s"
+msgstr ""
 
 #: static/js/admin.js:81
 msgid "Guru advice"
@@ -25,125 +61,28 @@ msgstr ""
 msgid "To the main page"
 msgstr ""
 
-#: static/js/FileUploadField.js:21
-msgid "Browse..."
-msgstr ""
-
 #: static/js/admin-form-presets.js:10
 msgid "Presets:"
 msgstr ""
 
-#: static/js/admin-form.js:182 mg/templates/constructor/domain-wizard.html:82
-#: mg/templates/constructor/domain.html:71
-#: mg/templates/constructor/logo.html:57
-#: mg/templates/constructor/logo-wizard.html:80
-#: mg/templates/constructor/logo-wizard.html:119
-#: mg/templates/constructor/logo-wizard.html:230
-msgid "Please wait..."
-msgstr ""
-
-#: static/js/admin-form.js:212
-msgid "Sending data..."
-msgstr ""
-
-#: static/js/admin-form.js:227 static/js/admin-form.js:230
-#: mg/templates/constructor/domain-wizard.html:41
-#: mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/domain.html:29
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
-#: mg/templates/constructor/logo-wizard.html:63
-#: mg/templates/constructor/logo-wizard.html:66
-msgid "Error"
-msgstr ""
-
-#: static/js/admin-form.js:230 mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/logo.html:98
-#: mg/templates/constructor/logo-wizard.html:66
-#, python-format
-msgid "Server error: %s"
-msgstr ""
-
-#: mg/templates/constructor/intro-ru.html:18
 #: mg/templates/constructor/intro-en.html:12
+#: mg/templates/constructor/intro-ru.html:18
 #: mg/templates/constructor/logo.html:130
 msgid "Next"
 msgstr ""
 
-#: mg/templates/constructor/index/indexpage.js:85
-#: mg/templates/constructor/index/indexpage.js:194
-msgid "Server is in the local mode"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:116
-#: mg/templates/constructor/index/indexpage.js:242
-msgid "Server is temporarily unavailable"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:133
-#: mg/templates/constructor/index/indexpage.js:160
-msgid "Next >"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:160
-msgid "Register"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:169
-msgid "This field may not be empty"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:177
-msgid "Type your password twice"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:181
-msgid "Passwords don't match"
-msgstr ""
-
-#: mg/templates/constructor/index/indexpage.js:222
-msgid "Error during registration"
-msgstr ""
-
-#: mg/templates/constructor/domain-wizard.html:126
-msgid "Check availability"
-msgstr ""
-
-#: mg/templates/constructor/domain-wizard.html:161
-msgid "Buy MM$"
-msgstr ""
-
-#: mg/templates/constructor/domain-wizard.html:258
-#: mg/templates/constructor/logo-wizard.html:281
-msgid "Abort wizard"
-msgstr ""
-
-#: mg/templates/constructor/offer-ru.html:261
-msgid "I agree to the terms and conditions"
-msgstr ""
-
-#: mg/templates/constructor/offer-ru.html:264
-msgid "I don't agree"
-msgstr ""
-
-#: mg/templates/constructor/domain.html:95
-#: mg/templates/constructor/logo.html:126
-msgid "Previous"
-msgstr ""
-
-#: mg/templates/constructor/logo.html:80
-#: mg/templates/constructor/logo-wizard.html:102
-msgid "Upload"
-msgstr ""
-
-#: mg/templates/constructor/logo.html:83
 #: mg/templates/constructor/logo-wizard.html:40
+#: mg/templates/constructor/logo.html:83
 msgid "Uploading data..."
 msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:74
 msgid "Upload file"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:102
+#: mg/templates/constructor/logo.html:80
+msgid "Upload"
 msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:113
@@ -176,4 +115,65 @@ msgstr ""
 
 #: mg/templates/constructor/logo-wizard.html:278
 msgid "Apply"
+msgstr ""
+
+#: mg/templates/constructor/logo-wizard.html:281
+#: mg/templates/constructor/domain-wizard.html:258
+msgid "Abort wizard"
+msgstr ""
+
+#: mg/templates/constructor/domain.html:95
+#: mg/templates/constructor/logo.html:126
+msgid "Previous"
+msgstr ""
+
+#: mg/templates/constructor/domain-wizard.html:126
+msgid "Check availability"
+msgstr ""
+
+#: mg/templates/constructor/domain-wizard.html:161
+msgid "Buy MM$"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:132
+#: mg/templates/constructor/index/indexpage.js:244
+msgid "Server is in the local mode"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:163
+#: mg/templates/constructor/index/indexpage.js:292
+msgid "Server is temporarily unavailable"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:180
+#: mg/templates/constructor/index/indexpage.js:210
+msgid "Next >"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:210
+msgid "Register"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:219
+msgid "This field may not be empty"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:227
+msgid "Type your password twice"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:231
+msgid "Passwords don't match"
+msgstr ""
+
+#: mg/templates/constructor/index/indexpage.js:272
+msgid "Error during registration"
+msgstr ""
+
+#: mg/templates/constructor/offer-ru.html:261
+msgid "I agree to the terms and conditions"
+msgstr ""
+
+#: mg/templates/constructor/offer-ru.html:264
+msgid "I don't agree"
 msgstr ""

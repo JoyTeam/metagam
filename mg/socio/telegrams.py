@@ -65,20 +65,18 @@ class Telegrams(Module):
         self.rhook("ext-telegrams.send", self.telegrams_send)
         self.rhook("ext-telegrams.user", self.telegrams_user)
 
-    def menu(self, menu_lst, menu_title=None):
+    def menu(self, menu_lst):
         req = self.req()
         if req.user():
             params = {}
             self.call("telegrams.params", params)
             req = self.req()
-            if menu_title is None:
-                menu_title = params.get("menu_title", self._("Telegrams"))
             lst = self.objlist(TelegramUserList, query_index="unread", query_equal="%s-1" % req.user())
             if len(lst):
                 suffix = " <strong>(%d)</strong>" % len(lst)
             else:
                 suffix = None
-            menu_lst.append({"href": "/telegrams/list" if req.group != "telegrams" or req.hook != "list" else None, "html": menu_title, "suffix": suffix})
+            menu_lst.append({"href": "/telegrams/list" if req.group != "telegrams" or req.hook != "list" else None, "html": params.get("menu_title", self._("Telegrams")), "suffix": suffix})
 
     def telegrams_list(self):
         self.call("session.require_login")
@@ -97,11 +95,14 @@ class Telegrams(Module):
             user = users.get(ent.get("contragent"))
             if user is None:
                 continue
-            rows.append([
-                htmlescape(user.get("name")),
-                '<a href="/telegrams/user/%s%s">%s</a>' % (user.uuid, "#unread" if ent.get("unread") else "", self.call("l10n.timeencode2", ent.get("last_telegram"))),
-                self._("Yes") if ent.get("unread") else self._("No")
-            ])
+            rows.append({
+                "bold": ent.get("unread"),
+                "cols": [
+                    htmlescape(user.get("name")),
+                    '<a href="/telegrams/user/%s%s">%s</a>' % (user.uuid, "#unread" if ent.get("unread") else "", self.call("l10n.timeencode2", ent.get("last_telegram"))),
+                    self._("Yes") if ent.get("unread") else self._("No")
+                ]
+            })
         vars = {
             "title": params.get("page_title", self._("Telegrams")),
             "list_cols": [params.get("user", self._("User")), params.get("last_telegram", self._("Last telegram")), self._("Unread")],
@@ -129,6 +130,8 @@ class Telegrams(Module):
                 recipient = self.call("session.find_user", cname)
                 if not recipient:
                     form.error("cname", self._("No such user"))
+                elif recipient.get("tag"):
+                    form.error("cname", self._("You can't send messages to the system"))
             if not content:
                 form.error("content", self._("Enter message content"))
             if not form.errors:
@@ -226,13 +229,7 @@ class Telegrams(Module):
                     if not unread:
                         unread = True
                         html = '<a name="unread"></a>' + html
-                    # Marking telegram as read
                     tel.delkey("unread")
-#                    tel_user = self.objlist(TelegramUserList, query_index="telegram", query_equal=tel.uuid)
-#                    tel_user.load()
-#                    for ent in tel_user:
-#                        ent.delkey("unread")
-#                    tel_user.store()
                 rows.append([self.call("l10n.timeencode2", tel.get("sent")), html])
             else:
                 rows.append([self.call("l10n.timeencode2", tel.get("sent")), None, html])
@@ -248,19 +245,23 @@ class Telegrams(Module):
             else:
                 cont.delkey("unread")
                 cont.store()
+        read_only = True if contragent.get("tag") else False
         title = params.get("telegrams_with", self._("Telegrams with {0}")).format(htmlescape(contragent.get("name")))
         form = self.call("web.form", action="/telegrams/send")
         form.hidden("cname", contragent.get("name"))
         form.texteditor(params.get("text", self._("Telegram text")), "content", "")
         form.submit(None, None, self._("Send"))
+        cols = [self._("Time"), self._("Received")]
+        if not read_only:
+            cols.append(self._("Sent"))
         vars = {
             "title": title,
-            "list_cols": [self._("Time"), self._("Received"), self._("Sent")],
+            "list_cols": cols,
             "list_rows": rows if len(rows) else None,
             "menu_left": [
                 {"href": "/telegrams/list", "html": params.get("all_telegrams", self._("All telegrams"))},
                 {"html": title, "lst": True}
             ],
-            "form": form.html()
+            "form": "" if read_only else form.html()
         }
         self.call("web.response_template", "socio/telegrams-user.html", vars)

@@ -1,1 +1,12 @@
-[%if list_rows%][%include socio/list.html%][%end%]
+[%if list_rows%]
+<table class="socio-list">
+	<tr class="socio-list-header">
+		[%foreach ent in list_cols%]<td>[%ent%]</td>[%end%]
+	</tr>
+	[%foreach row in list_rows%]
+	<tr>
+		[%foreach col in row.cols%]<td class="socio-list-cell">[%if row.bold%]<strong>[%end%][%col%][%if row.bold%]</strong>[%end%]</td>[%end%]
+	</tr>
+	[%end%]
+</table>
+[%end%]
