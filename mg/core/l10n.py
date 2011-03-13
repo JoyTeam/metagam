@@ -49,6 +49,7 @@ class L10n(Module):
         self.rhook("l10n.dateencode2", self.l10n_dateencode2)
         self.rhook("l10n.timeencode2", self.l10n_timeencode2)
         self.rhook("l10n.stemmer", self.l10n_stemmer)
+        self.rhook("l10n.literal_value", self.l10n_literal_value)
 
     def l10n_domain(self):
         return "mg_server"
@@ -175,3 +176,21 @@ class L10n(Module):
             elif day10 == 3:
                 th = "rd"
         return self._("{2:d}{3} {1}, {0}").format(year, self._(timeencode2_month.get(month)), day, th)
+
+    def l10n_literal_value(self, val, values):
+        values = values.split("/")
+        lang = self.call("l10n.lang")
+        val = abs(float(val))
+        if lang == "ru":
+            if val != int(val):
+                return values[1]
+            if (val % 100) >= 10 and (val % 100) <= 20:
+                return values[2]
+            if (val % 10) >= 2 and (val % 10) <= 4:
+                return values[1]
+            if (val % 10) == 1:
+                return values[0]
+            return values[2]
+        if val == 1:
+            return values[0]
+        return values[1]
