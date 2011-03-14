@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>[%title%]</title>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<script type="text/javascript">var ver='[%ver%]'</script>
+		[%head%]
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
+		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
+		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/js/gettext.js"></script>
+		[%if lang%]<script type="text/javascript" src="/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
+		<script type="text/javascript" src="/st/[%ver%]/js/sprintf.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/js/depend.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/js/game-frameset.js"></script>
+	</head>
+	<body>
+		[%if twopay_payport%]
+		<div id="cassa2payCanvas"></div>
+		<script type="text/javascript" src="http://2pay.ru/gadget/client/html/init.js"></script>
+		<script type="text/javascript">
+		var _2payProjectID = '[%twopay_payport.project_id%]';
+		var _2payUserEmail = '[%twopay_payport.email%]';
+		var _2payPaymentSum = '[%twopay_payport.payment_sum%]';
+		var _2payVolumeSum = '[%twopay_payport.amount_sum%]';
+		var _2payParamsV1 = '[%twopay_payport.name%]';
+		var _2payLanguageUser = [%twopay_payport.language%];
+		addEvent(window, 'load', function () { _2payLoadGadget(); });
+		</script>
+		[%end%]
+		[%if twopay_payment%]
+		<script type="text/javascript">
+		var twopay_project_id = '[%twopay_payment.project_id%]';
+		var twopay_email = '[%twopay_payment.email%]';
+		var twopay_v1 = '[%twopay_payment.name%]';
+		</script>
+		[%end%]
+	</body>
+</html>

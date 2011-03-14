@@ -72,7 +72,7 @@ class IndexPage(Module):
 
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
-        msg["user_inactive"] = self._("Character is not active. Check your e-mail and enter activation code")
+        msg["user_inactive"] = self._("Character is not active. Check your e-mail and follow activation link")
 
     def index(self):
         req = self.req()
@@ -147,15 +147,20 @@ class IndexPage(Module):
         try:
             player = self.obj(Player, player_uuid)
         except ObjectNotFoundException:
-            self.error(self._("Missing player record in the database"))
+            self.error(self._("Missing player %s record in the database"), player_uuid)
         chars = self.objlist(CharacterList, query_index="player", query_equal=player_uuid, query_reversed=True)
         if not len(chars):
             self.call("web.redirect", "/character/create")
-        return game_interface(chars[0].uuid)
+        return self.game_interface(chars[0].uuid)
 
     def game_interface(self, character_uuid):
         try:
             character = self.obj(Character, character_uuid)
         except ObjectNotFoundException:
-            self.error(self._("Missing character record in the database"))
-        self.call("web.response_global", "Game Interface: %s" % character.get("name"), {})
+            self.error(self._("Missing character %s record in the database"), character_uuid)
+        project = self.app().project
+        vars = {
+            "title": htmlescape(project.get("title_full")),
+            "global_html": "game/frameset.html"
+        }
+        self.call("web.response_global", "", vars)
