@@ -48,6 +48,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-pages-list a:hover, .socio-pages-list a:active { color: #ed8439 }
 .socio-topic-created { color: #535c5f; font-size: 11px }
 .socio-topiclist-pages { font-size: 11px }
+.socio-category-title div { display: none }
 /* TOPIC */
 .socio-mark { vertical-align: middle }
 #socio-topic-head { width: 100% }

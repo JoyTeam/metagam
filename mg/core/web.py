@@ -231,7 +231,7 @@ class Request(object):
 
     def has_access(self, key):
         perms = self.permissions()
-        if perms.get(key) or perms.get("project.admin"):
+        if perms.get(key) or perms.get("project.admin") or perms.get("global.admin"):
             return True
         return False
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-13 09:53+0300\n"
+"POT-Creation-Date: 2011-03-14 21:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -138,11 +138,11 @@ msgstr ""
 msgid "of December"
 msgstr ""
 
-#: mg/core/l10n.py:158
+#: mg/core/l10n.py:159
 msgid "at the {2:d}{4} {1}, {0} at {3}"
 msgstr ""
 
-#: mg/core/l10n.py:177
+#: mg/core/l10n.py:178
 msgid "{2:d}{3} {1}, {0}"
 msgstr ""
 
@@ -289,8 +289,8 @@ msgid ""
 "http://{host}/auth/activate/{user}?code={code}"
 msgstr ""
 
-#: mg/core/auth.py:333 mg/core/auth.py:610 mg/core/auth.py:831
-#: mg/core/auth.py:860 mg/core/auth.py:961
+#: mg/core/auth.py:333 mg/core/auth.py:610 mg/core/auth.py:832
+#: mg/core/auth.py:861 mg/core/auth.py:962
 msgid "User name"
 msgstr ""
 
@@ -406,7 +406,7 @@ msgstr ""
 msgid "Enter your name or email"
 msgstr ""
 
-#: mg/core/auth.py:566 mg/core/auth.py:855 mg/core/auth.py:956
+#: mg/core/auth.py:566 mg/core/auth.py:856 mg/core/auth.py:957
 msgid "User not found"
 msgstr ""
 
@@ -531,133 +531,133 @@ msgstr ""
 msgid "User profiles"
 msgstr ""
 
-#: mg/core/auth.py:798
+#: mg/core/auth.py:799
 msgid "Users"
 msgstr ""
 
-#: mg/core/auth.py:803 mg/core/auth.py:832
+#: mg/core/auth.py:804 mg/core/auth.py:833
 msgid "Permissions"
 msgstr ""
 
-#: mg/core/auth.py:805
+#: mg/core/auth.py:806
 msgid "My dashboard"
 msgstr ""
 
-#: mg/core/auth.py:806
+#: mg/core/auth.py:807
 msgid "Find user"
 msgstr ""
 
-#: mg/core/auth.py:807
+#: mg/core/auth.py:808
 msgid "Last registered users"
 msgstr ""
 
-#: mg/core/auth.py:830 mg/core/auth.py:866
+#: mg/core/auth.py:831 mg/core/auth.py:867
 msgid "Edit permissions of a user"
 msgstr ""
 
-#: mg/core/auth.py:833 mg/constructor/design.py:1329
+#: mg/core/auth.py:834 mg/constructor/design.py:1329
 #: mg/constructor/players.py:352 mg/socio/__init__.py:239
 #: mg/socio/__init__.py:401 mg/socio/__init__.py:1353
 #: mg/socio/__init__.py:1395
 msgid "edit"
 msgstr ""
 
-#: mg/core/auth.py:834 mg/constructor/players.py:350 mg/socio/__init__.py:238
+#: mg/core/auth.py:835 mg/constructor/players.py:350 mg/socio/__init__.py:238
 #: mg/socio/__init__.py:1670
 msgid "Editing"
 msgstr ""
 
-#: mg/core/auth.py:840
+#: mg/core/auth.py:841
 msgid "User permissions"
 msgstr ""
 
-#: mg/core/auth.py:851 mg/core/auth.py:952
+#: mg/core/auth.py:852 mg/core/auth.py:953
 msgid "Enter user name"
 msgstr ""
 
-#: mg/core/auth.py:862 mg/core/auth.py:963 mg/constructor/dashboard.py:71
+#: mg/core/auth.py:863 mg/core/auth.py:964 mg/constructor/dashboard.py:71
 #: mg/constructor/design.py:1501
 msgid "Search"
 msgstr ""
 
-#: mg/core/auth.py:912
+#: mg/core/auth.py:913
 msgid "Everybody"
 msgstr ""
 
-#: mg/core/auth.py:913
+#: mg/core/auth.py:914
 msgid "Logged in"
 msgstr ""
 
-#: mg/core/auth.py:914
+#: mg/core/auth.py:915
 msgid "Not logged in"
 msgstr ""
 
-#: mg/core/auth.py:916
+#: mg/core/auth.py:917
 #, python-format
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:943 mg/socio/__init__.py:730
+#: mg/core/auth.py:944 mg/socio/__init__.py:730
 #, python-format
 msgid "User %s"
 msgstr ""
 
-#: mg/core/auth.py:977 mg/game/money.py:538 mg/game/money.py:670
+#: mg/core/auth.py:978 mg/game/money.py:539 mg/game/money.py:671
 #: mg/constructor/dashboard.py:118
 msgid "Update"
 msgstr ""
 
-#: mg/core/auth.py:995 mg/constructor/design.py:1155
+#: mg/core/auth.py:996 mg/constructor/design.py:1155
 #: mg/constructor/domains.py:650
 msgid "Registration"
 msgstr ""
 
-#: mg/core/auth.py:995
+#: mg/core/auth.py:996
 msgid "ID"
 msgstr ""
 
-#: mg/core/auth.py:995 mg/constructor/players.py:348
+#: mg/core/auth.py:996 mg/constructor/players.py:348
 #: mg/constructor/players.py:377
 msgid "Name"
 msgstr ""
 
-#: mg/core/auth.py:995
+#: mg/core/auth.py:996
 msgid "Active"
 msgstr ""
 
-#: mg/core/auth.py:996 mg/constructor/dashboard.py:116
+#: mg/core/auth.py:997 mg/constructor/dashboard.py:116
 msgid "no"
 msgstr ""
 
-#: mg/core/auth.py:996
+#: mg/core/auth.py:997
 msgid "yes"
 msgstr ""
 
-#: mg/core/auth.py:1053 mg/core/auth.py:1062
+#: mg/core/auth.py:1054 mg/core/auth.py:1063
 msgid "Select valid role"
 msgstr ""
 
-#: mg/core/auth.py:1055 mg/core/auth.py:1064
+#: mg/core/auth.py:1056 mg/core/auth.py:1065
 msgid "Select valid permission"
 msgstr ""
 
-#: mg/core/auth.py:1079
+#: mg/core/auth.py:1080
 msgid "Delete"
 msgstr ""
 
-#: mg/core/auth.py:1080
+#: mg/core/auth.py:1081
 msgid "Add"
 msgstr ""
 
-#: mg/core/auth.py:1084 mg/constructor/players.py:349 mg/socio/__init__.py:237
+#: mg/core/auth.py:1085 mg/constructor/players.py:349 mg/socio/__init__.py:237
 msgid "Order"
 msgstr ""
 
-#: mg/core/auth.py:1085
+#: mg/core/auth.py:1086
 msgid "Role"
 msgstr ""
 
-#: mg/core/auth.py:1086
+#: mg/core/auth.py:1087
 msgid "Permission"
 msgstr ""
 
@@ -673,170 +673,170 @@ msgstr ""
 msgid "Taken by the administration"
 msgstr ""
 
-#: mg/game/money.py:404 mg/game/money.py:573
+#: mg/game/money.py:404 mg/game/money.py:574
 msgid "Give money"
 msgstr ""
 
-#: mg/game/money.py:416 mg/game/money.py:483
+#: mg/game/money.py:416 mg/game/money.py:484
 msgid "Invalid currency"
 msgstr ""
 
-#: mg/game/money.py:423 mg/game/money.py:487
+#: mg/game/money.py:423 mg/game/money.py:488
 msgid "Amount must be greater than 0"
 msgstr ""
 
-#: mg/game/money.py:427 mg/game/money.py:489
+#: mg/game/money.py:427 mg/game/money.py:490
 msgid "Invalid amount precision"
 msgstr ""
 
-#: mg/game/money.py:431 mg/game/money.py:491
+#: mg/game/money.py:431 mg/game/money.py:492
 msgid "Invalid number format"
 msgstr ""
 
-#: mg/game/money.py:456
+#: mg/game/money.py:457
 msgid "Give amount"
 msgstr ""
 
-#: mg/game/money.py:457 mg/game/money.py:501 mg/game/money.py:551
-#: mg/game/money.py:565 mg/constructor/players.py:188
+#: mg/game/money.py:458 mg/game/money.py:502 mg/game/money.py:552
+#: mg/game/money.py:566 mg/constructor/players.py:188
 msgid "Currency"
 msgstr ""
 
-#: mg/game/money.py:458
+#: mg/game/money.py:459
 msgid "Give"
 msgstr ""
 
-#: mg/game/money.py:466 mg/game/money.py:573
+#: mg/game/money.py:467 mg/game/money.py:574
 msgid "Take money"
 msgstr ""
 
-#: mg/game/money.py:500
+#: mg/game/money.py:501
 msgid "Take amount"
 msgstr ""
 
-#: mg/game/money.py:502
+#: mg/game/money.py:503
 msgid "Take"
 msgstr ""
 
-#: mg/game/money.py:510
+#: mg/game/money.py:511
 #, python-format
 msgid "Account %s"
 msgstr ""
 
-#: mg/game/money.py:533
+#: mg/game/money.py:534
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:534 mg/game/money.py:565 mg/game/money.py:667
+#: mg/game/money.py:535 mg/game/money.py:566 mg/game/money.py:668
 msgid "Amount"
 msgstr ""
 
-#: mg/game/money.py:535 mg/game/money.py:551
+#: mg/game/money.py:536 mg/game/money.py:552
 msgid "Balance"
 msgstr ""
 
-#: mg/game/money.py:536 mg/game/money.py:565
+#: mg/game/money.py:537 mg/game/money.py:566
 msgid "Description"
 msgstr ""
 
-#: mg/game/money.py:551
+#: mg/game/money.py:552
 msgid "Account Id"
 msgstr ""
 
-#: mg/game/money.py:551
+#: mg/game/money.py:552
 msgid "Locked"
 msgstr ""
 
-#: mg/game/money.py:551
+#: mg/game/money.py:552
 msgid "Low limit"
 msgstr ""
 
-#: mg/game/money.py:565
+#: mg/game/money.py:566
 msgid "Lock ID"
 msgstr ""
 
-#: mg/game/money.py:572
+#: mg/game/money.py:573
 msgid "Money operations"
 msgstr ""
 
-#: mg/game/money.py:582
+#: mg/game/money.py:583
 msgid "Constructor: access to users money"
 msgstr ""
 
-#: mg/game/money.py:583
+#: mg/game/money.py:584
 msgid "Constructor: giving and taking money"
 msgstr ""
 
-#: mg/game/money.py:605
+#: mg/game/money.py:606
 msgid "2pay payment"
 msgstr ""
 
-#: mg/game/money.py:611
+#: mg/game/money.py:612
 msgid "2pay chargeback"
 msgstr ""
 
-#: mg/game/money.py:616
+#: mg/game/money.py:617
 msgid "2pay integration"
 msgstr ""
 
-#: mg/game/money.py:616
+#: mg/game/money.py:617
 msgid "open dashboard"
 msgstr ""
 
-#: mg/game/money.py:625
+#: mg/game/money.py:626
 msgid "2pay dashboard"
 msgstr ""
 
-#: mg/game/money.py:627
+#: mg/game/money.py:628
 msgid "Settings editor"
 msgstr ""
 
-#: mg/game/money.py:661
+#: mg/game/money.py:662
 msgid "Edit settings"
 msgstr ""
 
-#: mg/game/money.py:662
+#: mg/game/money.py:663
 msgid "Payment URL"
 msgstr ""
 
-#: mg/game/money.py:663
+#: mg/game/money.py:664
 msgid "Secret code"
 msgstr ""
 
-#: mg/game/money.py:664
+#: mg/game/money.py:665
 msgid "2pay time"
 msgstr ""
 
-#: mg/game/money.py:665
+#: mg/game/money.py:666
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:666 mg/constructor/invitations.py:92
-#: mg/socio/telegrams.py:105 mg/socio/__init__.py:733
+#: mg/game/money.py:667 mg/constructor/invitations.py:92
+#: mg/socio/telegrams.py:108 mg/socio/__init__.py:733
 msgid "User"
 msgstr ""
 
-#: mg/game/money.py:668
+#: mg/game/money.py:669
 msgid "Chargeback"
 msgstr ""
 
-#: mg/game/money.py:671 mg/constructor/dashboard.py:107
+#: mg/game/money.py:672 mg/constructor/dashboard.py:107
 msgid "Id"
 msgstr ""
 
-#: mg/game/money.py:672 mg/constructor/dashboard.py:27
+#: mg/game/money.py:673 mg/constructor/dashboard.py:27
 msgid "Project ID"
 msgstr ""
 
-#: mg/game/money.py:693
+#: mg/game/money.py:694
 msgid "2pay project id"
 msgstr ""
 
-#: mg/game/money.py:694
+#: mg/game/money.py:695
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:822
+#: mg/game/money.py:823
 msgid "Constructor: 2pay integration"
 msgstr ""
 
@@ -1501,7 +1501,7 @@ msgstr ""
 msgid "Replies"
 msgstr ""
 
-#: mg/constructor/design.py:1253 mg/socio/telegrams.py:105
+#: mg/constructor/design.py:1253 mg/socio/telegrams.py:108
 msgid "Unread"
 msgstr ""
 
@@ -2734,7 +2734,7 @@ msgstr ""
 msgid "Invitations for the registration"
 msgstr ""
 
-#: mg/constructor/invitations.py:60 mg/socio/telegrams.py:125
+#: mg/constructor/invitations.py:60 mg/socio/telegrams.py:128
 msgid "Enter recipient name"
 msgstr ""
 
@@ -2807,7 +2807,7 @@ msgstr ""
 msgid "Are players allowed to play more than 1 character"
 msgstr ""
 
-#: mg/constructor/players.py:184 mg/socio/telegrams.py:101
+#: mg/constructor/players.py:184 mg/socio/telegrams.py:103
 msgid "No"
 msgstr ""
 
@@ -3211,69 +3211,69 @@ msgstr ""
 msgid "Step 2. Check your configured domain and link it with your game"
 msgstr ""
 
-#: mg/socio/telegrams.py:79 mg/socio/telegrams.py:104
+#: mg/socio/telegrams.py:79 mg/socio/telegrams.py:107
 msgid "Telegrams"
 msgstr ""
 
-#: mg/socio/telegrams.py:101
+#: mg/socio/telegrams.py:103
 msgid "Yes"
 msgstr ""
 
-#: mg/socio/telegrams.py:105
+#: mg/socio/telegrams.py:108
 msgid "Last telegram"
 msgstr ""
 
-#: mg/socio/telegrams.py:108 mg/socio/telegrams.py:143
-#: mg/socio/telegrams.py:265
+#: mg/socio/telegrams.py:111 mg/socio/telegrams.py:146
+#: mg/socio/telegrams.py:262
 msgid "All telegrams"
 msgstr ""
 
-#: mg/socio/telegrams.py:109 mg/socio/telegrams.py:141
-#: mg/socio/telegrams.py:144
+#: mg/socio/telegrams.py:112 mg/socio/telegrams.py:144
+#: mg/socio/telegrams.py:147
 msgid "Send new telegram"
 msgstr ""
 
-#: mg/socio/telegrams.py:129
+#: mg/socio/telegrams.py:132
 msgid "No such user"
 msgstr ""
 
-#: mg/socio/telegrams.py:131
+#: mg/socio/telegrams.py:134
 msgid "You can't send messages to the system"
 msgstr ""
 
-#: mg/socio/telegrams.py:133
+#: mg/socio/telegrams.py:136
 msgid "Enter message content"
 msgstr ""
 
-#: mg/socio/telegrams.py:137
+#: mg/socio/telegrams.py:140
 msgid "Recipient"
 msgstr ""
 
-#: mg/socio/telegrams.py:138 mg/socio/telegrams.py:255
+#: mg/socio/telegrams.py:141 mg/socio/telegrams.py:252
 msgid "Telegram text"
 msgstr ""
 
-#: mg/socio/telegrams.py:139 mg/socio/telegrams.py:256
+#: mg/socio/telegrams.py:142 mg/socio/telegrams.py:253
 msgid "Send"
 msgstr ""
 
-#: mg/socio/telegrams.py:165
+#: mg/socio/telegrams.py:168
 msgid "System"
 msgstr ""
 
-#: mg/socio/telegrams.py:252
+#: mg/socio/telegrams.py:249
 msgid "Telegrams with {0}"
 msgstr ""
 
-#: mg/socio/telegrams.py:257
+#: mg/socio/telegrams.py:254
 msgid "Time"
 msgstr ""
 
-#: mg/socio/telegrams.py:257
+#: mg/socio/telegrams.py:254
 msgid "Received"
 msgstr ""
 
-#: mg/socio/telegrams.py:259
+#: mg/socio/telegrams.py:256
 msgid "Sent"
 msgstr ""
 

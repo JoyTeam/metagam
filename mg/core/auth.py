@@ -786,6 +786,7 @@ class Interface(Module):
         if user_id:
             if user_id == self.app().inst.config.get("admin_user"):
                 perms["admin"] = True
+                perms["global.admin"] = True
             try:
                 p = self.obj(UserPermissions, user_id)
                 for key in p.get("perms").keys():

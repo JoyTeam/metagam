@@ -1,5 +1,5 @@
 <table id="socio-topic-head"><tr><td id="socio-topic-title">
-[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+<div>[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>
 </td>
 [%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>

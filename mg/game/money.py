@@ -447,6 +447,7 @@ class Money(Module):
             self.call("money.valid_amount", amount, currency, errors, "amount", "v_currency")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
+            amount = float(amount)
             member = MemberMoney(self.app(), user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user())
             self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
