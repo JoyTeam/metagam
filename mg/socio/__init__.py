@@ -769,6 +769,8 @@ class Forum(Module):
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("all.schedule", self.schedule)
         self.rhook("hook-forum.news", self.news)
+        self.rhook("forum.may_read", self.may_read)
+        self.rhook("forum.may_write", self.may_write)
 
     def objclasses_list(self, objclasses):
         objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)
@@ -1145,6 +1147,8 @@ class Forum(Module):
             created = req.param("created")
         else:
             created = None
+        params = {}
+        self.call("forum.params", params)
         tags = req.param("tags")
         form = self.call("web.form", "common/form.html")
         if req.ok():
@@ -1157,15 +1161,19 @@ class Forum(Module):
                     created = None
                 elif not re_valid_date.match(created):
                     form.error("created", self._("Invalid datetime format"))
+            self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
                 user = self.obj(User, req.user())
                 topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
+                self.call("forum.topic-form", topic, form, "store")
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         if cat.get("manual_date"):
             form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
-        form.input(self._("Tags"), "tags", tags)
+        if params.get("show_tags", True):
+            form.input(self._("Tags"), "tags", tags)
+        self.call("forum.topic-form", None, form, "form")
         vars = {
             "category": cat,
             "title": u"%s: %s" % (self._("New topic"), cat["title"]),
@@ -1648,6 +1656,7 @@ class Forum(Module):
             topic.remove()
             topic_content = self.obj(ForumTopicContent, topic.uuid, {})
             topic_content.remove()
+            self.call("forum.topic-form", topic, None, "delete")
             catstat = self.catstat(cat["id"])
             catstat.decr("topics")
             catstat.decr("replies", len(posts))
@@ -1697,11 +1706,14 @@ class Forum(Module):
             subject = req.param("subject")
             content = req.param("content")
             tags = req.param("tags")
+            params = {}
+            self.call("forum.params", params)
             if req.ok():
                 if not subject:
                     form.error("subject", self._("Enter topic subject"))
                 if not content:
                     form.error("content", self._("Enter topic content"))
+                self.call("forum.topic-form", topic, form, "validate")
                 if not form.errors:
                     with self.lock(["ForumTopic-" + topic.uuid]):
                         topic.set("subject", subject)
@@ -1712,6 +1724,7 @@ class Forum(Module):
                         topic_content.set("tags", tags)
                         topic.store()
                         topic_content.store()
+                        self.call("forum.topic-form", topic, form, "store")
                         self.call("socio.fulltext_remove", "ForumSearch", topic.uuid)
                         self.call("socio.fulltext_store", "ForumSearch", topic.uuid, self.call("socio.word_extractor", content))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
@@ -1721,7 +1734,9 @@ class Forum(Module):
                 tags = ", ".join(topic_content.get("tags")) if topic_content.get("tags") else ""
             form.input(self._("Subject"), "subject", subject)
             form.texteditor(None, "content", content)
-            form.input(self._("Tags"), "tags", tags)
+            if params.get("show_tags", True):
+                form.input(self._("Tags"), "tags", tags)
+            self.call("forum.topic-form", topic, form, "form")
         form.submit(None, None, self._("Save"))
         self.call("forum.response", form.html(), vars)
 
@@ -1943,7 +1958,7 @@ class Forum(Module):
             # permissions
             user_uuid = req.user()
             categories = self.categories()
-            rules = self.load_rules([cat["id"] for cat in categories])
+            rules = self.load_rules([c["id"] for c in categories])
             roles = {}
             self.call("security.users-roles", [user_uuid], roles)
             roles = roles.get(user_uuid, [])
@@ -1965,6 +1980,7 @@ class Forum(Module):
                     for post in posts:
                         post.set("category", newcat)
                     posts.store()
+                    self.call("forum.topic-form", topic, None, "update")
                     catstat = self.catstat(cat["id"])
                     catstat.decr("topics")
                     catstat.decr("replies", topic.get_int("posts"))
@@ -1975,11 +1991,11 @@ class Forum(Module):
                     catstat.store()
                     self.call("web.redirect", "/forum/cat/%s" % cat["id"])
         catlist = [{}]
-        catlist.extend([{"value": cat["id"], "description": cat["title"]} for cat in categories])
+        catlist.extend([{"value": c["id"], "description": c["title"]} for c in categories])
         form.select(self._("Category where to move"), "newcat", newcat, catlist)
         form.submit(None, None, self._("Move"))
         vars = {
-            "title": self._("Move topic: %s" % topic.get("title"))
+            "title": self._("Move topic: %s") % topic.get("subject")
         }
         self.call("forum.response", form.html(), vars)
 
