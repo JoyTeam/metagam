@@ -1073,7 +1073,7 @@ class Forum(Module):
             for obj in authors_list:
                 signatures[obj.uuid] = obj.get("signature_html")
                 avatars[obj.uuid] = obj.get("avatar")
-                statuses[obj.uuid] = obj.get("status")
+                statuses[obj.uuid] = htmlescape(obj.get("status"))
         for ent in list:
             author = ent.get("author")
             ent["avatar"] = avatars.get(author)

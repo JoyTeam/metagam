@@ -20,7 +20,7 @@
 	[%if topic.pages%]<div class="socio-topiclist-pages">[%Pages%]: [%foreach ent in topic.pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</div>[%end%]
 </td>
 <td class="socio-author">[%topic.author_html%]</td>
-<td class="socio-counter">[%topic.posts%]</td>
+<td class="socio-counter">[%if topic.posts%]<div>[%topic.posts%]</div>[%end%]</td>
 <td class="socio-lastcomment">[%if topic.last_post%]<div><a href="/forum/topic/[%topic.uuid%]?page=[%topic.last_post_page%]#[%topic.last_post%]">[%topic.last_post_created%]</a></div><div>[%by +%] [%+ topic.last_post_author_html%]</div>[%end%]</td>
 </tr>
 [%unless topic.lst%]

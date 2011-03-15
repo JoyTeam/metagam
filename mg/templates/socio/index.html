@@ -18,9 +18,9 @@
 <div class="socio-catname"><a href="/forum/cat/[%ent.category.id%]">[%ent.category.title%]</a></div>
 <div class="socio-catdescription">[%ent.category.description%]</div>
 </td>
-<td class="socio-counter">[%ent.category.topics%]</td>
-<td class="socio-counter">[%ent.category.replies%]</td>
-<td class="socio-counter">[%if ent.category.unread%]<img src="/st-mg/[%ver%]/socio/box.gif" alt="" />[%end%]</td>
+<td class="socio-counter">[%if ent.category.topics%]<div>[%ent.category.topics%]</div>[%end%]</td>
+<td class="socio-counter">[%if ent.category.replies%]<div>[%ent.category.replies%]</div>[%end%]</td>
+<td class="socio-counter">[%if ent.category.unread%]<div>Новые</div>[%end%]</td>
 <td class="socio-last">
 [%if ent.category.lastinfo%]
 <div><a href="/forum/topic/[%ent.category.lastinfo.topic%][%if ent.category.lastinfo.post%]?post=[%ent.category.lastinfo.post%][%end%]">[%ent.category.lastinfo.subject_html%]</a></div>
