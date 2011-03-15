@@ -247,12 +247,12 @@ class Interface(Module):
         req = self.req()
         session = self.call("session.get", True)
         form = self.call("web.form", "common/form.html")
-        name = req.param("name")
-        sex = req.param("sex")
-        email = req.param("email")
+        name = req.param("name").strip()
+        sex = req.param("sex").strip()
+        email = req.param("email").strip()
         password1 = req.param("password1")
         password2 = req.param("password2")
-        captcha = req.param("captcha")
+        captcha = req.param("captcha").strip()
         redirect = req.param("redirect")
         params = {
             "name_re": r'^[A-Za-z0-9_-]+$',
