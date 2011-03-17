@@ -35,6 +35,7 @@ class Character(CassandraObject):
         "created": [[], "created"],
         "name": [["name_lower"]],
         "player": [["player"], "created"],
+        "admin": [["admin"]]
     }
 
     def __init__(self, *args, **kwargs):
@@ -505,6 +506,7 @@ class Auth(Module):
         player_user.store()
         character.store()
         character_user.store()
+        character_form.store()
         # Sending activation e-mail
         if activation_code:
             params = {

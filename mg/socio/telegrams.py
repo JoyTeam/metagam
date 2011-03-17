@@ -180,30 +180,33 @@ class Telegrams(Module):
         tel_user_1.set("user", sender_uuid)
         tel_user_1.set("contragent", recipient_uuid)
         tel_user_1.set("sent", now)
-        # TelegramUser for recipient
-        tel_user_2 = self.obj(TelegramUser)
-        tel_user_2.set("telegram", tel.uuid)
-        tel_user_2.set("user", recipient_uuid)
-        tel_user_2.set("contragent", sender_uuid)
-        tel_user_2.set("sent", now)
-        tel_user_2.set("unread", 1)
+        if recipient_uuid != sender_uuid:
+            # TelegramUser for recipient
+            tel_user_2 = self.obj(TelegramUser)
+            tel_user_2.set("telegram", tel.uuid)
+            tel_user_2.set("user", recipient_uuid)
+            tel_user_2.set("contragent", sender_uuid)
+            tel_user_2.set("sent", now)
+            tel_user_2.set("unread", 1)
         # TelegramContragent for sender
         tel_cont_1 = self.obj(TelegramContragent, "%s-%s" % (sender_uuid, recipient_uuid), silent=True)
         tel_cont_1.set("user", sender_uuid)
         tel_cont_1.set("contragent", recipient_uuid)
         tel_cont_1.set("last_telegram", now)
-        # TelegramContragent for recipient
-        tel_cont_2 = self.obj(TelegramContragent, "%s-%s" % (recipient_uuid, sender_uuid), silent=True)
-        tel_cont_2.set("user", recipient_uuid)
-        tel_cont_2.set("contragent", sender_uuid)
-        tel_cont_2.set("last_telegram", now)
-        tel_cont_2.set("unread", 1)
+        if recipient_uuid != sender_uuid:
+            # TelegramContragent for recipient
+            tel_cont_2 = self.obj(TelegramContragent, "%s-%s" % (recipient_uuid, sender_uuid), silent=True)
+            tel_cont_2.set("user", recipient_uuid)
+            tel_cont_2.set("contragent", sender_uuid)
+            tel_cont_2.set("last_telegram", now)
+            tel_cont_2.set("unread", 1)
         # Storing message
         tel.store()
         tel_user_1.store()
-        tel_user_2.store()
         tel_cont_1.store()
-        tel_cont_2.store()
+        if recipient_uuid != sender_uuid:
+            tel_user_2.store()
+            tel_cont_2.store()
 
     def telegrams_user(self):
         self.call("session.require_login")

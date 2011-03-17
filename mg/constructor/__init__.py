@@ -362,22 +362,40 @@ class Constructor(Module):
         app.hooks.call("all.check")
         # creating admin user
         old_user = self.obj(User, req.user())
-        new_user = app.obj(User)
-        new_user.set("created", "%020d" % time.time())
-        for field in ["name", "name_lower", "sex", "email", "salt", "pass_reminder", "pass_hash"]:
-            new_user.set(field, old_user.get(field))
-        new_user.set("inactive", 1)
+        now_ts = "%020d" % time.time()
+        player = self.obj(Player)
+        player.set("created", self.now())
+        player_user = self.obj(User, player.uuid, {})
+        player_user.set("created", now_ts)
+        for field in ["email", "salt", "pass_reminder", "pass_hash"]:
+            player_user.set(field, old_user.get(field))
+        player_user.set("inactive", 1)
         activation_code = uuid4().hex
-        new_user.set("activation_code", activation_code)
-        new_user.set("activation_redirect", "/admin")
-        new_user.store()
+        player_user.set("activation_code", activation_code)
+        player_user.set("activation_redirect", "/admin")
+        # creating admin character
+        character = self.obj(Character)
+        character.set("created", self.now())
+        character.set("player", player.uuid)
+        character.set("admin", 1)
+        character_user = self.obj(User, character.uuid, {})
+        character_user.set("last_login", now_ts)
+        for field in ["name", "name_lower", "sex"]:
+            character_user.set(field, old_user.get(field))
+        character_form = self.obj(CharacterForm, character.uuid, {})
+        # storing
+        player.store()
+        player_user.store()
+        character.store()
+        character_user.store()
+        character_form.store()
         # giving permissions
-        perms = app.obj(UserPermissions, new_user.uuid, {"perms": {"project.admin": True}})
+        perms = app.obj(UserPermissions, character_user.uuid, {"perms": {"project.admin": True}})
         perms.sync()
         perms.store()
         # creating setup wizard
         app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
-        self.call("web.redirect", "http://%s/auth/activate/%s?ok=1&code=%s" % (app.domain, new_user.uuid, activation_code))
+        self.call("web.redirect", "http://%s/auth/activate/%s?ok=1&code=%s" % (app.domain, player_user.uuid, activation_code))
 
     def cleanup(self, tag):
         inst = self.app().inst

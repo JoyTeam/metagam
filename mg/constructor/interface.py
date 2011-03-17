@@ -66,7 +66,7 @@ class IndexPage(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-index.index", self.index)
-        self.rhook("indexpage.error", self.error)
+        self.rhook("indexpage.error", self.index_error)
         self.rhook("indexpage.response_template", self.response_template)
         self.rhook("auth.messages", self.auth_messages)
 
@@ -129,7 +129,7 @@ class IndexPage(Module):
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
 
-    def error(self, msg):
+    def index_error(self, msg):
         vars = {
             "title": self._("Error"),
             "msg": msg,
@@ -141,13 +141,13 @@ class IndexPage(Module):
         self.call("web.response_global", content, vars)
 
     def game_cabinet(self, player_uuid):
-        self.error("The cabinet is not implemented yet")
+        self.index_error("The cabinet is not implemented yet")
 
     def game_interface_default_character(self, player_uuid):
         try:
             player = self.obj(Player, player_uuid)
         except ObjectNotFoundException:
-            self.error(self._("Missing player %s record in the database"), player_uuid)
+            self.index_error(self._("Missing player %s record in the database") % player_uuid)
         chars = self.objlist(CharacterList, query_index="player", query_equal=player_uuid, query_reversed=True)
         if not len(chars):
             self.call("web.redirect", "/character/create")
@@ -157,7 +157,7 @@ class IndexPage(Module):
         try:
             character = self.obj(Character, character_uuid)
         except ObjectNotFoundException:
-            self.error(self._("Missing character %s record in the database"), character_uuid)
+            self.index_error(self._("Missing character %s record in the database") % character_uuid)
         project = self.app().project
         vars = {
             "title": htmlescape(project.get("title_full")),
