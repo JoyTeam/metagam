@@ -623,14 +623,16 @@ class Formatter(logging.Formatter):
         for key, value in record.__dict__.items():
             if type(value) == unicode:
                 record.__dict__[key] = value.encode("utf-8")
-        if record.__dict__.get("user"):
-            record.msg = "user:%s %s" % (record.user, record.msg)
-        if record.__dict__.get("ip"):
-            record.msg = "ip:%s %s" % (record.ip, record.msg)
-        if record.__dict__.get("app"):
-            record.msg = "app:%s %s" % (record.app, record.msg)
-        if record.__dict__.get("host"):
-            record.msg = "host:%s %s" % (record.host, record.msg)
+        if not record.__dict__.get("mg_formatted"):
+            if record.__dict__.get("user"):
+                record.msg = "user:%s %s" % (record.user, record.msg)
+            if record.__dict__.get("ip"):
+                record.msg = "ip:%s %s" % (record.ip, record.msg)
+            if record.__dict__.get("app"):
+                record.msg = "app:%s %s" % (record.app, record.msg)
+            if record.__dict__.get("host"):
+                record.msg = "host:%s %s" % (record.host, record.msg)
+            record.mg_formatted = True
         str = logging.Formatter.format(self, record)
         if type(str) == unicode:
             str = str.encode("utf-8")
@@ -675,6 +677,7 @@ class Instance(object):
     def setup_logger(self):
         modlogger = logging.getLogger("")
         modlogger.setLevel(logging.DEBUG)
+
         # syslog
         if self.syslog_channel:
             modlogger.removeHandler(self.syslog_channel)
@@ -685,6 +688,7 @@ class Instance(object):
         filter = Filter()
         self.syslog_channel.addFilter(filter)
         modlogger.addHandler(self.syslog_channel)
+
         # stderr
         if self.stderr_channel:
             modlogger.removeHandler(self.stderr_channel)
