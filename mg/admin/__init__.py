@@ -25,20 +25,15 @@ class AdminInterface(Module):
         self.rhook("admin.advice", self.advice)
 
     def index(self):
-        print "admin.index called"
         self.call("session.require_login")
-        print "login passed"
         menu = self.makemenu()
-        print "makemenu passed"
         vars = {
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
             "main_host": self.app().inst.config["main_host"],
         }
-        print "vars passed"
         if getattr(self.app(), "project", None):
             self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
-        print "returning template"
         self.call("web.response_template", "admin/index.html", vars)
 
     def menu_compare(self, x, y):
@@ -55,17 +50,13 @@ class AdminInterface(Module):
                 self.sortleftmenu(child)
 
     def makemenu(self):
-        print "makemenu.1"
         leftmenu = self.leftmenunode("root.index", "Root")
-        print "makemenu.2"
         wizards = []
         self.call("wizards.call", "menu", wizards)
-        print "makemenu.3"
         if wizards:
             if not leftmenu:
                 leftmenu = {"text": "Root", "children": []}
             leftmenu["children"] = wizards + leftmenu["children"]
-        print "makemenu.4"
         if not leftmenu:
             req = self.req()
             if not req.has_access("project.admin"):
@@ -73,14 +64,11 @@ class AdminInterface(Module):
             leftmenu = []
         else:
             self.sortleftmenu(leftmenu)
-        print "makemenu.5"
         topmenu = []
         self.call("menu-admin-top.list", topmenu)
-        print "makemenu.6"
         title = self.call("project.title")
         if title is None:
             title = self.app().tag
-        print "makemenu.7"
         return {
             "left": leftmenu,
             "top": topmenu,
@@ -88,10 +76,8 @@ class AdminInterface(Module):
         }
 
     def leftmenunode(self, node, text):
-        print "leftmenunode.1 %s" % node
         menu = []
         self.call("menu-admin-%s" % node, menu)
-        print "leftmenunode.2"
         result = []
         for ent in menu:
             if ent.get("leaf"):

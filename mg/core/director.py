@@ -174,14 +174,14 @@ class Director(Module):
         lst = self.objlist(WorkerStatusList, query_index="all")
         lst.load(silent=True)
         lst.sort(cmp=lambda x, y: cmp(x.get("cls"), y.get("cls")))
-        print "Workers: %s" % lst
+        self.debug("Workers: %s", lst)
         i = 0
         while i < len(lst):
             del lst[i:i + 1]
             i += 2
-        print "Reloading 2/3 of workers: %s" % lst
+        self.debug("Reloading 2/3 of workers: %s", lst)
         for st in lst:
-            print "reloading worker %s" % st.uuid
+            self.debug("Reloading worker %s", st.uuid)
             try:
                 with Timeout.push(30):
                     cnn = HTTPConnection()

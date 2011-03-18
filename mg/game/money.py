@@ -404,7 +404,6 @@ class Money(Module):
         return [self._("Give money"), "auth/user-dashboard/%s" % args]
 
     def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
-        print "called_valid_amount"
         valid = True
         # checking currency
         currencies = {}

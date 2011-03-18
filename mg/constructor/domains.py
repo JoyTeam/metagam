@@ -111,7 +111,7 @@ class Domains(Module):
             result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
             ips = []
             names = []
-            print "querying %s about domain %s: %s" % (configtext, checkdomain, [result])
+            self.debug("Querying %s about domain %s: %s", configtext, checkdomain, [result])
             for rr in result[3]:
                 names.append(rr[0])
                 if rr[2]:
@@ -120,7 +120,7 @@ class Domains(Module):
                 elif rr[0]:
                     engine = QueryEngine()
                     result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
-                    print "querying main DNS about domain %s: %s" % (rr[0], [result])
+                    self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
                     for rr in result[3]:
                         ips.append(rr[1])
             if not len(ips):

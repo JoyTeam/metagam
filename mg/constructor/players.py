@@ -99,7 +99,6 @@ class Auth(Module):
         session = self.call("session.get", True)
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
-            print "character %s" % chars[0].uuid
             session.set("user", chars[0].uuid)
             session.delkey("semi_user")
             session.store()
@@ -575,12 +574,9 @@ class Auth(Module):
         else:
             if user.get("name"):
                 # character user
-                print "logging in as character user %s" % user.uuid
                 character = self.obj(Character, user.uuid)
-                print "character player is %s" % character.get("player")
                 if character.get("player"):
                     user = self.obj(User, character.get("player"))
-                    print "switched to user %s" % user.uuid
             if user.get("inactive"):
                 self.call("web.response_json", {"error": msg["user_inactive"]})
         if not password:
