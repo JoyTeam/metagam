@@ -2,6 +2,7 @@ from mg import *
 from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 from concurrence.dns import *
+from mg.constructor.players import CharacterList, Character, Player
 import re
 import cgi
 import cStringIO
@@ -204,18 +205,21 @@ class ProjectSetupWizard(Wizard):
                 self.app().store_config_hooks()
                 owner = self.main_app().obj(User, self.app().project.get("owner"))
                 # searching admin user in the new project
-                admin = self.call("session.find_user", owner.get("name"))
-                if admin:
+                admins = self.objlist(CharacterList, query_index="admin", query_equal="1")
+                admins.load()
+                for admin in admins:
+                    character_user = self.obj(User, admin.uuid)
+                    player_user = self.obj(User, admin.get("player"))
                     # entering the new project
                     activation_code = uuid4().hex
-                    admin.set("inactive", 1)
-                    admin.set("activation_code", activation_code)
-                    admin.set("activation_redirect", "/admin")
-                    admin.store()
-                    # giving permissions
-                    perms = self.obj(UserPermissions, admin.uuid, {"perms": {"project.admin": True}})
-                    perms.sync()
-                    perms.store()
+                    player_user.set("inactive", 1)
+                    player_user.set("activation_code", activation_code)
+                    player_user.set("activation_redirect", "/admin")
+                    player_user.store()
+#                   # giving permissions
+#                   perms = self.obj(UserPermissions, admin.uuid, {"perms": {"project.admin": True}})
+#                   perms.sync()
+#                   perms.store()
                 self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")

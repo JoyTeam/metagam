@@ -2,6 +2,7 @@ from mg import *
 from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
 from mg.core.queue import QueueTask, QueueTaskList, Schedule
 from mg.core.cluster import TempFileList
+from mg.constructor.players import Player, Character, CharacterForm, CharacterList
 import mg.constructor.common
 from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
@@ -254,12 +255,18 @@ class Constructor(Module):
                 else:
                     domain = "www.%s" % domain
                     if not project.get("admin_confirmed"):
+                        self.debug("Project %s (%s) administrator is not confirmed", project.uuid, project.get("created"))
                         app = self.app().inst.appfactory.get_by_tag(project.uuid)
-                        users = app.objlist(UserList, query_index="inactive", query_equal="1", query_limit=1)
-                        users.load(silent=True)
-                        if len(users):
-                            admin = users[0]
-                            href = "http://%s/auth/activate/%s?code=%s&ok=1" % (domain, admin.uuid, admin.get("activation_code"))
+                        admins = app.objlist(CharacterList, query_index="admin", query_equal="1")
+                        admins.load()
+                        for admin in admins:
+                            self.debug("Character %s is admin", admin.uuid)
+                            character_user = app.obj(User, admin.uuid)
+                            player_user = app.obj(User, admin.get("player"))
+                            self.debug("Player %s is admin", player_user.uuid)
+                            if player_user.get("inactive"):
+                                self.debug("Player is INACTIVE")
+                                href = "http://%s/auth/activate/%s?code=%s&ok=1" % (domain, player_user.uuid, player_user.get("activation_code"))
                         comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
                 if href is None:
                     href = "http://%s/admin" % domain
@@ -363,9 +370,9 @@ class Constructor(Module):
         # creating admin user
         old_user = self.obj(User, req.user())
         now_ts = "%020d" % time.time()
-        player = self.obj(Player)
+        player = app.obj(Player)
         player.set("created", self.now())
-        player_user = self.obj(User, player.uuid, {})
+        player_user = app.obj(User, player.uuid, {})
         player_user.set("created", now_ts)
         for field in ["email", "salt", "pass_reminder", "pass_hash"]:
             player_user.set(field, old_user.get(field))
@@ -374,15 +381,15 @@ class Constructor(Module):
         player_user.set("activation_code", activation_code)
         player_user.set("activation_redirect", "/admin")
         # creating admin character
-        character = self.obj(Character)
+        character = app.obj(Character)
         character.set("created", self.now())
         character.set("player", player.uuid)
         character.set("admin", 1)
-        character_user = self.obj(User, character.uuid, {})
+        character_user = app.obj(User, character.uuid, {})
         character_user.set("last_login", now_ts)
         for field in ["name", "name_lower", "sex"]:
             character_user.set(field, old_user.get(field))
-        character_form = self.obj(CharacterForm, character.uuid, {})
+        character_form = app.obj(CharacterForm, character.uuid, {})
         # storing
         player.store()
         player_user.store()
@@ -390,6 +397,7 @@ class Constructor(Module):
         character_user.store()
         character_form.store()
         # giving permissions
+        self.info("Giving project.admin permission to the user %s" % character_user.uuid)
         perms = app.obj(UserPermissions, character_user.uuid, {"perms": {"project.admin": True}})
         perms.sync()
         perms.store()

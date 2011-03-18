@@ -84,10 +84,12 @@ class IndexPage(Module):
             user = session.get("user")
             if not user:
                 self.call("web.redirect", "/")
+            character = self.obj(Character, user)
+            player = self.obj(Player, character.get("player"))
             if self.conf("auth.multicharing") or self.conf("auth.cabinet"):
-                return self.game_cabinet(user)
+                return self.game_cabinet(player)
             else:
-                return self.game_interface_default_character(user)
+                return self.game_interface_default_character(player)
 
         email = req.param("email")
         if email:
@@ -140,24 +142,17 @@ class IndexPage(Module):
         content = self.call("web.parse_template", template, vars)
         self.call("web.response_global", content, vars)
 
-    def game_cabinet(self, player_uuid):
+    def game_cabinet(self, player):
         self.index_error("The cabinet is not implemented yet")
 
-    def game_interface_default_character(self, player_uuid):
-        try:
-            player = self.obj(Player, player_uuid)
-        except ObjectNotFoundException:
-            self.index_error(self._("Missing player %s record in the database") % player_uuid)
-        chars = self.objlist(CharacterList, query_index="player", query_equal=player_uuid, query_reversed=True)
+    def game_interface_default_character(self, player):
+        chars = self.objlist(CharacterList, query_index="player", query_equal=player.uuid, query_reversed=True, query_limit=1)
         if not len(chars):
             self.call("web.redirect", "/character/create")
-        return self.game_interface(chars[0].uuid)
+        chars.load()
+        return self.game_interface(chars[0])
 
-    def game_interface(self, character_uuid):
-        try:
-            character = self.obj(Character, character_uuid)
-        except ObjectNotFoundException:
-            self.index_error(self._("Missing character %s record in the database") % character_uuid)
+    def game_interface(self, character):
         project = self.app().project
         vars = {
             "title": htmlescape(project.get("title_full")),

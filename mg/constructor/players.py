@@ -78,10 +78,42 @@ class Auth(Module):
         self.rhook("ext-admin-characters.form", self.admin_characters_form)
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("indexpage.render", self.indexpage_render)
-        self.rhook("ext-player.register", self.player_register)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.form_params", self.auth_form_params)
+        self.rhook("ext-player.register", self.player_register)
         self.rhook("ext-player.login", self.player_login)
+        self.rhook("auth.registered", self.auth_registered)
+        self.rhook("auth.activated", self.auth_activated)
+
+    def auth_registered(self, user):
+        req = self.req()
+        project = self.app().project
+        if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
+            project.set("admin_confirmed", True)
+            project.store()
+            self.app().store_config_hooks()
+
+    def auth_activated(self, user, redirect):
+        req = self.req()
+        self.info("auth.activated: user=%s", user.uuid)
+        session = self.call("session.get", True)
+        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+        if len(chars):
+            print "character %s" % chars[0].uuid
+            session.set("user", chars[0].uuid)
+            session.delkey("semi_user")
+            session.store()
+            self.app().mc.delete("SessionCache-%s" % session.uuid)
+        else:
+            self.error("auth.activated(%s) called but no associated characters found", user.uuid)
+        # redirect
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        redirects = {}
+        self.call("auth.redirects", redirects)
+        if redirects.has_key("register"):
+            self.call("web.redirect", redirects["register"])
+        self.call("web.redirect", "/")
 
     def objclasses_list(self, objclasses):
         objclasses["Player"] = (Player, PlayerList)
@@ -375,8 +407,8 @@ class Auth(Module):
     def character_form(self):
         fields = self.conf("auth.char_form", [])
         if not len(fields):
-            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True})
-            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [[0, self._("Male")], [1, self._("Female")]], "order": 20.0, "reg": True})
+            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character name"), "prompt": self._("Enter your character name")})
+            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
         return copy.deepcopy(fields)
 
     def indexpage_render(self, vars):
@@ -412,8 +444,10 @@ class Auth(Module):
                 # character name. checking validity
                 if not re.match(params["name_re"], val, re.UNICODE):
                     errors[code] = params["name_invalid_re"]
-                elif self.call("session.find_user", val, allow_email=True):
+                elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
+                else:
+                    self.debug("Name %s is OK", val)
             elif fld["type"] == 1:
                 if not val and not std and not fld.get("mandatory_level"):
                     # empty value is ok
@@ -515,6 +549,11 @@ class Auth(Module):
             }
             self.call("auth.activation_email", params)
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
+        else:
+            session.set("user", character_user.uuid)
+            session.delkey("semi_user")
+            session.store()
+            self.app().mc.delete("SessionCache-%s" % session.uuid)
         # Responding
         self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
@@ -533,18 +572,30 @@ class Auth(Module):
         user = self.call("session.find_user", name, allow_email=True)
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
-        elif user.get("inactive"):
-            self.call("web.response_json", {"error": msg["user_inactive"]})
+        else:
+            if user.get("name"):
+                # character user
+                print "logging in as character user %s" % user.uuid
+                character = self.obj(Character, user.uuid)
+                print "character player is %s" % character.get("player")
+                if character.get("player"):
+                    user = self.obj(User, character.get("player"))
+                    print "switched to user %s" % user.uuid
+            if user.get("inactive"):
+                self.call("web.response_json", {"error": msg["user_inactive"]})
         if not password:
             self.call("web.response_json", {"error": msg["password_empty"]})
         m = hashlib.md5()
         m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
         if m.hexdigest() != user.get("pass_hash"):
             self.call("web.response_json", {"error": msg["password_incorrect"]})
-        session = self.call("session.get", True)
-        session.set("user", user.uuid)
-        session.delkey("semi_user")
-        session.store()
-        self.app().mc.delete("SessionCache-%s" % session.uuid)
-        self.call("web.response_json", {"ok": 1, "session": session.uuid})
-
+        # acquiring character user
+        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+        if len(chars):
+            session = self.call("session.get", True)
+            session.set("user", chars[0].uuid)
+            session.delkey("semi_user")
+            session.store()
+            self.app().mc.delete("SessionCache-%s" % session.uuid)
+            self.call("web.response_json", {"ok": 1, "session": session.uuid})
+        self.call("web.response_json", {"error": self._("No characters assigned to this player")})

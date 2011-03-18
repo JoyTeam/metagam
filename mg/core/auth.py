@@ -175,14 +175,15 @@ class Sessions(Module):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
         return session
 
-    def find_user(self, name, allow_email=False):
-        name = name.lower()
-        users = self.objlist(UserList, query_index="name", query_equal=name)
-        if len(users):
-            users.load()
-            return users[0]
+    def find_user(self, val, allow_email=False, allow_name=True):
+        val = val.lower()
+        if allow_name:
+            users = self.objlist(UserList, query_index="name", query_equal=val)
+            if len(users):
+                users.load()
+                return users[0]
         if allow_email:
-            users = self.objlist(UserList, query_index="email", query_equal=name)
+            users = self.objlist(UserList, query_index="email", query_equal=val)
             if len(users):
                 users.load()
                 return users[0]
@@ -374,6 +375,7 @@ class Interface(Module):
                 user.delkey("activation_redirect")
                 user.store()
                 self.call("auth.registered", user)
+                self.call("auth.activated", user, redirect)
                 session.set("user", user.uuid)
                 session.delkey("semi_user")
                 session.store()

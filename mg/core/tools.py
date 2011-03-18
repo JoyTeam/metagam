@@ -37,23 +37,27 @@ def floatz(str, onerror=0):
 def valid_nonnegative_int(str):
     return re_valid_nonnegative_int.match(str)
 
-def jsencode(str):
-    if str is None:
+def jsencode(val):
+    if val is None:
         return ""
-    str = string.replace(str, "\\", "\\\\")
-    str = string.replace(str, "'", "\\'")
-    str = string.replace(str, "\r", "\\r")
-    str = string.replace(str, "\n", "\\n")
-    return str
+    if type(val) != type("") and type(val) != unicode:
+        val = str(val)
+    val = string.replace(val, "\\", "\\\\")
+    val = string.replace(val, "'", "\\'")
+    val = string.replace(val, "\r", "\\r")
+    val = string.replace(val, "\n", "\\n")
+    return val
 
-def jsdecode(str):
-    if str is None:
+def jsdecode(val):
+    if val is None:
         return ""
-    str = string.replace(str, "\\n", "\n")
-    str = string.replace(str, "\\r", "\r")
-    str = string.replace(str, "\\'", "'")
-    str = string.replace(str, "\\\\", "\\")
-    return str
+    if type(val) != type("") and type(val) != unicode:
+        val = str(val)
+    val = string.replace(val, "\\n", "\n")
+    val = string.replace(val, "\\r", "\r")
+    val = string.replace(val, "\\'", "'")
+    val = string.replace(val, "\\\\", "\\")
+    return val
 
 def format_gender(gender, str):
     return re.sub(r'\[gender\?([^:\]]*):([^:\]]*)\]', lambda m: m.group(1) if gender == 1 or gender == "1" else m.group(2), str)
@@ -65,19 +69,23 @@ def parse_color(color):
     r, g, b = m.group(1, 2, 3)
     return (int(r, 16), int(g, 16), int(b, 16))
 
-def htmlescape(str):
-    if str is None:
+def htmlescape(val):
+    if val is None:
         return ""
-    return cgi.escape(str)
+    if type(val) != type("") and type(val) != unicode:
+        val = str(val)
+    return cgi.escape(val)
 
-def htmldecode(str):
-    if str is None:
+def htmldecode(val):
+    if val is None:
         return ""
-    str = string.replace(str, "&quot;", '"')
-    str = string.replace(str, "&lt;", "<")
-    str = string.replace(str, "&gt;", ">")
-    str = string.replace(str, "&amp;", "&")
-    return str
+    if type(val) != type("") and type(val) != unicode:
+        val = str(val)
+    val = string.replace(val, "&quot;", '"')
+    val = string.replace(val, "&lt;", "<")
+    val = string.replace(val, "&gt;", ">")
+    val = string.replace(val, "&amp;", "&")
+    return val
 
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")

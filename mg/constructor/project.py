@@ -8,13 +8,11 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
-        self.rhook("auth.registered", self.admin_confirmed)
-        self.rhook("project.admin_confirmed", self.admin_confirmed)
 
     def child_modules(self):
-        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains", "mg.socio.Socio"]
+        lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains", "mg.socio.Socio", "mg.constructor.players.Auth"]
         if self.app().project.get("admin_confirmed"):
-            lst.extend(["mg.constructor.design.DesignMod", "mg.constructor.game.Game", "mg.constructor.interface.Dynamic", "mg.constructor.interface.IndexPage", "mg.constructor.players.Auth", "mg.game.money.Money"])
+            lst.extend(["mg.constructor.design.DesignMod", "mg.constructor.game.Game", "mg.constructor.interface.Dynamic", "mg.constructor.interface.IndexPage", "mg.game.money.Money"])
         return lst
 
     def project_title(self):
@@ -26,14 +24,6 @@ class ConstructorProject(Module):
             return
         #if req.group == "admin":
         vars["global_html"] = "constructor/admin_global.html"
-
-    def admin_confirmed(self, user):
-        req = self.req()
-        project = self.app().project
-        if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
-            project.set("admin_confirmed", True)
-            project.store()
-            self.app().store_config_hooks()
 
 class ConstructorProjectAdmin(Module):
     def register(self):
@@ -51,6 +41,8 @@ class ConstructorProjectAdmin(Module):
         if not project.get("admin_confirmed"):
             if project.get("domain") and req.has_access("project.admin"):
                 admin = self.obj(User, req.user())
+                project.set("admin_confirmed", admin.uuid)
+                project.store()
                 self.call("project.admin_confirmed", admin)
                 self.call("web.redirect", "/admin")
             menu[:] = [ent for ent in menu if ent.get("leaf")]
@@ -58,13 +50,13 @@ class ConstructorProjectAdmin(Module):
     def menu_top_list(self, topmenu):
         req = self.req()
         if self.app().project.get("inactive") and req.has_access("project.admin"):
-            topmenu.append({"id": "project/destroy", "text": self._("Destroy this game"), "tooltip": self._("You can destroy your game while not created")})
+            topmenu.append({"href": "/admin-project/destroy", "text": self._("Destroy this game"), "tooltip": self._("You can destroy your game while not created")})
 
     def project_destroy(self):
         self.call("session.require_permission", "project.admin")
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
+        self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
 
     def permissions_list(self, perms):
         perms.append({"id": "project.admin", "name": self._("Project main administrator")})
