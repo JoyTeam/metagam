@@ -43,6 +43,7 @@ class ProjectSetupWizard(Wizard):
             vars = {
                 "author": cgi.escape(author.get("name")),
                 "wizard": self.uuid,
+                "main_host": self.app().inst.config["main_host"],
             }
             self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
             self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)

@@ -26,7 +26,8 @@ class Documentation(Module):
         lang = self.call("l10n.lang")
         vars = {
             "lang": lang,
-            "htmlmeta": {}
+            "htmlmeta": {},
+            "main_host": self.app().inst.config["main_host"]
         }
         try:
             content = self.call("web.parse_template", "constructor/docs/%s/%s.html" % (lang, req.args), vars)
