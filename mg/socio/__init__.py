@@ -26,7 +26,7 @@ re_r = re.compile(r'\r')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
 re_images = re.compile(r'\[img:[0-9a-f]+\]')
-re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
+re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|code|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
 re_color = re.compile(r'^#[0-9a-f]{6}$')
 re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
 re_cut = re.compile(r'\s*\[cut\]')
@@ -551,6 +551,8 @@ class Socio(Module):
                 if re_url.match(arg):
                     arg = htmlescape(arg)
                     return self.format_text(before, options) + ('<a href="%s" target="_blank">' % arg) + self.format_text(inner, options) + '</a>' + self.format_text(after, options)
+            elif tag == "code":
+                    return self.format_text(before.rstrip(), options) + '<pre class="code">' + htmlescape(inner).strip() + '</pre>' + self.format_text(after.lstrip(), options)
             elif tag == "quote":
                 before = self.format_text(re_trim.sub(r'\1', before), options)
                 inner = self.format_text(re_trim.sub(r'\1', inner), options)
@@ -665,11 +667,11 @@ class Socio(Module):
                         ext = "jpg"
                         content_type = "image/jpeg"
                     width, height = image_obj.size
-                    if width <= 800 and height <= 600 and format == target_format:
+                    if width <= 800 and height <= 800 and format == target_format:
                         th_data = None
                     else:
                         th = image_obj.convert("RGB")
-                        th.thumbnail((800, 600), Image.ANTIALIAS)
+                        th.thumbnail((800, 800), Image.ANTIALIAS)
                         th_data = cStringIO.StringIO()
                         th.save(th_data, "JPEG")
                         th_data = th_data.getvalue()
@@ -1856,8 +1858,8 @@ class Forum(Module):
             for cat in categories:
                 notify[cat["id"]] = settings.get("notify_%s" % cat["id"], cat.get("default_subscribe"))
         form.hidden("redirect", redirect)
-        form.texteditor(self._("Your forum signature"), "signature", signature)
         form.file(self._("Your avatar"), "avatar")
+        form.texteditor(self._("Your forum signature"), "signature", signature)
         form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
         for cat in categories:
             form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))

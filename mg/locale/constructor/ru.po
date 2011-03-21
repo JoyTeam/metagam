@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-13 01:19+0300\n"
+"POT-Creation-Date: 2011-03-20 11:39+0300\n"
 "PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -172,11 +172,11 @@ msgstr "Пароли не совпадают"
 msgid "Error during registration"
 msgstr "Ошибка во время регистрации"
 
-#: mg/templates/constructor/offer-ru.html:261
+#: mg/templates/constructor/offer-ru.html:40
 msgid "I agree to the terms and conditions"
 msgstr "Я принимаю условия соглашения и договора"
 
-#: mg/templates/constructor/offer-ru.html:264
+#: mg/templates/constructor/offer-ru.html:43
 msgid "I don't agree"
 msgstr "Я не согласен"
 
