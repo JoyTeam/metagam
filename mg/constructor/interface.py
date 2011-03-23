@@ -6,12 +6,17 @@ import re
 import hashlib
 import mg
 
+caching = False
+
 class Dynamic(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js)
         self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css)
         self.rhook("auth.char-form-changed", self.char_form_changed)
+        self.rhook("ext-dyn-mg.game.js", self.game_js)
+        self.rhook("ext-dyn-mg.game.css", self.game_css)
+        self.rhook("gameinterface.layout-changed", self.layout_changed)
 
     def indexpage_js_mcid(self):
         main_host = self.app().inst.config["main_host"]
@@ -20,15 +25,15 @@ class Dynamic(Module):
         return "indexpage-js-%s-%s-%s" % (main_host, lang, ver)
 
     def char_form_changed(self):
-        mcid = self.indexpage_js_mcid()
-        self.app().mc.delete(mcid)
+        for mcid in [self.indexpage_js_mcid(), self.indexpage_css_mcid()]:
+            self.app().mc.delete(mcid)
 
     def indexpage_js(self):
         main_host = self.app().inst.config["main_host"]
         lang = self.call("l10n.lang")
         mcid = self.indexpage_js_mcid()
         data = self.app().mc.get(mcid)
-        if not data:
+        if not data or not caching:
             mg_path = mg.__path__[0]
             vars = {
                 "includes": [
@@ -53,7 +58,7 @@ class Dynamic(Module):
         main_host = self.app().inst.config["main_host"]
         mcid = self.indexpage_css_mcid()
         data = self.app().mc.get(mcid)
-        if not data:
+        if not data or not caching:
             mg_path = mg.__path__[0]
             vars = {
                 "main_host": main_host
@@ -62,13 +67,62 @@ class Dynamic(Module):
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/css")
 
-class IndexPage(Module):
+    def layout_changed(self):
+        for mcid in [self.game_js_mcid(), self.game_css_mcid()]:
+            self.app().mc.delete(mcid)
+
+    def game_js_mcid(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        ver = self.int_app().config.get("application.version", 0)
+        return "game-js-%s-%s-%s" % (main_host, lang, ver)
+
+    def game_css_mcid(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        ver = self.int_app().config.get("application.version", 0)
+        return "game-css-%s-%s-%s" % (main_host, lang, ver)
+
+    def game_css(self):
+        main_host = self.app().inst.config["main_host"]
+        mcid = self.game_css_mcid()
+        data = self.app().mc.get(mcid)
+        if not data or not caching:
+            mg_path = mg.__path__[0]
+            vars = {
+                "main_host": main_host
+            }
+            data = self.call("web.parse_template", "game/main.css", vars)
+            self.app().mc.set(mcid, data)
+        self.call("web.response", data, "text/css")
+
+    def game_js(self):
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        mcid = self.game_js_mcid()
+        data = self.app().mc.get(mcid)
+        if not data or not caching:
+            mg_path = mg.__path__[0]
+            vars = {
+                "main_host": main_host,
+                "layout": {
+                    "scheme": self.conf("gameinterface.layout-scheme", 1),
+                },
+            }
+            self.call("indexpage.render", vars)
+            data = self.call("web.parse_template", "game/interface.js", vars)
+            self.app().mc.set(mcid, data)
+        self.call("web.response", data, "text/javascript; charset=utf-8")
+
+class Interface(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-index.index", self.index)
         self.rhook("indexpage.error", self.index_error)
         self.rhook("indexpage.response_template", self.response_template)
         self.rhook("auth.messages", self.auth_messages)
+        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout)
 
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
@@ -159,3 +213,33 @@ class IndexPage(Module):
             "global_html": "game/frameset.html"
         }
         self.call("web.response_global", "", vars)
+
+    def menu_design_index(self, menu):
+        req = self.req()
+        if req.has_access("design"):
+            menu.append({"id": "gameinterface/layout", "text": self._("Game interface layout"), "leaf": True, "order": 2})
+
+    def gameinterface_layout(self):
+        self.call("session.require_permission", "design")
+        req = self.req()
+        if req.ok():
+            scheme = intz(req.param("scheme"))
+            errors = {}
+            if scheme < 1 or scheme > 3:
+                errors["scheme"] = self._("Invalid selection")
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            config = self.app().config
+            config.set("gameinterface.layout-scheme", scheme)
+            config.store()
+            self.call("gameinterface.layout-changed")
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            scheme = self.conf("gameinterface.layout-scheme", 3)
+        fields = [
+            {"id": "scheme0", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
+            {"id": "scheme1", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "checked": scheme == 2, "boxLabel": '<img src="/st/constructor/gameinterface/layout1.png" alt="" />', "inline": True},
+            {"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "checked": scheme == 3, "boxLabel": '<img src="/st/constructor/gameinterface/layout2.png" alt="" />', "inline": True},
+        ]
+        self.call("admin.form", fields=fields)
+

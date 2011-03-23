@@ -3,18 +3,21 @@
 	<head>
 		<title>[%title%]</title>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 		<script type="text/javascript">var ver='[%ver%]'</script>
 		[%head%]
-		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all.css" />
 		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
 		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
+		<script type="text/javascript" src="/st/ext/miframe.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/js/gettext.js"></script>
 		[%if lang%]<script type="text/javascript" src="/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
 		<script type="text/javascript" src="/st/[%ver%]/js/sprintf.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/js/depend.js"></script>
-		<script type="text/javascript" src="/st/[%ver%]/js/game-frameset.js"></script>
+		<script type="text/javascript" src="/dyn-mg/game.js"></script>
+		<link rel="stylesheet" type="text/css" href="/dyn-mg/game.css" />
 	</head>
-	<body>
+	<body scroll="no">
 		[%if twopay_payport%]
 		<div id="cassa2payCanvas"></div>
 		<script type="text/javascript" src="http://2pay.ru/gadget/client/html/init.js"></script>

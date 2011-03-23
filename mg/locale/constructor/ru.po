@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-20 11:39+0300\n"
+"POT-Creation-Date: 2011-03-18 17:52+0300\n"
 "PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -19,42 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: static/js/FileUploadField.js:21
-msgid "Browse..."
-msgstr "Обзор..."
-
-#: static/js/admin-form.js:182 mg/templates/constructor/logo-wizard.html:80
-#: mg/templates/constructor/logo-wizard.html:119
-#: mg/templates/constructor/logo-wizard.html:230
-#: mg/templates/constructor/domain.html:71
-#: mg/templates/constructor/domain-wizard.html:82
-#: mg/templates/constructor/logo.html:57
-msgid "Please wait..."
-msgstr "Пожалуйста, подождите..."
-
-#: static/js/admin-form.js:212
-msgid "Sending data..."
-msgstr "Отправка данных..."
-
-#: static/js/admin-form.js:227 static/js/admin-form.js:230
-#: mg/templates/constructor/logo-wizard.html:63
-#: mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:29
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/domain-wizard.html:41
-#: mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
-msgid "Error"
-msgstr "Ошибка"
-
-#: static/js/admin-form.js:230 mg/templates/constructor/logo-wizard.html:66
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/logo.html:98
-#, python-format
-msgid "Server error: %s"
-msgstr "Ошибка на сервере: %s"
-
 #: static/js/admin.js:81
 msgid "Guru advice"
 msgstr "Советы гуру"
@@ -63,79 +27,51 @@ msgstr "Советы гуру"
 msgid "To the main page"
 msgstr "На главную страницу"
 
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
+msgstr "Обзор..."
+
 #: static/js/admin-form-presets.js:10
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: mg/templates/constructor/intro-en.html:12
+#: static/js/admin-form.js:182 mg/templates/constructor/domain-wizard.html:82
+#: mg/templates/constructor/domain.html:71
+#: mg/templates/constructor/logo.html:57
+#: mg/templates/constructor/logo-wizard.html:80
+#: mg/templates/constructor/logo-wizard.html:119
+#: mg/templates/constructor/logo-wizard.html:230
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+#: static/js/admin-form.js:212
+msgid "Sending data..."
+msgstr "Отправка данных..."
+
+#: static/js/admin-form.js:227 static/js/admin-form.js:230
+#: mg/templates/constructor/domain-wizard.html:41
+#: mg/templates/constructor/domain-wizard.html:44
+#: mg/templates/constructor/domain.html:29
+#: mg/templates/constructor/domain.html:32
+#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo-wizard.html:63
+#: mg/templates/constructor/logo-wizard.html:66
+msgid "Error"
+msgstr "Ошибка"
+
+#: static/js/admin-form.js:230 mg/templates/constructor/domain-wizard.html:44
+#: mg/templates/constructor/domain.html:32
+#: mg/templates/constructor/logo.html:98
+#: mg/templates/constructor/logo-wizard.html:66
+#, python-format
+msgid "Server error: %s"
+msgstr "Ошибка на сервере: %s"
+
 #: mg/templates/constructor/intro-ru.html:18
+#: mg/templates/constructor/intro-en.html:12
 #: mg/templates/constructor/logo.html:130
 msgid "Next"
 msgstr "Далее"
-
-#: mg/templates/constructor/logo-wizard.html:40
-#: mg/templates/constructor/logo.html:83
-msgid "Uploading data..."
-msgstr "Отправка данных..."
-
-#: mg/templates/constructor/logo-wizard.html:74
-msgid "Upload file"
-msgstr "Загрузить файл"
-
-#: mg/templates/constructor/logo-wizard.html:102
-#: mg/templates/constructor/logo.html:80
-msgid "Upload"
-msgstr "Загрузить"
-
-#: mg/templates/constructor/logo-wizard.html:113
-msgid "Solid color"
-msgstr "Сплошной цвет"
-
-#: mg/templates/constructor/logo-wizard.html:146
-msgid "Select"
-msgstr "Выбрать"
-
-#: mg/templates/constructor/logo-wizard.html:213
-msgid "Smooth contour"
-msgstr "Сглаженные края"
-
-#: mg/templates/constructor/logo-wizard.html:242
-msgid "Shape"
-msgstr "Форма"
-
-#: mg/templates/constructor/logo-wizard.html:245
-msgid "Fill"
-msgstr "Заливка"
-
-#: mg/templates/constructor/logo-wizard.html:248
-msgid "Effects"
-msgstr "Эффекты"
-
-#: mg/templates/constructor/logo-wizard.html:256
-msgid "Preview"
-msgstr "Предварительный просмотр"
-
-#: mg/templates/constructor/logo-wizard.html:278
-msgid "Apply"
-msgstr "Применить"
-
-#: mg/templates/constructor/logo-wizard.html:281
-#: mg/templates/constructor/domain-wizard.html:258
-msgid "Abort wizard"
-msgstr "Прервать мастер"
-
-#: mg/templates/constructor/domain.html:95
-#: mg/templates/constructor/logo.html:126
-msgid "Previous"
-msgstr "Назад"
-
-#: mg/templates/constructor/domain-wizard.html:126
-msgid "Check availability"
-msgstr "Проверить доступность"
-
-#: mg/templates/constructor/domain-wizard.html:161
-msgid "Buy MM$"
-msgstr "Купить MM$"
 
 #: mg/templates/constructor/index/indexpage.js:132
 #: mg/templates/constructor/index/indexpage.js:244
@@ -172,6 +108,19 @@ msgstr "Пароли не совпадают"
 msgid "Error during registration"
 msgstr "Ошибка во время регистрации"
 
+#: mg/templates/constructor/domain-wizard.html:126
+msgid "Check availability"
+msgstr "Проверить доступность"
+
+#: mg/templates/constructor/domain-wizard.html:161
+msgid "Buy MM$"
+msgstr "Купить MM$"
+
+#: mg/templates/constructor/domain-wizard.html:258
+#: mg/templates/constructor/logo-wizard.html:281
+msgid "Abort wizard"
+msgstr "Прервать мастер"
+
 #: mg/templates/constructor/offer-ru.html:40
 msgid "I agree to the terms and conditions"
 msgstr "Я принимаю условия соглашения и договора"
@@ -179,6 +128,57 @@ msgstr "Я принимаю условия соглашения и догово�
 #: mg/templates/constructor/offer-ru.html:43
 msgid "I don't agree"
 msgstr "Я не согласен"
+
+#: mg/templates/constructor/domain.html:95
+#: mg/templates/constructor/logo.html:126
+msgid "Previous"
+msgstr "Назад"
+
+#: mg/templates/constructor/logo.html:80
+#: mg/templates/constructor/logo-wizard.html:102
+msgid "Upload"
+msgstr "Загрузить"
+
+#: mg/templates/constructor/logo.html:83
+#: mg/templates/constructor/logo-wizard.html:40
+msgid "Uploading data..."
+msgstr "Отправка данных..."
+
+#: mg/templates/constructor/logo-wizard.html:74
+msgid "Upload file"
+msgstr "Загрузить файл"
+
+#: mg/templates/constructor/logo-wizard.html:113
+msgid "Solid color"
+msgstr "Сплошной цвет"
+
+#: mg/templates/constructor/logo-wizard.html:146
+msgid "Select"
+msgstr "Выбрать"
+
+#: mg/templates/constructor/logo-wizard.html:213
+msgid "Smooth contour"
+msgstr "Сглаженные края"
+
+#: mg/templates/constructor/logo-wizard.html:242
+msgid "Shape"
+msgstr "Форма"
+
+#: mg/templates/constructor/logo-wizard.html:245
+msgid "Fill"
+msgstr "Заливка"
+
+#: mg/templates/constructor/logo-wizard.html:248
+msgid "Effects"
+msgstr "Эффекты"
+
+#: mg/templates/constructor/logo-wizard.html:256
+msgid "Preview"
+msgstr "Предварительный просмотр"
+
+#: mg/templates/constructor/logo-wizard.html:278
+msgid "Apply"
+msgstr "Применить"
 
 #~ msgid "Abort"
 #~ msgstr "Прервать"

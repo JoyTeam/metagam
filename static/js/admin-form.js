@@ -67,13 +67,18 @@ Form = Ext.extend(AdminResponse, {
 					anchor: '-30',
 					border: false,
 					msgTarget: 'side',
-					listeners: {}
+					listeners: {},
+					boxLabel: it.boxLabel,
+					width: it.width
 				};
 				if (it.name)
-					elt.id = 'form-field-' + it.name;
+					elt.id = 'form-field-' + (it.id || it.name);
 				if (elt.xtype == 'checkbox') {
 					elt.fieldLabel = it.desc;
 					elt.boxLabel = it.label;
+				} else if (elt.xtype == 'radio') {
+					elt.value = undefined;
+					elt.inputValue = it.value;
 				} else if (elt.xtype == 'combo') {
 					elt.store = it.values;
 					elt.forceSelection = true;
@@ -114,7 +119,7 @@ Form = Ext.extend(AdminResponse, {
 			if (it.flex)
 				flex_total += it.flex;
 			row.push({
-				id: 'elem_' + it.name,
+				id: 'elem_' + (it.id || it.name),
 				autoHeight: true,
 				flex: it.flex,
 				width: it.width,
@@ -122,7 +127,7 @@ Form = Ext.extend(AdminResponse, {
 				items: elem
 			});
 			if (it.condition)
-				this.conditions.push({id: 'elem_' + it.name, condition: it.condition});
+				this.conditions.push({id: 'elem_' + (it.id || it.name), condition: it.condition});
 			if (i == data.fields.length - 1 || !data.fields[i + 1].inline) {
 				for (var j = 0; j < row.length; j++) {
 					if (row[j].flex)
