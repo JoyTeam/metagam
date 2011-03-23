@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 09:39+0300\n"
+"POT-Creation-Date: 2011-03-23 17:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1418,7 +1418,7 @@ msgstr ""
 msgid "Free characters can't be greater than max characters"
 msgstr ""
 
-#: mg/constructor/players.py:203
+#: mg/constructor/players.py:203 mg/constructor/interface.py:283
 msgid "Settings stored"
 msgstr ""
 
@@ -1490,7 +1490,8 @@ msgstr ""
 msgid "Character sex"
 msgstr ""
 
-#: mg/constructor/players.py:305
+#: mg/constructor/players.py:305 mg/constructor/interface.py:245
+#: mg/constructor/interface.py:251
 msgid "Invalid selection"
 msgstr ""
 
@@ -2122,20 +2123,69 @@ msgstr ""
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/constructor/interface.py:74
+#: mg/constructor/interface.py:142
 msgid "Character not found"
 msgstr ""
 
-#: mg/constructor/interface.py:75
+#: mg/constructor/interface.py:143
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr ""
 
-#: mg/constructor/interface.py:105
+#: mg/constructor/interface.py:173
 msgid "Index page design is not configured"
 msgstr ""
 
-#: mg/constructor/interface.py:136
+#: mg/constructor/interface.py:204
 msgid "Error"
+msgstr ""
+
+#: mg/constructor/interface.py:234
+msgid "Game interface layout"
+msgstr ""
+
+#: mg/constructor/interface.py:257 mg/constructor/interface.py:263
+#: mg/constructor/interface.py:269 mg/constructor/interface.py:275
+msgid "Enter width in pixels"
+msgstr ""
+
+#: mg/constructor/interface.py:292
+msgid "General layout scheme"
+msgstr ""
+
+#: mg/constructor/interface.py:295
+msgid "Chat channels mode"
+msgstr ""
+
+#: mg/constructor/interface.py:295
+msgid "Channels disabled"
+msgstr ""
+
+#: mg/constructor/interface.py:295
+msgid "Every channel on a separate tab"
+msgstr ""
+
+#: mg/constructor/interface.py:295
+msgid "Channel selection checkboxes"
+msgstr ""
+
+#: mg/constructor/interface.py:296
+msgid "Page margins (0 - margin is disabled):"
+msgstr ""
+
+#: mg/constructor/interface.py:298
+msgid "Left"
+msgstr ""
+
+#: mg/constructor/interface.py:299
+msgid "Right"
+msgstr ""
+
+#: mg/constructor/interface.py:300
+msgid "Top"
+msgstr ""
+
+#: mg/constructor/interface.py:301
+msgid "Bottom"
 msgstr ""
 
 #: mg/constructor/design.py:90
