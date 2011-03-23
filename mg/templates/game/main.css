@@ -1,0 +1,10 @@
+#topmenu-box { height: 39px; background: #ffffff; text-align: center; border-bottom: solid 1px #f0f0f0 }
+#topmenu-box-content { padding-top: 10px; font-size: 18px }
+#chat-channels { height: 100%; background: #ffffff }
+#chat-channel-buttons { padding: 10px 10px 0 10px }
+#chat-box { height: 100%; background: #ffffff; border-top: solid 1px #f0f0f0; overflow: auto }
+#chat-box-content { padding: 0 15px 0 10px }
+#chat-input { height: 100%; padding: 10px 15px 0 10px; background: #ffffff; border-top: solid 1px #f0f0f0 }
+#chat-input-control { width: 100%; }
+#roster-box { height: 100%; overflow: auto; background: #ffffff }
+#roster-box-content { padding: 10px 15px 0 10px }

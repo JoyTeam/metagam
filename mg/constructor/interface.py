@@ -107,9 +107,23 @@ class Dynamic(Module):
                 "main_host": main_host,
                 "layout": {
                     "scheme": self.conf("gameinterface.layout-scheme", 1),
+                    "chatmode": self.conf("gameinterface.chat-mode", 1),
+                    "marginleft": self.conf("gameinterface.margin-left", 0),
+                    "marginright": self.conf("gameinterface.margin-right", 0),
+                    "margintop": self.conf("gameinterface.margin-top", 0),
+                    "marginbottom": self.conf("gameinterface.margin-bottom", 0),
                 },
             }
-            self.call("indexpage.render", vars)
+            channels = []
+            self.call("chat.channels", channels)
+            channels_res = []
+            for ch in channels:
+                channels_res.append({
+                    "id": ch["id"],
+                    "short_name": htmlescape(ch["short_name"])
+                })
+            vars["chat_channels"] = channels_res
+            self.call("gameinterface.render", vars)
             data = self.call("web.parse_template", "game/interface.js", vars)
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/javascript; charset=utf-8")
@@ -223,23 +237,68 @@ class Interface(Module):
         self.call("session.require_permission", "design")
         req = self.req()
         if req.ok():
-            scheme = intz(req.param("scheme"))
+            config = self.app().config
             errors = {}
+            # scheme
+            scheme = intz(req.param("scheme"))
             if scheme < 1 or scheme > 3:
                 errors["scheme"] = self._("Invalid selection")
+            else:
+                config.set("gameinterface.layout-scheme", scheme)
+            # chatmode
+            chatmode = intz(req.param("v_chatmode"))
+            if chatmode < 0 or chatmode > 2:
+                errors["chatmode"] = self._("Invalid selection")
+            else:
+                config.set("gameinterface.chat-mode", chatmode)
+            # margin-left
+            marginleft = req.param("marginleft")
+            if not valid_nonnegative_int(marginleft):
+                errors["marginleft"] = self._("Enter width in pixels")
+            else:
+                config.set("gameinterface.margin-left", marginleft)
+            # margin-right
+            marginright = req.param("marginright")
+            if not valid_nonnegative_int(marginright):
+                errors["marginright"] = self._("Enter width in pixels")
+            else:
+                config.set("gameinterface.margin-right", marginright)
+            # margin-top
+            margintop = req.param("margintop")
+            if not valid_nonnegative_int(margintop):
+                errors["margintop"] = self._("Enter width in pixels")
+            else:
+                config.set("gameinterface.margin-top", margintop)
+            # margin-bottom
+            marginbottom = req.param("marginbottom")
+            if not valid_nonnegative_int(marginbottom):
+                errors["marginbottom"] = self._("Enter width in pixels")
+            else:
+                config.set("gameinterface.margin-bottom", marginbottom)
+            # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
-            config = self.app().config
-            config.set("gameinterface.layout-scheme", scheme)
             config.store()
             self.call("gameinterface.layout-changed")
             self.call("admin.response", self._("Settings stored"), {})
         else:
-            scheme = self.conf("gameinterface.layout-scheme", 3)
+            scheme = self.conf("gameinterface.layout-scheme", 1)
+            chatmode = self.conf("gameinterface.chat-mode", 1)
+            marginleft = self.conf("gameinterface.margin-left", 0)
+            marginright = self.conf("gameinterface.margin-right", 0)
+            margintop = self.conf("gameinterface.margin-top", 0)
+            marginbottom = self.conf("gameinterface.margin-bottom", 0)
         fields = [
             {"id": "scheme0", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
             {"id": "scheme1", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "checked": scheme == 2, "boxLabel": '<img src="/st/constructor/gameinterface/layout1.png" alt="" />', "inline": True},
             {"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "checked": scheme == 3, "boxLabel": '<img src="/st/constructor/gameinterface/layout2.png" alt="" />', "inline": True},
+            {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
+            {"type": "label", "label": self._("Page margins (0 - margin is disabled):")},
+            {"type": "html", "html": '<img src="/st/constructor/gameinterface/margins.png" style="margin: 3px 0 5px 0" />'},
+            {"name": "marginleft", "label": self._("Left"), "value": marginleft},
+            {"name": "marginright", "label": self._("Right"), "value": marginright, "inline": True},
+            {"name": "margintop", "label": self._("Top"), "value": margintop, "inline": True},
+            {"name": "marginbottom", "label": self._("Bottom"), "value": marginbottom, "inline": True},
         ]
         self.call("admin.form", fields=fields)
 

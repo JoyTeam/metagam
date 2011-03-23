@@ -38,6 +38,12 @@ Form = Ext.extend(AdminResponse, {
 					cls: 'text',
 					html: it.html
 				};
+			} else if (it.type == 'label') {
+				elem = {
+					border: false,
+					cls: 'x-form-item-label',
+					html: it.label
+				};
 			} else if (it.type == 'button') {
 				elem = {
 					border: false,
@@ -119,7 +125,7 @@ Form = Ext.extend(AdminResponse, {
 			if (it.flex)
 				flex_total += it.flex;
 			row.push({
-				id: 'elem_' + (it.id || it.name),
+				id: (id.id || it.name) ? ('elem_' + (it.id || it.name)) : undefined,
 				autoHeight: true,
 				flex: it.flex,
 				width: it.width,
