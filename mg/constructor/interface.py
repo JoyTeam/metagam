@@ -113,6 +113,8 @@ class Dynamic(Module):
                     "margintop": self.conf("gameinterface.margin-top", 0),
                     "marginbottom": self.conf("gameinterface.margin-bottom", 0),
                 },
+                "domain": self.app().project.get("domain"),
+                "app": self.app().tag
             }
             channels = []
             self.call("chat.channels", channels)

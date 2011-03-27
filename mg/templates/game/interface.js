@@ -1,15 +1,12 @@
-var GameInterface = {
-	fixupContentEl: function(el) {
-		if (!Ext.getDom(el.contentEl))
-			el.contentEl = undefined;
-		return el;
-	}
+var GameInterface = {}
+
+GameInterface.fixupContentEl = function(el) {
+	if (!Ext.getDom(el.contentEl))
+		el.contentEl = undefined;
+	return el;
 };
 
-Ext.onReady(function() {
-	Ext.QuickTips.init();
-	Ext.form.Field.prototype.msgTarget = 'under';
-
+GameInterface.setup_layout = function() {
 	var topmenu = GameInterface.fixupContentEl({
 		xtype: 'box',
 		height: 40,
@@ -180,4 +177,19 @@ Ext.onReady(function() {
 			items: content
 		});
 	}
+};
+
+GameInterface.run_realplexor = function() {
+	var realplexor = new Dklab_Realplexor('http://www.[%domain%]/rpl', '[%app%]_');
+	realplexor.subscribe("control", function (result, id) {
+		alert(result);
+	});
+	realplexor.execute();
+};
+
+Ext.onReady(function() {
+	Ext.QuickTips.init();
+	Ext.form.Field.prototype.msgTarget = 'under';
+	GameInterface.setup_layout();
+	GameInterface.run_realplexor();
 });
