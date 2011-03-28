@@ -1,4 +1,5 @@
 var GameInterface = {}
+var app = '[%app%]';
 
 GameInterface.fixupContentEl = function(el) {
 	if (!Ext.getDom(el.contentEl))
@@ -38,7 +39,7 @@ GameInterface.setup_layout = function() {
 	var main = {
 		xtype: 'iframepanel',
 		border: false,
-		defaultSrc: 'http://www.kaluga-comfort.ru',
+		defaultSrc: '[%main_init%]',
 		frameConfig: {
 			name: 'main'
 		}
@@ -180,9 +181,20 @@ GameInterface.setup_layout = function() {
 };
 
 GameInterface.run_realplexor = function() {
-	var realplexor = new Dklab_Realplexor('http://www.[%domain%]/rpl', '[%app%]_');
-	realplexor.subscribe("control", function (result, id) {
-		alert(result);
+	var realplexor = new Dklab_Realplexor('http://rpl.www.[%domain%]/rpl', app + '_');
+	realplexor.setCursor('id_' + Ext.util.Cookies.get('mgsess-' + app), 0);
+	realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + app), function (result, id) {
+		if (this.initialized) {
+			if (result.marker) {
+				return;
+			}
+		} else {
+			if (result.marker == '[%stream_marker%]') {
+				this.initialized = true;
+			}
+			return;
+		}
+		alert('Received message: ' + result.marker);
 	});
 	realplexor.execute();
 };

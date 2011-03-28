@@ -4,7 +4,7 @@
 		<title>[%title%]</title>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<script type="text/javascript">var ver='[%ver%]'</script>
+		<script type="text/javascript">var ver='[%ver%]'; document.domain=document.domain;</script>
 		[%head%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all.css" />
 		<link rel="stylesheet" type="text/css" href="/dyn-mg/game.css" />
@@ -16,7 +16,7 @@
 		<script type="text/javascript" src="/st/[%ver%]/js/sprintf.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/js/depend.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/js/realplexor.js"></script>
-		<script type="text/javascript" src="/dyn-mg/game.js"></script>
+		<script type="text/javascript">[%game_js%]</script>
 	</head>
 	<body scroll="no">
 		[%if twopay_payport%]

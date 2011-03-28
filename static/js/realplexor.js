@@ -7,7 +7,7 @@ function Dklab_Realplexor(fullUrl, namespace, viaDocumentWrite)
 
 	// Detect current page hostname.
 	var host = document.location.host;
-	
+
 	// Assign initial properties.
 	if (!this.constructor._registry) this.constructor._registry = {}; // all objects registry
 	this.version = VERSION;
@@ -44,7 +44,7 @@ function Dklab_Realplexor(fullUrl, namespace, viaDocumentWrite)
 		document.write(this._iframeTag);
 		this._iframeCreated = true;
 	}
-	
+
 	// Allow realplexor's IFRAME to access outer window.
 	document.domain = host;	
 }
