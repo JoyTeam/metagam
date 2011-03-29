@@ -5,7 +5,7 @@ Form = Ext.extend(AdminResponse, {
 		Form.superclass.constructor.call(this, {
 		});
 		this.conditions = new Array();
-		var upload = false;
+		var upload = data.upload;
 		var rows = new Array();
 		if (data.title) {
 			rows.push({
@@ -251,5 +251,5 @@ function form_value(id)
 	return cmp.getValue();
 }
 
-loaded('js/admin-form.js');
+loaded('admin-form');
 

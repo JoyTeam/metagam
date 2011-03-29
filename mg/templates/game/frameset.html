@@ -7,7 +7,9 @@
 		<script type="text/javascript">var ver='[%ver%]'; document.domain=document.domain;</script>
 		[%head%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all.css" />
-		<link rel="stylesheet" type="text/css" href="/dyn-mg/game.css" />
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
+		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
+		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
 		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
 		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
 		<script type="text/javascript" src="/st/ext/miframe.js"></script>
@@ -39,10 +41,6 @@
 		var twopay_v1 = '[%twopay_payment.name%]';
 		</script>
 		[%end%]
-		<div class="x-hidden" id="topmenu-box"><div id="topmenu-box-content">Это верхняя менюха</div></div>
-		<div class="x-hidden" id="chat-channels"><div id="chat-channel-buttons">Кнопки</div></div>
-		<div class="x-hidden" id="chat-box"><div id="chat-box-content">Содержимое чата</div></div>
-		<div class="x-hidden" id="chat-input"><form><input id="chat-input-control" /></div>
-		<div class="x-hidden" id="roster-box"><div id="roster-box-content">Это ростер</div></div>
+		[%blocks%]
 	</body>
 </html>

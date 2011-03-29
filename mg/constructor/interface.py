@@ -15,8 +15,6 @@ class Dynamic(Module):
         self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js)
         self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css)
         self.rhook("auth.char-form-changed", self.char_form_changed)
-        self.rhook("ext-dyn-mg.game.css", self.game_css)
-        self.rhook("gameinterface.layout-changed", self.layout_changed)
 
     def indexpage_js_mcid(self):
         main_host = self.app().inst.config["main_host"]
@@ -67,29 +65,6 @@ class Dynamic(Module):
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/css")
 
-    def layout_changed(self):
-        for mcid in [self.game_css_mcid()]:
-            self.app().mc.delete(mcid)
-
-    def game_css_mcid(self):
-        main_host = self.app().inst.config["main_host"]
-        lang = self.call("l10n.lang")
-        ver = self.int_app().config.get("application.version", 0)
-        return "game-css-%s-%s-%s" % (main_host, lang, ver)
-
-    def game_css(self):
-        main_host = self.app().inst.config["main_host"]
-        mcid = self.game_css_mcid()
-        data = self.app().mc.get(mcid)
-        if not data or not caching:
-            mg_path = mg.__path__[0]
-            vars = {
-                "main_host": main_host
-            }
-            data = self.call("web.parse_template", "game/main.css", vars)
-            self.app().mc.set(mcid, data)
-        self.call("web.response", data, "text/css")
-
 class Interface(Module):
     def register(self):
         Module.register(self)
@@ -100,6 +75,9 @@ class Interface(Module):
         self.rhook("menu-admin-design.index", self.menu_design_index)
         self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout)
         self.rhook("ext-interface.index", self.interface_index)
+        self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
+        self.rhook("gameinterface.gamejs", self.game_js)
+        self.rhook("gameinterface.blocks", self.blocks)
 
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
@@ -121,7 +99,6 @@ class Interface(Module):
                 return self.game_cabinet(player)
             else:
                 return self.game_interface_default_character(player)
-
         email = req.param("email")
         if email:
             user = self.call("session.find_user", email)
@@ -183,14 +160,38 @@ class Interface(Module):
         chars.load()
         return self.game_interface(chars[0])
 
-    def game_interface(self, character):
+    def game_interface_render(self, vars, design):
+        session = self.call("session.get")
+        main_host = self.app().inst.config["main_host"]
+        lang = self.call("l10n.lang")
+        mg_path = mg.__path__[0]
         project = self.app().project
-        vars = {
-            "title": htmlescape(project.get("title_full")),
-            "game_js": self.game_js(),
-            "global_html": "game/frameset.html"
+        vars["title"] = htmlescape(project.get("title_full"))
+        vars["design_root"] = design.get("uri")
+        vars["main_host"] = main_host
+        vars["layout"] = {
+            "scheme": self.conf("gameinterface.layout-scheme", 1),
+            "marginleft": self.conf("gameinterface.margin-left", 0),
+            "marginright": self.conf("gameinterface.margin-right", 0),
+            "margintop": self.conf("gameinterface.margin-top", 0),
+            "marginbottom": self.conf("gameinterface.margin-bottom", 0),
         }
-        self.call("web.response_global", "", vars)
+        vars["domain"] = self.app().project.get("domain")
+        vars["app"] = self.app().tag
+        vars["js_modules"] = set()
+        vars["main_init"] = "/interface"
+
+    def game_interface(self, character):
+        # setting up design
+        interface = self.conf("gameinterface.design")
+        if not interface:
+            return self.call("indexpage.error", self._("Game interface design is not configured"))
+        design = self.obj(Design, interface)
+        vars = {}
+        self.call("gameinterface.render", vars, design)
+        self.call("gameinterface.gamejs", vars, design)
+        self.call("gameinterface.blocks", vars, design)
+        self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
 
     def menu_design_index(self, menu):
         req = self.req()
@@ -209,12 +210,6 @@ class Interface(Module):
                 errors["scheme"] = self._("Invalid selection")
             else:
                 config.set("gameinterface.layout-scheme", scheme)
-            # chatmode
-            chatmode = intz(req.param("v_chatmode"))
-            if chatmode < 0 or chatmode > 2:
-                errors["chatmode"] = self._("Invalid selection")
-            else:
-                config.set("gameinterface.chat-mode", chatmode)
             # margin-left
             marginleft = req.param("marginleft")
             if not valid_nonnegative_int(marginleft):
@@ -243,11 +238,9 @@ class Interface(Module):
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
-            self.call("gameinterface.layout-changed")
             self.call("admin.response", self._("Settings stored"), {})
         else:
             scheme = self.conf("gameinterface.layout-scheme", 1)
-            chatmode = self.conf("gameinterface.chat-mode", 1)
             marginleft = self.conf("gameinterface.margin-left", 0)
             marginright = self.conf("gameinterface.margin-right", 0)
             margintop = self.conf("gameinterface.margin-top", 0)
@@ -262,48 +255,25 @@ class Interface(Module):
             {"name": "marginright", "label": self._("Right"), "value": marginright, "inline": True},
             {"name": "margintop", "label": self._("Top"), "value": margintop, "inline": True},
             {"name": "marginbottom", "label": self._("Bottom"), "value": marginbottom, "inline": True},
-            {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
         ]
         self.call("admin.form", fields=fields)
 
-    def game_js(self):
+    def blocks(self, vars, design):
+        obj = self.httpfile("%s/blocks.html" % design.get("uri"))
+        vars["blocks"] = self.call("web.parse_template", obj, vars)
+
+    def game_js(self, vars, design):
         session = self.call("session.get")
-        main_host = self.app().inst.config["main_host"]
-        lang = self.call("l10n.lang")
-        mg_path = mg.__path__[0]
-        vars = {
-            "main_host": main_host,
-            "layout": {
-                "scheme": self.conf("gameinterface.layout-scheme", 1),
-                "chatmode": self.conf("gameinterface.chat-mode", 1),
-                "marginleft": self.conf("gameinterface.margin-left", 0),
-                "marginright": self.conf("gameinterface.margin-right", 0),
-                "margintop": self.conf("gameinterface.margin-top", 0),
-                "marginbottom": self.conf("gameinterface.margin-bottom", 0),
-            },
-            "domain": self.app().project.get("domain"),
-            "app": self.app().tag
-        }
-        # chat channels
-        channels = []
-        self.call("chat.channels", channels)
-        channels_res = []
-        for ch in channels:
-            channels_res.append({
-                "id": ch["id"],
-                "short_name": htmlescape(ch["short_name"])
-            })
-        vars["chat_channels"] = channels_res
-        # main frame
-        vars["main_init"] = "/interface"
-        # stream
+        # initializing stream
         stream_marker = uuid4().hex
         vars["stream_marker"] = stream_marker
         self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
-        self.call("gameinterface.render", vars)
-        return self.call("web.parse_template", "game/interface.js", vars)
+        # js modules
+        vars["js_modules"] = [{"name": mod} for mod in vars["js_modules"]]
+        if len(vars["js_modules"]):
+            vars["js_modules"][-1]["lst"] = True
+        vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def interface_index(self):
         self.call("session.require_login")
         self.call("web.response_global", "OK", {})
-

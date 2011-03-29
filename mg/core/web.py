@@ -313,7 +313,7 @@ class WebDaemon(object):
                 raise
             except RuntimeError as e:
                 self.logger.error(e)
-                e = "%s" % e
+                e = u"%s" % e
                 if type(e) == unicode:
                     e = e.encode("utf-8")
                 return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))

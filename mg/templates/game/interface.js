@@ -1,5 +1,7 @@
 var GameInterface = {}
+var StreamHandlers = new Array();
 var app = '[%app%]';
+var admin_root = '';
 
 GameInterface.fixupContentEl = function(el) {
 	if (!Ext.getDom(el.contentEl))
@@ -16,12 +18,12 @@ GameInterface.setup_layout = function() {
 	var chat = {
 		border: false,
 		layout: 'border',
-		items: [GameInterface.fixupContentEl({
+		items: [[%if layout.chat_channels%]GameInterface.fixupContentEl({
 			xtype: 'box',
 			height: 40,
 			region: 'north',
 			contentEl: 'chat-channels'
-		}), GameInterface.fixupContentEl({
+		}),[%end%]GameInterface.fixupContentEl({
 			xtype: 'box',
 			region: 'center',
 			contentEl: 'chat-box'
@@ -183,25 +185,40 @@ GameInterface.setup_layout = function() {
 GameInterface.run_realplexor = function() {
 	var realplexor = new Dklab_Realplexor('http://rpl.www.[%domain%]/rpl', app + '_');
 	realplexor.setCursor('id_' + Ext.util.Cookies.get('mgsess-' + app), 0);
-	realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + app), function (result, id) {
+	realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + app), function (cmd, id) {
 		if (this.initialized) {
-			if (result.marker) {
+			if (cmd.marker) {
 				return;
 			}
 		} else {
-			if (result.marker == '[%stream_marker%]') {
+			if (cmd.marker == '[%stream_marker%]') {
 				this.initialized = true;
 			}
 			return;
 		}
-		alert('Received message: ' + result.marker);
+		if (cmd.packets) {
+			for (var pack_i = 0; pack_i < cmd.packets.length; pack_i++) {
+				var pkt = cmd.packets[pack_i];
+				var handler = StreamHandlers[pkt.method];
+				if (handler) {
+					handler(pkt);
+				}
+			}
+		}
 	});
 	realplexor.execute();
 };
 
+function stream_handler(method, handler, scope)
+{
+	StreamHandlers[method] = scope ? handler.createDelegate(scope) : handler;
+}
+
 Ext.onReady(function() {
-	Ext.QuickTips.init();
-	Ext.form.Field.prototype.msgTarget = 'under';
-	GameInterface.setup_layout();
-	GameInterface.run_realplexor();
+	wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
+		Ext.QuickTips.init();
+		Ext.form.Field.prototype.msgTarget = 'under';
+		GameInterface.setup_layout();
+		GameInterface.run_realplexor();
+	});
 });

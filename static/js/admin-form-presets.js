@@ -5,29 +5,33 @@ FormPresets = Ext.extend(AdminResponse, {
 		FormPresets.superclass.constructor.call(this, {
 		});
 		var form = new Form(data);
-		var presets = new Array();
-		if (data.presets.length) {
-			presets.push('<div class="x-form-item-label">' + gt.gettext('Presets:') + '</div>');
-			for (var i = 0; i < data.presets.length; i++) {
-				var preset = data.presets[i];
-				presets.push('<a href="javascript:void(0)" onclick="form_preset(' + i + '); return false">' + preset.title + '</a>');
+		if (data.presets) {
+			var presets = new Array();
+			if (data.presets.length) {
+				presets.push('<div class="x-form-item-label">' + gt.gettext('Presets:') + '</div>');
+				for (var i = 0; i < data.presets.length; i++) {
+					var preset = data.presets[i];
+					presets.push('<a href="javascript:void(0)" onclick="form_preset(' + i + '); return false">' + preset.title + '</a>');
+				}
 			}
+			form_presets = data.presets;
+			var panel = new Ext.Panel({
+				border: false,
+				layout: 'column',
+				items: [{
+					border: false,
+					columnWidth: 1,
+					items: form
+				}, {
+					width: 150,
+					border: false,
+					html: presets.join('<br />')
+				}]
+			});
+			this.add(panel);
+		} else {
+			this.add(form);
 		}
-		form_presets = data.presets;
-		var panel = new Ext.Panel({
-			border: false,
-			layout: 'column',
-			items: [{
-				border: false,
-				columnWidth: 1,
-				items: form
-			}, {
-				width: 150,
-				border: false,
-				html: presets.join('<br />')
-			}]
-		});
-		this.add(panel);
 		form.doLayout();
 	}
 });
@@ -43,7 +47,7 @@ function form_preset(i)
 	}
 }
 
-wait(['js/admin-form.js'], function() {
-	loaded('js/admin-form-presets.js');
+wait(['admin-form'], function() {
+	loaded('admin-form-presets');
 });
 

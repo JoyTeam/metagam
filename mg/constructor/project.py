@@ -13,7 +13,7 @@ class ConstructorProject(Module):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.ConstructorUtils", "mg.constructor.domains.Domains", "mg.socio.Socio", "mg.constructor.players.Auth"]
         if self.app().project.get("admin_confirmed"):
             lst.extend(["mg.constructor.design.DesignMod", "mg.constructor.game.Game", "mg.constructor.interface.Dynamic", "mg.constructor.interface.Interface", "mg.game.money.Money",
-                "mg.constructor.realplexor.Realplexor"])
+                "mg.constructor.realplexor.Realplexor", "mg.constructor.chat.Chat"])
         return lst
 
     def project_title(self):

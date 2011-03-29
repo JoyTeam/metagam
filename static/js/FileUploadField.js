@@ -174,4 +174,4 @@ Ext.reg('fileuploadfield', Ext.ux.form.FileUploadField);
 // backwards compat
 Ext.form.FileUploadField = Ext.ux.form.FileUploadField;
 
-loaded('js/FileUploadField.js');
+loaded('FileUploadField');

@@ -1,5 +1,6 @@
 body, h1, h2, h3 { font-family: Verdana; color: #535c5f }
 body, td { font-size: 13px }
+strong { font-weight: bold }
 a:link, a:visited { color: #dd6419 }
 a:hover, a:active { color: #ed9439 }
 table { border-spacing: 0px; padding: 0px; border-collapse: collapse }

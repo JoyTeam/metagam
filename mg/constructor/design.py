@@ -66,7 +66,12 @@ class DesignList(CassandraObjectList):
 
 class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     "HTML parser validating HTML file received from the user and modifying it adding [%design_root%] prefixes"
-    def __init__(self, app):
+    def __init__(self, app, fragment=False):
+        """
+        HTML Parser constructor.
+        app - application
+        fragment - parse document fragment. Don't require DOCTYPE declaration, content-type declaration and so on
+        """
         HTMLParser.HTMLParser.__init__(self)
         Module.__init__(self, app, "mg.constructor.design.DesignHTMLParser")
         self.output = ""
@@ -76,6 +81,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.scripts = set()
         self.forms = []
         self.in_form = None
+        self.fragment = fragment
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
@@ -120,6 +126,8 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.output += "<!--%s-->" % data
 
     def handle_decl(self, decl):
+        if self.fragment:
+            raise HTMLParser.HTMLParseError(self._("XML declarations are not allowed here"), (self.lineno, self.offset))
         self.output += "<!%s>" % decl
         if not re_valid_decl.match(decl):
             raise HTMLParser.HTMLParseError(self._("Valid XHTML doctype required"), (self.lineno, self.offset))
@@ -129,10 +137,11 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         HTMLParser.HTMLParser.close(self)
         if len(self.tagstack):
             raise HTMLParser.HTMLParseError(self._("Not closed tags at the end of file: %s") % (", ".join(self.tagstack)))
-        if not self.decl_ok:
-            raise HTMLParser.HTMLParseError(self._("DOCTYPE not specified"))
-        if not self.content_type_ok:
-            raise HTMLParser.HTMLParseError(self._('Content-type not specified. Add <meta http-equiv="Content-type" content="text/html; charset=utf-8" /> into the head tag'))
+        if not self.fragment:
+            if not self.decl_ok:
+                raise HTMLParser.HTMLParseError(self._("DOCTYPE not specified"))
+            if not self.content_type_ok:
+                raise HTMLParser.HTMLParseError(self._('Content-type not specified. Add <meta http-equiv="Content-type" content="text/html; charset=utf-8" /> into the head tag'))
 
     def process_tag(self, tag, attrs):
         if tag == "img" or tag == "link" or tag == "input" or tag == "script":
@@ -160,6 +169,8 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
                             if attrs[i][0] == att:
                                 attrs[i] = (att, "[%design_root%]/" + attrs[i][1])
         elif tag == "meta":
+            if self.fragment:
+                raise HTMLParser.HTMLParseError(self._("Meta tags are not allowed here"), (self.lineno, self.offset))
             attrs_dict = dict(attrs)
             key = attrs_dict.get("http-equiv")
             val = attrs_dict.get("content")
@@ -297,7 +308,11 @@ class DesignZip(Module):
                 if file["content-type"] == "text/html":
                     data = self.zip.read(file["zipname"])
                     try:
-                        parser = DesignHTMLParser(self.app())
+                        if file["filename"] == "blocks.html":
+                            fragment = True
+                        else:
+                            fragment = False
+                        parser = DesignHTMLParser(self.app(), fragment=fragment)
                         parser.feed(data)
                         parser.close()
                         vars = {}
@@ -310,6 +325,7 @@ class DesignZip(Module):
                             file["data"] = parser.output
                         parsed_html[file["filename"]] = parser
                     except HTMLParser.HTMLParseError as e:
+                        self.exception(e)
                         msg = e.msg
                         if e.lineno is not None:
                             msg += self._(", at line %d") % e.lineno
@@ -462,7 +478,11 @@ class DesignGenerator(Module):
                     data = f.read()
                 stackless.schedule()
                 try:
-                    parser = DesignHTMLParser(self.app())
+                    if file["filename"] == "blocks.html":
+                        fragment = True
+                    else:
+                        fragment = False
+                    parser = DesignHTMLParser(self.app(), fragment=fragment)
                     parser.feed(data)
                     parser.close()
                     vars = {}
@@ -538,6 +558,9 @@ class DesignGenerator(Module):
     def process(self):
         pass
 
+    def presets(self):
+        return None
+
     def store(self):
         self.puzzle.update_elements()
         for ent in self.upload_list:
@@ -560,7 +583,7 @@ class DesignIndexMagicLands(DesignGenerator):
     def group(self): return "indexpage"
     def id(self): return "magiclands"
     def name(self): return "Magic Lands"
-    def preview(self): return "/st/constructor/design/gen/magiclands.jpg"
+    def preview(self): return "/st/constructor/design/gen/test.jpg"
 
     def form_fields(self, fields):
         fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (normal size is {0}x{1}, will be automatically resized if not match)").format(902, 404)})
@@ -734,6 +757,76 @@ class DesignIndexBrokenStones(DesignGenerator):
                     rule.style.setProperty("background-color", self.css_color(self.merge_color(0.3, self.body_dark, self.body_light)))
                     rule.style.setProperty("color", self.css_color(self.text_color))
 
+    def presets(self):
+        presets = []
+        presets.append({"title": self._("Grey"), "fields": [
+            {"name": "body_light", "value": "#ffffff"},
+            {"name": "body_dark", "value": "#000000"},
+            {"name": "text_color", "value": "#000000"},
+            {"name": "about_text_color", "value": "#000000"},
+            {"name": "headers_color", "value": "#39322d"},
+            {"name": "href_color", "value": "#af0341"},
+            {"name": "links_color", "value": "#413a36"},
+            {"name": "rating_score_color", "value": "#960036"},
+            {"name": "game_title_color", "value": "#272727"},
+            {"name": "game_title_glow", "value": "#ffffff"},
+        ]})
+        presets.append({"title": self._("White"), "fields": [
+            {"name": "body_light", "value": "#ffffff"},
+            {"name": "body_dark", "value": "#808080"},
+            {"name": "text_color", "value": "#808080"},
+            {"name": "about_text_color", "value": "#ffffff"},
+            {"name": "headers_color", "value": "#383838"},
+            {"name": "href_color", "value": "#8f0681"},
+            {"name": "links_color", "value": "#816a66"},
+            {"name": "rating_score_color", "value": "#c60056"},
+            {"name": "game_title_color", "value": "#808080"},
+            {"name": "game_title_glow", "value": "#ffffff"},
+        ]})
+        presets.append({"title": self._("Dark"), "fields": [
+            {"name": "body_light", "value": "#404040"},
+            {"name": "body_dark", "value": "#000000"},
+            {"name": "text_color", "value": "#c0c0c0"},
+            {"name": "about_text_color", "value": "#c0c0c0"},
+            {"name": "headers_color", "value": "#c0c0c0"},
+            {"name": "href_color", "value": "#c63066"},
+            {"name": "links_color", "value": "#c0c0c0"},
+            {"name": "rating_score_color", "value": "#c63066"},
+            {"name": "game_title_color", "value": "#ffffff"},
+            {"name": "game_title_glow", "value": "#c0c0c0"},
+        ]})
+        presets.append({"title": self._("Brick"), "fields": [
+            {"name": "body_light", "value": "#e3520f"},
+            {"name": "body_dark", "value": "#000000"},
+            {"name": "text_color", "value": "#f4ba8f"},
+            {"name": "about_text_color", "value": "#f4ba8f"},
+            {"name": "headers_color", "value": "#f4ba8f"},
+            {"name": "href_color", "value": "#d6b60a"},
+            {"name": "links_color", "value": "#f4ba8f"},
+            {"name": "rating_score_color", "value": "#ffffff"},
+            {"name": "game_title_color", "value": "#ffffff"},
+            {"name": "game_title_glow", "value": "#f4ba8f"},
+        ]})
+        presets.append({"title": self._("Night"), "fields": [
+            {"name": "body_light", "value": "#101060"},
+            {"name": "body_dark", "value": "#000000"},
+            {"name": "text_color", "value": "#e0e0e0"},
+            {"name": "about_text_color", "value": "#a9a9a9"},
+            {"name": "headers_color", "value": "#6c73a4"},
+            {"name": "href_color", "value": "#9ea9ff"},
+            {"name": "links_color", "value": "#a9a9a9"},
+            {"name": "rating_score_color", "value": "#ffffff"},
+            {"name": "game_title_color", "value": "#ffffff"},
+            {"name": "game_title_glow", "value": "#6c73ff"},
+        ]})
+        return presets
+
+class DesignGameInterfaceTest(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "test"
+    def name(self): return self._("Test")
+    def preview(self): return "/st/constructor/design/gen/test.jpg"
+
 class DesignMod(Module):
     def register(self):
         Module.register(self)
@@ -846,7 +939,7 @@ class DesignAdmin(Module):
                 buttons = [
                     {"text": self._("Upload")}
                 ]
-                self.call("admin.form", fields=fields, buttons=buttons, modules=["js/FileUploadField.js"])
+                self.call("admin.form", fields=fields, buttons=buttons, modules=["FileUploadField"])
             elif req.args == "gen":
                 gens = []
                 self.call("admin-%s.generators" % group, gens)
@@ -879,73 +972,14 @@ class DesignAdmin(Module):
                         buttons = [
                             {"text": self._("Generate design template")}
                         ]
-                        presets = []
-                        presets.append({"title": self._("Grey"), "fields": [
-                            {"name": "body_light", "value": "#ffffff"},
-                            {"name": "body_dark", "value": "#000000"},
-                            {"name": "text_color", "value": "#000000"},
-                            {"name": "about_text_color", "value": "#000000"},
-                            {"name": "headers_color", "value": "#39322d"},
-                            {"name": "href_color", "value": "#af0341"},
-                            {"name": "links_color", "value": "#413a36"},
-                            {"name": "rating_score_color", "value": "#960036"},
-                            {"name": "game_title_color", "value": "#272727"},
-                            {"name": "game_title_glow", "value": "#ffffff"},
-                        ]})
-                        presets.append({"title": self._("White"), "fields": [
-                            {"name": "body_light", "value": "#ffffff"},
-                            {"name": "body_dark", "value": "#808080"},
-                            {"name": "text_color", "value": "#808080"},
-                            {"name": "about_text_color", "value": "#ffffff"},
-                            {"name": "headers_color", "value": "#383838"},
-                            {"name": "href_color", "value": "#8f0681"},
-                            {"name": "links_color", "value": "#816a66"},
-                            {"name": "rating_score_color", "value": "#c60056"},
-                            {"name": "game_title_color", "value": "#808080"},
-                            {"name": "game_title_glow", "value": "#ffffff"},
-                        ]})
-                        presets.append({"title": self._("Dark"), "fields": [
-                            {"name": "body_light", "value": "#404040"},
-                            {"name": "body_dark", "value": "#000000"},
-                            {"name": "text_color", "value": "#c0c0c0"},
-                            {"name": "about_text_color", "value": "#c0c0c0"},
-                            {"name": "headers_color", "value": "#c0c0c0"},
-                            {"name": "href_color", "value": "#c63066"},
-                            {"name": "links_color", "value": "#c0c0c0"},
-                            {"name": "rating_score_color", "value": "#c63066"},
-                            {"name": "game_title_color", "value": "#ffffff"},
-                            {"name": "game_title_glow", "value": "#c0c0c0"},
-                        ]})
-                        presets.append({"title": self._("Brick"), "fields": [
-                            {"name": "body_light", "value": "#e3520f"},
-                            {"name": "body_dark", "value": "#000000"},
-                            {"name": "text_color", "value": "#f4ba8f"},
-                            {"name": "about_text_color", "value": "#f4ba8f"},
-                            {"name": "headers_color", "value": "#f4ba8f"},
-                            {"name": "href_color", "value": "#d6b60a"},
-                            {"name": "links_color", "value": "#f4ba8f"},
-                            {"name": "rating_score_color", "value": "#ffffff"},
-                            {"name": "game_title_color", "value": "#ffffff"},
-                            {"name": "game_title_glow", "value": "#f4ba8f"},
-                        ]})
-                        presets.append({"title": self._("Night"), "fields": [
-                            {"name": "body_light", "value": "#101060"},
-                            {"name": "body_dark", "value": "#000000"},
-                            {"name": "text_color", "value": "#e0e0e0"},
-                            {"name": "about_text_color", "value": "#a9a9a9"},
-                            {"name": "headers_color", "value": "#6c73a4"},
-                            {"name": "href_color", "value": "#9ea9ff"},
-                            {"name": "links_color", "value": "#a9a9a9"},
-                            {"name": "rating_score_color", "value": "#ffffff"},
-                            {"name": "game_title_color", "value": "#ffffff"},
-                            {"name": "game_title_glow", "value": "#6c73ff"},
-                        ]})
-                        self.call("admin.response_js", "js/admin-form-presets.js", "FormPresets", {
+                        presets = obj.presets()
+                        self.call("admin.response_js", "admin-form-presets", "FormPresets", {
                             "url": "/%s/%s/%s" % (req.group, req.hook, req.args),
                             "fields": fields,
                             "buttons": buttons,
-                            "modules": ["js/FileUploadField.js"],
+                            "modules": ["FileUploadField"],
                             "presets": presets,
+                            "upload": True,
                         })
                 self.call("web.not_found")
             m = re.match(r'^([a-z]+)/([a-f0-9]{32})$', req.args)
@@ -1192,42 +1226,7 @@ class IndexPageAdmin(Module):
             vars["ratings"][-1]["lst"] = True
 
     def generators(self, gens):
-        #gens.append(DesignIndexMagicLands)
         gens.append(DesignIndexBrokenStones)
-
-class GameInterface(Module):
-    def register(self):
-        Module.register(self)
-
-class GameInterfaceAdmin(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-gameinterface.design", self.ext_design)
-        self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)
-        self.rhook("admin-gameinterface.validate", self.validate)
-        self.rhook("admin-gameinterface.preview-data", self.preview_data)
-
-    def headmenu_design(self, args):
-        if args == "":
-            return self._("Game interface design")
-        else:
-            return self.call("design-admin.headmenu", "indexpage", args)
-
-    def menu_design_index(self, menu):
-        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("gameinterface.design"), "order": 2})
-
-    def ext_design(self):
-        self.call("design-admin.editor", "gameinterface")
-
-    def validate(self, design, parsed_html, errors):
-        if not design.get("css"):
-            errors.append(self._("Game interface design package must contain a CSS file"))
-        if design.get("html"):
-            errors.append(self._("Game interface design package must not contain HTML files"))
-
-    def preview_data(self, vars):
-        pass
 
 class SocioInterface(Module):
     def register(self):
@@ -1291,7 +1290,7 @@ class SocioInterfaceAdmin(Module):
         if args == "":
             return self._("Socio interface design")
         else:
-            return self.call("design-admin.headmenu", "indexpage", args)
+            return self.call("design-admin.headmenu", "sociointerface", args)
 
     def menu_design_index(self, menu):
         menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("sociointerface.design"), "order": 3})
@@ -1523,3 +1522,59 @@ class SocioInterfaceAdmin(Module):
             vars["counters"] += ' <img src="/st/constructor/design/counter%d.gif" alt="" />' % random.randrange(0, 4)
         content = self.call("web.parse_template", "socio/%s" % filename, vars)
         self.call("design.response", design, "index.html", content, vars)
+
+class GameInterface(Module):
+    def register(self):
+        Module.register(self)
+
+class GameInterfaceAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("ext-admin-gameinterface.design", self.ext_design)
+        self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)
+        self.rhook("admin-gameinterface.validate", self.validate)
+        self.rhook("admin-gameinterface.preview-data", self.preview_data)
+        self.rhook("advice-admin-gameinterface.design", self.gameinterface_advice)
+        self.rhook("admin-gameinterface.generators", self.generators)
+        self.rhook("admin-gameinterface.preview", self.preview)
+
+    def headmenu_design(self, args):
+        if args == "":
+            return self._("Game interface design")
+        else:
+            return self.call("design-admin.headmenu", "gameinterface", args)
+
+    def menu_design_index(self, menu):
+        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("gameinterface.design"), "order": 2})
+
+    def ext_design(self):
+        self.call("design-admin.editor", "gameinterface")
+
+    def validate(self, design, parsed_html, errors):
+        for name in ["blocks.html", "interface.css", "game.css"]:
+            if not name in design.get("files"):
+                errors.append(self._("Game interface design package must contain %s file") % name)
+
+    def preview_data(self, vars):
+        pass
+
+    def gameinterface_advice(self, args, advice):
+        files = []
+        files.append({"filename": "blocks.html", "description": self._("Game interface blocks")})
+        files.append({"filename": "interface.css", "description": self._("Game interface CSS")})
+        files.append({"filename": "game.css", "description": self._("Common game CSS (styles for character icons, level [5] markers etc). This file is included in every game page - index page, game interface, socio interface")})
+        self.call("admin-gameinterface.design-files", files)
+        files = "".join(["<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (f.get("filename"), f.get("description")) for f in files])
+        advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files})
+
+    def generators(self, gens):
+        gens.append(DesignGameInterfaceTest)
+
+    def preview(self, design, filename):
+        project = self.app().project
+        vars = {}
+        self.call("gameinterface.render", vars, design)
+        self.call("gameinterface.gamejs", vars, design)
+        self.call("gameinterface.blocks", vars, design)
+        self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))

@@ -243,7 +243,7 @@ class AdminInterface(Module):
             condition = field.get("condition")
             if condition is not None:
                 field["condition"] = re_form_condition.sub(self.form_condition, condition)
-        self.call("admin.response_js", "js/admin-form.js", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
+        self.call("admin.response_js", "admin-form", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
 
     def update_menu(self):
         self.req().admin_update_menu = True
