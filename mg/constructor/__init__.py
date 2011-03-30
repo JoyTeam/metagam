@@ -55,6 +55,7 @@ class Constructor(Module):
         self.rhook("ext-test.delay", self.test_delay, priv="disabled")
         self.rhook("indexpage.render", self.indexpage_render)
         self.rhook("telegrams.params", self.telegrams_params)
+        self.rhook("email.sender", self.email_sender)
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -475,3 +476,10 @@ class Constructor(Module):
         params["text"] = self._("Message text")
         params["system_name"] = self._("MMO Constructor")
         params["telegrams_with"] = self._("Correspondence with {0}")
+
+    def email_sender(self, params):
+        params["email"] = "robot@mmoconstructor.ru"
+        params["name"] = self._("MMO Constructor")
+        params["prefix"] = "[mg] "
+        params["signature"] = self._("MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games")
+

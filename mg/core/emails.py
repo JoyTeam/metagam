@@ -55,7 +55,7 @@ class Email(Module):
         self.rhook("email.users", self.email_users)
         self.rhook("exception.report", self.exception_report)
 
-    def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain"):
+    def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True):
         if not immediately:
             return self.call("queue.add", "email.send", {
                 "to_email": to_email,
@@ -66,6 +66,7 @@ class Email(Module):
                 "from_name": from_name,
                 "immediately": True,
                 "subtype": subtype,
+                "signature": signature,
             }, retry_on_fail=True)
         params = {
             "email": "aml@rulezz.ru",
@@ -85,6 +86,11 @@ class Email(Module):
                 from_email = from_email.encode("utf-8")
             if type(to_email) == unicode:
                 to_email = to_email.encode("utf-8")
+            if signature and subtype == "plain" and params.get("signature"):
+                sig = params.get("signature")
+                if type(sig) == unicode:
+                    sig = sig.encode("utf-8")
+                    content += "\n\n--\n%s" % sig
             msg = MIMEText(content, _subtype=subtype, _charset="utf-8")
             msg["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
             msg["From"] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
@@ -101,7 +107,7 @@ class Email(Module):
         finally:
             s.quit()
 
-    def email_users(self, users, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain"):
+    def email_users(self, users, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True):
         if not immediately:
             return self.call("queue.add", "email.users", {
                 "users": users,
@@ -111,6 +117,7 @@ class Email(Module):
                 "from_name": from_name,
                 "immediately": True,
                 "subtype": subtype,
+                "signature": signature,
             }, retry_on_fail=True)
         usr = self.objlist(UserList, users)
         usr.load(silent=True)
