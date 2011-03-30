@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-29 00:11+0400\n"
+"POT-Creation-Date: 2011-03-30 13:34+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,77 +17,114 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mg/core/web.py:747 mg/core/director.py:402 mg/socio/__init__.py:1742
+#: mg/core/web.py:689 mg/core/web.py:696
+msgid "Forbidden"
+msgstr ""
+
+#: mg/core/web.py:689
+msgid "Security failure: POST method required"
+msgstr ""
+
+#: mg/core/web.py:696
+msgid "Security failure: Valid Referer required"
+msgstr ""
+
+#: mg/core/web.py:759 mg/core/director.py:388 mg/socio/__init__.py:1738
 #: mg/admin/__init__.py:241
 msgid "Save"
 msgstr ""
 
-#: mg/core/web.py:757
+#: mg/core/web.py:769
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:758
+#: mg/core/web.py:770
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:759
+#: mg/core/web.py:771
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:760
+#: mg/core/web.py:772
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:761
+#: mg/core/web.py:773
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:762
+#: mg/core/web.py:774
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:763
+#: mg/core/web.py:775
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:764
+#: mg/core/web.py:776
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:765
+#: mg/core/web.py:777
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:766
+#: mg/core/web.py:778
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:767
+#: mg/core/web.py:779
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:768
+#: mg/core/web.py:780
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:769 mg/socio/__init__.py:710
+#: mg/core/web.py:781 mg/socio/__init__.py:706
 msgid "Image"
 msgstr ""
 
-#: mg/core/web.py:770
+#: mg/core/web.py:782
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:771
+#: mg/core/web.py:783
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:772
+#: mg/core/web.py:784
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:773
+#: mg/core/web.py:785
 msgid "Smiles"
+msgstr ""
+
+#: mg/core/emails.py:24
+msgid "Email configuration"
+msgstr ""
+
+#: mg/core/emails.py:29 mg/core/auth.py:337
+msgid "E-mail"
+msgstr ""
+
+#: mg/core/emails.py:41 mg/constructor/interface.py:241
+#: mg/constructor/players.py:203 mg/constructor/realplexor.py:38
+msgid "Settings stored"
+msgstr ""
+
+#: mg/core/emails.py:45
+msgid "Send software exceptions to this e-mail"
+msgstr ""
+
+#: mg/core/emails.py:50
+msgid "E-mail settings"
+msgstr ""
+
+#: mg/core/emails.py:170
+msgid "Software engineer"
 msgstr ""
 
 #: mg/core/l10n.py:13
@@ -166,118 +203,124 @@ msgstr ""
 msgid "Counters HTML code"
 msgstr ""
 
-#: mg/core/cluster.py:112 mg/core/cluster.py:141
+#: mg/core/cluster.py:65
+msgid "Cluster"
+msgstr ""
+
+#: mg/core/cluster.py:114 mg/core/cluster.py:143
 #, python-format
 msgid "Error storing object: %s"
 msgstr ""
 
-#: mg/core/director.py:314
+#: mg/core/director.py:300
 msgid "Welcome to the cluster control center"
 msgstr ""
 
-#: mg/core/director.py:315
+#: mg/core/director.py:301
 msgid "Change cluster settings"
 msgstr ""
 
-#: mg/core/director.py:321
+#: mg/core/director.py:307
 msgid "List of servers online"
 msgstr ""
 
-#: mg/core/director.py:386
+#: mg/core/director.py:372
 msgid "Cluster settings"
 msgstr ""
 
-#: mg/core/director.py:388
+#: mg/core/director.py:374
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/core/director.py:390
+#: mg/core/director.py:376
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/core/director.py:392
+#: mg/core/director.py:378
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr ""
 
-#: mg/core/director.py:394
+#: mg/core/director.py:380
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:396
+#: mg/core/director.py:382
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr ""
 
-#: mg/core/director.py:398
+#: mg/core/director.py:384
 msgid "<strong>SMTP server</strong> (host)"
 msgstr ""
 
-#: mg/core/director.py:400
+#: mg/core/director.py:386
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr ""
 
-#: mg/core/auth.py:260 mg/constructor/players.py:431
+#: mg/core/auth.py:261 mg/constructor/players.py:431
 msgid ""
 "Invalid characters in the name. Only latin letters, numbers, symbols '_' and "
 "'-' are allowed"
 msgstr ""
 
-#: mg/core/auth.py:265
+#: mg/core/auth.py:266
 msgid "Enter your user name"
 msgstr ""
 
-#: mg/core/auth.py:269 mg/constructor/players.py:447
+#: mg/core/auth.py:270 mg/constructor/players.py:447
 msgid "This name is taken already"
 msgstr ""
 
-#: mg/core/auth.py:271 mg/core/auth.py:570 mg/constructor/__init__.py:458
+#: mg/core/auth.py:272 mg/core/auth.py:627 mg/constructor/__init__.py:458
 #: mg/constructor/players.py:476
 msgid "Enter your password"
 msgstr ""
 
-#: mg/core/auth.py:273 mg/core/auth.py:654 mg/constructor/players.py:478
+#: mg/core/auth.py:274 mg/core/auth.py:711 mg/constructor/players.py:478
 msgid "Minimal password length - 6 characters"
 msgstr ""
 
-#: mg/core/auth.py:275
+#: mg/core/auth.py:276
 msgid "Retype your password"
 msgstr ""
 
-#: mg/core/auth.py:277 mg/core/auth.py:658
+#: mg/core/auth.py:278 mg/core/auth.py:715
 msgid "Password don't match. Try again, please"
 msgstr ""
 
-#: mg/core/auth.py:281
+#: mg/core/auth.py:282
 msgid "Select your sex"
 msgstr ""
 
-#: mg/core/auth.py:283 mg/constructor/players.py:466
+#: mg/core/auth.py:284 mg/constructor/players.py:466
 msgid "Enter your e-mail address"
 msgstr ""
 
-#: mg/core/auth.py:285 mg/core/auth.py:750 mg/constructor/players.py:468
+#: mg/core/auth.py:286 mg/core/auth.py:429 mg/core/auth.py:807
+#: mg/constructor/players.py:468
 msgid "Enter correct e-mail"
 msgstr ""
 
-#: mg/core/auth.py:290 mg/core/auth.py:714 mg/core/auth.py:755
-#: mg/constructor/players.py:473
+#: mg/core/auth.py:291 mg/core/auth.py:434 mg/core/auth.py:771
+#: mg/core/auth.py:812 mg/constructor/players.py:473
 msgid "There is another user with this email"
 msgstr ""
 
-#: mg/core/auth.py:292 mg/constructor/players.py:419
+#: mg/core/auth.py:293 mg/core/auth.py:418 mg/constructor/players.py:419
 #: mg/constructor/players.py:481
 msgid "Enter numbers from the picture"
 msgstr ""
 
-#: mg/core/auth.py:297 mg/core/auth.py:299 mg/constructor/players.py:486
+#: mg/core/auth.py:298 mg/core/auth.py:300 mg/core/auth.py:423
+#: mg/core/auth.py:425 mg/constructor/players.py:486
 #: mg/constructor/players.py:488
 msgid "Incorrect number"
 msgstr ""
 
-#: mg/core/auth.py:326 mg/constructor/players.py:546
+#: mg/core/auth.py:327 mg/core/auth.py:441 mg/constructor/players.py:546
 msgid "Account activation"
 msgstr ""
 
-#: mg/core/auth.py:327 mg/constructor/players.py:547
+#: mg/core/auth.py:328 mg/core/auth.py:442 mg/constructor/players.py:547
 msgid ""
 "Someone possibly you requested registration on the {host}. If you really "
 "want to do this enter the following activation code on the site:\n"
@@ -289,95 +332,114 @@ msgid ""
 "http://{host}/auth/activate/{user}?code={code}"
 msgstr ""
 
-#: mg/core/auth.py:334 mg/core/auth.py:612 mg/core/auth.py:834
-#: mg/core/auth.py:863 mg/core/auth.py:964
+#: mg/core/auth.py:335 mg/core/auth.py:669 mg/core/auth.py:891
+#: mg/core/auth.py:920 mg/core/auth.py:1021
 msgid "User name"
 msgstr ""
 
-#: mg/core/auth.py:335 mg/constructor/players.py:410
+#: mg/core/auth.py:336 mg/constructor/players.py:410
 msgid "Sex"
 msgstr ""
 
-#: mg/core/auth.py:335 mg/constructor/players.py:410
+#: mg/core/auth.py:336 mg/constructor/players.py:410
 msgid "Male"
 msgstr ""
 
-#: mg/core/auth.py:335 mg/constructor/players.py:410
+#: mg/core/auth.py:336 mg/constructor/players.py:410
 msgid "Female"
 msgstr ""
 
-#: mg/core/auth.py:336
-msgid "E-mail"
-msgstr ""
-
-#: mg/core/auth.py:337 mg/core/auth.py:613
+#: mg/core/auth.py:338 mg/core/auth.py:670
 msgid "Password"
 msgstr ""
 
-#: mg/core/auth.py:338
+#: mg/core/auth.py:339
 msgid "Confirm password"
 msgstr ""
 
-#: mg/core/auth.py:339
+#: mg/core/auth.py:340 mg/core/auth.py:448
 msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
-#: mg/core/auth.py:341 mg/constructor/__init__.py:166
+#: mg/core/auth.py:342 mg/constructor/__init__.py:166
 msgid "Register"
 msgstr ""
 
-#: mg/core/auth.py:343
+#: mg/core/auth.py:344
 msgid "User registration"
 msgstr ""
 
-#: mg/core/auth.py:346 mg/core/auth.py:621 mg/constructor/domains.py:609
+#: mg/core/auth.py:347 mg/core/auth.py:678 mg/constructor/domains.py:609
 #: mg/constructor/__init__.py:168
 msgid "Cancel"
 msgstr ""
 
-#: mg/core/auth.py:368
+#: mg/core/auth.py:369
 msgid "Enter activation code from your e-mail box"
 msgstr ""
 
-#: mg/core/auth.py:370
+#: mg/core/auth.py:371
 msgid "Invalid activation code"
 msgstr ""
 
-#: mg/core/auth.py:390
+#: mg/core/auth.py:391
 msgid "Activation code"
 msgstr ""
 
-#: mg/core/auth.py:391
+#: mg/core/auth.py:392
 msgid "Activate"
 msgstr ""
 
-#: mg/core/auth.py:392
+#: mg/core/auth.py:393
 msgid ""
 "A message was sent to your mailbox. Enter the activation code from this "
 "message."
 msgstr ""
 
 #: mg/core/auth.py:394
+#, python-format
+msgid ""
+"If you have not received activation letter you can <a href=\"/auth/"
+"reactivate/%s\">send another one or change your e-mail</a>"
+msgstr ""
+
+#: mg/core/auth.py:396
 msgid "User activation"
 msgstr ""
 
-#: mg/core/auth.py:404 mg/core/auth.py:421
+#: mg/core/auth.py:427 mg/core/auth.py:805
+msgid "Enter new e-mail address"
+msgstr ""
+
+#: mg/core/auth.py:447
+msgid "New e-mail"
+msgstr ""
+
+#: mg/core/auth.py:449
+msgid "Reactivate"
+msgstr ""
+
+#: mg/core/auth.py:451
+msgid "Retrying activation"
+msgstr ""
+
+#: mg/core/auth.py:461 mg/core/auth.py:478
 msgid "Password reminder"
 msgstr ""
 
-#: mg/core/auth.py:408
+#: mg/core/auth.py:465
 msgid "Enter your e-mail"
 msgstr ""
 
-#: mg/core/auth.py:412
+#: mg/core/auth.py:469
 msgid "No users with this e-mail"
 msgstr ""
 
-#: mg/core/auth.py:418
+#: mg/core/auth.py:475
 msgid "User '{user}' has password '{password}'\n"
 msgstr ""
 
-#: mg/core/auth.py:422
+#: mg/core/auth.py:479
 msgid ""
 "Someone possibly you requested password recovery on the {host} site. "
 "Accounts registered with your e-mail are:\n"
@@ -386,120 +448,116 @@ msgid ""
 "If you still can't remember your password feel free to contact our support."
 msgstr ""
 
-#: mg/core/auth.py:426
+#: mg/core/auth.py:483
 msgid "We have sent you an e-mail with your password reminder"
 msgstr ""
 
-#: mg/core/auth.py:429 mg/socio/__init__.py:1866
+#: mg/core/auth.py:486 mg/socio/__init__.py:1862
 msgid "Return"
 msgstr ""
 
-#: mg/core/auth.py:433
+#: mg/core/auth.py:490
 msgid "Your e-mail"
 msgstr ""
 
-#: mg/core/auth.py:434
+#: mg/core/auth.py:491
 msgid "Remind"
 msgstr ""
 
-#: mg/core/auth.py:567
+#: mg/core/auth.py:624
 msgid "Enter your name or email"
 msgstr ""
 
-#: mg/core/auth.py:568 mg/core/auth.py:858 mg/core/auth.py:959
+#: mg/core/auth.py:625 mg/core/auth.py:915 mg/core/auth.py:1016
 msgid "User not found"
 msgstr ""
 
-#: mg/core/auth.py:569
+#: mg/core/auth.py:626
 msgid "User is not active. Check your e-mail and enter activation code"
 msgstr ""
 
-#: mg/core/auth.py:571
+#: mg/core/auth.py:628
 msgid "Incorrect password"
 msgstr ""
 
-#: mg/core/auth.py:614 mg/constructor/__init__.py:165
+#: mg/core/auth.py:671 mg/constructor/__init__.py:165
 msgid "Log in"
 msgstr ""
 
-#: mg/core/auth.py:615
+#: mg/core/auth.py:672
 #, python-format
 msgid "If this is your first visit, %s."
 msgstr ""
 
-#: mg/core/auth.py:615
+#: mg/core/auth.py:672
 msgid "register please"
 msgstr ""
 
-#: mg/core/auth.py:616
+#: mg/core/auth.py:673
 msgid "Forgotten your password?"
 msgstr ""
 
-#: mg/core/auth.py:618
+#: mg/core/auth.py:675
 msgid "User login"
 msgstr ""
 
-#: mg/core/auth.py:645 mg/core/auth.py:741
+#: mg/core/auth.py:702 mg/core/auth.py:798
 msgid "Enter your old password"
 msgstr ""
 
-#: mg/core/auth.py:650 mg/core/auth.py:746
+#: mg/core/auth.py:707 mg/core/auth.py:803
 msgid "Incorrect old password"
 msgstr ""
 
-#: mg/core/auth.py:652
+#: mg/core/auth.py:709
 msgid "Enter your new password"
 msgstr ""
 
-#: mg/core/auth.py:656
+#: mg/core/auth.py:713
 msgid "Retype your new password"
 msgstr ""
 
-#: mg/core/auth.py:686
+#: mg/core/auth.py:743
 msgid "Old password"
 msgstr ""
 
-#: mg/core/auth.py:687
+#: mg/core/auth.py:744
 msgid "New password"
 msgstr ""
 
-#: mg/core/auth.py:688
+#: mg/core/auth.py:745
 msgid "Confirm new password"
 msgstr ""
 
-#: mg/core/auth.py:689 mg/core/auth.py:771
+#: mg/core/auth.py:746 mg/core/auth.py:828
 msgid "Change"
 msgstr ""
 
-#: mg/core/auth.py:691
+#: mg/core/auth.py:748
 msgid "Password change"
 msgstr ""
 
-#: mg/core/auth.py:705
+#: mg/core/auth.py:762
 msgid "Enter your code"
 msgstr ""
 
-#: mg/core/auth.py:709
+#: mg/core/auth.py:766
 msgid "Invalid code"
 msgstr ""
 
-#: mg/core/auth.py:726
+#: mg/core/auth.py:783
 msgid "Confirmation code from your post box"
 msgstr ""
 
-#: mg/core/auth.py:727
+#: mg/core/auth.py:784
 msgid "btn///Confirm"
 msgstr ""
 
-#: mg/core/auth.py:729 mg/core/auth.py:762
+#: mg/core/auth.py:786 mg/core/auth.py:819
 msgid "E-mail confirmation"
 msgstr ""
 
-#: mg/core/auth.py:748
-msgid "Enter new e-mail address"
-msgstr ""
-
-#: mg/core/auth.py:763
+#: mg/core/auth.py:820
 msgid ""
 "Someone possibly you requested e-mail change on the {host}. If you really "
 "want to do this enter the following confirmation code on the site:\n"
@@ -511,153 +569,153 @@ msgid ""
 "http://{host}/auth/email/confirm?code={code}"
 msgstr ""
 
-#: mg/core/auth.py:769
+#: mg/core/auth.py:826
 msgid "New e-mail address"
 msgstr ""
 
-#: mg/core/auth.py:770
+#: mg/core/auth.py:827
 msgid "Your current password"
 msgstr ""
 
-#: mg/core/auth.py:778
+#: mg/core/auth.py:835
 msgid "E-mail change"
 msgstr ""
 
-#: mg/core/auth.py:783
+#: mg/core/auth.py:840
 msgid "User permissions editor"
 msgstr ""
 
-#: mg/core/auth.py:784
+#: mg/core/auth.py:841
 msgid "User profiles"
 msgstr ""
 
-#: mg/core/auth.py:801
+#: mg/core/auth.py:858
 msgid "Users"
 msgstr ""
 
-#: mg/core/auth.py:806 mg/core/auth.py:835
+#: mg/core/auth.py:863 mg/core/auth.py:892
 msgid "Permissions"
 msgstr ""
 
-#: mg/core/auth.py:808
+#: mg/core/auth.py:865
 msgid "My dashboard"
 msgstr ""
 
-#: mg/core/auth.py:809
+#: mg/core/auth.py:866
 msgid "Find user"
 msgstr ""
 
-#: mg/core/auth.py:810
+#: mg/core/auth.py:867
 msgid "Last registered users"
 msgstr ""
 
-#: mg/core/auth.py:833 mg/core/auth.py:869
+#: mg/core/auth.py:890 mg/core/auth.py:926
 msgid "Edit permissions of a user"
 msgstr ""
 
-#: mg/core/auth.py:836 mg/constructor/design.py:1329
+#: mg/core/auth.py:893 mg/constructor/design.py:1328
 #: mg/constructor/players.py:384 mg/socio/__init__.py:239
-#: mg/socio/__init__.py:401 mg/socio/__init__.py:1363
-#: mg/socio/__init__.py:1405
+#: mg/socio/__init__.py:401 mg/socio/__init__.py:1359
+#: mg/socio/__init__.py:1401
 msgid "edit"
 msgstr ""
 
-#: mg/core/auth.py:837 mg/constructor/players.py:382 mg/socio/__init__.py:238
-#: mg/socio/__init__.py:1681
+#: mg/core/auth.py:894 mg/constructor/players.py:382 mg/socio/__init__.py:238
+#: mg/socio/__init__.py:1677
 msgid "Editing"
 msgstr ""
 
-#: mg/core/auth.py:843
+#: mg/core/auth.py:900
 msgid "User permissions"
 msgstr ""
 
-#: mg/core/auth.py:854 mg/core/auth.py:955
+#: mg/core/auth.py:911 mg/core/auth.py:1012
 msgid "Enter user name"
 msgstr ""
 
-#: mg/core/auth.py:865 mg/core/auth.py:966 mg/constructor/dashboard.py:71
-#: mg/constructor/design.py:1501
+#: mg/core/auth.py:922 mg/core/auth.py:1023 mg/constructor/dashboard.py:71
+#: mg/constructor/design.py:1500
 msgid "Search"
 msgstr ""
 
-#: mg/core/auth.py:915
+#: mg/core/auth.py:972
 msgid "Everybody"
 msgstr ""
 
-#: mg/core/auth.py:916
+#: mg/core/auth.py:973
 msgid "Logged in"
 msgstr ""
 
-#: mg/core/auth.py:917
+#: mg/core/auth.py:974
 msgid "Not logged in"
 msgstr ""
 
-#: mg/core/auth.py:919
+#: mg/core/auth.py:976
 #, python-format
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:946 mg/socio/__init__.py:732
+#: mg/core/auth.py:1003 mg/socio/__init__.py:728
 #, python-format
 msgid "User %s"
 msgstr ""
 
-#: mg/core/auth.py:980 mg/game/money.py:538 mg/game/money.py:670
+#: mg/core/auth.py:1037 mg/game/money.py:538 mg/game/money.py:670
 #: mg/constructor/dashboard.py:118
 msgid "Update"
 msgstr ""
 
-#: mg/core/auth.py:998 mg/constructor/design.py:1155
+#: mg/core/auth.py:1055 mg/constructor/design.py:1189
 #: mg/constructor/domains.py:650
 msgid "Registration"
 msgstr ""
 
-#: mg/core/auth.py:998
+#: mg/core/auth.py:1055
 msgid "ID"
 msgstr ""
 
-#: mg/core/auth.py:998 mg/constructor/players.py:380
+#: mg/core/auth.py:1055 mg/constructor/players.py:380
 #: mg/constructor/players.py:409
 msgid "Name"
 msgstr ""
 
-#: mg/core/auth.py:998
+#: mg/core/auth.py:1055
 msgid "Active"
 msgstr ""
 
-#: mg/core/auth.py:999 mg/constructor/dashboard.py:116
+#: mg/core/auth.py:1056 mg/constructor/dashboard.py:116
 msgid "no"
 msgstr ""
 
-#: mg/core/auth.py:999
+#: mg/core/auth.py:1056
 msgid "yes"
 msgstr ""
 
-#: mg/core/auth.py:1056 mg/core/auth.py:1065
+#: mg/core/auth.py:1113 mg/core/auth.py:1122
 msgid "Select valid role"
 msgstr ""
 
-#: mg/core/auth.py:1058 mg/core/auth.py:1067
+#: mg/core/auth.py:1115 mg/core/auth.py:1124
 msgid "Select valid permission"
 msgstr ""
 
-#: mg/core/auth.py:1082
+#: mg/core/auth.py:1139
 msgid "Delete"
 msgstr ""
 
-#: mg/core/auth.py:1083
+#: mg/core/auth.py:1140
 msgid "Add"
 msgstr ""
 
-#: mg/core/auth.py:1087 mg/constructor/players.py:381 mg/socio/__init__.py:237
+#: mg/core/auth.py:1144 mg/constructor/players.py:381 mg/socio/__init__.py:237
 msgid "Order"
 msgstr ""
 
-#: mg/core/auth.py:1088
+#: mg/core/auth.py:1145
 msgid "Role"
 msgstr ""
 
-#: mg/core/auth.py:1089
+#: mg/core/auth.py:1146
 msgid "Permission"
 msgstr ""
 
@@ -812,7 +870,7 @@ msgid "Our time"
 msgstr ""
 
 #: mg/game/money.py:666 mg/constructor/invitations.py:92
-#: mg/socio/telegrams.py:108 mg/socio/__init__.py:735
+#: mg/socio/telegrams.py:108 mg/socio/__init__.py:731
 msgid "User"
 msgstr ""
 
@@ -836,7 +894,7 @@ msgstr ""
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:822
+#: mg/game/money.py:820
 msgid "Constructor: 2pay integration"
 msgstr ""
 
@@ -943,42 +1001,50 @@ msgstr ""
 msgid "Registration on invitations"
 msgstr ""
 
-#: mg/constructor/design.py:90
+#: mg/constructor/design.py:96
 msgid "Forms inside forms are not allowed"
 msgstr ""
 
-#: mg/constructor/design.py:98
+#: mg/constructor/design.py:104
 msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
 msgstr ""
 
-#: mg/constructor/design.py:125
+#: mg/constructor/design.py:130
+msgid "XML declarations are not allowed here"
+msgstr ""
+
+#: mg/constructor/design.py:133
 msgid "Valid XHTML doctype required"
 msgstr ""
 
-#: mg/constructor/design.py:131
+#: mg/constructor/design.py:139
 #, python-format
 msgid "Not closed tags at the end of file: %s"
 msgstr ""
 
-#: mg/constructor/design.py:133
+#: mg/constructor/design.py:142
 msgid "DOCTYPE not specified"
 msgstr ""
 
-#: mg/constructor/design.py:135
+#: mg/constructor/design.py:144
 msgid ""
 "Content-type not specified. Add <meta http-equiv=\"Content-type\" content="
 "\"text/html; charset=utf-8\" /> into the head tag"
 msgstr ""
 
-#: mg/constructor/design.py:169
+#: mg/constructor/design.py:173
+msgid "Meta tags are not allowed here"
+msgstr ""
+
+#: mg/constructor/design.py:180
 msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
 msgstr ""
 
-#: mg/constructor/design.py:174
+#: mg/constructor/design.py:185
 msgid "Form input must have \"name\" attribute"
 msgstr ""
 
-#: mg/constructor/design.py:276
+#: mg/constructor/design.py:287
 #, python-format
 msgid ""
 "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), "
@@ -986,358 +1052,362 @@ msgid ""
 "(a-z, 0-9 symbols)"
 msgstr ""
 
-#: mg/constructor/design.py:282
+#: mg/constructor/design.py:293
 msgid ""
 "Filename '{0}' has unsupported extension: {1}. Permitted extensions are: {2}"
 msgstr ""
 
-#: mg/constructor/design.py:285
+#: mg/constructor/design.py:296
 #, python-format
 msgid "Several files with the same name '%s' encountered"
 msgstr ""
 
-#: mg/constructor/design.py:308 mg/constructor/design.py:473
+#: mg/constructor/design.py:323 mg/constructor/design.py:493
 msgid "Error parsing template {0}: {1}"
 msgstr ""
 
-#: mg/constructor/design.py:315 mg/constructor/design.py:479
+#: mg/constructor/design.py:331 mg/constructor/design.py:499
 #, python-format
 msgid ", at line %d"
 msgstr ""
 
-#: mg/constructor/design.py:317 mg/constructor/design.py:481
+#: mg/constructor/design.py:333 mg/constructor/design.py:501
 #, python-format
 msgid ", column %d"
 msgstr ""
 
-#: mg/constructor/design.py:318 mg/constructor/design.py:482
+#: mg/constructor/design.py:334 mg/constructor/design.py:502
 msgid "Error parsing {0}: {1}"
 msgstr ""
 
-#: mg/constructor/design.py:384 mg/socio/__init__.py:708
+#: mg/constructor/design.py:400 mg/socio/__init__.py:704
 msgid "Upload an image"
 msgstr ""
 
-#: mg/constructor/design.py:391 mg/constructor/design.py:394
+#: mg/constructor/design.py:407 mg/constructor/design.py:410
 #: mg/constructor/logo.py:193 mg/constructor/setup.py:120
-#: mg/socio/__init__.py:654 mg/socio/__init__.py:1794
+#: mg/socio/__init__.py:650 mg/socio/__init__.py:1790
 msgid "Image format not recognized"
 msgstr ""
 
-#: mg/constructor/design.py:398 mg/constructor/logo.py:196
+#: mg/constructor/design.py:414 mg/constructor/logo.py:196
 msgid "Animated images are not supported"
 msgstr ""
 
-#: mg/constructor/design.py:409
+#: mg/constructor/design.py:425
 msgid "Invalid color format"
 msgstr ""
 
-#: mg/constructor/design.py:566 mg/constructor/design.py:596
+#: mg/constructor/design.py:589 mg/constructor/design.py:619
 msgid ""
 "Main image (normal size is {0}x{1}, will be automatically resized if not "
 "match)"
 msgstr ""
 
-#: mg/constructor/design.py:591
+#: mg/constructor/design.py:614
 msgid "Broken Stones"
 msgstr ""
 
-#: mg/constructor/design.py:597
+#: mg/constructor/design.py:620
 msgid "Background dark color"
 msgstr ""
 
-#: mg/constructor/design.py:598
+#: mg/constructor/design.py:621
 msgid "Background light color"
 msgstr ""
 
-#: mg/constructor/design.py:599
+#: mg/constructor/design.py:622
 msgid "Game title (multiline permitted)"
 msgstr ""
 
-#: mg/constructor/design.py:600
+#: mg/constructor/design.py:623
 msgid "Game title color"
 msgstr ""
 
-#: mg/constructor/design.py:601
+#: mg/constructor/design.py:624
 msgid "Game title glow color"
 msgstr ""
 
-#: mg/constructor/design.py:602
+#: mg/constructor/design.py:625
 msgid "Text color in the 'About' and 'News' blocks"
 msgstr ""
 
-#: mg/constructor/design.py:603
+#: mg/constructor/design.py:626
 msgid "Text color of the footer, rating participants"
 msgstr ""
 
-#: mg/constructor/design.py:604
+#: mg/constructor/design.py:627
 msgid "Hyperlinks color"
 msgstr ""
 
-#: mg/constructor/design.py:605
+#: mg/constructor/design.py:628
 msgid "Color of block headers"
 msgstr ""
 
-#: mg/constructor/design.py:606
+#: mg/constructor/design.py:629
 msgid "Color of rating score values"
 msgstr ""
 
-#: mg/constructor/design.py:607
+#: mg/constructor/design.py:630
 msgid "Text color in the 'Links' block"
 msgstr ""
 
-#: mg/constructor/design.py:766
+#: mg/constructor/design.py:762
+msgid "Grey"
+msgstr ""
+
+#: mg/constructor/design.py:774
+msgid "White"
+msgstr ""
+
+#: mg/constructor/design.py:786
+msgid "Dark"
+msgstr ""
+
+#: mg/constructor/design.py:798
+msgid "Brick"
+msgstr ""
+
+#: mg/constructor/design.py:810
+msgid "Night"
+msgstr ""
+
+#: mg/constructor/design.py:827
+msgid "Test"
+msgstr ""
+
+#: mg/constructor/design.py:859
 msgid "Design"
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid "Preview feature"
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid ""
 "Use \"preview\" feature to check your design before installing it to the "
 "project. Then press \"Reload\" several times to check design on arbitrary "
 "data."
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid "Multiple browsers"
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid "Check your design in the most popular browsers."
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid "google///browser statistics"
 msgstr ""
 
-#: mg/constructor/design.py:770
+#: mg/constructor/design.py:863
 msgid "Find the most popular browsers"
 msgstr ""
 
-#: mg/constructor/design.py:783
+#: mg/constructor/design.py:876
 msgid "Untitled"
 msgstr ""
 
-#: mg/constructor/design.py:792 mg/constructor/design.py:809
+#: mg/constructor/design.py:885 mg/constructor/design.py:902
 msgid "preview"
 msgstr ""
 
-#: mg/constructor/design.py:803
+#: mg/constructor/design.py:896
 msgid "Upload design package from your computer"
 msgstr ""
 
-#: mg/constructor/design.py:804
+#: mg/constructor/design.py:897
 msgid "Uploaded"
 msgstr ""
 
-#: mg/constructor/design.py:805 mg/socio/__init__.py:236
+#: mg/constructor/design.py:898 mg/socio/__init__.py:236
 msgid "Title"
 msgstr ""
 
-#: mg/constructor/design.py:806
+#: mg/constructor/design.py:899
 msgid "Preview"
 msgstr ""
 
-#: mg/constructor/design.py:807 mg/constructor/players.py:383
+#: mg/constructor/design.py:900 mg/constructor/players.py:383
 #: mg/socio/__init__.py:242
 msgid "Deletion"
 msgstr ""
 
-#: mg/constructor/design.py:808
+#: mg/constructor/design.py:901
 msgid "Installation"
 msgstr ""
 
-#: mg/constructor/design.py:810 mg/constructor/design.py:1329
+#: mg/constructor/design.py:903 mg/constructor/design.py:1328
 #: mg/constructor/players.py:385 mg/socio/__init__.py:243
-#: mg/socio/__init__.py:1361 mg/socio/__init__.py:1403
+#: mg/socio/__init__.py:1357 mg/socio/__init__.py:1399
 msgid "delete"
 msgstr ""
 
-#: mg/constructor/design.py:811
+#: mg/constructor/design.py:904
 msgid "install"
 msgstr ""
 
-#: mg/constructor/design.py:812
+#: mg/constructor/design.py:905
 msgid "Do you really want to delete this design?"
 msgstr ""
 
-#: mg/constructor/design.py:813
+#: mg/constructor/design.py:906
 msgid "Do you really want to install this design?"
 msgstr ""
 
-#: mg/constructor/design.py:815
+#: mg/constructor/design.py:908
 msgid "zip"
 msgstr ""
 
-#: mg/constructor/design.py:816
+#: mg/constructor/design.py:909
 msgid "rename///ren"
 msgstr ""
 
-#: mg/constructor/design.py:817
+#: mg/constructor/design.py:910
 msgid "Select from the list of templates"
 msgstr ""
 
-#: mg/constructor/design.py:818
+#: mg/constructor/design.py:911
 msgid "installed"
 msgstr ""
 
-#: mg/constructor/design.py:826
+#: mg/constructor/design.py:919
 msgid "Provide a ZIP archive"
 msgstr ""
 
-#: mg/constructor/design.py:834
+#: mg/constructor/design.py:927
 msgid "This is not a ZIP file"
 msgstr ""
 
-#: mg/constructor/design.py:836
+#: mg/constructor/design.py:929
 msgid "ZIP64 is not supported"
 msgstr ""
 
-#: mg/constructor/design.py:843
+#: mg/constructor/design.py:936
 msgid "Zipped design package"
 msgstr ""
 
-#: mg/constructor/design.py:844 mg/constructor/design.py:978
+#: mg/constructor/design.py:937 mg/constructor/design.py:1012
 msgid "Design title"
 msgstr ""
 
-#: mg/constructor/design.py:847 mg/socio/__init__.py:712
+#: mg/constructor/design.py:940 mg/socio/__init__.py:708
 msgid "Upload"
 msgstr ""
 
-#: mg/constructor/design.py:854
+#: mg/constructor/design.py:947
 msgid ""
 "Choose any template you want. Then setup its parameters and you will get a "
 "personalised variant of the template."
 msgstr ""
 
-#: mg/constructor/design.py:880
+#: mg/constructor/design.py:973
 msgid "Generate design template"
 msgstr ""
 
-#: mg/constructor/design.py:883
-msgid "Grey"
-msgstr ""
-
-#: mg/constructor/design.py:895
-msgid "White"
-msgstr ""
-
-#: mg/constructor/design.py:907
-msgid "Dark"
-msgstr ""
-
-#: mg/constructor/design.py:919
-msgid "Brick"
-msgstr ""
-
-#: mg/constructor/design.py:931
-msgid "Night"
-msgstr ""
-
-#: mg/constructor/design.py:981
+#: mg/constructor/design.py:1015
 msgid "Rename"
 msgstr ""
 
-#: mg/constructor/design.py:1040
+#: mg/constructor/design.py:1074
 msgid "New design"
 msgstr ""
 
-#: mg/constructor/design.py:1042
+#: mg/constructor/design.py:1076
 msgid "Design templates"
 msgstr ""
 
-#: mg/constructor/design.py:1044
+#: mg/constructor/design.py:1078
 msgid "Renaming"
 msgstr ""
 
-#: mg/constructor/design.py:1046 mg/constructor/design.py:1496
+#: mg/constructor/design.py:1080 mg/constructor/design.py:1495
 #: mg/constructor/__init__.py:140 mg/constructor/__init__.py:145
 msgid "Settings"
 msgstr ""
 
-#: mg/constructor/design.py:1064
+#: mg/constructor/design.py:1098
 msgid "Index page design"
 msgstr ""
 
-#: mg/constructor/design.py:1069
+#: mg/constructor/design.py:1103
 msgid "Index page"
 msgstr ""
 
-#: mg/constructor/design.py:1077
+#: mg/constructor/design.py:1111
 msgid "Index page design package must contain an HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:1079
+#: mg/constructor/design.py:1113
 msgid "Index page design package must not contain more than one HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:1082
+#: mg/constructor/design.py:1116
 msgid "index.html must exist in the index page design package"
 msgstr ""
 
-#: mg/constructor/design.py:1084
+#: mg/constructor/design.py:1118
 msgid "Index page design package must contain a CSS file"
 msgstr ""
 
-#: mg/constructor/design.py:1088 mg/constructor/design.py:1090
+#: mg/constructor/design.py:1122 mg/constructor/design.py:1124
 #, python-format
 msgid "Your page must have HTML tag: %s"
 msgstr ""
 
-#: mg/constructor/design.py:1096
+#: mg/constructor/design.py:1130
 msgid "Your loginform must contain onsubmit=\"return auth_login();\""
 msgstr ""
 
-#: mg/constructor/design.py:1103
+#: mg/constructor/design.py:1137
 msgid "Email input field must have id=\"email\" and name=\"email\""
 msgstr ""
 
-#: mg/constructor/design.py:1107
+#: mg/constructor/design.py:1141
 msgid "Password input field must have id=\"password\" and name=\"password\""
 msgstr ""
 
-#: mg/constructor/design.py:1110
+#: mg/constructor/design.py:1144
 msgid ""
 "Your page must have HTML form with id=\"loginform\" and name=\"loginform\""
 msgstr ""
 
-#: mg/constructor/design.py:1113 mg/constructor/design.py:1324
+#: mg/constructor/design.py:1147 mg/constructor/design.py:1323
 msgid "Mike"
 msgstr ""
 
-#: mg/constructor/design.py:1113 mg/constructor/design.py:1324
+#: mg/constructor/design.py:1147 mg/constructor/design.py:1323
 msgid "Ivan Ivanov"
 msgstr ""
 
-#: mg/constructor/design.py:1113 mg/constructor/design.py:1324
+#: mg/constructor/design.py:1147 mg/constructor/design.py:1323
 msgid "John Smith"
 msgstr ""
 
-#: mg/constructor/design.py:1113 mg/constructor/design.py:1324
+#: mg/constructor/design.py:1147 mg/constructor/design.py:1323
 msgid "Lizard the killer"
 msgstr ""
 
-#: mg/constructor/design.py:1113 mg/constructor/design.py:1324
+#: mg/constructor/design.py:1147 mg/constructor/design.py:1323
 msgid "Cult of the dead cow"
 msgstr ""
 
-#: mg/constructor/design.py:1115 mg/constructor/design.py:1116
+#: mg/constructor/design.py:1149 mg/constructor/design.py:1150
 msgid "Some title"
 msgstr ""
 
-#: mg/constructor/design.py:1115
+#: mg/constructor/design.py:1149
 msgid "Very cool game with very long title"
 msgstr ""
 
-#: mg/constructor/design.py:1116
+#: mg/constructor/design.py:1150
 msgid "Very cool game"
 msgstr ""
 
-#: mg/constructor/design.py:1117
+#: mg/constructor/design.py:1151
 msgid ""
 "<p>This game is a very good sample of games with very long descriptions. In "
 "this game you become a strong warrior, a mighty wizard, a rich merchant or "
@@ -1359,40 +1429,40 @@ msgid ""
 "vehicula porttitor. Donec vitae elit tellus.</p>"
 msgstr ""
 
-#: mg/constructor/design.py:1117
+#: mg/constructor/design.py:1151
 msgid ""
 "This game has a very short description. It was written in hurry by a young "
 "game designer."
 msgstr ""
 
-#: mg/constructor/design.py:1124
+#: mg/constructor/design.py:1158
 msgid "Breaking news"
 msgstr ""
 
-#: mg/constructor/design.py:1124
+#: mg/constructor/design.py:1158
 msgid "New updates related to the abandoned dungeon"
 msgstr ""
 
-#: mg/constructor/design.py:1124
+#: mg/constructor/design.py:1158
 msgid "Eternal shadow returns"
 msgstr ""
 
-#: mg/constructor/design.py:1124
+#: mg/constructor/design.py:1158
 msgid "Epic war event"
 msgstr ""
 
-#: mg/constructor/design.py:1125
+#: mg/constructor/design.py:1159
 msgid ""
 "South Korea will hold its largest-ever winter live-fire drills Thursday in "
 "an area adjacent to North Korea, amid heightened tensions, the South Korean "
 "Army says."
 msgstr ""
 
-#: mg/constructor/design.py:1125
+#: mg/constructor/design.py:1159
 msgid "Europe travel chaos starts to clear"
 msgstr ""
 
-#: mg/constructor/design.py:1125
+#: mg/constructor/design.py:1159
 msgid ""
 "Even with legal protection, women victims of rape still face a social stigma "
 "that is hard to overcome. He said: \"Women are still afraid to complain if "
@@ -1402,343 +1472,327 @@ msgid ""
 "understand the problem is not the woman, but the perpetrator of the rape.\""
 msgstr ""
 
-#: mg/constructor/design.py:1130
+#: mg/constructor/design.py:1164
 msgid "This is a sample meta description"
 msgstr ""
 
-#: mg/constructor/design.py:1131
+#: mg/constructor/design.py:1165
 msgid "online games, keyword 1, keyword 2"
 msgstr ""
 
-#: mg/constructor/design.py:1137
+#: mg/constructor/design.py:1171
 msgid "Joy Team, Author"
 msgstr ""
 
-#: mg/constructor/design.py:1137
+#: mg/constructor/design.py:1171
 msgid "Joy Team, Very Long Author Name Even So Long"
 msgstr ""
 
-#: mg/constructor/design.py:1141
+#: mg/constructor/design.py:1175
 msgid "Enter invisible"
 msgstr ""
 
-#: mg/constructor/design.py:1143
+#: mg/constructor/design.py:1177
 msgid "Already invisible"
 msgstr ""
 
-#: mg/constructor/design.py:1147
+#: mg/constructor/design.py:1181
 msgid "Library"
 msgstr ""
 
-#: mg/constructor/design.py:1151
+#: mg/constructor/design.py:1185
 msgid "World history"
 msgstr ""
 
-#: mg/constructor/design.py:1160
+#: mg/constructor/design.py:1194
 msgid "Game forum"
 msgstr ""
 
-#: mg/constructor/design.py:1165
+#: mg/constructor/design.py:1199
 msgid "Screenshots"
 msgstr ""
 
-#: mg/constructor/design.py:1170
+#: mg/constructor/design.py:1204
 msgid "Secure entrance"
 msgstr ""
 
-#: mg/constructor/design.py:1172
+#: mg/constructor/design.py:1206
 msgid "Connection secured"
 msgstr ""
 
-#: mg/constructor/design.py:1182
+#: mg/constructor/design.py:1216
 msgid "The biggest glory"
 msgstr ""
 
-#: mg/constructor/design.py:1182
+#: mg/constructor/design.py:1216
 msgid "The richest"
 msgstr ""
 
-#: mg/constructor/design.py:1182
+#: mg/constructor/design.py:1216
 msgid "Top clan"
 msgstr ""
 
-#: mg/constructor/design.py:1182
+#: mg/constructor/design.py:1216
 msgid "The best dragon hunter"
 msgstr ""
 
-#: mg/constructor/design.py:1213
-msgid "Game interface design"
-msgstr ""
-
-#: mg/constructor/design.py:1218
-msgid "Game interface"
-msgstr ""
-
-#: mg/constructor/design.py:1225
-msgid "Game interface design package must contain a CSS file"
-msgstr ""
-
-#: mg/constructor/design.py:1227
-msgid "Game interface design package must not contain HTML files"
-msgstr ""
-
-#: mg/constructor/design.py:1250 mg/constructor/design.py:1256
-#: mg/constructor/design.py:1315 mg/socio/__init__.py:223
-#: mg/socio/__init__.py:249 mg/socio/__init__.py:867 mg/socio/__init__.py:1044
-#: mg/socio/__init__.py:1183 mg/socio/__init__.py:1355
-#: mg/socio/__init__.py:1596 mg/socio/__init__.py:1678
-#: mg/socio/__init__.py:2183 mg/socio/__init__.py:2261
-#: mg/socio/__init__.py:2299 mg/socio/__init__.py:2317
+#: mg/constructor/design.py:1249 mg/constructor/design.py:1255
+#: mg/constructor/design.py:1314 mg/socio/__init__.py:223
+#: mg/socio/__init__.py:249 mg/socio/__init__.py:863 mg/socio/__init__.py:1040
+#: mg/socio/__init__.py:1179 mg/socio/__init__.py:1351
+#: mg/socio/__init__.py:1592 mg/socio/__init__.py:1674
+#: mg/socio/__init__.py:2179 mg/socio/__init__.py:2257
+#: mg/socio/__init__.py:2295 mg/socio/__init__.py:2313
 msgid "Forum categories"
 msgstr ""
 
-#: mg/constructor/design.py:1251
+#: mg/constructor/design.py:1250
 msgid "Topics"
 msgstr ""
 
-#: mg/constructor/design.py:1252 mg/constructor/design.py:1261
-#: mg/socio/__init__.py:2177
+#: mg/constructor/design.py:1251 mg/constructor/design.py:1260
+#: mg/socio/__init__.py:2173
 msgid "Replies"
 msgstr ""
 
-#: mg/constructor/design.py:1253 mg/socio/telegrams.py:108
+#: mg/constructor/design.py:1252 mg/socio/telegrams.py:108
 msgid "Unread"
 msgstr ""
 
-#: mg/constructor/design.py:1254
+#: mg/constructor/design.py:1253
 msgid "Last message"
 msgstr ""
 
-#: mg/constructor/design.py:1255 mg/constructor/design.py:1263
-#: mg/socio/__init__.py:2179
+#: mg/constructor/design.py:1254 mg/constructor/design.py:1262
+#: mg/socio/__init__.py:2175
 msgid "by"
 msgstr ""
 
-#: mg/constructor/design.py:1259 mg/constructor/design.py:1517
-#: mg/socio/__init__.py:1048 mg/socio/__init__.py:1181
-#: mg/socio/__init__.py:1185
+#: mg/constructor/design.py:1258 mg/constructor/design.py:1516
+#: mg/socio/__init__.py:1044 mg/socio/__init__.py:1177
+#: mg/socio/__init__.py:1181
 msgid "New topic"
 msgstr ""
 
-#: mg/constructor/design.py:1260 mg/socio/__init__.py:2176
+#: mg/constructor/design.py:1259 mg/socio/__init__.py:2172
 msgid "Author"
 msgstr ""
 
-#: mg/constructor/design.py:1262 mg/socio/__init__.py:2178
+#: mg/constructor/design.py:1261 mg/socio/__init__.py:2174
 msgid "Last reply"
 msgstr ""
 
-#: mg/constructor/design.py:1264 mg/constructor/design.py:1266
-#: mg/constructor/design.py:1269
+#: mg/constructor/design.py:1263 mg/constructor/design.py:1265
+#: mg/constructor/design.py:1268
 msgid "Pages"
 msgstr ""
 
-#: mg/constructor/design.py:1265
+#: mg/constructor/design.py:1264
 msgid "topic///Opened"
 msgstr ""
 
-#: mg/constructor/design.py:1270
+#: mg/constructor/design.py:1269
 msgid "topic started"
 msgstr ""
 
-#: mg/constructor/design.py:1271 mg/constructor/design.py:1328
+#: mg/constructor/design.py:1270 mg/constructor/design.py:1327
 msgid "All posts"
 msgstr ""
 
-#: mg/constructor/design.py:1272
+#: mg/constructor/design.py:1271
 msgid "Search for all posts of this member"
 msgstr ""
 
-#: mg/constructor/design.py:1273
+#: mg/constructor/design.py:1272
 msgid "to the top"
 msgstr ""
 
-#: mg/constructor/design.py:1274
+#: mg/constructor/design.py:1273
 msgid "written at"
 msgstr ""
 
-#: mg/constructor/design.py:1275 mg/socio/__init__.py:1177
-#: mg/socio/__init__.py:1740 mg/socio/__init__.py:2184
-#: mg/socio/__init__.py:2265 mg/socio/__init__.py:2318
+#: mg/constructor/design.py:1274 mg/socio/__init__.py:1173
+#: mg/socio/__init__.py:1736 mg/socio/__init__.py:2180
+#: mg/socio/__init__.py:2261 mg/socio/__init__.py:2314
 msgid "Tags"
 msgstr ""
 
-#: mg/constructor/design.py:1278
+#: mg/constructor/design.py:1277
 msgid "Forum tags"
 msgstr ""
 
-#: mg/constructor/design.py:1292
+#: mg/constructor/design.py:1291
 msgid "Socio interface design"
 msgstr ""
 
-#: mg/constructor/design.py:1297
+#: mg/constructor/design.py:1296
 msgid "Socio interface"
 msgstr ""
 
-#: mg/constructor/design.py:1305
+#: mg/constructor/design.py:1304
 msgid "Socio interface design package must contain an HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:1307
+#: mg/constructor/design.py:1306
 msgid "Socio interface design package must not contain more than one HTML file"
 msgstr ""
 
-#: mg/constructor/design.py:1310
+#: mg/constructor/design.py:1309
 msgid "index.html must exist in the socio interface design package"
 msgstr ""
 
-#: mg/constructor/design.py:1312
+#: mg/constructor/design.py:1311
 msgid "Socio interface design package must contain a CSS file"
 msgstr ""
 
-#: mg/constructor/design.py:1316 mg/constructor/design.py:1359
+#: mg/constructor/design.py:1315 mg/constructor/design.py:1358
 msgid "Forum category"
 msgstr ""
 
-#: mg/constructor/design.py:1317
+#: mg/constructor/design.py:1316
 msgid "Forum topic"
 msgstr ""
 
-#: mg/constructor/design.py:1318
+#: mg/constructor/design.py:1317
 msgid "Tags cloud"
 msgstr ""
 
-#: mg/constructor/design.py:1323
+#: mg/constructor/design.py:1322
 msgid "Unknown problem"
 msgstr ""
 
-#: mg/constructor/design.py:1323
+#: mg/constructor/design.py:1322
 msgid "Very important combat will take place tomorrow"
 msgstr ""
 
-#: mg/constructor/design.py:1323
+#: mg/constructor/design.py:1322
 msgid "Not so important but a very large forum topic title"
 msgstr ""
 
-#: mg/constructor/design.py:1325
+#: mg/constructor/design.py:1324
 msgid "6th of December, 2010 at 12:01"
 msgstr ""
 
-#: mg/constructor/design.py:1325
+#: mg/constructor/design.py:1324
 msgid "13th of June, 2008 at 02:11"
 msgstr ""
 
-#: mg/constructor/design.py:1325
+#: mg/constructor/design.py:1324
 msgid "7th of February, 2011 at 23:17"
 msgstr ""
 
-#: mg/constructor/design.py:1325
+#: mg/constructor/design.py:1324
 msgid "21th of October, 2010 at 17:00"
 msgstr ""
 
-#: mg/constructor/design.py:1326
+#: mg/constructor/design.py:1325
 msgid "This is a sample signature line"
 msgstr ""
 
-#: mg/constructor/design.py:1326
+#: mg/constructor/design.py:1325
 msgid "Some another line"
 msgstr ""
 
-#: mg/constructor/design.py:1326
+#: mg/constructor/design.py:1325
 msgid "Very strange signature"
 msgstr ""
 
-#: mg/constructor/design.py:1326
+#: mg/constructor/design.py:1325
 msgid "Absolutely crazy signature line"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "game"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "mmo"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "constructor"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "people"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "online games"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "game industry"
 msgstr ""
 
-#: mg/constructor/design.py:1327
+#: mg/constructor/design.py:1326
 msgid "game engine"
 msgstr ""
 
-#: mg/constructor/design.py:1328 mg/socio/__init__.py:1101
-#: mg/socio/__init__.py:1136
+#: mg/constructor/design.py:1327 mg/socio/__init__.py:1097
+#: mg/socio/__init__.py:1132
 msgid "Profile"
 msgstr ""
 
-#: mg/constructor/design.py:1328
+#: mg/constructor/design.py:1327
 msgid "Rating"
 msgstr ""
 
-#: mg/constructor/design.py:1328
+#: mg/constructor/design.py:1327
 msgid "Projects"
 msgstr ""
 
-#: mg/constructor/design.py:1328
+#: mg/constructor/design.py:1327
 msgid "Wishlist"
 msgstr ""
 
-#: mg/constructor/design.py:1329 mg/socio/__init__.py:1365
-#: mg/socio/__init__.py:1407
+#: mg/constructor/design.py:1328 mg/socio/__init__.py:1361
+#: mg/socio/__init__.py:1403
 msgid "reply"
 msgstr ""
 
-#: mg/constructor/design.py:1329
+#: mg/constructor/design.py:1328
 msgid "ignore"
 msgstr ""
 
-#: mg/constructor/design.py:1337
+#: mg/constructor/design.py:1336
 msgid "Main group"
 msgstr ""
 
-#: mg/constructor/design.py:1337
+#: mg/constructor/design.py:1336
 msgid "Additional categories"
 msgstr ""
 
-#: mg/constructor/design.py:1337
+#: mg/constructor/design.py:1336
 msgid "Important"
 msgstr ""
 
-#: mg/constructor/design.py:1337
+#: mg/constructor/design.py:1336
 msgid "Technical reference"
 msgstr ""
 
-#: mg/constructor/design.py:1341 mg/constructor/project.py:67
+#: mg/constructor/design.py:1340 mg/constructor/project.py:67
 #: mg/constructor/__init__.py:75
 msgid "News"
 msgstr ""
 
-#: mg/constructor/design.py:1341
+#: mg/constructor/design.py:1340
 msgid "Technical support"
 msgstr ""
 
-#: mg/constructor/design.py:1341
+#: mg/constructor/design.py:1340
 msgid "A very long forum category title"
 msgstr ""
 
-#: mg/constructor/design.py:1341 mg/constructor/__init__.py:77
+#: mg/constructor/design.py:1340 mg/constructor/__init__.py:77
 msgid "Developers club"
 msgstr ""
 
-#: mg/constructor/design.py:1342
+#: mg/constructor/design.py:1341
 msgid "This is a short category description"
 msgstr ""
 
-#: mg/constructor/design.py:1342
+#: mg/constructor/design.py:1341
 msgid ""
 "This is a very long category description. It can be very-very long. And even "
 "longer. It can take several lines. Most of us know him as the big jolly man "
@@ -1747,44 +1801,83 @@ msgid ""
 "of Saint Nicholas."
 msgstr ""
 
-#: mg/constructor/design.py:1482
+#: mg/constructor/design.py:1481
 msgid "Some header"
 msgstr ""
 
-#: mg/constructor/design.py:1488 mg/constructor/design.py:1508
+#: mg/constructor/design.py:1487 mg/constructor/design.py:1507
 msgid "Menu item"
 msgstr ""
 
-#: mg/constructor/design.py:1496
+#: mg/constructor/design.py:1495
 msgid "Login"
 msgstr ""
 
-#: mg/constructor/design.py:1496
+#: mg/constructor/design.py:1495
 msgid "Logout"
 msgstr ""
 
-#: mg/constructor/design.py:1496
+#: mg/constructor/design.py:1495
 msgid "Friends"
 msgstr ""
 
-#: mg/constructor/design.py:1517 mg/socio/__init__.py:1998
+#: mg/constructor/design.py:1516 mg/socio/__init__.py:1994
 msgid "Move"
 msgstr ""
 
-#: mg/constructor/design.py:1517
+#: mg/constructor/design.py:1516
 msgid "Pin"
 msgstr ""
 
-#: mg/constructor/design.py:1517
+#: mg/constructor/design.py:1516
 msgid "Unpin"
 msgstr ""
 
-#: mg/constructor/design.py:1517
+#: mg/constructor/design.py:1516
 msgid "Close"
 msgstr ""
 
-#: mg/constructor/design.py:1517
+#: mg/constructor/design.py:1516
 msgid "Open"
+msgstr ""
+
+#: mg/constructor/design.py:1544
+msgid "Game interface design"
+msgstr ""
+
+#: mg/constructor/design.py:1549
+msgid "Game interface"
+msgstr ""
+
+#: mg/constructor/design.py:1557
+#, python-format
+msgid "Game interface design package must contain %s file"
+msgstr ""
+
+#: mg/constructor/design.py:1564
+msgid "Game interface blocks"
+msgstr ""
+
+#: mg/constructor/design.py:1565
+msgid "Game interface CSS"
+msgstr ""
+
+#: mg/constructor/design.py:1566
+msgid ""
+"Common game CSS (styles for character icons, level [5] markers etc). This "
+"file is included in every game page - index page, game interface, socio "
+"interface"
+msgstr ""
+
+#: mg/constructor/design.py:1569
+msgid "Required design files"
+msgstr ""
+
+#: mg/constructor/design.py:1569
+#, python-format
+msgid ""
+"Here is a list of required files in your design with short descriptions: <ul>"
+"%s</ul>"
 msgstr ""
 
 #: mg/constructor/logo.py:45
@@ -2383,79 +2476,128 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: mg/constructor/interface.py:105
-msgid "Character not found"
+#: mg/constructor/chat.py:16 mg/constructor/chat.py:22
+msgid "Chat configuration"
 msgstr ""
 
-#: mg/constructor/interface.py:106
-msgid "Character is not active. Check your e-mail and follow activation link"
+#: mg/constructor/chat.py:19
+msgid "Chat configuration editor"
 msgstr ""
 
-#: mg/constructor/interface.py:136
-msgid "Index page design is not configured"
-msgstr ""
-
-#: mg/constructor/interface.py:167
-msgid "Error"
-msgstr ""
-
-#: mg/constructor/interface.py:198
-msgid "Game interface layout"
-msgstr ""
-
-#: mg/constructor/interface.py:209 mg/constructor/interface.py:215
+#: mg/constructor/chat.py:39 mg/constructor/interface.py:210
 #: mg/constructor/players.py:305
 msgid "Invalid selection"
 msgstr ""
 
-#: mg/constructor/interface.py:221 mg/constructor/interface.py:227
-#: mg/constructor/interface.py:233 mg/constructor/interface.py:239
-msgid "Enter width in pixels"
+#: mg/constructor/chat.py:46
+msgid "Chat configuration stored"
 msgstr ""
 
-#: mg/constructor/interface.py:247 mg/constructor/players.py:203
-#: mg/constructor/realplexor.py:38
-msgid "Settings stored"
-msgstr ""
-
-#: mg/constructor/interface.py:256
-msgid "General layout scheme"
-msgstr ""
-
-#: mg/constructor/interface.py:259
-msgid "Page margins (0 - margin is disabled):"
-msgstr ""
-
-#: mg/constructor/interface.py:261
-msgid "Left"
-msgstr ""
-
-#: mg/constructor/interface.py:262
-msgid "Right"
-msgstr ""
-
-#: mg/constructor/interface.py:263
-msgid "Top"
-msgstr ""
-
-#: mg/constructor/interface.py:264
-msgid "Bottom"
-msgstr ""
-
-#: mg/constructor/interface.py:265
+#: mg/constructor/chat.py:53
 msgid "Chat channels mode"
 msgstr ""
 
-#: mg/constructor/interface.py:265
+#: mg/constructor/chat.py:53
 msgid "Channels disabled"
 msgstr ""
 
-#: mg/constructor/interface.py:265
+#: mg/constructor/chat.py:53
 msgid "Every channel on a separate tab"
 msgstr ""
 
-#: mg/constructor/interface.py:265
+#: mg/constructor/chat.py:53
 msgid "Channel selection checkboxes"
+msgstr ""
+
+#: mg/constructor/chat.py:54
+msgid "Location chat is separated from the main channel"
+msgstr ""
+
+#: mg/constructor/chat.py:55
+msgid "Debugging channel enabled"
+msgstr ""
+
+#: mg/constructor/chat.py:56
+msgid "Trading channel enabled"
+msgstr ""
+
+#: mg/constructor/chat.py:67
+msgid "channel///Main"
+msgstr ""
+
+#: mg/constructor/chat.py:74
+msgid "channel///Location"
+msgstr ""
+
+#: mg/constructor/chat.py:79
+msgid "channel///Trade"
+msgstr ""
+
+#: mg/constructor/chat.py:85
+msgid "channel///Debug"
+msgstr ""
+
+#: mg/constructor/chat.py:132
+#, python-format
+msgid "Chat channel '%s' disabled"
+msgstr ""
+
+#: mg/constructor/chat.py:133
+#, python-format
+msgid "Chat channel '%s' enabled"
+msgstr ""
+
+#: mg/constructor/interface.py:83
+msgid "Character not found"
+msgstr ""
+
+#: mg/constructor/interface.py:84
+msgid "Character is not active. Check your e-mail and follow activation link"
+msgstr ""
+
+#: mg/constructor/interface.py:113
+msgid "Index page design is not configured"
+msgstr ""
+
+#: mg/constructor/interface.py:144
+msgid "Error"
+msgstr ""
+
+#: mg/constructor/interface.py:188
+msgid "Game interface design is not configured"
+msgstr ""
+
+#: mg/constructor/interface.py:199
+msgid "Game interface layout"
+msgstr ""
+
+#: mg/constructor/interface.py:216 mg/constructor/interface.py:222
+#: mg/constructor/interface.py:228 mg/constructor/interface.py:234
+msgid "Enter width in pixels"
+msgstr ""
+
+#: mg/constructor/interface.py:249
+msgid "General layout scheme"
+msgstr ""
+
+#: mg/constructor/interface.py:252
+msgid "Page margins (0 - margin is disabled):"
+msgstr ""
+
+#: mg/constructor/interface.py:254
+msgid "Left"
+msgstr ""
+
+#: mg/constructor/interface.py:255
+msgid "Right"
+msgstr ""
+
+#: mg/constructor/interface.py:256
+msgid "Top"
+msgstr ""
+
+#: mg/constructor/interface.py:257
+msgid "Bottom"
 msgstr ""
 
 #: mg/constructor/project.py:55
@@ -2656,7 +2798,7 @@ msgid "socio-top///Search"
 msgstr ""
 
 #: mg/constructor/__init__.py:162 mg/constructor/__init__.py:302
-#: mg/socio/__init__.py:1754
+#: mg/socio/__init__.py:1750
 msgid "Forum settings"
 msgstr ""
 
@@ -2767,10 +2909,6 @@ msgstr ""
 msgid ""
 "This is a very long text asking you to enter your motto. So be so kind "
 "entering your motto"
-msgstr ""
-
-#: mg/constructor/admin.py:10
-msgid "Cluster"
 msgstr ""
 
 #: mg/constructor/invitations.py:40
@@ -3475,7 +3613,7 @@ msgstr ""
 msgid "Deny moderation"
 msgstr ""
 
-#: mg/socio/__init__.py:393 mg/socio/__init__.py:421 mg/socio/__init__.py:730
+#: mg/socio/__init__.py:393 mg/socio/__init__.py:421 mg/socio/__init__.py:726
 msgid "Status"
 msgstr ""
 
@@ -3520,7 +3658,7 @@ msgstr ""
 msgid "Remote server response: Internal server error"
 msgstr ""
 
-#: mg/socio/__init__.py:633 mg/socio/__init__.py:642
+#: mg/socio/__init__.py:633 mg/socio/__init__.py:640
 #, python-format
 msgid "Download error: %s"
 msgstr ""
@@ -3529,188 +3667,188 @@ msgstr ""
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
-#: mg/socio/__init__.py:711
+#: mg/socio/__init__.py:707
 msgid "Or Internet address"
 msgstr ""
 
-#: mg/socio/__init__.py:714
+#: mg/socio/__init__.py:710
 msgid "Upload image"
 msgstr ""
 
-#: mg/socio/__init__.py:727
+#: mg/socio/__init__.py:723
 msgid "user///Registered"
 msgstr ""
 
-#: mg/socio/__init__.py:868 mg/socio/__init__.py:2295
-#: mg/socio/__init__.py:2300
+#: mg/socio/__init__.py:864 mg/socio/__init__.py:2291
+#: mg/socio/__init__.py:2296
 msgid "Subscribed topics"
 msgstr ""
 
-#: mg/socio/__init__.py:1158 mg/socio/__init__.py:1715
+#: mg/socio/__init__.py:1154 mg/socio/__init__.py:1711
 msgid "Enter topic subject"
 msgstr ""
 
-#: mg/socio/__init__.py:1160 mg/socio/__init__.py:1717
+#: mg/socio/__init__.py:1156 mg/socio/__init__.py:1713
 msgid "Enter topic content"
 msgstr ""
 
-#: mg/socio/__init__.py:1165
+#: mg/socio/__init__.py:1161
 msgid "Invalid datetime format"
 msgstr ""
 
-#: mg/socio/__init__.py:1173
+#: mg/socio/__init__.py:1169
 msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
 msgstr ""
 
-#: mg/socio/__init__.py:1174 mg/socio/__init__.py:1737
+#: mg/socio/__init__.py:1170 mg/socio/__init__.py:1733
 msgid "Subject"
 msgstr ""
 
-#: mg/socio/__init__.py:1175
+#: mg/socio/__init__.py:1171
 msgid "Content"
 msgstr ""
 
-#: mg/socio/__init__.py:1357 mg/socio/__init__.py:1598
-#: mg/socio/__init__.py:1680
+#: mg/socio/__init__.py:1353 mg/socio/__init__.py:1594
+#: mg/socio/__init__.py:1676
 msgid "Topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1386
+#: mg/socio/__init__.py:1382
 msgid "unsubscribe"
 msgstr ""
 
-#: mg/socio/__init__.py:1388
+#: mg/socio/__init__.py:1384
 msgid "subscribe"
 msgstr ""
 
-#: mg/socio/__init__.py:1391
+#: mg/socio/__init__.py:1387
 msgid "unpin"
 msgstr ""
 
-#: mg/socio/__init__.py:1393
+#: mg/socio/__init__.py:1389
 msgid "pin"
 msgstr ""
 
-#: mg/socio/__init__.py:1395
+#: mg/socio/__init__.py:1391
 msgid "move"
 msgstr ""
 
-#: mg/socio/__init__.py:1415 mg/socio/__init__.py:1573
-#: mg/socio/__init__.py:1689
+#: mg/socio/__init__.py:1411 mg/socio/__init__.py:1569
+#: mg/socio/__init__.py:1685
 msgid "Enter post content"
 msgstr ""
 
-#: mg/socio/__init__.py:1417
+#: mg/socio/__init__.py:1413
 msgid "Access denied"
 msgstr ""
 
-#: mg/socio/__init__.py:1433 mg/socio/__init__.py:1590
-#: mg/socio/__init__.py:1594 mg/socio/__init__.py:1599
+#: mg/socio/__init__.py:1429 mg/socio/__init__.py:1586
+#: mg/socio/__init__.py:1590 mg/socio/__init__.py:1595
 msgid "Reply"
 msgstr ""
 
-#: mg/socio/__init__.py:1685
+#: mg/socio/__init__.py:1681
 msgid "Edit post"
 msgstr ""
 
-#: mg/socio/__init__.py:1707
+#: mg/socio/__init__.py:1703
 msgid "Edit topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1782
+#: mg/socio/__init__.py:1778
 msgid "Signature can't contain more than 4 lines"
 msgstr ""
 
-#: mg/socio/__init__.py:1786
+#: mg/socio/__init__.py:1782
 msgid "Signature line couldn't be longer than 80 symbols"
 msgstr ""
 
-#: mg/socio/__init__.py:1788
+#: mg/socio/__init__.py:1784
 msgid "Signature couldn't contain images"
 msgstr ""
 
-#: mg/socio/__init__.py:1811
+#: mg/socio/__init__.py:1807
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr ""
 
-#: mg/socio/__init__.py:1861
+#: mg/socio/__init__.py:1857
 msgid "Your avatar"
 msgstr ""
 
-#: mg/socio/__init__.py:1862
+#: mg/socio/__init__.py:1858
 msgid "Your forum signature"
 msgstr ""
 
-#: mg/socio/__init__.py:1863
+#: mg/socio/__init__.py:1859
 msgid "Replies in subscribed topics"
 msgstr ""
 
-#: mg/socio/__init__.py:1863
+#: mg/socio/__init__.py:1859
 msgid "E-mail notifications"
 msgstr ""
 
-#: mg/socio/__init__.py:1865
+#: mg/socio/__init__.py:1861
 msgid "New topics in '{topcat} / {cat}'"
 msgstr ""
 
-#: mg/socio/__init__.py:1975
+#: mg/socio/__init__.py:1971
 msgid "Select category"
 msgstr ""
 
-#: mg/socio/__init__.py:1997
+#: mg/socio/__init__.py:1993
 msgid "Category where to move"
 msgstr ""
 
-#: mg/socio/__init__.py:2000
+#: mg/socio/__init__.py:1996
 #, python-format
 msgid "Move topic: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:2046
+#: mg/socio/__init__.py:2042
 #, python-format
 msgid "New topic: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:2046
+#: mg/socio/__init__.py:2042
 msgid ""
 "{author_name} has started new topic: {topic_subject}\n"
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}"
 msgstr ""
 
-#: mg/socio/__init__.py:2096
+#: mg/socio/__init__.py:2092
 #, python-format
 msgid "New replies: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:2096
+#: mg/socio/__init__.py:2092
 msgid ""
 "{author_name} has replied in the topic: {topic_subject}\n"
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 msgstr ""
 
-#: mg/socio/__init__.py:2181 mg/socio/__init__.py:2266
+#: mg/socio/__init__.py:2177 mg/socio/__init__.py:2262
 msgid "Nothing found"
 msgstr ""
 
-#: mg/socio/__init__.py:2239 mg/socio/__init__.py:2252
+#: mg/socio/__init__.py:2235 mg/socio/__init__.py:2248
 msgid "open"
 msgstr ""
 
-#: mg/socio/__init__.py:2262
+#: mg/socio/__init__.py:2258
 msgid "results///Search"
 msgstr ""
 
-#: mg/socio/__init__.py:2297
+#: mg/socio/__init__.py:2293
 msgid "You have not subscribed to any topic"
 msgstr ""
 
-#: mg/socio/__init__.py:2351
+#: mg/socio/__init__.py:2347
 msgid "Read more"
 msgstr ""
 
-#: mg/socio/__init__.py:2352
+#: mg/socio/__init__.py:2348
 msgid "Comment"
 msgstr ""
 

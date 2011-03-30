@@ -24,7 +24,7 @@ import cStringIO
 re_hook_path = re.compile(r'^(.+?)\.(.+)$')
 re_config_path = re.compile(r'^(.+?)\.(.+)$')
 re_module_path = re.compile(r'^(.+)\.(.+)$')
-re_remove_domain = re.compile(r'^.{,10}///')
+re_remove_domain = re.compile(r'^.{,20}///')
 
 class HookFormatException(Exception):
     "Invalid hook format"
@@ -373,8 +373,9 @@ class Module(object):
     def critical(self, msg, *args):
         self.logger().critical(msg, *args)
 
-    def exception(self, msg, *args):
-        self.logger().exception(msg, *args)
+    def exception(self, exception, *args):
+        self.logger().exception(exception, *args)
+        self.call("exception.report", exception)
 
     def _(self, val):
         try:
@@ -478,16 +479,12 @@ class Module(object):
                     return response.body
             except TimeoutError:
                 self.error("Timeout downloading %s", url)
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.error("Error downloading %s: %s", url, str(e))
             finally:
                 try:
                     cnn.close()
-                except (KeyboardInterrupt, SystemExit, TaskletExit):
-                    raise
-                except:
+                except Exception:
                     pass
         raise DownloadError()
 
@@ -517,16 +514,12 @@ class Module(object):
                     cnn.perform(request)
             except TimeoutError:
                 self.error("Timeout deleting %s", url)
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.error("Error deleting %s: %s", url, str(e))
             finally:
                 try:
                     cnn.close()
-                except (KeyboardInterrupt, SystemExit, TaskletExit):
-                    raise
-                except:
+                except Exception:
                     pass
 
 class ModuleException(Exception):
@@ -575,9 +568,7 @@ class Modules(object):
                             else:
                                 raise
                         module = sys.modules.get(module_name)
-                    except (KeyboardInterrupt, SystemExit, TaskletExit):
-                        raise
-                    except BaseException as e:
+                    except Exception as e:
                         errors += 1
                         module = sys.modules.get(module_name)
                         if module:
@@ -720,9 +711,7 @@ class Instance(object):
         cnn = http.HTTPConnection()
         try:
             cnn.connect(("director", 3000))
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except BaseException as e:
+        except Exception as e:
             raise RuntimeError("Couldn't connect to director:3000: %s" % e)
         try:
             request = cnn.get("/director/config")
@@ -877,9 +866,7 @@ class ApplicationFactory(object):
                 if module:
                     try:
                         reload(module)
-                    except (KeyboardInterrupt, SystemExit, TaskletExit):
-                        raise
-                    except BaseException as e:
+                    except Exception as e:
                         errors += 1
                         module = sys.modules.get(module_name)
                         if module:

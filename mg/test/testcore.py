@@ -100,9 +100,7 @@ class TestCore(unittest.TestCase):
         app = Application(self.inst, "mgtest", keyspace="mgtest")
         try:
             app.db().system_drop_keyspace("mgtest")
-        except (SystemExit, TaskletExit, KeyboardInterrupt):
-            raise
-        except BaseException as e:
+        except Exception as e:
             pass
 
     def test01(self):

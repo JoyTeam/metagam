@@ -786,9 +786,7 @@ class TwoPay(Module):
                 self.debug("2pay Request: command=%s", command)
                 result = 4
                 comment = "This command is not implemented"
-        except (TaskletExit, SystemExit, KeyboardInterrupt):
-            raise
-        except BaseException as e:
+        except Exception as e:
             result = 1
             comment = str(e)
         req.content_type = "application/xml"

@@ -110,9 +110,7 @@ class Wizards(Module):
             try:
                 __import__(module_name, globals(), locals(), [], -1)
                 module = sys.modules.get(module_name)
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 module = sys.modules.get(module_name)
                 if module:
                     self.exception(e)

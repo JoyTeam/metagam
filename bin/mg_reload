@@ -63,8 +63,6 @@ def main():
             print response.status
             print response.body
         cnn.close()
-    except (SystemExit, TaskletExit, KeyboardInterrupt):
-        raise
     except Exception as e:
         print e
     finally:

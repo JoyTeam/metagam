@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-29 00:11+0400\n"
+"POT-Creation-Date: 2011-03-30 13:34+0400\n"
 "PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -63,7 +63,7 @@ msgstr "Советы гуру"
 msgid "To the main page"
 msgstr "На главную страницу"
 
-#: static/js/admin-form-presets.js:10
+#: static/js/admin-form-presets.js:11
 msgid "Presets:"
 msgstr "Предустановки:"
 

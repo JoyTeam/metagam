@@ -49,9 +49,7 @@ class Director(Module):
         while True:
             try:
                 self.call("core.fastidle")
-            except (SystemExit, KeyboardInterrupt, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.exception(e)
             Tasklet.sleep(1)
 
@@ -84,9 +82,7 @@ class Director(Module):
                                                 cnn.perform(request)
                             finally:
                                 cnn.close()
-                    except (KeyboardInterrupt, SystemExit, TaskletExit):
-                        raise
-                    except BaseException as e:
+                    except Exception as e:
                         self.info("%s - %s", server_id, e)
                     if not success:
                         fact_server = self.app().servers_online.get(server_id)
@@ -135,9 +131,7 @@ class Director(Module):
                                 st.remove()
                             finally:
                                 cnn.close()
-            except (SystemExit, TaskletExit, KeyboardInterrupt):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.exception(e)
             Tasklet.sleep(10)
 
@@ -191,9 +185,7 @@ class Director(Module):
                         cnn.perform(request)
                     finally:
                         cnn.close()
-            except (SystemExit, TaskletExit, KeyboardInterrupt):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.exception(e)
         self.store_servers_online()
         self.servers_online_updated()
@@ -230,9 +222,7 @@ class Director(Module):
                             cnn.perform(request)
                         finally:
                             cnn.close()
-                except (SystemExit, TaskletExit, KeyboardInterrupt):
-                    raise
-                except BaseException as e:
+                except Exception as e:
                     self.exception(e)
         self.store_servers_online()
         self.servers_online_updated()
@@ -266,9 +256,7 @@ class Director(Module):
                                     cnn.perform(request)
                                 finally:
                                     cnn.close()
-                        except (SystemExit, TaskletExit, KeyboardInterrupt):
-                            raise
-                        except BaseException as e:
+                        except Exception as e:
                             self.exception(e)
                 break
         self.store_servers_online()
@@ -296,9 +284,7 @@ class Director(Module):
                     errors = 0
                 else:
                     errors = err
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.error("%s:%d - %s", info["host"], info["port"], e)
             tag = "%s (%s:%d)" % (server_id, info["host"], info["port"])
             if errors:
@@ -462,9 +448,7 @@ class Director(Module):
             with Timeout.push(20):
                 self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
             return True
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except BaseException as e:
+        except Exception as e:
             self.error("%s:%d - %s", host, port, e)
             return False
 

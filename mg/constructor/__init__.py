@@ -29,7 +29,7 @@ class Constructor(Module):
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
-            "mg.constructor.admin.Admin", "mg.constructor.realplexor.RealplexorAdmin"])
+            "mg.constructor.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index)
         self.rhook("ext-cabinet.index", self.cabinet_index)

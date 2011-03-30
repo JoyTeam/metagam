@@ -123,5 +123,8 @@ class MultiapplicationWebDaemon(WebDaemon):
         app = self.inst.appfactory.get_by_domain(host)
         if app is None:
             return request.redirect("http://www.%s" % str(self.inst.config["main_host"]))
-        #app.hooks.call("l10n.set_request_lang")
-        return app.http_request(request, group, hook, args)
+        try:
+            return app.http_request(request, group, hook, args)
+        except Exception as e:
+            app.hooks.call("exception.report", e)
+            raise

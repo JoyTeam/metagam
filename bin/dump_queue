@@ -24,9 +24,7 @@ def main():
     except RuntimeError as e:
         logging.error(e)
         os._exit(1)
-    except (SystemExit, TaskletExit, KeyboardInterrupt):
-        raise
-    except BaseException as e:
+    except Exception as e:
         logging.exception(e)
         os._exit(1)
 

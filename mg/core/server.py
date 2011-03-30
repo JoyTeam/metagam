@@ -56,9 +56,7 @@ class Server(Module):
         while True:
             try:
                 self.call("core.fastidle")
-            except (SystemExit, KeyboardInterrupt, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.exception(e)
             Tasklet.sleep(1)
 

@@ -1,21 +1,26 @@
 html { height: 100%; font-family: Verdana; font-size: 14px }
-body { width: 100%; background: #fbfbfb; margin: 0 auto; height: 100%; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; padding: 0 }
+body { background: #fbfbfb; margin: 0 auto; height: 100%; padding: 0 }
 table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 14px; padding: 0; }
 img { border: none }
 h1 { color: #0078ac; font-size: 21px; font-weight: bold }
-#page-width { width: 1024px }
-#page-layout1 { height: 100%; width: 100% }
-#page-layout1-div { background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; min-height: 100% }
-#page-layout1-td { vertical-align: top }
-#page-top1 { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; position: absolute; left: 0px; top: 0px; width: 100%; }
+/* LAYOUT */
+#page-top { position: relative; height: 57px; margin: 0 -96px 0 -96px; left: 0; top: 0 }
+#page-layout { width: 100%; height: 100% }
+#page-left { width: 96px; background-image: url(/st/constructor/socio/left.gif); background-repeat: repeat-y; background-position: 0% 0%; }
+#page-left div { width: 96px }
+#page-right { width: 96px; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; }
+#page-right div { width: 96px }
+#page-width { width: 1000px }
+#page-top1 { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; height: 57px }
 #page-top2 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
 #page-top3 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; height: 57px }
-#page-top4 { padding: 0px 55px 0px 70px }
-#page-layout-content { padding: 82px 96px 25px 96px }
-#page-layout-simple-content { padding: 25px 96px 25px 96px }
+#page-top4 { padding: 0px 96px 0px 61px }
+#page-layout-content { vertical-align: top }
+#page-content { padding: 25px 0px 25px 0px }
 /* FORM */
 .form { margin-top: 30px }
+#search-form { margin: 0 }
 .form-desc { color: #0078ac; font-size: 17px; font-weight: bold; padding: 10px 0px 10px 0px }
 .form-w100 { width: 100% }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }

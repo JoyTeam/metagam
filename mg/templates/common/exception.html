@@ -1,0 +1,24 @@
+<h1>[%msg%]</h1>
+<table border="1">
+[%if host%]<tr><td>Host</td><td><strong>[%host%]</strong></td></tr>[%end%]
+[%if uri%]<tr><td>URL</td><td><strong>[%uri%]</strong></td></tr>[%end%]
+</table>
+<pre>[%dump%]</pre>
+[%if params%]
+<h1>Request parameters</h1>
+<table border="1">[%foreach ent in params%]<tr><td>[%ent.key%]</td><td>[%foreach val in ent.values%]<div>[%val%]</div>[%end%]</td></tr>[%end%]</table>
+[%end%]
+[%if session%]
+<h1>Session</h1>
+<table border="1">
+<tr><td>User</td><td>[%if session.user%]<strong>[%session.user%]</strong>[%else%]none[%end%]</td></tr>
+</table>
+[%end%]
+[%if cookies%]
+<h1>Cookies</h1>
+<table border="1">[%foreach ent in cookies%]<tr><td>[%ent.name%]</td><td>[%ent.value%]</td></tr>[%end%]</table>
+[%end%]
+[%if environ%]
+<h1>HTTP environment</h1>
+<table border="1">[%foreach ent in environ%]<tr><td>[%ent.key%]</td><td>[%ent.value%]</td></tr>[%end%]</table>
+[%end%]

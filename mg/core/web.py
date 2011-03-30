@@ -23,6 +23,7 @@ re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
 re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
 re_group = re.compile(r'^[a-z0-9\-]+')
+re_protocol = re.compile(r'^[a-z]+://')
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"
@@ -266,9 +267,7 @@ class WebDaemon(object):
         try:
             self.server.serve(addr)
             self.logger.info("serving %s:%d", addr[0], addr[1])
-        except (SystemExit, TaskletExit, KeyboardInterrupt):
-            raise
-        except BaseException as err:
+        except Exception as err:
             self.logger.error("Listen %s:%d: %s", addr[0], addr[1], err)
             os._exit(1)
 
@@ -285,9 +284,7 @@ class WebDaemon(object):
                         pass
                     else:
                         raise
-            except (SystemExit, TaskletExit, KeyboardInterrupt):
-                raise
-            except BaseException as err:
+            except Exception as err:
                 self.logger.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
                 os._exit(1)
         self.logger.error("Couldn't find any unused port")
@@ -309,15 +306,13 @@ class WebDaemon(object):
                 # remove doubling, leading and trailing slashes, unquote and convert to utf-8
                 uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
                 return self.request_uri(request, uri)
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
             except RuntimeError as e:
                 self.logger.error(e)
                 e = u"%s" % e
                 if type(e) == unicode:
                     e = e.encode("utf-8")
                 return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
-            except BaseException as e:
+            except Exception as e:
                 self.logger.exception(e)
                 return request.internal_server_error()
         finally:
@@ -358,8 +353,11 @@ class WebDaemon(object):
         "Process HTTP request with parsed URI"
         if self.app is None:
             raise RuntimeError("No applications configured. Load some payload modules")
-        #self.app.hooks.call("l10n.set_request_lang")
-        return self.app.http_request(request, group, hook, args)
+        try:
+            return self.app.http_request(request, group, hook, args)
+        except Exception as e:
+            self.app.hooks.call("exception.report", e)
+            raise
 
 class WebResponse(Exception):
     def __init__(self, content):
@@ -390,6 +388,7 @@ class WebApplication(Application):
         request.hook = hook
         request.args = re_remove_ver.sub("", args)
         try:
+            self.hooks.call("web.security_check")
             res = self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
         except WebResponse as res:
             res = res.content
@@ -447,6 +446,7 @@ class Web(Module):
         self.rhook("web.bad_request", self.web_bad_request)
         self.rhook("web.redirect", self.web_redirect)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("web.security_check", self.security_check)
 
     def objclasses_list(self, objclasses):
         objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
@@ -627,9 +627,7 @@ class Web(Module):
                 res = self.call("hook-%s" % hook_name, vars, **args)
             except WebResponse:
                 raise
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 self.error(traceback.format_exc())
                 res = ""
             if res is None:
@@ -682,6 +680,20 @@ class Web(Module):
 
     def web_redirect(self, uri):
         raise WebResponse(self.req().redirect(uri))
+
+    def security_check(self):
+        req = self.req()
+        if req.param("ok"):
+            if req.environ.get("REQUEST_METHOD") != "POST":
+                self.error("Security alert: request %s with method %s", req.uri(), req.environ.get("REQUEST_METHOD"))
+                raise WebResponse(req.send_response("403 Required POST", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: POST method required"))))
+            ref = req.environ.get("HTTP_REFERER")
+            if ref:
+                ref = re_protocol.sub('', ref)
+                required_prefix = req.host() + "/"
+                if not ref.startswith(required_prefix):
+                    self.error("Security alert: request %s to host %s from invalid referrer: %s", req.uri(), req.host(), req.environ.get("HTTP_REFERER"))
+                    raise WebResponse(req.send_response("403 Invalid Referer", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: Valid Referer required"))))
 
 class WebForm(object):
     """

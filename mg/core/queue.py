@@ -226,9 +226,7 @@ class QueueRunner(Module):
                         Tasklet.sleep(5)
                 else:
                     Tasklet.sleep(1)
-            except (KeyboardInterrupt, SystemExit, TaskletExit):
-                raise
-            except BaseException as e:
+            except Exception as e:
                 logging.getLogger("mg.core.queue.Queue").exception(e)
 
     def queue_run(self, task, worker):
@@ -252,9 +250,7 @@ class QueueRunner(Module):
                 if main_app.hooks.call("project.missing", tag):
                     self.info("Removing missing project %s", tag)
                     self.main_app().hooks.call("project.cleanup", tag)
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except BaseException as e:
+        except Exception as e:
             self.exception(e)
         self.workers = self.workers + 1
         self.processing.discard(task.uuid)

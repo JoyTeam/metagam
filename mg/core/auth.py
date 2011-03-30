@@ -218,6 +218,7 @@ class Interface(Module):
         self.rhook("ext-auth.login", self.ext_login)
         self.rhook("auth.messages", self.messages, priority=10)
         self.rhook("ext-auth.activate", self.ext_activate)
+        self.rhook("ext-auth.reactivate", self.ext_reactivate)
         self.rhook("ext-auth.remind", self.ext_remind)
         self.rhook("ext-auth.change", self.ext_change)
         self.rhook("ext-auth.email", self.ext_email)
@@ -390,8 +391,64 @@ class Interface(Module):
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
         form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
+        form.add_message_bottom(self._('If you have not received activation letter you can <a href="/auth/reactivate/%s">send another one or change your e-mail</a>' % user.uuid))
         vars = {
             "title": self._("User activation"),
+        }
+        self.call("web.response_global", form.html(), vars)
+
+    def ext_reactivate(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        if not user.get("inactive"):
+            redirects = {}
+            self.call("auth.redirects", redirects)
+            if redirects.has_key("register"):
+                self.call("web.redirect", redirects["register"])
+            self.call("web.redirect", "/")
+        session = self.call("session.get", True)
+        form = self.call("web.form", "common/form.html")
+        email = req.param("email")
+        captcha = req.param("captcha").strip()
+        if req.ok():
+            if not captcha:
+                form.error("captcha", self._("Enter numbers from the picture"))
+            else:
+                try:
+                    cap = self.obj(Captcha, session.uuid)
+                    if cap.get("number") != captcha:
+                        form.error("captcha", self._("Incorrect number"))
+                except ObjectNotFoundException:
+                    form.error("captcha", self._("Incorrect number"))
+            if not email:
+                form.error("email", self._("Enter new e-mail address"))
+            elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
+                form.error("email", self._("Enter correct e-mail"))
+            else:
+                existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
+                existing_email.load(silent=True)
+                if len(existing_email) > 1 or len(existing_email) and existing_email[0].uuid != user.uuid:
+                    form.error("email", self._("There is another user with this email"))
+            if not form.errors:
+                user.set("email", email.lower())
+                activation_code = uuid4().hex
+                user.set("activation_code", activation_code)
+                user.store()
+                params = {
+                    "subject": self._("Account activation"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                }
+                self.call("auth.activation_email", params)
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("web.redirect", "/auth/activate/%s" % user.uuid)
+        form.input(self._("New e-mail"), "email", email)
+        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        form.submit(None, None, self._("Reactivate"))
+        vars = {
+            "title": self._("Retrying activation"),
         }
         self.call("web.response_global", form.html(), vars)
 
@@ -441,9 +498,9 @@ class Interface(Module):
         field = 25
         char_w = 35
         char_h = 40
-        step = 20
+        step = 25
         digits = 6
-        jitter = 0.1 # 0.15
+        jitter = 0.15 # 0.15
         image = Image.new("RGB", (step * (digits - 1) + char_w + field * 2, char_h + field * 2), (255, 255, 255))
         draw = ImageDraw.Draw(image)
         number = ""
@@ -586,7 +643,7 @@ class Interface(Module):
                 if user is None:
                     form.error("name", msg["name_unknown"])
                 elif user.get("inactive"):
-                    form.error("name", msg["user_inactive"])
+                    self.call("web.redirect", "/auth/activate/%s" % user.uuid)
             if not password:
                 form.error("password", msg["password_empty"])
             if not form.errors:

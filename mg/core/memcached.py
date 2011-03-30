@@ -94,9 +94,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return {}
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -115,9 +113,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -136,9 +132,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -157,9 +151,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -178,9 +170,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -199,9 +189,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)
@@ -220,9 +208,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return MemcacheResult.ERROR
-        except (KeyboardInterrupt, SystemExit, TaskletExit):
-            raise
-        except:
+        except Exception:
             self.pool.new()
             raise
         self.pool.put(connection)

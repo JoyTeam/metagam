@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-29 00:11+0400\n"
+"POT-Creation-Date: 2011-03-30 13:34+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,7 +61,7 @@ msgstr ""
 msgid "To the main page"
 msgstr ""
 
-#: static/js/admin-form-presets.js:10
+#: static/js/admin-form-presets.js:11
 msgid "Presets:"
 msgstr ""
 

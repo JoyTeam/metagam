@@ -12,12 +12,10 @@ def main():
         app = WebApplication(inst, "int", "int")
         app.modules.load(["mg.core.server.Server"])
         app.hooks.call("server.run")
-    except (SystemExit, TaskletExit, KeyboardInterrupt):
-        raise
     except RuntimeError as e:
         logging.error(e)
         os._exit(1)
-    except BaseException as e:
+    except Exception as e:
         logging.exception(e)
         os._exit(1)
 

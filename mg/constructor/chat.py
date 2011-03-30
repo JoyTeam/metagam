@@ -119,7 +119,6 @@ class Chat(Module):
                     else:
                         btn["image"] = "/st/game/chat/chat-channel-%s.gif" % btn["state"]
                     btn["id"] = "chat-channel-button-%s" % btn["id"]
-                print buttons
                 buttons[-1]["lst"] = True
                 vars["chat_buttons"] = buttons
         vars["chat_channels"] = channels

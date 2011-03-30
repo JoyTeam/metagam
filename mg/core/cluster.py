@@ -36,9 +36,7 @@ class TempFile(CassandraObject):
             request.path = url
             request.host = host
             cnn.perform(request)
-        except (SystemExit, KeyboardInterrupt, TaskletExit):
-            raise
-        except:
+        except Exception:
             pass
         finally:
             cnn.close()
@@ -61,6 +59,10 @@ class Cluster(Module):
         self.rhook("cluster.static_preserve", self.static_preserve)
         self.rhook("cluster.static_upload_zip", self.static_upload_zip)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": -50})
 
     def query_director(self, uri, params={}):
         """
@@ -177,9 +179,7 @@ class Cluster(Module):
                         self.int_app().hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
                     except HTTPError as e:
                         self.error(e)
-                    except (KeyboardInterrupt, SystemExit, TaskletExit):
-                        raise
-                    except BaseException as e:
+                    except Exception as e:
                         self.exception(e)
     
     def objclasses_list(self, objclasses):

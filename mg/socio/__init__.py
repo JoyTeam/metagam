@@ -636,16 +636,12 @@ class Socio(Module):
                                 image_field = "url"
                     except TimeoutError as e:
                         form.error("url", self._("Timeout on downloading image. Time limit - 30 sec"))
-                    except (KeyboardInterrupt, SystemExit, TaskletExit):
-                        raise
-                    except BaseException as e:
+                    except Exception as e:
                         form.error("url", self._("Download error: %s") % htmlescape(str(e)))
                     finally:
                         try:
                             cnn.close()
-                        except (KeyboardInterrupt, SystemExit, TaskletExit):
-                            raise
-                        except:
+                        except Exception:
                             pass
             if image:
                 try:
