@@ -152,7 +152,7 @@ class Constructor(Module):
                 for link in links:
                     cabmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "title": link["html"], "href": link["href"], "left": True, "suffix": link["suffix"]})
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout %s") % htmlescape(user.get("name")), "href": "/auth/logout"})
-        elif req.group == "forum" or req.group == "socio" or req.group == "telegrams":
+        elif req.group == "forum" or req.group == "socio":
             vars["global_html"] = "constructor/socio_global.html"
             vars["title_suffix"] = " - %s" % self._("MMO Constructor Forum")
             redirect = req.param("redirect")
@@ -177,6 +177,15 @@ class Constructor(Module):
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
             if redirect_param:
                 topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
+        elif req.group == "telegrams":
+            vars["global_html"] = "constructor/socio_global.html"
+            vars["title_suffix"] = " - %s" % self._("MMO Constructor")
+            topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
+            links = []
+            self.call("telegrams.menu", links)
+            for link in links:
+                topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
+            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
         elif req.group == "doc":
             vars["global_html"] = "constructor/socio_global.html"
             topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
