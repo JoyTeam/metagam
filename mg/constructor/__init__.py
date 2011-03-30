@@ -29,7 +29,8 @@ class Constructor(Module):
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
-            "mg.constructor.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin"])
+            "mg.constructor.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
+            "mg.socio.telegrams.Telegrams"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
@@ -53,6 +54,7 @@ class Constructor(Module):
         self.rhook("auth.password-changed", self.password_changed)
         self.rhook("ext-test.delay", self.test_delay, priv="disabled")
         self.rhook("indexpage.render", self.indexpage_render)
+        self.rhook("telegrams.params", self.telegrams_params)
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -144,8 +146,12 @@ class Constructor(Module):
                 cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/doc", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
                 cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
+                links = []
+                self.call("telegrams.menu", links)
+                for link in links:
+                    cabmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "title": link["html"], "href": link["href"], "left": True, "suffix": link["suffix"]})
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout %s") % htmlescape(user.get("name")), "href": "/auth/logout"})
-        elif req.group == "forum" or req.group == "socio":
+        elif req.group == "forum" or req.group == "socio" or req.group == "telegrams":
             vars["global_html"] = "constructor/socio_global.html"
             vars["title_suffix"] = " - %s" % self._("MMO Constructor Forum")
             redirect = req.param("redirect")
@@ -160,6 +166,10 @@ class Constructor(Module):
                 topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
                     topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Forum settings")})
+                    links = []
+                    self.call("telegrams.menu", links)
+                    for link in links:
+                        topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
                     topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Return to the Cabinet")})
                 else:
                     topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
@@ -455,3 +465,13 @@ class Constructor(Module):
             {"code": "password", "prompt": self._("Enter your password")},
         ]
         vars["register_fields"] = fields
+
+    def telegrams_params(self, params):
+        params["menu_title"] = self._("telegrams menu///Post")
+        params["page_title"] = self._("Messages")
+        params["last_telegram"] = self._("Last message")
+        params["all_telegrams"] = self._("All messages")
+        params["send_telegram"] = self._("Send a new message")
+        params["text"] = self._("Message text")
+        params["system_name"] = self._("MMO Constructor")
+        params["telegrams_with"] = self._("Correspondence with {0}")

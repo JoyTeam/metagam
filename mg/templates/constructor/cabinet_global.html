@@ -7,7 +7,7 @@
 <table id="page-table"><tr><td id="page-td-cabinet">
 <table id="cab-toplogo"><tr><td><a href="/"><img src="/st/constructor/cabinet/logo.gif" alt="" title="[%ToTheMainPage%]" /></a></td></tr></table>
 <table id="cab-menu"><tr><td id="cab-menu-left">
-[%for ent in cabmenu_left%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end +%] [%+ if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ unless ent.lst%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
+[%for ent in cabmenu_left%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end +%] [%+ if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%][%ent.suffix%] [%+ unless ent.lst%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td><td id="cab-menu-right">
 [%for ent in cabmenu_right%][%if ent.image%]<img src="[%ent.image%]" alt="" />[%end +%] [%+ if ent.href%]<a href="[%ent.href%]">[%end%][%ent.title%][%if ent.href%]</a>[%end%] [%+ unless ent.lst%]<img src="/st/constructor/cabinet/delim.gif" alt="" /> [%+ end%][%end%]
 </td></tr></table>

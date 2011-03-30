@@ -19,7 +19,7 @@
 				<table id="socio-topmenu"><tr>
 				<td id="socio-topmenu-left-logo"><a href="/"><img src="/st/constructor/socio/top-left-logo.gif" alt="" /></a></td>
 				[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.header%]<span class="socio-topmenu-header">[%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%if ent.header%]</span>[%end%][%unless ent.lst +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%end%]</td>[%end%]
-				[%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.image%][%if ent.href%]<a href="[%ent.href%]">[%end%]<img src="[%ent.image%]" alt="" />[%if ent.href%]</a>[%end +%] [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%if ent.search%]<input id="socio-top-search" value="[%search_query%]" /> <a href="javascript:void(0)" onclick="return run_search();">[%ent.button%]</a>[%end%][%unless ent.lst +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%end%]</td>[%end%]
+				[%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.image%][%if ent.href%]<a href="[%ent.href%]">[%end%]<img src="[%ent.image%]" alt="" />[%if ent.href%]</a>[%end +%] [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%ent.suffix%][%if ent.search%]<input id="socio-top-search" value="[%search_query%]" /> <a href="javascript:void(0)" onclick="return run_search();">[%ent.button%]</a>[%end%][%unless ent.lst +%] <img src="/st/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%end%]</td>[%end%]
 				</tr></table>
 				</form>
 				</div></div></div></div>
