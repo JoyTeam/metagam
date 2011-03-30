@@ -12,8 +12,8 @@ caching = False
 class Dynamic(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js)
-        self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css)
+        self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js, priv="public")
+        self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css, priv="public")
         self.rhook("auth.char-form-changed", self.char_form_changed)
 
     def indexpage_js_mcid(self):
@@ -68,13 +68,13 @@ class Dynamic(Module):
 class Interface(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-index.index", self.index)
+        self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("indexpage.error", self.index_error)
         self.rhook("indexpage.response_template", self.response_template)
         self.rhook("auth.messages", self.auth_messages)
         self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout)
-        self.rhook("ext-interface.index", self.interface_index)
+        self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout, priv="design")
+        self.rhook("ext-interface.index", self.interface_index, priv="logged")
         self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
@@ -199,7 +199,6 @@ class Interface(Module):
             menu.append({"id": "gameinterface/layout", "text": self._("Game interface layout"), "leaf": True, "order": 2})
 
     def gameinterface_layout(self):
-        self.call("session.require_permission", "design")
         req = self.req()
         if req.ok():
             config = self.app().config
@@ -275,5 +274,4 @@ class Interface(Module):
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def interface_index(self):
-        self.call("session.require_login")
         self.call("web.response_global", "OK", {})

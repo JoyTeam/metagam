@@ -30,7 +30,7 @@ class ConstructorProjectAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-top.list", self.menu_top_list, priority=10)
-        self.rhook("ext-admin-project.destroy", self.project_destroy)
+        self.rhook("ext-admin-project.destroy", self.project_destroy, priv="project.admin")
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
@@ -55,7 +55,6 @@ class ConstructorProjectAdmin(Module):
             topmenu.append({"href": "/admin-project/destroy", "text": self._("Destroy this game"), "tooltip": self._("You can destroy your game while not created")})
 
     def project_destroy(self):
-        self.call("session.require_permission", "project.admin")
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
         self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])

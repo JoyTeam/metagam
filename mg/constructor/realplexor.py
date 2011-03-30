@@ -16,7 +16,7 @@ class RealplexorAdmin(Module):
         Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
-        self.rhook("ext-admin-constructor.realplexor-settings", self.realplexor_settings)
+        self.rhook("ext-admin-constructor.realplexor-settings", self.realplexor_settings, priv="realplexor.config")
         self.rhook("headmenu-admin-constructor.realplexor-settings", self.headmenu_realplexor_settings)
 
     def permissions_list(self, perms):
@@ -28,7 +28,6 @@ class RealplexorAdmin(Module):
             menu.append({"id": "constructor/realplexor-settings", "text": self._("Realplexor"), "leaf": True})
 
     def realplexor_settings(self):
-        self.call("session.require_permission", "realplexor.config")
         req = self.req()
         realplexor = req.param("realplexor")
         if req.param("ok"):

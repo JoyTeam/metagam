@@ -61,9 +61,9 @@ class Telegrams(Module):
         Module.register(self)
         self.rhook("telegrams.menu", self.menu)
         self.rhook("telegrams.send", self.send)
-        self.rhook("ext-telegrams.list", self.telegrams_list)
-        self.rhook("ext-telegrams.send", self.telegrams_send)
-        self.rhook("ext-telegrams.user", self.telegrams_user)
+        self.rhook("ext-telegrams.list", self.telegrams_list, priv="logged")
+        self.rhook("ext-telegrams.send", self.telegrams_send, priv="logged")
+        self.rhook("ext-telegrams.user", self.telegrams_user, priv="logged")
 
     def menu(self, menu_lst):
         req = self.req()
@@ -79,7 +79,6 @@ class Telegrams(Module):
             menu_lst.append({"href": "/telegrams/list" if req.group != "telegrams" or req.hook != "list" else None, "html": params.get("menu_title", self._("Telegrams")), "suffix": suffix})
 
     def telegrams_list(self):
-        self.call("session.require_login")
         params = {}
         self.call("telegrams.params", params)
         req = self.req()
@@ -115,7 +114,6 @@ class Telegrams(Module):
         self.call("web.response_template", "socio/telegrams-contragents.html", vars)
 
     def telegrams_send(self):
-        self.call("session.require_login")
         params = {}
         self.call("telegrams.params", params)
         req = self.req()
@@ -209,7 +207,6 @@ class Telegrams(Module):
             tel_cont_2.store()
 
     def telegrams_user(self):
-        self.call("session.require_login")
         params = {}
         self.call("telegrams.params", params)
         req = self.req()

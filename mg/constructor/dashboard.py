@@ -9,13 +9,13 @@ class ProjectDashboard(Module):
         self.rdep(["mg.constructor.invitations.Invitations"])
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
-        self.rhook("ext-admin-constructor.project-find", self.ext_project_find)
-        self.rhook("ext-admin-constructor.project-dashboard", self.ext_project_dashboard)
+        self.rhook("ext-admin-constructor.project-find", self.ext_project_find, priv="constructor.projects")
+        self.rhook("ext-admin-constructor.project-dashboard", self.ext_project_dashboard, priv="constructor.projects")
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
-        self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish)
+        self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish, priv="constructor.projects.unpublish")
         self.rhook("auth.user-tables", self.user_tables)
-        self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings)
+        self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings, priv="constructor.settings")
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -51,7 +51,6 @@ class ProjectDashboard(Module):
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
 
     def ext_project_find(self):
-        self.call("session.require_permission", "constructor.projects")
         req = self.req()
         uuid = req.param("uuid")
         if req.ok():
@@ -72,7 +71,6 @@ class ProjectDashboard(Module):
         self.call("admin.form", fields=fields, buttons=buttons)
 
     def ext_project_unpublish(self):
-        self.call("session.require_permission", "constructor.projects.unpublish")
         req = self.req()
         try:
             app = self.app().inst.appfactory.get_by_tag(req.args)
@@ -97,7 +95,6 @@ class ProjectDashboard(Module):
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
     def ext_project_dashboard(self):
-        self.call("session.require_permission", "constructor.projects")
         req = self.req()
         try:
             app = self.app().inst.appfactory.get_by_tag(req.args)
@@ -152,7 +149,6 @@ class ProjectDashboard(Module):
         perms.append({"id": "constructor.projects.unpublish", "name": self._("Constructor: unpublishing projects")})
 
     def ext_constructor_settings(self):
-        self.call("session.require_permission", "constructor.settings")
         req = self.req()
         config = self.main_app().config
         invitations = True if req.param("invitations") else False

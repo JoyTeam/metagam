@@ -402,10 +402,10 @@ class DomainsAdmin(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-domains.index", self.menu_domains_index)
-        self.rhook("ext-admin-domains.dns", self.ext_dns)
-        self.rhook("ext-admin-domains.prices", self.ext_prices)
-        self.rhook("ext-admin-domains.personal-data", self.ext_personal_data)
-        self.rhook("ext-admin-domains.pending", self.ext_pending)
+        self.rhook("ext-admin-domains.dns", self.ext_dns, priv="domains.dns")
+        self.rhook("ext-admin-domains.prices", self.ext_prices, priv="domains.prices")
+        self.rhook("ext-admin-domains.personal-data", self.ext_personal_data, priv="domains.personal-data")
+        self.rhook("ext-admin-domains.pending", self.ext_pending, priv="domains")
         self.rhook("domains.money_unlock", self.money_unlock)
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
@@ -440,7 +440,6 @@ class DomainsAdmin(Module):
             menu.append({"id": "domains/dns", "text": self._("DNS settings"), "leaf": True})
 
     def ext_dns(self):
-        self.call("session.require_permission", "domains.dns")
         req = self.req()
         main = self.main_app()
         ns1 = req.param("ns1")
@@ -461,7 +460,6 @@ class DomainsAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def ext_prices(self):
-        self.call("session.require_permission", "domains.prices")
         req = self.req()
         tlds = []
         self.call("domains.tlds", tlds)
@@ -490,7 +488,6 @@ class DomainsAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def ext_personal_data(self):
-        self.call("session.require_permission", "domains.personal-data")
         req = self.req()
         person_r = req.param("person-r")
         person = req.param("person")
@@ -541,7 +538,6 @@ class DomainsAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def ext_pending(self):
-        self.call("session.require_permission", "domains")
         req = self.req()
         m = re.match(r'(confirm|cancel|recheck)/(\S+)$', req.args)
         if m:

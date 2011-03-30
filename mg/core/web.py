@@ -144,13 +144,16 @@ class Request(object):
         return self.environ['PATH_INFO']
 
     def send_response(self, status, headers, content):
-        self.content = content
+        if type(content) == unicode:
+            self.content = content.encode("utf-8")
+        else:
+            self.content = content
         if self._set_cookies is not None:
             for cookie in self._set_cookies:
                 c = re_set_cookie.sub("", str(cookie))
                 headers.append(("Set-Cookie", c))
         self.start_response(status, headers)
-        return [content]
+        return [self.content]
 
     def bad_request(self):
         "Return 400 Bad Request"
@@ -183,7 +186,6 @@ class Request(object):
     def response(self, content):
         "Return HTTP response. content will be returned to the client"
         self.headers.append(('Content-type', self.content_type))
-        #self.headers.append(('Content-length', len(content)))
         return self.send_response("200 OK", self.headers, content)
 
     def uresponse(self, content):
@@ -389,7 +391,7 @@ class WebApplication(Application):
         request.args = re_remove_ver.sub("", args)
         try:
             self.hooks.call("web.security_check")
-            res = self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook))
+            res = self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
         except WebResponse as res:
             res = res.content
         if getattr(request, "cache", None):
@@ -417,12 +419,12 @@ class Web(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
-        self.rhook("int-core.ping", self.core_ping)
-        self.rhook("int-core.abort", self.core_abort)
+        self.rhook("int-core.ping", self.core_ping, priv="public")
+        self.rhook("int-core.abort", self.core_abort, priv="public")
         self.rhook("core.check_last_ping", self.check_last_ping)
-        self.rhook("int-core.reload", self.core_reload)
-        self.rhook("int-core.reload-hard", self.core_reload_hard)
-        self.rhook("int-core.appconfig", self.core_appconfig)
+        self.rhook("int-core.reload", self.core_reload, priv="public")
+        self.rhook("int-core.reload-hard", self.core_reload_hard, priv="public")
+        self.rhook("int-core.appconfig", self.core_appconfig, priv="public")
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.cache", self.web_cache)
         self.rhook("web.cache_invalidate", self.web_cache_invalidate)
@@ -686,6 +688,7 @@ class Web(Module):
         if req.param("ok"):
             if req.environ.get("REQUEST_METHOD") != "POST":
                 self.error("Security alert: request %s with method %s", req.uri(), req.environ.get("REQUEST_METHOD"))
+                req.headers.append(('Content-type', req.content_type))
                 raise WebResponse(req.send_response("403 Required POST", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: POST method required"))))
             ref = req.environ.get("HTTP_REFERER")
             if ref:
@@ -693,6 +696,7 @@ class Web(Module):
                 required_prefix = req.host() + "/"
                 if not ref.startswith(required_prefix):
                     self.error("Security alert: request %s to host %s from invalid referrer: %s", req.uri(), req.host(), req.environ.get("HTTP_REFERER"))
+                    req.headers.append(('Content-type', req.content_type))
                     raise WebResponse(req.send_response("403 Invalid Referer", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: Valid Referer required"))))
 
 class WebForm(object):

@@ -20,11 +20,11 @@ class Director(Module):
         self.queue_workers = {}
         self.workers_str = None
         self.rhook("web.setup_design", self.web_setup_design)
-        self.rhook("int-director.ready", self.director_ready)
-        self.rhook("int-director.reload", self.int_director_reload)
-        self.rhook("int-index.index", self.director_index)
-        self.rhook("int-director.setup", self.director_setup)
-        self.rhook("int-director.config", self.director_config)
+        self.rhook("int-director.ready", self.director_ready, priv="public")
+        self.rhook("int-director.reload", self.int_director_reload, priv="public")
+        self.rhook("int-index.index", self.director_index, priv="public")
+        self.rhook("int-director.setup", self.director_setup, priv="public")
+        self.rhook("int-director.config", self.director_config, priv="public")
         self.rhook("director.reload_servers", self.reload_servers)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("director.queue_workers", self.director_queue_workers)

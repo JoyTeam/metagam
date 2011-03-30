@@ -78,7 +78,7 @@ class Queue(Module):
     def register(self):
         Module.register(self)
         self.rhook("queue.add", self.queue_add)
-        self.rhook("int-queue.run", self.queue_run)
+        self.rhook("int-queue.run", self.queue_run, priv="public")
         self.rhook("queue.schedule", self.queue_schedule)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("all.check", self.check)
@@ -176,7 +176,7 @@ class QueueRunner(Module):
         Module.register(self)
         self.rhook("queue.process", self.queue_process)
         self.rhook("queue.processing", self.queue_processing)
-        self.rhook("int-schedule.update", self.schedule_update)
+        self.rhook("int-schedule.update", self.schedule_update, priv="public")
         self.processing = set()
         self.processing_uniques = set()
         self.workers = 4

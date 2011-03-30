@@ -91,7 +91,7 @@ class Wizards(Module):
         self.rhook("wizards.list", self.wizards_list)
         self.rhook("wizards.get", self.wizards_get)
         self.rhook("wizards.call", self.wizards_call)
-        self.rhook("ext-admin-wizard.call", self.wizard_call)
+        self.rhook("ext-admin-wizard.call", self.wizard_call, priv="project.admin")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("wizards.find", self.wizards_find)
 

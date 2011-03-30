@@ -174,7 +174,7 @@ msgstr "Ошибка во время регистрации"
 
 #: mg/templates/constructor/offer-ru.html:40
 msgid "I agree to the terms and conditions"
-msgstr "Я принимаю условия соглашения и договора"
+msgstr "Я принимаю условия соглашения"
 
 #: mg/templates/constructor/offer-ru.html:43
 msgid "I don't agree"

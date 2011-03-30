@@ -17,7 +17,7 @@ class EmailAdmin(Module):
         Module.register(self)
         self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("ext-admin-constructor.email-settings", self.email_settings)
+        self.rhook("ext-admin-constructor.email-settings", self.email_settings, priv="email.settings")
         self.rhook("headmenu-admin-constructor.email-settings", self.headmenu_email_settings)
 
     def permissions_list(self, perms):
@@ -29,7 +29,6 @@ class EmailAdmin(Module):
             menu.append({"id": "constructor/email-settings", "text": self._("E-mail"), "leaf": True})
 
     def email_settings(self):
-        self.call("session.require_permission", "email.settings")
         req = self.req()
         exceptions = req.param("exceptions")
         int_config = self.int_app().config

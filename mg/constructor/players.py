@@ -72,16 +72,16 @@ class Auth(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-users.index", self.menu_users_index)
-        self.rhook("ext-admin-players.auth", self.admin_players_auth)
+        self.rhook("ext-admin-players.auth", self.admin_players_auth, priv="players.auth")
         self.rhook("headmenu-admin-players.auth", self.headmenu_players_auth)
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("ext-admin-characters.form", self.admin_characters_form)
+        self.rhook("ext-admin-characters.form", self.admin_characters_form, priv="players.auth")
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("indexpage.render", self.indexpage_render)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.form_params", self.auth_form_params)
-        self.rhook("ext-player.register", self.player_register)
-        self.rhook("ext-player.login", self.player_login)
+        self.rhook("ext-player.register", self.player_register, priv="public")
+        self.rhook("ext-player.login", self.player_login, priv="public")
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("auth.activated", self.auth_activated)
 
@@ -132,7 +132,6 @@ class Auth(Module):
         return self._("Players authentication settings")
 
     def admin_players_auth(self):
-        self.call("session.require_permission", "players.auth")
         req = self.req()
         config = self.app().config
         currencies = {}
@@ -227,7 +226,6 @@ class Auth(Module):
         self.call("admin.form", fields=fields)
 
     def admin_characters_form(self):
-        self.call("session.require_permission", "players.auth")
         req = self.req()
         character_form = self.character_form()
         m = re_delete_recover.match(req.args)

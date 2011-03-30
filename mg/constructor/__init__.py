@@ -31,12 +31,12 @@ class Constructor(Module):
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
             "mg.constructor.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)
-        self.rhook("ext-index.index", self.index)
-        self.rhook("ext-cabinet.index", self.cabinet_index)
+        self.rhook("ext-index.index", self.index, priv="public")
+        self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
         self.rhook("auth.redirects", self.redirects)
-        self.rhook("ext-cabinet.settings", self.cabinet_settings)
-        self.rhook("ext-debug.validate", self.debug_validate)
-        self.rhook("ext-constructor.newgame", self.constructor_newgame)
+        self.rhook("ext-cabinet.settings", self.cabinet_settings, priv="logged")
+        self.rhook("ext-debug.validate", self.debug_validate, priv="disabled")
+        self.rhook("ext-constructor.newgame", self.constructor_newgame, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("all.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
@@ -51,7 +51,7 @@ class Constructor(Module):
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("auth.register-form", self.register_form)
         self.rhook("auth.password-changed", self.password_changed)
-        self.rhook("ext-test.delay", self.test_delay)
+        self.rhook("ext-test.delay", self.test_delay, priv="disabled")
         self.rhook("indexpage.render", self.indexpage_render)
 
     def test_delay(self):
@@ -233,7 +233,6 @@ class Constructor(Module):
 
     def cabinet_index(self):
         req = self.req()
-        session = self.call("session.require_login")
         menu = []
         menu_projects = []
         # constructor admin
@@ -267,7 +266,7 @@ class Constructor(Module):
                             self.debug("Player %s is admin", player_user.uuid)
                             if player_user.get("inactive"):
                                 self.debug("Player is INACTIVE")
-                                href = "http://%s/auth/activate/%s?code=%s&ok=1" % (domain, player_user.uuid, player_user.get("activation_code"))
+                                href = "http://%s/auth/activate/%s?code=%s&okget=1" % (domain, player_user.uuid, player_user.get("activation_code"))
                         comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
                 if href is None:
                     href = "http://%s/admin" % domain
@@ -292,7 +291,6 @@ class Constructor(Module):
         self.call("web.response_global", None, vars)
 
     def cabinet_settings(self):
-        session = self.call("session.require_login")
         vars = {
             "title": self._("MMO Constructor Settings"),
             "cabinet_menu": [
@@ -333,7 +331,6 @@ class Constructor(Module):
         self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):
-        self.call("session.require_login")
         req = self.req()
         # Registration on invitations
         if self.conf("constructor.invitations"):
@@ -404,7 +401,7 @@ class Constructor(Module):
         perms.store()
         # creating setup wizard
         app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
-        self.call("web.redirect", "http://%s/auth/activate/%s?ok=1&code=%s" % (app.domain, player_user.uuid, activation_code))
+        self.call("web.redirect", "http://%s/auth/activate/%s?okget=1&code=%s" % (app.domain, player_user.uuid, activation_code))
 
     def cleanup(self, tag):
         inst = self.app().inst

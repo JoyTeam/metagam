@@ -360,14 +360,14 @@ class Money(Module):
         self.rhook("auth.user-options", self.user_options)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("ext-admin-money.give", self.admin_money_give)
+        self.rhook("ext-admin-money.give", self.admin_money_give, priv="users.money.give")
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
-        self.rhook("ext-admin-money.take", self.admin_money_take)
+        self.rhook("ext-admin-money.take", self.admin_money_take, priv="users.money.give")
         self.rhook("headmenu-admin-money.take", self.headmenu_money_take)
         self.rhook("currencies.list", self.currencies_list, priority=-1000)
         self.rhook("money-description.admin-give", self.money_description_admin_give)
         self.rhook("money-description.admin-take", self.money_description_admin_take)
-        self.rhook("ext-admin-money.account", self.admin_money_account)
+        self.rhook("ext-admin-money.account", self.admin_money_account, priv="users.money")
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
         self.rhook("money.member-money", self.member_money)
         self.rhook("money.valid_amount", self.valid_amount)
@@ -431,7 +431,6 @@ class Money(Module):
         return valid
 
     def admin_money_give(self):
-        self.call("session.require_permission", "users.money.give")
         req = self.req()
         try:
             user = self.obj(User, req.args)
@@ -466,7 +465,6 @@ class Money(Module):
         return [self._("Take money"), "auth/user-dashboard/%s" % args]
 
     def admin_money_take(self):
-        self.call("session.require_permission", "users.money.give")
         req = self.req()
         try:
             user = self.obj(User, req.args)
@@ -510,7 +508,6 @@ class Money(Module):
         return [self._("Account %s") % acc.uuid, "auth/user-dashboard/%s" % acc.get("member")]
 
     def admin_money_account(self):
-        self.call("session.require_permission", "users.money")
         req = self.req()
         try:
             account = self.obj(Account, req.args)
@@ -588,8 +585,8 @@ class Money(Module):
 class TwoPay(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-ext-payment.2pay", self.payment_2pay)
-        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay)
+        self.rhook("ext-ext-payment.2pay", self.payment_2pay, priv="public")
+        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay, priv="constructor.projects-2pay")
         self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
         self.rhook("money-description.2pay-pay", self.money_description_2pay_pay)
         self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
@@ -630,7 +627,6 @@ class TwoPay(Module):
         objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
 
     def project_2pay(self):
-        self.call("session.require_permission", "constructor.projects-2pay")
         req = self.req()
         uuid = req.args
         cmd = ""

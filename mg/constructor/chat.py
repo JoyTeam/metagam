@@ -6,7 +6,7 @@ class Chat(Module):
         self.rhook("menu-admin-game.index", self.menu_game_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-chat.config", self.headmenu_chat_config)
-        self.rhook("ext-admin-chat.config", self.chat_config)
+        self.rhook("ext-admin-chat.config", self.chat_config, priv="chat.config")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("admin-gameinterface.design-files", self.gameinterface_advice_files)
 
@@ -22,7 +22,6 @@ class Chat(Module):
         return self._("Chat configuration")
 
     def chat_config(self):
-        self.call("session.require_permission", "chat.config")
         req = self.req()
         config = self.app().config
         if req.param("ok"):

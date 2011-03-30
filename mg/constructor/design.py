@@ -859,7 +859,6 @@ class DesignAdmin(Module):
             menu.append({"id": "design.index", "text": self._("Design"), "order": 20})
 
     def editor(self, group):
-        self.call("session.require_permission", "design")
         self.call("admin.advice", {"title": self._("Preview feature"), "content": self._('Use "preview" feature to check your design before installing it to the project. Then press "Reload" several times to check design on arbitrary data.')}, {"title": self._("Multiple browsers"), "content": self._('Check your design in the most popular browsers.') + u' <a href="http://www.google.com/search?q={0}" target="_blank">{1}</a>.'.format(urlencode(self._("google///browser statistics")), self._("Find the most popular browsers"))})
         with self.lock(["DesignAdmin-%s" % group]):
             req = self.req()
@@ -1087,7 +1086,7 @@ class IndexPageAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-indexpage.design", self.ext_design)
+        self.rhook("ext-admin-indexpage.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
         self.rhook("admin-indexpage.validate", self.validate)
         self.rhook("admin-indexpage.preview-data", self.preview_data)
@@ -1235,7 +1234,7 @@ class SocioInterface(Module):
         self.rhook("forum.vars-category", self.forum_vars_category)
         self.rhook("forum.vars-topic", self.forum_vars_topic)
         self.rhook("forum.vars-tags", self.forum_vars_tags)
-        self.rhook("ext-admin-sociointerface.templates", self.templates)
+        self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
 
     def templates(self):
         output = cStringIO.StringIO()
@@ -1280,7 +1279,7 @@ class SocioInterfaceAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-sociointerface.design", self.ext_design)
+        self.rhook("ext-admin-sociointerface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-sociointerface.design", self.headmenu_design)
         self.rhook("admin-sociointerface.validate", self.validate)
         self.rhook("admin-sociointerface.previews", self.previews)
@@ -1531,7 +1530,7 @@ class GameInterfaceAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-design.index", self.menu_design_index)
-        self.rhook("ext-admin-gameinterface.design", self.ext_design)
+        self.rhook("ext-admin-gameinterface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)
         self.rhook("admin-gameinterface.validate", self.validate)
         self.rhook("admin-gameinterface.preview-data", self.preview_data)

@@ -187,21 +187,21 @@ class ForumAdmin(Module):
         self.rdep(["mg.socio.Forum"])
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
-        self.rhook("ext-admin-forum.categories", self.admin_categories)
+        self.rhook("ext-admin-forum.categories", self.admin_categories, priv="forum.categories")
         self.rhook("headmenu-admin-forum.categories", self.headmenu_forum_categories)
-        self.rhook("ext-admin-forum.category", self.admin_category)
+        self.rhook("ext-admin-forum.category", self.admin_category, priv="forum.categories")
         self.rhook("headmenu-admin-forum.category", self.headmenu_forum_category)
-        self.rhook("ext-admin-forum.access", self.admin_access)
+        self.rhook("ext-admin-forum.access", self.admin_access, priv="forum.categories")
         self.rhook("headmenu-admin-forum.access", self.headmenu_forum_access)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.default_rules", self.default_rules)
-        self.rhook("ext-admin-forum.delete", self.admin_delete)
+        self.rhook("ext-admin-forum.delete", self.admin_delete, priv="forum.categories")
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("advice-admin-forum.categories", self.advice_forum_categories)
         self.rhook("advice-admin-forum.category", self.advice_forum_categories)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("headmenu-admin-socio.user", self.headmenu_user)
-        self.rhook("ext-admin-socio.user", self.user)
+        self.rhook("ext-admin-socio.user", self.user, priv="public")
 
     def advice_forum_categories(self, args, advice):
         advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
@@ -219,11 +219,9 @@ class ForumAdmin(Module):
             menu.append({ "id": "forum.index", "text": self._("Forum") })
 
     def menu_forum_index(self, menu):
-        self.call("session.require_permission", "forum.categories")
         menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
 
     def admin_categories(self):
-        self.call("session.require_permission", "forum.categories")
         categories = []
         topcat = None
         for cat in self.call("forum.categories"):
@@ -249,7 +247,6 @@ class ForumAdmin(Module):
         return self._("Forum categories")
 
     def admin_category(self):
-        self.call("session.require_permission", "forum.categories")
         req = self.req()
         if req.args == "new":
             cat = {}
@@ -347,7 +344,6 @@ class ForumAdmin(Module):
         return [self._("Category %s") % cat["title"], "forum/categories"]
 
     def admin_access(self):
-        self.call("session.require_permission", "forum.categories")
         permissions = []
         permissions.append(("-R", self._("Deny everything")))
         permissions.append(("+R", self._("Allow reading")))
@@ -369,7 +365,6 @@ class ForumAdmin(Module):
         return [self._("Access"), "forum/category/" + re.sub(r'/.*', '', args)]
 
     def admin_delete(self):
-        self.call("session.require_permission", "forum.categories")
         cat = self.call("forum.category", self.req().args)
         if cat is None:
             self.call("admin.redirect", "forum/categories")
@@ -437,8 +432,8 @@ class Socio(Module):
     def register(self):
         Module.register(self)
         self.rhook("socio.format_text", self.format_text)
-        self.rhook("ext-socio.image", self.ext_image)
-        self.rhook("ext-socio.user", self.ext_user)
+        self.rhook("ext-socio.image", self.ext_image, priv="logged")
+        self.rhook("ext-socio.user", self.ext_user, priv="public")
         self.rhook("socio.template", self.template)
         self.rhook("socio.word_extractor", self.word_extractor)
         self.rhook("socio.fulltext_store", self.fulltext_store)
@@ -596,7 +591,6 @@ class Socio(Module):
         return html
 
     def ext_image(self):
-        self.call("session.require_login")
         req = self.req()
         if not re.match(r'^[a-z0-9_]+$', req.args):
             self.call("web.not_found")
@@ -746,23 +740,23 @@ class Forum(Module):
         self.rhook("forum.response", self.response)
         self.rhook("forum.response_template", self.response_template)
         self.rhook("forum.sync", self.sync)
-        self.rhook("ext-forum.index", self.ext_index)
-        self.rhook("ext-forum.cat", self.ext_category)
-        self.rhook("ext-forum.newtopic", self.ext_newtopic)
-        self.rhook("ext-forum.topic", self.ext_topic)
-        self.rhook("ext-forum.reply", self.ext_reply)
-        self.rhook("ext-forum.delete", self.ext_delete)
-        self.rhook("ext-forum.edit", self.ext_edit)
-        self.rhook("ext-forum.settings", self.ext_settings)
-        self.rhook("ext-forum.subscribe", self.ext_subscribe)
-        self.rhook("ext-forum.unsubscribe", self.ext_unsubscribe)
-        self.rhook("ext-forum.pin", self.ext_pin)
-        self.rhook("ext-forum.unpin", self.ext_unpin)
-        self.rhook("ext-forum.move", self.ext_move)
-        self.rhook("ext-forum.tag", self.ext_tag)
-        self.rhook("ext-forum.tags", self.ext_tags)
-        self.rhook("ext-forum.search", self.ext_search)
-        self.rhook("ext-forum.subscribed", self.ext_subscribed)
+        self.rhook("ext-forum.index", self.ext_index, priv="public")
+        self.rhook("ext-forum.cat", self.ext_category, priv="public")
+        self.rhook("ext-forum.newtopic", self.ext_newtopic, priv="public")
+        self.rhook("ext-forum.topic", self.ext_topic, priv="public")
+        self.rhook("ext-forum.reply", self.ext_reply, priv="public")
+        self.rhook("ext-forum.delete", self.ext_delete, priv="public")
+        self.rhook("ext-forum.edit", self.ext_edit, priv="public")
+        self.rhook("ext-forum.settings", self.ext_settings, priv="logged")
+        self.rhook("ext-forum.subscribe", self.ext_subscribe, priv="logged")
+        self.rhook("ext-forum.unsubscribe", self.ext_unsubscribe, priv="logged")
+        self.rhook("ext-forum.pin", self.ext_pin, priv="logged")
+        self.rhook("ext-forum.unpin", self.ext_unpin, priv="logged")
+        self.rhook("ext-forum.move", self.ext_move, priv="logged")
+        self.rhook("ext-forum.tag", self.ext_tag, priv="public")
+        self.rhook("ext-forum.tags", self.ext_tags, priv="public")
+        self.rhook("ext-forum.search", self.ext_search, priv="public")
+        self.rhook("ext-forum.subscribed", self.ext_subscribed, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("all.schedule", self.schedule)
@@ -1739,7 +1733,6 @@ class Forum(Module):
         self.call("forum.response", form.html(), vars)
 
     def ext_settings(self):
-        self.call("session.require_login")
         req = self.req()
         user_uuid = req.user()
         try:
@@ -1865,7 +1858,6 @@ class Forum(Module):
     def ext_subscribe(self):
         req = self.req()
         user_uuid = req.user()
-        self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
@@ -1884,7 +1876,6 @@ class Forum(Module):
     def ext_unsubscribe(self):
         req = self.req()
         user_uuid = req.user()
-        self.call("session.require_login")
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
@@ -1902,7 +1893,6 @@ class Forum(Module):
 
     def ext_pin(self):
         req = self.req()
-        self.call("session.require_login")
         with self.lock(["ForumTopic-" + req.args]):
             try:
                 topic = self.obj(ForumTopic, req.args)
@@ -1923,7 +1913,6 @@ class Forum(Module):
 
     def ext_unpin(self):
         req = self.req()
-        self.call("session.require_login")
         with self.lock(["ForumTopic-" + req.args]):
             try:
                 topic = self.obj(ForumTopic, req.args)
@@ -1944,7 +1933,6 @@ class Forum(Module):
 
     def ext_move(self):
         req = self.req()
-        self.call("session.require_login")
         with self.lock(["ForumTopic-" + req.args]):
             try:
                 topic = self.obj(ForumTopic, req.args)
@@ -2264,7 +2252,6 @@ class Forum(Module):
         self.call("forum.response_template", "socio/topic.html", vars)
 
     def ext_subscribed(self):
-        self.call("session.require_login")
         req = self.req()
         user_uuid = req.user()
         categories = self.categories()

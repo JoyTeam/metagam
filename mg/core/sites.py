@@ -22,7 +22,7 @@ class CountersAdmin(Module):
         self.rdep(["mg.core.sites.SiteAdmin"])
         self.rhook("menu-admin-site.index", self.menu_site)
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("ext-admin-site.counters", self.counters)
+        self.rhook("ext-admin-site.counters", self.counters, priv="site.counters")
 
     def permissions_list(self, perms):
         perms.append({"id": "site.counters", "name": self._("Counters administration")})
@@ -33,7 +33,6 @@ class CountersAdmin(Module):
             menu.append({"id": "site/counters", "text": self._("Counters"), "leaf": True})
 
     def counters(self):
-        self.call("session.require_permission", "site.counters")
         req = self.req()
         html = req.param("html")
         if req.param("ok"):

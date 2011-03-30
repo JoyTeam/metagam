@@ -28,7 +28,7 @@ class Invitations(Module):
     def register(self):
         Module.register(self)
         self.rhook("headmenu-admin-constructor.invitations", self.headmenu_constructor_invitations)
-        self.rhook("ext-admin-constructor.invitations", self.ext_constructor_invitations)
+        self.rhook("ext-admin-constructor.invitations", self.ext_constructor_invitations, priv="constructor.invitations")
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("invitation.ok", self.invitation_ok)
@@ -48,7 +48,6 @@ class Invitations(Module):
         return self._("Invitations for the registration")
 
     def ext_constructor_invitations(self):
-        self.call("session.require_permission", "constructor.invitations")
         if not self.conf("constructor.invitations"):
             self.call("web.not_found")
         req = self.req()

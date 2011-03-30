@@ -13,8 +13,8 @@ class Server(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.cluster.Cluster", "mg.core.web.Web"])
-        self.rhook("int-server.spawn", self.spawn)
-        self.rhook("int-server.nginx", self.nginx)
+        self.rhook("int-server.spawn", self.spawn, priv="public")
+        self.rhook("int-server.nginx", self.nginx, priv="public")
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("server.run", self.run)
         self.executable = re.sub(r'[^\/]+$', 'mg_worker', sys.argv[0])

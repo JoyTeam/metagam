@@ -5,7 +5,7 @@ class Game(Module):
         Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-game.index", self.menu_game_index)
-        self.rhook("ext-admin-game.profile", self.ext_profile)
+        self.rhook("ext-admin-game.profile", self.ext_profile, priv="game.profile")
         self.rhook("headmenu-admin-game.profile", self.headmenu_profile)
         self.rhook("permissions.list", self.permissions_list)
 
@@ -24,7 +24,6 @@ class Game(Module):
         return self._("Game profile")
 
     def ext_profile(self):
-        self.call("session.require_permission", "game.profile")
         req = self.req()
         config = self.app().config
         author_name = req.param("author_name")

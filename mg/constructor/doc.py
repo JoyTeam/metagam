@@ -10,8 +10,8 @@ class Documentation(Module):
     def register(self):
         Module.register(self)
 
-        self.rhook("ext-doc.index", self.index)
-        self.rhook("ext-doc.handler", self.handler)
+        self.rhook("ext-doc.index", self.index, priv="public")
+        self.rhook("ext-doc.handler", self.handler, priv="public")
 
     def index(self):
         req = self.req()

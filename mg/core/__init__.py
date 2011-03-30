@@ -52,6 +52,10 @@ class DownloadError(Exception):
     "Failed Module().download()"
     pass
 
+class HandlerPermissionError(Exception):
+    "Permission checks on the hook handler failed"
+    pass
+
 class Hooks(object):
     """
     This class is a hook manager for the application. It keeps list of loaded handlers
@@ -96,7 +100,7 @@ class Hooks(object):
             for g in load_groups:
                 self.loaded_groups.add(g)
 
-    def register(self, module_name, hook_name, handler, priority=0):
+    def register(self, module_name, hook_name, handler, priority=0, priv=None):
         """
         Register hook handler
         module_name - fully qualified module name
@@ -108,7 +112,7 @@ class Hooks(object):
         if lst is None:
             lst = []
             self.handlers[hook_name] = lst
-        lst.append((handler, priority, module_name))
+        lst.append((handler, priority, module_name, priv))
         lst.sort(key=itemgetter(1), reverse=True)
 
     def unregister_all(self):
@@ -121,7 +125,14 @@ class Hooks(object):
         Call handlers of the hook
         name - hook name ("group.name")
         *args, **kwargs - arbitrary parameters passed to the handlers
+        Some special kwargs (they are not passed to the handlers):
+        check_priv - require permission setting for the habdler
         """
+        if "check_priv" in kwargs:
+            check_priv = kwargs["check_priv"]
+            del kwargs["check_priv"]
+        else:
+            check_priv = None
         m = re_hook_path.match(name)
         if not m:
             raise HookFormatException("Invalid hook name: %s" % name)
@@ -133,7 +144,16 @@ class Hooks(object):
         handlers = self.handlers.get(name)
         ret = None
         if handlers is not None:
-            for handler, priority, module_name in handlers:
+            for handler, priority, module_name, priv in handlers:
+                if check_priv:
+                    if priv is None:
+                        raise HandlerPermissionError("No privilege information in handler %s of module %s" % (name, module_name))
+                    if priv == "public":
+                        pass
+                    elif priv == "logged":
+                        self.call("session.require_login")
+                    else:
+                        self.call("session.require_permission", priv)
                 try:
                     res = handler(*args, **kwargs)
                     if type(res) == tuple:

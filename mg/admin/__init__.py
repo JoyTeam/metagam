@@ -12,7 +12,7 @@ re_form_condition = re.compile(r'\[([a-z_][a-z0-9_]*)\]')
 class AdminInterface(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-admin.index", self.index)
+        self.rhook("ext-admin.index", self.index, priv="logged")
         self.rhook("admin.response_js", self.response_js)
         self.rhook("admin.response_json", self.response_json)
         self.rhook("admin.response", self.response)
@@ -25,7 +25,6 @@ class AdminInterface(Module):
         self.rhook("admin.advice", self.advice)
 
     def index(self):
-        self.call("session.require_login")
         menu = self.makemenu()
         vars = {
             "menu": json.dumps(menu),

@@ -201,31 +201,31 @@ class Interface(Module):
         self.rhook("auth.permissions", self.auth_permissions)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-users.index", self.menu_users_index)
-        self.rhook("ext-admin-auth.permissions", self.admin_permissions)
+        self.rhook("ext-admin-auth.permissions", self.admin_permissions, priv="permissions")
         self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
-        self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions)
+        self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions, priv="permissions")
         self.rhook("headmenu-admin-auth.editpermissions", self.headmenu_editpermissions)
-        self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions)
+        self.rhook("ext-admin-auth.edituserpermissions", self.admin_edituserpermissions, priv="permissions")
         self.rhook("headmenu-admin-auth.edituserpermissions", self.headmenu_edituserpermissions)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
         self.rhook("all.schedule", self.schedule)
         self.rhook("auth.cleanup", self.cleanup)
-        self.rhook("ext-auth.register", self.ext_register)
-        self.rhook("ext-auth.captcha", self.ext_captcha)
-        self.rhook("ext-auth.logout", self.ext_logout)
-        self.rhook("ext-auth.login", self.ext_login)
+        self.rhook("ext-auth.register", self.ext_register, priv="public")
+        self.rhook("ext-auth.captcha", self.ext_captcha, priv="public")
+        self.rhook("ext-auth.logout", self.ext_logout, priv="public")
+        self.rhook("ext-auth.login", self.ext_login, priv="public")
         self.rhook("auth.messages", self.messages, priority=10)
-        self.rhook("ext-auth.activate", self.ext_activate)
-        self.rhook("ext-auth.reactivate", self.ext_reactivate)
-        self.rhook("ext-auth.remind", self.ext_remind)
-        self.rhook("ext-auth.change", self.ext_change)
-        self.rhook("ext-auth.email", self.ext_email)
+        self.rhook("ext-auth.activate", self.ext_activate, priv="public")
+        self.rhook("ext-auth.reactivate", self.ext_reactivate, priv="public")
+        self.rhook("ext-auth.remind", self.ext_remind, priv="public")
+        self.rhook("ext-auth.change", self.ext_change, priv="logged")
+        self.rhook("ext-auth.email", self.ext_email, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("ext-admin-auth.user-find", self.ext_user_find)
-        self.rhook("ext-admin-auth.user-dashboard", self.ext_user_dashboard)
-        self.rhook("ext-admin-auth.user-lastreg", self.ext_user_lastreg)
+        self.rhook("ext-admin-auth.user-find", self.ext_user_find, priv="users")
+        self.rhook("ext-admin-auth.user-dashboard", self.ext_user_dashboard, priv="users")
+        self.rhook("ext-admin-auth.user-lastreg", self.ext_user_lastreg, priv="users")
         self.rhook("headmenu-admin-auth.user-dashboard", self.headmenu_user_dashboard)
 
     def schedule(self, sched):
@@ -364,7 +364,7 @@ class Interface(Module):
         session = self.call("session.get", True)
         form = self.call("web.form", "common/form.html")
         code = req.param("code")
-        if req.ok():
+        if req.param("ok") or req.param("okget"):
             if not code:
                 form.error("code", self._("Enter activation code from your e-mail box"))
             elif code != user.get("activation_code"):
@@ -681,7 +681,6 @@ class Interface(Module):
         self.call("web.response_global", form.html(vars), vars)
 
     def ext_change(self):
-        self.call("session.require_login")
         ret = "/"
         redirects = {}
         self.call("auth.redirects", redirects)
@@ -750,7 +749,6 @@ class Interface(Module):
         self.call("web.response_global", form.html(vars), vars)
 
     def ext_email(self):
-        self.call("session.require_login")
         req = self.req()
         user = self.obj(User, req.user())
         if req.args == "confirm":
@@ -1003,7 +1001,6 @@ class Interface(Module):
         return [self._("User %s") % cgi.escape(user.get("name"))]
 
     def ext_user_find(self):
-        self.call("session.require_permission", "users")
         req = self.req()
         name = req.param("name")
         if req.ok():
@@ -1024,7 +1021,6 @@ class Interface(Module):
         self.call("admin.form", fields=fields, buttons=buttons)
 
     def ext_user_dashboard(self):
-        self.call("session.require_permission", "users")
         req = self.req()
         try:
             user = self.obj(User, req.args)
@@ -1047,7 +1043,6 @@ class Interface(Module):
         self.call("admin.response_template", "admin/auth/user-dashboard.html", vars)
 
     def ext_user_lastreg(self):
-        self.call("session.require_permission", "users")
         tables = []
         users = self.objlist(UserList, query_index="created", query_reversed=True, query_limit=30)
         users.load()
