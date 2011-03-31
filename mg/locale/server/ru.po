@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-31 01:03+0400\n"
-"PO-Revision-Date: 2011-03-31 01:04+0300\n"
+"POT-Creation-Date: 2011-03-31 18:47+0400\n"
+"PO-Revision-Date: 2011-03-31 18:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -198,21 +198,25 @@ msgstr "{2:02d} {1} {0}"
 msgid "Site"
 msgstr "Сайт"
 
-#: mg/core/sites.py:28
+#: mg/core/sites.py:29
 msgid "Counters administration"
 msgstr "Администрирование счётчиков"
 
-#: mg/core/sites.py:33
+#: mg/core/sites.py:34
 msgid "Counters"
 msgstr "Счётчики"
 
-#: mg/core/sites.py:42
+#: mg/core/sites.py:45
 msgid "Counters stored"
 msgstr "Счётчики сохранены"
 
-#: mg/core/sites.py:46
+#: mg/core/sites.py:50
 msgid "Counters HTML code"
 msgstr "HTML-код счётчиков"
+
+#: mg/core/sites.py:51
+msgid "Tracking code (before the end of 'head')"
+msgstr "Код для отслеживания (перед концом раздела head)"
 
 #: mg/core/cluster.py:65
 msgid "Cluster"
@@ -284,7 +288,7 @@ msgstr "Это имя уже занято"
 
 #: mg/core/auth.py:272
 #: mg/core/auth.py:627
-#: mg/constructor/__init__.py:466
+#: mg/constructor/__init__.py:475
 #: mg/constructor/players.py:474
 msgid "Enter your password"
 msgstr "Введите ваш пароль"
@@ -1659,7 +1663,7 @@ msgid "Unread"
 msgstr "Новые"
 
 #: mg/constructor/design.py:1252
-#: mg/constructor/__init__.py:473
+#: mg/constructor/__init__.py:482
 msgid "Last message"
 msgstr "Последнее сообщение"
 
@@ -2801,7 +2805,8 @@ msgstr "Место, где вы можете договориться о пок�
 
 #: mg/constructor/__init__.py:18
 #: mg/constructor/__init__.py:149
-#: mg/constructor/__init__.py:182
+#: mg/constructor/__init__.py:183
+#: mg/constructor/__init__.py:191
 #: mg/socio/__init__.py:219
 msgid "Forum"
 msgstr "Форум"
@@ -2811,7 +2816,8 @@ msgid "Go to the Constructor forum"
 msgstr "Перейти на форум Конструктора"
 
 #: mg/constructor/__init__.py:19
-#: mg/constructor/__init__.py:294
+#: mg/constructor/__init__.py:188
+#: mg/constructor/__init__.py:303
 msgid "Cabinet"
 msgstr "Кабинет"
 
@@ -2819,7 +2825,7 @@ msgstr "Кабинет"
 #: mg/constructor/__init__.py:125
 #: mg/constructor/__init__.py:144
 #: mg/constructor/__init__.py:174
-#: mg/constructor/__init__.py:184
+#: mg/constructor/__init__.py:193
 msgid "Return to the Cabinet"
 msgstr "Возврат в кабинет"
 
@@ -2886,143 +2892,144 @@ msgid "socio-top///Search"
 msgstr "Поиск"
 
 #: mg/constructor/__init__.py:169
-#: mg/constructor/__init__.py:311
+#: mg/constructor/__init__.py:320
 #: mg/socio/__init__.py:1743
 msgid "Forum settings"
 msgstr "Настройки форума"
 
-#: mg/constructor/__init__.py:185
+#: mg/constructor/__init__.py:182
+#: mg/constructor/__init__.py:486
+#: mg/constructor/__init__.py:491
+msgid "MMO Constructor"
+msgstr "MMO Constructor"
+
+#: mg/constructor/__init__.py:194
 msgid "MMO Constructor Documentation"
 msgstr "Документация на конструктор"
 
-#: mg/constructor/__init__.py:222
+#: mg/constructor/__init__.py:231
 msgid "Browser-based Games Constructor"
 msgstr "Конструктор браузерных игр"
 
-#: mg/constructor/__init__.py:223
+#: mg/constructor/__init__.py:232
 #, python-format
 msgid "Copyright &copy; Joy Team, 2009-%s"
 msgstr "Copyright &copy; Joy Team, 2009-%s"
 
-#: mg/constructor/__init__.py:233
+#: mg/constructor/__init__.py:242
 msgid "Constructor of browser-based online games"
 msgstr "Конструктор браузерных онлайн-игр"
 
-#: mg/constructor/__init__.py:234
+#: mg/constructor/__init__.py:243
 msgid "log in"
 msgstr "вход"
 
-#: mg/constructor/__init__.py:235
+#: mg/constructor/__init__.py:244
 msgid "register"
 msgstr "регистрация"
 
-#: mg/constructor/__init__.py:236
+#: mg/constructor/__init__.py:245
 msgid "forum"
 msgstr "форум"
 
-#: mg/constructor/__init__.py:237
+#: mg/constructor/__init__.py:246
 msgid "cabinet"
 msgstr "кабинет"
 
-#: mg/constructor/__init__.py:238
+#: mg/constructor/__init__.py:247
 msgid "log out"
 msgstr "выход"
 
-#: mg/constructor/__init__.py:239
+#: mg/constructor/__init__.py:248
 msgid "documentation"
 msgstr "документация"
 
-#: mg/constructor/__init__.py:252
+#: mg/constructor/__init__.py:261
 msgid "Constructor administration"
 msgstr "Администрирование конструктора"
 
-#: mg/constructor/__init__.py:261
+#: mg/constructor/__init__.py:270
 msgid "Untitled game"
 msgstr "Безымянная игра"
 
-#: mg/constructor/__init__.py:281
+#: mg/constructor/__init__.py:290
 msgid "Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work."
 msgstr "Поздравляем! Ваша игра успешно зарегистрирована. Чтобы настроить её, зайдите в административную панель. Если вы не можете попасть в игру прямо сейчас, не беспокойтесь. Система DNS довольно медленная, и ей может потребоваться несколько часов или даже дней, чтобы ваш домен заработал."
 
-#: mg/constructor/__init__.py:298
+#: mg/constructor/__init__.py:307
 msgid "Create a new game"
 msgstr "Создать новую игру"
 
-#: mg/constructor/__init__.py:306
+#: mg/constructor/__init__.py:315
 msgid "MMO Constructor Settings"
 msgstr "Настройки конструктора"
 
-#: mg/constructor/__init__.py:309
+#: mg/constructor/__init__.py:318
 msgid "Change password"
 msgstr "Изменить пароль"
 
-#: mg/constructor/__init__.py:310
+#: mg/constructor/__init__.py:319
 msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
-#: mg/constructor/__init__.py:353
+#: mg/constructor/__init__.py:362
 msgid "Enter invitation code"
 msgstr "Введите пригласительный код"
 
-#: mg/constructor/__init__.py:360
+#: mg/constructor/__init__.py:369
 #: mg/constructor/invitations.py:91
 msgid "Invitation code"
 msgstr "Код приглашения"
 
-#: mg/constructor/__init__.py:361
+#: mg/constructor/__init__.py:370
 msgid "Proceed"
 msgstr "Продолжить"
 
-#: mg/constructor/__init__.py:362
+#: mg/constructor/__init__.py:371
 msgid "Open registration of new games is unavailable at the moment. If you have an invitation code enter it now"
 msgstr "В данный момент свободная регистрация игр невозможна. Если у вас есть код приглашения, введите его прямо сейчас"
 
-#: mg/constructor/__init__.py:364
+#: mg/constructor/__init__.py:373
 msgid "Invitation required"
 msgstr "Требуется приглашение"
 
-#: mg/constructor/__init__.py:463
+#: mg/constructor/__init__.py:472
 msgid "Enter your name, please"
 msgstr "Пожалуйста, введите ваше имя"
 
-#: mg/constructor/__init__.py:464
+#: mg/constructor/__init__.py:473
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
 
-#: mg/constructor/__init__.py:465
+#: mg/constructor/__init__.py:474
 msgid "This is a very long text asking you to enter your motto. So be so kind entering your motto"
 msgstr "Это очень длинный текст, в котором вас просят ввести ваш девиз. Будьте так любезны, введите свой девиз"
 
-#: mg/constructor/__init__.py:471
+#: mg/constructor/__init__.py:480
 msgid "telegrams menu///Post"
 msgstr "Почта"
 
-#: mg/constructor/__init__.py:472
+#: mg/constructor/__init__.py:481
 msgid "Messages"
 msgstr "Сообщения"
 
-#: mg/constructor/__init__.py:474
+#: mg/constructor/__init__.py:483
 msgid "All messages"
 msgstr "Все сообщения"
 
-#: mg/constructor/__init__.py:475
+#: mg/constructor/__init__.py:484
 msgid "Send a new message"
 msgstr "Отправить новое сообщение"
 
-#: mg/constructor/__init__.py:476
+#: mg/constructor/__init__.py:485
 msgid "Message text"
 msgstr "Текст сообщения"
 
-#: mg/constructor/__init__.py:477
-#: mg/constructor/__init__.py:482
-msgid "MMO Constructor"
-msgstr "MMO Constructor"
-
-#: mg/constructor/__init__.py:478
+#: mg/constructor/__init__.py:487
 msgid "Correspondence with {0}"
 msgstr "Переписка с {0}"
 
-#: mg/constructor/__init__.py:484
+#: mg/constructor/__init__.py:493
 msgid "MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games"
 msgstr "MMO Constructor - http://www.mmoconstructor.ru - конструктор браузерных онлайн-игр"
 
