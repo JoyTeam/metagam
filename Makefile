@@ -72,5 +72,6 @@ deploy: translations
 	cp bin/* depl/bin/
 	cp -R mg static depl/
 	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
+	find depl/static -name robots.txt -exec rm -rf {} \;
 	rsync --delete -r depl/* admin.mmoconstructor.ru:/home/mg/
 	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --delete -r * mg-frontend-1:/home/mg/'

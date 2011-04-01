@@ -1,16 +1,16 @@
-var GameInterface = {}
-var StreamHandlers = new Array();
-var app = '[%app%]';
 var admin_root = '';
+var Game = {}
+Game.stream_handlers = new Array();
+Game.app = '[%app%]';
 
-GameInterface.fixupContentEl = function(el) {
+Game.fixupContentEl = function(el) {
 	if (!Ext.getDom(el.contentEl))
 		el.contentEl = undefined;
 	return el;
 };
 
-GameInterface.setup_layout = function() {
-	var topmenu = GameInterface.fixupContentEl({
+Game.setup_layout = function() {
+	var topmenu = Game.fixupContentEl({
 		xtype: 'box',
 		height: 40,
 		contentEl: 'topmenu-box'
@@ -18,23 +18,23 @@ GameInterface.setup_layout = function() {
 	var chat = {
 		border: false,
 		layout: 'border',
-		items: [[%if layout.chat_channels%]GameInterface.fixupContentEl({
+		items: [[%if layout.chat_channels%]Game.fixupContentEl({
 			xtype: 'box',
 			height: 40,
 			region: 'north',
 			contentEl: 'chat-channels'
-		}),[%end%]GameInterface.fixupContentEl({
+		}),[%end%]Game.fixupContentEl({
 			xtype: 'box',
 			region: 'center',
 			contentEl: 'chat-box'
-		}), GameInterface.fixupContentEl({
+		}), Game.fixupContentEl({
 			xtype: 'box',
 			height: 40,
 			region: 'south',
 			contentEl: 'chat-input'
 		})]
 	};
-	var roster = GameInterface.fixupContentEl({
+	var roster = Game.fixupContentEl({
 		xtype: 'box',
 		contentEl: 'roster-box'
 	});
@@ -136,7 +136,7 @@ GameInterface.setup_layout = function() {
 	[%end%]
 	var margins = new Array();
 	[%if layout.marginleft%]
-	margins.push(GameInterface.fixupContentEl({
+	margins.push(Game.fixupContentEl({
 		xtype: 'box',
 		width: [%layout.marginleft%],
 		region: 'west',
@@ -144,7 +144,7 @@ GameInterface.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.marginright%]
-	margins.push(GameInterface.fixupContentEl({
+	margins.push(Game.fixupContentEl({
 		xtype: 'box',
 		width: [%layout.marginright%],
 		region: 'east',
@@ -152,7 +152,7 @@ GameInterface.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.margintop%]
-	margins.push(GameInterface.fixupContentEl({
+	margins.push(Game.fixupContentEl({
 		xtype: 'box',
 		height: [%layout.margintop%],
 		region: 'north',
@@ -160,7 +160,7 @@ GameInterface.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.marginbottom%]
-	margins.push(GameInterface.fixupContentEl({
+	margins.push(Game.fixupContentEl({
 		xtype: 'box',
 		height: [%layout.marginbottom%],
 		region: 'south',
@@ -182,43 +182,54 @@ GameInterface.setup_layout = function() {
 	}
 };
 
-GameInterface.run_realplexor = function() {
-	var realplexor = new Dklab_Realplexor('http://rpl.www.[%domain%]/rpl', app + '_');
-	realplexor.setCursor('id_' + Ext.util.Cookies.get('mgsess-' + app), 0);
-	realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + app), function (cmd, id) {
-		if (this.initialized) {
-			if (cmd.marker) {
-				return;
-			}
-		} else {
-			if (cmd.marker == '[%stream_marker%]') {
-				this.initialized = true;
-			}
-			return;
-		}
-		if (cmd.packets) {
-			for (var pack_i = 0; pack_i < cmd.packets.length; pack_i++) {
-				var pkt = cmd.packets[pack_i];
-				var handler = StreamHandlers[pkt.method];
-				if (handler) {
-					handler(pkt);
-				}
-			}
-		}
-	});
-	realplexor.execute();
+Game.run_realplexor = function() {
+	this.realplexor = new Dklab_Realplexor('http://rpl.www.[%domain%]/rpl', this.app + '_');
+	this.realplexor.setCursor('id_' + Ext.util.Cookies.get('mgsess-' + this.app), 0);
+	this.realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + this.app), this.stream_command.createDelegate(this));
+	this.realplexor.execute();
 };
 
-function stream_handler(method, handler, scope)
+Game.stream_command = function(cmd, id)
 {
-	StreamHandlers[method] = scope ? handler.createDelegate(scope) : handler;
+	if (this.initialized) {
+		if (cmd.marker) {
+			return;
+		}
+	} else {
+		if (cmd.marker == '[%stream_marker%]')
+			this.initialized = true;
+		return;
+	}
+	if (cmd.packets) {
+		for (var pack_i = 0; pack_i < cmd.packets.length; pack_i++)
+			this.packet_received(cmd.packets[pack_i]);
+	}
 }
+
+Game.packet_received = function(pkt) {
+	var handler = this.stream_handlers[pkt.cls];
+	if (!handler)
+		return;
+	var method = handler[pkt.method];
+	if (!method)
+		return;
+	try {
+		method(pkt);
+	} catch (e) {
+		alert('Exception ' + e);
+	}
+};
+
+Game.stream_handler = function(tag, cls)
+{
+	this.stream_handlers[tag] = cls;
+};
 
 Ext.onReady(function() {
 	wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
 		Ext.QuickTips.init();
 		Ext.form.Field.prototype.msgTarget = 'under';
-		GameInterface.setup_layout();
-		GameInterface.run_realplexor();
+		Game.setup_layout();
+		Game.run_realplexor();
 	});
 });
