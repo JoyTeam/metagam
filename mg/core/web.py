@@ -496,6 +496,7 @@ class Web(Module):
         except AttributeError:
             pass
         self.last_ping = time.time()
+        self.call("web.ping_response", response)
         self.call("web.response_json", response)
 
     def check_last_ping(self):

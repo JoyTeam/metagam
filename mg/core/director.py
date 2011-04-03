@@ -12,7 +12,8 @@ class CassandraStruct(Module):
 class Director(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects"])
+        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
+            "mg.core.daemons.DaemonsManager"])
         self.config()
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", {})
@@ -46,6 +47,7 @@ class Director(Module):
         # background tasks
         Tasklet.new(self.monitor)()
         Tasklet.new(self.call)("queue.process")
+        Tasklet.new(self.call)("daemon.monitor")
         while True:
             try:
                 self.call("core.fastidle")
@@ -80,6 +82,8 @@ class Director(Module):
                                                 success = False
                                                 request = cnn.get("/core/abort")
                                                 cnn.perform(request)
+                                        if success:
+                                            self.call("director.ping_results", str(host), int(port), body)
                             finally:
                                 cnn.close()
                     except Exception as e:
@@ -458,14 +462,12 @@ class Director(Module):
         type = request.param("type")
         params = json.loads(request.param("params"))
         port = int(request.param("port"))
-
         # sending configuration
         if params.get("backends"):
             with Timeout.push(20):
                 self.call("cluster.query_server", host, port, "/server/spawn", {
                     "workers": params.get("backends"),
                 })
-
         # storing online list
         server_id = str(host)
         conf = {
@@ -491,6 +493,7 @@ class Director(Module):
             server_id = "%s-%02d" % (server_id, int(id))
             conf["id"] = id
         self.app().servers_online[server_id] = conf
+        self.call("director.registering_server", server_id, conf)
         # clearing possibly "reloading" state
         obj = self.obj(WorkerStatus, server_id, {}, silent=True)
         obj.remove()

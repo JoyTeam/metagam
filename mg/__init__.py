@@ -5,4 +5,5 @@ from mg.core.cass import *
 from mg.core.memcached import *
 from mg.core.projects import *
 from mg.admin.wizards import *
+from mg.core.daemons import Daemon, DaemonStatus, DaemonStatusList, DaemonError
 import stackless

@@ -1,6 +1,10 @@
+from mg import *
+
 import json
 import re
 import socket
+from concurrence.io import Socket
+from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 
 re_valid_id = re.compile('^\w+$')
 re_split_headers = re.compile('\r?\n\r?\n')
@@ -12,7 +16,7 @@ re_watch_line = re.compile('^(\w+)\s+([^:]+):(\S+)\s*$')
 class RealplexorError(Exception):
     pass
 
-class Realplexor(object):
+class RealplexorConcurrence(object):
     def __init__(self, host, port, namespace="", identifier="identifier"):
         """
         host, port - address of the realplexor IN socket
@@ -147,14 +151,22 @@ class Realplexor(object):
 
     def _send(self, identifier, body, timeout=30):
         try:
-            conn = socket.create_connection((self.host, self.port), timeout)
+            conn = Socket.connect((self.host, self.port), timeout)
             try:
-                req = "POST / HTTP/1.1\r\nHost: %s\r\nContent-length: %d\r\nX-Realplexor: %s=%s%s\r\n\r\n%s" % (self.host, len(body), self.identifier, ("%s:%s@" % (self.login, self.password) if self.login else ""), identifier or "", body)
-                conn.sendall(req)
-                conn.shutdown(socket.SHUT_WR)
+                req = u"POST / HTTP/1.1\r\nHost: %s\r\nContent-length: %d\r\nX-Realplexor: %s=%s%s\r\n\r\n%s" % (self.host, len(body), (self.identifier or ""), ("%s:%s@" % (self.login, self.password) if self.login else ""), identifier or "", body)
+                if type(req) == unicode:
+                    req = req.encode("utf-8")
+                reader = BufferedReader(conn, Buffer(1024))
+                writer = BufferedWriter(conn, Buffer(1024))
+                writer.write_bytes(req)
+                writer.flush()
+                conn.socket.shutdown(socket.SHUT_WR)
                 response = ""
                 while True:
-                    chunk = conn.recv(1024)
+                    try:
+                        chunk = reader.read_bytes(1024)
+                    except EOFError:
+                        chunk = None
                     if not chunk:
                         break
                     response += chunk
@@ -186,57 +198,95 @@ class Realplexor(object):
             raise RealplexorError("DNS error: %s" % e)
         except socket.timeout as e:
             raise RealplexorError("Timeout error: %s" % e)
+        except IOError:
+            raise RealplexorError("IOError: %s" % e)
 
-try:
-    from concurrence.io import Socket
-    from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
-except ImportError:
-    pass
-else:
-    class RealplexorConcurrence(Realplexor):
-        def _send(self, identifier, body, timeout=30):
-            try:
-                conn = Socket.connect((self.host, self.port), timeout)
+class Realplexor(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("stream.send", self.send)
+
+    def send(self, ids, data):
+        self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
+        rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")
+        rpl.send(ids, data)
+
+class RealplexorDaemon(Daemon):
+    def __init__(self, app, id="realplexor"):
+        Daemon.__init__(self, app, "mg.core.realplexor.RealplexorDaemon", id)
+
+    def main(self):
+        rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+        pos = 0
+        check_pos = False
+        timer = 0
+        while True:
+            timer += 1
+            if timer >= 300:
+                timer = 0
+                check_pos = True
+            if check_pos:
+                self.debug("Checking realplexor position")
                 try:
-                    req = "POST / HTTP/1.1\r\nHost: %s\r\nContent-length: %d\r\nX-Realplexor: %s=%s%s\r\n\r\n%s" % (self.host, len(body), self.identifier, ("%s:%s@" % (self.login, self.password) if self.login else ""), identifier or "", body)
-                    reader = BufferedReader(conn, Buffer(1024))
-                    writer = BufferedWriter(conn, Buffer(1024))
-                    writer.write_bytes(req)
-                    writer.flush()
-                    conn.socket.shutdown(socket.SHUT_WR)
-                    response = ""
-                    while True:
-                        chunk = reader.read_bytes(1024)
-                        if not chunk:
-                            break
-                        response += chunk
-                    if response:
-                        m = re_split_headers.split(response, 1)
-                        if not m:
-                            raise RealplexorError("Non-HTTP response received:\n%s" % response)
-                        headers = m[0]
-                        body = m[1]
-                        m = re_http_status_line.match(headers)
-                        if not m:
-                            raise RealplexorError("Non-HTTP response received:\n%s" % response)
-                        status, code = m.group(1, 2)
-                        if code != "200":
-                            raise RealplexorError("Request failed: %s\n%s" % (status, body))
-                        m = re_content_length.search(headers)
-                        if not m:
-                            raise RealplexorError("No Content-Length header in response headers:\n%s" % headers)
-                        expected_len = int(m.group(1))
-                        if len(body) != expected_len:
-                            raise RealplexorError("Response length (%d) is different from one specified in the Content-Length header (%d): possibly broken response" % (len(body), expected_len))
-                        return body
-                    return response
-                finally:
-                    conn.close()
-            except socket.error as e:
-                raise RealplexorError("Socket error: %s" % e)
-            except socket.gaierror as e:
-                raise RealplexorError("DNS error: %s" % e)
-            except socket.timeout as e:
-                raise RealplexorError("Timeout error: %s" % e)
-            except IOError:
-                raise RealplexorError("IOError: %s" % e)
+                    last_pos = 0
+                    for ev in rpl.cmdWatch(0):
+                        last_pos = ev["pos"]
+                    if last_pos < pos:
+                        pos = 0
+                        self.info("Realplexor server restarted. Resetting event position")
+                    check_pos = False
+                except RealplexorError:
+                    self.error("Realplexor server is not available")
+            try:
+                for ev in rpl.cmdWatch(pos):
+                    self.debug("Received realplexor event: %s", ev)
+                    pos = ev["pos"]
+            except RealplexorError as e:
+                self.error("Error watching realplexor events: %s", e)
+                check_pos = True
+            Tasklet.sleep(1)
+
+    def hello(self, *args, **kwargs):
+        self.debug("Hello, world! args: %s, kwargs: %s", args, kwargs)
+        return "It worked!"
+
+class RealplexorAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
+        self.rhook("ext-admin-constructor.realplexor-settings", self.realplexor_settings, priv="realplexor.config")
+        self.rhook("headmenu-admin-constructor.realplexor-settings", self.headmenu_realplexor_settings)
+        self.rhook("int-realplexor.daemon", self.daemon, priv="public")
+
+    def permissions_list(self, perms):
+        perms.append({"id": "realplexor.config", "name": self._("Realplexor configuration")})
+
+    def menu_constructor_cluster(self, menu):
+        req = self.req()
+        if req.has_access("realplexor.config"):
+            menu.append({"id": "constructor/realplexor-settings", "text": self._("Realplexor"), "leaf": True})
+
+    def realplexor_settings(self):
+        req = self.req()
+        realplexor = req.param("realplexor")
+        if req.param("ok"):
+            config = self.app().config
+            config.set("cluster.realplexor", realplexor)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            realplexor = self.conf("cluster.realplexor", "127.0.0.1")
+        fields = [
+            {"name": "realplexor", "label": self._("Realplexor host name"), "value": realplexor},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def headmenu_realplexor_settings(self, args):
+        return self._("Realplexor settings")
+
+    def daemon(self):
+        self.debug("Running realplexor daemon")
+        daemon = RealplexorDaemon(self.main_app())
+        daemon.run()
+        self.call("web.response_json", {"ok": True})
