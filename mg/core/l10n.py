@@ -59,6 +59,8 @@ class L10n(Module):
             return str(self.req().lang)
         except AttributeError:
             pass
+        except RuntimeError:
+            pass
         try:
             return str(self.app().lang)
         except AttributeError:
@@ -93,14 +95,18 @@ class L10n(Module):
             return Stemmer.Stemmer("english")
 
     def l10n_gettext(self, value):
-        request = self.req()
         try:
-            value = request.trans.gettext(value)
-            if type(value) == str:
-                value = unicode(value, "utf-8")
-            return value
-        except AttributeError:
-            pass
+            request = self.req()
+        except RuntimeError:
+            request = None
+        if request:
+            try:
+                value = request.trans.gettext(value)
+                if type(value) == str:
+                    value = unicode(value, "utf-8")
+                return value
+            except AttributeError:
+                pass
         lang = self.call("l10n.lang")
         if lang is None:
             if type(value) == str:
@@ -108,7 +114,8 @@ class L10n(Module):
             return value 
         domain = self.call("l10n.domain")
         trans = self.call("l10n.translation", domain, lang)
-        request.trans = trans
+        if request:
+            request.trans = trans
         value = trans.gettext(value)
         if type(value) == str:
             value = unicode(value, "utf-8")

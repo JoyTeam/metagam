@@ -22,3 +22,11 @@ class WorkerStatusList(CassandraObjectList):
         kwargs["cls"] = WorkerStatus
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DoubleResponseException(Exception):
+    "start_response called twice on the same request"
+    pass
+
+class WebResponse(Exception):
+    def __init__(self, content):
+        self.content = content
+

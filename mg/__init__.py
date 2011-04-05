@@ -1,4 +1,5 @@
 from mg.core import *
+from mg.core.classes import *
 from mg.core.web import *
 from mg.core.tools import *
 from mg.core.cass import *

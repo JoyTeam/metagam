@@ -193,7 +193,8 @@ Form = Ext.extend(AdminResponse, {
 			waitTitle: gt.gettext('Please wait...'),
 			layout: 'auto',
 			fileUpload: upload,
-			url: data.url
+			url: data.url,
+			method: 'POST'
 		});
 		this.add(form);
 		this.enforce_conditions(true);

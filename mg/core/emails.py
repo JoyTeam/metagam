@@ -128,7 +128,7 @@ class Email(Module):
         try:
             dump = traceback.format_exc()
             try:
-                msg = u"%s" % exception
+                msg = u"%s %s" % (exception.__class__.__name__, exception)
             except Exception as e:
                 msg = "Unhandled exception"
             email = self.int_app().config.get("email.exceptions")

@@ -38,9 +38,9 @@ class Worker(Module):
             self.last_status = now
             self.store_status()
 
-    def active_requests(self):
+    def active_requests(self, active_requests):
         inst = self.app().inst
-        return inst.int_daemon.active_requests + inst.ext_daemon.active_requests
+        active_requests["web"] = inst.int_daemon.active_requests + inst.ext_daemon.active_requests
 
     def store_status(self):
         inst = self.app().inst
@@ -52,7 +52,9 @@ class Worker(Module):
         obj.set("port", inst.int_port)
         obj.set("cls", inst.cls)
         obj.set("ver", self.app().inst.application_version)
-        obj.set("active_requests", self.active_requests())
+        active_requests = {}
+        self.call("web.active_requests", active_requests)
+        obj.set("active_requests", active_requests)
         try:
             if self.app().inst.reloading_hard:
                 obj.set("reloading", True)

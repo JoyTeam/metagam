@@ -25,10 +25,6 @@ re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
 re_group = re.compile(r'^[a-z0-9\-]+')
 re_protocol = re.compile(r'^[a-z]+://')
 
-class DoubleResponseException(Exception):
-    "start_response called twice on the same request"
-    pass
-
 class Request(object):
     "HTTP request"
 
@@ -361,10 +357,6 @@ class WebDaemon(object):
             self.app.hooks.call("exception.report", e)
             raise
 
-class WebResponse(Exception):
-    def __init__(self, content):
-        self.content = content
-
 re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
 
 class WebApplication(Application):
@@ -469,8 +461,13 @@ class Web(Module):
         self.call("core.reloading_hard")
         Tasklet.sleep(2);
         for i in range(0, 60):
-            active_requests = self.call("web.active_requests")
-            if active_requests == None or active_requests == 0:
+            active_requests = {}
+            self.call("web.active_requests", active_requests)
+            cnt = 0
+            for val in active_requests.values():
+                cnt += val
+            self.debug("active_requests: %s, cnt=%d" % (active_requests, cnt))
+            if cnt == 0:
                 break
             Tasklet.sleep(1)
         os._exit(0)
@@ -518,12 +515,16 @@ class Web(Module):
         self.call("web.response_json", {"ok": 1})
 
     def web_parse_template(self, filename, vars):
-        req = self.req()
-        if req.templates_parsed >= 100:
-            return "<too-much-templates />"
-        if req.templates_len >= 10000000:
-            return "<too-long-templates />"
-        req.templates_parsed = req.templates_parsed + 1
+        try:
+            req = self.req()
+        except RuntimeError:
+            req = False
+        if req:
+            if req.templates_parsed >= 100:
+                return "<too-much-templates />"
+            if req.templates_len >= 10000000:
+                return "<too-long-templates />"
+            req.templates_parsed = req.templates_parsed + 1
         if self.tpl is None:
             include_path = [ mg.__path__[0] + "/templates" ]
             self.call("core.template_path", include_path)
@@ -552,7 +553,8 @@ class Web(Module):
         if type(filename) == unicode:
             filename = filename.encode("utf-8")
         content = self.tpl.process(filename, vars)
-        req.templates_len = req.templates_len + len(content)
+        if req:
+            req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)
         if m:
             # everything before ===HEAD=== delimiter will pass to the header

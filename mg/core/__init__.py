@@ -405,6 +405,8 @@ class Module(object):
             return re_remove_domain.sub('', value)
         except AttributeError:
             pass
+        except RuntimeError:
+            pass
         return re_remove_domain.sub('', self.call("l10n.gettext", val))
 
     def obj(self, *args, **kwargs):

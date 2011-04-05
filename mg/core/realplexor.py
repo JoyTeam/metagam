@@ -164,7 +164,7 @@ class RealplexorConcurrence(object):
                 response = ""
                 while True:
                     try:
-                        chunk = reader.read_bytes(1024)
+                        chunk = reader.read_bytes_available()
                     except EOFError:
                         chunk = None
                     if not chunk:
@@ -212,52 +212,56 @@ class Realplexor(Module):
         rpl.send(ids, data)
 
 class RealplexorDaemon(Daemon):
-    def __init__(self, app, id="realplexor"):
+    def __init__(self, app, id="stream"):
         Daemon.__init__(self, app, "mg.core.realplexor.RealplexorDaemon", id)
+        self.permanent = True
 
     def main(self):
-        rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
         pos = 0
         check_pos = False
         timer = 0
-        while True:
-            timer += 1
-            if timer >= 300:
-                timer = 0
-                check_pos = True
-            if check_pos:
-                self.debug("Checking realplexor position")
-                try:
-                    last_pos = 0
-                    for ev in rpl.cmdWatch(0):
-                        last_pos = ev["pos"]
-                    if last_pos < pos:
-                        pos = 0
-                        self.info("Realplexor server restarted. Resetting event position")
-                    check_pos = False
-                except RealplexorError:
-                    self.error("Realplexor server is not available")
+        while not self.terminate:
             try:
-                for ev in rpl.cmdWatch(pos):
-                    self.debug("Received realplexor event: %s", ev)
-                    pos = ev["pos"]
-            except RealplexorError as e:
-                self.error("Error watching realplexor events: %s", e)
-                check_pos = True
+                rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+                timer += 1
+                if timer >= 300:
+                    timer = 0
+                    check_pos = True
+                if check_pos:
+                    self.debug("Checking realplexor position")
+                    try:
+                        last_pos = 0
+                        for ev in rpl.cmdWatch(0):
+                            last_pos = ev["pos"]
+                        if last_pos < pos:
+                            pos = 0
+                            self.info("Realplexor server restarted. Resetting event position")
+                        check_pos = False
+                    except RealplexorError:
+                        self.error("Realplexor server is not available")
+                try:
+                    for ev in rpl.cmdWatch(pos):
+                        self.debug("Received realplexor event: %s", ev)
+                        pos = ev["pos"]
+                except RealplexorError as e:
+                    self.error("Error watching realplexor events: %s", e)
+                    check_pos = True
+            except Exception as e:
+                self.exception(e)
             Tasklet.sleep(1)
-
-    def hello(self, *args, **kwargs):
-        self.debug("Hello, world! args: %s, kwargs: %s", args, kwargs)
-        return "It worked!"
 
 class RealplexorAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
-        self.rhook("ext-admin-constructor.realplexor-settings", self.realplexor_settings, priv="realplexor.config")
-        self.rhook("headmenu-admin-constructor.realplexor-settings", self.headmenu_realplexor_settings)
+        self.rhook("ext-admin-realplexor-settings", self.realplexor_settings, priv="realplexor.config")
+        self.rhook("headmenu-admin-realplexor.settings", self.headmenu_realplexor_settings)
+        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
+        self.rhook("ext-admin-realplexor.monitor", self.realplexor_monitor, priv="monitoring")
+        self.rhook("headmenu-admin-realplexor.monitor", self.headmenu_realplexor_monitor)
         self.rhook("int-realplexor.daemon", self.daemon, priv="public")
+        self.rhook("daemons.permanent", self.daemons_permanent)
 
     def permissions_list(self, perms):
         perms.append({"id": "realplexor.config", "name": self._("Realplexor configuration")})
@@ -265,7 +269,12 @@ class RealplexorAdmin(Module):
     def menu_constructor_cluster(self, menu):
         req = self.req()
         if req.has_access("realplexor.config"):
-            menu.append({"id": "constructor/realplexor-settings", "text": self._("Realplexor"), "leaf": True})
+            menu.append({"id": "realplexor/settings", "text": self._("Realplexor"), "leaf": True})
+
+    def menu_cluster_monitoring(self, menu):
+        req = self.req()
+        if req.has_access("monitoring"):
+            menu.append({"id": "realplexor/monitor", "text": self._("Realplexor"), "leaf": True})
 
     def realplexor_settings(self):
         req = self.req()
@@ -290,3 +299,25 @@ class RealplexorAdmin(Module):
         daemon = RealplexorDaemon(self.main_app())
         daemon.run()
         self.call("web.response_json", {"ok": True})
+
+    def realplexor_monitor(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "header": [self._("Channel"), self._("Listeners")],
+                    "rows": rows
+                }
+            ]
+        }
+        rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+        for channel, listeners in rpl.cmdOnlineWithCounters().iteritems():
+            rows.append([htmlescape(channel), listeners])
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_realplexor_monitor(self, args):
+        return self._("Realplexor monitor")
+
+    def daemons_permanent(self, daemons):
+        daemons.append({"cls": "metagam", "app": "main", "daemon": "stream", "url": "/realplexor/daemon"})
+

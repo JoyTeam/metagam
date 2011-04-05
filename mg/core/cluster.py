@@ -59,10 +59,6 @@ class Cluster(Module):
         self.rhook("cluster.static_preserve", self.static_preserve)
         self.rhook("cluster.static_upload_zip", self.static_upload_zip)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-
-    def menu_root_index(self, menu):
-        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": -50})
 
     def query_director(self, uri, params={}):
         """
@@ -222,3 +218,43 @@ def query(host, port, uri, params):
                 cnn.close()
     except TimeoutError:
         raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, uri))
+
+class ClusterAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
+        self.rhook("ext-admin-workers.monitor", self.workers_monitor, priv="monitoring")
+        self.rhook("headmenu-admin-workers.monitor", self.headmenu_workers_monitor)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "monitoring", "name": self._("Cluster monitoring")})
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": -50})
+        menu.append({"id": "cluster.monitoring", "text": self._("Monitoring"), "order": -60})
+
+    def menu_cluster_monitoring(self, menu):
+        req = self.req()
+        if req.has_access("monitoring"):
+            menu.append({"id": "workers/monitor", "text": self._("Workers"), "leaf": True})
+
+    def workers_monitor(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "header": [self._("ID"), self._("Class"), self._("Interface"), self._("Version"), self._("Status")],
+                    "rows": rows
+                }
+            ]
+        }
+        lst = self.int_app().objlist(WorkerStatusList, query_index="all")
+        lst.load(silent=True)
+        for ent in lst:
+            rows.append([ent.uuid, ent.get("cls"), "%s:%d" % (ent.get("host"), ent.get("port")), ent.get("ver"), self._("Reloading") if ent.get("reloading") else self._("OK")])
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_workers_monitor(self, args):
+        return self._("Workers monitor")

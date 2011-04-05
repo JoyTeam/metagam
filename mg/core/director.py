@@ -13,7 +13,7 @@ class Director(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
-            "mg.core.daemons.DaemonsManager"])
+            "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin"])
         self.config()
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", {})
@@ -99,6 +99,8 @@ class Director(Module):
                                 # removing status object
                                 st = self.obj(WorkerStatus, server_id, silent=True)
                                 st.remove()
+                                # additional actions
+                                self.call("director.unregistering_server", server_id)
                 # examining WorkerStatus records
                 lst = self.objlist(WorkerStatusList, query_index="all")
                 lst.load(silent=True)
