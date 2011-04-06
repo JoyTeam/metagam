@@ -199,7 +199,7 @@ class RealplexorConcurrence(object):
             raise RealplexorError("DNS error: %s" % e)
         except socket.timeout as e:
             raise RealplexorError("Timeout error: %s" % e)
-        except IOError:
+        except IOError as e:
             raise RealplexorError("IOError: %s" % e)
 
 class Realplexor(Module):
@@ -218,12 +218,28 @@ class RealplexorDaemon(Daemon):
         self.permanent = True
 
     def main(self):
-        pos = 0
-        check_pos = False
-        timer = 0
+        resync = True
         while not self.terminate:
             try:
                 rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+                # resynchronization
+                if resync:
+                    resync = False
+                    check_pos = False
+                    pos = 0
+                    timer = 0
+                    self.info("Performing Realplexor synchronization")
+                    # checking actual online
+                    try:
+                        counters = rpl.cmdOnlineWithCounters()
+                    except RealplexorError as e:
+                        self.error("Error getting realplexor online: %s", e)
+                        resync = True
+                    else:
+                        for channel, listeners in counters.iteritems():
+                            m = re_valid_channel.match(channel)
+                            if m:
+                                app_tag, session_uuid = m.group(1, 2)
                 timer += 1
                 if timer >= 300:
                     timer = 0
@@ -235,7 +251,7 @@ class RealplexorDaemon(Daemon):
                         for ev in rpl.cmdWatch(0):
                             last_pos = ev["pos"]
                         if last_pos < pos:
-                            pos = 0
+                            resync = True
                             self.info("Realplexor server restarted. Resetting event position")
                         check_pos = False
                     except RealplexorError:
@@ -244,6 +260,15 @@ class RealplexorDaemon(Daemon):
                     for ev in rpl.cmdWatch(pos):
                         self.debug("Received realplexor event: %s", ev)
                         pos = ev["pos"]
+                        m = re_valid_channel.match(ev["id"])
+                        if m:
+                            app_tag, session_uuid = m.group(1, 2)
+                            app = self.app().inst.appfactory.get_by_tag(app_tag)
+                            if app is not None:
+                                if ev["event"] == "online":
+                                    app.hooks.call("session.online", session_uuid)
+                                elif ev["event"] == "offline":
+                                    app.hooks.call("session.offline", session_uuid)
                 except RealplexorError as e:
                     self.error("Error watching realplexor events: %s", e)
                     check_pos = True
@@ -256,7 +281,7 @@ class RealplexorAdmin(Module):
         Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
-        self.rhook("ext-admin-realplexor-settings", self.realplexor_settings, priv="realplexor.config")
+        self.rhook("ext-admin-realplexor.settings", self.realplexor_settings, priv="realplexor.config")
         self.rhook("headmenu-admin-realplexor.settings", self.headmenu_realplexor_settings)
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
         self.rhook("ext-admin-realplexor.monitor", self.realplexor_monitor, priv="monitoring")
@@ -306,7 +331,7 @@ class RealplexorAdmin(Module):
         vars = {
             "tables": [
                 {
-                    "header": [self._("Project"), self._("User"), self._("Listeners")],
+                    "header": [self._("Project"), self._("Session"), self._("Listeners")],
                     "rows": rows
                 }
             ]
@@ -315,8 +340,8 @@ class RealplexorAdmin(Module):
         for channel, listeners in rpl.cmdOnlineWithCounters().iteritems():
             m = re_valid_channel.match(channel)
             if m:
-                project, user = m.group(1, 2)
-                rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(project), user, listeners])
+                project, session_uuid = m.group(1, 2)
+                rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(project), session_uuid, listeners])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_realplexor_monitor(self, args):

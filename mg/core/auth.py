@@ -135,9 +135,11 @@ class Sessions(Module):
             if session is not None:
                 # update session every hour
                 if session.get("updated") < self.now(-3600):
-                    session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
-                    session.set("updated", self.now())
-                    session.store()
+                    with self.lock(["session.%s" % session.uuid]):
+                        session.load()
+                        session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
+                        session.set("updated", self.now())
+                        session.store()
                 if cache:
                     req._session = session
                 return session
@@ -364,23 +366,26 @@ class Interface(Module):
             elif code != user.get("activation_code"):
                 form.error("code", self._("Invalid activation code"))
             if not form.errors:
-                redirect = user.get("activation_redirect")
-                user.delkey("inactive")
-                user.delkey("activation_code")
-                user.delkey("activation_redirect")
-                user.store()
-                self.call("auth.registered", user)
-                self.call("auth.activated", user, redirect)
-                session.set("user", user.uuid)
-                session.delkey("semi_user")
-                session.store()
-                if redirect is not None and redirect != "":
-                    self.call("web.redirect", redirect)
-                redirects = {}
-                self.call("auth.redirects", redirects)
-                if redirects.has_key("register"):
-                    self.call("web.redirect", redirects["register"])
-                self.call("web.redirect", "/")
+                with self.lock(["session.%s" % session.uuid, "user.%s" % user.uuid]):
+                    session.load()
+                    user.load()
+                    redirect = user.get("activation_redirect")
+                    user.delkey("inactive")
+                    user.delkey("activation_code")
+                    user.delkey("activation_redirect")
+                    user.store()
+                    self.call("auth.registered", user)
+                    self.call("auth.activated", user, redirect)
+                    session.set("user", user.uuid)
+                    session.delkey("semi_user")
+                    session.store()
+                    if redirect is not None and redirect != "":
+                        self.call("web.redirect", redirect)
+                    redirects = {}
+                    self.call("auth.redirects", redirects)
+                    if redirects.has_key("register"):
+                        self.call("web.redirect", redirects["register"])
+                    self.call("web.redirect", "/")
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
         form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
@@ -602,9 +607,9 @@ class Interface(Module):
     def ext_logout(self):
         session = self.call("session.get")
         if session is not None:
-            with self.lock(["session.%s" % session.uuid]):
-                user = session.get("user")
-                if user:
+            user = session.get("user")
+            if user:
+                with self.lock(["session.%s" % session.uuid, "user.%s" % user]):
                     self.call("auth.logging_out", session, user)
                     session.set("semi_user", user)
                     session.delkey("user")
@@ -648,16 +653,18 @@ class Interface(Module):
                     form.error("password", msg["password_incorrect"])
             if not form.errors:
                 session = self.call("session.get", True)
-                session.set("user", user.uuid)
-                session.delkey("semi_user")
-                session.store()
-                if redirect is not None and redirect != "":
-                    self.call("web.redirect", redirect)
-                redirects = {}
-                self.call("auth.redirects", redirects)
-                if redirects.has_key("login"):
-                    self.call("web.redirect", redirects["login"])
-                self.call("web.redirect", "/")
+                with self.lock(["session.%s" % session.uuid]):
+                    session.load()
+                    session.set("user", user.uuid)
+                    session.delkey("semi_user")
+                    session.store()
+                    if redirect is not None and redirect != "":
+                        self.call("web.redirect", redirect)
+                    redirects = {}
+                    self.call("auth.redirects", redirects)
+                    if redirects.has_key("login"):
+                        self.call("web.redirect", redirects["login"])
+                    self.call("web.redirect", "/")
         if redirect is not None:
             form.hidden("redirect", redirect)
         form.input(self._("User name"), "name", name)
