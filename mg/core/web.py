@@ -439,8 +439,8 @@ class Web(Module):
         self.rhook("web.service_unavailable", self.web_service_unavailable)
         self.rhook("web.bad_request", self.web_bad_request)
         self.rhook("web.redirect", self.web_redirect)
-        self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("web.security_check", self.security_check)
+        self.rhook("objclasses.list", self.objclasses_list)
 
     def objclasses_list(self, objclasses):
         objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)

@@ -131,19 +131,13 @@ class Sessions(Module):
         cookie_name = "mgsess-%s" % self.app().tag
         sid = req.cookie(cookie_name)
         if sid is not None:
-            mcid = "SessionCache-%s" % sid
-            val = self.app().mc.get(mcid)
-            if val is not None:
-                session = self.obj(Session, sid, val)
-                if cache:
-                    req._session = session
-                return session
             session = self.find_session(sid)
             if session is not None:
-                session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
-                session.set("updated", self.now())
-                session.store()
-                self.app().mc.set(mcid, session.data)
+                # update session every hour
+                if session.get("updated") < self.now(-3600):
+                    session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
+                    session.set("updated", self.now())
+                    session.store()
                 if cache:
                     req._session = session
                 return session
@@ -380,7 +374,6 @@ class Interface(Module):
                 session.set("user", user.uuid)
                 session.delkey("semi_user")
                 session.store()
-                self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
                 redirects = {}
@@ -608,16 +601,18 @@ class Interface(Module):
 
     def ext_logout(self):
         session = self.call("session.get")
-        user = session.get("user")
-        if session is not None and user:
-            session.set("semi_user", user)
-            session.delkey("user")
-            session.store()
-            self.app().mc.delete("SessionCache-%s" % session.uuid)
-            req = self.req()
-            redirect = req.param("redirect")
-            if redirect is not None and redirect != "":
-                self.call("web.redirect", redirect)
+        if session is not None:
+            with self.lock(["session.%s" % session.uuid]):
+                user = session.get("user")
+                if user:
+                    self.call("auth.logging_out", session, user)
+                    session.set("semi_user", user)
+                    session.delkey("user")
+                    session.store()
+        req = self.req()
+        redirect = req.param("redirect")
+        if redirect:
+            self.call("web.redirect", redirect)
         self.call("web.redirect", "/")
 
     def messages(self, msg):
@@ -656,7 +651,6 @@ class Interface(Module):
                 session.set("user", user.uuid)
                 session.delkey("semi_user")
                 session.store()
-                self.app().mc.delete("SessionCache-%s" % session.uuid)
                 if redirect is not None and redirect != "":
                     self.call("web.redirect", redirect)
                 redirects = {}
@@ -730,12 +724,12 @@ class Interface(Module):
                 sessions.load()
                 for sess in sessions:
                     if sess.uuid != my_session.uuid:
+                        user = sess.get("user")
+                        if user:
+                            self.call("auth.logging_out", session, user)
                         sess.delkey("user")
                         sess.delkey("semi_user")
                 sessions.store()
-                for sess in sessions:
-                    if sess.uuid != my_session.uuid:
-                        self.app().mc.delete("SessionCache-%s" % sess.uuid)
                 self.call("auth.password-changed", user, password1)
                 self.call("web.redirect", ret)
         form.hidden("prefix", prefix)

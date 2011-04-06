@@ -12,6 +12,7 @@ re_http_status_line = re.compile('^HTTP/[\d\.]+\s+((\d+)\s+[^\r\n]*)')
 re_content_length = re.compile('^Content-Length:\s*(\d+)', re.IGNORECASE | re.MULTILINE)
 re_valid_numeric = re.compile('^[\d\.]+$')
 re_watch_line = re.compile('^(\w+)\s+([^:]+):(\S+)\s*$')
+re_valid_channel = re.compile('^([a-zA-Z0-9]+)_id_([0-9a-f]{32})$')
 
 class RealplexorError(Exception):
     pass
@@ -274,7 +275,7 @@ class RealplexorAdmin(Module):
     def menu_cluster_monitoring(self, menu):
         req = self.req()
         if req.has_access("monitoring"):
-            menu.append({"id": "realplexor/monitor", "text": self._("Realplexor"), "leaf": True})
+            menu.append({"id": "realplexor/monitor", "text": self._("Sessions"), "leaf": True})
 
     def realplexor_settings(self):
         req = self.req()
@@ -305,18 +306,21 @@ class RealplexorAdmin(Module):
         vars = {
             "tables": [
                 {
-                    "header": [self._("Channel"), self._("Listeners")],
+                    "header": [self._("Project"), self._("User"), self._("Listeners")],
                     "rows": rows
                 }
             ]
         }
         rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
         for channel, listeners in rpl.cmdOnlineWithCounters().iteritems():
-            rows.append([htmlescape(channel), listeners])
+            m = re_valid_channel.match(channel)
+            if m:
+                project, user = m.group(1, 2)
+                rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(project), user, listeners])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_realplexor_monitor(self, args):
-        return self._("Realplexor monitor")
+        return self._("Sessions monitor")
 
     def daemons_permanent(self, daemons):
         daemons.append({"cls": "metagam", "app": "main", "daemon": "stream", "url": "/realplexor/daemon"})

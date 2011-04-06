@@ -226,6 +226,24 @@ class TestORM(unittest.TestCase):
         self.assertTrue(obj2.uuid in uuids)
         self.assertTrue(obj3.uuid in uuids)
 
+        for ent in lst:
+            if ent.uuid == obj2.uuid:
+                ent.delkey("topic")
+                ent.store()
+
+#       obj2 = TestObject(self.db, obj2.uuid)
+#       obj2.delkey("topic")
+#       obj2.store()
+
+        obj2 = TestObject(self.db, obj2.uuid)
+        obj2.set("topic", "Жопик")
+        obj2.store()
+
+        lst = TestObjectList(self.db, query_index="created", query_equal="Топик")
+        self.assertEqual(len(lst), 1)
+        uuids = [obj.uuid for obj in lst]
+        self.assertTrue(obj1.uuid in uuids)
+
     def test06(self):
         lst = TestObjectList(self.db, query_index="index")
         lst.remove()

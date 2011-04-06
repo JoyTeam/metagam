@@ -85,7 +85,7 @@ class Hooks(object):
         """
         The same as load_groups but without locking
         """
-        load_groups = [g for g in groups if g not in self.loaded_groups]
+        load_groups = [g for g in groups if (g != "all") and (g not in self.loaded_groups)]
         if len(load_groups):
             lst = self.app().objlist(HookGroupModulesList, load_groups)
             lst.load(silent=True)
@@ -190,9 +190,10 @@ class Hooks(object):
                     obj.remove()
             groups = self.app().objlist(HookGroupModulesList, [])
             for group, grpset in rec.iteritems():
-                obj = self.app().obj(HookGroupModules, group, data={})
-                obj.set("list", list(grpset))
-                groups.append(obj)
+                if group != "all":
+                    obj = self.app().obj(HookGroupModules, group, data={})
+                    obj.set("list", list(grpset))
+                    groups.append(obj)
             groups.store(dont_load=True)
 
 class ConfigGroup(CassandraObject):

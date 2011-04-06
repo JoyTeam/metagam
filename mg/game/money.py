@@ -576,8 +576,8 @@ class Money(Module):
         objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
 
     def permissions_list(self, perms):
-        perms.append({"id": "users.money", "name": self._("Constructor: access to users money")})
-        perms.append({"id": "users.money.give", "name": self._("Constructor: giving and taking money")})
+        perms.append({"id": "users.money", "name": self._("Access to users money")})
+        perms.append({"id": "users.money.give", "name": self._("Giving and taking money")})
 
     def member_money(self, member_uuid):
         return MemberMoney(self.app(), member_uuid)

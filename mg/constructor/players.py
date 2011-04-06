@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from mg import *
-from mg.core.auth import User, UserList, Captcha
+from mg.core.auth import User, UserList, Captcha, Session, SessionList
 from uuid import uuid4
 import re
 import copy
@@ -84,6 +84,8 @@ class Auth(Module):
         self.rhook("ext-player.login", self.player_login, priv="public")
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("auth.activated", self.auth_activated)
+        self.rhook("auth.logging_out", self.auth_logging_out)
+        self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
 
     def auth_registered(self, user):
         req = self.req()
@@ -100,9 +102,11 @@ class Auth(Module):
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
             session.set("user", chars[0].uuid)
+            session.set("character", 1)
+            session.set("authorized", 1)
+            session.set("updated", self.now())
             session.delkey("semi_user")
             session.store()
-            self.app().mc.delete("SessionCache-%s" % session.uuid)
         else:
             self.error("auth.activated(%s) called but no associated characters found", user.uuid)
         # redirect
@@ -121,12 +125,15 @@ class Auth(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
+        perms.append({"id": "users.authorized", "name": self._("Viewing list of authorized users")})
 
     def menu_users_index(self, menu):
         req = self.req()
         if req.has_access("players.auth"):
             menu.append({"id": "players/auth", "text": self._("Players authentication"), "leaf": True, "order": 10})
             menu.append({"id": "characters/form", "text": self._("Character form"), "leaf": True, "order": 20})
+        if req.has_access("users.authorized"):
+            menu.append({"id": "characters/online", "text": self._("List of characters online"), "leaf": True, "order": 30})
 
     def headmenu_players_auth(self, args):
         return self._("Players authentication settings")
@@ -548,11 +555,20 @@ class Auth(Module):
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
         else:
             session.set("user", character_user.uuid)
+            session.set("character", 1)
+            session.set("authorized", 1)
+            session.set("updated", self.now())
             session.delkey("semi_user")
             session.store()
-            self.app().mc.delete("SessionCache-%s" % session.uuid)
         # Responding
         self.call("web.response_json", {"ok": 1, "session": session.uuid})
+
+    def auth_logging_out(self, session, user_uuid):
+        print "auth.logging_out %s, %s" % (session.uuid, user_uuid)
+        session.delkey("character")
+        session.delkey("authorized")
+        session.delkey("online")
+        session.set("updated", self.now())
 
     def auth_form_params(self, params):
         params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
@@ -587,9 +603,28 @@ class Auth(Module):
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
             session = self.call("session.get", True)
-            session.set("user", chars[0].uuid)
-            session.delkey("semi_user")
-            session.store()
-            self.app().mc.delete("SessionCache-%s" % session.uuid)
-            self.call("web.response_json", {"ok": 1, "session": session.uuid})
+            with self.lock(["session.%s" % session.uuid]):
+                session.set("user", chars[0].uuid)
+                session.set("character", 1)
+                session.set("authorized", 1)
+                session.set("updated", self.now())
+                session.delkey("semi_user")
+                session.store()
+                self.call("web.response_json", {"ok": 1, "session": session.uuid})
         self.call("web.response_json", {"error": self._("No characters assigned to this player")})
+
+    def characters_online(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "header": [self._("Session"), self._("Character"), self._("Online"), self._("Updated")],
+                    "rows": rows
+                }
+            ]
+        }
+        lst = self.objlist(SessionList, query_index="authorized", query_equal="1")
+        lst.load(silent=True)
+        for sess in lst:
+            rows.append([sess.uuid, sess.get("user"), sess.get("online"), sess.get("updated")])
+        self.call("admin.response_template", "admin/common/tables.html", vars)

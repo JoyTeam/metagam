@@ -36,8 +36,9 @@ class Projects(Module):
         self.rhook("applications.list", self.applications_list)
 
     def applications_list(self, apps):
+        print "projects list"
         apps.append({"cls": "metagam", "tag": "main"})
-        projects = self.app().inst.int_app.objlist(ProjectList, query_index="created")
+        projects = self.int_app().objlist(ProjectList, query_index="created")
         projects.load(silent=True)
         for proj in projects:
             apps.append({"cls": proj.get("cls") if proj.get("cls") else "metagam", "tag": proj.uuid})

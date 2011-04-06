@@ -25,6 +25,7 @@ class Constructor(Module):
         self.rdep(["mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
+            "mg.core.projects.Projects",
             "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
@@ -37,7 +38,7 @@ class Constructor(Module):
         self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
         self.rhook("auth.redirects", self.redirects)
         self.rhook("ext-cabinet.settings", self.cabinet_settings, priv="logged")
-        self.rhook("ext-debug.validate", self.debug_validate, priv="disabled")
+        self.rhook("ext-debug.validate", self.debug_validate, priv="public")
         self.rhook("ext-constructor.newgame", self.constructor_newgame, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("all.schedule", self.schedule)
@@ -326,6 +327,7 @@ class Constructor(Module):
         self.call("web.response_global", None, vars)
 
     def debug_validate(self):
+        req = self.req()
         slices_list = self.call("cassmaint.load_database")
 #        for slice in slices_list:
 #            self.debug("KEY: %s", slice.key)
@@ -345,10 +347,12 @@ class Constructor(Module):
         mutations = {}
         for row in slices_list:
             if len(row.columns):
-                self.warning("Unknown database key %s", row.key)
-                mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
-#        if len(mutations):
-#            self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
+                for ent in apps:
+                    if row.key.startswith("%s-" % ent["tag"]):
+                        self.warning("Unknown database key %s", row.key)
+                        mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
+        if len(mutations) and req.args == "delete":
+            self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):

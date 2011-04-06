@@ -1,0 +1,30 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from mg.core.classes import *
+from mg.core.auth import SessionList
+from concurrence import dispatch, quit
+import os
+import logging
+import sys
+
+def main():
+    try:
+        inst = Instance("dump")
+        inst.download_config()
+        app = WebApplication(inst, sys.argv[1], "ext")
+        lst = app.objlist(SessionList, query_index="authorized", query_equal="1")
+        lst.load(silent=True)
+        for sess in lst:
+            print "sess=%s, user=%s" % (sess.uuid, sess.get("user"))
+        quit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+

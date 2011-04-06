@@ -831,6 +831,10 @@ class DesignMod(Module):
     def register(self):
         Module.register(self)
         self.rhook("design.response", self.response)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["Design"] = (Design, DesignList)
 
     def response(self, design, template, content, vars):
         vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), template))

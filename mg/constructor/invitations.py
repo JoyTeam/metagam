@@ -33,6 +33,10 @@ class Invitations(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("invitation.ok", self.invitation_ok)
         self.rhook("invitation.enter", self.invitation_enter)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["Invitation"] = (Invitation, InvitationList)
 
     def menu_constructor_index(self, menu):
         req = self.req()
