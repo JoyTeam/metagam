@@ -87,6 +87,8 @@ class Auth(Module):
         self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
         self.rhook("ext-auth.logout", self.ext_logout, priv="public", priority=10)
         self.rhook("ext-auth.login", self.ext_login, priv="disabled", priority=10)
+        self.rhook("session.character-online", self.character_online)
+        self.rhook("session.character-offline", self.character_offline)
 
     def ext_login(self):
         pass
@@ -633,3 +635,9 @@ class Auth(Module):
         for sess in lst:
             rows.append([sess.uuid, sess.get("user"), sess.get("online"), sess.get("updated")])
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def character_online(self, character_uuid):
+        self.debug("CHARACTER %s WENT ONLINE :)))))))))))", character_uuid)
+
+    def character_offline(self, character_uuid):
+        self.debug("CHARACTER %s WENT OFFLINE :(((((((((((", character_uuid)

@@ -228,6 +228,7 @@ class Realplexor(Module):
         self.rhook("stream.disconnected", self.disconnected)
         self.rhook("stream.login", self.login)
         self.rhook("stream.logout", self.logout)
+        self.rhook("ext-stream.init", self.init, priv="logged")
 
     def send(self, ids, data):
         self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
@@ -242,7 +243,6 @@ class Realplexor(Module):
         return sess
 
     def connected(self, session_uuid):
-        self.debug("Session %s went online", session_uuid)
         with self.lock(["session.%s" % session_uuid]):
             try:
                 session = self.obj(Session, session_uuid)
@@ -267,19 +267,36 @@ class Realplexor(Module):
                 # storing
                 session.store()
                 appsession.store()
-                if went_online:
-                    self.call("session.character-online", character_uuid)
-            elif old_state == 1:
-                # connection established after login
-                self.debug("Session %s established connection after login. State: %s => 2" % (session_uuid, old_state))
+                self.call("session.character-online", character_uuid)
+
+    def init(self):
+        req = self.req()
+        session = req.session()
+        with self.lock(["session.%s" % session.uuid]):
+            session.load()
+            # updating appsession
+            appsession = self.appsession(session.uuid)
+            character_uuid = appsession.get("character")
+            if character_uuid:
+                old_state = appsession.get("state")
+                went_online = old_state == 3
+                self.debug("Session %s connection initialized. State: %s => 2" % (session.uuid, old_state))
                 appsession.set("state", 2)
                 appsession.set("timeout", self.now(3600))
+                appsession.set("character", character_uuid)
                 # updating session
+                session.set("user", character_uuid)
+                session.set("character", 1)
                 session.set("authorized", 1)
                 session.set("updated", self.now())
+                session.delkey("semi_user")
                 # storing
                 session.store()
                 appsession.store()
+                if went_online:
+                    self.call("session.character-online", character_uuid)
+                self.call("web.response_json", {"ok": 1})
+            self.call("web.response_json", {"offline": 1})
 
     def disconnected(self, session_uuid):
         with self.lock(["session.%s" % session_uuid]):

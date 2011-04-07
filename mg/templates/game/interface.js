@@ -193,11 +193,16 @@ Game.stream_command = function(cmd, id)
 {
 	if (this.initialized) {
 		if (cmd.marker) {
-			return;
+			document.location = '/';
 		}
 	} else {
-		if (cmd.marker == '[%stream_marker%]')
+		if (cmd.marker == '[%stream_marker%]') {
 			this.initialized = true;
+			Ext.Ajax.request({
+				url: '/stream/init',
+				method: 'POST'
+			});
+		}
 		return;
 	}
 	if (cmd.packets) {
