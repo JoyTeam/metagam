@@ -1,5 +1,5 @@
 from mg import *
-
+from mg.core.auth import Session, SessionList
 import json
 import re
 import socket
@@ -13,6 +13,24 @@ re_content_length = re.compile('^Content-Length:\s*(\d+)', re.IGNORECASE | re.MU
 re_valid_numeric = re.compile('^[\d\.]+$')
 re_watch_line = re.compile('^(\w+)\s+([^:]+):(\S+)\s*$')
 re_valid_channel = re.compile('^([a-zA-Z0-9]+)_id_([0-9a-f]{32})$')
+
+class AppSession(CassandraObject):
+    _indexes = {
+        "timeout": [[], "timeout"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AppSession-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return AppSession._indexes
+
+class AppSessionList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AppSession-"
+        kwargs["cls"] = AppSession
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class RealplexorError(Exception):
     pass
@@ -206,11 +224,145 @@ class Realplexor(Module):
     def register(self):
         Module.register(self)
         self.rhook("stream.send", self.send)
+        self.rhook("stream.connected", self.connected)
+        self.rhook("stream.disconnected", self.disconnected)
+        self.rhook("stream.login", self.login)
+        self.rhook("stream.logout", self.logout)
 
     def send(self, ids, data):
         self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
         rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")
         rpl.send(ids, data)
+
+    def appsession(self, session_uuid):
+        app_tag = self.app().tag
+        sess = self.main_app().obj(AppSession, "%s-%s" % (app_tag, session_uuid), silent=True)
+        sess.set("app", app_tag)
+        sess.set("session", session_uuid)
+        return sess
+
+    def connected(self, session_uuid):
+        self.debug("Session %s went online", session_uuid)
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            character_uuid = appsession.get("character")
+            if old_state == 3 and session.get("semi_user") == character_uuid:
+                # went online after disconnection
+                self.debug("Session %s went online after disconnection. State: %s => 2" % (session_uuid, old_state))
+                appsession.set("state", 2)
+                appsession.set("timeout", self.now(3600))
+                # updating session
+                session.set("user", character_uuid)
+                session.set("character", 1)
+                session.set("authorized", 1)
+                session.set("updated", self.now())
+                session.delkey("semi_user")
+                # storing
+                session.store()
+                appsession.store()
+                if went_online:
+                    self.call("session.character-online", character_uuid)
+            elif old_state == 1:
+                # connection established after login
+                self.debug("Session %s established connection after login. State: %s => 2" % (session_uuid, old_state))
+                appsession.set("state", 2)
+                appsession.set("timeout", self.now(3600))
+                # updating session
+                session.set("authorized", 1)
+                session.set("updated", self.now())
+                # storing
+                session.store()
+                appsession.store()
+
+    def disconnected(self, session_uuid):
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            if old_state == 2:
+                # online session disconnected
+                self.debug("Session %s disconnected. State: %s => 3" % (session_uuid, old_state))
+                appsession.set("state", 3)
+                appsession.set("timeout", self.now(3600))
+                character_uuid = appsession.get("character")
+                # updating session
+                user = session.get("user")
+                if user:
+                    session.set("semi_user", user)
+                    session.delkey("user")
+                session.delkey("character")
+                session.delkey("authorized")
+                session.set("updated", self.now())
+                # storing
+                session.store()
+                appsession.store()
+                self.call("session.character-offline", character_uuid)
+
+    def login(self, session_uuid, character_uuid):
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            went_online = not old_state or old_state == 3
+            self.debug("Session %s logged in. State: %s => 1" % (session_uuid, old_state))
+            appsession.set("state", 1)
+            appsession.set("timeout", self.now(120))
+            appsession.set("character", character_uuid)
+            # updating session
+            session.set("user", character_uuid)
+            session.set("character", 1)
+            session.set("authorized", 1)
+            session.set("updated", self.now())
+            session.delkey("semi_user")
+            # storing
+            session.store()
+            appsession.store()
+            if went_online:
+                self.call("session.character-online", character_uuid)
+
+    def logout(self, session_uuid):
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            went_offline = old_state == 1 or old_state == 2
+            self.debug("Session %s logged out. State: %s => None" % (session_uuid, old_state))
+            character_uuid = appsession.get("character")
+            # updating session
+            user = session.get("user")
+            if user:
+                session.set("semi_user", user)
+                session.delkey("user")
+            session.delkey("character")
+            session.delkey("authorized")
+            session.set("updated", self.now())
+            # storing
+            session.store()
+            appsession.remove()
+            if went_offline:
+                self.call("session.character-offline", character_uuid)
 
 class RealplexorDaemon(Daemon):
     def __init__(self, app, id="stream"):
@@ -266,9 +418,9 @@ class RealplexorDaemon(Daemon):
                             app = self.app().inst.appfactory.get_by_tag(app_tag)
                             if app is not None:
                                 if ev["event"] == "online":
-                                    app.hooks.call("session.online", session_uuid)
+                                    app.hooks.call("stream.connected", session_uuid)
                                 elif ev["event"] == "offline":
-                                    app.hooks.call("session.offline", session_uuid)
+                                    app.hooks.call("stream.disconnected", session_uuid)
                 except RealplexorError as e:
                     self.error("Error watching realplexor events: %s", e)
                     check_pos = True
@@ -288,6 +440,10 @@ class RealplexorAdmin(Module):
         self.rhook("headmenu-admin-realplexor.monitor", self.headmenu_realplexor_monitor)
         self.rhook("int-realplexor.daemon", self.daemon, priv="public")
         self.rhook("daemons.permanent", self.daemons_permanent)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["AppSession"] = (AppSession, AppSessionList)
 
     def permissions_list(self, perms):
         perms.append({"id": "realplexor.config", "name": self._("Realplexor configuration")})

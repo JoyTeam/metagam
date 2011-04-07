@@ -610,7 +610,6 @@ class Interface(Module):
             user = session.get("user")
             if user:
                 with self.lock(["session.%s" % session.uuid, "user.%s" % user]):
-                    self.call("auth.logging_out", session, user)
                     session.set("semi_user", user)
                     session.delkey("user")
                     session.store()
@@ -731,12 +730,10 @@ class Interface(Module):
                 sessions.load()
                 for sess in sessions:
                     if sess.uuid != my_session.uuid:
-                        user = sess.get("user")
-                        if user:
-                            self.call("auth.logging_out", session, user)
-                        sess.delkey("user")
-                        sess.delkey("semi_user")
-                sessions.store()
+                        with self.lock(["session.%s" % sess.uuid]):
+                            sess.delkey("user")
+                            sess.delkey("semi_user")
+                            sess.store()
                 self.call("auth.password-changed", user, password1)
                 self.call("web.redirect", ret)
         form.hidden("prefix", prefix)

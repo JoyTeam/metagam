@@ -84,10 +84,12 @@ class Auth(Module):
         self.rhook("ext-player.login", self.player_login, priv="public")
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("auth.activated", self.auth_activated)
-        self.rhook("auth.logging_out", self.auth_logging_out)
         self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
-        self.rhook("session.online", self.session_online)
-        self.rhook("session.offline", self.session_offline)
+        self.rhook("ext-auth.logout", self.ext_logout, priv="public", priority=10)
+        self.rhook("ext-auth.login", self.ext_login, priv="disabled", priority=10)
+
+    def ext_login(self):
+        pass
 
     def auth_registered(self, user):
         req = self.req()
@@ -569,12 +571,15 @@ class Auth(Module):
         # Responding
         self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
-    def auth_logging_out(self, session, user_uuid):
-        print "auth.logging_out %s, %s" % (session.uuid, user_uuid)
-        session.delkey("character")
-        session.delkey("authorized")
-        session.delkey("online")
-        session.set("updated", self.now())
+    def ext_logout(self):
+        session = self.call("session.get")
+        if session is not None:
+            self.call("stream.logout", session.uuid)
+        req = self.req()
+        redirect = req.param("redirect")
+        if redirect:
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/")
 
     def auth_form_params(self, params):
         params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
@@ -609,14 +614,8 @@ class Auth(Module):
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
             session = self.call("session.get", True)
-            with self.lock(["session.%s" % session.uuid]):
-                session.set("user", chars[0].uuid)
-                session.set("character", 1)
-                session.set("authorized", 1)
-                session.set("updated", self.now())
-                session.delkey("semi_user")
-                session.store()
-                self.call("web.response_json", {"ok": 1, "session": session.uuid})
+            self.call("stream.login", session.uuid, chars[0].uuid)
+            self.call("web.response_json", {"ok": 1, "session": session.uuid})
         self.call("web.response_json", {"error": self._("No characters assigned to this player")})
 
     def characters_online(self):
@@ -634,32 +633,3 @@ class Auth(Module):
         for sess in lst:
             rows.append([sess.uuid, sess.get("user"), sess.get("online"), sess.get("updated")])
         self.call("admin.response_template", "admin/common/tables.html", vars)
-
-    def session_online(self, session_uuid):
-        self.debug("Session %s went online", session_uuid)
-        with self.lock(["session.%s" % session_uuid]):
-            try:
-                session = self.obj(Session, session_uuid)
-            except ObjectNotFoundException as e:
-                self.exception(e)
-                return
-            if session.get("character") and not session.get("authorized"):
-                self.debug("User %s went online", session.get("user"))
-                session.set("authorized", 1)
-                session.store()
-
-    def session_offline(self, session_uuid):
-        self.debug("Session %s went offline", session_uuid)
-        with self.lock(["session.%s" % session_uuid]):
-            self.debug("Lock acquired")
-            try:
-                session = self.obj(Session, session_uuid)
-            except ObjectNotFoundException as e:
-                self.exception(e)
-                return
-            self.debug("Session loaded: %s", session.data)
-            if session.get("authorized") and session.get("character"):
-                self.debug("User %s went offline", session.get("user"))
-                session.delkey("authorized")
-                session.delkey("online")
-                session.store()

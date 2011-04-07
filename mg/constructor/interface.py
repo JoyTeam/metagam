@@ -191,6 +191,8 @@ class Interface(Module):
         self.call("gameinterface.render", vars, design)
         self.call("gameinterface.gamejs", vars, design)
         self.call("gameinterface.blocks", vars, design)
+        session = self.call("session.get", True)
+        self.call("stream.login", session.uuid, character.uuid)
         self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
 
     def menu_design_index(self, menu):
