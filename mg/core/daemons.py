@@ -86,8 +86,8 @@ class Daemon(Module):
         self._no = 0
         # main cycle should be aborted if this field is set
         self.terminate = False
-        # permanent means autorespawning daemon
-        self.permanent = False
+        # persistent means autorespawning daemon
+        self.persistent = False
 
     def run(self):
         """
@@ -154,6 +154,7 @@ class DaemonsManager(Module):
         self.rhook("director.unregistering_server", self.unregistering_server)
         self.rhook("int-daemon.stopped", self.daemon_stopped, priv="public")
         self.rhook("web.active_requests", self.active_requests)
+        self.rhook("core.reloading_hard", self.reloading_hard)
 
     def running(self, app_tag=None, create=True):
         inst = self.app().inst
@@ -192,7 +193,7 @@ class DaemonsManager(Module):
         running = self.running(daemon.app().tag)
         del running[daemon.id]
         self.status_remove(daemon)
-        if daemon.permanent:
+        if daemon.persistent:
             self.call("cluster.query_director", "/daemon/stopped/%s" % daemon.id)
 
     def fastidle(self):
@@ -225,6 +226,12 @@ class DaemonsManager(Module):
                                 pass
                         else:
                             st.store()
+
+    def reloading_hard(self):
+        for cls, daemons in self.running().items():
+            for daemon in daemons.values():
+                if daemon.persistent:
+                    daemon.terminate = True
 
     def status(self, daemon):
         st = self.obj(DaemonStatus, "%s.%s" % (daemon.app().tag, daemon.id), silent=True)
@@ -315,9 +322,9 @@ class DaemonsManager(Module):
 #                    self.debug("Workers: %s", workers)
 #                    self.debug("Priority: %s", priority)
 #                    self.debug("Daemons: %s", running)
-                    # Permanent daemons
+                    # persistent daemons
                     daemons = []
-                    self.call("daemons.permanent", daemons)
+                    self.call("daemons.persistent", daemons)
                     for daemon in daemons:
                         if not ("%s-%s-%s" % (daemon["cls"], daemon["app"], daemon["daemon"])) in running:
                             timer = check_daemons_interval_fast
@@ -382,8 +389,7 @@ class DaemonsManager(Module):
         running = self.running()
         for cls, daemons in running.items():
             for daemon in daemons.values():
-                if not daemon.permanent:
-                    cnt += 1
+                cnt += 1
         active_requests["daemons"] = cnt
 
 class DaemonsAdmin(Module):

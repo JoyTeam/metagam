@@ -639,13 +639,13 @@ class Formatter(logging.Formatter):
                 record.__dict__[key] = value.encode("utf-8")
         if not record.__dict__.get("mg_formatted"):
             if record.__dict__.get("user"):
-                record.msg = "user:%s %s" % (record.user, record.msg)
+                record.msg = "user=%s %s" % (record.user, record.msg)
             if record.__dict__.get("ip"):
-                record.msg = "ip:%s %s" % (record.ip, record.msg)
+                record.msg = "ip=%s %s" % (record.ip, record.msg)
             if record.__dict__.get("app"):
-                record.msg = "app:%s %s" % (record.app, record.msg)
+                record.msg = "app=%s %s" % (record.app, record.msg)
             if record.__dict__.get("host"):
-                record.msg = "host:%s %s" % (record.host, record.msg)
+                record.msg = "host=%s %s" % (record.host, record.msg)
             record.mg_formatted = True
         str = logging.Formatter.format(self, record)
         if type(str) == unicode:

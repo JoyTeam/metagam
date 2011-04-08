@@ -228,7 +228,8 @@ class Realplexor(Module):
         self.rhook("stream.disconnected", self.disconnected)
         self.rhook("stream.login", self.login)
         self.rhook("stream.logout", self.logout)
-        self.rhook("ext-stream.init", self.init, priv="logged")
+        self.rhook("ext-stream.init", self.init, priv="public")
+        self.rhook("stream.idle", self.idle)
 
     def send(self, ids, data):
         self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
@@ -272,6 +273,8 @@ class Realplexor(Module):
     def init(self):
         req = self.req()
         session = req.session()
+        if not session or not session.get("user"):
+            self.call("web.response_json", {"logged_out": 1})
         with self.lock(["session.%s" % session.uuid]):
             session.load()
             # updating appsession
@@ -334,9 +337,13 @@ class Realplexor(Module):
             except ObjectNotFoundException as e:
                 self.exception(e)
                 return
-            # updating appsession
             appsession = self.appsession(session_uuid)
             old_state = appsession.get("state")
+            if old_state == 1 and appsession.get("updated") > self.now(-10):
+                # Game interface is loaded immediately after character login
+                # There is no need to update AppSession too fast
+                return
+            # updating appsession
             went_online = not old_state or old_state == 3
             self.debug("Session %s logged in. State: %s => 1" % (session_uuid, old_state))
             appsession.set("state", 1)
@@ -381,10 +388,67 @@ class Realplexor(Module):
             if went_offline:
                 self.call("session.character-offline", character_uuid)
 
+    def idle(self):
+        try:
+            now = self.now()
+            appsessions = self.main_app().objlist(AppSessionList, query_index="timeout", query_finish=now)
+            appsessions.load(silent=True)
+            for appsession in appsessions:
+                app_tag = appsession.get("app")
+                app = self.app().inst.appfactory.get_by_tag(app_tag)
+                session_uuid = appsession.get("session")
+                with app.lock(["session.%s" % session_uuid]):
+                    try:
+                        appsession.load()
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        if appsession.get("timeout") < now:
+                            try:
+                                session = app.obj(Session, session_uuid)
+                            except ObjectNotFoundException as e:
+                                self.exception(e)
+                            else:
+                                old_state = appsession.get("state")
+                                if old_state == 1 or old_state == 2:
+                                    # online session disconnected on timeout
+                                    self.debug("Session %s timed out. State: %s => 3" % (session_uuid, old_state))
+                                    appsession.set("state", 3)
+                                    appsession.set("timeout", self.now(3600))
+                                    character_uuid = appsession.get("character")
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.store()
+                                    self.call("session.character-offline", character_uuid)
+                                else:
+                                    # disconnected session destroyed on timeout
+                                    self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.remove()
+        except Exception as e:
+            self.exception(e)
+
 class RealplexorDaemon(Daemon):
     def __init__(self, app, id="stream"):
         Daemon.__init__(self, app, "mg.core.realplexor.RealplexorDaemon", id)
-        self.permanent = True
+        self.persistent = True
 
     def main(self):
         resync = True
@@ -397,22 +461,15 @@ class RealplexorDaemon(Daemon):
                     check_pos = False
                     pos = 0
                     timer = 0
-                    self.info("Performing Realplexor synchronization")
-                    # checking actual online
-                    try:
-                        counters = rpl.cmdOnlineWithCounters()
-                    except RealplexorError as e:
-                        self.error("Error getting realplexor online: %s", e)
-                        resync = True
-                    else:
-                        for channel, listeners in counters.iteritems():
-                            m = re_valid_channel.match(channel)
-                            if m:
-                                app_tag, session_uuid = m.group(1, 2)
+                    idle_timer = 0
                 timer += 1
                 if timer >= 300:
                     timer = 0
                     check_pos = True
+                idle_timer -= 1
+                if idle_timer <= 0:
+                    idle_timer = 30
+                    self.call("stream.idle")
                 if check_pos:
                     self.debug("Checking realplexor position")
                     try:
@@ -456,7 +513,7 @@ class RealplexorAdmin(Module):
         self.rhook("ext-admin-realplexor.monitor", self.realplexor_monitor, priv="monitoring")
         self.rhook("headmenu-admin-realplexor.monitor", self.headmenu_realplexor_monitor)
         self.rhook("int-realplexor.daemon", self.daemon, priv="public")
-        self.rhook("daemons.permanent", self.daemons_permanent)
+        self.rhook("daemons.persistent", self.daemons_persistent)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def objclasses_list(self, objclasses):
@@ -520,6 +577,6 @@ class RealplexorAdmin(Module):
     def headmenu_realplexor_monitor(self, args):
         return self._("Sessions monitor")
 
-    def daemons_permanent(self, daemons):
+    def daemons_persistent(self, daemons):
         daemons.append({"cls": "metagam", "app": "main", "daemon": "stream", "url": "/realplexor/daemon"})
 

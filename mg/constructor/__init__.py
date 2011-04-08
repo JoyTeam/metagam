@@ -30,7 +30,7 @@ class Constructor(Module):
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
-            "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
+            "mg.core.realplexor.Realplexor", "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
             "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
             "mg.core.cluster.ClusterAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)

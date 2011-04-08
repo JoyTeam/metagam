@@ -200,7 +200,19 @@ Game.stream_command = function(cmd, id)
 			this.initialized = true;
 			Ext.Ajax.request({
 				url: '/stream/init',
-				method: 'POST'
+				method: 'POST',
+				success: function (response, opts) {
+					if (response && response.getResponseHeader) {
+						var res = Ext.util.JSON.decode(response.responseText);
+						if (res.ok) {
+							return;
+						}
+					}
+					document.location = '/';
+				},
+				failure: function (response, opts) {
+					document.location = '/';
+				}
 			});
 		}
 		return;
