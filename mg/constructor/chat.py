@@ -9,6 +9,8 @@ class Chat(Module):
         self.rhook("ext-admin-chat.config", self.chat_config, priv="chat.config")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("admin-gameinterface.design-files", self.gameinterface_advice_files)
+        self.rhook("ext-chat.post", self.post, priv="online")
+        self.rhook("chat.message", self.message)
 
     def menu_game_index(self, menu):
         req = self.req()
@@ -130,3 +132,11 @@ class Chat(Module):
                 if chatmode == 1 or ch.get("switchable"):
                     files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["short_name"]})
                     files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["short_name"]})
+
+    def post(self):
+        req = self.req()
+        self.call("chat.message", req.param("text"))
+        self.call("web.response_json", {"ok": True})
+
+    def message(self, text):
+        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": htmlescape(text)}]})

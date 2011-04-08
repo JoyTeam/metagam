@@ -5,6 +5,7 @@ import re
 import socket
 from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
+from uuid import uuid4
 
 re_valid_id = re.compile('^\w+$')
 re_split_headers = re.compile('\r?\n\r?\n')
@@ -230,6 +231,8 @@ class Realplexor(Module):
         self.rhook("stream.logout", self.logout)
         self.rhook("ext-stream.init", self.init, priv="public")
         self.rhook("stream.idle", self.idle)
+        self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("stream.require_online", self.require_online)
 
     def send(self, ids, data):
         self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
@@ -444,6 +447,22 @@ class Realplexor(Module):
                                     appsession.remove()
         except Exception as e:
             self.exception(e)
+
+    def gameinterface_render(self, vars, design):
+        req = self.req()
+        session = req.session()
+        # initializing stream
+        stream_marker = uuid4().hex
+        vars["stream_marker"] = stream_marker
+        self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
+        vars["js_modules"].add("realplexor-stream")
+        vars["js_init"].append("Stream.run_realplexor('%s');" % stream_marker)
+
+    def require_online(self):
+        req = self.req()
+        session = req.session()
+        if not session or not session.get("authorized"):
+            self.call("web.forbidden")
 
 class RealplexorDaemon(Daemon):
     def __init__(self, app, id="stream"):

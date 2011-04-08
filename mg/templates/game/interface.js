@@ -1,7 +1,7 @@
 var admin_root = '';
 var Game = {}
-Game.stream_handlers = new Array();
 Game.app = '[%app%]';
+Game.domain = '[%domain%]';
 
 Game.fixupContentEl = function(el) {
 	if (!Ext.getDom(el.contentEl))
@@ -182,71 +182,12 @@ Game.setup_layout = function() {
 	}
 };
 
-Game.run_realplexor = function() {
-	this.realplexor = new Dklab_Realplexor('http://rpl.www.[%domain%]/rpl', this.app + '_');
-	this.realplexor.setCursor('id_' + Ext.util.Cookies.get('mgsess-' + this.app), 0);
-	this.realplexor.subscribe('id_' + Ext.util.Cookies.get('mgsess-' + this.app), this.stream_command.createDelegate(this));
-	this.realplexor.execute();
-};
-
-Game.stream_command = function(cmd, id)
-{
-	if (this.initialized) {
-		if (cmd.marker) {
-			document.location = '/';
-		}
-	} else {
-		if (cmd.marker == '[%stream_marker%]') {
-			this.initialized = true;
-			Ext.Ajax.request({
-				url: '/stream/init',
-				method: 'POST',
-				success: function (response, opts) {
-					if (response && response.getResponseHeader) {
-						var res = Ext.util.JSON.decode(response.responseText);
-						if (res.ok) {
-							return;
-						}
-					}
-					document.location = '/';
-				},
-				failure: function (response, opts) {
-					document.location = '/';
-				}
-			});
-		}
-		return;
-	}
-	if (cmd.packets) {
-		for (var pack_i = 0; pack_i < cmd.packets.length; pack_i++)
-			this.packet_received(cmd.packets[pack_i]);
-	}
-}
-
-Game.packet_received = function(pkt) {
-	var handler = this.stream_handlers[pkt.cls];
-	if (!handler)
-		return;
-	var method = handler[pkt.method];
-	if (!method)
-		return;
-	try {
-		method(pkt);
-	} catch (e) {
-		alert('Exception ' + e);
-	}
-};
-
-Game.stream_handler = function(tag, cls)
-{
-	this.stream_handlers[tag] = cls;
-};
-
 Ext.onReady(function() {
+	Ext.QuickTips.init();
+	Ext.form.Field.prototype.msgTarget = 'under';
 	wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
-		Ext.QuickTips.init();
-		Ext.form.Field.prototype.msgTarget = 'under';
 		Game.setup_layout();
-		Game.run_realplexor();
+		[%+ foreach statement in js_init%][%statement +%]
+		[%+ end%]
 	});
 });

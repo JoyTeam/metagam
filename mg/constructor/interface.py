@@ -2,7 +2,6 @@ from mg import *
 from mg.constructor.design import Design
 from mg.core.auth import User
 from mg.constructor.players import Player, Character, CharacterList
-from uuid import uuid4
 import re
 import hashlib
 import mg
@@ -87,7 +86,7 @@ class Interface(Module):
         req = self.req()
         session_param = req.param("session")
         if session_param:
-            session = self.call("session.get")
+            session = req.session()
             if session.uuid != session_param:
                 self.call("web.redirect", "/")
             user = session.get("user")
@@ -178,7 +177,8 @@ class Interface(Module):
         }
         vars["domain"] = self.app().project.get("domain")
         vars["app"] = self.app().tag
-        vars["js_modules"] = set()
+        vars["js_modules"] = set(["game-interface"])
+        vars["js_init"] = []
         vars["main_init"] = "/interface"
 
     def game_interface(self, character):
@@ -265,10 +265,6 @@ class Interface(Module):
 
     def game_js(self, vars, design):
         session = self.call("session.get")
-        # initializing stream
-        stream_marker = uuid4().hex
-        vars["stream_marker"] = stream_marker
-        self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
         # js modules
         vars["js_modules"] = [{"name": mod} for mod in vars["js_modules"]]
         if len(vars["js_modules"]):

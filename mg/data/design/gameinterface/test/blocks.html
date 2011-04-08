@@ -1,7 +1,7 @@
-<div class="x-hidden" id="topmenu-box"><div id="topmenu-box-content">Это тестовая верхняя менюха</div></div>
+<div class="x-hidden" id="topmenu-box"><div id="topmenu-box-content">Это тестовая верхняя менюха <img src="reload.gif" alt="" style="cursor: pointer" onclick="Game.reload()" /></div></div>
 <div class="x-hidden" id="chat-channels"><div id="chat-channel-buttons">
 	[%foreach btn in chat_buttons%]<img src="[%btn.image%]" id="[%btn.id%]" onclick="[%btn.onclick%]" class="clickable" />[%end%]
 </div></div>
 <div class="x-hidden" id="chat-box"><div id="chat-box-content">Содержимое чата</div></div>
-<div class="x-hidden" id="chat-input"><form><input id="chat-input-control" /></form></div>
+<div class="x-hidden" id="chat-input"><table style="width: 100%"><tr><td><form><input id="chat-input-control" /></form></td><td style="width: 40px"><img src="chat-submit.gif" alt="" style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()" /></td></tr></table></div>
 <div class="x-hidden" id="roster-box"><div id="roster-box-content">Это ростер</div></div>

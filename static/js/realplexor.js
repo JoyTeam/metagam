@@ -150,3 +150,5 @@ Dklab_Realplexor._callAndReturnException = function(func, args) {
 		return "" + e;
 	}
 }
+
+loaded('realplexor');

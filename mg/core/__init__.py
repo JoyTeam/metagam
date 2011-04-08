@@ -152,6 +152,8 @@ class Hooks(object):
                         pass
                     elif priv == "logged":
                         self.call("session.require_login")
+                    elif priv == "online":
+                        self.call("stream.require_online")
                     else:
                         self.call("session.require_permission", priv)
                 try:
