@@ -12,6 +12,25 @@ import hashlib
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
 
+class AppSession(CassandraObject):
+    _indexes = {
+        "timeout": [[], "timeout"],
+        "character": [["character"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AppSession-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return AppSession._indexes
+
+class AppSessionList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AppSession-"
+        kwargs["cls"] = AppSession
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Player(CassandraObject):
     _indexes = {
         "created": [[], "created"],
@@ -33,7 +52,6 @@ class PlayerList(CassandraObjectList):
 class Character(CassandraObject):
     _indexes = {
         "created": [[], "created"],
-        "name": [["name_lower"]],
         "player": [["player"], "created"],
         "admin": [["admin"]]
     }
@@ -68,6 +86,24 @@ class CharacterFormList(CassandraObjectList):
         kwargs["cls"] = CharacterForm
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class CharacterOnline(CassandraObject):
+    _indexes = {
+        "all": [[]]
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterOnline-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return CharacterOnline._indexes
+
+class CharacterOnlineList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterOnline-"
+        kwargs["cls"] = CharacterOnline
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Auth(Module):
     def register(self):
         Module.register(self)
@@ -89,6 +125,13 @@ class Auth(Module):
         self.rhook("ext-auth.login", self.ext_login, priv="disabled", priority=10)
         self.rhook("session.character-online", self.character_online)
         self.rhook("session.character-offline", self.character_offline)
+        self.rhook("stream.connected", self.stream_connected)
+        self.rhook("stream.disconnected", self.stream_disconnected)
+        self.rhook("stream.login", self.stream_login)
+        self.rhook("stream.logout", self.stream_logout)
+        self.rhook("ext-stream.ready", self.stream_ready, priv="public")
+        self.rhook("stream.idle", self.stream_idle)
+        self.rhook("gameinterface.render", self.gameinterface_render)
 
     def ext_login(self):
         pass
@@ -130,6 +173,7 @@ class Auth(Module):
         objclasses["Player"] = (Player, PlayerList)
         objclasses["Character"] = (Character, CharacterList)
         objclasses["CharacterForm"] = (CharacterForm, CharacterFormList)
+        objclasses["AppSession"] = (AppSession, AppSessionList)
 
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
@@ -563,13 +607,7 @@ class Auth(Module):
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
         else:
             with self.lock(["session.%s" % session.uuid]):
-                session.load()
-                session.set("user", character_user.uuid)
-                session.set("character", 1)
-                session.set("authorized", 1)
-                session.set("updated", self.now())
-                session.delkey("semi_user")
-                session.store()
+                self.call("stream.login", session.uuid, character_user.uuid)
         # Responding
         self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
@@ -598,20 +636,22 @@ class Auth(Module):
         user = self.call("session.find_user", name, allow_email=True)
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
-        else:
-            if user.get("name"):
-                # character user
-                character = self.obj(Character, user.uuid)
-                if character.get("player"):
+        if user.get("name"):
+            # character user
+            character = self.obj(Character, user.uuid)
+            if character.get("player"):
+                try:
                     user = self.obj(User, character.get("player"))
-            if user.get("inactive"):
-                self.call("web.response_json", {"error": msg["user_inactive"]})
+                except ObjectNotFoundException:
+                    self.call("web.response_json", {"error": self._("No characters assigned to this player")})
         if not password:
             self.call("web.response_json", {"error": msg["password_empty"]})
         m = hashlib.md5()
         m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
         if m.hexdigest() != user.get("pass_hash"):
             self.call("web.response_json", {"error": msg["password_incorrect"]})
+#        if user.get("inactive"):
+#            self.call("web.response_json", {"error": msg["user_inactive"]})
         # acquiring character user
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
@@ -637,7 +677,347 @@ class Auth(Module):
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def character_online(self, character_uuid):
-        self.debug("CHARACTER %s WENT ONLINE :)))))))))))", character_uuid)
+        user = self.obj(User, character_uuid)
+        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": self._("%s online") % htmlescape(user.get("name"))}]})
 
     def character_offline(self, character_uuid):
-        self.debug("CHARACTER %s WENT OFFLINE :(((((((((((", character_uuid)
+        user = self.obj(User, character_uuid)
+        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": self._("%s offline") % htmlescape(user.get("name"))}]})
+
+    def appsession(self, session_uuid):
+        app_tag = self.app().tag
+        sess = self.main_app().obj(AppSession, "%s-%s" % (app_tag, session_uuid), silent=True)
+        sess.set("app", app_tag)
+        sess.set("session", session_uuid)
+        return sess
+
+    def stream_connected(self, session_uuid):
+        logout_others = False
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            character_uuid = appsession.get("character")
+            if old_state == 3 and session.get("semi_user") == character_uuid:
+                # went online after disconnection
+                self.debug("Session %s went online after disconnection. State: %s => 2" % (session_uuid, old_state))
+                appsession.set("state", 2)
+                appsession.set("timeout", self.now(3600))
+                # updating session
+                session.set("user", character_uuid)
+                session.set("character", 1)
+                session.set("authorized", 1)
+                session.set("updated", self.now())
+                session.delkey("semi_user")
+                # storing
+                session.store()
+                appsession.store()
+                self.stream_character_online(character_uuid)
+                logout_others = True
+        if logout_others:
+            self.logout_others(session_uuid, character_uuid)
+
+    def stream_character_online(self, character_uuid):
+        with self.lock(["character.%s" % character_uuid]):
+            try:
+                self.obj(CharacterOnline, character_uuid)
+            except ObjectNotFoundException:
+                obj = self.obj(CharacterOnline, character_uuid, data={})
+                obj.dirty = True
+                obj.store()
+                self.call("session.character-online", character_uuid)
+
+    def stream_character_offline(self, character_uuid):
+        with self.lock(["character.%s" % character_uuid]):
+            try:
+                obj = self.obj(CharacterOnline, character_uuid)
+            except ObjectNotFoundException:
+                pass
+            else:
+                obj.remove()
+                self.call("session.character-offline", character_uuid)
+
+    def logout_others(self, except_session_uuid, character_uuid):
+        # log out other character sessions depending on multicharing policy, except given session_uuid
+        if self.conf("auth.multicharing", 0) < 2:
+            # dropping all character of the player
+            char = self.obj(Character, character_uuid)
+            chars = self.objlist(CharacterList, query_index="player", query_equal=char.get("player"))
+            characters = chars.uuids()
+        else:
+            # dropping just this character
+            characters = [character_uuid]
+        self.debug("Dropping other sessions for characters %s", characters)
+        appsessions = self.main_app().objlist(AppSessionList, query_index="character", query_equal=characters)
+        appsessions.load(silent=True)
+        for appsession in appsessions:
+            session_uuid = appsession.get("session")
+            if session_uuid == except_session_uuid:
+                continue
+            with self.lock(["session.%s" % session_uuid]):
+                try:
+                    appsession.load()
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    self.debug("Dropping session %s" % session_uuid)
+                    old_state = appsession.get("state")
+                    if old_state == 1 or old_state == 2:
+                        self.debug("Session %s logged out forced. State: %s => None" % (session_uuid, old_state))
+                        try:
+                            session = self.obj(Session, session_uuid)
+                        except ObjectNotFoundException as e:
+                            self.exception(e)
+                        else:
+                            # updating session
+                            user = session.get("user")
+                            if user:
+                                session.set("semi_user", user)
+                                session.delkey("user")
+                            session.delkey("character")
+                            session.delkey("authorized")
+                            session.set("updated", self.now())
+                            # storing
+                            session.store()
+                    else:
+                        self.debug("Session %s is timed out. Clearing it forced. State: %s => None" % (session_uuid, old_state))
+                    appsession.remove()
+                    # notifying session
+                    self.call("stream.send", ["id_%s" % session_uuid], {"packets": [{"cls": "game", "method": "close"}]})
+
+    def stream_ready(self):
+        req = self.req()
+        session = req.session()
+        if not session or not session.get("user"):
+            self.call("web.response_json", {"logged_out": 1})
+        ok = False
+        logout_others = False
+        with self.lock(["session.%s" % session.uuid]):
+            session.load()
+            # updating appsession
+            appsession = self.appsession(session.uuid)
+            character_uuid = appsession.get("character")
+            if character_uuid:
+                old_state = appsession.get("state")
+                went_online = old_state == 3
+                if old_state != 2:
+                    self.debug("Session %s connection is ready. State: %s => 2" % (session.uuid, old_state))
+                appsession.set("state", 2)
+                appsession.set("timeout", self.now(3600))
+                appsession.set("character", character_uuid)
+                # updating session
+                session.set("user", character_uuid)
+                session.set("character", 1)
+                session.set("authorized", 1)
+                if went_online:
+                    session.set("updated", self.now())
+                session.delkey("semi_user")
+                # storing
+                session.store()
+                appsession.store()
+                if went_online:
+                    self.stream_character_online(character_uuid)
+                    logout_others = True
+                ok = True
+        if logout_others:
+            self.logout_others(session.uuid, character_uuid)
+        if ok:
+            self.call("web.response_json", {"ok": 1})
+        else:
+            self.call("web.response_json", {"offline": 1})
+
+    def stream_disconnected(self, session_uuid):
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            if old_state == 2:
+                # online session disconnected
+                self.debug("Session %s disconnected. State: %s => 3" % (session_uuid, old_state))
+                appsession.set("state", 3)
+                appsession.set("timeout", self.now(3600))
+                character_uuid = appsession.get("character")
+                # updating session
+                user = session.get("user")
+                if user:
+                    session.set("semi_user", user)
+                    session.delkey("user")
+                session.delkey("character")
+                session.delkey("authorized")
+                session.set("updated", self.now())
+                # storing
+                session.store()
+                appsession.store()
+                self.stream_character_offline(character_uuid)
+
+    def stream_login(self, session_uuid, character_uuid):
+        logout_others = False
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            if old_state == 1 and appsession.get("updated") > self.now(-10):
+                # Game interface is loaded immediately after character login
+                # There is no need to update AppSession too fast
+                return
+            # updating appsession
+            went_online = not old_state or old_state == 3
+            self.debug("Session %s logged in. State: %s => 1" % (session_uuid, old_state))
+            appsession.set("state", 1)
+            appsession.set("timeout", self.now(120))
+            appsession.set("character", character_uuid)
+            # updating session
+            session.set("user", character_uuid)
+            session.set("character", 1)
+            session.set("authorized", 1)
+            session.set("updated", self.now())
+            session.delkey("semi_user")
+            # storing
+            session.store()
+            appsession.store()
+            if went_online:
+                self.stream_character_online(character_uuid)
+            logout_others = True
+        if logout_others:
+            self.logout_others(session_uuid, character_uuid)
+
+    def stream_logout(self, session_uuid):
+        with self.lock(["session.%s" % session_uuid]):
+            try:
+                session = self.obj(Session, session_uuid)
+            except ObjectNotFoundException as e:
+                self.exception(e)
+                return
+            # updating appsession
+            appsession = self.appsession(session_uuid)
+            old_state = appsession.get("state")
+            went_offline = old_state == 1 or old_state == 2
+            self.debug("Session %s logged out. State: %s => None" % (session_uuid, old_state))
+            character_uuid = appsession.get("character")
+            # updating session
+            user = session.get("user")
+            if user:
+                session.set("semi_user", user)
+                session.delkey("user")
+            session.delkey("character")
+            session.delkey("authorized")
+            session.set("updated", self.now())
+            # storing
+            session.store()
+            appsession.remove()
+            if went_offline:
+                self.stream_character_offline(character_uuid)
+
+    def stream_idle(self):
+        try:
+            now = self.now()
+            appsessions = self.main_app().objlist(AppSessionList, query_index="timeout", query_finish=now)
+            appsessions.load(silent=True)
+            for appsession in appsessions:
+                app_tag = appsession.get("app")
+                app = self.app().inst.appfactory.get_by_tag(app_tag)
+                session_uuid = appsession.get("session")
+                with app.lock(["session.%s" % session_uuid]):
+                    try:
+                        appsession.load()
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        if appsession.get("timeout") < now:
+                            try:
+                                session = app.obj(Session, session_uuid)
+                            except ObjectNotFoundException as e:
+                                self.exception(e)
+                            else:
+                                old_state = appsession.get("state")
+                                if old_state == 1 or old_state == 2:
+                                    # online session disconnected on timeout
+                                    self.debug("Session %s timed out. State: %s => 3" % (session_uuid, old_state))
+                                    appsession.set("state", 3)
+                                    appsession.set("timeout", self.now(3600))
+                                    character_uuid = appsession.get("character")
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.store()
+                                    self.stream_character_offline(character_uuid)
+                                else:
+                                    # disconnected session destroyed on timeout
+                                    self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.remove()
+        except Exception as e:
+            self.exception(e)
+
+    def gameinterface_render(self, vars, design):
+        req = self.req()
+        session = req.session()
+        # initializing stream
+        stream_marker = uuid4().hex
+        vars["stream_marker"] = stream_marker
+        self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
+        vars["js_modules"].add("realplexor-stream")
+        vars["js_init"].append("Stream.run_realplexor('%s');" % stream_marker)
+
+class AuthAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
+        self.rhook("ext-admin-sessions.monitor", self.sessions_monitor, priv="monitoring")
+        self.rhook("headmenu-admin-sessions.monitor", self.headmenu_sessions_monitor)
+
+    def menu_cluster_monitoring(self, menu):
+        req = self.req()
+        if req.has_access("monitoring"):
+            menu.append({"id": "sessions/monitor", "text": self._("Sessions"), "leaf": True})
+
+    def sessions_monitor(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "header": [self._("Application"), self._("Session"), self._("Character"), self._("State"), self._("Timeout")],
+                    "rows": rows
+                }
+            ]
+        }
+        lst = self.main_app().objlist(AppSessionList, query_index="timeout")
+        lst.load(silent=True)
+        for ent in lst:
+            state = {1: self._("authorized"), 2: self._("online"), 3: self._("disconnected")}.get(ent.get("state"), ent.get("state"))
+            rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(ent.get("app")), ent.get("session"), ent.get("character"), state, ent.get("timeout")])
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_sessions_monitor(self, args):
+        return self._("Sessions monitor")
+

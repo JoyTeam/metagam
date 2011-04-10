@@ -12,4 +12,9 @@ Game.reload = function() {
 	frm.submit();
 };
 
+Game.close = function() {
+	Stream.initialized = false;
+	document.location = 'http://www.' + Game.domain;
+};
+
 loaded('game-interface');

@@ -22,8 +22,7 @@ Stream.stream_command = function(cmd, id)
 				buttons: Ext.MessageBox.OK,
 				icon: Ext.MessageBox.ERROR,
 				fn: function() {
-					this.initialized = false;
-					document.location = 'http://www.' + Game.domain;
+					Game.close();
 				}
 			});
 			return;
@@ -31,23 +30,9 @@ Stream.stream_command = function(cmd, id)
 	} else {
 		if (cmd.marker == this.marker) {
 			this.initialized = true;
-			Ext.Ajax.request({
-				url: '/stream/init',
-				method: 'POST',
-				success: function (response, opts) {
-					if (response && response.getResponseHeader) {
-						var res = Ext.util.JSON.decode(response.responseText);
-						if (res.ok) {
-							return;
-						}
-					}
-					this.initialized = false;
-					document.location = 'http://www.' + Game.domain;
-				},
-				failure: function (response, opts) {
-					this.initialized = false;
-					document.location = 'http://www.' + Game.domain;
-				}
+			Ext.TaskMgr.start({
+				interval: 600000,
+				run: this.ping.createDelegate(this)
 			});
 			var cursor = this.realplexor._map[this.personal_channel].cursor;
 			this.realplexor.setCursor('global', cursor);
@@ -59,7 +44,23 @@ Stream.stream_command = function(cmd, id)
 		for (var pack_i = 0; pack_i < cmd.packets.length; pack_i++)
 			this.packet_received(cmd.packets[pack_i]);
 	}
-}
+};
+
+Stream.ping = function() {
+	Ext.Ajax.request({
+		url: '/stream/ready',
+		method: 'POST',
+		success: function (response, opts) {
+			if (response && response.getResponseHeader) {
+				var res = Ext.util.JSON.decode(response.responseText);
+				if (res.ok) {
+					return;
+				}
+			}
+			Game.close();
+		},
+	});
+};
 
 Stream.packet_received = function(pkt) {
 	var handler = this.stream_handlers[pkt.cls];
@@ -75,10 +76,12 @@ Stream.packet_received = function(pkt) {
 	}
 };
 
-Stream.stream_handler = function(tag, cls)
-{
+Stream.stream_handler = function(tag, cls) {
 	this.stream_handlers[tag] = cls;
 };
+
+Stream.stream_handler('stream', Stream);
+Stream.stream_handler('game', Game);
 
 wait(['realplexor'], function() {
 	loaded('realplexor-stream');

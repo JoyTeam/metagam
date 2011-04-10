@@ -577,7 +577,7 @@ class CassandraObjectList(object):
                     if type(index_row) == unicode:
                         index_row = index_row.encode("utf-8")
                     index_rows.append(index_row)
-#               print "loading mcids %s" % mcids
+                #print "loading mcids %s" % mcids
                 d = self.db.mc.get_multi(mcids)
                 remain_index_rows = []
                 for i in range(0, len(query_equal)):
@@ -588,7 +588,7 @@ class CassandraObjectList(object):
                         self.index_data.extend(index_data)
                     else:
                         remain_index_rows.append(index_row)
-#               print "loading index rows %s" % remain_index_rows
+                #print "loading index rows %s" % remain_index_rows
                 if len(remain_index_rows):
                     d = self.db.multiget_slice(remain_index_rows, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
                     for index_row, index_data in d.iteritems():
@@ -603,7 +603,7 @@ class CassandraObjectList(object):
                             self.db.mc.delete(mcid)
                 self.index_data.sort(cmp=lambda x, y: cmp(x[0], y[0]), reverse=query_reversed)
                 self.dict = [cls(db, col[1], {}, dbprefix=dbprefix, clsprefix=clsprefix) for col in self.index_data]
-#               print "loaded index data " % self.index_data
+                #print "loaded index data %s" % self.index_data
             else:
                 # single key
                 mcid = urlencode("%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid))

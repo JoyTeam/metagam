@@ -245,7 +245,7 @@ class ClusterAdmin(Module):
         vars = {
             "tables": [
                 {
-                    "header": [self._("ID"), self._("Class"), self._("Interface"), self._("Version"), self._("Status")],
+                    "header": [self._("ID"), self._("Class"), self._("Interface"), self._("Version"), self._("Status"), self._("Web"), self._("Daemons")],
                     "rows": rows
                 }
             ]
@@ -253,7 +253,8 @@ class ClusterAdmin(Module):
         lst = self.int_app().objlist(WorkerStatusList, query_index="all")
         lst.load(silent=True)
         for ent in lst:
-            rows.append([ent.uuid, ent.get("cls"), "%s:%d" % (ent.get("host"), ent.get("port")), ent.get("ver"), self._("Reloading") if ent.get("reloading") else self._("OK")])
+            act = ent.get("active_requests", {})
+            rows.append([ent.uuid, ent.get("cls"), "%s:%d" % (ent.get("host"), ent.get("port")), ent.get("ver"), self._("Reloading") if ent.get("reloading") else self._("OK"), act.get("web"), act.get("daemons")])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_workers_monitor(self, args):

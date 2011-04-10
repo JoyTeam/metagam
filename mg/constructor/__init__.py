@@ -32,7 +32,7 @@ class Constructor(Module):
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
             "mg.core.realplexor.Realplexor", "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
             "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
-            "mg.core.cluster.ClusterAdmin"])
+            "mg.core.cluster.ClusterAdmin", "mg.constructor.players.AuthAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
