@@ -13,6 +13,7 @@ import logging
 import time
 import random
 import stackless
+import concurrence
 
 cache_interval = 3600
 max_index_length = 10000000
@@ -237,7 +238,7 @@ class CassandraPool(object):
 
         # We may not allocate more connections. Locking on the channel
         if self.channel is None:
-            self.channel = stackless.channel()
+            self.channel = concurrence.Channel()
         return self.channel.receive()
 
     def cput(self, connection):
@@ -445,7 +446,7 @@ class CassandraObject(object):
         # mutation of the object itself
         row_id = self.dbprefix + self.clsprefix + self.uuid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), timestamp=timestamp)))]}
-        logging.getLogger("mg.core.cass.CassandraObject").info("STORE %s %s", row_id, self.data)
+        logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
         self.db.mc.set(row_id, self.data, cache_interval)
         self.dirty = False
         self.new = False
@@ -596,7 +597,7 @@ class CassandraObjectList(object):
                         self.index_rows.append(index_row)
                         self.index_data.extend(index_data)
                         mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid))
-                        #logging.getLogger("mg.core.cass.CassandraObject").info("storing mcid %s = %s", mcid, index_data)
+                        #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, index_data)
                         if len(index_data) < max_index_length:
                             self.db.mc.set(mcid, index_data)
                         else:
@@ -622,7 +623,7 @@ class CassandraObjectList(object):
                     d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
                     self.index_rows.append(index_row)
                     self.index_data = [[col.column.name, col.column.value] for col in d]
-                    #logging.getLogger("mg.core.cass.CassandraObject").info("storing mcid %s = %s", mcid, self.index_data)
+                    #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, self.index_data)
                     if len(self.index_data) < max_index_length:
                         self.db.mc.set(mcid, self.index_data)
                     else:

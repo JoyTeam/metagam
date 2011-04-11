@@ -677,6 +677,20 @@ class Filter(logging.Filter):
             pass
         return 1
 
+class StderrFilter(Filter):
+    def filter(self, record):
+        try:
+            if record.name == "mg.core.cass.CassandraObject" and record.levelname == "DEBUG":
+                return 0
+        except Exception:
+            pass
+        try:
+            if record.args[0] == "200 OK" and record.args[1] == "/core/ping":
+                return 0
+        except Exception:
+            pass
+        return 1
+
 class Instance(object):
     """
     This is an executable instance. It keeps references to all major objects
@@ -710,6 +724,7 @@ class Instance(object):
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
+        filter = StderrFilter()
         self.stderr_channel.addFilter(filter)
         formatter = Formatter(unicode("%(asctime)s " + self.logger_id + " cls=%(name)s %(message)s"))
         self.stderr_channel.setFormatter(formatter)

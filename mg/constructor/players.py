@@ -613,8 +613,7 @@ class Auth(Module):
             self.call("auth.activation_email", params)
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
         else:
-            with self.lock(["session.%s" % session.uuid]):
-                self.call("stream.login", session.uuid, character_user.uuid)
+            self.call("stream.login", session.uuid, character_user.uuid)
         # Responding
         self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
@@ -877,12 +876,14 @@ class Auth(Module):
                 return
             appsession = self.appsession(session_uuid)
             old_state = appsession.get("state")
-            if old_state == 1 and appsession.get("updated") > self.now(-10):
+            old_character = appsession.get("character")
+            if old_state == 1 and appsession.get("updated") > self.now(-10) and old_character == character_uuid:
                 # Game interface is loaded immediately after character login
                 # There is no need to update AppSession too fast
                 return
             # updating appsession
-            went_online = not old_state or old_state == 3
+            went_online = not old_state or old_state == 3 or (old_character and character_uuid != old_character)
+            went_offline = old_character and character_uuid != old_character and (old_state == 1 or old_state == 2)
             self.debug("Session %s logged in. State: %s => 1" % (session_uuid, old_state))
             appsession.set("state", 1)
             appsession.set("timeout", self.now(120))
@@ -896,6 +897,8 @@ class Auth(Module):
             # storing
             session.store()
             appsession.store()
+            if went_offline:
+                self.stream_character_offline(old_character)
             if went_online:
                 self.stream_character_online(character_uuid)
             logout_others = True

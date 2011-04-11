@@ -5,6 +5,7 @@ import re
 import time
 import logging
 import traceback
+import concurrence
 
 class MemcachedPool(object):
     """
@@ -41,7 +42,7 @@ class MemcachedPool(object):
 
         # We may not allocate more connections. Locking on the channel
         if self.channel is None:
-            self.channel = stackless.channel()
+            self.channel = concurrence.Channel()
         return self.channel.receive()
 
     def put(self, connection):
