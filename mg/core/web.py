@@ -696,11 +696,13 @@ class Web(Module):
             ref = req.environ.get("HTTP_REFERER")
             if ref:
                 ref = re_protocol.sub('', ref)
-                required_prefix = req.host() + "/"
-                if not ref.startswith(required_prefix):
-                    self.error("Security alert: request %s to host %s from invalid referrer: %s", req.uri(), req.host(), req.environ.get("HTTP_REFERER"))
-                    req.headers.append(('Content-type', req.content_type))
-                    raise WebResponse(req.send_response("403 Invalid Referer", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: Valid Referer required"))))
+                host = req.host()
+                if host is not None:
+                    required_prefix = host + "/"
+                    if not ref.startswith(required_prefix):
+                        self.error("Security alert: request %s to host %s from invalid referrer: %s", req.uri(), req.host(), req.environ.get("HTTP_REFERER"))
+                        req.headers.append(('Content-type', req.content_type))
+                        raise WebResponse(req.send_response("403 Invalid Referer", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: Valid Referer required"))))
 
 class WebForm(object):
     """

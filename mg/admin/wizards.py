@@ -60,12 +60,16 @@ class Wizard(Module):
     def destroy(self):
         "Destroy wizard on destroy. Override to set your logic"
         self.config.remove()
-        temp_files = self.app().inst.int_app.objlist(TempFileList, query_index="wizard", query_equal=self.uuid)
-        temp_files.load(silent=True)
-        for file in temp_files:
-            file.delete()
-        temp_files.remove()
-        self.call("admin.update_menu")
+        try:
+            temp_files = self.app().inst.int_app.objlist(TempFileList, query_index="wizard", query_equal=self.uuid)
+        except AttributeError:
+            pass
+        else:
+            temp_files.load(silent=True)
+            for file in temp_files:
+                file.delete()
+            temp_files.remove()
+            self.call("admin.update_menu")
 
     def result(self, data):
         target = self.config.get("target")

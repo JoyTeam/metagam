@@ -465,7 +465,7 @@ class Socio(Module):
                     break
 
     def fulltext_store(self, group, uuid, words):
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
         cnt = dict()
         for word in words:
@@ -482,8 +482,8 @@ class Socio(Module):
             "%s-%s-%s" % (app_tag, group, uuid): {"Indexes": mutations_list},
         }
         for word, count in cnt.iteritems():
-            mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), clock=clock))))
-            mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), clock=clock))))
+            mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), timestamp=timestamp))))
+            mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), timestamp=timestamp))))
             if len(mutations_search) >= 1000:
                 self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 mutations_search = []
@@ -492,15 +492,15 @@ class Socio(Module):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def fulltext_remove(self, group, uuid):
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
         words = self.app().db.get_slice("%s-%s-%s" % (app_tag, group, uuid), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         mutations = []
         for word in words:
-            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), clock=clock)))
+            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), timestamp=timestamp)))
         if len(mutations):
             self.db().batch_mutate({"%s-%s" % (app_tag, group): {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
-            self.db().remove("%s-%s-%s" % (app_tag, group, uuid), ColumnPath("Indexes"), clock, ConsistencyLevel.QUORUM)
+            self.db().remove("%s-%s-%s" % (app_tag, group, uuid), ColumnPath("Indexes"), timestamp, ConsistencyLevel.QUORUM)
 
     def fulltext_search(self, group, words):
         app_tag = str(self.app().tag)
@@ -1236,7 +1236,7 @@ class Forum(Module):
         tags = self.tags_parse(tags_str)
         mutations = {}
         mutations_tags = []
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
         for tag in tags:
             tag_short = tag
@@ -1244,8 +1244,8 @@ class Forum(Module):
                 tag_short = tag_short[0:max_tag_len]
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
-            mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=tag, clock=clock))))
-            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", clock=clock)))]}
+            mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=tag, timestamp=timestamp))))
+            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", timestamp=timestamp)))]}
         if len(mutations):
             mutations["%s-ForumTags" % app_tag] = {"Indexes": mutations_tags}
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
@@ -1257,7 +1257,7 @@ class Forum(Module):
         else:
             tags = self.tags_parse(tags_str)
         mutations = {}
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
         for tag in tags:
             tag_short = tag
@@ -1265,7 +1265,7 @@ class Forum(Module):
                 tag_short = tag_short[0:max_tag_len]
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
-            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), clock=clock))]}
+            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), timestamp=timestamp))]}
         if len(mutations):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         return tags

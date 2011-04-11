@@ -107,7 +107,7 @@ class CassandraMaintenance(Module):
                         # checking index integrity
                         for col in slice.columns:
                             self.debug("in the index %s column %s (holding data %s) is invalid", key, col.column.name, col.column.value)
-                            mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), clock=Clock(col.column.clock.timestamp+1)))
+                            mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([col.column.name]), timestamp=col.column.timestamp+1))
                             try:
                                 mutations[key]["Objects"].append(mutation)
                             except KeyError:

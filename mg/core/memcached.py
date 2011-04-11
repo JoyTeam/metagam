@@ -3,6 +3,8 @@ from concurrence import Tasklet
 import stackless
 import re
 import time
+import logging
+import traceback
 
 class MemcachedPool(object):
     """
@@ -26,7 +28,7 @@ class MemcachedPool(object):
         return connection
 
     def get(self):
-        "Get a connection from the pool. If the pool is empty, current tasklet will be blocked"
+        "Get a connection from the pool. If the pool is empty, current tasklet will be bleocked"
         # The Pool contains at least one connection
         if len(self.connections) > 0:
             return self.connections.pop(0)
@@ -239,6 +241,7 @@ class MemcachedLock(object):
         while True:
             locked = []
             success = True
+            badlock = None
             for key in self.keys:
                 if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
                     locked.append(key)
@@ -246,6 +249,7 @@ class MemcachedLock(object):
                     for k in locked:
                         self.mc.delete(k)
                     success = False
+                    badlock = (key, self.mc.get(key))
                     break
             if success:
                 self.locked = time.time()
@@ -254,6 +258,8 @@ class MemcachedLock(object):
             if start is None:
                 start = time.time()
             elif time.time() > start + self.patience:
+                logging.getLogger("mg.core.memcached.MemcachedLock").error("Timeout waiting lock %s (locked by %s)" % badlock)
+                logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
                 for key in self.keys:
                     self.mc.set(key, self.value, self.ttl)
                 self.locked = time.time()

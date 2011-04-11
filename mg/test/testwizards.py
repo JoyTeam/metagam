@@ -33,7 +33,7 @@ class TestWizards(unittest.TestCase):
         dbstruct = {}
         self.app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
-        self.assertTrue("Core" in dbstruct)
+        self.assertTrue("Objects" in dbstruct)
         self.app.hooks.call("core.dbapply", dbstruct)
 
     def test01(self):

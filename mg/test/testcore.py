@@ -119,7 +119,7 @@ class TestCore(unittest.TestCase):
         dbstruct = {}
         app.hooks.call("core.dbstruct", dbstruct)
         self.assertTrue(len(dbstruct) > 0)
-        self.assertTrue("Core" in dbstruct)
+        self.assertTrue("Objects" in dbstruct)
         app.hooks.call("core.dbapply", dbstruct)
 
         app.config.load_groups(["a", "b", "c"])
@@ -154,44 +154,10 @@ class TestCore(unittest.TestCase):
         app.modules.load(["mg.test.testcore.Test1"])
         app.hooks.store()
 
-    def test05(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
-        self.assertEqual(len(app.hooks._groups), 0)
-        list = []
-        app.hooks.call("core.loaded_modules", list)
-        self.assertEqual(len(app.hooks._groups), 0)
-        app.hooks.call("grp1.test1")
-        self.assertEqual(len(app.hooks._groups), 1)
-        self.assertTrue("grp1" in app.hooks._groups)
-        app.hooks.load_handlers(["grp1.test2", "grp2.test3"])
-        self.assertEqual(len(app.hooks._groups), 2)
-        self.assertTrue("grp1" in app.hooks._groups)
-        self.assertTrue("grp2" in app.hooks._groups)
-
     def test06(self):
         app = Application(self.inst, "mgtest", keyspace="mgtest")
         app.modules.load(["mg.test.testcore.Test2"])
         app.hooks.store()
-
-    def test07(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
-        self.assertEqual(len(app.hooks._groups), 0)
-        app.hooks.call("grp1.test1")
-        self.assertEqual(len(app.hooks._groups), 1)
-        self.assertTrue("grp1" in app.hooks._groups)
-        self.assertTrue("mg.test.testcore.Test1" not in app.hooks._groups["grp1"]["test1"])
-        self.assertTrue("mg.test.testcore.Test2" in app.hooks._groups["grp1"]["test1"])
-        app.modules.load(["mg.test.testcore.Test1"])
-        app.hooks.store()
-
-    def test08(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
-        self.assertEqual(len(app.hooks._groups), 0)
-        app.hooks.call("grp1.test1")
-        self.assertEqual(len(app.hooks._groups), 1)
-        self.assertTrue("grp1" in app.hooks._groups)
-        self.assertTrue("mg.test.testcore.Test1" in app.hooks._groups["grp1"]["test1"])
-        self.assertTrue("mg.test.testcore.Test2" in app.hooks._groups["grp1"]["test1"])
 
     def test09(self):
         app = Application(self.inst, "mgtest", keyspace="mgtest")

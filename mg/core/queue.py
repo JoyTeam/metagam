@@ -216,6 +216,7 @@ class QueueRunner(Module):
                                 self.workers = self.workers - 1
                                 Tasklet.new(self.queue_run)(task, worker)
                             else:
+                                self.warning("No workers for class %s. Delaying job" % task.get("cls"))
                                 task.set("priority", task.get("priority") - 1)
                                 task.store()
                         else:

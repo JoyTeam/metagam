@@ -403,7 +403,7 @@ class CassandraObject(object):
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
         self.dirty = False
 
-    def mutate(self, mutations, mcgroups, clock):
+    def mutate(self, mutations, mcgroups, timestamp):
         """
         Returns mapping of row_key => [Mutation, Mutation, ...] if modified
         dirty flag is turned off
@@ -423,7 +423,7 @@ class CassandraObject(object):
                 #print "\t\t%s: %s => %s" % (index_name, old_key, key)
                 # deleting old index entry if exists
                 if old_key is not None:
-                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([old_key[1].encode("utf-8")]), clock=clock))
+                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([old_key[1].encode("utf-8")]), timestamp=timestamp))
                     index_row = (self.dbprefix + self.clsprefix + index_name + old_key[0]).encode("utf-8")
                     #print "delete: row=%s, column=%s" % (index_row, old_key[1].encode("utf-8"))
                     exists = mutations.get(index_row)
@@ -433,7 +433,7 @@ class CassandraObject(object):
                         mutations[index_row] = {"Objects": [mutation]}
                 # creating new index entry if needed
                 if key is not None:
-                    mutation = Mutation(ColumnOrSuperColumn(Column(name=key[1].encode("utf-8"), value=self.uuid, clock=clock)))
+                    mutation = Mutation(ColumnOrSuperColumn(Column(name=key[1].encode("utf-8"), value=self.uuid, timestamp=timestamp)))
                     index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
                     #print [ index_row, key[1] ]
                     #print "insert: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
@@ -444,7 +444,7 @@ class CassandraObject(object):
                         mutations[index_row] = {"Objects": [mutation]}
         # mutation of the object itself
         row_id = self.dbprefix + self.clsprefix + self.uuid
-        mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), clock=clock)))]}
+        mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), timestamp=timestamp)))]}
         logging.getLogger("mg.core.cass.CassandraObject").info("STORE %s %s", row_id, self.data)
         self.db.mc.set(row_id, self.data, cache_interval)
         self.dirty = False
@@ -456,10 +456,10 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         mutations = {}
         mcgroups = set()
-        self.mutate(mutations, mcgroups, clock)
+        self.mutate(mutations, mcgroups, timestamp)
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
             for mcid in mcgroups:
@@ -470,9 +470,9 @@ class CassandraObject(object):
         Remove object from the database
         """
         #print "removing %s" % self.uuid
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         row_id = self.dbprefix + self.clsprefix + self.uuid
-        self.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+        self.db.remove(row_id, ColumnPath("Objects"), timestamp, ConsistencyLevel.QUORUM)
         self.db.mc.set(row_id, "tomb", cache_interval)
         # removing indexes
         mutations = {}
@@ -480,7 +480,7 @@ class CassandraObject(object):
         old_index_values = self.index_values()
         for index_name, key in old_index_values.iteritems():
             index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
-            mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))]}
+            mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), timestamp=timestamp))]}
             mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
             #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
 #       print "REMOVE %s" % row_id
@@ -654,13 +654,13 @@ class CassandraObjectList(object):
                             if len(self.index_rows):
                                 mutations = []
                                 mcgroups = set()
-                                clock = None
+                                timestamp = None
                                 for col in self.index_data:
                                     if col[1] == obj.uuid:
                                         #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
-                                        if clock is None:
-                                            clock = Clock(time.time() * 1000)
-                                        mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), clock=clock)))
+                                        if timestamp is None:
+                                            timestamp = time.time() * 1000
+                                        mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                         self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
                                         break
                                 if len(mutations):
@@ -682,13 +682,13 @@ class CassandraObjectList(object):
                         recovered = True
                         if len(self.index_rows):
                             mutations = []
-                            clock = None
+                            timestamp = None
                             for col in self.index_data:
                                 if col[1] == obj.uuid:
                                     #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
-                                    if clock is None:
-                                        clock = Clock(time.time() * 1000)
-                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), clock=clock)))
+                                    if timestamp is None:
+                                        timestamp = time.time() * 1000
+                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                     self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
                                     break
                             if len(mutations):
@@ -709,12 +709,12 @@ class CassandraObjectList(object):
         if len(self.dict) > 0:
             mutations = {}
             mcgroups = set()
-            clock = None
+            timestamp = None
             for obj in self.dict:
                 if obj.dirty:
-                    if clock is None:
-                        clock = Clock(time.time() * 1000)
-                    obj.mutate(mutations, mcgroups, clock)
+                    if timestamp is None:
+                        timestamp = time.time() * 1000
+                    obj.mutate(mutations, mcgroups, timestamp)
             if len(mutations) > 0:
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 for mcid in mcgroups:
@@ -723,7 +723,7 @@ class CassandraObjectList(object):
     def remove(self):
         self._load_if_not_yet(True)
         if len(self.dict) > 0:
-            clock = Clock(time.time() * 1000)
+            timestamp = time.time() * 1000
             mutations = {}
             mcgroups = set()
             for obj in self.dict:
@@ -732,7 +732,7 @@ class CassandraObjectList(object):
                 for index_name, key in old_index_values.iteritems():
                     index_row = (obj.dbprefix + obj.clsprefix + index_name + key[0]).encode("utf-8")
                     m = mutations.get(index_row)
-                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), clock=clock))
+                    mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), timestamp=timestamp))
                     if m is None:
                         mutations[index_row] = {"Objects": [mutation]}
                     else:
@@ -740,7 +740,7 @@ class CassandraObjectList(object):
                     mcgroups.add("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, index_name))
                 row_id = obj.dbprefix + obj.clsprefix + obj.uuid
 #               print "REMOVE %s" % row_id
-                obj.db.remove(row_id, ColumnPath("Objects"), clock, ConsistencyLevel.QUORUM)
+                obj.db.remove(row_id, ColumnPath("Objects"), timestamp, ConsistencyLevel.QUORUM)
                 obj.db.mc.set(row_id, "tomb", cache_interval)
                 obj.dirty = False
                 obj.new = False

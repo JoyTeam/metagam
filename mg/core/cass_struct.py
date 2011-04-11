@@ -32,7 +32,7 @@ class CassandraRestructure(object):
         for (name, cfdef) in config.items():
             if name in family_exists:
                 existing = family_exists[name]
-                if cfdef.column_type != existing.column_type or "org.apache.cassandra.db.marshal." + cfdef.comparator_type != existing.comparator_type or cfdef.comment != existing.comment or cfdef.clock_type != existing.clock_type:
+                if cfdef.column_type != existing.column_type or "org.apache.cassandra.db.marshal." + cfdef.comparator_type != existing.comparator_type:
                     dbdiff.ops.append(("df", name))
                     cfdef.table = self.db.keyspace
                     cfdef.name = name
@@ -54,7 +54,7 @@ class CassandraRestructure(object):
                 cmd[1].keyspace = self.db.keyspace
                 self.logger.debug("created column family %s: %s", cmd[1].name, self.db.system_add_column_family(cmd[1]))
             elif cmd[0] == "df":
-                self.logger.debug("destoyed column family %s: %s", cmd[1], self.db.system_drop_column_family(cmd[1]))
+                self.logger.debug("destroyed column family %s: %s", cmd[1], self.db.system_drop_column_family(cmd[1]))
             elif cmd[0] == "cks":
                 self.logger.debug("created keyspace %s: %s", cmd[1].name, self.db.system_add_keyspace(cmd[1]))
             else:

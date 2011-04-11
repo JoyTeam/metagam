@@ -366,16 +366,17 @@ class Interface(Module):
             elif code != user.get("activation_code"):
                 form.error("code", self._("Invalid activation code"))
             if not form.errors:
-                with self.lock(["session.%s" % session.uuid, "user.%s" % user.uuid]):
-                    session.load()
+                with self.lock(["user.%s" % user.uuid]):
                     user.load()
-                    redirect = user.get("activation_redirect")
                     user.delkey("inactive")
                     user.delkey("activation_code")
                     user.delkey("activation_redirect")
                     user.store()
-                    self.call("auth.registered", user)
-                    self.call("auth.activated", user, redirect)
+                redirect = user.get("activation_redirect")
+                self.call("auth.registered", user)
+                self.call("auth.activated", user, redirect)
+                with self.lock(["session.%s" % session.uuid]):
+                    session.load()
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
                     session.store()
@@ -389,7 +390,7 @@ class Interface(Module):
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
         form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
-        form.add_message_bottom(self._('If you have not received activation letter you can <a href="/auth/reactivate/%s">send another one or change your e-mail</a>' % user.uuid))
+        form.add_message_bottom(self._('If you have not received activation letter you can <a href="/auth/reactivate/%s">send another one or change your e-mail</a>') % user.uuid)
         vars = {
             "title": self._("User activation"),
         }
@@ -646,6 +647,7 @@ class Interface(Module):
             if not password:
                 form.error("password", msg["password_empty"])
             if not form.errors:
+                print user.uuid
                 m = hashlib.md5()
                 m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
                 if m.hexdigest() != user.get("pass_hash"):

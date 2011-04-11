@@ -68,7 +68,7 @@ class TestDatabase(unittest.TestCase):
 
     def testputget(self):
         timestamp = time.time() * 1000
-        self.db.insert("1", ColumnParent(column_family="Family1"), Column(name="email", value="aml@rulezz.ru - проверка", clock=Clock(timestamp=timestamp)), ConsistencyLevel.QUORUM)
+        self.db.insert("1", ColumnParent(column_family="Family1"), Column(name="email", value="aml@rulezz.ru - проверка", timestamp=timestamp), ConsistencyLevel.QUORUM)
         self.db.get_slice("1", ColumnParent(column_family="Family1"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.QUORUM)
 
 if __name__ == "__main__":

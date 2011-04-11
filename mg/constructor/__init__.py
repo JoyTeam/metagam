@@ -343,14 +343,14 @@ class Constructor(Module):
             if app is not None:
                 valid_keys = app.hooks.call("cassmaint.validate", slices_list)
                 slices_list = [row for row in slices_list if row.key not in valid_keys]
-        clock = Clock(time.time() * 1000)
+        timestamp = time.time() * 1000
         mutations = {}
         for row in slices_list:
             if len(row.columns):
                 for ent in apps:
                     if row.key.startswith("%s-" % ent["tag"]):
                         self.warning("Unknown database key %s", row.key)
-                        mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(clock=clock))]}
+                        mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(timestamp=timestamp))]}
         if len(mutations) and req.args == "delete":
             self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})

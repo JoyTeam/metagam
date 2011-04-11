@@ -149,6 +149,8 @@ class Auth(Module):
         self.info("auth.activated: user=%s", user.uuid)
         session = self.call("session.get", True)
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+        chars.load(silent=True)
+        admin = False
         if len(chars):
             with self.lock(["session.%s" % session.uuid]):
                 session.load()
@@ -158,6 +160,8 @@ class Auth(Module):
                 session.set("updated", self.now())
                 session.delkey("semi_user")
                 session.store()
+            if chars[0].get("admin"):
+                admin = True
         else:
             self.error("auth.activated(%s) called but no associated characters found", user.uuid)
         # redirect
@@ -167,6 +171,9 @@ class Auth(Module):
         self.call("auth.redirects", redirects)
         if redirects.has_key("register"):
             self.call("web.redirect", redirects["register"])
+        user = self.obj(User, req.user())
+        if admin:
+            self.call("web.redirect", "/admin")
         self.call("web.redirect", "/")
 
     def objclasses_list(self, objclasses):
