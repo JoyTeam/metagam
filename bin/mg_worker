@@ -11,7 +11,7 @@ def main():
         inst = Instance("worker")
         inst.download_config()
         int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.Constructor"])
+        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
         int_app.hooks.call("worker.run", "metagam", sys.argv[1], sys.argv[2])
     except RuntimeError as e:
         logging.error(e)

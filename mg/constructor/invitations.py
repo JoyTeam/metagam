@@ -1,5 +1,4 @@
 from mg import *
-from mg.core.auth import User
 import re
 import random
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-11 18:14+0400\n"
+"POT-Creation-Date: 2011-04-11 18:33+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -815,7 +815,7 @@ msgstr ""
 msgid "App"
 msgstr ""
 
-#: mg/core/daemons.py:415 mg/constructor/players.py:675
+#: mg/core/daemons.py:415 mg/constructor/players.py:674
 msgid "Updated"
 msgstr ""
 
@@ -1381,8 +1381,8 @@ msgstr ""
 msgid "Project"
 msgstr ""
 
-#: mg/core/realplexor.py:335 mg/constructor/players.py:675
-#: mg/constructor/players.py:1016
+#: mg/core/realplexor.py:335 mg/constructor/players.py:674
+#: mg/constructor/players.py:1019
 msgid "Session"
 msgstr ""
 
@@ -1799,63 +1799,63 @@ msgstr ""
 msgid "Make a valid selection"
 msgstr ""
 
-#: mg/constructor/players.py:633
+#: mg/constructor/players.py:632
 msgid ""
 "Invalid characters in the name. Only latin and russian letters, numbers, "
 "spaces, symbols '_', and '-' are allowed"
 msgstr ""
 
-#: mg/constructor/players.py:653 mg/constructor/players.py:668
+#: mg/constructor/players.py:652 mg/constructor/players.py:667
 msgid "No characters assigned to this player"
 msgstr ""
 
-#: mg/constructor/players.py:675 mg/constructor/players.py:1016
+#: mg/constructor/players.py:674 mg/constructor/players.py:1019
 msgid "Character"
 msgstr ""
 
-#: mg/constructor/players.py:675
+#: mg/constructor/players.py:674
 msgid "Online"
 msgstr ""
 
-#: mg/constructor/players.py:688
+#: mg/constructor/players.py:687
 #, python-format
 msgid "%s online"
 msgstr ""
 
-#: mg/constructor/players.py:692
+#: mg/constructor/players.py:691
 #, python-format
 msgid "%s offline"
 msgstr ""
 
-#: mg/constructor/players.py:1009
+#: mg/constructor/players.py:1012
 msgid "Sessions"
 msgstr ""
 
-#: mg/constructor/players.py:1016
+#: mg/constructor/players.py:1019
 msgid "Application"
 msgstr ""
 
-#: mg/constructor/players.py:1016 mg/constructor/domains.py:601
+#: mg/constructor/players.py:1019 mg/constructor/domains.py:601
 msgid "State"
 msgstr ""
 
-#: mg/constructor/players.py:1016
+#: mg/constructor/players.py:1019
 msgid "Timeout"
 msgstr ""
 
-#: mg/constructor/players.py:1024
+#: mg/constructor/players.py:1027
 msgid "authorized"
 msgstr ""
 
-#: mg/constructor/players.py:1024
+#: mg/constructor/players.py:1027
 msgid "online"
 msgstr ""
 
-#: mg/constructor/players.py:1024
+#: mg/constructor/players.py:1027
 msgid "disconnected"
 msgstr ""
 
-#: mg/constructor/players.py:1029
+#: mg/constructor/players.py:1032
 msgid "Sessions monitor"
 msgstr ""
 

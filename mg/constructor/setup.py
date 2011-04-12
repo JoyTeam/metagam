@@ -1,5 +1,5 @@
 from mg import *
-from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
+from mg.core.auth import UserPermissions, UserPermissionsList
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 from concurrence.dns import *
 from mg.constructor.players import CharacterList, Character, Player

@@ -7,7 +7,7 @@ from mg.core.cluster import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
-from mg.core.auth import User, PermissionsEditor
+from mg.core.auth import PermissionsEditor
 from itertools import *
 import re
 import cgi

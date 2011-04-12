@@ -69,7 +69,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         if tag == "main":
             app = WebApplication(self.inst, tag, "ext")
             app.domain = self.inst.config["main_host"]
-            app.modules.load(["mg.constructor.Constructor"])
+            app.modules.load(["mg.constructor.admin.Constructor"])
             return app
         try:
             project = self.inst.int_app.obj(Project, tag)

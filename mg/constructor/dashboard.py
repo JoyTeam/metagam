@@ -1,5 +1,4 @@
 from mg import *
-from mg.core.auth import User, UserList
 from mg.constructor.common import *
 import cgi
 

@@ -1,6 +1,5 @@
 from mg import *
 from mg.constructor.design import Design
-from mg.core.auth import User
 from mg.constructor.players import Player, Character, CharacterList
 import re
 import hashlib

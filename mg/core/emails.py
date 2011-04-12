@@ -1,5 +1,4 @@
 from mg import *
-from mg.core.auth import User, UserList
 from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 from concurrence.smtp import *

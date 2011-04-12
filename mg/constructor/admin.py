@@ -1,5 +1,5 @@
 from mg import *
-from mg.core.auth import User, UserPermissions, Session, UserList, SessionList, UserPermissionsList
+from mg.core.auth import UserPermissions, UserPermissionsList
 from mg.core.queue import QueueTask, QueueTaskList, Schedule
 from mg.core.cluster import TempFileList
 from mg.constructor.players import Player, Character, CharacterForm, CharacterList
@@ -26,13 +26,13 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
-            "mg.constructor.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
+            "mg.constructor.admin.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
             "mg.core.realplexor.Realplexor", "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
             "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
-            "mg.core.cluster.ClusterAdmin", "mg.constructor.players.AuthAdmin"])
+            "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
@@ -291,7 +291,7 @@ class Constructor(Module):
                                 href = "http://%s/auth/activate/%s?code=%s&okget=1" % (domain, player_user.uuid, player_user.get("activation_code"))
                         comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
                 if href is None:
-                    href = "http://%s/admin" % domain
+                    href = "http://%s" % domain
                 logo = project.get("logo")
                 if logo is None:
                     logo = "/st/constructor/cabinet/untitled.gif"
