@@ -206,18 +206,58 @@ class Realplexor(Module):
     def register(self):
         Module.register(self)
         self.rhook("stream.send", self.send)
-        self.rhook("stream.require_online", self.require_online)
+        self.rhook("stream.packet", self.packet)
+        self.rhook("web.request_processed", self.request_processed)
 
     def send(self, ids, data):
-        self.debug("Sending to %s%s: %s" % (self.app().tag + "_", ids, data))
         rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")
         rpl.send(ids, data)
 
-    def require_online(self):
+    def packet(self, ids, cls, method, **kwargs):
+        if ids == None:
+            session = self.req().session()
+            if session is None:
+                self.call("web.require_login")
+            ids = "id_%s" % session.uuid
+        kwargs["cls"] = cls
+        kwargs["method"] = method
+        # [a, b, c] will be sent immediately
+        # a will be delayed
+        # [a] will be delayed
+        if type(ids) == list:
+            if len(ids) == 1:
+                ids = ids[0]
+            else:
+                self.call("stream.send", ids, {"packets": [kwargs]})
+                return
+        try:
+            req = self.req()
+        except AttributeError:
+            self.call("stream.send", ids, {"packets": [kwargs]})
+        else:
+            self.debug("Delaying packets to %s: %s" % (ids, kwargs))
+            try:
+                packets = req.stream_packets
+            except AttributeError:
+                packets = {}
+                req.stream_packets = packets
+            try:
+                queue = packets[ids]
+            except KeyError:
+                queue = []
+                packets[ids] = queue
+            queue.append(kwargs)
+
+    def request_processed(self):
         req = self.req()
-        session = req.session()
-        if not session or not session.get("authorized"):
-            self.call("web.forbidden")
+        try:
+            packets = req.stream_packets
+        except AttributeError:
+            pass
+        else:
+            for session_uuid, lst in packets.iteritems():
+                self.debug("Sending delayed packets to %s: %s" % (session_uuid, lst))
+                self.call("stream.send", session_uuid, {"packets": lst})
 
 class RealplexorDaemon(Daemon):
     def __init__(self, app, id="stream"):

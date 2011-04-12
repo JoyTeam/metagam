@@ -7,6 +7,7 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
+        self.rhook("email.sender", self.email_sender)
 
     def child_modules(self):
         lst = ["mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.admin.AdminInterface", "mg.core.cluster.Cluster", "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards", "mg.constructor.project.ConstructorProjectAdmin", "mg.constructor.admin.ConstructorUtils", "mg.constructor.domains.Domains", "mg.socio.Socio", "mg.constructor.auth.Auth", "mg.constructor.players.Characters", "mg.core.daemons.Daemons"]
@@ -24,6 +25,12 @@ class ConstructorProject(Module):
             return
         #if req.group == "admin":
         vars["global_html"] = "constructor/admin_global.html"
+
+    def email_sender(self, params):
+        project = self.app().project
+        params["name"] = project.get("title_short")
+        params["prefix"] = u"[%s] " % project.get("title_code")
+        params["signature"] = u"%s - http://www.%s" % (project.get("title_full"), project.get("domain"))
 
 class ConstructorProjectAdmin(Module):
     def register(self):

@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+
 from mg import *
 from mg.constructor import *
 import hashlib
+import copy
+import random
+import time
 
 class AppSession(CassandraObject):
     _indexes = {
@@ -48,6 +53,8 @@ class Auth(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-player.login", self.player_login, priv="public")
+        self.rhook("ext-player.register", self.player_register, priv="public")
+        self.rhook("auth.form_params", self.auth_form_params)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("auth.activated", self.auth_activated)
         self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
@@ -62,11 +69,16 @@ class Auth(Module):
         self.rhook("ext-stream.ready", self.stream_ready, priv="public")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("session.require_login", self.require_login, priority=10)
+        self.rhook("indexpage.render", self.indexpage_render)
 
     def require_login(self):
-        session = self.call("session.get")
-        if not session or not session.get("user"):
-            self.call("indexpage.error", self._("To access this page enter the game first"))
+        req = self.req()
+        session = req.session()
+        if not session or not session.get("user") or not session.get("authorized"):
+            if req.group.startswith("admin-"):
+                self.call("web.forbidden")
+            else:
+                self.call("indexpage.error", self._("To access this page enter the game first"))
         return session
 
     def auth_registered(self, user):
@@ -79,8 +91,7 @@ class Auth(Module):
 
     def auth_activated(self, user, redirect):
         req = self.req()
-        self.info("auth.activated: user=%s", user.uuid)
-        session = self.call("session.get", True)
+        session = req.session(True)
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         chars.load(silent=True)
         admin = False
@@ -222,14 +233,178 @@ class Auth(Module):
         self.call("admin.form", fields=fields)
 
     def ext_logout(self):
-        session = self.call("session.get")
-        if session is not None:
-            self.call("stream.logout", session.uuid)
         req = self.req()
+        session = req.session()
+        if session:
+            self.call("stream.logout", session.uuid)
         redirect = req.param("redirect")
         if redirect:
             self.call("web.redirect", redirect)
         self.call("web.redirect", "/")
+
+    def character_form(self):
+        fields = self.conf("auth.char_form", [])
+        if not len(fields):
+            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character name"), "prompt": self._("Enter your character name")})
+            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
+        return copy.deepcopy(fields)
+
+    def jsencode_character_form(self, lst):
+        for fld in lst:
+            fld["name"] = jsencode(fld.get("name"))
+            fld["description"] = jsencode(fld.get("description"))
+            fld["prompt"] = jsencode(fld.get("prompt"))
+            if fld.get("values"):
+                fld["values"] = [[jsencode(val[0]), jsencode(val[1])] for val in fld["values"]]
+                fld["values"][-1].append(True)
+
+    def indexpage_render(self, vars):
+        fields = self.character_form()
+        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
+        self.jsencode_character_form(fields)
+        fields.append({"code": "email", "prompt": self._("Your e-mail address")})
+        fields.append({"code": "password", "prompt": self._("Your password")})
+        fields.append({"code": "captcha", "prompt": self._("Enter numbers from the picture")})
+        vars["register_fields"] = fields
+
+    def player_register(self):
+        req = self.req()
+        session = req.session(True)
+        # registragion form
+        fields = self.character_form()
+        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
+        # auth params
+        params = {
+            "name_re": r'^[A-Za-z0-9_-]+$',
+            "name_invalid_re": self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"),
+        }
+        self.call("auth.form_params", params)
+        # validating
+        errors = {}
+        values = {}
+        for fld in fields:
+            code = fld["code"]
+            val = req.param(code).strip()
+            if fld.get("mandatory_level") and not val:
+                errors[code] = self._("This field is mandatory")
+            elif fld["std"] == 1:
+                # character name. checking validity
+                if not re.match(params["name_re"], val, re.UNICODE):
+                    errors[code] = params["name_invalid_re"]
+                elif self.call("session.find_user", val):
+                    errors[code] = self._("This name is taken already")
+                else:
+                    self.debug("Name %s is OK", val)
+            elif fld["type"] == 1:
+                if not val and not std and not fld.get("mandatory_level"):
+                    # empty value is ok
+                    val = None
+                else:
+                    # checking acceptable values
+                    ok = False
+                    for v in fld["values"]:
+                        if v[0] == val:
+                            ok = True
+                            break
+                    if not ok:
+                        errors[code] = self._("Make a valid selection")
+            values[code] = val
+        email = req.param("email")
+        if not email:
+            errors["email"] = self._("Enter your e-mail address")
+        elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
+            errors["email"] = self._("Enter correct e-mail")
+        else:
+            existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
+            existing_email.load(silent=True)
+            if len(existing_email):
+                errors["email"] = self._("There is another user with this email")
+        password = req.param("password")
+        if not password:
+            errors["password"] = self._("Enter your password")
+        elif len(password) < 6:
+            errors["password"] = self._("Minimal password length - 6 characters")
+        captcha = req.param("captcha")
+        if not captcha:
+            errors["captcha"] = self._("Enter numbers from the picture")
+        else:
+            try:
+                cap = self.obj(Captcha, session.uuid)
+                if cap.get("number") != captcha:
+                    errors["captcha"] = self._("Incorrect number")
+            except ObjectNotFoundException:
+                errors["captcha"] = self._("Incorrect number")
+        if len(errors):
+            self.call("web.response_json", {"success": False, "errors": errors})
+        # Registering player and character
+        now = self.now()
+        now_ts = "%020d" % time.time()
+        # Creating player
+        player = self.obj(Player)
+        player.set("created", now)
+        player_user = self.obj(User, player.uuid, {})
+        player_user.set("created", now_ts)
+        player_user.set("last_login", now_ts)
+        player_user.set("email", email.lower())
+        player_user.set("inactive", 1)
+        # Activation code
+        if self.conf("auth.activate_email", True):
+            activation_code = uuid4().hex
+            player_user.set("activation_code", activation_code)
+            player_user.set("activation_redirect", "/")
+        else:
+            activation_code = None
+        # Password
+        salt = ""
+        letters = "abcdefghijklmnopqrstuvwxyz"
+        for i in range(0, 10):
+            salt += random.choice(letters)
+        player_user.set("salt", salt)
+        player_user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password))
+        m = hashlib.md5()
+        m.update(salt + password.encode("utf-8"))
+        player_user.set("pass_hash", m.hexdigest())
+        # Creating character
+        character = self.obj(Character)
+        character.set("created", now)
+        character.set("player", player.uuid)
+        character_user = self.obj(User, character.uuid, {})
+        character_user.set("created", now_ts)
+        character_user.set("last_login", now_ts)
+        character_user.set("name", values["name"])
+        character_user.set("name_lower", values["name"].lower())
+        character_form = self.obj(CharacterForm, character.uuid, {})
+        for fld in fields:
+            code = fld["code"]
+            if code == "name":
+                continue
+            val = values.get(code)
+            if val is None:
+                continue
+            character_form.set(code, val)
+        # Storing objects
+        player.store()
+        player_user.store()
+        character.store()
+        character_user.store()
+        character_form.store()
+        # Sending activation e-mail
+        if activation_code:
+            params = {
+                "subject": self._("Account activation"),
+                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+            }
+            self.call("auth.activation_email", params)
+            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
+
+        if not activation_code or (not self.conf("auth.activate_email_level", 0) or not self.conf("auth.activate_email_days", 7)):
+            self.call("stream.login", session.uuid, character_user.uuid)
+        # Responding
+        self.call("web.response_json", {"ok": 1, "session": session.uuid})
+
+    def auth_form_params(self, params):
+        params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
+        params["name_invalid_re"] = self._("Invalid characters in the name. Only latin and russian letters, numbers, spaces, symbols '_', and '-' are allowed")
 
     def player_login(self):
         req = self.req()
@@ -261,7 +436,7 @@ class Auth(Module):
         # acquiring character user
         chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
-            session = self.call("session.get", True)
+            session = req.session(True)
             self.call("stream.login", session.uuid, chars[0].uuid)
             self.call("web.response_json", {"ok": 1, "session": session.uuid})
         self.call("web.response_json", {"error": self._("No characters assigned to this player")})
@@ -284,11 +459,11 @@ class Auth(Module):
 
     def character_online(self, character_uuid):
         user = self.obj(User, character_uuid)
-        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": self._("%s online") % htmlescape(user.get("name"))}]})
+        self.call("chat.message", html=self._("%s online") % htmlescape(user.get("name")))
 
     def character_offline(self, character_uuid):
         user = self.obj(User, character_uuid)
-        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": self._("%s offline") % htmlescape(user.get("name"))}]})
+        self.call("chat.message", html=self._("%s offline") % htmlescape(user.get("name")))
 
     def appsession(self, session_uuid):
         app_tag = self.app().tag
@@ -358,7 +533,6 @@ class Auth(Module):
         else:
             # dropping just this character
             characters = [character_uuid]
-        self.debug("Dropping other sessions for characters %s", characters)
         appsessions = self.main_app().objlist(AppSessionList, query_index="character", query_equal=characters)
         appsessions.load(silent=True)
         for appsession in appsessions:

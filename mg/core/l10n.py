@@ -59,8 +59,6 @@ class L10n(Module):
             return str(self.req().lang)
         except AttributeError:
             pass
-        except RuntimeError:
-            pass
         try:
             return str(self.app().lang)
         except AttributeError:
@@ -97,7 +95,7 @@ class L10n(Module):
     def l10n_gettext(self, value):
         try:
             request = self.req()
-        except RuntimeError:
+        except AttributeError:
             request = None
         if request:
             try:

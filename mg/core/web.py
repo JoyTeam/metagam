@@ -200,12 +200,15 @@ class Request(object):
         self.headers.append(('Location', uri))
         return self.send_response("302 Found", self.headers, "")
 
-    def session(self):
+    def session(self, create=False):
         try:
-            return self._session
+            if self._session:
+                return self._session
+            if not create:
+                return None
         except AttributeError:
             pass
-        self._session = self.app.hooks.call("session.get")
+        self._session = self.app.hooks.call("session.get", create)
         return self._session
 
     def user(self):
@@ -395,6 +398,7 @@ class WebApplication(Application):
             lock = getattr(request, "web_cache_lock", None)
             if lock:
                 lock.__exit__(None, None, None)
+        self.hooks.call("web.request_processed")
         return res
 
 re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
@@ -517,7 +521,7 @@ class Web(Module):
     def web_parse_template(self, filename, vars):
         try:
             req = self.req()
-        except RuntimeError:
+        except AttributeError:
             req = False
         if req:
             if req.templates_parsed >= 100:

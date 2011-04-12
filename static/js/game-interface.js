@@ -17,4 +17,9 @@ Game.close = function() {
 	document.location = 'http://www.' + Game.domain;
 };
 
+Game.logout = function() {
+	Stream.initialized = false;
+	document.location = 'http://www.' + Game.domain + '/auth/logout';
+};
+
 loaded('game-interface');

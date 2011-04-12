@@ -1,4 +1,8 @@
 from mg import *
+import datetime
+import re
+
+re_chat_characters = re.compile(r'(?:\[(chf|ch):([a-f0-9]{32})\])')
 
 class Chat(Module):
     def register(self):
@@ -9,7 +13,7 @@ class Chat(Module):
         self.rhook("ext-admin-chat.config", self.chat_config, priv="chat.config")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("admin-gameinterface.design-files", self.gameinterface_advice_files)
-        self.rhook("ext-chat.post", self.post, priv="online")
+        self.rhook("ext-chat.post", self.post, priv="logged")
         self.rhook("chat.message", self.message)
 
     def menu_game_index(self, menu):
@@ -135,8 +139,51 @@ class Chat(Module):
 
     def post(self):
         req = self.req()
-        self.call("chat.message", req.param("text"))
+        user = req.user()
+        self.call("chat.message", html=u"[[chf:%s]] %s" % (user, htmlescape(req.param("text"))))
         self.call("web.response_json", {"ok": True})
 
-    def message(self, text):
-        self.call("stream.send", ["global"], {"packets": [{"cls": "chat", "method": "msg", "html": htmlescape(text)}]})
+    def message(self, **kwargs):
+        html = kwargs.get("html")
+        # replacing character tags [chf:UUID], [ch:UUID] etc
+        tokens = []
+        characters = {}
+        start = 0
+        print u"html='%s'" % html
+        for match in re_chat_characters.finditer(html):
+            match_start, match_end = match.span()
+            if match_start > start:
+                tokens.append({"str": html[start:match_start]})
+            tp, character = match.group(1, 2)
+            tokens.append({"tp": tp, "character": character})
+            characters[character] = None
+            start = match_end
+        if len(html) > start:
+            tokens.append({"str": html[start:]})
+        if (characters):
+            lst = self.objlist(UserList, list(characters))
+            lst.load(silent=True)
+            for ch in lst:
+                characters[ch.uuid] = ch
+            for token in tokens:
+                character = token.get("character")
+                if not character:
+                    continue
+                character = characters[character]
+                if not character:
+                    continue
+                tp = token["tp"]
+                if tp == "chf":
+                    token["str"] = u'<span class="chat-msg-from">%s</span>' % htmlescape(character.get("name"))
+                elif tp == "ch":
+                    token["str"] = u'<span class="chat-msg-char">%s</span>' % htmlescape(character.get("name"))
+        html = u"".join([u"%s" % token.get("str", token.get("character")) for token in tokens])
+        # formatting html
+        html = u'<span class="chat-msg-body">%s</span>' % html
+        # time
+        if not kwargs.get("hide_time"):
+            now = datetime.datetime.utcnow().strftime("%H:%M:%S")
+            html = u'<span class="chat-msg-time">%s</span> %s' % (now, html)
+        # sending message
+        kwargs["html"] = html
+        self.call("stream.packet", "global", "chat", "msg", **kwargs)

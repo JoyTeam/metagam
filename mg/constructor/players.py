@@ -1,13 +1,7 @@
-# -*- coding: utf-8 -*-
-
 from mg import *
 from mg.core.auth import Captcha
 from uuid import uuid4
 import re
-import copy
-import time
-import random
-import hashlib
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
@@ -73,10 +67,7 @@ class Characters(Module):
         self.rhook("menu-admin-users.index", self.menu_users_index)
         self.rhook("ext-admin-characters.form", self.admin_characters_form, priv="players.auth")
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
-        self.rhook("ext-player.register", self.player_register, priv="public")
-        self.rhook("auth.form_params", self.auth_form_params)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("indexpage.render", self.indexpage_render)
 
     def menu_users_index(self, menu):
         req = self.req()
@@ -249,169 +240,6 @@ class Characters(Module):
         elif args:
             return [htmlescape(args), "characters/form"]
         return self._("Character form")
-
-    def jsencode_character_form(self, lst):
-        for fld in lst:
-            fld["name"] = jsencode(fld.get("name"))
-            fld["description"] = jsencode(fld.get("description"))
-            fld["prompt"] = jsencode(fld.get("prompt"))
-            if fld.get("values"):
-                fld["values"] = [[jsencode(val[0]), jsencode(val[1])] for val in fld["values"]]
-                fld["values"][-1].append(True)
-
-    def character_form(self):
-        fields = self.conf("auth.char_form", [])
-        if not len(fields):
-            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character name"), "prompt": self._("Enter your character name")})
-            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
-        return copy.deepcopy(fields)
-
-    def indexpage_render(self, vars):
-        fields = self.character_form()
-        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
-        self.jsencode_character_form(fields)
-        fields.append({"code": "email", "prompt": self._("Your e-mail address")})
-        fields.append({"code": "password", "prompt": self._("Your password")})
-        fields.append({"code": "captcha", "prompt": self._("Enter numbers from the picture")})
-        vars["register_fields"] = fields
-
-    def player_register(self):
-        req = self.req()
-        session = self.call("session.get", True)
-        # registragion form
-        fields = self.character_form()
-        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
-        # auth params
-        params = {
-            "name_re": r'^[A-Za-z0-9_-]+$',
-            "name_invalid_re": self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"),
-        }
-        self.call("auth.form_params", params)
-        # validating
-        errors = {}
-        values = {}
-        for fld in fields:
-            code = fld["code"]
-            val = req.param(code).strip()
-            if fld.get("mandatory_level") and not val:
-                errors[code] = self._("This field is mandatory")
-            elif fld["std"] == 1:
-                # character name. checking validity
-                if not re.match(params["name_re"], val, re.UNICODE):
-                    errors[code] = params["name_invalid_re"]
-                elif self.call("session.find_user", val):
-                    errors[code] = self._("This name is taken already")
-                else:
-                    self.debug("Name %s is OK", val)
-            elif fld["type"] == 1:
-                if not val and not std and not fld.get("mandatory_level"):
-                    # empty value is ok
-                    val = None
-                else:
-                    # checking acceptable values
-                    ok = False
-                    for v in fld["values"]:
-                        if v[0] == val:
-                            ok = True
-                            break
-                    if not ok:
-                        errors[code] = self._("Make a valid selection")
-            values[code] = val
-        email = req.param("email")
-        if not email:
-            errors["email"] = self._("Enter your e-mail address")
-        elif not re.match(r'^[a-zA-Z0-9_\-+\.]+@[a-zA-Z0-9\-_\.]+\.[a-zA-Z0-9]+$', email):
-            errors["email"] = self._("Enter correct e-mail")
-        else:
-            existing_email = self.objlist(UserList, query_index="email", query_equal=email.lower())
-            existing_email.load(silent=True)
-            if len(existing_email):
-                errors["email"] = self._("There is another user with this email")
-        password = req.param("password")
-        if not password:
-            errors["password"] = self._("Enter your password")
-        elif len(password) < 6:
-            errors["password"] = self._("Minimal password length - 6 characters")
-        captcha = req.param("captcha")
-        if not captcha:
-            errors["captcha"] = self._("Enter numbers from the picture")
-        else:
-            try:
-                cap = self.obj(Captcha, session.uuid)
-                if cap.get("number") != captcha:
-                    errors["captcha"] = self._("Incorrect number")
-            except ObjectNotFoundException:
-                errors["captcha"] = self._("Incorrect number")
-        if len(errors):
-            self.call("web.response_json", {"success": False, "errors": errors})
-        # Registering player and character
-        now = self.now()
-        now_ts = "%020d" % time.time()
-        # Creating player
-        player = self.obj(Player)
-        player.set("created", now)
-        player_user = self.obj(User, player.uuid, {})
-        player_user.set("created", now_ts)
-        player_user.set("last_login", now_ts)
-        player_user.set("email", email.lower())
-        player_user.set("inactive", 1)
-        # Activation code
-        if self.conf("auth.activate_email") and (not self.conf("auth.activate_email_level") or not self.conf("auth.activate_email_days")):
-            activation_code = uuid4().hex
-            player_user.set("activation_code", activation_code)
-            player_user.set("activation_redirect", "/player/login")
-        else:
-            activation_code = None
-        # Password
-        salt = ""
-        letters = "abcdefghijklmnopqrstuvwxyz"
-        for i in range(0, 10):
-            salt += random.choice(letters)
-        player_user.set("salt", salt)
-        player_user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password))
-        m = hashlib.md5()
-        m.update(salt + password.encode("utf-8"))
-        player_user.set("pass_hash", m.hexdigest())
-        # Creating character
-        character = self.obj(Character)
-        character.set("created", now)
-        character.set("player", player.uuid)
-        character_user = self.obj(User, character.uuid, {})
-        character_user.set("created", now_ts)
-        character_user.set("last_login", now_ts)
-        character_user.set("name", values["name"])
-        character_user.set("name_lower", values["name"].lower())
-        character_form = self.obj(CharacterForm, character.uuid, {})
-        for fld in fields:
-            code = fld["code"]
-            if code == "name":
-                continue
-            val = values.get(code)
-            if val is None:
-                continue
-            character_form.set(code, val)
-        # Storing objects
-        player.store()
-        player_user.store()
-        character.store()
-        character_user.store()
-        character_form.store()
-        # Sending activation e-mail
-        if activation_code:
-            params = {
-                "subject": self._("Account activation"),
-                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
-            }
-            self.call("auth.activation_email", params)
-            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
-        else:
-            self.call("stream.login", session.uuid, character_user.uuid)
-        # Responding
-        self.call("web.response_json", {"ok": 1, "session": session.uuid})
-
-    def auth_form_params(self, params):
-        params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
-        params["name_invalid_re"] = self._("Invalid characters in the name. Only latin and russian letters, numbers, spaces, symbols '_', and '-' are allowed")
 
     def objclasses_list(self, objclasses):
         objclasses["Player"] = (Player, PlayerList)

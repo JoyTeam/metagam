@@ -152,9 +152,8 @@ class Hooks(object):
                         pass
                     elif priv == "logged":
                         self.call("session.require_login")
-                    elif priv == "online":
-                        self.call("stream.require_online")
                     else:
+                        self.call("session.require_login")
                         self.call("session.require_permission", priv)
                 try:
                     res = handler(*args, **kwargs)
@@ -408,8 +407,6 @@ class Module(object):
             return re_remove_domain.sub('', value)
         except AttributeError:
             pass
-        except RuntimeError:
-            pass
         return re_remove_domain.sub('', self.call("l10n.gettext", val))
 
     def obj(self, *args, **kwargs):
@@ -419,10 +416,7 @@ class Module(object):
         return self.app().objlist(*args, **kwargs)
 
     def req(self):
-        try:
-            return Tasklet.current().req
-        except AttributeError:
-            raise RuntimeError("Module.req() called outside of a web handler")
+        return Tasklet.current().req
 
     def nowdate(self):
         return self.app().nowdate()

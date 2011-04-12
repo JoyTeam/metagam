@@ -68,8 +68,8 @@ class Email(Module):
                 "signature": signature,
             }, retry_on_fail=True)
         params = {
-            "email": "aml@rulezz.ru",
-            "name": "MG Robot",
+            "email": "robot@%s" % self.app().inst.config["main_host"],
+            "name": "Metagam Robot",
             "prefix": "[mg] ",
         }
         self.call("email.sender", params)
@@ -139,7 +139,7 @@ class Email(Module):
                 vars = {}
                 try:
                     req = self.req()
-                except RuntimeError:
+                except AttributeError:
                     pass
                 else:
                     params = []

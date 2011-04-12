@@ -159,7 +159,8 @@ class Interface(Module):
         return self.game_interface(chars[0])
 
     def game_interface_render(self, vars, design):
-        session = self.call("session.get")
+        req = self.req()
+        session = req.session()
         main_host = self.app().inst.config["main_host"]
         lang = self.call("l10n.lang")
         mg_path = mg.__path__[0]
@@ -190,7 +191,8 @@ class Interface(Module):
         self.call("gameinterface.render", vars, design)
         self.call("gameinterface.gamejs", vars, design)
         self.call("gameinterface.blocks", vars, design)
-        session = self.call("session.get")
+        req = self.req()
+        session = req.session()
         self.call("stream.login", session.uuid, character.uuid)
         self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
 
@@ -263,7 +265,8 @@ class Interface(Module):
         vars["blocks"] = self.call("web.parse_template", obj, vars)
 
     def game_js(self, vars, design):
-        session = self.call("session.get")
+        req = self.req()
+        session = req.session()
         # js modules
         vars["js_modules"] = [{"name": mod} for mod in vars["js_modules"]]
         if len(vars["js_modules"]):

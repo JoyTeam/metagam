@@ -165,11 +165,10 @@ class Sessions(Module):
         return session
 
     def require_login(self):
-        session = self.call("session.get")
-        if session is None or session.get("user") is None:
-            req = self.req()
+        req = self.req()
+        session = req.session()
+        if not session or not session.get("user"):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
-        return session
 
     def find_user(self, val, allow_email=False, allow_name=True):
         val = val.lower()
@@ -243,7 +242,7 @@ class Interface(Module):
 
     def ext_register(self):
         req = self.req()
-        session = self.call("session.get", True)
+        session = req.session(True)
         form = self.call("web.form", "common/form.html")
         name = req.param("name").strip()
         sex = req.param("sex").strip()
@@ -357,7 +356,7 @@ class Interface(Module):
             if redirects.has_key("register"):
                 self.call("web.redirect", redirects["register"])
             self.call("web.redirect", "/")
-        session = self.call("session.get", True)
+        session = req.session(True)
         form = self.call("web.form", "common/form.html")
         code = req.param("code")
         if req.param("ok") or req.param("okget"):
@@ -408,7 +407,7 @@ class Interface(Module):
             if redirects.has_key("register"):
                 self.call("web.redirect", redirects["register"])
             self.call("web.redirect", "/")
-        session = self.call("session.get", True)
+        session = req.session(True)
         form = self.call("web.form", "common/form.html")
         email = req.param("email")
         captcha = req.param("captcha").strip()
@@ -491,7 +490,8 @@ class Interface(Module):
         self.call("web.response_global", form.html(), vars)
 
     def ext_captcha(self):
-        session = self.call("session.get")
+        req = self.req()
+        session = req.session()
         if session is None:
             self.call("web.forbidden")
         field = 25
@@ -593,10 +593,7 @@ class Interface(Module):
                 points.extend(bezier(ts))
             draw.line(points, fill=(119, 119, 119), width=1)
         del draw
-        try:
-            captcha = self.obj(Captcha, session.uuid)
-        except ObjectNotFoundException:
-            captcha = self.obj(Captcha, session.uuid, {})
+        captcha = self.obj(Captcha, session.uuid, silent=True)
         captcha.set("number", number)
         captcha.set("valid_till", "%020d" % (time.time() + 86400))
         captcha.store()
@@ -606,7 +603,8 @@ class Interface(Module):
         self.call("web.response", data.getvalue(), "image/jpeg")
 
     def ext_logout(self):
-        session = self.call("session.get")
+        req = self.req()
+        session = req.session()
         if session is not None:
             user = session.get("user")
             if user:
@@ -653,7 +651,7 @@ class Interface(Module):
                 if m.hexdigest() != user.get("pass_hash"):
                     form.error("password", msg["password_incorrect"])
             if not form.errors:
-                session = self.call("session.get", True)
+                session = req.session(True)
                 with self.lock(["session.%s" % session.uuid]):
                     session.load()
                     session.set("user", user.uuid)
