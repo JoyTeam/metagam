@@ -40,7 +40,7 @@ class Dynamic(Module):
                 "main_host": main_host
             }
             self.call("indexpage.render", vars)
-            data = self.call("web.parse_template", "constructor/index/indexpage.js", vars)
+            data = self.call("web.parse_template", "game/indexpage.js", vars)
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/javascript; charset=utf-8")
 
@@ -59,7 +59,7 @@ class Dynamic(Module):
             vars = {
                 "main_host": main_host
             }
-            data = self.call("web.parse_template", "constructor/index/indexpage.css", vars)
+            data = self.call("web.parse_template", "game/indexpage.css", vars)
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/css")
 
@@ -67,8 +67,10 @@ class Interface(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-index.index", self.index, priv="public")
-        self.rhook("indexpage.error", self.index_error)
-        self.rhook("indexpage.response_template", self.response_template)
+        self.rhook("game.response", self.game_response)
+        self.rhook("game.response_external", self.game_response_external)
+        self.rhook("game.error", self.game_error)
+        self.rhook("game.form", self.game_form)
         self.rhook("auth.messages", self.auth_messages)
         self.rhook("menu-admin-design.index", self.menu_design_index)
         self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout, priv="design")
@@ -76,7 +78,8 @@ class Interface(Module):
         self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
-
+        self.rhook("gamecabinet.render", self.game_cabinet_render)
+        
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
         msg["user_inactive"] = self._("Character is not active. Check your e-mail and follow activation link")
@@ -91,12 +94,13 @@ class Interface(Module):
             user = session.get("user")
             if not user:
                 self.call("web.redirect", "/")
-            character = self.obj(Character, user)
-            player = self.obj(Player, character.get("player"))
-            if self.conf("auth.multicharing") or self.conf("auth.cabinet"):
-                return self.game_cabinet(player)
+            userobj = self.obj(User, user)
+            if userobj.get("name") is not None:
+                character = self.obj(Character, userobj.uuid)
+                return self.game_interface(character)
             else:
-                return self.game_interface_default_character(player)
+                player = self.obj(Player, userobj.uuid)
+                return self.game_cabinet(player)
         email = req.param("email")
         if email:
             user = self.call("session.find_user", email)
@@ -137,19 +141,53 @@ class Interface(Module):
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
 
-    def index_error(self, msg):
+    def game_error(self, msg):
         vars = {
             "title": self._("Error"),
-            "msg": msg,
         }
-        self.call("indexpage.response_template", "constructor/index/error.html", vars)
+        self.call("game.response_external", "error.html", vars, msg)
 
-    def response_template(self, template, vars):
-        content = self.call("web.parse_template", template, vars)
-        self.call("web.response_global", content, vars)
+    def game_form(self, form, vars):
+        self.call("game.response_external", "form.html", vars, form.html(vars))
+
+    def game_response(self, template, vars, content=""):
+        interface = self.conf("gameinterface.design")
+        if interface:
+            design = self.obj(Design, interface)
+        else:
+            design = None
+        self.call("design.response", design, template, content, vars)
+
+    def game_response_external(self, template, vars, content=""):
+        interface = self.conf("gameinterface.design")
+        if interface:
+            design = self.obj(Design, interface)
+        else:
+            design = None
+        content = self.call("design.parse", design, template, content, vars)
+        self.call("design.response", design, "external.html", content, vars)
 
     def game_cabinet(self, player):
-        self.index_error("The cabinet is not implemented yet")
+        characters = []
+        lst = self.objlist(CharacterList, query_index="player", query_equal=player.uuid)
+        lst = self.objlist(UserList, lst.uuids())
+        lst.load()
+        for ent in lst:
+            characters.append({
+                "uuid": ent.uuid,
+                "name": htmlescape(ent.get("name")),
+            })
+        vars = {
+            "title": self._("Game cabinet"),
+            "characters": characters if len(characters) else None,
+        }
+        self.call("gamecabinet.render", vars)
+        self.call("game.response_external", "cabinet.html", vars)
+
+    def game_cabinet_render(self, vars):
+        vars["SelectYourCharacter"] = self._("Select your character")
+        vars["Logout"] = self._("Logout")
+        vars["CreateNewCharacter"] = self._("Create a new character")
 
     def game_interface_default_character(self, player):
         chars = self.objlist(CharacterList, query_index="player", query_equal=player.uuid, query_reversed=True, query_limit=1)
@@ -178,14 +216,14 @@ class Interface(Module):
         vars["domain"] = self.app().project.get("domain")
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
-        vars["js_init"] = []
+        vars["js_init"] = ["Game.setup_game_layout();"]
         vars["main_init"] = "/interface"
 
     def game_interface(self, character):
         # setting up design
         interface = self.conf("gameinterface.design")
         if not interface:
-            return self.call("indexpage.error", self._("Game interface design is not configured"))
+            return self.call("game.error", self._("Game interface design is not configured"))
         design = self.obj(Design, interface)
         vars = {}
         self.call("gameinterface.render", vars, design)

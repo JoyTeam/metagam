@@ -445,6 +445,7 @@ class Web(Module):
         self.rhook("web.redirect", self.web_redirect)
         self.rhook("web.security_check", self.security_check)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("web.post_redirect", self.post_redirect)
 
     def objclasses_list(self, objclasses):
         objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
@@ -707,6 +708,11 @@ class Web(Module):
                         self.error("Security alert: request %s to host %s from invalid referrer: %s", req.uri(), req.host(), req.environ.get("HTTP_REFERER"))
                         req.headers.append(('Content-type', req.content_type))
                         raise WebResponse(req.send_response("403 Invalid Referer", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Forbidden"), self._("Security failure: Valid Referer required"))))
+
+    def post_redirect(self, uri, params={}):
+        params = [u'<input type="hidden" name="%s" value="%s" />' % (htmlescape(key), htmlescape(val)) for key, val in params.iteritems()]
+        content = '<html><body><form action="%s" method="post" name="autoform">%s</form><script type="text/javascript">document.autoform.submit();</script></body></html>' % (htmlescape(uri), u''.join(params))
+        self.call("web.response", content)
 
 class WebForm(object):
     """

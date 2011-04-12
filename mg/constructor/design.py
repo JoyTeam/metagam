@@ -831,15 +831,11 @@ class DesignMod(Module):
     def register(self):
         Module.register(self)
         self.rhook("design.response", self.response)
+        self.rhook("design.parse", self.parse)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def objclasses_list(self, objclasses):
         objclasses["Design"] = (Design, DesignList)
-
-    def response(self, design, template, content, vars):
-        vars["global_html"] = self.httpfile("%s/%s" % (design.get("uri"), template))
-        vars["design_root"] = design.get("uri")
-        self.call("web.response_global", content, vars)
 
     def child_modules(self):
         return [
@@ -848,6 +844,18 @@ class DesignMod(Module):
             "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
             "mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"
         ]
+
+    def parse(self, design, template, content, vars):
+        if design and template in design.get("files"):
+            template = self.httpfile("%s/%s" % (design.get("uri"), template))
+        else:
+            template = "game/%s" % template
+        vars["design_root"] = design.get("uri")
+        vars["content"] = content
+        return self.call("web.parse_layout", template, vars)
+
+    def response(self, design, template, content, vars):
+        self.call("web.response", self.parse(design, template, content, vars))
 
 class DesignAdmin(Module):
     def register(self):
@@ -883,7 +891,7 @@ class DesignAdmin(Module):
                     filename += "-%s" % ent.get("uploaded")
                     filename = re_make_filename.sub('-', filename.lower()) + ".zip"
                     previews = []
-                    self.call("admin-%s.previews" % group, previews)
+                    self.call("admin-%s.previews" % group, ent, previews)
                     if not len(previews):
                         previews.append({"filename": "index.html", "title": self._("preview")})
                     designs.append({
@@ -1313,7 +1321,7 @@ class SocioInterfaceAdmin(Module):
         if not design.get("css"):
             errors.append(self._("Socio interface design package must contain a CSS file"))
 
-    def previews(self, previews):
+    def previews(self, design, previews):
         previews.append({"filename": "index.html", "title": self._("Forum categories")})
         previews.append({"filename": "category.html", "title": self._("Forum category")})
         previews.append({"filename": "topic.html", "title": self._("Forum topic")})
@@ -1540,6 +1548,7 @@ class GameInterfaceAdmin(Module):
         self.rhook("admin-gameinterface.preview-data", self.preview_data)
         self.rhook("advice-admin-gameinterface.design", self.gameinterface_advice)
         self.rhook("admin-gameinterface.generators", self.generators)
+        self.rhook("admin-gameinterface.previews", self.previews)
         self.rhook("admin-gameinterface.preview", self.preview)
 
     def headmenu_design(self, args):
@@ -1567,6 +1576,10 @@ class GameInterfaceAdmin(Module):
         files.append({"filename": "blocks.html", "description": self._("Game interface blocks")})
         files.append({"filename": "interface.css", "description": self._("Game interface CSS")})
         files.append({"filename": "game.css", "description": self._("Common game CSS (styles for character icons, level [5] markers etc). This file is included in every game page - index page, game interface, socio interface")})
+        files.append({"filename": "external.html", "description": self._("External interface")})
+        files.append({"filename": "cabinet.html", "description": self._("Cabinet interface (inside the external interface)")})
+        files.append({"filename": "error.html", "description": self._("External error message (inside the external interface)")})
+        files.append({"filename": "form.html", "description": self._("External form (inside the external interface)")})
         self.call("admin-gameinterface.design-files", files)
         files = "".join(["<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (f.get("filename"), f.get("description")) for f in files])
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files})
@@ -1574,10 +1587,70 @@ class GameInterfaceAdmin(Module):
     def generators(self, gens):
         gens.append(DesignGameInterfaceTest)
 
+    def previews(self, design, previews):
+        previews.append({"filename": "interface.html", "title": self._("Game interface")})
+        previews.append({"filename": "cabinet.html", "title": self._("Cabinet")})
+        previews.append({"filename": "error.html", "title": self._("Error")})
+        previews.append({"filename": "form.html", "title": self._("Form")})
+
     def preview(self, design, filename):
-        project = self.app().project
-        vars = {}
-        self.call("gameinterface.render", vars, design)
-        self.call("gameinterface.gamejs", vars, design)
-        self.call("gameinterface.blocks", vars, design)
-        self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
+        vars = {
+            "title": self._("Demo page")
+        }
+        if filename == "interface.html":
+            self.call("gameinterface.render", vars, design)
+            self.call("gameinterface.gamejs", vars, design)
+            self.call("gameinterface.blocks", vars, design)
+            self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
+        elif filename == "cabinet.html" or filename == "error.html" or filename == "form.html":
+            demo_users = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Crazy Warrior From Hell")]
+            content = None
+            if filename == "cabinet.html":
+                self.call("gamecabinet.render", vars)
+                if random.random() < 0.8:
+                    lst = []
+                    for i in range(1, random.randrange(1, 11)):
+                        lst.append({"uuid": i, "name": random.choice(demo_users)})
+                    vars["characters"] = lst
+            elif filename == "error.html":
+                content = random.choice([
+                    self._("This is a short error message"),
+                    self._("An error message is information displayed when an unexpected condition occurs, usually on a computer or other device. On modern operating systems with graphical user interfaces, error messages are often displayed using dialog boxes. Error messages are used when user intervention is required, to indicate that a desired operation has failed, or to relay important warnings (such as warning a computer user that they are almost out of hard disk space). Error messages are seen widely throughout computing, and are part of every operating system or computer hardware device. Proper design of error messages is an important topic in usability and other fields of humancomputer interaction."),
+                ])
+            elif filename == "form.html":
+                form = self.call("web.form")
+                demo_errors = [self._("Invalid value"), self._("Are you sure?"), self._("Something wrong"), self._("Something is completely wrong")]
+                demo_descriptions = [self._("Enter your age"), self._("Specify your weight"), self._("What do you think about this?"), self._("Try to describe your choice")]
+                demo_values = [self._("Some value"), self._("Some another value"), self._("Some strange value"), self._("Very important value"), self._("A simple value"), self._("A complex value")]
+                demo_messages = [self._("Values you entered are not valid. Try again please"), self._("This is a very long message to tell user some important information about the form")]
+                inlines = 0
+                for i in range(0, random.randrange(2, 21)):
+                    inline = (random.random() < 0.5) and (i > 0)
+                    if inline:
+                        inlines += 1
+                        if inlines > 5:
+                            inline = False
+                            inlines = 0
+                    else:
+                        inlines = 0
+                    if random.random() < 0.2:
+                        form.error(i, random.choice(demo_errors))
+                    if random.random() < 0.3:
+                        form.select(random.choice(demo_descriptions), i, 0, random.sample([{"value": 1, "description": val} for val in demo_values], 3), inline=inline)
+                    elif random.random() < 0.2:
+                        form.checkbox(random.choice(demo_descriptions), i, 0, inline=inline)
+                    elif random.random() < 0.3:
+                        form.radio(random.choice(demo_descriptions), i, 0, 0, inline=inline)
+                    else:
+                        form.input(random.choice(demo_descriptions), i, random.choice(demo_values), inline=inline)
+                if random.random() < 0.3:
+                    form.textarea(random.choice(demo_descriptions), i, random.choice(demo_values))
+                if random.random() < 0.3:
+                    form.add_message_top(random.choice(demo_messages))
+                if random.random() < 0.3:
+                    form.add_message_bottom(random.choice(demo_messages))
+                for i in range(0, random.randrange(1, 5)):
+                    form.submit(None, None, random.choice(demo_values), inline=i>0)
+                content = form.html()
+            content = self.call("design.parse", design, filename, content, vars)
+            self.call("design.response", design, "external.html", content, vars)

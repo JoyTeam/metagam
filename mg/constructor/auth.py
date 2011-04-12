@@ -2,6 +2,8 @@
 
 from mg import *
 from mg.constructor import *
+from mg.core.auth import Captcha
+from mg.constructor.players import CharacterForm
 import hashlib
 import copy
 import random
@@ -44,6 +46,104 @@ class CharacterOnlineList(CassandraObjectList):
         kwargs["cls"] = CharacterOnline
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class AuthAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
+        self.rhook("ext-admin-sessions.monitor", self.sessions_monitor, priv="monitoring")
+        self.rhook("headmenu-admin-sessions.monitor", self.headmenu_sessions_monitor)
+        self.rhook("stream.idle", self.stream_idle)
+
+    def menu_cluster_monitoring(self, menu):
+        req = self.req()
+        if req.has_access("monitoring"):
+            menu.append({"id": "sessions/monitor", "text": self._("Sessions"), "leaf": True})
+
+    def sessions_monitor(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "header": [self._("Application"), self._("Session"), self._("Character"), self._("State"), self._("Timeout")],
+                    "rows": rows
+                }
+            ]
+        }
+        lst = self.main_app().objlist(AppSessionList, query_index="timeout")
+        lst.load(silent=True)
+        for ent in lst:
+            state = {1: self._("authorized"), 2: self._("online"), 3: self._("disconnected")}.get(ent.get("state"), ent.get("state"))
+            rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(ent.get("app")), ent.get("session"), ent.get("character"), state, ent.get("timeout")])
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_sessions_monitor(self, args):
+        return self._("Sessions monitor")
+
+    def stream_idle(self):
+        try:
+            now = self.now()
+            appsessions = self.objlist(AppSessionList, query_index="timeout", query_finish=now)
+            appsessions.load(silent=True)
+            for appsession in appsessions:
+                app_tag = appsession.get("app")
+                app = self.app().inst.appfactory.get_by_tag(app_tag)
+                session_uuid = appsession.get("session")
+                with app.lock(["session.%s" % session_uuid]):
+                    try:
+                        appsession.load()
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        if appsession.get("timeout") < now:
+                            try:
+                                session = app.obj(Session, session_uuid)
+                            except ObjectNotFoundException as e:
+                                self.exception(e)
+                            else:
+                                old_state = appsession.get("state")
+                                if old_state == 1 or old_state == 2:
+                                    # online session disconnected on timeout
+                                    self.debug("Session %s timed out. State: %s => 3" % (session_uuid, old_state))
+                                    appsession.set("state", 3)
+                                    appsession.set("timeout", self.now(3600))
+                                    character_uuid = appsession.get("character")
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.store()
+                                    # character offline on timeout
+                                    with app.lock(["character.%s" % character_uuid]):
+                                        try:
+                                            obj = app.obj(CharacterOnline, character_uuid)
+                                        except ObjectNotFoundException:
+                                            pass
+                                        else:
+                                            obj.remove()
+                                            app.hooks.call("session.character-offline", character_uuid)
+                                else:
+                                    # disconnected session destroyed on timeout
+                                    self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
+                                    # updating session
+                                    user = session.get("user")
+                                    if user:
+                                        session.set("semi_user", user)
+                                        session.delkey("user")
+                                    session.delkey("character")
+                                    session.delkey("authorized")
+                                    session.set("updated", self.now())
+                                    # storing
+                                    session.store()
+                                    appsession.remove()
+        except Exception as e:
+            self.exception(e)
+
 class Auth(Module):
     def register(self):
         Module.register(self)
@@ -70,6 +170,7 @@ class Auth(Module):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("session.require_login", self.require_login, priority=10)
         self.rhook("indexpage.render", self.indexpage_render)
+        self.rhook("ext-auth.character", self.auth_character, priv="public")
 
     def require_login(self):
         req = self.req()
@@ -78,7 +179,7 @@ class Auth(Module):
             if req.group.startswith("admin-"):
                 self.call("web.forbidden")
             else:
-                self.call("indexpage.error", self._("To access this page enter the game first"))
+                self.call("game.error", self._("To access this page enter the game first"))
         return session
 
     def auth_registered(self, user):
@@ -181,7 +282,6 @@ class Auth(Module):
                                 multichar_price = float(multichar_price)
                                 config.set("auth.multichar_price", multichar_price)
                                 config.set("auth.multichar_currency", multichar_currency)
-                # cabinet
                 config.set("auth.cabinet", True if req.param("cabinet") else False)
             # email activation
             activate_email = True if req.param("activate_email") else False
@@ -213,7 +313,7 @@ class Auth(Module):
             max_chars = config.get("auth.max_chars", 5)
             multichar_price = config.get("auth.multichar_price", 5)
             multichar_currency = config.get("auth.multichar_currency")
-            cabinet = config.get("auth.cabinet", 0)
+            cabinet = config.get("auth.cabinet", False)
             activate_email = config.get("auth.activate_email", True)
             activate_email_level = config.get("auth.activate_email_level", 0)
             activate_email_days = config.get("auth.activate_email_days", 7)
@@ -274,10 +374,7 @@ class Auth(Module):
         fields = self.character_form()
         fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
         # auth params
-        params = {
-            "name_re": r'^[A-Za-z0-9_-]+$',
-            "name_invalid_re": self._("Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"),
-        }
+        params = {}
         self.call("auth.form_params", params)
         # validating
         errors = {}
@@ -293,8 +390,6 @@ class Auth(Module):
                     errors[code] = params["name_invalid_re"]
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
-                else:
-                    self.debug("Name %s is OK", val)
             elif fld["type"] == 1:
                 if not val and not std and not fld.get("mandatory_level"):
                     # empty value is ok
@@ -433,13 +528,29 @@ class Auth(Module):
             self.call("web.response_json", {"error": msg["password_incorrect"]})
 #        if user.get("inactive"):
 #            self.call("web.response_json", {"error": msg["user_inactive"]})
-        # acquiring character user
-        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
-        if len(chars):
-            session = req.session(True)
-            self.call("stream.login", session.uuid, chars[0].uuid)
-            self.call("web.response_json", {"ok": 1, "session": session.uuid})
-        self.call("web.response_json", {"error": self._("No characters assigned to this player")})
+
+        if not self.conf("auth.multicharing") and not self.conf("auth.cabinet"):
+            # Looking for character
+            chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+            if len(chars):
+                session = req.session(True)
+                self.call("stream.login", session.uuid, chars[0].uuid)
+                self.call("web.response_json", {"ok": 1, "session": session.uuid})
+            if self.conf("auth.allow-create-first-character"):
+                self.call("web.response_json", {"error": self._("No characters assigned to this player")})
+        # Entering cabinet
+        session = req.session(True)
+        self.call("stream.logout", session.uuid)
+        with self.lock(["session.%s" % session.uuid]):
+            session.load()
+            if not session.get("user"):
+                session.set("user", user.uuid)
+                session.set("updated", self.now())
+                session.delkey("semi_user")
+                session.store()
+                self.call("web.response_json", {"ok": 1, "session": session.uuid})
+        # Everything failed
+        self.call("web.response_json", {"error": self._("Error logging in")})
 
     def characters_online(self):
         rows = []
@@ -716,101 +827,115 @@ class Auth(Module):
         vars["js_modules"].add("realplexor-stream")
         vars["js_init"].append("Stream.run_realplexor('%s');" % stream_marker)
 
-class AuthAdmin(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
-        self.rhook("ext-admin-sessions.monitor", self.sessions_monitor, priv="monitoring")
-        self.rhook("headmenu-admin-sessions.monitor", self.headmenu_sessions_monitor)
-        self.rhook("stream.idle", self.stream_idle)
-
-    def menu_cluster_monitoring(self, menu):
+    def auth_character(self):
         req = self.req()
-        if req.has_access("monitoring"):
-            menu.append({"id": "sessions/monitor", "text": self._("Sessions"), "leaf": True})
-
-    def sessions_monitor(self):
-        rows = []
-        vars = {
-            "tables": [
-                {
-                    "header": [self._("Application"), self._("Session"), self._("Character"), self._("State"), self._("Timeout")],
-                    "rows": rows
-                }
-            ]
-        }
-        lst = self.main_app().objlist(AppSessionList, query_index="timeout")
-        lst.load(silent=True)
-        for ent in lst:
-            state = {1: self._("authorized"), 2: self._("online"), 3: self._("disconnected")}.get(ent.get("state"), ent.get("state"))
-            rows.append(['<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(ent.get("app")), ent.get("session"), ent.get("character"), state, ent.get("timeout")])
-        self.call("admin.response_template", "admin/common/tables.html", vars)
-
-    def headmenu_sessions_monitor(self, args):
-        return self._("Sessions monitor")
-
-    def stream_idle(self):
+        session = req.session()
+        if not session or not session.get("user"):
+            self.call("web.redirect", "/")
         try:
-            now = self.now()
-            appsessions = self.objlist(AppSessionList, query_index="timeout", query_finish=now)
-            appsessions.load(silent=True)
-            for appsession in appsessions:
-                app_tag = appsession.get("app")
-                app = self.app().inst.appfactory.get_by_tag(app_tag)
-                session_uuid = appsession.get("session")
-                with app.lock(["session.%s" % session_uuid]):
-                    try:
-                        appsession.load()
-                    except ObjectNotFoundException:
-                        pass
-                    else:
-                        if appsession.get("timeout") < now:
-                            try:
-                                session = app.obj(Session, session_uuid)
-                            except ObjectNotFoundException as e:
-                                self.exception(e)
-                            else:
-                                old_state = appsession.get("state")
-                                if old_state == 1 or old_state == 2:
-                                    # online session disconnected on timeout
-                                    self.debug("Session %s timed out. State: %s => 3" % (session_uuid, old_state))
-                                    appsession.set("state", 3)
-                                    appsession.set("timeout", self.now(3600))
-                                    character_uuid = appsession.get("character")
-                                    # updating session
-                                    user = session.get("user")
-                                    if user:
-                                        session.set("semi_user", user)
-                                        session.delkey("user")
-                                    session.delkey("character")
-                                    session.delkey("authorized")
-                                    session.set("updated", self.now())
-                                    # storing
-                                    session.store()
-                                    appsession.store()
-                                    # character offline on timeout
-                                    with app.lock(["character.%s" % character_uuid]):
-                                        try:
-                                            obj = app.obj(CharacterOnline, character_uuid)
-                                        except ObjectNotFoundException:
-                                            pass
-                                        else:
-                                            obj.remove()
-                                            app.hooks.call("session.character-offline", character_uuid)
-                                else:
-                                    # disconnected session destroyed on timeout
-                                    self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
-                                    # updating session
-                                    user = session.get("user")
-                                    if user:
-                                        session.set("semi_user", user)
-                                        session.delkey("user")
-                                    session.delkey("character")
-                                    session.delkey("authorized")
-                                    session.set("updated", self.now())
-                                    # storing
-                                    session.store()
-                                    appsession.remove()
-        except Exception as e:
-            self.exception(e)
+            player = self.obj(Player, session.get("user"))
+        except ObjectNotFoundException:
+            pass
+        else:
+            if req.args == "new":
+                return self.new_character(player)
+            try:
+                character = self.obj(Character, req.args)
+            except ObjectNotFoundException:
+                self.call("web.forbidden")
+            if character.get("player") != player.uuid:
+                self.error("Hacking attempt. Player %s requested access to character %s", player.uuid, req.args)
+                self.call("web.forbidden")
+            self.call("stream.login", session.uuid, character.uuid)
+        self.call("web.post_redirect", "/", {"session": session.uuid})
 
+    def new_character(self, player):
+        req = self.req()
+        session = req.session()
+        form = self.call("web.form")
+        # registragion form
+        fields = self.character_form()
+        fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
+        values = {}
+        if req.ok():
+            # auth params
+            params = {}
+            self.call("auth.form_params", params)
+            # validating
+            for fld in fields:
+                code = fld["code"]
+                val = req.param(code).strip()
+                if fld.get("mandatory_level") and not val:
+                    form.error(code, self._("This field is mandatory"))
+                elif fld["std"] == 1:
+                    # character name. checking validity
+                    if not re.match(params["name_re"], val, re.UNICODE):
+                        form.error(code, params["name_invalid_re"])
+                    elif self.call("session.find_user", val):
+                        form.error(code, self._("This name is taken already"))
+                elif fld["type"] == 1:
+                    if not val and not std and not fld.get("mandatory_level"):
+                        # empty value is ok
+                        val = None
+                    else:
+                        # checking acceptable values
+                        ok = False
+                        for v in fld["values"]:
+                            if v[0] == val:
+                                ok = True
+                                break
+                        if not ok:
+                            form.error(code, self._("Make a valid selection"))
+                values[code] = val
+            captcha = req.param("captcha")
+            if not captcha:
+                form.error("captcha", self._("Enter numbers from the picture"))
+            else:
+                try:
+                    cap = self.obj(Captcha, session.uuid)
+                    if cap.get("number") != captcha:
+                        form.error("captcha", self._("Incorrect number"))
+                except ObjectNotFoundException:
+                    form.error("captcha", self._("Incorrect number"))
+            if not form.errors:
+                now = self.now()
+                now_ts = "%020d" % time.time()
+                # Creating new character
+                character = self.obj(Character)
+                character.set("created", now)
+                character.set("player", player.uuid)
+                character_user = self.obj(User, character.uuid, {})
+                character_user.set("created", now_ts)
+                character_user.set("last_login", now_ts)
+                character_user.set("name", values["name"])
+                character_user.set("name_lower", values["name"].lower())
+                character_form = self.obj(CharacterForm, character.uuid, {})
+                for fld in fields:
+                    code = fld["code"]
+                    if code == "name":
+                        continue
+                    val = values.get(code)
+                    if val is None:
+                        continue
+                    character_form.set(code, val)
+                # Storing objects
+                character.store()
+                character_user.store()
+                character_form.store()
+                # Entering game
+                self.call("web.post_redirect", "/", {"session": session.uuid})
+        vars = {
+            "title": self._("Create a new character")
+        }
+        for field in fields:
+            tp = field.get("type")
+            if tp == 1:
+                options = [{"value": v, "description": d} for v, d in field["values"]]
+                form.select(field["name"], field["code"], values.get(field["code"]), options)
+            elif tp == 2:
+                form.textarea(field["name"], field["code"], values.get(field["code"]))
+            else:
+                form.input(field["name"], field["code"], values.get(field["code"]))
+        form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        form.submit(None, None, self._("Create a character"))
+        self.call("game.form", form, vars)

@@ -149,7 +149,6 @@ class Chat(Module):
         tokens = []
         characters = {}
         start = 0
-        print u"html='%s'" % html
         for match in re_chat_characters.finditer(html):
             match_start, match_end = match.span()
             if match_start > start:

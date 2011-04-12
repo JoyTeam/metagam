@@ -243,7 +243,7 @@ class Interface(Module):
     def ext_register(self):
         req = self.req()
         session = req.session(True)
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         name = req.param("name").strip()
         sex = req.param("sex").strip()
         email = req.param("email").strip()
@@ -357,7 +357,7 @@ class Interface(Module):
                 self.call("web.redirect", redirects["register"])
             self.call("web.redirect", "/")
         session = req.session(True)
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         code = req.param("code")
         if req.param("ok") or req.param("okget"):
             if not code:
@@ -408,7 +408,7 @@ class Interface(Module):
                 self.call("web.redirect", redirects["register"])
             self.call("web.redirect", "/")
         session = req.session(True)
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         email = req.param("email")
         captcha = req.param("captcha").strip()
         if req.ok():
@@ -452,7 +452,7 @@ class Interface(Module):
 
     def ext_remind(self):
         req = self.req()
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         email = req.param("email")
         redirect = req.param("redirect")
         vars = {
@@ -627,7 +627,7 @@ class Interface(Module):
 
     def ext_login(self):
         req = self.req()
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         name = req.param("name")
         password = req.param("password")
         redirect = req.param("redirect")
@@ -687,7 +687,7 @@ class Interface(Module):
         if redirects.has_key("change"):
             ret = redirects["change"]
         req = self.req()
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         if req.ok():
             prefix = req.param("prefix")
         else:
@@ -750,7 +750,7 @@ class Interface(Module):
         req = self.req()
         user = self.obj(User, req.user())
         if req.args == "confirm":
-            form = self.call("web.form", "common/form.html")
+            form = self.call("web.form")
             code = req.param("code")
             redirect = req.param("redirect")
             if req.ok():
@@ -782,7 +782,7 @@ class Interface(Module):
                 "title": self._("E-mail confirmation"),
             }
             self.call("web.response_global", form.html(), vars)
-        form = self.call("web.form", "common/form.html")
+        form = self.call("web.form")
         if req.ok():
             prefix = req.param("prefix")
         else:

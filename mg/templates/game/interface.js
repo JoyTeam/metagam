@@ -9,8 +9,8 @@ Game.fixupContentEl = function(el) {
 	return el;
 };
 
-Game.setup_layout = function() {
-	var topmenu = Game.fixupContentEl({
+Game.setup_game_layout = function() {
+	var topmenu = this.fixupContentEl({
 		xtype: 'box',
 		height: 40,
 		contentEl: 'topmenu-box'
@@ -18,23 +18,23 @@ Game.setup_layout = function() {
 	var chat = {
 		border: false,
 		layout: 'border',
-		items: [[%if layout.chat_channels%]Game.fixupContentEl({
+		items: [[%if layout.chat_channels%]this.fixupContentEl({
 			xtype: 'box',
 			height: 40,
 			region: 'north',
 			contentEl: 'chat-channels'
-		}),[%end%]Game.fixupContentEl({
+		}),[%end%]this.fixupContentEl({
 			xtype: 'box',
 			region: 'center',
 			contentEl: 'chat-box'
-		}), Game.fixupContentEl({
+		}), this.fixupContentEl({
 			xtype: 'box',
 			height: 40,
 			region: 'south',
 			contentEl: 'chat-input'
 		})]
 	};
-	var roster = Game.fixupContentEl({
+	var roster = this.fixupContentEl({
 		xtype: 'box',
 		contentEl: 'roster-box'
 	});
@@ -136,7 +136,7 @@ Game.setup_layout = function() {
 	[%end%]
 	var margins = new Array();
 	[%if layout.marginleft%]
-	margins.push(Game.fixupContentEl({
+	margins.push(this.fixupContentEl({
 		xtype: 'box',
 		width: [%layout.marginleft%],
 		region: 'west',
@@ -144,7 +144,7 @@ Game.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.marginright%]
-	margins.push(Game.fixupContentEl({
+	margins.push(this.fixupContentEl({
 		xtype: 'box',
 		width: [%layout.marginright%],
 		region: 'east',
@@ -152,7 +152,7 @@ Game.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.margintop%]
-	margins.push(Game.fixupContentEl({
+	margins.push(this.fixupContentEl({
 		xtype: 'box',
 		height: [%layout.margintop%],
 		region: 'north',
@@ -160,7 +160,7 @@ Game.setup_layout = function() {
 	}));
 	[%end%]
 	[%if layout.marginbottom%]
-	margins.push(Game.fixupContentEl({
+	margins.push(this.fixupContentEl({
 		xtype: 'box',
 		height: [%layout.marginbottom%],
 		region: 'south',
@@ -182,11 +182,20 @@ Game.setup_layout = function() {
 	}
 };
 
+Game.setup_cabinet_layout = function() {
+	new Ext.Viewport({
+		layout: 'fit',
+		items: this.fixupContentEl({
+			xtype: 'box',
+			contentEl: 'cabinet-content'
+		})
+	});
+};
+
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'under';
 	wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
-		Game.setup_layout();
 		[%+ foreach statement in js_init%][%statement +%]
 		[%+ end%]
 	});

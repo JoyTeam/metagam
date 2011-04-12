@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-11 16:10+0400\n"
+"POT-Creation-Date: 2011-04-12 18:50+0400\n"
 "PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -72,46 +72,43 @@ msgstr "Отправка данных..."
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
+#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:244
+msgid "Server is in the local mode"
+msgstr "Сервер находится в локальном режиме"
+
+#: mg/templates/game/indexpage.js:163 mg/templates/game/indexpage.js:292
+msgid "Server is temporarily unavailable"
+msgstr "Сервер временно недоступен"
+
+#: mg/templates/game/indexpage.js:180 mg/templates/game/indexpage.js:210
+msgid "Next >"
+msgstr "Далее >"
+
+#: mg/templates/game/indexpage.js:210
+msgid "Register"
+msgstr "Регистрация"
+
+#: mg/templates/game/indexpage.js:219
+msgid "This field may not be empty"
+msgstr "Это поле не может быть пустым"
+
+#: mg/templates/game/indexpage.js:227
+msgid "Type your password twice"
+msgstr "Введите свой пароль дважды"
+
+#: mg/templates/game/indexpage.js:231
+msgid "Passwords don't match"
+msgstr "Пароли не совпадают"
+
+#: mg/templates/game/indexpage.js:272
+msgid "Error during registration"
+msgstr "Ошибка во время регистрации"
+
 #: mg/templates/constructor/intro-ru.html:18
 #: mg/templates/constructor/intro-en.html:12
 #: mg/templates/constructor/logo.html:130
 msgid "Next"
 msgstr "Далее"
-
-#: mg/templates/constructor/index/indexpage.js:132
-#: mg/templates/constructor/index/indexpage.js:244
-msgid "Server is in the local mode"
-msgstr "Сервер находится в локальном режиме"
-
-#: mg/templates/constructor/index/indexpage.js:163
-#: mg/templates/constructor/index/indexpage.js:292
-msgid "Server is temporarily unavailable"
-msgstr "Сервер временно недоступен"
-
-#: mg/templates/constructor/index/indexpage.js:180
-#: mg/templates/constructor/index/indexpage.js:210
-msgid "Next >"
-msgstr "Далее >"
-
-#: mg/templates/constructor/index/indexpage.js:210
-msgid "Register"
-msgstr "Регистрация"
-
-#: mg/templates/constructor/index/indexpage.js:219
-msgid "This field may not be empty"
-msgstr "Это поле не может быть пустым"
-
-#: mg/templates/constructor/index/indexpage.js:227
-msgid "Type your password twice"
-msgstr "Введите свой пароль дважды"
-
-#: mg/templates/constructor/index/indexpage.js:231
-msgid "Passwords don't match"
-msgstr "Пароли не совпадают"
-
-#: mg/templates/constructor/index/indexpage.js:272
-msgid "Error during registration"
-msgstr "Ошибка во время регистрации"
 
 #: mg/templates/constructor/domain-wizard.html:126
 msgid "Check availability"

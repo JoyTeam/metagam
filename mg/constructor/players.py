@@ -1,5 +1,4 @@
 from mg import *
-from mg.core.auth import Captcha
 from uuid import uuid4
 import re
 
