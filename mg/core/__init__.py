@@ -674,6 +674,8 @@ class Filter(logging.Filter):
 class StderrFilter(Filter):
     def filter(self, record):
         try:
+            if record.name == "WSGIServer":
+                return 0
             if record.name == "mg.core.cass.CassandraObject" and record.levelname == "DEBUG":
                 return 0
         except Exception:

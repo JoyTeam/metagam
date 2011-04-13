@@ -235,7 +235,6 @@ class Realplexor(Module):
         except AttributeError:
             self.call("stream.send", ids, {"packets": [kwargs]})
         else:
-            self.debug("Delaying packets to %s: %s" % (ids, kwargs))
             try:
                 packets = req.stream_packets
             except AttributeError:
@@ -256,7 +255,6 @@ class Realplexor(Module):
             pass
         else:
             for session_uuid, lst in packets.iteritems():
-                self.debug("Sending delayed packets to %s: %s" % (session_uuid, lst))
                 self.call("stream.send", session_uuid, {"packets": lst})
 
 class RealplexorDaemon(Daemon):
@@ -285,7 +283,6 @@ class RealplexorDaemon(Daemon):
                     idle_timer = 30
                     self.call("stream.idle")
                 if check_pos:
-                    self.debug("Checking realplexor position")
                     try:
                         last_pos = 0
                         for ev in rpl.cmdWatch(0):
@@ -298,7 +295,6 @@ class RealplexorDaemon(Daemon):
                         self.error("Realplexor server is not available")
                 try:
                     for ev in rpl.cmdWatch(pos):
-                        self.debug("Received realplexor event: %s", ev)
                         pos = ev["pos"]
                         m = re_valid_channel.match(ev["id"])
                         if m:

@@ -36,7 +36,6 @@ class Projects(Module):
         self.rhook("applications.list", self.applications_list)
 
     def applications_list(self, apps):
-        print "projects list"
         apps.append({"cls": "metagam", "tag": "main"})
         projects = self.int_app().objlist(ProjectList, query_index="created")
         projects.load(silent=True)
