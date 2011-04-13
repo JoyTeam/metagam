@@ -273,21 +273,18 @@ class Constructor(Module):
                 href = None
                 domain = project.get("domain")
                 if domain is None:
-                    domain = "%s.%s" % (project.uuid, self.app().inst.config["main_host"])
+                    domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
+                    href = "http://%s/admin" % domain
                 else:
                     domain = "www.%s" % domain
                     if not project.get("admin_confirmed"):
-                        self.debug("Project %s (%s) administrator is not confirmed", project.uuid, project.get("created"))
                         app = self.app().inst.appfactory.get_by_tag(project.uuid)
                         admins = app.objlist(CharacterList, query_index="admin", query_equal="1")
                         admins.load()
                         for admin in admins:
-                            self.debug("Character %s is admin", admin.uuid)
                             character_user = app.obj(User, admin.uuid)
                             player_user = app.obj(User, admin.get("player"))
-                            self.debug("Player %s is admin", player_user.uuid)
                             if player_user.get("inactive"):
-                                self.debug("Player is INACTIVE")
                                 href = "http://%s/auth/activate/%s?code=%s&okget=1" % (domain, player_user.uuid, player_user.get("activation_code"))
                         comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
                 if href is None:
@@ -329,8 +326,6 @@ class Constructor(Module):
     def debug_validate(self):
         req = self.req()
         slices_list = self.call("cassmaint.load_database")
-#        for slice in slices_list:
-#            self.debug("KEY: %s", slice.key)
         inst = self.app().inst
         valid_keys = inst.int_app.hooks.call("cassmaint.validate", slices_list)
         slices_list = [row for row in slices_list if row.key not in valid_keys]
@@ -338,7 +333,7 @@ class Constructor(Module):
         self.call("applications.list", apps)
         for ent in apps:
             tag = ent["tag"]
-            self.debug("validating application %s", tag)
+            self.debug("Validating application %s", tag)
             app = inst.appfactory.get_by_tag(tag)
             if app is not None:
                 valid_keys = app.hooks.call("cassmaint.validate", slices_list)
@@ -420,7 +415,6 @@ class Constructor(Module):
         character_user.store()
         character_form.store()
         # giving permissions
-        self.info("Giving project.admin permission to the user %s" % character_user.uuid)
         perms = app.obj(UserPermissions, character_user.uuid, {"perms": {"project.admin": True}})
         perms.sync()
         perms.store()

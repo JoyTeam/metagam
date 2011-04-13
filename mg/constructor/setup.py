@@ -33,7 +33,7 @@ class ProjectSetupWizard(Wizard):
                 "next_text": jsencode(self._("Next")),
             }
             self.call("admin.advice", {"title": self._("Demo advice"), "content": self._("Look to the right to read some recommendations")})
-            self.call("admin.response_template", "constructor/intro-%s.html" % self.call("l10n.lang"), vars)
+            self.call("admin.response_template", "constructor/setup/intro-%s.html" % self.call("l10n.lang"), vars)
         elif state == "offer":
             if cmd == "agree":
                 self.config.set("state", "name")
@@ -46,7 +46,7 @@ class ProjectSetupWizard(Wizard):
                 "main_host": self.app().inst.config["main_host"],
             }
             self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
-            self.call("admin.response_template", "constructor/offer-%s.html" % self.call("l10n.lang"), vars)
+            self.call("admin.response_template", "constructor/setup/offer-%s.html" % self.call("l10n.lang"), vars)
         elif state == "name":
             if cmd == "name-submit":
                 errors = {}
@@ -168,7 +168,28 @@ class ProjectSetupWizard(Wizard):
                 "UploadNote": self._("Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."),
                 "LaunchConstructor": self._("Launch the constructor"),
             }
-            self.call("admin.response_template", "constructor/logo.html", vars)
+            self.call("admin.response_template", "constructor/setup/logo.html", vars)
+        elif state == "indexpage":
+            # Leaved here to keep an example how to create admin.form inside a wizard
+            if cmd == "submit":
+                errors = {"variant": "UHAHA"}
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+            elif cmd == "prev":
+                self.config.set("state", "logo")
+                self.config.store()
+                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
+            form_data = {
+                "url": "/admin-wizard/call/%s/submit" % self.uuid,
+                "title": "Setup",
+                "fields": [{"name": "test", "label": "Test", "value": "123"}],
+                "buttons": [{"text": self._("Save")}],
+            }
+            vars = {
+                "form_data": jsencode(json.dumps(form_data)),
+                "wizard": self.uuid,
+            }
+            self.call("admin.response_template", "constructor/setup/indexpage.html", vars)
         elif state == "domain":
             if cmd == "prev":
                 self.config.set("state", "logo")
@@ -211,16 +232,12 @@ class ProjectSetupWizard(Wizard):
                 for admin in admins:
                     character_user = self.obj(User, admin.uuid)
                     player_user = self.obj(User, admin.get("player"))
-                    # entering the new project
+                    # deactivating main user
                     activation_code = uuid4().hex
                     player_user.set("inactive", 1)
                     player_user.set("activation_code", activation_code)
-                    player_user.set("activation_redirect", "/admin")
+                    player_user.set("activation_redirect", "/")
                     player_user.store()
-#                   # giving permissions
-#                   perms = self.obj(UserPermissions, admin.uuid, {"perms": {"project.admin": True}})
-#                   perms.sync()
-#                   perms.store()
                 self.call("admin.redirect_top", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
@@ -244,7 +261,7 @@ class ProjectSetupWizard(Wizard):
                 "DomainCheck": self._("Step 2. Check your configured domain and link it with your game"),
                 "domain_name": jsencode(self.config.get("domain")),
             }
-            self.call("admin.response_template", "constructor/domain.html", vars)
+            self.call("admin.response_template", "constructor/setup/domain.html", vars)
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
 

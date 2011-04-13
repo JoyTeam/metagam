@@ -63,7 +63,12 @@ class ConstructorProjectAdmin(Module):
     def project_destroy(self):
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
+        redirect = "http://www.%s/cabinet" % self.app().inst.config["main_host"]
+        req = self.req()
+        if req.args == "admin":
+            self.call("web.response_json", {"success": True, "redirect_top": redirect})
+        else:
+            self.call("web.redirect", redirect)
 
     def permissions_list(self, perms):
         perms.append({"id": "project.admin", "name": self._("Project main administrator")})

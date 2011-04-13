@@ -151,17 +151,25 @@ class ProjectDashboard(Module):
         req = self.req()
         config = self.main_app().config
         invitations = True if req.param("invitations") else False
+        moderator_email = req.param("moderator_email")
+        projects_domain = req.param("projects_domain")
         if req.param("ok"):
             changed = False
             if config.get("constructor.invitations") != invitations:
                 self.call("admin.update_menu")
             config.set("constructor.invitations", invitations)
+            config.set("constructor.moderator-email", moderator_email)
+            config.set("constructor.projects-domain", projects_domain)
             config.store()
             self.call("admin.response", self._("Constructor settings stored"), {})
         else:
             invitations = config.get("constructor.invitations")
+            moderator_email = config.get("constructor.moderator-email")
+            projects_domain = config.get("constructor.projects-domain", self.app().inst.config["main_host"])
         fields = [
             {"type": "checkbox", "name": "invitations", "label": self._("Registration on invitations"), "checked": invitations},
+            {"name": "moderator_email", "label": self._("Email of projects moderator"), "value": moderator_email},
+            {"name": "projects_domain", "label": self._("Projects domain"), "value": projects_domain},
         ]
         self.call("admin.form", fields=fields)
 

@@ -386,7 +386,7 @@ class DomainRegWizard(Wizard):
                 "UpdatingBalance": self._("Updating balance..."),
                 "RegisteringDomain": self._("Registering domain. It may take several minutes. Be patient please..."),
             }
-            self.call("admin.response_template", "constructor/domain-wizard.html", vars)
+            self.call("admin.response_template", "constructor/setup/domain-wizard.html", vars)
 
     def user_money(self):
         return self.main_app().hooks.call("money.member-money", self.app().project.get("owner"))

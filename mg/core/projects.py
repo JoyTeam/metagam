@@ -6,6 +6,7 @@ class Project(CassandraObject):
         "created": [[], "created"],
         "inactive": [["inactive"], "created"],
         "owner": [["owner"], "created"],
+        "moderation": [["moderation"], "created"],
     }
 
     def __init__(self, *args, **kwargs):

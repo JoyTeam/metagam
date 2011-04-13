@@ -1612,6 +1612,8 @@ class GameInterfaceAdmin(Module):
                     for i in range(1, random.randrange(1, 11)):
                         lst.append({"uuid": i, "name": random.choice(demo_users)})
                     vars["characters"] = lst
+                if random.random() < 0.5:
+                    vars["create"] = True
             elif filename == "error.html":
                 content = random.choice([
                     self._("This is a short error message"),

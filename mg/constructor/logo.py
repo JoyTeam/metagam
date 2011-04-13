@@ -268,4 +268,4 @@ class LogoWizard(Wizard):
             "layers": self.config.get("layers"),
             "preview": self.config.get("preview"),
         }
-        self.call("admin.response_template", "constructor/logo-wizard.html", vars)
+        self.call("admin.response_template", "constructor/setup/logo-wizard.html", vars)

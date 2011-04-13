@@ -44,15 +44,16 @@ class ApplicationFactory(mg.core.ApplicationFactory):
             return None
         domain = re_remove_www.sub('', domain)
         main_host = self.inst.config["main_host"]
+        main_app = self.get_by_tag("main")
         if domain == main_host:
             return "main"
-        m = re.match("^([0-9a-f]{32})\.%s" % main_host, domain)
-        if m:
-            return m.groups(1)[0]
         try:
-            domain = self.get_by_tag("main").obj(Domain, domain)
+            domain = main_app.obj(Domain, domain)
         except ObjectNotFoundException:
-            pass
+            projects_domain = main_app.config.get("constructor.projects-domain", main_host)
+            m = re.match("^([0-9a-f]{32})\.%s" % projects_domain, domain)
+            if m:
+                return m.groups(1)[0]
         else:
             tag = domain.get("project")
             if tag is not None:
@@ -78,7 +79,10 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         if project:
             domain = project.get("domain")
             if domain is None:
-                domain = "%s.%s" % (tag, self.inst.config["main_host"])
+                main_app = self.get_by_tag("main")
+                main_host = self.inst.config["main_host"]
+                projects_domain = main_app.config.get("constructor.projects-domain", main_host)
+                domain = "%s.%s" % (tag, projects_domain)
             app = WebApplication(self.inst, tag, "ext")
             app.hooks.dynamic = True
             app.domain = domain

@@ -71,6 +71,7 @@ class Interface(Module):
         self.rhook("game.response_external", self.game_response_external)
         self.rhook("game.error", self.game_error)
         self.rhook("game.form", self.game_form)
+        self.rhook("auth.form", self.game_form)
         self.rhook("auth.messages", self.auth_messages)
         self.rhook("menu-admin-design.index", self.menu_design_index)
         self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout, priv="design")
@@ -87,7 +88,7 @@ class Interface(Module):
     def index(self):
         req = self.req()
         session_param = req.param("session")
-        if session_param:
+        if session_param and req.environ.get("REQUEST_METHOD") == "POST":
             session = req.session()
             if session.uuid != session_param:
                 self.call("web.redirect", "/")
@@ -180,6 +181,7 @@ class Interface(Module):
         vars = {
             "title": self._("Game cabinet"),
             "characters": characters if len(characters) else None,
+            "create": self.conf("auth.multicharing"),
         }
         self.call("gamecabinet.render", vars)
         self.call("game.response_external", "cabinet.html", vars)
@@ -213,7 +215,7 @@ class Interface(Module):
             "margintop": self.conf("gameinterface.margin-top", 0),
             "marginbottom": self.conf("gameinterface.margin-bottom", 0),
         }
-        vars["domain"] = self.app().project.get("domain")
+        vars["domain"] = req.host()
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]

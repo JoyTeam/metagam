@@ -145,16 +145,20 @@ function auth_login()
 				if (json.error) {
 					report_failure(json.error);
 				} else if (json.ok) {
-					var frm = document.createElement('form');
-					frm.method = 'post';
-					frm.action = '/';
-					var inp = document.createElement('input');
-					inp.type = 'hidden';
-					inp.name = 'session';
-					inp.value = json.session;
-					frm.appendChild(inp);
-					$$('body')[0].appendChild(frm);
-					frm.submit();
+					if (json.session) {
+						var frm = document.createElement('form');
+						frm.method = 'post';
+						frm.action = '/';
+						var inp = document.createElement('input');
+						inp.type = 'hidden';
+						inp.name = 'session';
+						inp.value = json.session;
+						frm.appendChild(inp);
+						$$('body')[0].appendChild(frm);
+						frm.submit();
+					} else if (json.redirect) {
+						document.location = json.redirect;
+					}
 				}
 			}
 		},
@@ -274,16 +278,20 @@ function auth_register_next()
 							auth_register_field(index);
 						}
 					} else if (json.ok) {
-						var frm = document.createElement('form');
-						frm.method = 'post';
-						frm.action = '/';
-						var inp = document.createElement('input');
-						inp.type = 'hidden';
-						inp.name = 'session';
-						inp.value = json.session;
-						frm.appendChild(inp);
-						$$('body')[0].appendChild(frm);
-						frm.submit();
+						if (json.session) {
+							var frm = document.createElement('form');
+							frm.method = 'post';
+							frm.action = '/';
+							var inp = document.createElement('input');
+							inp.type = 'hidden';
+							inp.name = 'session';
+							inp.value = json.session;
+							frm.appendChild(inp);
+							$$('body')[0].appendChild(frm);
+							frm.submit();
+						} else if (json.redirect) {
+							document.location = json.redirect;
+						}
 					}
 				}
 			},

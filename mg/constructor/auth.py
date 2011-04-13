@@ -155,11 +155,12 @@ class Auth(Module):
         self.rhook("ext-player.login", self.player_login, priv="public")
         self.rhook("ext-player.register", self.player_register, priv="public")
         self.rhook("auth.form_params", self.auth_form_params)
-        self.rhook("auth.registered", self.auth_registered)
+        self.rhook("auth.registered", self.auth_registered, priority=5)
         self.rhook("auth.activated", self.auth_activated)
         self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
         self.rhook("ext-auth.logout", self.ext_logout, priv="public", priority=10)
-        self.rhook("ext-auth.login", (lambda self: None), priv="disabled", priority=10)
+        self.rhook("ext-auth.login", (lambda: self.call("web.forbidden")), priv="disabled", priority=10)
+        self.rhook("ext-auth.register", (lambda: self.call("web.forbidden")), priv="disabled", priority=10)
         self.rhook("session.character-online", self.character_online)
         self.rhook("session.character-offline", self.character_offline)
         self.rhook("stream.connected", self.stream_connected)
@@ -169,57 +170,57 @@ class Auth(Module):
         self.rhook("ext-stream.ready", self.stream_ready, priv="public")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("session.require_login", self.require_login, priority=10)
+        self.rhook("session.require_permission", self.require_permission, priority=10)
+        self.rhook("auth.permissions", self.auth_permissions, priority=10)
         self.rhook("indexpage.render", self.indexpage_render)
         self.rhook("ext-auth.character", self.auth_character, priv="public")
+        self.rhook("auth.login-before-activate", self.login_before_activate)
+        self.rhook("ext-player.activated", self.player_activated, priv="public")
+        self.rhook("character.form", self.character_form)
 
     def require_login(self):
-        req = self.req()
-        session = req.session()
-        if not session or not session.get("user") or not session.get("authorized"):
-            if req.group.startswith("admin-"):
-                self.call("web.forbidden")
-            else:
-                self.call("game.error", self._("To access this page enter the game first"))
-        return session
+        if self.app().project.get("admin_confirmed"):
+            req = self.req()
+            session = req.session()
+            if not session or not session.get("user") or not session.get("authorized"):
+                if req.group.startswith("admin-"):
+                    req.headers.append(('Content-type', req.content_type))
+                    raise WebResponse(req.send_response("403 Admin Offline", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Admin Offline"), self._("To access this page enter the game first"))))
+                else:
+                    self.call("game.error", self._("To access this page enter the game first"))
+        raise Hooks.Return(None)
+
+    def require_permission(self, priv):
+        if not self.app().project.get("admin_confirmed"):
+            raise Hooks.Return(None)
+
+    def auth_permissions(self, user_id):
+        if not self.app().project.get("admin_confirmed"):
+            raise Hooks.Return({
+                "admin": True,
+                "project.admin": True
+            })
 
     def auth_registered(self, user):
         req = self.req()
         project = self.app().project
         if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
             project.set("admin_confirmed", True)
+            project.set("moderation", 1)
             project.store()
             self.app().store_config_hooks()
+            # Sending project to moderation
+            email = self.main_app().config.get("constructor.moderator-email")
+            if email:
+                content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+                self.main_app().call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s" % project.get("title_short")), content)
+        raise Hooks.Return()
 
     def auth_activated(self, user, redirect):
         req = self.req()
-        session = req.session(True)
-        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
-        chars.load(silent=True)
-        admin = False
-        if len(chars):
-            with self.lock(["session.%s" % session.uuid]):
-                session.load()
-                session.set("user", chars[0].uuid)
-                session.set("character", 1)
-                session.set("authorized", 1)
-                session.set("updated", self.now())
-                session.delkey("semi_user")
-                session.store()
-            if chars[0].get("admin"):
-                admin = True
-        else:
-            self.error("auth.activated(%s) called but no associated characters found", user.uuid)
-        # redirect
-        if redirect is not None and redirect != "":
-            self.call("web.redirect", redirect)
-        redirects = {}
-        self.call("auth.redirects", redirects)
-        if redirects.has_key("register"):
-            self.call("web.redirect", redirects["register"])
-        user = self.obj(User, req.user())
-        if admin:
-            self.call("web.redirect", "/admin")
-        self.call("web.redirect", "/")
+        session = req.session()
+        if session:
+            self.call("stream.logout", session.uuid)
 
     def objclasses_list(self, objclasses):
         objclasses["AppSession"] = (AppSession, AppSessionList)
@@ -282,17 +283,17 @@ class Auth(Module):
                                 multichar_price = float(multichar_price)
                                 config.set("auth.multichar_price", multichar_price)
                                 config.set("auth.multichar_currency", multichar_currency)
-                config.set("auth.cabinet", True if req.param("cabinet") else False)
+                config.set("auth.cabinet", True if req.param("v_cabinet") else False)
             # email activation
             activate_email = True if req.param("activate_email") else False
             config.set("auth.activate_email", activate_email)
             if activate_email:
-                activate_email_level = req.param("activate_email_level")
-                if not valid_nonnegative_int(activate_email_level):
-                    errors["activate_email_level"] = self._("Invalid number")
-                else:
-                    activate_email_level = int(activate_email_level)
-                    config.set("auth.activate_email_level", activate_email_level)
+#                activate_email_level = req.param("activate_email_level")
+#                if not valid_nonnegative_int(activate_email_level):
+#                    errors["activate_email_level"] = self._("Invalid number")
+#                else:
+#                    activate_email_level = int(activate_email_level)
+#                    config.set("auth.activate_email_level", activate_email_level)
                 activate_email_days = req.param("activate_email_days")
                 if not valid_nonnegative_int(activate_email_days):
                     errors["activate_email_days"] = self._("Invalid number")
@@ -315,7 +316,7 @@ class Auth(Module):
             multichar_currency = config.get("auth.multichar_currency")
             cabinet = config.get("auth.cabinet", False)
             activate_email = config.get("auth.activate_email", True)
-            activate_email_level = config.get("auth.activate_email_level", 0)
+#            activate_email_level = config.get("auth.activate_email_level", 0)
             activate_email_days = config.get("auth.activate_email_days", 7)
             validate_names = config.get("auth.validate_names", False)
         fields = [
@@ -326,8 +327,8 @@ class Auth(Module):
             {"name": "multichar_currency", "label": self._("Currency"), "type": "combo", "value": multichar_currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()], "allow_blank": True, "condition": "[multicharing]>0 && [max_chars]>[free_chars]", "inline": True},
             {"name": "cabinet", "type": "combo", "label": self._("Login sequence"), "value": cabinet, "condition": "![multicharing]", "values": [(0, self._("Enter the game immediately after login")), (1, self._("Open player cabinet after login"))]},
             {"name": "activate_email", "type": "checkbox", "label": self._("Require email activation"), "checked": activate_email},
-            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
-            {"name": "activate_email_days", "label": self._("Activation is required after this number of days ('0' if require on registration)"), "value": activate_email_days, "inline": True, "condition": "[activate_email]"},
+#            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
+            {"name": "activate_email_days", "label": self._("Activation is required after this number of days ('0' if require on registration)"), "value": activate_email_days, "condition": "[activate_email]"},
             {"name": "validate_names", "type": "checkbox", "label": self._("Manual validation of every character name"), "checked": validate_names},
         ]
         self.call("admin.form", fields=fields)
@@ -382,7 +383,7 @@ class Auth(Module):
         for fld in fields:
             code = fld["code"]
             val = req.param(code).strip()
-            if fld.get("mandatory_level") and not val:
+            if not fld.get("mandatory_level") and not val:
                 errors[code] = self._("This field is mandatory")
             elif fld["std"] == 1:
                 # character name. checking validity
@@ -446,7 +447,7 @@ class Auth(Module):
         if self.conf("auth.activate_email", True):
             activation_code = uuid4().hex
             player_user.set("activation_code", activation_code)
-            player_user.set("activation_redirect", "/")
+            player_user.set("activation_redirect", "/player/activated")
         else:
             activation_code = None
         # Password
@@ -492,10 +493,21 @@ class Auth(Module):
             self.call("auth.activation_email", params)
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
 
-        if not activation_code or (not self.conf("auth.activate_email_level", 0) or not self.conf("auth.activate_email_days", 7)):
+        if activation_code and (not self.conf("auth.activate_email_days", 7)):
+            # Require activation immediately after registration
+            self.call("stream.logout", session.uuid)
+            with self.lock(["session.%s" % session.uuid]):
+                session.load()
+                session.delkey("user")
+                session.delkey("character")
+                session.delkey("authorized")
+                session.set("semi_user", player.uuid)
+                session.store()
+            self.call("web.response_json", {"ok": 1, "redirect": "/auth/activate/%s" % player.uuid})
+        else:
+            # First login without activation
             self.call("stream.login", session.uuid, character_user.uuid)
-        # Responding
-        self.call("web.response_json", {"ok": 1, "session": session.uuid})
+            self.call("web.response_json", {"ok": 1, "session": session.uuid})
 
     def auth_form_params(self, params):
         params["name_re"] = ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$'
@@ -526,10 +538,28 @@ class Auth(Module):
         m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
         if m.hexdigest() != user.get("pass_hash"):
             self.call("web.response_json", {"error": msg["password_incorrect"]})
-#        if user.get("inactive"):
-#            self.call("web.response_json", {"error": msg["user_inactive"]})
-
+        session = req.session(True)
+        if user.get("inactive") and self.conf("auth.activate_email", True):
+            require_activation = False
+            activate_days = self.conf("auth.activate_email_days", 7)
+            print "activate_days=%d" % activate_days
+            if activate_days:
+                days_since_reg = (time.time() - int(user.get("created"))) / 86400
+                print "days_since_reg=%d" % days_since_reg
+                if days_since_reg >= activate_days:
+                    require_activation = True
+            if require_activation:
+                self.call("stream.logout", session.uuid)
+                with self.lock(["session.%s" % session.uuid]):
+                    session.load()
+                    session.delkey("user")
+                    session.delkey("character")
+                    session.delkey("authorized")
+                    session.set("semi_user", user.uuid)
+                    session.store()
+                self.call("web.response_json", {"ok": 1, "redirect": "/auth/activate/%s" % user.uuid})
         if not self.conf("auth.multicharing") and not self.conf("auth.cabinet"):
+            print "multicharing=%s, cabinet=%s" % (self.conf("auth.multicharing"), self.conf("auth.cabinet"))
             # Looking for character
             chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
             if len(chars):
@@ -539,7 +569,6 @@ class Auth(Module):
             if self.conf("auth.allow-create-first-character"):
                 self.call("web.response_json", {"error": self._("No characters assigned to this player")})
         # Entering cabinet
-        session = req.session(True)
         self.call("stream.logout", session.uuid)
         with self.lock(["session.%s" % session.uuid]):
             session.load()
@@ -659,7 +688,8 @@ class Auth(Module):
                     self.debug("Dropping session %s" % session_uuid)
                     old_state = appsession.get("state")
                     if old_state == 1 or old_state == 2:
-                        self.debug("Session %s logged out forced. State: %s => None" % (session_uuid, old_state))
+                        if old_state:
+                            self.debug("Session %s logged out forced. State: %s => None" % (session_uuid, old_state))
                         try:
                             session = self.obj(Session, session_uuid)
                         except ObjectNotFoundException as e:
@@ -838,6 +868,11 @@ class Auth(Module):
             pass
         else:
             if req.args == "new":
+                if not self.conf("auth.multicharing"):
+                    self.call("web.not_found")
+                chars = self.objlist(CharacterList, query_index="player", query_equal=player.uuid)
+                if len(chars) >= self.conf("auth.max_chars", 5):
+                    self.call("game.error", self._("You can't create more characters"))
                 return self.new_character(player)
             try:
                 character = self.obj(Character, req.args)
@@ -865,7 +900,7 @@ class Auth(Module):
             for fld in fields:
                 code = fld["code"]
                 val = req.param(code).strip()
-                if fld.get("mandatory_level") and not val:
+                if not fld.get("mandatory_level") and not val:
                     form.error(code, self._("This field is mandatory"))
                 elif fld["std"] == 1:
                     # character name. checking validity
@@ -939,3 +974,30 @@ class Auth(Module):
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
         form.submit(None, None, self._("Create a character"))
         self.call("game.form", form, vars)
+
+    def login_before_activate(self, redirect):
+        self.call("game.error", self._('You are not logged in. <a href="/">Please login</a> and retry activation'))
+
+    def player_activated(self):
+        req = self.req()
+        session = req.session()
+        if not session:
+            # missing cookie
+            self.call("web.redirect", "/")
+        if not session.get("user"):
+            # not authorized
+            self.call("web.redirect", "/")
+        user = self.obj(User, session.get("user"))
+        if user.get("player"):
+            # character user
+            self.call("web.redirect", "/")
+        if user.get("inactive"):
+            # activation
+            self.call("web.redirect", "/auth/activate/%s" % user.uuid)
+        # Everything is OK. Redirecting user to the game interface or to the cabinet
+        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+        if len(chars):
+            self.call("stream.login", session.uuid, chars[0].uuid)
+        if self.conf("auth.allow-create-first-character"):
+            self.call("game.error", self._("No characters assigned to this player"))
+        self.call("web.post_redirect", "/", {"session": session.uuid})

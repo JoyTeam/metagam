@@ -1,0 +1,26 @@
+<div class="text">
+<div id="form"></div>
+<div id="navi"></div>
+</div>
+
+<script type="text/javascript">
+var form_data = Ext.util.JSON.decode('[%form_data%]');
+wait(['admin-form'], function() {
+	var frm = new Form(form_data);
+	frm.render('form');
+});
+new Ext.Panel({
+	renderTo: 'navi',
+	cls: 'bottom-form',
+	border: false,
+	layout: 'form',
+	buttons: [{
+		text: gt.gettext('Previous'),
+		handler: function() { adm('wizard/call/[%wizard%]/prev') }
+	}, {
+		text: gt.gettext('Next'),
+		handler: function() { adm('wizard/call/[%wizard%]/next') },
+		hidden: [%next_hidden%]
+	}]
+});
+</script>

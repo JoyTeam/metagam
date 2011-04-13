@@ -1,6 +1,6 @@
 <h1>[%title%]</h1>
 <p><a href="/auth/logout">[%Logout%]</a></p>
-<p><a href="/auth/character/new">[%CreateNewCharacter%]</a></p>
+[%if create%]<p><a href="/auth/character/new">[%CreateNewCharacter%]</a></p>[%end%]
 [%if characters%]
 <h2>[%SelectYourCharacter%]</h2>
 [%foreach char in characters%]

@@ -185,17 +185,18 @@ class Hooks(object):
                 for handler in handlers:
                     grpset.add(handler[2])
         with self.app().hook_lock:
-            old_groups = self.app().objlist(HookGroupModulesList, query_index="all")
-            for obj in old_groups:
-                if not obj.uuid in rec:
-                    obj.remove()
-            groups = self.app().objlist(HookGroupModulesList, [])
-            for group, grpset in rec.iteritems():
-                if group != "all":
-                    obj = self.app().obj(HookGroupModules, group, data={})
-                    obj.set("list", list(grpset))
-                    groups.append(obj)
-            groups.store(dont_load=True)
+            with self.app().lock(["HOOK-GROUPS"]):
+                old_groups = self.app().objlist(HookGroupModulesList, query_index="all")
+                for obj in old_groups:
+                    if not obj.uuid in rec:
+                        obj.remove()
+                groups = self.app().objlist(HookGroupModulesList, [])
+                for group, grpset in rec.iteritems():
+                    if group != "all":
+                        obj = self.app().obj(HookGroupModules, group, data={})
+                        obj.set("list", list(grpset))
+                        groups.append(obj)
+                groups.store(dont_load=True)
 
 class ConfigGroup(CassandraObject):
     _indexes = {
@@ -320,6 +321,7 @@ class Config(object):
                 list.store()
                 self._modified.clear()
             if notify:
+                self.app().hooks.store()
                 self.app().hooks.call("cluster.appconfig_changed")
 
 class Module(object):
@@ -821,6 +823,7 @@ class Application(object):
         self.modules.load_all()
         self.hooks.store()
         if notify:
+            self.hooks.store()
             self.hooks.call("cluster.appconfig_changed")
 
 class TaskletLock(Lock):

@@ -75,7 +75,7 @@ class Characters(Module):
 
     def admin_characters_form(self):
         req = self.req()
-        character_form = self.character_form()
+        character_form = self.call("character.form")
         m = re_delete_recover.match(req.args)
         if m:
             op, code = m.group(1, 2)

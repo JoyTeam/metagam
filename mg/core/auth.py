@@ -148,7 +148,7 @@ class Sessions(Module):
         if domain is None:
             domain = req.environ.get("HTTP_X_REAL_HOST")
         if domain is not None:
-            domain = re.sub(r'^www\.', '', domain)
+            #domain = re.sub(r'^www\.', '', domain)
             args["domain"] = "." + domain
         args["path"] = "/"
         args["expires"] = format_date_time(time.mktime(datetime.datetime.now().timetuple()) + 90 * 86400)
@@ -318,6 +318,11 @@ class Interface(Module):
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
                 user.store()
+                with self.lock(["session.%s" % session.uuid]):
+                    session.load()
+                    session.delkey("user")
+                    session.set("semi_user", user.uuid)
+                    session.store()
                 params = {
                     "subject": self._("Account activation"),
                     "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
@@ -342,6 +347,7 @@ class Interface(Module):
                 "title": self._("Cancel"),
             },
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
 
     def ext_activate(self):
@@ -350,28 +356,26 @@ class Interface(Module):
             user = self.obj(User, req.args)
         except ObjectNotFoundException:
             self.call("web.not_found")
-        if not user.get("inactive"):
-            redirects = {}
-            self.call("auth.redirects", redirects)
-            if redirects.has_key("register"):
-                self.call("web.redirect", redirects["register"])
-            self.call("web.redirect", "/")
         session = req.session(True)
-        form = self.call("web.form")
+        redirects = {}
+        self.call("auth.redirects", redirects)
         code = req.param("code")
+        if not user.get("inactive"):
+            self.call("web.redirect", redirects.get("register", "/"))
+        form = self.call("web.form")
         if req.param("ok") or req.param("okget"):
             if not code:
                 form.error("code", self._("Enter activation code from your e-mail box"))
             elif code != user.get("activation_code"):
                 form.error("code", self._("Invalid activation code"))
             if not form.errors:
+                redirect = user.get("activation_redirect")
                 with self.lock(["user.%s" % user.uuid]):
                     user.load()
                     user.delkey("inactive")
                     user.delkey("activation_code")
                     user.delkey("activation_redirect")
                     user.store()
-                redirect = user.get("activation_redirect")
                 self.call("auth.registered", user)
                 self.call("auth.activated", user, redirect)
                 with self.lock(["session.%s" % session.uuid]):
@@ -379,13 +383,9 @@ class Interface(Module):
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
                     session.store()
-                    if redirect is not None and redirect != "":
+                    if redirect:
                         self.call("web.redirect", redirect)
-                    redirects = {}
-                    self.call("auth.redirects", redirects)
-                    if redirects.has_key("register"):
-                        self.call("web.redirect", redirects["register"])
-                    self.call("web.redirect", "/")
+                    self.call("web.redirect", redirects.get("register", "/"))
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
         form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
@@ -393,6 +393,7 @@ class Interface(Module):
         vars = {
             "title": self._("User activation"),
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(), vars)
 
     def ext_reactivate(self):
@@ -411,7 +412,10 @@ class Interface(Module):
         form = self.call("web.form")
         email = req.param("email")
         captcha = req.param("captcha").strip()
+        password = req.param("password")
         if req.ok():
+            msg = {}
+            self.call("auth.messages", msg)
             if not captcha:
                 form.error("captcha", self._("Enter numbers from the picture"))
             else:
@@ -430,6 +434,13 @@ class Interface(Module):
                 existing_email.load(silent=True)
                 if len(existing_email) > 1 or len(existing_email) and existing_email[0].uuid != user.uuid:
                     form.error("email", self._("There is another user with this email"))
+            if not password:
+                form.error("password", msg["password_empty"])
+            if not form.errors:
+                m = hashlib.md5()
+                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+                if m.hexdigest() != user.get("pass_hash"):
+                    form.error("password", msg["password_incorrect"])
             if not form.errors:
                 user.set("email", email.lower())
                 activation_code = uuid4().hex
@@ -444,10 +455,12 @@ class Interface(Module):
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         form.input(self._("New e-mail"), "email", email)
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        form.password(self._("Password"), "password", password)
         form.submit(None, None, self._("Reactivate"))
         vars = {
             "title": self._("Retrying activation"),
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(), vars)
 
     def ext_remind(self):
@@ -487,6 +500,7 @@ class Interface(Module):
         form.hidden("redirect", redirect)
         form.input(self._("Your e-mail"), "email", email)
         form.submit(None, None, self._("Remind"))
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(), vars)
 
     def ext_captcha(self):
@@ -634,6 +648,7 @@ class Interface(Module):
         msg = {}
         self.call("auth.messages", msg)
         if req.ok():
+            session = req.session(True)
             if not name:
                 form.error("name", msg["name_empty"])
             else:
@@ -641,17 +656,20 @@ class Interface(Module):
                 if user is None:
                     form.error("name", msg["name_unknown"])
                 elif user.get("inactive"):
+                    with self.lock(["session.%s" % session.uuid]):
+                        session.load()
+                        session.delkey("user")
+                        session.set("semi_user", user.uuid)
+                        session.store()
                     self.call("web.redirect", "/auth/activate/%s" % user.uuid)
             if not password:
                 form.error("password", msg["password_empty"])
             if not form.errors:
-                print user.uuid
                 m = hashlib.md5()
                 m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
                 if m.hexdigest() != user.get("pass_hash"):
                     form.error("password", msg["password_incorrect"])
             if not form.errors:
-                session = req.session(True)
                 with self.lock(["session.%s" % session.uuid]):
                     session.load()
                     session.set("user", user.uuid)
@@ -678,6 +696,7 @@ class Interface(Module):
                 "title": self._("Cancel"),
             },
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
 
     def ext_change(self):
@@ -727,10 +746,10 @@ class Interface(Module):
                 user.store()
                 my_session = req.session()
                 sessions = self.objlist(SessionList, query_index="user", query_equal=user.uuid)
-                sessions.load()
                 for sess in sessions:
                     if sess.uuid != my_session.uuid:
                         with self.lock(["session.%s" % sess.uuid]):
+                            sess.load()
                             sess.delkey("user")
                             sess.delkey("semi_user")
                             sess.store()
@@ -744,6 +763,7 @@ class Interface(Module):
         vars = {
             "title": self._("Password change"),
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
 
     def ext_email(self):
@@ -830,6 +850,7 @@ class Interface(Module):
         vars = {
             "title": self._("E-mail change"),
         }
+        self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
 
     def permissions_list(self, perms):
