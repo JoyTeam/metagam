@@ -13,7 +13,7 @@
 [%for ent in categories%]
 
 [%if ent.category%]
-<tr class="socio-category">
+<tr class="socio-category socio-category-[%ent.odd%]">
 <td class="socio-catname">
 <div class="socio-catname"><a href="/forum/cat/[%ent.category.id%]">[%ent.category.title%]</a></div>
 <div class="socio-catdescription">[%ent.category.description%]</div>

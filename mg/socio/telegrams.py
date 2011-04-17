@@ -96,9 +96,9 @@ class Telegrams(Module):
             rows.append({
                 "bold": ent.get("unread"),
                 "cols": [
-                    htmlescape(user.get("name")),
-                    '<a href="/telegrams/user/%s%s">%s</a>' % (user.uuid, "#unread" if ent.get("unread") else "", self.call("l10n.timeencode2", ent.get("last_telegram"))),
-                    self._("Yes") if ent.get("unread") else self._("No")
+                    {"html": htmlescape(user.get("name")), "class": "telegrams-user"},
+                    {"html": '<a href="/telegrams/user/%s%s">%s</a>' % (user.uuid, "#unread" if ent.get("unread") else "", self.call("l10n.timeencode2", ent.get("last_telegram"))), "class": "telegrams-last"},
+                    {"html": self._("Yes") if ent.get("unread") else self._("No"), "class": "telegrams-unread"}
                 ]
             })
         vars = {
@@ -229,9 +229,9 @@ class Telegrams(Module):
                         unread = True
                         html = '<a name="unread"></a>' + html
                     tel.delkey("unread")
-                rows.append([self.call("l10n.timeencode2", tel.get("sent")), html])
+                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, {"html": html, "class": "telegrams-content telegrams-fromme"}])
             else:
-                rows.append([self.call("l10n.timeencode2", tel.get("sent")), None, html])
+                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, None, {"html": html, "class": "telegrams-content telegrams-tome"}])
         if unread:
             for ent in lst:
                 ent.delkey("unread")

@@ -834,11 +834,13 @@ class Forum(Module):
         # generating template
         entries = []
         topcat = None
+        odd = None
         for cat in categories:
             cat = cat.copy()
             if cat["topcat"] != topcat:
                 topcat = cat["topcat"]
                 entries.append({"header": topcat})
+                odd = None
             st = stat.get(cat["id"])
             if st:
                 topics = st.get_int("topics")
@@ -850,7 +852,8 @@ class Forum(Module):
                 cat["lastinfo"] = st.get("last")
             if unread.get(cat["id"]):
                 cat["unread"] = True
-            entries.append({"category": cat})
+            odd = 0 if odd else 1
+            entries.append({"category": cat, "odd": odd})
         vars = {
             "categories": entries,
             "menu": [
@@ -1089,6 +1092,7 @@ class Forum(Module):
                 topic["last_post_created"] = self.call("l10n.timeencode2", topic["last_post_created"])
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % topic.get("author")})
+            self.call("socio.author_menu", topic.get("author"), topic.get("author_html"), menu)
             topic["author_menu"] = menu
             pages = (topic["posts"] - 1) / posts_per_page + 1
             if pages > 1:
@@ -1124,6 +1128,7 @@ class Forum(Module):
             post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % post.get("author")})
+            self.call("socio.author_menu", post.get("author"), post.get("author_html"), menu)
             post["author_menu"] = menu
 
     def ext_newtopic(self):

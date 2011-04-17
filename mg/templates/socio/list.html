@@ -4,7 +4,7 @@
 	</tr>
 	[%foreach row in list_rows%]
 	<tr>
-		[%foreach col in row%]<td class="socio-list-cell">[%col%]</td>[%end%]
+		[%foreach col in row%]<td class="socio-list-cell[%if col.class +%] [%+ col.class%][%end%]">[%col.html%]</td>[%end%]
 	</tr>
 	[%end%]
 </table>

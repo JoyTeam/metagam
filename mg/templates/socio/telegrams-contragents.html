@@ -5,7 +5,7 @@
 	</tr>
 	[%foreach row in list_rows%]
 	<tr>
-		[%foreach col in row.cols%]<td class="socio-list-cell">[%if row.bold%]<strong>[%end%][%col%][%if row.bold%]</strong>[%end%]</td>[%end%]
+		[%foreach col in row.cols%]<td class="socio-list-cell[%if col.class +%] [%+ col.class%][%end%]">[%if row.bold%]<strong>[%end%][%col.html%][%if row.bold%]</strong>[%end%]</td>[%end%]
 	</tr>
 	[%end%]
 </table>
