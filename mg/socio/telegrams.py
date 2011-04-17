@@ -229,9 +229,9 @@ class Telegrams(Module):
                         unread = True
                         html = '<a name="unread"></a>' + html
                     tel.delkey("unread")
-                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, {"html": html, "class": "telegrams-content telegrams-fromme"}])
+                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, {"html": html, "class": "telegrams-content telegrams-tome"}])
             else:
-                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, None, {"html": html, "class": "telegrams-content telegrams-tome"}])
+                rows.append([{"html": self.call("l10n.timeencode2", tel.get("sent")), "class": "telegrams-sent"}, None, {"html": html, "class": "telegrams-content telegrams-fromme"}])
         if unread:
             for ent in lst:
                 ent.delkey("unread")
