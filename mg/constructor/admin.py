@@ -333,11 +333,20 @@ class Constructor(Module):
         self.call("applications.list", apps)
         for ent in apps:
             tag = ent["tag"]
-            self.debug("Validating application %s", tag)
-            app = inst.appfactory.get_by_tag(tag)
-            if app is not None:
-                valid_keys = app.hooks.call("cassmaint.validate", slices_list)
-                slices_list = [row for row in slices_list if row.key not in valid_keys]
+            if ent["cls"] != inst.cls:
+                self.debug("Skipping application %s", tag)
+                re_skip = re.compile('^%s-' % tag)
+                slices_list = [row for row in slices_list if not re_skip.match(row.key)]
+            else:
+                self.debug("Validating application %s", tag)
+                app = inst.appfactory.get_by_tag(tag)
+                if app is not None:
+                    valid_keys = app.hooks.call("cassmaint.validate", slices_list)
+                    slices_list = [row for row in slices_list if row.key not in valid_keys]
+                else:
+                    self.debug("Skipping application %s (no application handler)", tag)
+                    re_skip = re.compile('^%s-' % tag)
+                    slices_list = [row for row in slices_list if not re_skip.match(row.key)]
         timestamp = time.time() * 1000
         mutations = {}
         for row in slices_list:
