@@ -129,6 +129,8 @@ class MultiapplicationWebDaemon(WebDaemon):
     def req_handler(self, request, group, hook, args):
         host = request.host()
         app = self.inst.appfactory.get_by_domain(host)
+        if app is None:
+            return request.redirect("http://www.%s" % str(self.inst.config["main_host"]))
         if host != app.canonical_domain:
             if group == "index":
                 url = "/"
@@ -139,8 +141,6 @@ class MultiapplicationWebDaemon(WebDaemon):
                     if args != "":
                         url = "%s/%s" % (url, args)
             return request.redirect("http://%s%s" % (app.canonical_domain, url))
-        if app is None:
-            return request.redirect("http://www.%s" % str(self.inst.config["main_host"]))
         try:
             return app.http_request(request, group, hook, args)
         except Exception as e:
