@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-15 18:14+0400\n"
+"POT-Creation-Date: 2011-04-18 16:46+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,7 +108,6 @@ msgstr ""
 #: mg/templates/constructor/setup/intro-ru.html:18
 #: mg/templates/constructor/setup/intro-en.html:12
 #: mg/templates/constructor/setup/logo.html:130
-#: mg/templates/constructor/setup/indexpage.html:21
 msgid "Next"
 msgstr ""
 
@@ -134,8 +133,8 @@ msgid "I don't agree"
 msgstr ""
 
 #: mg/templates/constructor/setup/domain.html:95
+#: mg/templates/constructor/setup/form.html:18
 #: mg/templates/constructor/setup/logo.html:126
-#: mg/templates/constructor/setup/indexpage.html:18
 msgid "Previous"
 msgstr ""
 

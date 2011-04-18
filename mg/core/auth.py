@@ -225,6 +225,7 @@ class Interface(Module):
         self.rhook("security.users-roles", self.users_roles)
         self.rhook("all.schedule", self.schedule)
         self.rhook("auth.cleanup", self.cleanup)
+        self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users)
         self.rhook("ext-auth.register", self.ext_register, priv="public")
         self.rhook("ext-auth.captcha", self.ext_captcha, priv="public")
         self.rhook("ext-auth.logout", self.ext_logout, priv="public")
@@ -250,10 +251,12 @@ class Interface(Module):
         sessions.remove()
         captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
         captchas.remove()
-        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
-        users.remove()
         autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
         autologins.remove()
+
+    def cleanup_inactive_users(self):
+        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
+        users.remove()
 
     def objclasses_list(self, objclasses):
         objclasses["User"] = (User, UserList)

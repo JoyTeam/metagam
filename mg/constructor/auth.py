@@ -178,6 +178,7 @@ class Auth(Module):
         self.rhook("ext-player.activated", self.player_activated, priv="public")
         self.rhook("character.form", self.character_form)
         self.rhook("ext-auth.autologin", self.ext_autologin, priv="public")
+        self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -531,10 +532,8 @@ class Auth(Module):
         if user.get("inactive") and self.conf("auth.activate_email", True):
             require_activation = False
             activate_days = self.conf("auth.activate_email_days", 7)
-            print "activate_days=%d" % activate_days
             if activate_days:
                 days_since_reg = (time.time() - int(user.get("created"))) / 86400
-                print "days_since_reg=%d" % days_since_reg
                 if days_since_reg >= activate_days:
                     require_activation = True
             if require_activation:
@@ -548,7 +547,6 @@ class Auth(Module):
                     session.store()
                 self.call("web.response_json", {"ok": 1, "redirect": "/auth/activate/%s" % user.uuid})
         if not self.conf("auth.multicharing") and not self.conf("auth.cabinet"):
-            print "multicharing=%s, cabinet=%s" % (self.conf("auth.multicharing"), self.conf("auth.cabinet"))
             # Looking for character
             chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
             if len(chars):
@@ -1003,3 +1001,6 @@ class Auth(Module):
             self.call("stream.login", session.uuid, autologin.get("user"))
             autologin.remove()
         self.call("web.post_redirect", "/", {"session": session.uuid})
+
+    def cleanup_inactive_users(self):
+        raise Hooks.Return(None)
