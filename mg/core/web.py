@@ -551,7 +551,10 @@ class Web(Module):
             vars["ver"] = self.int_app().config.get("application.version", 0)
             vars["universal_variables"] = True
             try:
-                vars["domain"] = self.app().domain
+                try:
+                    vars["domain"] = self.app().canonical_domain
+                except AttributeError:
+                    vars["domain"] = self.app().domain
             except AttributeError:
                 pass
             self.call("web.universal_variables", vars)

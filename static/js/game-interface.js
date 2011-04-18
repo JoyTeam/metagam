@@ -14,12 +14,12 @@ Game.reload = function() {
 
 Game.close = function() {
 	Stream.initialized = false;
-	document.location = 'http://www.' + Game.domain;
+	document.location = 'http://' + Game.domain;
 };
 
 Game.logout = function() {
 	Stream.initialized = false;
-	document.location = 'http://www.' + Game.domain + '/auth/logout';
+	document.location = 'http://' + Game.domain + '/auth/logout';
 };
 
 loaded('game-interface');

@@ -309,7 +309,7 @@ class Config(object):
             del self._config[group][name]
             self._modified.add(group)
 
-    def store(self, notify=True):
+    def store(self):
         if len(self._modified):
             with self.app().config_lock:
                 list = self.app().objlist(ConfigGroupList, [])
@@ -320,9 +320,6 @@ class Config(object):
                     list.append(obj)
                 list.store()
                 self._modified.clear()
-            if notify:
-                self.app().hooks.store()
-                self.app().hooks.call("cluster.appconfig_changed")
 
 class Module(object):
     """
@@ -765,6 +762,39 @@ class Instance(object):
         finally:
             cnn.close()
 
+class ApplicationConfigUpdater(object):
+    """
+    This module holds configuration changes and applies
+    it when store() called
+    """
+    def __init__(self, app):
+        self.app = app
+        self.params = {}
+        self.dirty = False
+
+    def set(self, param, value):
+        if self.app.config.get(param) == value:
+            try:
+                del self.params[param]
+            except KeyError:
+                pass
+        else:
+            self.params[param] = value
+
+    def store(self, update_hooks=True, notify=True):
+        if len(self.params):
+            config = self.app.config
+            for key, value in self.params.iteritems():
+                print "applying conf %s=%s" % (key, value)
+                config.set(key, value)
+            if update_hooks:
+                config.store()
+                if notify:
+                    self.hooks.call("cluster.appconfig_changed")
+            else:
+                self.app.store_config_hooks(notify)
+            self.params = {}
+
 class Application(object):
     """
     Application is anything that can process unified /group/hook/args
@@ -819,12 +849,14 @@ class Application(object):
         return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
 
     def store_config_hooks(self, notify=True):
-        self.config.store(notify=False)
+        self.config.store()
         self.modules.load_all()
         self.hooks.store()
         if notify:
-            self.hooks.store()
             self.hooks.call("cluster.appconfig_changed")
+
+    def config_updater(self):
+        return ApplicationConfigUpdater(self)
 
 class TaskletLock(Lock):
     def __init__(self):

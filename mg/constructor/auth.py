@@ -242,10 +242,10 @@ class Auth(Module):
 
     def admin_players_auth(self):
         req = self.req()
-        config = self.app().config
         currencies = {}
         self.call("currencies.list", currencies)
         if req.param("ok"):
+            config = self.app().config_updater()
             errors = {}
             # multicharing
             multicharing = req.param("v_multicharing")
@@ -306,19 +306,19 @@ class Auth(Module):
             # processing
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
-            config.store()
+            self.app().store_config_hooks()
             self.call("admin.response", self._("Settings stored"), {})
         else:
-            multicharing = config.get("auth.multicharing", 0)
-            free_chars = config.get("auth.free_chars", 1)
-            max_chars = config.get("auth.max_chars", 5)
-            multichar_price = config.get("auth.multichar_price", 5)
-            multichar_currency = config.get("auth.multichar_currency")
-            cabinet = config.get("auth.cabinet", False)
-            activate_email = config.get("auth.activate_email", True)
-#            activate_email_level = config.get("auth.activate_email_level", 0)
-            activate_email_days = config.get("auth.activate_email_days", 7)
-            validate_names = config.get("auth.validate_names", False)
+            multicharing = self.conf("auth.multicharing", 0)
+            free_chars = self.conf("auth.free_chars", 1)
+            max_chars = self.conf("auth.max_chars", 5)
+            multichar_price = self.conf("auth.multichar_price", 5)
+            multichar_currency = self.conf("auth.multichar_currency")
+            cabinet = self.conf("auth.cabinet", False)
+            activate_email = self.conf("auth.activate_email", True)
+#            activate_email_level = self.conf("auth.activate_email_level", 0)
+            activate_email_days = self.conf("auth.activate_email_days", 7)
+            validate_names = self.conf("auth.validate_names", False)
         fields = [
             {"name": "multicharing", "type": "combo", "label": self._("Are players allowed to play more than 1 character"), "value": multicharing, "values": [(0, self._("No")), (1, self._("Yes, but play them by turn")), (2, self._("Yes, play them simultaneously"))] },
             {"name": "free_chars", "label": self._("Number of characters per player allowed for free"), "value": free_chars, "condition": "[multicharing]>0" },

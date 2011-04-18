@@ -8,8 +8,11 @@
 		[%head%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all.css" />
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/interface.css" />
+		[%if design_root%]
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
+		[%end%]
 		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
 		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
 		<script type="text/javascript" src="/st/ext/miframe.js"></script>
@@ -41,5 +44,15 @@
 		</script>
 		[%end%]
 		[%blocks%]
+		<div class="x-hidden" id="default-topmenu-box">
+			<span style="cursor: pointer" onclick="Game.reload()">reload</span>
+			<span style="cursor: pointer" onclick="Game.logout()">logout</span>
+		</div>
+		<div class="x-hidden" id="default-chat-channels">
+			<div id="chat-channel-buttons">[%foreach btn in chat_buttons%]<img src="[%btn.image%]" id="[%btn.id%]" onclick="[%btn.onclick%]" class="clickable" />[%end%]</div>
+		</div>
+		<div class="x-hidden" id="default-chat-box"><div id="chat-box-content">chatbox</div></div>
+		<div class="x-hidden" id="default-chat-input"><table style="width: 100%"><tr><td><form><input id="chat-input-control" /></form></td><td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td></tr></table></div>
+		<div class="x-hidden" id="default-roster-box"><div id="roster-box-content"></div></div>
 	</body>
 </html>

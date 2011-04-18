@@ -5,7 +5,7 @@ Stream.stream_handlers = new Array();
 Stream.run_realplexor = function(marker) {
 	this.marker = marker;
 	this.personal_channel = 'id_' + Ext.util.Cookies.get('mgsess-' + Game.app);
-	this.realplexor = new Dklab_Realplexor('http://rpl.www.' + Game.domain + '/rpl', Game.app + '_');
+	this.realplexor = new Dklab_Realplexor('http://rpl.' + Game.domain + '/rpl', Game.app + '_');
 	this.realplexor.setCursor(this.personal_channel, 0);
 	this.realplexor.subscribe(this.personal_channel, this.stream_command.createDelegate(this));
 	this.realplexor.execute();

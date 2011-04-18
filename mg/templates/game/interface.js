@@ -4,8 +4,13 @@ Game.app = '[%app%]';
 Game.domain = '[%domain%]';
 
 Game.fixupContentEl = function(el) {
-	if (!Ext.getDom(el.contentEl))
-		el.contentEl = undefined;
+	if (Ext.getDom(el.contentEl)) {
+		var def = Ext.get('default-' + el.contentEl);
+		if (def)
+			def.remove();
+	} else {
+		el.contentEl = 'default-' + el.contentEl;
+	}
 	return el;
 };
 

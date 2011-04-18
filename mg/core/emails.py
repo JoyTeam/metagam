@@ -30,14 +30,17 @@ class EmailAdmin(Module):
     def email_settings(self):
         req = self.req()
         exceptions = req.param("exceptions")
-        int_config = self.int_app().config
         if req.param("ok"):
-            config = self.app().config
+            config = self.app().config_updater()
+            int_config = self.int_app().config_updater()
+            # setting
             int_config.set("email.exceptions", exceptions)
+            # storing
             config.store()
             int_config.store()
             self.call("admin.response", self._("Settings stored"), {})
         else:
+            int_config = self.int_app().config
             exceptions = int_config.get("email.exceptions")
         fields = [
             {"name": "exceptions", "label": self._("Send software exceptions to this e-mail"), "value": exceptions},

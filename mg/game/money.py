@@ -677,7 +677,7 @@ class TwoPay(Module):
             secret = req.param("secret")
             project_id = req.param("project_id")
             if req.param("ok"):
-                config = self.app().config
+                config = self.app().config_updater()
                 config.set("2pay.secret", secret)
                 config.set("2pay.project-id", project_id)
                 config.store()

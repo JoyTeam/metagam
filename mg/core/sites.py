@@ -38,7 +38,7 @@ class CountersAdmin(Module):
         html = req.param("html")
         head = req.param("head")
         if req.param("ok"):
-            config = self.app().config
+            config = self.app().config_updater()
             config.set("counters.html", html)
             config.set("counters.head", head)
             config.store()

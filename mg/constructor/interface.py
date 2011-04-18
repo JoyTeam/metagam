@@ -102,19 +102,8 @@ class Interface(Module):
             else:
                 player = self.obj(Player, userobj.uuid)
                 return self.game_cabinet(player)
-        email = req.param("email")
-        if email:
-            user = self.call("session.find_user", email)
-            if user:
-                password = req.param("password")
-                m = hashlib.md5()
-                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
-                if m.hexdigest() == user.get("pass_hash"):
-                    self.call("web.response", "ENTERING GAME", {})
         interface = self.conf("indexpage.design")
-        if not interface:
-            return self.call("indexpage.error", self._("Index page design is not configured"))
-        design = self.obj(Design, interface)
+        design = self.obj(Design, interface) if interface else None
         project = self.app().project
         author_name = self.conf("gameprofile.author_name")
         if not author_name:
@@ -133,6 +122,7 @@ class Interface(Module):
             },
             "year": re.sub(r'-.*', '', self.now()),
             "copyright": "Joy Team, %s" % htmlescape(author_name),
+            "main_host": self.app().inst.config["main_host"],
         }
         links = []
         self.call("indexpage.links", links)
@@ -206,7 +196,7 @@ class Interface(Module):
         mg_path = mg.__path__[0]
         project = self.app().project
         vars["title"] = htmlescape(project.get("title_full"))
-        vars["design_root"] = design.get("uri")
+        vars["design_root"] = design.get("uri") if design else ""
         vars["main_host"] = main_host
         vars["layout"] = {
             "scheme": self.conf("gameinterface.layout-scheme", 1),
@@ -224,9 +214,7 @@ class Interface(Module):
     def game_interface(self, character):
         # setting up design
         interface = self.conf("gameinterface.design")
-        if not interface:
-            return self.call("game.error", self._("Game interface design is not configured"))
-        design = self.obj(Design, interface)
+        design = self.obj(Design, interface) if interface else None
         vars = {}
         self.call("gameinterface.render", vars, design)
         self.call("gameinterface.gamejs", vars, design)
@@ -244,7 +232,7 @@ class Interface(Module):
     def gameinterface_layout(self):
         req = self.req()
         if req.ok():
-            config = self.app().config
+            config = self.app().config_updater()
             errors = {}
             # scheme
             scheme = intz(req.param("scheme"))
@@ -301,8 +289,9 @@ class Interface(Module):
         self.call("admin.form", fields=fields)
 
     def blocks(self, vars, design):
-        obj = self.httpfile("%s/blocks.html" % design.get("uri"))
-        vars["blocks"] = self.call("web.parse_template", obj, vars)
+        if design:
+            obj = self.httpfile("%s/blocks.html" % design.get("uri"))
+            vars["blocks"] = self.call("web.parse_template", obj, vars)
 
     def game_js(self, vars, design):
         req = self.req()

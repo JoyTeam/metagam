@@ -25,12 +25,12 @@ class Game(Module):
 
     def ext_profile(self):
         req = self.req()
-        config = self.app().config
         author_name = req.param("author_name")
         description = req.param("description")
         indexpage_description = req.param("indexpage_description")
         indexpage_keywords = req.param("indexpage_keywords")
         if req.param("ok"):
+            config = self.app().config_updater()
             config.set("gameprofile.author_name", author_name)
             config.set("gameprofile.description", description)
             config.set("gameprofile.indexpage_description", indexpage_description)
@@ -38,10 +38,10 @@ class Game(Module):
             config.store()
             self.call("admin.response", self._("Game profile stored"), {})
         else:
-            author_name = config.get("gameprofile.author_name")
-            description = config.get("gameprofile.description")
-            indexpage_description = config.get("gameprofile.indexpage_description")
-            indexpage_keywords = config.get("gameprofile.indexpage_keywords")
+            author_name = self.conf("gameprofile.author_name")
+            description = self.conf("gameprofile.description")
+            indexpage_description = self.conf("gameprofile.indexpage_description")
+            indexpage_keywords = self.conf("gameprofile.indexpage_keywords")
         fields = [
             {"name": "author_name", "label": self._("Game author name"), "value": author_name},
             {"type": "textarea", "name": "description", "label": self._("Game description"), "value": description},

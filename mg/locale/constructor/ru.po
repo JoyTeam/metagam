@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-12 18:50+0400\n"
+"POT-Creation-Date: 2011-04-15 18:14+0400\n"
 "PO-Revision-Date: 2011-03-11 10:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -28,13 +28,15 @@ msgid "To the main page"
 msgstr "На главную страницу"
 
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:239
-#: static/js/admin-form.js:242 mg/templates/constructor/domain-wizard.html:41
-#: mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/domain.html:29
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/logo.html:95 mg/templates/constructor/logo.html:98
-#: mg/templates/constructor/logo-wizard.html:63
-#: mg/templates/constructor/logo-wizard.html:66
+#: static/js/admin-form.js:242
+#: mg/templates/constructor/setup/domain-wizard.html:41
+#: mg/templates/constructor/setup/domain-wizard.html:44
+#: mg/templates/constructor/setup/domain.html:29
+#: mg/templates/constructor/setup/domain.html:32
+#: mg/templates/constructor/setup/logo.html:95
+#: mg/templates/constructor/setup/logo.html:98
+#: mg/templates/constructor/setup/logo-wizard.html:63
+#: mg/templates/constructor/setup/logo-wizard.html:66
 msgid "Error"
 msgstr "Ошибка"
 
@@ -51,12 +53,13 @@ msgstr "Обзор..."
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: static/js/admin-form.js:193 mg/templates/constructor/domain-wizard.html:82
-#: mg/templates/constructor/domain.html:71
-#: mg/templates/constructor/logo.html:57
-#: mg/templates/constructor/logo-wizard.html:80
-#: mg/templates/constructor/logo-wizard.html:119
-#: mg/templates/constructor/logo-wizard.html:230
+#: static/js/admin-form.js:193
+#: mg/templates/constructor/setup/domain-wizard.html:82
+#: mg/templates/constructor/setup/domain.html:71
+#: mg/templates/constructor/setup/logo.html:57
+#: mg/templates/constructor/setup/logo-wizard.html:80
+#: mg/templates/constructor/setup/logo-wizard.html:119
+#: mg/templates/constructor/setup/logo-wizard.html:230
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
 
@@ -64,121 +67,124 @@ msgstr "Пожалуйста, подождите..."
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:242 mg/templates/constructor/domain-wizard.html:44
-#: mg/templates/constructor/domain.html:32
-#: mg/templates/constructor/logo.html:98
-#: mg/templates/constructor/logo-wizard.html:66
+#: static/js/admin-form.js:242
+#: mg/templates/constructor/setup/domain-wizard.html:44
+#: mg/templates/constructor/setup/domain.html:32
+#: mg/templates/constructor/setup/logo.html:98
+#: mg/templates/constructor/setup/logo-wizard.html:66
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:244
+#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:248
 msgid "Server is in the local mode"
 msgstr "Сервер находится в локальном режиме"
 
-#: mg/templates/game/indexpage.js:163 mg/templates/game/indexpage.js:292
+#: mg/templates/game/indexpage.js:167 mg/templates/game/indexpage.js:300
 msgid "Server is temporarily unavailable"
 msgstr "Сервер временно недоступен"
 
-#: mg/templates/game/indexpage.js:180 mg/templates/game/indexpage.js:210
+#: mg/templates/game/indexpage.js:184 mg/templates/game/indexpage.js:214
 msgid "Next >"
 msgstr "Далее >"
 
-#: mg/templates/game/indexpage.js:210
+#: mg/templates/game/indexpage.js:214
 msgid "Register"
 msgstr "Регистрация"
 
-#: mg/templates/game/indexpage.js:219
+#: mg/templates/game/indexpage.js:223
 msgid "This field may not be empty"
 msgstr "Это поле не может быть пустым"
 
-#: mg/templates/game/indexpage.js:227
+#: mg/templates/game/indexpage.js:231
 msgid "Type your password twice"
 msgstr "Введите свой пароль дважды"
 
-#: mg/templates/game/indexpage.js:231
+#: mg/templates/game/indexpage.js:235
 msgid "Passwords don't match"
 msgstr "Пароли не совпадают"
 
-#: mg/templates/game/indexpage.js:272
+#: mg/templates/game/indexpage.js:276
 msgid "Error during registration"
 msgstr "Ошибка во время регистрации"
 
-#: mg/templates/constructor/intro-ru.html:18
-#: mg/templates/constructor/intro-en.html:12
-#: mg/templates/constructor/logo.html:130
+#: mg/templates/constructor/setup/intro-ru.html:18
+#: mg/templates/constructor/setup/intro-en.html:12
+#: mg/templates/constructor/setup/logo.html:130
+#: mg/templates/constructor/setup/indexpage.html:21
 msgid "Next"
 msgstr "Далее"
 
-#: mg/templates/constructor/domain-wizard.html:126
+#: mg/templates/constructor/setup/domain-wizard.html:126
 msgid "Check availability"
 msgstr "Проверить доступность"
 
-#: mg/templates/constructor/domain-wizard.html:161
+#: mg/templates/constructor/setup/domain-wizard.html:161
 msgid "Buy MM$"
 msgstr "Купить MM$"
 
-#: mg/templates/constructor/domain-wizard.html:258
-#: mg/templates/constructor/logo-wizard.html:281
+#: mg/templates/constructor/setup/domain-wizard.html:258
+#: mg/templates/constructor/setup/logo-wizard.html:281
 msgid "Abort wizard"
 msgstr "Прервать мастер"
 
-#: mg/templates/constructor/offer-ru.html:40
+#: mg/templates/constructor/setup/offer-ru.html:40
 msgid "I agree to the terms and conditions"
 msgstr "Я принимаю условия соглашения"
 
-#: mg/templates/constructor/offer-ru.html:43
+#: mg/templates/constructor/setup/offer-ru.html:43
 msgid "I don't agree"
 msgstr "Я не согласен"
 
-#: mg/templates/constructor/domain.html:95
-#: mg/templates/constructor/logo.html:126
+#: mg/templates/constructor/setup/domain.html:95
+#: mg/templates/constructor/setup/logo.html:126
+#: mg/templates/constructor/setup/indexpage.html:18
 msgid "Previous"
 msgstr "Назад"
 
-#: mg/templates/constructor/logo.html:80
-#: mg/templates/constructor/logo-wizard.html:102
+#: mg/templates/constructor/setup/logo.html:80
+#: mg/templates/constructor/setup/logo-wizard.html:102
 msgid "Upload"
 msgstr "Загрузить"
 
-#: mg/templates/constructor/logo.html:83
-#: mg/templates/constructor/logo-wizard.html:40
+#: mg/templates/constructor/setup/logo.html:83
+#: mg/templates/constructor/setup/logo-wizard.html:40
 msgid "Uploading data..."
 msgstr "Отправка данных..."
 
-#: mg/templates/constructor/logo-wizard.html:74
+#: mg/templates/constructor/setup/logo-wizard.html:74
 msgid "Upload file"
 msgstr "Загрузить файл"
 
-#: mg/templates/constructor/logo-wizard.html:113
+#: mg/templates/constructor/setup/logo-wizard.html:113
 msgid "Solid color"
 msgstr "Сплошной цвет"
 
-#: mg/templates/constructor/logo-wizard.html:146
+#: mg/templates/constructor/setup/logo-wizard.html:146
 msgid "Select"
 msgstr "Выбрать"
 
-#: mg/templates/constructor/logo-wizard.html:213
+#: mg/templates/constructor/setup/logo-wizard.html:213
 msgid "Smooth contour"
 msgstr "Сглаженные края"
 
-#: mg/templates/constructor/logo-wizard.html:242
+#: mg/templates/constructor/setup/logo-wizard.html:242
 msgid "Shape"
 msgstr "Форма"
 
-#: mg/templates/constructor/logo-wizard.html:245
+#: mg/templates/constructor/setup/logo-wizard.html:245
 msgid "Fill"
 msgstr "Заливка"
 
-#: mg/templates/constructor/logo-wizard.html:248
+#: mg/templates/constructor/setup/logo-wizard.html:248
 msgid "Effects"
 msgstr "Эффекты"
 
-#: mg/templates/constructor/logo-wizard.html:256
+#: mg/templates/constructor/setup/logo-wizard.html:256
 msgid "Preview"
 msgstr "Предварительный просмотр"
 
-#: mg/templates/constructor/logo-wizard.html:278
+#: mg/templates/constructor/setup/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
 

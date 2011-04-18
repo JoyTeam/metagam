@@ -850,7 +850,7 @@ class DesignMod(Module):
             template = self.httpfile("%s/%s" % (design.get("uri"), template))
         else:
             template = "game/%s" % template
-        vars["design_root"] = design.get("uri")
+        vars["design_root"] = design.get("uri") if design else None
         vars["content"] = content
         return self.call("web.parse_layout", template, vars)
 
@@ -1033,8 +1033,9 @@ class DesignAdmin(Module):
                         pass
                     else:
                         if self.conf("%s.design" % group) != uuid:
-                            self.app().config.set("%s.design" % group, uuid)
-                            self.app().config.store()
+                            config = self.app().config_updater()
+                            config.set("%s.design" % group, uuid)
+                            config.store()
                     self.call("admin.redirect", "%s/design" % group)
             m = re.match(r'^preview/([a-f0-9]{32})/([a-z]+\.html)$', req.args)
             if m:
@@ -1235,6 +1236,7 @@ class IndexPageAdmin(Module):
                     })
                     lst[-1]["lst"] = True
             vars["ratings"][-1]["lst"] = True
+        vars["main_host"] = self.app().inst.config["main_host"]
 
     def generators(self, gens):
         gens.append(DesignIndexBrokenStones)

@@ -445,7 +445,7 @@ class DomainsAdmin(Module):
         ns1 = req.param("ns1")
         ns2 = req.param("ns2")
         if req.param("ok"):
-            config = main.config
+            config = main.config_updater()
             config.set("dns.ns1", ns1)
             config.set("dns.ns2", ns2)
             config.store()
@@ -473,7 +473,7 @@ class DomainsAdmin(Module):
                     errors["price_%s" % tld] = self._("Invalid price format")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
-            config = self.app().config
+            config = self.app().config_updater()
             config.set("domains.prices", prices)
             config.store()
             self.call("admin.response", self._("Domain registration prices stored"), {})
@@ -499,8 +499,8 @@ class DomainsAdmin(Module):
         email = req.param("email")
         login = req.param("login")
         password = req.param("password")
-        config = self.app().config
         if req.param("ok"):
+            config = self.app().config_updater()
             config.set("domains.person-r", person_r)
             config.set("domains.person", person)
             config.set("domains.passport", passport)
@@ -514,16 +514,16 @@ class DomainsAdmin(Module):
             config.store()
             self.call("admin.response", self._("Personal data saved"), {})
         else:
-            person_r = config.get("domains.person-r")
-            person = config.get("domains.person")
-            passport = config.get("domains.passport")
-            birth_date = config.get("domains.birth-date")
-            address_r = config.get("domains.address-r")
-            p_addr = config.get("domains.p-addr")
-            phone = config.get("domains.phone")
-            email = config.get("domains.email")
-            login = config.get("domains.login")
-            password = config.get("domains.password")
+            person_r = self.conf("domains.person-r")
+            person = self.conf("domains.person")
+            passport = self.conf("domains.passport")
+            birth_date = self.conf("domains.birth-date")
+            address_r = self.conf("domains.address-r")
+            p_addr = self.conf("domains.p-addr")
+            phone = self.conf("domains.phone")
+            email = self.conf("domains.email")
+            login = self.conf("domains.login")
+            password = self.conf("domains.password")
         fields = []
         fields.append({"name": "person-r", "label": self._("Person name (in the native language)"), "value": person_r})
         fields.append({"name": "person", "label": self._("Person name (in English)"), "value": person})

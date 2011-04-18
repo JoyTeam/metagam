@@ -70,26 +70,30 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         if tag == "main":
             app = WebApplication(self.inst, tag, "ext")
             app.domain = self.inst.config["main_host"]
+            app.canonical_domain = "www.%s" % app.domain
             app.modules.load(["mg.constructor.admin.Constructor"])
             return app
         try:
             project = self.inst.int_app.obj(Project, tag)
         except ObjectNotFoundException:
-            project = None
-        if project:
+            app = None
+        else:
             domain = project.get("domain")
-            if domain is None:
+            if domain:
+                canonical_domain = "www.%s" % domain
+            else:
                 main_app = self.get_by_tag("main")
                 main_host = self.inst.config["main_host"]
                 projects_domain = main_app.config.get("constructor.projects-domain", main_host)
                 domain = "%s.%s" % (tag, projects_domain)
+                canonical_domain = domain
             app = WebApplication(self.inst, tag, "ext")
             app.hooks.dynamic = True
             app.domain = domain
+            app.canonical_domain = canonical_domain
             app.project = project
             app.modules.load(["mg.constructor.project.ConstructorProject"])
-            return app
-        return None
+        return app
 
     def added(self, app):
         project = getattr(app, "project", None)
@@ -125,6 +129,16 @@ class MultiapplicationWebDaemon(WebDaemon):
     def req_handler(self, request, group, hook, args):
         host = request.host()
         app = self.inst.appfactory.get_by_domain(host)
+        if host != app.canonical_domain:
+            if group == "index":
+                url = "/"
+            else:
+                url = "/%s" % group
+                if hook != "index":
+                    url = "%s/%s" % (url, hook)
+                    if args != "":
+                        url = "%s/%s" % (url, args)
+            return request.redirect("http://%s%s" % (app.canonical_domain, url))
         if app is None:
             return request.redirect("http://www.%s" % str(self.inst.config["main_host"]))
         try:

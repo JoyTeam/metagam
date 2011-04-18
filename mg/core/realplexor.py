@@ -342,7 +342,7 @@ class RealplexorAdmin(Module):
         req = self.req()
         realplexor = req.param("realplexor")
         if req.param("ok"):
-            config = self.app().config
+            config = self.app().config_updater()
             config.set("cluster.realplexor", realplexor)
             config.store()
             self.call("admin.response", self._("Settings stored"), {})

@@ -284,7 +284,7 @@ class ForumAdmin(Module):
             cat["order"] = float(order)
             cat["default_subscribe"] = True if default_subscribe else False
             cat["manual_date"] = True if manual_date else False
-            conf = self.app().config
+            conf = self.app().config_updater()
             conf.set("forum.categories", categories)
             conf.store()
             self.call("admin.redirect", "forum/categories")
@@ -369,7 +369,7 @@ class ForumAdmin(Module):
         if cat is None:
             self.call("admin.redirect", "forum/categories")
         categories = [c for c in self.call("forum.categories") if c["id"] != cat["id"]]
-        conf = self.app().config
+        conf = self.app().config_updater()
         conf.set("forum.categories", categories)
         conf.store()
         list = self.objlist(ForumTopicList, query_index="category-created", query_equal=cat["id"])
@@ -881,7 +881,7 @@ class Forum(Module):
         if cats is None:
             cats = []
             self.call("forum-admin.init-categories", cats)
-            conf = self.app().config
+            conf = self.app().config_updater()
             conf.set("forum.categories", cats)
             conf.store()
         cats.sort(key=itemgetter("order"))

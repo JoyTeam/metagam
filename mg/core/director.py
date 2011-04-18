@@ -155,7 +155,7 @@ class Director(Module):
         config = self.int_app().config
         ver = config.get("application.version", 0) + 1
         config.set("application.version", ver)
-        config.store(notify=False)
+        config.store()
         # reloading ourselves
         result = self.director_reload()
         req = self.req()

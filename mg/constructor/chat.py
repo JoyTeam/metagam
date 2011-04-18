@@ -29,8 +29,8 @@ class Chat(Module):
 
     def chat_config(self):
         req = self.req()
-        config = self.app().config
         if req.param("ok"):
+            config = self.app().config_updater()
             errors = {}
             location_separate = True if req.param("location-separate") else False
             config.set("chat.location-separate", location_separate)
@@ -50,9 +50,9 @@ class Chat(Module):
             config.store()
             self.call("admin.response", self._("Chat configuration stored"), {})
         else:
-            location_separate = config.get("chat.location-separate")
-            debug_channel = config.get("chat.debug-channel")
-            trade_channel = config.get("chat.trade-channel")
+            location_separate = self.conf("chat.location-separate")
+            debug_channel = self.conf("chat.debug-channel")
+            trade_channel = self.conf("chat.trade-channel")
             chatmode = self.chatmode()
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},

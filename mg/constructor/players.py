@@ -88,7 +88,7 @@ class Characters(Module):
                             del fld["deleted"]
                         except KeyError:
                             pass
-                    config = self.app().config
+                    config = self.app().config_updater()
                     config.set("auth.char_form", character_form)
                     config.store()
                     self.call("auth.char-form-changed")
@@ -199,7 +199,7 @@ class Characters(Module):
                 character_form = [fld for fld in character_form if fld["code"] != val["code"]]
                 character_form.append(val)
                 character_form.sort(cmp=lambda x, y: cmp(x.get("order"), y.get("order")) or cmp(x.get("name"), y.get("name")))
-                config = self.app().config
+                config = self.app().config_updater()
                 config.set("auth.char_form", character_form)
                 config.store()
                 self.call("auth.char-form-changed")

@@ -149,12 +149,12 @@ class ProjectDashboard(Module):
 
     def ext_constructor_settings(self):
         req = self.req()
-        config = self.main_app().config
         invitations = True if req.param("invitations") else False
         moderator_email = req.param("moderator_email")
         projects_domain = req.param("projects_domain")
         if req.param("ok"):
             changed = False
+            config = self.main_app().config_updater()
             if config.get("constructor.invitations") != invitations:
                 self.call("admin.update_menu")
             config.set("constructor.invitations", invitations)
@@ -163,6 +163,7 @@ class ProjectDashboard(Module):
             config.store()
             self.call("admin.response", self._("Constructor settings stored"), {})
         else:
+            config = self.main_app().config
             invitations = config.get("constructor.invitations")
             moderator_email = config.get("constructor.moderator-email")
             projects_domain = config.get("constructor.projects-domain", self.app().inst.config["main_host"])
