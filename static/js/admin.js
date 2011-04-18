@@ -88,7 +88,7 @@ function adm_response(res)
 				var adv = res.advice[i];
 				advicecontent.add({
 					title: adv.title,
-					html: adv.content,
+					html: '<h1>' + adv.title + '</h1>' + adv.content,
 					bodyCfg: {
 						cls: adv.lst ? 'admin-advice-body-last' : 'admin-advice-body'
 					},

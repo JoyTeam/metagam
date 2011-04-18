@@ -37,6 +37,9 @@ class ConstructorProject(Module):
                 "mg.constructor.interface.Dynamic",
                 "mg.constructor.interface.Interface",
                 "mg.constructor.design.DesignMod",
+                "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
+                "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
+                #"mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"
             ])
         return lst
 
@@ -64,6 +67,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
+        self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -74,6 +78,10 @@ class ConstructorProjectAdmin(Module):
         project = self.app().project
         if project.get("inactive"):
             menu[:] = [ent for ent in menu if ent.get("leaf")]
+        else:
+            req = self.req()
+            if req.has_access("project.admin"):
+                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "ord": -20})
 
     def project_destroy(self):
         if self.app().project.get("inactive"):
@@ -100,3 +108,8 @@ class ConstructorProjectAdmin(Module):
         cats.append({"id": uuid4().hex, "topcat": self._("Reallife"), "title": self._("Art"), "description": self._("Poems, prose, pictures, photos, music about the game"), "order": 90.0})
         cats.append({"id": uuid4().hex, "topcat": self._("Trading"), "title": self._("Services"), "description": self._("Any game services: mercenaries, guardians, builders etc."), "order": 100.0})
         cats.append({"id": uuid4().hex, "topcat": self._("Trading"), "title": self._("Market"), "description": self._("Market place to sell and by any item"), "order": 110.0})
+
+    def game_dashboard(self):
+        vars = {
+        }
+        self.call("admin.response_template", "admin/game/dashboard.html", vars)

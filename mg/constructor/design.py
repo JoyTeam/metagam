@@ -840,9 +840,6 @@ class DesignMod(Module):
     def child_modules(self):
         return [
             "mg.constructor.design.DesignAdmin",
-            "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
-            "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
-            "mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"
         ]
 
     def parse(self, design, template, content, vars):
@@ -1104,6 +1101,11 @@ class IndexPageAdmin(Module):
         self.rhook("admin-indexpage.validate", self.validate)
         self.rhook("admin-indexpage.preview-data", self.preview_data)
         self.rhook("admin-indexpage.generators", self.generators)
+        self.rhook("advice-admin-game.dashboard", self.advice)
+
+    def advice(self, args, advice):
+        if not self.conf("indexpage.design"):
+            advice.append({"title": self._("Index page design"), "content": self._('Index page design of your game is not configured. Index page is the face of your game. It\'s the first that players see when they come. You can upload your own design or select one from the catalog. <hook:admin.link href="indexpage/design" title="Open configuration" />')})
 
     def headmenu_design(self, args):
         if args == "":
@@ -1112,7 +1114,7 @@ class IndexPageAdmin(Module):
             return self.call("design-admin.headmenu", "indexpage", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "admin_index": not self.conf("indexpage.design"), "order": 1})
+        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "order": 1})
 
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
@@ -1249,6 +1251,11 @@ class SocioInterface(Module):
         self.rhook("forum.vars-topic", self.forum_vars_topic)
         self.rhook("forum.vars-tags", self.forum_vars_tags)
         self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
+        self.rhook("advice-admin-game.dashboard", self.advice)
+
+    def advice(self, args, advice):
+        if not self.conf("sociointerface.design"):
+            advice.append({"title": self._("Socio interface design"), "content": self._('Socio interface design of your game is not configured. Socio interface is shown when forum, library or any other external interface is being accessed. You can upload your own design or select one from the catalog. <hook:admin.link href="sociointerface/design" title="Open configuration" />')})
 
     def templates(self):
         output = cStringIO.StringIO()
@@ -1306,7 +1313,7 @@ class SocioInterfaceAdmin(Module):
             return self.call("design-admin.headmenu", "sociointerface", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "admin_index": not self.conf("sociointerface.design"), "order": 3})
+        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "order": 3})
 
     def ext_design(self):
         self.call("design-admin.editor", "sociointerface")
@@ -1552,6 +1559,11 @@ class GameInterfaceAdmin(Module):
         self.rhook("admin-gameinterface.generators", self.generators)
         self.rhook("admin-gameinterface.previews", self.previews)
         self.rhook("admin-gameinterface.preview", self.preview)
+        self.rhook("advice-admin-game.dashboard", self.advice)
+
+    def advice(self, args, advice):
+        if not self.conf("gameinterface.design"):
+            advice.append({"title": self._("Game interface design"), "content": self._('Game interface design of your game is not configured. Game interface is a screen than player sees after entering the game. You can upload your own design or select one from the catalog. <hook:admin.link href="gameinterface/design" title="Open configuration" />')})
 
     def headmenu_design(self, args):
         if args == "":
@@ -1560,7 +1572,7 @@ class GameInterfaceAdmin(Module):
             return self.call("design-admin.headmenu", "gameinterface", args)
 
     def menu_design_index(self, menu):
-        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "admin_index": not self.conf("gameinterface.design"), "order": 2})
+        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "order": 2})
 
     def ext_design(self):
         self.call("design-admin.editor", "gameinterface")
