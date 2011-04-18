@@ -106,6 +106,24 @@ class CaptchaList(CassandraObjectList):
         kwargs["cls"] = Captcha
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class AutoLogin(CassandraObject):
+    _indexes = {
+        "valid_till": [[], "valid_till"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AutoLogin-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return AutoLogin._indexes
+
+class AutoLoginList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AutoLogin-"
+        kwargs["cls"] = AutoLogin
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Sessions(Module):
     "The mostly used authentication functions. It must load very fast"
     def register(self):
@@ -222,6 +240,7 @@ class Interface(Module):
         self.rhook("ext-admin-auth.user-dashboard", self.ext_user_dashboard, priv="users")
         self.rhook("ext-admin-auth.user-lastreg", self.ext_user_lastreg, priv="users")
         self.rhook("headmenu-admin-auth.user-dashboard", self.headmenu_user_dashboard)
+        self.rhook("auth.autologin", self.autologin)
 
     def schedule(self, sched):
         sched.add("auth.cleanup", "5 1 * * *", priority=10)
@@ -233,12 +252,15 @@ class Interface(Module):
         captchas.remove()
         users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
         users.remove()
+        autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
+        autologins.remove()
 
     def objclasses_list(self, objclasses):
         objclasses["User"] = (User, UserList)
         objclasses["UserPermissions"] = (UserPermissions, UserPermissionsList)
         objclasses["Session"] = (Session, SessionList)
         objclasses["Captcha"] = (Captcha, CaptchaList)
+        objclasses["AutoLogin"] = (AutoLogin, AutoLoginList)
 
     def ext_register(self):
         req = self.req()
@@ -1073,6 +1095,13 @@ class Interface(Module):
             "tables": tables
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def autologin(self, user_uuid, interval=60):
+        autologin = self.obj(AutoLogin, data={})
+        autologin.set("user", user_uuid)
+        autologin.set("valid_till", "%020d" % (time.time() + interval))
+        autologin.store()
+        return autologin.uuid
 
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 

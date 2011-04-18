@@ -65,24 +65,15 @@ class ConstructorProjectAdmin(Module):
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
 
-    def menu_root_index(self, menu):
-        a = [menu]
-        req = self.req()
-        project = self.app().project
-        if not project.get("admin_confirmed"):
-            if project.get("domain") and req.has_access("project.admin"):
-                admin = self.obj(User, req.user())
-                project.set("admin_confirmed", admin.uuid)
-                project.store()
-                self.call("project.admin_confirmed", admin)
-                self.call("cluster.appconfig_changed")
-                self.call("web.redirect", "/admin")
-            menu[:] = [ent for ent in menu if ent.get("leaf")]
-
     def menu_top_list(self, topmenu):
         req = self.req()
         if self.app().project.get("inactive") and req.has_access("project.admin"):
             topmenu.append({"href": "/admin-project/destroy", "text": self._("Destroy this game"), "tooltip": self._("You can destroy your game while not created")})
+
+    def menu_root_index(self, menu):
+        project = self.app().project
+        if project.get("inactive"):
+            menu[:] = [ent for ent in menu if ent.get("leaf")]
 
     def project_destroy(self):
         if self.app().project.get("inactive"):

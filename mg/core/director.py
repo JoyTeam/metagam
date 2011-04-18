@@ -244,7 +244,7 @@ class Director(Module):
             for st in lst:
                 if st.get("ver") >= ver:
                     reloaded += 1
-            if reloaded > len(lst):
+            if reloaded >= len(lst):
                 self.info("Hard reload to version %s completed", ver)
                 self.app().inst.reloading_hard = 0
                 return

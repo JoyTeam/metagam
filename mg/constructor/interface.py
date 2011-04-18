@@ -102,6 +102,8 @@ class Interface(Module):
             else:
                 player = self.obj(Player, userobj.uuid)
                 return self.game_cabinet(player)
+        if self.app().project.get("inactive"):
+            self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
         interface = self.conf("indexpage.design")
         design = self.obj(Design, interface) if interface else None
         project = self.app().project

@@ -770,29 +770,21 @@ class ApplicationConfigUpdater(object):
     def __init__(self, app):
         self.app = app
         self.params = {}
-        self.dirty = False
 
     def set(self, param, value):
-        if self.app.config.get(param) == value:
-            try:
-                del self.params[param]
-            except KeyError:
-                pass
-        else:
-            self.params[param] = value
+        self.params[param] = value
 
     def store(self, update_hooks=True, notify=True):
         if len(self.params):
             config = self.app.config
             for key, value in self.params.iteritems():
-                print "applying conf %s=%s" % (key, value)
                 config.set(key, value)
             if update_hooks:
+                self.app.store_config_hooks(notify)
+            else:
                 config.store()
                 if notify:
                     self.hooks.call("cluster.appconfig_changed")
-            else:
-                self.app.store_config_hooks(notify)
             self.params = {}
 
 class Application(object):

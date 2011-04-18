@@ -17,10 +17,6 @@ new Ext.Panel({
 	buttons: [{
 		text: gt.gettext('Previous'),
 		handler: function() { adm('wizard/call/[%wizard%]/prev') }
-	}, {
-		text: gt.gettext('Next'),
-		handler: function() { adm('wizard/call/[%wizard%]/next') },
-		hidden: [%next_hidden%]
 	}]
 });
 </script>

@@ -2,7 +2,7 @@
 
 from mg import *
 from mg.constructor import *
-from mg.core.auth import Captcha
+from mg.core.auth import Captcha, AutoLogin
 from mg.constructor.players import CharacterForm
 import hashlib
 import copy
@@ -177,9 +177,10 @@ class Auth(Module):
         self.rhook("auth.login-before-activate", self.login_before_activate)
         self.rhook("ext-player.activated", self.player_activated, priv="public")
         self.rhook("character.form", self.character_form)
+        self.rhook("ext-auth.autologin", self.ext_autologin, priv="public")
 
     def require_login(self):
-        if self.app().project.get("admin_confirmed"):
+        if not self.app().project.get("inactive"):
             req = self.req()
             session = req.session()
             if not session or not session.get("user") or not session.get("authorized"):
@@ -191,29 +192,17 @@ class Auth(Module):
         raise Hooks.Return(None)
 
     def require_permission(self, priv):
-        if not self.app().project.get("admin_confirmed"):
+        if self.app().project.get("inactive"):
             raise Hooks.Return(None)
 
     def auth_permissions(self, user_id):
-        if not self.app().project.get("admin_confirmed"):
+        if self.app().project.get("inactive"):
             raise Hooks.Return({
                 "admin": True,
                 "project.admin": True
             })
 
     def auth_registered(self, user):
-        req = self.req()
-        project = self.app().project
-        if not project.get("admin_confirmed") and project.get("domain") and req.has_access("project.admin"):
-            project.set("admin_confirmed", True)
-            project.set("moderation", 1)
-            project.store()
-            self.app().store_config_hooks()
-            # Sending project to moderation
-            email = self.main_app().config.get("constructor.moderator-email")
-            if email:
-                content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
-                self.main_app().call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s" % project.get("title_short")), content)
         raise Hooks.Return()
 
     def auth_activated(self, user, redirect):
@@ -283,7 +272,7 @@ class Auth(Module):
                                 multichar_price = float(multichar_price)
                                 config.set("auth.multichar_price", multichar_price)
                                 config.set("auth.multichar_currency", multichar_currency)
-                config.set("auth.cabinet", True if req.param("v_cabinet") else False)
+                config.set("auth.cabinet", True if req.param("v_cabinet") == "1" else False)
             # email activation
             activate_email = True if req.param("activate_email") else False
             config.set("auth.activate_email", activate_email)
@@ -306,7 +295,7 @@ class Auth(Module):
             # processing
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
-            self.app().store_config_hooks()
+            config.store()
             self.call("admin.response", self._("Settings stored"), {})
         else:
             multicharing = self.conf("auth.multicharing", 0)
@@ -1000,4 +989,17 @@ class Auth(Module):
             self.call("stream.login", session.uuid, chars[0].uuid)
         if self.conf("auth.allow-create-first-character"):
             self.call("game.error", self._("No characters assigned to this player"))
+        self.call("web.post_redirect", "/", {"session": session.uuid})
+
+    def ext_autologin(self):
+        req = self.req()
+        session = req.session(True)
+        try:
+            autologin = self.obj(AutoLogin, req.args)
+        except ObjectNotFoundException:
+            pass
+        else:
+            self.info("Autologging in character %s", autologin.get("user"))
+            self.call("stream.login", session.uuid, autologin.get("user"))
+            autologin.remove()
         self.call("web.post_redirect", "/", {"session": session.uuid})

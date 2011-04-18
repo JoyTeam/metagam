@@ -58,6 +58,7 @@ class Constructor(Module):
         self.rhook("indexpage.render", self.indexpage_render)
         self.rhook("telegrams.params", self.telegrams_params)
         self.rhook("email.sender", self.email_sender)
+        self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -271,24 +272,11 @@ class Constructor(Module):
                 if title is None:
                     title = self._("Untitled game")
                 href = None
-                domain = project.get("domain")
-                if domain is None:
+                if project.get("inactive"):
                     domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
                     href = "http://%s/admin" % domain
                 else:
-                    domain = "www.%s" % domain
-                    if not project.get("admin_confirmed"):
-                        app = self.app().inst.appfactory.get_by_tag(project.uuid)
-                        admins = app.objlist(CharacterList, query_index="admin", query_equal="1")
-                        admins.load()
-                        for admin in admins:
-                            character_user = app.obj(User, admin.uuid)
-                            player_user = app.obj(User, admin.get("player"))
-                            if player_user.get("inactive"):
-                                href = "http://%s/auth/activate/%s?code=%s&okget=1" % (domain, player_user.uuid, player_user.get("activation_code"))
-                        comment = self._("Congratulations! Your game was registered successfully. Now you can enter administration panel and configure your game. Don't worry if you can't open your game right now. DNS system is quite slow and it may take several hours or even days for your domain to work.")
-                if href is None:
-                    href = "http://%s" % domain
+                    href = "/constructor/game/%s" % project.uuid
                 logo = project.get("logo")
                 if logo is None:
                     logo = "/st/constructor/cabinet/untitled.gif"
@@ -394,42 +382,30 @@ class Constructor(Module):
         app = inst.appfactory.get_by_tag(project.uuid)
         # setting up everything
         app.hooks.call("all.check")
-        # creating admin user
-        old_user = self.obj(User, req.user())
-        now_ts = "%020d" % time.time()
-        player = app.obj(Player)
-        player.set("created", self.now())
-        player_user = app.obj(User, player.uuid, {})
-        player_user.set("created", now_ts)
-        for field in ["email", "salt", "pass_reminder", "pass_hash"]:
-            player_user.set(field, old_user.get(field))
-        player_user.set("inactive", 1)
-        activation_code = uuid4().hex
-        player_user.set("activation_code", activation_code)
-        player_user.set("activation_redirect", "/admin")
-        # creating admin character
-        character = app.obj(Character)
-        character.set("created", self.now())
-        character.set("player", player.uuid)
-        character.set("admin", 1)
-        character_user = app.obj(User, character.uuid, {})
-        character_user.set("last_login", now_ts)
-        for field in ["name", "name_lower", "sex"]:
-            character_user.set(field, old_user.get(field))
-        character_form = app.obj(CharacterForm, character.uuid, {})
-        # storing
-        player.store()
-        player_user.store()
-        character.store()
-        character_user.store()
-        character_form.store()
-        # giving permissions
-        perms = app.obj(UserPermissions, character_user.uuid, {"perms": {"project.admin": True}})
-        perms.sync()
-        perms.store()
         # creating setup wizard
         app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
-        self.call("web.redirect", "http://%s/auth/activate/%s?okget=1&code=%s" % (app.domain, player_user.uuid, activation_code))
+        self.call("web.redirect", "http://%s/admin" % app.domain)
+
+    def constructor_game(self):
+        req = self.req()
+        try:
+            project = self.int_app().obj(Project, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        if project.get("owner") != req.user():
+            self.call("web.forbidden")
+        app = self.app().inst.appfactory.get_by_tag(project.uuid)
+        domain = project.get("domain")
+        if domain is None:
+            domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
+        else:
+            domain = "www.%s" % domain
+        admins = app.objlist(CharacterList, query_index="admin", query_equal="1")
+        if not len(admins):
+            self.call("web.redirect", "http://%s" % domain)
+        admin = admins[0]
+        autologin = app.hooks.call("auth.autologin", admin.uuid)
+        self.call("web.redirect", "http://%s/auth/autologin/%s" % (domain, autologin))
 
     def cleanup(self, tag):
         inst = self.app().inst
