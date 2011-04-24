@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-24 11:28+0400\n"
+"POT-Creation-Date: 2011-04-24 21:52+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,8 +53,8 @@ msgstr ""
 #: mg/socio/__init__.py:1037 mg/socio/__init__.py:1178
 #: mg/socio/__init__.py:1350 mg/socio/__init__.py:1591
 #: mg/socio/__init__.py:1673 mg/socio/__init__.py:2172
-#: mg/socio/__init__.py:2250 mg/socio/__init__.py:2287
-#: mg/socio/__init__.py:2305 mg/constructor/design.py:1269
+#: mg/socio/__init__.py:2252 mg/socio/__init__.py:2289
+#: mg/socio/__init__.py:2307 mg/constructor/design.py:1269
 #: mg/constructor/design.py:1275 mg/constructor/design.py:1334
 msgid "Forum categories"
 msgstr ""
@@ -259,7 +259,7 @@ msgstr ""
 msgid "Upload an image"
 msgstr ""
 
-#: mg/socio/__init__.py:700 mg/core/web.py:803
+#: mg/socio/__init__.py:700 mg/core/web.py:805
 msgid "Image"
 msgstr ""
 
@@ -289,8 +289,8 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: mg/socio/__init__.py:861 mg/socio/__init__.py:2283
-#: mg/socio/__init__.py:2288
+#: mg/socio/__init__.py:861 mg/socio/__init__.py:2285
+#: mg/socio/__init__.py:2290
 msgid "Subscribed topics"
 msgstr ""
 
@@ -385,7 +385,7 @@ msgstr ""
 msgid "Edit topic"
 msgstr ""
 
-#: mg/socio/__init__.py:1737 mg/core/web.py:781 mg/core/director.py:394
+#: mg/socio/__init__.py:1737 mg/core/web.py:783 mg/core/director.py:394
 #: mg/admin/__init__.py:242 mg/constructor/setup.py:188
 #: mg/constructor/setup.py:300
 msgid "Save"
@@ -495,32 +495,32 @@ msgstr ""
 msgid "by"
 msgstr ""
 
-#: mg/socio/__init__.py:2170 mg/socio/__init__.py:2255
+#: mg/socio/__init__.py:2170 mg/socio/__init__.py:2257
 msgid "Nothing found"
 msgstr ""
 
-#: mg/socio/__init__.py:2173 mg/socio/__init__.py:2254
-#: mg/socio/__init__.py:2306 mg/constructor/design.py:1294
+#: mg/socio/__init__.py:2173 mg/socio/__init__.py:2256
+#: mg/socio/__init__.py:2308 mg/constructor/design.py:1294
 msgid "Tags"
 msgstr ""
 
-#: mg/socio/__init__.py:2228 mg/socio/__init__.py:2241
+#: mg/socio/__init__.py:2230 mg/socio/__init__.py:2243
 msgid "open"
 msgstr ""
 
-#: mg/socio/__init__.py:2251
+#: mg/socio/__init__.py:2253
 msgid "results///Search"
 msgstr ""
 
-#: mg/socio/__init__.py:2285
+#: mg/socio/__init__.py:2287
 msgid "You have not subscribed to any topic"
 msgstr ""
 
-#: mg/socio/__init__.py:2339
+#: mg/socio/__init__.py:2341
 msgid "Read more"
 msgstr ""
 
-#: mg/socio/__init__.py:2340
+#: mg/socio/__init__.py:2342
 msgid "Comment"
 msgstr ""
 
@@ -658,79 +658,79 @@ msgstr ""
 msgid "{2:d}{3} {1}, {0}"
 msgstr ""
 
-#: mg/core/web.py:703 mg/core/web.py:713
+#: mg/core/web.py:705 mg/core/web.py:715
 msgid "Forbidden"
 msgstr ""
 
-#: mg/core/web.py:703
+#: mg/core/web.py:705
 msgid "Security failure: POST method required"
 msgstr ""
 
-#: mg/core/web.py:713
+#: mg/core/web.py:715
 msgid "Security failure: Valid Referer required"
 msgstr ""
 
-#: mg/core/web.py:791
+#: mg/core/web.py:793
 msgid "Bold"
 msgstr ""
 
-#: mg/core/web.py:792
+#: mg/core/web.py:794
 msgid "Italic"
 msgstr ""
 
-#: mg/core/web.py:793
+#: mg/core/web.py:795
 msgid "Underline"
 msgstr ""
 
-#: mg/core/web.py:794
+#: mg/core/web.py:796
 msgid "Strike"
 msgstr ""
 
-#: mg/core/web.py:795
+#: mg/core/web.py:797
 msgid "Quote"
 msgstr ""
 
-#: mg/core/web.py:796
+#: mg/core/web.py:798
 msgid "Red"
 msgstr ""
 
-#: mg/core/web.py:797
+#: mg/core/web.py:799
 msgid "Green"
 msgstr ""
 
-#: mg/core/web.py:798
+#: mg/core/web.py:800
 msgid "Blue"
 msgstr ""
 
-#: mg/core/web.py:799
+#: mg/core/web.py:801
 msgid "Dark green"
 msgstr ""
 
-#: mg/core/web.py:800
+#: mg/core/web.py:802
 msgid "Magenta"
 msgstr ""
 
-#: mg/core/web.py:801
+#: mg/core/web.py:803
 msgid "Yellow"
 msgstr ""
 
-#: mg/core/web.py:802
+#: mg/core/web.py:804
 msgid "Orange"
 msgstr ""
 
-#: mg/core/web.py:804
+#: mg/core/web.py:806
 msgid "Insert image"
 msgstr ""
 
-#: mg/core/web.py:805
+#: mg/core/web.py:807
 msgid "Translit"
 msgstr ""
 
-#: mg/core/web.py:806
+#: mg/core/web.py:808
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/web.py:807
+#: mg/core/web.py:809
 msgid "Smiles"
 msgstr ""
 

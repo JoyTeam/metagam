@@ -19,7 +19,7 @@ posts_per_page = 20
 topics_per_page = 20
 max_word_len = 30
 max_tag_len = 30
-search_results_per_page = 5
+search_results_per_page = 20
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
@@ -484,7 +484,6 @@ class Socio(Module):
         for word, count in cnt.iteritems():
             mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), timestamp=timestamp))))
             mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), timestamp=timestamp))))
-            self.debug(u"%s//%s" % (word, uuid))
             if len(mutations_search) >= 1000:
                 self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 mutations_search = []
@@ -513,7 +512,6 @@ class Socio(Module):
             start = (query_search + "//").encode("utf-8")
             finish = (query_search + "/=").encode("utf-8")
             objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-%s" % (app_tag, group), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
-            self.debug(u"%s (%s-%s): %s" % (word, start.decode("utf-8"), finish.decode("utf-8"), objs))
             if render_objects is None:
                 render_objects = objs
             else:
@@ -2198,9 +2196,11 @@ class Forum(Module):
         query = req.args.lower().strip()
         words = list(self.call("socio.word_extractor", query))
         render_objects = self.call("socio.fulltext_search", "ForumSearch", words)
+        if len(render_objects) > search_results_per_page:
+            del render_objects[search_results_per_page:]
         posts = []
-        while len(posts) < search_results_per_page and len(render_objects):
-            get_cnt = search_results_per_page-len(render_objects)
+        while len(render_objects):
+            get_cnt = 1000
             if get_cnt > len(render_objects):
                 get_cnt = len(render_objects)
             bucket = [render_objects[i][1] for i in range(0, get_cnt)]
