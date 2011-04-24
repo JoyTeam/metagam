@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-18 17:54+0400\n"
-"PO-Revision-Date: 2011-04-18 17:59+0300\n"
+"POT-Creation-Date: 2011-04-24 11:28+0400\n"
+"PO-Revision-Date: 2011-04-24 11:28+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -376,12 +376,8 @@ msgstr "Содержание"
 
 #: mg/socio/__init__.py:1172
 #: mg/socio/__init__.py:1735
-#: mg/socio/__init__.py:2173
-#: mg/socio/__init__.py:2254
-#: mg/socio/__init__.py:2306
-#: mg/constructor/design.py:1294
-msgid "Tags"
-msgstr "Теги"
+msgid "Tags (delimited with commas)"
+msgstr "Теги (разделяются запятыми)"
 
 #: mg/socio/__init__.py:1352
 #: mg/socio/__init__.py:1593
@@ -570,6 +566,13 @@ msgstr "от"
 #: mg/socio/__init__.py:2255
 msgid "Nothing found"
 msgstr "Ничего не найдено"
+
+#: mg/socio/__init__.py:2173
+#: mg/socio/__init__.py:2254
+#: mg/socio/__init__.py:2306
+#: mg/constructor/design.py:1294
+msgid "Tags"
+msgstr "Теги"
 
 #: mg/socio/__init__.py:2228
 #: mg/socio/__init__.py:2241

@@ -1169,7 +1169,7 @@ class Forum(Module):
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         if params.get("show_tags", True):
-            form.input(self._("Tags"), "tags", tags)
+            form.input(self._("Tags (delimited with commas)"), "tags", tags)
         self.call("forum.topic-form", None, form, "form")
         vars = {
             "category": cat,
@@ -1732,7 +1732,7 @@ class Forum(Module):
             form.input(self._("Subject"), "subject", subject)
             form.texteditor(None, "content", content)
             if params.get("show_tags", True):
-                form.input(self._("Tags"), "tags", tags)
+                form.input(self._("Tags (delimited with commas)"), "tags", tags)
             self.call("forum.topic-form", topic, form, "form")
         form.submit(None, None, self._("Save"))
         self.call("forum.response", form.html(), vars)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-18 17:54+0400\n"
+"POT-Creation-Date: 2011-04-24 11:28+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -330,9 +330,7 @@ msgid "Content"
 msgstr ""
 
 #: mg/socio/__init__.py:1172 mg/socio/__init__.py:1735
-#: mg/socio/__init__.py:2173 mg/socio/__init__.py:2254
-#: mg/socio/__init__.py:2306 mg/constructor/design.py:1294
-msgid "Tags"
+msgid "Tags (delimited with commas)"
 msgstr ""
 
 #: mg/socio/__init__.py:1352 mg/socio/__init__.py:1593
@@ -499,6 +497,11 @@ msgstr ""
 
 #: mg/socio/__init__.py:2170 mg/socio/__init__.py:2255
 msgid "Nothing found"
+msgstr ""
+
+#: mg/socio/__init__.py:2173 mg/socio/__init__.py:2254
+#: mg/socio/__init__.py:2306 mg/constructor/design.py:1294
+msgid "Tags"
 msgstr ""
 
 #: mg/socio/__init__.py:2228 mg/socio/__init__.py:2241
