@@ -391,6 +391,8 @@ class WebApplication(Application):
             res = res.content
         if getattr(request, "cache", None):
             res = ["".join([str(chunk) for chunk in res])]
+            #print "storing page cache page%s" % urldecode(request.uri()).encode("utf-8")
+            self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
             mcid = getattr(request, "web_cache_mcid", None)
             if mcid:
                 self.mc.set("page%s" % mg.core.tools.urldecode(request.uri()).encode("utf-8"), res[0])
