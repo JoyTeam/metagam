@@ -484,6 +484,7 @@ class Socio(Module):
         for word, count in cnt.iteritems():
             mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), timestamp=timestamp))))
             mutations_list.append(Mutation(ColumnOrSuperColumn(Column(name=word.encode("utf-8"), value=str(count), timestamp=timestamp))))
+            self.debug(u"%s//%s" % (word, uuid))
             if len(mutations_search) >= 1000:
                 self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 mutations_search = []
@@ -512,6 +513,7 @@ class Socio(Module):
             start = (query_search + "//").encode("utf-8")
             finish = (query_search + "/=").encode("utf-8")
             objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-%s" % (app_tag, group), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
+            self.debug(u"%s (%s-%s): %s" % (word, start.decode("utf-8"), finish.decode("utf-8"), objs))
             if render_objects is None:
                 render_objects = objs
             else:
@@ -1723,7 +1725,7 @@ class Forum(Module):
                         topic_content.store()
                         self.call("forum.topic-form", topic, form, "store")
                         self.call("socio.fulltext_remove", "ForumSearch", topic.uuid)
-                        self.call("socio.fulltext_store", "ForumSearch", topic.uuid, self.call("socio.word_extractor", content))
+                        self.call("socio.fulltext_store", "ForumSearch", topic.uuid, list(chain(self.call("socio.word_extractor", subject), self.call("socio.word_extractor", content))))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
                 subject = topic.get("subject")
