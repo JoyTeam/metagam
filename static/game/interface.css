@@ -1,11 +1,11 @@
-#default-topmenu-box { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
+#topmenu-box { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
 #topmenu-box-content { padding-top: 10px; font-size: 18px }
-#default-chat-channels { height: 100%; background: #ffffff }
+#chat-channels { height: 100%; background: #ffffff }
 #chat-channel-buttons { padding: 10px 10px 0 10px }
-#default-chat-box { height: 100%; background: #ffffff; border-top: solid 1px #f0f0f0; overflow: auto }
+#chat-box { height: 100%; background: #ffffff; border-top: solid 1px #f0f0f0; overflow: auto }
 #chat-box-content { padding: 0 15px 0 10px }
-#default-chat-input { height: 100%; padding: 10px 15px 0 10px; background: #ffffff; border-top: solid 1px #f0f0f0 }
+#chat-input { height: 100%; padding: 10px 15px 0 10px; background: #ffffff; border-top: solid 1px #f0f0f0 }
 #chat-input-control { width: 100%; }
-#default-roster-box { height: 100%; overflow: auto; background: #ffffff }
+#roster-box { height: 100%; overflow: auto; background: #ffffff }
 #roster-box-content { padding: 10px 15px 0 10px }
-#default-margin-left, #default-margin-right, #default-margin-top, #default-margin-bottom { text-align: center }
+#margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }

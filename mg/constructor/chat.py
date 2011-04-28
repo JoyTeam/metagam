@@ -3,6 +3,7 @@ import datetime
 import re
 
 re_chat_characters = re.compile(r'(?:\[(chf|ch):([a-f0-9]{32})\])')
+re_loc_channel = re.compile(r'^loc-')
 
 class Chat(Module):
     def register(self):
@@ -75,21 +76,29 @@ class Chat(Module):
             # channels enabled
             if self.conf("chat.location-separate"):
                 channels.append({
-                    "id": "location",
-                    "short_name": self._("channel///Location")
+                    "id": "loc",
+                    "short_name": self._("channel///Location"),
+                    "writable": True,
+                    "switchable": True
                 })
+            else:
+                channels[0]["writable"] = True
             if self.conf("chat.trade-channel"):
                 channels.append({
-                    "id": "trade",
+                    "id": "trd",
                     "short_name": self._("channel///Trade"),
-                    "switchable": True
+                    "switchable": True,
+                    "writable": True
                 })
             if self.conf("chat.debug-channel"):
                 channels.append({
-                    "id": "debug",
+                    "id": "dbg",
                     "short_name": self._("channel///Debug"),
-                    "switchable": True
+                    "switchable": True,
+                    "writable": True
                 })
+        else:
+            channels[0]["writable"] = True
         return channels
 
     def gameinterface_render(self, vars, design):
@@ -97,7 +106,10 @@ class Chat(Module):
         # list of channels
         chatmode = self.chatmode()
         channels = self.channels(chatmode)
-        if chatmode and len(channels) >= 2:
+        for ch in channels:
+            vars["js_init"].append("Chat.channel_new({id: '%s', title: '%s'});" % (ch["id"], jsencode(ch["short_name"])))
+        vars["js_init"].append("Chat.mode = %d;" % chatmode)
+        if chatmode and len(channels):
             vars["layout"]["chat_channels"] = True
             buttons = []
             state = None
@@ -106,7 +118,8 @@ class Chat(Module):
                     buttons.append({
                         "id": ch["id"],
                         "state": "on" if ch["id"] == "main" else "off",
-                        "onclick": "return Chat.open_channel('%s');" % ch["id"],
+                        "onclick": "return Chat.tab_open('%s');" % ch["id"],
+                        "hint": ch["short_name"]
                     })
             elif chatmode == 2:
                 for ch in channels:
@@ -115,17 +128,20 @@ class Chat(Module):
                             "id": ch["id"],
                             "state": "on",
                             "onclick": "return Chat.toggle_channel('%s');" % ch["id"],
+                            "hint": ch["short_name"]
                         })
             if len(buttons):
                 for btn in buttons:
-                    filename = "chat-%s-%s.gif" % (btn["id"], btn["state"])
-                    if filename in design.get("files"):
+                    filename = "chat-%s" % btn["id"]
+                    if design and (("%s-on.gif" % filename) in design.get("files")) and (("%s-off.gif" % filename) in design.get("files")):
                         btn["image"] = "%s/%s" % (design.get("uri"), filename)
                     else:
-                        btn["image"] = "/st/game/chat/chat-channel-%s.gif" % btn["state"]
+                        btn["image"] = "/st/game/chat/chat-channel"
+                    vars["js_init"].append("Chat.button_images['%s'] = '%s';" % (btn["id"], btn["image"]))
                     btn["id"] = "chat-channel-button-%s" % btn["id"]
                 buttons[-1]["lst"] = True
                 vars["chat_buttons"] = buttons
+        vars["js_init"].append("Chat.tab_open('main');")
         vars["chat_channels"] = channels
 
     def gameinterface_advice_files(self, files):
@@ -183,6 +199,20 @@ class Chat(Module):
         if not kwargs.get("hide_time"):
             now = datetime.datetime.utcnow().strftime("%H:%M:%S")
             html = u'<span class="chat-msg-time">%s</span> %s' % (now, html)
-        # sending message
         kwargs["html"] = html
+        # channel
+        channel = kwargs.get("channel")
+        if not channel:
+            channel = "sys"
+        # store chat message
+        # translate channel name
+        if channel == "sys" or channel == "world":
+            channel = "main"
+        elif re_loc_channel.match(channel):
+            if self.conf("chat.location-separate"):
+                channel = "loc"
+            else:
+                channel = "main"
+        kwargs["channel"] = channel
+        # sending message
         self.call("stream.packet", "global", "chat", "msg", **kwargs)

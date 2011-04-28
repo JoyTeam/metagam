@@ -70,7 +70,7 @@ Stream.packet_received = function(pkt) {
 	if (!method)
 		return;
 	try {
-		method(pkt);
+		(method.createDelegate(handler))(pkt);
 	} catch (e) {
 		Ext.Msg.alert('Exception ' + e);
 	}

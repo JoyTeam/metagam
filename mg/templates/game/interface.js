@@ -4,12 +4,15 @@ Game.app = '[%app%]';
 Game.domain = '[%domain%]';
 
 Game.fixupContentEl = function(el) {
+	var def = Ext.getDom('default-' + el.contentEl);
+	if (!def) {
+		Ext.alert('Missing element: default-' + el.contentEl);
+		return el;
+	}
 	if (Ext.getDom(el.contentEl)) {
-		var def = Ext.get('default-' + el.contentEl);
-		if (def)
-			def.remove();
+		Ext.get(def.id).remove();
 	} else {
-		el.contentEl = 'default-' + el.contentEl;
+		def.id = el.contentEl;
 	}
 	return el;
 };
