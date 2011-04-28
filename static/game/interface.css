@@ -8,3 +8,4 @@
 #chat-input-control { width: 100%; }
 #default-roster-box { height: 100%; overflow: auto; background: #ffffff }
 #roster-box-content { padding: 10px 15px 0 10px }
+#default-margin-left, #default-margin-right, #default-margin-top, #default-margin-bottom { text-align: center }

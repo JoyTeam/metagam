@@ -47,7 +47,7 @@
 		<div class="x-hidden" id="default-topmenu-box">
 			<a href="javascript:void(0)" onclick="Game.reload(); return false">reload</a> &bull;
 			<a href="javascript:void(0)" onclick="Game.logout(); return false">logout</a> &bull;
-			<a href="/admin" target="_blank">admin</span>
+			<a href="/admin" target="_blank">admin</a>
 		</div>
 		<div class="x-hidden" id="default-chat-channels">
 			<div id="chat-channel-buttons">[%foreach btn in chat_buttons%]<img src="[%btn.image%]" id="[%btn.id%]" onclick="[%btn.onclick%]" class="clickable" />[%end%]</div>
@@ -55,5 +55,9 @@
 		<div class="x-hidden" id="default-chat-box"><div id="chat-box-content">chatbox</div></div>
 		<div class="x-hidden" id="default-chat-input"><table style="width: 100%"><tr><td><form><input id="chat-input-control" /></form></td><td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td></tr></table></div>
 		<div class="x-hidden" id="default-roster-box"><div id="roster-box-content"></div></div>
+		<div class="x-hidden" id="default-margin-left">m<br />a<br />r<br />g<br />i<br />n<br />-<br />l<br />e<br />f<br />t</div>
+		<div class="x-hidden" id="default-margin-right">m<br />a<br />r<br />g<br />i<br />n<br />-<br />r<br />i<br />g<br />h<br />t</div>
+		<div class="x-hidden" id="default-margin-top">margin-top</div>
+		<div class="x-hidden" id="default-margin-bottom">margin-bottom</div>
 	</body>
 </html>
