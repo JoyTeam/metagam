@@ -24,32 +24,38 @@ Chat.channel_new = function(ch) {
 			tag: 'div'
 		},
 		renderTo: 'chat-box-content',
-		html: 'Initial content for channel ' + ch.id,
 		hidden: true
 	});
 	ch.btn = Ext.get('chat-channel-button-' + ch.id);
 };
 
 Chat.tab_open = function(id) {
-	if (id == this.active_channel)
-		return;
-	var ch = this.channels_by_id[id];
-	if (!ch)
-		return;
-	if (this.active_channel) {
-		var old_ch = this.channels_by_id[this.active_channel];
-		if (old_ch) {
-			old_ch.content.hide();
-			if (this.mode == 1 && old_ch.btn)
-				old_ch.btn.dom.src = this.button_images[this.active_channel] + '-off.gif';
+	if (id != this.active_channel) {
+		var ch = this.channels_by_id[id];
+		if (ch) {
+			if (this.active_channel) {
+				var old_ch = this.channels_by_id[this.active_channel];
+				if (old_ch) {
+					old_ch.content.hide();
+					if (this.mode == 1 && old_ch.btn)
+						old_ch.btn.dom.src = this.button_images[this.active_channel] + '-off.gif';
+				}
+			}
+			this.active_channel = id;
+			ch.content.show();
+			this.content.el.scroll('down', 1000000, false);
+			if (this.mode == 1 && ch.btn) {
+				ch.btn.dom.src = this.button_images[id] + '-on.gif';
+			}
 		}
 	}
-	this.active_channel = id;
-	ch.content.show();
-	this.content.el.scroll('down', 1000000, false);
-	if (this.mode == 1 && ch.btn) {
-		ch.btn.dom.src = this.button_images[id] + '-on.gif';
-	}
+	this.focus();
+};
+
+Chat.focus = function() {
+	var cht = Ext.getCmp('chat-input-control');
+	if (cht)
+		cht.focus();
 };
 
 Chat.msg = function(pkt) {
@@ -71,27 +77,24 @@ Chat.submit = function() {
 		url: '/chat/post',
 		method: 'POST',
 		params: {
-			text: val
+			text: val,
+			channel: this.active_channel
 		},
 		success: (function (response, opts) {
 			this.input.enable();
+			this.focus();
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
 					this.input.el.dom.value = '';
 				}
 			}
-			this.input.focus();
 		}).createDelegate(this),
 		failure: (function (response, opts) {
 			this.input.enable();
-			this.input.focus();
+			this.focus();
 		}).createDelegate(this)
 	});
-};
-
-Chat.focus = function() {
-	this.input.focus();
 };
 
 wait(['realplexor-stream'], function() {

@@ -156,7 +156,7 @@ class Chat(Module):
     def post(self):
         req = self.req()
         user = req.user()
-        self.call("chat.message", html=u"[[chf:%s]] %s" % (user, htmlescape(req.param("text"))))
+        self.call("chat.message", html=u"[[chf:%s]] %s" % (user, htmlescape(req.param("text"))), channel=req.param("channel"))
         self.call("web.response_json", {"ok": True})
 
     def message(self, **kwargs):
