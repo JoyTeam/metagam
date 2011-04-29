@@ -37,3 +37,17 @@ class ConstructorModule(Module):
                 obj = Player(self.app(), uuid)
                 players[uuid] = obj
                 return obj
+
+    @property
+    def myself(self):
+        req = self.req()
+        try:
+            return req._myself
+        except AttributeError:
+            user = req.user()
+            if user:
+                req._myself = self.character(req.user())
+            else:
+                req._myself = None
+            return req._myself
+

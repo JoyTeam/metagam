@@ -4,7 +4,9 @@ import datetime
 import re
 
 re_chat_characters = re.compile(r'\[(chf|ch):([a-f0-9]{32})\]')
+re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
 re_loc_channel = re.compile(r'^loc-')
+re_valid_command = re.compile(r'^/(\S+)$')
 
 class Chat(ConstructorModule):
     def register(self):
@@ -46,6 +48,36 @@ class Chat(ConstructorModule):
                 errors["chatmode"] = self._("Invalid selection")
             else:
                 config.set("chat.channels-mode", chatmode)
+            # channel selection commands
+            if chatmode > 0:
+                cmd_wld = req.param("cmd-wld")
+                if cmd_wld != "":
+                    m = re_valid_command.match(cmd_wld)
+                    if m:
+                        config.set("chat.cmd-wld", m.group(1))
+                    else:
+                        errors["cmd-wld"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                else:
+                    config.set("chat.cmd-wld", "")
+                cmd_loc = req.param("cmd-loc")
+                if cmd_loc != "":
+                    m = re_valid_command.match(cmd_loc)
+                    if m:
+                        config.set("chat.cmd-loc", m.group(1))
+                    else:
+                        errors["cmd-loc"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                else:
+                    config.set("chat.cmd-loc", "")
+                if trade_channel:
+                    cmd_trd = req.param("cmd-trd")
+                    if cmd_trd != "":
+                        m = re_valid_command.match(cmd_trd)
+                        if m:
+                            config.set("chat.cmd-trd", m.group(1))
+                        else:
+                            errors["cmd-trd"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                    else:
+                        config.set("chat.cmd-trd", "")
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -56,11 +88,23 @@ class Chat(ConstructorModule):
             debug_channel = self.conf("chat.debug-channel")
             trade_channel = self.conf("chat.trade-channel")
             chatmode = self.chatmode()
+            cmd_wld = self.cmd_wld()
+            if cmd_wld != "":
+                cmd_wld = "/%s" % cmd_wld
+            cmd_loc = self.cmd_loc()
+            if cmd_loc != "":
+                cmd_loc = "/%s" % cmd_loc
+            cmd_trd = self.cmd_trd()
+            if cmd_trd != "":
+                cmd_trd = "/%s" % cmd_trd
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
             {"name": "debug-channel", "type": "checkbox", "label": self._("Debugging channel enabled"), "checked": debug_channel, "condition": "[chatmode]>0"},
             {"name": "trade-channel", "type": "checkbox", "label": self._("Trading channel enabled"), "checked": trade_channel, "condition": "[chatmode]>0"},
+            {"name": "cmd-wld", "label": self._("Chat command for writing to the entire world channel"), "value": cmd_wld, "condition": "[chatmode]>0"},
+            {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
+            {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
         ]
         self.call("admin.form", fields=fields)
 
@@ -154,11 +198,51 @@ class Chat(ConstructorModule):
                     files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["short_name"]})
                     files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["short_name"]})
 
+    def cmd_loc(self):
+        return self.conf("chat.cmd-loc", "loc")
+
+    def cmd_wld(self):
+        return self.conf("chat.cmd-wld", "wld")
+
+    def cmd_trd(self):
+        return self.conf("chat.cmd-trd", "trd")
+
     def post(self):
         req = self.req()
         user = req.user()
-        self.call("chat.message", html=u"[[chf:{0}]] {1}".format(user, htmlescape(req.param("text"))), channel=req.param("channel"))
-        self.call("web.response_json", {"ok": True})
+        text = req.param("text") 
+        channel = req.param("channel")
+        if channel == "main":
+            if self.conf("chat.location-separate"):
+                channel = "wld"
+            else:
+                channel = "loc"
+        # extracting commands
+        while True:
+            m = re_chat_command.match(text)
+            if not m:
+                break
+            cmd, text = m.group(1, 2)
+            if cmd == self.cmd_loc():
+                channel = "loc"
+            elif cmd == self.cmd_wld():
+                channel = "wld"
+            elif cmd == self.cmd_trd() and self.conf("chat.trade-channel"):
+                channel = "trd"
+            else:
+                self.call("web.response_json", {"error": self._("Unrecognized command: /%s") % htmlescape(cmd)})
+        # access control
+        if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel"):
+            pass
+        else:
+            self.call("web.response_json", {"error": self._("No access to the chat channel %s") % htmlescape(channel)})
+        # translating channel name
+        if channel == "loc":
+            # TODO: convert to loc-%s format
+            pass
+        # sending message
+        self.call("chat.message", html=u"[[chf:{0}]] {1}".format(user, htmlescape(text)), channel=channel)
+        self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
     def message(self, **kwargs):
         try:
@@ -195,14 +279,18 @@ class Chat(ConstructorModule):
         if not channel:
             channel = "sys"
         # store chat message
+        # TODO
         # translate channel name
-        if channel == "sys" or channel == "world":
-            channel = "main"
-        elif re_loc_channel.match(channel):
-            if self.conf("chat.location-separate"):
-                channel = "loc"
-            else:
-                channel = "main"
-        kwargs["channel"] = channel
+        kwargs["channel"] = self.channel2tab(channel)
         # sending message
         self.call("stream.packet", "global", "chat", "msg", **kwargs)
+
+    def channel2tab(self, channel):
+        if channel == "sys" or channel == "world":
+            return "main"
+        if re_loc_channel.match(channel):
+            if self.conf("chat.location-separate"):
+                return "loc"
+            else:
+                return "main"
+        return channel

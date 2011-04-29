@@ -82,11 +82,13 @@ Chat.submit = function() {
 		},
 		success: (function (response, opts) {
 			this.input.enable();
-			this.focus();
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
 					this.input.el.dom.value = '';
+					this.focus();
+				} else if (res.error) {
+					Ext.Msg.alert(gt.gettext('Error'), res.error, this.focus.createDelegate(this));
 				}
 			}
 		}).createDelegate(this),

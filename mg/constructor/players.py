@@ -115,6 +115,14 @@ class Character(Module):
             self._sex = self.db_user.get("sex")
             return self._sex
 
+    @property
+    def location(self):
+        try:
+            return self._location
+        except AttributeError:
+            self._location = None
+            return self._location
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)
