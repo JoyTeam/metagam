@@ -116,10 +116,13 @@ Chat.channel_hide = function(id) {
 };
 
 Chat.submit = function() {
+	if (this.submit_locked)
+		return;
 	var val = this.input_control.el.dom.value;
 	if (!val)
 		return;
-	this.input_control.disable();
+	this.submit_locked = true;
+	this.input_control.el.dom.onkeypress = function() { return false; }
 	var channel = this.active_channel;
 	if (this.channel_control) {
 		channel = this.channel_control.value;
@@ -132,7 +135,8 @@ Chat.submit = function() {
 			channel: channel
 		},
 		success: (function (response, opts) {
-			this.input_control.enable();
+			this.submit_locked = false;
+			this.input_control.el.dom.onkeypress = undefined;
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
@@ -147,7 +151,8 @@ Chat.submit = function() {
 			}
 		}).createDelegate(this),
 		failure: (function (response, opts) {
-			this.input_control.enable();
+			this.submit_locked = false;
+			this.input_control.el.dom.onkeypress = undefined;
 			this.focus();
 		}).createDelegate(this)
 	});
