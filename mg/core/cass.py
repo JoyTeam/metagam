@@ -387,8 +387,9 @@ class CassandraObject(object):
         Raises ObjectNotFoundException
         """
         self._indexes = None
-        row_id = self.dbprefix + self.clsprefix + self.uuid
-        self.data = self.db.mc.get(row_id)
+        row_mcid = self.clsprefix + self.uuid
+        row_id = self.dbprefix + row_mcid
+        self.data = self.db.mc.get(row_mcid)
         if self.data == "tomb":
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
             raise ObjectNotFoundException(row_id)
@@ -398,7 +399,7 @@ class CassandraObject(object):
             except NotFoundException:
                 raise ObjectNotFoundException(row_id)
             self.data = json.loads(col.value)
-            self.db.mc.add(row_id, self.data, cache_interval)
+            self.db.mc.add(row_mcid, self.data, cache_interval)
 #            print "LOAD(DB) %s %s" % (row_id, self.data)
 #        else:
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
@@ -420,7 +421,7 @@ class CassandraObject(object):
             key = index_values.get(index_name)
             old_key = old_index_values.get(index_name)
             if old_key != key:
-                mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
+                mcgroups.add("%s%s/VER" % (self.clsprefix, index_name))
                 #print "\t\t%s: %s => %s" % (index_name, old_key, key)
                 # deleting old index entry if exists
                 if old_key is not None:
@@ -444,10 +445,11 @@ class CassandraObject(object):
                     else:
                         mutations[index_row] = {"Objects": [mutation]}
         # mutation of the object itself
-        row_id = self.dbprefix + self.clsprefix + self.uuid
+        row_mcid = self.clsprefix + self.uuid
+        row_id = self.dbprefix + row_mcid
         mutations[row_id] = {"Objects": [Mutation(ColumnOrSuperColumn(Column(name="data", value=json.dumps(self.data).encode("utf-8"), timestamp=timestamp)))]}
         logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s %s", row_id, self.data)
-        self.db.mc.set(row_id, self.data, cache_interval)
+        self.db.mc.set(row_mcid, self.data, cache_interval)
         self.dirty = False
         self.new = False
 
@@ -472,9 +474,10 @@ class CassandraObject(object):
         """
         #print "removing %s" % self.uuid
         timestamp = time.time() * 1000
-        row_id = self.dbprefix + self.clsprefix + self.uuid
+        row_mcid = self.clsprefix + self.uuid
+        row_id = self.dbprefix + row_mcid
         self.db.remove(row_id, ColumnPath("Objects"), timestamp, ConsistencyLevel.QUORUM)
-        self.db.mc.set(row_id, "tomb", cache_interval)
+        self.db.mc.set(row_mcid, "tomb", cache_interval)
         # removing indexes
         mutations = {}
         mcgroups = set()
@@ -482,7 +485,7 @@ class CassandraObject(object):
         for index_name, key in old_index_values.iteritems():
             index_row = (self.dbprefix + self.clsprefix + index_name + key[0]).encode("utf-8")
             mutations[index_row] = {"Objects": [Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), timestamp=timestamp))]}
-            mcgroups.add("%s%s%s/VER" % (self.dbprefix, self.clsprefix, index_name))
+            mcgroups.add("%s%s/VER" % (self.clsprefix, index_name))
             #print "delete: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
 #       print "REMOVE %s" % row_id
         if len(mutations):
@@ -561,7 +564,7 @@ class CassandraObjectList(object):
         if uuids is not None:
             self.dict = [cls(db, uuid, {}, dbprefix=dbprefix, clsprefix=clsprefix) for uuid in uuids]
         elif query_index is not None:
-            grpmcid = "%s%s%s/VER" % (dbprefix, clsprefix, query_index)
+            grpmcid = "%s%s/VER" % (clsprefix, query_index)
             grpid = self.db.mc.get(grpmcid)
             if grpid is None:
                 grpid = random.randint(0, 2000000000)
@@ -572,7 +575,7 @@ class CassandraObjectList(object):
                 index_rows = []
                 self.index_data = []
                 for val in query_equal:
-                    mcid = urlencode("%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, val, query_start, query_finish, query_limit, query_reversed, grpid))
+                    mcid = urlencode("%s%s-%s/%s/%s/%s/%s/%s" % (clsprefix, query_index, val, query_start, query_finish, query_limit, query_reversed, grpid))
                     mcids.append(mcid)
                     index_row = "%s%s%s-%s" % (dbprefix, clsprefix, query_index, val)
                     if type(index_row) == unicode:
@@ -596,7 +599,7 @@ class CassandraObjectList(object):
                         index_data = [[col.column.name, col.column.value] for col in index_data]
                         self.index_rows.append(index_row)
                         self.index_data.extend(index_data)
-                        mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row, query_start, query_finish, query_limit, query_reversed, grpid))
+                        mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row[len(dbprefix):], query_start, query_finish, query_limit, query_reversed, grpid))
                         #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, index_data)
                         if len(index_data) < max_index_length:
                             self.db.mc.set(mcid, index_data)
@@ -607,7 +610,7 @@ class CassandraObjectList(object):
                 #print "loaded index data %s" % self.index_data
             else:
                 # single key
-                mcid = urlencode("%s%s%s-%s/%s/%s/%s/%s/%s" % (dbprefix, clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid))
+                mcid = urlencode("%s%s-%s/%s/%s/%s/%s/%s" % (clsprefix, query_index, query_equal, query_start, query_finish, query_limit, query_reversed, grpid))
                 index_row = dbprefix + clsprefix + query_index
                 if query_equal is not None:
                     index_row = index_row + "-" + query_equal
@@ -637,15 +640,16 @@ class CassandraObjectList(object):
 
     def load(self, silent=False):
         if len(self.dict) > 0:
-            row_ids = [(obj.dbprefix + obj.clsprefix + obj.uuid) for obj in self.dict]
-            mc_d = self.db.mc.get_multi(row_ids)
-            row_ids = [id for id in row_ids if mc_d.get(id) is None]
+            row_mcids = [(obj.clsprefix + obj.uuid) for obj in self.dict]
+            mc_d = self.db.mc.get_multi(row_mcids)
+            row_ids = [obj.dbprefix + mcid for mcid in row_mcids if mcid not in mc_d]
             db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="Objects"), SlicePredicate(column_names=["data"]), ConsistencyLevel.QUORUM) if len(row_ids) else {}
             recovered = False
             for obj in self.dict:
                 obj.valid = True
-                row_id = obj.dbprefix + obj.clsprefix + obj.uuid
-                data = mc_d.get(row_id)
+                row_mcid = obj.clsprefix + obj.uuid
+                row_id = obj.dbprefix + row_mcid
+                data = mc_d.get(row_mcid)
                 if data is not None:
 #                   print "LOAD(MC) %s %s" % (obj.uuid, data)
                     if data == "tomb":
@@ -662,7 +666,7 @@ class CassandraObjectList(object):
                                         if timestamp is None:
                                             timestamp = time.time() * 1000
                                         mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
-                                        self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
+                                        self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                         break
                                 if len(mutations):
                                     self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
@@ -676,7 +680,7 @@ class CassandraObjectList(object):
                     if len(cols) > 0:
                         obj.data = json.loads(cols[0].column.value)
                         obj.dirty = False
-                        self.db.mc.add(row_id, obj.data, cache_interval)
+                        self.db.mc.add(row_mcid, obj.data, cache_interval)
 #                        print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
                     elif silent:
                         obj.valid = False
@@ -690,7 +694,7 @@ class CassandraObjectList(object):
                                     if timestamp is None:
                                         timestamp = time.time() * 1000
                                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
-                                    self.db.mc.incr("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, self.query_index))
+                                    self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                     break
                             if len(mutations):
                                 self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
@@ -738,11 +742,12 @@ class CassandraObjectList(object):
                         mutations[index_row] = {"Objects": [mutation]}
                     else:
                         m["Objects"].append(mutation)
-                    mcgroups.add("%s%s%s/VER" % (obj.dbprefix, obj.clsprefix, index_name))
-                row_id = obj.dbprefix + obj.clsprefix + obj.uuid
+                    mcgroups.add("%s%s/VER" % (obj.clsprefix, index_name))
+                row_mcid = obj.clsprefix + obj.uuid
+                row_id = obj.dbprefix + row_mcid
 #               print "REMOVE %s" % row_id
                 obj.db.remove(row_id, ColumnPath("Objects"), timestamp, ConsistencyLevel.QUORUM)
-                obj.db.mc.set(row_id, "tomb", cache_interval)
+                obj.db.mc.set(row_mcid, "tomb", cache_interval)
                 obj.dirty = False
                 obj.new = False
             # removing indexes
