@@ -12,9 +12,11 @@ Chat.content = new Ext.BoxComponent({
 	}
 });
 
-Chat.input = new Ext.BoxComponent({
+Chat.input_control = new Ext.BoxComponent({
 	applyTo: 'chat-input-control'
 });
+
+Chat.channel_control = Ext.getDom('chat-channel-control');
 
 Chat.channel_new = function(ch) {
 	this.channels.push(ch);
@@ -114,23 +116,27 @@ Chat.channel_hide = function(id) {
 };
 
 Chat.submit = function() {
-	var val = this.input.el.dom.value;
+	var val = this.input_control.el.dom.value;
 	if (!val)
 		return;
-	this.input.disable();
+	this.input_control.disable();
+	var channel = this.active_channel;
+	if (this.channel_control) {
+		channel = this.channel_control.value;
+	}
 	Ext.Ajax.request({
 		url: '/chat/post',
 		method: 'POST',
 		params: {
 			text: val,
-			channel: this.active_channel
+			channel: channel
 		},
 		success: (function (response, opts) {
-			this.input.enable();
+			this.input_control.enable();
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
-					this.input.el.dom.value = '';
+					this.input_control.el.dom.value = '';
 					this.focus();
 					if (this.mode == 2) {
 						this.channel_show(res.channel);
@@ -141,7 +147,7 @@ Chat.submit = function() {
 			}
 		}).createDelegate(this),
 		failure: (function (response, opts) {
-			this.input.enable();
+			this.input_control.enable();
 			this.focus();
 		}).createDelegate(this)
 	});
@@ -151,7 +157,7 @@ wait(['realplexor-stream'], function() {
 
 	Stream.stream_handler('chat', Chat);
 
-	Chat.input.el.on('keypress', function(e, t, o) {
+	Chat.input_control.el.on('keypress', function(e, t, o) {
 		if (e.getKey() == 13) {
 			e.preventDefault();
 			Chat.submit();

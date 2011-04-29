@@ -51,7 +51,7 @@
 		</div>
 		<div class="x-hidden" id="default-chat-channels"><div id="chat-channel-buttons">[%foreach btn in chat_buttons%]<img src="[%btn.image%]-[%btn.state%].gif" id="[%btn.id%]" onclick="[%btn.onclick%]" class="clickable" title="[%btn.hint%]" />[%end%]</div></div>
 		<div class="x-hidden" id="default-chat-box"><div id="chat-box-content">chat-box + chat-box-content</div></div>
-		<div class="x-hidden" id="default-chat-input"><table style="width: 100%"><tr><td><form><input id="chat-input-control" /></form></td><td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td></tr></table></div>
+		<div class="x-hidden" id="default-chat-input"><table style="width: 100%"><tr><td style="width: 100px"><select id="chat-channel-control" style="width: 100%">[%foreach ch in chat_channels%][%if ch.writable%]<option value="[%ch.id%]">[%ch.short_name%]</option>[%end%][%end%]</select></td><td><form><input id="chat-input-control" /></form></td><td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td></tr></table></div>
 		<div class="x-hidden" id="default-roster-box"><div id="roster-box-content"></div></div>
 		<div class="x-hidden" id="default-margin-left">m<br />a<br />r<br />g<br />i<br />n<br />-<br />l<br />e<br />f<br />t</div>
 		<div class="x-hidden" id="default-margin-right">m<br />a<br />r<br />g<br />i<br />n<br />-<br />r<br />i<br />g<br />h<br />t</div>

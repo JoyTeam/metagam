@@ -193,7 +193,7 @@ class Chat(ConstructorModule):
                         "id": ch["id"],
                         "state": "on" if ch["id"] == "main" else "off",
                         "onclick": "return Chat.tab_open('%s');" % ch["id"],
-                        "hint": ch["short_name"]
+                        "hint": htmlescape(ch["short_name"])
                     })
             elif chatmode == 2:
                 for ch in channels:
@@ -202,7 +202,7 @@ class Chat(ConstructorModule):
                             "id": ch["id"],
                             "state": "on",
                             "onclick": "return Chat.channel_toggle('%s');" % ch["id"],
-                            "hint": ch["short_name"]
+                            "hint": htmlescape(ch["short_name"])
                         })
             if len(buttons):
                 for btn in buttons:
