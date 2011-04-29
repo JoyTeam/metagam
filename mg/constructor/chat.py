@@ -5,6 +5,7 @@ import re
 
 re_chat_characters = re.compile(r'\[(chf|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
+re_chat_recipient = re.compile(r'^\s*(to|private)\s*\[([^\]]+)\]\s*(.*)$')
 re_loc_channel = re.compile(r'^loc-')
 re_valid_command = re.compile(r'^/(\S+)$')
 
@@ -244,6 +245,8 @@ class Chat(ConstructorModule):
         req = self.req()
         user = req.user()
         text = req.param("text") 
+        prefixes = []
+        prefixes.append("[[chf:%s]] " % user)
         channel = req.param("channel")
         if channel == "main" or channel == "":
             if self.conf("chat.location-separate"):
@@ -266,6 +269,27 @@ class Chat(ConstructorModule):
                 channel = "dip"
             else:
                 self.call("web.response_json", {"error": self._("Unrecognized command: /%s") % htmlescape(cmd)})
+        # extracting recipients
+        private = False
+        recipients = []
+        while True:
+            m = re_chat_recipient.match(text)
+            if not m:
+                break
+            mode, name, text = m.group(1, 2, 3)
+            if mode == "private":
+                private = True
+            if not name in recipients:
+                recipients.append(name)
+        # searching recipient names
+        for name in recipients:
+            char = self.find_character(name)
+            if not char:
+                self.call("web.response_json", {"error": self._("Character '%s' not found") % htmlescape(name)})
+            if private:
+                prefixes.append("private [[ch:%s]] " % char.uuid)
+            else:
+                prefixes.append("to [[ch:%s]] " % char.uuid)
         # access control
         if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
             pass
@@ -275,8 +299,10 @@ class Chat(ConstructorModule):
         if channel == "loc":
             # TODO: convert to loc-%s format
             pass
+        # formatting html
+        html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), htmlescape(text))
         # sending message
-        self.call("chat.message", html=u"[[chf:{0}]] {1}".format(user, htmlescape(text)), channel=channel)
+        self.call("chat.message", html=html, channel=channel)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
     def message(self, **kwargs):
@@ -302,8 +328,6 @@ class Chat(ConstructorModule):
         if len(html) > start:
             tokens.append(html[start:])
         html = u"".join(tokens)
-        # formatting html
-        html = u'<span class="chat-msg-body">%s</span>' % html
         # time
         if not kwargs.get("hide_time"):
             now = datetime.datetime.utcnow().strftime("%H:%M:%S")

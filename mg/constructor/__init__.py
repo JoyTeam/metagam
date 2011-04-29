@@ -12,7 +12,7 @@ class ConstructorModule(Module):
                 characters = req.characters
             except AttributeError:
                 characters = {}
-                req.character = characters
+                req.characters = characters
             try:
                 return characters[uuid]
             except KeyError:
@@ -30,7 +30,7 @@ class ConstructorModule(Module):
                 players = req.players
             except AttributeError:
                 players = {}
-                req.player = players
+                req.players = players
             try:
                 return players[uuid]
             except KeyError:
@@ -51,3 +51,8 @@ class ConstructorModule(Module):
                 req._myself = None
             return req._myself
 
+    def find_character(self, name):
+        user = self.call("session.find_user", name, return_id=True)
+        if not user:
+            return None
+        return self.character(user)

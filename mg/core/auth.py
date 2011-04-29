@@ -188,16 +188,20 @@ class Sessions(Module):
         if not session or not session.get("user"):
             self.call("web.redirect", "/auth/login?redirect=%s" % urlencode(req.uri()))
 
-    def find_user(self, val, allow_email=False, allow_name=True):
+    def find_user(self, val, allow_email=False, allow_name=True, return_id=False):
         val = val.lower()
         if allow_name:
             users = self.objlist(UserList, query_index="name", query_equal=val)
             if len(users):
+                if return_id:
+                    return users[0].uuid
                 users.load()
                 return users[0]
         if allow_email:
             users = self.objlist(UserList, query_index="email", query_equal=val)
             if len(users):
+                if return_id:
+                    return users[0].uuid
                 users.load()
                 return users[0]
         return None

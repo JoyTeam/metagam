@@ -44,17 +44,21 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         if domain is None:
             return None
         domain = re_remove_www.sub('', domain)
+        # main constructor domain
         main_host = self.inst.config["main_host"]
         main_app = self.get_by_tag("main")
         if domain == main_host:
             return "main"
+        # temporary game domains
+        projects_domain = main_app.config.get("constructor.projects-domain", main_host)
+        m = re.match("^([0-9a-f]{32})\.%s" % projects_domain, domain)
+        if m:
+            return m.groups(1)[0]
+        # permanent game domains
         try:
             domain = main_app.obj(Domain, domain)
         except ObjectNotFoundException:
-            projects_domain = main_app.config.get("constructor.projects-domain", main_host)
-            m = re.match("^([0-9a-f]{32})\.%s" % projects_domain, domain)
-            if m:
-                return m.groups(1)[0]
+            pass
         else:
             tag = domain.get("project")
             if tag is not None:
