@@ -42,6 +42,8 @@ class Chat(ConstructorModule):
             config.set("chat.debug-channel", debug_channel)
             trade_channel = True if req.param("trade-channel") else False
             config.set("chat.trade-channel", trade_channel)
+            diplomacy_channel = True if req.param("diplomacy-channel") else False
+            config.set("chat.diplomacy-channel", diplomacy_channel)
             # chatmode
             chatmode = intz(req.param("v_chatmode"))
             if chatmode < 0 or chatmode > 2:
@@ -78,6 +80,16 @@ class Chat(ConstructorModule):
                             errors["cmd-trd"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
                     else:
                         config.set("chat.cmd-trd", "")
+                if diplomacy_channel:
+                    cmd_dip = req.param("cmd-dip")
+                    if cmd_dip != "":
+                        m = re_valid_command.match(cmd_dip)
+                        if m:
+                            config.set("chat.cmd-dip", m.group(1))
+                        else:
+                            errors["cmd-dip"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                    else:
+                        config.set("chat.cmd-dip", "")
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -87,6 +99,7 @@ class Chat(ConstructorModule):
             location_separate = self.conf("chat.location-separate")
             debug_channel = self.conf("chat.debug-channel")
             trade_channel = self.conf("chat.trade-channel")
+            diplomacy_channel = self.conf("chat.diplomacy-channel")
             chatmode = self.chatmode()
             cmd_wld = self.cmd_wld()
             if cmd_wld != "":
@@ -97,14 +110,19 @@ class Chat(ConstructorModule):
             cmd_trd = self.cmd_trd()
             if cmd_trd != "":
                 cmd_trd = "/%s" % cmd_trd
+            cmd_dip = self.cmd_dip()
+            if cmd_dip != "":
+                cmd_dip = "/%s" % cmd_dip
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
             {"name": "debug-channel", "type": "checkbox", "label": self._("Debugging channel enabled"), "checked": debug_channel, "condition": "[chatmode]>0"},
             {"name": "trade-channel", "type": "checkbox", "label": self._("Trading channel enabled"), "checked": trade_channel, "condition": "[chatmode]>0"},
+            {"name": "diplomacy-channel", "type": "checkbox", "label": self._("Diplomacy channel enabled"), "checked": diplomacy_channel, "condition": "[chatmode]>0"},
             {"name": "cmd-wld", "label": self._("Chat command for writing to the entire world channel"), "value": cmd_wld, "condition": "[chatmode]>0"},
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
+            {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
         ]
         self.call("admin.form", fields=fields)
 
@@ -115,7 +133,9 @@ class Chat(ConstructorModule):
         channels = []
         channels.append({
             "id": "main",
-            "short_name": self._("channel///Main")
+            "short_name": self._("channel///Main"),
+            "switchable": True,
+            "writable": True,
         })
         if chatmode:
             # channels enabled
@@ -135,6 +155,13 @@ class Chat(ConstructorModule):
                     "switchable": True,
                     "writable": True
                 })
+            if self.conf("chat.diplomacy-channel"):
+                channels.append({
+                    "id": "dip",
+                    "short_name": self._("channel///Diplomacy"),
+                    "switchable": True,
+                    "writable": True
+                })
             if self.conf("chat.debug-channel"):
                 channels.append({
                     "id": "dbg",
@@ -151,9 +178,11 @@ class Chat(ConstructorModule):
         # list of channels
         chatmode = self.chatmode()
         channels = self.channels(chatmode)
+        vars["js_init"].append("Chat.mode = %d;" % chatmode)
+        if chatmode == 2:
+            vars["js_init"].append("Chat.active_channel = 'main';")
         for ch in channels:
             vars["js_init"].append("Chat.channel_new({id: '%s', title: '%s'});" % (ch["id"], jsencode(ch["short_name"])))
-        vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode and len(channels):
             vars["layout"]["chat_channels"] = True
             buttons = []
@@ -172,7 +201,7 @@ class Chat(ConstructorModule):
                         buttons.append({
                             "id": ch["id"],
                             "state": "on",
-                            "onclick": "return Chat.toggle_channel('%s');" % ch["id"],
+                            "onclick": "return Chat.channel_toggle('%s');" % ch["id"],
                             "hint": ch["short_name"]
                         })
             if len(buttons):
@@ -186,7 +215,8 @@ class Chat(ConstructorModule):
                     btn["id"] = "chat-channel-button-%s" % btn["id"]
                 buttons[-1]["lst"] = True
                 vars["chat_buttons"] = buttons
-        vars["js_init"].append("Chat.tab_open('main');")
+        if chatmode == 1:
+            vars["js_init"].append("Chat.tab_open('main');")
         vars["chat_channels"] = channels
 
     def gameinterface_advice_files(self, files):
@@ -207,12 +237,15 @@ class Chat(ConstructorModule):
     def cmd_trd(self):
         return self.conf("chat.cmd-trd", "trd")
 
+    def cmd_dip(self):
+        return self.conf("chat.cmd-dip", "dip")
+
     def post(self):
         req = self.req()
         user = req.user()
         text = req.param("text") 
         channel = req.param("channel")
-        if channel == "main":
+        if channel == "main" or channel == "":
             if self.conf("chat.location-separate"):
                 channel = "wld"
             else:
@@ -229,10 +262,12 @@ class Chat(ConstructorModule):
                 channel = "wld"
             elif cmd == self.cmd_trd() and self.conf("chat.trade-channel"):
                 channel = "trd"
+            elif cmd == self.cmd_dip() and self.conf("chat.diplomacy-channel"):
+                channel = "dip"
             else:
                 self.call("web.response_json", {"error": self._("Unrecognized command: /%s") % htmlescape(cmd)})
         # access control
-        if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel"):
+        if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
             pass
         else:
             self.call("web.response_json", {"error": self._("No access to the chat channel %s") % htmlescape(channel)})
@@ -286,7 +321,7 @@ class Chat(ConstructorModule):
         self.call("stream.packet", "global", "chat", "msg", **kwargs)
 
     def channel2tab(self, channel):
-        if channel == "sys" or channel == "world":
+        if channel == "sys" or channel == "wld" or channel == "loc" and not self.conf("chat.location-separate"):
             return "main"
         if re_loc_channel.match(channel):
             if self.conf("chat.location-separate"):

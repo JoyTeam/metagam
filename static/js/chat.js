@@ -19,13 +19,17 @@ Chat.input = new Ext.BoxComponent({
 Chat.channel_new = function(ch) {
 	this.channels.push(ch);
 	this.channels_by_id[ch.id] = ch;
-	ch.content = new Ext.BoxComponent({
-		autoEl: {
-			tag: 'div'
-		},
-		renderTo: 'chat-box-content',
-		hidden: true
-	});
+	if (this.mode == 1) {
+		ch.content = new Ext.BoxComponent({
+			autoEl: {
+				tag: 'div'
+			},
+			renderTo: 'chat-box-content',
+			hidden: true
+		});
+	} else if (this.mode == 2) {
+		ch.visible = true;
+	}
 	ch.btn = Ext.get('chat-channel-button-' + ch.id);
 };
 
@@ -64,8 +68,49 @@ Chat.msg = function(pkt) {
 		ch = this.channels_by_id['main'];
 	var div = document.createElement('div');
 	div.innerHTML = pkt.html;
-	ch.content.el.dom.appendChild(div);
-	this.content.el.scroll('down', 1000000, true);
+	if (this.mode == 1) {
+		ch.content.el.dom.appendChild(div);
+		this.content.el.scroll('down', 1000000, true);
+	} else if (this.mode == 2) {
+		div.className = 'cmc-' + ch.id;
+		div.style.display = ch.visible ? 'block' : 'none';
+		this.content.el.dom.appendChild(div);
+		if (ch.visible)
+			this.content.el.scroll('down', 1000000, true);
+	}
+};
+
+Chat.channel_toggle = function(id) {
+	var ch = this.channels_by_id[id];
+	if (ch) {
+		if (ch.visible)
+			this.channel_hide(id);
+		else
+			this.channel_show(id);
+		this.content.el.scroll('down', 1000000, false);
+	}
+};
+
+Chat.channel_show = function(id) {
+	var ch = this.channels_by_id[id];
+	if (ch && !ch.visible) {
+		if (this.mode == 2 && ch.btn) {
+			ch.btn.dom.src = this.button_images[id] + '-on.gif';
+		}
+		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'block'; })
+		ch.visible = true;
+	}
+};
+
+Chat.channel_hide = function(id) {
+	var ch = this.channels_by_id[id];
+	if (ch && ch.visible) {
+		if (this.mode == 2 && ch.btn) {
+			ch.btn.dom.src = this.button_images[id] + '-off.gif';
+		}
+		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'none'; })
+		ch.visible = false;
+	}
 };
 
 Chat.submit = function() {
@@ -87,6 +132,9 @@ Chat.submit = function() {
 				if (res.ok) {
 					this.input.el.dom.value = '';
 					this.focus();
+					if (this.mode == 2) {
+						this.channel_show(res.channel);
+					}
 				} else if (res.error) {
 					Ext.Msg.alert(gt.gettext('Error'), res.error, this.focus.createDelegate(this));
 				}
