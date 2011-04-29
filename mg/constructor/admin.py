@@ -2,7 +2,7 @@ from mg import *
 from mg.core.auth import UserPermissions, UserPermissionsList
 from mg.core.queue import QueueTask, QueueTaskList, Schedule
 from mg.core.cluster import TempFileList
-from mg.constructor.players import Player, Character, CharacterForm, CharacterList
+from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterForm, DBCharacterList
 import mg.constructor.common
 from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
@@ -400,7 +400,7 @@ class Constructor(Module):
             domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
         else:
             domain = "www.%s" % domain
-        admins = app.objlist(CharacterList, query_index="admin", query_equal="1")
+        admins = app.objlist(DBCharacterList, query_index="admin", query_equal="1")
         if not len(admins):
             self.call("web.redirect", "http://%s" % domain)
         admin = admins[0]

@@ -2,7 +2,7 @@ from mg import *
 from mg.core.auth import UserPermissions, UserPermissionsList
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 from concurrence.dns import *
-from mg.constructor.players import CharacterList, Character, Player, CharacterForm
+from mg.constructor.players import DBCharacterList, DBCharacter, DBPlayer, DBCharacterForm
 import re
 import cgi
 import cStringIO
@@ -337,7 +337,7 @@ class ProjectSetupWizard(Wizard):
         # creating admin player
         now_ts = "%020d" % time.time()
         now = self.now()
-        player = self.obj(Player)
+        player = self.obj(DBPlayer)
         player.set("created", now)
         player_user = self.obj(User, player.uuid, {})
         player_user.set("created", now_ts)
@@ -352,7 +352,7 @@ class ProjectSetupWizard(Wizard):
         m.update(salt + password.encode("utf-8"))
         player_user.set("pass_hash", m.hexdigest())
         # creating admin character
-        character = self.obj(Character)
+        character = self.obj(DBCharacter)
         character.set("created", now)
         character.set("player", player.uuid)
         character.set("admin", 1)
@@ -361,7 +361,7 @@ class ProjectSetupWizard(Wizard):
         character_user.set("name", name)
         character_user.set("name_lower", name.lower())
         character_user.set("sex", sex)
-        character_form = self.obj(CharacterForm, character.uuid, {})
+        character_form = self.obj(DBCharacterForm, character.uuid, {})
         # storing
         player.store()
         player_user.store()

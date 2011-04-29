@@ -1,6 +1,6 @@
 from mg import *
 from mg.constructor.design import Design
-from mg.constructor.players import Player, Character, CharacterList
+from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterList
 import re
 import hashlib
 import mg
@@ -97,10 +97,10 @@ class Interface(Module):
                 self.call("web.redirect", "/")
             userobj = self.obj(User, user)
             if userobj.get("name") is not None:
-                character = self.obj(Character, userobj.uuid)
+                character = self.obj(DBCharacter, userobj.uuid)
                 return self.game_interface(character)
             else:
-                player = self.obj(Player, userobj.uuid)
+                player = self.obj(DBPlayer, userobj.uuid)
                 return self.game_cabinet(player)
         if self.app().project.get("inactive"):
             self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
@@ -162,7 +162,7 @@ class Interface(Module):
 
     def game_cabinet(self, player):
         characters = []
-        lst = self.objlist(CharacterList, query_index="player", query_equal=player.uuid)
+        lst = self.objlist(DBCharacterList, query_index="player", query_equal=player.uuid)
         lst = self.objlist(UserList, lst.uuids())
         lst.load()
         for ent in lst:
@@ -184,7 +184,7 @@ class Interface(Module):
         vars["CreateNewCharacter"] = self._("Create a new character")
 
     def game_interface_default_character(self, player):
-        chars = self.objlist(CharacterList, query_index="player", query_equal=player.uuid, query_reversed=True, query_limit=1)
+        chars = self.objlist(DBCharacterList, query_index="player", query_equal=player.uuid, query_reversed=True, query_limit=1)
         if not len(chars):
             self.call("web.redirect", "/character/create")
         chars.load()

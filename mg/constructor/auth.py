@@ -3,7 +3,7 @@
 from mg import *
 from mg.constructor import *
 from mg.core.auth import Captcha, AutoLogin
-from mg.constructor.players import CharacterForm
+from mg.constructor.players import DBCharacterForm
 import hashlib
 import copy
 import random
@@ -28,7 +28,7 @@ class AppSessionList(CassandraObjectList):
         kwargs["cls"] = AppSession
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class CharacterOnline(CassandraObject):
+class DBCharacterOnline(CassandraObject):
     _indexes = {
         "all": [[]]
     }
@@ -38,12 +38,12 @@ class CharacterOnline(CassandraObject):
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
-        return CharacterOnline._indexes
+        return DBCharacterOnline._indexes
 
-class CharacterOnlineList(CassandraObjectList):
+class DBCharacterOnlineList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "CharacterOnline-"
-        kwargs["cls"] = CharacterOnline
+        kwargs["cls"] = DBCharacterOnline
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class AuthAdmin(Module):
@@ -121,7 +121,7 @@ class AuthAdmin(Module):
                                     # character offline on timeout
                                     with app.lock(["character.%s" % character_uuid]):
                                         try:
-                                            obj = app.obj(CharacterOnline, character_uuid)
+                                            obj = app.obj(DBCharacterOnline, character_uuid)
                                         except ObjectNotFoundException:
                                             pass
                                         else:
@@ -214,7 +214,7 @@ class Auth(Module):
 
     def objclasses_list(self, objclasses):
         objclasses["AppSession"] = (AppSession, AppSessionList)
-        objclasses["CharacterOnline"] = (CharacterOnline, CharacterOnlineList)
+        objclasses["CharacterOnline"] = (DBCharacterOnline, DBCharacterOnlineList)
 
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
@@ -426,7 +426,7 @@ class Auth(Module):
         now = self.now()
         now_ts = "%020d" % time.time()
         # Creating player
-        player = self.obj(Player)
+        player = self.obj(DBPlayer)
         player.set("created", now)
         player_user = self.obj(User, player.uuid, {})
         player_user.set("created", now_ts)
@@ -451,7 +451,7 @@ class Auth(Module):
         m.update(salt + password.encode("utf-8"))
         player_user.set("pass_hash", m.hexdigest())
         # Creating character
-        character = self.obj(Character)
+        character = self.obj(DBCharacter)
         character.set("created", now)
         character.set("player", player.uuid)
         character_user = self.obj(User, character.uuid, {})
@@ -459,7 +459,7 @@ class Auth(Module):
         character_user.set("last_login", now_ts)
         character_user.set("name", values["name"])
         character_user.set("name_lower", values["name"].lower())
-        character_form = self.obj(CharacterForm, character.uuid, {})
+        character_form = self.obj(DBCharacterForm, character.uuid, {})
         for fld in fields:
             code = fld["code"]
             if code == "name":
@@ -516,7 +516,7 @@ class Auth(Module):
             self.call("web.response_json", {"error": msg["name_unknown"]})
         if user.get("name"):
             # character user
-            character = self.obj(Character, user.uuid)
+            character = self.obj(DBCharacter, user.uuid)
             if character.get("player"):
                 try:
                     user = self.obj(User, character.get("player"))
@@ -548,7 +548,7 @@ class Auth(Module):
                 self.call("web.response_json", {"ok": 1, "redirect": "/auth/activate/%s" % user.uuid})
         if not self.conf("auth.multicharing") and not self.conf("auth.cabinet"):
             # Looking for character
-            chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+            chars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
             if len(chars):
                 session = req.session(True)
                 self.call("stream.login", session.uuid, chars[0].uuid)
@@ -633,9 +633,9 @@ class Auth(Module):
     def stream_character_online(self, character_uuid):
         with self.lock(["character.%s" % character_uuid]):
             try:
-                self.obj(CharacterOnline, character_uuid)
+                self.obj(DBCharacterOnline, character_uuid)
             except ObjectNotFoundException:
-                obj = self.obj(CharacterOnline, character_uuid, data={})
+                obj = self.obj(DBCharacterOnline, character_uuid, data={})
                 obj.dirty = True
                 obj.store()
                 self.call("session.character-online", character_uuid)
@@ -643,7 +643,7 @@ class Auth(Module):
     def stream_character_offline(self, character_uuid):
         with self.lock(["character.%s" % character_uuid]):
             try:
-                obj = self.obj(CharacterOnline, character_uuid)
+                obj = self.obj(DBCharacterOnline, character_uuid)
             except ObjectNotFoundException:
                 pass
             else:
@@ -654,8 +654,8 @@ class Auth(Module):
         # log out other character sessions depending on multicharing policy, except given session_uuid
         if self.conf("auth.multicharing", 0) < 2:
             # dropping all character of the player
-            char = self.obj(Character, character_uuid)
-            chars = self.objlist(CharacterList, query_index="player", query_equal=char.get("player"))
+            char = self.obj(DBCharacter, character_uuid)
+            chars = self.objlist(DBCharacterList, query_index="player", query_equal=char.get("player"))
             characters = chars.uuids()
         else:
             # dropping just this character
@@ -850,19 +850,19 @@ class Auth(Module):
         if not session or not session.get("user"):
             self.call("web.redirect", "/")
         try:
-            player = self.obj(Player, session.get("user"))
+            player = self.obj(DBPlayer, session.get("user"))
         except ObjectNotFoundException:
             pass
         else:
             if req.args == "new":
                 if not self.conf("auth.multicharing"):
                     self.call("web.not_found")
-                chars = self.objlist(CharacterList, query_index="player", query_equal=player.uuid)
+                chars = self.objlist(DBCharacterList, query_index="player", query_equal=player.uuid)
                 if len(chars) >= self.conf("auth.max_chars", 5):
                     self.call("game.error", self._("You can't create more characters"))
                 return self.new_character(player)
             try:
-                character = self.obj(Character, req.args)
+                character = self.obj(DBCharacter, req.args)
             except ObjectNotFoundException:
                 self.call("web.forbidden")
             if character.get("player") != player.uuid:
@@ -923,7 +923,7 @@ class Auth(Module):
                 now = self.now()
                 now_ts = "%020d" % time.time()
                 # Creating new character
-                character = self.obj(Character)
+                character = self.obj(DBCharacter)
                 character.set("created", now)
                 character.set("player", player.uuid)
                 character_user = self.obj(User, character.uuid, {})
@@ -931,7 +931,7 @@ class Auth(Module):
                 character_user.set("last_login", now_ts)
                 character_user.set("name", values["name"])
                 character_user.set("name_lower", values["name"].lower())
-                character_form = self.obj(CharacterForm, character.uuid, {})
+                character_form = self.obj(DBCharacterForm, character.uuid, {})
                 for fld in fields:
                     code = fld["code"]
                     if code == "name":
@@ -982,7 +982,7 @@ class Auth(Module):
             # activation
             self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         # Everything is OK. Redirecting user to the game interface or to the cabinet
-        chars = self.objlist(CharacterList, query_index="player", query_equal=user.uuid)
+        chars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
             self.call("stream.login", session.uuid, chars[0].uuid)
         if self.conf("auth.allow-create-first-character"):

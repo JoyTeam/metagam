@@ -5,7 +5,7 @@ import re
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
 
-class Player(CassandraObject):
+class DBPlayer(CassandraObject):
     _indexes = {
         "created": [[], "created"],
     }
@@ -15,15 +15,15 @@ class Player(CassandraObject):
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
-        return Player._indexes
+        return DBPlayer._indexes
 
-class PlayerList(CassandraObjectList):
+class DBPlayerList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "Player-"
-        kwargs["cls"] = Player
+        kwargs["cls"] = DBPlayer
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class Character(CassandraObject):
+class DBCharacter(CassandraObject):
     _indexes = {
         "created": [[], "created"],
         "player": [["player"], "created"],
@@ -35,15 +35,15 @@ class Character(CassandraObject):
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
-        return Character._indexes
+        return DBCharacter._indexes
 
-class CharacterList(CassandraObjectList):
+class DBCharacterList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "Character-"
-        kwargs["cls"] = Character
+        kwargs["cls"] = DBCharacter
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class CharacterForm(CassandraObject):
+class DBCharacterForm(CassandraObject):
     _indexes = {
     }
 
@@ -52,12 +52,12 @@ class CharacterForm(CassandraObject):
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
-        return CharacterForm._indexes
+        return DBCharacterForm._indexes
 
-class CharacterFormList(CassandraObjectList):
+class DBCharacterFormList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "CharacterForm-"
-        kwargs["cls"] = CharacterForm
+        kwargs["cls"] = DBCharacterForm
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Characters(Module):
@@ -241,6 +241,6 @@ class Characters(Module):
         return self._("Character form")
 
     def objclasses_list(self, objclasses):
-        objclasses["Player"] = (Player, PlayerList)
-        objclasses["Character"] = (Character, CharacterList)
-        objclasses["CharacterForm"] = (CharacterForm, CharacterFormList)
+        objclasses["Player"] = (DBPlayer, DBPlayerList)
+        objclasses["Character"] = (DBCharacter, DBCharacterList)
+        objclasses["CharacterForm"] = (DBCharacterForm, DBCharacterFormList)
