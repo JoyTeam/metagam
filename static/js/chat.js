@@ -142,7 +142,7 @@ Chat.submit = function() {
 						this.channel_show(res.channel);
 					}
 				} else if (res.error) {
-					Ext.Msg.alert(gt.gettext('Error'), res.error, this.focus.createDelegate(this));
+					Game.msg(gt.gettext('Error'), res.error);
 				}
 			}
 		}).createDelegate(this),
