@@ -297,11 +297,14 @@ class WebDaemon(object):
         except AttributeError:
             raise RuntimeError("Module.req() called outside of a web handler")
 
+    def new_request_obj(self, environ, start_response):
+        return Request(environ, start_response)
+
     def request(self, environ, start_response):
         "Process single HTTP request"
         try:
             self.active_requests += 1
-            request = Request(environ, start_response)
+            request = self.new_request_obj(environ, start_response)
             Tasklet.current().req = request
             try:
                 # remove doubling, leading and trailing slashes, unquote and convert to utf-8

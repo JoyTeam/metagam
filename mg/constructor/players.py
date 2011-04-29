@@ -5,6 +5,8 @@ import re
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
 
+# Database objects
+
 class DBPlayer(CassandraObject):
     _indexes = {
         "created": [[], "created"],
@@ -59,6 +61,82 @@ class DBCharacterFormList(CassandraObjectList):
         kwargs["clsprefix"] = "CharacterForm-"
         kwargs["cls"] = DBCharacterForm
         CassandraObjectList.__init__(self, *args, **kwargs)
+
+# Business logic objects
+
+class Character(Module):
+    def __init__(self, app, uuid, fqn="mg.constructor.players.Character"):
+        Module.__init__(self, app, fqn)
+        self.uuid = uuid
+
+    @property
+    def db_character(self):
+        try:
+            return self._db_character
+        except AttributeError:
+            self._db_character = self.obj(DBCharacter, self.uuid)
+            return self._db_character
+
+    @property
+    def db_user(self):
+        try:
+            return self._db_user
+        except AttributeError:
+            self._db_user = self.obj(User, self.uuid)
+            return self._db_user
+
+    @property
+    def name(self):
+        try:
+            return self._name
+        except AttributeError:
+            self._name = self.db_user.get("name")
+            return self._name
+
+    @property
+    def player(self):
+        try:
+            return self._player
+        except AttributeError:
+            uuid = self.db_character.get("player")
+            try:
+                req = self.req()
+            except AttributeError:
+                self._player = Player(self.app(), uuid)
+            else:
+                self._player = req.player(uuid)
+            return self._player
+
+class Player(Module):
+    def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
+        Module.__init__(self, app, fqn)
+        self.uuid = uuid
+
+    @property
+    def db_player(self):
+        try:
+            return self._db_player
+        except AttributeError:
+            self._db_player = self.obj(DBPlayer, self.uuid)
+            return self._db_player
+
+    @property
+    def db_user(self):
+        try:
+            return self._db_user
+        except AttributeError:
+            self._db_user = self.obj(User, self.uuid)
+            return self._db_user
+
+    @property
+    def email(self):
+        try:
+            return self._email
+        except AttributeError:
+            self._email = self.db_user.get("email")
+            return self._email
+
+# Modules
 
 class Characters(Module):
     def register(self):

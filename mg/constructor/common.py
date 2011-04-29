@@ -1,5 +1,6 @@
 from mg import *
-import mg.core
+from mg.constructor import *
+from mg.core.web import Request
 import re
 
 re_remove_www = re.compile(r'^www.', re.IGNORECASE)
@@ -124,7 +125,29 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         except AttributeError:
             pass
 
-class MultiapplicationWebDaemon(WebDaemon):
+class ConstructorRequest(Request):
+    def __init__(self, environ, start_response):
+        Request.__init__(self, environ, start_response)
+        self.characters = {}
+        self.players = {}
+
+    def character(self, uuid):
+        try:
+            return self.characters[uuid]
+        except KeyError:
+            obj = Character(self.app, uuid)
+            self.characters[uuid] = obj
+            return obj
+
+    def player(self, uuid):
+        try:
+            return self.players[uuid]
+        except KeyError:
+            obj = Player(self.app, uuid)
+            self.players[uuid] = obj
+            return obj
+
+class ConstructorWebDaemon(WebDaemon):
     "This is a WebDaemon that accesses application depending on HTTP host"
     def req_handler(self, request, group, hook, args):
         host = request.host()
@@ -141,8 +164,12 @@ class MultiapplicationWebDaemon(WebDaemon):
                     if args != "":
                         url = "%s/%s" % (url, args)
             return request.redirect("http://%s%s" % (app.canonical_domain, url))
+        request.app = app
         try:
             return app.http_request(request, group, hook, args)
         except Exception as e:
             app.hooks.call("exception.report", e)
             raise
+
+    def new_request_obj(self, environ, start_response):
+        return ConstructorRequest(environ, start_response)

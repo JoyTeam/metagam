@@ -3,7 +3,7 @@
 from mg import *
 from mg.constructor import *
 from mg.core.auth import Captcha, AutoLogin
-from mg.constructor.players import DBCharacterForm
+from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList, DBCharacterForm
 import hashlib
 import copy
 import random

@@ -1,1 +1,1 @@
-from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList
+from mg.constructor.players import Character, Player

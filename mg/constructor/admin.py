@@ -89,7 +89,7 @@ class Constructor(Module):
         raise Hooks.Return(mg.constructor.common.ApplicationFactory(self.app().inst))
 
     def webdaemon(self):
-        raise Hooks.Return(mg.constructor.common.MultiapplicationWebDaemon(self.app().inst))
+        raise Hooks.Return(mg.constructor.common.ConstructorWebDaemon(self.app().inst))
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)

@@ -1,4 +1,5 @@
 from mg import *
+from mg.constructor.players import Character
 import datetime
 import re
 
@@ -156,14 +157,17 @@ class Chat(Module):
     def post(self):
         req = self.req()
         user = req.user()
-        self.call("chat.message", html=u"[[chf:%s]] %s" % (user, htmlescape(req.param("text"))), channel=req.param("channel"))
+        self.call("chat.message", html=u"[[chf:{0}]] {1}".format(user, htmlescape(req.param("text"))), channel=req.param("channel"))
         self.call("web.response_json", {"ok": True})
 
     def message(self, **kwargs):
+        try:
+            req = self.req()
+        except AttributeError:
+            req = None
         html = kwargs.get("html")
         # replacing character tags [chf:UUID], [ch:UUID] etc
         tokens = []
-        characters = {}
         start = 0
         for match in re_chat_characters.finditer(html):
             match_start, match_end = match.span()
@@ -171,27 +175,21 @@ class Chat(Module):
                 tokens.append({"str": html[start:match_start]})
             tp, character = match.group(1, 2)
             tokens.append({"tp": tp, "character": character})
-            characters[character] = None
             start = match_end
         if len(html) > start:
             tokens.append({"str": html[start:]})
-        if (characters):
-            lst = self.objlist(UserList, list(characters))
-            lst.load(silent=True)
-            for ch in lst:
-                characters[ch.uuid] = ch
-            for token in tokens:
-                character = token.get("character")
-                if not character:
-                    continue
-                character = characters[character]
-                if not character:
-                    continue
+        for token in tokens:
+            character = token.get("character")
+            if character:
+                if req:
+                    character = req.character(character)
+                else:
+                    character = Character(self.app(), character)
                 tp = token["tp"]
                 if tp == "chf":
-                    token["str"] = u'<span class="chat-msg-from">%s</span>' % htmlescape(character.get("name"))
+                    token["str"] = u'<span class="chat-msg-from">%s</span>' % htmlescape(character.name)
                 elif tp == "ch":
-                    token["str"] = u'<span class="chat-msg-char">%s</span>' % htmlescape(character.get("name"))
+                    token["str"] = u'<span class="chat-msg-char">%s</span>' % htmlescape(character.name)
         html = u"".join([u"%s" % token.get("str", token.get("character")) for token in tokens])
         # formatting html
         html = u'<span class="chat-msg-body">%s</span>' % html
