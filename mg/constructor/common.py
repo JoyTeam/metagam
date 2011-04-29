@@ -125,28 +125,6 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         except AttributeError:
             pass
 
-class ConstructorRequest(Request):
-    def __init__(self, environ, start_response):
-        Request.__init__(self, environ, start_response)
-        self.characters = {}
-        self.players = {}
-
-    def character(self, uuid):
-        try:
-            return self.characters[uuid]
-        except KeyError:
-            obj = Character(self.app, uuid)
-            self.characters[uuid] = obj
-            return obj
-
-    def player(self, uuid):
-        try:
-            return self.players[uuid]
-        except KeyError:
-            obj = Player(self.app, uuid)
-            self.players[uuid] = obj
-            return obj
-
 class ConstructorWebDaemon(WebDaemon):
     "This is a WebDaemon that accesses application depending on HTTP host"
     def req_handler(self, request, group, hook, args):
@@ -170,6 +148,3 @@ class ConstructorWebDaemon(WebDaemon):
         except Exception as e:
             app.hooks.call("exception.report", e)
             raise
-
-    def new_request_obj(self, environ, start_response):
-        return ConstructorRequest(environ, start_response)

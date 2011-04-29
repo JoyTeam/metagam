@@ -39,7 +39,8 @@ class ConstructorProject(Module):
                 "mg.constructor.design.DesignMod",
                 "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
-                #"mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"
+                #"mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin",
+                "mg.constructor.quest.QuestEngine",
             ])
         return lst
 

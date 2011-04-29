@@ -107,6 +107,14 @@ class Character(Module):
                 self._player = req.player(uuid)
             return self._player
 
+    @property
+    def sex(self):
+        try:
+            return self._sex
+        except AttributeError:
+            self._sex = self.db_user.get("sex")
+            return self._sex
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)

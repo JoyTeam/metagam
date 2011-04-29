@@ -293,6 +293,9 @@ class Auth(Module):
             # names validation
             validate_names = True if req.param("validate_names") else False
             config.set("auth.validate_names", validate_names)
+            # chat messages
+            config.set("auth.msg_went_online", req.param("msg_went_online"))
+            config.set("auth.msg_went_offline", req.param("msg_went_offline"))
             # processing
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -309,6 +312,8 @@ class Auth(Module):
 #            activate_email_level = self.conf("auth.activate_email_level", 0)
             activate_email_days = self.conf("auth.activate_email_days", 7)
             validate_names = self.conf("auth.validate_names", False)
+            msg_went_online = self.msg_went_online()
+            msg_went_offline = self.msg_went_offline()
         fields = [
             {"name": "multicharing", "type": "combo", "label": self._("Are players allowed to play more than 1 character"), "value": multicharing, "values": [(0, self._("No")), (1, self._("Yes, but play them by turn")), (2, self._("Yes, play them simultaneously"))] },
             {"name": "free_chars", "label": self._("Number of characters per player allowed for free"), "value": free_chars, "condition": "[multicharing]>0" },
@@ -320,6 +325,8 @@ class Auth(Module):
 #            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
             {"name": "activate_email_days", "label": self._("Activation is required after this number of days ('0' if require on registration)"), "value": activate_email_days, "condition": "[activate_email]"},
             {"name": "validate_names", "type": "checkbox", "label": self._("Manual validation of every character name"), "checked": validate_names},
+            {"name": "msg_went_online", "label": self._("Message about character went online"), "value": msg_went_online},
+            {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": msg_went_offline},
         ]
         self.call("admin.form", fields=fields)
 
@@ -584,13 +591,21 @@ class Auth(Module):
             rows.append([sess.uuid, sess.get("user"), sess.get("online"), sess.get("updated")])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def msg_went_online(self):
+        return self.conf("auth.msg_went_online", self._("{NAME} {GENDER:went,went} online"))
+
+    def msg_went_offline(self):
+        return self.conf("auth.msg_went_offline", self._("{NAME} {GENDER:went,went} offline"))
+
     def character_online(self, character_uuid):
-        user = self.obj(User, character_uuid)
-        self.call("chat.message", html=self._("%s online") % htmlescape(user.get("name")))
+        msg = self.msg_went_online()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character_uuid))
 
     def character_offline(self, character_uuid):
-        user = self.obj(User, character_uuid)
-        self.call("chat.message", html=self._("%s offline") % htmlescape(user.get("name")))
+        msg = self.msg_went_offline()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character_uuid))
 
     def appsession(self, session_uuid):
         app_tag = self.app().tag

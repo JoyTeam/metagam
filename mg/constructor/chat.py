@@ -1,14 +1,14 @@
 from mg import *
-from mg.constructor.players import Character
+from mg.constructor import *
 import datetime
 import re
 
-re_chat_characters = re.compile(r'(?:\[(chf|ch):([a-f0-9]{32})\])')
+re_chat_characters = re.compile(r'\[(chf|ch):([a-f0-9]{32})\]')
 re_loc_channel = re.compile(r'^loc-')
 
-class Chat(Module):
+class Chat(ConstructorModule):
     def register(self):
-        Module.register(self)
+        ConstructorModule.register(self)
         self.rhook("menu-admin-game.index", self.menu_game_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-chat.config", self.headmenu_chat_config)
@@ -172,25 +172,17 @@ class Chat(Module):
         for match in re_chat_characters.finditer(html):
             match_start, match_end = match.span()
             if match_start > start:
-                tokens.append({"str": html[start:match_start]})
-            tp, character = match.group(1, 2)
-            tokens.append({"tp": tp, "character": character})
+                tokens.append(html[start:match_start])
             start = match_end
+            tp, character = match.group(1, 2)
+            character = self.character(character)
+            if tp == "chf":
+                tokens.append(u'<span class="chat-msg-from">%s</span>' % htmlescape(character.name))
+            elif tp == "ch":
+                tokens.append(u'<span class="chat-msg-char">%s</span>' % htmlescape(character.name))
         if len(html) > start:
-            tokens.append({"str": html[start:]})
-        for token in tokens:
-            character = token.get("character")
-            if character:
-                if req:
-                    character = req.character(character)
-                else:
-                    character = Character(self.app(), character)
-                tp = token["tp"]
-                if tp == "chf":
-                    token["str"] = u'<span class="chat-msg-from">%s</span>' % htmlescape(character.name)
-                elif tp == "ch":
-                    token["str"] = u'<span class="chat-msg-char">%s</span>' % htmlescape(character.name)
-        html = u"".join([u"%s" % token.get("str", token.get("character")) for token in tokens])
+            tokens.append(html[start:])
+        html = u"".join(tokens)
         # formatting html
         html = u'<span class="chat-msg-body">%s</span>' % html
         # time
