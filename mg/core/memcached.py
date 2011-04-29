@@ -24,9 +24,12 @@ class MemcachedPool(object):
 
     def new_connection(self):
         "Create a new MemcacheConnection and connect it"
-        connection = MemcacheConnection(self.host)
-        connection.connect()
-        return connection
+        try:
+            connection = MemcacheConnection(self.host)
+            connection.connect()
+            return connection
+        except IOError:
+            return None
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be bleocked"
@@ -37,8 +40,7 @@ class MemcachedPool(object):
         # There are no connections in the pool, but we may allocate more
         if self.size is None or self.allocated < self.size:
             self.allocated += 1
-            connection = self.new_connection()
-            return connection
+            return self.new_connection()
 
         # We may not allocate more connections. Locking on the channel
         if self.channel is None:
@@ -82,6 +84,8 @@ class Memcached(object):
 
     def get_multi(self, keys):
         connection = self.pool.get()
+        if not connection:
+            return {}
         try:
             got = connection.get_multi(map(lambda key: str(self.prefix + key), keys))
             if got[0] == MemcacheResult.ERROR:
@@ -105,6 +109,8 @@ class Memcached(object):
 
     def set(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.set(str(self.prefix + key), data, expiration, flags)
             if res == MemcacheResult.ERROR:
@@ -124,6 +130,8 @@ class Memcached(object):
 
     def add(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.add(str(self.prefix + key), data, expiration, flags)
             if res == MemcacheResult.ERROR:
@@ -143,6 +151,8 @@ class Memcached(object):
 
     def replace(self, key, data, expiration=0, flags=0):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.replace(str(self.prefix + key), data, expiration, flags)
             if res == MemcacheResult.ERROR:
@@ -162,6 +172,8 @@ class Memcached(object):
 
     def incr(self, key, increment=1):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.incr(str(self.prefix + key), increment)
             if res == MemcacheResult.ERROR:
@@ -181,6 +193,8 @@ class Memcached(object):
 
     def decr(self, key, decrement=1):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.decr(str(self.prefix + key), decrement)
             if res == MemcacheResult.ERROR:
@@ -200,6 +214,8 @@ class Memcached(object):
 
     def delete(self, key, expiration=0):
         connection = self.pool.get()
+        if not connection:
+            return MemcacheResult.ERROR
         try:
             res = connection.delete(str(self.prefix + key), expiration)
             if res == MemcacheResult.ERROR:
