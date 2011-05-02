@@ -1,5 +1,5 @@
 from mg import *
-from mg.constructor.players import Character, Player
+from mg.constructor.players import Character, Player, Characters
 
 class ConstructorModule(Module):
     def character(self, uuid):
@@ -56,3 +56,17 @@ class ConstructorModule(Module):
         if not user:
             return None
         return self.character(user)
+
+    @property
+    def characters(self):
+        try:
+            req = self.req()
+        except AttributeError:
+            return Characters(self.app())
+        else:
+            try:
+                return req.characters_obj
+            except AttributeError:
+                characters = Characters(self.app())
+                req.characters_obj = characters
+                return characters

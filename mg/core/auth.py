@@ -62,8 +62,8 @@ class Session(CassandraObject):
     _indexes = {
         "valid_till": [[], "valid_till"],
         "user": [["user"]],
-        "authorized": [["authorized"], "updated"],
-        "online": [["online"], "updated"],
+        "authorized": [["authorized"]],
+        "authorized-user": [["authorized", "user"]],
     }
 
     def __init__(self, *args, **kwargs):

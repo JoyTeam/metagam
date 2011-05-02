@@ -24,7 +24,7 @@ class ConstructorProject(Module):
             "mg.constructor.domains.Domains",
             "mg.socio.Socio",
             "mg.constructor.auth.Auth",
-            "mg.constructor.players.Characters",
+            "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
         ]
         project = self.app().project

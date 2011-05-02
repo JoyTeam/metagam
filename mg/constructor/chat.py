@@ -6,7 +6,7 @@ import re
 re_chat_characters = re.compile(r'\[(chf|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
 re_chat_recipient = re.compile(r'^\s*(to|private)\s*\[([^\]]+)\]\s*(.*)$')
-re_loc_channel = re.compile(r'^loc-')
+re_loc_channel = re.compile(r'^loc-(\S+)$')
 re_valid_command = re.compile(r'^/(\S+)$')
 
 class Chat(ConstructorModule):
@@ -244,6 +244,7 @@ class Chat(ConstructorModule):
     def post(self):
         req = self.req()
         user = req.user()
+        author = self.character(user)
         text = req.param("text") 
         prefixes = []
         prefixes.append("[[chf:%s]] " % user)
@@ -271,7 +272,7 @@ class Chat(ConstructorModule):
                 self.call("web.response_json", {"error": self._("Unrecognized command: /%s") % htmlescape(cmd)})
         # extracting recipients
         private = False
-        recipients = []
+        recipient_names = []
         while True:
             m = re_chat_recipient.match(text)
             if not m:
@@ -279,10 +280,11 @@ class Chat(ConstructorModule):
             mode, name, text = m.group(1, 2, 3)
             if mode == "private":
                 private = True
-            if not name in recipients:
-                recipients.append(name)
+            if not name in recipient_name:
+                recipient_names.append(name)
         # searching recipient names
-        for name in recipients:
+        recipients = []
+        for name in recipient_names:
             char = self.find_character(name)
             if not char:
                 self.call("web.response_json", {"error": self._("Character '%s' not found") % htmlescape(name)})
@@ -290,6 +292,9 @@ class Chat(ConstructorModule):
                 prefixes.append("private [[ch:%s]] " % char.uuid)
             else:
                 prefixes.append("to [[ch:%s]] " % char.uuid)
+            recipients.append(char)
+        if private and author not in recipients:
+            recipients.append(author)
         # access control
         if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
             pass
@@ -302,7 +307,7 @@ class Chat(ConstructorModule):
         # formatting html
         html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), htmlescape(text))
         # sending message
-        self.call("chat.message", html=html, channel=channel)
+        self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
     def message(self, **kwargs):
@@ -311,38 +316,88 @@ class Chat(ConstructorModule):
         except AttributeError:
             req = None
         html = kwargs.get("html")
-        # replacing character tags [chf:UUID], [ch:UUID] etc
-        tokens = []
-        start = 0
-        for match in re_chat_characters.finditer(html):
-            match_start, match_end = match.span()
-            if match_start > start:
-                tokens.append(html[start:match_start])
-            start = match_end
-            tp, character = match.group(1, 2)
-            character = self.character(character)
-            if tp == "chf":
-                tokens.append(u'<span class="chat-msg-from">%s</span>' % htmlescape(character.name))
-            elif tp == "ch":
-                tokens.append(u'<span class="chat-msg-char">%s</span>' % htmlescape(character.name))
-        if len(html) > start:
-            tokens.append(html[start:])
-        html = u"".join(tokens)
         # time
         if not kwargs.get("hide_time"):
             now = datetime.datetime.utcnow().strftime("%H:%M:%S")
             html = u'<span class="chat-msg-time">%s</span> %s' % (now, html)
-        kwargs["html"] = html
         # channel
         channel = kwargs.get("channel")
         if not channel:
             channel = "sys"
         # store chat message
-        # TODO
+        # TODO: store chat message
         # translate channel name
-        kwargs["channel"] = self.channel2tab(channel)
-        # sending message
-        self.call("stream.packet", "global", "chat", "msg", **kwargs)
+        if channel == "sys":
+            viewers = None
+        else:
+            print "channel: %s" % channel
+            # preparing list of characters to receive
+            characters = []
+            if kwargs.get("private"):
+                characters = kwargs["recipients"]
+            elif channel == "wld" or channel == "trd" or channel == "dip":
+                characters = self.characters.tech_online
+            else:
+                m = re_loc_channel.match(channel)
+                if m:
+                    loc_uuid = m.group(1)
+                    # TODO: load location list
+            # loading list of sessions corresponding to the characters
+            print "characters: %s" % characters
+            sessions = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % char.uuid for char in characters])
+            print "sessions: %s" % sessions
+            # TODO: remove logic of syschannel and replace with versioned (see below)
+            syschannel = ["id_%s" % uuid for uuid in sessions.uuids()]
+            # loading list of characters able to view the message
+            viewers = set()
+            for uuid in sessions.index_values(2):
+                print "viewer: %s" % uuid
+                viewers.add(self.character(uuid))
+            print "effective viewers: %s" % viewers
+        # replacing character tags [chf:UUID], [ch:UUID] etc
+        tokens = []
+        mentioned = set()       # characters mentioned in the message
+        start = 0
+        for match in re_chat_characters.finditer(html):
+            match_start, match_end = match.span()
+            if match_start > start:
+                tokens.append({"html": html[start:match_start]})
+            start = match_end
+            tp, character = match.group(1, 2)
+            mentioned.add(character)
+            character = self.character(character)
+            if tp == "chf" or tp == "ch":
+                tokens.append({"character": character})
+#                        u'<span class="chat-msg-char" onclick="Chat.click(\'%s\'%s)">%s</span>' % (jsencode(character.name), (", 1" if kwargs.get("private") else ""), character.html_chat))
+        if len(html) > start:
+            tokens.append({"html": html[start:]})
+        message = {
+            "channel": self.channel2tab(channel),
+        }
+        if viewers:
+            # enumerating all recipients and preparing HTML version of the message for everyone
+            global_version = False
+            messages = []
+            for viewer in viewers:
+                if viewer.uuid in mentioned:
+                    # TODO: make special version
+                    messages.append(([session_of_viewer], "specific-html"))
+                else:
+                    # needed global version
+                    global_version = True
+            if global_version:
+                # TODO: make global version
+                messages.append(([sessions_of_char for char in viewers if char not in mentioned], "global-html"))
+            for msg in messages:
+                # sending message
+                print "sending chat message to syschannel: %s" % msg[0]
+                message["html"] = msg[1]
+                self.call("stream.packet", msg[0], "chat", "msg", **message)
+        else:
+            # system message
+            message["html"] = "system-message-html"
+            print "sending chat message to syschannel: global"
+            self.call("stream.packet", "global", "chat", "msg", **message)
 
     def channel2tab(self, channel):
         if channel == "sys" or channel == "wld" or channel == "loc" and not self.conf("chat.location-separate"):

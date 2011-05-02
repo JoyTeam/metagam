@@ -564,6 +564,7 @@ class CassandraObjectList(object):
         if uuids is not None:
             self.dict = [cls(db, uuid, {}, dbprefix=dbprefix, clsprefix=clsprefix) for uuid in uuids]
         elif query_index is not None:
+            self.index_prefix_len = len(dbprefix) + len(clsprefix) + len(query_index) + 1
             grpmcid = "%s%s/VER" % (clsprefix, query_index)
             grpid = self.db.mc.get(grpmcid)
             if grpid is None:
@@ -637,6 +638,10 @@ class CassandraObjectList(object):
             raise RuntimeError("Invalid usage of CassandraObjectList")
         for obj in self.dict:
             obj._indexes = None
+
+    def index_values(self, strip_prefix_len=0):
+        strip_prefix_len += self.index_prefix_len
+        return [ent[strip_prefix_len:] for ent in self.index_rows]
 
     def load(self, silent=False):
         if len(self.dict) > 0:

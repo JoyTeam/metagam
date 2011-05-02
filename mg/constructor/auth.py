@@ -144,9 +144,9 @@ class AuthAdmin(Module):
         except Exception as e:
             self.exception(e)
 
-class Auth(Module):
+class Auth(ConstructorModule):
     def register(self):
-        Module.register(self)
+        ConstructorModule.register(self)
         self.rhook("menu-admin-users.index", self.menu_users_index)
         self.rhook("ext-admin-players.auth", self.admin_players_auth, priv="players.auth")
         self.rhook("headmenu-admin-players.auth", self.headmenu_players_auth)
@@ -157,7 +157,7 @@ class Auth(Module):
         self.rhook("auth.form_params", self.auth_form_params)
         self.rhook("auth.registered", self.auth_registered, priority=5)
         self.rhook("auth.activated", self.auth_activated)
-        self.rhook("ext-admin-characters.online", self.characters_online, priv="users.authorized")
+        self.rhook("ext-admin-characters.online", self.admin_characters_online, priv="users.authorized")
         self.rhook("ext-auth.logout", self.ext_logout, priv="public", priority=10)
         self.rhook("ext-auth.login", (lambda: self.call("web.forbidden")), priv="disabled", priority=10)
         self.rhook("ext-auth.register", (lambda: self.call("web.forbidden")), priv="disabled", priority=10)
@@ -179,6 +179,7 @@ class Auth(Module):
         self.rhook("character.form", self.character_form)
         self.rhook("ext-auth.autologin", self.ext_autologin, priv="public")
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
+        self.rhook("auth.characters-tech-online", self.characters_tech_online)
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -575,12 +576,12 @@ class Auth(Module):
         # Everything failed
         self.call("web.response_json", {"error": self._("Error logging in")})
 
-    def characters_online(self):
+    def admin_characters_online(self):
         rows = []
         vars = {
             "tables": [
                 {
-                    "header": [self._("Session"), self._("Character"), self._("Online"), self._("Updated")],
+                    "header": [self._("Session"), self._("Character"), self._("Updated")],
                     "rows": rows
                 }
             ]
@@ -588,8 +589,12 @@ class Auth(Module):
         lst = self.objlist(SessionList, query_index="authorized", query_equal="1")
         lst.load(silent=True)
         for sess in lst:
-            rows.append([sess.uuid, sess.get("user"), sess.get("online"), sess.get("updated")])
+            rows.append([sess.uuid, sess.get("user"), sess.get("updated")])
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def characters_tech_online(self, lst):
+        dblst = self.objlist(DBCharacterOnlineList, query_index="all")
+        lst.extend([self.character(uuid) for uuid in dblst.uuids()])
 
     def msg_went_online(self):
         return self.conf("auth.msg_went_online", self._("{NAME} {GENDER:went,went} online"))
@@ -631,6 +636,7 @@ class Auth(Module):
                 self.debug("Session %s went online after disconnection. State: %s => 2" % (session_uuid, old_state))
                 appsession.set("state", 2)
                 appsession.set("timeout", self.now(3600))
+                appsession.set("character", character_uuid)
                 # updating session
                 session.set("user", character_uuid)
                 session.set("character", 1)

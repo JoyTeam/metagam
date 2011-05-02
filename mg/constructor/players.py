@@ -123,6 +123,14 @@ class Character(Module):
             self._location = None
             return self._location
 
+    @property
+    def html_chat(self):
+        try:
+            return self._html_chat
+        except AttributeError:
+            self._html_chat = self.call("character.make-html", self, "chat")
+            return self._html_chat
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)
@@ -152,9 +160,22 @@ class Player(Module):
             self._email = self.db_user.get("email")
             return self._email
 
+class Characters(Module):
+    def __init__(self, app, fqn="mg.constructor.players.Characters"):
+        Module.__init__(self, app, fqn)
+
+    @property
+    def tech_online(self):
+        try:
+            return self._tech_online
+        except AttributeError:
+            self._tech_online = []
+            self.call("auth.characters-tech-online", self._tech_online)
+            return self._tech_online
+
 # Modules
 
-class Characters(Module):
+class CharactersMod(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-users.index", self.menu_users_index)
