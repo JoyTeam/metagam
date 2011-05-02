@@ -73,12 +73,16 @@ Chat.msg = function(pkt) {
 	if (this.mode == 1) {
 		ch.content.el.dom.appendChild(div);
 		this.content.el.scroll('down', 1000000, true);
+		if (ch.id != this.active_channel)
+			ch.btn.dom.src = this.button_images[ch.id] + '-new.gif';
 	} else if (this.mode == 2) {
 		div.className = 'cmc-' + ch.id;
 		div.style.display = ch.visible ? 'block' : 'none';
 		this.content.el.dom.appendChild(div);
 		if (ch.visible)
 			this.content.el.scroll('down', 1000000, true);
+		else if (ch.btn)
+			ch.btn.dom.src = this.button_images[ch.id] + '-new.gif';
 	}
 };
 
@@ -124,8 +128,11 @@ Chat.submit = function() {
 	this.submit_locked = true;
 	this.input_control.el.dom.onkeypress = function() { return false; }
 	var channel = this.active_channel;
-	if (this.channel_control) {
+	if (this.channel_control && this.channel_control.value) {
 		channel = this.channel_control.value;
+	}
+	if (this.mode == 1) {
+		this.tab_open(channel);
 	}
 	Ext.Ajax.request({
 		url: '/chat/post',
@@ -142,7 +149,11 @@ Chat.submit = function() {
 				if (res.ok) {
 					this.input_control.el.dom.value = '';
 					this.focus();
-					if (this.mode == 2) {
+					if (this.mode == 1) {
+						this.tab_open(res.channel);
+						if (this.channel_control)
+							this.channel_control.value = res.channel;
+					} else if (this.mode == 2) {
 						this.channel_show(res.channel);
 					}
 				} else if (res.error) {
