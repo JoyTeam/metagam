@@ -20,6 +20,8 @@ class Chat(ConstructorModule):
         self.rhook("admin-gameinterface.design-files", self.gameinterface_advice_files)
         self.rhook("ext-chat.post", self.post, priv="logged")
         self.rhook("chat.message", self.message)
+        self.rhook("session.character-online", self.character_online)
+        self.rhook("session.character-offline", self.character_offline)
 
     def menu_game_index(self, menu):
         req = self.req()
@@ -59,7 +61,7 @@ class Chat(ConstructorModule):
                     if m:
                         config.set("chat.cmd-wld", m.group(1))
                     else:
-                        errors["cmd-wld"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                        errors["cmd-wld"] = self._("Chat command must begin with / and must not contain whitespace characters")
                 else:
                     config.set("chat.cmd-wld", "")
                 cmd_loc = req.param("cmd-loc")
@@ -68,7 +70,7 @@ class Chat(ConstructorModule):
                     if m:
                         config.set("chat.cmd-loc", m.group(1))
                     else:
-                        errors["cmd-loc"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                        errors["cmd-loc"] = self._("Chat command must begin with / and must not contain whitespace characters")
                 else:
                     config.set("chat.cmd-loc", "")
                 if trade_channel:
@@ -78,7 +80,7 @@ class Chat(ConstructorModule):
                         if m:
                             config.set("chat.cmd-trd", m.group(1))
                         else:
-                            errors["cmd-trd"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                            errors["cmd-trd"] = self._("Chat command must begin with / and must not contain whitespace characters")
                     else:
                         config.set("chat.cmd-trd", "")
                 if diplomacy_channel:
@@ -88,9 +90,12 @@ class Chat(ConstructorModule):
                         if m:
                             config.set("chat.cmd-dip", m.group(1))
                         else:
-                            errors["cmd-dip"] = self._("Chat command must begin with / and must not contain non-whitespace characters")
+                            errors["cmd-dip"] = self._("Chat command must begin with / and must not contain whitespace characters")
                     else:
                         config.set("chat.cmd-dip", "")
+            # chat messages
+            config.set("chat.msg_went_online", req.param("msg_went_online"))
+            config.set("chat.msg_went_offline", req.param("msg_went_offline"))
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -114,6 +119,8 @@ class Chat(ConstructorModule):
             cmd_dip = self.cmd_dip()
             if cmd_dip != "":
                 cmd_dip = "/%s" % cmd_dip
+            msg_went_online = self.msg_went_online()
+            msg_went_offline = self.msg_went_offline()
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
@@ -124,6 +131,8 @@ class Chat(ConstructorModule):
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
+            {"name": "msg_went_online", "label": self._("Message about character went online"), "value": msg_went_online},
+            {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": msg_went_offline},
         ]
         self.call("admin.form", fields=fields)
 
@@ -352,12 +361,13 @@ class Chat(ConstructorModule):
                     viewers[char_uuid] = [sess_uuid]
             print "effective viewers: %s" % viewers
         tokens = []
+        mentioned_uuids = set()         # characters uuids mentioned in the message
+        mentioned = set()               # characters mentioned in the message
         # time
         if not hide_time:
             now = datetime.datetime.utcnow().strftime("%H:%M:%S")
-            tokens.append({"time": now, "recipients": recipients})
+            tokens.append({"time": now, "mentioned": mentioned})
         # replacing character tags [chf:UUID], [ch:UUID] etc
-        mentioned = set()       # characters mentioned in the message
         start = 0
         for match in re_chat_characters.finditer(html):
             match_start, match_end = match.span()
@@ -365,11 +375,12 @@ class Chat(ConstructorModule):
                 tokens.append({"html": html[start:match_start]})
             start = match_end
             tp, character = match.group(1, 2)
-            mentioned.add(character)
+            mentioned_uuids.add(character)
             character = self.character(character)
+            mentioned.add(character)
             if tp == "chf" or tp == "ch":
-                token = {"character": character, "recipients": recipients}
-                if character.uuid not in viewers:
+                token = {"character": character, "mentioned": mentioned}
+                if viewers is not None and character.uuid not in viewers:
                     token["missing"] = True
                 tokens.append(token)
         if len(html) > start:
@@ -378,13 +389,13 @@ class Chat(ConstructorModule):
         message = {
             "channel": self.channel2tab(channel),
         }
-        print "mentioned: %s" % mentioned
+        print "mentioned_uuids: %s" % mentioned_uuids
         if viewers is not None:
             # enumerating all recipients and preparing HTML version of the message for everyone
             universal = []
             messages = []
             for char_uuid, sessions in viewers.iteritems():
-                if char_uuid in mentioned:
+                if char_uuid in mentioned_uuids:
                     # make specific HTML for this character
                     html = u''.join([self.render_token(token, char_uuid, private) for token in tokens])
                     messages.append((["id_%s" % sess_uuid for sess_uuid in sessions], html))
@@ -416,14 +427,14 @@ class Chat(ConstructorModule):
             add_tag = ""
             if token.get("missing"):
                 add_cls += " chat-msg-char-missing"
-            recipients = ["'%s'" % jsencode(ch.name) for ch in token["recipients"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
+            recipients = ["'%s'" % jsencode(ch.name) for ch in token["mentioned"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
             if recipients:
                 add_cls += " clickable"
                 add_tag += ' onclick="Chat.click([%s]%s)"' % (",".join(recipients), (", 1" if private else ""))
             return u'<span class="chat-msg-char%s"%s>%s</span>' % (add_cls, add_tag, char.html_chat)
         now = token.get("time")
         if now:
-            recipients = [char for char in token["recipients"] if char.uuid != viewer_uuid] if viewer_uuid else token["recipients"]
+            recipients = [char for char in token["mentioned"] if char.uuid != viewer_uuid] if viewer_uuid else token["mentioned"]
             if recipients:
                 recipient_names = ["'%s'" % jsencode(char.name) for char in recipients]
                 return u'<span class="chat-msg-time clickable" onclick="Chat.click([%s])">%s</span> ' % (",".join(recipient_names), now)
@@ -439,3 +450,20 @@ class Chat(ConstructorModule):
             else:
                 return "main"
         return channel
+
+    def msg_went_online(self):
+        return self.conf("chat.msg_went_online", self._("{NAME_CHAT} {GENDER:went,went} online"))
+
+    def msg_went_offline(self):
+        return self.conf("chat.msg_went_offline", self._("{NAME_CHAT} {GENDER:went,went} offline"))
+
+    def character_online(self, character_uuid):
+        msg = self.msg_went_online()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character_uuid))
+
+    def character_offline(self, character_uuid):
+        msg = self.msg_went_offline()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character_uuid))
+

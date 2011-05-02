@@ -2,9 +2,10 @@ from mg import *
 from mg.constructor import *
 import re
 
-re_find_tags = re.compile(r'{(NAME|GENDER:[^}]+)}')
+re_find_tags = re.compile(r'{(NAME|NAME_CHAT|GENDER:[^}]+)}')
 re_gender = re.compile(r'^GENDER:(.+)$')
 re_name = re.compile(r'^NAME$')
+re_name_chat = re.compile(r'^NAME_CHAT$')
 
 class QuestParserVariables(ConstructorModule):
     def __init__(self, app, kwargs, fqn="mg.constructor.quest.QuestParserVariables"):
@@ -38,8 +39,19 @@ class QuestParserVariables(ConstructorModule):
             if self.kwargs.get("character"):
                 self._name = self.character.name
             else:
-                self._name = "[%s]" % self.character.uuid
+                self._name = None
             return self._name
+
+    @property
+    def chat_name(self):
+        try:
+            return self._chat_name
+        except AttributeError:
+            if self.kwargs.get("character"):
+                self._chat_name = "[ch:%s]" % self.character.uuid
+            else:
+                self._chat_name = None
+            return self._chat_name
 
 class QuestEngine(ConstructorModule):
     def register(self):
@@ -56,6 +68,8 @@ class QuestEngine(ConstructorModule):
                 tokens.append(text[start:match_start])
             start = match_end
             if self.sub(re_name, self.name, match.group(1), tokens, variables):
+                continue
+            if self.sub(re_name_chat, self.name_chat, match.group(1), tokens, variables):
                 continue
             if self.sub(re_gender, self.gender, match.group(1), tokens, variables):
                 continue
@@ -85,3 +99,6 @@ class QuestEngine(ConstructorModule):
 
     def name(self, match, variables):
         return variables.name
+
+    def name_chat(self, match, variables):
+        return variables.chat_name

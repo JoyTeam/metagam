@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-02 19:25+0400\n"
+"POT-Creation-Date: 2011-05-02 20:16+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2779,7 +2779,7 @@ msgstr ""
 #: mg/constructor/chat.py:62 mg/constructor/chat.py:71
 #: mg/constructor/chat.py:81 mg/constructor/chat.py:91
 msgid ""
-"Chat command must begin with / and must not contain non-whitespace characters"
+"Chat command must begin with / and must not contain whitespace characters"
 msgstr ""
 
 #: mg/constructor/chat.py:98
@@ -3607,11 +3607,11 @@ msgid "Error logging in"
 msgstr ""
 
 #: mg/constructor/auth.py:600
-msgid "{NAME} {GENDER:went,went} online"
+msgid "{NAME_CHAT} {GENDER:went,went} online"
 msgstr ""
 
 #: mg/constructor/auth.py:603
-msgid "{NAME} {GENDER:went,went} offline"
+msgid "{NAME_CHAT} {GENDER:went,went} offline"
 msgstr ""
 
 #: mg/constructor/auth.py:883
