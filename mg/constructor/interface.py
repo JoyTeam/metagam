@@ -15,17 +15,14 @@ class Dynamic(Module):
         self.rhook("auth.char-form-changed", self.char_form_changed)
 
     def indexpage_js_mcid(self):
-        main_host = self.app().inst.config["main_host"]
-        lang = self.call("l10n.lang")
         ver = self.int_app().config.get("application.version", 0)
-        return "indexpage-js-%s-%s-%s" % (main_host, lang, ver)
+        return "indexpage-js-%s" % ver
 
     def char_form_changed(self):
         for mcid in [self.indexpage_js_mcid(), self.indexpage_css_mcid()]:
             self.app().mc.delete(mcid)
 
     def indexpage_js(self):
-        main_host = self.app().inst.config["main_host"]
         lang = self.call("l10n.lang")
         mcid = self.indexpage_js_mcid()
         data = self.app().mc.get(mcid)
@@ -37,7 +34,7 @@ class Dynamic(Module):
                     "%s/../static/js/gettext.js" % mg_path,
                     "%s/../static/constructor/gettext-%s.js" % (mg_path, lang),
                 ],
-                "main_host": main_host
+                "game_domain": self.app().canonical_domain
             }
             self.call("indexpage.render", vars)
             data = self.call("web.parse_template", "game/indexpage.js", vars)
@@ -45,19 +42,16 @@ class Dynamic(Module):
         self.call("web.response", data, "text/javascript; charset=utf-8")
 
     def indexpage_css_mcid(self):
-        main_host = self.app().inst.config["main_host"]
-        lang = self.call("l10n.lang")
         ver = self.int_app().config.get("application.version", 0)
-        return "indexpage-css-%s-%s-%s" % (main_host, lang, ver)
+        return "indexpage-css--%s" % ver
 
     def indexpage_css(self):
-        main_host = self.app().inst.config["main_host"]
         mcid = self.indexpage_css_mcid()
         data = self.app().mc.get(mcid)
         if not data or not caching:
             mg_path = mg.__path__[0]
             vars = {
-                "main_host": main_host
+                "game_domain": self.app().canonical_domain
             }
             data = self.call("web.parse_template", "game/indexpage.css", vars)
             self.app().mc.set(mcid, data)
@@ -124,7 +118,7 @@ class Interface(Module):
             },
             "year": re.sub(r'-.*', '', self.now()),
             "copyright": "Joy Team, %s" % htmlescape(author_name),
-            "main_host": self.app().inst.config["main_host"],
+            "game_domain": self.app().canonical_domain
         }
         links = []
         self.call("indexpage.links", links)
@@ -194,12 +188,12 @@ class Interface(Module):
         req = self.req()
         session = req.session()
         main_host = self.app().inst.config["main_host"]
-        lang = self.call("l10n.lang")
         mg_path = mg.__path__[0]
         project = self.app().project
         vars["title"] = htmlescape(project.get("title_full"))
         vars["design_root"] = design.get("uri") if design else ""
         vars["main_host"] = main_host
+        vars["game_domain"] = self.app().canonical_domain
         vars["layout"] = {
             "scheme": self.conf("gameinterface.layout-scheme", 1),
             "marginleft": self.conf("gameinterface.margin-left", 0),

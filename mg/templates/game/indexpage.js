@@ -273,7 +273,7 @@ function auth_register_next()
 							}
 						}
 						if (index < 0) {
-							report_failure(gt.gettext('Error during registration'));
+							report_failure(response.responseText);
 						} else {
 							auth_register_field(index);
 						}

@@ -280,7 +280,7 @@ class Chat(ConstructorModule):
             mode, name, text = m.group(1, 2, 3)
             if mode == "private":
                 private = True
-            if not name in recipient_name:
+            if not name in recipient_names:
                 recipient_names.append(name)
         # searching recipient names
         recipients = []
@@ -293,7 +293,7 @@ class Chat(ConstructorModule):
             else:
                 prefixes.append("to [[ch:%s]] " % char.uuid)
             recipients.append(char)
-        if private and author not in recipients:
+        if author not in recipients:
             recipients.append(author)
         # access control
         if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
@@ -310,18 +310,12 @@ class Chat(ConstructorModule):
         self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
-    def message(self, **kwargs):
+    def message(self, html=None, hide_time=False, channel=None, private=None, recipients=None, author=None):
         try:
             req = self.req()
         except AttributeError:
             req = None
-        html = kwargs.get("html")
-        # time
-        if not kwargs.get("hide_time"):
-            now = datetime.datetime.utcnow().strftime("%H:%M:%S")
-            html = u'<span class="chat-msg-time">%s</span> %s' % (now, html)
         # channel
-        channel = kwargs.get("channel")
         if not channel:
             channel = "sys"
         # store chat message
@@ -333,8 +327,8 @@ class Chat(ConstructorModule):
             print "channel: %s" % channel
             # preparing list of characters to receive
             characters = []
-            if kwargs.get("private"):
-                characters = kwargs["recipients"]
+            if private:
+                characters = recipients
             elif channel == "wld" or channel == "trd" or channel == "dip":
                 characters = self.characters.tech_online
             else:
@@ -345,17 +339,24 @@ class Chat(ConstructorModule):
             # loading list of sessions corresponding to the characters
             print "characters: %s" % characters
             sessions = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % char.uuid for char in characters])
+            print "index_rows: %s" % sessions.index_rows
+            print "index_data: %s" % sessions.index_data
             print "sessions: %s" % sessions
-            # TODO: remove logic of syschannel and replace with versioned (see below)
-            syschannel = ["id_%s" % uuid for uuid in sessions.uuids()]
             # loading list of characters able to view the message
-            viewers = set()
-            for uuid in sessions.index_values(2):
-                print "viewer: %s" % uuid
-                viewers.add(self.character(uuid))
+            viewers = {}
+            for char_uuid, sess_uuid in sessions.index_values(2):
+                print "session %s => character %s (%s)" % (sess_uuid, char_uuid, self.character(char_uuid).name)
+                try:
+                    viewers[char_uuid].append(sess_uuid)
+                except KeyError:
+                    viewers[char_uuid] = [sess_uuid]
             print "effective viewers: %s" % viewers
-        # replacing character tags [chf:UUID], [ch:UUID] etc
         tokens = []
+        # time
+        if not hide_time:
+            now = datetime.datetime.utcnow().strftime("%H:%M:%S")
+            tokens.append({"time": now, "recipients": recipients})
+        # replacing character tags [chf:UUID], [ch:UUID] etc
         mentioned = set()       # characters mentioned in the message
         start = 0
         for match in re_chat_characters.finditer(html):
@@ -367,37 +368,67 @@ class Chat(ConstructorModule):
             mentioned.add(character)
             character = self.character(character)
             if tp == "chf" or tp == "ch":
-                tokens.append({"character": character})
-#                        u'<span class="chat-msg-char" onclick="Chat.click(\'%s\'%s)">%s</span>' % (jsencode(character.name), (", 1" if kwargs.get("private") else ""), character.html_chat))
+                token = {"character": character, "recipients": recipients}
+                if character.uuid not in viewers:
+                    token["missing"] = True
+                tokens.append(token)
         if len(html) > start:
             tokens.append({"html": html[start:]})
+        print "formed tokens: %s" % tokens
         message = {
             "channel": self.channel2tab(channel),
         }
-        if viewers:
+        print "mentioned: %s" % mentioned
+        if viewers is not None:
             # enumerating all recipients and preparing HTML version of the message for everyone
-            global_version = False
+            universal = []
             messages = []
-            for viewer in viewers:
-                if viewer.uuid in mentioned:
-                    # TODO: make special version
-                    messages.append(([session_of_viewer], "specific-html"))
+            for char_uuid, sessions in viewers.iteritems():
+                if char_uuid in mentioned:
+                    # make specific HTML for this character
+                    html = u''.join([self.render_token(token, char_uuid, private) for token in tokens])
+                    messages.append((["id_%s" % sess_uuid for sess_uuid in sessions], html))
                 else:
-                    # needed global version
-                    global_version = True
-            if global_version:
-                # TODO: make global version
-                messages.append(([sessions_of_char for char in viewers if char not in mentioned], "global-html"))
+                    # these sessions need universal HTML
+                    universal.extend(sessions)
+            if universal:
+                # anyone wants universal HTML
+                html = u''.join([self.render_token(token, None, private) for token in tokens])
+                messages.append((["id_%s" % sess_uuid for sess_uuid in universal], html))
             for msg in messages:
                 # sending message
-                print "sending chat message to syschannel: %s" % msg[0]
+                print "sending chat message to syschannel %s: %s" % (msg[0], msg[1])
                 message["html"] = msg[1]
                 self.call("stream.packet", msg[0], "chat", "msg", **message)
         else:
             # system message
-            message["html"] = "system-message-html"
-            print "sending chat message to syschannel: global"
+            message["html"] = u''.join([self.render_token(token, None) for token in tokens])
+            print "sending chat message to syschannel global"
             self.call("stream.packet", "global", "chat", "msg", **message)
+
+    def render_token(self, token, viewer_uuid, private=False):
+        html = token.get("html")
+        if html:
+            return html
+        char = token.get("character")
+        if char:
+            add_cls = ""
+            add_tag = ""
+            if token.get("missing"):
+                add_cls += " chat-msg-char-missing"
+            recipients = ["'%s'" % jsencode(ch.name) for ch in token["recipients"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
+            if recipients:
+                add_cls += " clickable"
+                add_tag += ' onclick="Chat.click([%s]%s)"' % (",".join(recipients), (", 1" if private else ""))
+            return u'<span class="chat-msg-char%s"%s>%s</span>' % (add_cls, add_tag, char.html_chat)
+        now = token.get("time")
+        if now:
+            recipients = [char for char in token["recipients"] if char.uuid != viewer_uuid] if viewer_uuid else token["recipients"]
+            if recipients:
+                recipient_names = ["'%s'" % jsencode(char.name) for char in recipients]
+                return u'<span class="chat-msg-time clickable" onclick="Chat.click([%s])">%s</span> ' % (",".join(recipient_names), now)
+            else:
+                return u'<span class="chat-msg-time">%s</span> ' % now
 
     def channel2tab(self, channel):
         if channel == "sys" or channel == "wld" or channel == "loc" and not self.conf("chat.location-separate"):

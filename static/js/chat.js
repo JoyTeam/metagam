@@ -59,7 +59,7 @@ Chat.tab_open = function(id) {
 };
 
 Chat.focus = function() {
-	var cht = Ext.getCmp('chat-input-control');
+	var cht = Ext.getDom('chat-input-control');
 	if (cht)
 		cht.focus();
 };
@@ -156,6 +156,75 @@ Chat.submit = function() {
 			this.focus();
 		}).createDelegate(this)
 	});
+};
+
+Chat.click = function(names, priv) {
+	if (this.submit_locked)
+		return;
+	var tokens = this.parse_input(this.input_control.el.dom.value);
+	/* ensure all names are in the list */
+	var existing = new Array();
+	for (var i = 0; i < tokens.recipients.length; i++) {
+		existing[tokens.recipients[i].name] = true;
+	}
+	var anybody_added = false;
+	for (var i = 0; i < names.length; i++) {
+		if (!existing[names[i]]) {
+			anybody_added = true;
+			tokens.recipients.push({name: names[i]});
+		}
+	}
+	/* if anybody added to the list apply original 'priv' setting.
+	 * otherwise invert current private selection */
+	if (!anybody_added) {
+		priv = !tokens.recipients[0].priv
+	}
+	for (var i = 0; i < tokens.recipients.length; i++) {
+		tokens.recipients[i].priv = priv;
+	}
+	this.input_control.el.dom.value = this.generate_input(tokens);
+	this.focus();
+};
+
+Chat.parse_input = function(val) {
+	var tokens = {
+		commands: [],
+		recipients: [],
+		text: val
+	};
+	/* extracting commands */
+	while (true) {
+		var res = /^\s*\/(\S+)\s*(.*)/.exec(tokens.text);
+		if (!res)
+			break;
+		tokens.commands.push(res[1]);
+		tokens.text = res[2];
+	}
+	/* extracting recipients */
+	while (true) {
+		var res = /^\s*(to|private)\s*\[([^\]]+)\]\s*(.*)/.exec(tokens.text);
+		if (!res)
+			break;
+		tokens.recipients.push({
+			priv: res[1] == 'private',
+			name: res[2]
+		});
+		tokens.text = res[3];
+	}
+	return tokens;
+};
+
+Chat.generate_input = function(tokens) {
+	var res = '';
+	for (var i = 0; i < tokens.commands.length; i++) {
+		res += '/' + tokens.commands[i] + ' ';
+	}
+	for (var i = 0; i < tokens.recipients.length; i++) {
+		var rec = tokens.recipients[i];
+		res += (rec.priv ? 'private' : 'to') + ' [' + rec.name + '] ';
+	}
+	res += tokens.text;
+	return res;
 };
 
 wait(['realplexor-stream'], function() {

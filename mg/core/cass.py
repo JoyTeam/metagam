@@ -559,7 +559,7 @@ class CassandraObjectList(object):
         """
         self.db = db
         self._loaded = False
-        self.index_rows = []
+        self.index_rows = {}
         self.query_index = query_index
         if uuids is not None:
             self.dict = [cls(db, uuid, {}, dbprefix=dbprefix, clsprefix=clsprefix) for uuid in uuids]
@@ -582,23 +582,26 @@ class CassandraObjectList(object):
                     if type(index_row) == unicode:
                         index_row = index_row.encode("utf-8")
                     index_rows.append(index_row)
-                #print "loading mcids %s" % mcids
+#               print "loading mcids %s" % mcids
                 d = self.db.mc.get_multi(mcids)
+#               print d
                 remain_index_rows = []
                 for i in range(0, len(query_equal)):
                     index_row = index_rows[i]
                     index_data = d.get(mcids[i])
                     if index_data is not None:
-                        self.index_rows.append(index_row)
+#                       print "Storing: %s => %s" % (index_row, index_data)
+                        self.index_rows[index_row] = [ent[1] for ent in index_data]
                         self.index_data.extend(index_data)
                     else:
                         remain_index_rows.append(index_row)
-                #print "loading index rows %s" % remain_index_rows
                 if len(remain_index_rows):
+#                   print "loading index rows %s" % remain_index_rows
                     d = self.db.multiget_slice(remain_index_rows, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
+#                   print d
                     for index_row, index_data in d.iteritems():
+                        self.index_rows[index_row] = [col.column.value for col in index_data]
                         index_data = [[col.column.name, col.column.value] for col in index_data]
-                        self.index_rows.append(index_row)
                         self.index_data.extend(index_data)
                         mcid = urlencode("%s/%s/%s/%s/%s/%s" % (index_row[len(dbprefix):], query_start, query_finish, query_limit, query_reversed, grpid))
                         #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, index_data)
@@ -620,12 +623,12 @@ class CassandraObjectList(object):
 #               print "loading mcid %s" % mcid
                 d = self.db.mc.get(mcid)
                 if d is not None:
-                    self.index_rows.append(index_row)
+                    self.index_rows[index_row] = [ent[1] for ent in d]
                     self.index_data = d
                 else:
 #                   print "loading index row %s" % index_row
                     d = self.db.get_slice(index_row, ColumnParent(column_family="Objects"), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
-                    self.index_rows.append(index_row)
+                    self.index_rows[index_row] = [col.column.value for col in d]
                     self.index_data = [[col.column.name, col.column.value] for col in d]
                     #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, self.index_data)
                     if len(self.index_data) < max_index_length:
@@ -641,7 +644,12 @@ class CassandraObjectList(object):
 
     def index_values(self, strip_prefix_len=0):
         strip_prefix_len += self.index_prefix_len
-        return [ent[strip_prefix_len:] for ent in self.index_rows]
+        res = []
+        for key, values in self.index_rows.iteritems():
+            stripped_key = key[strip_prefix_len:]
+            for val in values:
+                res.append((stripped_key, val))
+        return res
 
     def load(self, silent=False):
         if len(self.dict) > 0:
@@ -674,7 +682,7 @@ class CassandraObjectList(object):
                                         self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                         break
                                 if len(mutations):
-                                    self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
+                                    self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
                         else:
                             raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix %s) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
                     else:
@@ -702,7 +710,7 @@ class CassandraObjectList(object):
                                     self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                     break
                             if len(mutations):
-                                self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row in self.index_rows]), ConsistencyLevel.QUORUM)
+                                self.db.batch_mutate(dict([(index_row, {"Objects": mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
                     else:
                         raise ObjectNotFoundException("UUID %s (dbprefix %s, clsprefix %s) not found" % (obj.uuid, obj.dbprefix, obj.clsprefix))
             if recovered:

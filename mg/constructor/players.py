@@ -128,6 +128,7 @@ class Character(Module):
         try:
             return self._html_chat
         except AttributeError:
+            print "calling character.make-html"
             self._html_chat = self.call("character.make-html", self, "chat")
             return self._html_chat
 
@@ -182,6 +183,7 @@ class CharactersMod(Module):
         self.rhook("ext-admin-characters.form", self.admin_characters_form, priv="players.auth")
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("character.make-html", self.character_make_html)
 
     def menu_users_index(self, menu):
         req = self.req()
@@ -359,3 +361,7 @@ class CharactersMod(Module):
         objclasses["Player"] = (DBPlayer, DBPlayerList)
         objclasses["Character"] = (DBCharacter, DBCharacterList)
         objclasses["CharacterForm"] = (DBCharacterForm, DBCharacterFormList)
+
+    def character_make_html(self, character, mode):
+        print "called character_make_html"
+        return htmlescape(character.name)

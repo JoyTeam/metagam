@@ -16,4 +16,5 @@
 #msg-div .msg h3 { margin: 0 0 8px; font-weight: bold; font-size: 15px }
 #msg-div .msg p { margin: 0 }
 /* chat */
-.chat-msg-char { cursor: pointer }
+.chat-clickable { cursor: pointer }
+.chat-msg-char-missing { text-decoration: line-through }
