@@ -1,4 +1,5 @@
 from mg import *
+from mg.constructor import *
 from mg.core.cluster import StaticUploadError
 import re
 import zipfile
@@ -1547,7 +1548,7 @@ class GameInterface(Module):
     def register(self):
         Module.register(self)
 
-class GameInterfaceAdmin(Module):
+class GameInterfaceAdmin(ConstructorModule):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-design.index", self.menu_design_index)
@@ -1611,10 +1612,11 @@ class GameInterfaceAdmin(Module):
         vars = {
             "title": self._("Demo page")
         }
+        char = self.character(req.user())
         if filename == "interface.html":
-            self.call("gameinterface.render", vars, design)
-            self.call("gameinterface.gamejs", vars, design)
-            self.call("gameinterface.blocks", vars, design)
+            self.call("gameinterface.render", char, vars, design)
+            self.call("gameinterface.gamejs", char, vars, design)
+            self.call("gameinterface.blocks", char, vars, design)
             self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
         elif filename == "cabinet.html" or filename == "error.html" or filename == "form.html":
             demo_users = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Crazy Warrior From Hell")]

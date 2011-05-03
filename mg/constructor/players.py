@@ -62,6 +62,24 @@ class DBCharacterFormList(CassandraObjectList):
         kwargs["cls"] = DBCharacterForm
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DBCharacterOnline(CassandraObject):
+    _indexes = {
+        "all": [[]]
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterOnline-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBCharacterOnline._indexes
+
+class DBCharacterOnlineList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterOnline-"
+        kwargs["cls"] = DBCharacterOnline
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 # Business logic objects
 
 class Character(Module):
@@ -124,6 +142,22 @@ class Character(Module):
             return self._location
 
     @property
+    def html(self):
+        try:
+            return self._html
+        except AttributeError:
+            self._html = self.call("character.make-html", self, "main")
+            return self._html
+
+    @property
+    def html_admin(self):
+        try:
+            return self._html_admin
+        except AttributeError:
+            self._html_admin = self.call("character.make-html", self, "admin")
+            return self._html_admin
+
+    @property
     def html_chat(self):
         try:
             return self._html_chat
@@ -139,13 +173,18 @@ class Character(Module):
             self._html_chatlist = self.call("character.make-html", self, "chatlist")
             return self._html_chatlist
 
+    @property
     def tech_online(self):
         try:
-            self.obj(DBCharacterOnline, self.uuid)
-        except ObjectNotFoundException:
-            return False
-        else:
-            return True
+            return self._tech_online
+        except AttributeError:
+            try:
+                self.obj(DBCharacterOnline, self.uuid)
+            except ObjectNotFoundException:
+                self._tech_online = False
+            else:
+                self._tech_online = True
+            return self._tech_online
 
     @property
     def lock(self):

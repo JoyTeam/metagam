@@ -228,6 +228,7 @@ class Realplexor(Module):
             if len(ids) == 1:
                 ids = ids[0]
             else:
+                self.flush()
                 self.call("stream.send", ids, {"packets": [kwargs]})
                 return
         try:
@@ -247,8 +248,11 @@ class Realplexor(Module):
                 packets[ids] = queue
             queue.append(kwargs)
 
-    def request_processed(self):
-        req = self.req()
+    def flush(self):
+        try:
+            req = self.req()
+        except AttributeError:
+            return
         try:
             packets = req.stream_packets
         except AttributeError:
@@ -256,6 +260,10 @@ class Realplexor(Module):
         else:
             for session_uuid, lst in packets.iteritems():
                 self.call("stream.send", session_uuid, {"packets": lst})
+            req.stream_packets = {}
+
+    def request_processed(self):
+        self.flush()
 
 class RealplexorDaemon(Daemon):
     def __init__(self, app, id="stream"):

@@ -1,4 +1,5 @@
 from mg import *
+from mg.constructor import *
 from mg.constructor.design import Design
 from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterList
 import re
@@ -57,7 +58,7 @@ class Dynamic(Module):
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/css")
 
-class Interface(Module):
+class Interface(ConstructorModule):
     def register(self):
         Module.register(self)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -91,10 +92,10 @@ class Interface(Module):
                 self.call("web.redirect", "/")
             userobj = self.obj(User, user)
             if userobj.get("name") is not None:
-                character = self.obj(DBCharacter, userobj.uuid)
+                character = self.character(userobj.uuid)
                 return self.game_interface(character)
             else:
-                player = self.obj(DBPlayer, userobj.uuid)
+                player = self.player(userobj.uuid)
                 return self.game_cabinet(player)
         if self.app().project.get("inactive"):
             self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
@@ -177,20 +178,13 @@ class Interface(Module):
         vars["Logout"] = self._("Logout")
         vars["CreateNewCharacter"] = self._("Create a new character")
 
-    def game_interface_default_character(self, player):
-        chars = self.objlist(DBCharacterList, query_index="player", query_equal=player.uuid, query_reversed=True, query_limit=1)
-        if not len(chars):
-            self.call("web.redirect", "/character/create")
-        chars.load()
-        return self.game_interface(chars[0])
-
-    def game_interface_render(self, vars, design):
+    def game_interface_render(self, character, vars, design):
         req = self.req()
         session = req.session()
         main_host = self.app().inst.config["main_host"]
         mg_path = mg.__path__[0]
         project = self.app().project
-        vars["title"] = htmlescape(project.get("title_full"))
+        vars["title"] = htmlescape("%s - %s" % (character.name, project.get("title_full")))
         vars["design_root"] = design.get("uri") if design else ""
         vars["main_host"] = main_host
         vars["game_domain"] = self.app().canonical_domain
@@ -212,9 +206,9 @@ class Interface(Module):
         interface = self.conf("gameinterface.design")
         design = self.obj(Design, interface) if interface else None
         vars = {}
-        self.call("gameinterface.render", vars, design)
-        self.call("gameinterface.gamejs", vars, design)
-        self.call("gameinterface.blocks", vars, design)
+        self.call("gameinterface.render", character, vars, design)
+        self.call("gameinterface.gamejs", character, vars, design)
+        self.call("gameinterface.blocks", character, vars, design)
         req = self.req()
         session = req.session()
         self.call("stream.login", session.uuid, character.uuid)
@@ -284,12 +278,12 @@ class Interface(Module):
         ]
         self.call("admin.form", fields=fields)
 
-    def blocks(self, vars, design):
+    def blocks(self, character, vars, design):
         if design:
             obj = self.httpfile("%s/blocks.html" % design.get("uri"))
             vars["blocks"] = self.call("web.parse_template", obj, vars)
 
-    def game_js(self, vars, design):
+    def game_js(self, character, vars, design):
         req = self.req()
         session = req.session()
         # js modules

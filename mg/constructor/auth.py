@@ -3,7 +3,7 @@
 from mg import *
 from mg.constructor import *
 from mg.core.auth import Captcha, AutoLogin
-from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList, DBCharacterForm
+from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList, DBCharacterForm, DBCharacterOnline, DBCharacterOnlineList
 import hashlib
 import copy
 import random
@@ -26,24 +26,6 @@ class AppSessionList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "AppSession-"
         kwargs["cls"] = AppSession
-        CassandraObjectList.__init__(self, *args, **kwargs)
-
-class DBCharacterOnline(CassandraObject):
-    _indexes = {
-        "all": [[]]
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterOnline-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacterOnline._indexes
-
-class DBCharacterOnlineList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterOnline-"
-        kwargs["cls"] = DBCharacterOnline
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class AuthAdmin(Module):
@@ -126,7 +108,7 @@ class AuthAdmin(Module):
                                             pass
                                         else:
                                             obj.remove()
-                                            app.hooks.call("session.character-offline", character_uuid)
+                                            app.hooks.call("session.character-offline", self.character(character_uuid))
                                 else:
                                     # disconnected session destroyed on timeout
                                     self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
@@ -178,6 +160,7 @@ class Auth(ConstructorModule):
         self.rhook("ext-auth.autologin", self.ext_autologin, priv="public")
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
+        self.rhook("stream.character", self.stream_character)
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -623,6 +606,7 @@ class Auth(ConstructorModule):
                 appsession.store()
                 self.stream_character_online(character_uuid)
                 logout_others = True
+                self.call("session.character-init", session.uuid, self.character(character_uuid))
         if logout_others:
             self.logout_others(session_uuid, character_uuid)
 
@@ -634,7 +618,7 @@ class Auth(ConstructorModule):
                 obj = self.obj(DBCharacterOnline, character_uuid, data={})
                 obj.dirty = True
                 obj.store()
-                self.call("session.character-online", character_uuid)
+                self.call("session.character-online", self.character(character_uuid))
 
     def stream_character_offline(self, character_uuid):
         with self.lock(["character.%s" % character_uuid]):
@@ -644,7 +628,7 @@ class Auth(ConstructorModule):
                 pass
             else:
                 obj.remove()
-                self.call("session.character-offline", character_uuid)
+                self.call("session.character-offline", self.character(character_uuid))
 
     def logout_others(self, except_session_uuid, character_uuid):
         # log out other character sessions depending on multicharing policy, except given session_uuid
@@ -830,15 +814,15 @@ class Auth(ConstructorModule):
             if went_offline:
                 self.stream_character_offline(character_uuid)
 
-    def gameinterface_render(self, vars, design):
+    def gameinterface_render(self, character, vars, design):
         req = self.req()
         session = req.session()
         # initializing stream
         stream_marker = uuid4().hex
-        vars["stream_marker"] = stream_marker
         self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
         vars["js_modules"].add("realplexor-stream")
         vars["js_init"].append("Stream.run_realplexor('%s');" % stream_marker)
+        self.call("session.character-init", session.uuid, character)
 
     def auth_character(self):
         req = self.req()
@@ -1000,3 +984,9 @@ class Auth(ConstructorModule):
 
     def cleanup_inactive_users(self):
         raise Hooks.Return(None)
+
+    def stream_character(self, character, cls, method, **kwargs):
+        lst = self.objlist(SessionList, query_index="authorized-user", query_equal="1-%s" % character.uuid)
+        ids = ["id_%s" % sess_uuid for char_uuid, sess_uuid in lst.index_values(2)]
+        if ids:
+            self.call("stream.packet", ids, cls, method, **kwargs)

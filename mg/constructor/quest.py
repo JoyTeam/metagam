@@ -17,7 +17,10 @@ class QuestParserVariables(ConstructorModule):
         try:
             return self._character
         except AttributeError:
-            self._character = ConstructorModule.character(self, self.kwargs["character"])
+            if self.kwargs.get("character"):
+                self._character = self.kwargs["character"]
+            else:
+                self._character = None
             return self._character
 
     @property

@@ -238,6 +238,25 @@ Chat.generate_input = function(tokens) {
 	return res;
 };
 
+Chat.join_myself = function(pkt) {
+	alert('Joining myself to the channel ' + pkt.channel);
+};
+
+Chat.join = function(pkt) {
+	alert('Joining ' + pkt.html + ' to the channel ' + pkt.channel);
+};
+
+Chat.unjoin = function(pkt) {
+	alert('Unjoining ' + pkt.character + ' from the channel ' + pkt.channel);
+};
+
+Chat.reload_channels = function(pkt) {
+	alert('Reloading channels');
+	for (var i = 0; i < pkt.channels.length; i++) {
+		var ch = pkt.channels[i];
+	}
+};
+
 wait(['realplexor-stream'], function() {
 
 	Stream.stream_handler('chat', Chat);
