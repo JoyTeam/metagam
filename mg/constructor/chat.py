@@ -8,6 +8,27 @@ re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
 re_chat_recipient = re.compile(r'^\s*(to|private)\s*\[([^\]]+)\]\s*(.*)$')
 re_loc_channel = re.compile(r'^loc-(\S+)$')
 re_valid_command = re.compile(r'^/(\S+)$')
+re_after_dash = re.compile(r'-.*')
+
+class DBChatChannelCharacter(CassandraObject):
+    "This object is created when the character is online and joined corresponding channel"
+    _indexes = {
+        "channel": [["channel"]],
+        "character": [["character"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ChatChannelCharacter-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBChatChannelCharacter._indexes
+
+class DBChatChannelCharacter(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "ChatChannelCharacter-"
+        kwargs["cls"] = DBChatChannelCharacter
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Chat(ConstructorModule):
     def register(self):
@@ -22,11 +43,21 @@ class Chat(ConstructorModule):
         self.rhook("chat.message", self.message)
         self.rhook("session.character-online", self.character_online)
         self.rhook("session.character-offline", self.character_offline)
+        self.rhook("chat.channel-join", self.channel_join)
+        self.rhook("chat.channel-unjoin", self.channel_unjoin)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("headmenu-admin-chat.debug", self.headmenu_chat_debug)
+        self.rhook("ext-admin-chat.debug", self.chat_debug, priv="chat.config")
+
+    def objclasses_list(self, objclasses):
+        objclasses["ChatChannelCharacter"] = (DBChatChannelCharacter, DBChatChannelCharacterList)
 
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("chat.config"):
             menu.append({"id": "chat/config", "text": self._("Chat configuration"), "leaf": True, "order": 10})
+            if self.conf("chat.debug-channel"):
+                menu.append({"id": "chat/debug", "text": self._("Debug channel"), "leaf": True, "order": 11})
 
     def permissions_list(self, perms):
         perms.append({"id": "chat.config", "name": self._("Chat configuration editor")})
@@ -466,4 +497,84 @@ class Chat(ConstructorModule):
         msg = self.msg_went_offline()
         if msg:
             self.call("chat.message", html=self.call("quest.format_text", msg, character=character_uuid))
+
+    def channel_join(self, character, channel):
+        print "character %s is online and now joining channel %s" % (character.name, channel)
+        with self.lock(["chat-channel.%s" % channel]):
+            uuid = "%s-%s" % (character.uuid, channel)
+            obj = self.obj(DBChatChannelCharacter, uuid, silent=True)
+            obj.set("character", character.uuid)
+            obj.set("channel", channel)
+            obj.store()
+            # list of characters subscribed to this channel
+            lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel)
+            character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+            print "subscribed characters: %s" % character_uuids
+            # load sessions of these characters
+            lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+            characters_online = set()
+            syschannels = []
+            for char_uuid, sess_uuid in lst.index_values(2):
+                characters_online.add(char_uuid)
+                syschannels.append("id_%s" % sess_uuid)
+            print "syschannels: %s" % syschannels
+            if syschannels:
+                self.call("stream.packet", syschannels, "chat", "join", character=character.uuid, html=character.html_chatlist, channel=channel)
+            # dropping obsolete database records
+            for char_uuid in character_uuids:
+                if char_uuid not in character_online:
+                    self.info("Unjoining offline character %s from channel %s", char_uuid, channel)
+                    obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel), data={})
+                    obj.remove()
+
+    def channel_unjoin(self, character, channel):
+        print "character %s is online and now unjoining channel %s" % (character.name, channel)
+        with self.lock(["chat-channel.%s" % channel]):
+            # list of characters subscribed to this channel
+            lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel)
+            character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+            print "subscribed characters: %s" % character_uuids
+            # load sessions of these characters
+            lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+            characters_online = set()
+            syschannels = []
+            for char_uuid, sess_uuid in lst.index_values(2):
+                characters_online.add(char_uuid)
+                syschannels.append("id_%s" % sess_uuid)
+            print "syschannels: %s" % syschannels
+            if syschannels:
+                self.call("stream.packet", syschannels, "chat", "unjoin", character=character.uuid, channel=channel)
+            characters_online.add(character.uuid)
+            # dropping obsolete database records
+            for char_uuid in character_uuids:
+                if char_uuid not in character_online:
+                    self.info("Unjoining offline character %s from channel %s", char_uuid, channel)
+                    obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel), data={})
+                    obj.remove()
+            # dropping database record
+            uuid = "%s-%s" % (character.uuid, channel)
+            obj = self.obj(DBChatChannelCharacter, uuid, data={})
+            obj.remove()
+
+    def headmenu_chat_debug(self, args):
+        return self._("Chat debug channel")
+
+    def chat_debug(self):
+        rows = []
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "chat/debug/join",
+                            "text": self._("Join character"),
+                            "lst": True
+                        }
+                    ],
+                    "header": [self._("Character"), self._("Unjoining")],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 

@@ -225,11 +225,11 @@ Form = Ext.extend(AdminResponse, {
 			success: function(f, action) {
 				if (form.fileUpload) {
 					adm_success_json(action.response, {
-						func: url
+						func: url.replace(/(^\/admin-|\/$)/g, '')
 					});
 				} else {
 					adm_success(action.response, {
-						func: url
+						func: url.replace(/(^\/admin-|\/$)/g, '')
 					});
 				}
 			},

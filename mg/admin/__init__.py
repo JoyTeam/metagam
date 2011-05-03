@@ -247,4 +247,7 @@ class AdminInterface(Module):
         self.call("admin.response_js", "admin-form", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
 
     def update_menu(self):
-        self.req().admin_update_menu = True
+        try:
+            self.req().admin_update_menu = True
+        except AttributeError:
+            pass

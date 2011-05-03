@@ -784,8 +784,9 @@ class ApplicationConfigUpdater(object):
             else:
                 config.store()
                 if notify:
-                    self.hooks.call("cluster.appconfig_changed")
+                    self.app.hooks.call("cluster.appconfig_changed")
             self.params = {}
+            self.app.hooks.call("admin.update_menu")
 
 class Application(object):
     """

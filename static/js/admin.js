@@ -130,8 +130,10 @@ function adm_success(response, opts)
 {
 	if (!response || !response.getResponseHeader)
 		return;
-	current_page = opts.func;
-	expand_menu(current_page);
+	if (opts.func) {
+		current_page = opts.func;
+		expand_menu(current_page);
+	}
 	if (response.getResponseHeader("Content-Type").match(/json/)) {
 		var res = Ext.util.JSON.decode(response.responseText);
 		adm_response(res);

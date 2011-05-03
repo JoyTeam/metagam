@@ -128,9 +128,28 @@ class Character(Module):
         try:
             return self._html_chat
         except AttributeError:
-            print "calling character.make-html"
             self._html_chat = self.call("character.make-html", self, "chat")
             return self._html_chat
+
+    @property
+    def html_chatlist(self):
+        try:
+            return self._html_chatlist
+        except AttributeError:
+            self._html_chatlist = self.call("character.make-html", self, "chatlist")
+            return self._html_chatlist
+
+    def tech_online(self):
+        try:
+            self.obj(DBCharacterOnline, self.uuid)
+        except ObjectNotFoundException:
+            return False
+        else:
+            return True
+
+    @property
+    def lock(self):
+        return self.lock(["character.%s" % self.uuid])
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
@@ -363,5 +382,4 @@ class CharactersMod(Module):
         objclasses["CharacterForm"] = (DBCharacterForm, DBCharacterFormList)
 
     def character_make_html(self, character, mode):
-        print "called character_make_html"
         return htmlescape(character.name)
