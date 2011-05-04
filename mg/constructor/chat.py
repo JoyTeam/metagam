@@ -194,72 +194,31 @@ class Chat(ConstructorModule):
     def chatmode(self):
         return self.conf("chat.channels-mode", 1)
 
-    def channels(self, chatmode):
-        channels = []
-        channels.append({
-            "id": "main",
-            "short_name": self._("channel///Main"),
-            "switchable": True,
-            "writable": True,
-        })
-        if chatmode:
-            # channels enabled
-            if self.conf("chat.location-separate"):
-                channels.append({
-                    "id": "loc",
-                    "short_name": self._("channel///Location"),
-                    "writable": True,
-                    "switchable": True
-                })
-            else:
-                channels[0]["writable"] = True
-            if self.conf("chat.trade-channel"):
-                channels.append({
-                    "id": "trd",
-                    "short_name": self._("channel///Trade"),
-                    "switchable": True,
-                    "writable": True
-                })
-            if self.conf("chat.diplomacy-channel"):
-                channels.append({
-                    "id": "dip",
-                    "short_name": self._("channel///Diplomacy"),
-                    "switchable": True,
-                    "writable": True
-                })
-            if self.conf("chat.debug-channel"):
-                channels.append({
-                    "id": "dbg",
-                    "short_name": self._("channel///Debug"),
-                    "switchable": True,
-                    "writable": True
-                })
-        else:
-            channels[0]["writable"] = True
-        return channels
-
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("chat")
         # list of channels
+        channels = []
+        self.call("chat.character-channels", character, channels)
         chatmode = self.chatmode()
-        channels = self.channels(chatmode)
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode == 2:
             vars["js_init"].append("Chat.active_channel = 'main';")
         for ch in channels:
-            vars["js_init"].append("Chat.channel_new({id: '%s', title: '%s'});" % (ch["id"], jsencode(ch["short_name"])))
+            if ch.get("chatbox"):
+                vars["js_init"].append("Chat.chatbox_new({id: '%s', title: '%s'});" % (ch["id"], jsencode(ch["title"])))
         if chatmode and len(channels):
             vars["layout"]["chat_channels"] = True
             buttons = []
             state = None
             if chatmode == 1:
                 for ch in channels:
-                    buttons.append({
-                        "id": ch["id"],
-                        "state": "on" if ch["id"] == "main" else "off",
-                        "onclick": "return Chat.tab_open('%s');" % ch["id"],
-                        "hint": htmlescape(ch["short_name"])
-                    })
+                    if ch.get("chatbox"):
+                        buttons.append({
+                            "id": ch["id"],
+                            "state": "on" if ch["id"] == "main" else "off",
+                            "onclick": "return Chat.tab_open('%s');" % ch["id"],
+                            "hint": htmlescape(ch["title"])
+                        })
             elif chatmode == 2:
                 for ch in channels:
                     if ch.get("switchable"):
@@ -267,7 +226,7 @@ class Chat(ConstructorModule):
                             "id": ch["id"],
                             "state": "on",
                             "onclick": "return Chat.channel_toggle('%s');" % ch["id"],
-                            "hint": htmlescape(ch["short_name"])
+                            "hint": htmlescape(ch["title"])
                         })
             if len(buttons):
                 for btn in buttons:
@@ -286,12 +245,14 @@ class Chat(ConstructorModule):
 
     def gameinterface_advice_files(self, files):
         chatmode = self.chatmode()
-        channels = self.channels(chatmode)
+        channels = []
+        self.call("chat.character-channels", None, channels)
         if len(channels) >= 2:
             for ch in channels:
-                if chatmode == 1 or ch.get("switchable"):
-                    files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["short_name"]})
-                    files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["short_name"]})
+                if ch.get("chatbox") or ch.get("switchable"):
+                    files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["title"]})
+                    files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["title"]})
+                    files.append({"filename": "chat-%s-new.gif" % ch["id"], "description": self._("Chat channel '%s' has new messages") % ch["title"]})
 
     def cmd_loc(self):
         return self.conf("chat.cmd-loc", "loc")
@@ -363,7 +324,7 @@ class Chat(ConstructorModule):
         if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
             pass
         else:
-            self.call("web.response_json", {"error": self._("No access to the chat channel %s") % htmlescape(channel)})
+            self.call("web.response_json", {"error": self._("No access to this chat channel")})
         # translating channel name
         if channel == "loc":
             # TODO: convert to loc-%s format
@@ -521,31 +482,31 @@ class Chat(ConstructorModule):
         self.call("chat.character-channels", character, channels)
         # joining character to all channels
         for channel in channels:
-            self.call("chat.channel-join", character, channel["id"], title=channel["title"], send_myself=False)
+            self.call("chat.channel-join", character, channel["id"], send_myself=False)
+
+    #
+    # TODO
+    #
+    # Clear difference between chatboxes, subscribed channels, switchable channels and roster
+    # channel-join in some circumstances must deliver information about other subscribers
+    #
 
     def character_init(self, session_uuid, character):
         print "character %s init" % character.uuid
         channels = []
         self.call("chat.character-channels", character, channels)
         # reload_channels resets destroyes all channels not listed in the 'channels' list and unconditionaly clears online lists
-        self.call("stream.character", character, "chat", "reload_channels", channels=[ch["id"] for ch in channels])
+        self.call("stream.character", character, "chat", "reload_channels", channels=channels)
         # send information about all characters on all subscribed channels
         syschannel = "id_%s" % session_uuid
+        print "channels: %s" % channels
         for channel in channels:
             lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel["id"])
             character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
             for char_uuid in character_uuids:
                 char = self.character(char_uuid)
-                self.call("stream.packet", syschannel, "chat", "join", character=char.uuid, html=char.html_chatlist, channel=channel["id"], title=channel["title"])
-
-    def character_channels(self, char, channels):
-        if self.conf("chat.debug-channel"):
-            try:
-                self.obj(DBChatDebug, char.uuid)
-            except ObjectNotFoundException:
-                pass
-            else:
-                channels.append({"id": "debug", "title": self._("Debug")})
+                print "join character %s to the channel %s" % (char.roster_info, channel["id"])
+                self.call("stream.packet", syschannel, "chat", "join", character=char.roster_info, channel=channel["id"])
 
     def character_offline(self, character):
         msg = self.msg_went_offline()
@@ -585,16 +546,16 @@ class Chat(ConstructorModule):
                 print "syschannels: %s" % syschannels
                 if send_myself and len(mychannels):
                     print "join_myself %s" % mychannels
-                    self.call("stream.packet", mychannels, "chat", "join_myself", channel=channel, title=title)
+                    self.call("stream.packet", mychannels, "chat", "join_myself", id=channel, title=title)
                 if syschannels:
                     print "join %s" % syschannels
-                    self.call("stream.packet", syschannels, "chat", "join", character=character.uuid, html=character.html_chatlist, channel=channel)
+                    self.call("stream.packet", syschannels, "chat", "join", character=character.roster_info, channel=channel)
                 for char_uuid in character_uuids:
                     if char_uuid in characters_online:
                         if send_myself and char_uuid != character.uuid and len(mychannels):
                             char = self.character(char_uuid)
                             for ch in mychannels:
-                                self.call("stream.packet", ch, "chat", "join", character=char.uuid, html=char.html_chatlist, channel=channel)
+                                self.call("stream.packet", ch, "chat", "join", character=char.roster_info, channel=channel)
                     else:
                         # dropping obsolete database record
                         self.info("Unjoining offline character %s from channel %s", char_uuid, channel)
@@ -654,7 +615,7 @@ class Chat(ConstructorModule):
                 obj.dirty = True
                 obj.store()
                 if char.tech_online:
-                    self.call("chat.channel-join", char, "debug")
+                    self.call("chat.channel-join", char, "dbg", title=self._("channel///Debug"))
                 self.call("admin.redirect", "chat/debug")
             fields = [
                 {"name": "name", "label": self._("Character name")},
@@ -667,7 +628,7 @@ class Chat(ConstructorModule):
             obj.remove()
             char = self.character(char_uuid)
             if char.tech_online:
-                self.call("chat.channel-unjoin", char, "debug")
+                self.call("chat.channel-unjoin", char, "dbg")
             self.call("admin.redirect", "chat/debug")
         rows = []
         lst = self.objlist(DBChatDebugList, query_index="all")
@@ -690,4 +651,57 @@ class Chat(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def character_channels(self, char, channels):
+        channels.append({
+            "id": "main",
+            "title": self._("channel///Main"),
+            "chatbox": True,
+        })
+        channels.append({
+            "id": "wld",
+            "title": self._("channel///Entire world"),
+            "switchable": True,
+            "writable": True,
+        })
+        location_separate = True if self.conf("chat.location-separate") else False
+        channels.append({
+            "id": "loc",
+            "title": self._("channel///Location"),
+            "chatbox": location_separate,
+            "switchable": location_separate,
+            "writable": True,
+            "roster": True,
+        })
+        if self.conf("chat.trade-channel"):
+            channels.append({
+                "id": "trd",
+                "title": self._("channel///Trade"),
+                "chatbox": True,
+                "switchable": True,
+                "writable": True,
+            })
+        if self.conf("chat.diplomacy-channel"):
+            channels.append({
+                "id": "dip",
+                "title": self._("channel///Diplomacy"),
+                "chatbox": True,
+                "switchable": True,
+                "writable": True
+            })
+        if self.conf("chat.debug-channel"):
+            try:
+                if char:
+                    self.obj(DBChatDebug, char.uuid)
+            except ObjectNotFoundException:
+                pass
+            else:
+                channels.append({
+                    "id": "dbg",
+                    "title": self._("channel///Debug")
+                    "chatbox": True,
+                    "switchable": True,
+                    "writable": True,
+                    "roster": True
+                })
 

@@ -1,7 +1,9 @@
 var Chat = {
 	channels: new Array(),
 	channels_by_id: new Array(),
-	button_images: new Array()
+	button_images: new Array(),
+	roster_channels: new Array(),
+	roster_channels_by_id: new Array()
 };
 
 Chat.content = new Ext.BoxComponent({
@@ -17,8 +19,10 @@ Chat.input_control = new Ext.BoxComponent({
 });
 
 Chat.channel_control = Ext.getDom('chat-channel-control');
+Chat.roster_header_element = Ext.get('roster-header');
+Chat.roster_box_element = Ext.get('roster-box-content');
 
-Chat.channel_new = function(ch) {
+Chat.chatbox_new = function(ch) {
 	this.channels.push(ch);
 	this.channels_by_id[ch.id] = ch;
 	if (this.mode == 1) {
@@ -157,7 +161,7 @@ Chat.submit = function() {
 						this.channel_show(res.channel);
 					}
 				} else if (res.error) {
-					Game.msg(gt.gettext('Error'), res.error);
+					Game.error(gt.gettext('Error'), res.error);
 				}
 			}
 		}).createDelegate(this),
@@ -171,7 +175,7 @@ Chat.submit = function() {
 
 Chat.click = function(names, priv) {
 	if (this.submit_locked)
-		return;
+		return false;
 	var tokens = this.parse_input(this.input_control.el.dom.value);
 	/* ensure all names are in the list */
 	var existing = new Array();
@@ -185,7 +189,7 @@ Chat.click = function(names, priv) {
 			tokens.recipients.push({name: names[i]});
 		}
 	}
-	/* if anybody added to the list apply original 'priv' setting.
+	/* if anybody added to the list - apply original 'priv' setting.
 	 * otherwise invert current private selection */
 	if (!anybody_added) {
 		priv = !tokens.recipients[0].priv
@@ -195,6 +199,7 @@ Chat.click = function(names, priv) {
 	}
 	this.input_control.el.dom.value = this.generate_input(tokens);
 	this.focus();
+	return false;
 };
 
 Chat.parse_input = function(val) {
@@ -239,34 +244,161 @@ Chat.generate_input = function(tokens) {
 };
 
 Chat.join_myself = function(pkt) {
-	alert('Joining myself to the channel ' + pkt.channel);
+	this.roster_channel_create(pkt);
 };
 
 Chat.join = function(pkt) {
-	alert('Joining ' + pkt.html + ' to the channel ' + pkt.channel);
+	var rch = this.roster_channels_by_id[pkt.channel];
+	if (!rch)
+		return;
+	var char_info = pkt.character;
+	var character = rch.characters_by_id[char_info.id];
+	if (character) {
+		character.html = char_info.html;
+		character.name = char_info.name;
+		if (character.element) {
+			character.element.el.update(char_info.html);
+		}
+		return;
+	}
+	var character = char_info;
+	if (rch.content) {
+		character.element = new Ext.BoxComponent({
+			renderTo: rch.content.el,
+			html: '<span class="chat-roster-char chat-clickable" onclick="return Chat.click([\'' + jsencode(char_info.name) + '\']);">' + htmlescape(char_info.name) + '</span>'
+		});
+	}
+	rch.characters.push(character);
+	rch.characters_by_id[character.id] = character;
 };
 
 Chat.unjoin = function(pkt) {
-	alert('Unjoining ' + pkt.character + ' from the channel ' + pkt.channel);
+	var rch = this.roster_channels_by_id[pkt.channel];
+	if (!rch)
+		return;
+	var character = rch.characters_by_id[pkt.character];
+	if (!character)
+		return;
+	rch.characters_by_id[character.id] = undefined;
+	for (var i = 0; i < rch.characters.length; i++) {
+		if (rch.characters[i].id == character.id) {
+			rch.characters.splice(i, 1);
+			break;
+		}
+	}
+	if (character.element) {
+		character.element.destroy();
+	}
+	if (character.id == Game.character) {
+		this.roster_channel_destroy(rch);
+	}
 };
 
 Chat.reload_channels = function(pkt) {
-	alert('Reloading channels');
+	var remaining = new Array();
 	for (var i = 0; i < pkt.channels.length; i++) {
-		var ch = pkt.channels[i];
+		this.roster_channel_create(pkt.channels[i]);
+		remaining[pkt.channels[i].id] = true;
+	}
+	for (var i = this.roster_channels.length - 1; i >= 0; i--) {
+		var ch = this.roster_channels[i];
+		if (!remaining[ch.id]) {
+			this.roster_channel_destroy(ch);
+		}
+	}
+};
+
+Chat.roster_channel_create = function(info) {
+	var rch = this.roster_channels_by_id[info.id];
+	if (!rch) {
+		rch = info;
+		rch.characters = new Array();
+		rch.characters_by_id = new Array();
+		this.roster_channels.push(rch);
+		this.roster_channels_by_id[info.id] = rch;
+		if (this.roster_box_element) {
+			rch.content = new Ext.BoxComponent({
+				renderTo: this.roster_box_element,
+				hidden: true
+			});
+		}
+		if (!this.active_roster_channel) {
+			this.active_roster_channel = rch.id;
+			if (rch.content) {
+				rch.content.show();
+			}
+		}
+		this.roster_header_update();
+	}
+	return rch;
+};
+
+Chat.roster_channel_destroy = function(info) {
+	var rch = this.roster_channels_by_id[info.id];
+	if (rch) {
+		for (var i = 0; i < this.roster_channels.length; i++) {
+			if (this.roster_channels[i].id == info.id) {
+				this.roster_channels.splice(i, 1);
+				break;
+			}
+		}
+		this.roster_channels_by_id[info.id] = undefined;
+		if (info.content) {
+			info.content.destroy();
+		}
+		if (this.active_roster_channel == info.id) {
+			if (this.roster_channels.length) {
+				var ch = this.roster_channels[0]
+				this.active_roster_channel = ch.id;
+				if (ch.content) {
+					ch.content.show();
+				}
+			} else
+				this.active_roster_channel = undefined;
+		}
+		this.roster_header_update();
+	}
+};
+
+Chat.roster_header_update = function() {
+	if (this.roster_header_element) {
+		var tokens = new Array();
+		for (var i = 0; i < this.roster_channels.length; i++) {
+			var ch = this.roster_channels[i];
+			var html = ch.title;
+			if (ch.id != this.active_roster_channel) {
+				html = '<span class="roster-channel roster-channel-clickable" onclick="Chat.roster_tab(\'' + ch.id + '\')">' + html + '</span>';
+			} else {
+				html = '<span class="roster-channel">' + html + '</span>';
+			}
+			tokens.push(html);
+		}
+		this.roster_header_element.update(tokens.join('&nbsp;| '));
+	}
+};
+
+Chat.roster_tab = function(id) {
+	if (this.active_roster_channel) {
+		var ch = this.roster_channels_by_id[this.active_roster_channel];
+		if (ch && ch.content) {
+			ch.content.hide();
+		}
+	}
+	this.active_roster_channel = id;
+	this.roster_header_update();
+	var ch = this.roster_channels_by_id[id];
+	if (ch && ch.content) {
+		ch.content.show();
 	}
 };
 
 wait(['realplexor-stream'], function() {
-
 	Stream.stream_handler('chat', Chat);
-
 	Chat.input_control.el.on('keypress', function(e, t, o) {
 		if (e.getKey() == 13) {
 			e.preventDefault();
 			Chat.submit();
 		}
 	});
-
 	loaded('chat');
 });

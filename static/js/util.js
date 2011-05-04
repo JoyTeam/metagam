@@ -131,3 +131,23 @@ sprintfWrapper = {
  
 sprintf = sprintfWrapper.init;
 
+function jsencode(s)
+{
+	s = s.replace(/\\/g, '\\\\');
+	s = s.replace(/\'/g, '\\\'');
+	s = s.replace(/\r/g, '\\r');
+	s = s.replace(/\n/g, '\\n');
+
+	return s;
+}
+
+function htmlescape(s)
+{
+	s = s.replace(/\046/g, '\&amp;');
+	s = s.replace(/\074/g, '\&lt;');
+	s = s.replace(/\076/g, '\&gt;');
+	s = s.replace(/\012/g, '\&quot;');
+
+	return s;
+}
+

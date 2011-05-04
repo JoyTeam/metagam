@@ -2,6 +2,7 @@ var admin_root = '';
 var Game = {}
 Game.app = '[%app%]';
 Game.domain = '[%domain%]';
+Game.character = '[%character%]';
 
 Game.fixupContentEl = function(el) {
 	var def = Ext.getDom('default-' + el.contentEl);

@@ -72,7 +72,7 @@ Stream.packet_received = function(pkt) {
 	try {
 		(method.createDelegate(handler))(pkt);
 	} catch (e) {
-		Game.msg(gt.gettext('Exception'), e);
+		Game.error(gt.gettext('Exception'), e);
 	}
 };
 

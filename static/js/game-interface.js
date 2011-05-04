@@ -22,13 +22,21 @@ Game.logout = function() {
 	document.location = 'http://' + Game.domain + '/auth/logout';
 };
 
-Game.msg = function(title, str) {
+Game.msg = function(title, str, add_cls) {
 	if (!this.msgCt){
 		this.msgCt = Ext.DomHelper.insertFirst(document.body, {id: 'msg-div'}, true);
 	}
-	var m = Ext.DomHelper.append(this.msgCt, '<div class="msg"><h3>' + title + '</h3><p>' + str + '</p></div>', true);
+	var m = Ext.DomHelper.append(this.msgCt, '<div class="msg' + (add_cls ? ' ' + add_cls : '') + '"><h3>' + title + '</h3><p>' + str + '</p></div>', true);
 	m.hide();
 	m.slideIn('t').pause(3).ghost('t', {remove: true});
+};
+
+Game.info = function(title, str) {
+	this.msg(title, str, 'msg-info');
+};
+
+Game.error = function(title, str) {
+	this.msg(title, str, 'msg-error');
 };
 
 loaded('game-interface');

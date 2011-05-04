@@ -188,6 +188,7 @@ class Interface(ConstructorModule):
         vars["design_root"] = design.get("uri") if design else ""
         vars["main_host"] = main_host
         vars["game_domain"] = self.app().canonical_domain
+        vars["character"] = character.uuid
         vars["layout"] = {
             "scheme": self.conf("gameinterface.layout-scheme", 1),
             "marginleft": self.conf("gameinterface.margin-left", 0),

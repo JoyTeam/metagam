@@ -166,14 +166,6 @@ class Character(Module):
             return self._html_chat
 
     @property
-    def html_chatlist(self):
-        try:
-            return self._html_chatlist
-        except AttributeError:
-            self._html_chatlist = self.call("character.make-html", self, "chatlist")
-            return self._html_chatlist
-
-    @property
     def tech_online(self):
         try:
             return self._tech_online
@@ -189,6 +181,17 @@ class Character(Module):
     @property
     def lock(self):
         return self.lock(["character.%s" % self.uuid])
+
+    @property
+    def roster_info(self):
+        try:
+            return self._roster_info
+        except AttributeError:
+            self._roster_info = {
+                "id": self.uuid,
+                "name": self.name
+            }
+            return self._roster_info
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
