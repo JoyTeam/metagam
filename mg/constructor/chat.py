@@ -161,7 +161,7 @@ class Chat(ConstructorModule):
             debug_channel = self.conf("chat.debug-channel")
             trade_channel = self.conf("chat.trade-channel")
             diplomacy_channel = self.conf("chat.diplomacy-channel")
-            chatmode = self.chatmode()
+            chatmode = self.chatmode
             cmd_wld = self.cmd_wld()
             if cmd_wld != "":
                 cmd_wld = "/%s" % cmd_wld
@@ -191,21 +191,24 @@ class Chat(ConstructorModule):
         ]
         self.call("admin.form", fields=fields)
 
+    @property
     def chatmode(self):
-        return self.conf("chat.channels-mode", 1)
+        try:
+            return self._chatmode
+        except AttributeError:
+            self._chatmode = self.conf("chat.channels-mode", 1)
+            return self._chatmode
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("chat")
         # list of channels
         channels = []
         self.call("chat.character-channels", character, channels)
-        chatmode = self.chatmode()
+        chatmode = self.chatmode
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode == 2:
             vars["js_init"].append("Chat.active_channel = 'main';")
-        for ch in channels:
-            if ch.get("chatbox"):
-                vars["js_init"].append("Chat.chatbox_new({id: '%s', title: '%s'});" % (ch["id"], jsencode(ch["title"])))
+        return
         if chatmode and len(channels):
             vars["layout"]["chat_channels"] = True
             buttons = []
@@ -244,7 +247,7 @@ class Chat(ConstructorModule):
         vars["chat_channels"] = channels
 
     def gameinterface_advice_files(self, files):
-        chatmode = self.chatmode()
+        chatmode = self.chatmode
         channels = []
         self.call("chat.character-channels", None, channels)
         if len(channels) >= 2:
@@ -482,14 +485,7 @@ class Chat(ConstructorModule):
         self.call("chat.character-channels", character, channels)
         # joining character to all channels
         for channel in channels:
-            self.call("chat.channel-join", character, channel["id"], send_myself=False)
-
-    #
-    # TODO
-    #
-    # Clear difference between chatboxes, subscribed channels, switchable channels and roster
-    # channel-join in some circumstances must deliver information about other subscribers
-    #
+            self.call("chat.channel-join", character, channel, send_myself=False)
 
     def character_init(self, session_uuid, character):
         print "character %s init" % character.uuid
@@ -501,12 +497,13 @@ class Chat(ConstructorModule):
         syschannel = "id_%s" % session_uuid
         print "channels: %s" % channels
         for channel in channels:
-            lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel["id"])
-            character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
-            for char_uuid in character_uuids:
-                char = self.character(char_uuid)
-                print "join character %s to the channel %s" % (char.roster_info, channel["id"])
-                self.call("stream.packet", syschannel, "chat", "join", character=char.roster_info, channel=channel["id"])
+            if channel.get("roster"):
+                lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel["id"])
+                character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+                for char_uuid in character_uuids:
+                    char = self.character(char_uuid)
+                    print "join character %s to the channel %s" % (char.roster_info, channel["id"])
+                    self.call("stream.packet", syschannel, "chat", "roster_add", character=char.roster_info, channel=channel["id"])
 
     def character_offline(self, character):
         msg = self.msg_went_offline()
@@ -516,80 +513,90 @@ class Chat(ConstructorModule):
         lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
         lst.load(silent=True)
         for ent in lst:
-            self.call("chat.channel-unjoin", character, ent.get("channel"))
+            info = self.channel_info(ent.get("channel"))
+            if ent.get("roster"):
+                info["roster"] = True
+            self.call("chat.channel-unjoin", character, info)
 
-    def channel_join(self, character, channel, title=None, send_myself=True):
+    def channel_join(self, character, channel, send_myself=True):
         print "character %s is online and now joining channel %s" % (character.name, channel)
-        with self.lock(["chat-channel.%s" % channel]):
-            uuid = "%s-%s" % (character.uuid, channel)
-            obj = self.obj(DBChatChannelCharacter, uuid, silent=True)
+        channel_id = channel["id"]
+        with self.lock(["chat-channel.%s" % channel_id]):
+            obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
             obj.set("character", character.uuid)
-            obj.set("channel", channel)
+            obj.set("channel", channel_id)
+            if channel.get("roster"):
+                obj.set("roster", True)
+                obj.set("roster_info", character.roster_info)
             obj.store()
-            # list of characters subscribed to this channel
-            lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel)
-            character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
-            if not send_myself:
-                character_uuids = [uuid for uuid in character_uuids if uuid != character.uuid]
-            print "subscribed characters: %s" % character_uuids
-            if len(character_uuids):
-                # load sessions of these characters
-                lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
-                characters_online = set()
-                syschannels = []
-                mychannels = []
-                for char_uuid, sess_uuid in lst.index_values(2):
-                    characters_online.add(char_uuid)
-                    syschannels.append("id_%s" % sess_uuid)
-                    if send_myself and character.uuid == char_uuid:
-                        mychannels.append("id_%s" % sess_uuid)
-                print "syschannels: %s" % syschannels
-                if send_myself and len(mychannels):
-                    print "join_myself %s" % mychannels
-                    self.call("stream.packet", mychannels, "chat", "join_myself", id=channel, title=title)
-                if syschannels:
-                    print "join %s" % syschannels
-                    self.call("stream.packet", syschannels, "chat", "join", character=character.roster_info, channel=channel)
-                for char_uuid in character_uuids:
-                    if char_uuid in characters_online:
-                        if send_myself and char_uuid != character.uuid and len(mychannels):
-                            char = self.character(char_uuid)
-                            for ch in mychannels:
-                                self.call("stream.packet", ch, "chat", "join", character=char.roster_info, channel=channel)
-                    else:
-                        # dropping obsolete database record
-                        self.info("Unjoining offline character %s from channel %s", char_uuid, channel)
-                        obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel), silent=True)
-                        obj.remove()
+            if channel.get("roster"):
+                # list of characters subscribed to this channel
+                lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
+                character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+                if not send_myself:
+                    character_uuids = [uuid for uuid in character_uuids if uuid != character.uuid]
+                print "subscribed characters: %s" % character_uuids
+                if len(character_uuids):
+                    # load sessions of these characters
+                    lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+                    characters_online = set()
+                    syschannels = []
+                    mychannels = []
+                    for char_uuid, sess_uuid in lst.index_values(2):
+                        characters_online.add(char_uuid)
+                        syschannels.append("id_%s" % sess_uuid)
+                        if send_myself and character.uuid == char_uuid:
+                            mychannels.append("id_%s" % sess_uuid)
+                    print "syschannels: %s" % syschannels
+                    if send_myself and len(mychannels):
+                        print "roster_channel_create %s" % mychannels
+                        self.call("stream.packet", mychannels, "chat", "channel_create", **channel)
+                    if syschannels:
+                        print "roster_add %s" % syschannels
+                        self.call("stream.packet", syschannels, "chat", "roster_add", character=character.roster_info, channel=channel_id)
+                    for char_uuid in character_uuids:
+                        if char_uuid in characters_online:
+                            if send_myself and char_uuid != character.uuid and len(mychannels):
+                                char = self.character(char_uuid)
+                                for ch in mychannels:
+                                    self.call("stream.packet", ch, "chat", "roster_add", character=char.roster_info, channel=channel_id)
+                        else:
+                            # dropping obsolete database record
+                            self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
+                            obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel_id), silent=True)
+                            obj.remove()
+            else:
+                self.call("stream.character", character, "chat", "channel_create", **channel)
 
     def channel_unjoin(self, character, channel):
         print "character %s is online and now unjoining channel %s" % (character.name, channel)
-        with self.lock(["chat-channel.%s" % channel]):
-            # list of characters subscribed to this channel
-            lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel)
-            character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
-            print "subscribed characters: %s" % character_uuids
-            if len(character_uuids):
-                # load sessions of these characters
-                lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
-                characters_online = set()
-                syschannels = []
-                for char_uuid, sess_uuid in lst.index_values(2):
-                    characters_online.add(char_uuid)
-                    syschannels.append("id_%s" % sess_uuid)
-                print "syschannels: %s" % syschannels
-                if syschannels:
-                    self.call("stream.packet", syschannels, "chat", "unjoin", character=character.uuid, channel=channel)
-                characters_online.add(character.uuid)
-                # dropping obsolete database records
-                for char_uuid in character_uuids:
-                    if char_uuid not in characters_online:
-                        self.info("Unjoining offline character %s from channel %s", char_uuid, channel)
-                        obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel), silent=True)
-                        obj.remove()
+        channel_id = channel["id"]
+        with self.lock(["chat-channel.%s" % channel_id]):
+            if channel.get("roster"):
+                # list of characters subscribed to this channel
+                lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
+                character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+                print "subscribed characters: %s" % character_uuids
+                if len(character_uuids):
+                    # load sessions of these characters
+                    lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+                    characters_online = set()
+                    syschannels = []
+                    for char_uuid, sess_uuid in lst.index_values(2):
+                        characters_online.add(char_uuid)
+                        syschannels.append("id_%s" % sess_uuid)
+                    print "syschannels: %s" % syschannels
+                    if syschannels:
+                        self.call("stream.packet", syschannels, "chat", "roster_remove", character=character.uuid, channel=channel_id)
+                    characters_online.add(character.uuid)
+                    # dropping obsolete database records
+                    for char_uuid in character_uuids:
+                        if char_uuid not in characters_online:
+                            self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
+                            obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel_id), silent=True)
+                            obj.remove()
             # dropping database record
-            uuid = "%s-%s" % (character.uuid, channel)
-            obj = self.obj(DBChatChannelCharacter, uuid, silent=True)
+            obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
             obj.remove()
 
     def headmenu_chat_debug(self, args):
@@ -615,7 +622,7 @@ class Chat(ConstructorModule):
                 obj.dirty = True
                 obj.store()
                 if char.tech_online:
-                    self.call("chat.channel-join", char, "dbg", title=self._("channel///Debug"))
+                    self.call("chat.channel-join", char, self.channel_info("dbg"))
                 self.call("admin.redirect", "chat/debug")
             fields = [
                 {"name": "name", "label": self._("Character name")},
@@ -628,7 +635,7 @@ class Chat(ConstructorModule):
             obj.remove()
             char = self.character(char_uuid)
             if char.tech_online:
-                self.call("chat.channel-unjoin", char, "dbg")
+                self.call("chat.channel-unjoin", char, self.channel_info("dbg"))
             self.call("admin.redirect", "chat/debug")
         rows = []
         lst = self.objlist(DBChatDebugList, query_index="all")
@@ -653,42 +660,13 @@ class Chat(ConstructorModule):
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def character_channels(self, char, channels):
-        channels.append({
-            "id": "main",
-            "title": self._("channel///Main"),
-            "chatbox": True,
-        })
-        channels.append({
-            "id": "wld",
-            "title": self._("channel///Entire world"),
-            "switchable": True,
-            "writable": True,
-        })
-        location_separate = True if self.conf("chat.location-separate") else False
-        channels.append({
-            "id": "loc",
-            "title": self._("channel///Location"),
-            "chatbox": location_separate,
-            "switchable": location_separate,
-            "writable": True,
-            "roster": True,
-        })
+        channels.append(self.channel_info("main"))
+        channels.append(self.channel_info("wld"))
+        channels.append(self.channel_info("loc"))
         if self.conf("chat.trade-channel"):
-            channels.append({
-                "id": "trd",
-                "title": self._("channel///Trade"),
-                "chatbox": True,
-                "switchable": True,
-                "writable": True,
-            })
+            channels.append(self.channel_info("trd"))
         if self.conf("chat.diplomacy-channel"):
-            channels.append({
-                "id": "dip",
-                "title": self._("channel///Diplomacy"),
-                "chatbox": True,
-                "switchable": True,
-                "writable": True
-            })
+            channels.append(self.channel_info("dip"))
         if self.conf("chat.debug-channel"):
             try:
                 if char:
@@ -696,12 +674,41 @@ class Chat(ConstructorModule):
             except ObjectNotFoundException:
                 pass
             else:
-                channels.append({
-                    "id": "dbg",
-                    "title": self._("channel///Debug")
-                    "chatbox": True,
-                    "switchable": True,
-                    "writable": True,
-                    "roster": True
-                })
+                channels.append(self.channel_info("dbg"))
 
+    def channel_info(self, channel_id):
+        channel = {
+            "id": channel_id
+        }
+        if channel_id == "main":
+            channel["title"] = self._("channel///Main")
+            channel["chatbox"] = True
+        elif channel_id == "wld":
+            channel["title"] = self._("channel///Entire world")
+            channel["switchable"] = True
+            channel["writable"] = True
+        elif channel_id == "loc":
+            location_separate = True if self.conf("chat.location-separate") else False
+            channel["title"] = self._("channel///Location")
+            channel["chatbox"] = location_separate
+            channel["switchable"] = location_separate
+            channel["writable"] = True
+            channel["roster"] = True
+        elif channel_id == "trd":
+            channel["title"] = self._("channel///Trade")
+            channel["chatbox"] = True
+            channel["switchable"] = True
+            channel["writable"] = True
+        elif channel_id == "dip":
+            channel["title"] = self._("channel///Diplomacy")
+            channel["chatbox"] = True
+            channel["switchable"] = True
+            channel["writable"] = True
+        elif channel_id == "dbg":
+            channel["title"] = self._("channel///Debug")
+            channel["chatbox"] = True
+            channel["switchable"] = True
+            channel["writable"] = True
+            channel["roster"] = True
+        self.call("chat.channel-info", channel)
+        return channel

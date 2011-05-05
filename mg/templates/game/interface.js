@@ -22,7 +22,7 @@ Game.setup_game_layout = function() {
 	var topmenu = this.fixupContentEl({
 		xtype: 'box',
 		height: 40,
-		contentEl: 'topmenu-box'
+		contentEl: 'topmenu'
 	});
 	var chat = {
 		border: false,

@@ -28,7 +28,7 @@ class AppSessionList(CassandraObjectList):
         kwargs["cls"] = AppSession
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class AuthAdmin(Module):
+class AuthAdmin(ConstructorModule):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)

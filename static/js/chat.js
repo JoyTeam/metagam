@@ -1,9 +1,6 @@
 var Chat = {
 	channels: new Array(),
-	channels_by_id: new Array(),
-	button_images: new Array(),
-	roster_channels: new Array(),
-	roster_channels_by_id: new Array()
+	channels_by_id: new Array()
 };
 
 Chat.content = new Ext.BoxComponent({
@@ -19,6 +16,7 @@ Chat.input_control = new Ext.BoxComponent({
 });
 
 Chat.channel_control = Ext.getDom('chat-channel-control');
+Chat.channel_buttons_element = Ext.get('chat-channel-buttons');
 Chat.roster_header_element = Ext.get('roster-header');
 Chat.roster_box_element = Ext.get('roster-box-content');
 
@@ -243,12 +241,8 @@ Chat.generate_input = function(tokens) {
 	return res;
 };
 
-Chat.join_myself = function(pkt) {
-	this.roster_channel_create(pkt);
-};
-
-Chat.join = function(pkt) {
-	var rch = this.roster_channels_by_id[pkt.channel];
+Chat.roster_add = function(pkt) {
+	var rch = this.channels_by_id[pkt.channel];
 	if (!rch)
 		return;
 	var char_info = pkt.character;
@@ -272,8 +266,8 @@ Chat.join = function(pkt) {
 	rch.characters_by_id[character.id] = character;
 };
 
-Chat.unjoin = function(pkt) {
-	var rch = this.roster_channels_by_id[pkt.channel];
+Chat.roster_remove = function(pkt) {
+	var rch = this.channels_by_id[pkt.channel];
 	if (!rch)
 		return;
 	var character = rch.characters_by_id[pkt.character];
@@ -297,25 +291,34 @@ Chat.unjoin = function(pkt) {
 Chat.reload_channels = function(pkt) {
 	var remaining = new Array();
 	for (var i = 0; i < pkt.channels.length; i++) {
-		this.roster_channel_create(pkt.channels[i]);
-		remaining[pkt.channels[i].id] = true;
+		var ch = pkt.channels[i];
+		if (ch.roster) {
+			this.roster_channel_create(ch);
+			remaining[ch.id] = true;
+		}
 	}
-	for (var i = this.roster_channels.length - 1; i >= 0; i--) {
-		var ch = this.roster_channels[i];
+	for (var i = this.channels.length - 1; i >= 0; i--) {
+		var ch = this.channels[i];
 		if (!remaining[ch.id]) {
 			this.roster_channel_destroy(ch);
 		}
 	}
 };
 
+Chat.channel_create = function(info) {
+	if (info.roster)
+		this.roster_channel_create(info);
+	+++
+};
+
 Chat.roster_channel_create = function(info) {
-	var rch = this.roster_channels_by_id[info.id];
+	var rch = this.channels_by_id[info.id];
 	if (!rch) {
 		rch = info;
 		rch.characters = new Array();
 		rch.characters_by_id = new Array();
-		this.roster_channels.push(rch);
-		this.roster_channels_by_id[info.id] = rch;
+		this.channels.push(rch);
+		this.channels_by_id[info.id] = rch;
 		if (this.roster_box_element) {
 			rch.content = new Ext.BoxComponent({
 				renderTo: this.roster_box_element,
@@ -334,21 +337,21 @@ Chat.roster_channel_create = function(info) {
 };
 
 Chat.roster_channel_destroy = function(info) {
-	var rch = this.roster_channels_by_id[info.id];
+	var rch = this.channels_by_id[info.id];
 	if (rch) {
-		for (var i = 0; i < this.roster_channels.length; i++) {
-			if (this.roster_channels[i].id == info.id) {
-				this.roster_channels.splice(i, 1);
+		for (var i = 0; i < this.channels.length; i++) {
+			if (this.channels[i].id == info.id) {
+				this.channels.splice(i, 1);
 				break;
 			}
 		}
-		this.roster_channels_by_id[info.id] = undefined;
+		this.channels_by_id[info.id] = undefined;
 		if (info.content) {
 			info.content.destroy();
 		}
 		if (this.active_roster_channel == info.id) {
-			if (this.roster_channels.length) {
-				var ch = this.roster_channels[0]
+			if (this.channels.length) {
+				var ch = this.channels[0]
 				this.active_roster_channel = ch.id;
 				if (ch.content) {
 					ch.content.show();
@@ -363,8 +366,8 @@ Chat.roster_channel_destroy = function(info) {
 Chat.roster_header_update = function() {
 	if (this.roster_header_element) {
 		var tokens = new Array();
-		for (var i = 0; i < this.roster_channels.length; i++) {
-			var ch = this.roster_channels[i];
+		for (var i = 0; i < this.channels.length; i++) {
+			var ch = this.channels[i];
 			var html = ch.title;
 			if (ch.id != this.active_roster_channel) {
 				html = '<span class="roster-channel roster-channel-clickable" onclick="Chat.roster_tab(\'' + ch.id + '\')">' + html + '</span>';
@@ -379,14 +382,14 @@ Chat.roster_header_update = function() {
 
 Chat.roster_tab = function(id) {
 	if (this.active_roster_channel) {
-		var ch = this.roster_channels_by_id[this.active_roster_channel];
+		var ch = this.channels_by_id[this.active_roster_channel];
 		if (ch && ch.content) {
 			ch.content.hide();
 		}
 	}
 	this.active_roster_channel = id;
 	this.roster_header_update();
-	var ch = this.roster_channels_by_id[id];
+	var ch = this.channels_by_id[id];
 	if (ch && ch.content) {
 		ch.content.show();
 	}

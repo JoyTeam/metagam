@@ -1,15 +1,18 @@
-#topmenu-box { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
-#topmenu-box-content { padding-top: 10px; font-size: 18px }
-#chat-channels { height: 100%; background: #ffffff }
-#chat-channel-buttons { padding: 10px 10px 0 10px }
+/* topmenu interface */
+#topmenu { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
+#topmenu-content { padding-top: 10px; font-size: 18px }
+/* chat interface */
+#chat-buttons { height: 100%; background: #ffffff }
+#chat-buttons-content { padding: 10px 10px 0 10px }
 #chat-box { height: 100%; background: #ffffff; border-top: solid 1px #f0f0f0; overflow: auto }
 #chat-box-content { padding: 0 15px 0 10px }
 #chat-input { height: 100%; padding: 10px 15px 0 10px; background: #ffffff; border-top: solid 1px #f0f0f0 }
 #chat-input-control { width: 100%; }
-#roster-box { height: 100%; overflow: auto; background: #ffffff }
-#roster-header { padding: 10px 15px 0 10px }
-#roster-box-content { padding: 10px 15px 0 10px }
+#chat-roster { height: 100%; overflow: auto; background: #ffffff }
+#chat-roster-header { padding: 10px 15px 0 10px }
+#chat-roster-content { padding: 10px 15px 0 10px }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
+.chat-button { cursor: pointer }
 /* top message */
 .msg .x-box-mc { font-size: 14px }
 #msg-div { position: absolute; left: 35%; top: 10px; width: 300px; z-index: 20000 }
@@ -18,8 +21,8 @@
 #msg-div .msg-error { background: #ffe0e0; border: 2px solid #c44 }
 #msg-div .msg h3 { margin: 0 0 8px; font-weight: bold; font-size: 15px }
 #msg-div .msg p { margin: 0 }
-/* chat */
+/* chat contents */
 .chat-clickable { cursor: pointer }
 .chat-msg-char-missing { text-decoration: line-through }
-.roster-channel { cursor: pointer; color: blue }
-.roster-channel-clickable { text-decoration: underline }
+.chat-roster-channel { cursor: pointer; color: blue }
+.chat-roster-channel-clickable { text-decoration: underline }
