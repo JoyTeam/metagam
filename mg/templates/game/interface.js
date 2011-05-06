@@ -1,8 +1,9 @@
 var admin_root = '';
-var Game = {}
-Game.app = '[%app%]';
-Game.domain = '[%domain%]';
-Game.character = '[%character%]';
+var Game = {
+	app: '[%app%]',
+	domain: '[%domain%]',
+	character: '[%character%]'
+};
 
 Game.fixupContentEl = function(el) {
 	var def = Ext.getDom('default-' + el.contentEl);
@@ -31,7 +32,7 @@ Game.setup_game_layout = function() {
 			xtype: 'box',
 			height: 40,
 			region: 'north',
-			contentEl: 'chat-channels'
+			contentEl: 'chat-buttons'
 		}),[%end%]this.fixupContentEl({
 			xtype: 'box',
 			region: 'center',
@@ -45,7 +46,7 @@ Game.setup_game_layout = function() {
 	};
 	var roster = this.fixupContentEl({
 		xtype: 'box',
-		contentEl: 'roster-box'
+		contentEl: 'chat-roster'
 	});
 	var main = {
 		xtype: 'iframepanel',
@@ -140,7 +141,7 @@ Game.setup_game_layout = function() {
 	[%else%]
 	var content = new Ext.Panel({
 		border: false,
-		html: 'Misconfigured layout scheme'
+		html: gt.gettext('Misconfigured layout scheme')
 	});
 	[%end%]
 	var margins = new Array();

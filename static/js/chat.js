@@ -1,137 +1,330 @@
 var Chat = {
 	channels: new Array(),
-	channels_by_id: new Array()
+	channels_by_id: new Array(),
+	box_content: new Ext.BoxComponent({
+		applyTo: 'chat-box-content',
+		autoScroll: true,
+		style: {
+			height: '100%'
+		}
+	}),
+	input_control: Ext.get('chat-input-control'),
+	channel_control_element: Ext.getDom('chat-channel-control'),
+	buttons_content: Ext.get('chat-buttons-content'),
+	roster_header_element: Ext.get('chat-roster-header'),
+	roster_content_element: Ext.get('chat-roster-content')
 };
 
-Chat.content = new Ext.BoxComponent({
-	applyTo: 'chat-box-content',
-	autoScroll: true,
-	style: {
-		height: '100%'
-	}
-});
-
-Chat.input_control = new Ext.BoxComponent({
-	applyTo: 'chat-input-control'
-});
-
-Chat.channel_control = Ext.getDom('chat-channel-control');
-Chat.channel_buttons_element = Ext.get('chat-channel-buttons');
-Chat.roster_header_element = Ext.get('roster-header');
-Chat.roster_box_element = Ext.get('roster-box-content');
-
-Chat.chatbox_new = function(ch) {
+/* Create channel: chat tab, channel button, roster tab, channel selection option */
+Chat.channel_create = function(ch) {
+	if (this.channels_by_id[ch.id])
+		return;
 	this.channels.push(ch);
 	this.channels_by_id[ch.id] = ch;
-	if (this.mode == 1) {
-		ch.content = new Ext.BoxComponent({
-			autoEl: {
-				tag: 'div'
-			},
-			renderTo: 'chat-box-content',
-			hidden: true
-		});
-	} else if (this.mode == 2) {
-		ch.visible = true;
+	if (ch.roster) {
+		this.roster_tab_create(ch);
 	}
-	ch.btn = Ext.get('chat-channel-button-' + ch.id);
+	if (this.mode == 1) {
+		if (ch.chatbox) {
+			this.channel_button_create(ch);
+		}
+		this.channel_tab_create(ch);
+	}
+	if (this.mode == 2 && ch.switchable) {
+		ch.visible = true;
+		this.channel_button_create(ch);
+	}
+	if (ch.writable && this.channel_control_element) {
+		var opt = document.createElement('option');
+		opt.value = ch.id;
+		opt.innerHTML = htmlescape(ch.title);
+		ch.channel_control_opt = opt;
+		this.channel_control_element.appendChild(opt);
+	}
 };
 
-Chat.tab_open = function(id) {
+/* Destroy channel and everything related */
+Chat.channel_destroy = function(ch) {
+	var channels_by_id= new Array();
+	var channels = new Array();
+	for (var i = 0; i < this.channels.length; i++) {
+		var c = this.channels[i];
+		if (c.id != ch.id) {
+			channels.push(c);
+			channels_by_id[c.id] = c;
+		}
+	}
+	this.channels = channels;
+	this.channels_by_id = channels_by_id;
+	if (ch.roster) {
+		this.roster_tab_destroy(ch);
+	}
+	if (this.mode == 1) {
+		this.channel_tab_destroy(ch);
+		if (ch.chatbox) {
+			this.channel_button_destroy(ch);
+		}
+	}
+	if (this.mode == 2 && ch.switchable) {
+		this.channel_button_destroy(ch);
+	}
+	if (ch.channel_control_opt) {
+		this.channel_control_element.removeChild(ch.channel_control_opt);
+		ch.channel_control_opt = undefined;
+	}
+	if (this.mode == 1 && this.active_channel == ch.id) {
+		this.open_first_tab();
+	}
+};
+
+/* Create roster tab */
+Chat.roster_tab_create = function(ch) {
+	if (!this.roster_content_element)
+		return;
+	ch.roster_characters = new Array();
+	ch.roster_characters_by_id = new Array();
+	if (this.roster_content_element) {
+		ch.roster_content = new Ext.BoxComponent({
+			renderTo: this.roster_content_element,
+			hidden: true
+		});
+	}
+	if (!this.active_roster_channel) {
+		this.active_roster_channel = ch.id;
+		if (ch.roster_content) {
+			ch.roster_content.show();
+		}
+	}
+	this.roster_header_update();
+};
+
+/* Destroy roster tab */
+Chat.roster_tab_destroy = function(ch) {
+	if (!this.roster_content_element)
+		return;
+	if (ch.roster_content) {
+		ch.roster_content.destroy();
+		ch.roster_content = undefined;
+	}
+	if (this.active_roster_channel == ch.id) {
+		if (this.channels.length) {
+			var c = this.channels[0]
+			this.active_roster_channel = c.id;
+			if (c.roster_content) {
+				c.roster_content.show();
+			}
+		} else {
+			this.active_roster_channel = undefined;
+		}
+	}
+	this.roster_header_update();
+	this.channel_button_destroy(ch);
+};
+
+/* Update roster menu */
+Chat.roster_header_update = function() {
+	if (!this.roster_header_element)
+		return;
+	var tokens = new Array();
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		if (ch.roster) {
+			var html = htmlescape(ch.title);
+			if (ch.id != this.active_roster_channel) {
+				html = '<span class="chat-roster-channel chat-roster-channel-clickable" onclick="Chat.roster_tab(\'' + ch.id + '\')">' + html + '</span>';
+			} else {
+				html = '<span class="chat-roster-channel">' + html + '</span>';
+			}
+			tokens.push(html);
+		}
+	}
+	this.roster_header_element.update(tokens.join('&nbsp;| '));
+};
+
+/* Open specified roster tab */
+Chat.roster_tab = function(id) {
+	if (this.active_roster_channel) {
+		var ch = this.channels_by_id[this.active_roster_channel];
+		if (ch && ch.roster_content) {
+			ch.roster_content.hide();
+		}
+	}
+	this.active_roster_channel = id;
+	this.roster_header_update();
+	var ch = this.channels_by_id[id];
+	if (ch && ch.roster_content) {
+		ch.roster_content.show();
+	}
+};
+
+/* Create channel tab - element containing channel messages */
+Chat.channel_tab_create = function(ch) {
+	ch.box_content = new Ext.BoxComponent({
+		autoEl: {
+			tag: 'div'
+		},
+		renderTo: this.box_content.el,
+		hidden: true
+	});
+};
+
+/* Destroy channel tab */
+Chat.channel_tab_destroy = function(ch) {
+	if (ch.box_content) {
+		ch.box_content.destroy();
+		ch.box_content = undefined;
+	}
+};
+
+/* Create channel button */
+Chat.channel_button_create = function(ch) {
+	var state;
+	var onclick;
+	if (this.mode == 1) {
+		state = (this.active_channel == ch.id);
+		onclick = 'return Chat.tab_open(\'' + ch.id + '\', true);';
+	} else if (this.mode == 2) {
+		state = ch.visible;
+		onclick = 'return Chat.channel_toggle(\'' + ch.id + '\');';
+	}
+	ch.btn = new Ext.BoxComponent({
+		autoEl: {
+			tag: 'img',
+			src: ch.button_image + (state ? '-on.gif' : '-off.gif'),
+			onclick: onclick,
+			cls: 'chat-button',
+			title: htmlescape(ch.title)
+		},
+		renderTo: this.buttons_content
+	});
+};
+
+/* Destroy channel button */
+Chat.channel_button_destroy = function(ch) {
+	if (ch.btn) {
+		ch.btn.destroy();
+		ch.btn = undefined;
+	}
+};
+
+/* Open chatbox tab with given id */
+Chat.tab_open = function(id, change_write_selector) {
 	if (id != this.active_channel) {
 		var ch = this.channels_by_id[id];
-		if (ch) {
+		if (ch && ch.chatbox) {
 			if (this.active_channel) {
 				var old_ch = this.channels_by_id[this.active_channel];
 				if (old_ch) {
-					old_ch.content.hide();
-					if (this.mode == 1 && old_ch.btn)
-						old_ch.btn.dom.src = this.button_images[this.active_channel] + '-off.gif';
+					old_ch.box_content.hide();
+					if (this.mode == 1 && old_ch.btn) {
+						old_ch.btn.el.dom.src = ch.button_image + '-off.gif';
+					}
 				}
 			}
 			this.active_channel = id;
-			ch.content.show();
-			this.content.el.scroll('down', 1000000, false);
+			ch.box_content.show();
+			this.box_content.el.scroll('down', 1000000, false);
 			if (this.mode == 1 && ch.btn) {
-				ch.btn.dom.src = this.button_images[id] + '-on.gif';
+				ch.btn.el.dom.src = ch.button_image + '-on.gif';
 			}
+		}
+		if (ch && change_write_selector && this.channel_control_element) {
+			this.channel_control_element.value = id;
 		}
 	}
 	this.focus();
 };
 
+/* Give focus to the chat input control */
 Chat.focus = function() {
 	var cht = Ext.getDom('chat-input-control');
 	if (cht)
 		cht.focus();
 };
 
+/* Receive message from the server */
 Chat.msg = function(pkt) {
-	var ch = this.channels_by_id[pkt.channel];
-	if (!ch)
-		ch = this.channels_by_id['main'];
+	if (this.mode != 0) {
+		var ch = this.channels_by_id[pkt.channel];
+		if (!ch)
+			return;
+	}
 	var div = document.createElement('div');
 	div.innerHTML = pkt.html;
 	if (this.mode == 1) {
-		ch.content.el.dom.appendChild(div);
-		this.content.el.scroll('down', 1000000, true);
-		if (ch.id != this.active_channel)
-			ch.btn.dom.src = this.button_images[ch.id] + '-new.gif';
+		ch.box_content.el.dom.appendChild(div);
+		if (ch.id == this.active_channel) {
+			this.box_content.el.scroll('down', 1000000, true);
+		} else if (ch.btn) {
+			ch.btn.el.dom.src = ch.button_image + '-new.gif';
+		}
 	} else if (this.mode == 2) {
 		div.className = 'cmc-' + ch.id;
 		div.style.display = ch.visible ? 'block' : 'none';
-		this.content.el.dom.appendChild(div);
-		if (ch.visible)
-			this.content.el.scroll('down', 1000000, true);
-		else if (ch.btn)
-			ch.btn.dom.src = this.button_images[ch.id] + '-new.gif';
+		this.box_content.el.dom.appendChild(div);
+		if (ch.visible) {
+			this.box_content.el.scroll('down', 1000000, true);
+		} else if (ch.btn) {
+			ch.btn.el.dom.src = ch.button_image + '-new.gif';
+		}
+	} else if (this.mode == 0) {
+		this.box_content.el.dom.appendChild(div);
+		this.box_content.el.scroll('down', 1000000, true);
 	}
 };
 
+/* Toggle chatbox tab visibility */
 Chat.channel_toggle = function(id) {
 	var ch = this.channels_by_id[id];
 	if (ch) {
-		if (ch.visible)
+		if (ch.visible) {
 			this.channel_hide(id);
-		else
+		} else {
 			this.channel_show(id);
-		this.content.el.scroll('down', 1000000, false);
+		}
+		this.box_content.el.scroll('down', 1000000, false);
 	}
+	this.focus();
 };
 
+/* Show chatbox tab */
 Chat.channel_show = function(id) {
 	var ch = this.channels_by_id[id];
 	if (ch && !ch.visible) {
 		if (this.mode == 2 && ch.btn) {
-			ch.btn.dom.src = this.button_images[id] + '-on.gif';
+			ch.btn.el.dom.src = ch.button_image + '-on.gif';
 		}
 		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'block'; })
 		ch.visible = true;
 	}
 };
 
+/* Hide chatbox tab */
 Chat.channel_hide = function(id) {
 	var ch = this.channels_by_id[id];
 	if (ch && ch.visible) {
 		if (this.mode == 2 && ch.btn) {
-			ch.btn.dom.src = this.button_images[id] + '-off.gif';
+			ch.btn.el.dom.src = ch.button_image + '-off.gif';
 		}
 		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'none'; })
 		ch.visible = false;
 	}
 };
 
+/* Submit chat message to the server */
 Chat.submit = function() {
 	if (this.submit_locked)
 		return;
-	var val = this.input_control.el.dom.value;
+	var val = this.input_control.dom.value;
 	if (!val)
 		return;
 	this.submit_locked = true;
-	this.input_control.el.dom.onkeypress = function() { return false; }
+	this.input_control.dom.onkeypress = function() { return false; }
 	var channel = this.active_channel;
-	if (this.channel_control && this.channel_control.value) {
-		channel = this.channel_control.value;
+	if (this.channel_control_element && this.channel_control_element.value) {
+		channel = this.channel_control_element.value;
+	} else if (this.mode == 1) {
+		channel = this.active_channel;
 	}
 	if (this.mode == 1) {
 		this.tab_open(channel);
@@ -145,16 +338,14 @@ Chat.submit = function() {
 		},
 		success: (function (response, opts) {
 			this.submit_locked = false;
-			this.input_control.el.dom.onkeypress = undefined;
+			this.input_control.dom.onkeypress = undefined;
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
+				this.focus();
 				if (res.ok) {
-					this.input_control.el.dom.value = '';
-					this.focus();
+					this.input_control.dom.value = '';
 					if (this.mode == 1) {
 						this.tab_open(res.channel);
-						if (this.channel_control)
-							this.channel_control.value = res.channel;
 					} else if (this.mode == 2) {
 						this.channel_show(res.channel);
 					}
@@ -165,16 +356,21 @@ Chat.submit = function() {
 		}).createDelegate(this),
 		failure: (function (response, opts) {
 			this.submit_locked = false;
-			this.input_control.el.dom.onkeypress = undefined;
+			this.input_control.dom.onkeypress = undefined;
 			this.focus();
+			Game.error(gt.gettext('Error'), gt.gettext('Couldn\'t deliver message to the server'));
 		}).createDelegate(this)
 	});
 };
 
+/* Click on the character nick
+ * names - list of character names
+ * priv - true if clicked on private message and false otherwise
+ */
 Chat.click = function(names, priv) {
 	if (this.submit_locked)
 		return false;
-	var tokens = this.parse_input(this.input_control.el.dom.value);
+	var tokens = this.parse_input(this.input_control.dom.value);
 	/* ensure all names are in the list */
 	var existing = new Array();
 	for (var i = 0; i < tokens.recipients.length; i++) {
@@ -195,11 +391,12 @@ Chat.click = function(names, priv) {
 	for (var i = 0; i < tokens.recipients.length; i++) {
 		tokens.recipients[i].priv = priv;
 	}
-	this.input_control.el.dom.value = this.generate_input(tokens);
+	this.input_control.dom.value = this.generate_input(tokens);
 	this.focus();
 	return false;
 };
 
+/* Parse chat input string and return parsed structure */
 Chat.parse_input = function(val) {
 	var tokens = {
 		commands: [],
@@ -228,6 +425,7 @@ Chat.parse_input = function(val) {
 	return tokens;
 };
 
+/* Generate chat input string based on the given structure */
 Chat.generate_input = function(tokens) {
 	var res = '';
 	for (var i = 0; i < tokens.commands.length; i++) {
@@ -241,12 +439,13 @@ Chat.generate_input = function(tokens) {
 	return res;
 };
 
+/* Add a new character to the roster tab */
 Chat.roster_add = function(pkt) {
-	var rch = this.channels_by_id[pkt.channel];
-	if (!rch)
+	var ch = this.channels_by_id[pkt.channel];
+	if (!ch)
 		return;
 	var char_info = pkt.character;
-	var character = rch.characters_by_id[char_info.id];
+	var character = ch.roster_characters_by_id[char_info.id];
 	if (character) {
 		character.html = char_info.html;
 		character.name = char_info.name;
@@ -256,148 +455,80 @@ Chat.roster_add = function(pkt) {
 		return;
 	}
 	var character = char_info;
-	if (rch.content) {
+	if (ch.roster_content) {
 		character.element = new Ext.BoxComponent({
-			renderTo: rch.content.el,
+			renderTo: ch.roster_content.el,
 			html: '<span class="chat-roster-char chat-clickable" onclick="return Chat.click([\'' + jsencode(char_info.name) + '\']);">' + htmlescape(char_info.name) + '</span>'
 		});
 	}
-	rch.characters.push(character);
-	rch.characters_by_id[character.id] = character;
+	ch.roster_characters.push(character);
+	ch.roster_characters_by_id[character.id] = character;
 };
 
+/* Remove a character from the roster tab */
 Chat.roster_remove = function(pkt) {
-	var rch = this.channels_by_id[pkt.channel];
-	if (!rch)
+	var ch = this.channels_by_id[pkt.channel];
+	if (!ch)
 		return;
-	var character = rch.characters_by_id[pkt.character];
+	var character = ch.roster_characters_by_id[pkt.character];
 	if (!character)
 		return;
-	rch.characters_by_id[character.id] = undefined;
-	for (var i = 0; i < rch.characters.length; i++) {
-		if (rch.characters[i].id == character.id) {
-			rch.characters.splice(i, 1);
-			break;
+	var characters = new Array();
+	var characters_by_id = new Array();
+	for (var i = 0; i < ch.roster_characters.length; i++) {
+		var c = ch.roster_characters[i];
+		if (c.id != character.id) {
+			characters.push(c);
+			characters_by_id[c.id] = c;
 		}
 	}
+	ch.roster_characters = characters;
+	ch.roster_characters_by_id = characters_by_id;
 	if (character.element) {
 		character.element.destroy();
+		character.element = undefined;
 	}
 	if (character.id == Game.character) {
-		this.roster_channel_destroy(rch);
+		this.channel_destroy(ch);
 	}
 };
 
+/* Supply full of channels to the client. Client must synchronize existing channels with received ones */
 Chat.reload_channels = function(pkt) {
 	var remaining = new Array();
 	for (var i = 0; i < pkt.channels.length; i++) {
 		var ch = pkt.channels[i];
-		if (ch.roster) {
-			this.roster_channel_create(ch);
-			remaining[ch.id] = true;
-		}
+		this.channel_create(ch);
+		remaining[ch.id] = true;
 	}
 	for (var i = this.channels.length - 1; i >= 0; i--) {
 		var ch = this.channels[i];
 		if (!remaining[ch.id]) {
-			this.roster_channel_destroy(ch);
+			this.channel_destroy(ch);
 		}
+	}
+	if (this.mode == 1 && !this.active_channel) {
+		this.open_first_tab();
 	}
 };
 
-Chat.channel_create = function(info) {
-	if (info.roster)
-		this.roster_channel_create(info);
-	+++
-};
-
-Chat.roster_channel_create = function(info) {
-	var rch = this.channels_by_id[info.id];
-	if (!rch) {
-		rch = info;
-		rch.characters = new Array();
-		rch.characters_by_id = new Array();
-		this.channels.push(rch);
-		this.channels_by_id[info.id] = rch;
-		if (this.roster_box_element) {
-			rch.content = new Ext.BoxComponent({
-				renderTo: this.roster_box_element,
-				hidden: true
-			});
-		}
-		if (!this.active_roster_channel) {
-			this.active_roster_channel = rch.id;
-			if (rch.content) {
-				rch.content.show();
-			}
-		}
-		this.roster_header_update();
-	}
-	return rch;
-};
-
-Chat.roster_channel_destroy = function(info) {
-	var rch = this.channels_by_id[info.id];
-	if (rch) {
-		for (var i = 0; i < this.channels.length; i++) {
-			if (this.channels[i].id == info.id) {
-				this.channels.splice(i, 1);
-				break;
-			}
-		}
-		this.channels_by_id[info.id] = undefined;
-		if (info.content) {
-			info.content.destroy();
-		}
-		if (this.active_roster_channel == info.id) {
-			if (this.channels.length) {
-				var ch = this.channels[0]
-				this.active_roster_channel = ch.id;
-				if (ch.content) {
-					ch.content.show();
-				}
-			} else
-				this.active_roster_channel = undefined;
-		}
-		this.roster_header_update();
-	}
-};
-
-Chat.roster_header_update = function() {
-	if (this.roster_header_element) {
-		var tokens = new Array();
+/* Open the first tab with chatbox */
+Chat.open_first_tab = function() {
+	if (this.channels.length) {
 		for (var i = 0; i < this.channels.length; i++) {
 			var ch = this.channels[i];
-			var html = ch.title;
-			if (ch.id != this.active_roster_channel) {
-				html = '<span class="roster-channel roster-channel-clickable" onclick="Chat.roster_tab(\'' + ch.id + '\')">' + html + '</span>';
-			} else {
-				html = '<span class="roster-channel">' + html + '</span>';
+			if (ch.chatbox) {
+				this.tab_open(ch.id, true);
+				return;
 			}
-			tokens.push(html);
-		}
-		this.roster_header_element.update(tokens.join('&nbsp;| '));
-	}
-};
-
-Chat.roster_tab = function(id) {
-	if (this.active_roster_channel) {
-		var ch = this.channels_by_id[this.active_roster_channel];
-		if (ch && ch.content) {
-			ch.content.hide();
 		}
 	}
-	this.active_roster_channel = id;
-	this.roster_header_update();
-	var ch = this.channels_by_id[id];
-	if (ch && ch.content) {
-		ch.content.show();
-	}
+	this.active_channel = undefined;
 };
 
 wait(['realplexor-stream'], function() {
 	Stream.stream_handler('chat', Chat);
-	Chat.input_control.el.on('keypress', function(e, t, o) {
+	Chat.input_control.on('keypress', function(e, t, o) {
 		if (e.getKey() == 13) {
 			e.preventDefault();
 			Chat.submit();

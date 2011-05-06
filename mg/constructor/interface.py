@@ -99,8 +99,7 @@ class Interface(ConstructorModule):
                 return self.game_cabinet(player)
         if self.app().project.get("inactive"):
             self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
-        interface = self.conf("indexpage.design")
-        design = self.obj(Design, interface) if interface else None
+        design = self.design("indexpage")
         project = self.app().project
         author_name = self.conf("gameprofile.author_name")
         if not author_name:
@@ -139,19 +138,11 @@ class Interface(ConstructorModule):
         self.call("game.response_external", "form.html", vars, form.html(vars))
 
     def game_response(self, template, vars, content=""):
-        interface = self.conf("gameinterface.design")
-        if interface:
-            design = self.obj(Design, interface)
-        else:
-            design = None
+        design = self.design("gameinterface")
         self.call("design.response", design, template, content, vars)
 
     def game_response_external(self, template, vars, content=""):
-        interface = self.conf("gameinterface.design")
-        if interface:
-            design = self.obj(Design, interface)
-        else:
-            design = None
+        design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
         self.call("design.response", design, "external.html", content, vars)
 
@@ -203,9 +194,7 @@ class Interface(ConstructorModule):
         vars["main_init"] = "/interface"
 
     def game_interface(self, character):
-        # setting up design
-        interface = self.conf("gameinterface.design")
-        design = self.obj(Design, interface) if interface else None
+        design = self.design("gameinterface")
         vars = {}
         self.call("gameinterface.render", character, vars, design)
         self.call("gameinterface.gamejs", character, vars, design)

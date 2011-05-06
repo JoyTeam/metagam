@@ -834,9 +834,16 @@ class DesignMod(Module):
         self.rhook("design.response", self.response)
         self.rhook("design.parse", self.parse)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("design.get", self.get)
 
     def objclasses_list(self, objclasses):
         objclasses["Design"] = (Design, DesignList)
+
+    def get(self, group):
+        uuid = self.conf("%s.design" % group)
+        if not uuid:
+            return None
+        return self.obj(Design, uuid)
 
     def child_modules(self):
         return [

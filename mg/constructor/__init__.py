@@ -70,3 +70,21 @@ class ConstructorModule(Module):
                 characters = Characters(self.app())
                 req.characters_obj = characters
                 return characters
+
+    def design(self, group):
+        try:
+            req = self.req()
+        except AttributeError:
+            return self.call("design.get", group)
+        else:
+            try:
+                designs = req.designs
+            except AttributeError:
+                designs = {}
+                req.designs = designs
+            try:
+                return designs[group]
+            except KeyError:
+                obj = self.call("design.get", group)
+                designs[group] = obj
+                return obj
