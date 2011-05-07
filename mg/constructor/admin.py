@@ -350,7 +350,14 @@ class Constructor(Module):
     def constructor_newgame(self):
         req = self.req()
         # Registration on invitations
-        if self.conf("constructor.invitations"):
+        invitations = self.conf("constructor.invitations")
+        if invitations == 2:
+            vars = {
+                "title": self._("Registration closed"),
+                "text": self.conf("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment")),
+            }
+            self.call("web.response_template", "constructor/setup/closed.html", vars)
+        elif invitations:
             if not self.call("invitation.ok", req.user(), "newproject"):
                 invitation = req.param("invitation")
                 form = self.call("web.form")
@@ -365,7 +372,7 @@ class Constructor(Module):
                         self.call("web.redirect", "/constructor/newgame")
                 form.input(self._("Invitation code"), "invitation", invitation)
                 form.submit(None, None, self._("Proceed"))
-                form.add_message_top(self._("Open registration of new games is unavailable at the moment. If you have an invitation code enter it now"))
+                form.add_message_top(self.conf("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment")))
                 vars = {
                     "title": self._("Invitation required"),
                 }

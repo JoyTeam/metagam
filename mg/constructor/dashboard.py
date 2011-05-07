@@ -149,15 +149,17 @@ class ProjectDashboard(Module):
 
     def ext_constructor_settings(self):
         req = self.req()
-        invitations = True if req.param("invitations") else False
+        invitations = intz(req.param("v_invitations"))
         moderator_email = req.param("moderator_email")
         projects_domain = req.param("projects_domain")
+        invitations_text = req.param("invitations_text")
         if req.param("ok"):
             changed = False
             config = self.main_app().config_updater()
             if config.get("constructor.invitations") != invitations:
                 self.call("admin.update_menu")
             config.set("constructor.invitations", invitations)
+            config.set("constructor.invitations-text", invitations_text)
             config.set("constructor.moderator-email", moderator_email)
             config.set("constructor.projects-domain", projects_domain)
             config.store()
@@ -167,8 +169,10 @@ class ProjectDashboard(Module):
             invitations = config.get("constructor.invitations")
             moderator_email = config.get("constructor.moderator-email")
             projects_domain = config.get("constructor.projects-domain", self.app().inst.config["main_host"])
+            invitations_text = config.get("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment"))
         fields = [
-            {"type": "checkbox", "name": "invitations", "label": self._("Registration on invitations"), "checked": invitations},
+            {"type": "combo", "name": "invitations", "label": self._("Registration on invitations"), "value": invitations, "values": [(0, self._("Open registration")), (1, self._("Registration on invitations")), (2, self._("Registration closed"))]},
+            {"name": "invitations_text", "label": self._("HTML message about registration on invitations"), "value": invitations_text},
             {"name": "moderator_email", "label": self._("Email of projects moderator"), "value": moderator_email},
             {"name": "projects_domain", "label": self._("Projects domain"), "value": projects_domain},
         ]

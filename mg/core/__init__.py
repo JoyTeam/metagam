@@ -774,6 +774,9 @@ class ApplicationConfigUpdater(object):
     def set(self, param, value):
         self.params[param] = value
 
+    def get(self, param, default=None):
+        return self.params.get(self.app.config.get(param, default))
+
     def store(self, update_hooks=True, notify=True):
         if len(self.params):
             config = self.app.config

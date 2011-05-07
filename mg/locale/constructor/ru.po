@@ -8,23 +8,25 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-03 22:36+0400\n"
-"PO-Revision-Date: 2011-03-11 10:19+0300\n"
+"POT-Creation-Date: 2011-05-07 22:03+0400\n"
+"PO-Revision-Date: 2011-05-07 22:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: static/js/FileUploadField.js:21
 msgid "Browse..."
 msgstr "Обзор..."
 
-#: static/js/chat.js:160 static/js/admin-form.js:239
-#: static/js/admin-form.js:242 static/js/realplexor-stream.js:20
+#: static/js/chat.js:353
+#: static/js/chat.js:361
+#: static/js/admin-form.js:239
+#: static/js/admin-form.js:242
+#: static/js/realplexor-stream.js:20
 #: mg/templates/constructor/setup/logo-wizard.html:63
 #: mg/templates/constructor/setup/logo-wizard.html:66
 #: mg/templates/constructor/setup/domain.html:29
@@ -35,6 +37,10 @@ msgstr "Обзор..."
 #: mg/templates/constructor/setup/logo.html:98
 msgid "Error"
 msgstr "Ошибка"
+
+#: static/js/chat.js:361
+msgid "Couldn't deliver message to the server"
+msgstr "Не удалось отправить сообщение на сервер"
 
 #: static/js/admin-form.js:193
 #: mg/templates/constructor/setup/logo-wizard.html:80
@@ -60,13 +66,12 @@ msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
 #: static/js/realplexor-stream.js:21
-#, fuzzy
 msgid "Connection terminated"
-msgstr "Нет связи с сервером"
+msgstr "Соединение прервано"
 
 #: static/js/realplexor-stream.js:75
 msgid "Exception"
-msgstr ""
+msgstr "Исключение"
 
 #: static/js/admin.js:81
 msgid "Guru advice"
@@ -80,15 +85,22 @@ msgstr "На главную страницу"
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:248
+#: mg/templates/game/interface.js:144
+msgid "Misconfigured layout scheme"
+msgstr "Схема расположения не настроена"
+
+#: mg/templates/game/indexpage.js:132
+#: mg/templates/game/indexpage.js:248
 msgid "Server is in the local mode"
 msgstr "Сервер находится в локальном режиме"
 
-#: mg/templates/game/indexpage.js:167 mg/templates/game/indexpage.js:300
+#: mg/templates/game/indexpage.js:167
+#: mg/templates/game/indexpage.js:300
 msgid "Server is temporarily unavailable"
 msgstr "Сервер временно недоступен"
 
-#: mg/templates/game/indexpage.js:184 mg/templates/game/indexpage.js:214
+#: mg/templates/game/indexpage.js:184
+#: mg/templates/game/indexpage.js:214
 msgid "Next >"
 msgstr "Далее >"
 
@@ -189,48 +201,34 @@ msgstr "Я не согласен"
 
 #~ msgid "Error during registration"
 #~ msgstr "Ошибка во время регистрации"
-
 #~ msgid "Abort"
 #~ msgstr "Прервать"
-
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
-
 #~ msgid "Subscription confirmation"
 #~ msgstr "Подтверждение подписки"
-
 #~ msgid "You have successfully subscribed to the project news"
 #~ msgstr "Вы успешно подписались на новости проекта"
-
 #~ msgid "E-mail address"
 #~ msgstr "Адрес e-mail"
-
 #~ msgid "Subsciption to the project news"
 #~ msgstr "Подписка на новости проекта"
-
 #~ msgid "Error loading %s: %s"
 #~ msgstr "Ошибка при загрузке %s: %s"
-
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
-
 #~ msgid "Category description"
 #~ msgstr "Описание раздела"
-
 #~ msgid "Order"
 #~ msgstr "Порядок"
-
 #~ msgid "New category"
 #~ msgstr "Новый раздел"
-
 #~ msgid "Stay tuned"
 #~ msgstr "Хочу быть в курсе"
-
 #~ msgid "Project status notifications"
 #~ msgstr "Уведомление о статусе разработки"
-
 #~ msgid "Notify me on everything interesting"
 #~ msgstr "Сообщайте мне обо всём интересном"
-
 #~ msgid "Login"
 #~ msgstr "Вход"
+

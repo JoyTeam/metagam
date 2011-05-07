@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-03 22:36+0400\n"
+"POT-Creation-Date: 2011-05-07 22:03+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Browse..."
 msgstr ""
 
-#: static/js/chat.js:160 static/js/admin-form.js:239
+#: static/js/chat.js:353 static/js/chat.js:361 static/js/admin-form.js:239
 #: static/js/admin-form.js:242 static/js/realplexor-stream.js:20
 #: mg/templates/constructor/setup/logo-wizard.html:63
 #: mg/templates/constructor/setup/logo-wizard.html:66
@@ -32,6 +32,10 @@ msgstr ""
 #: mg/templates/constructor/setup/logo.html:95
 #: mg/templates/constructor/setup/logo.html:98
 msgid "Error"
+msgstr ""
+
+#: static/js/chat.js:361
+msgid "Couldn't deliver message to the server"
 msgstr ""
 
 #: static/js/admin-form.js:193
@@ -75,6 +79,10 @@ msgstr ""
 
 #: static/js/admin-form-presets.js:11
 msgid "Presets:"
+msgstr ""
+
+#: mg/templates/game/interface.js:144
+msgid "Misconfigured layout scheme"
 msgstr ""
 
 #: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:248

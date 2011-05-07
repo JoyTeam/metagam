@@ -105,3 +105,5 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 /* LISTS */
 .socio-list-header td { vertical-align: top; padding: 3px 40px 3px 0px; font-weight: bold }
 .socio-list-cell { vertical-align: top; padding: 3px 40px 3px 0px }
+/* DOC */
+.devel-progress-table td { padding: 3px 0 3px 40px }
