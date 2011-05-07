@@ -22,7 +22,7 @@ class Constructor(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.web.Web"])
-        self.rdep(["mg.socio.Socio", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
+        self.rdep(["mg.socio.Socio", "mg.socio.SocioAdmin", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",

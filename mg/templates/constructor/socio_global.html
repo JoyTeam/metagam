@@ -32,6 +32,7 @@
 				[%if menu_right%]<td id="socio-menu-right">[%for ent in menu_right%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</td>[%end%]
 				</tr></table>
 				[%end%]
+				[%if socio_message_top%]<div class="socio-message-top">[%socio_message_top%]</div>[%end%]
 				[%content%]
 				<div id="socio-counters">[%counters%]</div>
 			</div>

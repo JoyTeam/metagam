@@ -216,7 +216,7 @@ class ForumAdmin(Module):
     def menu_socio_index(self, menu):
         req = self.req()
         if req.has_access("forum.categories"):
-            menu.append({ "id": "forum.index", "text": self._("Forum") })
+            menu.append({"id": "forum.index", "text": self._("Forum")})
 
     def menu_forum_index(self, menu):
         menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
@@ -439,6 +439,9 @@ class Socio(Module):
         self.rhook("socio.fulltext_store", self.fulltext_store)
         self.rhook("socio.fulltext_remove", self.fulltext_remove)
         self.rhook("socio.fulltext_search", self.fulltext_search)
+
+    def child_modules(self):
+        return ["mg.socio.SocioAdmin"]
 
     def word_extractor(self, text):
         for chunk in re_text_chunks.finditer(text):
@@ -789,6 +792,7 @@ class Forum(Module):
             if len(menu_right):
                 menu_right[-1]["lst"] = True
                 vars["menu_right"] = menu_right
+        vars["socio_message_top"] = self.conf("socio.message-top")
         self.call("web.response_global", content, vars)
 
     def response_template(self, template, vars):
@@ -2343,3 +2347,35 @@ class Forum(Module):
         if template is None:
             template = self.call("socio.template", "news", "socio/news.html")
         return self.call("web.parse_template", template, vars)
+
+class SocioAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-socio.index", self.menu_socio_index)
+        self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
+
+    def permissions_list(self, perms):
+        perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
+
+    def menu_socio_index(self, menu):
+        req = self.req()
+        if req.has_access("socio.messages"):
+            menu.append({"id": "socio/messages", "text": self._("Interface messages"), "leaf": True})
+
+    def admin_socio_messages(self):
+        req = self.req()
+        message_top = req.param("message_top")
+        if req.param("ok"):
+            config = self.main_app().config_updater()
+            config.set("socio.message-top", message_top)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            config = self.main_app().config
+            message_top = config.get("socio.message-top")
+        fields = [
+            {"name": "message_top", "label": self._("Top message"), "value": message_top},
+        ]
+        self.call("admin.form", fields=fields)
+
