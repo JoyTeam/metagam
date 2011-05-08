@@ -58,7 +58,7 @@ Stream.ping = function() {
 				}
 			}
 			Game.close();
-		},
+		}
 	});
 };
 

@@ -338,7 +338,7 @@ Chat.submit = function() {
 		},
 		success: (function (response, opts) {
 			this.submit_locked = false;
-			this.input_control.dom.onkeypress = undefined;
+			this.input_control.dom.onkeypress = function() { return true; }
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				this.focus();
@@ -356,7 +356,7 @@ Chat.submit = function() {
 		}).createDelegate(this),
 		failure: (function (response, opts) {
 			this.submit_locked = false;
-			this.input_control.dom.onkeypress = undefined;
+			this.input_control.dom.onkeypress = function() { return true; }
 			this.focus();
 			Game.error(gt.gettext('Error'), gt.gettext('Couldn\'t deliver message to the server'));
 		}).createDelegate(this)
@@ -391,8 +391,8 @@ Chat.click = function(names, priv) {
 	for (var i = 0; i < tokens.recipients.length; i++) {
 		tokens.recipients[i].priv = priv;
 	}
-	this.input_control.dom.value = this.generate_input(tokens);
 	this.focus();
+	this.input_control.dom.value = this.generate_input(tokens);
 	return false;
 };
 
