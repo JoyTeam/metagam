@@ -10,7 +10,7 @@ class Game(Module):
         self.rhook("permissions.list", self.permissions_list)
 
     def menu_root_index(self, menu):
-        menu.append({"id": "game.index", "text": self._("Game"), "order": 10})
+        menu.append({"id": "game.index", "text": self._("Game"), "order": 100})
 
     def permissions_list(self, perms):
         perms.append({"id": "game.profile", "name": self._("Game profile editor")})

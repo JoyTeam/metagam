@@ -1,2 +1,7 @@
-<h1>Приборная панель вашей игры</h1>
-[%dashboard_content%]
+[%if recommended_actions%]
+<table class="admin-recommended-table">
+	[%foreach act in recommended_actions%]
+	<tr><td class="admin-recommended-icon"><img src="[%act.icon%]" alt="" /></td><td class="admin-recommended-content">[%act.content%]</td></tr>
+	[%end%]
+</table>
+[%end%]

@@ -1,14 +1,25 @@
 <div class="text">
-<h1>[%GameDomain%]</h1>
-[%HereYouCan%]
-<div id="variants"></div>
+	[%Disclaimer%]
+	<div class="auto-panel[%if expanded==1 +%] expanded[%end%]" title="[%IHaveADomain%]">
+		[%DomainSettings%]
+		<div id="domain-check-1">
+		</div>
+	</div>
+	<div class="auto-panel[%if expanded==2 +%] expanded[%end%]" title="[%IdLikeToRegister%]">
+		<div id="launch-reg">
+		</div>
+		<div id="domain-check-2"[%if expanded!=2 +%] style="display: none"[%end%]>
+		</div>
+	</div>
+</div>
+	
 <div id="navi"></div>
 </div>
 
 <script type="text/javascript">
-function form_submit()
+function form_submit(btn, ev)
 {
-	Ext.getCmp('check-form').getForm().submit({
+	Ext.getCmp('check-form-' + btn.form_id).getForm().submit({
 		url: '/admin-wizard/call/[%wizard%]/check',
 		waitMsg: '[%CheckingDomain%]',
 		success: function(f, action) {
@@ -35,41 +46,24 @@ function form_submit()
 	});
 }
 new Ext.Panel({
-	renderTo: 'variants',
+	renderTo: 'launch-reg',
 	border: false,
-	layout: 'table',
-	autoHeight: true,
-	defaults: {
-		cellCls: 'form-table',
-		border: false,
-		cls: 'bottom-form'
-	},
-	layoutConfig: {
-		columns: 1
-	},
+	cls: 'bottom-form',
 	items: [{
-		html: '<h2>[%AlreadyRegistered%]</h2>[%DomainSettings%]'
-	}, {
-		defaults: {
-			border: false
-		},
-		items: [{
-			html: '<h2>[%RegisterWizard%]</h2>'
-		}, {
-			items: [{
-				xtype: 'button',
-				text: '[%LaunchWizard%]',
-				handler: function() { adm('wizard/call/[%wizard%]/register') }
-			}]
-		}]
-	}, {
-		html: '<h2>[%DomainCheck%]</h2>'
-	}, {
-		id: 'check-form',
+		xtype: 'button',
+		text: '[%LaunchWizard%]',
+		handler: function() { adm('wizard/call/[%wizard%]/register') }
+	}]
+});
+for (var form_id = 1; form_id <= 2; form_id++) {
+	new Ext.FormPanel({
+		renderTo: 'domain-check-' + form_id,
+		id: 'check-form-' + form_id,
 		layout: 'form',
 		labelAlign: 'top',
 		waitTitle: gt.gettext('Please wait...'),
-		xtype: 'form',
+		border: false,
+		cls: 'bottom-form',
 		items: [{
 			border: false,
 			xtype: 'textfield',
@@ -82,18 +76,19 @@ new Ext.Panel({
 		}, {
 			xtype: 'button',
 			text: '[%CheckDomain%]',
+			form_id: form_id,
 			handler: form_submit
 		}]
-	}]
-});
+	});
+}
 new Ext.Panel({
 	renderTo: 'navi',
 	cls: 'bottom-form',
 	border: false,
 	layout: 'form',
 	buttons: [{
-		text: gt.gettext('Previous'),
-		handler: function() { adm('wizard/call/[%wizard%]/prev') }
+		text: gt.gettext('Abort wizard'),
+		handler: function() { adm('wizard/call/[%wizard%]/cancel') }
 	}]
 });
 </script>

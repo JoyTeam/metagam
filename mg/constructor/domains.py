@@ -12,6 +12,7 @@ re_person = re.compile(r'^[A-Z][a-z]*( [A-Z][a-z]*)+$')
 re_birth_date = re.compile(r'^\d\d\.\d\d\.\d\d\d\d$')
 re_phone = re.compile(r'^\+\d[ \d]+$')
 re_i7_response = re.compile(r'^<html><body>(\S*):\s*(\d*)\s+(\S*)\s+(\S*)(,\s*in progress|)</body></html>$')
+re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
 
 class DNSCheckError(Exception):
     pass
@@ -58,12 +59,22 @@ class Domains(Module):
                 prices[tld] = price
 
     def assign(self, domain):
-        self.debug("Assigning domain %s to the project %s", domain, self.app().project.uuid)
+        project = self.app().project
+        self.info("Assigning domain %s to the project %s", domain, project.uuid)
         rec = self.main_app().obj(Domain, domain, silent=True)
-        rec.set("user", self.app().project.get("owner"))
+        rec.set("user", project.get("owner"))
         rec.set("project", self.app().project.uuid)
         rec.set("created", self.now())
         rec.store()
+        project.set("domain", domain)
+        project.set("moderation", 1)
+        project.store()
+        self.app().store_config_hooks()
+        # message to the moderator
+        email = self.main_app().config.get("constructor.moderator-email")
+        if email:
+            content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+            self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s" % project.get("title_short")), content)
 
     def validate_new(self, domain, errors):
         try:
@@ -646,3 +657,78 @@ class DomainsAdmin(Module):
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
                     "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
                 })
+
+class DomainWizard(Wizard):
+    def new(self, **kwargs):
+        super(DomainWizard, self).new(**kwargs)
+        self.config.set("state", "main")
+        self.config.set("tag", "domain")
+        self.config.set("redirect_fail", kwargs["redirect_fail"])
+        
+    def menu(self, menu):
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain wizard"), "leaf": True, "order": 20})
+
+    def domain_registered(self, domain, arg):
+        self.config.set("domain", domain)
+        self.config.set("registered", True)
+        self.config.store()
+    
+    def request(self, cmd):
+        req = self.req()
+        state = self.config.get("state")
+        project = self.app().project
+        if state == "main":
+            if cmd == "cancel":
+                wizs = self.call("wizards.find", "domain-reg")
+                for wiz in wizs:
+                    wiz.abort()
+                self.abort()
+                self.call("admin.redirect", self.config.get("redirect_fail"))
+            elif cmd == "check":
+                domain = req.param("domain").strip().lower()
+                self.config.set("domain", domain)
+                self.config.store()
+                errors = {}
+                if domain == "":
+                    errors["domain"] = self._("Specify your domain name")
+                elif not re_domain.match(domain):
+                    errors["domain"] = self._("Invalid domain name")
+                elif len(domain) > 63:
+                    errors["domain"] = self._("Domain name is too long")
+                if not len(errors):
+                    self.call("domains.validate_new", domain, errors)
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                wizs = self.call("wizards.find", "domain-reg")
+                for wiz in wizs:
+                    wiz.abort()
+                # saving wizard data
+                self.call("domains.assign", domain)
+            elif cmd == "register":
+                wizs = self.call("wizards.find", "domain-reg")
+                if len(wizs):
+                    self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
+                wiz = self.call("wizards.new", "mg.constructor.domains.DomainRegWizard", target=["wizard", self.uuid, "domain_registered", ""], redirect_fail="wizard/call/%s" % self.uuid)
+                self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
+            ns1 = self.main_app().config.get("dns.ns1")
+            ns2 = self.main_app().config.get("dns.ns2")
+            vars = {
+                "Disclaimer": self._("<p>We don't offer a free domain name &mdash; you have to register it manually. You may take domain of any level you want: 2nd-level domain (yourgame.com), 3rd-level (game.yourdomain.com) or any other (game.project.person.company.com)</p>"),
+                "IHaveADomain": self._("If you have a domain name already"),
+                "IdLikeToRegister": self._("If you would like to register a new domain now"),
+                "DomainSettings": self._("If you want to assign the entire domain (for example: <strong>blahblahgame.com</strong>) to the game, supply the following settings to your domain registrar:<ul><li>DNS server 1: {0}</li><li>DNS server 2: {1}</li></ul>If you want to assign a subdomain (for example: <strong>blahblahgame.example.com</strong>) to the game go to the <strong>example.com</strong> domain control panel (or edit domain zone configuration) and add subdomain records:<ul><li><strong>blahblahgame</strong> IN NS {0}.</li><li><strong>blahblahgame</strong> IN NS {1}.</li></ul>").format(ns1, ns2),
+                "LaunchWizard": self._("Launch domain registration wizard"),
+                "wizard": self.uuid,
+                "DomainName": self._("Domain name (without www)"),
+                "CheckDomain": self._("Check domain and assign it to the game"),
+                "CheckingDomain": self._("Checking domain..."),
+                "domain_name": jsencode(self.config.get("domain")),
+            }
+            if self.config.get("domain"):
+                if self.config.get("registered"):
+                    vars["expanded"] = 2
+                else:
+                    vars["expanded"] = 1
+            self.call("admin.response_template", "constructor/setup/domain.html", vars)
+        else:
+            raise RuntimeError("Invalid DomainWizard state: %s" % state)

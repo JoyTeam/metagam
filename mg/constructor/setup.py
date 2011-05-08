@@ -10,7 +10,6 @@ import random
 import time
 import hashlib
 
-re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
 re_bad_symbols = re.compile(r'.*[\'"<>&\\]')
 
 class ProjectSetupWizard(Wizard):
@@ -19,7 +18,7 @@ class ProjectSetupWizard(Wizard):
         self.config.set("state", "intro")
         
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True, "ord": 10})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True, "order": 10})
 
     def request(self, cmd):
         req = self.req()
@@ -192,54 +191,6 @@ class ProjectSetupWizard(Wizard):
                 "wizard": self.uuid,
             }
             self.call("admin.response_template", "constructor/setup/indexpage.html", vars)
-        elif state == "domain":
-            if cmd == "prev":
-                self.config.set("state", "logo")
-                self.config.store()
-                self.call("web.response_json", {"success": True, "redirect": "wizard/call/%s" % self.uuid})
-            elif cmd == "check":
-                domain = req.param("domain").strip().lower()
-                self.config.set("domain", domain)
-                self.config.store()
-                errors = {}
-                if domain == "":
-                    errors["domain"] = self._("Specify your domain name")
-                elif not re_domain.match(domain):
-                    errors["domain"] = self._("Invalid domain name")
-                elif len(domain) > 63:
-                    errors["domain"] = self._("Domain name is too long")
-                if not len(errors):
-                    self.call("domains.validate_new", domain, errors)
-                if len(errors):
-                    self.call("web.response_json", {"success": False, "errors": errors})
-                wizs = self.call("wizards.find", "domain-reg")
-                for wiz in wizs:
-                    wiz.abort()
-                # saving wizard data
-                self.call("domains.assign", domain)
-            elif cmd == "register":
-                wizs = self.call("wizards.find", "domain-reg")
-                if len(wizs):
-                    self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
-                wiz = self.call("wizards.new", "mg.constructor.domains.DomainRegWizard", target=["wizard", self.uuid, "domain_registered", ""], redirect_fail="wizard/call/%s" % self.uuid)
-                self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
-            ns1 = self.main_app().config.get("dns.ns1")
-            ns2 = self.main_app().config.get("dns.ns2")
-            vars = {
-                "GameDomain": self._("Domain for your game"),
-                "HereYouCan": self._("<p>We don't offer free domain names &mdash; you have to register it manually.</p>"),
-                "AlreadyRegistered": self._("Step 1. Alternative 1. Register domain yourself"),
-                "DomainSettings": "<ul><li>%s</li><li>%s</li><li>%s</li></ul>" % (self._("Register a new domain (or take any previously registered)"), self._("Specify the following DNS servers for your domain: <strong>{0}</strong> and <strong>{1}</strong>").format(ns1, ns2), self._("You may use any level domains")),
-                "RegisterWizard": self._("Step 1. Alternative 2. Let us register a domain for you"),
-                "wizard": self.uuid,
-                "LaunchWizard": self._("Launch domain registration wizard"),
-                "DomainName": self._("Domain name (without www)"),
-                "CheckDomain": self._("Check domain and assign it to the game"),
-                "CheckingDomain": self._("Checking domain..."),
-                "DomainCheck": self._("Step 2. Check your configured domain and link it with your game"),
-                "domain_name": jsencode(self.config.get("domain")),
-            }
-            self.call("admin.response_template", "constructor/setup/domain.html", vars)
         elif state == "admin":
             if cmd == "submit":
                 # auth settings
@@ -307,10 +258,6 @@ class ProjectSetupWizard(Wizard):
         else:
             raise RuntimeError("Invalid ProjectSetupWizard state: %s" % state)
 
-    def domain_registered(self, domain, arg):
-        self.config.set("domain", domain)
-        self.config.store()
-
     def constructed(self, logo, arg):
         self.config.set("state", "logo")
         self.store_logo(logo)
@@ -319,14 +266,10 @@ class ProjectSetupWizard(Wizard):
         self.call("cluster.static_preserve", self.config.get("logo"))
         # creating project
         project = self.app().project
-        for key in ("domain", "logo", "title_full", "title_short", "title_code"):
+        for key in ("logo", "title_full", "title_short", "title_code"):
             project.set(key, self.config.get(key))
         project.delkey("inactive")
         project.store()
-#        email = self.main_app().config.get("constructor.moderator-email")
-#        if email:
-#            content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
-#            self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s" % project.get("title_short")), content)
         self.finish()
         self.app().store_config_hooks()
         # administrator requisites

@@ -69,6 +69,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
         self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
+        self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -82,7 +83,7 @@ class ConstructorProjectAdmin(Module):
         else:
             req = self.req()
             if req.has_access("project.admin"):
-                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "ord": -20})
+                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20})
 
     def project_destroy(self):
         if self.app().project.get("inactive"):
@@ -113,4 +114,19 @@ class ConstructorProjectAdmin(Module):
     def game_dashboard(self):
         vars = {
         }
+        recommended_actions = []
+        self.call("admin-game.recommended-actions", recommended_actions)
+        if not self.app().project.get("domain"):
+            recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": '%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s. You have to assign it a normal domain name.") % self.app().canonical_domain, self._("Assign a domain name"))})
+        if len(recommended_actions):
+            vars["recommended_actions"] = recommended_actions
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
+
+    def game_domain(self):
+        if self.app().project.get("domain"):
+            self.call("admin.redirect", "game/dashboard")
+        wizs = self.call("wizards.find", "domain")
+        if len(wizs):
+            self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
+        wiz = self.call("wizards.new", "mg.constructor.domains.DomainWizard", redirect_fail="game/dashboard")
+        self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
