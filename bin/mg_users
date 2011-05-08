@@ -1,0 +1,33 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+import os
+import logging
+import sys
+
+def main():
+    try:
+        if len(sys.argv) != 2:
+            print "usage: mg_users <app>"
+            os._exit(1)
+        inst = Instance("users")
+        inst.download_config()
+        app_tag = sys.argv[1]
+        app = WebApplication(inst, app_tag)
+        lst = app.objlist(UserList, query_index="created")
+        lst.load(silent=True)
+        for ent in lst:
+            if ent.get("name"):
+                print ent.get("name")
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
