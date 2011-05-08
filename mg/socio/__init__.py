@@ -46,6 +46,8 @@ re_not_word_symbol = re.compile(r'[%s]' % delimiters)
 re_remove_word = re.compile(r'^.*\/\/')
 re_format_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) \d\d:\d\d:\d\d$')
 re_valid_date = re.compile(r'^(\d\d\.\d\d\.\d\d\d\d|\d\d\.\d\d\.\d\d\d\d \d\d:\d\d:\d\d)$')
+re_valid_tag = re.compile(r'^[\w\- ]+$', re.UNICODE)
+re_whitespace = re.compile(r'\s+')
 
 class UserForumSettings(CassandraObject):
     _indexes = {
@@ -1230,14 +1232,14 @@ class Forum(Module):
         return topic
 
     def tags_parse(self, tags_str):
-        raw_tags = re_split_tags.split(tags_str) if len(tags_str) else []
+        raw_tags = re_split_tags.split(tags_str) if tags_str != None and len(tags_str) else []
         tags = set()
         for i in range(0, len(raw_tags)):
             if i % 2 == 0:
                 tag = raw_tags[i].strip()
                 if len(tag):
                     tags.add(tag.lower())
-        return list(tags)
+        return [re_whitespace.sub(' ', tag) for tag in tags]
 
     def tags_store(self, uuid, tags_str):
         if tags_str is None:
@@ -1268,15 +1270,24 @@ class Forum(Module):
         mutations = {}
         timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
+        short_tags = []
         for tag in tags:
             tag_short = tag
             if len(tag_short) > max_tag_len:
                 tag_short = tag_short[0:max_tag_len]
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
+            short_tags.append(tag_short)
             mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), timestamp=timestamp))]}
         if len(mutations):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
+            mutations = []
+            for tag_utf8 in short_tags:
+                topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
+                if not topics:
+                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
+            if len(mutations):
+                self.db().batch_mutate({"%s-ForumTags" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
         return tags
 
     def reply(self, cat, topic, author, content):
@@ -1717,6 +1728,12 @@ class Forum(Module):
                     form.error("subject", self._("Enter topic subject"))
                 if not content:
                     form.error("content", self._("Enter topic content"))
+                for tag in self.tags_parse(tags):
+                    errors = []
+                    if not re_valid_tag.match(tag):
+                        errors.append(self._("Tag '%s' is invalid - only letters, digits, spaces, underscore and minus are allowed") % htmlescape(tag))
+                    if len(errors):
+                        form.error("tags", "<br />".join(errors))
                 self.call("forum.topic-form", topic, form, "validate")
                 if not form.errors:
                     with self.lock(["ForumTopic-" + topic.uuid]):
@@ -2134,6 +2151,20 @@ class Forum(Module):
                     "updated": self.call("l10n.timeencode2", last_topic.get("created")),
                 })
             stat.store()
+        # Updating tags
+        app_tag = str(self.app().tag)
+        tags = self.app().db.get_slice("%s-ForumTags" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        mutations = []
+        timestamp = None
+        for tag in tags:
+            tag_utf8 = tag.column.name
+            topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
+            if not topics:
+                if timestamp is None:
+                    timestamp = time.time() * 1000
+                mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
+        if len(mutations):
+            self.db().batch_mutate({"%s-ForumTags" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
 
     def ext_tag(self):
