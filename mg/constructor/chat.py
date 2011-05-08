@@ -317,7 +317,6 @@ class Chat(ConstructorModule):
         if channel == "sys":
             viewers = None
         else:
-            print "channel: %s" % channel
             # preparing list of characters to receive
             characters = []
             if private:
@@ -334,20 +333,14 @@ class Chat(ConstructorModule):
                     loc_uuid = m.group(1)
                     # TODO: load location list
             # loading list of sessions corresponding to the characters
-            print "characters: %s" % characters
             sessions = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % char.uuid for char in characters])
-            print "index_rows: %s" % sessions.index_rows
-            print "index_data: %s" % sessions.index_data
-            print "sessions: %s" % sessions
             # loading list of characters able to view the message
             viewers = {}
             for char_uuid, sess_uuid in sessions.index_values(2):
-                print "session %s => character %s (%s)" % (sess_uuid, char_uuid, self.character(char_uuid).name)
                 try:
                     viewers[char_uuid].append(sess_uuid)
                 except KeyError:
                     viewers[char_uuid] = [sess_uuid]
-            print "effective viewers: %s" % viewers
         tokens = []
         mentioned_uuids = set()         # characters uuids mentioned in the message
         mentioned = set()               # characters mentioned in the message
@@ -373,11 +366,9 @@ class Chat(ConstructorModule):
                 tokens.append(token)
         if len(html) > start:
             tokens.append({"html": html[start:]})
-        print "formed tokens: %s" % tokens
         message = {
             "channel": self.channel2tab(channel),
         }
-        print "mentioned_uuids: %s" % mentioned_uuids
         if viewers is not None:
             # enumerating all recipients and preparing HTML version of the message for everyone
             universal = []
@@ -397,12 +388,10 @@ class Chat(ConstructorModule):
             for msg in messages:
                 # sending message
                 message["html"] = msg[1]
-                print "sending chat message to syschannel %s: %s" % (msg[0], message)
                 self.call("stream.packet", msg[0], "chat", "msg", **message)
         else:
             # system message
             message["html"] = u''.join([self.render_token(token, None) for token in tokens])
-            print "sending chat message to syschannel global"
             self.call("stream.packet", "global", "chat", "msg", **message)
 
     def render_token(self, token, viewer_uuid, private=False):
@@ -456,21 +445,18 @@ class Chat(ConstructorModule):
             self.call("chat.channel-join", character, channel, send_myself=False)
 
     def character_init(self, session_uuid, character):
-        print "character %s init" % character.uuid
         channels = []
         self.call("chat.character-channels", character, channels)
         # reload_channels resets destroyes all channels not listed in the 'channels' list and unconditionaly clears online lists
         self.call("stream.character", character, "chat", "reload_channels", channels=channels)
         # send information about all characters on all subscribed channels
         syschannel = "id_%s" % session_uuid
-        print "channels: %s" % channels
         for channel in channels:
             if channel.get("roster"):
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel["id"])
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 for char_uuid in character_uuids:
                     char = self.character(char_uuid)
-                    print "join character %s to the channel %s" % (char.roster_info, channel["id"])
                     self.call("stream.packet", syschannel, "chat", "roster_add", character=char.roster_info, channel=channel["id"])
 
     def character_offline(self, character):
@@ -487,7 +473,6 @@ class Chat(ConstructorModule):
             self.call("chat.channel-unjoin", character, info)
 
     def channel_join(self, character, channel, send_myself=True):
-        print "character %s is online and now joining channel %s" % (character.name, channel)
         channel_id = channel["id"]
         with self.lock(["chat-channel.%s" % channel_id]):
             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
@@ -503,7 +488,6 @@ class Chat(ConstructorModule):
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 if not send_myself:
                     character_uuids = [uuid for uuid in character_uuids if uuid != character.uuid]
-                print "subscribed characters: %s" % character_uuids
                 if len(character_uuids):
                     # load sessions of these characters
                     lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
@@ -515,12 +499,9 @@ class Chat(ConstructorModule):
                         syschannels.append("id_%s" % sess_uuid)
                         if send_myself and character.uuid == char_uuid:
                             mychannels.append("id_%s" % sess_uuid)
-                    print "syschannels: %s" % syschannels
                     if send_myself and len(mychannels):
-                        print "roster_channel_create %s" % mychannels
                         self.call("stream.packet", mychannels, "chat", "channel_create", **channel)
                     if syschannels:
-                        print "roster_add %s" % syschannels
                         self.call("stream.packet", syschannels, "chat", "roster_add", character=character.roster_info, channel=channel_id)
                     for char_uuid in character_uuids:
                         if char_uuid in characters_online:
@@ -537,14 +518,12 @@ class Chat(ConstructorModule):
                 self.call("stream.character", character, "chat", "channel_create", **channel)
 
     def channel_unjoin(self, character, channel):
-        print "character %s is online and now unjoining channel %s" % (character.name, channel)
         channel_id = channel["id"]
         with self.lock(["chat-channel.%s" % channel_id]):
             if channel.get("roster"):
                 # list of characters subscribed to this channel
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
-                print "subscribed characters: %s" % character_uuids
                 if len(character_uuids):
                     # load sessions of these characters
                     lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
@@ -553,7 +532,6 @@ class Chat(ConstructorModule):
                     for char_uuid, sess_uuid in lst.index_values(2):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
-                    print "syschannels: %s" % syschannels
                     if syschannels:
                         self.call("stream.packet", syschannels, "chat", "roster_remove", character=character.uuid, channel=channel_id)
                     characters_online.add(character.uuid)
@@ -629,7 +607,6 @@ class Chat(ConstructorModule):
 
     def character_channels(self, char, channels):
         channels.append(self.channel_info("sys"))
-        print "chatmode=%s" % self.chatmode
         if self.chatmode:
             channels.append(self.channel_info("wld"))
             channels.append(self.channel_info("loc"))
@@ -640,7 +617,6 @@ class Chat(ConstructorModule):
             if self.conf("chat.debug-channel"):
                 if self.debug_access(char):
                     channels.append(self.channel_info("dbg"))
-        print "channels: %s" % channels
 
     def debug_access(self, character):
         if not character:
