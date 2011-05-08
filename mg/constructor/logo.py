@@ -59,7 +59,7 @@ class LogoWizard(Wizard):
             req = cnn.get(uri_obj.path)
             resp = cnn.perform(req)
             if resp.status_code != 200:
-                raise RuntimeError("Couldn't download %s: %s" % (uri, cgi.escape(resp.status)))
+                raise RuntimeError("Couldn't download %s: %s" % (uri, htmlescape(resp.status)))
         finally:
             cnn.close()
         im = Image.open(cStringIO.StringIO(resp.body))

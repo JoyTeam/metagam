@@ -41,6 +41,7 @@ class ConstructorProject(Module):
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
                 #"mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin",
                 "mg.constructor.quest.QuestEngine",
+                "mg.core.auth.Dossiers",
             ])
         return lst
 

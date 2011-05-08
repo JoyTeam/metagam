@@ -42,7 +42,7 @@ class ProjectSetupWizard(Wizard):
                 self.call("admin.redirect", "wizard/call/%s" % self.uuid)
             author = self.main_app().obj(User, project.get("owner"))
             vars = {
-                "author": cgi.escape(author.get("name")),
+                "author": htmlescape(author.get("name")),
                 "wizard": self.uuid,
                 "main_host": self.app().inst.config["main_host"],
             }

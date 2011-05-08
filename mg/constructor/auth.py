@@ -162,6 +162,7 @@ class Auth(ConstructorModule):
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
         self.rhook("stream.character", self.stream_character)
+        self.rhook("auth.user-tables", self.user_tables)
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -1000,3 +1001,25 @@ class Auth(ConstructorModule):
         ids = ["id_%s" % sess_uuid for char_uuid, sess_uuid in lst.index_values(2)]
         if ids:
             self.call("stream.packet", ids, cls, method, **kwargs)
+
+    def user_tables(self, user, tables):
+        req = self.req()
+        if user.get("name"):
+            # character
+            character = self.character(user.uuid)
+            player = character.player
+            tables.append({
+                "rows": [
+                    (self._("Related player"), '<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(player.uuid))
+                ]
+            })
+        else:
+            #player
+            dbchars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
+            chars = [self.character(char.uuid) for char in dbchars]
+            tables.append({
+                "rows": [(self._("Related character %s") % htmlescape(char.name), '<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(char.uuid)) for char in chars]
+            })
+            player = self.player(user.uuid)
+            character = None
+

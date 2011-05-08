@@ -1,0 +1,49 @@
+<div id="write-dossier" style="height: 150px"></div>
+
+<script type="text/javascript">
+new Ext.FormPanel({
+	renderTo: 'write-dossier',
+	id: 'write-dossier-form',
+	layout: 'form',
+	labelAlign: 'top',
+	border: false,
+	items: [{
+		border: false,
+		xtype: 'textarea',
+		width: 400,
+		name: 'content',
+		border: false,
+		msgTarget: 'under'
+	}, {
+		xtype: 'button',
+		text: '[%Write%]',
+		handler: function() {
+			Ext.getCmp('write-dossier-form').getForm().submit({
+				url: '/admin-auth/write-dossier/[%user%]',
+				waitTitle: gt.gettext('Please wait...'),
+				success: function(f, action) {
+					var is_json = false;
+					try {
+						is_json = action.response.getResponseHeader("Content-Type").match(/json/);
+					} catch (e) {
+					}
+					if (is_json) {
+						var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
+						if (res)
+							adm_response(res);
+					}
+				},
+				failure: function(f, action) {
+					if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+						if (action.result.errormsg) {
+							Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+						}
+					} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+						Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText));
+					}
+				}
+			});
+		}
+	}]
+});
+</script>

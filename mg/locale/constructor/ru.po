@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-08 12:36+0400\n"
+"POT-Creation-Date: 2011-05-08 16:32+0400\n"
 "PO-Revision-Date: 2011-05-07 22:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -29,6 +29,8 @@ msgstr "На главную страницу"
 
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:239
 #: static/js/admin-form.js:242 static/js/chat.js:353 static/js/chat.js:361
+#: mg/templates/admin/auth/write-dossier.html:39
+#: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:40
@@ -56,7 +58,7 @@ msgstr "Обзор..."
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: static/js/admin-form.js:193
+#: static/js/admin-form.js:193 mg/templates/admin/auth/write-dossier.html:23
 #: mg/templates/constructor/setup/domain-wizard.html:82
 #: mg/templates/constructor/setup/domain.html:64
 #: mg/templates/constructor/setup/logo.html:57
@@ -70,7 +72,7 @@ msgstr "Пожалуйста, подождите..."
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:242
+#: static/js/admin-form.js:242 mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
 #: mg/templates/constructor/setup/logo.html:98

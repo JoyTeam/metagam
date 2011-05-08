@@ -14,6 +14,8 @@ import random
 import hashlib
 import cgi
 
+re_newline = re.compile(r'\n')
+
 class User(CassandraObject):
     _indexes = {
         "created": [[], "created"],
@@ -143,6 +145,25 @@ class AuthLogList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "AuthLog-"
         kwargs["cls"] = AuthLog
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class DossierRecord(CassandraObject):
+    _indexes = {
+        "user-performed": [["user"], "performed"],
+        "admin-performed": [["admin"], "performed"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "DossierRecord-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DossierRecord._indexes
+
+class DossierRecordList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "DossierRecord-"
+        kwargs["cls"] = DossierRecord
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Sessions(Module):
@@ -303,6 +324,7 @@ class Interface(Module):
         objclasses["Captcha"] = (Captcha, CaptchaList)
         objclasses["AutoLogin"] = (AutoLogin, AutoLoginList)
         objclasses["AuthLog"] = (AuthLog, AuthLogList)
+        objclasses["DossierRecord"] = (DossierRecord, DossierRecordList)
 
     def ext_register(self):
         req = self.req()
@@ -976,7 +998,7 @@ class Interface(Module):
                 for perm in permissions_list:
                     if p.get(perm["id"]):
                         grant_list.append(perm["name"])
-                users.append({"id": u.uuid, "name": cgi.escape(u.get("name")), "permissions": "<br />".join(grant_list)})
+                users.append({"id": u.uuid, "name": htmlescape(u.get("name")), "permissions": "<br />".join(grant_list)})
         vars = {
             "editpermissions": self._("Edit permissions of a user"),
             "user_name": self._("User name"),
@@ -1056,7 +1078,7 @@ class Interface(Module):
 
     def headmenu_edituserpermissions(self, args):
         user = self.obj(User, args)
-        return [cgi.escape(user.get("name")), "auth/editpermissions"]
+        return [htmlescape(user.get("name")), "auth/editpermissions"]
 
     def list_roles(self, roles):
         permissions_list = []
@@ -1091,7 +1113,7 @@ class Interface(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("User %s") % cgi.escape(user.get("name"))]
+        return [self._("User %s") % htmlescape(user.get("name"))]
 
     def ext_user_find(self):
         req = self.req()
@@ -1128,6 +1150,7 @@ class Interface(Module):
         tables = []
         self.call("auth.user-tables", user, tables)
         if len(tables):
+            tables.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
             vars["tables"] = tables
         options = []
         self.call("auth.user-options", user, options)
@@ -1252,3 +1275,74 @@ class PermissionsEditor(Module):
         except IndexError:
             pass
         self.call("admin.redirect", "forum/access/%s" % self.uuid)
+
+class Dossiers(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("ext-admin-auth.write-dossier", self.admin_write_dossier, priv="users.dossiers")
+        self.rhook("dossier.write", self.dossier_write)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "users.dossiers", "name": self._("Viewing users dossiers")})
+
+    def user_tables(self, user, tables):
+        req = self.req()
+        if req.has_access("users.dossiers"):
+            dossier_info = {
+                "user": user.uuid
+            }
+            vars = {
+                "Write": self._("Write a message to the dossier"),
+                "user": user.uuid,
+            }
+            self.call("dossier.before-display", dossier_info, vars)
+            dossier_entries = []
+            records = self.objlist(DossierRecordList, query_index="user-performed", query_equal=dossier_info["user"], query_reversed=True)
+            records.load(silent=True)
+            users = {}
+            for ent in records:
+                if ent.get("admin"):
+                    users[ent.get("admin")] = None
+            if users:
+                ulst = self.objlist(UserList, uuids=users.keys())
+                ulst.load(silent=True)
+                for ent in ulst:
+                    users[ent.uuid] = ent
+            for ent in records:
+                admin = users.get(ent.get("admin")) if ent.get("admin") else None
+                content = re_newline.sub('<br />', htmlescape(ent.get("content")))
+                dossier_entries.append([ent.get("performed"), u'<hook:admin.link href="auth/user-dashboard/{0}" title="{1}" />'.format(admin.uuid, htmlescape(admin.get("name"))) if admin else None, content])
+            table = {
+                "order": 100,
+                "header": [self._("dossier///Performed"), self._("Administrator"), self._("Event")],
+                "rows": dossier_entries,
+                "before": self.call("web.parse_template", "admin/auth/write-dossier.html", vars),
+            }
+            self.call("dossier.after-display", records, users, table)
+            tables.append(table)
+
+    def dossier_write(self, **kwargs):
+        rec = self.obj(DossierRecord)
+        for key, value in kwargs.iteritems():
+            rec.set(key, value)
+        rec.set("performed", self.now())
+        self.call("dossier.record", rec)
+        rec.store()
+        return rec
+
+    def admin_write_dossier(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        content = req.param("content").strip()
+        errors = {}
+        if content == "":
+            errors["content"] = self._("Content must not be empty")
+        if len(errors):
+            self.call("web.response_json", {"success": False, "errors": errors})
+        rec = self.call("dossier.write", user=user.uuid, admin=req.user(), content=content)
+        self.call("web.response_json", {"success": True, "redirect": "auth/user-dashboard/%s" % rec.get("user")})

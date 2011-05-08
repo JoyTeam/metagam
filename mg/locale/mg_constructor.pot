@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-08 12:36+0400\n"
+"POT-Creation-Date: 2011-05-08 16:32+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,6 +27,8 @@ msgstr ""
 
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:239
 #: static/js/admin-form.js:242 static/js/chat.js:353 static/js/chat.js:361
+#: mg/templates/admin/auth/write-dossier.html:39
+#: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:40
@@ -54,7 +56,7 @@ msgstr ""
 msgid "Presets:"
 msgstr ""
 
-#: static/js/admin-form.js:193
+#: static/js/admin-form.js:193 mg/templates/admin/auth/write-dossier.html:23
 #: mg/templates/constructor/setup/domain-wizard.html:82
 #: mg/templates/constructor/setup/domain.html:64
 #: mg/templates/constructor/setup/logo.html:57
@@ -68,7 +70,7 @@ msgstr ""
 msgid "Sending data..."
 msgstr ""
 
-#: static/js/admin-form.js:242
+#: static/js/admin-form.js:242 mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
 #: mg/templates/constructor/setup/logo.html:98

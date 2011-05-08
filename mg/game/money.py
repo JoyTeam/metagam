@@ -646,7 +646,7 @@ class TwoPay(Module):
                     "performed": pay.get("performed"),
                     "date": pay.get("date"),
                     "user": pay.get("user"),
-                    "v1": cgi.escape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
+                    "v1": htmlescape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
                     "sum": pay.get("sum"),
                     "cancelled": pay.get("cancelled")
                 })

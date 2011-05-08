@@ -117,12 +117,25 @@ class Character(Module):
             return self._player
         except AttributeError:
             uuid = self.db_character.get("player")
-            try:
-                req = self.req()
-            except AttributeError:
-                self._player = Player(self.app(), uuid)
+            if uuid:
+                try:
+                    req = self.req()
+                except AttributeError:
+                    return Player(self.app(), uuid)
+                else:
+                    try:
+                        players = req.players
+                    except AttributeError:
+                        players = {}
+                        req.players = players
+                    try:
+                        return players[uuid]
+                    except KeyError:
+                        obj = Player(self.app(), uuid)
+                        players[uuid] = obj
+                        return obj
             else:
-                self._player = req.player(uuid)
+                self._player = None
             return self._player
 
     @property
@@ -207,6 +220,15 @@ class Player(Module):
             return self._db_player
 
     @property
+    def valid(self):
+        try:
+            self.db_player
+        except ObjectNotFoundException:
+            return False
+        else:
+            return True
+
+    @property
     def db_user(self):
         try:
             return self._db_user
@@ -245,6 +267,9 @@ class CharactersMod(Module):
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("character.make-html", self.character_make_html)
+        self.rhook("dossier.record", self.dossier_record)
+        self.rhook("dossier.before-display", self.dossier_before_display)
+        self.rhook("dossier.after-display", self.dossier_after_display)
 
     def menu_users_index(self, menu):
         req = self.req()
@@ -425,3 +450,39 @@ class CharactersMod(Module):
 
     def character_make_html(self, character, mode):
         return htmlescape(character.name)
+
+    def dossier_record(self, rec):
+        try:
+            char = self.obj(DBCharacter, rec.get("user"))
+        except ObjectNotFoundException:
+            pass
+        else:
+            rec.set("character", char.uuid)
+            rec.set("user", char.get("player"))
+
+    def dossier_before_display(self, dossier_info, vars):
+        try:
+            char = self.obj(DBCharacter, dossier_info["user"])
+        except ObjectNotFoundException:
+            pass
+        else:
+            dossier_info["user"] = char.get("player")
+
+    def dossier_after_display(self, records, users, table):
+        table["header"].append(self._("Character"))
+        load_users = {}
+        for rec in records:
+            char_uuid = rec.get("character")
+            if char_uuid and not users.get(char_uuid):
+                load_users[char_uuid] = None
+        if load_users:
+            ulst = self.objlist(UserList, uuids=load_users.keys())
+            ulst.load(silent=True)
+            for ent in ulst:
+                users[ent.uuid] = ent
+        i = 0
+        for rec in records:
+            char_uuid = rec.get("character")
+            user = users.get(char_uuid) if char_uuid else None
+            table["rows"][i].append(u'<hook:admin.link href="auth/user-dashboard/{0}" title="{1}" />'.format(user.uuid, htmlescape(user.get("name"))) if user else None)
+            i += 1
