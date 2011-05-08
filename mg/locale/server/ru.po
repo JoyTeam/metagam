@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-08 12:36+0400\n"
-"PO-Revision-Date: 2011-05-08 12:42+0300\n"
+"POT-Creation-Date: 2011-05-08 12:48+0400\n"
+"PO-Revision-Date: 2011-05-08 12:49+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4310,35 +4310,40 @@ msgstr "Неверное имя домена"
 msgid "Domain name is too long"
 msgstr "Доменное имя слишком длинное"
 
-#: mg/constructor/domains.py:716
+#: mg/constructor/domains.py:708
+#, python-format
+msgid "You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient"
+msgstr "Вы успешно назначили вашей игре доменное имя <strong>%s</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением."
+
+#: mg/constructor/domains.py:718
 msgid "<p>We don't offer a free domain name &mdash; you have to register it manually. You may take domain of any level you want: 2nd-level domain (yourgame.com), 3rd-level (game.yourdomain.com) or any other (game.project.person.company.com)</p>"
 msgstr "<p>Мы не предоставляем бесплатное доменное имя &mdash; вам необходимо зарегистрировать его вручную. Вы можете взять домен любого уровня, какой захотите: 2 уровня (yourgame.ru), 3 уровня (game.yourdomain.ru) или любого другого (game.project.person.company.ru)</p>"
 
-#: mg/constructor/domains.py:717
+#: mg/constructor/domains.py:719
 msgid "If you have a domain name already"
 msgstr "Если вы уже имеете доменное имя"
 
-#: mg/constructor/domains.py:718
+#: mg/constructor/domains.py:720
 msgid "If you would like to register a new domain now"
 msgstr "Если вы хотите зарегистрировать домен прямо сейчас"
 
-#: mg/constructor/domains.py:719
+#: mg/constructor/domains.py:721
 msgid "If you want to assign the entire domain (for example: <strong>blahblahgame.com</strong>) to the game, supply the following settings to your domain registrar:<ul><li>DNS server 1: {0}</li><li>DNS server 2: {1}</li></ul>If you want to assign a subdomain (for example: <strong>blahblahgame.example.com</strong>) to the game go to the <strong>example.com</strong> domain control panel (or edit domain zone configuration) and add subdomain records:<ul><li><strong>blahblahgame</strong> IN NS {0}.</li><li><strong>blahblahgame</strong> IN NS {1}.</li></ul>"
 msgstr "Если вы хотите назначить игре весь домен (например: <strong>blahblahblahgame.ru</strong>), укажите следующие настройки в админке регистратора:<ul><li>DNS-сервер 1: {0}</li><li>DNS-сервер 2: {1}</li></ul>Если вы хотите назначить игре поддомен (например: <strong>blahblahblahgame.example.ru</strong>), зайдите в панель управления доменом <strong>example.ru</strong> на вашем DNS-хостинге или иным способом отредактируйте конфигурацию зоны и добавьте записи о поддомене:<ul><li><strong>blahblahblahname</strong> IN NS {0}.</li><li><strong>blahblahblahname</strong> IN NS {1}.</li></ul>"
 
-#: mg/constructor/domains.py:720
+#: mg/constructor/domains.py:722
 msgid "Launch domain registration wizard"
 msgstr "Запустить мастер регистрации доменов"
 
-#: mg/constructor/domains.py:722
+#: mg/constructor/domains.py:724
 msgid "Domain name (without www)"
 msgstr "Доменное имя (без www)"
 
-#: mg/constructor/domains.py:723
+#: mg/constructor/domains.py:725
 msgid "Check domain and assign it to the game"
 msgstr "Проверить домен и назначить его вашей игре"
 
-#: mg/constructor/domains.py:724
+#: mg/constructor/domains.py:726
 msgid "Checking domain..."
 msgstr "Проверка домена..."
 

@@ -704,6 +704,8 @@ class DomainWizard(Wizard):
                     wiz.abort()
                 # saving wizard data
                 self.call("domains.assign", domain)
+                wiz.finish()
+                self.call("admin.response", self._("You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient"), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

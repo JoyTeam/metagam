@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-08 12:36+0400\n"
+"POT-Creation-Date: 2011-05-08 12:48+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4191,7 +4191,15 @@ msgstr ""
 msgid "Domain name is too long"
 msgstr ""
 
-#: mg/constructor/domains.py:716
+#: mg/constructor/domains.py:708
+#, python-format
+msgid ""
+"You have assigned domain name <strong>%s</strong> to your game. Now you can "
+"enter the game only via this domain. It may take several hours for your "
+"local DNS server to make your domain available. Please be patient"
+msgstr ""
+
+#: mg/constructor/domains.py:718
 msgid ""
 "<p>We don't offer a free domain name &mdash; you have to register it "
 "manually. You may take domain of any level you want: 2nd-level domain "
@@ -4199,15 +4207,15 @@ msgid ""
 "person.company.com)</p>"
 msgstr ""
 
-#: mg/constructor/domains.py:717
+#: mg/constructor/domains.py:719
 msgid "If you have a domain name already"
 msgstr ""
 
-#: mg/constructor/domains.py:718
+#: mg/constructor/domains.py:720
 msgid "If you would like to register a new domain now"
 msgstr ""
 
-#: mg/constructor/domains.py:719
+#: mg/constructor/domains.py:721
 msgid ""
 "If you want to assign the entire domain (for example: <strong>blahblahgame."
 "com</strong>) to the game, supply the following settings to your domain "
@@ -4219,19 +4227,19 @@ msgid ""
 "li><li><strong>blahblahgame</strong> IN NS {1}.</li></ul>"
 msgstr ""
 
-#: mg/constructor/domains.py:720
+#: mg/constructor/domains.py:722
 msgid "Launch domain registration wizard"
 msgstr ""
 
-#: mg/constructor/domains.py:722
+#: mg/constructor/domains.py:724
 msgid "Domain name (without www)"
 msgstr ""
 
-#: mg/constructor/domains.py:723
+#: mg/constructor/domains.py:725
 msgid "Check domain and assign it to the game"
 msgstr ""
 
-#: mg/constructor/domains.py:724
+#: mg/constructor/domains.py:726
 msgid "Checking domain..."
 msgstr ""
 
