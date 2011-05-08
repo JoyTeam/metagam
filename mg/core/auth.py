@@ -124,6 +124,27 @@ class AutoLoginList(CassandraObjectList):
         kwargs["cls"] = AutoLogin
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class AuthLog(CassandraObject):
+    _indexes = {
+        "performed": [[], "performed"],
+        "user-performed": [["user"], "performed"],
+        "session-performed": [["session"], "performed"],
+        "ip-performed": [["ip"], "performed"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AuthLog-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return AuthLog._indexes
+
+class AuthLogList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "AuthLog-"
+        kwargs["cls"] = AuthLog
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Sessions(Module):
     "The mostly used authentication functions. It must load very fast"
     def register(self):
@@ -132,6 +153,14 @@ class Sessions(Module):
         self.rhook("session.require_login", self.require_login)
         self.rhook("session.find_user", self.find_user)
         self.rhook("session.require_permission", self.require_permission)
+        self.rhook("session.log", self.log)
+
+    def log(self, **kwargs):
+        ent = self.obj(AuthLog)
+        for key, value in kwargs.iteritems():
+            ent.set(key, value)
+        ent.set("performed", self.now())
+        ent.store()
 
     def find_session(self, sid):
         try:
@@ -157,6 +186,11 @@ class Sessions(Module):
                         session.load()
                         session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
                         session.set("updated", self.now())
+                        if session.get("ip") != req.remote_addr():
+                            session.set("ip", req.remote_addr())
+                            user = session.get("user")
+                            if user:
+                                self.call("session.log", act="change", session=session.uuid, ip=req.remote_addr(), user=user)
                         session.store()
                 if cache:
                     req._session = session
@@ -268,6 +302,7 @@ class Interface(Module):
         objclasses["Session"] = (Session, SessionList)
         objclasses["Captcha"] = (Captcha, CaptchaList)
         objclasses["AutoLogin"] = (AutoLogin, AutoLoginList)
+        objclasses["AuthLog"] = (AuthLog, AuthLogList)
 
     def ext_register(self):
         req = self.req()
@@ -351,7 +386,9 @@ class Interface(Module):
                     session.load()
                     session.delkey("user")
                     session.set("semi_user", user.uuid)
+                    session.set("ip", req.remote_addr())
                     session.store()
+                self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                 params = {
                     "subject": self._("Account activation"),
                     "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
@@ -411,7 +448,9 @@ class Interface(Module):
                     session.load()
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
+                    session.set("ip", req.remote_addr())
                     session.store()
+                    self.call("session.log", act="login", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                     if redirect:
                         self.call("web.redirect", redirect)
                     self.call("web.redirect", redirects.get("register", "/"))
@@ -654,7 +693,9 @@ class Interface(Module):
                 with self.lock(["session.%s" % session.uuid, "user.%s" % user]):
                     session.set("semi_user", user)
                     session.delkey("user")
+                    session.set("ip", req.remote_addr())
                     session.store()
+                self.call("session.log", act="logout", session=session.uuid, ip=req.remote_addr(), user=user)
         req = self.req()
         redirect = req.param("redirect")
         if redirect:
@@ -689,7 +730,9 @@ class Interface(Module):
                         session.load()
                         session.delkey("user")
                         session.set("semi_user", user.uuid)
+                        session.set("ip", req.remote_addr())
                         session.store()
+                    self.call("session.log", act="logout", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                     self.call("web.redirect", "/auth/activate/%s" % user.uuid)
             if not password:
                 form.error("password", msg["password_empty"])
@@ -703,7 +746,9 @@ class Interface(Module):
                     session.load()
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
+                    session.set("ip", req.remote_addr())
                     session.store()
+                    self.call("session.log", act="login", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                     if redirect is not None and redirect != "":
                         self.call("web.redirect", redirect)
                     redirects = {}

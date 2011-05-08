@@ -94,6 +94,7 @@ class AuthAdmin(ConstructorModule):
                                     if user:
                                         session.set("semi_user", user)
                                         session.delkey("user")
+                                        self.call("session.log", act="disconnect", session=session.uuid, user=user)
                                     session.delkey("character")
                                     session.delkey("authorized")
                                     session.set("updated", self.now())
@@ -545,7 +546,9 @@ class Auth(ConstructorModule):
                 session.set("user", user.uuid)
                 session.set("updated", self.now())
                 session.delkey("semi_user")
+                session.set("ip", req.remote_addr())
                 session.store()
+                self.call("session.log", act="login", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                 self.call("web.response_json", {"ok": 1, "session": session.uuid})
         # Everything failed
         self.call("web.response_json", {"error": self._("Error logging in")})
@@ -604,6 +607,7 @@ class Auth(ConstructorModule):
                 # storing
                 session.store()
                 appsession.store()
+                self.call("session.log", act="reconnect", session=session.uuid, user=character_uuid)
                 self.stream_character_online(character_uuid)
                 logout_others = True
                 self.call("session.character-init", session.uuid, self.character(character_uuid))
@@ -704,11 +708,13 @@ class Auth(ConstructorModule):
                 session.set("authorized", 1)
                 if went_online:
                     session.set("updated", self.now())
+                    session.set("ip", req.remote_addr())
                 session.delkey("semi_user")
                 # storing
                 session.store()
                 appsession.store()
                 if went_online:
+                    self.call("session.log", act="ready", session=session.uuid, ip=req.remote_addr(), user=character_uuid)
                     self.stream_character_online(character_uuid)
                     logout_others = True
                 ok = True
@@ -746,6 +752,7 @@ class Auth(ConstructorModule):
                 # storing
                 session.store()
                 appsession.store()
+                self.call("session.log", act="disconnect", session=session.uuid, user=character_uuid)
                 self.stream_character_offline(character_uuid)
 
     def stream_login(self, session_uuid, character_uuid):
@@ -780,8 +787,10 @@ class Auth(ConstructorModule):
             session.store()
             appsession.store()
             if went_offline:
+                self.call("session.log", act="logout", session=session.uuid, user=old_character)
                 self.stream_character_offline(old_character)
             if went_online:
+                self.call("session.log", act="login", session=session.uuid, user=character_uuid)
                 self.stream_character_online(character_uuid)
             logout_others = True
         if logout_others:
@@ -812,6 +821,7 @@ class Auth(ConstructorModule):
             session.store()
             appsession.remove()
             if went_offline:
+                self.call("session.log", act="logout", session=session.uuid, user=character_uuid)
                 self.stream_character_offline(character_uuid)
 
     def gameinterface_render(self, character, vars, design):

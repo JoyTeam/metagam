@@ -480,6 +480,6 @@ class Constructor(Module):
     def email_sender(self, params):
         params["email"] = "robot@mmoconstructor.ru"
         params["name"] = self._("MMO Constructor")
-        params["prefix"] = "[mg] "
+        params["prefix"] = "[mmoconstructor] "
         params["signature"] = self._("MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games")
 

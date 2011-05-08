@@ -126,6 +126,12 @@ class Request(object):
             cookie[name][key] = val
         self._set_cookies.append(cookie)
 
+    def remote_addr(self):
+        ip = self.environ.get("HTTP_X_REAL_IP")
+        if ip is None:
+            ip = self.environ.get("REMOTE_ADDR")
+        return ip
+            
     def host(self):
         host = self.environ.get("HTTP_X_REAL_HOST")
         if host is None:
