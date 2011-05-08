@@ -21,6 +21,7 @@ def main():
         for ent in lst:
             if ent.get("name"):
                 print ent.get("name")
+        sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:
         logging.error(e)
