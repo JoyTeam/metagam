@@ -304,6 +304,7 @@ class ProjectSetupWizard(Wizard):
         character_user.set("name", name)
         character_user.set("name_lower", name.lower())
         character_user.set("sex", sex)
+        character_user.set("created", now_ts)
         character_form = self.obj(DBCharacterForm, character.uuid, {})
         # storing
         player.store()
