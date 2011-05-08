@@ -74,7 +74,7 @@ class Domains(Module):
         email = self.main_app().config.get("constructor.moderator-email")
         if email:
             content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
-            self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s" % project.get("title_short")), content)
+            self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
 
     def validate_new(self, domain, errors):
         try:
