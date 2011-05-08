@@ -1518,9 +1518,9 @@ class Forum(Module):
         if page < 1:
             page = 1
         elif page > pages:
-            page = pages
-        del posts[0:(page - 1) * posts_per_page]
+            page = page
         del posts[page * posts_per_page:]
+        del posts[0:(page - 1) * posts_per_page]
         posts.load()
         return posts, page, pages, last_post
 
@@ -1636,11 +1636,14 @@ class Forum(Module):
             prev = ""
             for i in range(0, len(posts)):
                 if posts[i].uuid == post.uuid:
-                    page = (i - 1) / posts_per_page + 1
                     if i < len(posts) - 1:
                         prev = "#%s" % posts[i + 1].uuid
+                        page = i / posts_per_page + 1
                     elif i > 0:
                         prev = "#%s" % posts[i - 1].uuid
+                        page = (i - 1) / posts_per_page + 1
+                    else:
+                        page = 1
                     break
             post.remove()
             catstat = self.catstat(cat["id"])
