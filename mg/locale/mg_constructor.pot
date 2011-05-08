@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-08 00:57+0400\n"
+"POT-Creation-Date: 2011-05-08 12:36+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,48 +17,25 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: static/js/FileUploadField.js:21
-msgid "Browse..."
+#: static/js/admin.js:81
+msgid "Guru advice"
 msgstr ""
 
-#: static/js/chat.js:353 static/js/chat.js:361 static/js/admin-form.js:239
-#: static/js/admin-form.js:242 static/js/realplexor-stream.js:20
-#: mg/templates/constructor/setup/logo-wizard.html:63
-#: mg/templates/constructor/setup/logo-wizard.html:66
-#: mg/templates/constructor/setup/domain.html:29
-#: mg/templates/constructor/setup/domain.html:32
+#: static/js/admin.js:220
+msgid "To the main page"
+msgstr ""
+
+#: static/js/realplexor-stream.js:20 static/js/admin-form.js:239
+#: static/js/admin-form.js:242 static/js/chat.js:353 static/js/chat.js:361
 #: mg/templates/constructor/setup/domain-wizard.html:41
 #: mg/templates/constructor/setup/domain-wizard.html:44
+#: mg/templates/constructor/setup/domain.html:40
+#: mg/templates/constructor/setup/domain.html:43
 #: mg/templates/constructor/setup/logo.html:95
 #: mg/templates/constructor/setup/logo.html:98
-msgid "Error"
-msgstr ""
-
-#: static/js/chat.js:361
-msgid "Couldn't deliver message to the server"
-msgstr ""
-
-#: static/js/admin-form.js:193
-#: mg/templates/constructor/setup/logo-wizard.html:80
-#: mg/templates/constructor/setup/logo-wizard.html:119
-#: mg/templates/constructor/setup/logo-wizard.html:230
-#: mg/templates/constructor/setup/domain.html:71
-#: mg/templates/constructor/setup/domain-wizard.html:82
-#: mg/templates/constructor/setup/logo.html:57
-msgid "Please wait..."
-msgstr ""
-
-#: static/js/admin-form.js:224
-msgid "Sending data..."
-msgstr ""
-
-#: static/js/admin-form.js:242
+#: mg/templates/constructor/setup/logo-wizard.html:63
 #: mg/templates/constructor/setup/logo-wizard.html:66
-#: mg/templates/constructor/setup/domain.html:32
-#: mg/templates/constructor/setup/domain-wizard.html:44
-#: mg/templates/constructor/setup/logo.html:98
-#, python-format
-msgid "Server error: %s"
+msgid "Error"
 msgstr ""
 
 #: static/js/realplexor-stream.js:21
@@ -69,16 +46,39 @@ msgstr ""
 msgid "Exception"
 msgstr ""
 
-#: static/js/admin.js:81
-msgid "Guru advice"
-msgstr ""
-
-#: static/js/admin.js:220
-msgid "To the main page"
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
 msgstr ""
 
 #: static/js/admin-form-presets.js:11
 msgid "Presets:"
+msgstr ""
+
+#: static/js/admin-form.js:193
+#: mg/templates/constructor/setup/domain-wizard.html:82
+#: mg/templates/constructor/setup/domain.html:64
+#: mg/templates/constructor/setup/logo.html:57
+#: mg/templates/constructor/setup/logo-wizard.html:80
+#: mg/templates/constructor/setup/logo-wizard.html:119
+#: mg/templates/constructor/setup/logo-wizard.html:230
+msgid "Please wait..."
+msgstr ""
+
+#: static/js/admin-form.js:224
+msgid "Sending data..."
+msgstr ""
+
+#: static/js/admin-form.js:242
+#: mg/templates/constructor/setup/domain-wizard.html:44
+#: mg/templates/constructor/setup/domain.html:43
+#: mg/templates/constructor/setup/logo.html:98
+#: mg/templates/constructor/setup/logo-wizard.html:66
+#, python-format
+msgid "Server error: %s"
+msgstr ""
+
+#: static/js/chat.js:361
+msgid "Couldn't deliver message to the server"
 msgstr ""
 
 #: mg/templates/game/interface.js:144
@@ -113,30 +113,51 @@ msgstr ""
 msgid "Passwords don't match"
 msgstr ""
 
-#: mg/templates/constructor/setup/intro-en.html:12
 #: mg/templates/constructor/setup/intro-ru.html:18
+#: mg/templates/constructor/setup/intro-en.html:12
 #: mg/templates/constructor/setup/logo.html:130
 msgid "Next"
 msgstr ""
 
+#: mg/templates/constructor/setup/domain-wizard.html:126
+msgid "Check availability"
+msgstr ""
+
+#: mg/templates/constructor/setup/domain-wizard.html:161
+msgid "Buy MM$"
+msgstr ""
+
+#: mg/templates/constructor/setup/domain-wizard.html:258
+#: mg/templates/constructor/setup/domain.html:90
+#: mg/templates/constructor/setup/logo-wizard.html:281
+msgid "Abort wizard"
+msgstr ""
+
+#: mg/templates/constructor/setup/offer-ru.html:40
+msgid "I agree to the terms and conditions"
+msgstr ""
+
+#: mg/templates/constructor/setup/offer-ru.html:43
+msgid "I don't agree"
+msgstr ""
+
 #: mg/templates/constructor/setup/form.html:18
-#: mg/templates/constructor/setup/domain.html:95
 #: mg/templates/constructor/setup/logo.html:126
 msgid "Previous"
 msgstr ""
 
-#: mg/templates/constructor/setup/logo-wizard.html:40
+#: mg/templates/constructor/setup/logo.html:80
+#: mg/templates/constructor/setup/logo-wizard.html:102
+msgid "Upload"
+msgstr ""
+
 #: mg/templates/constructor/setup/logo.html:83
+#: mg/templates/constructor/setup/logo-wizard.html:40
 msgid "Uploading data..."
 msgstr ""
 
 #: mg/templates/constructor/setup/logo-wizard.html:74
 msgid "Upload file"
-msgstr ""
-
-#: mg/templates/constructor/setup/logo-wizard.html:102
-#: mg/templates/constructor/setup/logo.html:80
-msgid "Upload"
 msgstr ""
 
 #: mg/templates/constructor/setup/logo-wizard.html:113
@@ -169,25 +190,4 @@ msgstr ""
 
 #: mg/templates/constructor/setup/logo-wizard.html:278
 msgid "Apply"
-msgstr ""
-
-#: mg/templates/constructor/setup/logo-wizard.html:281
-#: mg/templates/constructor/setup/domain-wizard.html:258
-msgid "Abort wizard"
-msgstr ""
-
-#: mg/templates/constructor/setup/domain-wizard.html:126
-msgid "Check availability"
-msgstr ""
-
-#: mg/templates/constructor/setup/domain-wizard.html:161
-msgid "Buy MM$"
-msgstr ""
-
-#: mg/templates/constructor/setup/offer-ru.html:40
-msgid "I agree to the terms and conditions"
-msgstr ""
-
-#: mg/templates/constructor/setup/offer-ru.html:43
-msgid "I don't agree"
 msgstr ""
