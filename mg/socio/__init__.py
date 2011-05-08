@@ -2409,7 +2409,7 @@ class SocioAdmin(Module):
             config = self.main_app().config
             message_top = config.get("socio.message-top")
         fields = [
-            {"name": "message_top", "label": self._("Top message"), "value": message_top},
+            {"type": "textarea", "name": "message_top", "label": self._("Top message"), "value": message_top},
         ]
         self.call("admin.form", fields=fields)
 
