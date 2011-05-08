@@ -13,7 +13,7 @@ a:hover, a:active { color: #ed8439 }
 #page-left div { width: 96px }
 #page-right { width: 96px; background-image: url(/st/constructor/socio/right.gif); background-repeat: repeat-y; background-position: 100% 0%; }
 #page-right div { width: 96px }
-#page-width { width: 1000px }
+#page-width { width: 800px }
 #page-top1 { background-image: url(/st/constructor/socio/top-bg.gif); background-repeat: repeat-x; background-position: 0% 0%; height: 57px }
 #page-top2 { background-image: url(/st/constructor/socio/top-left.gif); background-repeat: no-repeat; background-position: 0% 0%; }
 #page-top3 { background-image: url(/st/constructor/socio/top-right.gif); background-repeat: no-repeat; background-position: 100% 0%; height: 57px }

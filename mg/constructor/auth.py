@@ -3,7 +3,7 @@
 from mg import *
 from mg.constructor import *
 from mg.core.auth import Captcha, AutoLogin
-from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList, DBCharacterForm, DBCharacterOnline, DBCharacterOnlineList
+from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPlayerList, DBCharacterForm, DBCharacterOnline, DBCharacterOnlineList, Character
 import hashlib
 import copy
 import random
@@ -108,7 +108,7 @@ class AuthAdmin(ConstructorModule):
                                             pass
                                         else:
                                             obj.remove()
-                                            app.hooks.call("session.character-offline", self.character(character_uuid))
+                                            app.hooks.call("session.character-offline", Character(app, character_uuid))
                                 else:
                                     # disconnected session destroyed on timeout
                                     self.debug("Session %s destroyed on timeout. State: %s => None" % (session_uuid, old_state))
