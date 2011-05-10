@@ -301,6 +301,10 @@ class Interface(Module):
         self.rhook("ext-admin-auth.user-lastreg", self.ext_user_lastreg, priv="users")
         self.rhook("headmenu-admin-auth.user-dashboard", self.headmenu_user_dashboard)
         self.rhook("auth.autologin", self.autologin)
+        self.rhook("web.robots-txt", self.robots_txt)
+
+    def robots_txt(self, disallow):
+        disallow.append("/auth/")
 
     def schedule(self, sched):
         sched.add("auth.cleanup", "5 1 * * *", priority=10)

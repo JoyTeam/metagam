@@ -29,7 +29,7 @@ class Constructor(Module):
             "mg.constructor.admin.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin", "mg.game.money.TwoPay", "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
-            "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin",
+            "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
             "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
             "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
             "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin", "mg.core.auth.Dossiers"])

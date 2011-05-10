@@ -1455,7 +1455,7 @@ class Forum(Module):
                 last_show = show
             pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
-        vars["share_url"] = htmlescape("http://%s%s" % (self.app().canonical_domain, req.uri()))
+        vars["share_url"] = htmlescape("http://%s%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
         self.call("forum.vars-topic", vars)
         self.call("forum.response_template", "socio/topic.html", vars)
 

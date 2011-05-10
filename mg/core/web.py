@@ -457,6 +457,17 @@ class Web(Module):
         self.rhook("web.security_check", self.security_check)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("web.post_redirect", self.post_redirect)
+        self.rhook("ext-robots.txt.index", self.robots_txt, priv="public")
+
+    def robots_txt(self):
+        req = self.req()
+        disallow = []
+        if self.conf("indexing.enabled", True):
+            self.call("web.robots-txt", disallow)
+        else:
+            disallow.append("/")
+        req.headers.append(('Content-type', "text/plain"))
+        raise WebResponse(req.send_response("200 OK", req.headers, "User-agent: *\n%s" % "".join(["Disallow: %s\n" % line for line in disallow])))
 
     def objclasses_list(self, objclasses):
         objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)

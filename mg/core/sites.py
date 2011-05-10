@@ -4,9 +4,35 @@ class SiteAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("ext-admin-site.robots", self.robots, priv="site.robots")
+        self.rhook("menu-admin-site.index", self.menu_site)
 
     def menu_root_index(self, menu):
         menu.append({"id": "site.index", "text": self._("Site")})
+
+    def permissions_list(self, perms):
+        perms.append({"id": "site.robots", "name": self._("Robots.txt administration")})
+
+    def menu_site(self, menu):
+        req = self.req()
+        if req.has_access("site.robots"):
+            menu.append({"id": "site/robots", "text": "robots.txt", "leaf": True})
+
+    def robots(self):
+        req = self.req()
+        indexing = True if req.param("indexing") else False
+        if req.param("ok"):
+            config = self.app().config_updater()
+            config.set("indexing.enabled", indexing)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            indexing = self.conf("indexing.enabled", True)
+        fields = [
+            {"name": "indexing", "type": "checkbox", "label": self._("Site indexing enabled"), "checked": indexing},
+        ]
+        self.call("admin.form", fields=fields)
 
 class Counters(Module):
     def register(self):
@@ -20,7 +46,6 @@ class Counters(Module):
 class CountersAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rdep(["mg.core.sites.SiteAdmin"])
         self.rhook("menu-admin-site.index", self.menu_site)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.counters", self.counters, priv="site.counters")
