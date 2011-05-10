@@ -38,6 +38,7 @@ re_linebreak = re.compile(r'\n')
 re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
 valid = r'\/\w\/\+\%\#\$\&=\?#'
 re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|(?=(?:[a-z][\-a-z0-9]{,30}\.)+[a-z]{2,5}))[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
+re_email = re.compile(r'(.*?)(\w[\w\-\.]*\@[a-z0-9][a-z0-9_\-]*(?:\.[a-z0-9][a-z0-9_\-]*)*)(.*)', re.IGNORECASE | re.DOTALL)
 re_split_tags = re.compile(r'\s*(,\s*)+')
 re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
 delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
@@ -578,6 +579,12 @@ class Socio(Module):
                 return '%s <img src="%s" alt="" /> %s' % (self.format_text(before, options), image, self.format_text(after, options))
             else:
                 return '%s <a href="%s" target="_blank"><img src="%s" alt="" /></a> %s' % (self.format_text(before, options), image, thumbnail, self.format_text(after, options))
+        m = re_email.match(html)
+        if m:
+            before, email, after = m.group(1, 2, 3)
+            inner_show = htmlescape(re_softhyphen.sub(r'\1' + u"\u200b", email))
+            email = htmlescape(email)
+            return '%s<a href="mailto:%s">%s</a>%s' % (self.format_text(before, options), email, email, self.format_text(after, options))
         m = re_urls.match(html)
         if m:
             before, inner, protocol, after = m.group(1, 2, 3, 4)
@@ -1711,7 +1718,7 @@ class Forum(Module):
                     posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
                     for i in range(0, len(posts)):
                         if posts[i].uuid == post.uuid:
-                            page = (i - 1) / posts_per_page + 1
+                            page = i / posts_per_page + 1
                             self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
             else:
