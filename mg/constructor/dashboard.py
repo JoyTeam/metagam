@@ -13,6 +13,7 @@ class ProjectDashboard(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish, priv="constructor.projects.unpublish")
+        self.rhook("ext-admin-constructor.project-publish", self.ext_project_publish, priv="constructor.projects.publish")
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings, priv="constructor.settings")
 
@@ -22,9 +23,20 @@ class ProjectDashboard(Module):
             projects = []
             self.call("projects.owned_by", user.uuid, projects)
             if len(projects):
+                rows = []
+                for p in projects:
+                    if p.get("inactive"):
+                        status = self._("projstatus///inactive")
+                    elif p.get("moderation"):
+                        status = self._("projstatus///moderation")
+                    elif p.get("published"):
+                        status = self._("projstatus///published")
+                    else:
+                        status = self._("projstatus///not published")
+                    rows.append(('<hook:admin.link href="constructor/project-dashboard/{0}" title="{1}" />'.format(p.get("uuid"), htmlescape(p.get("title_short"))), p.get("title_code"), status))
                 tables.append({
-                    "header": [self._("Project ID"), self._("Project name"), self._("Project code")],
-                    "rows": [('<hook:admin.link href="constructor/project-dashboard/{0}" title="{0}" />'.format(p.get("uuid")), p.get("title_short"), p.get("title_code")) for p in projects]
+                    "header": [self._("Project name"), self._("Project code"), self._("Status")],
+                    "rows": rows
                 })
 
     def menu_root_index(self, menu):
@@ -78,19 +90,18 @@ class ProjectDashboard(Module):
         for wiz in app.hooks.call("wizards.list"):
             wiz.abort()
         project = app.project
-        domain = project.get("domain")
-        if domain:
-            dom = self.obj(Domain, domain, silent=True)
-            dom.remove()
-        project.delkey("domain")
-        project.delkey("title_full")
-        project.delkey("title_short")
-        project.delkey("title_code")
-        project.delkey("published")
-        project.delkey("logo")
-        project.store()
-        app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
-        app.hooks.call("cluster.appconfig_changed")
+        with self.lock(["project.%s" % project.uuid]):
+            if project.get("published"):
+                project.delkey("published")
+                project.set("moderation", 1)
+#               app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
+                app.hooks.call("constructor-project.notify-owner", self._("Game unpublished: %s") % project.get("title_short"), self._("We are sorry. Your game '{0}' was unpublished.".format(project.get("title_short"))))
+#               domain = project.get("domain")
+#               if domain:
+#                   dom = self.obj(Domain, domain, silent=True)
+#                   dom.remove()
+                project.store()
+                app.store_config_hooks()
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
     def ext_project_dashboard(self):
@@ -100,19 +111,22 @@ class ProjectDashboard(Module):
         except ObjectNotFoundException:
             self.call("web.not_found")
         vars = {
-            "Id": self._("Id"),
+            "Id": self._("Game id"),
             "TitleFull": self._("Full title"),
             "TitleShort": self._("Short title"),
             "TitleCode": self._("Title code"),
-            "Owner": self._("Owner"),
-            "Domain": self._("Domain"),
-            "Created": self._("Created"),
-            "Published": self._("Published"),
+            "Owner": self._("Game owner"),
+            "Domain": self._("Game domain"),
+            "Created": self._("game///Created"),
+            "Moderation": self._("Moderation required"),
+            "Published": self._("game///Published"),
             "unpublish": self._("unpublish"),
             "no": self._("no"),
+            "yes": self._("yes"),
             "ConfirmUnpublish": self._("Are you sure want to unpublish the project?"),
             "Update": self._("Update"),
             "Logo": self._("Logo"),
+            "permit": self._("moderation///permit"),
         }
         project = getattr(app, "project", None)
         if project:
@@ -125,8 +139,10 @@ class ProjectDashboard(Module):
                 "logo": htmlescape(project.get("logo")),
                 "domain": htmlescape(project.get("domain")),
                 "published": project.get("published"),
+                "moderation": project.get("moderation"),
                 "created": project.get("created"),
-                "unpublish": req.has_access("constructor.projects.unpublish"),
+                "unpublish": req.has_access("constructor.projects.unpublish") and project.get("published"),
+                "publish": req.has_access("constructor.projects.publish") and project.get("moderation"),
             }
             vars["owner"] = {
                 "uuid": owner.uuid,
@@ -145,6 +161,7 @@ class ProjectDashboard(Module):
     def permissions_list(self, perms):
         perms.append({"id": "constructor.settings", "name": self._("Constructor: global settings")})
         perms.append({"id": "constructor.projects", "name": self._("Constructor: projects")})
+        perms.append({"id": "constructor.projects.publish", "name": self._("Constructor: publishing projects (moderation)")})
         perms.append({"id": "constructor.projects.unpublish", "name": self._("Constructor: unpublishing projects")})
 
     def ext_constructor_settings(self):
@@ -177,4 +194,22 @@ class ProjectDashboard(Module):
             {"name": "projects_domain", "label": self._("Projects domain"), "value": projects_domain},
         ]
         self.call("admin.form", fields=fields)
+
+    def ext_project_publish(self):
+        req = self.req()
+        try:
+            app = self.app().inst.appfactory.get_by_tag(req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        project = app.project
+        with self.lock(["project.%s" % project.uuid]):
+            if not project.get("published"):
+                project.delkey("moderation")
+                project.set("published", self.now())
+                app.modules.load(["mg.game.money.TwoPay"])
+                app.hooks.call("2pay.register")
+                app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.".format(project.get("title_short"))))
+                project.store()
+                app.store_config_hooks()
+        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 

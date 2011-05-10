@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-10 15:58+0400\n"
+"POT-Creation-Date: 2011-05-10 18:43+0400\n"
 "PO-Revision-Date: 2011-05-10 15:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -55,8 +55,8 @@ msgid "Forum moderation"
 msgstr "Модерирование форума"
 
 #: mg/socio/__init__.py:222 mg/constructor/admin.py:18
-#: mg/constructor/admin.py:152 mg/constructor/admin.py:186
-#: mg/constructor/admin.py:194
+#: mg/constructor/admin.py:154 mg/constructor/admin.py:188
+#: mg/constructor/admin.py:196
 msgid "Forum"
 msgstr "Форум"
 
@@ -206,7 +206,7 @@ msgid "Deny moderation"
 msgstr "Запрещено модерировать"
 
 #: mg/socio/__init__.py:391 mg/socio/__init__.py:419 mg/socio/__init__.py:732
-#: mg/core/cluster.py:248
+#: mg/core/cluster.py:248 mg/constructor/dashboard.py:38
 msgid "Status"
 msgstr "Статус"
 
@@ -295,7 +295,7 @@ msgstr "Регистрация"
 msgid "User %s"
 msgstr "Пользователь %s"
 
-#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:662
+#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:917
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr "Пользователь"
@@ -411,7 +411,7 @@ msgstr ""
 msgid "Save"
 msgstr "Сохранить"
 
-#: mg/socio/__init__.py:1781 mg/constructor/admin.py:307
+#: mg/socio/__init__.py:1781 mg/constructor/admin.py:309
 msgid "Forum settings"
 msgstr "Настройки форума"
 
@@ -930,7 +930,7 @@ msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
 #: mg/core/auth.py:357 mg/core/auth.py:735 mg/constructor/setup.py:216
-#: mg/constructor/admin.py:466 mg/constructor/auth.py:394
+#: mg/constructor/admin.py:468 mg/constructor/auth.py:394
 msgid "Enter your password"
 msgstr "Введите ваш пароль"
 
@@ -1033,7 +1033,7 @@ msgstr "Подтвердите пароль"
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
-#: mg/core/auth.py:434 mg/constructor/admin.py:180
+#: mg/core/auth.py:434 mg/constructor/admin.py:182
 msgid "Register"
 msgstr "Регистрация"
 
@@ -1041,7 +1041,7 @@ msgstr "Регистрация"
 msgid "User registration"
 msgstr "Регистрация пользователя"
 
-#: mg/core/auth.py:439 mg/core/auth.py:796 mg/constructor/admin.py:182
+#: mg/core/auth.py:439 mg/core/auth.py:796 mg/constructor/admin.py:184
 #: mg/constructor/domains.py:616
 msgid "Cancel"
 msgstr "Отмена"
@@ -1158,7 +1158,7 @@ msgstr "Пользователь неактивен. Проверьте почт
 msgid "Incorrect password"
 msgstr "Неверный пароль"
 
-#: mg/core/auth.py:789 mg/constructor/admin.py:179
+#: mg/core/auth.py:789 mg/constructor/admin.py:181
 msgid "Log in"
 msgstr "Вход"
 
@@ -1308,7 +1308,7 @@ msgid "Enter user name"
 msgstr "Введите имя пользователя"
 
 #: mg/core/auth.py:1039 mg/core/auth.py:1139 mg/constructor/design.py:1528
-#: mg/constructor/dashboard.py:69
+#: mg/constructor/dashboard.py:81
 msgid "Search"
 msgstr "Искать"
 
@@ -1329,8 +1329,8 @@ msgstr "Не вошедший в систему"
 msgid "Privilege: %s"
 msgstr "Привилегия: %s"
 
-#: mg/core/auth.py:1152 mg/game/money.py:535 mg/game/money.py:666
-#: mg/constructor/dashboard.py:114
+#: mg/core/auth.py:1152 mg/game/money.py:541 mg/game/money.py:921
+#: mg/constructor/dashboard.py:127
 msgid "Update"
 msgstr "Обновить"
 
@@ -1348,11 +1348,11 @@ msgstr "Имя"
 msgid "Active"
 msgstr "Активен"
 
-#: mg/core/auth.py:1171 mg/constructor/dashboard.py:112
+#: mg/core/auth.py:1171 mg/constructor/dashboard.py:124
 msgid "no"
 msgstr "нет"
 
-#: mg/core/auth.py:1171
+#: mg/core/auth.py:1171 mg/constructor/dashboard.py:125
 msgid "yes"
 msgstr "да"
 
@@ -1497,177 +1497,177 @@ msgstr "Слушатели"
 msgid "Realplexor monitor"
 msgstr "Монитор Realplexor"
 
-#: mg/game/money.py:384
+#: mg/game/money.py:390
 msgid "Gold"
 msgstr "Золото"
 
-#: mg/game/money.py:390
+#: mg/game/money.py:396
 msgid "Given by the administration"
 msgstr "Выдано администрацией"
 
-#: mg/game/money.py:396
+#: mg/game/money.py:402
 msgid "Taken by the administration"
 msgstr "Изъято администрацией"
 
-#: mg/game/money.py:404 mg/game/money.py:570
+#: mg/game/money.py:410 mg/game/money.py:576
 msgid "Give money"
 msgstr "Выдать деньги"
 
-#: mg/game/money.py:415 mg/game/money.py:481
+#: mg/game/money.py:421 mg/game/money.py:487
 msgid "Invalid currency"
 msgstr "Неверная валюта"
 
-#: mg/game/money.py:422 mg/game/money.py:485
+#: mg/game/money.py:428 mg/game/money.py:491
 msgid "Amount must be greater than 0"
 msgstr "Количество должно быть больше 0"
 
-#: mg/game/money.py:426 mg/game/money.py:487
+#: mg/game/money.py:432 mg/game/money.py:493
 msgid "Invalid amount precision"
 msgstr "Неверная точность количества"
 
-#: mg/game/money.py:430 mg/game/money.py:489
+#: mg/game/money.py:436 mg/game/money.py:495
 msgid "Invalid number format"
 msgstr "Неверный формат числа"
 
-#: mg/game/money.py:455
+#: mg/game/money.py:461
 msgid "Give amount"
 msgstr "Сумма к выдаче"
 
-#: mg/game/money.py:456 mg/game/money.py:499 mg/game/money.py:548
-#: mg/game/money.py:562 mg/constructor/auth.py:301
+#: mg/game/money.py:462 mg/game/money.py:505 mg/game/money.py:554
+#: mg/game/money.py:568 mg/constructor/auth.py:301
 msgid "Currency"
 msgstr "Валюта"
 
-#: mg/game/money.py:457
+#: mg/game/money.py:463
 msgid "Give"
 msgstr "Выдать"
 
-#: mg/game/money.py:465 mg/game/money.py:570
+#: mg/game/money.py:471 mg/game/money.py:576
 msgid "Take money"
 msgstr "Взять деньги"
 
-#: mg/game/money.py:498
+#: mg/game/money.py:504
 msgid "Take amount"
 msgstr "Количество для взятия"
 
-#: mg/game/money.py:500
+#: mg/game/money.py:506
 msgid "Take"
 msgstr "Взять"
 
-#: mg/game/money.py:508
+#: mg/game/money.py:514
 #, python-format
 msgid "Account %s"
 msgstr "Счет %s"
 
-#: mg/game/money.py:530
+#: mg/game/money.py:536
 msgid "Performed"
 msgstr "Исполнено"
 
-#: mg/game/money.py:531 mg/game/money.py:562 mg/game/money.py:663
+#: mg/game/money.py:537 mg/game/money.py:568 mg/game/money.py:918
 msgid "Amount"
 msgstr "Сумма"
 
-#: mg/game/money.py:532 mg/game/money.py:548
+#: mg/game/money.py:538 mg/game/money.py:554
 msgid "Balance"
 msgstr "Баланс"
 
-#: mg/game/money.py:533 mg/game/money.py:562
+#: mg/game/money.py:539 mg/game/money.py:568
 msgid "Description"
 msgstr "Описание"
 
-#: mg/game/money.py:548
+#: mg/game/money.py:554
 msgid "Account Id"
 msgstr "Идентификатор счёта"
 
-#: mg/game/money.py:548
+#: mg/game/money.py:554
 msgid "Locked"
 msgstr "Заблокировано"
 
-#: mg/game/money.py:548
+#: mg/game/money.py:554
 msgid "Low limit"
 msgstr "Нижний предел"
 
-#: mg/game/money.py:562
+#: mg/game/money.py:568
 msgid "Lock ID"
 msgstr "ID блокировки"
 
-#: mg/game/money.py:569
+#: mg/game/money.py:575
 msgid "Money operations"
 msgstr "Денежные операции"
 
-#: mg/game/money.py:579
+#: mg/game/money.py:585
 msgid "Access to users money"
 msgstr "Доступ к деньгам пользователей"
 
-#: mg/game/money.py:580
+#: mg/game/money.py:586
 msgid "Giving and taking money"
 msgstr "Выдача и взятие денег"
 
-#: mg/game/money.py:602
+#: mg/game/money.py:606
 msgid "2pay payment"
 msgstr "Платёж 2pay"
 
-#: mg/game/money.py:608
+#: mg/game/money.py:612
 msgid "2pay chargeback"
 msgstr "Возврат платежа 2pay"
 
-#: mg/game/money.py:613
+#: mg/game/money.py:617
 msgid "2pay integration"
 msgstr "Интеграция с 2pay"
 
-#: mg/game/money.py:613
+#: mg/game/money.py:617
 msgid "open dashboard"
 msgstr "открыть панель управления"
 
-#: mg/game/money.py:622
-msgid "2pay dashboard"
-msgstr "Панель управления 2pay"
-
-#: mg/game/money.py:624
-msgid "Settings editor"
-msgstr "Редактор настроек"
-
-#: mg/game/money.py:657
+#: mg/game/money.py:912
 msgid "Edit settings"
 msgstr "Редактировать настройки"
 
-#: mg/game/money.py:658
+#: mg/game/money.py:913
 msgid "Payment URL"
 msgstr "Платёжный URL"
 
-#: mg/game/money.py:659
+#: mg/game/money.py:914
 msgid "Secret code"
 msgstr "Секретный код"
 
-#: mg/game/money.py:660
+#: mg/game/money.py:915
 msgid "2pay time"
 msgstr "Время 2pay"
 
-#: mg/game/money.py:661
+#: mg/game/money.py:916
 msgid "Our time"
 msgstr "Наше время"
 
-#: mg/game/money.py:664
+#: mg/game/money.py:919
 msgid "Chargeback"
 msgstr "Возврат платежа"
 
-#: mg/game/money.py:667 mg/constructor/dashboard.py:103
+#: mg/game/money.py:922
 msgid "Id"
 msgstr "Id"
 
-#: mg/game/money.py:668 mg/constructor/dashboard.py:26
+#: mg/game/money.py:923
 msgid "Project ID"
 msgstr "ID проекта"
 
-#: mg/game/money.py:689
+#: mg/game/money.py:944
 msgid "2pay project id"
 msgstr "ID проекта в 2pay"
 
-#: mg/game/money.py:690
+#: mg/game/money.py:945
 msgid "2pay secret"
 msgstr "Секретный код 2pay"
 
-#: mg/game/money.py:816
+#: mg/game/money.py:957
+msgid "2pay dashboard"
+msgstr "Панель управления 2pay"
+
+#: mg/game/money.py:959
+msgid "Settings editor"
+msgstr "Редактор настроек"
+
+#: mg/game/money.py:963
 msgid "Constructor: 2pay integration"
 msgstr "Конструктор: интеграция с 2pay"
 
@@ -1968,201 +1968,201 @@ msgstr "E-mail администратора"
 msgid "Go to the Constructor forum"
 msgstr "Перейти на форум Конструктора"
 
-#: mg/constructor/admin.py:19 mg/constructor/admin.py:177
-#: mg/constructor/admin.py:191 mg/constructor/admin.py:196
-#: mg/constructor/admin.py:290 mg/constructor/design.py:1614
+#: mg/constructor/admin.py:19 mg/constructor/admin.py:179
+#: mg/constructor/admin.py:193 mg/constructor/admin.py:198
+#: mg/constructor/admin.py:292 mg/constructor/design.py:1614
 msgid "Cabinet"
 msgstr "Кабинет"
 
-#: mg/constructor/admin.py:72
+#: mg/constructor/admin.py:74
 msgid "You must confirm you are of the full legal age"
 msgstr "Вы должны подтвердить, что являетесь совершеннолетним"
 
-#: mg/constructor/admin.py:74
+#: mg/constructor/admin.py:76
 msgid "I confirm I'm of the full legal age"
 msgstr "Я подтверждаю, что являюсь совершеннолетним и дееспособным лицом"
 
-#: mg/constructor/admin.py:81 mg/constructor/admin.py:82
-#: mg/constructor/dashboard.py:31
+#: mg/constructor/admin.py:83 mg/constructor/admin.py:84
+#: mg/constructor/dashboard.py:43
 msgid "Constructor"
 msgstr "Конструктор"
 
-#: mg/constructor/admin.py:81 mg/constructor/project.py:104
+#: mg/constructor/admin.py:83 mg/constructor/project.py:109
 #: mg/constructor/design.py:1368
 msgid "News"
 msgstr "Новости"
 
-#: mg/constructor/admin.py:81
+#: mg/constructor/admin.py:83
 msgid "News related to the Constructor"
 msgstr "Новости Конструктора"
 
-#: mg/constructor/admin.py:82
+#: mg/constructor/admin.py:84
 msgid "Support"
 msgstr "Техническая поддержка"
 
-#: mg/constructor/admin.py:82
+#: mg/constructor/admin.py:84
 msgid "Constructor technical support"
 msgstr "Техническая поддержка Конструктора"
 
-#: mg/constructor/admin.py:83
+#: mg/constructor/admin.py:85
 msgid "Game Development"
 msgstr "Разработка игр"
 
-#: mg/constructor/admin.py:83 mg/constructor/design.py:1368
+#: mg/constructor/admin.py:85 mg/constructor/design.py:1368
 msgid "Developers club"
 msgstr "Клуб разработчиков"
 
-#: mg/constructor/admin.py:83
+#: mg/constructor/admin.py:85
 msgid "Any talks related to the game development"
 msgstr "Общение на тему разработки игр"
 
-#: mg/constructor/admin.py:128 mg/constructor/admin.py:147
+#: mg/constructor/admin.py:130 mg/constructor/admin.py:149
 msgid "Return to the Cabinet"
 msgstr "Возврат в кабинет"
 
-#: mg/constructor/admin.py:134 mg/constructor/admin.py:144
+#: mg/constructor/admin.py:136 mg/constructor/admin.py:146
 msgid "To the main page"
 msgstr "На главную страницу"
 
-#: mg/constructor/admin.py:136
+#: mg/constructor/admin.py:138
 msgid "Password changing"
 msgstr "Изменение пароля"
 
-#: mg/constructor/admin.py:138
+#: mg/constructor/admin.py:140
 msgid "E-mail changing"
 msgstr "Изменение e-mail"
 
-#: mg/constructor/admin.py:139
+#: mg/constructor/admin.py:141
 msgid "Return to the Settings"
 msgstr "Возврат к настройкам"
 
-#: mg/constructor/admin.py:146 mg/constructor/admin.py:151
-#: mg/constructor/admin.py:172 mg/constructor/design.py:1097
+#: mg/constructor/admin.py:148 mg/constructor/admin.py:153
+#: mg/constructor/admin.py:174 mg/constructor/design.py:1097
 #: mg/constructor/design.py:1523
 msgid "Settings"
 msgstr "Настройки"
 
-#: mg/constructor/admin.py:150
+#: mg/constructor/admin.py:152
 msgid "Documentation"
 msgstr "Документация"
 
-#: mg/constructor/admin.py:157
+#: mg/constructor/admin.py:159
 #, python-format
 msgid "Logout %s"
 msgstr "Завершение сеанса %s"
 
-#: mg/constructor/admin.py:160
+#: mg/constructor/admin.py:162
 msgid "MMO Constructor Forum"
 msgstr "Форум MMO Constructor"
 
-#: mg/constructor/admin.py:170
+#: mg/constructor/admin.py:172
 msgid "socio-top///Search"
 msgstr "Поиск"
 
-#: mg/constructor/admin.py:185 mg/constructor/admin.py:477
-#: mg/constructor/admin.py:482
+#: mg/constructor/admin.py:187 mg/constructor/admin.py:479
+#: mg/constructor/admin.py:484
 msgid "MMO Constructor"
 msgstr "MMO Constructor"
 
-#: mg/constructor/admin.py:197
+#: mg/constructor/admin.py:199
 msgid "MMO Constructor Documentation"
 msgstr "Документация на конструктор"
 
-#: mg/constructor/admin.py:234
+#: mg/constructor/admin.py:236
 msgid "Browser-based Games Constructor"
 msgstr "Конструктор браузерных игр"
 
-#: mg/constructor/admin.py:235
+#: mg/constructor/admin.py:237
 #, python-format
 msgid "Copyright &copy; Joy Team, 2009-%s"
 msgstr "Copyright &copy; Joy Team, 2009-%s"
 
-#: mg/constructor/admin.py:245
+#: mg/constructor/admin.py:247
 msgid "Constructor of browser-based online games"
 msgstr "Конструктор браузерных онлайн-игр"
 
-#: mg/constructor/admin.py:246
+#: mg/constructor/admin.py:248
 msgid "log in"
 msgstr "вход"
 
-#: mg/constructor/admin.py:247
+#: mg/constructor/admin.py:249
 msgid "register"
 msgstr "регистрация"
 
-#: mg/constructor/admin.py:248
+#: mg/constructor/admin.py:250
 msgid "forum"
 msgstr "форум"
 
-#: mg/constructor/admin.py:249
+#: mg/constructor/admin.py:251
 msgid "cabinet"
 msgstr "кабинет"
 
-#: mg/constructor/admin.py:250
+#: mg/constructor/admin.py:252
 msgid "log out"
 msgstr "выход"
 
-#: mg/constructor/admin.py:251
+#: mg/constructor/admin.py:253
 msgid "documentation"
 msgstr "документация"
 
-#: mg/constructor/admin.py:264
+#: mg/constructor/admin.py:266
 msgid "Constructor administration"
 msgstr "Администрирование конструктора"
 
-#: mg/constructor/admin.py:273
+#: mg/constructor/admin.py:275
 msgid "Untitled game"
 msgstr "Безымянная игра"
 
-#: mg/constructor/admin.py:294
+#: mg/constructor/admin.py:296
 msgid "Create a new game"
 msgstr "Создать новую игру"
 
-#: mg/constructor/admin.py:302
+#: mg/constructor/admin.py:304
 msgid "MMO Constructor Settings"
 msgstr "Настройки конструктора"
 
-#: mg/constructor/admin.py:305
+#: mg/constructor/admin.py:307
 msgid "Change password"
 msgstr "Изменить пароль"
 
-#: mg/constructor/admin.py:306
+#: mg/constructor/admin.py:308
 msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
-#: mg/constructor/admin.py:356 mg/constructor/dashboard.py:174
+#: mg/constructor/admin.py:358 mg/constructor/dashboard.py:191
 msgid "Registration closed"
 msgstr "Регистрация закрыта"
 
-#: mg/constructor/admin.py:357 mg/constructor/admin.py:375
-#: mg/constructor/dashboard.py:172
+#: mg/constructor/admin.py:359 mg/constructor/admin.py:377
+#: mg/constructor/dashboard.py:189
 msgid "Open registration of new games is unavailable at the moment"
 msgstr "В данный момент свободная регистрация игр невозможна"
 
-#: mg/constructor/admin.py:366
+#: mg/constructor/admin.py:368
 msgid "Enter invitation code"
 msgstr "Введите пригласительный код"
 
-#: mg/constructor/admin.py:373 mg/constructor/invitations.py:94
+#: mg/constructor/admin.py:375 mg/constructor/invitations.py:94
 msgid "Invitation code"
 msgstr "Код приглашения"
 
-#: mg/constructor/admin.py:374
+#: mg/constructor/admin.py:376
 msgid "Proceed"
 msgstr "Продолжить"
 
-#: mg/constructor/admin.py:377
+#: mg/constructor/admin.py:379
 msgid "Invitation required"
 msgstr "Требуется приглашение"
 
-#: mg/constructor/admin.py:463
+#: mg/constructor/admin.py:465
 msgid "Enter your name, please"
 msgstr "Пожалуйста, введите ваше имя"
 
-#: mg/constructor/admin.py:464
+#: mg/constructor/admin.py:466
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
 
-#: mg/constructor/admin.py:465
+#: mg/constructor/admin.py:467
 msgid ""
 "This is a very long text asking you to enter your motto. So be so kind "
 "entering your motto"
@@ -2170,35 +2170,35 @@ msgstr ""
 "Это очень длинный текст, в котором вас просят ввести ваш девиз. Будьте так "
 "любезны, введите свой девиз"
 
-#: mg/constructor/admin.py:471
+#: mg/constructor/admin.py:473
 msgid "telegrams menu///Post"
 msgstr "Почта"
 
-#: mg/constructor/admin.py:472
+#: mg/constructor/admin.py:474
 msgid "Messages"
 msgstr "Сообщения"
 
-#: mg/constructor/admin.py:473 mg/constructor/design.py:1281
+#: mg/constructor/admin.py:475 mg/constructor/design.py:1281
 msgid "Last message"
 msgstr "Последнее сообщение"
 
-#: mg/constructor/admin.py:474
+#: mg/constructor/admin.py:476
 msgid "All messages"
 msgstr "Все сообщения"
 
-#: mg/constructor/admin.py:475
+#: mg/constructor/admin.py:477
 msgid "Send a new message"
 msgstr "Отправить новое сообщение"
 
-#: mg/constructor/admin.py:476
+#: mg/constructor/admin.py:478
 msgid "Message text"
 msgstr "Текст сообщения"
 
-#: mg/constructor/admin.py:478
+#: mg/constructor/admin.py:480
 msgid "Correspondence with {0}"
 msgstr "Переписка с {0}"
 
-#: mg/constructor/admin.py:484
+#: mg/constructor/admin.py:486
 msgid ""
 "MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-"
 "based online games"
@@ -2369,53 +2369,53 @@ msgstr "Дипломатия"
 msgid "channel///Debug"
 msgstr "Отладка"
 
-#: mg/constructor/project.py:79
+#: mg/constructor/project.py:84
 msgid "Destroy this game"
 msgstr "Уничтожить эту игру"
 
-#: mg/constructor/project.py:79
+#: mg/constructor/project.py:84
 msgid "You can destroy your game while not created"
 msgstr ""
 "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
-#: mg/constructor/project.py:88
+#: mg/constructor/project.py:93
 msgid "Game dashboard"
 msgstr "Панель управления игрой"
 
-#: mg/constructor/project.py:101
+#: mg/constructor/project.py:106
 msgid "Project main administrator"
 msgstr "Главный администратор проекта"
 
-#: mg/constructor/project.py:104 mg/constructor/project.py:105
-#: mg/constructor/project.py:106 mg/constructor/project.py:107
+#: mg/constructor/project.py:109 mg/constructor/project.py:110
+#: mg/constructor/project.py:111 mg/constructor/project.py:112
 #: mg/constructor/game.py:13
 msgid "Game"
 msgstr "Игра"
 
-#: mg/constructor/project.py:104
+#: mg/constructor/project.py:109
 msgid "Game news published by the administrators"
 msgstr "Игровые новости, публикуемые администрацией"
 
-#: mg/constructor/project.py:105
+#: mg/constructor/project.py:110
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr ""
 "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, "
 "политику и т.д."
 
-#: mg/constructor/project.py:106
+#: mg/constructor/project.py:111
 msgid "Newbies"
 msgstr "Вопросы новичков"
 
-#: mg/constructor/project.py:106
+#: mg/constructor/project.py:111
 msgid ""
 "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
 
-#: mg/constructor/project.py:107
+#: mg/constructor/project.py:112
 msgid "Diplomacy"
 msgstr "Дипломатия"
 
-#: mg/constructor/project.py:107
+#: mg/constructor/project.py:112
 msgid ""
 "Authorized guild members can talk to each other about diplomacy and politics "
 "issues here"
@@ -2423,16 +2423,16 @@ msgstr ""
 "В этом разделе уполномоченные члены кланов могут общаться на темы "
 "дипломатии, войн и политики"
 
-#: mg/constructor/project.py:108 mg/constructor/project.py:109
-#: mg/constructor/project.py:110
+#: mg/constructor/project.py:113 mg/constructor/project.py:114
+#: mg/constructor/project.py:115
 msgid "Admin"
 msgstr "Администрация"
 
-#: mg/constructor/project.py:108
+#: mg/constructor/project.py:113
 msgid "Admin talks"
 msgstr "Общение с администрацией"
 
-#: mg/constructor/project.py:108
+#: mg/constructor/project.py:113
 msgid ""
 "Discussions with the game administrators. Here you can discuss any issues "
 "related to the game itself."
@@ -2440,64 +2440,64 @@ msgstr ""
 "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, "
 "связанные с игрой в целом."
 
-#: mg/constructor/project.py:109
+#: mg/constructor/project.py:114
 msgid "Reference manuals"
 msgstr "Справочная информация"
 
-#: mg/constructor/project.py:109
+#: mg/constructor/project.py:114
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
 
-#: mg/constructor/project.py:110
+#: mg/constructor/project.py:115
 msgid "Bug reports"
 msgstr "Сообщения об ошибках"
 
-#: mg/constructor/project.py:110
+#: mg/constructor/project.py:115
 msgid "Report any problems in the game here"
 msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
 
-#: mg/constructor/project.py:111 mg/constructor/project.py:112
+#: mg/constructor/project.py:116 mg/constructor/project.py:117
 msgid "Reallife"
 msgstr "Реальная жизнь"
 
-#: mg/constructor/project.py:111
+#: mg/constructor/project.py:116
 msgid "Smoking room"
 msgstr "Курилка"
 
-#: mg/constructor/project.py:111
+#: mg/constructor/project.py:116
 msgid ""
 "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
 
-#: mg/constructor/project.py:112
+#: mg/constructor/project.py:117
 msgid "Art"
 msgstr "Творчество"
 
-#: mg/constructor/project.py:112
+#: mg/constructor/project.py:117
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
 
-#: mg/constructor/project.py:113 mg/constructor/project.py:114
+#: mg/constructor/project.py:118 mg/constructor/project.py:119
 msgid "Trading"
 msgstr "Торговля"
 
-#: mg/constructor/project.py:113
+#: mg/constructor/project.py:118
 msgid "Services"
 msgstr "Услуги"
 
-#: mg/constructor/project.py:113
+#: mg/constructor/project.py:118
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
 
-#: mg/constructor/project.py:114
+#: mg/constructor/project.py:119
 msgid "Market"
 msgstr "Рынок"
 
-#: mg/constructor/project.py:114
+#: mg/constructor/project.py:119
 msgid "Market place to sell and by any item"
 msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
 
-#: mg/constructor/project.py:122
+#: mg/constructor/project.py:128
 #, python-format
 msgid ""
 "Your game is currently available under the temporary domain %s. You have to "
@@ -2506,7 +2506,7 @@ msgstr ""
 "Ваша игра сейчас доступна на временном домене %s. Вам необходимо назначить "
 "ей нормальное доменное имя."
 
-#: mg/constructor/project.py:122
+#: mg/constructor/project.py:128
 msgid "Assign a domain name"
 msgstr "Назначить доменное имя"
 
@@ -4378,11 +4378,10 @@ msgid "Registrar password"
 msgstr "Пароль для регистратора"
 
 #: mg/constructor/domains.py:609 mg/constructor/domains.py:657
-#: mg/constructor/dashboard.py:108
 msgid "Domain"
 msgstr "Домен"
 
-#: mg/constructor/domains.py:610 mg/constructor/dashboard.py:109
+#: mg/constructor/domains.py:610
 msgid "Created"
 msgstr "Создано"
 
@@ -4566,110 +4565,179 @@ msgstr "Этот код уже погашен"
 msgid "This code in inappropriate for this action"
 msgstr "Этот код не подходит для этого действия"
 
-#: mg/constructor/dashboard.py:26
+#: mg/constructor/dashboard.py:29
+msgid "projstatus///inactive"
+msgstr ""
+
+#: mg/constructor/dashboard.py:31
+#, fuzzy
+msgid "projstatus///moderation"
+msgstr "Модерирование проекта: %s"
+
+#: mg/constructor/dashboard.py:33
+msgid "projstatus///published"
+msgstr ""
+
+#: mg/constructor/dashboard.py:35
+msgid "projstatus///not published"
+msgstr ""
+
+#: mg/constructor/dashboard.py:38
 msgid "Project name"
 msgstr "Название проекта"
 
-#: mg/constructor/dashboard.py:26
+#: mg/constructor/dashboard.py:38
 msgid "Project code"
 msgstr "Код проекта"
 
-#: mg/constructor/dashboard.py:40 mg/constructor/dashboard.py:42
+#: mg/constructor/dashboard.py:52 mg/constructor/dashboard.py:54
 #, python-format
 msgid "Project %s"
 msgstr "Проект %s"
 
-#: mg/constructor/dashboard.py:47
+#: mg/constructor/dashboard.py:59
 msgid "Global settings"
 msgstr "Глобальные настройки"
 
-#: mg/constructor/dashboard.py:49
+#: mg/constructor/dashboard.py:61
 msgid "Find project"
 msgstr "Найти проект"
 
-#: mg/constructor/dashboard.py:50
+#: mg/constructor/dashboard.py:62
 msgid "Main project"
 msgstr "Главный проект"
 
-#: mg/constructor/dashboard.py:58
+#: mg/constructor/dashboard.py:70
 msgid "Enter project uuid"
 msgstr "Введите UUID проекта"
 
-#: mg/constructor/dashboard.py:62
+#: mg/constructor/dashboard.py:74
 msgid "Project not found"
 msgstr "Проект не найден"
 
-#: mg/constructor/dashboard.py:67
+#: mg/constructor/dashboard.py:79
 msgid "Project uuid"
 msgstr "UUID проекта"
 
-#: mg/constructor/dashboard.py:104
+#: mg/constructor/dashboard.py:98
+#, fuzzy, python-format
+msgid "Game unpublished: %s"
+msgstr "снять с публикации"
+
+#: mg/constructor/dashboard.py:98
+msgid "We are sorry. Your game '{0}' was unpublished."
+msgstr ""
+
+#: mg/constructor/dashboard.py:114
+#, fuzzy
+msgid "Game id"
+msgstr "Игра"
+
+#: mg/constructor/dashboard.py:115
 msgid "Full title"
 msgstr "Полное название"
 
-#: mg/constructor/dashboard.py:105
+#: mg/constructor/dashboard.py:116
 msgid "Short title"
 msgstr "Короткое название"
 
-#: mg/constructor/dashboard.py:106
+#: mg/constructor/dashboard.py:117
 msgid "Title code"
 msgstr "Код названия"
 
-#: mg/constructor/dashboard.py:107
-msgid "Owner"
-msgstr "Владелец"
+#: mg/constructor/dashboard.py:118
+#, fuzzy
+msgid "Game owner"
+msgstr "Форум игры"
 
-#: mg/constructor/dashboard.py:110
-msgid "Published"
+#: mg/constructor/dashboard.py:119
+#, fuzzy
+msgid "Game domain"
+msgstr "Проверить домен"
+
+#: mg/constructor/dashboard.py:120
+#, fuzzy
+msgid "game///Created"
+msgstr "Создано"
+
+#: mg/constructor/dashboard.py:121
+#, fuzzy
+msgid "Moderation required"
+msgstr "Требуется приглашение"
+
+#: mg/constructor/dashboard.py:122
+#, fuzzy
+msgid "game///Published"
 msgstr "Опубликовано"
 
-#: mg/constructor/dashboard.py:111
+#: mg/constructor/dashboard.py:123
 msgid "unpublish"
 msgstr "снять с публикации"
 
-#: mg/constructor/dashboard.py:113
+#: mg/constructor/dashboard.py:126
 msgid "Are you sure want to unpublish the project?"
 msgstr "Вы уверены, что хотите снять проект с публикации?"
 
-#: mg/constructor/dashboard.py:115
+#: mg/constructor/dashboard.py:128
 msgid "Logo"
 msgstr "Логотип"
 
-#: mg/constructor/dashboard.py:146
+#: mg/constructor/dashboard.py:129
+msgid "moderation///permit"
+msgstr ""
+
+#: mg/constructor/dashboard.py:162
 msgid "Constructor: global settings"
 msgstr "Конструктор: глобальные настройки"
 
-#: mg/constructor/dashboard.py:147
+#: mg/constructor/dashboard.py:163
 msgid "Constructor: projects"
 msgstr "Конструктор: проекты"
 
-#: mg/constructor/dashboard.py:148
+#: mg/constructor/dashboard.py:164
+#, fuzzy
+msgid "Constructor: publishing projects (moderation)"
+msgstr "Конструктор: снятие проектов с публикации"
+
+#: mg/constructor/dashboard.py:165
 msgid "Constructor: unpublishing projects"
 msgstr "Конструктор: снятие проектов с публикации"
 
-#: mg/constructor/dashboard.py:166
+#: mg/constructor/dashboard.py:183
 msgid "Constructor settings stored"
 msgstr "Настройки конструктора сохранены"
 
-#: mg/constructor/dashboard.py:174
+#: mg/constructor/dashboard.py:191
 msgid "Registration on invitations"
 msgstr "Регистрация по приглашениям"
 
-#: mg/constructor/dashboard.py:174
+#: mg/constructor/dashboard.py:191
 msgid "Open registration"
 msgstr "Открытая регистрация"
 
-#: mg/constructor/dashboard.py:175
+#: mg/constructor/dashboard.py:192
 msgid "HTML message about registration on invitations"
 msgstr "HTML-сообщение о регистрации по приглашениям"
 
-#: mg/constructor/dashboard.py:176
+#: mg/constructor/dashboard.py:193
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
 
-#: mg/constructor/dashboard.py:177
+#: mg/constructor/dashboard.py:194
 msgid "Projects domain"
 msgstr "Домен проектов"
+
+#: mg/constructor/dashboard.py:211
+#, fuzzy, python-format
+msgid "Moderation passed: %s"
+msgstr "Модерирование проекта: %s"
+
+#: mg/constructor/dashboard.py:211
+msgid "Congratulations! Your game '{0}' has passed moderation successfully."
+msgstr ""
+
+#~ msgid "Owner"
+#~ msgstr "Владелец"
 
 #~ msgid "Domain for your game"
 #~ msgstr "Домен для вашей игры"
@@ -4913,9 +4981,6 @@ msgstr "Домен проектов"
 
 #~ msgid "Domain {0} was not found by {1}"
 #~ msgstr "Домен {0} не найден DNS-серверами {1}"
-
-#~ msgid "Check domain"
-#~ msgstr "Проверить домен"
 
 #~ msgid ""
 #~ "<p>Now you have to assign a domain name to your game. Domain name is a "

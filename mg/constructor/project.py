@@ -44,6 +44,10 @@ class ConstructorProject(Module):
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
             ])
+            if project.get("published"):
+                lst.extend([
+                    "mg.game.money.TwoPay"
+                ])
         return lst
 
     def project_title(self):
@@ -72,6 +76,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
         self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
         self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
+        self.rhook("constructor-project.notify-owner", self.notify_owner)
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -118,7 +123,8 @@ class ConstructorProjectAdmin(Module):
         }
         recommended_actions = []
         self.call("admin-game.recommended-actions", recommended_actions)
-        if not self.app().project.get("domain"):
+        project = self.app().project
+        if not project.get("domain"):
             recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": '%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s. You have to assign it a normal domain name.") % self.app().canonical_domain, self._("Assign a domain name"))})
         if len(recommended_actions):
             vars["recommended_actions"] = recommended_actions
@@ -132,3 +138,9 @@ class ConstructorProjectAdmin(Module):
             self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
         wiz = self.call("wizards.new", "mg.constructor.domains.DomainWizard", redirect_fail="game/dashboard")
         self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
+
+    def notify_owner(self, subject, content):
+        owner = self.main_app().obj(User, self.app().project.get("owner"))
+        name = owner.get("name")
+        email = owner.get("email")
+        self.main_app().hooks.call("email.send", email, name, subject, content)

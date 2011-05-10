@@ -84,3 +84,5 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 /* GAME DASHBOARD */
 .admin-recommended-content { vertical-align: top; padding-bottom: 15px }
 .admin-recommended-icon { vertical-align: top; padding: 3px 30px 15px 0 }
+.yes { color: #008000 }
+.no { color: #e00000 }

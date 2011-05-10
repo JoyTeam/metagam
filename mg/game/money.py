@@ -1,8 +1,14 @@
+# -*- coding: utf-8 -*-
+
 from mg import *
 from mg.core.auth import *
+from concurrence import Timeout, TimeoutError
+from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
+from uuid import uuid4
 import xml.dom.minidom
 import hashlib
 import re
+import random
 
 re_uuid_cmd = re.compile(r'^([0-9a-z]+)/(.+)$')
 
@@ -586,15 +592,13 @@ class TwoPay(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-ext-payment.2pay", self.payment_2pay, priv="public")
-        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay, priv="constructor.projects-2pay")
-        self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
         self.rhook("money-description.2pay-pay", self.money_description_2pay_pay)
         self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
         self.rhook("constructor.project-options", self.project_options)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("permissions.list", self.permissions_list)
         self.rhook("2pay.payport-params", self.payport_params)
         self.rhook("2pay.payment-params", self.payment_params)
+        self.rhook("2pay.register", self.register_2pay)
 
     def money_description_2pay_pay(self):
         return {
@@ -612,85 +616,8 @@ class TwoPay(Module):
         if self.req().has_access("constructor.projects-2pay"):
             options.append({"title": self._("2pay integration"), "value": '<hook:admin.link href="constructor/project-2pay/%s" title="%s" />' % (self.app().tag, self._("open dashboard"))})
 
-    def headmenu_project_2pay(self, args):
-        uuid = args
-        cmd = ""
-        m = re_uuid_cmd.match(args)
-        if m:
-            uuid, cmd = m.group(1, 2)
-        if cmd == "":
-            return [self._("2pay dashboard"), "constructor/project-dashboard/%s" % uuid]
-        elif cmd == "settings":
-            return [self._("Settings editor"), "constructor/project-2pay/%s" % uuid]
-
     def objclasses_list(self, objclasses):
         objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
-
-    def project_2pay(self):
-        req = self.req()
-        uuid = req.args
-        cmd = ""
-        m = re_uuid_cmd.match(req.args)
-        if m:
-            uuid, cmd = m.group(1, 2)
-        app = self.app().inst.appfactory.get_by_tag(uuid)
-        if app is None:
-            self.call("web.not_found")
-        if cmd == "":
-            payments = []
-            list = self.objlist(Payment2payList, query_index="date", query_reversed=True)
-            list.load(silent=True)
-            for pay in list:
-                payments.append({
-                    "id": pay.uuid,
-                    "performed": pay.get("performed"),
-                    "date": pay.get("date"),
-                    "user": pay.get("user"),
-                    "v1": htmlescape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
-                    "sum": pay.get("sum"),
-                    "cancelled": pay.get("cancelled")
-                })
-            vars = {
-                "project": {
-                    "uuid": uuid
-                },
-                "EditSettings": self._("Edit settings"),
-                "PaymentURL": self._("Payment URL"),
-                "SecretCode": self._("Secret code"),
-                "Time2pay": self._("2pay time"),
-                "OurTime": self._("Our time"),
-                "User": self._("User"),
-                "Amount": self._("Amount"),
-                "Chargeback": self._("Chargeback"),
-                "payments": payments,
-                "Update": self._("Update"),
-                "Id": self._("Id"),
-                "ProjectID": self._("Project ID"),
-            }
-            vars["settings"] = {
-                "secret": htmlescape(self.conf("2pay.secret")),
-                "project_id": htmlescape(self.conf("2pay.project-id")),
-                "payment_url": "http://%s/ext-payment/2pay" % app.domain,
-            }
-            self.call("admin.response_template", "admin/money/2pay-dashboard.html", vars)
-        elif cmd == "settings":
-            secret = req.param("secret")
-            project_id = req.param("project_id")
-            if req.param("ok"):
-                config = self.app().config_updater()
-                config.set("2pay.secret", secret)
-                config.set("2pay.project-id", project_id)
-                config.store()
-                self.call("admin.redirect", "constructor/project-2pay/%s" % uuid)
-            else:
-                secret = self.conf("2pay.secret")
-                project_id = self.conf("2pay.project-id")
-            fields = []
-            fields.append({"name": "project_id", "label": self._("2pay project id"), "value": project_id})
-            fields.append({"name": "secret", "label": self._("2pay secret"), "value": secret})
-            self.call("admin.form", fields=fields)
-        else:
-            self.call("web.not_found")
 
     def payment_2pay(self):
         req = self.req()
@@ -811,10 +738,6 @@ class TwoPay(Module):
         self.debug("2pay Response: %s", response.toxml("utf-8"))
         self.call("web.response", doc.toxml("windows-1251"), {})
 
-    def permissions_list(self, perms):
-        if self.app().tag == "main":
-            perms.append({"id": "constructor.projects-2pay", "name": self._("Constructor: 2pay integration")})
-
     def payport_params(self, params, owner_uuid):
         payport = {}
         try:
@@ -840,3 +763,202 @@ class TwoPay(Module):
         payment["project_id"] = self.conf("2pay.project-id")
         payment["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
         params["twopay_payment"] = payment
+
+    def register_2pay(self):
+        self.info("Registering in the 2pay system")
+        project = self.app().project
+        doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "response", None)
+        request = doc.documentElement
+        # Master ID
+        master_id = str(self.main_app().config.get("2pay.project-id"))
+        elt = doc.createElement("id")
+        elt.appendChild(doc.createTextNode(master_id))
+        request.appendChild(elt)
+        # Project title
+        elt = doc.createElement("name")
+        elt.setAttribute("loc", "ru")
+        elt.appendChild(doc.createTextNode(project.get("title_short")))
+        request.appendChild(elt)
+        elt = doc.createElement("name")
+        elt.setAttribute("loc", "en")
+        elt.appendChild(doc.createTextNode(project.get("title_short_en", "")))
+        request.appendChild(elt)
+        # Currency
+        elt = doc.createElement("currency")
+        elt.setAttribute("loc", "ru")
+        elt.appendChild(doc.createTextNode("Gold"))
+        request.appendChild(elt)
+        elt = doc.createElement("currency")
+        elt.setAttribute("loc", "en")
+        elt.appendChild(doc.createTextNode("Gold"))
+        request.appendChild(elt)
+        # Character name
+        elt = doc.createElement("v0")
+        elt.setAttribute("loc", "ru")
+        elt.appendChild(doc.createTextNode(u'Введите имя персонажа:'))
+        request.appendChild(elt)
+        elt = doc.createElement("v0")
+        elt.setAttribute("loc", "en")
+        elt.appendChild(doc.createTextNode('Character name:'))
+        request.appendChild(elt)
+        # Secret key
+        secret = uuid4().hex
+        elt = doc.createElement("secretKey")
+        elt.appendChild(doc.createTextNode(secret))
+        request.appendChild(elt)
+        # Random number
+        rnd = str(random.randrange(0, 1000000000))
+        elt = doc.createElement("randomNumber")
+        elt.appendChild(doc.createTextNode(rnd))
+        request.appendChild(elt)
+        # url
+        elt = doc.createElement("url")
+        elt.appendChild(doc.createTextNode(self.app().canonical_domain))
+        request.appendChild(elt)
+        # imageURL
+        elt = doc.createElement("imageURL")
+        elt.appendChild(doc.createTextNode(project.get("logo")))
+        request.appendChild(elt)
+        # payURL
+        elt = doc.createElement("payUrl")
+        elt.appendChild(doc.createTextNode("http://%s/ext-payment/2pay" % self.app().canonical_domain))
+        request.appendChild(elt)
+        # Currency precision
+        elt = doc.createElement("natur")
+        elt.appendChild(doc.createTextNode("0"))
+        request.appendChild(elt)
+        # Currency rate
+        prices = doc.createElement("prices")
+        request.appendChild(prices)
+        elt = doc.createElement("price")
+        elt.setAttribute("qty", "1")
+        elt.appendChild(doc.createTextNode("30"))
+        prices.appendChild(elt)
+        elt = doc.createElement("valuta")
+        elt.appendChild(doc.createTextNode("1"))
+        request.appendChild(elt)
+        # Minimal and maximal amount
+        elt = doc.createElement("min")
+        elt.appendChild(doc.createTextNode("0.01"))
+        request.appendChild(elt)
+        elt = doc.createElement("max")
+        elt.appendChild(doc.createTextNode("0"))
+        request.appendChild(elt)
+        # Description
+        elt = doc.createElement("desc")
+        elt.appendChild(doc.createTextNode(self.conf("gameprofile.description", project.get("title_full"))))
+        request.appendChild(elt)
+        # Signature
+        sign = hashlib.md5(str("%s%s%s") % (master_id, rnd, self.main_app().config.get("2pay.secret"))).hexdigest().lower()
+        elt = doc.createElement("sign")
+        elt.appendChild(doc.createTextNode(sign))
+        request.appendChild(elt)
+        xmldata = request.toxml("utf-8")
+        self.debug("2pay request: %s", xmldata)
+        if False:
+            try:
+                cnn = HTTPConnection()
+                cnn.connect(("2pay.ru", 80))
+                try:
+                    request = HTTPRequest()
+                    request.method = "POST"
+                    request.path = "/api/game/index.php"
+                    request.host = "2pay.ru"
+                    request.body = xmldata
+                    request.add_header("Content-type", "application/xml")
+                    request.add_header("Content-length", len(xmldata))
+                    response = cnn.perform(request)
+                    self.debug("2pay response: %s %s" % (response.status_code, response.body))
+                finally:
+                    cnn.close()
+            except IOError as e:
+                self.error("Error registering in the 2pay system: %s" % e)
+
+class TwoPayAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay, priv="constructor.projects-2pay")
+        self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
+        self.rhook("permissions.list", self.permissions_list)
+
+    def project_2pay(self):
+        req = self.req()
+        uuid = req.args
+        cmd = ""
+        m = re_uuid_cmd.match(req.args)
+        if m:
+            uuid, cmd = m.group(1, 2)
+        app = self.app().inst.appfactory.get_by_tag(uuid)
+        if app is None:
+            self.call("web.not_found")
+        if cmd == "":
+            payments = []
+            list = self.objlist(Payment2payList, query_index="date", query_reversed=True)
+            list.load(silent=True)
+            for pay in list:
+                payments.append({
+                    "id": pay.uuid,
+                    "performed": pay.get("performed"),
+                    "date": pay.get("date"),
+                    "user": pay.get("user"),
+                    "v1": htmlescape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
+                    "sum": pay.get("sum"),
+                    "cancelled": pay.get("cancelled")
+                })
+            vars = {
+                "project": {
+                    "uuid": uuid
+                },
+                "EditSettings": self._("Edit settings"),
+                "PaymentURL": self._("Payment URL"),
+                "SecretCode": self._("Secret code"),
+                "Time2pay": self._("2pay time"),
+                "OurTime": self._("Our time"),
+                "User": self._("User"),
+                "Amount": self._("Amount"),
+                "Chargeback": self._("Chargeback"),
+                "payments": payments,
+                "Update": self._("Update"),
+                "Id": self._("Id"),
+                "ProjectID": self._("Project ID"),
+            }
+            vars["settings"] = {
+                "secret": htmlescape(self.conf("2pay.secret")),
+                "project_id": htmlescape(self.conf("2pay.project-id")),
+                "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
+            }
+            self.call("admin.response_template", "admin/money/2pay-dashboard.html", vars)
+        elif cmd == "settings":
+            secret = req.param("secret")
+            project_id = req.param("project_id")
+            if req.param("ok"):
+                config = self.app().config_updater()
+                config.set("2pay.secret", secret)
+                config.set("2pay.project-id", project_id)
+                config.store()
+                self.call("admin.redirect", "constructor/project-2pay/%s" % uuid)
+            else:
+                secret = self.conf("2pay.secret")
+                project_id = self.conf("2pay.project-id")
+            fields = []
+            fields.append({"name": "project_id", "label": self._("2pay project id"), "value": project_id})
+            fields.append({"name": "secret", "label": self._("2pay secret"), "value": secret})
+            self.call("admin.form", fields=fields)
+        else:
+            self.call("web.not_found")
+
+    def headmenu_project_2pay(self, args):
+        uuid = args
+        cmd = ""
+        m = re_uuid_cmd.match(args)
+        if m:
+            uuid, cmd = m.group(1, 2)
+        if cmd == "":
+            return [self._("2pay dashboard"), "constructor/project-dashboard/%s" % uuid]
+        elif cmd == "settings":
+            return [self._("Settings editor"), "constructor/project-2pay/%s" % uuid]
+
+    def permissions_list(self, perms):
+        if self.app().tag == "main":
+            perms.append({"id": "constructor.projects-2pay", "name": self._("Constructor: 2pay integration")})
+
