@@ -780,6 +780,7 @@ class Forum(Module):
         objclasses["ForumCategoryStat"] = (ForumCategoryStat, ForumCategoryStatList)
 
     def response(self, content, vars):
+        req = self.req()
         if vars.get("menu") and len(vars["menu"]):
             menu_left = []
             menu_right = []
@@ -1454,6 +1455,7 @@ class Forum(Module):
                 last_show = show
             pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
+        vars["share_url"] = htmlescape("http://%s%s" % (self.app().canonical_domain, req.uri()))
         self.call("forum.vars-topic", vars)
         self.call("forum.response_template", "socio/topic.html", vars)
 
