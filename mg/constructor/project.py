@@ -31,7 +31,7 @@ class ConstructorProject(Module):
         if not project.get("inactive"):
             lst.extend([
                 "mg.constructor.game.Game",
-                "mg.game.money.Money",
+                "mg.game.money.Money", "mg.game.money.MoneyAdmin",
                 "mg.core.realplexor.Realplexor",
                 "mg.constructor.chat.Chat",
                 "mg.constructor.interface.Dynamic",
@@ -77,6 +77,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
         self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
         self.rhook("constructor-project.notify-owner", self.notify_owner)
+        self.rhook("advice.all", self.advice_all)
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -123,12 +124,15 @@ class ConstructorProjectAdmin(Module):
         }
         recommended_actions = []
         self.call("admin-game.recommended-actions", recommended_actions)
-        project = self.app().project
-        if not project.get("domain"):
-            recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": '%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s. You have to assign it a normal domain name.") % self.app().canonical_domain, self._("Assign a domain name"))})
         if len(recommended_actions):
+            recommended_actions.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
             vars["recommended_actions"] = recommended_actions
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
+
+    def advice_all(self, group, hook, args, advice):
+        project = self.app().project
+        if not project.get("inactive") and not project.get("published") and (group != "admin-game" or hook != "dashboard"):
+            advice.append({"title": self._("Launch your game"), "content": self._('Your game is not published yet. To publish it perform the steps listed on the <hook:admin.link href="game/dashboard" title="Game dashboard" /> page'), "order": 1000})
 
     def game_domain(self):
         if self.app().project.get("domain"):

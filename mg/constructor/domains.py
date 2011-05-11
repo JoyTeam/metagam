@@ -24,6 +24,7 @@ class Domains(Module):
         self.rhook("domains.prices", self.prices)
         self.rhook("domains.assign", self.assign)
         self.rhook("domains.validate_new", self.validate_new)
+        self.rhook("admin-game.recommended-actions", self.recommended_actions)
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -67,14 +68,14 @@ class Domains(Module):
         rec.set("created", self.now())
         rec.store()
         project.set("domain", domain)
-        project.set("moderation", 1)
         project.store()
         self.app().store_config_hooks()
-        # message to the moderator
-        email = self.main_app().config.get("constructor.moderator-email")
-        if email:
-            content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
-            self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
+        #project.set("moderation", 1)
+        ## message to the moderator
+        #email = self.main_app().config.get("constructor.moderator-email")
+        #if email:
+        #    content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+        #    self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
 
     def validate_new(self, domain, errors):
         try:
@@ -157,6 +158,12 @@ class Domains(Module):
             else:
                 raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
         return servers
+
+    def recommended_actions(self, recommended_actions):
+        project = self.app().project
+        req = self.req()
+        if not project.get("domain") and req.has_access("project.admin"):
+            recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": u'%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s only. You have to assign it a normal domain name before game launch.") % self.app().canonical_domain, self._("Assign a domain name")), "order": 100})
 
 class DomainRegWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):

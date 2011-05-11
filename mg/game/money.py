@@ -358,49 +358,86 @@ class MemberMoney(object):
         if account is None:
             return 0
         return account.available()
-    
-class Money(Module):
+
+class MoneyAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("auth.user-tables", self.user_tables)
-        self.rhook("auth.user-options", self.user_options)
-        self.rhook("permissions.list", self.permissions_list)
-        self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-admin-money.give", self.admin_money_give, priv="users.money.give")
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
         self.rhook("ext-admin-money.take", self.admin_money_take, priv="users.money.give")
         self.rhook("headmenu-admin-money.take", self.headmenu_money_take)
-        self.rhook("currencies.list", self.currencies_list, priority=-1000)
-        self.rhook("money-description.admin-give", self.money_description_admin_give)
-        self.rhook("money-description.admin-take", self.money_description_admin_take)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("auth.user-options", self.user_options)
         self.rhook("ext-admin-money.account", self.admin_money_account, priv="users.money")
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
-        self.rhook("money.member-money", self.member_money)
-        self.rhook("money.valid_amount", self.valid_amount)
+        self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("ext-admin-money.currencies", self.admin_money_currencies, priv="money.currencies")
+        self.rhook("headmenu-admin-money.currencies", self.headmenu_money_currencies)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-money.index", self.menu_money_index)
 
-    def currencies_list(self, currencies):
-        if self.app().tag == "main":
-            currencies["MM$"] = {
-                "format": "%.2f",
-                "description": "MM$",
+    def menu_root_index(self, menu):
+        menu.append({"id": "money.index", "text": self._("Money"), "order": 100})
+
+    def menu_money_index(self, menu):
+        req = self.req()
+        if req.has_access("money.currencies"):
+            menu.append({"id": "money/currencies", "text": self._("Currencies"), "leaf": True})
+
+    def headmenu_money_currencies(self, args):
+        if args == "new":
+            return [self._("New currency"), "money/currencies"]
+        elif args:
+            return [args, "money/currencies"]
+        return self._("Currency editor")
+
+    def admin_money_currencies(self):
+        req = self.req()
+        currencies = {}
+        self.call("currencies.list", currencies)
+        if req.args:
+            if req.ok():
+                pass
+            elif req.args == "new":
+                code = ""
+                description = ""
+                real = False
+            else:
+                code = req.args
+                info = currencies.get(code)
+                if not info:
+                    self.call("web.not_found")
+                description = info.get("description")
+                real = info.get("real")
+            fields = []
+            if req.args == "new":
+                fields.append({"name": "code", "label": self._('Currency code (for example, USD, RUR, EUR, GLD, SLVR, DMND, etc). <span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>'), "value": code})
+            fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
+            fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
+            self.call("admin.form", fields=fields)
+        else:
+            rows = []
+            for code in sorted(currencies.keys()):
+                info = currencies.get(code)
+                real = '<img src="/st/img/coins-16x16.png" alt="" />' if info.get("real") else None
+                rows.append(['<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code), htmlescape(info.get("description")), real])
+            vars = {
+                "tables": [
+                    {
+                        "links": [
+                            {
+                                "hook": "money/currencies/new",
+                                "text": self._("New currency"),
+                                "lst": True,
+                            }
+                        ],
+                        "header": [self._("Currency code"), self._("Currency description"), self._("Real money")],
+                        "rows": rows
+                    }
+                ]
             }
-        if not len(currencies):
-            currencies["GLD"] = {
-                "format": "%d",
-                "description": self._("Gold")
-            }
-
-    def money_description_admin_give(self):
-        return {
-            "args": ["admin"],
-            "text": self._("Given by the administration"),
-        }
-
-    def money_description_admin_take(self):
-        return {
-            "args": ["admin"],
-            "text": self._("Taken by the administration"),
-        }
+            self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_money_give(self, args):
         try:
@@ -408,33 +445,6 @@ class Money(Module):
         except ObjectNotFoundException:
             return
         return [self._("Give money"), "auth/user-dashboard/%s" % args]
-
-    def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
-        valid = True
-        # checking currency
-        currencies = {}
-        self.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            valid = False
-            if errors is not None and currency_field:
-                errors[currency_field] = self._("Invalid currency")
-        # checking amount
-        try:
-            amount = float(amount)
-            if amount <= 0:
-                valid = False
-                if errors is not None and amount_field:
-                    errors[amount_field] = self._("Amount must be greater than 0")
-            elif currency_info is not None and amount != float(currency_info["format"] % amount):
-                valid = False
-                if errors is not None and amount_field:
-                    errors[amount_field] = self._("Invalid amount precision")
-        except ValueError:
-            valid = False
-            if errors is not None and amount_field:
-                errors[amount_field] = self._("Invalid number format")
-        return valid
 
     def admin_money_give(self):
         req = self.req()
@@ -576,14 +586,85 @@ class Money(Module):
                 "value": u'<hook:admin.link href="money/give/{0}" title="{1}" /> &bull; <hook:admin.link href="money/take/{0}" title="{2}" />'.format(user.uuid, self._("Give money"), self._("Take money"))
             })
 
+    def permissions_list(self, perms):
+        perms.append({"id": "users.money", "name": self._("Access to users money")})
+        perms.append({"id": "users.money.give", "name": self._("Giving and taking money")})
+        perms.append({"id": "money.currencies", "name": self._("Currencies editor")})
+
+    def recommended_actions(self, recommended_actions):
+        req = self.req()
+        if req.has_access("money.currencies"):
+            currencies = []
+            self.call("currencies.list", currencies)
+            real_ok = False
+            for cur in currencies:
+                if cur.get("real"):
+                    real_ok = True
+                    break
+            if not real_ok:
+                recommended_actions.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="money/currencies" title="%s" />' % (self._("You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."), self._("Open currency settings")), "order": 90})
+
+class Money(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("currencies.list", self.currencies_list, priority=-1000)
+        self.rhook("money-description.admin-give", self.money_description_admin_give)
+        self.rhook("money-description.admin-take", self.money_description_admin_take)
+        self.rhook("money.member-money", self.member_money)
+        self.rhook("money.valid_amount", self.valid_amount)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def currencies_list(self, currencies):
+        if self.app().tag == "main":
+            currencies["MM$"] = {
+                "format": "%.2f",
+                "description": "MM$",
+                "real": True,
+            }
+
+    def money_description_admin_give(self):
+        return {
+            "args": ["admin"],
+            "text": self._("Given by the administration"),
+        }
+
+    def money_description_admin_take(self):
+        return {
+            "args": ["admin"],
+            "text": self._("Taken by the administration"),
+        }
+
     def objclasses_list(self, objclasses):
         objclasses["Account"] = (Account, AccountList)
         objclasses["AccountLock"] = (AccountLock, AccountLockList)
         objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
 
-    def permissions_list(self, perms):
-        perms.append({"id": "users.money", "name": self._("Access to users money")})
-        perms.append({"id": "users.money.give", "name": self._("Giving and taking money")})
+    def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
+        valid = True
+        # checking currency
+        currencies = {}
+        self.call("currencies.list", currencies)
+        currency_info = currencies.get(currency)
+        if currency_info is None:
+            valid = False
+            if errors is not None and currency_field:
+                errors[currency_field] = self._("Invalid currency")
+        # checking amount
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Amount must be greater than 0")
+            elif currency_info is not None and amount != float(currency_info["format"] % amount):
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Invalid amount precision")
+        except ValueError:
+            valid = False
+            if errors is not None and amount_field:
+                errors[amount_field] = self._("Invalid number format")
+        return valid
 
     def member_money(self, member_uuid):
         return MemberMoney(self.app(), member_uuid)

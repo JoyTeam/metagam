@@ -9,7 +9,7 @@ class SiteAdmin(Module):
         self.rhook("menu-admin-site.index", self.menu_site)
 
     def menu_root_index(self, menu):
-        menu.append({"id": "site.index", "text": self._("Site")})
+        menu.append({"id": "site.index", "text": self._("Site"), "order": 30})
 
     def permissions_list(self, perms):
         perms.append({"id": "site.robots", "name": self._("Robots.txt administration")})

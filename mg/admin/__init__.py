@@ -165,6 +165,7 @@ class AdminInterface(Module):
             advice.extend(admin_advice)
         self.call("advice-%s.%s" % (req.group, req.hook), req.args, advice)
         self.call("advice-%s.index" % req.group, req.hook, req.args, advice)
+        self.call("advice.all", req.group, req.hook, req.args, advice)
         if len(advice):
             for adv in advice:
                 adv["content"] = self.call("web.parse_inline_layout", adv["content"], {})

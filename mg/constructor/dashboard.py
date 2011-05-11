@@ -95,7 +95,7 @@ class ProjectDashboard(Module):
                 project.delkey("published")
                 project.set("moderation", 1)
 #               app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
-                app.hooks.call("constructor-project.notify-owner", self._("Game unpublished: %s") % project.get("title_short"), self._("We are sorry. Your game '{0}' was unpublished.".format(project.get("title_short"))))
+                app.hooks.call("constructor-project.notify-owner", self._("Game unpublished: %s") % project.get("title_short"), self._("We are sorry. Your game '{0}' was unpublished.").format(project.get("title_short")))
 #               domain = project.get("domain")
 #               if domain:
 #                   dom = self.obj(Domain, domain, silent=True)

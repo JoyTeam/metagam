@@ -1113,7 +1113,7 @@ class IndexPageAdmin(Module):
 
     def recommended_actions(self, actions):
         if not self.conf("indexpage.design"):
-            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Index page design of your game is not configured. Index page is the face of your game. It\'s the first that players see when they come. You can upload your own design or select one from the catalog. <hook:admin.link href="indexpage/design" title="Open configuration" />')})
+            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Index page design of your game is not configured. Index page is the face of your game. It\'s the first that players see when they come. You can upload your own design or select one from the catalog. <hook:admin.link href="indexpage/design" title="Open configuration" />'), "order": 10})
 
     def headmenu_design(self, args):
         if args == "":
@@ -1263,7 +1263,7 @@ class SocioInterface(Module):
 
     def recommended_actions(self, actions):
         if not self.conf("sociointerface.design"):
-            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Socio interface design of your game is not configured. Socio interface is shown when forum, library or any other external interface is being accessed. You can upload your own design or select one from the catalog. <hook:admin.link href="sociointerface/design" title="Open configuration" />')})
+            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Socio interface design of your game is not configured. Socio interface is shown when forum, library or any other external interface is being accessed. You can upload your own design or select one from the catalog. <hook:admin.link href="sociointerface/design" title="Open configuration" />'), "order": 10})
 
     def templates(self):
         output = cStringIO.StringIO()
@@ -1571,7 +1571,7 @@ class GameInterfaceAdmin(ConstructorModule):
 
     def recommended_actions(self, actions):
         if not self.conf("gameinterface.design"):
-            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Game interface design of your game is not configured. Game interface is a screen than player sees after entering the game. You can upload your own design or select one from the catalog. <hook:admin.link href="gameinterface/design" title="Open configuration" />')})
+            actions.append({"icon": "/st/img/exclamation.png", "content": self._('Game interface design of your game is not configured. Game interface is a screen than player sees after entering the game. You can upload your own design or select one from the catalog. <hook:admin.link href="gameinterface/design" title="Open configuration" />'), "order": 10})
 
     def headmenu_design(self, args):
         if args == "":
