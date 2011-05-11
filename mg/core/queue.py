@@ -166,7 +166,7 @@ class Queue(Module):
     def queue_generate(self):
         sched = self.call("queue.schedule", empty=True)
         self.call("all.schedule", sched)
-        self.debug("generated schedule: %s", sched.data["entries"])
+        self.debug("generated schedule for the project %s: %s", (sched.uuid, sched.data["entries"]))
         sched.store()
         self.call("cluster.query_director", "/schedule/update/%s" % sched.uuid)
 
