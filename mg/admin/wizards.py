@@ -81,6 +81,8 @@ class Wizard(Module):
             if method is None:
                 raise RuntimeError("Target wizard result method doesn't exist")
             method(data, target[3])
+        elif target[0] == "hook":
+            self.call(target[1], data)
         else:
             raise RuntimeError("Invalid result target: %s" % target[0])
 

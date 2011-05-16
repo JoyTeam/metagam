@@ -1,6 +1,9 @@
 from mg import *
 from mg.constructor.common import *
 import cgi
+import re
+
+re_newline = re.compile(r'\n')
 
 class ProjectDashboard(Module):
     def register(self):
@@ -14,6 +17,8 @@ class ProjectDashboard(Module):
         self.rhook("headmenu-admin-constructor.project-dashboard", self.headmenu_project_dashboard)
         self.rhook("ext-admin-constructor.project-unpublish", self.ext_project_unpublish, priv="constructor.projects.unpublish")
         self.rhook("ext-admin-constructor.project-publish", self.ext_project_publish, priv="constructor.projects.publish")
+        self.rhook("headmenu-admin-constructor.project-reject", self.headmenu_project_reject)
+        self.rhook("ext-admin-constructor.project-reject", self.ext_project_reject, priv="constructor.projects.publish")
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings, priv="constructor.settings")
 
@@ -91,9 +96,11 @@ class ProjectDashboard(Module):
             wiz.abort()
         project = app.project
         with self.lock(["project.%s" % project.uuid]):
+            project.load()
             if project.get("published"):
                 project.delkey("published")
-                project.set("moderation", 1)
+                project.delkey("moderation")
+                project.set("moderation_reject", self._("Game was unpublished by a moderator"))
 #               app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
                 app.hooks.call("constructor-project.notify-owner", self._("Game unpublished: %s") % project.get("title_short"), self._("We are sorry. Your game '{0}' was unpublished.").format(project.get("title_short")))
 #               domain = project.get("domain")
@@ -115,34 +122,46 @@ class ProjectDashboard(Module):
             "TitleFull": self._("Full title"),
             "TitleShort": self._("Short title"),
             "TitleCode": self._("Title code"),
+            "TitleEn": self._("Title in English"),
+            "GameDescription": self._("Game description"),
             "Owner": self._("Game owner"),
             "Domain": self._("Game domain"),
             "Created": self._("game///Created"),
             "Moderation": self._("Moderation required"),
             "Published": self._("game///Published"),
-            "unpublish": self._("unpublish"),
+            "unpublish": self._("Unpublish"),
             "no": self._("no"),
             "yes": self._("yes"),
             "ConfirmUnpublish": self._("Are you sure want to unpublish the project?"),
             "Update": self._("Update"),
             "Logo": self._("Logo"),
             "permit": self._("moderation///permit"),
+            "reject": self._("moderation///reject"),
+            "by": self._("created///by"),
+            "WaitingModeration": self._("This game is waiting for moderation"),
+            "PublishedAt": self._("This game is published at"),
+            "GameInactive": self._("This game is inactive yet"),
+            "GameSetup": self._("This game is being set up by its administrator"),
         }
         project = getattr(app, "project", None)
         if project:
             owner = self.obj(User, project.get("owner"))
+            description = re_newline.sub('<br />', htmlescape(app.config.get("gameprofile.description")))
             vars["project"] = {
                 "uuid": project.uuid,
                 "title_full": htmlescape(project.get("title_full")),
                 "title_short": htmlescape(project.get("title_short")),
                 "title_code": htmlescape(project.get("title_code")),
+                "title_en": htmlescape(project.get("title_en")),
                 "logo": htmlescape(project.get("logo")),
                 "domain": htmlescape(project.get("domain")),
+                "moderation_reject": htmlescape(project.get("moderation_reject")),
                 "published": project.get("published"),
                 "moderation": project.get("moderation"),
                 "created": project.get("created"),
                 "unpublish": req.has_access("constructor.projects.unpublish") and project.get("published"),
                 "publish": req.has_access("constructor.projects.publish") and project.get("moderation"),
+                "description": description,
             }
             vars["owner"] = {
                 "uuid": owner.uuid,
@@ -153,9 +172,13 @@ class ProjectDashboard(Module):
                 "uuid": app.tag,
             }
         options = []
-        app.hooks.call("constructor.project-options",options)
+        app.hooks.call("constructor.project-options", options)
         if len(options):
             vars["options"] = options
+        params = []
+        app.hooks.call("constructor.project-params", params)
+        if len(params):
+            vars["project"]["params"] = params
         self.call("admin.response_template", "admin/constructor/project-dashboard.html", vars)
 
     def permissions_list(self, perms):
@@ -203,13 +226,47 @@ class ProjectDashboard(Module):
             self.call("web.not_found")
         project = app.project
         with self.lock(["project.%s" % project.uuid]):
-            if not project.get("published"):
+            project.load()
+            if project.get("moderation"):
                 project.delkey("moderation")
+                project.delkey("moderation_reject")
                 project.set("published", self.now())
                 app.modules.load(["mg.game.money.TwoPay"])
                 app.hooks.call("2pay.register")
-                app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.".format(project.get("title_short"))))
+                app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.").format(project.get("title_short")))
                 project.store()
                 app.store_config_hooks()
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
+    def ext_project_reject(self):
+        req = self.req()
+        try:
+            app = self.app().inst.appfactory.get_by_tag(req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        project = app.project
+        with self.lock(["project.%s" % project.uuid]):
+            project.load()
+            if project.get("moderation"):
+                if req.ok():
+                    reason = req.param("reason")
+                    errors = {}
+                    if not reason:
+                        errors["reason"] = self._("Reason is mandatory")
+                    if len(errors):
+                        self.call("web.response_json", {"success": False, "errors": errors})
+                    project.delkey("moderation")
+                    project.set("moderation_reject", self._("Moderation reject reason: %s") % reason)
+                    project.delkey("published")
+                    app.hooks.call("constructor-project.notify-owner", self._("Moderation reject: %s") % project.get("title_short"), self._("Your game '{0}' hasn't passed moderation.\nReason: {1}").format(project.get("title_short"), reason))
+                    project.store()
+                    app.store_config_hooks()
+                    self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+                fields = []
+                fields.append({"name": "reason", "label": self._("Reject reason")})
+                buttons = [{"text": self._("moderation///Reject")}]
+                self.call("admin.form", fields=fields, buttons=buttons)
+        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+
+    def headmenu_project_reject(self, args):
+        return [self._("Moderation reject"), "constructor/project-dashboard/%s" % args]

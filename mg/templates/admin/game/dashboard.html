@@ -1,4 +1,59 @@
-[%if recommended_actions%]
+[%if before_launch %]
+<div class="text"><h1>[%BeforeLaunch%]</h1></div>
+<table class="admin-recommended-table">
+	[%foreach act in before_launch%]
+	<tr><td class="admin-recommended-icon"><img src="[%act.icon%]" alt="" /></td><td class="admin-recommended-content">[%act.content%]</td></tr>
+	[%end%]
+</table>
+[%end%]
+[%if published%]
+<div class="text">
+<table class="admin-columns">
+	<tr>
+		<td class="admin-column"><h1>[%IncomeStructure%]</h1><div id="income-structure"></div></td>
+		<td class="admin-column"><h1>[%IncomeStatistics%]</h1><div id="income-statistics"></div></td>
+	</tr>
+</table>
+</div>
+<script type="text/javascript">
+	var store = new Ext.data.JsonStore({
+		fields: ['paysystem', 'amount'],
+		data: [{
+			paysystem: 'Qiwi',
+			amount: 150
+		}, {
+			paysystem: 'Credit cards',
+			amount: 200
+		}, {
+			paysystem: 'Mobile payment',
+			amount: 100
+		}, {
+			paysystem: 'WebMoney',
+			amount: 230
+		}]
+	});
+	new Ext.chart.PieChart({
+		width: 220,
+		height: 300,
+		renderTo: 'income-structure',
+		store: store,
+		dataField: 'amount',
+		categoryField: 'paysystem',
+		extraStyle: {
+			legend: {
+				display: 'bottom',
+				padding: 5,
+				font: {
+					family: 'Verdana',
+					size: 11
+				}
+			}
+		}
+	});
+</script>
+[%end%]
+<div class="text"><h1>[%Tips%]</h1></div>
+[%if recommended_actions %]
 <table class="admin-recommended-table">
 	[%foreach act in recommended_actions%]
 	<tr><td class="admin-recommended-icon"><img src="[%act.icon%]" alt="" /></td><td class="admin-recommended-content">[%act.content%]</td></tr>

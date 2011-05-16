@@ -8,6 +8,8 @@ class Project(CassandraObject):
         "owner": [["owner"], "created"],
         "moderation": [["moderation"], "created"],
         "published": [[], "published"],
+        "name_short": [[], "name_short"],
+        "name_en": [[], "name_en"],
     }
 
     def __init__(self, *args, **kwargs):

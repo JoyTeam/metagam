@@ -11,6 +11,11 @@ import re
 import random
 
 re_uuid_cmd = re.compile(r'^([0-9a-z]+)/(.+)$')
+re_valid_code = re.compile(r'^[A-Z]{2,5}$')
+re_questions = re.compile('\?')
+re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
+re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
+re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
 
 class Account(CassandraObject):
     _indexes = {
@@ -376,6 +381,7 @@ class MoneyAdmin(Module):
         self.rhook("headmenu-admin-money.currencies", self.headmenu_money_currencies)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-money.index", self.menu_money_index)
+        self.rhook("constructor.project-params", self.project_params)
 
     def menu_root_index(self, menu):
         menu.append({"id": "money.index", "text": self._("Money"), "order": 100})
@@ -386,7 +392,7 @@ class MoneyAdmin(Module):
             menu.append({"id": "money/currencies", "text": self._("Currencies"), "leaf": True})
 
     def headmenu_money_currencies(self, args):
-        if args == "new":
+        if args == "new" or args == "prenew":
             return [self._("New currency"), "money/currencies"]
         elif args:
             return [args, "money/currencies"]
@@ -394,50 +400,209 @@ class MoneyAdmin(Module):
 
     def admin_money_currencies(self):
         req = self.req()
-        currencies = {}
-        self.call("currencies.list", currencies)
-        if req.args:
-            if req.ok():
-                pass
-            elif req.args == "new":
-                code = ""
-                description = ""
-                real = False
+        project = self.app().project
+        with self.lock(["currencies"]):
+            currencies = {}
+            self.call("currencies.list", currencies)
+            lang = self.call("l10n.lang")
+            if req.args == "prenew":
+                if req.ok():
+                    errors = {}
+                    name_en = req.param("name_en").strip().capitalize()
+                    name_local = req.param("name_local").strip().capitalize()
+                    if not name_local:
+                        errors["name_local"] = self._("Currency name is mandatory")
+                    if lang != "en":
+                        if not name_en:
+                            errors["name_en"] = self._("Currency name is mandatory")
+                    if len(errors):
+                        self.call("web.response_json", {"success": False, "errors": errors})
+                    self.call("admin.redirect", "money/currencies/new", {
+                        "name_local": self.call("l10n.literal_values_sample", name_local),
+                        "name_plural": u"%s???" % self.stem(name_local),
+                        "name_en": u"{0}/{0}???s".format(name_en),
+                    })
+                fields = []
+                fields.append({"name": "name_local", "label": self._('Currency name')})
+                if lang != "en":
+                    fields.append({"name": "name_en", "label": self._('Currency name in English')})
+                self.call("admin.form", fields=fields)
+            elif req.args:
+                if req.ok():
+                    code = req.param("code").strip()
+                    name_en = req.param("name_en").strip()
+                    name_local = req.param("name_local").strip()
+                    name_plural = req.param("name_plural").strip()
+                    description = req.param("description").strip()
+                    precision = intz(req.param("precision"))
+                    real = True if req.param("real") else False
+                    real_price = req.param("real_price")
+                    real_currency = req.param("v_real_currency")
+                    # validating
+                    errors = {}
+                    errormsg = None
+                    if req.args == "new":
+                        if not code:
+                            errors["code"] = self._("Currency code is mandatory")
+                        elif len(code) < 2:
+                            errors["code"] = self._("Minimal length is 3 letters")
+                        elif len(code) > 5:
+                            errors["code"] = self._("Maximal length is 5 letters")
+                        elif not re_valid_code.match(code):
+                            errors["code"] = self._("Currency code must contain capital latin letters only")
+                        elif currencies.get(code):
+                            errors["code"] = self._("This currency name is busy")
+                        info = {}
+                    else:
+                        info = currencies.get(req.args)
+                    if not name_local:
+                        errors["name_local"] = self._("Currency name is mandatory")
+                    elif not self.call("l10n.literal_values_valid", name_local):
+                        errors["name_local"] = self._("Invalid field format")
+                    elif re_questions.search(name_local):
+                        errors["name_local"] = self._("Replace '???' with correct endings")
+                    else:
+                        m = re_invalid_symbol.search(name_local)
+                        if m:
+                            sym = m.group(1)
+                            errors["name_local"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
+                    if not name_plural:
+                        errors["name_plural"] = self._("Currency name is mandatory")
+                    elif re_questions.search(name_plural):
+                        errors["name_plural"] = self._("Replace '???' with correct endings")
+                    else:
+                        m = re_invalid_symbol.search(name_plural)
+                        if m:
+                            sym = m.group(1)
+                            errors["name_plural"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
+                        elif (project.get("moderation") or project.get("published")) and name_plural != info.get("name_plural") and info.get("real"):
+                            errors["name_plural"] = self._("You can't change real money currency name after game publication")
+                    if lang != "en":
+                        if not name_en:
+                            errors["name_en"] = self._("Currency name is mandatory")
+                        elif re_questions.search(name_en):
+                            errors["name_en"] = self._("Replace '???' with correct endings")
+                        else:
+                            values = name_en.split("/")
+                            if len(values) != 2:
+                                errors["name_en"] = self._("Invalid field format")
+                            else:
+                                m = re_invalid_english_symbol.search(name_en)
+                                if m:
+                                    sym = m.group(1)
+                                    errors["name_en"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
+                                elif (project.get("moderation") or project.get("published")) and name_en != info.get("name_en") and info.get("real"):
+                                    errors["name_en"] = self._("You can't change real money currency name after game publication")
+                    m = re_invalid_symbol.search(description)
+                    if m:
+                        sym = m.group(1)
+                        errors["description"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
+                    if precision < 0:
+                        errors["precision"] = self._("Precision can't be negative")
+                    elif precision > 4:
+                        errors["precision"] = self._("Maximal supported precision is 4")
+                    elif (project.get("moderation") or project.get("published")) and info.get("real") and precision != info.get("precision"):
+                        errors["precision"] = self._("You can't change real money currency precision after game publication")
+                    if real:
+                        for c, i in currencies.iteritems():
+                            if i.get("real") and c != req.args:
+                                errormsg = self._("You already have a real money currency")
+                                break
+                        if precision != 0 and precision != 2:
+                            errors["precision"] = self._("Real money currency must have precision 0 or 2 (limitation of the payment system)")
+                    else:
+                        if (project.get("moderation") or project.get("published")) and info.get("real"):
+                            errormsg = self._("You can't remove real money currency after game publication")
+                    if real:
+                        if not real_price:
+                            errors["real_price"] = self._("You must supply real money price for this currency")
+                        elif not re_valid_real_price.match(real_price):
+                            errors["real_price"] = self._("Invalid number format")
+                        if real_currency not in ["RUR", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
+                            errors["v_real_currency"] = self._("Select real money currency")
+                    if len(errors) or errormsg:
+                        self.call("web.response_json", {"success": False, "errors": errors, "errormsg": errormsg})
+                    # storing
+                    lst = self.conf("money.currencies", {})
+                    if req.args == "new":
+                        lst[code] = info
+                    info["name_local"] = name_local
+                    info["name_plural"] = name_plural
+                    if lang == "en":
+                        info["name_en"] = name_local
+                    else:
+                        info["name_en"] = name_en
+                    info["precision"] = precision
+                    info["format"] = "%.{0}f".format(precision) if precision else "%d"
+                    info["description"] = description
+                    info["real"] = real
+                    if real:
+                        info["real_price"] = floatz(real_price)
+                        info["real_currency"] = real_currency
+                    config = self.app().config_updater()
+                    config.set("money.currencies", lst)
+                    config.store()
+                    self.call("admin.redirect", "money/currencies")
+                elif req.args == "new":
+                    description = ""
+                    real = False
+                    name_local = req.param("name_local")
+                    name_plural = req.param("name_plural")
+                    name_en = req.param("name_en")
+                    precision = 2
+                    real_price = 30
+                    real_currency = "RUR"
+                else:
+                    info = currencies.get(req.args)
+                    if not info:
+                        self.call("web.not_found")
+                    name_local = info.get("name_local")
+                    name_plural = info.get("name_plural")
+                    name_en = info.get("name_en")
+                    precision = info.get("precision")
+                    description = info.get("description")
+                    real = info.get("real")
+                    real_price = info.get("real_price")
+                    real_currency = info.get("real_currency")
+                fields = []
+                if req.args == "new":
+                    fields.append({"name": "code", "label": self._('Currency code (for example, GLD for gold, SLVR for silver, DMND for diamonds and so on).<br /><span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>')})
+                fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_local})
+                fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars"'), "value": name_plural})
+                if lang != "en":
+                    fields.append({"name": "name_en", "label": self._('Currency name in English: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_en})
+                fields.append({"name": "precision", "label": self._("Values precision (number of digits after decimal point)"), "value": precision})
+                fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
+                fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
+                fields.append({"name": "real_price", "label": self._("Real money price for 1 unit of the currency"), "value": real_price, "condition": "[real]"})
+                fields.append({"name": "real_currency", "type": "combo", "label": self._("Real money currency"), "value": real_currency, "condition": "[real]", "values": [("RUR", "RUR"), ("USD", "USD"), ("EUR", "EUR"), ("UAH", "UAH"), ("BYR", "BYR"), ("GBP", "GBP"), ("KZT", "KZT")]})
+                self.call("admin.form", fields=fields)
             else:
-                code = req.args
-                info = currencies.get(code)
-                if not info:
-                    self.call("web.not_found")
-                description = info.get("description")
-                real = info.get("real")
-            fields = []
-            if req.args == "new":
-                fields.append({"name": "code", "label": self._('Currency code (for example, USD, RUR, EUR, GLD, SLVR, DMND, etc). <span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>'), "value": code})
-            fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
-            fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
-            self.call("admin.form", fields=fields)
-        else:
-            rows = []
-            for code in sorted(currencies.keys()):
-                info = currencies.get(code)
-                real = '<img src="/st/img/coins-16x16.png" alt="" />' if info.get("real") else None
-                rows.append(['<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code), htmlescape(info.get("description")), real])
-            vars = {
-                "tables": [
-                    {
-                        "links": [
-                            {
-                                "hook": "money/currencies/new",
-                                "text": self._("New currency"),
-                                "lst": True,
-                            }
-                        ],
-                        "header": [self._("Currency code"), self._("Currency description"), self._("Real money")],
-                        "rows": rows
-                    }
-                ]
-            }
-            self.call("admin.response_template", "admin/common/tables.html", vars)
+                rows = []
+                for code in sorted(currencies.keys()):
+                    info = currencies.get(code)
+                    real = '<center>%s</center>' % ('<img src="/st/img/coins-16x16.png" alt="" /><br />%s %s' % (info.get("real_price"), info.get("real_currency")) if info.get("real") else '-')
+                    declensions = []
+                    for i in (0, 1, 2, 5, 10, 21):
+                        declensions.append("<nobr>%d %s</nobr>" % (i, self.call("l10n.literal_value", i, info.get("name_local"))))
+                    rows.append(['<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code), self.call("l10n.literal_value", 1, info.get("name_plural")), real, ", ".join(declensions)])
+                vars = {
+                    "tables": [
+                        {
+                            "links": [
+                                {
+                                    "hook": "money/currencies/prenew",
+                                    "text": self._("New currency"),
+                                    "lst": True,
+                                }
+                            ],
+                            "header": [self._("Currency code"), self._("Currency name"), self._("Real money"), self._("Declension samples")],
+                            "header_nowrap": True,
+                            "rows": rows
+                        }
+                    ]
+                }
+                self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_money_give(self, args):
         try:
@@ -594,15 +759,29 @@ class MoneyAdmin(Module):
     def recommended_actions(self, recommended_actions):
         req = self.req()
         if req.has_access("money.currencies"):
-            currencies = []
+            currencies = {}
             self.call("currencies.list", currencies)
             real_ok = False
-            for cur in currencies:
+            for cur in currencies.values():
                 if cur.get("real"):
                     real_ok = True
                     break
             if not real_ok:
-                recommended_actions.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="money/currencies" title="%s" />' % (self._("You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."), self._("Open currency settings")), "order": 90})
+                recommended_actions.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="money/currencies" title="%s" />' % (self._("You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."), self._("Open currency settings")), "order": 90, "before_launch": True})
+
+    def project_params(self, params):
+        currencies = {}
+        self.call("currencies.list", currencies)
+        real_ok = False
+        for code, cur in currencies.iteritems():
+            if cur.get("real"):
+                params.append({"name": self._("Real money name"), "value": cur.get("name_plural"), "moderated": True, "edit": "money/currencies", "rowspan": 4})
+                params.append({"name": self._("Declensions"), "value": cur.get("name_local")})
+                params.append({"name": self._("Real in English"), "value": cur.get("name_en"), "moderated": True})
+                params.append({"name": self._("Exchange rate"), "value": "1 %s = %s %s" % (code, cur.get("real_price"), cur.get("real_currency")), "moderated": True})
+                real_ok = True
+        if not real_ok:
+            params.append({"name": self._("Real money currency name"), "value": '<span class="no">%s</span>' % self._("absent"), "moderated": True})
 
 class Money(Module):
     def register(self):
@@ -621,6 +800,11 @@ class Money(Module):
                 "description": "MM$",
                 "real": True,
             }
+        else:
+            lst = self.conf("money.currencies")
+            if lst:
+                for code, info in lst.iteritems():
+                    currencies[code] = info
 
     def money_description_admin_give(self):
         return {

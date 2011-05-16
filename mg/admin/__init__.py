@@ -207,10 +207,11 @@ class AdminInterface(Module):
         self.params_menu(params)
         self.call("web.response_json", params)
 
-    def redirect(self, id):
+    def redirect(self, id, parameters=None):
         params = self.response_params()
         params["redirect"] = id
         params["success"] = True
+        params["parameters"] = parameters
         self.params_menu(params)
         self.call("web.response_json", params)
 

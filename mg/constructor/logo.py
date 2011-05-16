@@ -5,6 +5,76 @@ import cStringIO
 import urlparse
 import cgi
 
+class LogoAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("admin-logo.uploader", self.logo_uploader)
+        self.rhook("admin-logo.store", self.store_logo)
+
+    def logo_uploader(self, image, title):
+        if image is None or not len(image):
+            self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload logo image")}})
+        try:
+            image_obj = Image.open(cStringIO.StringIO(image))
+            if image_obj.load() is None:
+                raise IOError;
+        except IOError:
+            self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Image format not recognized")}})
+        try:
+            image_obj.seek(1)
+            self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Animated logos are not supported")}})
+        except EOFError:
+            pass
+        image_obj = image_obj.convert("RGBA")
+        width, height = image_obj.size
+        if width == 100 and height == 100:
+            image_obj = image_obj.crop((0, 0, 100, 75))
+        elif width * 75 >= height * 100:
+            width = width * 75 / height
+            height = 75
+            image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
+            if width != 100:
+                image_obj = image_obj.crop(((width - 100) / 2, 0, (width - 100) / 2 + 100, 75))
+        else:
+            height = height * 100 / width
+            width = 100
+            image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
+            if height != 75:
+                image_obj = image_obj.crop((0, (height - 75) / 2, 100, (height - 75) / 2 + 75))
+        return self.call("admin-logo.store", image_obj, title)
+
+    def store_logo(self, image_obj, title):
+        background = Image.new("RGBA", (100, 100), (255, 255, 255))
+        background.paste(image_obj, (0, 0, 100, 75), image_obj)
+        # drawing image border
+        bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
+        background.paste(bord, None, bord)
+        # rounding corners
+        mask = Image.open(mg.__path__[0] + "/data/logo/logo-mask.png")
+        mask = mask.convert("RGBA")
+        mask.paste(background, None, mask)
+        # writing text
+        textpad = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
+        font_size = 20
+        watchdog = 0
+        while font_size > 5:
+            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/arialn.ttf", font_size, encoding="unic")
+            w, h = font.getsize(title)
+            if w <= 92 and h <= 20:
+                break
+            font_size -= 1
+        draw = ImageDraw.Draw(textpad)
+        draw.text((50 - w / 2, 88 - h / 2), title, font=font)
+        enhancer = ImageEnhance.Sharpness(textpad)
+        textpad_blur = enhancer.enhance(0.5)
+        mask.paste(textpad_blur, None, textpad_blur)
+        mask.paste(textpad, None, textpad)
+        # generating png
+        png = cStringIO.StringIO()
+        mask.save(png, "PNG")
+        png = png.getvalue()
+        return self.call("cluster.static_upload", "logo", "png", "image/png", png)
+
 class LogoWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):
         super(LogoWizard, self).new(**kwargs)
@@ -15,11 +85,11 @@ class LogoWizard(Wizard):
         self.config.set("tag", "logo")
         self.config.set("target", target)
         self.config.set("redirect_fail", redirect_fail)
-        if kwargs.get("title_code"):
+        if kwargs.get("title"):
             fonts = ["agaaler.ttf", "albion1.ttf", "anirb.ttf", "ardvrk.ttf", "assuan8.ttf", "batik.ttf", "billb.ttf", "blazed.ttf", "bleeding.ttf", "bodon11.ttf", "broken74.ttf", "bumbazo.ttf", "drake.ttf", "impact.ttf", "thehard.ttf", "cosmdd.ttf", "creamandsugar.ttf", "bentt13.ttf"]
             for font_name in fonts:
                 textpad = Image.new("RGBA", (100, 75), (255, 255, 255, 0))
-                title = kwargs["title_code"]
+                title = kwargs["title"]
                 font_size = 65
                 watchdog = 0
                 while font_size > 5:

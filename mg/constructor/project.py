@@ -1,4 +1,7 @@
 from mg import *
+import re
+
+re_newline = re.compile(r'\n')
 
 class ConstructorProject(Module):
     "This is the main module of every project. It must load very fast"
@@ -26,6 +29,7 @@ class ConstructorProject(Module):
             "mg.constructor.auth.Auth",
             "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
+            "mg.constructor.logo.LogoAdmin",
         ]
         project = self.app().project
         if not project.get("inactive"):
@@ -78,6 +82,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
         self.rhook("constructor-project.notify-owner", self.notify_owner)
         self.rhook("advice.all", self.advice_all)
+        self.rhook("ext-admin-game.moderation", self.game_moderation, priv="project.admin")
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -121,17 +126,45 @@ class ConstructorProjectAdmin(Module):
 
     def game_dashboard(self):
         vars = {
+            "Tips": self._("Tips"),
+            "BeforeLaunch": self._("Prepare to launch"),
         }
         recommended_actions = []
         self.call("admin-game.recommended-actions", recommended_actions)
-        if len(recommended_actions):
-            recommended_actions.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
-            vars["recommended_actions"] = recommended_actions
+        recommended_actions.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
+        req = self.req()
+        project = self.app().project
+        before_launch = []
+        others = []
+        for ent in recommended_actions:
+            if ent.get("before_launch"):
+                before_launch.append(ent)
+            else:
+                others.append(ent)
+        if not project.get("published") and project.get("moderation"):
+            before_launch.append({"icon": "/st/img/help-hint.png", "content": self._("Your game is being checked by the moderators. Moderation results will be sent you via e-mail. Please be patient.")})
+            vars["BeforeLaunch"] = self._("Moderation in progress")
+        if not project.get("inactive") and not project.get("published") and not project.get("moderation") and req.has_access("project.admin"):
+            if before_launch:
+                before_launch.append({"icon": "/st/img/application-exit.png", "content": '<strong>%s</strong>' % self._("Before launching your game perform the steps listed above")})
+            else:
+                before_launch.append({"icon": "/st/img/arrow-right.png", "content": u'<strong>%s</strong> <hook:admin.link href="game/moderation" title="%s" />' % (self._("Congratulations! Your game is ready to be published."), self._("game///Send it to moderation"))})
+        if not project.get("published") and not project.get("moderation") and project.get("moderation_reject"):
+            before_launch.insert(0, {"icon": "/st/img/application-exit.png", "content": htmlescape(project.get("moderation_reject"))})
+        if len(before_launch):
+            vars["before_launch"] = before_launch
+        if len(others):
+            vars["recommended_actions"] = others
+        if project.get("published"):
+            vars["published"] = True
+            vars["IncomeStatistics"] = self._("Income statistics")
+            vars["IncomeStructure"] = self._("Income structure")
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):
+        req = self.req()
         project = self.app().project
-        if not project.get("inactive") and not project.get("published") and (group != "admin-game" or hook != "dashboard"):
+        if not project.get("inactive") and not project.get("published") and not project.get("moderation") and (group != "admin-game" or hook != "dashboard") and req.has_access("project.admin"):
             advice.append({"title": self._("Launch your game"), "content": self._('Your game is not published yet. To publish it perform the steps listed on the <hook:admin.link href="game/dashboard" title="Game dashboard" /> page'), "order": 1000})
 
     def game_domain(self):
@@ -148,3 +181,55 @@ class ConstructorProjectAdmin(Module):
         name = owner.get("name")
         email = owner.get("email")
         self.main_app().hooks.call("email.send", email, name, subject, content)
+
+    def game_moderation(self):
+        project = self.app().project
+        recommended_actions = []
+        self.call("admin-game.recommended-actions", recommended_actions)
+        for ent in recommended_actions:
+            if ent.get("before_launch"):
+                self.call("admin.redirect", "game/dashboard")
+        if project.get("inactive") or project.get("published") or project.get("moderation"):
+            self.call("admin.redirect", "game/dashboard")
+        req = self.req()
+        if req.args == "commit":
+            with self.lock(["project.%s" % project.uuid]):
+                project.load()
+                if not project.get("moderation"):
+                    project.set("moderation", 1)
+                    # message to the moderator
+                    email = self.main_app().config.get("constructor.moderator-email")
+                    if email:
+                        content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+                        self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
+                    project.store()
+                    self.app().store_config_hooks()
+            self.call("admin.redirect", "game/dashboard")
+        project = self.app().project
+        description = re_newline.sub('<br />', htmlescape(self.conf("gameprofile.description")))
+        vars = {
+            "TitleFull": self._("Full title"),
+            "TitleShort": self._("Short title"),
+            "TitleEn": self._("Title in English"),
+            "TitleCode": self._("Title code"),
+            "GameDescription": self._("Game description"),
+            "Domain": self._("Game domain"),
+            "Logo": self._("Logo"),
+            "Recheck": self._("Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"),
+            "Submit": self._("Everything is correct. Send to moderation"),
+            "edit": self._("edit"),
+            "project": {
+                "title_full": htmlescape(project.get("title_full")),
+                "title_short": htmlescape(project.get("title_short")),
+                "title_en": htmlescape(project.get("title_en")),
+                "title_code": htmlescape(project.get("title_code")),
+                "description": description,
+                "domain": htmlescape(project.get("domain")),
+                "logo": htmlescape(project.get("logo")),
+            },
+        }
+        params = []
+        self.call("constructor.project-params", params)
+        if len(params):
+            vars["project"]["params"] = params
+        self.call("admin.response_template", "admin/game/moderation.html", vars)

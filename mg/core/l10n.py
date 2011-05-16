@@ -44,12 +44,15 @@ class L10n(Module):
         self.rhook("l10n.lang", self.l10n_lang)
         self.rhook("l10n.translation", self.l10n_translation)
         self.rhook("l10n.gettext", self.l10n_gettext)
+        self.rhook("l10n.ngettext", self.l10n_ngettext)
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
         self.rhook("l10n.dateencode2", self.l10n_dateencode2)
         self.rhook("l10n.timeencode2", self.l10n_timeencode2)
         self.rhook("l10n.stemmer", self.l10n_stemmer)
         self.rhook("l10n.literal_value", self.l10n_literal_value)
+        self.rhook("l10n.literal_values_valid", self.l10n_literal_values_valid)
+        self.rhook("l10n.literal_values_sample", self.l10n_literal_values_sample)
 
     def l10n_domain(self):
         return "mg_server"
@@ -119,6 +122,33 @@ class L10n(Module):
             value = unicode(value, "utf-8")
         return value
 
+    def l10n_ngettext(self, n, singular, plural):
+        try:
+            request = self.req()
+        except AttributeError:
+            request = None
+        if request:
+            try:
+                value = request.trans.ngettext(n, singular, plural)
+                if type(value) == str:
+                    value = unicode(value, "utf-8")
+                return value
+            except AttributeError:
+                pass
+        lang = self.call("l10n.lang")
+        if lang is None:
+            if type(value) == str:
+                value = unicode(value, "utf-8")
+            return value 
+        domain = self.call("l10n.domain")
+        trans = self.call("l10n.translation", domain, lang)
+        if request:
+            request.trans = trans
+        value = trans.ngettext(n, singular, plural)
+        if type(value) == str:
+            value = unicode(value, "utf-8")
+        return value
+
     def l10n_set_request_lang(self):
         request = self.req()
         accept_language = request.environ.get("HTTP_ACCEPT_LANGUAGE")
@@ -183,7 +213,10 @@ class L10n(Module):
         return self._("{2:d}{3} {1}, {0}").format(year, self._(timeencode2_month.get(month)), day, th)
 
     def l10n_literal_value(self, val, values):
-        values = values.split("/")
+        if values is None:
+            return None
+        if type(values) == str or type(values) == unicode:
+            values = values.split("/")
         lang = self.call("l10n.lang")
         val = abs(float(val))
         if lang == "ru":
@@ -199,3 +232,18 @@ class L10n(Module):
         if val == 1:
             return values[0]
         return values[1]
+
+    def l10n_literal_values_sample(self, singular):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            stemmed = self.stem(singular)
+            return u"{0}/{1}???/{1}???".format(singular, stemmed)
+        return u"{0}/{0}???s".format(singular)
+
+    def l10n_literal_values_valid(self, values):
+        if type(values) == str or type(values) == unicode:
+            values = values.split("/")
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            return len(values) == 3
+        return len(values) == 2

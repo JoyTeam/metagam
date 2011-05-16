@@ -29,9 +29,9 @@ function adm_response(res)
 		update_menu(res.menu);
 	if (res.redirect) {
 		if (res.redirect == '_self')
-			adm(current_page);
+			adm(current_page, res.parameters);
 		else
-			adm(res.redirect);
+			adm(res.redirect, res.parameters);
 	} else if (res.redirect_top) {
 		window.location = res.redirect_top;
 	} else {
@@ -161,7 +161,7 @@ function adm_failure(response, opts)
 	adminmain.doLayout();
 }
 
-function adm(node_id)
+function adm(node_id, parameters)
 {
 	if (admin_ajax_trans)
 		Ext.Ajax.abort(admin_ajax_trans);
@@ -169,6 +169,7 @@ function adm(node_id)
 		document.location.replace(base_url + '#' + node_id);
 		admin_ajax_trans = Ext.Ajax.request({
 			url: '/admin-' + node_id + '/ver' + ver,
+			params: parameters,
 			func: node_id,
 			success: adm_success,
 			failure: adm_failure

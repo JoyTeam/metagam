@@ -70,12 +70,6 @@ class Domains(Module):
         project.set("domain", domain)
         project.store()
         self.app().store_config_hooks()
-        #project.set("moderation", 1)
-        ## message to the moderator
-        #email = self.main_app().config.get("constructor.moderator-email")
-        #if email:
-        #    content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
-        #    self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
 
     def validate_new(self, domain, errors):
         try:
@@ -163,7 +157,7 @@ class Domains(Module):
         project = self.app().project
         req = self.req()
         if not project.get("domain") and req.has_access("project.admin"):
-            recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": u'%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s only. You have to assign it a normal domain name before game launch.") % self.app().canonical_domain, self._("Assign a domain name")), "order": 100})
+            recommended_actions.append({"icon": "/st/img/applications-internet.png", "content": u'%s <hook:admin.link href="game/domain" title="%s" />' % (self._("Your game is currently available under the temporary domain %s only. You have to assign it a normal domain name before game launch.") % self.app().canonical_domain, self._("Assign a domain name")), "order": 100, "before_launch": True})
 
 class DomainRegWizard(Wizard):
     def new(self, target=None, redirect_fail=None, **kwargs):
@@ -711,8 +705,9 @@ class DomainWizard(Wizard):
                     wiz.abort()
                 # saving wizard data
                 self.call("domains.assign", domain)
-                wiz.finish()
-                self.call("admin.response", self._("You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient"), {})
+                for wiz in wizs:
+                    wiz.finish()
+                self.call("admin.response", self._('You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="http://%s/cabinet" target="top">Return to the cabinet</a>') % (domain, self.main_app().canonical_domain), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

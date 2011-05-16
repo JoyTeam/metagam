@@ -55,21 +55,21 @@ class ProjectSetupWizard(Wizard):
                 title_short = req.param("title_short")
                 title_code = req.param("title_code")
 
-                if not title_full or title_full == "":
+                if not title_full:
                     errors["title_full"] = self._("Enter full title")
                 elif len(title_full) > 50:
                     errors["title_full"] = self._("Maximal length - 50 characters")
                 elif re_bad_symbols.match(title_full):
                     errors["title_full"] = self._("Bad symbols in the title")
 
-                if not title_short or title_short == "":
+                if not title_short:
                     errors["title_short"] = self._("Enter short title")
                 elif len(title_short) > 17:
                     errors["title_short"] = self._("Maximal length - 17 characters")
                 elif re_bad_symbols.match(title_short):
                     errors["title_short"] = self._("Bad symbols in the title")
 
-                if not title_code or title_code == "":
+                if not title_code:
                     errors["title_code"] = self._("Enter code")
                 elif len(title_code) > 5:
                     errors["title_code"] = self._("Maximal length - 5 characters")
@@ -111,36 +111,9 @@ class ProjectSetupWizard(Wizard):
             wizs = self.call("wizards.find", "logo")
             if cmd == "upload":
                 image = req.param_raw("image")
-                if image is None or not len(image):
-                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload logo image")}})
-                try:
-                    image_obj = Image.open(cStringIO.StringIO(image))
-                    if image_obj.load() is None:
-                        raise IOError;
-                except IOError:
-                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Image format not recognized")}})
-                try:
-                    image_obj.seek(1)
-                    self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Animated logos are not supported")}})
-                except EOFError:
-                    pass
-                image_obj = image_obj.convert("RGBA")
-                width, height = image_obj.size
-                if width == 100 and height == 100:
-                    image_obj = image_obj.crop((0, 0, 100, 75))
-                elif width * 75 >= height * 100:
-                    width = width * 75 / height
-                    height = 75
-                    image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
-                    if width != 100:
-                        image_obj = image_obj.crop(((width - 100) / 2, 0, (width - 100) / 2 + 100, 75))
-                else:
-                    height = height * 100 / width
-                    width = 100
-                    image_obj = image_obj.resize((width, height), Image.ANTIALIAS)
-                    if height != 75:
-                        image_obj = image_obj.crop((0, (height - 75) / 2, 100, (height - 75) / 2 + 75))
-                uri = self.store_logo(image_obj)
+                uri = self.call("admin-logo.uploader", image, self.config.get("title_short"))
+                self.config.set("logo", uri)
+                self.config.store()
                 self.call("web.response_json_html", {"success": True, "logo_preview": uri})
             elif cmd == "prev":
                 self.config.set("state", "name")
@@ -149,7 +122,7 @@ class ProjectSetupWizard(Wizard):
             elif cmd == "constructor":
                 if len(wizs):
                     self.call("admin.redirect", "wizard/call/%s" % wizs[0].uuid)
-                wiz = self.call("wizards.new", "mg.constructor.logo.LogoWizard", target=["wizard", self.uuid, "constructed", ""], redirect_fail="wizard/call/%s" % self.uuid, title_code=self.config.get("title_code"))
+                wiz = self.call("wizards.new", "mg.constructor.logo.LogoWizard", target=["wizard", self.uuid, "constructed", ""], redirect_fail="wizard/call/%s" % self.uuid, title=self.config.get("title_short"))
                 self.call("admin.redirect", "wizard/call/%s" % wiz.uuid)
             elif cmd == "next":
                 if self.config.get("logo"):
@@ -260,7 +233,9 @@ class ProjectSetupWizard(Wizard):
 
     def constructed(self, logo, arg):
         self.config.set("state", "logo")
-        self.store_logo(logo)
+        uri = self.call("admin-logo.store", logo, self.config.get("title_short"))
+        self.config.set("logo", uri)
+        self.config.store()
 
     def activate_project(self):
         self.call("cluster.static_preserve", self.config.get("logo"))
@@ -318,39 +293,3 @@ class ProjectSetupWizard(Wizard):
         perms.store()
         # entering new project
         self.call("admin.redirect_top", "http://www.%s/constructor/game/%s" % (self.app().inst.config["main_host"], project.uuid))
-
-    def store_logo(self, image_obj):
-        background = Image.new("RGBA", (100, 100), (255, 255, 255))
-        background.paste(image_obj, (0, 0, 100, 75), image_obj)
-        # drawing image border
-        bord = Image.open(mg.__path__[0] + "/data/logo/logo-pad.png")
-        background.paste(bord, None, bord)
-        # rounding corners
-        mask = Image.open(mg.__path__[0] + "/data/logo/logo-mask.png")
-        mask = mask.convert("RGBA")
-        mask.paste(background, None, mask)
-        # writing text
-        textpad = Image.new("RGBA", (100, 100), (255, 255, 255, 0))
-        title = self.config.get("title_short")
-        font_size = 20
-        watchdog = 0
-        while font_size > 5:
-            font = ImageFont.truetype(mg.__path__[0] + "/data/fonts/arialn.ttf", font_size, encoding="unic")
-            w, h = font.getsize(title)
-            if w <= 92 and h <= 20:
-                break
-            font_size -= 1
-        draw = ImageDraw.Draw(textpad)
-        draw.text((50 - w / 2, 88 - h / 2), title, font=font)
-        enhancer = ImageEnhance.Sharpness(textpad)
-        textpad_blur = enhancer.enhance(0.5)
-        mask.paste(textpad_blur, None, textpad_blur)
-        mask.paste(textpad, None, textpad)
-        # generating png
-        png = cStringIO.StringIO()
-        mask.save(png, "PNG")
-        png = png.getvalue()
-        uri = self.call("cluster.static_upload_temp", "logo", "png", "image/png", png, wizard=self.uuid)
-        self.config.set("logo", uri)
-        self.config.store()
-        return uri

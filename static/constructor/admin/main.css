@@ -71,18 +71,24 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .not-enough { color: #ff4040 }
 table.menu { margin: 10px 0px 10px 0px }
 table.menu td { padding: 3px 10px 3px 5px; vertical-align: top }
-table.menu tr.header td { background-color:#f0f0f0; padding: 5px 10px 5px 5px; color: #000000; font-weight: bold }
-table.menu td.header { background-color:#f0f0f0; color: #000000; font-weight: bold }
+table.menu tr.header td { background-color: #f0f0f0; padding: 5px 10px 5px 5px; color: #000000; font-weight: bold }
+table.menu td.header { background-color: #f0f0f0; color: #000000; font-weight: bold }
+.header-nowrap { white-space: nowrap }
 table.menu td.subheader { font-weight: bold; font-size: 16px }
+.moderated { border: solid 1px #c00000; padding: 3px; font-weight: bold }
+.admin-message-green { border: solid 1px #008000; color: #00c000; padding: 10px; margin: 10px 0 10px 0 }
+.admin-message-red { border: solid 1px #e00000; color: #ff0000; padding: 10px; margin: 10px 0 10px 0 }
+.admin-united { border-left: solid 2px #c0c0e0; }
 .admin-delim { margin-top: 15px; padding-top: 15px; border-top: solid 1px #dd6419 }
 .admin-w50 { width: 50% }
 .admin-column-padding { padding-left: 20px }
+.admin-column { padding-right: 60px; vertical-align: top }
 .admin-valign-top { vertical-align: top }
 /* DESIGN TEMPLATES */
 .design-template { width: 180px; float: left }
 .design-template-name { padding: 10px 0px 30px 0px }
 /* GAME DASHBOARD */
-.admin-recommended-content { vertical-align: top; padding-bottom: 15px }
+.admin-recommended-content { vertical-align: middle; padding-bottom: 15px }
 .admin-recommended-icon { vertical-align: top; padding: 3px 30px 15px 0 }
 .yes { color: #008000 }
 .no { color: #e00000 }

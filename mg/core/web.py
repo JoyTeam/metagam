@@ -535,7 +535,7 @@ class Web(Module):
         factory = self.app().inst.appfactory
         app = factory.get_by_tag(req.args)
         if app:
-            if app.dynamic:
+            if app.hooks.dynamic:
                 factory.remove_by_tag(req.args)
             else:
                 app.reload()

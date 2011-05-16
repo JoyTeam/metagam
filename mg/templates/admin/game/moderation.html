@@ -1,0 +1,29 @@
+<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/exclamation.png" alt="" /></td><td class="admin-recommended-content">[%Recheck%]</td></tr></table>
+
+<div class="text">
+<table class="menu">
+<tr><td class="header header-nowrap">[%TitleFull%]</td><td><div class="moderated">[%project.title_full%]</div></td><td rowspan="5" class="admin-united"><hook:admin.link href="game/profile" title="[%edit%]" /></td></tr>
+<tr><td class="header header-nowrap">[%TitleShort%]</td><td><div class="moderated">[%project.title_short%]</div></td></tr>
+<tr><td class="header header-nowrap">[%TitleEn%]</td><td><div class="moderated">[%project.title_en%]</div></td></tr>
+<tr><td class="header header-nowrap">[%TitleCode%]</td><td>[%project.title_code%]</td></tr>
+<tr><td class="header header-nowrap">[%GameDescription%]</td><td><div class="moderated" style="font-weight: normal">[%project.description%]</div></td></tr>
+<tr><td class="header header-nowrap">[%Domain%]</td><td><div class="moderated"><a href="http://www.[%project.domain%]" target="_blank">[%project.domain%]</a></div></td></tr>
+<tr><td class="header header-nowrap">[%Logo%]</td><td>[%if project.logo%]<img src="[%project.logo%]" alt="" />[%end%]</td><td class="admin-united"><hook:admin.link href="game/logo" title="[%edit%]" /></td></tr>
+[%for param in project.params%]
+[%if param.edit%]
+<tr><td></td><td></td><td></td></tr>
+[%end%]
+<tr><td class="header header-nowrap">[%param.name%]</td><td>[%if param.moderated%]<div class="moderated">[%end%][%param.value%][%if param.moderated%]</div>[%end%]</td>[%if param.edit%]<td class="admin-united"[%if param.rowspan +%] rowspan="[%param.rowspan%]"[%end%]><hook:admin.link href="[%param.edit%]" title="[%edit%]" /></td>[%end%]</tr>
+[%end%]
+</table>
+</div>
+
+<div id="navi"></div>
+
+<script type="text/javascript">
+	new Ext.Button({
+		renderTo: 'navi',
+		text: '[%Submit%]',
+		handler: function() { adm('game/moderation/commit') }
+	});
+</script>
