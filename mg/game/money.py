@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from mg import *
 from mg.core.auth import *
 from concurrence import Timeout, TimeoutError
@@ -1032,6 +1030,7 @@ class TwoPay(Module):
     def register_2pay(self):
         self.info("Registering in the 2pay system")
         project = self.app().project
+        lang = self.call("l10n.lang")
         doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "response", None)
         request = doc.documentElement
         # Master ID
@@ -1041,31 +1040,72 @@ class TwoPay(Module):
         request.appendChild(elt)
         # Project title
         elt = doc.createElement("name")
-        elt.setAttribute("loc", "ru")
+        elt.setAttribute("loc", lang)
         elt.appendChild(doc.createTextNode(project.get("title_short")))
         request.appendChild(elt)
-        elt = doc.createElement("name")
-        elt.setAttribute("loc", "en")
-        elt.appendChild(doc.createTextNode(project.get("title_short_en", "")))
-        request.appendChild(elt)
-        # Currency
-        elt = doc.createElement("currency")
-        elt.setAttribute("loc", "ru")
-        elt.appendChild(doc.createTextNode("Gold"))
-        request.appendChild(elt)
-        elt = doc.createElement("currency")
-        elt.setAttribute("loc", "en")
-        elt.appendChild(doc.createTextNode("Gold"))
-        request.appendChild(elt)
+        if lang != "en":
+            elt = doc.createElement("name")
+            elt.setAttribute("loc", "en")
+            elt.appendChild(doc.createTextNode(project.get("title_en")))
+            request.appendChild(elt)
+        # Currencies setup
+        currencies = {}
+        self.call("currencies.list", currencies)
+        real_ok = False
+        for code, cur in currencies.iteritems():
+            if cur.get("real"):
+                # Currency name
+                elt = doc.createElement("currency")
+                elt.setAttribute("loc", lang)
+                elt.appendChild(doc.createTextNode(cur.get("name_plural")))
+                request.appendChild(elt)
+                if lang != "en":
+                    elt = doc.createElement("currency")
+                    elt.setAttribute("loc", "en")
+                    elt.appendChild(doc.createTextNode(cur.get("name_en").split("/")[1]))
+                    request.appendChild(elt)
+                # Currency precision
+                elt = doc.createElement("natur")
+                elt.appendChild(doc.createTextNode("0" if cur.get("precision") else "1"))
+                request.appendChild(elt)
+                # Currency rate
+                prices = doc.createElement("prices")
+                request.appendChild(prices)
+                elt = doc.createElement("price")
+                elt.setAttribute("qty", "1")
+                elt.appendChild(doc.createTextNode(str(cur.get("real_price"))))
+                prices.appendChild(elt)
+                elt = doc.createElement("valuta")
+                currencies = {
+                    "RUR": "1",
+                    "USD": "2",
+                    "EUR": "3",
+                    "UAH": "4",
+                    "BYR": "5",
+                    "GBP": "7",
+                    "KZT": "77",
+                }
+                currency = currencies.get(cur.get("real_currency"), "1")
+                elt.appendChild(doc.createTextNode(currency))
+                request.appendChild(elt)
+                # Minimal and maximal amount
+                elt = doc.createElement("min")
+                elt.appendChild(doc.createTextNode(str(0.1 ** cur.get("precision"))))
+                request.appendChild(elt)
+                elt = doc.createElement("max")
+                elt.appendChild(doc.createTextNode("0"))
+                request.appendChild(elt)
+                break
         # Character name
         elt = doc.createElement("v0")
-        elt.setAttribute("loc", "ru")
-        elt.appendChild(doc.createTextNode(u'Введите имя персонажа:'))
+        elt.setAttribute("loc", lang)
+        elt.appendChild(doc.createTextNode(self._("Character name:")))
         request.appendChild(elt)
-        elt = doc.createElement("v0")
-        elt.setAttribute("loc", "en")
-        elt.appendChild(doc.createTextNode('Character name:'))
-        request.appendChild(elt)
+        if lang != "en":
+            elt = doc.createElement("v0")
+            elt.setAttribute("loc", "en")
+            elt.appendChild(doc.createTextNode("Character name:"))
+            request.appendChild(elt)
         # Secret key
         secret = uuid4().hex
         elt = doc.createElement("secretKey")
@@ -1088,30 +1128,9 @@ class TwoPay(Module):
         elt = doc.createElement("payUrl")
         elt.appendChild(doc.createTextNode("http://%s/ext-payment/2pay" % self.app().canonical_domain))
         request.appendChild(elt)
-        # Currency precision
-        elt = doc.createElement("natur")
-        elt.appendChild(doc.createTextNode("0"))
-        request.appendChild(elt)
-        # Currency rate
-        prices = doc.createElement("prices")
-        request.appendChild(prices)
-        elt = doc.createElement("price")
-        elt.setAttribute("qty", "1")
-        elt.appendChild(doc.createTextNode("30"))
-        prices.appendChild(elt)
-        elt = doc.createElement("valuta")
-        elt.appendChild(doc.createTextNode("1"))
-        request.appendChild(elt)
-        # Minimal and maximal amount
-        elt = doc.createElement("min")
-        elt.appendChild(doc.createTextNode("0.01"))
-        request.appendChild(elt)
-        elt = doc.createElement("max")
-        elt.appendChild(doc.createTextNode("0"))
-        request.appendChild(elt)
         # Description
         elt = doc.createElement("desc")
-        elt.appendChild(doc.createTextNode(self.conf("gameprofile.description", project.get("title_full"))))
+        elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
         request.appendChild(elt)
         # Signature
         sign = hashlib.md5(str("%s%s%s") % (master_id, rnd, self.main_app().config.get("2pay.secret"))).hexdigest().lower()
@@ -1119,9 +1138,9 @@ class TwoPay(Module):
         elt.appendChild(doc.createTextNode(sign))
         request.appendChild(elt)
         xmldata = request.toxml("utf-8")
-        self.debug("2pay request: %s", xmldata)
-        if False:
-            try:
+        self.debug(u"2pay request: %s", xmldata)
+        try:
+            with Timeout.push(30):
                 cnn = HTTPConnection()
                 cnn.connect(("2pay.ru", 80))
                 try:
@@ -1133,11 +1152,13 @@ class TwoPay(Module):
                     request.add_header("Content-type", "application/xml")
                     request.add_header("Content-length", len(xmldata))
                     response = cnn.perform(request)
-                    self.debug("2pay response: %s %s" % (response.status_code, response.body))
+                    self.debug(u"2pay response: %s %s", response.status_code, response.body)
                 finally:
                     cnn.close()
-            except IOError as e:
-                self.error("Error registering in the 2pay system: %s" % e)
+        except IOError as e:
+            self.error("Error registering in the 2pay system: %s", e)
+        except TimeoutError:
+            self.error("Error registering in the 2pay system: Timed out")
 
 class TwoPayAdmin(Module):
     def register(self):

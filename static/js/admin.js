@@ -128,6 +128,7 @@ function adm_success_json(response, opts)
 
 function adm_success(response, opts)
 {
+	Ext.get('admin-logo-image').dom.src = '/st/constructor/admin/top-left-logo.gif';
 	if (!response || !response.getResponseHeader)
 		return;
 	if (opts.func) {
@@ -151,6 +152,7 @@ function adm_success(response, opts)
 
 function adm_failure(response, opts)
 {
+	Ext.get('admin-logo-image').dom.src = '/st/constructor/admin/top-left-logo.gif';
 	var panel = new AdminResponse({
 		border: false,
 		html: sprintf('<div class="text">%s</div>', response.responseText),
@@ -171,9 +173,11 @@ function adm(node_id, parameters)
 			url: '/admin-' + node_id + '/ver' + ver,
 			params: parameters,
 			func: node_id,
+			timeout: 120000,
 			success: adm_success,
 			failure: adm_failure
 		});
+		Ext.get('admin-logo-image').dom.src = '/st/constructor/admin/top-left-logo-anim.gif';
 	} else {
 		document.location.replace(base_url + '#');
 		adminmain.removeAll();
@@ -218,7 +222,7 @@ function update_menu(menu)
 	topmenu.add({
 		id: 'admin-logo',
 		xtype: 'tbtext',
-		text: '<a href="' + constructor_index_page + '"><img src="' + admin_root + '/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>'
+		text: '<a href="' + constructor_index_page + '"><img id="admin-logo-image" src="' + admin_root + '/st/constructor/admin/top-left-logo.gif" alt="" title="' + gt.gettext('To the main page') + '" /></a>'
 	});
 	topmenu.add({
 		id: 'admin-project-title',
