@@ -10,6 +10,13 @@
 [%if project.moderation_reject%]
 <table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/application-exit.png" alt="" /></td><td class="admin-recommended-content">[%project.moderation_reject%]</td></tr></table>
 [%end%]
+[%if project.notifications%]
+<table class="admin-recommended-table">
+	[%foreach act in project.notifications%]
+	<tr><td class="admin-recommended-icon"><img src="[%act.icon%]" alt="" /></td><td class="admin-recommended-content">[%act.content%]</td></tr>
+	[%end%]
+</table>
+[%end%]
 
 <div class="text">
 <p><hook:admin.link href="constructor/project-dashboard/[%project.uuid%]" title="[%Update%]" /></p>

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-16 17:49+0400\n"
-"PO-Revision-Date: 2011-05-16 17:49+0300\n"
+"POT-Creation-Date: 2011-05-16 18:26+0400\n"
+"PO-Revision-Date: 2011-05-16 18:27+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -223,7 +223,7 @@ msgstr "Запрещено модерировать"
 #: mg/socio/__init__.py:419
 #: mg/socio/__init__.py:732
 #: mg/core/cluster.py:248
-#: mg/constructor/dashboard.py:43
+#: mg/constructor/dashboard.py:44
 msgid "Status"
 msgstr "Статус"
 
@@ -325,7 +325,7 @@ msgstr "Пользователь %s"
 
 #: mg/socio/__init__.py:737
 #: mg/socio/telegrams.py:106
-#: mg/game/money.py:1201
+#: mg/game/money.py:1207
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr "Пользователь"
@@ -1143,6 +1143,7 @@ msgstr "Введите число (6 цифр) с картинки"
 
 #: mg/core/auth.py:434
 #: mg/constructor/admin.py:182
+#: mg/constructor/dashboard.py:185
 msgid "Register"
 msgstr "Регистрация"
 
@@ -1420,7 +1421,7 @@ msgstr "Введите имя пользователя"
 #: mg/core/auth.py:1039
 #: mg/core/auth.py:1139
 #: mg/constructor/design.py:1528
-#: mg/constructor/dashboard.py:86
+#: mg/constructor/dashboard.py:87
 msgid "Search"
 msgstr "Искать"
 
@@ -1443,8 +1444,8 @@ msgstr "Привилегия: %s"
 
 #: mg/core/auth.py:1152
 #: mg/game/money.py:714
-#: mg/game/money.py:1205
-#: mg/constructor/dashboard.py:136
+#: mg/game/money.py:1211
+#: mg/constructor/dashboard.py:137
 msgid "Update"
 msgstr "Обновить"
 
@@ -1465,12 +1466,12 @@ msgid "Active"
 msgstr "Активен"
 
 #: mg/core/auth.py:1171
-#: mg/constructor/dashboard.py:133
+#: mg/constructor/dashboard.py:134
 msgid "no"
 msgstr "нет"
 
 #: mg/core/auth.py:1171
-#: mg/constructor/dashboard.py:134
+#: mg/constructor/dashboard.py:135
 msgid "yes"
 msgstr "да"
 
@@ -1846,7 +1847,7 @@ msgstr "Исполнено"
 
 #: mg/game/money.py:710
 #: mg/game/money.py:741
-#: mg/game/money.py:1202
+#: mg/game/money.py:1208
 msgid "Amount"
 msgstr "Сумма"
 
@@ -1952,55 +1953,55 @@ msgstr "открыть панель управления"
 msgid "Character name:"
 msgstr "Имя персонажа:"
 
-#: mg/game/money.py:1196
+#: mg/game/money.py:1202
 msgid "Edit settings"
 msgstr "Редактировать настройки"
 
-#: mg/game/money.py:1197
+#: mg/game/money.py:1203
 msgid "Payment URL"
 msgstr "Платёжный URL"
 
-#: mg/game/money.py:1198
+#: mg/game/money.py:1204
 msgid "Secret code"
 msgstr "Секретный код"
 
-#: mg/game/money.py:1199
+#: mg/game/money.py:1205
 msgid "2pay time"
 msgstr "Время 2pay"
 
-#: mg/game/money.py:1200
+#: mg/game/money.py:1206
 msgid "Our time"
 msgstr "Наше время"
 
-#: mg/game/money.py:1203
+#: mg/game/money.py:1209
 msgid "Chargeback"
 msgstr "Возврат платежа"
 
-#: mg/game/money.py:1206
+#: mg/game/money.py:1212
 msgid "Id"
 msgstr "Id"
 
-#: mg/game/money.py:1207
+#: mg/game/money.py:1213
 msgid "Project ID"
 msgstr "ID проекта"
 
-#: mg/game/money.py:1228
+#: mg/game/money.py:1234
 msgid "2pay project id"
 msgstr "ID проекта в 2pay"
 
-#: mg/game/money.py:1229
+#: mg/game/money.py:1235
 msgid "2pay secret"
 msgstr "Секретный код 2pay"
 
-#: mg/game/money.py:1241
+#: mg/game/money.py:1247
 msgid "2pay dashboard"
 msgstr "Панель управления 2pay"
 
-#: mg/game/money.py:1243
+#: mg/game/money.py:1249
 msgid "Settings editor"
 msgstr "Редактор настроек"
 
-#: mg/game/money.py:1247
+#: mg/game/money.py:1253
 msgid "Constructor: 2pay integration"
 msgstr "Конструктор: интеграция с 2pay"
 
@@ -2306,7 +2307,7 @@ msgstr "Я подтверждаю, что являюсь совершеннол�
 
 #: mg/constructor/admin.py:83
 #: mg/constructor/admin.py:84
-#: mg/constructor/dashboard.py:48
+#: mg/constructor/dashboard.py:49
 msgid "Constructor"
 msgstr "Конструктор"
 
@@ -2460,13 +2461,13 @@ msgid "Change e-mail"
 msgstr "Изменить e-mail"
 
 #: mg/constructor/admin.py:358
-#: mg/constructor/dashboard.py:214
+#: mg/constructor/dashboard.py:221
 msgid "Registration closed"
 msgstr "Регистрация закрыта"
 
 #: mg/constructor/admin.py:359
 #: mg/constructor/admin.py:377
-#: mg/constructor/dashboard.py:212
+#: mg/constructor/dashboard.py:219
 msgid "Open registration of new games is unavailable at the moment"
 msgstr "В данный момент свободная регистрация игр невозможна"
 
@@ -2881,38 +2882,38 @@ msgid "Project moderation: %s"
 msgstr "Модерирование проекта: %s"
 
 #: mg/constructor/project.py:211
-#: mg/constructor/dashboard.py:122
+#: mg/constructor/dashboard.py:123
 msgid "Full title"
 msgstr "Полное название"
 
 #: mg/constructor/project.py:212
-#: mg/constructor/dashboard.py:123
+#: mg/constructor/dashboard.py:124
 msgid "Short title"
 msgstr "Короткое название"
 
 #: mg/constructor/project.py:213
-#: mg/constructor/dashboard.py:125
+#: mg/constructor/dashboard.py:126
 msgid "Title in English"
 msgstr "Название на английском языке"
 
 #: mg/constructor/project.py:214
-#: mg/constructor/dashboard.py:124
+#: mg/constructor/dashboard.py:125
 msgid "Title code"
 msgstr "Код названия"
 
 #: mg/constructor/project.py:215
 #: mg/constructor/game.py:132
-#: mg/constructor/dashboard.py:126
+#: mg/constructor/dashboard.py:127
 msgid "Game description"
 msgstr "Описание игры"
 
 #: mg/constructor/project.py:216
-#: mg/constructor/dashboard.py:128
+#: mg/constructor/dashboard.py:129
 msgid "Game domain"
 msgstr "Домен игры"
 
 #: mg/constructor/project.py:217
-#: mg/constructor/dashboard.py:137
+#: mg/constructor/dashboard.py:138
 msgid "Logo"
 msgstr "Логотип"
 
@@ -4801,193 +4802,197 @@ msgstr "Этот код уже погашен"
 msgid "This code in inappropriate for this action"
 msgstr "Этот код не подходит для этого действия"
 
-#: mg/constructor/dashboard.py:34
+#: mg/constructor/dashboard.py:35
 msgid "projstatus///inactive"
 msgstr "неактивный"
 
-#: mg/constructor/dashboard.py:36
+#: mg/constructor/dashboard.py:37
 msgid "projstatus///moderation"
 msgstr "на модерации"
 
-#: mg/constructor/dashboard.py:38
+#: mg/constructor/dashboard.py:39
 msgid "projstatus///published"
 msgstr "опубликован"
 
-#: mg/constructor/dashboard.py:40
+#: mg/constructor/dashboard.py:41
 msgid "projstatus///not published"
 msgstr "не опубликован"
 
-#: mg/constructor/dashboard.py:43
+#: mg/constructor/dashboard.py:44
 msgid "Project name"
 msgstr "Название проекта"
 
-#: mg/constructor/dashboard.py:43
+#: mg/constructor/dashboard.py:44
 msgid "Project code"
 msgstr "Код проекта"
 
-#: mg/constructor/dashboard.py:57
-#: mg/constructor/dashboard.py:59
+#: mg/constructor/dashboard.py:58
+#: mg/constructor/dashboard.py:60
 #, python-format
 msgid "Project %s"
 msgstr "Проект %s"
 
-#: mg/constructor/dashboard.py:64
+#: mg/constructor/dashboard.py:65
 msgid "Global settings"
 msgstr "Глобальные настройки"
 
-#: mg/constructor/dashboard.py:66
+#: mg/constructor/dashboard.py:67
 msgid "Find project"
 msgstr "Найти проект"
 
-#: mg/constructor/dashboard.py:67
+#: mg/constructor/dashboard.py:68
 msgid "Main project"
 msgstr "Главный проект"
 
-#: mg/constructor/dashboard.py:75
+#: mg/constructor/dashboard.py:76
 msgid "Enter project uuid"
 msgstr "Введите UUID проекта"
 
-#: mg/constructor/dashboard.py:79
+#: mg/constructor/dashboard.py:80
 msgid "Project not found"
 msgstr "Проект не найден"
 
-#: mg/constructor/dashboard.py:84
+#: mg/constructor/dashboard.py:85
 msgid "Project uuid"
 msgstr "UUID проекта"
 
-#: mg/constructor/dashboard.py:103
+#: mg/constructor/dashboard.py:104
 msgid "Game was unpublished by a moderator"
 msgstr "Игра была снята с публикации модератором"
 
-#: mg/constructor/dashboard.py:105
+#: mg/constructor/dashboard.py:106
 #, python-format
 msgid "Game unpublished: %s"
 msgstr "Игра снята с публикации: %s"
 
-#: mg/constructor/dashboard.py:105
+#: mg/constructor/dashboard.py:106
 msgid "We are sorry. Your game '{0}' was unpublished."
 msgstr "Приносим извинения. Ваша игра '{0}' снята с публикации."
 
-#: mg/constructor/dashboard.py:121
+#: mg/constructor/dashboard.py:122
 msgid "Game id"
 msgstr "ID игры"
 
-#: mg/constructor/dashboard.py:127
+#: mg/constructor/dashboard.py:128
 msgid "Game owner"
 msgstr "Владелец игры"
 
-#: mg/constructor/dashboard.py:129
+#: mg/constructor/dashboard.py:130
 msgid "game///Created"
 msgstr "Создана"
 
-#: mg/constructor/dashboard.py:130
+#: mg/constructor/dashboard.py:131
 msgid "Moderation required"
 msgstr "Требуется модерирование"
 
-#: mg/constructor/dashboard.py:131
+#: mg/constructor/dashboard.py:132
 msgid "game///Published"
 msgstr "Опубликована"
 
-#: mg/constructor/dashboard.py:132
+#: mg/constructor/dashboard.py:133
 msgid "Unpublish"
 msgstr "Снять с публикации"
 
-#: mg/constructor/dashboard.py:135
+#: mg/constructor/dashboard.py:136
 msgid "Are you sure want to unpublish the project?"
 msgstr "Вы уверены, что хотите снять проект с публикации?"
 
-#: mg/constructor/dashboard.py:138
+#: mg/constructor/dashboard.py:139
 msgid "moderation///permit"
 msgstr "разрешить"
 
-#: mg/constructor/dashboard.py:139
+#: mg/constructor/dashboard.py:140
 msgid "moderation///reject"
 msgstr "отклонить"
 
-#: mg/constructor/dashboard.py:140
+#: mg/constructor/dashboard.py:141
 msgid "created///by"
 msgstr " "
 
-#: mg/constructor/dashboard.py:141
+#: mg/constructor/dashboard.py:142
 msgid "This game is waiting for moderation"
 msgstr "Эта игра ожидает модерации"
 
-#: mg/constructor/dashboard.py:142
+#: mg/constructor/dashboard.py:143
 msgid "This game is published at"
 msgstr "Эта игра опубликована"
 
-#: mg/constructor/dashboard.py:143
+#: mg/constructor/dashboard.py:144
 msgid "This game is inactive yet"
 msgstr "Это имя ещё не активна"
 
-#: mg/constructor/dashboard.py:144
+#: mg/constructor/dashboard.py:145
 msgid "This game is being set up by its administrator"
 msgstr "Эта игра в данный момент настраивается её администратором"
 
 #: mg/constructor/dashboard.py:185
+msgid "This game is not registered in the 2pay system."
+msgstr "Эта игра не зарегистрирована в системе 2pay."
+
+#: mg/constructor/dashboard.py:192
 msgid "Constructor: global settings"
 msgstr "Конструктор: глобальные настройки"
 
-#: mg/constructor/dashboard.py:186
+#: mg/constructor/dashboard.py:193
 msgid "Constructor: projects"
 msgstr "Конструктор: проекты"
 
-#: mg/constructor/dashboard.py:187
+#: mg/constructor/dashboard.py:194
 msgid "Constructor: publishing projects (moderation)"
 msgstr "Конструктор: публикация проектов (модерация)"
 
-#: mg/constructor/dashboard.py:188
+#: mg/constructor/dashboard.py:195
 msgid "Constructor: unpublishing projects"
 msgstr "Конструктор: снятие проектов с публикации"
 
-#: mg/constructor/dashboard.py:206
+#: mg/constructor/dashboard.py:213
 msgid "Constructor settings stored"
 msgstr "Настройки конструктора сохранены"
 
-#: mg/constructor/dashboard.py:214
+#: mg/constructor/dashboard.py:221
 msgid "Registration on invitations"
 msgstr "Регистрация по приглашениям"
 
-#: mg/constructor/dashboard.py:214
+#: mg/constructor/dashboard.py:221
 msgid "Open registration"
 msgstr "Открытая регистрация"
 
-#: mg/constructor/dashboard.py:215
+#: mg/constructor/dashboard.py:222
 msgid "HTML message about registration on invitations"
 msgstr "HTML-сообщение о регистрации по приглашениям"
 
-#: mg/constructor/dashboard.py:216
+#: mg/constructor/dashboard.py:223
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
 
-#: mg/constructor/dashboard.py:217
+#: mg/constructor/dashboard.py:224
 msgid "Projects domain"
 msgstr "Домен проектов"
 
-#: mg/constructor/dashboard.py:236
+#: mg/constructor/dashboard.py:243
 #, python-format
 msgid "Moderation passed: %s"
 msgstr "Пройдена модерация: %s"
 
-#: mg/constructor/dashboard.py:236
+#: mg/constructor/dashboard.py:243
 msgid "Congratulations! Your game '{0}' has passed moderation successfully."
 msgstr "Поздравляем! Ваша игра '{0}' успешно прошла модерацию."
 
-#: mg/constructor/dashboard.py:255
+#: mg/constructor/dashboard.py:262
 msgid "Reason is mandatory"
 msgstr "Обязательно укажите причину"
 
-#: mg/constructor/dashboard.py:259
+#: mg/constructor/dashboard.py:266
 #, python-format
 msgid "Moderation reject reason: %s"
 msgstr "Причина отказа в модерации: %s"
 
-#: mg/constructor/dashboard.py:261
+#: mg/constructor/dashboard.py:268
 #, python-format
 msgid "Moderation reject: %s"
 msgstr "Отказ модератора: %s"
 
-#: mg/constructor/dashboard.py:261
+#: mg/constructor/dashboard.py:268
 msgid ""
 "Your game '{0}' hasn't passed moderation.\n"
 "Reason: {1}"
@@ -4995,17 +5000,21 @@ msgstr ""
 "Ваша игра '{0}' не прошла модерацию.\n"
 "Причина: {1}"
 
-#: mg/constructor/dashboard.py:266
+#: mg/constructor/dashboard.py:273
 msgid "Reject reason"
 msgstr "Причина отказа"
 
-#: mg/constructor/dashboard.py:267
+#: mg/constructor/dashboard.py:274
 msgid "moderation///Reject"
 msgstr "Отказать"
 
-#: mg/constructor/dashboard.py:272
+#: mg/constructor/dashboard.py:279
 msgid "Moderation reject"
 msgstr "Отказ модератора"
+
+#: mg/constructor/dashboard.py:292
+msgid "Registration failed"
+msgstr "Регистрация не удалась"
 
 #~ msgid "Gold"
 #~ msgstr "Золото"

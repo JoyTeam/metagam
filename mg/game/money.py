@@ -1140,7 +1140,7 @@ class TwoPay(Module):
         xmldata = request.toxml("utf-8")
         self.debug(u"2pay request: %s", xmldata)
         try:
-            with Timeout.push(30):
+            with Timeout.push(90):
                 cnn = HTTPConnection()
                 cnn.connect(("2pay.ru", 80))
                 try:
@@ -1153,6 +1153,10 @@ class TwoPay(Module):
                     request.add_header("Content-length", len(xmldata))
                     response = cnn.perform(request)
                     self.debug(u"2pay response: %s %s", response.status_code, response.body)
+                    #config = self.app().config_updater()
+                    #config.set("2pay.secret", secret)
+                    #config.set("2pay.project-id", project_id)
+                    #config.store()
                 finally:
                     cnn.close()
         except IOError as e:

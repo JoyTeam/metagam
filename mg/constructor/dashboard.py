@@ -21,6 +21,7 @@ class ProjectDashboard(Module):
         self.rhook("ext-admin-constructor.project-reject", self.ext_project_reject, priv="constructor.projects.publish")
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings, priv="constructor.settings")
+        self.rhook("ext-admin-constructor.register-2pay", self.ext_project_register_2pay, priv="constructor.projects.publish")
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -95,7 +96,7 @@ class ProjectDashboard(Module):
         for wiz in app.hooks.call("wizards.list"):
             wiz.abort()
         project = app.project
-        with self.lock(["project.%s" % project.uuid]):
+        with self.lock(["project.%s" % project.uuid], patience=120):
             project.load()
             if project.get("published"):
                 project.delkey("published")
@@ -179,6 +180,12 @@ class ProjectDashboard(Module):
         app.hooks.call("constructor.project-params", params)
         if len(params):
             vars["project"]["params"] = params
+        notifications = []
+        if not app.config.get("2pay.project-id") and req.has_access("constructor.projects.publish"):
+            notifications.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="constructor/register-2pay/%s" title="%s" />' % (self._("This game is not registered in the 2pay system."), project.uuid, self._("Register"))})
+        app.hooks.call("constructor.project-notifications", notifications)
+        if len(notifications):
+            vars["project"]["notifications"] = notifications
         self.call("admin.response_template", "admin/constructor/project-dashboard.html", vars)
 
     def permissions_list(self, perms):
@@ -225,7 +232,7 @@ class ProjectDashboard(Module):
         except ObjectNotFoundException:
             self.call("web.not_found")
         project = app.project
-        with self.lock(["project.%s" % project.uuid]):
+        with self.lock(["project.%s" % project.uuid], patience=120):
             project.load()
             if project.get("moderation"):
                 project.delkey("moderation")
@@ -245,7 +252,7 @@ class ProjectDashboard(Module):
         except ObjectNotFoundException:
             self.call("web.not_found")
         project = app.project
-        with self.lock(["project.%s" % project.uuid]):
+        with self.lock(["project.%s" % project.uuid], patience=120):
             project.load()
             if project.get("moderation"):
                 if req.ok():
@@ -270,3 +277,18 @@ class ProjectDashboard(Module):
 
     def headmenu_project_reject(self, args):
         return [self._("Moderation reject"), "constructor/project-dashboard/%s" % args]
+
+    def ext_project_register_2pay(self):
+        req = self.req()
+        try:
+            app = self.app().inst.appfactory.get_by_tag(req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        project = app.project
+        with self.lock(["project.%s.2pay" % project.uuid], patience=120):
+            if not app.config.get("2pay.project-id"):
+                app.hooks.call("2pay.register")
+                if not app.config.get("2pay.project-id"):
+                    self.call("admin.response", self._("Registration failed"), {})
+        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+
