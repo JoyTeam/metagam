@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-17 16:44+0400\n"
+"POT-Creation-Date: 2011-05-17 18:39+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -286,7 +286,7 @@ msgstr ""
 msgid "User %s"
 msgstr ""
 
-#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:1238
+#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:1247
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr ""
@@ -1286,7 +1286,7 @@ msgstr ""
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:1152 mg/game/money.py:714 mg/game/money.py:1242
+#: mg/core/auth.py:1152 mg/game/money.py:714 mg/game/money.py:1251
 #: mg/constructor/dashboard.py:137
 msgid "Update"
 msgstr ""
@@ -1667,7 +1667,7 @@ msgstr ""
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:710 mg/game/money.py:741 mg/game/money.py:1239
+#: mg/game/money.py:710 mg/game/money.py:741 mg/game/money.py:1248
 msgid "Amount"
 msgstr ""
 
@@ -1770,79 +1770,79 @@ msgstr ""
 msgid "open dashboard"
 msgstr ""
 
-#: mg/game/money.py:1099
+#: mg/game/money.py:1108
 msgid "Enter character name:"
 msgstr ""
 
-#: mg/game/money.py:1109
+#: mg/game/money.py:1118
 msgid "Character name:"
 msgstr ""
 
-#: mg/game/money.py:1232
+#: mg/game/money.py:1241
 msgid "Edit settings"
 msgstr ""
 
-#: mg/game/money.py:1233
+#: mg/game/money.py:1242
 msgid "Payment URL"
 msgstr ""
 
-#: mg/game/money.py:1234
+#: mg/game/money.py:1243
 msgid "Secret code"
 msgstr ""
 
-#: mg/game/money.py:1235
+#: mg/game/money.py:1244
 msgid "Secret code for adding games"
 msgstr ""
 
-#: mg/game/money.py:1236
+#: mg/game/money.py:1245
 msgid "2pay time"
 msgstr ""
 
-#: mg/game/money.py:1237
+#: mg/game/money.py:1246
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:1240
+#: mg/game/money.py:1249
 msgid "Chargeback"
 msgstr ""
 
-#: mg/game/money.py:1243
+#: mg/game/money.py:1252
 msgid "Id"
 msgstr ""
 
-#: mg/game/money.py:1244
+#: mg/game/money.py:1253
 msgid "Project ID"
 msgstr ""
 
-#: mg/game/money.py:1245
+#: mg/game/money.py:1254
 msgid "Contragent ID"
 msgstr ""
 
-#: mg/game/money.py:1274
+#: mg/game/money.py:1283
 msgid "2pay project id"
 msgstr ""
 
-#: mg/game/money.py:1275
+#: mg/game/money.py:1284
 msgid "2pay contragent id"
 msgstr ""
 
-#: mg/game/money.py:1276
+#: mg/game/money.py:1285
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:1277
+#: mg/game/money.py:1286
 msgid "2pay secret for adding games"
 msgstr ""
 
-#: mg/game/money.py:1289
+#: mg/game/money.py:1298
 msgid "2pay dashboard"
 msgstr ""
 
-#: mg/game/money.py:1291
+#: mg/game/money.py:1300
 msgid "Settings editor"
 msgstr ""
 
-#: mg/game/money.py:1295
+#: mg/game/money.py:1304
 msgid "Constructor: 2pay integration"
 msgstr ""
 
