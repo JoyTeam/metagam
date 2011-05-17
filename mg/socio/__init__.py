@@ -1357,7 +1357,7 @@ class Forum(Module):
                 if posts[i].uuid == uuid:
                     self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, (i / posts_per_page + 1), uuid))
             if len(posts):
-                self.call("web.redirect", "/forum/topic/%s?page=%d" % (topic.uuid, uuid))
+                self.call("web.redirect", "/forum/topic/%s?page=%s" % (topic.uuid, uuid))
             else:
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
         # topic contents
