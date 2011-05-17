@@ -882,6 +882,15 @@ class TwoPay(Module):
     def objclasses_list(self, objclasses):
         objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
 
+    def real_currency(self):
+        currencies = {}
+        self.call("currencies.list", currencies)
+        real_ok = False
+        for code, cur in currencies.iteritems():
+            if cur.get("real"):
+                return code
+        return None
+
     def payment_2pay(self):
         req = self.req()
         command = req.param_raw("command")
@@ -938,7 +947,7 @@ class TwoPay(Module):
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 member = MemberMoney(self.app(), user.uuid)
-                                member.credit(sum_v, "MM$", "2pay-pay", payment_id=id, payment_performed=date)
+                                member.credit(sum_v, self.real_currency(), "2pay-pay", payment_id=id, payment_performed=date)
                                 payment.store()
                                 result = 0
                                 id_shop = id
@@ -959,7 +968,7 @@ class TwoPay(Module):
                             else:
                                 payment.set("cancelled", self.now())
                                 member = MemberMoney(self.app(), payment.get("user"))
-                                member.force_debit(payment.get("sum"), "MM$", "2pay-chargeback", payment_id=id)
+                                member.force_debit(payment.get("sum"), self.real_currency(), "2pay-chargeback", payment_id=id)
                                 payment.store()
                                 result = 0
                         except ObjectNotFoundException:
@@ -1034,7 +1043,7 @@ class TwoPay(Module):
         doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "response", None)
         request = doc.documentElement
         # Master ID
-        master_id = str(self.main_app().config.get("2pay.project-id"))
+        master_id = str(self.main_app().config.get("2pay.contragent-id"))
         elt = doc.createElement("id")
         elt.appendChild(doc.createTextNode(master_id))
         request.appendChild(elt)
@@ -1069,12 +1078,9 @@ class TwoPay(Module):
                 elt.appendChild(doc.createTextNode("0" if cur.get("precision") else "1"))
                 request.appendChild(elt)
                 # Currency rate
-                prices = doc.createElement("prices")
-                request.appendChild(prices)
                 elt = doc.createElement("price")
-                elt.setAttribute("qty", "1")
                 elt.appendChild(doc.createTextNode(str(cur.get("real_price"))))
-                prices.appendChild(elt)
+                request.appendChild(elt)
                 elt = doc.createElement("valuta")
                 currencies = {
                     "RUR": "1",
@@ -1096,13 +1102,23 @@ class TwoPay(Module):
                 elt.appendChild(doc.createTextNode("0"))
                 request.appendChild(elt)
                 break
-        # Character name
+        # Enter character name
         elt = doc.createElement("v0")
+        elt.setAttribute("loc", lang)
+        elt.appendChild(doc.createTextNode(self._("Enter character name:")))
+        request.appendChild(elt)
+        if lang != "en":
+            elt = doc.createElement("v0")
+            elt.setAttribute("loc", "en")
+            elt.appendChild(doc.createTextNode("Enter character name:"))
+            request.appendChild(elt)
+        # Character name
+        elt = doc.createElement("v1")
         elt.setAttribute("loc", lang)
         elt.appendChild(doc.createTextNode(self._("Character name:")))
         request.appendChild(elt)
         if lang != "en":
-            elt = doc.createElement("v0")
+            elt = doc.createElement("v1")
             elt.setAttribute("loc", "en")
             elt.appendChild(doc.createTextNode("Character name:"))
             request.appendChild(elt)
@@ -1132,13 +1148,14 @@ class TwoPay(Module):
         elt = doc.createElement("desc")
         elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
         request.appendChild(elt)
-        # Signature
-        sign = hashlib.md5(str("%s%s%s") % (master_id, rnd, self.main_app().config.get("2pay.secret"))).hexdigest().lower()
-        elt = doc.createElement("sign")
-        elt.appendChild(doc.createTextNode(sign))
-        request.appendChild(elt)
         xmldata = request.toxml("utf-8")
         self.debug(u"2pay request: %s", xmldata)
+        # Signature
+        sign_str = str("%s%s%s") % (master_id, rnd, self.main_app().config.get("2pay.secret-addgame"))
+        sign = hashlib.md5(sign_str).hexdigest().lower()
+        self.debug(u"2pay signing string '%s': %s", sign_str, sign)
+        query = "xml=%s&sign=%s" % (urlencode(xmldata), urlencode(sign))
+        self.debug(u"2pay urlencoded query: %s", query)
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
@@ -1148,21 +1165,43 @@ class TwoPay(Module):
                     request.method = "POST"
                     request.path = "/api/game/index.php"
                     request.host = "2pay.ru"
-                    request.body = xmldata
-                    request.add_header("Content-type", "application/xml")
-                    request.add_header("Content-length", len(xmldata))
+                    request.body = query
+                    request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
+                    request.add_header("Content-length", len(query))
                     response = cnn.perform(request)
                     self.debug(u"2pay response: %s %s", response.status_code, response.body)
-                    #config = self.app().config_updater()
-                    #config.set("2pay.secret", secret)
-                    #config.set("2pay.project-id", project_id)
-                    #config.store()
+                    if response.status_code == 200:
+                        response = xml.dom.minidom.parseString(response.body)
+                        print "parsed XML"
+                        if response.documentElement.tagName == "response":
+                            print "tagname OK"
+                            result = response.documentElement.getElementsByTagName("result")
+                            print "result fetched"
+                            if result and self.getText(result[0].childNodes) == "OK":
+                                print "result OK"
+                                game_id = response.documentElement.getElementsByTagName("gameId")
+                                if game_id:
+                                    game_id = self.getText(game_id[0].childNodes)
+                                    print "game_id: %s" % game_id
+                                    game_id = intz(game_id)
+                                    config = self.app().config_updater()
+                                    config.set("2pay.secret", secret)
+                                    config.set("2pay.project-id", game_id)
+                                    config.store()
                 finally:
                     cnn.close()
         except IOError as e:
             self.error("Error registering in the 2pay system: %s", e)
         except TimeoutError:
             self.error("Error registering in the 2pay system: Timed out")
+
+    def getText(self, nodelist):
+        rc = ""
+        for node in nodelist:
+            if node.nodeType == node.TEXT_NODE:
+                rc = rc + node.data
+        return rc
+
 
 class TwoPayAdmin(Module):
     def register(self):
@@ -1202,6 +1241,7 @@ class TwoPayAdmin(Module):
                 "EditSettings": self._("Edit settings"),
                 "PaymentURL": self._("Payment URL"),
                 "SecretCode": self._("Secret code"),
+                "SecretCodeAddGame": self._("Secret code for adding games"),
                 "Time2pay": self._("2pay time"),
                 "OurTime": self._("Our time"),
                 "User": self._("User"),
@@ -1211,28 +1251,39 @@ class TwoPayAdmin(Module):
                 "Update": self._("Update"),
                 "Id": self._("Id"),
                 "ProjectID": self._("Project ID"),
+                "ContragentID": self._("Contragent ID"),
             }
             vars["settings"] = {
-                "secret": htmlescape(self.conf("2pay.secret")),
-                "project_id": htmlescape(self.conf("2pay.project-id")),
+                "secret": htmlescape(app.config.get("2pay.secret")),
+                "secret_addgame": htmlescape(app.config.get("2pay.secret-addgame")),
+                "project_id": htmlescape(app.config.get("2pay.project-id")),
+                "contragent_id": htmlescape(app.config.get("2pay.contragent-id")),
                 "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
             }
             self.call("admin.response_template", "admin/money/2pay-dashboard.html", vars)
         elif cmd == "settings":
             secret = req.param("secret")
+            secret_addgame = req.param("secret_addgame")
             project_id = req.param("project_id")
+            contragent_id = req.param("contragent_id")
             if req.param("ok"):
-                config = self.app().config_updater()
+                config = app.config_updater()
                 config.set("2pay.secret", secret)
+                config.set("2pay.secret-addgame", secret_addgame)
                 config.set("2pay.project-id", project_id)
+                config.set("2pay.contragent-id", contragent_id)
                 config.store()
                 self.call("admin.redirect", "constructor/project-2pay/%s" % uuid)
             else:
-                secret = self.conf("2pay.secret")
-                project_id = self.conf("2pay.project-id")
+                secret = app.config.get("2pay.secret")
+                secret_addgame = app.config.get("2pay.secret-addgame")
+                project_id = app.config.get("2pay.project-id")
+                contragent_id = app.config.get("2pay.contragent-id")
             fields = []
             fields.append({"name": "project_id", "label": self._("2pay project id"), "value": project_id})
+            fields.append({"name": "contragent_id", "label": self._("2pay contragent id"), "value": contragent_id})
             fields.append({"name": "secret", "label": self._("2pay secret"), "value": secret})
+            fields.append({"name": "secret_addgame", "label": self._("2pay secret for adding games"), "value": secret_addgame})
             self.call("admin.form", fields=fields)
         else:
             self.call("web.not_found")

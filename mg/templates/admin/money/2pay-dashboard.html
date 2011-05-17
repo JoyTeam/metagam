@@ -1,8 +1,10 @@
 [%if settings%]
 <table class="menu">
 <tr><td class="header">[%ProjectID%]</td><td>[%settings.project_id%]</td></tr>
+<tr><td class="header">[%ContragentID%]</td><td>[%settings.contragent_id%]</td></tr>
 <tr><td class="header">[%PaymentURL%]</td><td>[%settings.payment_url%]</td></tr>
 <tr><td class="header">[%SecretCode%]</td><td>[%settings.secret%]</td></tr>
+[%if settings.secret_addgame%]<tr><td class="header">[%SecretCodeAddGame%]</td><td>[%settings.secret_addgame%]</td></tr>[%end%]
 </table>
 [%end%]
 <div class="text">

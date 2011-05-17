@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-16 18:26+0400\n"
+"POT-Creation-Date: 2011-05-17 16:44+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -286,7 +286,7 @@ msgstr ""
 msgid "User %s"
 msgstr ""
 
-#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:1207
+#: mg/socio/__init__.py:737 mg/socio/telegrams.py:106 mg/game/money.py:1238
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr ""
@@ -441,6 +441,7 @@ msgid "New topics in '{topcat} / {cat}'"
 msgstr ""
 
 #: mg/socio/__init__.py:1893 mg/core/auth.py:591
+#: mg/constructor/dashboard.py:293
 msgid "Return"
 msgstr ""
 
@@ -1285,7 +1286,7 @@ msgstr ""
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:1152 mg/game/money.py:714 mg/game/money.py:1211
+#: mg/core/auth.py:1152 mg/game/money.py:714 mg/game/money.py:1242
 #: mg/constructor/dashboard.py:137
 msgid "Update"
 msgstr ""
@@ -1666,7 +1667,7 @@ msgstr ""
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:710 mg/game/money.py:741 mg/game/money.py:1208
+#: mg/game/money.py:710 mg/game/money.py:741 mg/game/money.py:1239
 msgid "Amount"
 msgstr ""
 
@@ -1769,59 +1770,79 @@ msgstr ""
 msgid "open dashboard"
 msgstr ""
 
-#: mg/game/money.py:1102
+#: mg/game/money.py:1099
+msgid "Enter character name:"
+msgstr ""
+
+#: mg/game/money.py:1109
 msgid "Character name:"
 msgstr ""
 
-#: mg/game/money.py:1202
+#: mg/game/money.py:1232
 msgid "Edit settings"
 msgstr ""
 
-#: mg/game/money.py:1203
+#: mg/game/money.py:1233
 msgid "Payment URL"
 msgstr ""
 
-#: mg/game/money.py:1204
+#: mg/game/money.py:1234
 msgid "Secret code"
 msgstr ""
 
-#: mg/game/money.py:1205
+#: mg/game/money.py:1235
+msgid "Secret code for adding games"
+msgstr ""
+
+#: mg/game/money.py:1236
 msgid "2pay time"
 msgstr ""
 
-#: mg/game/money.py:1206
+#: mg/game/money.py:1237
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:1209
+#: mg/game/money.py:1240
 msgid "Chargeback"
 msgstr ""
 
-#: mg/game/money.py:1212
+#: mg/game/money.py:1243
 msgid "Id"
 msgstr ""
 
-#: mg/game/money.py:1213
+#: mg/game/money.py:1244
 msgid "Project ID"
 msgstr ""
 
-#: mg/game/money.py:1234
+#: mg/game/money.py:1245
+msgid "Contragent ID"
+msgstr ""
+
+#: mg/game/money.py:1274
 msgid "2pay project id"
 msgstr ""
 
-#: mg/game/money.py:1235
+#: mg/game/money.py:1275
+msgid "2pay contragent id"
+msgstr ""
+
+#: mg/game/money.py:1276
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:1247
+#: mg/game/money.py:1277
+msgid "2pay secret for adding games"
+msgstr ""
+
+#: mg/game/money.py:1289
 msgid "2pay dashboard"
 msgstr ""
 
-#: mg/game/money.py:1249
+#: mg/game/money.py:1291
 msgid "Settings editor"
 msgstr ""
 
-#: mg/game/money.py:1253
+#: mg/game/money.py:1295
 msgid "Constructor: 2pay integration"
 msgstr ""
 
@@ -4859,47 +4880,47 @@ msgstr ""
 msgid "Projects domain"
 msgstr ""
 
-#: mg/constructor/dashboard.py:243
+#: mg/constructor/dashboard.py:244
 #, python-format
 msgid "Moderation passed: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:243
+#: mg/constructor/dashboard.py:244
 msgid "Congratulations! Your game '{0}' has passed moderation successfully."
 msgstr ""
 
-#: mg/constructor/dashboard.py:262
+#: mg/constructor/dashboard.py:263
 msgid "Reason is mandatory"
 msgstr ""
 
-#: mg/constructor/dashboard.py:266
+#: mg/constructor/dashboard.py:267
 #, python-format
 msgid "Moderation reject reason: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:268
+#: mg/constructor/dashboard.py:269
 #, python-format
 msgid "Moderation reject: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:268
+#: mg/constructor/dashboard.py:269
 msgid ""
 "Your game '{0}' hasn't passed moderation.\n"
 "Reason: {1}"
 msgstr ""
 
-#: mg/constructor/dashboard.py:273
+#: mg/constructor/dashboard.py:274
 msgid "Reject reason"
 msgstr ""
 
-#: mg/constructor/dashboard.py:274
+#: mg/constructor/dashboard.py:275
 msgid "moderation///Reject"
 msgstr ""
 
-#: mg/constructor/dashboard.py:279
+#: mg/constructor/dashboard.py:280
 msgid "Moderation reject"
 msgstr ""
 
-#: mg/constructor/dashboard.py:292
+#: mg/constructor/dashboard.py:293
 msgid "Registration failed"
 msgstr ""

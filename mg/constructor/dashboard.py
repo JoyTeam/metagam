@@ -39,7 +39,7 @@ class ProjectDashboard(Module):
                         status = self._("projstatus///published")
                     else:
                         status = self._("projstatus///not published")
-                    rows.append(('<hook:admin.link href="constructor/project-dashboard/{0}" title="{1}" />'.format(p.get("uuid"), htmlescape(p.get("title_short"))), p.get("title_code"), status))
+                    rows.append((u'<hook:admin.link href="constructor/project-dashboard/{0}" title="{1}" />'.format(p.get("uuid"), htmlescape(p.get("title_short"))), p.get("title_code"), status))
                 tables.append({
                     "header": [self._("Project name"), self._("Project code"), self._("Status")],
                     "rows": rows
@@ -181,7 +181,7 @@ class ProjectDashboard(Module):
         if len(params):
             vars["project"]["params"] = params
         notifications = []
-        if not app.config.get("2pay.project-id") and req.has_access("constructor.projects.publish"):
+        if not app.config.get("2pay.project-id") and req.has_access("constructor.projects.publish") and project.get("published"):
             notifications.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="constructor/register-2pay/%s" title="%s" />' % (self._("This game is not registered in the 2pay system."), project.uuid, self._("Register"))})
         app.hooks.call("constructor.project-notifications", notifications)
         if len(notifications):
@@ -239,7 +239,8 @@ class ProjectDashboard(Module):
                 project.delkey("moderation_reject")
                 project.set("published", self.now())
                 app.modules.load(["mg.game.money.TwoPay"])
-                app.hooks.call("2pay.register")
+                if not app.config.get("2pay.project-id"):
+                    app.hooks.call("2pay.register")
                 app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.").format(project.get("title_short")))
                 project.store()
                 app.store_config_hooks()
@@ -289,6 +290,6 @@ class ProjectDashboard(Module):
             if not app.config.get("2pay.project-id"):
                 app.hooks.call("2pay.register")
                 if not app.config.get("2pay.project-id"):
-                    self.call("admin.response", self._("Registration failed"), {})
+                    self.call("admin.response", u'%s. <hook:admin.link href="constructor/project-dashboard/%s" title="%s" />' % (self._("Registration failed"), project.uuid, self._("Return")), {})
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
