@@ -204,6 +204,8 @@ class Telegrams(Module):
         if recipient_uuid != sender_uuid:
             tel_user_2.store()
             tel_cont_2.store()
+        # Sending notification
+        self.call("email.users", [recipient_uuid], self._("New message"), self._("You have received a new message.\n\nhttp://www.%s/telegrams/list") % self.app().domain, immediately=True)
 
     def telegrams_user(self):
         params = {}

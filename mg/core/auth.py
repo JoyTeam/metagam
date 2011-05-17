@@ -302,6 +302,11 @@ class Interface(Module):
         self.rhook("headmenu-admin-auth.user-dashboard", self.headmenu_user_dashboard)
         self.rhook("auth.autologin", self.autologin)
         self.rhook("web.robots-txt", self.robots_txt)
+        self.rhook("user.email", self.user_email)
+
+    def user_email(self, user_uuid):
+        user = self.obj(User, user_uuid)
+        return user.get("email")
 
     def robots_txt(self, disallow):
         disallow.append("/auth/")
