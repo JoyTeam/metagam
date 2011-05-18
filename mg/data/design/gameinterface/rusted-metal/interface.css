@@ -1,0 +1,20 @@
+body { background-image: url(body-bg-1.jpg); }
+/* BOX */
+.box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.box-2 { background-image: url(box-left.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.box-4 { background-image: url(box-top.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.box-5 { background-image: url(box-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+
+/* OLD */
+#topmenu-box { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0 }
+#topmenu-box-content { padding-top: 10px; font-size: 18px }
+#chat-channels { height: 100%; background: #ffffff }
+#chat-channel-buttons { padding: 10px 10px 0 10px }
+#chat-input { height: 100% }
+#chat-input-control { width: 100%; }
+#roster-box { height: 100%; overflow: auto; background: #ffffff }
+#roster-box-content { padding: 10px 15px 0 10px }

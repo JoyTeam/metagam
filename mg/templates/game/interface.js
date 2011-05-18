@@ -6,32 +6,40 @@ var Game = {
 };
 
 Game.fixupContentEl = function(el) {
-	var def = Ext.getDom('default-' + el.contentEl);
+	var def = Ext.get('default-' + el.contentEl);
 	if (!def) {
 		Ext.alert('Missing element: default-' + el.contentEl);
 		return el;
 	}
 	if (Ext.getDom(el.contentEl)) {
 		Ext.get(def.id).remove();
+		if (el.loadHeight)
+			el.height = Ext.get(el.contentEl).getHeight();
 	} else {
+		if (el.loadHeight)
+			el.height = def.getHeight();
 		def.id = el.contentEl;
+		def.dom.id = el.contentEl;
 	}
 	return el;
 };
 
 Game.setup_game_layout = function() {
 	var topmenu = this.fixupContentEl({
+		id: 'topmenu-container',
 		xtype: 'box',
 		height: 40,
 		contentEl: 'topmenu'
 	});
-	var chat = {
-		border: false,
+	new Ext.Container({
+		id: 'chat-frame-layout',
+		renderTo: 'chat-frame-content',
 		layout: 'border',
+		height: '100%',
 		items: [[%if layout.chat_channels%]this.fixupContentEl({
 			xtype: 'box',
-			height: 40,
 			region: 'north',
+			loadHeight: true,
 			contentEl: 'chat-buttons'
 		}),[%end%]this.fixupContentEl({
 			xtype: 'box',
@@ -39,16 +47,38 @@ Game.setup_game_layout = function() {
 			contentEl: 'chat-box'
 		}), this.fixupContentEl({
 			xtype: 'box',
-			height: 40,
+			loadHeight: true,
 			region: 'south',
 			contentEl: 'chat-input'
 		})]
-	};
+	});
+	var chat = this.fixupContentEl({
+		id: 'chat-frame-container',
+		xtype: 'container',
+		contentEl: 'chat-frame',
+		onLayout: function(shallow, forceLayout) {
+			if (shallow !== true) {
+				Ext.getCmp('chat-frame-layout').doLayout(false, forceLayout);
+			}
+		}
+	});
+	new Ext.Container({
+		id: 'chat-roster-content',
+		applyTo: 'chat-roster-content',
+		height: '100%'
+	});
 	var roster = this.fixupContentEl({
-		xtype: 'box',
-		contentEl: 'chat-roster'
+		id: 'roster-container',
+		xtype: 'container',
+		contentEl: 'chat-roster',
+		onLayout: function(shallow, forceLayout) {
+			if (shallow !== true) {
+				Ext.getCmp('chat-roster-content').doLayout(false, forceLayout);
+			}
+		}
 	});
 	var main = {
+		id: 'main-iframe',
 		xtype: 'iframepanel',
 		border: false,
 		defaultSrc: '[%main_init%]',
@@ -67,18 +97,19 @@ Game.setup_game_layout = function() {
 	roster.minSize = 300;
 	main.region = 'center';
 	main.minHeight = 200;
-	var content = new Ext.Panel({
-		border: false,
+	var content = new Ext.Container({
+		id: 'page-content',
 		layout: 'border',
 		items: [
 			topmenu,
 			{
+				id: 'chat-and-roster',
+				xtype: 'container',
 				region: 'south',
 				height: 250,
 				minHeight: 100,
 				layout: 'border',
 				split: true,
-				border: false,
 				items: [chat, roster]
 			},
 			main
@@ -96,17 +127,18 @@ Game.setup_game_layout = function() {
 	chat.minHeight = 100;
 	main.region = 'center';
 	main.minHeight = 200;
-	var content = new Ext.Panel({
-		border: false,
+	var content = new Ext.Container({
+		id: 'page-content',
 		layout: 'border',
 		items: [
 			topmenu,
 			roster,
 			{
+				id: 'main-and-chat',
+				xtype: 'container',
 				region: 'center',
 				minWidth: 300,
 				layout: 'border',
-				border: false,
 				items: [main, chat]
 			}
 		]
@@ -121,26 +153,27 @@ Game.setup_game_layout = function() {
 	chat.minHeight = 100;
 	chat.height = 300;
 	chat.split = true;
-	var content = new Ext.Panel({
-		border: false,
+	var content = new Ext.Container({
+		id: 'page-content',
 		layout: 'border',
 		items: [
 			topmenu,
 			main,
 			{
+				id: 'roster-and-chat',
+				xtype: 'container',
 				region: 'east',
 				width: 300,
 				minWidth: 300,
 				layout: 'border',
-				border: false,
 				split: true,
 				items: [roster, chat]
 			}
 		]
 	});
 	[%else%]
-	var content = new Ext.Panel({
-		border: false,
+	var content = new Ext.Container({
+		id: 'page-content',
 		html: gt.gettext('Misconfigured layout scheme')
 	});
 	[%end%]
@@ -181,11 +214,13 @@ Game.setup_game_layout = function() {
 		content.region = 'center';
 		margins.push(content);
 		new Ext.Viewport({
+			id: 'game-viewport',
 			layout: 'border',
 			items: margins
 		});
 	} else {
 		new Ext.Viewport({
+			id: 'game-viewport',
 			layout: 'fit',
 			items: content
 		});
@@ -194,6 +229,7 @@ Game.setup_game_layout = function() {
 
 Game.setup_cabinet_layout = function() {
 	new Ext.Viewport({
+		id: 'cabinet-viewport',
 		layout: 'fit',
 		items: this.fixupContentEl({
 			xtype: 'box',

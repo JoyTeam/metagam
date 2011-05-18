@@ -828,6 +828,12 @@ class DesignGameInterfaceTest(DesignGenerator):
     def name(self): return self._("Test")
     def preview(self): return "/st/constructor/design/gen/test.jpg"
 
+class DesignGameInterfaceRustedMetal(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "rusted-metal"
+    def name(self): return self._("Rusted Metal")
+    def preview(self): return "/st/constructor/design/gen/rusted-metal.jpg"
+
 class DesignMod(Module):
     def register(self):
         Module.register(self)
@@ -1608,6 +1614,7 @@ class GameInterfaceAdmin(ConstructorModule):
 
     def generators(self, gens):
         gens.append(DesignGameInterfaceTest)
+        gens.append(DesignGameInterfaceRustedMetal)
 
     def previews(self, design, previews):
         previews.append({"filename": "interface.html", "title": self._("Game interface")})
@@ -1619,6 +1626,7 @@ class GameInterfaceAdmin(ConstructorModule):
         vars = {
             "title": self._("Demo page")
         }
+        req = self.req()
         char = self.character(req.user())
         if filename == "interface.html":
             self.call("gameinterface.render", char, vars, design)

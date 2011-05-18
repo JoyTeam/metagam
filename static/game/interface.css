@@ -1,16 +1,21 @@
-/* topmenu interface */
+/* TOPMENU */
 #topmenu { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
 #topmenu-content { padding-top: 10px; font-size: 18px }
-/* chat interface */
-#chat-buttons { height: 100%; background: #ffffff }
-#chat-buttons-content { padding: 10px 10px 0 10px }
-#chat-box { height: 100%; background: #ffffff; border-top: solid 1px #f0f0f0; overflow: auto }
-#chat-box-content { padding: 0 15px 0 10px }
-#chat-input { height: 100%; padding: 10px 15px 0 10px; background: #ffffff; border-top: solid 1px #f0f0f0 }
+
+/* CHAT */
+#chat-frame { height: 100% }
+#chat-frame-content { height: 100% }
+#chat-frame-layout { background: none }
+#chat-box { height: 100% }
+#chat-box-content { overflow: auto }
+#chat-input { height: 100% }
 #chat-input-control { width: 100%; }
-#chat-roster { height: 100%; overflow: auto; background: #ffffff }
-#chat-roster-header { padding: 10px 15px 0 10px }
-#chat-roster-content { padding: 10px 15px 0 10px }
+#chat-roster { height: 100% }
+#chat-roster-content { overflow: auto }
+
+
+#chat-buttons { height: 100% }
+#chat-buttons-content { padding: 10px 10px 0 10px }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
 .chat-button { cursor: pointer }
 /* top message */
