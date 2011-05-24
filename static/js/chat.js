@@ -7,12 +7,22 @@ var Chat = {
 		style: {
 			height: '100%'
 		}
-	}),
-	input_control: Ext.get('chat-input-control'),
-	channel_control_element: Ext.getDom('chat-channel-control'),
-	buttons_content: Ext.get('chat-buttons-content'),
-	roster_header_element: Ext.get('chat-roster-header'),
-	roster_content_element: Ext.get('chat-roster-content')
+	})
+};
+
+Chat.initialize = function() {
+	this.input_control = Ext.get('chat-input-control');
+	this.channel_control_element = Ext.getDom('chat-channel-control');
+	this.buttons_content = Ext.get('chat-channel-buttons-content');
+	this.roster_header_element = Ext.get('chat-roster-header-content');
+	this.roster_chars_element = Ext.get('chat-roster-characters-content');
+	Stream.stream_handler('chat', this);
+	this.input_control.on('keypress', function(e, t, o) {
+		if (e.getKey() == 13) {
+			e.preventDefault();
+			Chat.submit();
+		}
+	});
 };
 
 /* Create channel: chat tab, channel button, roster tab, channel selection option */
@@ -79,20 +89,20 @@ Chat.channel_destroy = function(ch) {
 
 /* Create roster tab */
 Chat.roster_tab_create = function(ch) {
-	if (!this.roster_content_element)
+	if (!this.roster_chars_element)
 		return;
 	ch.roster_characters = new Array();
 	ch.roster_characters_by_id = new Array();
-	if (this.roster_content_element) {
-		ch.roster_content = new Ext.BoxComponent({
-			renderTo: this.roster_content_element,
+	if (this.roster_chars_element) {
+		ch.roster_chars = new Ext.BoxComponent({
+			renderTo: this.roster_chars_element,
 			hidden: true
 		});
 	}
 	if (!this.active_roster_channel) {
 		this.active_roster_channel = ch.id;
-		if (ch.roster_content) {
-			ch.roster_content.show();
+		if (ch.roster_chars) {
+			ch.roster_chars.show();
 		}
 	}
 	this.roster_header_update();
@@ -100,18 +110,18 @@ Chat.roster_tab_create = function(ch) {
 
 /* Destroy roster tab */
 Chat.roster_tab_destroy = function(ch) {
-	if (!this.roster_content_element)
+	if (!this.roster_chars_element)
 		return;
-	if (ch.roster_content) {
-		ch.roster_content.destroy();
-		ch.roster_content = undefined;
+	if (ch.roster_chars) {
+		ch.roster_chars.destroy();
+		ch.roster_chars = undefined;
 	}
 	if (this.active_roster_channel == ch.id) {
 		if (this.channels.length) {
 			var c = this.channels[0]
 			this.active_roster_channel = c.id;
-			if (c.roster_content) {
-				c.roster_content.show();
+			if (c.roster_chars) {
+				c.roster_chars.show();
 			}
 		} else {
 			this.active_roster_channel = undefined;
@@ -145,15 +155,15 @@ Chat.roster_header_update = function() {
 Chat.roster_tab = function(id) {
 	if (this.active_roster_channel) {
 		var ch = this.channels_by_id[this.active_roster_channel];
-		if (ch && ch.roster_content) {
-			ch.roster_content.hide();
+		if (ch && ch.roster_chars) {
+			ch.roster_chars.hide();
 		}
 	}
 	this.active_roster_channel = id;
 	this.roster_header_update();
 	var ch = this.channels_by_id[id];
-	if (ch && ch.roster_content) {
-		ch.roster_content.show();
+	if (ch && ch.roster_chars) {
+		ch.roster_chars.show();
 	}
 };
 
@@ -455,9 +465,9 @@ Chat.roster_add = function(pkt) {
 		return;
 	}
 	var character = char_info;
-	if (ch.roster_content) {
+	if (ch.roster_chars) {
 		character.element = new Ext.BoxComponent({
-			renderTo: ch.roster_content.el,
+			renderTo: ch.roster_chars.el,
 			html: '<span class="chat-roster-char chat-clickable" onclick="return Chat.click([\'' + jsencode(char_info.name) + '\']);">' + htmlescape(char_info.name) + '</span>'
 		});
 	}
@@ -527,12 +537,5 @@ Chat.open_first_tab = function() {
 };
 
 wait(['realplexor-stream'], function() {
-	Stream.stream_handler('chat', Chat);
-	Chat.input_control.on('keypress', function(e, t, o) {
-		if (e.getKey() == 13) {
-			e.preventDefault();
-			Chat.submit();
-		}
-	});
 	loaded('chat');
 });

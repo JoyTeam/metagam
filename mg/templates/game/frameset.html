@@ -14,8 +14,13 @@
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
 		[%end%]
 		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
+		[%if debug_ext%]
+		<script type="text/javascript" src="/st/ext/ext-all-debug-w-comments.js"></script>
+		<script type="text/javascript" src="/st/ext/miframe-debug.js"></script>
+		[%else%]
 		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
 		<script type="text/javascript" src="/st/ext/miframe.js"></script>
+		[%end%]
 		<script type="text/javascript" src="/st/[%ver%]/js/gettext.js"></script>
 		[%if lang%]<script type="text/javascript" src="/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
 		<script type="text/javascript" src="/st/[%ver%]/js/util.js"></script>
@@ -44,19 +49,26 @@
 		</script>
 		[%end%]
 		[%blocks%]
-		<div class="x-hidden" id="default-topmenu">
-			<a href="javascript:void(0)" onclick="Game.reload(); return false">reload</a> &bull;
-			<a href="javascript:void(0)" onclick="Game.logout(); return false">logout</a> &bull;
-			<a href="/admin" target="_blank">admin</a>
+		<div class="x-hidden" id="default-topmenu" style="height: 39px">
+			<div id="topmenu-content">
+				<a href="javascript:void(0)" onclick="Game.reload(); return false">reload</a> &bull;
+				<a href="javascript:void(0)" onclick="Game.logout(); return false">logout</a> &bull;
+				<a href="/admin" target="_blank">admin</a>
+			</div>
 		</div>
 		<div class="x-hidden" id="default-chat-frame"><div id="chat-frame-content"></div></div>
-		<div class="x-hidden" id="default-chat-buttons"><div id="chat-buttons-content"></div></div>
+		<div class="x-hidden" id="default-chat-channel-buttons" style="width: 30px"><div id="chat-channel-buttons-content"></div></div>
 		<div class="x-hidden" id="default-chat-box"><div id="chat-box-content"></div></div>
-		<div class="x-hidden" id="default-chat-input"><table style="width: 100%"><tr>
+		<div class="x-hidden" id="default-chat-input"><div id="chat-input-content"><table style="width: 100%"><tr>
 			<td style="width: 100px"><select id="chat-channel-control" style="width: 100%"></select></td>
-			<td><form><input id="chat-input-control" /></form></td><td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td>
-		</tr></table></div>
-		<div class="x-hidden" id="default-chat-roster"><div id="chat-roster-content"><div id="chat-roster-header"></div></div></div>
+			<td><form><input id="chat-input-control" /></form></td>
+			<td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td>
+		</tr></table></div></div>
+		<div class="x-hidden" id="default-chat-roster"><div id="chat-roster-content"></div></div>
+		<div class="x-hidden" id="default-chat-roster-header" style="height: 30px"><div id="chat-roster-header-content"></div></div>
+		<div class="x-hidden" id="default-chat-roster-characters"><div id="chat-roster-characters-content"></div></div>
+		<div class="x-hidden" id="default-chat-roster-buttons" style="height: 30px"><div id="chat-roster-buttons-content"></div></div>
+		<div class="x-hidden" id="default-main"><div id="main-content"></div></div>
 		<div class="x-hidden" id="default-margin-left">m<br />a<br />r<br />g<br />i<br />n<br />-<br />l<br />e<br />f<br />t</div>
 		<div class="x-hidden" id="default-margin-right">m<br />a<br />r<br />g<br />i<br />n<br />-<br />r<br />i<br />g<br />h<br />t</div>
 		<div class="x-hidden" id="default-margin-top">margin-top</div>

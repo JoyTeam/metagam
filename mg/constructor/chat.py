@@ -201,6 +201,7 @@ class Chat(ConstructorModule):
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("chat")
+        vars["js_init"].append("Chat.initialize();")
         # list of channels
         channels = []
         self.call("chat.character-channels", character, channels)

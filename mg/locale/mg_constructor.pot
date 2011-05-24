@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-17 18:39+0400\n"
+"POT-Creation-Date: 2011-05-23 12:59+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,7 +83,7 @@ msgstr ""
 msgid "Couldn't deliver message to the server"
 msgstr ""
 
-#: mg/templates/game/interface.js:144
+#: mg/templates/game/interface.js:177
 msgid "Misconfigured layout scheme"
 msgstr ""
 

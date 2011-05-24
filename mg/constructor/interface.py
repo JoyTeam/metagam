@@ -192,6 +192,9 @@ class Interface(ConstructorModule):
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]
         vars["main_init"] = "/interface"
+        #vars["main_init"] = "/"
+        if self.conf("debug.ext"):
+            vars["debug_ext"] = True
 
     def game_interface(self, character):
         design = self.design("gameinterface")
@@ -244,6 +247,7 @@ class Interface(ConstructorModule):
                 errors["marginbottom"] = self._("Enter width in pixels")
             else:
                 config.set("gameinterface.margin-bottom", marginbottom)
+            config.set("debug.ext", True if req.param("debug_ext") else False)
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -255,6 +259,7 @@ class Interface(ConstructorModule):
             marginright = self.conf("gameinterface.margin-right", 0)
             margintop = self.conf("gameinterface.margin-top", 0)
             marginbottom = self.conf("gameinterface.margin-bottom", 0)
+            debug_ext = self.conf("debug.ext")
         fields = [
             {"id": "scheme0", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
             {"id": "scheme1", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "checked": scheme == 2, "boxLabel": '<img src="/st/constructor/gameinterface/layout1.png" alt="" />', "inline": True},
@@ -265,6 +270,7 @@ class Interface(ConstructorModule):
             {"name": "marginright", "label": self._("Right"), "value": marginright, "inline": True},
             {"name": "margintop", "label": self._("Top"), "value": margintop, "inline": True},
             {"name": "marginbottom", "label": self._("Bottom"), "value": marginbottom, "inline": True},
+            {"name": "debug_ext", "type": "checkbox", "label": self._("Debugging version of ExtJS (for extended JavaScript programming)"), "checked": debug_ext},
         ]
         self.call("admin.form", fields=fields)
 
@@ -283,4 +289,7 @@ class Interface(ConstructorModule):
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def interface_index(self):
-        self.call("web.response_global", "OK", {})
+        response = ""
+        for i in range(0, 100000):
+            response += "OK ";
+        self.call("web.response_global", response, {})

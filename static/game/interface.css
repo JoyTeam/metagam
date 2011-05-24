@@ -1,24 +1,36 @@
+/* LAYOUT */
+#page-content { background: none }
+#main-and-chat, #roster-and-chat, #chat-and-roster { background: none }
+.x-layout-split { background: #808080 }
+#margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
+
+/* MAIN FRAME */
+#main { height: 100%; background-color: #ffffff }
+#main-content { height: 100% }
+
 /* TOPMENU */
-#topmenu { height: 39px; background: #ffc0c0; text-align: center; border-bottom: solid 1px #f0f0f0; padding-top: 10px }
+#topmenu { text-align: center }
 #topmenu-content { padding-top: 10px; font-size: 18px }
 
 /* CHAT */
-#chat-frame { height: 100% }
-#chat-frame-content { height: 100% }
 #chat-frame-layout { background: none }
-#chat-box { height: 100% }
+#chat-buttons-and-frame { background: none }
 #chat-box-content { overflow: auto }
-#chat-input { height: 100% }
 #chat-input-control { width: 100%; }
-#chat-roster { height: 100% }
-#chat-roster-content { overflow: auto }
-
-
-#chat-buttons { height: 100% }
-#chat-buttons-content { padding: 10px 10px 0 10px }
-#margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
 .chat-button { cursor: pointer }
-/* top message */
+.chat-clickable { cursor: pointer }
+.chat-msg-char-missing { text-decoration: line-through }
+
+/* ROSTER */
+#chat-roster { height: 100% }
+#chat-roster-content { height: 100% }
+#chat-roster-characters { height: 100% }
+#chat-roster-layout { background: none }
+#chat-roster-characters-content { height: 100%; overflow: auto }
+.chat-roster-channel { cursor: pointer; color: blue }
+.chat-roster-channel-clickable { text-decoration: underline }
+
+/* TOP MESSAGE */
 .msg .x-box-mc { font-size: 14px }
 #msg-div { position: absolute; left: 35%; top: 10px; width: 300px; z-index: 20000 }
 #msg-div .msg { border-radius: 8px; -moz-border-radius: 8px; border: 2px solid #ccc; margin-top: 2px; padding: 10px 15px; color: #555 }
@@ -26,8 +38,3 @@
 #msg-div .msg-error { background: #ffe0e0; border: 2px solid #c44 }
 #msg-div .msg h3 { margin: 0 0 8px; font-weight: bold; font-size: 15px }
 #msg-div .msg p { margin: 0 }
-/* chat contents */
-.chat-clickable { cursor: pointer }
-.chat-msg-char-missing { text-decoration: line-through }
-.chat-roster-channel { cursor: pointer; color: blue }
-.chat-roster-channel-clickable { text-decoration: underline }
