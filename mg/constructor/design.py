@@ -841,6 +841,7 @@ class DesignMod(Module):
         self.rhook("design.parse", self.parse)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("design.get", self.get)
+        self.rhook("design.prepare_button", self.prepare_button)
 
     def objclasses_list(self, objclasses):
         objclasses["Design"] = (Design, DesignList)
@@ -867,6 +868,63 @@ class DesignMod(Module):
 
     def response(self, design, template, content, vars):
         self.call("web.response", self.parse(design, template, content, vars))
+
+    def prepare_button(self, design, target_filename, template, icon):
+        """
+        Return value:
+           True - target_filename is available
+           False - target_filename is not available and no way to generate
+           None - error generating target_filename
+        """
+        if target_filename in design.get("files"):
+            return True
+        if not template in design.get("files"):
+            return False
+        with self.lock(["Design.%s" % design.uuid]):
+            design.load()
+            if target_filename in design.get("files"):
+                return True
+            # loading template
+            template_uri = "%s/%s" % (design.get("uri"), template)
+            try:
+                template_data = self.download(template_uri)
+            except DownloadError:
+                self.error("Error downloading %s", template_uri)
+                return None
+            try:
+                template_image = Image.open(cStringIO.StringIO(template_data))
+                if template_image.load() is None:
+                    self.error("Error parsing %s", template_image)
+                    return None
+            except IOError:
+                self.error("Image %s format not recognized", template_uri)
+                return None
+            except OverflowError:
+                self.error("Image %s format not recognized", template_uri)
+                return None
+            try:
+                template_image.seek(1)
+                self.error("Image %s is animated", template_uri)
+                return None
+            except EOFError:
+                pass
+            template_image.convert("RGBA")
+            # loading icon
+            icon_path = "%s/data/icons/%s" % (mg.__path__[0], icon)
+            try:
+                icon_image = Image.open(icon_path)
+                if icon_image.load() is None:
+                    self.error("Error parsing %s", icon_path)
+                    return None
+            except IOError:
+                self.error("Image %s format not recognized", icon_path)
+                return None
+            except OverflowError:
+                self.error("Image %s format not recognized", icon_path)
+                return None
+            # mastering image
+            self.debug("Loaded: %s and %s. Mastering image %s", template_uri, icon_path, target_filename)
+            return False
 
 class DesignAdmin(Module):
     def register(self):

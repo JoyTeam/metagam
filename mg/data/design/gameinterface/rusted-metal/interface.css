@@ -16,3 +16,4 @@ body { background-image: url(body-bg-1.jpg); }
 .x-layout-split { background: #283420 }
 #chat-roster-header-content { text-align: center; overflow: auto }
 #chat-roster-buttons-content { text-align: center }
+.chat-button { display: block; margin: 0 auto 0 auto }

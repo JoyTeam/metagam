@@ -220,6 +220,9 @@ class Chat(ConstructorModule):
                     files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["title"]})
                     files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["title"]})
                     files.append({"filename": "chat-%s-new.gif" % ch["id"], "description": self._("Chat channel '%s' has new messages") % ch["title"]})
+            files.append({"filename": "chat-channel-button-on.png", "description": self._("Chat channel button template: state ON")})
+            files.append({"filename": "chat-channel-button-off.png", "description": self._("Chat channel button template: state OFF")})
+            files.append({"filename": "chat-channel-button-new.png", "description": self._("Chat channel button template: state NEW")})
 
     def cmd_loc(self):
         return self.conf("chat.cmd-loc", "loc")
@@ -664,11 +667,29 @@ class Chat(ConstructorModule):
             channel["writable"] = True
             channel["roster"] = True
         if channel.get("chatbox") or channel.get("switchable"):
+            # default channel button image
+            channel["button_image"] = "/st/game/chat/chat-channel"
             design = self.design("gameinterface")
             filename = "chat-%s" % channel_id
-            if design and (("%s-on.gif" % filename) in design.get("files")) and (("%s-off.gif" % filename) in design.get("files")) and (("%s-new.gif" % filename) in design.get("files")):
-                channel["button_image"] = "%s/%s" % (design.get("uri"), filename)
-            else:
-                channel["button_image"] = "/st/game/chat/chat-channel"
+            if design:
+                # design-specific channel button image
+                ok = True
+                res = self.call("design.prepare_button", design, "%s-on.gif" % filename, "chat-channel-button-on.png", "chat-%s.png" % channel_id)
+                if res is None:
+                    raise RuntimeError(self._("Error generating %s-on.gif") % filename)
+                if not res:
+                    ok = False
+                res = self.call("design.prepare_button", design, "%s-off.gif" % filename, "chat-channel-button-off.png", "chat-%s.png" % channel_id)
+                if res is None:
+                    raise RuntimeError(self._("Error generating %s-off.gif") % filename)
+                if not res:
+                    ok = False
+                res = self.call("design.prepare_button", design, "%s-new.gif" % filename, "chat-channel-button-new.png", "chat-%s.png" % channel_id)
+                if res is None:
+                    raise RuntimeError(self._("Error generating %s-new.gif") % filename)
+                if not res:
+                    ok = False
+                if ok:
+                    channel["button_image"] = "%s/%s" % (design.get("uri"), filename)
         self.call("chat.channel-info", channel)
         return channel

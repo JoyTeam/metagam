@@ -57,6 +57,7 @@ Game.element = function(eid, cel, el) {
 	el = el || {};
 	var content = Ext.get(eid + '-content');
 	el.margins = content.dom.style.margin;
+	/* save static content items */
 	var children = new Array();
 	var childNodes = content.dom.childNodes;
 	for (var i = childNodes.length - 1; i >= 0; i--) {
@@ -65,22 +66,34 @@ Game.element = function(eid, cel, el) {
 		children.push(node);
 	}
 	el.html = content.dom.innerHTML;
+	/* 'content' is the innermost container. Remove it and create a new element
+	 * at the same place. */
 	var content_parent = content.parent();
+	var insert_here = content_parent.dom.insertBefore(document.createElement('div'), content.dom);
 	content.remove();
 	el.id = eid + '-content';
 	el.xtype = el.xtype || 'container';
 	el.flex = 1;
 	el.layout = el.layout || 'fit';
-	new Ext.Container({
+	var container_options = {
 		id: eid + '-content-container',
-		renderTo: content_parent,
+		applyTo: insert_here,
 		height: '100%',
 		layout: 'vbox',
 		layoutConfig: {
 			align: 'stretch'
 		},
 		items: [el]
-	});
+	};
+	if (el.vertical) {
+		el.vertical = undefined;
+		container_options.width = '100%';
+		container_options.height = undefined;
+		container_options.layout = 'auto';
+		container_options.layoutConfig = undefined;
+	}
+	var container = new Ext.Container(container_options);
+	/* restore static content items */
 	var dom = Ext.get(eid + '-content').dom;
 	for (var i = children.length - 1; i >= 0; i--) {
 		dom.appendChild(children[i]);
@@ -92,22 +105,24 @@ Game.setup_game_layout = function() {
 	var topmenu = this.element('topmenu', {loadHeight: true});
 	var chat = this.element('chat-frame');
 	[%if layout.chat_channels%]
-	var channel_buttons = this.element('chat-channel-buttons');
 	var chat_frame_items = new Array();
+	var channel_buttons;
 	if (Ext.get('chat-channel-buttons').hasClass('layout-left')) {
-		channel_buttons.region = 'west';
+		channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto'});
 		channel_buttons.height = undefined;
 		chat.region = 'center';
 		chat = {
 			id: 'chat-buttons-and-frame',
 			xtype: 'container',
 			layout: 'border',
+			region: 'center',
 			items: [
 				channel_buttons,
 				chat
 			]
 		};
 	} else {
+		channel_buttons = this.element('chat-channel-buttons', {region: 'north'});
 		channel_buttons.region = 'north';
 		channel_buttons.width = undefined;
 		chat_frame_items.push(channel_buttons);
