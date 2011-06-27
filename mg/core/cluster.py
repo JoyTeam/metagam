@@ -3,6 +3,7 @@ from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from urllib import urlencode
 from uuid import uuid4
+import urlparse
 import json
 import random
 import re
@@ -58,6 +59,7 @@ class Cluster(Module):
         self.rhook("cluster.static_upload_temp", self.static_upload_temp)
         self.rhook("cluster.static_preserve", self.static_preserve)
         self.rhook("cluster.static_upload_zip", self.static_upload_zip)
+        self.rhook("cluster.static_put", self.static_put)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def query_director(self, uri, params={}):
@@ -90,6 +92,30 @@ class Cluster(Module):
             online = {}
         return online
 
+    def static_put(self, uri, content_type, data):
+        if uri is None:
+            raise StaticUploadError(self._("Invalid store URI"))
+        if type(uri) == unicode:
+            uri = uri.encode("utf-8")
+        uri_obj = urlparse.urlparse(uri, "http", False)
+        if uri_obj.hostname is None:
+            raise StaticUploadError(self._("Empty hostname"))
+        cnn = HTTPConnection()
+        cnn.connect((uri_obj.hostname, 80))
+        try:
+            request = HTTPRequest()
+            request.method = "PUT"
+            request.path = uri_obj.path
+            request.host = uri_obj.hostname
+            request.body = data
+            request.add_header("Content-type", content_type)
+            request.add_header("Content-length", len(request.body))
+            response = cnn.perform(request)
+            if response.status_code != 201:
+                raise StaticUploadError(self._("Error storing object %s: %s") % (uri, response.status))
+        finally:
+            cnn.close()
+
     def upload(self, subdir, ext, content_type, data):
         host = str(random.choice(self.app().inst.config["storage"]))
         id = uuid4().hex
@@ -107,7 +133,7 @@ class Cluster(Module):
             request.add_header("Content-length", len(request.body))
             response = cnn.perform(request)
             if response.status_code != 201:
-                raise StaticUploadError(self._("Error storing object: %s") % response.status)
+                raise StaticUploadError(self._("Error storing object %s: %s") % (uri, response.status))
         finally:
             cnn.close()
         return (uri, url, host, id)

@@ -1,13 +1,6 @@
 var Chat = {
 	channels: new Array(),
-	channels_by_id: new Array(),
-	box_content: new Ext.BoxComponent({
-		applyTo: 'chat-box-content',
-		autoScroll: true,
-		style: {
-			height: '100%'
-		}
-	})
+	channels_by_id: new Array()
 };
 
 Chat.initialize = function() {
@@ -21,6 +14,13 @@ Chat.initialize = function() {
 		if (e.getKey() == 13) {
 			e.preventDefault();
 			Chat.submit();
+		}
+	});
+	this.box_content = new Ext.BoxComponent({
+		applyTo: 'chat-box-content',
+		autoScroll: true,
+		style: {
+			height: '100%'
 		}
 	});
 };
@@ -200,7 +200,7 @@ Chat.channel_button_create = function(ch) {
 	ch.btn = new Ext.BoxComponent({
 		autoEl: {
 			tag: 'img',
-			src: ch.button_image + (state ? '-on.gif' : '-off.gif'),
+			src: ch.button_image + (state ? '-on.png' : '-off.png'),
 			onclick: onclick,
 			cls: 'chat-button',
 			title: htmlescape(ch.title)
@@ -227,7 +227,7 @@ Chat.tab_open = function(id, change_write_selector) {
 				if (old_ch) {
 					old_ch.box_content.hide();
 					if (this.mode == 1 && old_ch.btn) {
-						old_ch.btn.el.dom.src = ch.button_image + '-off.gif';
+						old_ch.btn.el.dom.src = old_ch.button_image + '-off.png';
 					}
 				}
 			}
@@ -235,7 +235,7 @@ Chat.tab_open = function(id, change_write_selector) {
 			ch.box_content.show();
 			this.box_content.el.scroll('down', 1000000, false);
 			if (this.mode == 1 && ch.btn) {
-				ch.btn.el.dom.src = ch.button_image + '-on.gif';
+				ch.btn.el.dom.src = ch.button_image + '-on.png';
 			}
 		}
 		if (ch && change_write_selector && this.channel_control_element) {
@@ -266,7 +266,7 @@ Chat.msg = function(pkt) {
 		if (ch.id == this.active_channel) {
 			this.box_content.el.scroll('down', 1000000, true);
 		} else if (ch.btn) {
-			ch.btn.el.dom.src = ch.button_image + '-new.gif';
+			ch.btn.el.dom.src = ch.button_image + '-new.png';
 		}
 	} else if (this.mode == 2) {
 		div.className = 'cmc-' + ch.id;
@@ -275,7 +275,7 @@ Chat.msg = function(pkt) {
 		if (ch.visible) {
 			this.box_content.el.scroll('down', 1000000, true);
 		} else if (ch.btn) {
-			ch.btn.el.dom.src = ch.button_image + '-new.gif';
+			ch.btn.el.dom.src = ch.button_image + '-new.png';
 		}
 	} else if (this.mode == 0) {
 		this.box_content.el.dom.appendChild(div);
@@ -302,7 +302,7 @@ Chat.channel_show = function(id) {
 	var ch = this.channels_by_id[id];
 	if (ch && !ch.visible) {
 		if (this.mode == 2 && ch.btn) {
-			ch.btn.el.dom.src = ch.button_image + '-on.gif';
+			ch.btn.el.dom.src = ch.button_image + '-on.png';
 		}
 		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'block'; })
 		ch.visible = true;
@@ -314,7 +314,7 @@ Chat.channel_hide = function(id) {
 	var ch = this.channels_by_id[id];
 	if (ch && ch.visible) {
 		if (this.mode == 2 && ch.btn) {
-			ch.btn.el.dom.src = ch.button_image + '-off.gif';
+			ch.btn.el.dom.src = ch.button_image + '-off.png';
 		}
 		Ext.each(Ext.query('.cmc-' + ch.id), function(el) { el.style.display = 'none'; })
 		ch.visible = false;

@@ -104,8 +104,8 @@ Game.element = function(eid, cel, el) {
 Game.setup_game_layout = function() {
 	var topmenu = this.element('topmenu', {loadHeight: true});
 	var chat = this.element('chat-frame');
-	[%if layout.chat_channels%]
 	var chat_frame_items = new Array();
+	[%if layout.chat_channels%]
 	var channel_buttons;
 	if (Ext.get('chat-channel-buttons').hasClass('layout-left')) {
 		channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto'});

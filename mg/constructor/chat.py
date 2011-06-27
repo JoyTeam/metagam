@@ -217,9 +217,9 @@ class Chat(ConstructorModule):
         if len(channels) >= 2:
             for ch in channels:
                 if ch.get("chatbox") or ch.get("switchable"):
-                    files.append({"filename": "chat-%s-off.gif" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["title"]})
-                    files.append({"filename": "chat-%s-on.gif" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["title"]})
-                    files.append({"filename": "chat-%s-new.gif" % ch["id"], "description": self._("Chat channel '%s' has new messages") % ch["title"]})
+                    files.append({"filename": "chat-%s-off.png" % ch["id"], "description": self._("Chat channel '%s' disabled") % ch["title"]})
+                    files.append({"filename": "chat-%s-on.png" % ch["id"], "description": self._("Chat channel '%s' enabled") % ch["title"]})
+                    files.append({"filename": "chat-%s-new.png" % ch["id"], "description": self._("Chat channel '%s' has new messages") % ch["title"]})
             files.append({"filename": "chat-channel-button-on.png", "description": self._("Chat channel button template: state ON")})
             files.append({"filename": "chat-channel-button-off.png", "description": self._("Chat channel button template: state OFF")})
             files.append({"filename": "chat-channel-button-new.png", "description": self._("Chat channel button template: state NEW")})
@@ -674,19 +674,19 @@ class Chat(ConstructorModule):
             if design:
                 # design-specific channel button image
                 ok = True
-                res = self.call("design.prepare_button", design, "%s-on.gif" % filename, "chat-channel-button-on.png", "chat-%s.png" % channel_id)
+                res = self.call("design.prepare_button", design, "%s-on.png" % filename, "chat-channel-button-on.png", "chat-%s.png" % channel_id)
                 if res is None:
-                    raise RuntimeError(self._("Error generating %s-on.gif") % filename)
+                    raise RuntimeError(self._("Error generating %s-on.png") % filename)
                 if not res:
                     ok = False
-                res = self.call("design.prepare_button", design, "%s-off.gif" % filename, "chat-channel-button-off.png", "chat-%s.png" % channel_id)
+                res = self.call("design.prepare_button", design, "%s-off.png" % filename, "chat-channel-button-off.png", "chat-%s.png" % channel_id)
                 if res is None:
-                    raise RuntimeError(self._("Error generating %s-off.gif") % filename)
+                    raise RuntimeError(self._("Error generating %s-off.png") % filename)
                 if not res:
                     ok = False
-                res = self.call("design.prepare_button", design, "%s-new.gif" % filename, "chat-channel-button-new.png", "chat-%s.png" % channel_id)
+                res = self.call("design.prepare_button", design, "%s-new.png" % filename, "chat-channel-button-new.png", "chat-%s.png" % channel_id)
                 if res is None:
-                    raise RuntimeError(self._("Error generating %s-new.gif") % filename)
+                    raise RuntimeError(self._("Error generating %s-new.png") % filename)
                 if not res:
                     ok = False
                 if ok:

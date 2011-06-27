@@ -923,8 +923,26 @@ class DesignMod(Module):
                 self.error("Image %s format not recognized", icon_path)
                 return None
             # mastering image
-            self.debug("Loaded: %s and %s. Mastering image %s", template_uri, icon_path, target_filename)
-            return False
+#           self.debug("Loaded: %s and %s. Mastering image %s/%s", template_uri, icon_path, design.get("uri"), target_filename)
+            template_w, template_h = template_image.size
+            icon_w, icon_h = icon_image.size
+            template_image.paste(icon_image, ((template_w - icon_w) / 2, (template_h - icon_h) / 2), icon_image)
+            # uploading image
+            stream = cStringIO.StringIO()
+            template_image.save(stream, "PNG")
+            try:
+                self.call("cluster.static_put", "%s/%s" % (design.get("uri"), target_filename), "image/png", stream.getvalue())
+            except IOError as e:
+                self.error("Couldn't store %s/%s: %s", design.get("uri"), target_filename, e)
+                return None
+            except StaticUploadError as e:
+                self.error("Couldn't store %s/%s: %s", design.get("uri"), target_filename, e)
+                return None
+            # storing updated design
+            design.touch()
+            design.get("files")[target_filename] = {"content-type": "image/png"}
+            design.store()
+            return True
 
 class DesignAdmin(Module):
     def register(self):
