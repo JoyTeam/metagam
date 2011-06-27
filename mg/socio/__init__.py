@@ -1128,6 +1128,7 @@ class Forum(Module):
                 else:
                     topic["subscribed"] = lr.get("subscribed")
                     topic["unread"] = topic["updated"] > lr.get("last_post")
+        self.call("forum.topics_htmlencode", topics)
 
     def posts_htmlencode(self, posts):
         signatures = {}
@@ -1144,6 +1145,7 @@ class Forum(Module):
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % post.get("author")})
             self.call("socio.author_menu", post.get("author"), post.get("author_html"), menu)
             post["author_menu"] = menu
+        self.call("forum.posts_htmlencode", posts)
 
     def ext_newtopic(self):
         req = self.req()
@@ -1849,11 +1851,11 @@ class Forum(Module):
                         if width > 100:
                             left = (width - 100) / 2
                             top = 0
-                            image_obj = image_obj.crop((left, top, left + 99, top + 99))
+                            image_obj = image_obj.crop((left, top, left + 100, top + 100))
                         elif height > 100:
                             left = 0
                             top = (height - 100) / 2
-                            image_obj = image_obj.crop((left, top, left + 99, top + 99))
+                            image_obj = image_obj.crop((left, top, left + 100, top + 100))
             if not form.errors:
                 if image_obj:
                     # storing
