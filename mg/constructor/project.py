@@ -165,7 +165,7 @@ class ConstructorProjectAdmin(Module):
         req = self.req()
         project = self.app().project
         if not project.get("inactive") and not project.get("published") and not project.get("moderation") and (group != "admin-game" or hook != "dashboard") and req.has_access("project.admin"):
-            advice.append({"title": self._("Launch your game"), "content": self._('Your game is not published yet. To publish it perform the steps listed on the <hook:admin.link href="game/dashboard" title="Game dashboard" /> page'), "order": 1000})
+            advice.append({"title": self._("Launching your game"), "content": self._('Your game is not published yet. To publish it perform the steps listed on the <hook:admin.link href="game/dashboard" title="Game dashboard" /> page'), "order": 1000})
 
     def game_domain(self):
         if self.app().project.get("domain"):

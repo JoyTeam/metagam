@@ -296,8 +296,8 @@ class Interface(ConstructorModule):
             {"name": "marginright", "label": self._("Right"), "value": marginright, "inline": True},
             {"name": "margintop", "label": self._("Top"), "value": margintop, "inline": True},
             {"name": "marginbottom", "label": self._("Bottom"), "value": marginbottom, "inline": True},
-            {"name": "debug_ext", "type": "checkbox", "label": self._("Debugging version of ExtJS (for extended JavaScript programming)"), "checked": debug_ext},
-            {"name": "panel_top", "type": "checkbox", "label": self._("Enable panel on the top of the screen ('top')"), "checked": panel_top},
+            {"name": "debug_ext", "type": "checkbox", "label": self._("Debugging version of ExtJS (for advanced JavaScript programming)"), "checked": debug_ext},
+            {"name": "panel_top", "type": "checkbox", "label": self._("Enable panel on the top of the screen (code 'top')"), "checked": panel_top},
             {"name": "panel_main_left", "type": "checkbox", "label": self._("Enable panel to the left of the main frame (code 'main-left')"), "checked": panel_main_left},
             {"name": "panel_main_right", "type": "checkbox", "label": self._("Enable panel to the right of the main frame (code 'main-right')"), "checked": panel_main_right},
         ]
