@@ -163,6 +163,7 @@ class Auth(ConstructorModule):
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
         self.rhook("stream.character", self.stream_character)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -1023,3 +1024,20 @@ class Auth(ConstructorModule):
             player = self.player(user.uuid)
             character = None
 
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "auth-logout",
+            "onclick": "Game.logout(); return false",
+            "icon": "auth-logout.png",
+            "title": self._("Logout"),
+            "block": "top-menu",
+            "order": 100,
+        })
+        buttons.append({
+            "id": "game-reload",
+            "onclick": "Game.reload(); return false",
+            "icon": "game-reload.png",
+            "title": self._("Reload"),
+            "block": "top-menu",
+            "order": 95,
+        })

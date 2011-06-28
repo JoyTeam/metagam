@@ -102,7 +102,15 @@ Game.element = function(eid, cel, el) {
 };
 
 Game.setup_game_layout = function() {
-	var topmenu = this.element('topmenu', {loadHeight: true});
+	var topmenu;
+	[%if layout.panel_top%]
+     	topmenu = this.element('panel-top', {loadHeight: true});
+	[%else%]
+	topmenu = {
+		id: 'panel-top',
+		xtype: 'box'
+	};
+	[%end%]
 	var chat = this.element('chat-frame');
 	var chat_frame_items = new Array();
 	[%if layout.chat_channels%]
@@ -176,6 +184,19 @@ Game.setup_game_layout = function() {
 			}
 		}]
 	});
+	[%if layout.panel_main_left or layout.panel_main_right%]
+		main.region = 'center';
+		main = {
+			id: 'main-panel-group',
+			xtype: 'container',
+			layout: 'border',
+			items: [
+				[%if layout.panel_main_left%]this.element('main-panel-left', {region: 'west', loadWidth: true}),[%end%]
+				main
+				[%if layout.panel_main_right%], this.element('main-panel-right', {region: 'east', loadWidth: true})[%end%]
+			]
+		};
+	[%end%]
 	[%if layout.scheme == 1%]
 	topmenu.region = 'north';
 	chat.region = 'center';

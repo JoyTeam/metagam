@@ -60,6 +60,7 @@ class Cluster(Module):
         self.rhook("cluster.static_preserve", self.static_preserve)
         self.rhook("cluster.static_upload_zip", self.static_upload_zip)
         self.rhook("cluster.static_put", self.static_put)
+        self.rhook("cluster.static_delete", self.static_delete)
         self.rhook("objclasses.list", self.objclasses_list)
 
     def query_director(self, uri, params={}):
@@ -113,6 +114,25 @@ class Cluster(Module):
             response = cnn.perform(request)
             if response.status_code != 201:
                 raise StaticUploadError(self._("Error storing object %s: %s") % (uri, response.status))
+        finally:
+            cnn.close()
+
+    def static_delete(self, uri):
+        if uri is None:
+            raise StaticUploadError(self._("Invalid delete URI"))
+        if type(uri) == unicode:
+            uri = uri.encode("utf-8")
+        uri_obj = urlparse.urlparse(uri, "http", False)
+        if uri_obj.hostname is None:
+            raise StaticUploadError(self._("Empty hostname"))
+        cnn = HTTPConnection()
+        cnn.connect((uri_obj.hostname, 80))
+        try:
+            request = HTTPRequest()
+            request.method = "DELETE"
+            request.path = uri_obj.path
+            request.host = uri_obj.hostname
+            cnn.perform(request)
         finally:
             cnn.close()
 

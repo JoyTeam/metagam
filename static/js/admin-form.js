@@ -75,7 +75,8 @@ Form = Ext.extend(AdminResponse, {
 					msgTarget: 'side',
 					listeners: {},
 					boxLabel: it.boxLabel,
-					width: it.width
+					width: it.width,
+					disabled: it.disabled
 				};
 				if (it.name)
 					elt.id = 'form-field-' + (it.id || it.name);

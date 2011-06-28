@@ -1,0 +1,8 @@
+<p class="admin-submenu"><hook:admin.link href="gameinterface/blocks/[%panel%]/new" title="[%NewBlock%]" /></p>
+
+<table class="list">
+	<tr class="header"><td class="header">[%Title%]</td><td>[%Type%]</td><td>[%Width%]</td><td>[%Order%]</td><td>[%Editing%]</td><td>[%Deletion%]</td></tr>
+	[%foreach blk in blocks%]
+	<tr><td>[%blk.title%]</td><td>[%blk.type%]</td><td>[%blk.width%]</td><td>[%blk.order%]</td><td><hook:admin.link href="gameinterface/blocks/[%panel%]/[%blk.id%]" title="[%edit%]" /></td><td><hook:admin.link href="gameinterface/blocks/del/[%panel%]/[%blk.id%]" title="[%delete%]" confirm="[%ConfirmDelete%]" /></td></tr>
+	[%end%]
+</table>

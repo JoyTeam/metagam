@@ -1,0 +1,13 @@
+<p class="admin-submenu"><hook:admin.link href="gameinterface/buttons/new" title="[%NewButton%]" /></p>
+
+[%foreach blk in blocks%]
+<p class="text"><h1>[%blk.title%]</h1></p>
+[%if blk.buttons%]
+<table class="list">
+	<tr class="header"><td class="header">[%Button%]</td><td>[%Action%]</td>[%unless blk.hide_order%]<td>[%Order%]</td>[%end%]<td>[%Editing%]</td>[%unless blk.hide_deletion%]<td>[%Deletion%]</td>[%end%]</tr>
+	[%foreach btn in blk.buttons%]
+	<tr><td>[%btn.image%]</td><td>[%btn.action%]</td>[%unless blk.hide_order%]<td>[%btn.order%]</td>[%end%]<td><hook:admin.link href="gameinterface/buttons/[%btn.id%]" title="[%edit%]" /></td>[%unless blk.hide_deletion%]<td>[%if btn.may_delete%]<hook:admin.link href="gameinterface/buttons/del/[%btn.id%]" title="[%delete%]" confirm="[%ConfirmDelete%]" />[%else%][%NA%][%end%]</td>[%end%]</tr>
+	[%end%]
+</table>
+[%end%]
+[%end%]

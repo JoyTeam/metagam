@@ -1,0 +1,6 @@
+<table class="list">
+	<tr class="header"><td class="header">[%Title%]</td><td>[%Code%]</td><td>[%Editing%]</td></tr>
+	[%foreach panel in panels%]
+	<tr><td>[%panel.title%]</td><td>[%panel.id%]</td><td><hook:admin.link href="gameinterface/blocks/[%panel.id%]" title="[%edit%]" /></td></tr>
+	[%end%]
+</table>

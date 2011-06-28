@@ -1,6 +1,6 @@
 /* LAYOUT */
 #page-content { background: none }
-#main-and-chat, #roster-and-chat, #chat-and-roster { background: none }
+#main-and-chat, #roster-and-chat, #chat-and-roster, #main-panel-group { background: none }
 .x-layout-split { background: #808080 }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
 
@@ -8,9 +8,9 @@
 #main { height: 100%; background-color: #ffffff }
 #main-content { height: 100% }
 
-/* TOPMENU */
-#topmenu { text-align: center }
-#topmenu-content { padding-top: 10px; font-size: 18px }
+/* PANELS */
+#panel-top { text-align: center }
+#panel-top-content { padding-top: 10px; font-size: 18px }
 
 /* CHAT */
 #chat-frame-layout { background: none }
