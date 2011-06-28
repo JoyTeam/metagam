@@ -363,6 +363,22 @@ class Interface(ConstructorModule):
                 "title": self._("Top menu"),
                 "class": "horizontal",
             })
+        elif panel_id == "main-left":
+            blocks.append({
+                "id": "left-menu",
+                "type": "buttons",
+                "order": 10,
+                "title": self._("Left menu"),
+                "class": "vertical",
+            })
+        elif panel_id == "main-right":
+            blocks.append({
+                "id": "right-menu",
+                "type": "buttons",
+                "order": 10,
+                "title": self._("Right menu"),
+                "class": "vertical",
+            })
         config = self.app().config_updater()
         config.set("gameinterface.blocks-%s" % panel_id, blocks)
         config.store()
