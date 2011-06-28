@@ -1027,7 +1027,7 @@ class Auth(ConstructorModule):
     def gameinterface_buttons(self, buttons):
         buttons.append({
             "id": "auth-logout",
-            "onclick": "Game.logout(); return false",
+            "onclick": "Game.logout()",
             "icon": "auth-logout.png",
             "title": self._("Logout"),
             "block": "top-menu",
@@ -1035,7 +1035,7 @@ class Auth(ConstructorModule):
         })
         buttons.append({
             "id": "game-reload",
-            "onclick": "Game.reload(); return false",
+            "onclick": "Game.reload()",
             "icon": "game-reload.png",
             "title": self._("Reload"),
             "block": "top-menu",

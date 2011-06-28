@@ -9,8 +9,9 @@
 #main-content { height: 100% }
 
 /* PANELS */
-#panel-top { text-align: center }
-#panel-top-content { padding-top: 10px; font-size: 18px }
+.block-vertical { text-align: center }
+.block-vertical img { display: block; margin: 0 auto 0 auto }
+.btn-clickable { cursor: pointer }
 
 /* CHAT */
 #chat-frame-layout { background: none }

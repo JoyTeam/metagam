@@ -39,4 +39,12 @@ Game.error = function(title, str) {
 	this.msg(title, str, 'msg-error');
 };
 
+Game.main_open = function(uri) {
+	try {
+		Ext.getCmp('main-iframe').getFrameDocument().location.href = uri;
+	} catch (e) {
+		this.error(e);
+	}
+};
+
 loaded('game-interface');

@@ -2,7 +2,33 @@ var admin_root = '';
 var Game = {
 	app: '[%app%]',
 	domain: '[%domain%]',
-	character: '[%character%]'
+	character: '[%character%]',
+	panels: {
+		[%+ foreach panel in panels%]'[%panel.id%]': {
+			blocks: [
+				[%foreach blk in panel.blocks%]{
+					id: '[%blk.id%]',
+					tp: '[%blk.tp%]',
+					cls: '[%blk.cls%]'
+					[%if blk.width%], width: [%blk.width%][%end%]
+					[%if blk.flex%], flex: [%blk.flex%][%end%]
+					[%if blk.buttons%], buttons: [
+						[%foreach btn in blk.buttons%]
+						{
+							image: '[%btn.image%]',
+							title: '[%btn.title%]'
+							[%if btn.href%], href: '[%btn.href%]'[%end%]
+							[%if btn.target%], target: '[%btn.target%]'[%end%]
+							[%if btn.onclick%], onclick: '[%btn.onclick%]'[%end%]
+						}[%unless btn.lst%],[%end%]
+					    	[%end%]
+					][%end%]
+				}[%unless blk.lst%], [%end%]
+			    	[%end%]
+			]
+		}[%unless panel.lst%], [%+ end%]
+		[%end +%]
+	}
 };
 
 Game.fixupContentEl = function(el) {
@@ -75,6 +101,7 @@ Game.element = function(eid, cel, el) {
 	el.xtype = el.xtype || 'container';
 	el.flex = 1;
 	el.layout = el.layout || 'fit';
+	insert_here.id = eid + '-content-container';
 	var container_options = {
 		id: eid + '-content-container',
 		applyTo: insert_here,
@@ -88,7 +115,7 @@ Game.element = function(eid, cel, el) {
 	if (el.vertical) {
 		el.vertical = undefined;
 		container_options.width = '100%';
-		container_options.height = undefined;
+//		container_options.height = undefined;
 		container_options.layout = 'auto';
 		container_options.layoutConfig = undefined;
 	}
@@ -101,12 +128,90 @@ Game.element = function(eid, cel, el) {
 	return cel;
 };
 
+Game.panel = function(id, options) {
+	var cel = {};
+	var el = {
+		layoutConfig: {
+			align: 'stretch'
+		}
+	};
+	options = options || {};
+	if (options.vertical) {
+		cel.loadWidth = true;
+		el.vertical = true;
+		el.layout = 'vbox';
+		el.height = '100%';
+	} else {
+		cel.loadHeight = true;
+		el.layout = 'hbox';
+	}
+	if (options.region) {
+		cel.region = options.region;
+	}
+	el.items = [];
+	var panel_info = this.panels[id];
+	if (panel_info) {
+		for (var i = 0; i < panel_info.blocks.length; i++) {
+			var block = panel_info.blocks[i];
+			var block_el = {
+				xtype: 'box',
+				width: block.width,
+				flex: block.flex
+			};
+			if (block.cls) {
+				block_el.cls = 'block-' + block.cls;
+			}
+			if (block.tp == 'empty') {
+			} else if (block.tp == 'buttons') {
+				block_el.html = '';
+				[%if design_root%]
+				block_el.html += '<img src="[%design_root%]/' + block.cls + '-' + (options.vertical ? 'top' : 'left') + '.png" alt="" />';
+				[%end%]
+				if (block.buttons) {
+					var att = '';
+					var hints = Ext.getDom('block-hints-' + block.cls);
+					hints = hints ? hints.innerHTML.split(',') : undefined;
+					if (options.vertical) {
+						if (hints) {
+							block_el.height = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
+						} else {
+							block_el.height = 32 * block.buttons.length + 32;
+						}
+					} else {
+						if (hints) {
+							block_el.width = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
+						} else {
+							block_el.width = 32 * block.buttons.length + 32;
+						}
+					}
+					for (var j = 0; j < block.buttons.length; j++) {
+						var btn = block.buttons[j];
+						var img = '<img src="' + btn.image + '" alt="" title="' + btn.title + '"' + att + (btn.onclick ? ' onclick="' + btn.onclick + '" class="btn-clickable"' : '') + ' />';
+						if (btn.href && !btn.onclick) {
+							img = '<a href="' + btn.href + '" target="' + btn.target + '">' + img + '</a>';
+						}
+						block_el.html += img;
+					}
+				}
+				[%if design_root%]
+				block_el.html += '<img src="[%design_root%]/' + block.cls + '-' + (options.vertical ? 'bottom' : 'right') + '.png" alt="" />';
+				[%end%]
+			} else {
+				block_el.html = block.tp;
+			}
+			el.items.push(block_el);
+		}
+	}
+	var panel = this.element('panel-' + id, cel, el);
+	return panel;
+};
+
 Game.setup_game_layout = function() {
-	var topmenu;
+	var panel_top;
 	[%if layout.panel_top%]
-     	topmenu = this.element('panel-top', {loadHeight: true});
+     	panel_top = this.panel('top');
 	[%else%]
-	topmenu = {
+	panel_top = {
 		id: 'panel-top',
 		xtype: 'box'
 	};
@@ -191,14 +296,14 @@ Game.setup_game_layout = function() {
 			xtype: 'container',
 			layout: 'border',
 			items: [
-				[%if layout.panel_main_left%]this.element('main-panel-left', {region: 'west', loadWidth: true}),[%end%]
+				[%if layout.panel_main_left%]this.panel('main-left', {region: 'west', vertical: true}),[%end%]
 				main
-				[%if layout.panel_main_right%], this.element('main-panel-right', {region: 'east', loadWidth: true})[%end%]
+				[%if layout.panel_main_right%], this.panel('main-right', {region: 'east', vertical: true})[%end%]
 			]
 		};
 	[%end%]
 	[%if layout.scheme == 1%]
-	topmenu.region = 'north';
+	panel_top.region = 'north';
 	chat.region = 'center';
 	chat.minWidth = 200;
 	roster.region = 'east';
@@ -211,7 +316,7 @@ Game.setup_game_layout = function() {
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			topmenu,
+			panel_top,
 			{
 				id: 'chat-and-roster',
 				xtype: 'container',
@@ -226,7 +331,7 @@ Game.setup_game_layout = function() {
 		]
 	});
 	[%elsif layout.scheme == 2%]
-	topmenu.region = 'north';
+	panel_top.region = 'north';
 	roster.region = 'east';
 	roster.width = 300;
 	roster.minSize = 300;
@@ -241,7 +346,7 @@ Game.setup_game_layout = function() {
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			topmenu,
+			panel_top,
 			roster,
 			{
 				id: 'main-and-chat',
@@ -254,7 +359,7 @@ Game.setup_game_layout = function() {
 		]
 	});
 	[%elsif layout.scheme == 3%]
-	topmenu.region = 'north';
+	panel_top.region = 'north';
 	main.region = 'center';
 	main.minWidth = 300;
 	roster.region = 'center';
@@ -267,7 +372,7 @@ Game.setup_game_layout = function() {
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			topmenu,
+			panel_top,
 			main,
 			{
 				id: 'roster-and-chat',

@@ -100,7 +100,7 @@ Form = Ext.extend(AdminResponse, {
 				}
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
-				if (elt.fieldLabel == '&nbsp;')
+				if (elt.fieldLabel == '&nbsp;' || it.remove_label_separator)
 					elt.labelSeparator = '';
 				if (elt.xtype != 'textarea' && elt.xtype != 'combo') {
 					elt.listeners.specialkey = function(field, e) {

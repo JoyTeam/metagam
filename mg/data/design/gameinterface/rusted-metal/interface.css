@@ -11,6 +11,8 @@ body { background-image: url(body-bg-1.jpg); }
 .box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
 .box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
 
+.block-horizontal { padding-top: 9px }
+
 /* CHAT */
 #chat-frame, #chat-roster { background-color: #9e9e86 }
 .x-layout-split { background: #283420 }

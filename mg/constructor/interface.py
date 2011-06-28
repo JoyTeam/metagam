@@ -84,7 +84,7 @@ class Interface(ConstructorModule):
         self.rhook("ext-admin-gameinterface.blocks", self.gameinterface_blocks, priv="design")
         self.rhook("headmenu-admin-gameinterface.buttons", self.headmenu_buttons)
         self.rhook("ext-admin-gameinterface.buttons", self.gameinterface_buttons, priv="design")
-        self.rhook("ext-interface.index", self.interface_index, priv="logged")
+        self.rhook("ext-interface.handler", self.interface_index, priv="logged")
         self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
@@ -208,10 +208,67 @@ class Interface(ConstructorModule):
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]
-        vars["main_init"] = "/interface"
-        #vars["main_init"] = "/"
+        vars["main_init"] = "/interface/sample"
         if self.conf("debug.ext"):
             vars["debug_ext"] = True
+        # Rendering button panels
+        layout = self.buttons_layout()
+        panels = []
+        for panel in self.panels():
+            rblocks = []
+            for block in panel["blocks"]:
+                rblock = {
+                    "id": block["id"],
+                    "tp": block["type"],
+                    "width": block.get("width"),
+                    "flex": block.get("flex"),
+                    "cls": block.get("class"),
+                }
+                if block["type"] == "buttons":
+                    buttons = []
+                    btn_list = layout.get(block["id"])
+                    if btn_list:
+                        for btn in btn_list:
+                            image = btn.get("image")
+                            if image.startswith("http://"):
+                                pass
+                            elif image in design.get("files"):
+                                image = "%s/%s" % (design.get("uri"), image)
+                            elif block.get("class") and btn.get("icon"):
+                                if self.call("design.prepare_button", design, image, "%s-bg.png" % block["class"], btn["icon"]):
+                                    image = "%s/%s" % (design.get("uri"), image)
+                                else:
+                                    image = "/st-mg/game/invalid.png"
+                            else:
+                                image = "/st-mg/game/invalid.png"
+                            rbtn = {
+                                "image": image,
+                                "title": jsencode(htmlescape(btn.get("title"))),
+                            }
+                            if btn.get("onclick"):
+                                rbtn["onclick"] = jsencode(htmlescape(btn.get("onclick")))
+                            elif btn.get("href"):
+                                if btn["target"] == "main":
+                                    rbtn["onclick"] = jsencode(htmlescape("Game.main_open('%s')" % jsencode(btn.get("href"))))
+                                else:
+                                    rbtn["href"] = jsencode(htmlescape(btn.get("href")))
+                                    rbtn["target"] = jsencode(htmlescape(btn.get("target")))
+                            print rbtn
+                            buttons.append(rbtn)
+                    if buttons:
+                        buttons[-1]["lst"] = True
+                        rblock["buttons"] = buttons
+                rblocks.append(rblock)
+            if rblocks:
+                rblocks[-1]["lst"] = True
+            rpanel = {
+                "id": panel["id"],
+                "blocks": rblocks
+            }
+            panels.append(rpanel)
+        if panels:
+            panels[-1]["lst"] = True
+            vars["panels"] = panels
 
     def game_interface(self, character):
         design = self.design("gameinterface")
@@ -318,8 +375,9 @@ class Interface(ConstructorModule):
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def interface_index(self):
-        response = ""
-        for i in range(0, 100000):
+        req = self.req()
+        response = "<h1>%s</h1>" % htmlescape(req.uri())
+        for i in range(0, 10000):
             response += "OK ";
         self.call("web.response_global", response, {})
 
@@ -355,6 +413,12 @@ class Interface(ConstructorModule):
         if blocks is not None:
             return blocks
         blocks = []
+        blocks.append({
+            "id": uuid4().hex,
+            "type": "empty",
+            "order": 0,
+            "flex": 1,
+        })
         if panel_id == "top":
             blocks.append({
                 "id": "top-menu",
@@ -379,6 +443,12 @@ class Interface(ConstructorModule):
                 "title": self._("Right menu"),
                 "class": "vertical",
             })
+        blocks.append({
+            "id": uuid4().hex,
+            "type": "empty",
+            "order": 100,
+            "flex": 1,
+        })
         config = self.app().config_updater()
         config.set("gameinterface.blocks-%s" % panel_id, blocks)
         config.store()
@@ -488,7 +558,7 @@ class Interface(ConstructorModule):
                     if panel["id"] == panel_id:
                         for blk in panel["blocks"]:
                             if blk["id"] == block_id:
-                                return [blk["title"], "gameinterface/blocks/%s" % panel_id]
+                                return [blk.get("title") or blk.get("id"), "gameinterface/blocks/%s" % panel_id]
                 return [self._("Block %s") % block_id, "gameinterface/blocks/%s" % panel_id]
         for panel in self.panels():
             if panel["id"] == args:
@@ -534,7 +604,8 @@ class Interface(ConstructorModule):
             block["title"] = req.param("title")
             cls = req.param("class")
             if not cls:
-                errors["class"] = self._("Specify CSS class")
+                if block["type"] == "buttons":
+                    errors["class"] = self._("Specify CSS class")
             elif not re_valid_class.match(cls):
                 errors["class"] = self._("Class name must begin with a symbol a-z, continue with symbols a-z, 0-9 and '-' and end with a symbol a-z or a digit")
             else:
@@ -575,7 +646,7 @@ class Interface(ConstructorModule):
                 cls = ""
         fields = [
             {"name": "title", "label": self._("Block title (visible to administrators only)"), "value": title},
-            {"name": "class", "label": self._("CSS class name"), "value": cls},
+            {"name": "class", "label": self._("CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"), "value": cls, "remove_label_separator": True},
             {"type": "combo", "name": "type", "label": self._("Block type"), "value": tp, "values": [("buttons", self._("Buttons")), ("empty", self._("Empty space")), ("html", self._("Raw HTML"))], "disabled": True if block else False},
             {"type": "combo", "name": "width_type", "label": self._("Block height") if panel.get("vert") else self._("Block width"), "value": width_type, "values": [("static", self._("width///Static")), ("flex", self._("width///Flexible"))], "condition": "[type]!='buttons'"},
             {"name": "width_static", "label": self._("Height in pixels") if panel.get("vert") else self._("Width in pixels"), "value": width_static, "condition": "[type]!='buttons' && [width_type]=='static'", "inline": True},
@@ -630,7 +701,6 @@ class Interface(ConstructorModule):
             "Order": self._("Order"),
             "Editing": self._("Editing"),
             "Deletion": self._("Deletion"),
-            "edit": self._("edit"),
             "delete": self._("delete"),
             "ConfirmDelete": self._("Are you sure want to delete this button?"),
             "NA": self._("n/a"),
@@ -658,6 +728,7 @@ class Interface(ConstructorModule):
                     show_btn = btn.copy()
                     assigned_buttons[btn["id"]] = show_btn
                     show_block["buttons"].append(show_btn)
+                    show_btn["edit"] = self._("edit")
         # Loading full list of generated buttons and showing missing buttons
         # as unused
         unused_buttons = []
@@ -666,6 +737,7 @@ class Interface(ConstructorModule):
                 show_btn = btn.copy()
                 assigned_buttons[btn["id"]] = show_btn
                 unused_buttons.append(show_btn)
+                show_btn["edit"] = self._("show")
         # Preparing buttons to rendering
         for btn in assigned_buttons.values():
             btn["title"] = htmlescape(btn.get("title"))
@@ -676,6 +748,8 @@ class Interface(ConstructorModule):
             btn["may_delete"] = True
             if btn.get("image") and btn["image"].startswith("http://"):
                 btn["image"] = '<img src="%s" alt="" title="%s" />' % (btn["image"], btn.get("title"))
+            if not btn.get("image") and btn.get("icon"):
+                btn["image"] = "<strong>%s-</strong>%s" % (self._("wildcard///block-class"), btn["icon"])
         # Rendering unused buttons
         if unused_buttons:
             unused_buttons.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
@@ -748,11 +822,12 @@ class Interface(ConstructorModule):
                 old_image = None
             # Trying to find button prototype in generated buttons
             user = True
-            for btn in self.generated_buttons():
-                if btn["id"] == button["id"]:
-                    prototype = btn
-                    user = False
-                    break
+            if button:
+                for btn in self.generated_buttons():
+                    if btn["id"] == button["id"]:
+                        prototype = btn
+                        user = False
+                        break
             # Input parameters
             block = req.param("v_block")
             order = intz(req.param("order"))
@@ -831,7 +906,7 @@ class Interface(ConstructorModule):
             config = self.app().config_updater()
             config.set("gameinterface.buttons-layout", layout)
             config.store()
-            if old_image and old_image.startswith("http://"):
+            if old_image and old_image.startswith("http://") and image_data:
                 self.call("cluster.static_delete", old_image)
             self.call("web.response_json_html", {"success": True, "redirect": "gameinterface/buttons"})
         else:

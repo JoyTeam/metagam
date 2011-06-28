@@ -62,6 +62,7 @@ class ConstructorProject(Module):
         if vars.get("global_html"):
             return
         #if req.group == "admin":
+        vars["main_host"] = self.app().inst.config.get("main_host")
         vars["global_html"] = "constructor/admin_global.html"
 
     def email_sender(self, params):
