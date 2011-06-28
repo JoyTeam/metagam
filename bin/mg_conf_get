@@ -1,0 +1,32 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+import os
+import logging
+import sys
+import json
+
+def main():
+    try:
+        if len(sys.argv) != 3:
+            print "usage: mg_conf_get <app> <config.key>"
+            os._exit(1)
+        inst = Instance("conf_get")
+        inst.download_config()
+        app_tag = sys.argv[1]
+        app = WebApplication(inst, app_tag)
+        val = app.config.get(sys.argv[2])
+        print json.dumps(val)
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
