@@ -2,7 +2,11 @@
 <link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
 <link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/constructor-admin.css" />
 <script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-base.js"></script>
+[%if debug_ext%]
+<script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-all-debug-w-comments.js"></script>
+[%else%]
 <script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-all.js"></script>
+[%end%]
 <script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/gettext.js"></script>
 [%if lang%]<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
 <script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/util.js"></script>

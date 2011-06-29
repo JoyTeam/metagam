@@ -122,8 +122,12 @@ function adm_success_json(response, opts)
 {
 	current_page = opts.func;
 	expand_menu(current_page);
-	var res = Ext.util.JSON.decode(response.responseText);
-	adm_response(res);
+	if (!response.responseText) {
+		Ext.Msg.alert(gt.gettext('Error'), gt.gettext('Error parsing server response'));
+	} else {
+		var res = Ext.util.JSON.decode(response.responseText);
+		adm_response(res);
+	}
 }
 
 function adm_success(response, opts)

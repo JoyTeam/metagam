@@ -1,7 +1,8 @@
 /* LAYOUT */
-body { background-image: url(body-bg-1.jpg); }
+body { background-image: url(body-bg-1.jpg) }
 
 /* BOX */
+.box-0 { background-color: #9e9e86; color: #291c0e }
 .box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
@@ -10,12 +11,17 @@ body { background-image: url(body-bg-1.jpg); }
 .box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
 .box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
 .box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+.box-9 { padding: 41px }
+.box-0 a:link, .box-0 a:visited { color: #32410f }
+.box-0 a:hover, .box-0 a:active { color: #607c1c }
 
+/* MENU */
 .block-horizontal { padding-top: 9px }
 
 /* CHAT */
 #chat-frame, #chat-roster { background-color: #9e9e86 }
 .x-layout-split { background: #283420 }
-#chat-roster-header-content { text-align: center; overflow: auto }
-#chat-roster-buttons-content { text-align: center }
-#chat-channel-buttons img { vertical-align: top; margin: 0 auto 0 auto }
+
+/* FORMS */
+.form-list-messages-top, .form-list-messages-bottom { color: #2b7118 }
+.form-error { color: #903b24 }

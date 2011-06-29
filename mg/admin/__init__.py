@@ -30,6 +30,7 @@ class AdminInterface(Module):
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
             "main_host": self.app().inst.config["main_host"],
+            "debug_ext": self.conf("debug.ext"),
         }
         if getattr(self.app(), "project", None):
             self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))

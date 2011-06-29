@@ -951,6 +951,10 @@ class DesignAdmin(Module):
         self.rhook("design-admin.editor", self.editor)
         self.rhook("design-admin.delete", self.delete)
         self.rhook("design-admin.headmenu", self.headmenu)
+        self.rhook("permissions.list", self.permissions_list)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "design", "name": self._("Design configuration")})
 
     def menu_root_index(self, menu):
         req = self.req()
@@ -1056,7 +1060,7 @@ class DesignAdmin(Module):
                 for gen in gens:
                     obj = gen(self.app())
                     if obj.id() == id and obj.group() == group:
-                        if req.param("ok"):
+                        if req.ok():
                             errors = {}
                             obj.form_parse(errors)
                             if len(errors):
