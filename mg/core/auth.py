@@ -303,6 +303,8 @@ class Interface(Module):
         self.rhook("auth.autologin", self.autologin)
         self.rhook("web.robots-txt", self.robots_txt)
         self.rhook("user.email", self.user_email)
+        self.rhook("ext-admin-auth.change-password", self.admin_change_password, priv="change.passwords")
+        self.rhook("headmenu-admin-auth.change-password", self.headmenu_change_password)
 
     def user_email(self, user_uuid):
         user = self.obj(User, user_uuid)
@@ -408,7 +410,7 @@ class Interface(Module):
                 for i in range(0, 10):
                     salt += random.choice(letters)
                 user.set("salt", salt)
-                user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password1))
+                user.set("pass_reminder", self.password_reminder(password1))
                 m = hashlib.md5()
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
@@ -844,7 +846,7 @@ class Interface(Module):
                 for i in range(0, 10):
                     salt += random.choice(letters)
                 user.set("salt", salt)
-                user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password1))
+                user.set("pass_reminder", self.password_reminder(password1))
                 m = hashlib.md5()
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
@@ -870,6 +872,11 @@ class Interface(Module):
         }
         self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
+
+    def password_reminder(self, password):
+        if self.conf("auth.insecure_password_reminder"):
+            return password
+        return re.sub(r'^(..).*$', r'\1...', password)
 
     def ext_email(self):
         req = self.req()
@@ -961,6 +968,7 @@ class Interface(Module):
     def permissions_list(self, perms):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
         perms.append({"id": "users", "name": self._("User profiles")})
+        perms.append({"id": "change.passwords", "name": self._("Change passwords for other users")})
 
     def auth_permissions(self, user_id):
         perms = {}
@@ -1162,6 +1170,11 @@ class Interface(Module):
             tables.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
             vars["tables"] = tables
         options = []
+        if req.has_access("change.passwords"):
+            options.append({
+                "title": self._("Authentication"),
+                "value": '<hook:admin.link href="auth/change-password/%s" title="%s" />' % (user.uuid, self._("Change password")),
+            })
         self.call("auth.user-options", user, options)
         if len(options):
             vars["options"] = options
@@ -1186,6 +1199,48 @@ class Interface(Module):
         autologin.set("valid_till", "%020d" % (time.time() + interval))
         autologin.store()
         return autologin.uuid
+
+    def admin_change_password(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        if req.ok():
+            errors = {}
+            password = req.param("password")
+            if not password:
+                errors["password"] = self._("Specify new password")
+            else:
+                salt = ""
+                letters = "abcdefghijklmnopqrstuvwxyz"
+                for i in range(0, 10):
+                    salt += random.choice(letters)
+                user.set("salt", salt)
+                user.set("pass_reminder", self.password_reminder(password))
+                m = hashlib.md5()
+                m.update(salt + password.encode("utf-8"))
+                user.set("pass_hash", m.hexdigest())
+                user.store()
+                my_session = req.session()
+                sessions = self.objlist(SessionList, query_index="user", query_equal=user.uuid)
+                for sess in sessions:
+                    if sess.uuid != my_session.uuid:
+                        with self.lock(["session.%s" % sess.uuid]):
+                            sess.load()
+                            sess.delkey("user")
+                            sess.delkey("semi_user")
+                            sess.store()
+                self.call("auth.password-changed", user, password)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+        fields = []
+        fields.append({"name": "password", "label": self._("New password")})
+        buttons = []
+        buttons.append({"text": self._("Change password")})
+        self.call("admin.form", fields=fields, buttons=buttons)
+
+    def headmenu_change_password(self, args):
+        return [self._("Password changing"), "auth/user-dashboard/%s" % args]
 
 re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
 
