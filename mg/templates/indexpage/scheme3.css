@@ -1,0 +1,16 @@
+/* GENERAL LAYOUT */
+#page-layout-1 { width: 984px; text-align: center; margin: 20px auto 0 auto }
+#page-layout-2 { width: 984px; margin: 20px auto 0 auto }
+#page-layout-2-left { padding-right: 20px; vertical-align: top }
+#page-layout-2-right { width: 482px; vertical-align: top }
+#page-layout-3 { width: 984px; margin: 20px auto 20px auto }
+#page-layout-copyright { vertical-align: bottom }
+#page-layout-counters { vertical-align: bottom; text-align: right; padding-left: 20px }
+#page-layout-5 { width: 100% }
+#page-layout-5-enter { width: 200px; vertical-align: top }
+#page-layout-5-links { padding-left: 20px; vertical-align: top; text-align: right }
+#layout-news { margin-top: 20px }
+#layout-ratings { margin-top: 20px }
+#h1-enter { display: none }
+#h1-links { display: none }
+a.link-active { display: inline }

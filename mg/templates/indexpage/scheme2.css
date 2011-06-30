@@ -1,5 +1,3 @@
-[% include "indexpage/common-blocks.css" %]
-
 /* GENERAL LAYOUT */
 #base-image-1 { width: 100%; background-image: url(base-image.jpg); background-position: 50% 0%; background-repeat: no-repeat }
 #page-layout-1-height { height: 200px }
@@ -13,7 +11,7 @@
 #page-layout-copyright { vertical-align: bottom }
 #page-layout-counters { vertical-align: bottom; text-align: right; padding-left: 20px }
 #page-layout-5 { width: 100% }
-#page-layout-5-enter { width: 300px; vertical-align: top }
+#page-layout-5-enter { width: 200px; vertical-align: top }
 #page-layout-5-links { padding-left: 20px; vertical-align: top; text-align: right }
 #h1-ratings { display: none }
 #h1-enter { display: none }

@@ -843,11 +843,11 @@ class DesignIndexCommonBlocks(DesignGenerator):
 
     def form_fields(self, fields):
         project = self.app().project
-        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (will be placed on the cyan area)")})
         fields.append({"id": "scheme1", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-1.png" alt="" />', "checked": True})
         fields.append({"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-2.png" alt="" />', "inline": True})
         fields.append({"id": "scheme3", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-3.png" alt="" />'})
         fields.append({"id": "scheme4", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 4, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-4.png" alt="" />', "inline": True})
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (will be placed on the cyan area)")})
 
     def form_parse(self, errors):
         req = self.req()
@@ -878,7 +878,7 @@ class DesignIndexCommonBlocks(DesignGenerator):
             "scheme": self.scheme,
             "lang": self.call("l10n.lang"),
         }
-        self.add_file("index.css", "text/css", self.call("web.parse_template", "indexpage/scheme%s.css" % self.scheme, vars))
+        self.add_file("index.css", "text/css", self.call("web.parse_template", "indexpage/common-blocks.css", vars))
 
     def process(self):
         # Box borders from the design
@@ -899,19 +899,16 @@ class DesignIndexCommonBlocks(DesignGenerator):
         base_width, base_height = self.base_image.size
         if self.scheme == 1 or self.scheme == 2:
             # Scaling base image
-            if base_height != 300:
-                base_width = base_width * 300.0 / base_height
-                base_height = 300
-            if base_width < 1024:
+            if base_width != 1024:
                 base_height = base_height * 1024.0 / base_width
                 base_width = 1024
             base_width = int(base_width + 0.5)
             base_height = int(base_height + 0.5)
             base_image = self.base_image.resize((base_width, base_height), Image.ANTIALIAS)
             # Cropping if necessary
-            if base_height > 300:
-                base_image = base_image.crop((0, 0, base_width, 300))
-                base_height = 300
+            if base_height > 1024 - border_bottom:
+                base_image = base_image.crop((0, 0, base_width, 1024 - border_bottom))
+                base_height = 1024 - border_bottom
             # Resizing puzzle image if necessary
             min_width = base_width + border_left + border_right
             if self.puzzle.width < min_width:
@@ -922,15 +919,46 @@ class DesignIndexCommonBlocks(DesignGenerator):
             # Drawing border on the puzzle
             x = 0
             while x < base_width + border_left + border_right:
-                self.puzzle.image.paste(box_bottom, (x, base_height))
+                self.puzzle.image.paste(box_bottom, (x, base_height), box_bottom)
                 x += box_bottom.size[0]
             y = 0
             while y < base_height + border_bottom:
                 self.puzzle.image.paste(box_left, (0, y), box_left)
-                self.puzzle.image.paste(box_left, (border_left + base_width, y), box_left)
+                self.puzzle.image.paste(box_right, (border_left + base_width, y), box_right)
                 y += box_left.size[1]
             self.puzzle.image.paste(box_left_bottom, (0, base_height + border_bottom - box_left_bottom.size[1]), box_left_bottom)
             self.puzzle.image.paste(box_right_bottom, (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_bottom - box_right_bottom.size[1]), box_right_bottom)
+        elif self.scheme == 3 or self.scheme == 4:
+            # Scaling base image
+            target_base_width = 482.0 - border_left - border_right
+            if base_width != target_base_width:
+                base_height = base_height * target_base_width / base_width
+                base_width = target_base_width
+            base_width = int(base_width + 0.5)
+            base_height = int(base_height + 0.5)
+            base_image = self.base_image.resize((base_width, base_height), Image.ANTIALIAS)
+            # Resizing puzzle image if necessary
+            min_height = base_height + border_top + border_bottom
+            if self.puzzle.height < min_height:
+                self.puzzle = Puzzle(482, min_height)
+            # Drawing base image on the puzzle
+            self.create_element("base-image.jpg", "JPEG", 0, 0, base_width + border_left + border_right, base_height + border_top + border_bottom)
+            self.puzzle.image.paste(base_image, (border_left, border_top))
+            # Drawing border on the puzzle
+            x = 0
+            while x < base_width + border_left + border_right:
+                self.puzzle.image.paste(box_top, (x, 0), box_top)
+                self.puzzle.image.paste(box_bottom, (x, base_height + border_top), box_bottom)
+                x += box_bottom.size[0]
+            y = 0
+            while y < base_height + border_top + border_bottom:
+                self.puzzle.image.paste(box_left, (0, y), box_left)
+                self.puzzle.image.paste(box_right, (border_left + base_width, y), box_right)
+                y += box_left.size[1]
+            self.puzzle.image.paste(box_left_bottom, (0, base_height + border_top + border_bottom - box_left_bottom.size[1]), box_left_bottom)
+            self.puzzle.image.paste(box_right_bottom, (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_top + border_bottom - box_right_bottom.size[1]), box_right_bottom)
+            self.puzzle.image.paste(box_left_top, (0, 0), box_left_top)
+            self.puzzle.image.paste(box_right_top, (base_width + border_left + border_right - box_right_top.size[0], 0), box_right_top)
 
 class DesignIndexRustedMetal(DesignIndexCommonBlocks):
     def id(self): return "index-rusted-metal"
@@ -1368,6 +1396,7 @@ class IndexPageAdmin(Module):
 
     def preview_data(self, vars):
         demo_authors = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Cult of the dead cow")]
+        vars["title"] = random.choice([self._("Some title"), self._("Very cool game")])
         vars["game"] = {
             "title_full": random.choice([self._("Some title"), self._("Very cool game with very long title")]),
             "title_short": random.choice([self._("Some title"), self._("Very cool game")]),

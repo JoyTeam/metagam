@@ -29,11 +29,9 @@ a.link-active { display: block; font-weight: bold; text-decoration: none }
 .news-delim { margin-top: 15px; padding-top: 15px }
 
 /* MESSAGES */
-.message-window { width: 600px; margin: 0 auto 0 auto; background: #c0c0c0; border: solid 1px #1a1a1a; background-color: #b3b3b3 }
-.message-window-td { padding: 20px }
-.message-text-td { color: #000; font-size: 16px }
-.message-button a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
-.message-button a:hover { color: #000; background-color: #808080 }
+.message-window { width: 600px; margin: 0 auto 0 auto }
+.message-text-td { font-size: 16px }
+.message-button a { display: block; font-size: 12px; text-align: center; padding: 10px; margin: 20px auto 0 auto; text-decoration: none; width: 200px; background: url(button.png); background-position: 50% 50%; background-repeat: no-repeat; }
 
 /* ABOUT */
 #about, #counters, #copyright { margin: 10px 0 10px 0 }
@@ -45,15 +43,13 @@ a.link-active { display: block; font-weight: bold; text-decoration: none }
 .field-input-div { text-align: center; padding: 15px 0 0px 0 }
 #field-input, #field-input2 { width: 500px; font-size: 20px }
 .field-edit { padding: 3px; border: solid 1px #808080 }
-#field-submit-a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
-#field-submit-a:hover { color: #000; background-color: #808080 }
-#field-error { color: #c00000; text-align: center }
+#field-submit-a { display: block; font-size: 12px; text-align: center; padding: 10px; margin: 20px auto 0 auto; text-decoration: none; width: 200px; background: url(button.png); background-position: 50% 50%; background-repeat: no-repeat }
+#field-error { color: #ff0000; text-align: center }
 
 /* HEADERS */
 #h1-description { display: none }
 
 /* BOX */
-.box-0 { background-color: #9e9e86; color: #291c0e }
 .box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
@@ -62,6 +58,7 @@ a.link-active { display: block; font-weight: bold; text-decoration: none }
 .box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
 .box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
 .box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
-.box-9 { padding: 41px }
-.box-0 a:link, .box-0 a:visited { color: #32410f }
-.box-0 a:hover, .box-0 a:active { color: #607c1c }
+
+[% include "indexpage/${tpl}.css" %]
+[% include "indexpage/scheme${scheme}.css" %]
+

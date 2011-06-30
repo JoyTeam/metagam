@@ -52,7 +52,6 @@
 [*block blk_links*]
 	<h1 id="h1-links">[*Links*]</h1>
 	<div id="links">
-		<div class="link-delim"></div>
 		[%for link in links%]
 		[%if link.href%]
 		[%if link.target%]
@@ -63,7 +62,23 @@
 		[%else%]
 		<div class="link-inactive">[%link.title%]</div>
 		[%end%]
-		<div class="link-delim"></div>
+		[%unless link.lst%]<div class="link-delim"></div>[%end%]
+		[%end%]
+	</div>
+[*end*]
+[*block blk_links_horiz*]
+	<div id="links">
+		[%for link in links%]
+		[%if link.href%]
+		[%if link.target%]
+		<a href="[%link.href%]" target="[%link.target%]" class="link-active">[%link.title%]</a>
+		[%else%]
+		<a href="[%link.href%]" class="link-active">[%link.title%]</a>
+		[%end%]
+		[%else%]
+		<span class="link-inactive">[%link.title%]</span>
+		[%end%]
+		[%unless link.lst%]<span class="link-delim"> | </span>[%end%]
 		[%end%]
 	</div>
 [*end*]

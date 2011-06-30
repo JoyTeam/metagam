@@ -55,8 +55,9 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .x-form-file-wrap .x-form-file-text { position: absolute; left: 0; z-index: 3; color: #777; }
 .x-form-item { padding-bottom: 15px }
 .x-form .x-form-item .x-form-item-label { padding-right: 28px }
-.x-form-check-wrap input.x-form-radio { vertical-align: middle }
+.x-form-check-wrap input.x-form-radio { vertical-align: middle; margin-left: 4px }
 .x-form-check-wrap .x-form-cb-label img { vertical-align: middle; margin: 10px 10px 10px 0 }
+.x-form-cb-label img { margin: 3px }
 .logo-demo-1 { padding: 20px; background: url(/st/constructor/admin/logo-demo.gif); text-align: center; }
 .logo-demo-2 { padding: 20px; }
 #background_preview { margin: 44px 0px 0px 20px; border: solid 1px #e0e0e0; }
