@@ -1041,3 +1041,12 @@ class Auth(ConstructorModule):
             "block": "top-menu",
             "order": 95,
         })
+        buttons.append({
+            "id": "game-admin",
+            "href": "/admin",
+            "target": "_blank",
+            "icon": "game-admin.png",
+            "title": self._("Administrative interface"),
+            "block": "top-menu",
+            "order": 90,
+        })

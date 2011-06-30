@@ -219,26 +219,28 @@ Game.setup_game_layout = function() {
 	var chat = this.element('chat-frame');
 	var chat_frame_items = new Array();
 	[%if layout.chat_channels%]
-	var channel_buttons;
-	if (Ext.get('chat-channel-buttons').hasClass('layout-left')) {
-		channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto'});
-		channel_buttons.height = undefined;
-		chat.region = 'center';
-		chat = {
-			id: 'chat-buttons-and-frame',
-			xtype: 'container',
-			layout: 'border',
-			region: 'center',
-			items: [
-				channel_buttons,
-				chat
-			]
-		};
-	} else {
-		channel_buttons = this.element('chat-channel-buttons', {region: 'north'});
-		channel_buttons.region = 'north';
-		channel_buttons.width = undefined;
-		chat_frame_items.push(channel_buttons);
+	if (Ext.get('chat-channel-buttons')) {
+		var channel_buttons;
+		if (Ext.get('chat-channel-buttons').hasClass('layout-left')) {
+			channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto'});
+			channel_buttons.height = undefined;
+			chat.region = 'center';
+			chat = {
+				id: 'chat-buttons-and-frame',
+				xtype: 'container',
+				layout: 'border',
+				region: 'center',
+				items: [
+					channel_buttons,
+					chat
+				]
+			};
+		} else {
+			channel_buttons = this.element('chat-channel-buttons', {region: 'north'});
+			channel_buttons.region = 'north';
+			channel_buttons.width = undefined;
+			chat_frame_items.push(channel_buttons);
+		}
 	}
 	[%end%]
 	chat_frame_items.push(this.element('chat-box', {region: 'center'}));

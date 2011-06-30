@@ -232,9 +232,9 @@ class Interface(ConstructorModule):
                             image = btn.get("image")
                             if image.startswith("http://"):
                                 pass
-                            elif image in design.get("files"):
+                            elif design and image in design.get("files"):
                                 image = "%s/%s" % (design.get("uri"), image)
-                            elif block.get("class") and btn.get("icon"):
+                            elif design and block.get("class") and btn.get("icon"):
                                 if self.call("design.prepare_button", design, image, "%s-bg.png" % block["class"], btn["icon"]):
                                     image = "%s/%s" % (design.get("uri"), image)
                                 else:
@@ -253,7 +253,6 @@ class Interface(ConstructorModule):
                                 else:
                                     rbtn["href"] = jsencode(htmlescape(btn.get("href")))
                                     rbtn["target"] = jsencode(htmlescape(btn.get("target")))
-                            print rbtn
                             buttons.append(rbtn)
                     if buttons:
                         buttons[-1]["lst"] = True

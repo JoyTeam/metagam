@@ -1,0 +1,67 @@
+/* LAYOUT */
+html,body,table,tr,td,form { padding: 0; margin: 0; border: 0; font-size: 13px; font-family: Verdana; }
+body { background-image: url(body-bg-1.jpg) }
+img { vertical-align: middle; border: 0; }
+table { border-collapse: collapse; }
+
+/* ENTER */
+#enter-email input, #enter-password input { width: 166px; border: solid 1px #5d5c5c; padding: 2px }
+#enter-password { padding-top: 8px }
+#enter-submit { padding-top: 8px; font-size: 12px }
+#enter-remind { padding-top: 5px; font-size: 11px }
+
+/* LINKS */
+.link-inactive { font-size: 12px }
+a.link-active { display: block; font-weight: bold; text-decoration: none }
+
+/* RATINGS */
+.rating { padding-bottom: 30px }
+.rating-title { font-size: 16px; font-weight: bold; margin: 0px 0 5px 0 }
+.rating-title a { text-decoration: none }
+.rating-table { width: 400px }
+.rating-member { padding-right: 8px; }
+.rating-score { font-weight: bold; text-align: center; width: 30% }
+
+/* NEWS */
+.news p { margin: 3px 0px 3px 0px }
+.news-title { font-size: 14px; font-weight: bold; padding-bottom: 5px }
+.news-date { font-size: 12px; font-weight: normal }
+.news-delim { margin-top: 15px; padding-top: 15px }
+
+/* MESSAGES */
+.message-window { width: 600px; margin: 0 auto 0 auto; background: #c0c0c0; border: solid 1px #1a1a1a; background-color: #b3b3b3 }
+.message-window-td { padding: 20px }
+.message-text-td { color: #000; font-size: 16px }
+.message-button a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
+.message-button a:hover { color: #000; background-color: #808080 }
+
+/* ABOUT */
+#about, #counters, #copyright { margin: 10px 0 10px 0 }
+.game-title { font-weight: bold; font-size: 14px }
+
+/* REGISTRATION FORM */
+#registerform { width: 560px }
+#field-prompt { text-align: center }
+.field-input-div { text-align: center; padding: 15px 0 0px 0 }
+#field-input, #field-input2 { width: 500px; font-size: 20px }
+.field-edit { padding: 3px; border: solid 1px #808080 }
+#field-submit-a { display: block; font-size: 16px; text-align: center; background-color: #4d4d4d; padding: 3px; margin: 20px auto 0 auto; color: #000; text-decoration: none; width: 200px }
+#field-submit-a:hover { color: #000; background-color: #808080 }
+#field-error { color: #c00000; text-align: center }
+
+/* HEADERS */
+#h1-description { display: none }
+
+/* BOX */
+.box-0 { background-color: #9e9e86; color: #291c0e }
+.box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.box-4 { background-image: url(box-bottom.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.box-5 { background-image: url(box-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+.box-9 { padding: 41px }
+.box-0 a:link, .box-0 a:visited { color: #32410f }
+.box-0 a:hover, .box-0 a:active { color: #607c1c }

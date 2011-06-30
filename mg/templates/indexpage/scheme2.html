@@ -1,0 +1,40 @@
+[% tags [* *] %]
+
+<table id="base-image-1"><tr><td>
+	<div id="page-layout-1-height"></div>
+	<table id="page-layout-2">
+		<tr>
+			<td id="page-layout-2-left">
+				<div id="page-layout-2-left-div">
+					<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+						[%if game.description%][*include blk_description*][%end%]
+						<table id="page-layout-5"><tr>
+							<td id="page-layout-5-enter">[*include blk_enter*]</td>
+							[%if links%]<td id="page-layout-5-links">[*include blk_links*]</td>[%end%]
+						</tr></table>
+						[%if news%][*include blk_news*][%end%]
+					</div></div></div></div></div></div></div></div></div></div>
+				</div>
+			</td>
+			[%if ratings%]
+			<td id="page-layout-2-right">
+				<div id="page-layout-2-right-div">
+					<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+						[*include blk_ratings*]
+					</div></div></div></div></div></div></div></div></div></div>
+				</div>
+			</td>
+			[%end%]
+		</tr>
+	</table>
+	[%if counters or copyright%]
+	<div id="page-layout-3">
+		<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+			<table id="page-layout-4"><tr>
+				[%if copyright%]<td id="page-layout-copyright">[*include blk_copyright*]</td>[%end%]
+				[%if counters%]<td id="page-layout-counters">[*include blk_counters*]</td>[%end%]
+			</tr></table>
+		</div></div></div></div></div></div></div></div></div></div>
+	</div>
+	[%end%]
+</td></tr></table>

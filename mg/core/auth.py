@@ -456,7 +456,7 @@ class Interface(Module):
         session = req.session(True)
         redirects = {}
         self.call("auth.redirects", redirects)
-        code = req.param("code")
+        code = req.param("code").strip()
         if not user.get("inactive"):
             self.call("web.redirect", redirects.get("register", "/"))
         form = self.call("web.form")

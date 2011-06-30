@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+[% tags [* *] %]
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="[*lang*]" lang="[*lang*]">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<title>[%title%]</title>
+<link rel="stylesheet" href="http://[*main_host*]/dyn-mg/indexpage.css" type="text/css" />
+<link rel="stylesheet" href="index.css" type="text/css" />
+<meta http-equiv="MSThemeCompatible" content="No" />
+<meta http-equiv="description" content="[%htmlmeta.description%]" />
+<meta http-equiv="keywords" content="[%htmlmeta.keywords%]" />
+<script type="text/javascript" src="http://[*main_host*]/dyn-mg/indexpage.js"></script>
+</head><body>
+[*block blk_enter*]
+	<div id="enter">
+		<form action="/" method="post" id="loginform" name="loginform" onsubmit="return auth_login();">
+			<h1 id="h1-enter">[*EnterTheGame*]</h1>
+			<div id="enter-email">
+				<input id="email" name="email" value="" title="[*CharNameOrEmail*]" />
+			</div>
+			<div id="enter-password">
+				<input id="password" type="password" name="password" value="" title="Пароль" />
+			</div>
+			<div id="enter-submit">
+				<input type="submit" value="[*enter*]" />
+			</div>
+			<div id="enter-remind">
+				<div><a href="javascript:void(0)" onclick="return auth_register();"><strong>[*register*]</strong></a></div>
+				<div><a href="javascript:void(0)" onclick="return auth_remind();">[*forgot*]</a></div>
+			</div>
+		</form>
+	</div>
+[*end*]
+[*block blk_description*]
+	<h1 id="h1-description">[*Description*]</h1>
+	<div id="about">
+	[%game.description%]
+	</div>
+[*end*]
+[*block blk_news*]
+	<h1 id="h1-news">[*News*]</h1>
+	<div id="news">
+		[%foreach n in news%]
+		<div class="news">
+			<div class="news-title"><span class="news-date">[%n.created%].</span> [%n.subject%]</div>
+			<div class="news-content"><p>[%n.announce%]</p>[%if n.more +%] <a href="[%n.more%]">Читать далее...</a>[%end%]</div>
+		</div>
+		[%unless n.lst%]<div class="news-delim"></div>[%end%]
+		[%end%]
+	</div>
+[*end*]
+[*block blk_links*]
+	<h1 id="h1-links">[*Links*]</h1>
+	<div id="links">
+		<div class="link-delim"></div>
+		[%for link in links%]
+		[%if link.href%]
+		[%if link.target%]
+		<a href="[%link.href%]" target="[%link.target%]" class="link-active">[%link.title%]</a>
+		[%else%]
+		<a href="[%link.href%]" class="link-active">[%link.title%]</a>
+		[%end%]
+		[%else%]
+		<div class="link-inactive">[%link.title%]</div>
+		[%end%]
+		<div class="link-delim"></div>
+		[%end%]
+	</div>
+[*end*]
+[*block blk_ratings*]
+	<h1 id="h1-ratings">[*Ratings*]</h1>
+	<div id="ratings">
+		[%foreach rating in ratings%]
+		<div class="rating">
+			<div class="rating-title"><a href="[%rating.href%]" target="_blank">[%rating.title%]</a></div>
+			<table class="rating-table">
+				[%for ent in rating.list%]
+				<tr class="[%ent.class%]"><td class="rating-member"><div>[%ent.name%]</div></td><td class="rating-score"><div>[%ent.value%]</div></td></tr>
+				[%end%]
+			</table>
+		</div>
+		[%end%]
+	</div>
+[*end*]
+[*block blk_copyright*]
+	<div id="copyright"><span class="game-title">[%game.title_full%]</span><br />Copyright &copy; [%copyright%], 2010-[%year%]<br /><a href="http://[*main_host*]" target="_blank">[*MMOConstructor*]</a></div>
+[*end*]
+[*block blk_counters*]
+	<div id="counters">[%counters%]</div>
+[*end*]
+[*include "indexpage/scheme${scheme}.html"*]
+</body></html>
+

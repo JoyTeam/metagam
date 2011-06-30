@@ -541,7 +541,7 @@ class Web(Module):
                 app.reload()
         self.call("web.response_json", {"ok": 1})
 
-    def web_parse_template(self, filename, vars):
+    def web_parse_template(self, filename, vars, config=None):
         try:
             req = self.req()
         except AttributeError:
@@ -562,6 +562,9 @@ class Web(Module):
                 "POST_CHOMP": 1,
                 "ABSOLUTE": True
             }
+            if config is not None:
+                for key, val in config.iteritems():
+                    conf[key] = val
             try:
                 conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
             except AttributeError, e:

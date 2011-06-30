@@ -1,0 +1,56 @@
+[% tags [* *] %]
+
+<table id="base-image-1"><tr><td>
+	<table id="page-layout-1">
+		<tr>
+			<td><div id="page-layout-1-height"></div></td>
+			[%if links%]
+			<td id="page-layout-1-right">
+				<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+					[*include blk_links*]
+				</div></div></div></div></div></div></div></div></div></div>
+			</td>
+			[%end%]
+		</tr>
+	</table>
+	<table id="page-layout-2">
+		<tr>
+			[%if news and ratings %]
+			<td id="page-layout-2-left">
+				<div id="page-layout-2-box">
+					<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+						[*include blk_enter*]
+						[*include blk_ratings*]
+					</div></div></div></div></div></div></div></div></div></div>
+				</div>
+			</td>
+			<td id="page-layout-2-right">
+				<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+					[*include blk_news*]
+				</div></div></div></div></div></div></div></div></div></div>
+			</td>
+			[%elsif news%]
+			<td>
+				<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+					[*include blk_enter*]
+					[*include blk_news*]
+				</div></div></div></div></div></div></div></div></div></div>
+			</td>
+			[%else%]
+			<td>
+				<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+					[*include blk_enter*]
+					[%if ratings%][*include blk_ratings*][%end%]
+				</div></div></div></div></div></div></div></div></div></div>
+			</td>
+			[%end%]
+		</tr>
+	</table>
+	<div id="page-layout-3">
+		<div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9">
+			[%if game.description%][*include blk_description*][%end%]
+			[*include blk_counters*]
+			[*include blk_copyright*]
+		</div></div></div></div></div></div></div></div></div></div>
+	</div>
+</td></tr></table>

@@ -442,13 +442,17 @@ class DesignGenerator(Module):
 
     def load(self):
         design = self.obj(Design)
+        self.design = design
         design.set("group", self.group())
         design.set("uploaded", self.now())
         dir = "%s/data/design/%s/%s" % (mg.__path__[0], self.group(), self.id())
         html = []
+        self.html_list = html
         css = []
+        self.css_list = css
         files = {}
         upload_list = []
+        self.upload_list = upload_list
         for filename in dircache.listdir(dir):
             m = re_valid_filename.match(filename)
             if not m:
@@ -465,6 +469,7 @@ class DesignGenerator(Module):
             upload_list.append({"filename": filename, "content-type": content_type, "path": "%s/%s" % (dir, filename)})
             files[filename] = {"content-type": content_type}
         design.set("files", files)
+        self.generate_files()
         if len(html):
             design.set("html", html)
         if len(css):
@@ -475,9 +480,12 @@ class DesignGenerator(Module):
             raise RuntimeError(", ".join(errors))
         for file in upload_list:
             if file["content-type"] == "text/html":
-                with open(file["path"], "r") as f:
-                    data = f.read()
-                stackless.schedule()
+                try:
+                    data = file["data"]
+                except KeyError:
+                    with open(file["path"], "r") as f:
+                        data = f.read()
+                    stackless.schedule()
                 try:
                     if file["filename"] == "blocks.html":
                         fragment = True
@@ -504,13 +512,13 @@ class DesignGenerator(Module):
                 stackless.schedule()
         if len(errors):
             raise RuntimeError(", ".join(errors))
-        self.design = design
-        self.upload_list = upload_list
         self.puzzle = Puzzle(1280, 1024)
         self.elements = {}
-        self.image = self.puzzle.image
         self.css = {}
         return design
+
+    def generate_files(self):
+        pass
 
     def edit_css(self, filename):
         parser = CSSParser()
@@ -556,6 +564,14 @@ class DesignGenerator(Module):
         del self.design.get("files")[filename]
         return self.load_image(filename)
 
+    def add_file(self, filename, content_type, data):
+        self.upload_list.append({"filename": filename, "content-type": content_type, "data": data})
+        self.design.get("files")[filename] = {"content-type": content_type}
+        if content_type == "text/html":
+            self.html_list.append(filename)
+        if content_type == "text/css":
+            self.css_list.append(filename)
+
     def process(self):
         pass
 
@@ -582,7 +598,7 @@ class DesignGenerator(Module):
 
 class DesignIndexMagicLands(DesignGenerator):
     def group(self): return "indexpage"
-    def id(self): return "magiclands"
+    def id(self): return "index-magiclands"
     def name(self): return "Magic Lands"
     def preview(self): return "/st/constructor/design/gen/test.jpg"
 
@@ -603,17 +619,17 @@ class DesignIndexMagicLands(DesignGenerator):
             height = 404
         width = int(width + 0.5)
         height = int(height + 0.5)
-        self.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, (404 - height) / 3))
+        self.puzzle.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, (404 - height) / 3))
         over = self.temp_image("index_top-over.png")
-        self.image.paste(over, (0, 297), over)
+        self.puzzle.image.paste(over, (0, 297), over)
         login = self.temp_image("login.png")
-        self.image.paste(login, (792, 85), login)
+        self.puzzle.image.paste(login, (792, 85), login)
 
 class DesignIndexBrokenStones(DesignGenerator):
     def group(self): return "indexpage"
     def id(self): return "broken-stones"
     def name(self): return self._("Broken Stones")
-    def preview(self): return "/st/constructor/design/gen/broken-stones.jpg"
+    def preview(self): return "/st/constructor/design/gen/index-broken-stones.jpg"
 
     def form_fields(self, fields):
         project = self.app().project
@@ -659,7 +675,7 @@ class DesignIndexBrokenStones(DesignGenerator):
         body_bg = self.elements["body-bg.png"][0]
         for y in range(0, 3):
             for x in range(-2, 3):
-                self.image.paste(body_bg, (512 - 252 / 2 + 252 * x, 252 * y))
+                self.puzzle.image.paste(body_bg, (512 - 252 / 2 + 252 * x, 252 * y))
         # main image
         width, height = self.base_image.size
         if width != 880:
@@ -673,10 +689,10 @@ class DesignIndexBrokenStones(DesignGenerator):
         # base image
         base_image = self.base_image.resize((width, height), Image.ANTIALIAS)
         base_image = base_image.crop((width / 2 - 440, 0, width / 2 + 440, 476))
-        self.image.paste(base_image, (512 - 880 / 2, 0))
+        self.puzzle.image.paste(base_image, (512 - 880 / 2, 0))
         body_top = self.temp_image("body-top.png")
         body_top_colorized = self.colorize(body_top, self.body_dark, self.body_light)
-        self.image.paste(body_top_colorized, (0, 0), body_top)
+        self.puzzle.image.paste(body_top_colorized, (0, 0), body_top)
         # game logo
         game_logo = self.temp_image("game-logo.png")
         game_logo_colorized = self.colorize(game_logo, self.body_dark, self.body_light)
@@ -715,10 +731,10 @@ class DesignIndexBrokenStones(DesignGenerator):
         game_logo_glow_mask = game_logo_mask.filter(ImageFilter.BLUR).filter(ImageFilter.BLUR)
         game_logo_colorized.paste(game_logo_glow, (0, 0), game_logo_glow_mask)
         game_logo_colorized.paste(game_logo_color, (0, 0), game_logo_mask)
-        self.image.paste(game_logo_colorized, (350, 300), game_logo)
+        self.puzzle.image.paste(game_logo_colorized, (350, 300), game_logo)
         # band
         band = self.temp_image("band.png")
-        self.image.paste(band, (0, 0), band)
+        self.puzzle.image.paste(band, (0, 0), band)
         self.create_element("body-top.jpg", "JPEG", 0, 0, 1024, 627)
         # CSS
         css = self.edit_css("index.css")
@@ -822,17 +838,116 @@ class DesignIndexBrokenStones(DesignGenerator):
         ]})
         return presets
 
+class DesignIndexCommonBlocks(DesignGenerator):
+    def group(self): return "indexpage"
+
+    def form_fields(self, fields):
+        project = self.app().project
+        fields.append({"name": "base-image", "type": "fileuploadfield", "label": self._("Main image (will be placed on the cyan area)")})
+        fields.append({"id": "scheme1", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-1.png" alt="" />', "checked": True})
+        fields.append({"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-2.png" alt="" />', "inline": True})
+        fields.append({"id": "scheme3", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-3.png" alt="" />'})
+        fields.append({"id": "scheme4", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 4, "boxLabel": '<img src="/st/constructor/indexpage/index-layout-4.png" alt="" />', "inline": True})
+
+    def form_parse(self, errors):
+        req = self.req()
+        self.base_image = self.upload_image("base-image", errors)
+        self.scheme = intz(req.param("scheme"))
+
+    def generate_files(self):
+        vars = {
+            "tpl": self.id(),
+            "scheme": self.scheme,
+            "lang": self.call("l10n.lang"),
+            "CharNameOrEmail": self._("Character name or e-mail"),
+            "register": self._("registration"),
+            "forgot": self._("forgot your password?"),
+            "enter": self._("enter"),
+            "News": self._("News"),
+            "Description": self._("Description"),
+            "Links": self._("Links"),
+            "Ratings": self._("Ratings"),
+            "main_host": self.app().inst.config.get("main_host"),
+            "EnterTheGame": self._("Enter the game"),
+            "MMOConstructor": self._("Browser based online games constructor"),
+        }
+        data = self.call("web.parse_template", "indexpage/common-blocks.html", vars)
+        self.add_file("index.html", "text/html", data)
+        vars = {
+            "tpl": self.id(),
+            "scheme": self.scheme,
+            "lang": self.call("l10n.lang"),
+        }
+        self.add_file("index.css", "text/css", self.call("web.parse_template", "indexpage/scheme%s.css" % self.scheme, vars))
+
+    def process(self):
+        # Box borders from the design
+        box_left = self.load_image("box-left.png")
+        box_right = self.load_image("box-right.png")
+        box_top = self.load_image("box-top.png")
+        box_bottom = self.load_image("box-bottom.png")
+        box_left_top = self.load_image("box-left-top.png")
+        box_right_top = self.load_image("box-right-top.png")
+        box_left_bottom = self.load_image("box-left-bottom.png")
+        box_right_bottom = self.load_image("box-right-bottom.png")
+        # Borders geometry
+        border_left = box_left.size[0]
+        border_right = box_right.size[0]
+        border_top = box_top.size[1]
+        border_bottom = box_bottom.size[1]
+        # Size of the base image given by the user
+        base_width, base_height = self.base_image.size
+        if self.scheme == 1 or self.scheme == 2:
+            # Scaling base image
+            if base_height != 300:
+                base_width = base_width * 300.0 / base_height
+                base_height = 300
+            if base_width < 1024:
+                base_height = base_height * 1024.0 / base_width
+                base_width = 1024
+            base_width = int(base_width + 0.5)
+            base_height = int(base_height + 0.5)
+            base_image = self.base_image.resize((base_width, base_height), Image.ANTIALIAS)
+            # Cropping if necessary
+            if base_height > 300:
+                base_image = base_image.crop((0, 0, base_width, 300))
+                base_height = 300
+            # Resizing puzzle image if necessary
+            min_width = base_width + border_left + border_right
+            if self.puzzle.width < min_width:
+                self.puzzle = Puzzle(min_width, 1024)
+            # Drawing base image on the puzzle
+            self.create_element("base-image.jpg", "JPEG", 0, 0, base_width + border_left + border_right, base_height + border_bottom)
+            self.puzzle.image.paste(base_image, (border_left, 0))
+            # Drawing border on the puzzle
+            x = 0
+            while x < base_width + border_left + border_right:
+                self.puzzle.image.paste(box_bottom, (x, base_height))
+                x += box_bottom.size[0]
+            y = 0
+            while y < base_height + border_bottom:
+                self.puzzle.image.paste(box_left, (0, y), box_left)
+                self.puzzle.image.paste(box_left, (border_left + base_width, y), box_left)
+                y += box_left.size[1]
+            self.puzzle.image.paste(box_left_bottom, (0, base_height + border_bottom - box_left_bottom.size[1]), box_left_bottom)
+            self.puzzle.image.paste(box_right_bottom, (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_bottom - box_right_bottom.size[1]), box_right_bottom)
+
+class DesignIndexRustedMetal(DesignIndexCommonBlocks):
+    def id(self): return "index-rusted-metal"
+    def name(self): return self._("Rusted Metal")
+    def preview(self): return "/st/constructor/design/gen/index-rusted-metal.jpg"
+
 class DesignGameInterfaceTest(DesignGenerator):
     def group(self): return "gameinterface"
-    def id(self): return "test"
+    def id(self): return "game-test"
     def name(self): return self._("Test")
-    def preview(self): return "/st/constructor/design/gen/test.jpg"
+    def preview(self): return "/st/constructor/design/gen/game-test.jpg"
 
 class DesignGameInterfaceRustedMetal(DesignGenerator):
     def group(self): return "gameinterface"
-    def id(self): return "rusted-metal"
+    def id(self): return "game-rusted-metal"
     def name(self): return self._("Rusted Metal")
-    def preview(self): return "/st/constructor/design/gen/rusted-metal.jpg"
+    def preview(self): return "/st/constructor/design/gen/game-rusted-metal.jpg"
 
 class DesignMod(Module):
     def register(self):
@@ -1336,6 +1451,7 @@ class IndexPageAdmin(Module):
 
     def generators(self, gens):
         gens.append(DesignIndexBrokenStones)
+        gens.append(DesignIndexRustedMetal)
 
 class SocioInterface(Module):
     def register(self):

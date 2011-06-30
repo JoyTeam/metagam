@@ -1,0 +1,20 @@
+[% include "indexpage/common-blocks.css" %]
+
+/* GENERAL LAYOUT */
+#base-image-1 { width: 100%; background-image: url(base-image.jpg); background-position: 50% 0%; background-repeat: no-repeat }
+#page-layout-1-height { height: 200px }
+#page-layout-2 { width: 984px; margin: 0 auto 0 auto }
+#page-layout-2-left { vertical-align: top }
+#page-layout-2-right { width: 400px; vertical-align: top }
+#page-layout-2-right-div { width: 380px; margin: 0 0 0 auto }
+#page-layout-2-right-div .rating-table { width: 300px }
+#page-layout-3 { width: 984px; margin: 20px auto 20px auto }
+#page-layout-4 { width: 100% }
+#page-layout-copyright { vertical-align: bottom }
+#page-layout-counters { vertical-align: bottom; text-align: right; padding-left: 20px }
+#page-layout-5 { width: 100% }
+#page-layout-5-enter { width: 300px; vertical-align: top }
+#page-layout-5-links { padding-left: 20px; vertical-align: top; text-align: right }
+#h1-ratings { display: none }
+#h1-enter { display: none }
+#h1-links { display: none }
