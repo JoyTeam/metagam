@@ -707,7 +707,7 @@ class DomainWizard(Wizard):
                 self.call("domains.assign", domain)
                 for wiz in wizs:
                     wiz.finish()
-                self.call("admin.response", self._('You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="http://%s/cabinet" target="top">Return to the cabinet</a>') % (domain, self.main_app().canonical_domain), {})
+                self.call("admin.response", self._('You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="http://{1}/cabinet" target="top">Return to the cabinet</a>').format(domain, self.main_app().canonical_domain), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

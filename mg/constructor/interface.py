@@ -741,7 +741,7 @@ class Interface(ConstructorModule):
         for btn in assigned_buttons.values():
             btn["title"] = htmlescape(btn.get("title"))
             if btn.get("href"):
-                btn["action"] = self._("href///<strong>%s</strong> to %s") % (btn["href"], btn.get("target"))
+                btn["action"] = self._("href///<strong>{0}</strong> to {1}").format(btn["href"], btn.get("target"))
             elif btn.get("onclick"):
                 btn["action"] = btn["onclick"]
             btn["may_delete"] = True
@@ -801,6 +801,7 @@ class Interface(ConstructorModule):
         req = self.req()
         layout = self.buttons_layout()
         if req.ok():
+            self.call("web.upload_handler")
             errors = {}
             if button:
                 button_id = button["id"]

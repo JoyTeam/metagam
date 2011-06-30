@@ -319,11 +319,21 @@ class WebDaemon(object):
             except RuntimeError as e:
                 self.logger.error(e)
                 e = u"%s" % e
+                try:
+                    if request.upload_handler:
+                        return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": e})))
+                except Exception as e2:
+                    self.logger.exception(e2)
                 if type(e) == unicode:
                     e = e.encode("utf-8")
                 return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
             except Exception as e:
                 self.logger.exception(e)
+                try:
+                    if request.upload_handler:
+                        return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))
+                except Exception as e2:
+                    self.logger.exception(e2)
                 return request.internal_server_error()
         finally:
             self.active_requests -= 1
@@ -458,6 +468,10 @@ class Web(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("web.post_redirect", self.post_redirect)
         self.rhook("ext-robots.txt.index", self.robots_txt, priv="public")
+        self.rhook("web.upload_handler", self.web_upload_handler)
+
+    def web_upload_handler(self):
+        self.req().upload_handler = True
 
     def robots_txt(self):
         req = self.req()

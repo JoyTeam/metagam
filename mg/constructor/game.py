@@ -145,6 +145,7 @@ class Game(Module):
             change = u'%s<br /><hook:admin.link href="game/logo/change" title="%s" />' % (self._("You will lose the ability to change the logo after game launch."), self._("Change the game logo now"))
             if req.args == "change":
                 if req.ok():
+                    self.call("web.upload_handler")
                     image = req.param_raw("image")
                     uri = self.call("admin-logo.uploader", image, project.get("title_short"))
                     with self.lock(["project.%s" % project.uuid]):

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-28 19:16+0400\n"
+"POT-Creation-Date: 2011-06-30 18:11+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,12 +21,9 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:225
-msgid "To the main page"
-msgstr ""
-
-#: static/js/realplexor-stream.js:20 static/js/admin-form.js:240
-#: static/js/admin-form.js:243 static/js/chat.js:363 static/js/chat.js:371
+#: static/js/admin.js:126 static/js/realplexor-stream.js:20
+#: static/js/admin-form.js:240 static/js/admin-form.js:243
+#: static/js/chat.js:363 static/js/chat.js:371
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -38,6 +35,14 @@ msgstr ""
 #: mg/templates/constructor/setup/logo-wizard.html:63
 #: mg/templates/constructor/setup/logo-wizard.html:66
 msgid "Error"
+msgstr ""
+
+#: static/js/admin.js:126
+msgid "Error parsing server response"
+msgstr ""
+
+#: static/js/admin.js:229
+msgid "To the main page"
 msgstr ""
 
 #: static/js/realplexor-stream.js:21
@@ -83,7 +88,7 @@ msgstr ""
 msgid "Couldn't deliver message to the server"
 msgstr ""
 
-#: mg/templates/game/interface.js:392
+#: mg/templates/game/interface.js:394
 msgid "Misconfigured layout scheme"
 msgstr ""
 

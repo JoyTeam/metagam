@@ -1158,6 +1158,7 @@ class DesignAdmin(Module):
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
                 if req.ok():
+                    self.call("web.upload_handler")
                     errors = {}
                     zipdata = req.param_raw("zip")
                     if zipdata is None or zipdata == "":
@@ -1204,6 +1205,7 @@ class DesignAdmin(Module):
                     obj = gen(self.app())
                     if obj.id() == id and obj.group() == group:
                         if req.ok():
+                            self.call("web.upload_handler")
                             errors = {}
                             obj.form_parse(errors)
                             if len(errors):

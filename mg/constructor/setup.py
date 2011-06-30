@@ -110,6 +110,7 @@ class ProjectSetupWizard(Wizard):
         elif state == "logo":
             wizs = self.call("wizards.find", "logo")
             if cmd == "upload":
+                self.call("web.upload_handler")
                 image = req.param_raw("image")
                 uri = self.call("admin-logo.uploader", image, self.config.get("title_short"))
                 self.config.set("logo", uri)

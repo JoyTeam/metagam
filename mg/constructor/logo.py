@@ -12,6 +12,7 @@ class LogoAdmin(Module):
         self.rhook("admin-logo.store", self.store_logo)
 
     def logo_uploader(self, image, title):
+        self.call("web.upload_handler")
         if image is None or not len(image):
             self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload logo image")}})
         try:
@@ -232,6 +233,7 @@ class LogoWizard(Wizard):
             self.abort()
             self.call("admin.redirect", self.config.get("redirect_fail"))
         elif cmd == "filler/solid":
+            self.call("web.upload_handler")
             color = req.param("color")
             rgb = parse_color(color)
             if not rgb:
@@ -252,6 +254,7 @@ class LogoWizard(Wizard):
             self.config.store()
             self.call("web.response_json_html", {"success": True, "filler": True, "key": "custom.%d" % filler_id, "title": title, "html": '<img src="%s" width="100" height="75" alt="" />' % uri})
         elif cmd == "filler/upload":
+            self.call("web.upload_handler")
             image = req.param_raw("image")
             if image is None or not len(image):
                 self.call("web.response_json_html", {"success": False, "errors": {"image": self._("Upload your image")}})
@@ -300,6 +303,7 @@ class LogoWizard(Wizard):
             self.config.store()
             self.call("web.response_json_html", {"success": True, "filler": True, "key": "custom.%d" % filler_id, "title": title, "html": '<img src="%s" width="100" height="75" alt="" />' % uri})
         elif cmd == "shapes":
+            self.call("web.upload_handler")
             i = 1
             errors = {}
             layers = []

@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-06-28 19:03+0400\n"
-"PO-Revision-Date: 2011-06-28 19:03+0300\n"
+"POT-Creation-Date: 2011-06-30 18:13+0400\n"
+"PO-Revision-Date: 2011-06-30 18:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -61,30 +61,30 @@ msgstr "Форум"
 #: mg/socio/__init__.py:2301
 #: mg/socio/__init__.py:2338
 #: mg/socio/__init__.py:2356
-#: mg/constructor/design.py:1359
-#: mg/constructor/design.py:1365
-#: mg/constructor/design.py:1424
+#: mg/constructor/design.py:1510
+#: mg/constructor/design.py:1516
+#: mg/constructor/design.py:1575
 msgid "Forum categories"
 msgstr "Разделы форума"
 
 #: mg/socio/__init__.py:236
 #: mg/constructor/players.py:428
-#: mg/constructor/interface.py:460
+#: mg/constructor/interface.py:459
 msgid "Code"
 msgstr "Код"
 
 #: mg/socio/__init__.py:237
-#: mg/constructor/interface.py:461
-#: mg/constructor/interface.py:521
-#: mg/constructor/design.py:996
+#: mg/constructor/interface.py:460
+#: mg/constructor/interface.py:520
+#: mg/constructor/design.py:1143
 msgid "Title"
 msgstr "Название"
 
 #: mg/socio/__init__.py:238
 #: mg/core/auth.py:1271
 #: mg/constructor/players.py:430
-#: mg/constructor/interface.py:518
-#: mg/constructor/interface.py:701
+#: mg/constructor/interface.py:517
+#: mg/constructor/interface.py:700
 msgid "Order"
 msgstr "Порядок"
 
@@ -92,9 +92,9 @@ msgstr "Порядок"
 #: mg/socio/__init__.py:1705
 #: mg/core/auth.py:1016
 #: mg/constructor/players.py:431
-#: mg/constructor/interface.py:462
-#: mg/constructor/interface.py:519
-#: mg/constructor/interface.py:702
+#: mg/constructor/interface.py:461
+#: mg/constructor/interface.py:518
+#: mg/constructor/interface.py:701
 msgid "Editing"
 msgstr "Редактирование"
 
@@ -104,11 +104,11 @@ msgstr "Редактирование"
 #: mg/socio/__init__.py:1425
 #: mg/core/auth.py:1015
 #: mg/constructor/players.py:433
-#: mg/constructor/project.py:221
-#: mg/constructor/interface.py:463
-#: mg/constructor/interface.py:522
-#: mg/constructor/interface.py:731
-#: mg/constructor/design.py:1438
+#: mg/constructor/project.py:223
+#: mg/constructor/interface.py:462
+#: mg/constructor/interface.py:521
+#: mg/constructor/interface.py:730
+#: mg/constructor/design.py:1589
 msgid "edit"
 msgstr "редактировать"
 
@@ -123,9 +123,9 @@ msgstr "доступ"
 
 #: mg/socio/__init__.py:243
 #: mg/constructor/players.py:432
-#: mg/constructor/interface.py:520
-#: mg/constructor/interface.py:703
-#: mg/constructor/design.py:998
+#: mg/constructor/interface.py:519
+#: mg/constructor/interface.py:702
+#: mg/constructor/design.py:1145
 msgid "Deletion"
 msgstr "Удаление"
 
@@ -133,10 +133,10 @@ msgstr "Удаление"
 #: mg/socio/__init__.py:1381
 #: mg/socio/__init__.py:1423
 #: mg/constructor/players.py:434
-#: mg/constructor/interface.py:523
-#: mg/constructor/interface.py:704
-#: mg/constructor/design.py:1001
-#: mg/constructor/design.py:1438
+#: mg/constructor/interface.py:522
+#: mg/constructor/interface.py:703
+#: mg/constructor/design.py:1148
+#: mg/constructor/design.py:1589
 msgid "delete"
 msgstr "удалить"
 
@@ -170,7 +170,7 @@ msgstr "Раздел верхнего уровня"
 
 #: mg/socio/__init__.py:308
 #: mg/constructor/players.py:414
-#: mg/constructor/interface.py:655
+#: mg/constructor/interface.py:654
 #: mg/constructor/interface.py:959
 msgid "Sort order"
 msgstr "Порядок сортировки"
@@ -301,8 +301,8 @@ msgstr "Таймаут при скачивании картинки. Огран�
 #: mg/socio/__init__.py:1823
 #: mg/constructor/design.py:408
 #: mg/constructor/design.py:411
-#: mg/constructor/logo.py:22
-#: mg/constructor/logo.py:263
+#: mg/constructor/logo.py:23
+#: mg/constructor/logo.py:266
 msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
@@ -312,7 +312,7 @@ msgid "Upload an image"
 msgstr "Загрузите изображение"
 
 #: mg/socio/__init__.py:712
-#: mg/core/web.py:825
+#: mg/core/web.py:842
 msgid "Image"
 msgstr "Картинка"
 
@@ -321,8 +321,8 @@ msgid "Or Internet address"
 msgstr "Или введите Internet-адрес"
 
 #: mg/socio/__init__.py:714
-#: mg/constructor/design.py:1038
-#: mg/constructor/game.py:159
+#: mg/constructor/design.py:1186
+#: mg/constructor/game.py:160
 msgid "Upload"
 msgstr "Загрузить"
 
@@ -356,14 +356,14 @@ msgstr "Подписанные темы"
 #: mg/socio/__init__.py:1055
 #: mg/socio/__init__.py:1192
 #: mg/socio/__init__.py:1196
-#: mg/constructor/design.py:1368
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1519
+#: mg/constructor/design.py:1777
 msgid "New topic"
 msgstr "Новая тема"
 
 #: mg/socio/__init__.py:1108
 #: mg/socio/__init__.py:1145
-#: mg/constructor/design.py:1437
+#: mg/constructor/design.py:1588
 msgid "Profile"
 msgstr "Профиль"
 
@@ -407,7 +407,7 @@ msgstr "Тема"
 
 #: mg/socio/__init__.py:1385
 #: mg/socio/__init__.py:1427
-#: mg/constructor/design.py:1438
+#: mg/constructor/design.py:1589
 msgid "reply"
 msgstr "ответить"
 
@@ -462,11 +462,11 @@ msgid "Tag '%s' is invalid - only letters, digits, spaces, underscore and minus 
 msgstr "Недопустимый тег '%s' - разрешены только буквы, цифры, пробелы, подчёркивания и минусы"
 
 #: mg/socio/__init__.py:1772
-#: mg/core/web.py:803
+#: mg/core/web.py:820
 #: mg/core/director.py:394
-#: mg/admin/__init__.py:244
-#: mg/constructor/setup.py:160
-#: mg/constructor/setup.py:224
+#: mg/admin/__init__.py:245
+#: mg/constructor/setup.py:161
+#: mg/constructor/setup.py:225
 msgid "Save"
 msgstr "Сохранить"
 
@@ -526,7 +526,7 @@ msgid "Category where to move"
 msgstr "Раздел, в который перенести"
 
 #: mg/socio/__init__.py:2022
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1777
 msgid "Move"
 msgstr "Перенести"
 
@@ -566,24 +566,24 @@ msgstr ""
 "http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 
 #: mg/socio/__init__.py:2214
-#: mg/constructor/design.py:1369
+#: mg/constructor/design.py:1520
 msgid "Author"
 msgstr "Автор"
 
 #: mg/socio/__init__.py:2215
-#: mg/constructor/design.py:1361
-#: mg/constructor/design.py:1370
+#: mg/constructor/design.py:1512
+#: mg/constructor/design.py:1521
 msgid "Replies"
 msgstr "Ответов"
 
 #: mg/socio/__init__.py:2216
-#: mg/constructor/design.py:1371
+#: mg/constructor/design.py:1522
 msgid "Last reply"
 msgstr "Последний ответ"
 
 #: mg/socio/__init__.py:2217
-#: mg/constructor/design.py:1364
-#: mg/constructor/design.py:1372
+#: mg/constructor/design.py:1515
+#: mg/constructor/design.py:1523
 msgid "by"
 msgstr "от"
 
@@ -595,7 +595,7 @@ msgstr "Ничего не найдено"
 #: mg/socio/__init__.py:2222
 #: mg/socio/__init__.py:2305
 #: mg/socio/__init__.py:2357
-#: mg/constructor/design.py:1384
+#: mg/constructor/design.py:1535
 msgid "Tags"
 msgstr "Теги"
 
@@ -633,7 +633,7 @@ msgstr "Сообщения интерфейса"
 #: mg/core/emails.py:41
 #: mg/core/realplexor.py:356
 #: mg/constructor/auth.py:285
-#: mg/constructor/interface.py:335
+#: mg/constructor/interface.py:334
 msgid "Settings stored"
 msgstr "Настройки сохранены"
 
@@ -660,7 +660,7 @@ msgid "Last telegram"
 msgstr "Последняя телеграмма"
 
 #: mg/socio/telegrams.py:106
-#: mg/constructor/design.py:1362
+#: mg/constructor/design.py:1513
 msgid "Unread"
 msgstr "Новые"
 
@@ -795,80 +795,80 @@ msgstr "{2:02d} {1} {0} в {3}"
 msgid "{2:d}{3} {1}, {0}"
 msgstr "{2:02d} {1} {0}"
 
-#: mg/core/web.py:725
-#: mg/core/web.py:735
+#: mg/core/web.py:742
+#: mg/core/web.py:752
 msgid "Forbidden"
 msgstr "Запрещено"
 
-#: mg/core/web.py:725
+#: mg/core/web.py:742
 msgid "Security failure: POST method required"
 msgstr "Отказ системы безопасности: требуется метод POST"
 
-#: mg/core/web.py:735
+#: mg/core/web.py:752
 msgid "Security failure: Valid Referer required"
 msgstr "Отказ системы безопасности: требуется верный Referer"
 
-#: mg/core/web.py:813
+#: mg/core/web.py:830
 msgid "Bold"
 msgstr "Полужирный"
 
-#: mg/core/web.py:814
+#: mg/core/web.py:831
 msgid "Italic"
 msgstr "Курсив"
 
-#: mg/core/web.py:815
+#: mg/core/web.py:832
 msgid "Underline"
 msgstr "Подчёркивание"
 
-#: mg/core/web.py:816
+#: mg/core/web.py:833
 msgid "Strike"
 msgstr "Зачёркивание"
 
-#: mg/core/web.py:817
+#: mg/core/web.py:834
 msgid "Quote"
 msgstr "Цитата"
 
-#: mg/core/web.py:818
+#: mg/core/web.py:835
 msgid "Red"
 msgstr "Красный"
 
-#: mg/core/web.py:819
+#: mg/core/web.py:836
 msgid "Green"
 msgstr "Зелёный"
 
-#: mg/core/web.py:820
+#: mg/core/web.py:837
 msgid "Blue"
 msgstr "Синий"
 
-#: mg/core/web.py:821
+#: mg/core/web.py:838
 msgid "Dark green"
 msgstr "Тёмно-зелёный"
 
-#: mg/core/web.py:822
+#: mg/core/web.py:839
 msgid "Magenta"
 msgstr "Фиолетовый"
 
-#: mg/core/web.py:823
+#: mg/core/web.py:840
 msgid "Yellow"
 msgstr "Жёлтый"
 
-#: mg/core/web.py:824
+#: mg/core/web.py:841
 msgid "Orange"
 msgstr "Оранжевый"
 
-#: mg/core/web.py:826
+#: mg/core/web.py:843
 msgid "Insert image"
 msgstr "Вставить изображение"
 
-#: mg/core/web.py:827
+#: mg/core/web.py:844
 msgid "Translit"
 msgstr "Транслит"
 
-#: mg/core/web.py:828
+#: mg/core/web.py:845
 msgid "Transliterate to Russian"
 msgstr "Транслитерация на русский"
 
-#: mg/core/web.py:829
+#: mg/core/web.py:846
 msgid "Smiles"
 msgstr "Смайлики"
 
@@ -883,9 +883,8 @@ msgstr "Пустое имя хоста"
 
 #: mg/core/cluster.py:116
 #: mg/core/cluster.py:156
-#, python-format
-msgid "Error storing object %s: %s"
-msgstr "Ошибка при сохранении объекта %s: %s"
+msgid "Error storing object {0}: {1}"
+msgstr "Ошибка при сохранении объекта {0}: {1}"
 
 #: mg/core/cluster.py:122
 msgid "Invalid delete URI"
@@ -1049,7 +1048,7 @@ msgstr "Это имя уже занято"
 
 #: mg/core/auth.py:362
 #: mg/core/auth.py:740
-#: mg/constructor/setup.py:189
+#: mg/constructor/setup.py:190
 #: mg/constructor/admin.py:468
 #: mg/constructor/auth.py:395
 msgid "Enter your password"
@@ -1057,7 +1056,7 @@ msgstr "Введите ваш пароль"
 
 #: mg/core/auth.py:364
 #: mg/core/auth.py:834
-#: mg/constructor/setup.py:191
+#: mg/constructor/setup.py:192
 #: mg/constructor/auth.py:397
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
@@ -1076,7 +1075,7 @@ msgid "Select your sex"
 msgstr "Укажите ваш пол"
 
 #: mg/core/auth.py:374
-#: mg/constructor/setup.py:185
+#: mg/constructor/setup.py:186
 #: mg/constructor/auth.py:385
 msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
@@ -1084,7 +1083,7 @@ msgstr "Введите ваш адрес e-mail"
 #: mg/core/auth.py:376
 #: mg/core/auth.py:530
 #: mg/core/auth.py:928
-#: mg/constructor/setup.py:187
+#: mg/constructor/setup.py:188
 #: mg/constructor/auth.py:387
 msgid "Enter correct e-mail"
 msgstr "Введите правильный адрес e-mail"
@@ -1151,19 +1150,19 @@ msgid "User name"
 msgstr "Имя пользователя"
 
 #: mg/core/auth.py:433
-#: mg/constructor/setup.py:219
+#: mg/constructor/setup.py:220
 #: mg/constructor/auth.py:325
 msgid "Sex"
 msgstr "Пол"
 
 #: mg/core/auth.py:433
-#: mg/constructor/setup.py:219
+#: mg/constructor/setup.py:220
 #: mg/constructor/auth.py:325
 msgid "Male"
 msgstr "Мужской"
 
 #: mg/core/auth.py:433
-#: mg/constructor/setup.py:219
+#: mg/constructor/setup.py:220
 #: mg/constructor/auth.py:325
 msgid "Female"
 msgstr "Женский"
@@ -1468,7 +1467,7 @@ msgstr "Введите имя пользователя"
 
 #: mg/core/auth.py:1044
 #: mg/core/auth.py:1144
-#: mg/constructor/design.py:1610
+#: mg/constructor/design.py:1761
 #: mg/constructor/dashboard.py:87
 msgid "Search"
 msgstr "Искать"
@@ -1498,7 +1497,7 @@ msgid "Update"
 msgstr "Обновить"
 
 #: mg/core/auth.py:1175
-#: mg/constructor/design.py:1293
+#: mg/constructor/design.py:1443
 #: mg/constructor/domains.py:658
 msgid "Registration"
 msgstr "Регистрация"
@@ -1906,6 +1905,7 @@ msgstr "Баланс"
 
 #: mg/game/money.py:712
 #: mg/game/money.py:741
+#: mg/constructor/design.py:867
 msgid "Description"
 msgstr "Описание"
 
@@ -2077,7 +2077,7 @@ msgstr "Конструктор: интеграция с 2pay"
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
-#: mg/admin/__init__.py:74
+#: mg/admin/__init__.py:75
 #, python-format
 msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
@@ -2104,7 +2104,7 @@ msgstr "Пол персонажа"
 
 #: mg/constructor/players.py:354
 #: mg/constructor/chat.py:108
-#: mg/constructor/interface.py:299
+#: mg/constructor/interface.py:298
 msgid "Invalid selection"
 msgstr "Неверный выбор"
 
@@ -2289,66 +2289,66 @@ msgstr "Названия должны быть короткими и ясным�
 msgid "Title of the game"
 msgstr "Название игры"
 
-#: mg/constructor/setup.py:135
-#: mg/constructor/game.py:171
+#: mg/constructor/setup.py:136
+#: mg/constructor/game.py:172
 msgid "Game logo"
 msgstr "Логотип игры"
 
-#: mg/constructor/setup.py:136
+#: mg/constructor/setup.py:137
 msgid "Here you have to create unique logo for your project."
 msgstr "Здесь вам необходимо создать уникальный логотип для вашего проекта"
 
-#: mg/constructor/setup.py:137
+#: mg/constructor/setup.py:138
 msgid "Upload pre-made logo file"
 msgstr "Загрузить готовый файл с логотипом"
 
-#: mg/constructor/setup.py:138
+#: mg/constructor/setup.py:139
 msgid "Alternative 2. Launch logo constructor"
 msgstr "Вариант 2. Запустить конструктор логотипов"
 
-#: mg/constructor/setup.py:141
+#: mg/constructor/setup.py:142
 msgid "Upload image: 100x100, without animation"
 msgstr "Загрузите изображение 100x100 без анимации"
 
-#: mg/constructor/setup.py:142
+#: mg/constructor/setup.py:143
 msgid "Note your image will be postprocessed - corners will be rounded, 1px border added, black padding added, title written on the black padding."
 msgstr "Обратите внимание, что ваше изображение будет обработано: будут закруглены углы, добавлены 1px бордюр и чёрная подложка с названием игры."
 
-#: mg/constructor/setup.py:143
+#: mg/constructor/setup.py:144
 msgid "Launch the constructor"
 msgstr "Запустить конструктор"
 
-#: mg/constructor/setup.py:181
+#: mg/constructor/setup.py:182
 #: mg/constructor/auth.py:362
 #: mg/constructor/auth.py:883
 msgid "This field is mandatory"
 msgstr "Это обязательное поле"
 
-#: mg/constructor/setup.py:194
+#: mg/constructor/setup.py:195
 msgid "Repeat your password"
 msgstr "Повторите ваш пароль"
 
-#: mg/constructor/setup.py:196
+#: mg/constructor/setup.py:197
 msgid "Passwords do not match"
 msgstr "Пароли не совпадают"
 
-#: mg/constructor/setup.py:216
+#: mg/constructor/setup.py:217
 msgid "Character for the game administrator"
 msgstr "Персонаж для администратора игры"
 
-#: mg/constructor/setup.py:218
+#: mg/constructor/setup.py:219
 msgid "Name of the administrative character in your game"
 msgstr "Имя административного персонажа в вашей игре"
 
-#: mg/constructor/setup.py:220
+#: mg/constructor/setup.py:221
 msgid "Administrator's password"
 msgstr "Пароль администратора"
 
-#: mg/constructor/setup.py:221
+#: mg/constructor/setup.py:222
 msgid "Repeat password"
 msgstr "Повторите пароль"
 
-#: mg/constructor/setup.py:222
+#: mg/constructor/setup.py:223
 msgid "Administrator's e-mail"
 msgstr "E-mail администратора"
 
@@ -2361,7 +2361,7 @@ msgstr "Перейти на форум Конструктора"
 #: mg/constructor/admin.py:193
 #: mg/constructor/admin.py:198
 #: mg/constructor/admin.py:292
-#: mg/constructor/design.py:1697
+#: mg/constructor/design.py:1848
 msgid "Cabinet"
 msgstr "Кабинет"
 
@@ -2380,8 +2380,9 @@ msgid "Constructor"
 msgstr "Конструктор"
 
 #: mg/constructor/admin.py:83
-#: mg/constructor/project.py:116
-#: mg/constructor/design.py:1450
+#: mg/constructor/project.py:118
+#: mg/constructor/design.py:866
+#: mg/constructor/design.py:1601
 msgid "News"
 msgstr "Новости"
 
@@ -2402,7 +2403,7 @@ msgid "Game Development"
 msgstr "Разработка игр"
 
 #: mg/constructor/admin.py:85
-#: mg/constructor/design.py:1450
+#: mg/constructor/design.py:1601
 msgid "Developers club"
 msgstr "Клуб разработчиков"
 
@@ -2435,8 +2436,8 @@ msgstr "Возврат к настройкам"
 #: mg/constructor/admin.py:148
 #: mg/constructor/admin.py:153
 #: mg/constructor/admin.py:174
-#: mg/constructor/design.py:1179
-#: mg/constructor/design.py:1605
+#: mg/constructor/design.py:1328
+#: mg/constructor/design.py:1756
 msgid "Settings"
 msgstr "Настройки"
 
@@ -2577,7 +2578,7 @@ msgid "Messages"
 msgstr "Сообщения"
 
 #: mg/constructor/admin.py:475
-#: mg/constructor/design.py:1363
+#: mg/constructor/design.py:1514
 msgid "Last message"
 msgstr "Последнее сообщение"
 
@@ -2795,171 +2796,171 @@ msgstr "Ошибка при генерации %s-off.png"
 msgid "Error generating %s-new.png"
 msgstr "Ошибка при генерации %s-new.png"
 
-#: mg/constructor/project.py:91
+#: mg/constructor/project.py:93
 msgid "Destroy this game"
 msgstr "Уничтожить эту игру"
 
-#: mg/constructor/project.py:91
+#: mg/constructor/project.py:93
 msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
-#: mg/constructor/project.py:100
+#: mg/constructor/project.py:102
 msgid "Game dashboard"
 msgstr "Панель управления игрой"
 
-#: mg/constructor/project.py:113
+#: mg/constructor/project.py:115
 msgid "Project main administrator"
 msgstr "Главный администратор проекта"
 
-#: mg/constructor/project.py:116
-#: mg/constructor/project.py:117
 #: mg/constructor/project.py:118
 #: mg/constructor/project.py:119
+#: mg/constructor/project.py:120
+#: mg/constructor/project.py:121
 #: mg/constructor/game.py:26
 msgid "Game"
 msgstr "Игра"
 
-#: mg/constructor/project.py:116
+#: mg/constructor/project.py:118
 msgid "Game news published by the administrators"
 msgstr "Игровые новости, публикуемые администрацией"
 
-#: mg/constructor/project.py:117
+#: mg/constructor/project.py:119
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
 
-#: mg/constructor/project.py:118
+#: mg/constructor/project.py:120
 msgid "Newbies"
 msgstr "Вопросы новичков"
 
-#: mg/constructor/project.py:118
+#: mg/constructor/project.py:120
 msgid "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr "Дорогие новички, задавайте вопросы, если вам чего непонятно"
 
-#: mg/constructor/project.py:119
+#: mg/constructor/project.py:121
 msgid "Diplomacy"
 msgstr "Дипломатия"
 
-#: mg/constructor/project.py:119
+#: mg/constructor/project.py:121
 msgid "Authorized guild members can talk to each other about diplomacy and politics issues here"
 msgstr "В этом разделе уполномоченные члены кланов могут общаться на темы дипломатии, войн и политики"
 
-#: mg/constructor/project.py:120
-#: mg/constructor/project.py:121
 #: mg/constructor/project.py:122
+#: mg/constructor/project.py:123
+#: mg/constructor/project.py:124
 msgid "Admin"
 msgstr "Администрация"
 
-#: mg/constructor/project.py:120
+#: mg/constructor/project.py:122
 msgid "Admin talks"
 msgstr "Общение с администрацией"
 
-#: mg/constructor/project.py:120
+#: mg/constructor/project.py:122
 msgid "Discussions with the game administrators. Here you can discuss any issues related to the game itself."
 msgstr "Здесь вы можете пообщаться с администрацией игры и обсудить любые вопросы, связанные с игрой в целом."
 
-#: mg/constructor/project.py:121
+#: mg/constructor/project.py:123
 msgid "Reference manuals"
 msgstr "Справочная информация"
 
-#: mg/constructor/project.py:121
+#: mg/constructor/project.py:123
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
 
-#: mg/constructor/project.py:122
+#: mg/constructor/project.py:124
 msgid "Bug reports"
 msgstr "Сообщения об ошибках"
 
-#: mg/constructor/project.py:122
+#: mg/constructor/project.py:124
 msgid "Report any problems in the game here"
 msgstr "Здесь вы можете сообщить о любых проблемах, связанных с работой игры"
 
-#: mg/constructor/project.py:123
-#: mg/constructor/project.py:124
+#: mg/constructor/project.py:125
+#: mg/constructor/project.py:126
 msgid "Reallife"
 msgstr "Реальная жизнь"
 
-#: mg/constructor/project.py:123
+#: mg/constructor/project.py:125
 msgid "Smoking room"
 msgstr "Курилка"
 
-#: mg/constructor/project.py:123
+#: mg/constructor/project.py:125
 msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
 
-#: mg/constructor/project.py:124
+#: mg/constructor/project.py:126
 msgid "Art"
 msgstr "Творчество"
 
-#: mg/constructor/project.py:124
+#: mg/constructor/project.py:126
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
 
-#: mg/constructor/project.py:125
-#: mg/constructor/project.py:126
+#: mg/constructor/project.py:127
+#: mg/constructor/project.py:128
 msgid "Trading"
 msgstr "Торговля"
 
-#: mg/constructor/project.py:125
+#: mg/constructor/project.py:127
 msgid "Services"
 msgstr "Услуги"
 
-#: mg/constructor/project.py:125
+#: mg/constructor/project.py:127
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr "Любые игровые услуги: найм, охрана, строительство и т.д."
 
-#: mg/constructor/project.py:126
+#: mg/constructor/project.py:128
 msgid "Market"
 msgstr "Рынок"
 
-#: mg/constructor/project.py:126
+#: mg/constructor/project.py:128
 msgid "Market place to sell and by any item"
 msgstr "Место, где вы можете договориться о покупке и продаже любых предметов"
 
-#: mg/constructor/project.py:130
+#: mg/constructor/project.py:132
 msgid "Tips"
 msgstr "Советы"
 
-#: mg/constructor/project.py:131
+#: mg/constructor/project.py:133
 msgid "Prepare to launch"
 msgstr "Подготовка к запуску"
 
-#: mg/constructor/project.py:146
+#: mg/constructor/project.py:148
 msgid "Your game is being checked by the moderators. Moderation results will be sent you via e-mail. Please be patient."
 msgstr "Ваша игра находится на проверке модераторами. Результаты модерации будут отправлены вам по e-mail. Пожалуйста, наберитесь терпения."
 
-#: mg/constructor/project.py:147
+#: mg/constructor/project.py:149
 msgid "Moderation in progress"
 msgstr "Идёт модерация"
 
-#: mg/constructor/project.py:150
+#: mg/constructor/project.py:152
 msgid "Before launching your game perform the steps listed above"
 msgstr "Перед запуском игры выполните шаги, перечисленные выше"
 
-#: mg/constructor/project.py:152
+#: mg/constructor/project.py:154
 msgid "Congratulations! Your game is ready to be published."
 msgstr "Поздравляем! Ваша игра готова к публикации."
 
-#: mg/constructor/project.py:152
+#: mg/constructor/project.py:154
 msgid "game///Send it to moderation"
 msgstr "Отправить её на модерацию"
 
-#: mg/constructor/project.py:161
+#: mg/constructor/project.py:163
 msgid "Income statistics"
 msgstr "Статистика по доходам"
 
-#: mg/constructor/project.py:162
+#: mg/constructor/project.py:164
 msgid "Income structure"
 msgstr "Структура дохода"
 
-#: mg/constructor/project.py:169
+#: mg/constructor/project.py:171
 msgid "Launching your game"
 msgstr "Запуск вашей игры"
 
-#: mg/constructor/project.py:169
+#: mg/constructor/project.py:171
 msgid "Your game is not published yet. To publish it perform the steps listed on the <hook:admin.link href=\"game/dashboard\" title=\"Game dashboard\" /> page"
 msgstr "Ваша игра ещё не опубликована. Чтобы опубликовать её, выполните шаги, перечисленные на странице <hook:admin.link href=\"game/dashboard\" title=\"Панель управления\" />"
 
-#: mg/constructor/project.py:204
+#: mg/constructor/project.py:206
 msgid ""
 "New project has been registered: {0}\n"
 "Please perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}"
@@ -2967,56 +2968,56 @@ msgstr ""
 "Зарегистрирован новый проект: {0}\n"
 "Пожалуйста, произведите необходимые действия по модерации: http://www.{1}/admin#constructor/project-dashboard/{2}"
 
-#: mg/constructor/project.py:205
+#: mg/constructor/project.py:207
 msgid "Constructor moderator"
 msgstr "Модератор конструктора"
 
-#: mg/constructor/project.py:205
+#: mg/constructor/project.py:207
 #, python-format
 msgid "Project moderation: %s"
 msgstr "Модерирование проекта: %s"
 
-#: mg/constructor/project.py:212
+#: mg/constructor/project.py:214
 #: mg/constructor/dashboard.py:123
 msgid "Full title"
 msgstr "Полное название"
 
-#: mg/constructor/project.py:213
+#: mg/constructor/project.py:215
 #: mg/constructor/dashboard.py:124
 msgid "Short title"
 msgstr "Короткое название"
 
-#: mg/constructor/project.py:214
+#: mg/constructor/project.py:216
 #: mg/constructor/dashboard.py:126
 msgid "Title in English"
 msgstr "Название на английском языке"
 
-#: mg/constructor/project.py:215
+#: mg/constructor/project.py:217
 #: mg/constructor/dashboard.py:125
 msgid "Title code"
 msgstr "Код названия"
 
-#: mg/constructor/project.py:216
+#: mg/constructor/project.py:218
 #: mg/constructor/game.py:132
 #: mg/constructor/dashboard.py:127
 msgid "Game description"
 msgstr "Описание игры"
 
-#: mg/constructor/project.py:217
+#: mg/constructor/project.py:219
 #: mg/constructor/dashboard.py:129
 msgid "Game domain"
 msgstr "Домен игры"
 
-#: mg/constructor/project.py:218
+#: mg/constructor/project.py:220
 #: mg/constructor/dashboard.py:138
 msgid "Logo"
 msgstr "Логотип"
 
-#: mg/constructor/project.py:219
+#: mg/constructor/project.py:221
 msgid "Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"
 msgstr "Тщательно перепроверьте все настройки. После отправки данных на модерацию у вас не будет возможности изменить логотип игры и поля, обведённые красным"
 
-#: mg/constructor/project.py:220
+#: mg/constructor/project.py:222
 msgid "Everything is correct. Send to moderation"
 msgstr "Всё верно. Отправить на модерацию"
 
@@ -3209,7 +3210,7 @@ msgstr "Связанный персонаж %s"
 
 #: mg/constructor/auth.py:1032
 #: mg/constructor/interface.py:183
-#: mg/constructor/design.py:1605
+#: mg/constructor/design.py:1756
 msgid "Logout"
 msgstr "Завершение сеанса"
 
@@ -3217,12 +3218,16 @@ msgstr "Завершение сеанса"
 msgid "Reload"
 msgstr "Перезагрузить"
 
+#: mg/constructor/auth.py:1049
+msgid "Administrative interface"
+msgstr "Административный интерфейс"
+
 #: mg/constructor/interface.py:95
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
 
 #: mg/constructor/interface.py:147
-#: mg/constructor/design.py:1698
+#: mg/constructor/design.py:1849
 msgid "Error"
 msgstr "Ошибка"
 
@@ -3234,252 +3239,252 @@ msgstr "Кабинет игры"
 msgid "Select your character"
 msgstr "Выберите вашего персонажа"
 
-#: mg/constructor/interface.py:287
+#: mg/constructor/interface.py:286
 msgid "Game interface layout"
 msgstr "Настройка игрового интерфейса"
 
-#: mg/constructor/interface.py:288
+#: mg/constructor/interface.py:287
 msgid "Game interface panels"
 msgstr "Панели игрового интерфейса"
 
-#: mg/constructor/interface.py:289
-#: mg/constructor/interface.py:772
+#: mg/constructor/interface.py:288
+#: mg/constructor/interface.py:771
 msgid "Game interface buttons"
 msgstr "Кнопки игрового интерфейса"
 
-#: mg/constructor/interface.py:305
-#: mg/constructor/interface.py:311
-#: mg/constructor/interface.py:317
-#: mg/constructor/interface.py:323
+#: mg/constructor/interface.py:304
+#: mg/constructor/interface.py:310
+#: mg/constructor/interface.py:316
+#: mg/constructor/interface.py:322
 msgid "Enter width in pixels"
 msgstr "Введите ширину в пикселях"
 
-#: mg/constructor/interface.py:347
+#: mg/constructor/interface.py:346
+#: mg/constructor/design.py:846
 msgid "General layout scheme"
 msgstr "Общая схема интерфейса"
 
-#: mg/constructor/interface.py:350
+#: mg/constructor/interface.py:349
 msgid "Page margins (0 - margin is disabled):"
 msgstr "Поля страницы (0 - поле отключено)"
 
-#: mg/constructor/interface.py:352
+#: mg/constructor/interface.py:351
 msgid "Left"
 msgstr "Лево"
 
-#: mg/constructor/interface.py:353
+#: mg/constructor/interface.py:352
 msgid "Right"
 msgstr "Право"
 
-#: mg/constructor/interface.py:354
+#: mg/constructor/interface.py:353
 msgid "Top"
 msgstr "Верх"
 
-#: mg/constructor/interface.py:355
+#: mg/constructor/interface.py:354
 msgid "Bottom"
 msgstr "Низ"
 
-#: mg/constructor/interface.py:356
+#: mg/constructor/interface.py:355
 msgid "Debugging version of ExtJS (for advanced JavaScript programming)"
 msgstr "Отладочная версия ExtJS (для продвинутого программирования на JavaScript)"
 
-#: mg/constructor/interface.py:357
+#: mg/constructor/interface.py:356
 msgid "Enable panel on the top of the screen (code 'top')"
 msgstr "Включить панель в верхней части экрана ('top')"
 
-#: mg/constructor/interface.py:358
+#: mg/constructor/interface.py:357
 msgid "Enable panel to the left of the main frame (code 'main-left')"
 msgstr "Включить панель слева от главного фрейма (код 'main-left')"
 
-#: mg/constructor/interface.py:359
+#: mg/constructor/interface.py:358
 msgid "Enable panel to the right of the main frame (code 'main-right')"
 msgstr "Включить панель справа от главного фрейма (код 'main-right')"
 
-#: mg/constructor/interface.py:389
+#: mg/constructor/interface.py:388
 msgid "Top panel"
 msgstr "Верхняя панель"
 
-#: mg/constructor/interface.py:395
+#: mg/constructor/interface.py:394
 msgid "Left of the main frame"
 msgstr "Слева от главного фрейма"
 
-#: mg/constructor/interface.py:402
+#: mg/constructor/interface.py:401
 msgid "Right of the main frame"
 msgstr "Справа от главного фрейма"
 
-#: mg/constructor/interface.py:427
+#: mg/constructor/interface.py:426
 msgid "Top menu"
 msgstr "Верхнее меню"
 
-#: mg/constructor/interface.py:435
+#: mg/constructor/interface.py:434
 msgid "Left menu"
 msgstr "Левое меню"
 
-#: mg/constructor/interface.py:443
+#: mg/constructor/interface.py:442
 msgid "Right menu"
 msgstr "Правое меню"
 
-#: mg/constructor/interface.py:459
+#: mg/constructor/interface.py:458
 msgid "New panel"
 msgstr "Новая панель"
 
-#: mg/constructor/interface.py:475
+#: mg/constructor/interface.py:474
 msgid "Panels"
 msgstr "Панели"
 
-#: mg/constructor/interface.py:515
-#: mg/constructor/interface.py:555
+#: mg/constructor/interface.py:514
+#: mg/constructor/interface.py:554
 msgid "New block"
 msgstr "Новый блок"
 
-#: mg/constructor/interface.py:516
+#: mg/constructor/interface.py:515
 #: mg/constructor/invitations.py:94
 msgid "Type"
 msgstr "Тип"
 
-#: mg/constructor/interface.py:517
+#: mg/constructor/interface.py:516
 msgid "Height"
 msgstr "Высота"
 
-#: mg/constructor/interface.py:517
+#: mg/constructor/interface.py:516
 msgid "Width"
 msgstr "Ширина"
 
-#: mg/constructor/interface.py:524
+#: mg/constructor/interface.py:523
 msgid "Are you sure want to delete this block?"
 msgstr "Вы уверены, что хотите удалить этот блок?"
 
-#: mg/constructor/interface.py:528
-#: mg/constructor/interface.py:650
+#: mg/constructor/interface.py:527
+#: mg/constructor/interface.py:649
 msgid "Buttons"
 msgstr "Кнопки"
 
-#: mg/constructor/interface.py:529
-#: mg/constructor/interface.py:650
+#: mg/constructor/interface.py:528
+#: mg/constructor/interface.py:649
 msgid "Empty space"
 msgstr "Пустое место"
 
-#: mg/constructor/interface.py:530
-#: mg/constructor/interface.py:650
+#: mg/constructor/interface.py:529
+#: mg/constructor/interface.py:649
 msgid "Raw HTML"
 msgstr "Чистый HTML"
 
-#: mg/constructor/interface.py:545
+#: mg/constructor/interface.py:544
 msgid "auto"
 msgstr "авто"
 
-#: mg/constructor/interface.py:562
+#: mg/constructor/interface.py:561
 #, python-format
 msgid "Block %s"
 msgstr "Блок %s"
 
-#: mg/constructor/interface.py:584
+#: mg/constructor/interface.py:583
 msgid "Specify block title"
 msgstr "Укажите название блока"
 
-#: mg/constructor/interface.py:590
-#: mg/constructor/interface.py:596
-#: mg/constructor/design.py:1731
+#: mg/constructor/interface.py:589
+#: mg/constructor/interface.py:595
+#: mg/constructor/design.py:1882
 msgid "Invalid value"
 msgstr "Неверное значение"
 
-#: mg/constructor/interface.py:600
+#: mg/constructor/interface.py:599
 msgid "Select valid type"
 msgstr "Выберите верный тип"
 
-#: mg/constructor/interface.py:608
+#: mg/constructor/interface.py:607
 msgid "Specify CSS class"
 msgstr "Укажите CSS-класс"
 
-#: mg/constructor/interface.py:610
+#: mg/constructor/interface.py:609
 msgid "Class name must begin with a symbol a-z, continue with symbols a-z, 0-9 and '-' and end with a symbol a-z or a digit"
 msgstr "Имя класса должно начинаться с символа a-z, продолжаться символами a-z, 0-9 и '-' и заканчиваться символами a-z или 0-9"
 
-#: mg/constructor/interface.py:648
+#: mg/constructor/interface.py:647
 msgid "Block title (visible to administrators only)"
 msgstr "Название блока (видно только администраторам)"
 
-#: mg/constructor/interface.py:649
+#: mg/constructor/interface.py:648
 msgid "CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"
 msgstr "Название CSS-класса:<ul><li>horizontal &mdash; стандартное горизонтальное меню;</li><li>vertical &mdash; стандартное вертикальное меню;</li><li>любое другое значение - пользовательский стиль</li></ul>"
 
-#: mg/constructor/interface.py:650
+#: mg/constructor/interface.py:649
 msgid "Block type"
 msgstr "Тип блока"
 
-#: mg/constructor/interface.py:651
+#: mg/constructor/interface.py:650
 msgid "Block height"
 msgstr "Высота блока"
 
-#: mg/constructor/interface.py:651
+#: mg/constructor/interface.py:650
 msgid "Block width"
 msgstr "Ширина блока"
 
-#: mg/constructor/interface.py:651
+#: mg/constructor/interface.py:650
 msgid "width///Static"
 msgstr "статическая"
 
-#: mg/constructor/interface.py:651
+#: mg/constructor/interface.py:650
 msgid "width///Flexible"
 msgstr "резиновая"
 
-#: mg/constructor/interface.py:652
+#: mg/constructor/interface.py:651
 msgid "Height in pixels"
 msgstr "Высота в пикселях"
 
-#: mg/constructor/interface.py:652
+#: mg/constructor/interface.py:651
 msgid "Width in pixels"
 msgstr "Ширина в пикселях"
 
-#: mg/constructor/interface.py:653
+#: mg/constructor/interface.py:652
 msgid "Relative height"
 msgstr "Относительная высота"
 
-#: mg/constructor/interface.py:653
+#: mg/constructor/interface.py:652
 msgid "Relative width"
 msgstr "Относительная ширина"
 
-#: mg/constructor/interface.py:654
+#: mg/constructor/interface.py:653
 msgid "HTML content"
 msgstr "HTML-содержимое"
 
-#: mg/constructor/interface.py:698
+#: mg/constructor/interface.py:697
 msgid "New button"
 msgstr "Новая кнопка"
 
-#: mg/constructor/interface.py:699
+#: mg/constructor/interface.py:698
 msgid "Button"
 msgstr "Кнопка"
 
-#: mg/constructor/interface.py:700
+#: mg/constructor/interface.py:699
 msgid "Action"
 msgstr "Действие"
 
-#: mg/constructor/interface.py:705
+#: mg/constructor/interface.py:704
 msgid "Are you sure want to delete this button?"
 msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
-#: mg/constructor/interface.py:706
+#: mg/constructor/interface.py:705
 msgid "n/a"
 msgstr "н/д"
 
-#: mg/constructor/interface.py:740
+#: mg/constructor/interface.py:739
 msgid "show"
 msgstr "показать"
 
-#: mg/constructor/interface.py:745
-#, python-format
-msgid "href///<strong>%s</strong> to %s"
-msgstr "<strong>%s</strong> в %s"
+#: mg/constructor/interface.py:744
+msgid "href///<strong>{0}</strong> to {1}"
+msgstr "<strong>{0}</strong> в {1}"
 
-#: mg/constructor/interface.py:752
+#: mg/constructor/interface.py:751
 msgid "wildcard///block-class"
 msgstr "класс-блока"
 
-#: mg/constructor/interface.py:757
+#: mg/constructor/interface.py:756
 msgid "Unused buttons"
 msgstr "Неиспользуемые кнопки"
 
-#: mg/constructor/interface.py:771
+#: mg/constructor/interface.py:770
 msgid "Button editor"
 msgstr "Редактор кнопки"
 
@@ -3611,29 +3616,29 @@ msgid "Several files with the same name '%s' encountered"
 msgstr "Найдено несколько файлов с одинаковым именем: '%s'"
 
 #: mg/constructor/design.py:324
-#: mg/constructor/design.py:494
+#: mg/constructor/design.py:502
 msgid "Error parsing template {0}: {1}"
 msgstr "Ошибка парсинга шаблона {0}: {1}"
 
 #: mg/constructor/design.py:332
-#: mg/constructor/design.py:500
+#: mg/constructor/design.py:508
 #, python-format
 msgid ", at line %d"
 msgstr ", в строке %d"
 
 #: mg/constructor/design.py:334
-#: mg/constructor/design.py:502
+#: mg/constructor/design.py:510
 #, python-format
 msgid ", column %d"
 msgstr ", в колонке %d"
 
 #: mg/constructor/design.py:335
-#: mg/constructor/design.py:503
+#: mg/constructor/design.py:511
 msgid "Error parsing {0}: {1}"
 msgstr "Ошибка парсера {0}: {1}"
 
 #: mg/constructor/design.py:415
-#: mg/constructor/logo.py:266
+#: mg/constructor/logo.py:269
 msgid "Animated images are not supported"
 msgstr "Анимированные картинки не поддерживаются"
 
@@ -3641,770 +3646,813 @@ msgstr "Анимированные картинки не поддерживаю�
 msgid "Invalid color format"
 msgstr "Неверный формат цвета"
 
-#: mg/constructor/design.py:590
-#: mg/constructor/design.py:620
+#: mg/constructor/design.py:606
+#: mg/constructor/design.py:636
 msgid "Main image (normal size is {0}x{1}, will be automatically resized if not match)"
 msgstr "Главное изображение (нормальный размер {0}x{1}; изображение будет отмасштабировано, если размер не совпадает)"
 
-#: mg/constructor/design.py:615
+#: mg/constructor/design.py:631
 msgid "Broken Stones"
 msgstr "Разбитые камни"
 
-#: mg/constructor/design.py:621
+#: mg/constructor/design.py:637
 msgid "Background dark color"
 msgstr "Цвет тёмных частей фона"
 
-#: mg/constructor/design.py:622
+#: mg/constructor/design.py:638
 msgid "Background light color"
 msgstr "Цвет светлых частей фона"
 
-#: mg/constructor/design.py:623
+#: mg/constructor/design.py:639
 msgid "Game title (multiline permitted)"
 msgstr "Название игры (можно указать несколько строк)"
 
-#: mg/constructor/design.py:624
+#: mg/constructor/design.py:640
 msgid "Game title color"
 msgstr "Цвет названия игры"
 
-#: mg/constructor/design.py:625
+#: mg/constructor/design.py:641
 msgid "Game title glow color"
 msgstr "Цвет свечения названия игры"
 
-#: mg/constructor/design.py:626
+#: mg/constructor/design.py:642
 msgid "Text color in the 'About' and 'News' blocks"
 msgstr "Цвет текста в блоках \"Об игре\" и \"Новости\""
 
-#: mg/constructor/design.py:627
+#: mg/constructor/design.py:643
 msgid "Text color of the footer, rating participants"
 msgstr "Цвет текста в нижней части страницы и у имён участников рейтинга"
 
-#: mg/constructor/design.py:628
+#: mg/constructor/design.py:644
 msgid "Hyperlinks color"
 msgstr "Цвет гиперссылок"
 
-#: mg/constructor/design.py:629
+#: mg/constructor/design.py:645
 msgid "Color of block headers"
 msgstr "Цвет заголовков блоков"
 
-#: mg/constructor/design.py:630
+#: mg/constructor/design.py:646
 msgid "Color of rating score values"
 msgstr "Цвет чисел в рейтингах"
 
-#: mg/constructor/design.py:631
+#: mg/constructor/design.py:647
 msgid "Text color in the 'Links' block"
 msgstr "Цвет текста в блоке \"Ссылки\""
 
-#: mg/constructor/design.py:763
+#: mg/constructor/design.py:779
 msgid "Grey"
 msgstr "Серый"
 
-#: mg/constructor/design.py:775
+#: mg/constructor/design.py:791
 msgid "White"
 msgstr "Белый"
 
-#: mg/constructor/design.py:787
+#: mg/constructor/design.py:803
 msgid "Dark"
 msgstr "Тёмный"
 
-#: mg/constructor/design.py:799
+#: mg/constructor/design.py:815
 msgid "Brick"
 msgstr "Кирпичи"
 
-#: mg/constructor/design.py:811
+#: mg/constructor/design.py:827
 msgid "Night"
 msgstr "Ночь"
 
-#: mg/constructor/design.py:828
-msgid "Test"
-msgstr "Тест"
+#: mg/constructor/design.py:850
+msgid "Main image (will be placed on the cyan area)"
+msgstr "Главное изображение (будет помещено на бирюзовую подложку)"
 
-#: mg/constructor/design.py:834
+#: mg/constructor/design.py:862
+msgid "Character name or e-mail"
+msgstr "Имя персонажа или e-mail"
+
+#: mg/constructor/design.py:863
+msgid "registration"
+msgstr "регистрация"
+
+#: mg/constructor/design.py:864
+msgid "forgot your password?"
+msgstr "забыли ваш пароль?"
+
+#: mg/constructor/design.py:865
+msgid "enter"
+msgstr "войти"
+
+#: mg/constructor/design.py:868
+msgid "Links"
+msgstr "Ссылки"
+
+#: mg/constructor/design.py:869
+msgid "Ratings"
+msgstr "Рейтинги"
+
+#: mg/constructor/design.py:871
+msgid "Enter the game"
+msgstr "Вход в игру"
+
+#: mg/constructor/design.py:872
+msgid "Browser based online games constructor"
+msgstr "Конструктор браузерных онлайн-игр"
+
+#: mg/constructor/design.py:965
+#: mg/constructor/design.py:977
 msgid "Rusted Metal"
 msgstr "Ржавый Металл"
 
-#: mg/constructor/design.py:958
+#: mg/constructor/design.py:971
+msgid "Test"
+msgstr "Тест"
+
+#: mg/constructor/design.py:1100
+msgid "Design configuration"
+msgstr "Настройка оформления"
+
+#: mg/constructor/design.py:1105
 msgid "Design"
 msgstr "Оформление"
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "Preview feature"
 msgstr "Предварительный просмотр"
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "Multiple browsers"
 msgstr "Различные браузеры"
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "Check your design in the most popular browsers."
 msgstr "Проверяйте ваше оформление в наиболее популярных браузерах."
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "google///browser statistics"
 msgstr "статистика браузеров"
 
-#: mg/constructor/design.py:961
+#: mg/constructor/design.py:1108
 msgid "Find the most popular browsers"
 msgstr "Найти наиболее популярные браузеры"
 
-#: mg/constructor/design.py:974
+#: mg/constructor/design.py:1121
 msgid "Untitled"
 msgstr "Без имени"
 
-#: mg/constructor/design.py:983
-#: mg/constructor/design.py:1000
+#: mg/constructor/design.py:1130
+#: mg/constructor/design.py:1147
 msgid "preview"
 msgstr "просмотреть"
 
-#: mg/constructor/design.py:994
+#: mg/constructor/design.py:1141
 msgid "Upload design package from your computer"
 msgstr "Загрузить пакет оформления с вашего компьютера"
 
-#: mg/constructor/design.py:995
+#: mg/constructor/design.py:1142
 msgid "Uploaded"
 msgstr "Загружено"
 
-#: mg/constructor/design.py:997
+#: mg/constructor/design.py:1144
 msgid "Preview"
 msgstr "Предпросмотр"
 
-#: mg/constructor/design.py:999
+#: mg/constructor/design.py:1146
 msgid "Installation"
 msgstr "Инсталляция"
 
-#: mg/constructor/design.py:1002
+#: mg/constructor/design.py:1149
 msgid "install"
 msgstr "установить"
 
-#: mg/constructor/design.py:1003
+#: mg/constructor/design.py:1150
 msgid "Do you really want to delete this design?"
 msgstr "Вы уверены, что хотите удалить это оформление?"
 
-#: mg/constructor/design.py:1004
+#: mg/constructor/design.py:1151
 msgid "Do you really want to install this design?"
 msgstr "Вы уверены, что хотите установить это оформление?"
 
-#: mg/constructor/design.py:1006
+#: mg/constructor/design.py:1153
 msgid "zip"
 msgstr "zip"
 
-#: mg/constructor/design.py:1007
+#: mg/constructor/design.py:1154
 msgid "rename///ren"
 msgstr "переим"
 
-#: mg/constructor/design.py:1008
+#: mg/constructor/design.py:1155
 msgid "Select from the list of templates"
 msgstr "Выбрать из списка шаблонов"
 
-#: mg/constructor/design.py:1009
+#: mg/constructor/design.py:1156
 msgid "installed"
 msgstr "установлено"
 
-#: mg/constructor/design.py:1017
+#: mg/constructor/design.py:1165
 msgid "Provide a ZIP archive"
 msgstr "Загрузите ZIP-архив"
 
-#: mg/constructor/design.py:1025
+#: mg/constructor/design.py:1173
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
 
-#: mg/constructor/design.py:1027
+#: mg/constructor/design.py:1175
 msgid "ZIP64 is not supported"
 msgstr "ZIP64 не поддерживается"
 
-#: mg/constructor/design.py:1034
+#: mg/constructor/design.py:1182
 msgid "Zipped design package"
 msgstr "Пакет с оформлением в формате ZIP"
 
-#: mg/constructor/design.py:1035
-#: mg/constructor/design.py:1110
+#: mg/constructor/design.py:1183
+#: mg/constructor/design.py:1259
 msgid "Design title"
 msgstr "Название оформления"
 
-#: mg/constructor/design.py:1045
+#: mg/constructor/design.py:1193
 msgid "Choose any template you want. Then setup its parameters and you will get a personalised variant of the template."
 msgstr "Выберите любой шаблон, который вам нравится. Затем настройте его параметры, и вы получите персонализированный вариант шаблона."
 
-#: mg/constructor/design.py:1071
+#: mg/constructor/design.py:1220
 msgid "Generate design template"
 msgstr "Сформировать шаблон оформления"
 
-#: mg/constructor/design.py:1113
+#: mg/constructor/design.py:1262
 msgid "Rename"
 msgstr "Переименовать"
 
-#: mg/constructor/design.py:1173
+#: mg/constructor/design.py:1322
 msgid "New design"
 msgstr "Новое оформление"
 
-#: mg/constructor/design.py:1175
+#: mg/constructor/design.py:1324
 msgid "Design templates"
 msgstr "Шаблоны оформления"
 
-#: mg/constructor/design.py:1177
+#: mg/constructor/design.py:1326
 msgid "Renaming"
 msgstr "Переименование"
 
-#: mg/constructor/design.py:1198
+#: mg/constructor/design.py:1347
 msgid "Index page design of your game is not configured. Index page is the face of your game. It's the first that players see when they come. You can upload your own design or select one from the catalog. <hook:admin.link href=\"indexpage/design\" title=\"Open configuration\" />"
 msgstr "Оформление титульной страницы вашей игры не настроено. Титульная страница - это лицо вашей игры. Это - первое, что видят игроки, когда приходят к вам. Вы можете загрузить своё собственное оформление или выбрать из каталога. <hook:admin.link href=\"indexpage/design\" title=\"Открыть настройку\" />"
 
-#: mg/constructor/design.py:1202
+#: mg/constructor/design.py:1351
 msgid "Index page design"
 msgstr "Оформление титульной страницы"
 
-#: mg/constructor/design.py:1207
+#: mg/constructor/design.py:1356
 msgid "Index page"
 msgstr "Титульная страница"
 
-#: mg/constructor/design.py:1215
+#: mg/constructor/design.py:1364
 msgid "Index page design package must contain an HTML file"
 msgstr "Пакет с оформлением титульной страницы должен содержать HTML-файл"
 
-#: mg/constructor/design.py:1217
+#: mg/constructor/design.py:1366
 msgid "Index page design package must not contain more than one HTML file"
 msgstr "Пакет с оформлением титульной страницы не может содержать более 1 HTML-файла"
 
-#: mg/constructor/design.py:1220
+#: mg/constructor/design.py:1369
 msgid "index.html must exist in the index page design package"
 msgstr "В пакете оформления титульной страницы должен быть файл index.html"
 
-#: mg/constructor/design.py:1222
+#: mg/constructor/design.py:1371
 msgid "Index page design package must contain a CSS file"
 msgstr "Пакет с оформлением титульной страницы должен содержать CSS-файл"
 
-#: mg/constructor/design.py:1226
-#: mg/constructor/design.py:1228
+#: mg/constructor/design.py:1375
+#: mg/constructor/design.py:1377
 #, python-format
 msgid "Your page must have HTML tag: %s"
 msgstr "На странице должен быть тег %s"
 
-#: mg/constructor/design.py:1234
+#: mg/constructor/design.py:1383
 msgid "Your loginform must contain onsubmit=\"return auth_login();\""
 msgstr "Форма входа в игру (loginform) должна иметь onsubmit=\"return auth_login();\""
 
-#: mg/constructor/design.py:1241
+#: mg/constructor/design.py:1390
 msgid "Email input field must have id=\"email\" and name=\"email\""
 msgstr "Поле ввода e-mail должно иметь id=\"email\" и name=\"email\""
 
-#: mg/constructor/design.py:1245
+#: mg/constructor/design.py:1394
 msgid "Password input field must have id=\"password\" and name=\"password\""
 msgstr "Поле ввода пароля должно иметь id=\"password\" и name=\"password\""
 
-#: mg/constructor/design.py:1248
+#: mg/constructor/design.py:1397
 msgid "Your page must have HTML form with id=\"loginform\" and name=\"loginform\""
 msgstr "На странице должна быть HTML-форма с id=\"loginform\" и name=\"loginform\""
 
-#: mg/constructor/design.py:1251
-#: mg/constructor/design.py:1433
-#: mg/constructor/design.py:1713
+#: mg/constructor/design.py:1400
+#: mg/constructor/design.py:1584
+#: mg/constructor/design.py:1864
 msgid "Mike"
 msgstr "Mike"
 
-#: mg/constructor/design.py:1251
-#: mg/constructor/design.py:1433
-#: mg/constructor/design.py:1713
+#: mg/constructor/design.py:1400
+#: mg/constructor/design.py:1584
+#: mg/constructor/design.py:1864
 msgid "Ivan Ivanov"
 msgstr "Иван Иванов"
 
-#: mg/constructor/design.py:1251
-#: mg/constructor/design.py:1433
-#: mg/constructor/design.py:1713
+#: mg/constructor/design.py:1400
+#: mg/constructor/design.py:1584
+#: mg/constructor/design.py:1864
 msgid "John Smith"
 msgstr "John Smith"
 
-#: mg/constructor/design.py:1251
-#: mg/constructor/design.py:1433
-#: mg/constructor/design.py:1713
+#: mg/constructor/design.py:1400
+#: mg/constructor/design.py:1584
+#: mg/constructor/design.py:1864
 msgid "Lizard the killer"
 msgstr "Lizard the killer"
 
-#: mg/constructor/design.py:1251
-#: mg/constructor/design.py:1433
+#: mg/constructor/design.py:1400
+#: mg/constructor/design.py:1584
 msgid "Cult of the dead cow"
 msgstr "Культ мёртвой коровы"
 
-#: mg/constructor/design.py:1253
-#: mg/constructor/design.py:1254
+#: mg/constructor/design.py:1401
+#: mg/constructor/design.py:1403
+#: mg/constructor/design.py:1404
 msgid "Some title"
 msgstr "Некое название"
 
-#: mg/constructor/design.py:1253
-msgid "Very cool game with very long title"
-msgstr "Очень крутая игра с очень длинным названием"
-
-#: mg/constructor/design.py:1254
+#: mg/constructor/design.py:1401
+#: mg/constructor/design.py:1404
 msgid "Very cool game"
 msgstr "Очень крутая игра"
 
-#: mg/constructor/design.py:1255
+#: mg/constructor/design.py:1403
+msgid "Very cool game with very long title"
+msgstr "Очень крутая игра с очень длинным названием"
+
+#: mg/constructor/design.py:1405
 msgid "<p>This game is a very good sample of games with very long descriptions. In this game you become a strong warrior, a mighty wizard, a rich merchant or anyone else. It's your choice. It's your way.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh vehicula porttitor. Donec vitae elit tellus.</p>"
 msgstr "<p>Эта игра - отличный пример игр с очень длинными описаниями. В этой игре вы можете стать сильным воином, могущественным чародеем, богатым купцом или кем угодно ещё. Это ваш выбор. Это ваш путь.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vel purus dolor. Integer aliquam lectus vel urna scelerisque eget viverra eros semper. Morbi aliquet auctor iaculis. Sed lectus mauris, elementum ut porta elementum, tincidunt vitae justo. Sed ac mauris eget lorem laoreet blandit a varius orci. Donec at dolor et quam feugiat dignissim a quis velit. Vestibulum elementum, tortor at eleifend ultricies, lorem felis scelerisque sapien, nec pretium dui ante quis tellus. Praesent at tellus erat, in malesuada nunc. Donec lectus nisi, placerat eget interdum ut, elementum in tellus. Vivamus quis elementum magna. Donec viverra adipiscing ante viverra porttitor. Nam aliquam elit nec turpis volutpat eu iaculis lectus pharetra. Fusce purus lacus, malesuada eu egestas sed, auctor vel sem. Ut tempus malesuada tincidunt. Duis in sem justo. Integer sodales rhoncus nibh, sed posuere lorem commodo ac. Donec tempor consequat venenatis. Vivamus velit tellus, dignissim venenatis viverra eu, porta eget augue. Quisque nec justo a nibh vehicula porttitor. Donec vitae elit tellus.</p>"
 
-#: mg/constructor/design.py:1255
+#: mg/constructor/design.py:1405
 msgid "This game has a very short description. It was written in hurry by a young game designer."
 msgstr "У этой игры очень короткое описание. Оно было написано в спешке молодым гейм-дизайнером."
 
-#: mg/constructor/design.py:1262
+#: mg/constructor/design.py:1412
 msgid "Breaking news"
 msgstr "Срочно в номер"
 
-#: mg/constructor/design.py:1262
+#: mg/constructor/design.py:1412
 msgid "New updates related to the abandoned dungeon"
 msgstr "Новые обновления, связанные с заброшенным подземельем"
 
-#: mg/constructor/design.py:1262
+#: mg/constructor/design.py:1412
 msgid "Eternal shadow returns"
 msgstr "Вечная тень возвращается"
 
-#: mg/constructor/design.py:1262
+#: mg/constructor/design.py:1412
 msgid "Epic war event"
 msgstr "Эпическое событие: война"
 
-#: mg/constructor/design.py:1263
+#: mg/constructor/design.py:1413
 msgid "South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."
 msgstr "Баварские фермеры отказались уступать землю под олимпийские объекты. По всей Европе вводятся новые сборы с туристов."
 
-#: mg/constructor/design.py:1263
+#: mg/constructor/design.py:1413
 msgid "Europe travel chaos starts to clear"
 msgstr "Перепись населения откатила США к временам Великой депрессии"
 
-#: mg/constructor/design.py:1263
+#: mg/constructor/design.py:1413
 msgid "Even with legal protection, women victims of rape still face a social stigma that is hard to overcome. He said: \"Women are still afraid to complain if they are victims of rape because there is an attitude from the society.\"</p><p>Coulibaly added: \"There is no law to define rape but there will be one. And work is being done with police officers and judges ... to let them understand the problem is not the woman, but the perpetrator of the rape.\""
 msgstr "На сайте госкорпорации \"Роснано\" появился рекламный ролик, приуроченный к открытию первого завода, созданного при участии \"Роснано\" в городе Рыбинске Ярославской области.</p><p>В ролике, показывающем возможности продукции первого нанопроизводства, звучит фраза, которую выбрали в качестве слогана акции: \"Ну ты, нано, даешь!\". На заводе планируют производить \"износостойкие инструменты\", в том числе сверла с прочным нанопокрытием."
 
-#: mg/constructor/design.py:1268
+#: mg/constructor/design.py:1418
 msgid "This is a sample meta description"
 msgstr "Это пример meta-описания"
 
-#: mg/constructor/design.py:1269
+#: mg/constructor/design.py:1419
 msgid "online games, keyword 1, keyword 2"
 msgstr "онлайн-игры, ключевое слово 1, ключевое слово 2"
 
-#: mg/constructor/design.py:1275
+#: mg/constructor/design.py:1425
 msgid "Joy Team, Author"
 msgstr "Joy Team, Автор"
 
-#: mg/constructor/design.py:1275
+#: mg/constructor/design.py:1425
 msgid "Joy Team, Very Long Author Name Even So Long"
 msgstr "Joy Team, Очень Длинное Имя Автора и Ещё Длиннее"
 
-#: mg/constructor/design.py:1279
+#: mg/constructor/design.py:1429
 msgid "Enter invisible"
 msgstr "Вход в невидимости"
 
-#: mg/constructor/design.py:1281
+#: mg/constructor/design.py:1431
 msgid "Already invisible"
 msgstr "Уже в невидимости"
 
-#: mg/constructor/design.py:1285
+#: mg/constructor/design.py:1435
 msgid "Library"
 msgstr "Библиотека"
 
-#: mg/constructor/design.py:1289
+#: mg/constructor/design.py:1439
 msgid "World history"
 msgstr "История мира"
 
-#: mg/constructor/design.py:1298
+#: mg/constructor/design.py:1448
 msgid "Game forum"
 msgstr "Форум игры"
 
-#: mg/constructor/design.py:1303
+#: mg/constructor/design.py:1453
 msgid "Screenshots"
 msgstr "Скриншоты"
 
-#: mg/constructor/design.py:1308
+#: mg/constructor/design.py:1458
 msgid "Secure entrance"
 msgstr "Безопасный вход"
 
-#: mg/constructor/design.py:1310
+#: mg/constructor/design.py:1460
 msgid "Connection secured"
 msgstr "Установлено безопасное соединение"
 
-#: mg/constructor/design.py:1320
+#: mg/constructor/design.py:1470
 msgid "The biggest glory"
 msgstr "Самая большая слава"
 
-#: mg/constructor/design.py:1320
+#: mg/constructor/design.py:1470
 msgid "The richest"
 msgstr "Самые богатые"
 
-#: mg/constructor/design.py:1320
+#: mg/constructor/design.py:1470
 msgid "Top clan"
 msgstr "Топ-клан"
 
-#: mg/constructor/design.py:1320
+#: mg/constructor/design.py:1470
 msgid "The best dragon hunter"
 msgstr "Лучший охотник на драконов"
 
-#: mg/constructor/design.py:1348
+#: mg/constructor/design.py:1499
 msgid "Socio interface design of your game is not configured. Socio interface is shown when forum, library or any other external interface is being accessed. You can upload your own design or select one from the catalog. <hook:admin.link href=\"sociointerface/design\" title=\"Open configuration\" />"
 msgstr "Оформление социальных интерфейсов вашей игры не настроено. Социальные интерфейсы показываются, когда игрок открывает форум, библиотеку или любую другую внешнюю страницу. Вы можете загрузить своё собственное оформление или выбрать из каталога. <hook:admin.link href=\"sociointerface/design\" title=\"Открыть настройку\" />"
 
-#: mg/constructor/design.py:1360
+#: mg/constructor/design.py:1511
 msgid "Topics"
 msgstr "Тем"
 
-#: mg/constructor/design.py:1373
-#: mg/constructor/design.py:1375
-#: mg/constructor/design.py:1378
+#: mg/constructor/design.py:1524
+#: mg/constructor/design.py:1526
+#: mg/constructor/design.py:1529
 msgid "Pages"
 msgstr "На страницу"
 
-#: mg/constructor/design.py:1374
+#: mg/constructor/design.py:1525
 msgid "topic///Opened"
 msgstr "Открыта"
 
-#: mg/constructor/design.py:1379
+#: mg/constructor/design.py:1530
 msgid "topic started"
 msgstr "тема открыта"
 
-#: mg/constructor/design.py:1380
-#: mg/constructor/design.py:1437
+#: mg/constructor/design.py:1531
+#: mg/constructor/design.py:1588
 msgid "All posts"
 msgstr "Все сообщения"
 
-#: mg/constructor/design.py:1381
+#: mg/constructor/design.py:1532
 msgid "Search for all posts of this member"
 msgstr "Все сообщения этого пользователя"
 
-#: mg/constructor/design.py:1382
+#: mg/constructor/design.py:1533
 msgid "to the top"
 msgstr "наверх"
 
-#: mg/constructor/design.py:1383
+#: mg/constructor/design.py:1534
 msgid "written at"
 msgstr "написано"
 
-#: mg/constructor/design.py:1387
+#: mg/constructor/design.py:1538
 msgid "Forum tags"
 msgstr "Теги форума"
 
-#: mg/constructor/design.py:1401
+#: mg/constructor/design.py:1552
 msgid "Socio interface design"
 msgstr "Оформление интерфейса социалки"
 
-#: mg/constructor/design.py:1406
+#: mg/constructor/design.py:1557
 msgid "Socio interface"
 msgstr "Интерфейс социалки"
 
-#: mg/constructor/design.py:1414
+#: mg/constructor/design.py:1565
 msgid "Socio interface design package must contain an HTML file"
 msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
 
-#: mg/constructor/design.py:1416
+#: mg/constructor/design.py:1567
 msgid "Socio interface design package must not contain more than one HTML file"
 msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
 
-#: mg/constructor/design.py:1419
+#: mg/constructor/design.py:1570
 msgid "index.html must exist in the socio interface design package"
 msgstr "В пакете оформления интерфейса социалки должен быть файл index.html"
 
-#: mg/constructor/design.py:1421
+#: mg/constructor/design.py:1572
 msgid "Socio interface design package must contain a CSS file"
 msgstr "Пакет с оформлением социалки должен содержать CSS-файл"
 
-#: mg/constructor/design.py:1425
-#: mg/constructor/design.py:1468
+#: mg/constructor/design.py:1576
+#: mg/constructor/design.py:1619
 msgid "Forum category"
 msgstr "Раздел форума"
 
-#: mg/constructor/design.py:1426
+#: mg/constructor/design.py:1577
 msgid "Forum topic"
 msgstr "Тема на форуме"
 
-#: mg/constructor/design.py:1427
+#: mg/constructor/design.py:1578
 msgid "Tags cloud"
 msgstr "Облако тегов"
 
-#: mg/constructor/design.py:1432
+#: mg/constructor/design.py:1583
 msgid "Unknown problem"
 msgstr "Неизвестная проблема"
 
-#: mg/constructor/design.py:1432
+#: mg/constructor/design.py:1583
 msgid "Very important combat will take place tomorrow"
 msgstr "Завтра состоится очень важное сражение"
 
-#: mg/constructor/design.py:1432
+#: mg/constructor/design.py:1583
 msgid "Not so important but a very large forum topic title"
 msgstr "Не очень важный, но очень длинный заголовок темы на форуме"
 
-#: mg/constructor/design.py:1434
+#: mg/constructor/design.py:1585
 msgid "6th of December, 2010 at 12:01"
 msgstr "6 декабря 2010 в 12:01"
 
-#: mg/constructor/design.py:1434
+#: mg/constructor/design.py:1585
 msgid "13th of June, 2008 at 02:11"
 msgstr "13 июня 2008 года в 02:11"
 
-#: mg/constructor/design.py:1434
+#: mg/constructor/design.py:1585
 msgid "7th of February, 2011 at 23:17"
 msgstr "7 февраля 2011 года в 23:17"
 
-#: mg/constructor/design.py:1434
+#: mg/constructor/design.py:1585
 msgid "21th of October, 2010 at 17:00"
 msgstr "21 октября 2010 года в 17:00"
 
-#: mg/constructor/design.py:1435
+#: mg/constructor/design.py:1586
 msgid "This is a sample signature line"
 msgstr "Это пример строки подписи"
 
-#: mg/constructor/design.py:1435
+#: mg/constructor/design.py:1586
 msgid "Some another line"
 msgstr "Какая-то другая строка"
 
-#: mg/constructor/design.py:1435
+#: mg/constructor/design.py:1586
 msgid "Very strange signature"
 msgstr "Очень странная подпись"
 
-#: mg/constructor/design.py:1435
+#: mg/constructor/design.py:1586
 msgid "Absolutely crazy signature line"
 msgstr "Абсолютно сумасшедшая строка подписи"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "game"
 msgstr "игра"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "mmo"
 msgstr "mmo"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "constructor"
 msgstr "конструктор"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "people"
 msgstr "люди"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "online games"
 msgstr "онлайн-игры"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "game industry"
 msgstr "игровая индустрия"
 
-#: mg/constructor/design.py:1436
+#: mg/constructor/design.py:1587
 msgid "game engine"
 msgstr "игровой движок"
 
-#: mg/constructor/design.py:1437
+#: mg/constructor/design.py:1588
 msgid "Rating"
 msgstr "Рейтинг"
 
-#: mg/constructor/design.py:1437
+#: mg/constructor/design.py:1588
 msgid "Projects"
 msgstr "Проекты"
 
-#: mg/constructor/design.py:1437
+#: mg/constructor/design.py:1588
 msgid "Wishlist"
 msgstr "Вишлист"
 
-#: mg/constructor/design.py:1438
+#: mg/constructor/design.py:1589
 msgid "ignore"
 msgstr "игнорировать"
 
-#: mg/constructor/design.py:1446
+#: mg/constructor/design.py:1597
 msgid "Main group"
 msgstr "Главная группа"
 
-#: mg/constructor/design.py:1446
+#: mg/constructor/design.py:1597
 msgid "Additional categories"
 msgstr "Дополнительные разделы"
 
-#: mg/constructor/design.py:1446
+#: mg/constructor/design.py:1597
 msgid "Important"
 msgstr "Важное"
 
-#: mg/constructor/design.py:1446
+#: mg/constructor/design.py:1597
 msgid "Technical reference"
 msgstr "Техническое руководство"
 
-#: mg/constructor/design.py:1450
+#: mg/constructor/design.py:1601
 msgid "Technical support"
 msgstr "Техническая поддержка"
 
-#: mg/constructor/design.py:1450
+#: mg/constructor/design.py:1601
 msgid "A very long forum category title"
 msgstr "Очень длинное название раздела на форуме"
 
-#: mg/constructor/design.py:1451
+#: mg/constructor/design.py:1602
 msgid "This is a short category description"
 msgstr "Это очень короткое описание раздела"
 
-#: mg/constructor/design.py:1451
+#: mg/constructor/design.py:1602
 msgid "This is a very long category description. It can be very-very long. And even longer. It can take several lines. Most of us know him as the big jolly man with a white beard and red suit, but who was - or were - the real Santa Claus? Ivan Watson goes to Demre in Turkey to find out more about the legend of Saint Nicholas."
 msgstr "Это очень длинное описание раздела. Оно может быть очень-очень длинным. И даже ещё длиннее. Оно может занимать несколько строк. Большинство из нас знает его как большого мужчину с белой бородой и в красной шубе. Но кто он, или кем он был знает только наш корреспондент, который отправился в Турцию, чтобы больше узнать о легенде Святого Николая."
 
-#: mg/constructor/design.py:1591
+#: mg/constructor/design.py:1742
 msgid "Some header"
 msgstr "Некий заголовок"
 
-#: mg/constructor/design.py:1597
-#: mg/constructor/design.py:1617
+#: mg/constructor/design.py:1748
+#: mg/constructor/design.py:1768
 msgid "Menu item"
 msgstr "Пункт меню"
 
-#: mg/constructor/design.py:1605
+#: mg/constructor/design.py:1756
 msgid "Login"
 msgstr "Имя"
 
-#: mg/constructor/design.py:1605
+#: mg/constructor/design.py:1756
 msgid "Friends"
 msgstr "Друзья"
 
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1777
 msgid "Pin"
 msgstr "Закрепить"
 
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1777
 msgid "Unpin"
 msgstr "Открепить"
 
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1777
 msgid "Close"
 msgstr "Закрыть"
 
-#: mg/constructor/design.py:1626
+#: mg/constructor/design.py:1777
 msgid "Open"
 msgstr "Открыть"
 
-#: mg/constructor/design.py:1656
+#: mg/constructor/design.py:1807
 msgid "Game interface design of your game is not configured. Game interface is a screen than player sees after entering the game. You can upload your own design or select one from the catalog. <hook:admin.link href=\"gameinterface/design\" title=\"Open configuration\" />"
 msgstr "Оформление игрового интерфейса вашей игры не настроено. Игровой интерфейс - это экран, который видят пользователи после входа в игру. Вы можете загрузить своё собственное оформление или выбрать из каталога. <hook:admin.link href=\"gameinterface/design\" title=\"Открыть настройку\" />"
 
-#: mg/constructor/design.py:1660
+#: mg/constructor/design.py:1811
 msgid "Game interface design"
 msgstr "Оформление интерфейса игры"
 
-#: mg/constructor/design.py:1665
-#: mg/constructor/design.py:1696
+#: mg/constructor/design.py:1816
+#: mg/constructor/design.py:1847
 msgid "Game interface"
 msgstr "Интерфейс игры"
 
-#: mg/constructor/design.py:1673
+#: mg/constructor/design.py:1824
 #, python-format
 msgid "Game interface design package must contain %s file"
 msgstr "Пакет с оформлением игры должен содержать файл %s"
 
-#: mg/constructor/design.py:1680
+#: mg/constructor/design.py:1831
 msgid "Game interface blocks"
 msgstr "Блоки игрового интерфейса"
 
-#: mg/constructor/design.py:1681
+#: mg/constructor/design.py:1832
 msgid "Game interface CSS"
 msgstr "CSS игрового интерфейса"
 
-#: mg/constructor/design.py:1682
+#: mg/constructor/design.py:1833
 msgid "Common game CSS (styles for character icons, level [5] markers etc). This file is included in every game page - index page, game interface, socio interface"
 msgstr "Общеигровой CSS (стили для иконок персонажей, маркеров уровней [5] и т.д.) Этот файл включается в каждую страницу игры - титульную, игровой интерфейс, социальный интерфейс"
 
-#: mg/constructor/design.py:1683
+#: mg/constructor/design.py:1834
 msgid "External interface"
 msgstr "Внешний интерфейс"
 
-#: mg/constructor/design.py:1684
+#: mg/constructor/design.py:1835
 msgid "Cabinet interface (inside the external interface)"
 msgstr "Интерфейс кабинета (помещается внутрь external.html)"
 
-#: mg/constructor/design.py:1685
+#: mg/constructor/design.py:1836
 msgid "External error message (inside the external interface)"
 msgstr "Внешнее сообщение об ошибке (помещается в external.html)"
 
-#: mg/constructor/design.py:1686
+#: mg/constructor/design.py:1837
 msgid "External form (inside the external interface)"
 msgstr "Внешняя форма (помещается в external.html)"
 
-#: mg/constructor/design.py:1689
+#: mg/constructor/design.py:1840
 msgid "Required design files"
 msgstr "Файлы, требуемые для оформления"
 
-#: mg/constructor/design.py:1689
+#: mg/constructor/design.py:1840
 #, python-format
 msgid "Here is a list of required files in your design with short descriptions: <ul>%s</ul>"
 msgstr "Это список требуемых от вашего оформления файлов с краткими описаниями: <ul>%s</ul>"
 
-#: mg/constructor/design.py:1699
+#: mg/constructor/design.py:1850
 msgid "Form"
 msgstr "Форма"
 
-#: mg/constructor/design.py:1703
+#: mg/constructor/design.py:1854
 msgid "Demo page"
 msgstr "Демонстрационная страница"
 
-#: mg/constructor/design.py:1713
+#: mg/constructor/design.py:1864
 msgid "Crazy Warrior From Hell"
 msgstr "Сумасшедший Воин Из Ада"
 
-#: mg/constructor/design.py:1726
+#: mg/constructor/design.py:1877
 msgid "This is a short error message"
 msgstr "Это очень короткое сообщение об ошибке"
 
-#: mg/constructor/design.py:1727
+#: mg/constructor/design.py:1878
 msgid "An error message is information displayed when an unexpected condition occurs, usually on a computer or other device. On modern operating systems with graphical user interfaces, error messages are often displayed using dialog boxes. Error messages are used when user intervention is required, to indicate that a desired operation has failed, or to relay important warnings (such as warning a computer user that they are almost out of hard disk space). Error messages are seen widely throughout computing, and are part of every operating system or computer hardware device. Proper design of error messages is an important topic in usability and other fields of humancomputer interaction."
 msgstr "Любой, кто написал программу для публичного использования, получил, по крайней мере, одно плохое сообщение об ошибке. Сообщения, которые ни о чем не говорили (\"Это не работает\"); сообщения, которые не имели смысла; сообщения, которые не давали достаточной информации; сообщения, которые давали неправильную информацию. Сообщения о проблемах, которые оборачивались ошибками пользователя; сообщения о проблемах, которые оборачивались дефектом в чьей-то другой программе; сообщения о проблемах, которые оборачивались сбоями сети."
 
-#: mg/constructor/design.py:1731
+#: mg/constructor/design.py:1882
 msgid "Are you sure?"
 msgstr "Вы уверены?"
 
-#: mg/constructor/design.py:1731
+#: mg/constructor/design.py:1882
 msgid "Something wrong"
 msgstr "Что-то пошло не так"
 
-#: mg/constructor/design.py:1731
+#: mg/constructor/design.py:1882
 msgid "Something is completely wrong"
 msgstr "Что-то полностью пошло не так"
 
-#: mg/constructor/design.py:1732
+#: mg/constructor/design.py:1883
 msgid "Enter your age"
 msgstr "Введите ваш возраст"
 
-#: mg/constructor/design.py:1732
+#: mg/constructor/design.py:1883
 msgid "Specify your weight"
 msgstr "Укажите ваш вас"
 
-#: mg/constructor/design.py:1732
+#: mg/constructor/design.py:1883
 msgid "What do you think about this?"
 msgstr "Что вы думаете об этом?"
 
-#: mg/constructor/design.py:1732
+#: mg/constructor/design.py:1883
 msgid "Try to describe your choice"
 msgstr "Попытайтесь описать свой выбор"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "Some value"
 msgstr "Некое значение"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "Some another value"
 msgstr "Некое другое значение"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "Some strange value"
 msgstr "Некое странное значение"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "Very important value"
 msgstr "Очень важное значение"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "A simple value"
 msgstr "Простое значение"
 
-#: mg/constructor/design.py:1733
+#: mg/constructor/design.py:1884
 msgid "A complex value"
 msgstr "Сложное значение"
 
-#: mg/constructor/design.py:1734
+#: mg/constructor/design.py:1885
 msgid "Values you entered are not valid. Try again please"
 msgstr "Введённые вами значения неверны. Попробуйте ещё раз"
 
-#: mg/constructor/design.py:1734
+#: mg/constructor/design.py:1885
 msgid "This is a very long message to tell user some important information about the form"
 msgstr "Это очень длинное сообщение, чтобы сообщить пользователю важную информацию о форме"
 
@@ -4493,187 +4541,187 @@ msgstr "У вас не будет возможности изменить лог
 msgid "Change the game logo now"
 msgstr "Изменить логотип игры прямо сейчас"
 
-#: mg/constructor/game.py:158
+#: mg/constructor/game.py:159
 msgid "Basic image for your logo"
 msgstr "Базовое изображение для вашего логотипа"
 
-#: mg/constructor/game.py:162
+#: mg/constructor/game.py:163
 msgid "Current logo"
 msgstr "Текущий логотип"
 
-#: mg/constructor/game.py:170
+#: mg/constructor/game.py:171
 msgid "Logo editor"
 msgstr "Редактор логотипа"
 
-#: mg/constructor/logo.py:16
+#: mg/constructor/logo.py:17
 msgid "Upload logo image"
 msgstr "Загрузите файл с логотипом"
 
-#: mg/constructor/logo.py:25
+#: mg/constructor/logo.py:26
 msgid "Animated logos are not supported"
 msgstr "Анимированные логотипы не поддерживаются"
 
-#: mg/constructor/logo.py:115
+#: mg/constructor/logo.py:116
 #, python-format
 msgid "Project code: Font %s"
 msgstr "Код проекта: Шрифт %s"
 
-#: mg/constructor/logo.py:119
-#: mg/constructor/logo.py:333
+#: mg/constructor/logo.py:120
+#: mg/constructor/logo.py:337
 msgid "Logo constructor"
 msgstr "Конструктор логотипов"
 
-#: mg/constructor/logo.py:183
-#: mg/constructor/logo.py:198
+#: mg/constructor/logo.py:184
+#: mg/constructor/logo.py:199
 msgid "Remove"
 msgstr "Удалить"
 
-#: mg/constructor/logo.py:184
+#: mg/constructor/logo.py:185
 msgid "Solid"
 msgstr "Сплошной"
 
-#: mg/constructor/logo.py:185
+#: mg/constructor/logo.py:186
 msgid "Circle"
 msgstr "Круг"
 
-#: mg/constructor/logo.py:186
+#: mg/constructor/logo.py:187
 msgid "Ring border"
 msgstr "Кольцевая рамка"
 
-#: mg/constructor/logo.py:187
+#: mg/constructor/logo.py:188
 msgid "Square"
 msgstr "Квадрат"
 
-#: mg/constructor/logo.py:188
+#: mg/constructor/logo.py:189
 msgid "Rectangle"
 msgstr "Прямоугольник"
 
-#: mg/constructor/logo.py:189
+#: mg/constructor/logo.py:190
 msgid "Triangle 1"
 msgstr "Треугольник 1"
 
-#: mg/constructor/logo.py:190
+#: mg/constructor/logo.py:191
 msgid "Triangle 2"
 msgstr "Треугольник 2"
 
-#: mg/constructor/logo.py:199
+#: mg/constructor/logo.py:200
 msgid "Bamboo #1"
 msgstr "Бамбук №1"
 
-#: mg/constructor/logo.py:200
+#: mg/constructor/logo.py:201
 msgid "Brick #1"
 msgstr "Кирпич №1"
 
-#: mg/constructor/logo.py:201
+#: mg/constructor/logo.py:202
 msgid "Brick #2"
 msgstr "Кирпич №2"
 
-#: mg/constructor/logo.py:202
+#: mg/constructor/logo.py:203
 msgid "Dirt #1"
 msgstr "Земля №1"
 
-#: mg/constructor/logo.py:203
+#: mg/constructor/logo.py:204
 msgid "Fur #1"
 msgstr "Мех №1"
 
-#: mg/constructor/logo.py:204
+#: mg/constructor/logo.py:205
 msgid "Grass #1"
 msgstr "Трава №1"
 
-#: mg/constructor/logo.py:205
+#: mg/constructor/logo.py:206
 msgid "Grass #2"
 msgstr "Трава №2"
 
-#: mg/constructor/logo.py:206
+#: mg/constructor/logo.py:207
 msgid "Grass #3"
 msgstr "Трава №3"
 
-#: mg/constructor/logo.py:207
+#: mg/constructor/logo.py:208
 msgid "Grass #4"
 msgstr "Трава №4"
 
-#: mg/constructor/logo.py:208
+#: mg/constructor/logo.py:209
 msgid "Leather #1"
 msgstr "Кожа №1"
 
-#: mg/constructor/logo.py:209
+#: mg/constructor/logo.py:210
 msgid "Metal #1"
 msgstr "Металл №1"
 
-#: mg/constructor/logo.py:210
+#: mg/constructor/logo.py:211
 msgid "Metal #2"
 msgstr "Металл №2"
 
-#: mg/constructor/logo.py:211
+#: mg/constructor/logo.py:212
 msgid "Metal #3"
 msgstr "Металл №3"
 
-#: mg/constructor/logo.py:212
+#: mg/constructor/logo.py:213
 msgid "Sack #1"
 msgstr "Мешковина №1"
 
-#: mg/constructor/logo.py:213
+#: mg/constructor/logo.py:214
 msgid "Sack #2"
 msgstr "Мешковина №2"
 
-#: mg/constructor/logo.py:214
+#: mg/constructor/logo.py:215
 msgid "Sky #1"
 msgstr "Небо №1"
 
-#: mg/constructor/logo.py:215
+#: mg/constructor/logo.py:216
 msgid "Stones #1"
 msgstr "Камни №1"
 
-#: mg/constructor/logo.py:216
+#: mg/constructor/logo.py:217
 msgid "Wicker #1"
 msgstr "Плетёнка №1"
 
-#: mg/constructor/logo.py:217
+#: mg/constructor/logo.py:218
 msgid "Wood #1"
 msgstr "Дерево №1"
 
-#: mg/constructor/logo.py:218
+#: mg/constructor/logo.py:219
 msgid "Wood #2"
 msgstr "Дерево №2"
 
-#: mg/constructor/logo.py:219
+#: mg/constructor/logo.py:220
 msgid "Wood #3"
 msgstr "Дерево №3"
 
-#: mg/constructor/logo.py:220
+#: mg/constructor/logo.py:221
 msgid "Wood #4"
 msgstr "Дерево №4"
 
-#: mg/constructor/logo.py:221
+#: mg/constructor/logo.py:222
 msgid "Wood #5"
 msgstr "Дерево №5"
 
-#: mg/constructor/logo.py:226
+#: mg/constructor/logo.py:227
 msgid "Upload new custom 100x75 image..."
 msgstr "Загрузить новую картинку 100x75..."
 
-#: mg/constructor/logo.py:227
+#: mg/constructor/logo.py:228
 msgid "Select solid color..."
 msgstr "Выберите сплошной цвет"
 
-#: mg/constructor/logo.py:238
+#: mg/constructor/logo.py:240
 msgid "Invalid color"
 msgstr "Неверный цвет"
 
-#: mg/constructor/logo.py:250
+#: mg/constructor/logo.py:252
 msgid "Solid color #{0} - {1}"
 msgstr "Сплошной цвет №{0} - {1}"
 
-#: mg/constructor/logo.py:257
+#: mg/constructor/logo.py:260
 msgid "Upload your image"
 msgstr "Загрузите ваше изображение"
 
-#: mg/constructor/logo.py:298
+#: mg/constructor/logo.py:301
 #, python-format
 msgid "Custom image #%d"
 msgstr "Пользовательская картинка №%d"
 
-#: mg/constructor/logo.py:334
+#: mg/constructor/logo.py:338
 msgid "Here you can construct your own simple 100x75 logo using several basic elements."
 msgstr "Здесь, используя несколько базовых элементов, вы можете сконструировать себе простой логотип 100x75."
 
@@ -5103,9 +5151,8 @@ msgid "Domain name is too long"
 msgstr "Доменное имя слишком длинное"
 
 #: mg/constructor/domains.py:710
-#, python-format
-msgid "You have assigned domain name <strong>%s</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://%s/cabinet\" target=\"top\">Return to the cabinet</a>"
-msgstr "Вы успешно назначили вашей игре доменное имя <strong>%s</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://%s/cabinet\" target=\"top\">Возврат в кабинет</a>"
+msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://{1}/cabinet\" target=\"top\">Return to the cabinet</a>"
+msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://{1}/cabinet\" target=\"top\">Возврат в кабинет</a>"
 
 #: mg/constructor/domains.py:720
 msgid "<p>We don't offer a free domain name &mdash; you have to register it manually. You may take domain of any level you want: 2nd-level domain (yourgame.com), 3rd-level (game.yourdomain.com) or any other (game.project.person.company.com)</p>"
@@ -5396,6 +5443,8 @@ msgstr "Отказ в модерации"
 msgid "Registration failed"
 msgstr "Регистрация не удалась"
 
+#~ msgid "Error storing object %s: %s"
+#~ msgstr "Ошибка при сохранении объекта %s: %s"
 #~ msgid "CSS class name"
 #~ msgstr "Имя CSS-класса"
 #~ msgid "Gold"
