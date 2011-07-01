@@ -1,0 +1,9 @@
+#panel-top-content { background-image: url(top-panel.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 4px }
+#panel-top-content .panel-header { color: #fdfdff; font-family: "Arial Black", Verdana; font-size: 16px; text-shadow: 0px 0px 1px #a0a0ff, 0px 0px 2px #000000; padding: 5px 0 0 10px }
+.x-layout-split { background: #d9e0e7 }
+#chat-input { padding: 12px }
+.chat-channel-content { padding: 0 12px 0 12px }
+.default-chat-submit { display: block; background-image: url(chat-submit.png); width: 128px; padding: 3px 0 4px 0; color: #577ca2; font-weight: bold; background-position: 50% 50%; background-repeat: no-repeat; text-align: center }
+.default-chat-submit-td { width: 138px }
+.chat-roster-characters-content2 { padding: 12px }
+.chat-roster-channel { margin-top: 5px }

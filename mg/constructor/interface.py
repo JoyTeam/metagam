@@ -16,6 +16,12 @@ re_block_edit = re.compile('^(\S+)\/(\S+)$')
 re_button_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
 
+default_icons = set([
+    "auth-logout.png",
+    "game-admin.png",
+    "game-reload.png",
+])
+
 class Dynamic(Module):
     def register(self):
         Module.register(self)
@@ -85,6 +91,7 @@ class Interface(ConstructorModule):
         self.rhook("headmenu-admin-gameinterface.buttons", self.headmenu_buttons)
         self.rhook("ext-admin-gameinterface.buttons", self.gameinterface_buttons, priv="design")
         self.rhook("ext-interface.handler", self.interface_index, priv="logged")
+        self.rhook("ext-project.status", self.project_status, priv="logged")
         self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
@@ -208,7 +215,11 @@ class Interface(ConstructorModule):
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]
-        vars["main_init"] = "/interface/sample"
+        vars["send"] = self._("send")
+        if project.get("published"):
+            vars["main_init"] = "/interface/sample"
+        else:
+            vars["main_init"] = "/project/status"
         if self.conf("debug.ext"):
             vars["debug_ext"] = True
         # Rendering button panels
@@ -222,6 +233,7 @@ class Interface(ConstructorModule):
                     "tp": block["type"],
                     "width": block.get("width"),
                     "flex": block.get("flex"),
+                    "html": jsencode(block.get("html")),
                     "cls": block.get("class"),
                 }
                 if block["type"] == "buttons":
@@ -240,7 +252,10 @@ class Interface(ConstructorModule):
                                 else:
                                     image = "/st-mg/game/invalid.png"
                             else:
-                                image = "/st-mg/game/invalid.png"
+                                if not design and btn.get("icon") and btn["icon"] in default_icons:
+                                    image = "/st-mg/game/default-interface/%s" % btn["icon"]
+                                else:
+                                    image = "/st-mg/game/invalid.png"
                             rbtn = {
                                 "image": image,
                                 "title": jsencode(htmlescape(btn.get("title"))),
@@ -412,13 +427,14 @@ class Interface(ConstructorModule):
         if blocks is not None:
             return blocks
         blocks = []
-        blocks.append({
-            "id": uuid4().hex,
-            "type": "empty",
-            "order": 0,
-            "flex": 1,
-        })
         if panel_id == "top":
+            blocks.append({
+                "id": "top-left",
+                "type": "header",
+                "html": htmlescape(self.app().project.get("title_short", "").upper()),
+                "order": 0,
+                "flex": 1,
+            })
             blocks.append({
                 "id": "top-menu",
                 "type": "buttons",
@@ -426,7 +442,19 @@ class Interface(ConstructorModule):
                 "title": self._("Top menu"),
                 "class": "horizontal",
             })
+            blocks.append({
+                "id": "top-right",
+                "type": "empty",
+                "order": 100,
+                "flex": 1,
+            })
         elif panel_id == "main-left":
+            blocks.append({
+                "id": "main-left-top",
+                "type": "empty",
+                "order": 0,
+                "flex": 1,
+            })
             blocks.append({
                 "id": "left-menu",
                 "type": "buttons",
@@ -434,7 +462,19 @@ class Interface(ConstructorModule):
                 "title": self._("Left menu"),
                 "class": "vertical",
             })
+            blocks.append({
+                "id": "main-left-bottom",
+                "type": "empty",
+                "order": 100,
+                "flex": 1,
+            })
         elif panel_id == "main-right":
+            blocks.append({
+                "id": "main-right-top",
+                "type": "empty",
+                "order": 0,
+                "flex": 1,
+            })
             blocks.append({
                 "id": "right-menu",
                 "type": "buttons",
@@ -442,12 +482,12 @@ class Interface(ConstructorModule):
                 "title": self._("Right menu"),
                 "class": "vertical",
             })
-        blocks.append({
-            "id": uuid4().hex,
-            "type": "empty",
-            "order": 100,
-            "flex": 1,
-        })
+            blocks.append({
+                "id": "main-right-bottom",
+                "type": "empty",
+                "order": 100,
+                "flex": 1,
+            })
         config = self.app().config_updater()
         config.set("gameinterface.blocks-%s" % panel_id, blocks)
         config.store()
@@ -527,6 +567,7 @@ class Interface(ConstructorModule):
             "buttons": self._("Buttons"),
             "empty": self._("Empty space"),
             "html": self._("Raw HTML"),
+            "header": self._("Header"),
         }
         blocks = []
         for block in panel["blocks"]:
@@ -597,7 +638,7 @@ class Interface(ConstructorModule):
                         block["flex"] = intz(width_flex)
                 else:
                     errors["v_width_type"] = self._("Select valid type")
-            if block["type"] == "html":
+            if block["type"] == "html" or block["header"] == "header":
                 block["html"] = req.param("html")
             block["order"] = intz(req.param("order"))
             block["title"] = req.param("title")
@@ -646,11 +687,11 @@ class Interface(ConstructorModule):
         fields = [
             {"name": "title", "label": self._("Block title (visible to administrators only)"), "value": title},
             {"name": "class", "label": self._("CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"), "value": cls, "remove_label_separator": True},
-            {"type": "combo", "name": "type", "label": self._("Block type"), "value": tp, "values": [("buttons", self._("Buttons")), ("empty", self._("Empty space")), ("html", self._("Raw HTML"))], "disabled": True if block else False},
+            {"type": "combo", "name": "type", "label": self._("Block type"), "value": tp, "values": [("buttons", self._("Buttons")), ("header", self._("Header")), ("empty", self._("Empty space")), ("html", self._("Raw HTML"))], "disabled": True if block else False},
             {"type": "combo", "name": "width_type", "label": self._("Block height") if panel.get("vert") else self._("Block width"), "value": width_type, "values": [("static", self._("width///Static")), ("flex", self._("width///Flexible"))], "condition": "[type]!='buttons'"},
             {"name": "width_static", "label": self._("Height in pixels") if panel.get("vert") else self._("Width in pixels"), "value": width_static, "condition": "[type]!='buttons' && [width_type]=='static'", "inline": True},
             {"name": "width_flex", "label": self._("Relative height") if panel.get("vert") else self._("Relative width"), "value": width_flex, "condition": "[type]!='buttons' && [width_type]=='flex'", "inline": True},
-            {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html'"},
+            {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html' || [type]=='header'"},
             {"name": "order", "label": self._("Sort order"), "value": order},
         ]
         self.call("admin.form", fields=fields)
@@ -965,3 +1006,11 @@ class Interface(ConstructorModule):
             {"name": "onclick", "label": self._("Javascript onclick"), "value": onclick, "condition": "[[action]]=='javascript'"},
         ]
         self.call("admin.form", fields=fields, modules=["FileUploadField"])
+
+    def project_status(self):
+        project = self.app().project
+        if project.get("moderation"):
+            text = self._('<p>Your game is currently on moderation. You may continue setting it up.</p><p><a href="/admin" target="_blank">Administrative interface</a></p>')
+        else:
+            text = self._('<h1>Welcome to your new game!</h1><p>Now you can open <a href="/admin" target="_blank">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>')
+        self.call("web.response_global", text, {})

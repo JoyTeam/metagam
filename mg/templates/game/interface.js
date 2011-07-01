@@ -12,6 +12,7 @@ var Game = {
 					cls: '[%blk.cls%]'
 					[%if blk.width%], width: [%blk.width%][%end%]
 					[%if blk.flex%], flex: [%blk.flex%][%end%]
+					[%if blk.html%], html: '[%blk.html%]'[%end%]
 					[%if blk.buttons%], buttons: [
 						[%foreach btn in blk.buttons%]
 						{
@@ -196,6 +197,10 @@ Game.panel = function(id, options) {
 				[%if design_root%]
 				block_el.html += '<img src="[%design_root%]/' + block.cls + '-' + (options.vertical ? 'bottom' : 'right') + '.png" alt="" />';
 				[%end%]
+			} else if (block.tp == 'html') {
+				block_el.html = block.html;
+			} else if (block.tp == 'header') {
+				block_el.html = '<div class="panel-header">' + block.html + '</div>';
 			} else {
 				block_el.html = block.tp;
 			}
@@ -236,7 +241,7 @@ Game.setup_game_layout = function() {
 				]
 			};
 		} else {
-			channel_buttons = this.element('chat-channel-buttons', {region: 'north'});
+			channel_buttons = this.element('chat-channel-buttons', {region: 'north', loadHeight: true});
 			channel_buttons.region = 'north';
 			channel_buttons.width = undefined;
 			chat_frame_items.push(channel_buttons);

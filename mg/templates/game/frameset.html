@@ -12,6 +12,8 @@
 		[%if design_root%]
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
+		[%else%]
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
 		[%end%]
 		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
 		[%if debug_ext%]
@@ -49,14 +51,14 @@
 		</script>
 		[%end%]
 		[%blocks%]
-		<div class="x-hidden" id="default-panel-top" style="height: 30px"><div id="panel-top-content"></div></div>
+		<div class="x-hidden" id="default-panel-top" style="height: 40px"><div id="panel-top-content"></div></div>
 		<div class="x-hidden" id="default-chat-frame"><div id="chat-frame-content"></div></div>
-		<div class="x-hidden" id="default-chat-channel-buttons" style="width: 30px"><div id="chat-channel-buttons-content"></div></div>
+		<div class="x-hidden" id="default-chat-channel-buttons" style="height: 30px"><div id="chat-channel-buttons-content"></div></div>
 		<div class="x-hidden" id="default-chat-box"><div id="chat-box-content"></div></div>
-		<div class="x-hidden" id="default-chat-input"><div id="chat-input-content"><table style="width: 100%"><tr>
+		<div class="x-hidden" id="default-chat-input" style="height: 45px"><div id="chat-input-content"><table style="width: 100%"><tr>
 			<td style="width: 100px"><select id="chat-channel-control" style="width: 100%"></select></td>
 			<td><form><input id="chat-input-control" /></form></td>
-			<td style="width: 50px"><span style="margin-left: 16px; cursor: pointer" onclick="Chat.submit()">send</span></td>
+			<td class="default-chat-submit-td"><span class="default-chat-submit" onclick="Chat.submit()">[%send%]</span></td>
 		</tr></table></div></div>
 		<div class="x-hidden" id="default-chat-roster"><div id="chat-roster-content"></div></div>
 		<div class="x-hidden" id="default-chat-roster-header" style="height: 30px"><div id="chat-roster-header-content"></div></div>
@@ -68,7 +70,7 @@
 		<div class="x-hidden" id="default-margin-right">m<br />a<br />r<br />g<br />i<br />n<br />-<br />r<br />i<br />g<br />h<br />t</div>
 		<div class="x-hidden" id="default-margin-top">margin-top</div>
 		<div class="x-hidden" id="default-margin-bottom">margin-bottom</div>
-		<div class="x-hidden" id="default-panel-main-left" style="width: 30px"><div id="panel-main-left-content"></div></div>
-		<div class="x-hidden" id="default-panel-main-right" style="width: 30px"><div id="panel-main-right-content"></div></div>
+		<div class="x-hidden" id="default-panel-main-left" style="width: 40px"><div id="panel-main-left-content"></div></div>
+		<div class="x-hidden" id="default-panel-main-right" style="width: 40px"><div id="panel-main-right-content"></div></div>
 	</body>
 </html>

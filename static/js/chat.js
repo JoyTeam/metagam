@@ -96,7 +96,8 @@ Chat.roster_tab_create = function(ch) {
 	if (this.roster_chars_element) {
 		ch.roster_chars = new Ext.BoxComponent({
 			renderTo: this.roster_chars_element,
-			hidden: true
+			hidden: true,
+			cls: 'chat-roster-characters-content2'
 		});
 	}
 	if (!this.active_roster_channel) {
@@ -171,7 +172,8 @@ Chat.roster_tab = function(id) {
 Chat.channel_tab_create = function(ch) {
 	ch.box_content = new Ext.BoxComponent({
 		autoEl: {
-			tag: 'div'
+			tag: 'div',
+			cls: 'chat-channel-content'
 		},
 		renderTo: this.box_content.el,
 		hidden: true
