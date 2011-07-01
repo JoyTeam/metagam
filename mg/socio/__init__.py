@@ -597,7 +597,7 @@ class Socio(Module):
         html = re_softhyphen.sub(r'\1' + u"\u200b", html)
         html = htmlescape(html)
         html = re_mdash.sub("&nbsp;&mdash; ", html)
-        html = re_bull.sub("&bull; ", html)
+        html = re_bull.sub("&bull;&nbsp;", html)
         html = re_parbreak.sub("\n\n", html)
         html = re_linebreak.sub("<br />", html)
         return html

@@ -721,7 +721,7 @@ msgid ""
 "You have received a new message.\n"
 "\n"
 "http://www.%s/telegrams/list"
-msgstr "Вам пришло новое сообщение.http://www.%s/telegrams/list"
+msgstr "Вам пришло новое сообщение.\n\nhttp://www.%s/telegrams/list"
 
 #: mg/socio/telegrams.py:250
 msgid "Telegrams with {0}"
