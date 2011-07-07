@@ -320,7 +320,7 @@ class WebDaemon(object):
                 self.logger.error(e)
                 e = u"%s" % e
                 try:
-                    if request.upload_handler:
+                    if getattr(request, "upload_handler", None):
                         return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": e})))
                 except Exception as e2:
                     self.logger.exception(e2)
@@ -330,7 +330,7 @@ class WebDaemon(object):
             except Exception as e:
                 self.logger.exception(e)
                 try:
-                    if request.upload_handler:
+                    if getattr(request, "upload_handler", None):
                         return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))
                 except Exception as e2:
                     self.logger.exception(e2)
