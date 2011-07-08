@@ -274,6 +274,15 @@ class Config(object):
             self.load_groups([group])
         return self._config[group].get(name, default)
 
+    def get_group(self, group):
+        """
+        Returns config group as a dict
+        group - group name
+        """
+        if not group in self._config:
+            self.load_groups([group])
+        return self._config[group]
+
     def set(self, name, value):
         """
         Change config value
@@ -770,18 +779,34 @@ class ApplicationConfigUpdater(object):
     def __init__(self, app):
         self.app = app
         self.params = {}
+        self.del_params = {}
 
     def set(self, param, value):
         self.params[param] = value
+        try:
+            del self.del_params[param]
+        except KeyError:
+            pass
+
+    def delete(self, param):
+        self.del_params[param] = True
+        try:
+            del self.params[param]
+        except KeyError:
+            pass
 
     def get(self, param, default=None):
+        if param in self.del_params:
+            return None
         return self.params.get(self.app.config.get(param, default))
 
     def store(self, update_hooks=True, notify=True):
-        if len(self.params):
+        if self.params or self.del_params:
             config = self.app.config
             for key, value in self.params.iteritems():
                 config.set(key, value)
+            for key, value in self.del_params.iteritems():
+                config.delete(key)
             if update_hooks:
                 self.app.store_config_hooks(notify)
             else:

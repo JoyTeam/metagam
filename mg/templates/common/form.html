@@ -61,11 +61,11 @@
 	<textarea id="[%col.name%]" name="[%col.name%]" class="[%if col.fixed_not_ok%]form-w100 [%end%]form-bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]"[%if fixed_ok%] wrap="hard"[%end%]>[%col.value%]</textarea>
 	[%if col.show_smiles and smile_categories%]
 		<div class="form-smiles">[%smiles%]</div>
-		<div>[%for cat in smile_categories%]<a href="javascript:void(0)">[%cat.name%]</a> [%end%]</div>
-		<p id="[%cat.name%]_smiles"></p>
+		<div>[%for cat in smile_categories%]<a href="javascript:void(0)" onclick="smile_category('[%col.name%]', '[%cat.id%]'); return false">[%cat.name%]</a> [%end%]</div>
+		<p id="[%col.name%]_smiles"></p>
 		[%for cat in smile_categories%]
 			<div id="smiles_[%col.name%]_[%cat.id%]" style="display: none">
-			[%for sm in cat.smiles%]<img src="[%sm.image%]" alt="" class="form-clickable" /> [%end%]
+			[%for sm in cat.smiles%]<img src="[%sm.image%]" alt="" class="form-clickable" onclick="add_code('[%col.name%]', this, '[%sm.code%]', '', 1)" /> [%end%]
 			</div>
 		[%end%]
 	[%end%]

@@ -223,6 +223,7 @@ class Interface(ConstructorModule):
         if self.conf("debug.ext"):
             vars["debug_ext"] = True
         # Rendering button panels
+        generated = set([btn["id"] for btn in self.generated_buttons()])
         layout = self.buttons_layout()
         panels = []
         for panel in self.panels():
@@ -244,18 +245,23 @@ class Interface(ConstructorModule):
                             image = btn.get("image")
                             if image.startswith("http://"):
                                 pass
-                            elif design and image in design.get("files"):
-                                image = "%s/%s" % (design.get("uri"), image)
-                            elif design and block.get("class") and btn.get("icon"):
-                                if self.call("design.prepare_button", design, image, "%s-bg.png" % block["class"], btn["icon"]):
-                                    image = "%s/%s" % (design.get("uri"), image)
-                                else:
-                                    image = "/st-mg/game/invalid.png"
                             else:
-                                if not design and btn.get("icon") and btn["icon"] in default_icons:
-                                    image = "/st-mg/game/default-interface/%s" % btn["icon"]
+                                # If some module is disabled we should hide
+                                # all its buttons
+                                if btn["id"] not in generated:
+                                    continue
+                                if design and image in design.get("files"):
+                                    image = "%s/%s" % (design.get("uri"), image)
+                                elif design and block.get("class") and btn.get("icon"):
+                                    if self.call("design.prepare_button", design, image, "%s-bg.png" % block["class"], btn["icon"], over="%s-over.png" % block["class"]):
+                                        image = "%s/%s" % (design.get("uri"), image)
+                                    else:
+                                        image = "/st-mg/game/invalid.png"
                                 else:
-                                    image = "/st-mg/game/invalid.png"
+                                    if not design and btn.get("icon") and btn["icon"] in default_icons:
+                                        image = "/st-mg/game/default-interface/%s" % btn["icon"]
+                                    else:
+                                        image = "/st-mg/game/invalid.png"
                             rbtn = {
                                 "image": image,
                                 "title": jsencode(htmlescape(btn.get("title"))),
@@ -271,7 +277,15 @@ class Interface(ConstructorModule):
                             buttons.append(rbtn)
                     if buttons:
                         buttons[-1]["lst"] = True
-                        rblock["buttons"] = buttons
+                    rblock["buttons"] = buttons
+                    if design and "%s-left.png" % block.get("class") in design.get("files"):
+                        rblock["buttons_left"] = True
+                    if design and "%s-right.png" % block.get("class") in design.get("files"):
+                        rblock["buttons_right"] = True
+                    if design and "%s-top.png" % block.get("class") in design.get("files"):
+                        rblock["buttons_top"] = True
+                    if design and "%s-bottom.png" % block.get("class") in design.get("files"):
+                        rblock["buttons_bottom"] = True
                 rblocks.append(rblock)
             if rblocks:
                 rblocks[-1]["lst"] = True
@@ -417,6 +431,12 @@ class Interface(ConstructorModule):
                 "vert": True,
                 "order": 3,
             })
+        if self.conf("gameinterface.panel-top", True):
+            panels.append({
+                "id": "roster-buttons",
+                "title": self._("Roster buttons panel"),
+                "order": 4,
+            })
         for panel in panels:
             panel["blocks"] = self.panel_blocks(panel["id"])
             panel["blocks"].sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
@@ -444,6 +464,26 @@ class Interface(ConstructorModule):
             })
             blocks.append({
                 "id": "top-right",
+                "type": "empty",
+                "order": 100,
+                "flex": 1,
+            })
+        elif panel_id == "roster-buttons":
+            blocks.append({
+                "id": "roster-buttons-left",
+                "type": "empty",
+                "order": 0,
+                "flex": 1,
+            })
+            blocks.append({
+                "id": "roster-buttons-menu",
+                "type": "buttons",
+                "order": 10,
+                "title": self._("Roster buttons"),
+                "class": "roster-buttons",
+            })
+            blocks.append({
+                "id": "roster-buttons-right",
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
@@ -761,14 +801,16 @@ class Interface(ConstructorModule):
         # Looking at the buttons layout and assigning buttons to the panels
         # Remebering assigned buttons
         assigned_buttons = {}
+        generated = set([btn["id"] for btn in self.generated_buttons()])
         for block_id, btn_list in self.buttons_layout().iteritems():
             show_block = valid_blocks.get(block_id)
             if show_block:
                 for btn in btn_list:
-                    show_btn = btn.copy()
-                    assigned_buttons[btn["id"]] = show_btn
-                    show_block["buttons"].append(show_btn)
-                    show_btn["edit"] = self._("edit")
+                    if btn["image"].startswith("http://") or btn["id"] in generated:
+                        show_btn = btn.copy()
+                        assigned_buttons[btn["id"]] = show_btn
+                        show_block["buttons"].append(show_btn)
+                        show_btn["edit"] = self._("edit")
         # Loading full list of generated buttons and showing missing buttons
         # as unused
         unused_buttons = []

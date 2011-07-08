@@ -11,6 +11,7 @@ class ConstructorProject(Module):
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
         self.rhook("email.sender", self.email_sender)
+        self.rhook("modules.list", self.modules_list)
 
     def child_modules(self):
         lst = [
@@ -43,7 +44,6 @@ class ConstructorProject(Module):
                 "mg.constructor.design.DesignMod",
                 "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
-                #"mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin",
                 "mg.constructor.quest.QuestEngine",
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
@@ -52,7 +52,32 @@ class ConstructorProject(Module):
                 lst.extend([
                     "mg.game.money.TwoPay"
                 ])
+            if self.conf("module.sociointerface"):
+                lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
+                if self.conf("module.forum"):
+                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin"])
+                if self.conf("module.smiles"):
+                    lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
         return lst
+
+    def modules_list(self, modules):
+        modules.append({
+            "id": "sociointerface",
+            "name": self._("Social modules"),
+            "description": self._("Couple of modules related to social interactions among players (smiles, forums, blogs, etc)"),
+        })
+        if self.conf("module.sociointerface"):
+            modules.extend([
+                {
+                    "id": "forum",
+                    "name": self._("Forum"),
+                    "description": self._("Game forum"),
+                }, {
+                    "id": "smiles",
+                    "name": self._("Smiles"),
+                    "description": self._("Smiles support"),
+                }
+            ])
 
     def project_title(self):
         return self.app().project.get("title_short", "New Game")

@@ -11,6 +11,10 @@ var Game = {
 					tp: '[%blk.tp%]',
 					cls: '[%blk.cls%]'
 					[%if blk.width%], width: [%blk.width%][%end%]
+					[%if blk.buttons_left%], buttons_left: true[%end%]
+					[%if blk.buttons_right%], buttons_right: true[%end%]
+					[%if blk.buttons_top%], buttons_top: true[%end%]
+					[%if blk.buttons_bottom%], buttons_bottom: true[%end%]
 					[%if blk.flex%], flex: [%blk.flex%][%end%]
 					[%if blk.html%], html: '[%blk.html%]'[%end%]
 					[%if blk.buttons%], buttons: [
@@ -35,7 +39,7 @@ var Game = {
 Game.fixupContentEl = function(el) {
 	var def = Ext.get('default-' + el.contentEl);
 	if (!def) {
-		Ext.alert('Missing element: default-' + el.contentEl);
+		Ext.Msg.alert('Missing element: default-' + el.contentEl);
 		return el;
 	}
 	if (Ext.getDom(el.contentEl)) {
@@ -116,7 +120,6 @@ Game.element = function(eid, cel, el) {
 	if (el.vertical) {
 		el.vertical = undefined;
 		container_options.width = '100%';
-//		container_options.height = undefined;
 		container_options.layout = 'auto';
 		container_options.layoutConfig = undefined;
 	}
@@ -166,36 +169,50 @@ Game.panel = function(id, options) {
 			} else if (block.tp == 'buttons') {
 				block_el.html = '';
 				[%if design_root%]
-				block_el.html += '<img src="[%design_root%]/' + block.cls + '-' + (options.vertical ? 'top' : 'left') + '.png" alt="" />';
-				[%end%]
-				if (block.buttons) {
-					var att = '';
-					var hints = Ext.getDom('block-hints-' + block.cls);
-					hints = hints ? hints.innerHTML.split(',') : undefined;
-					if (options.vertical) {
-						if (hints) {
-							block_el.height = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
-						} else {
-							block_el.height = 32 * block.buttons.length + 32;
-						}
-					} else {
-						if (hints) {
-							block_el.width = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
-						} else {
-							block_el.width = 32 * block.buttons.length + 32;
-						}
+				if (options.vertical) {
+					if (block.buttons_top) {
+						block_el.html += '<img src="[%design_root%]/' + block.cls + '-top.png" alt="" />';
 					}
-					for (var j = 0; j < block.buttons.length; j++) {
-						var btn = block.buttons[j];
-						var img = '<img src="' + btn.image + '" alt="" title="' + btn.title + '"' + att + (btn.onclick ? ' onclick="' + btn.onclick + '" class="btn-clickable"' : '') + ' />';
-						if (btn.href && !btn.onclick) {
-							img = '<a href="' + btn.href + '" target="' + btn.target + '">' + img + '</a>';
-						}
-						block_el.html += img;
+				} else {
+					if (block.buttons_left) {
+						block_el.html += '<img src="[%design_root%]/' + block.cls + '-left.png" alt="" />';
 					}
 				}
+				[%end%]
+				var att = '';
+				var hints = Ext.getDom('block-hints-' + block.cls);
+				hints = hints ? hints.innerHTML.split(',') : undefined;
+				if (options.vertical) {
+					if (hints) {
+						block_el.height = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
+					} else {
+						block_el.height = 32 * block.buttons.length + 32;
+					}
+				} else {
+					if (hints) {
+						block_el.width = parseInt(hints[0]) * block.buttons.length + parseInt(hints[1]);
+					} else {
+						block_el.width = 32 * block.buttons.length + 32;
+					}
+				}
+				for (var j = 0; j < block.buttons.length; j++) {
+					var btn = block.buttons[j];
+					var img = '<img src="' + btn.image + '" alt="" title="' + btn.title + '"' + att + (btn.onclick ? ' onclick="' + btn.onclick + '" class="btn-clickable"' : '') + ' />';
+					if (btn.href && !btn.onclick) {
+						img = '<a href="' + btn.href + '" target="' + btn.target + '">' + img + '</a>';
+					}
+					block_el.html += img;
+				}
 				[%if design_root%]
-				block_el.html += '<img src="[%design_root%]/' + block.cls + '-' + (options.vertical ? 'bottom' : 'right') + '.png" alt="" />';
+				if (options.vertical) {
+					if (block.buttons_bottom) {
+						block_el.html += '<img src="[%design_root%]/' + block.cls + '-bottom.png" alt="" />';
+					}
+				} else {
+					if (block.buttons_right) {
+						block_el.html += '<img src="[%design_root%]/' + block.cls + '-right.png" alt="" />';
+					}
+				}
 				[%end%]
 			} else if (block.tp == 'html') {
 				block_el.html = block.html;
@@ -264,7 +281,7 @@ Game.setup_game_layout = function() {
 		items: [
 			[%if layout.chat_channels%]this.element('chat-roster-header', {region: 'north', loadHeight: true}),[%end%]
 			this.element('chat-roster-characters', {region: 'center'}),
-			this.element('chat-roster-buttons', {region: 'south', loadHeight: true})
+			this.panel('roster-buttons', {region: 'south'})
 		]
 	});
 	var main = this.fixupContentEl({

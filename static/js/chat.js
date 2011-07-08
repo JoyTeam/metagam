@@ -538,6 +538,14 @@ Chat.open_first_tab = function() {
 	this.active_channel = undefined;
 };
 
+Chat.clear = function() {
+	alert('Clearing chat');
+}
+
+Chat.translit = function() {
+	alert('Switching translit');
+}
+
 wait(['realplexor-stream'], function() {
 	loaded('chat');
 });

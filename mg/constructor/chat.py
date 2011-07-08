@@ -71,6 +71,26 @@ class Chat(ConstructorModule):
             self.rhook("headmenu-admin-chat.debug", self.headmenu_chat_debug)
             self.rhook("ext-admin-chat.debug", self.chat_debug, priv="chat.config")
         self.rhook("chat.character-channels", self.character_channels)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "roster-clear",
+            "onclick": "Chat.clear()",
+            "icon": "roster-clear.png",
+            "title": self._("Clear chat"),
+            "block": "roster-buttons-menu",
+            "order": 10,
+        })
+        if self.call("l10n.lang") == "ru":
+            buttons.append({
+                "id": "roster-translit",
+                "onclick": "Chat.translit()",
+                "icon": "roster-translit.png",
+                "title": self._("Transliteration"),
+                "block": "roster-buttons-menu",
+                "order": 15,
+            })
 
     def objclasses_list(self, objclasses):
         objclasses["ChatChannelCharacter"] = (DBChatChannelCharacter, DBChatChannelCharacterList)
@@ -302,7 +322,9 @@ class Chat(ConstructorModule):
             # TODO: convert to loc-%s format
             pass
         # formatting html
-        html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), htmlescape(text))
+        tokens = [{"text": text}]
+        self.call("chat.parse", tokens)
+        html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens))
         # sending message
         self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})

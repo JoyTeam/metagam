@@ -843,13 +843,12 @@ class WebForm(object):
             "insert_image": self.module._("Insert image"),
             "translit": self.module._("Translit"),
             "transliterate_to_russian": self.module._("Transliterate to Russian"),
-            "smiles": self.module._("Smiles"),
             "errors_on_top": self.errors_on_top,
         }
         for k, v in add_vars.iteritems():
             vars[k] = v
         if self.texteditors:
-            smiles = self.module.call("smiles.list")
+            smiles = self.module.call("smiles.form")
             if smiles is not None:
                 vars["smile_categories"] = smiles
             vars["form_texteditors"] = True

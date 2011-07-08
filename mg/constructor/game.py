@@ -3,6 +3,7 @@ import re
 
 re_bad_symbols = re.compile(r'([^\w\- \.,:])', re.UNICODE)
 re_bad_english_symbols = re.compile(r'([^a-z0-9A-Z\-_ \.,:])')
+re_module_action = re.compile(r'^(enable|disable)/([a-z0-9\-]+)$')
 
 class Game(Module):
     def register(self):
@@ -15,6 +16,8 @@ class Game(Module):
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
         self.rhook("headmenu-admin-game.logo", self.headmenu_logo)
         self.rhook("ext-admin-game.logo", self.ext_logo, priv="game.logo")
+        self.rhook("headmenu-admin-game.modules", self.headmenu_modules)
+        self.rhook("ext-admin-game.modules", self.ext_modules, priv="project.admin")
 
     def recommended_actions(self, recommended_actions):
         req = self.req()
@@ -35,6 +38,8 @@ class Game(Module):
             menu.append({"id": "game/profile", "text": self._("Game profile editor"), "leaf": True})
         if req.has_access("game.logo"):
             menu.append({"id": "game/logo", "text": self._("Game logo editor"), "leaf": True})
+        if req.has_access("project.admin"):
+            menu.append({"id": "game/modules", "text": self._("Game modules"), "leaf": True, "order": -10})
 
     def headmenu_profile(self, args):
         return self._("Game profile")
@@ -170,4 +175,43 @@ class Game(Module):
         if args == "change":
             return [self._("Logo editor"), "game/logo"]
         return self._("Game logo")
+
+    def ext_modules(self):
+        req = self.req()
+        m = re_module_action.match(req.args)
+        if m:
+            action, module = m.group(1, 2)
+            config = self.app().config_updater()
+            config.set("module.%s" % module, True if action == "enable" else False)
+            config.store()
+            self.call("admin.redirect", "game/modules")
+        modules = []
+        self.call("modules.list", modules)
+        modules.sort(cmp=lambda x, y: cmp(x.get("name"), y.get("name")))
+        rows = []
+        for mod in modules:
+            status = self.conf("module.%s" % mod["id"])
+            rows.append([
+                mod["name"],
+                mod["description"],
+                '<span class="admin-enabled">%s</span>' % self._("module///enabled") if status else self._("module///disabled"),
+                '<hook:admin.link href="game/modules/disable/%s" title="%s" />' % (mod["id"], self._("disable")) if status else '<hook:admin.link href="game/modules/enable/%s" title="%s" />' % (mod["id"], self._("enable")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Module"),
+                        self._("Description"),
+                        self._("Status"),
+                        self._("Action"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_modules(self, args):
+        return self._("Game modules")
 

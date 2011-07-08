@@ -93,3 +93,4 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 .admin-recommended-icon { vertical-align: top; padding: 3px 30px 15px 0 }
 .yes { color: #008000 }
 .no { color: #e00000 }
+.admin-enabled { color: #00c000; font-weight: bold }

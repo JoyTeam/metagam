@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-01 17:52+0400\n"
+"POT-Creation-Date: 2011-07-08 17:44+0400\n"
 "PO-Revision-Date: 2011-06-30 18:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -90,7 +90,7 @@ msgstr "Ошибка на сервере: %s"
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 
-#: mg/templates/game/interface.js:399
+#: mg/templates/game/interface.js:416
 msgid "Misconfigured layout scheme"
 msgstr "Схема расположения не настроена"
 

@@ -1012,7 +1012,7 @@ class DesignMod(Module):
     def response(self, design, template, content, vars):
         self.call("web.response", self.parse(design, template, content, vars))
 
-    def prepare_button(self, design, target_filename, template, icon):
+    def prepare_button(self, design, target_filename, template, icon, over=None):
         """
         Return value:
            True - target_filename is available
@@ -1070,6 +1070,34 @@ class DesignMod(Module):
             template_w, template_h = template_image.size
             icon_w, icon_h = icon_image.size
             template_image.paste(icon_image, ((template_w - icon_w) / 2, (template_h - icon_h) / 2), icon_image)
+            if over and over in design.get("files"):
+                # loading overlay image
+                over_uri = "%s/%s" % (design.get("uri"), over)
+                try:
+                    over_data = self.download(over_uri)
+                except DownloadError:
+                    self.error("Error downloading %s", over_uri)
+                    return None
+                try:
+                    over_image = Image.open(cStringIO.StringIO(over_data))
+                    if over_image.load() is None:
+                        self.error("Error parsing %s", over_image)
+                        return None
+                except IOError:
+                    self.error("Image %s format not recognized", over_uri)
+                    return None
+                except OverflowError:
+                    self.error("Image %s format not recognized", over_uri)
+                    return None
+                try:
+                    over_image.seek(1)
+                    self.error("Image %s is animated", over_uri)
+                    return None
+                except EOFError:
+                    pass
+                over_image.convert("RGBA")
+                over_w, over_h = over_image.size
+                template_image.paste(over_image, ((template_w - over_w) / 2, (template_h - over_h) / 2), over_image)
             # uploading image
             stream = cStringIO.StringIO()
             template_image.save(stream, "PNG")

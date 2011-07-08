@@ -594,6 +594,18 @@ class Socio(Module):
                 inner = "http://%s" % inner
             return '%s<a href="%s" target="_blank">%s</a>%s' % (self.format_text(before, options), inner, inner_show, self.format_text(after, options))
         html = re_cut.sub("\n", html)
+        # smiles
+        smiles = self.call("smiles.dict")
+        tokens = self.call("smiles.split", html)
+        if tokens and len(tokens) > 1:
+            result = u""
+            for token in tokens:
+                info = smiles.get(token)
+                if info:
+                    result += '<img src="%s" alt="" class="socio-smile" />' % info["image"]
+                else:
+                    result += self.format_text(token, options)
+            return result
         html = re_softhyphen.sub(r'\1' + u"\u200b", html)
         html = htmlescape(html)
         html = re_mdash.sub("&nbsp;&mdash; ", html)
@@ -775,6 +787,18 @@ class Forum(Module):
         self.rhook("hook-forum.news", self.news)
         self.rhook("forum.may_read", self.may_read)
         self.rhook("forum.may_write", self.may_write)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "forum",
+            "href": "/forum",
+            "target": "_blank",
+            "icon": "forum.png",
+            "title": self._("Game forum"),
+            "block": "top-menu",
+            "order": 5,
+        })
 
     def objclasses_list(self, objclasses):
         objclasses["UserForumSettings"] = (UserForumSettings, UserForumSettingsList)

@@ -38,6 +38,7 @@ input.form-file { font-size: 13px }
 .form-error { color: #ff6347; font-size: 12px }
 .form-editor-toolbox td { padding: 0px 4px 10px 0px }
 .form-submit { margin-top: 10px }
+.form-clickable { cursor: pointer }
 /* TAGS */
 .socio-tags { padding-top: 10px; color: #81878a }
 .socio-tags-list { color: #dd6419 }
