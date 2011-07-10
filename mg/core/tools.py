@@ -74,7 +74,11 @@ def htmlescape(val):
         return ""
     if type(val) != type("") and type(val) != unicode:
         val = str(val)
-    return cgi.escape(val)
+    val = string.replace(val, "&", "&amp;")
+    val = string.replace(val, '"', "&quot;")
+    val = string.replace(val, "<", "&lt;")
+    val = string.replace(val, ">", "&gt;")
+    return val
 
 def htmldecode(val):
     if val is None:
