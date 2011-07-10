@@ -219,19 +219,22 @@ class L10n(Module):
             values = values.split("/")
         lang = self.call("l10n.lang")
         val = abs(float(val))
-        if lang == "ru":
-            if val != int(val):
-                return values[1]
-            if (val % 100) >= 10 and (val % 100) <= 20:
+        try:
+            if lang == "ru":
+                if val != int(val):
+                    return values[1]
+                if (val % 100) >= 10 and (val % 100) <= 20:
+                    return values[2]
+                if (val % 10) >= 2 and (val % 10) <= 4:
+                    return values[1]
+                if (val % 10) == 1:
+                    return values[0]
                 return values[2]
-            if (val % 10) >= 2 and (val % 10) <= 4:
-                return values[1]
-            if (val % 10) == 1:
+            if val == 1:
                 return values[0]
-            return values[2]
-        if val == 1:
-            return values[0]
-        return values[1]
+            return values[1]
+        except IndexError:
+            return values[-1]
 
     def l10n_literal_values_sample(self, singular):
         lang = self.call("l10n.lang")

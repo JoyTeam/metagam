@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-10 20:26+0400\n"
+"POT-Creation-Date: 2011-07-11 01:07+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,7 +31,7 @@ msgstr ""
 
 #: mg/core/web.py:820 mg/core/director.py:394 mg/constructor/setup.py:161
 #: mg/constructor/setup.py:225 mg/socio/__init__.py:1796
-#: mg/admin/__init__.py:245
+#: mg/admin/__init__.py:252
 msgid "Save"
 msgstr ""
 
@@ -99,30 +99,204 @@ msgstr ""
 msgid "Transliterate to Russian"
 msgstr ""
 
-#: mg/core/emails.py:23
+#: mg/core/emails.py:50
 msgid "Email configuration"
 msgstr ""
 
-#: mg/core/emails.py:28 mg/core/auth.py:436
+#: mg/core/emails.py:53 mg/core/auth.py:436
 msgid "E-mail"
 msgstr ""
 
-#: mg/core/emails.py:41 mg/core/sites.py:29 mg/core/realplexor.py:356
+#: mg/core/emails.py:58 mg/constructor/design.py:1356
+#: mg/constructor/design.py:1784 mg/constructor/admin.py:151
+#: mg/constructor/admin.py:156 mg/constructor/admin.py:177
+msgid "Settings"
+msgstr ""
+
+#: mg/core/emails.py:71 mg/core/sites.py:29 mg/core/realplexor.py:356
 #: mg/constructor/interface.py:363 mg/constructor/auth.py:285
 #: mg/socio/__init__.py:2442
 msgid "Settings stored"
 msgstr ""
 
-#: mg/core/emails.py:46
+#: mg/core/emails.py:76
 msgid "Send software exceptions to this e-mail"
 msgstr ""
 
-#: mg/core/emails.py:51
+#: mg/core/emails.py:81
 msgid "E-mail settings"
 msgstr ""
 
-#: mg/core/emails.py:178
+#: mg/core/emails.py:212
 msgid "Software engineer"
+msgstr ""
+
+#: mg/core/emails.py:225 mg/core/emails.py:249
+msgid "Email bulk sending"
+msgstr ""
+
+#: mg/core/emails.py:230
+msgid "Bulk sender"
+msgstr ""
+
+#: mg/core/emails.py:237
+msgid "Sender options"
+msgstr ""
+
+#: mg/core/emails.py:239 mg/core/emails.py:315 mg/socio/telegrams.py:208
+msgid "New message"
+msgstr ""
+
+#: mg/core/emails.py:244 mg/core/emails.py:247
+msgid "Message editor"
+msgstr ""
+
+#: mg/core/emails.py:272
+msgid "Specify message subject"
+msgstr ""
+
+#: mg/core/emails.py:276
+msgid "Specify message content"
+msgstr ""
+
+#: mg/core/emails.py:293
+msgid ""
+"To customize your letter you may use the following commands in the subject "
+"and message content"
+msgstr ""
+
+#: mg/core/emails.py:293
+msgid "[name] will be replaced with recipient's name"
+msgstr ""
+
+#: mg/core/emails.py:293
+msgid ""
+"[gender?FEMALE:MALE] will be replaced with FEMALE if recipient is female and "
+"MALE if recipient is male"
+msgstr ""
+
+#: mg/core/emails.py:294
+msgid "Message subject"
+msgstr ""
+
+#: mg/core/emails.py:295
+msgid "Message content"
+msgstr ""
+
+#: mg/core/emails.py:306 mg/socio/__init__.py:2303 mg/socio/__init__.py:2316
+msgid "open"
+msgstr ""
+
+#: mg/core/emails.py:307
+msgid "delivery options"
+msgstr ""
+
+#: mg/core/emails.py:320 mg/constructor/domains.py:611
+msgid "Created"
+msgstr ""
+
+#: mg/core/emails.py:321 mg/socio/telegrams.py:257
+msgid "Sent"
+msgstr ""
+
+#: mg/core/emails.py:322 mg/socio/__init__.py:1209 mg/socio/__init__.py:1791
+msgid "Subject"
+msgstr ""
+
+#: mg/core/emails.py:323
+msgid "Opening"
+msgstr ""
+
+#: mg/core/emails.py:324
+msgid "Send options"
+msgstr ""
+
+#: mg/core/emails.py:347
+msgid "Enter e-mail"
+msgstr ""
+
+#: mg/core/emails.py:349
+msgid "Enter name"
+msgstr ""
+
+#: mg/core/emails.py:351
+msgid "Invalid sex specified"
+msgstr ""
+
+#: mg/core/emails.py:355
+msgid "Select delivery mode"
+msgstr ""
+
+#: mg/core/emails.py:374
+#, python-format
+msgid "Image URL %s is incorrect"
+msgstr ""
+
+#: mg/core/emails.py:388
+#, python-format
+msgid "%s Resource not found"
+msgstr ""
+
+#: mg/core/emails.py:390
+#, python-format
+msgid "%s: Access denied"
+msgstr ""
+
+#: mg/core/emails.py:392
+#, python-format
+msgid "%s: Internal server error"
+msgstr ""
+
+#: mg/core/emails.py:410
+#, python-format
+msgid "URL %s is not an image"
+msgstr ""
+
+#: mg/core/emails.py:412
+#, python-format
+msgid "Timeout on downloading %s. Time limit - 30 sec"
+msgstr ""
+
+#: mg/core/emails.py:436
+msgid "Message was sent successfully"
+msgstr ""
+
+#: mg/core/emails.py:445
+msgid "message was queued for delivery/messages were queued for delivery"
+msgstr ""
+
+#: mg/core/emails.py:453
+msgid "Test delivery (to the administrator)"
+msgstr ""
+
+#: mg/core/emails.py:453
+msgid "Mass delivery (to all users)"
+msgstr ""
+
+#: mg/core/emails.py:454
+msgid "Destination email"
+msgstr ""
+
+#: mg/core/emails.py:455
+msgid "Recipient's name"
+msgstr ""
+
+#: mg/core/emails.py:456
+msgid "Recipient's sex"
+msgstr ""
+
+#: mg/core/emails.py:456 mg/core/auth.py:435 mg/constructor/auth.py:325
+#: mg/constructor/setup.py:220
+msgid "Male"
+msgstr ""
+
+#: mg/core/emails.py:456 mg/core/auth.py:435 mg/constructor/auth.py:325
+#: mg/constructor/setup.py:220
+msgid "Female"
+msgstr ""
+
+#: mg/core/emails.py:459 mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
+msgid "Send"
 msgstr ""
 
 #: mg/core/daemons.py:408 mg/core/cluster.py:294
@@ -430,7 +604,7 @@ msgstr ""
 msgid "This name is taken already"
 msgstr ""
 
-#: mg/core/auth.py:364 mg/core/auth.py:742 mg/constructor/admin.py:470
+#: mg/core/auth.py:364 mg/core/auth.py:742 mg/constructor/admin.py:471
 #: mg/constructor/auth.py:395 mg/constructor/setup.py:190
 msgid "Enter your password"
 msgstr ""
@@ -502,14 +676,6 @@ msgstr ""
 msgid "Sex"
 msgstr ""
 
-#: mg/core/auth.py:435 mg/constructor/auth.py:325 mg/constructor/setup.py:220
-msgid "Male"
-msgstr ""
-
-#: mg/core/auth.py:435 mg/constructor/auth.py:325 mg/constructor/setup.py:220
-msgid "Female"
-msgstr ""
-
 #: mg/core/auth.py:437 mg/core/auth.py:559 mg/core/auth.py:795
 msgid "Password"
 msgstr ""
@@ -523,7 +689,7 @@ msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
 #: mg/core/auth.py:441 mg/constructor/dashboard.py:185
-#: mg/constructor/admin.py:184
+#: mg/constructor/admin.py:185
 msgid "Register"
 msgstr ""
 
@@ -532,7 +698,7 @@ msgid "User registration"
 msgstr ""
 
 #: mg/core/auth.py:446 mg/core/auth.py:803 mg/constructor/domains.py:617
-#: mg/constructor/admin.py:186
+#: mg/constructor/admin.py:187
 msgid "Cancel"
 msgstr ""
 
@@ -643,7 +809,7 @@ msgstr ""
 msgid "Incorrect password"
 msgstr ""
 
-#: mg/core/auth.py:796 mg/constructor/admin.py:183
+#: mg/core/auth.py:796 mg/constructor/admin.py:184
 msgid "Log in"
 msgstr ""
 
@@ -840,7 +1006,7 @@ msgstr ""
 msgid "Authentication"
 msgstr ""
 
-#: mg/core/auth.py:1176 mg/core/auth.py:1239 mg/constructor/admin.py:309
+#: mg/core/auth.py:1176 mg/core/auth.py:1239 mg/constructor/admin.py:310
 msgid "Change password"
 msgstr ""
 
@@ -870,7 +1036,7 @@ msgstr ""
 msgid "Specify new password"
 msgstr ""
 
-#: mg/core/auth.py:1243 mg/constructor/admin.py:140
+#: mg/core/auth.py:1243 mg/constructor/admin.py:141
 msgid "Password changing"
 msgstr ""
 
@@ -1350,8 +1516,8 @@ msgstr ""
 msgid "Project code"
 msgstr ""
 
-#: mg/constructor/dashboard.py:49 mg/constructor/admin.py:85
-#: mg/constructor/admin.py:86
+#: mg/constructor/dashboard.py:49 mg/constructor/admin.py:86
+#: mg/constructor/admin.py:87
 msgid "Constructor"
 msgstr ""
 
@@ -1506,8 +1672,8 @@ msgstr ""
 msgid "Constructor settings stored"
 msgstr ""
 
-#: mg/constructor/dashboard.py:219 mg/constructor/admin.py:361
-#: mg/constructor/admin.py:379
+#: mg/constructor/dashboard.py:219 mg/constructor/admin.py:362
+#: mg/constructor/admin.py:380
 msgid "Open registration of new games is unavailable at the moment"
 msgstr ""
 
@@ -1519,7 +1685,7 @@ msgstr ""
 msgid "Open registration"
 msgstr ""
 
-#: mg/constructor/dashboard.py:221 mg/constructor/admin.py:360
+#: mg/constructor/dashboard.py:221 mg/constructor/admin.py:361
 msgid "Registration closed"
 msgstr ""
 
@@ -1660,12 +1826,14 @@ msgid "Error parsing {0}: {1}"
 msgstr ""
 
 #: mg/constructor/design.py:401 mg/socio/__init__.py:722
+#: mg/admin/__init__.py:338
 msgid "Upload an image"
 msgstr ""
 
 #: mg/constructor/design.py:408 mg/constructor/design.py:411
 #: mg/constructor/logo.py:23 mg/constructor/logo.py:266 mg/socio/smiles.py:160
 #: mg/socio/smiles.py:162 mg/socio/__init__.py:668 mg/socio/__init__.py:1847
+#: mg/admin/__init__.py:314
 msgid "Image format not recognized"
 msgstr ""
 
@@ -1776,7 +1944,7 @@ msgid "enter"
 msgstr ""
 
 #: mg/constructor/design.py:866 mg/constructor/design.py:1629
-#: mg/constructor/project.py:143 mg/constructor/admin.py:85
+#: mg/constructor/project.py:143 mg/constructor/admin.py:86
 msgid "News"
 msgstr ""
 
@@ -1959,12 +2127,6 @@ msgstr ""
 
 #: mg/constructor/design.py:1354
 msgid "Renaming"
-msgstr ""
-
-#: mg/constructor/design.py:1356 mg/constructor/design.py:1784
-#: mg/constructor/admin.py:150 mg/constructor/admin.py:155
-#: mg/constructor/admin.py:176
-msgid "Settings"
 msgstr ""
 
 #: mg/constructor/design.py:1375
@@ -2219,7 +2381,7 @@ msgstr ""
 msgid "Unread"
 msgstr ""
 
-#: mg/constructor/design.py:1542 mg/constructor/admin.py:477
+#: mg/constructor/design.py:1542 mg/constructor/admin.py:478
 msgid "Last message"
 msgstr ""
 
@@ -2438,7 +2600,7 @@ msgstr ""
 msgid "A very long forum category title"
 msgstr ""
 
-#: mg/constructor/design.py:1629 mg/constructor/admin.py:87
+#: mg/constructor/design.py:1629 mg/constructor/admin.py:88
 msgid "Developers club"
 msgstr ""
 
@@ -2560,8 +2722,8 @@ msgid ""
 msgstr ""
 
 #: mg/constructor/design.py:1876 mg/constructor/admin.py:19
-#: mg/constructor/admin.py:181 mg/constructor/admin.py:195
-#: mg/constructor/admin.py:200 mg/constructor/admin.py:294
+#: mg/constructor/admin.py:182 mg/constructor/admin.py:196
+#: mg/constructor/admin.py:201 mg/constructor/admin.py:295
 msgid "Cabinet"
 msgstr ""
 
@@ -3223,10 +3385,6 @@ msgstr ""
 
 #: mg/constructor/domains.py:610 mg/constructor/domains.py:658
 msgid "Domain"
-msgstr ""
-
-#: mg/constructor/domains.py:611
-msgid "Created"
 msgstr ""
 
 #: mg/constructor/domains.py:612
@@ -3936,8 +4094,8 @@ msgid ""
 msgstr ""
 
 #: mg/constructor/project.py:73 mg/constructor/admin.py:18
-#: mg/constructor/admin.py:156 mg/constructor/admin.py:190
-#: mg/constructor/admin.py:198 mg/socio/__init__.py:222
+#: mg/constructor/admin.py:157 mg/constructor/admin.py:191
+#: mg/constructor/admin.py:199 mg/socio/__init__.py:222
 msgid "Forum"
 msgstr ""
 
@@ -4148,192 +4306,192 @@ msgstr ""
 msgid "Go to the Constructor forum"
 msgstr ""
 
-#: mg/constructor/admin.py:76
+#: mg/constructor/admin.py:77
 msgid "You must confirm you are of the full legal age"
 msgstr ""
 
-#: mg/constructor/admin.py:78
+#: mg/constructor/admin.py:79
 msgid "I confirm I'm of the full legal age"
 msgstr ""
 
-#: mg/constructor/admin.py:85
+#: mg/constructor/admin.py:86
 msgid "News related to the Constructor"
 msgstr ""
 
-#: mg/constructor/admin.py:86
+#: mg/constructor/admin.py:87
 msgid "Support"
 msgstr ""
 
-#: mg/constructor/admin.py:86
+#: mg/constructor/admin.py:87
 msgid "Constructor technical support"
 msgstr ""
 
-#: mg/constructor/admin.py:87
+#: mg/constructor/admin.py:88
 msgid "Game Development"
 msgstr ""
 
-#: mg/constructor/admin.py:87
+#: mg/constructor/admin.py:88
 msgid "Any talks related to the game development"
 msgstr ""
 
-#: mg/constructor/admin.py:132 mg/constructor/admin.py:151
+#: mg/constructor/admin.py:133 mg/constructor/admin.py:152
 msgid "Return to the Cabinet"
 msgstr ""
 
-#: mg/constructor/admin.py:138 mg/constructor/admin.py:148
+#: mg/constructor/admin.py:139 mg/constructor/admin.py:149
 msgid "To the main page"
 msgstr ""
 
-#: mg/constructor/admin.py:142
+#: mg/constructor/admin.py:143
 msgid "E-mail changing"
 msgstr ""
 
-#: mg/constructor/admin.py:143
+#: mg/constructor/admin.py:144
 msgid "Return to the Settings"
 msgstr ""
 
-#: mg/constructor/admin.py:154
+#: mg/constructor/admin.py:155
 msgid "Documentation"
 msgstr ""
 
-#: mg/constructor/admin.py:161
+#: mg/constructor/admin.py:162
 #, python-format
 msgid "Logout %s"
 msgstr ""
 
-#: mg/constructor/admin.py:164
+#: mg/constructor/admin.py:165
 msgid "MMO Constructor Forum"
 msgstr ""
 
-#: mg/constructor/admin.py:174
+#: mg/constructor/admin.py:175
 msgid "socio-top///Search"
 msgstr ""
 
-#: mg/constructor/admin.py:189 mg/constructor/admin.py:481
-#: mg/constructor/admin.py:486
+#: mg/constructor/admin.py:190 mg/constructor/admin.py:482
+#: mg/constructor/admin.py:487
 msgid "MMO Constructor"
 msgstr ""
 
-#: mg/constructor/admin.py:201
+#: mg/constructor/admin.py:202
 msgid "MMO Constructor Documentation"
 msgstr ""
 
-#: mg/constructor/admin.py:238
+#: mg/constructor/admin.py:239
 msgid "Browser-based Games Constructor"
 msgstr ""
 
-#: mg/constructor/admin.py:239
+#: mg/constructor/admin.py:240
 #, python-format
 msgid "Copyright &copy; Joy Team, 2009-%s"
 msgstr ""
 
-#: mg/constructor/admin.py:249
+#: mg/constructor/admin.py:250
 msgid "Constructor of browser-based online games"
 msgstr ""
 
-#: mg/constructor/admin.py:250
+#: mg/constructor/admin.py:251
 msgid "log in"
 msgstr ""
 
-#: mg/constructor/admin.py:251
+#: mg/constructor/admin.py:252
 msgid "register"
 msgstr ""
 
-#: mg/constructor/admin.py:252
+#: mg/constructor/admin.py:253
 msgid "forum"
 msgstr ""
 
-#: mg/constructor/admin.py:253
+#: mg/constructor/admin.py:254
 msgid "cabinet"
 msgstr ""
 
-#: mg/constructor/admin.py:254
+#: mg/constructor/admin.py:255
 msgid "log out"
 msgstr ""
 
-#: mg/constructor/admin.py:255
+#: mg/constructor/admin.py:256
 msgid "documentation"
 msgstr ""
 
-#: mg/constructor/admin.py:268
+#: mg/constructor/admin.py:269
 msgid "Constructor administration"
 msgstr ""
 
-#: mg/constructor/admin.py:277
+#: mg/constructor/admin.py:278
 msgid "Untitled game"
 msgstr ""
 
-#: mg/constructor/admin.py:298
+#: mg/constructor/admin.py:299
 msgid "Create a new game"
 msgstr ""
 
-#: mg/constructor/admin.py:306
+#: mg/constructor/admin.py:307
 msgid "MMO Constructor Settings"
 msgstr ""
 
-#: mg/constructor/admin.py:310
+#: mg/constructor/admin.py:311
 msgid "Change e-mail"
 msgstr ""
 
-#: mg/constructor/admin.py:311 mg/socio/__init__.py:1807
+#: mg/constructor/admin.py:312 mg/socio/__init__.py:1807
 msgid "Forum settings"
 msgstr ""
 
-#: mg/constructor/admin.py:370
+#: mg/constructor/admin.py:371
 msgid "Enter invitation code"
 msgstr ""
 
-#: mg/constructor/admin.py:377 mg/constructor/invitations.py:94
+#: mg/constructor/admin.py:378 mg/constructor/invitations.py:94
 msgid "Invitation code"
 msgstr ""
 
-#: mg/constructor/admin.py:378
+#: mg/constructor/admin.py:379
 msgid "Proceed"
 msgstr ""
 
-#: mg/constructor/admin.py:381
+#: mg/constructor/admin.py:382
 msgid "Invitation required"
 msgstr ""
 
-#: mg/constructor/admin.py:467
+#: mg/constructor/admin.py:468
 msgid "Enter your name, please"
 msgstr ""
 
-#: mg/constructor/admin.py:468
+#: mg/constructor/admin.py:469
 msgid "What\\'s your sex"
 msgstr ""
 
-#: mg/constructor/admin.py:469
+#: mg/constructor/admin.py:470
 msgid ""
 "This is a very long text asking you to enter your motto. So be so kind "
 "entering your motto"
 msgstr ""
 
-#: mg/constructor/admin.py:475
+#: mg/constructor/admin.py:476
 msgid "telegrams menu///Post"
 msgstr ""
 
-#: mg/constructor/admin.py:476
+#: mg/constructor/admin.py:477
 msgid "Messages"
 msgstr ""
 
-#: mg/constructor/admin.py:478
+#: mg/constructor/admin.py:479
 msgid "All messages"
 msgstr ""
 
-#: mg/constructor/admin.py:479
+#: mg/constructor/admin.py:480
 msgid "Send a new message"
 msgstr ""
 
-#: mg/constructor/admin.py:480
+#: mg/constructor/admin.py:481
 msgid "Message text"
 msgstr ""
 
-#: mg/constructor/admin.py:482
+#: mg/constructor/admin.py:483
 msgid "Correspondence with {0}"
 msgstr ""
 
-#: mg/constructor/admin.py:488
+#: mg/constructor/admin.py:489
 msgid ""
 "MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-"
 "based online games"
@@ -4985,16 +5143,8 @@ msgstr ""
 msgid "Telegram text"
 msgstr ""
 
-#: mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
-msgid "Send"
-msgstr ""
-
 #: mg/socio/telegrams.py:165
 msgid "System"
-msgstr ""
-
-#: mg/socio/telegrams.py:208
-msgid "New message"
 msgstr ""
 
 #: mg/socio/telegrams.py:208
@@ -5015,10 +5165,6 @@ msgstr ""
 
 #: mg/socio/telegrams.py:255
 msgid "Received"
-msgstr ""
-
-#: mg/socio/telegrams.py:257
-msgid "Sent"
 msgstr ""
 
 #: mg/socio/smiles.py:71
@@ -5217,33 +5363,34 @@ msgstr ""
 msgid "Value"
 msgstr ""
 
-#: mg/socio/__init__.py:629
+#: mg/socio/__init__.py:629 mg/admin/__init__.py:275
 #, python-format
 msgid "Scheme '%s' is not supported"
 msgstr ""
 
-#: mg/socio/__init__.py:631
+#: mg/socio/__init__.py:631 mg/admin/__init__.py:277
 msgid "Enter correct URL"
 msgstr ""
 
-#: mg/socio/__init__.py:645
+#: mg/socio/__init__.py:645 mg/admin/__init__.py:291
 msgid "Remote server response: Resource not found"
 msgstr ""
 
-#: mg/socio/__init__.py:647
+#: mg/socio/__init__.py:647 mg/admin/__init__.py:293
 msgid "Remote server response: Access denied"
 msgstr ""
 
-#: mg/socio/__init__.py:649
+#: mg/socio/__init__.py:649 mg/admin/__init__.py:295
 msgid "Remote server response: Internal server error"
 msgstr ""
 
-#: mg/socio/__init__.py:651 mg/socio/__init__.py:658
+#: mg/socio/__init__.py:651 mg/socio/__init__.py:658 mg/admin/__init__.py:297
+#: mg/admin/__init__.py:304
 #, python-format
 msgid "Download error: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:656
+#: mg/socio/__init__.py:656 mg/admin/__init__.py:302
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
@@ -5278,10 +5425,6 @@ msgstr ""
 
 #: mg/socio/__init__.py:1208
 msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
-msgstr ""
-
-#: mg/socio/__init__.py:1209 mg/socio/__init__.py:1791
-msgid "Subject"
 msgstr ""
 
 #: mg/socio/__init__.py:1210
@@ -5423,10 +5566,6 @@ msgstr ""
 msgid "Nothing found"
 msgstr ""
 
-#: mg/socio/__init__.py:2303 mg/socio/__init__.py:2316
-msgid "open"
-msgstr ""
-
 #: mg/socio/__init__.py:2326
 msgid "results///Search"
 msgstr ""
@@ -5455,11 +5594,15 @@ msgstr ""
 msgid "Top message"
 msgstr ""
 
-#: mg/admin/__init__.py:31
+#: mg/admin/__init__.py:38
 msgid "Administration interface"
 msgstr ""
 
-#: mg/admin/__init__.py:75
+#: mg/admin/__init__.py:82
 #, python-format
 msgid "%s administration interface"
+msgstr ""
+
+#: mg/admin/__init__.py:342
+msgid "Unknown error uploading image"
 msgstr ""

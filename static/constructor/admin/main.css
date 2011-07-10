@@ -94,3 +94,4 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 .yes { color: #008000 }
 .no { color: #e00000 }
 .admin-enabled { color: #00c000; font-weight: bold }
+.x-edit-pictures {background: url(edit-pictures.png) 0 0 no-repeat !important;}

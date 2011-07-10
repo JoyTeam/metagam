@@ -97,12 +97,90 @@ Form = Ext.extend(AdminResponse, {
 				} else if (elt.xtype == 'password') {
 					elt.xtype = 'textfield';
 					elt.inputType = 'password';
+				} else if (elt.xtype == 'htmleditor') {
+					elt.plugins = Ext.form.HtmlEditor.plugins();
+					elt.selectImage = function(image) {
+						(new Ext.Window({
+							id: 'image-upload-win',
+							title: gt.gettext('Upload file'),
+							resizable: false,
+							modal: true,
+							items: {
+								xtype: 'form',
+								id: 'image-upload-form',
+								bodyStyle: 'padding: 10px',
+								border: false,
+								waitTitle: gt.gettext('Please wait...'),
+								labelAlign: 'top',
+								layout: 'auto',
+								fileUpload: true,
+								animate: true,
+								width: 300,
+								autoHeight: true,
+								items: [{
+									border: false,
+									layout: 'form',
+									autoHeight: true,
+									items: {
+										width: 200,
+										fieldLabel: gt.gettext('Upload image'),
+										xtype: 'fileuploadfield',
+										name: 'image',
+										height: 30,
+										border: false
+									}
+								}, {
+									border: false,
+									layout: 'form',
+									autoHeight: true,
+									items: {
+										width: 200,
+										xtype: 'textfield',
+										fieldLabel: gt.gettext('Or provide image URL'),
+										name: 'url',
+										height: 30,
+										border: false
+									}
+								}, {
+									border: false,
+									items: {
+										xtype: 'button',
+										text: gt.gettext('Upload'),
+										handler: function() {
+											Ext.getCmp('image-upload-form').getForm().submit({
+												url: '/admin-image/upload',
+												waitMsg: gt.gettext('Uploading data...'),
+												success: function(f, action) {
+													var res = Ext.util.JSON.decode(Ext.util.Format.htmlDecode(action.response.responseText));
+													if (res) {
+														image.insertImage({
+															src: res.uri
+														});
+														Ext.getCmp('image-upload-win').close();
+													}
+												},
+												failure: function(f, action) {
+													if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+														if (action.result && action.result.errormsg) {
+															Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+														}
+													} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
+														Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText));
+													}
+												}
+											});
+										}
+									}
+								}]
+							}
+						})).show();
+					};
 				}
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
 				if (elt.fieldLabel == '&nbsp;' || it.remove_label_separator)
 					elt.labelSeparator = '';
-				if (elt.xtype != 'textarea' && elt.xtype != 'combo') {
+				if (elt.xtype != 'textarea' && elt.xtype != 'combo' && elt.xtype != 'htmleditor') {
 					elt.listeners.specialkey = function(field, e) {
 						if (e.getKey() == e.ENTER) {
 							var form = Ext.getCmp('admin-form-' + form_id);

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-08 17:44+0400\n"
-"PO-Revision-Date: 2011-06-30 18:12+0300\n"
+"POT-Creation-Date: 2011-07-11 01:34+0400\n"
+"PO-Revision-Date: 2011-07-11 01:31+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -19,33 +19,83 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: static/js/admin.js:81
-msgid "Guru advice"
-msgstr "Советы гуру"
+#: static/js/FileUploadField.js:21
+msgid "Browse..."
+msgstr "Обзор..."
 
-#: static/js/admin.js:126 static/js/realplexor-stream.js:20
-#: static/js/admin-form.js:240 static/js/admin-form.js:243
-#: static/js/chat.js:365 static/js/chat.js:373
-#: mg/templates/admin/auth/write-dossier.html:39
-#: mg/templates/admin/auth/write-dossier.html:42
-#: mg/templates/constructor/setup/domain-wizard.html:41
-#: mg/templates/constructor/setup/domain-wizard.html:44
+#: static/js/chat.js:365 static/js/chat.js:373 static/js/admin-form.js:165
+#: static/js/admin-form.js:168 static/js/admin-form.js:318
+#: static/js/admin-form.js:321 static/js/realplexor-stream.js:20
+#: static/js/admin.js:126 mg/templates/constructor/setup/logo-wizard.html:63
+#: mg/templates/constructor/setup/logo-wizard.html:66
 #: mg/templates/constructor/setup/domain.html:40
 #: mg/templates/constructor/setup/domain.html:43
+#: mg/templates/constructor/setup/domain-wizard.html:41
+#: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/logo.html:95
 #: mg/templates/constructor/setup/logo.html:98
-#: mg/templates/constructor/setup/logo-wizard.html:63
-#: mg/templates/constructor/setup/logo-wizard.html:66
+#: mg/templates/admin/auth/write-dossier.html:39
+#: mg/templates/admin/auth/write-dossier.html:42
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/js/admin.js:126
-msgid "Error parsing server response"
-msgstr "Ошибка при разборе ответа сервера"
+#: static/js/chat.js:373
+msgid "Couldn't deliver message to the server"
+msgstr "Не удалось отправить сообщение на сервер"
 
-#: static/js/admin.js:229
-msgid "To the main page"
-msgstr "На главную страницу"
+#: static/js/HtmlEditorImage.js:30
+msgid "Insert Image"
+msgstr "Вставка изображения"
+
+#: static/js/admin-form.js:105
+#: mg/templates/constructor/setup/logo-wizard.html:74
+msgid "Upload file"
+msgstr "Загрузить файл"
+
+#: static/js/admin-form.js:113 static/js/admin-form.js:272
+#: mg/templates/constructor/setup/logo-wizard.html:80
+#: mg/templates/constructor/setup/logo-wizard.html:119
+#: mg/templates/constructor/setup/logo-wizard.html:230
+#: mg/templates/constructor/setup/domain.html:64
+#: mg/templates/constructor/setup/domain-wizard.html:82
+#: mg/templates/constructor/setup/logo.html:57
+#: mg/templates/admin/auth/write-dossier.html:23
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+#: static/js/admin-form.js:126
+msgid "Upload image"
+msgstr "Загрузите изображение"
+
+#: static/js/admin-form.js:139
+msgid "Or provide image URL"
+msgstr "Или укажите его URL"
+
+#: static/js/admin-form.js:148
+#: mg/templates/constructor/setup/logo-wizard.html:102
+#: mg/templates/constructor/setup/logo.html:80
+msgid "Upload"
+msgstr "Загрузить"
+
+#: static/js/admin-form.js:152
+#: mg/templates/constructor/setup/logo-wizard.html:40
+#: mg/templates/constructor/setup/logo.html:83
+msgid "Uploading data..."
+msgstr "Отправка данных..."
+
+#: static/js/admin-form.js:168 static/js/admin-form.js:321
+#: mg/templates/constructor/setup/logo-wizard.html:66
+#: mg/templates/constructor/setup/domain.html:43
+#: mg/templates/constructor/setup/domain-wizard.html:44
+#: mg/templates/constructor/setup/logo.html:98
+#: mg/templates/admin/auth/write-dossier.html:42
+#, python-format
+msgid "Server error: %s"
+msgstr "Ошибка на сервере: %s"
+
+#: static/js/admin-form.js:303
+msgid "Sending data..."
+msgstr "Отправка данных..."
 
 #: static/js/realplexor-stream.js:21
 msgid "Connection terminated"
@@ -55,40 +105,21 @@ msgstr "Соединение прервано"
 msgid "Exception"
 msgstr "Исключение"
 
-#: static/js/FileUploadField.js:21
-msgid "Browse..."
-msgstr "Обзор..."
+#: static/js/admin.js:81
+msgid "Guru advice"
+msgstr "Советы гуру"
+
+#: static/js/admin.js:126
+msgid "Error parsing server response"
+msgstr "Ошибка при разборе ответа сервера"
+
+#: static/js/admin.js:229
+msgid "To the main page"
+msgstr "На главную страницу"
 
 #: static/js/admin-form-presets.js:11
 msgid "Presets:"
 msgstr "Предустановки:"
-
-#: static/js/admin-form.js:194 mg/templates/admin/auth/write-dossier.html:23
-#: mg/templates/constructor/setup/domain-wizard.html:82
-#: mg/templates/constructor/setup/domain.html:64
-#: mg/templates/constructor/setup/logo.html:57
-#: mg/templates/constructor/setup/logo-wizard.html:80
-#: mg/templates/constructor/setup/logo-wizard.html:119
-#: mg/templates/constructor/setup/logo-wizard.html:230
-msgid "Please wait..."
-msgstr "Пожалуйста, подождите..."
-
-#: static/js/admin-form.js:225
-msgid "Sending data..."
-msgstr "Отправка данных..."
-
-#: static/js/admin-form.js:243 mg/templates/admin/auth/write-dossier.html:42
-#: mg/templates/constructor/setup/domain-wizard.html:44
-#: mg/templates/constructor/setup/domain.html:43
-#: mg/templates/constructor/setup/logo.html:98
-#: mg/templates/constructor/setup/logo-wizard.html:66
-#, python-format
-msgid "Server error: %s"
-msgstr "Ошибка на сервере: %s"
-
-#: static/js/chat.js:373
-msgid "Couldn't deliver message to the server"
-msgstr "Не удалось отправить сообщение на сервер"
 
 #: mg/templates/game/interface.js:416
 msgid "Misconfigured layout scheme"
@@ -122,52 +153,16 @@ msgstr "Введите свой пароль дважды"
 msgid "Passwords don't match"
 msgstr "Пароли не совпадают"
 
-#: mg/templates/constructor/setup/intro-ru.html:18
 #: mg/templates/constructor/setup/intro-en.html:12
+#: mg/templates/constructor/setup/intro-ru.html:18
 #: mg/templates/constructor/setup/logo.html:130
 msgid "Next"
 msgstr "Далее"
-
-#: mg/templates/constructor/setup/domain-wizard.html:126
-msgid "Check availability"
-msgstr "Проверить доступность"
-
-#: mg/templates/constructor/setup/domain-wizard.html:161
-msgid "Buy MM$"
-msgstr "Купить MM$"
-
-#: mg/templates/constructor/setup/domain-wizard.html:258
-#: mg/templates/constructor/setup/domain.html:90
-#: mg/templates/constructor/setup/logo-wizard.html:281
-msgid "Abort wizard"
-msgstr "Прервать мастер"
-
-#: mg/templates/constructor/setup/offer-ru.html:40
-msgid "I agree to the terms and conditions"
-msgstr "Я принимаю условия соглашения"
-
-#: mg/templates/constructor/setup/offer-ru.html:43
-msgid "I don't agree"
-msgstr "Я не согласен"
 
 #: mg/templates/constructor/setup/form.html:18
 #: mg/templates/constructor/setup/logo.html:126
 msgid "Previous"
 msgstr "Назад"
-
-#: mg/templates/constructor/setup/logo.html:80
-#: mg/templates/constructor/setup/logo-wizard.html:102
-msgid "Upload"
-msgstr "Загрузить"
-
-#: mg/templates/constructor/setup/logo.html:83
-#: mg/templates/constructor/setup/logo-wizard.html:40
-msgid "Uploading data..."
-msgstr "Отправка данных..."
-
-#: mg/templates/constructor/setup/logo-wizard.html:74
-msgid "Upload file"
-msgstr "Загрузить файл"
 
 #: mg/templates/constructor/setup/logo-wizard.html:113
 msgid "Solid color"
@@ -200,6 +195,28 @@ msgstr "Предварительный просмотр"
 #: mg/templates/constructor/setup/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
+
+#: mg/templates/constructor/setup/logo-wizard.html:281
+#: mg/templates/constructor/setup/domain.html:90
+#: mg/templates/constructor/setup/domain-wizard.html:258
+msgid "Abort wizard"
+msgstr "Прервать мастер"
+
+#: mg/templates/constructor/setup/domain-wizard.html:126
+msgid "Check availability"
+msgstr "Проверить доступность"
+
+#: mg/templates/constructor/setup/domain-wizard.html:161
+msgid "Buy MM$"
+msgstr "Купить MM$"
+
+#: mg/templates/constructor/setup/offer-ru.html:40
+msgid "I agree to the terms and conditions"
+msgstr "Я принимаю условия соглашения"
+
+#: mg/templates/constructor/setup/offer-ru.html:43
+msgid "I don't agree"
+msgstr "Я не согласен"
 
 #~ msgid "Error during registration"
 #~ msgstr "Ошибка во время регистрации"

@@ -1,4 +1,10 @@
 from mg import *
+from mg.core.cluster import StaticUploadError
+from concurrence.http import HTTPError
+from concurrence import Timeout, TimeoutError
+from PIL import Image
+import urlparse
+import cStringIO
 import cgi
 import random
 import re
@@ -23,6 +29,7 @@ class AdminInterface(Module):
         self.rhook("hook-admin.link", self.link)
         self.rhook("admin.form", self.form)
         self.rhook("admin.advice", self.advice)
+        self.rhook("ext-admin-image.upload", self.image, priv="logged")
 
     def index(self):
         menu = self.makemenu()
@@ -254,3 +261,83 @@ class AdminInterface(Module):
             self.req().admin_update_menu = True
         except AttributeError:
             pass
+
+    def image(self):
+        self.call("web.upload_handler")
+        req = self.req()
+        url = req.param("url")
+        image_field = "image"
+        errors = {}
+        image = req.param_raw("image")
+        if not image and url:
+            url_obj = urlparse.urlparse(url.encode("utf-8"), "http", False)
+            if url_obj.scheme != "http":
+                errors["url"] = self._("Scheme '%s' is not supported") % htmlescape(url_obj.scheme)
+            elif url_obj.hostname is None:
+                errors["url"] = self._("Enter correct URL")
+            else:
+                cnn = HTTPConnection()
+                try:
+                    with Timeout.push(50):
+                        cnn.set_limit(20000000)
+                        port = url_obj.port
+                        if port is None:
+                            port = 80
+                        cnn.connect((url_obj.hostname, port))
+                        request = cnn.get(url_obj.path + url_obj.query)
+                        response = cnn.perform(request)
+                        if response.status_code != 200:
+                            if response.status_code == 404:
+                                errors["url"] = self._("Remote server response: Resource not found")
+                            elif response.status_code == 403:
+                                errors["url"] = self._("Remote server response: Access denied")
+                            elif response.status_code == 500:
+                                errors["url"] = self._("Remote server response: Internal server error")
+                            else:
+                                errors["url"] = self._("Download error: %s") % htmlescape(response.status)
+                        else:
+                            image = response.body
+                            image_field = "url"
+                except TimeoutError as e:
+                    errors["url"] = self._("Timeout on downloading image. Time limit - 30 sec")
+                except Exception as e:
+                    errors["url"] = self._("Download error: %s") % htmlescape(str(e))
+                finally:
+                    try:
+                        cnn.close()
+                    except Exception:
+                        pass
+        if image:
+            try:
+                image_obj = Image.open(cStringIO.StringIO(image))
+            except IOError:
+                errors[image_field] = self._("Image format not recognized")
+            if not errors:
+                format = image_obj.format
+                if format == "GIF":
+                    ext = "gif"
+                    content_type = "image/gif"
+                    target_format = "GIF"
+                elif format == "PNG":
+                    ext = "png"
+                    content_type = "image/png"
+                    target_format = "PNG"
+                else:
+                    target_format = "JPEG"
+                    ext = "jpg"
+                    content_type = "image/jpeg"
+                if target_format != format:
+                    im_data = cStringIO.StringIO()
+                    image_obj.save(im_data, target_format)
+                    im_data = im_data.getvalue()
+                else:
+                    im_data = image
+                uri = self.call("cluster.static_upload", "socio", ext, content_type, im_data)
+                self.call("web.response_json_html", {"success": True, "uri": uri})
+        elif not errors:
+            errors["image"] = self._("Upload an image")
+        if errors:
+            self.call("web.response_json_html", {"success": False, "errors": errors})
+        else:
+            self.call("web.response_json_html", {"success": False, "errmsg": self._("Unknown error uploading image")})
+            
