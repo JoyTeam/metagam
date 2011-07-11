@@ -1512,7 +1512,7 @@ class IndexPageAdmin(Module):
         gens.append(DesignIndexBrokenStones)
         gens.append(DesignIndexRustedMetal)
 
-class SocioInterface(Module):
+class SocioInterface(ConstructorModule):
     def register(self):
         Module.register(self)
         self.rhook("forum.vars-index", self.forum_vars_index)
@@ -1521,6 +1521,8 @@ class SocioInterface(Module):
         self.rhook("forum.vars-tags", self.forum_vars_tags)
         self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("forum.response", self.response, priority=10)
+        self.rhook("forum.response_template", self.response_template, priority=10)
 
     def recommended_actions(self, actions):
         if not self.conf("sociointerface.design"):
@@ -1564,6 +1566,16 @@ class SocioInterface(Module):
 
     def forum_vars_tags(self, vars):
         vars["title"] = self._("Forum tags")
+
+    def response(self, content, vars):
+        self.call("forum.setup-menu", vars)
+        design = self.design("sociointerface")
+        self.call("design.response", design, "index.html", content, vars)
+
+    def response_template(self, template, vars):
+        self.call("forum.setup-menu", vars)
+        design = self.design("sociointerface")
+        self.call("design.response", design, "index.html", self.call("web.parse_template", template, vars), vars)
 
 class SocioInterfaceAdmin(Module):
     def register(self):
@@ -1809,6 +1821,10 @@ class SocioInterfaceAdmin(Module):
         vars["counters"] = ""
         for i in range(0, random.randrange(0, 5)):
             vars["counters"] += ' <img src="/st/constructor/design/counter%d.gif" alt="" />' % random.randrange(0, 4)
+        if random.random() < 0.5:
+            demo_messages = []
+            demo_messages.extend(demo_subjects)
+            vars["socio_message_top"] = random.choice(demo_messages)
         content = self.call("web.parse_template", "socio/%s" % filename, vars)
         self.call("design.response", design, "index.html", content, vars)
 

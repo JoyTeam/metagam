@@ -442,6 +442,26 @@ class Socio(Module):
         self.rhook("socio.fulltext_store", self.fulltext_store)
         self.rhook("socio.fulltext_remove", self.fulltext_remove)
         self.rhook("socio.fulltext_search", self.fulltext_search)
+        self.rhook("socio.user", self.socio_user)
+        self.rhook("socio.semi_user", self.socio_semi_user)
+
+    def socio_user(self):
+        req = self.req()
+        try:
+            return req._socio_user
+        except AttributeError:
+            pass
+        req._socio_user = req.user()
+        return req._socio_user
+
+    def socio_semi_user(self):
+        req = self.req()
+        try:
+            return req._socio_semi_user
+        except AttributeError:
+            pass
+        req._socio_semi_user = req.session().semi_user()
+        return req._socio_semi_user
 
     def child_modules(self):
         return ["mg.socio.SocioAdmin"]
@@ -762,6 +782,7 @@ class Forum(Module):
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
         self.rhook("forum.response", self.response)
+        self.rhook("forum.setup-menu", self.setup_menu)
         self.rhook("forum.response_template", self.response_template)
         self.rhook("forum.sync", self.sync)
         self.rhook("ext-forum.index", self.ext_index, priv="public")
@@ -810,7 +831,7 @@ class Forum(Module):
         objclasses["ForumPermissions"] = (ForumPermissions, ForumPermissionsList)
         objclasses["ForumCategoryStat"] = (ForumCategoryStat, ForumCategoryStatList)
 
-    def response(self, content, vars):
+    def setup_menu(self, vars):
         req = self.req()
         if vars.get("menu") and len(vars["menu"]):
             menu_left = []
@@ -826,15 +847,23 @@ class Forum(Module):
             if len(menu_right):
                 menu_right[-1]["lst"] = True
                 vars["menu_right"] = menu_right
-        vars["socio_message_top"] = self.conf("socio.message-top")
+        silence = self.silence(self.call("socio.user"))
+        if silence:
+            vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.timeencode2", silence.get("till")))
+        else:
+            vars["socio_message_top"] = self.conf("socio.message-top")
+
+    def response(self, content, vars):
+        self.call("forum.setup-menu", vars)
         self.call("web.response_global", content, vars)
 
     def response_template(self, template, vars):
-        self.call("forum.response", self.call("web.parse_template", template, vars), vars)
+        self.call("forum.setup-menu", vars)
+        self.call("web.response_template", template, vars)
 
     def ext_index(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         categories = self.categories()
         rules = self.load_rules([cat["id"] for cat in categories])
         if user_uuid is None:
@@ -850,7 +879,7 @@ class Forum(Module):
         stat = dict([(s.uuid, s) for s in stat])
         # unread topics
         unread = {}
-        semi_user_uuid = req.session().semi_user()
+        semi_user_uuid = self.call("socio.semi_user")
         if semi_user_uuid:
             topics = self.objlist(ForumTopicList, query_index="updated-category", query_start=self.now(-31 * 86400))
             re_updated = re.compile(r'^(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)-([a-f0-9]+)-[a-f0-9]+$')
@@ -959,10 +988,19 @@ class Forum(Module):
                 return False
         return False
 
+    def silence(self, user):
+        if user is None:
+            return None
+        limits = {}
+        self.call("limits.check", user, limits)
+        return limits.get("forum-silence")
+
     def may_write(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
-        user = req.user()
+        user = self.call("socio.user")
         if user is None:
+            return False
+        if self.silence(user):
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -976,8 +1014,10 @@ class Forum(Module):
 
     def may_create_topic(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
-        user = req.user()
+        user = self.call("socio.user")
         if user is None:
+            return False
+        if self.silence(user):
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -991,8 +1031,10 @@ class Forum(Module):
 
     def may_edit(self, cat, topic=None, post=None, rules=None, roles=None):
         req = self.req()
-        user = req.user()
+        user = self.call("socio.user")
         if user is None:
+            return False
+        if self.silence(user):
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -1015,8 +1057,10 @@ class Forum(Module):
 
     def may_moderate(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
-        user = req.user()
+        user = self.call("socio.user")
         if user is None:
+            return False
+        if self.silence(user):
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -1056,7 +1100,7 @@ class Forum(Module):
 
     def ext_category(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         cat = self.call("forum.category", req.args)
         if cat is None:
             self.call("web.not_found")
@@ -1140,7 +1184,7 @@ class Forum(Module):
                 pages_list[-1]["lst"] = True
                 topic["pages"] = pages_list
         req = self.req()
-        user_uuid = req.session().semi_user()
+        user_uuid = self.call("socio.semi_user")
         if user_uuid is not None:
             lastread_list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal=["%s-%s" % (topic["uuid"], user_uuid) for topic in topics])
             lastread_list.load()
@@ -1200,7 +1244,7 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
-                user = self.obj(User, req.user())
+                user = self.obj(User, self.call("socio.user"))
                 topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
                 self.call("forum.topic-form", topic, form, "store")
                 self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
@@ -1362,7 +1406,7 @@ class Forum(Module):
 
     def ext_topic(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         try:
             topic = self.obj(ForumTopic, req.args)
             topic_content = self.obj(ForumTopicContent, req.args)
@@ -1413,7 +1457,7 @@ class Forum(Module):
         page = intz(req.param("page"))
         posts, page, pages, last_post = self.posts(topic, page)
         # updating lastread
-        user_uuid = req.session().semi_user()
+        user_uuid = self.call("socio.semi_user")
         if user_uuid is not None:
             lastread = self.lastread(user_uuid, topic.uuid, cat["id"])
             if last_post is not None:
@@ -1424,7 +1468,7 @@ class Forum(Module):
                 lastread.set("last_post", created)
             lastread.delkey("email_notified")
             lastread.store()
-            if req.user():
+            if self.call("socio.user"):
                 redirect = urlencode(req.uri())
                 if lastread.get("subscribed"):
                     menu.append({"href": "/forum/unsubscribe/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unsubscribe"), "right": True})
@@ -1460,7 +1504,7 @@ class Forum(Module):
             elif not self.may_write(cat, rules=rules, roles=roles):
                 form.error("content", self._("Access denied"))
             if not form.errors:
-                user = self.obj(User, req.user())
+                user = self.obj(User, self.call("socio.user"))
                 post, page = self.call("forum.reply", cat, topic, user, content)
                 self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
         # making web response
@@ -1617,7 +1661,7 @@ class Forum(Module):
             if not content:
                 form.error("content", self._("Enter post content"))
             if not form.errors:
-                user = self.obj(User, req.user())
+                user = self.obj(User, self.call("socio.user"))
                 post, page = self.call("forum.reply", cat, topic, user, content)
                 self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
         else:
@@ -1798,7 +1842,7 @@ class Forum(Module):
 
     def ext_settings(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         try:
             settings = self.obj(UserForumSettings, user_uuid)
         except ObjectNotFoundException:
@@ -1921,7 +1965,7 @@ class Forum(Module):
 
     def ext_subscribe(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
@@ -1939,7 +1983,7 @@ class Forum(Module):
 
     def ext_unsubscribe(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         try:
             topic = self.obj(ForumTopic, req.args)
         except ObjectNotFoundException:
@@ -2006,7 +2050,7 @@ class Forum(Module):
             if cat is None:
                 self.call("web.not_found")
             # permissions
-            user_uuid = req.user()
+            user_uuid = self.call("socio.user")
             categories = self.categories()
             rules = self.load_rules([c["id"] for c in categories])
             roles = {}
@@ -2204,7 +2248,7 @@ class Forum(Module):
 
     def ext_tag(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         categories = self.categories()
         rules = self.load_rules([cat["id"] for cat in categories])
         if user_uuid is None:
@@ -2252,7 +2296,7 @@ class Forum(Module):
 
     def ext_search(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         categories = self.categories()
         rules = self.load_rules([cat["id"] for cat in categories])
         if user_uuid is None:
@@ -2333,7 +2377,7 @@ class Forum(Module):
 
     def ext_subscribed(self):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         categories = self.categories()
         rules = self.load_rules([cat["id"] for cat in categories])
         roles = {}
@@ -2386,7 +2430,7 @@ class Forum(Module):
 
     def news(self, vars, category, limit=5, template=None):
         req = self.req()
-        user_uuid = req.user()
+        user_uuid = self.call("socio.user")
         cat = self.call("forum.category-by-tag", category)
         if not cat:
             return ""
@@ -2423,6 +2467,10 @@ class SocioAdmin(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
+        self.rhook("socio-admin.message-silence", self.message_silence)
+
+    def message_silence(self):
+        return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))
 
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
@@ -2434,17 +2482,19 @@ class SocioAdmin(Module):
 
     def admin_socio_messages(self):
         req = self.req()
-        message_top = req.param("message_top")
         if req.param("ok"):
             config = self.main_app().config_updater()
-            config.set("socio.message-top", message_top)
+            config.set("socio.message-top", req.param("message_top"))
+            config.set("socio.message-silence", req.param("message_silence"))
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         else:
             config = self.main_app().config
             message_top = config.get("socio.message-top")
+            message_silence = self.message_silence()
         fields = [
             {"type": "textarea", "name": "message_top", "label": self._("Top message"), "value": message_top},
+            {"type": "textarea", "name": "message_silence", "label": self._("Silence message"), "value": message_silence},
         ]
         self.call("admin.form", fields=fields)
 
