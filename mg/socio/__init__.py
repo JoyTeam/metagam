@@ -2482,15 +2482,14 @@ class SocioAdmin(Module):
 
     def admin_socio_messages(self):
         req = self.req()
-        if req.param("ok"):
-            config = self.main_app().config_updater()
+        if req.ok():
+            config = self.app().config_updater()
             config.set("socio.message-top", req.param("message_top"))
             config.set("socio.message-silence", req.param("message_silence"))
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         else:
-            config = self.main_app().config
-            message_top = config.get("socio.message-top")
+            message_top = self.conf("socio.message-top")
             message_silence = self.message_silence()
         fields = [
             {"type": "textarea", "name": "message_top", "label": self._("Top message"), "value": message_top},
