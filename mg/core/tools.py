@@ -3,11 +3,12 @@ import string
 import re
 import cgi
 import datetime
+import calendar
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
 re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
-re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d:\d\d)$')
+re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 
 def urldecode(str):
@@ -94,12 +95,27 @@ def htmldecode(val):
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
 
+def unix_timestamp(val):
+    m = re_datetime.match(val)
+    if m:
+        y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
+    else:
+        m = re_date.match(val)
+        if m:
+            y, m, d = m.group(1, 2, 3)
+            hh = 0
+            mm = 0
+            ss = 0
+        else:
+            return None
+    return calendar.timegm(datetime.datetime(int(y), int(m), int(d), int(hh), int(mm), int(ss), tzinfo=None).utctimetuple())
+
 def datetime_to_human(str):
     m = re_datetime.match(str)
     if not m:
         return None
-    y, m, d, t = m.group(1, 2, 3, 4)
-    return "%02d.%02d.%04d %s" % (int(d), int(m), int(y), t)
+    y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
+    return "%02d.%02d.%04d %02d:%02d:%02d" % (int(d), int(m), int(y), int(hh), int(mm), int(ss))
 
 def date_to_human(str):
     m = re_date.match(str)
@@ -114,3 +130,4 @@ def date_from_human(str):
         return None
     d, m, y, t = m.group(1, 2, 3, 4)
     return "%04d-%02d-%02d %s" % (int(y), int(m), int(d), t if t else "00:00:00")
+

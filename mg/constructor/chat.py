@@ -105,6 +105,7 @@ class Chat(ConstructorModule):
 
     def permissions_list(self, perms):
         perms.append({"id": "chat.config", "name": self._("Chat configuration editor")})
+        self.call("permissions.chat", perms)
 
     def headmenu_chat_config(self, args):
         return self._("Chat configuration")
@@ -259,6 +260,10 @@ class Chat(ConstructorModule):
     def post(self):
         req = self.req()
         user = req.user()
+        limits = {}
+        self.call("limits.check", user, limits)
+        if limits.get("chat-silence"):
+            self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.timeencode2", limits["chat-silence"].get("till")), "hide_title": True})
         author = self.character(user)
         text = req.param("text") 
         prefixes = []

@@ -45,6 +45,10 @@ class EmailAdmin(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-email.settings", self.email_settings, priv="email.settings")
         self.rhook("headmenu-admin-email.settings", self.headmenu_email_settings)
+        self.rhook("objclasses.list", self.objclasses_list)
+        
+    def objclasses_list(self, objclasses):
+        objclasses["BulkEmailMessage"] = (BulkEmailMessage, BulkEmailMessageList)
 
     def permissions_list(self, perms):
         perms.append({"id": "email.settings", "name": self._("Email configuration")})

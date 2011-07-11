@@ -362,7 +362,7 @@ Chat.submit = function() {
 						this.channel_show(res.channel);
 					}
 				} else if (res.error) {
-					Game.error(gt.gettext('Error'), res.error);
+					Game.error(res.hide_title ? '' : gt.gettext('Error'), res.error);
 				}
 			}
 		}).createDelegate(this),

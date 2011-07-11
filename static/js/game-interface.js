@@ -26,7 +26,7 @@ Game.msg = function(title, str, add_cls) {
 	if (!this.msgCt){
 		this.msgCt = Ext.DomHelper.insertFirst(document.body, {id: 'msg-div'}, true);
 	}
-	var m = Ext.DomHelper.append(this.msgCt, '<div class="msg' + (add_cls ? ' ' + add_cls : '') + '"><h3>' + title + '</h3><p>' + str + '</p></div>', true);
+	var m = Ext.DomHelper.append(this.msgCt, '<div class="msg' + (add_cls ? ' ' + add_cls : '') + '">' + (title ? '<h3>' + title + '</h3>' : '') + '<p>' + str + '</p></div>', true);
 	m.hide();
 	m.slideIn('t').pause(3).ghost('t', {remove: true});
 };

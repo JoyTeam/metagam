@@ -107,7 +107,7 @@ class SmilesAdmin(Module):
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("ext-admin-socio.smiles", self.admin_socio_smiles, priv="socio.smiles")
         self.rhook("headmenu-admin-socio.smiles", self.headmenu_socio_smiles)
-        
+
     def permissions_list(self, perms):
         perms.append({"id": "socio.smiles", "name": self._("Smiles settings")})
 

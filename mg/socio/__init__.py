@@ -215,6 +215,7 @@ class ForumAdmin(Module):
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})
         perms.append({"id": "forum.moderation", "name": self._("Forum moderation")})
+        self.call("permissions.forum", perms)
 
     def menu_socio_index(self, menu):
         req = self.req()
@@ -397,7 +398,6 @@ class ForumAdmin(Module):
             tables.append({
                 "title": self._("Socio settings"),
                 "links": [{"hook": "socio/user/%s" % user.uuid, "text": self._("edit"), "lst": True}],
-                "header": [self._("Parameter"), self._("Value")],
                 "rows": params,
             })
 

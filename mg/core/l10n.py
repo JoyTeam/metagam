@@ -53,6 +53,7 @@ class L10n(Module):
         self.rhook("l10n.literal_value", self.l10n_literal_value)
         self.rhook("l10n.literal_values_valid", self.l10n_literal_values_valid)
         self.rhook("l10n.literal_values_sample", self.l10n_literal_values_sample)
+        self.rhook("l10n.literal_interval", self.l10n_literal_interval)
 
     def l10n_domain(self):
         return "mg_server"
@@ -191,7 +192,7 @@ class L10n(Module):
                 th = "nd"
             elif day10 == 3:
                 th = "rd"
-        return self._("at the {2:d}{4} {1}, {0} at {3}").format(year, self._(timeencode2_month.get(month)), day, time, th)
+        return self._("at the {2:d}{4} {1}, {0} {3}").format(year, self._(timeencode2_month.get(month)), day, time, th)
 
     def l10n_dateencode2(self, time):
         m = re_timeencode2.match(time)
@@ -250,3 +251,22 @@ class L10n(Module):
         if lang == "ru":
             return len(values) == 3
         return len(values) == 2
+
+    def l10n_literal_interval(self, seconds):
+        seconds = int(seconds)
+        minutes = seconds / 60
+        seconds -= minutes * 60
+        hours = minutes / 60
+        minutes -= hours * 60
+        days = hours / 24
+        hours -= days * 24
+        items = []
+        if days:
+            items.append("%d %s" % (days, self.call("l10n.literal_value", days, self._("day/days"))))
+        if hours > 0:
+            items.append("%d %s" % (hours, self.call("l10n.literal_value", hours, self._("hour/hours"))))
+        if minutes > 0:
+            items.append("%d %s" % (minutes, self.call("l10n.literal_value", minutes, self._("minute/minutes"))))
+        if not items or seconds > 0:
+            items.append("%d %s" % (seconds, self.call("l10n.literal_value", seconds, self._("second/seconds"))))
+        return " ".join(items)

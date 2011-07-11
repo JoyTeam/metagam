@@ -47,6 +47,7 @@ class ConstructorProject(Module):
                 "mg.constructor.quest.QuestEngine",
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
+                "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
             ])
             if project.get("published"):
                 lst.extend([
