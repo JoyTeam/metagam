@@ -48,6 +48,7 @@ class ConstructorProject(Module):
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
                 "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+                "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
             ])
             if project.get("published"):
                 lst.extend([

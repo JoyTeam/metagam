@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-11 17:32+0400\n"
+"POT-Creation-Date: 2011-07-11 17:50+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -563,11 +563,11 @@ msgstr ""
 msgid "Settings stored"
 msgstr ""
 
-#: mg/socio/__init__.py:2496
+#: mg/socio/__init__.py:2495
 msgid "Top message"
 msgstr ""
 
-#: mg/socio/__init__.py:2497
+#: mg/socio/__init__.py:2496
 msgid "Silence message"
 msgstr ""
 

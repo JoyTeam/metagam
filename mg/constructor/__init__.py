@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor.players import Character, Player, Characters
+from mg.mmo.locations_classes import Location
 
 class ConstructorModule(Module):
     def character(self, uuid):
@@ -88,3 +89,22 @@ class ConstructorModule(Module):
                 obj = self.call("design.get", group)
                 designs[group] = obj
                 return obj
+
+    def location(self, uuid):
+        try:
+            req = self.req()
+        except AttributeError:
+            return Location(self.app(), uuid)
+        else:
+            try:
+                locations = req.locations
+            except AttributeError:
+                locations = {}
+                req.locations = locations
+            try:
+                return locations[uuid]
+            except KeyError:
+                obj = Location(self.app(), uuid)
+                locations[uuid] = obj
+                return obj
+
