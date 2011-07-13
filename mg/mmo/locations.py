@@ -65,19 +65,19 @@ class LocationsAdmin(ConstructorModule):
                 if lang == "ru" and req.param("name_g"):
                     db_loc.set("name_g", req.param("name_g"))
                 else:
-                    db_loc.del_key("name_g")
+                    db_loc.delkey("name_g")
                 if lang == "ru" and req.param("name_a"):
                     db_loc.set("name_a", req.param("name_a"))
                 else:
-                    db_loc.del_key("name_a")
+                    db_loc.delkey("name_a")
                 if lang == "ru" and req.param("name_w"):
                     db_loc.set("name_w", req.param("name_w"))
                 else:
-                    db_loc.del_key("name_w")
+                    db_loc.delkey("name_w")
                 if lang == "ru" and req.param("name_t"):
                     db_loc.set("name_t", req.param("name_t"))
                 else:
-                    db_loc.del_key("name_t")
+                    db_loc.delkey("name_t")
                 db_loc.set("image_type", req.param("v_image_type"))
                 flags = {}
                 self.call("admin-locations.editor-form-validate", db_loc, flags, errors)
@@ -214,9 +214,9 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 else:
                     errors["image_static"] = self._("Upload an image")
         else:
-            db_loc.del_key("image_static")
-            db_loc.del_key("image_static_w")
-            db_loc.del_key("image_static_h")
+            db_loc.delkey("image_static")
+            db_loc.delkey("image_static_w")
+            db_loc.delkey("image_static_h")
 
     def form_store(self, db_loc, flags):
         if flags.get("image_static"):
@@ -251,5 +251,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             "image": location.db_location.get("image_static"),
             "width": location.db_location.get("image_static_w"),
             "height": location.db_location.get("image_static_h"),
+            "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
         }
         self.call("admin.response_template", "admin/locations/imagemap.html", vars)

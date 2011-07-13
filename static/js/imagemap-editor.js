@@ -1,21 +1,36 @@
-ImageMapEditor = {
-	zones: new Array(),
-	mouse: {x: -100, y: -100 },
-	handler_size: 8
-};
+ImageMapEditor = {};
 
 ImageMapEditor.init = function(width, height) {
+	this.zones = new Array();
+	this.mouse = new Array();
+	this.handler_size = 8;
+	this.active_zone = undefined;
+	this.mode = undefined;
+	this.active_handler = undefined;
+	this.highlighted_handler = undefined;
+	this.highlighted_segment = undefined;
+	this.highlighted_zone = undefined;
+	this.drag_handler = undefined;
+	this.drag_zone = undefined;
+	this.clip_x1 = undefined;
+	this.clip_x2 = undefined;
+	this.clip_y1 = undefined;
+	this.clip_y2 = undefined;
 	this.width = width;
 	this.height = height;
+	/* creating canvas */
 	var canvas = document.createElement('canvas');
-	canvas.id = 'imagemap_canvas';
+	canvas.id = 'imagemap-canvas';
 	canvas.width = width;
 	canvas.height = height;
-	try { G_vmlCanvasManager.initElement(canvas); } catch (e) {}
-	Ext.getDom('imagemap_div').appendChild(canvas);
+	try {
+		G_vmlCanvasManager.initElement(canvas);
+		Ext.getDom('imagemap-ie-warning').style.display = 'block';
+	} catch (e) {}
+	Ext.getDom('imagemap-div').appendChild(canvas);
 	this.ctx = canvas.getContext('2d');
 	this.canvas = Ext.get(canvas);
-	this.img = Ext.getDom('imagemap_img');
+	this.img = Ext.getDom('imagemap-img');
 	this.init_image();
 };
 
@@ -141,10 +156,40 @@ ImageMapEditor.update_highlighted = function() {
 			}
 		}
 	}
-	return this.highlighted_handler != old_highlighted_handler || this.highlighted_segment != old_highlighted_segment || this.highlighted_zone != old_highlighted_zone;
+	var modified = false;
+	if (this.highlighted_handler != old_highlighted_handler) {
+		this.touch_active_zone();
+		modified = true;
+	}
+	if (this.highlighted_segment != old_highlighted_segment) {
+		this.touch_active_zone();
+		modified = true;
+	}
+	if (this.highlighted_zone != old_highlighted_zone) {
+		this.touch_zone(this.highlighted_zone);
+		this.touch_zone(old_highlighted_zone);
+		modified = true;
+	}
+	return modified;
 };
 
 ImageMapEditor.paint = function() {
+	if (this.clip_x1 == undefined)
+		return;
+	this.ctx.save();
+	var clipping = true;
+	try {
+		if (G_vmlCanvasManager) {
+			clipping = false;
+			this.ctx.clearRect(0, 0, this.width, this.height);
+		}
+	} catch (e) {
+	}
+	if (clipping) {
+		this.ctx.beginPath();
+		this.ctx.rect(this.clip_x1, this.clip_y1, this.clip_x2 - this.clip_x1 + 1, this.clip_y2 - this.clip_y1 + 1);
+		this.ctx.clip();
+	}
 	this.ctx.drawImage(this.img, 0, 0);
 	for (var i = 0; i < this.zones.length; i++) {
 		var zone = this.zones[i];
@@ -191,6 +236,11 @@ ImageMapEditor.paint = function() {
 			}
 		}
 	}
+	this.ctx.restore();
+	this.clip_x1 = undefined;
+	this.clip_y1 = undefined;
+	this.clip_x2 = undefined;
+	this.clip_y2 = undefined;
 };
 
 ImageMapEditor.new_zone = function() {
@@ -223,12 +273,14 @@ ImageMapEditor.mouse_down = function(ev, target) {
 					this.active_zone.open = false;
 					this.mode = undefined;
 					repaint = true;
+					this.touch_active_zone();
 				}
 			} else {
 				/* adding new point to the polygon */
 				last_pt.x = pt.x;
 				last_pt.y = pt.y;
 				this.active_zone.poly.push(pt);
+				this.touch_active_zone();
 				repaint = true;
 			}
 		} else if (this.highlighted_handler) {
@@ -238,6 +290,7 @@ ImageMapEditor.mouse_down = function(ev, target) {
 				start_x: this.active_handler.x, start_y: this.active_handler.y,
 				mouse_start_x: this.mouse.x, mouse_start_y: this.mouse.y
 			};
+			this.touch_active_zone();
 			repaint = true;
 		} else if (this.highlighted_segment != undefined) {
 			/* splitting segment into 2 segments */
@@ -247,8 +300,10 @@ ImageMapEditor.mouse_down = function(ev, target) {
 				start_x: this.active_handler.x, start_y: this.active_handler.y,
 				mouse_start_x: this.mouse.x, mouse_start_y: this.mouse.y
 			};
+			this.touch_active_zone();
 			repaint = true;
 		} else if (this.highlighted_zone) {
+			this.touch_active_zone();
 			this.active_zone = this.highlighted_zone;
 			this.active_handler = undefined;
 			this.active_segment = undefined;
@@ -256,8 +311,10 @@ ImageMapEditor.mouse_down = function(ev, target) {
 				offset_x: 0, offset_y: 0,
 				mouse_last_x: this.mouse.x, mouse_last_y: this.mouse.y
 			};
+			this.touch_active_zone();
 			repaint = true;
 		} else if (this.active_zone) {
+			this.touch_active_zone();
 			this.active_zone = undefined;
 			this.active_handler = undefined;
 			this.active_segment = undefined;
@@ -269,6 +326,7 @@ ImageMapEditor.mouse_down = function(ev, target) {
 			this.active_zone.poly.push({x: pt.x, y: pt.y})
 			this.mode = 'new-zone';
 			repaint = true;
+			this.touch_active_zone();
 		}
 	} else if (ev.button == 2) {
 		this.cancel();
@@ -279,11 +337,45 @@ ImageMapEditor.mouse_down = function(ev, target) {
 	}
 };
 
+ImageMapEditor.touch_active_zone = function(poly) {
+	this.touch_zone(this.active_zone);
+};
+
+ImageMapEditor.touch_zone = function(zone) {
+	if (zone)
+		this.touch_poly(zone.poly);
+};
+
+ImageMapEditor.touch_poly = function(poly) {
+	for (var pi = 0; pi < poly.length; pi++) {
+		this.touch(poly[pi]);
+	}
+};
+
+ImageMapEditor.touch = function(pt) {
+	if (this.clip_x1 == undefined) {
+		this.clip_x1 = pt.x;
+		this.clip_x2 = pt.x;
+		this.clip_y1 = pt.y;
+		this.clip_y2 = pt.y;
+	} else {
+		if (pt.x - this.handler_size < this.clip_x1)
+			this.clip_x1 = pt.x - this.handler_size;
+		if (pt.x + this.handler_size > this.clip_x2)
+			this.clip_x2 = pt.x + this.handler_size;
+		if (pt.y - this.handler_size < this.clip_y1)
+			this.clip_y1 = pt.y - this.handler_size;
+		if (pt.y + this.handler_size > this.clip_y2)
+			this.clip_y2 = pt.y + this.handler_size;
+	}
+};
+
 ImageMapEditor.cancel = function() {
 	if (this.mode == 'new-zone') {
 		for (var i = 0; i < this.zones.length; i++) {
 			if (this.zones[i] == this.active_zone) {
 				this.zones.splice(i, 1);
+				this.touch_active_zone();
 				this.active_zone = undefined;
 				this.highlighted_zone = undefined;
 				this.highlighted_handler = undefined;
@@ -294,17 +386,21 @@ ImageMapEditor.cancel = function() {
 			}
 		}
 	} else if (this.drag_handler) {
+		this.touch_active_zone();
 		this.active_handler.x = this.drag_handler.start_x;
 		this.active_handler.y = this.drag_handler.start_y;
 		this.drag_handler = undefined;
 	} else if (this.drag_zone) {
+		this.touch_active_zone();
 		for (var i = 0; i < this.active_zone.poly.length - 1; i++) {
 			var pt = this.active_zone.poly[i];
 			pt.x -= this.drag_zone.offset_x;
 			pt.y -= this.drag_zone.offset_y;
 		}
+		this.touch_active_zone();
 		this.drag_zone = undefined;
 	} else if (this.active_zone) {
+		this.touch_active_zone();
 		this.active_zone = undefined;
 		this.active_handler = undefined;
 		this.active_segment = undefined;
@@ -324,15 +420,20 @@ ImageMapEditor.mouse_move = function(ev, target) {
 		repaint = true;
 	}
 	if (this.mode == 'new-zone') {
+		this.touch_active_zone();
 		var last_pt = this.active_zone.poly[this.active_zone.poly.length - 1];
 		last_pt.x = pt.x;
 		last_pt.y = pt.y;
+		this.touch_active_zone();
 		repaint = true;
 	} else if (this.drag_handler) {
+		this.touch_active_zone();
 		this.active_handler.x = pt.x - this.drag_handler.mouse_start_x + this.drag_handler.start_x;
 		this.active_handler.y = pt.y - this.drag_handler.mouse_start_y + this.drag_handler.start_y;
+		this.touch_active_zone();
 		repaint = true;
 	} else if (this.drag_zone) {
+		this.touch_active_zone();
 		var delta_x = pt.x - this.drag_zone.mouse_last_x;
 		var delta_y = pt.y - this.drag_zone.mouse_last_y;
 		this.drag_zone.mouse_last_x = pt.x;
@@ -344,6 +445,7 @@ ImageMapEditor.mouse_move = function(ev, target) {
 			pt.x += delta_x;
 			pt.y += delta_y;
 		}
+		this.touch_active_zone();
 		repaint = true;
 	}
 	if (repaint)
@@ -364,10 +466,12 @@ ImageMapEditor.mouse_up = function(ev, target) {
 	}
 	if (this.drag_handler) {
 		this.drag_handler = undefined;
+		this.touch_active_zone();
 		repaint = true;
 	}
 	if (this.drag_zone) {
 		this.drag_zone = undefined;
+		this.touch_active_zone();
 		repaint = true;
 	}
 	if (repaint)
@@ -379,7 +483,7 @@ ImageMapEditor.context_menu = function(ev, target) {
 };
 
 ImageMapEditor.key_down = function(ev, target) {
-	if (!this.canvas.dom || this.canvas.dom != Ext.getDom('imagemap_canvas')) {
+	if (!this.canvas.dom || this.canvas.dom != Ext.getDom('imagemap-canvas')) {
 		// editor closed. uninstalling
 		Ext.get('admin-viewport').un('keydown', this.key_down, this);
 		return;
@@ -393,6 +497,7 @@ ImageMapEditor.key_down = function(ev, target) {
 		ev.stopEvent();
 		if (this.active_handler && !this.mode) {
 			/* removing vertex */
+			this.touch_active_zone();
 			for (var i = 0; i < this.active_zone.poly.length; i++) {
 				if (this.active_zone.poly[i] == this.active_handler) {
 					this.active_zone.poly.splice(i, 1);
@@ -421,6 +526,7 @@ ImageMapEditor.key_down = function(ev, target) {
 			this.paint();
 		} else if (!this.active_handler && !this.highlighted_handler && this.active_zone) {
 			/* removing zone */
+			this.touch_active_zone();
 			for (var i = 0; i < this.zones.length; i++) {
 				if (this.zones[i] == this.active_zone) {
 					this.zones.splice(i, 1);
@@ -434,8 +540,6 @@ ImageMapEditor.key_down = function(ev, target) {
 			this.active_segment = undefined;
 			this.update_highlighted();
 			this.paint();
-		} else {
-			alert(this.active_handler + ', ' + this.highlighted_handler + ', ' + this.active_zone);
 		}
 	}
 };

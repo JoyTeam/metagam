@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-11 17:50+0400\n"
+"POT-Creation-Date: 2011-07-13 16:52+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,7 +45,7 @@ msgstr ""
 
 #: mg/socio/__init__.py:223 mg/constructor/admin.py:18
 #: mg/constructor/admin.py:158 mg/constructor/admin.py:192
-#: mg/constructor/admin.py:200 mg/constructor/project.py:74
+#: mg/constructor/admin.py:200 mg/constructor/project.py:75
 msgid "Forum"
 msgstr ""
 
@@ -76,7 +76,7 @@ msgid "Order"
 msgstr ""
 
 #: mg/socio/__init__.py:240 mg/socio/__init__.py:1773 mg/socio/smiles.py:233
-#: mg/core/auth.py:1024 mg/constructor/players.py:431
+#: mg/core/auth.py:1024 mg/mmo/locations.py:139 mg/constructor/players.py:431
 #: mg/constructor/interface.py:541 mg/constructor/interface.py:598
 #: mg/constructor/interface.py:782
 msgid "Editing"
@@ -84,9 +84,10 @@ msgstr ""
 
 #: mg/socio/__init__.py:241 mg/socio/__init__.py:400 mg/socio/__init__.py:1451
 #: mg/socio/__init__.py:1493 mg/socio/smiles.py:215 mg/core/auth.py:1023
-#: mg/constructor/players.py:433 mg/constructor/project.py:249
-#: mg/constructor/interface.py:542 mg/constructor/interface.py:601
-#: mg/constructor/interface.py:813 mg/constructor/design.py:1629
+#: mg/mmo/locations.py:121 mg/constructor/players.py:433
+#: mg/constructor/project.py:250 mg/constructor/interface.py:542
+#: mg/constructor/interface.py:601 mg/constructor/interface.py:813
+#: mg/constructor/design.py:1629
 msgid "edit"
 msgstr ""
 
@@ -256,13 +257,14 @@ msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
 #: mg/socio/__init__.py:688 mg/socio/__init__.py:1891 mg/socio/smiles.py:160
-#: mg/socio/smiles.py:162 mg/admin/__init__.py:314
-#: mg/constructor/design.py:408 mg/constructor/design.py:411
-#: mg/constructor/logo.py:23 mg/constructor/logo.py:266
+#: mg/socio/smiles.py:162 mg/admin/__init__.py:314 mg/mmo/locations.py:189
+#: mg/mmo/locations.py:191 mg/constructor/design.py:408
+#: mg/constructor/design.py:411 mg/constructor/logo.py:23
+#: mg/constructor/logo.py:266
 msgid "Image format not recognized"
 msgstr ""
 
-#: mg/socio/__init__.py:742 mg/admin/__init__.py:338
+#: mg/socio/__init__.py:742 mg/admin/__init__.py:338 mg/mmo/locations.py:215
 #: mg/constructor/design.py:401
 msgid "Upload an image"
 msgstr ""
@@ -298,7 +300,7 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: mg/socio/__init__.py:819 mg/constructor/project.py:75
+#: mg/socio/__init__.py:819 mg/constructor/project.py:76
 #: mg/constructor/design.py:1476
 msgid "Game forum"
 msgstr ""
@@ -575,7 +577,7 @@ msgstr ""
 msgid "Show smiles"
 msgstr ""
 
-#: mg/socio/smiles.py:92 mg/socio/smiles.py:247 mg/constructor/project.py:78
+#: mg/socio/smiles.py:92 mg/socio/smiles.py:247 mg/constructor/project.py:79
 msgid "Smiles"
 msgstr ""
 
@@ -2292,6 +2294,101 @@ msgstr ""
 msgid "Unknown error uploading image"
 msgstr ""
 
+#: mg/mmo/locations.py:25 mg/mmo/locations.py:42
+msgid "Locations"
+msgstr ""
+
+#: mg/mmo/locations.py:28
+msgid "Locations list"
+msgstr ""
+
+#: mg/mmo/locations.py:31
+msgid "Locations editor"
+msgstr ""
+
+#: mg/mmo/locations.py:35 mg/mmo/locations.py:132
+msgid "New location"
+msgstr ""
+
+#: mg/mmo/locations.py:41
+msgid "Editor"
+msgstr ""
+
+#: mg/mmo/locations.py:60
+msgid "Name is mandatory"
+msgstr ""
+
+#: mg/mmo/locations.py:62
+msgid "Name contains forbidden symbols"
+msgstr ""
+
+#: mg/mmo/locations.py:85
+msgid "Select valid image type"
+msgstr ""
+
+#: mg/mmo/locations.py:96
+msgid "Location name"
+msgstr ""
+
+#: mg/mmo/locations.py:98
+msgid "Location name in genitive"
+msgstr ""
+
+#: mg/mmo/locations.py:99
+msgid "Location name in accusative"
+msgstr ""
+
+#: mg/mmo/locations.py:100
+msgid "Location name (where?) - 'in the Some Location'"
+msgstr ""
+
+#: mg/mmo/locations.py:101
+msgid "Location name (to where?) - 'to the Some Location'"
+msgstr ""
+
+#: mg/mmo/locations.py:102
+msgid "Image type"
+msgstr ""
+
+#: mg/mmo/locations.py:137
+msgid "Location"
+msgstr ""
+
+#: mg/mmo/locations.py:138
+msgid "Functions"
+msgstr ""
+
+#: mg/mmo/locations.py:173
+msgid "Static image"
+msgstr ""
+
+#: mg/mmo/locations.py:174
+msgid "Replace location image (if necessary)"
+msgstr ""
+
+#: mg/mmo/locations.py:174
+msgid "Upload location image"
+msgstr ""
+
+#: mg/mmo/locations.py:210
+msgid "Image format must be GIF, JPEG or PNG"
+msgstr ""
+
+#: mg/mmo/locations.py:233 mg/mmo/locations.py:243
+msgid "Image map"
+msgstr ""
+
+#: mg/mmo/locations.py:238
+msgid "edit image map"
+msgstr ""
+
+#: mg/mmo/locations.py:254
+msgid ""
+"Warning! Internet Explorer browser is not supported. Location editor may "
+"work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully "
+"supported"
+msgstr ""
+
 #: mg/constructor/players.py:277 mg/constructor/players.py:444
 msgid "Character form"
 msgstr ""
@@ -2578,7 +2675,7 @@ msgstr ""
 msgid "Constructor"
 msgstr ""
 
-#: mg/constructor/admin.py:87 mg/constructor/project.py:144
+#: mg/constructor/admin.py:87 mg/constructor/project.py:145
 #: mg/constructor/design.py:866 mg/constructor/design.py:1641
 msgid "News"
 msgstr ""
@@ -2982,241 +3079,241 @@ msgstr ""
 msgid "Error generating %s-new.png"
 msgstr ""
 
-#: mg/constructor/project.py:67
+#: mg/constructor/project.py:68
 msgid "Social modules"
 msgstr ""
 
-#: mg/constructor/project.py:68
+#: mg/constructor/project.py:69
 msgid ""
 "Couple of modules related to social interactions among players (smiles, "
 "forums, blogs, etc)"
 msgstr ""
 
-#: mg/constructor/project.py:79
+#: mg/constructor/project.py:80
 msgid "Smiles support"
 msgstr ""
 
-#: mg/constructor/project.py:119
+#: mg/constructor/project.py:120
 msgid "Destroy this game"
 msgstr ""
 
-#: mg/constructor/project.py:119
+#: mg/constructor/project.py:120
 msgid "You can destroy your game while not created"
 msgstr ""
 
-#: mg/constructor/project.py:128
+#: mg/constructor/project.py:129
 msgid "Game dashboard"
 msgstr ""
 
-#: mg/constructor/project.py:141
+#: mg/constructor/project.py:142
 msgid "Project main administrator"
 msgstr ""
 
-#: mg/constructor/project.py:144 mg/constructor/project.py:145
-#: mg/constructor/project.py:146 mg/constructor/project.py:147
+#: mg/constructor/project.py:145 mg/constructor/project.py:146
+#: mg/constructor/project.py:147 mg/constructor/project.py:148
 #: mg/constructor/game.py:29
 msgid "Game"
 msgstr ""
 
-#: mg/constructor/project.py:144
+#: mg/constructor/project.py:145
 msgid "Game news published by the administrators"
 msgstr ""
 
-#: mg/constructor/project.py:145
+#: mg/constructor/project.py:146
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr ""
 
-#: mg/constructor/project.py:146
+#: mg/constructor/project.py:147
 msgid "Newbies"
 msgstr ""
 
-#: mg/constructor/project.py:146
+#: mg/constructor/project.py:147
 msgid ""
 "Dear newbies, if you have any questions about the game, feel free to ask"
 msgstr ""
 
-#: mg/constructor/project.py:147
+#: mg/constructor/project.py:148
 msgid "Diplomacy"
 msgstr ""
 
-#: mg/constructor/project.py:147
+#: mg/constructor/project.py:148
 msgid ""
 "Authorized guild members can talk to each other about diplomacy and politics "
 "issues here"
 msgstr ""
 
-#: mg/constructor/project.py:148 mg/constructor/project.py:149
-#: mg/constructor/project.py:150
+#: mg/constructor/project.py:149 mg/constructor/project.py:150
+#: mg/constructor/project.py:151
 msgid "Admin"
 msgstr ""
 
-#: mg/constructor/project.py:148
+#: mg/constructor/project.py:149
 msgid "Admin talks"
 msgstr ""
 
-#: mg/constructor/project.py:148
+#: mg/constructor/project.py:149
 msgid ""
 "Discussions with the game administrators. Here you can discuss any issues "
 "related to the game itself."
 msgstr ""
 
-#: mg/constructor/project.py:149
+#: mg/constructor/project.py:150
 msgid "Reference manuals"
 msgstr ""
 
-#: mg/constructor/project.py:149
+#: mg/constructor/project.py:150
 msgid "Actual reference documents about the game are placed here."
 msgstr ""
 
-#: mg/constructor/project.py:150
+#: mg/constructor/project.py:151
 msgid "Bug reports"
 msgstr ""
 
-#: mg/constructor/project.py:150
+#: mg/constructor/project.py:151
 msgid "Report any problems in the game here"
 msgstr ""
 
-#: mg/constructor/project.py:151 mg/constructor/project.py:152
+#: mg/constructor/project.py:152 mg/constructor/project.py:153
 msgid "Reallife"
 msgstr ""
 
-#: mg/constructor/project.py:151
+#: mg/constructor/project.py:152
 msgid "Smoking room"
 msgstr ""
 
-#: mg/constructor/project.py:151
+#: mg/constructor/project.py:152
 msgid ""
 "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr ""
 
-#: mg/constructor/project.py:152
+#: mg/constructor/project.py:153
 msgid "Art"
 msgstr ""
 
-#: mg/constructor/project.py:152
+#: mg/constructor/project.py:153
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr ""
 
-#: mg/constructor/project.py:153 mg/constructor/project.py:154
+#: mg/constructor/project.py:154 mg/constructor/project.py:155
 msgid "Trading"
 msgstr ""
 
-#: mg/constructor/project.py:153
+#: mg/constructor/project.py:154
 msgid "Services"
 msgstr ""
 
-#: mg/constructor/project.py:153
+#: mg/constructor/project.py:154
 msgid "Any game services: mercenaries, guardians, builders etc."
 msgstr ""
 
-#: mg/constructor/project.py:154
+#: mg/constructor/project.py:155
 msgid "Market"
 msgstr ""
 
-#: mg/constructor/project.py:154
+#: mg/constructor/project.py:155
 msgid "Market place to sell and by any item"
 msgstr ""
 
-#: mg/constructor/project.py:158
+#: mg/constructor/project.py:159
 msgid "Tips"
 msgstr ""
 
-#: mg/constructor/project.py:159
+#: mg/constructor/project.py:160
 msgid "Prepare to launch"
 msgstr ""
 
-#: mg/constructor/project.py:174
+#: mg/constructor/project.py:175
 msgid ""
 "Your game is being checked by the moderators. Moderation results will be "
 "sent you via e-mail. Please be patient."
 msgstr ""
 
-#: mg/constructor/project.py:175
+#: mg/constructor/project.py:176
 msgid "Moderation in progress"
 msgstr ""
 
-#: mg/constructor/project.py:178
+#: mg/constructor/project.py:179
 msgid "Before launching your game perform the steps listed above"
 msgstr ""
 
-#: mg/constructor/project.py:180
+#: mg/constructor/project.py:181
 msgid "Congratulations! Your game is ready to be published."
 msgstr ""
 
-#: mg/constructor/project.py:180
+#: mg/constructor/project.py:181
 msgid "game///Send it to moderation"
 msgstr ""
 
-#: mg/constructor/project.py:189
+#: mg/constructor/project.py:190
 msgid "Income statistics"
 msgstr ""
 
-#: mg/constructor/project.py:190
+#: mg/constructor/project.py:191
 msgid "Income structure"
 msgstr ""
 
-#: mg/constructor/project.py:197
+#: mg/constructor/project.py:198
 msgid "Launching your game"
 msgstr ""
 
-#: mg/constructor/project.py:197
+#: mg/constructor/project.py:198
 msgid ""
 "Your game is not published yet. To publish it perform the steps listed on "
 "the <hook:admin.link href=\"game/dashboard\" title=\"Game dashboard\" /> page"
 msgstr ""
 
-#: mg/constructor/project.py:232
+#: mg/constructor/project.py:233
 msgid ""
 "New project has been registered: {0}\n"
 "Please perform required moderation actions: http://www.{1}/admin#constructor/"
 "project-dashboard/{2}"
 msgstr ""
 
-#: mg/constructor/project.py:233
+#: mg/constructor/project.py:234
 msgid "Constructor moderator"
 msgstr ""
 
-#: mg/constructor/project.py:233
+#: mg/constructor/project.py:234
 #, python-format
 msgid "Project moderation: %s"
 msgstr ""
 
-#: mg/constructor/project.py:240 mg/constructor/dashboard.py:123
+#: mg/constructor/project.py:241 mg/constructor/dashboard.py:123
 msgid "Full title"
 msgstr ""
 
-#: mg/constructor/project.py:241 mg/constructor/dashboard.py:124
+#: mg/constructor/project.py:242 mg/constructor/dashboard.py:124
 msgid "Short title"
 msgstr ""
 
-#: mg/constructor/project.py:242 mg/constructor/dashboard.py:126
+#: mg/constructor/project.py:243 mg/constructor/dashboard.py:126
 msgid "Title in English"
 msgstr ""
 
-#: mg/constructor/project.py:243 mg/constructor/dashboard.py:125
+#: mg/constructor/project.py:244 mg/constructor/dashboard.py:125
 msgid "Title code"
 msgstr ""
 
-#: mg/constructor/project.py:244 mg/constructor/game.py:137
+#: mg/constructor/project.py:245 mg/constructor/game.py:137
 #: mg/constructor/dashboard.py:127
 msgid "Game description"
 msgstr ""
 
-#: mg/constructor/project.py:245 mg/constructor/dashboard.py:129
+#: mg/constructor/project.py:246 mg/constructor/dashboard.py:129
 msgid "Game domain"
 msgstr ""
 
-#: mg/constructor/project.py:246 mg/constructor/dashboard.py:138
+#: mg/constructor/project.py:247 mg/constructor/dashboard.py:138
 msgid "Logo"
 msgstr ""
 
-#: mg/constructor/project.py:247
+#: mg/constructor/project.py:248
 msgid ""
 "Recheck all settings thoroughly. After sending data to moderation you won't "
 "have an ability to change fields with red border and game logo"
 msgstr ""
 
-#: mg/constructor/project.py:248
+#: mg/constructor/project.py:249
 msgid "Everything is correct. Send to moderation"
 msgstr ""
 
