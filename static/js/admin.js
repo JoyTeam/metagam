@@ -292,6 +292,7 @@ Ext.onReady(function() {
 	});
 	var viewport = new Ext.Viewport({
 		layout: 'border',
+		id: 'admin-viewport',
 		items: [
 			{
 				region: 'north',
