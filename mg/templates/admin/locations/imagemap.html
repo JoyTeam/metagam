@@ -1,8 +1,15 @@
 <div id="imagemap-ie-warning" class="admin-alert" style="display: none">[%ie_warning%]</div>
-<div id="imagemap-div"></div>
-<img id="imagemap-img" src="[%image%]" alt="" />
+<div id="imagemap-div" style="width: [%width%]px; height: [%height%]px; background-image: url([%image%]); background-position: 0% 0%; background-repeat: no-repeat; cursor: default"></div>
+<div id="imagemap-form"></div>
 <script type="text/javascript">
 wait(['imagemap-editor'], function() {
-	ImageMapEditor.init([%width%], [%height%]);
+	ImageMapEditor.init('[%submit_url%]', [%width%], [%height%]);
+	[%foreach zone in zones%]
+	var zone = ImageMapEditor.new_zone();
+	zone.setPolygonStr('[%zone.polygon%]');
+	zone.hint = '[%zone.hint%]';
+	zone.render(ImageMapEditor.form);
+	[%end%]
+	ImageMapEditor.run();
 });
 </script>

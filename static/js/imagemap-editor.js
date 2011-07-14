@@ -1,6 +1,110 @@
+ImageMapZone = function(id) {
+	this.id = id;
+	this.poly = new Array();
+};
+
+ImageMapZone.prototype.render = function(form) {
+	this.form = form;
+	this.cmp = form.add({
+		title: gt.gettext('Zone') + ' ' + this.id,
+		collapsible: true,
+		collapsed: true,
+		layout: 'form',
+		autoHeight: true,
+		bodyStyle: 'padding: 10px',
+		style: 'margin: 6px 0 10px 0',
+		items: {
+			id: 'elem_hint-' + this.id,
+			border: false,
+			autoHeight: true,
+			layout: 'form',
+			labelAlign: 'top',
+			items: [
+				{
+					id: 'form-field-polygon-' + this.id,
+					fieldLabel: gt.gettext('Polygon vertices'),
+					name: 'polygon-' + this.id,
+					allowBlank: true,
+					value: this.getPolygonStr(),
+					xtype: 'textfield',
+					anchor: '-30',
+					border: false,
+					msgTarget: 'side'
+				},
+				{
+					id: 'form-field-hint-' + this.id,
+					fieldLabel: gt.gettext('Mouse over hint'),
+					name: 'hint-' + this.id,
+					allowBlank: true,
+					value: this.hint,
+					xtype: 'textfield',
+					anchor: '-30',
+					border: false,
+					msgTarget: 'side'
+				}
+			]
+		}
+	});
+};
+
+ImageMapZone.prototype.activate = function() {
+	this.cmp.addClass('im');
+	this.cmp.expand(false);
+};
+
+ImageMapZone.prototype.deactivate = function() {
+	this.cmp.removeClass('im');
+	this.cmp.collapse(false);
+};
+
+ImageMapZone.prototype.cleanup = function() {
+	this.form.remove(this.cmp);
+};
+
+ImageMapZone.prototype.getPolygonStr = function() {
+	var tokens = new Array();
+	for (var i = 0; i < this.poly.length - 1; i++) {
+		var pt = this.poly[i];
+		tokens.push(pt.x + ',' + pt.y);
+	}
+	/* last point is copy of the first. so in normal closed polygon it is not necessary to show it */
+	if (this.open && this.poly.length > 0) {
+		var pt = this.poly[this.poly.length - 1];
+		tokens.push(pt.x + ',' + pt.y);
+	}
+	return tokens.join(',');
+};
+
+ImageMapZone.prototype.setPolygonStr = function(str) {
+	var tokens = str.split(',');
+	if (tokens.length % 2) {
+		Game.error(gt.gettext('Number of corrdinates must not be odd'))
+		return;
+	}
+	if (tokens.length < 6) {
+		Game.error(gt.gettext('Minimal number of vertices - 3'))
+		return;
+	}
+	for (var i = 0; i < tokens.length; i++) {
+		var token = tokens[i];
+		if (!token.match(/^-?[0-9]+$/)) {
+			Game.error(gt.gettext('Invalid non-integer coordinate encountered'));
+			return;
+		}
+	}
+	this.poly = new Array();
+	for (var i = 0; i < tokens.length; i += 2) {
+		this.poly.push({x: parseInt(tokens[i]), y: parseInt(tokens[i + 1])});
+	}
+};
+
+ImageMapZone.prototype.update_polygon_str = function() {
+	Ext.get('form-field-polygon-' + this.id).dom.value = this.getPolygonStr();
+};
+
 ImageMapEditor = {};
 
-ImageMapEditor.init = function(width, height) {
+ImageMapEditor.cleanup = function() {
 	this.zones = new Array();
 	this.mouse = new Array();
 	this.handler_size = 8;
@@ -16,6 +120,11 @@ ImageMapEditor.init = function(width, height) {
 	this.clip_x2 = undefined;
 	this.clip_y1 = undefined;
 	this.clip_y2 = undefined;
+	this.zone_id = 0;
+};
+
+ImageMapEditor.init = function(submit_url, width, height) {
+	this.cleanup();
 	this.width = width;
 	this.height = height;
 	/* creating canvas */
@@ -30,18 +139,18 @@ ImageMapEditor.init = function(width, height) {
 	Ext.getDom('imagemap-div').appendChild(canvas);
 	this.ctx = canvas.getContext('2d');
 	this.canvas = Ext.get(canvas);
-	this.img = Ext.getDom('imagemap-img');
-	this.init_image();
+	/* creating form */
+	this.form_cmp = new Form({
+		url: submit_url,
+		fields: [],
+		buttons: [{text: gt.gettext('Save')}]
+	});
+	this.form = this.form_cmp.form_cmp;
 };
 
-ImageMapEditor.init_image = function() {
-	try {
-		this.ctx.drawImage(this.img, 0, 0);
-	} catch (e) {
-		window.setTimeout(this.init_image.createDelegate(this), 100);
-		return;
-	}
-	this.img.style.display = 'none';
+ImageMapEditor.run = function() {
+	this.paint(true);
+	this.form_cmp.render('imagemap-form');
 	this.canvas.on('mousedown', this.mouse_down.createDelegate(this));
 	this.canvas.on('mousemove', this.mouse_move.createDelegate(this));
 	this.canvas.on('mouseup', this.mouse_up.createDelegate(this));
@@ -173,24 +282,23 @@ ImageMapEditor.update_highlighted = function() {
 	return modified;
 };
 
-ImageMapEditor.paint = function() {
-	if (this.clip_x1 == undefined)
+ImageMapEditor.paint = function(force) {
+	if (this.clip_x1 == undefined && !force)
 		return;
 	this.ctx.save();
 	var clipping = true;
 	try {
 		if (G_vmlCanvasManager) {
 			clipping = false;
-			this.ctx.clearRect(0, 0, this.width, this.height);
 		}
 	} catch (e) {
 	}
-	if (clipping) {
+	if (clipping && !force) {
 		this.ctx.beginPath();
 		this.ctx.rect(this.clip_x1, this.clip_y1, this.clip_x2 - this.clip_x1 + 1, this.clip_y2 - this.clip_y1 + 1);
 		this.ctx.clip();
 	}
-	this.ctx.drawImage(this.img, 0, 0);
+	this.ctx.clearRect(0, 0, this.width, this.height);
 	for (var i = 0; i < this.zones.length; i++) {
 		var zone = this.zones[i];
 		this.ctx.save();
@@ -244,9 +352,7 @@ ImageMapEditor.paint = function() {
 };
 
 ImageMapEditor.new_zone = function() {
-	var zone = {
-		poly: new Array()
-	};
+	var zone = new ImageMapZone(++this.zone_id);
 	this.zones.push(zone);
 	return zone;
 };
@@ -274,6 +380,7 @@ ImageMapEditor.mouse_down = function(ev, target) {
 					this.mode = undefined;
 					repaint = true;
 					this.touch_active_zone();
+					this.active_zone.update_polygon_str();
 				}
 			} else {
 				/* adding new point to the polygon */
@@ -282,6 +389,7 @@ ImageMapEditor.mouse_down = function(ev, target) {
 				this.active_zone.poly.push(pt);
 				this.touch_active_zone();
 				repaint = true;
+				this.active_zone.update_polygon_str();
 			}
 		} else if (this.highlighted_handler) {
 			/* activating handler */
@@ -300,11 +408,15 @@ ImageMapEditor.mouse_down = function(ev, target) {
 				start_x: this.active_handler.x, start_y: this.active_handler.y,
 				mouse_start_x: this.mouse.x, mouse_start_y: this.mouse.y
 			};
+			this.highlighted_segment = undefined;
 			this.touch_active_zone();
 			repaint = true;
 		} else if (this.highlighted_zone) {
 			this.touch_active_zone();
+			if (this.active_zone)
+				this.active_zone.deactivate();
 			this.active_zone = this.highlighted_zone;
+			this.active_zone.activate();
 			this.active_handler = undefined;
 			this.active_segment = undefined;
 			this.drag_zone = {
@@ -315,12 +427,16 @@ ImageMapEditor.mouse_down = function(ev, target) {
 			repaint = true;
 		} else if (this.active_zone) {
 			this.touch_active_zone();
+			this.active_zone.deactivate();
 			this.active_zone = undefined;
 			this.active_handler = undefined;
 			this.active_segment = undefined;
 			repaint = true;
 		} else {
 			this.active_zone = this.new_zone();
+			this.active_zone.render(this.form);
+			this.form.doLayout();
+			this.active_zone.activate();
 			this.active_zone.open = true;
 			this.active_zone.poly.push(pt);
 			this.active_zone.poly.push({x: pt.x, y: pt.y})
@@ -374,6 +490,7 @@ ImageMapEditor.cancel = function() {
 	if (this.mode == 'new-zone') {
 		for (var i = 0; i < this.zones.length; i++) {
 			if (this.zones[i] == this.active_zone) {
+				this.active_zone.cleanup();
 				this.zones.splice(i, 1);
 				this.touch_active_zone();
 				this.active_zone = undefined;
@@ -389,7 +506,9 @@ ImageMapEditor.cancel = function() {
 		this.touch_active_zone();
 		this.active_handler.x = this.drag_handler.start_x;
 		this.active_handler.y = this.drag_handler.start_y;
+		this.touch_active_zone();
 		this.drag_handler = undefined;
+		this.active_zone.update_polygon_str();
 	} else if (this.drag_zone) {
 		this.touch_active_zone();
 		for (var i = 0; i < this.active_zone.poly.length - 1; i++) {
@@ -399,8 +518,10 @@ ImageMapEditor.cancel = function() {
 		}
 		this.touch_active_zone();
 		this.drag_zone = undefined;
+		this.active_zone.update_polygon_str();
 	} else if (this.active_zone) {
 		this.touch_active_zone();
+		this.active_zone.deactivate();
 		this.active_zone = undefined;
 		this.active_handler = undefined;
 		this.active_segment = undefined;
@@ -426,12 +547,14 @@ ImageMapEditor.mouse_move = function(ev, target) {
 		last_pt.y = pt.y;
 		this.touch_active_zone();
 		repaint = true;
+		this.active_zone.update_polygon_str();
 	} else if (this.drag_handler) {
 		this.touch_active_zone();
 		this.active_handler.x = pt.x - this.drag_handler.mouse_start_x + this.drag_handler.start_x;
 		this.active_handler.y = pt.y - this.drag_handler.mouse_start_y + this.drag_handler.start_y;
 		this.touch_active_zone();
 		repaint = true;
+		this.active_zone.update_polygon_str();
 	} else if (this.drag_zone) {
 		this.touch_active_zone();
 		var delta_x = pt.x - this.drag_zone.mouse_last_x;
@@ -447,6 +570,7 @@ ImageMapEditor.mouse_move = function(ev, target) {
 		}
 		this.touch_active_zone();
 		repaint = true;
+		this.active_zone.update_polygon_str();
 	}
 	if (repaint)
 		this.paint();
@@ -486,6 +610,7 @@ ImageMapEditor.key_down = function(ev, target) {
 	if (!this.canvas.dom || this.canvas.dom != Ext.getDom('imagemap-canvas')) {
 		// editor closed. uninstalling
 		Ext.get('admin-viewport').un('keydown', this.key_down, this);
+		this.cleanup();
 		return;
 	}
 	var key = ev.getKey();
@@ -506,6 +631,7 @@ ImageMapEditor.key_down = function(ev, target) {
 						this.active_zone.poly[this.active_zone.poly.length - 1] = this.active_zone.poly[0];
 					}
 					this.active_handler = this.active_zone.poly[i];
+					this.active_zone.update_polygon_str();
 					break;
 				}
 			}
@@ -513,6 +639,7 @@ ImageMapEditor.key_down = function(ev, target) {
 				/* removing zone */
 				for (var i = 0; i < this.zones.length; i++) {
 					if (this.zones[i] == this.active_zone) {
+						this.active_zone.cleanup();
 						this.zones.splice(i, 1);
 						break;
 					}
@@ -529,6 +656,7 @@ ImageMapEditor.key_down = function(ev, target) {
 			this.touch_active_zone();
 			for (var i = 0; i < this.zones.length; i++) {
 				if (this.zones[i] == this.active_zone) {
+					this.active_zone.cleanup();
 					this.zones.splice(i, 1);
 					break;
 				}
@@ -544,4 +672,6 @@ ImageMapEditor.key_down = function(ev, target) {
 	}
 };
 
-loaded('imagemap-editor');
+wait(['admin-form'], function() {
+	loaded('imagemap-editor');
+});

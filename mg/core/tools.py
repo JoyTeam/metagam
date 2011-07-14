@@ -8,6 +8,7 @@ import calendar
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
 re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
+re_valid_int = re.compile(r'^-?[0-9]+$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 
@@ -34,6 +35,9 @@ def floatz(str, onerror=0):
         return float(str)
     except (ValueError, TypeError):
         return onerror
+
+def valid_int(str):
+    return re_valid_int.match(str)
 
 def valid_nonnegative_int(str):
     return re_valid_nonnegative_int.match(str)

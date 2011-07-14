@@ -3,6 +3,9 @@ from mg.constructor import *
 from mg.mmo.locations_classes import *
 import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
+import re
+
+re_polygon_param = re.compile(r'^polygon-(\d+)$')
 
 class Locations(ConstructorModule):
     def register(self):
@@ -247,10 +250,52 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         location = self.location(req.args)
         if not location.valid() or location.image_type != "static":
             self.call("admin.redirect", "locations/editor")
+        if req.ok():
+            zones = {}
+            errors = {}
+            for key in req.param_dict().keys():
+                m = re_polygon_param.match(key)
+                if m:
+                    zone_id = int(m.group(1))
+                    zone = {}
+                    zones[zone_id] = zone
+                    # polygon data
+                    zone["polygon"] = req.param("polygon-%d" % zone_id)
+                    poly = zone["polygon"].split(",")
+                    if len(poly) == 0:
+                        errors["polygon-%d" % zone_id] = self._("Polygon may not be empty")
+                    elif len(poly) % 2:
+                        errors["polygon-%d" % zone_id] = self._("Odd number of coordinates")
+                    elif len(poly) < 6:
+                        errors["polygon-%d" % zone_id] = self._("Minimal number of points is 3")
+                    else:
+                        for coo in poly:
+                            if not valid_int(coo):
+                                errors["polygon-%d" % zone_id] = self._("Invalid non-integer coordinate encountered")
+                                break
+                    # hint
+                    hint = req.param("hint-%d" % zone_id).strip()
+                    if hint:
+                        zone["hint"] = hint
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
+            location.db_location.store()
+            self.call("web.response_json", {"success": True, "redirect": "locations/editor"})
+        # Loading zones
+        zones = []
+        for zone in location.db_location.get("static_zones"):
+            zones.append({
+                "polygon": zone.get("polygon"),
+                "hint": jsencode(zone.get("hint")),
+            })
         vars = {
             "image": location.db_location.get("image_static"),
             "width": location.db_location.get("image_static_w"),
             "height": location.db_location.get("image_static_h"),
             "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
+            "submit_url": "/admin-locations/image-map/%s" % location.uuid,
+            "zones": zones
         }
+        
         self.call("admin.response_template", "admin/locations/imagemap.html", vars)

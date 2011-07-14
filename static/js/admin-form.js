@@ -277,6 +277,7 @@ Form = Ext.extend(AdminResponse, {
 		});
 		this.add(form);
 		this.enforce_conditions(true);
+		this.form_cmp = form;
 	},
 	enforce_conditions: function(force) {
 		var changed = false;
