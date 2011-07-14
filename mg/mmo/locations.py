@@ -166,7 +166,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         self.rhook("admin-locations.editor-form-validate", self.form_validate)
         self.rhook("admin-locations.editor-form-store", self.form_store)
         self.rhook("admin-locations.editor-form-cleanup", self.form_cleanup)
-        self.rhook("admin-locations.format-list", self.format_list)
         self.rhook("ext-admin-locations.image-map", self.admin_image_map, priv="locations.editor")
         self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
         self.rhook("admin-locations.render", self.render)
@@ -232,16 +231,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
     def form_cleanup(self, db_loc, flags):
         if flags.get("old_image_static") and db_loc.get("image_static") != flags["old_image_static"]:
             self.call("cluster.static_delete", flags["old_image_static"])
-
-    def format_list(self, locations, table):
-        table["header"].append(self._("Image map"))
-        for loc in locations:
-            db_loc = loc["db_loc"]
-            row = loc["row"]
-            if db_loc.get("image_type") == "static":
-                row.append('<hook:admin.link href="locations/image-map/%s" title="%s" />' % (db_loc.uuid, self._("edit image map")))
-            else:
-                row.append(None)
 
     def headmenu_image_map(self, args):
         return [self._("Image map"), "locations/editor/%s" % args]
