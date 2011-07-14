@@ -1,0 +1,13 @@
+<div class="admin-actions">[%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]<hook:admin.link href="locations/image-map/[%loc.id%]" title="[%MapEditor%]" /></div>
+<div class="admin-location-render">
+<map name="locmap-[%loc.id%]">
+[%foreach zone in zones%]
+[%if zone.action=='move'%]
+<hook:admin.area href="locations/editor/[%zone.loc%]" polygon="[%zone.polygon%]" />
+[%elsif zone.polygon%]
+<hook:admin.area href="locations/editor/[%loc.id%]" polygon="[%zone.polygon%]" />
+[%end%]
+[%end%]
+</map>
+<img src="[%loc.image%]" alt="" usemap="#locmap-[%loc.id%]" />
+</div>

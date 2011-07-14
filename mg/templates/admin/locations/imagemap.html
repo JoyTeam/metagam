@@ -1,13 +1,24 @@
+<div class="admin-actions">[%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]<hook:admin.link href="locations/editor/[%loc.id%]" title="[%LocationEditor%]" /></div>
+<div class="admin-location-render">
 <div id="imagemap-ie-warning" class="admin-alert" style="display: none">[%ie_warning%]</div>
 <div id="imagemap-div" style="width: [%width%]px; height: [%height%]px; background-image: url([%image%]); background-position: 0% 0%; background-repeat: no-repeat; cursor: default"></div>
 <div id="imagemap-form"></div>
+</div>
 <script type="text/javascript">
 wait(['imagemap-editor'], function() {
 	ImageMapEditor.init('[%submit_url%]', [%width%], [%height%]);
+	[%foreach action in actions%]
+	ImageMapEditor.actions.push(['[%action.0%]', '[%action.1%]']);
+	[%end%]
+	[%foreach loc in locations%]
+	ImageMapEditor.locations.push(['[%loc.id%]', '[%loc.name%]']);
+	[%end%]
 	[%foreach zone in zones%]
 	var zone = ImageMapEditor.new_zone();
 	zone.setPolygonStr('[%zone.polygon%]');
 	zone.hint = '[%zone.hint%]';
+	zone.action = '[%zone.action%]';
+	zone.loc = '[%zone.loc%]';
 	zone.render(ImageMapEditor.form);
 	[%end%]
 	ImageMapEditor.run();

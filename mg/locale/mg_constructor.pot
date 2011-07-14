@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-13 16:52+0400\n"
+"POT-Creation-Date: 2011-07-14 16:01+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 
 #: static/js/admin.js:126 static/js/realplexor-stream.js:20
 #: static/js/admin-form.js:165 static/js/admin-form.js:168
-#: static/js/admin-form.js:318 static/js/admin-form.js:321
+#: static/js/admin-form.js:319 static/js/admin-form.js:322
 #: static/js/chat.js:365 static/js/chat.js:373
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
@@ -52,6 +52,42 @@ msgstr ""
 
 #: static/js/realplexor-stream.js:75
 msgid "Exception"
+msgstr ""
+
+#: static/js/imagemap-editor.js:10
+msgid "Zone"
+msgstr ""
+
+#: static/js/imagemap-editor.js:31
+msgid "Polygon vertices"
+msgstr ""
+
+#: static/js/imagemap-editor.js:45
+msgid "Mouse over hint"
+msgstr ""
+
+#: static/js/imagemap-editor.js:59
+msgid "Click action"
+msgstr ""
+
+#: static/js/imagemap-editor.js:84
+msgid "Target location"
+msgstr ""
+
+#: static/js/imagemap-editor.js:152
+msgid "Number of corrdinates must not be odd"
+msgstr ""
+
+#: static/js/imagemap-editor.js:156
+msgid "Minimal number of vertices - 3"
+msgstr ""
+
+#: static/js/imagemap-editor.js:162
+msgid "Invalid non-integer coordinate encountered"
+msgstr ""
+
+#: static/js/imagemap-editor.js:220
+msgid "Save"
 msgstr ""
 
 #: static/js/FileUploadField.js:21
@@ -100,7 +136,7 @@ msgstr ""
 msgid "Uploading data..."
 msgstr ""
 
-#: static/js/admin-form.js:168 static/js/admin-form.js:321
+#: static/js/admin-form.js:168 static/js/admin-form.js:322
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
@@ -110,7 +146,7 @@ msgstr ""
 msgid "Server error: %s"
 msgstr ""
 
-#: static/js/admin-form.js:303
+#: static/js/admin-form.js:304
 msgid "Sending data..."
 msgstr ""
 

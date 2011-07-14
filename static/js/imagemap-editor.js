@@ -5,45 +5,109 @@ ImageMapZone = function(id) {
 
 ImageMapZone.prototype.render = function(form) {
 	this.form = form;
-	this.cmp = form.add({
+	var enforce_conditions = form.enforce_conditions.createDelegate(form);
+	this.cmp = form.form_cmp.add({
 		title: gt.gettext('Zone') + ' ' + this.id,
 		collapsible: true,
 		collapsed: true,
 		layout: 'form',
 		autoHeight: true,
 		bodyStyle: 'padding: 10px',
-		style: 'margin: 6px 0 10px 0',
+		style: 'margin: 0 0 10px 0',
 		items: {
-			id: 'elem_hint-' + this.id,
 			border: false,
 			autoHeight: true,
-			layout: 'form',
-			labelAlign: 'top',
+			defaults: {
+				layout: 'form',
+				labelAlign: 'top',
+				autoHeight: true,
+				border: false
+			},
 			items: [
 				{
-					id: 'form-field-polygon-' + this.id,
-					fieldLabel: gt.gettext('Polygon vertices'),
-					name: 'polygon-' + this.id,
-					allowBlank: true,
-					value: this.getPolygonStr(),
-					xtype: 'textfield',
-					anchor: '-30',
-					border: false,
-					msgTarget: 'side'
+					id: 'elem_polygon-' + this.id,
+					items: { 
+						id: 'form-field-polygon-' + this.id,
+						fieldLabel: gt.gettext('Polygon vertices'),
+						name: 'polygon-' + this.id,
+						value: this.getPolygonStr(),
+						xtype: 'textfield',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true
+					},
 				},
 				{
-					id: 'form-field-hint-' + this.id,
-					fieldLabel: gt.gettext('Mouse over hint'),
-					name: 'hint-' + this.id,
-					allowBlank: true,
-					value: this.hint,
-					xtype: 'textfield',
-					anchor: '-30',
-					border: false,
-					msgTarget: 'side'
+					id: 'elem_hint-' + this.id,
+					items: {
+						id: 'form-field-hint-' + this.id,
+						fieldLabel: gt.gettext('Mouse over hint'),
+						name: 'hint-' + this.id,
+						value: this.hint,
+						xtype: 'textfield',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true
+					}
+				},
+				{
+					id: 'elem_action-' + this.id,
+					items: {
+						id: 'form-field-action-' + this.id,
+						fieldLabel: gt.gettext('Click action'),
+						name: 'action-' + this.id,
+						value: this.action,
+						xtype: 'combo',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						store: ImageMapEditor.actions,
+						forceSelection: true,
+						triggerAction: 'all',
+						hiddenName: 'v_action-' + this.id,
+						hiddenValue: this.action,
+						value: this.action,
+						listWidth: 600,
+						listeners: {
+							select: enforce_conditions,
+							change: enforce_conditions
+						}
+					}
+				},
+				{
+					id: 'elem_location-' + this.id,
+					items: {
+						id: 'form-field-location-' + this.id,
+						fieldLabel: gt.gettext('Target location'),
+						name: 'location-' + this.id,
+						value: this.action,
+						xtype: 'combo',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						store: ImageMapEditor.locations,
+						forceSelection: true,
+						triggerAction: 'all',
+						hiddenName: 'v_location-' + this.id,
+						hiddenValue: this.loc,
+						value: this.loc,
+						listWidth: 600,
+						listeners: {
+							select: enforce_conditions,
+							change: enforce_conditions
+						}
+					}
 				}
 			]
 		}
+	});
+	this.form.conditions.push({
+		id: 'elem_location-' + this.id,
+		condition: "form_value('action-" + this.id + "')=='move'"
 	});
 };
 
@@ -58,7 +122,14 @@ ImageMapZone.prototype.deactivate = function() {
 };
 
 ImageMapZone.prototype.cleanup = function() {
-	this.form.remove(this.cmp);
+	this.uninstall_global_events();
+	this.form.form_cmp.remove(this.cmp);
+	for (var ci = this.form.conditions.length - 1; ci >= 0; ci--) {
+		if (this.form.conditions[ci].id == 'elem_location-' + this.id) {
+			this.form.conditions.splice(ci, 1);
+			break;
+		}
+	}
 };
 
 ImageMapZone.prototype.getPolygonStr = function() {
@@ -96,6 +167,7 @@ ImageMapZone.prototype.setPolygonStr = function(str) {
 	for (var i = 0; i < tokens.length; i += 2) {
 		this.poly.push({x: parseInt(tokens[i]), y: parseInt(tokens[i + 1])});
 	}
+	this.poly.push(this.poly[0]);
 };
 
 ImageMapZone.prototype.update_polygon_str = function() {
@@ -121,6 +193,8 @@ ImageMapEditor.cleanup = function() {
 	this.clip_y1 = undefined;
 	this.clip_y2 = undefined;
 	this.zone_id = 0;
+	this.actions = new Array();
+	this.locations = new Array();
 };
 
 ImageMapEditor.init = function(submit_url, width, height) {
@@ -140,21 +214,21 @@ ImageMapEditor.init = function(submit_url, width, height) {
 	this.ctx = canvas.getContext('2d');
 	this.canvas = Ext.get(canvas);
 	/* creating form */
-	this.form_cmp = new Form({
+	this.form = new Form({
 		url: submit_url,
 		fields: [],
 		buttons: [{text: gt.gettext('Save')}]
 	});
-	this.form = this.form_cmp.form_cmp;
 };
 
 ImageMapEditor.run = function() {
 	this.paint(true);
-	this.form_cmp.render('imagemap-form');
-	this.canvas.on('mousedown', this.mouse_down.createDelegate(this));
-	this.canvas.on('mousemove', this.mouse_move.createDelegate(this));
-	this.canvas.on('mouseup', this.mouse_up.createDelegate(this));
-	this.canvas.on('contextmenu', this.context_menu.createDelegate(this));
+	this.form.enforce_conditions(true);
+	this.form.render('imagemap-form');
+	this.canvas.on('mousedown', this.mouse_down, this);
+	this.canvas.on('mousemove', this.mouse_move, this);
+	this.canvas.on('mouseup', this.mouse_up, this);
+	this.canvas.on('contextmenu', this.context_menu, this);
 	Ext.get('admin-viewport').on('keydown', this.key_down, this);
 };
 
@@ -435,6 +509,7 @@ ImageMapEditor.mouse_down = function(ev, target) {
 		} else {
 			this.active_zone = this.new_zone();
 			this.active_zone.render(this.form);
+			this.form.enforce_conditions(true);
 			this.form.doLayout();
 			this.active_zone.activate();
 			this.active_zone.open = true;
@@ -450,6 +525,12 @@ ImageMapEditor.mouse_down = function(ev, target) {
 	}
 	if (repaint) {
 		this.paint();
+	}
+	if (!this.global_events) {
+		Ext.get('admin-viewport').on('mousemove', this.mouse_move, this);
+		Ext.get('admin-viewport').on('mouseup', this.mouse_up, this);
+		Ext.get('admin-viewport').on('contextmenu', this.context_menu, this);
+		this.global_events = true;
 	}
 };
 
@@ -576,7 +657,17 @@ ImageMapEditor.mouse_move = function(ev, target) {
 		this.paint();
 };
 
+ImageMapEditor.uninstall_global_events = function() {
+	if (this.global_events) {
+		Ext.get('admin-viewport').un('mousemove', this.mouse_move, this);
+		Ext.get('admin-viewport').un('mouseup', this.mouse_up, this);
+		Ext.get('admin-viewport').un('contextmenu', this.context_menu, this);
+		this.global_events = false;
+	}
+};
+
 ImageMapEditor.mouse_up = function(ev, target) {
+	this.uninstall_global_events();
 	ev.stopEvent();
 	var page_coo = ev.getXY();
 	var pt = {
@@ -618,6 +709,11 @@ ImageMapEditor.key_down = function(ev, target) {
 		ev.stopEvent();
 		this.cancel();
 		this.paint();
+	} else if (key == ev.ENTER) {
+		ev.stopEvent();
+		this.cancel();
+		this.paint();
+		this.form.custom_submit(this.form.form_cmp.url);
 	} else if (key == ev.DELETE) {
 		ev.stopEvent();
 		if (this.active_handler && !this.mode) {

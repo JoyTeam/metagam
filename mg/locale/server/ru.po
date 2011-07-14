@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-13 16:52+0400\n"
-"PO-Revision-Date: 2011-07-13 16:56+0300\n"
+"POT-Creation-Date: 2011-07-14 16:01+0400\n"
+"PO-Revision-Date: 2011-07-14 16:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -95,7 +95,7 @@ msgstr "Порядок"
 #: mg/socio/__init__.py:1773
 #: mg/socio/smiles.py:233
 #: mg/core/auth.py:1024
-#: mg/mmo/locations.py:139
+#: mg/mmo/locations.py:142
 #: mg/constructor/players.py:431
 #: mg/constructor/interface.py:541
 #: mg/constructor/interface.py:598
@@ -109,7 +109,7 @@ msgstr "Редактирование"
 #: mg/socio/__init__.py:1493
 #: mg/socio/smiles.py:215
 #: mg/core/auth.py:1023
-#: mg/mmo/locations.py:121
+#: mg/mmo/locations.py:124
 #: mg/constructor/players.py:433
 #: mg/constructor/project.py:250
 #: mg/constructor/interface.py:542
@@ -269,41 +269,41 @@ msgid "Socio settings"
 msgstr "Социальные настройки"
 
 #: mg/socio/__init__.py:649
-#: mg/admin/__init__.py:275
+#: mg/admin/__init__.py:284
 #, python-format
 msgid "Scheme '%s' is not supported"
 msgstr "Схема '%s' не поддерживается"
 
 #: mg/socio/__init__.py:651
-#: mg/admin/__init__.py:277
+#: mg/admin/__init__.py:286
 msgid "Enter correct URL"
 msgstr "Введите правильный адрес"
 
 #: mg/socio/__init__.py:665
-#: mg/admin/__init__.py:291
+#: mg/admin/__init__.py:300
 msgid "Remote server response: Resource not found"
 msgstr "Ответ удалённого сервера: Ресурс не найден"
 
 #: mg/socio/__init__.py:667
-#: mg/admin/__init__.py:293
+#: mg/admin/__init__.py:302
 msgid "Remote server response: Access denied"
 msgstr "Ответ удалённого сервера: Доступ запрещён"
 
 #: mg/socio/__init__.py:669
-#: mg/admin/__init__.py:295
+#: mg/admin/__init__.py:304
 msgid "Remote server response: Internal server error"
 msgstr "Ответ удалённого сервера: Внутренняя ошибка сервера"
 
 #: mg/socio/__init__.py:671
 #: mg/socio/__init__.py:678
-#: mg/admin/__init__.py:297
-#: mg/admin/__init__.py:304
+#: mg/admin/__init__.py:306
+#: mg/admin/__init__.py:313
 #, python-format
 msgid "Download error: %s"
 msgstr "Ошибка при скачивании: %s"
 
 #: mg/socio/__init__.py:676
-#: mg/admin/__init__.py:302
+#: mg/admin/__init__.py:311
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
 
@@ -311,9 +311,9 @@ msgstr "Таймаут при скачивании картинки. Огран�
 #: mg/socio/__init__.py:1891
 #: mg/socio/smiles.py:160
 #: mg/socio/smiles.py:162
-#: mg/admin/__init__.py:314
-#: mg/mmo/locations.py:189
-#: mg/mmo/locations.py:191
+#: mg/admin/__init__.py:323
+#: mg/mmo/locations.py:193
+#: mg/mmo/locations.py:195
 #: mg/constructor/design.py:408
 #: mg/constructor/design.py:411
 #: mg/constructor/logo.py:23
@@ -322,8 +322,8 @@ msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
 #: mg/socio/__init__.py:742
-#: mg/admin/__init__.py:338
-#: mg/mmo/locations.py:215
+#: mg/admin/__init__.py:347
+#: mg/mmo/locations.py:219
 #: mg/constructor/design.py:401
 msgid "Upload an image"
 msgstr "Загрузите изображение"
@@ -489,7 +489,7 @@ msgstr "Недопустимый тег '%s' - разрешены только �
 #: mg/socio/__init__.py:1840
 #: mg/core/web.py:820
 #: mg/core/director.py:394
-#: mg/admin/__init__.py:252
+#: mg/admin/__init__.py:261
 #: mg/constructor/setup.py:161
 #: mg/constructor/setup.py:225
 msgid "Save"
@@ -2514,113 +2514,165 @@ msgstr "Редактор настроек"
 msgid "Constructor: 2pay integration"
 msgstr "Конструктор: интеграция с 2pay"
 
-#: mg/admin/__init__.py:38
+#: mg/admin/__init__.py:39
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
-#: mg/admin/__init__.py:82
+#: mg/admin/__init__.py:83
 #, python-format
 msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
 
-#: mg/admin/__init__.py:342
+#: mg/admin/__init__.py:351
 msgid "Unknown error uploading image"
 msgstr "Неизвестная ошибка при загрузке изображения"
 
-#: mg/mmo/locations.py:25
-#: mg/mmo/locations.py:42
+#: mg/mmo/locations.py:28
+#: mg/mmo/locations.py:45
 msgid "Locations"
 msgstr "Локации"
 
-#: mg/mmo/locations.py:28
+#: mg/mmo/locations.py:31
 msgid "Locations list"
 msgstr "Список локаций"
 
-#: mg/mmo/locations.py:31
+#: mg/mmo/locations.py:34
 msgid "Locations editor"
 msgstr "Редактор локаций"
 
-#: mg/mmo/locations.py:35
-#: mg/mmo/locations.py:132
+#: mg/mmo/locations.py:38
+#: mg/mmo/locations.py:135
 msgid "New location"
 msgstr "Новая локация"
 
-#: mg/mmo/locations.py:41
+#: mg/mmo/locations.py:44
 msgid "Editor"
 msgstr "Редактор"
 
-#: mg/mmo/locations.py:60
+#: mg/mmo/locations.py:63
 msgid "Name is mandatory"
 msgstr "Имя - обязательный параметр"
 
-#: mg/mmo/locations.py:62
+#: mg/mmo/locations.py:65
 msgid "Name contains forbidden symbols"
 msgstr "Имя содержит запрещённые символы"
 
-#: mg/mmo/locations.py:85
+#: mg/mmo/locations.py:88
 msgid "Select valid image type"
 msgstr "Укажите тип изображения"
 
-#: mg/mmo/locations.py:96
+#: mg/mmo/locations.py:99
 msgid "Location name"
 msgstr "Название локации"
 
-#: mg/mmo/locations.py:98
+#: mg/mmo/locations.py:101
 msgid "Location name in genitive"
 msgstr "Название локации в родительном падеже"
 
-#: mg/mmo/locations.py:99
+#: mg/mmo/locations.py:102
 msgid "Location name in accusative"
 msgstr "Название локации в винительном падеже"
 
-#: mg/mmo/locations.py:100
+#: mg/mmo/locations.py:103
 msgid "Location name (where?) - 'in the Some Location'"
 msgstr "Название локации (ответ на вопрос \"где\") - \"в Некоторой Локации\""
 
-#: mg/mmo/locations.py:101
+#: mg/mmo/locations.py:104
 msgid "Location name (to where?) - 'to the Some Location'"
 msgstr "Название локации (ответ на вопрос \"куда\") - \"в Некоторую Локацию\""
 
-#: mg/mmo/locations.py:102
+#: mg/mmo/locations.py:105
 msgid "Image type"
 msgstr "Тип изображения"
 
-#: mg/mmo/locations.py:137
+#: mg/mmo/locations.py:140
 msgid "Location"
 msgstr "Локация"
 
-#: mg/mmo/locations.py:138
+#: mg/mmo/locations.py:141
 msgid "Functions"
 msgstr "Функции"
 
-#: mg/mmo/locations.py:173
+#: mg/mmo/locations.py:177
 msgid "Static image"
 msgstr "Статическая картинка"
 
-#: mg/mmo/locations.py:174
+#: mg/mmo/locations.py:178
 msgid "Replace location image (if necessary)"
 msgstr "Замена изображение локации (если необходимо)"
 
-#: mg/mmo/locations.py:174
+#: mg/mmo/locations.py:178
 msgid "Upload location image"
 msgstr "Загрузите изображение локации"
 
-#: mg/mmo/locations.py:210
+#: mg/mmo/locations.py:214
 msgid "Image format must be GIF, JPEG or PNG"
 msgstr "Изображение должно быть в формате GIF, JPEG или PNG"
 
-#: mg/mmo/locations.py:233
-#: mg/mmo/locations.py:243
+#: mg/mmo/locations.py:237
+#: mg/mmo/locations.py:247
 msgid "Image map"
 msgstr "Карта изображения"
 
-#: mg/mmo/locations.py:238
+#: mg/mmo/locations.py:242
 msgid "edit image map"
 msgstr "редактировать карту изображения"
 
-#: mg/mmo/locations.py:254
+#: mg/mmo/locations.py:267
+msgid "Polygon may not be empty"
+msgstr "Многоугольник не может быть пустым"
+
+#: mg/mmo/locations.py:269
+msgid "Odd number of coordinates"
+msgstr "Нечётное количество координат"
+
+#: mg/mmo/locations.py:271
+msgid "Minimal number of points is 3"
+msgstr "Минимальное количество точек - 3"
+
+#: mg/mmo/locations.py:275
+msgid "Invalid non-integer coordinate encountered"
+msgstr "Найдена неверная координата, не являющаяся целым числом"
+
+#: mg/mmo/locations.py:289
+msgid "Location not specified"
+msgstr "Локация не указана"
+
+#: mg/mmo/locations.py:293
+msgid "Invalid location specified"
+msgstr "Указана неверная локация"
+
+#: mg/mmo/locations.py:297
+msgid "No action specified"
+msgstr "Действие не выбрано"
+
+#: mg/mmo/locations.py:325
 msgid "Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"
 msgstr "Внимание! Internet Explorer не поддерживается. Редактор локаций может работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, Google Chrome и Opera."
+
+#: mg/mmo/locations.py:328
+msgid "No action"
+msgstr "Нет действия"
+
+#: mg/mmo/locations.py:328
+msgid "Move to another location"
+msgstr "Переход в другую локацию"
+
+#: mg/mmo/locations.py:330
+msgid "Switch to the location editor"
+msgstr "Переключиться в режим редактора локации"
+
+#: mg/mmo/locations.py:337
+msgid "Location saved successfully"
+msgstr "Локация успешно сохранена"
+
+#: mg/mmo/locations.py:355
+msgid "Switch to the image map editor"
+msgstr "Переключиться в режим редактора карты изображения"
+
+#: mg/mmo/locations.py:359
+msgid "Image map saved successfully"
+msgstr "Карта изображения успешно сохранена"
 
 #: mg/constructor/players.py:277
 #: mg/constructor/players.py:444

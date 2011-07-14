@@ -31,7 +31,7 @@
 .default-chat-submit { margin-left: 16px; cursor: pointer }
 .default-chat-submit-td { width: 50px }
 #smiles-container { height: 100% }
-#smiles-container .box-0 { height: 100% }
+#smiles-container .box-0, #smiles-container .sbox-0 { height: 100% }
 .chat-smile { margin: 2px; cursor: pointer }
 
 /* ROSTER */

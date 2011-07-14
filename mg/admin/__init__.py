@@ -27,6 +27,7 @@ class AdminInterface(Module):
         self.rhook("admin.redirect", self.redirect)
         self.rhook("admin.redirect_top", self.redirect_top)
         self.rhook("hook-admin.link", self.link)
+        self.rhook("hook-admin.area", self.area)
         self.rhook("admin.form", self.form)
         self.rhook("admin.advice", self.advice)
         self.rhook("ext-admin-image.upload", self.image, priv="logged")
@@ -238,6 +239,14 @@ class AdminInterface(Module):
         if confirm is not None:
             onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
         return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), title, random.randrange(0, 1000000000), onclick)
+
+    def area(self, vars, href=None, confirm=None, polygon=None):
+        if type(href) == unicode:
+            href = href.encode("utf-8")
+        onclick = "adm('%s');" % jsencode(href)
+        if confirm is not None:
+            onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
+        return '<area href="/admin?_nd={1}#{0}" onclick="{2}return false;" shape="polygon" coords="{3}" />'.format(htmlescape(href), random.randrange(0, 1000000000), onclick, polygon)
 
     def form_condition(self, m):
         return "form_value('%s')" % m.group(1)

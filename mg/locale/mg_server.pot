@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-13 16:52+0400\n"
+"POT-Creation-Date: 2011-07-14 16:01+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -76,7 +76,7 @@ msgid "Order"
 msgstr ""
 
 #: mg/socio/__init__.py:240 mg/socio/__init__.py:1773 mg/socio/smiles.py:233
-#: mg/core/auth.py:1024 mg/mmo/locations.py:139 mg/constructor/players.py:431
+#: mg/core/auth.py:1024 mg/mmo/locations.py:142 mg/constructor/players.py:431
 #: mg/constructor/interface.py:541 mg/constructor/interface.py:598
 #: mg/constructor/interface.py:782
 msgid "Editing"
@@ -84,7 +84,7 @@ msgstr ""
 
 #: mg/socio/__init__.py:241 mg/socio/__init__.py:400 mg/socio/__init__.py:1451
 #: mg/socio/__init__.py:1493 mg/socio/smiles.py:215 mg/core/auth.py:1023
-#: mg/mmo/locations.py:121 mg/constructor/players.py:433
+#: mg/mmo/locations.py:124 mg/constructor/players.py:433
 #: mg/constructor/project.py:250 mg/constructor/interface.py:542
 #: mg/constructor/interface.py:601 mg/constructor/interface.py:813
 #: mg/constructor/design.py:1629
@@ -225,46 +225,46 @@ msgstr ""
 msgid "Socio settings"
 msgstr ""
 
-#: mg/socio/__init__.py:649 mg/admin/__init__.py:275
+#: mg/socio/__init__.py:649 mg/admin/__init__.py:284
 #, python-format
 msgid "Scheme '%s' is not supported"
 msgstr ""
 
-#: mg/socio/__init__.py:651 mg/admin/__init__.py:277
+#: mg/socio/__init__.py:651 mg/admin/__init__.py:286
 msgid "Enter correct URL"
 msgstr ""
 
-#: mg/socio/__init__.py:665 mg/admin/__init__.py:291
+#: mg/socio/__init__.py:665 mg/admin/__init__.py:300
 msgid "Remote server response: Resource not found"
 msgstr ""
 
-#: mg/socio/__init__.py:667 mg/admin/__init__.py:293
+#: mg/socio/__init__.py:667 mg/admin/__init__.py:302
 msgid "Remote server response: Access denied"
 msgstr ""
 
-#: mg/socio/__init__.py:669 mg/admin/__init__.py:295
+#: mg/socio/__init__.py:669 mg/admin/__init__.py:304
 msgid "Remote server response: Internal server error"
 msgstr ""
 
-#: mg/socio/__init__.py:671 mg/socio/__init__.py:678 mg/admin/__init__.py:297
-#: mg/admin/__init__.py:304
+#: mg/socio/__init__.py:671 mg/socio/__init__.py:678 mg/admin/__init__.py:306
+#: mg/admin/__init__.py:313
 #, python-format
 msgid "Download error: %s"
 msgstr ""
 
-#: mg/socio/__init__.py:676 mg/admin/__init__.py:302
+#: mg/socio/__init__.py:676 mg/admin/__init__.py:311
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
 #: mg/socio/__init__.py:688 mg/socio/__init__.py:1891 mg/socio/smiles.py:160
-#: mg/socio/smiles.py:162 mg/admin/__init__.py:314 mg/mmo/locations.py:189
-#: mg/mmo/locations.py:191 mg/constructor/design.py:408
+#: mg/socio/smiles.py:162 mg/admin/__init__.py:323 mg/mmo/locations.py:193
+#: mg/mmo/locations.py:195 mg/constructor/design.py:408
 #: mg/constructor/design.py:411 mg/constructor/logo.py:23
 #: mg/constructor/logo.py:266
 msgid "Image format not recognized"
 msgstr ""
 
-#: mg/socio/__init__.py:742 mg/admin/__init__.py:338 mg/mmo/locations.py:215
+#: mg/socio/__init__.py:742 mg/admin/__init__.py:347 mg/mmo/locations.py:219
 #: mg/constructor/design.py:401
 msgid "Upload an image"
 msgstr ""
@@ -409,7 +409,7 @@ msgid ""
 msgstr ""
 
 #: mg/socio/__init__.py:1840 mg/core/web.py:820 mg/core/director.py:394
-#: mg/admin/__init__.py:252 mg/constructor/setup.py:161
+#: mg/admin/__init__.py:261 mg/constructor/setup.py:161
 #: mg/constructor/setup.py:225
 msgid "Save"
 msgstr ""
@@ -2281,112 +2281,164 @@ msgstr ""
 msgid "Constructor: 2pay integration"
 msgstr ""
 
-#: mg/admin/__init__.py:38
+#: mg/admin/__init__.py:39
 msgid "Administration interface"
 msgstr ""
 
-#: mg/admin/__init__.py:82
+#: mg/admin/__init__.py:83
 #, python-format
 msgid "%s administration interface"
 msgstr ""
 
-#: mg/admin/__init__.py:342
+#: mg/admin/__init__.py:351
 msgid "Unknown error uploading image"
 msgstr ""
 
-#: mg/mmo/locations.py:25 mg/mmo/locations.py:42
+#: mg/mmo/locations.py:28 mg/mmo/locations.py:45
 msgid "Locations"
 msgstr ""
 
-#: mg/mmo/locations.py:28
+#: mg/mmo/locations.py:31
 msgid "Locations list"
 msgstr ""
 
-#: mg/mmo/locations.py:31
+#: mg/mmo/locations.py:34
 msgid "Locations editor"
 msgstr ""
 
-#: mg/mmo/locations.py:35 mg/mmo/locations.py:132
+#: mg/mmo/locations.py:38 mg/mmo/locations.py:135
 msgid "New location"
 msgstr ""
 
-#: mg/mmo/locations.py:41
+#: mg/mmo/locations.py:44
 msgid "Editor"
 msgstr ""
 
-#: mg/mmo/locations.py:60
+#: mg/mmo/locations.py:63
 msgid "Name is mandatory"
 msgstr ""
 
-#: mg/mmo/locations.py:62
+#: mg/mmo/locations.py:65
 msgid "Name contains forbidden symbols"
 msgstr ""
 
-#: mg/mmo/locations.py:85
+#: mg/mmo/locations.py:88
 msgid "Select valid image type"
 msgstr ""
 
-#: mg/mmo/locations.py:96
+#: mg/mmo/locations.py:99
 msgid "Location name"
 msgstr ""
 
-#: mg/mmo/locations.py:98
+#: mg/mmo/locations.py:101
 msgid "Location name in genitive"
 msgstr ""
 
-#: mg/mmo/locations.py:99
+#: mg/mmo/locations.py:102
 msgid "Location name in accusative"
 msgstr ""
 
-#: mg/mmo/locations.py:100
+#: mg/mmo/locations.py:103
 msgid "Location name (where?) - 'in the Some Location'"
 msgstr ""
 
-#: mg/mmo/locations.py:101
+#: mg/mmo/locations.py:104
 msgid "Location name (to where?) - 'to the Some Location'"
 msgstr ""
 
-#: mg/mmo/locations.py:102
+#: mg/mmo/locations.py:105
 msgid "Image type"
 msgstr ""
 
-#: mg/mmo/locations.py:137
+#: mg/mmo/locations.py:140
 msgid "Location"
 msgstr ""
 
-#: mg/mmo/locations.py:138
+#: mg/mmo/locations.py:141
 msgid "Functions"
 msgstr ""
 
-#: mg/mmo/locations.py:173
+#: mg/mmo/locations.py:177
 msgid "Static image"
 msgstr ""
 
-#: mg/mmo/locations.py:174
+#: mg/mmo/locations.py:178
 msgid "Replace location image (if necessary)"
 msgstr ""
 
-#: mg/mmo/locations.py:174
+#: mg/mmo/locations.py:178
 msgid "Upload location image"
 msgstr ""
 
-#: mg/mmo/locations.py:210
+#: mg/mmo/locations.py:214
 msgid "Image format must be GIF, JPEG or PNG"
 msgstr ""
 
-#: mg/mmo/locations.py:233 mg/mmo/locations.py:243
+#: mg/mmo/locations.py:237 mg/mmo/locations.py:247
 msgid "Image map"
 msgstr ""
 
-#: mg/mmo/locations.py:238
+#: mg/mmo/locations.py:242
 msgid "edit image map"
 msgstr ""
 
-#: mg/mmo/locations.py:254
+#: mg/mmo/locations.py:267
+msgid "Polygon may not be empty"
+msgstr ""
+
+#: mg/mmo/locations.py:269
+msgid "Odd number of coordinates"
+msgstr ""
+
+#: mg/mmo/locations.py:271
+msgid "Minimal number of points is 3"
+msgstr ""
+
+#: mg/mmo/locations.py:275
+msgid "Invalid non-integer coordinate encountered"
+msgstr ""
+
+#: mg/mmo/locations.py:289
+msgid "Location not specified"
+msgstr ""
+
+#: mg/mmo/locations.py:293
+msgid "Invalid location specified"
+msgstr ""
+
+#: mg/mmo/locations.py:297
+msgid "No action specified"
+msgstr ""
+
+#: mg/mmo/locations.py:325
 msgid ""
 "Warning! Internet Explorer browser is not supported. Location editor may "
 "work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully "
 "supported"
+msgstr ""
+
+#: mg/mmo/locations.py:328
+msgid "No action"
+msgstr ""
+
+#: mg/mmo/locations.py:328
+msgid "Move to another location"
+msgstr ""
+
+#: mg/mmo/locations.py:330
+msgid "Switch to the location editor"
+msgstr ""
+
+#: mg/mmo/locations.py:337
+msgid "Location saved successfully"
+msgstr ""
+
+#: mg/mmo/locations.py:355
+msgid "Switch to the image map editor"
+msgstr ""
+
+#: mg/mmo/locations.py:359
+msgid "Image map saved successfully"
 msgstr ""
 
 #: mg/constructor/players.py:277 mg/constructor/players.py:444

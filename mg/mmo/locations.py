@@ -93,7 +93,7 @@ class LocationsAdmin(ConstructorModule):
                 self.call("admin-locations.editor-form-store", db_loc, flags)
                 db_loc.store()
                 self.call("admin-locations.editor-form-cleanup", db_loc, flags)
-                self.call("web.response_json_html", {"success": True, "redirect": "locations/editor"})
+                self.call("web.response_json_html", {"success": True, "redirect": "locations/editor/%s" % location.uuid, "parameters": {"saved": 1}})
             # rendering form
             fields = []
             fields.append({"name": "name", "value": db_loc.get("name"), "label": self._("Location name")})
@@ -109,7 +109,7 @@ class LocationsAdmin(ConstructorModule):
                 image_type["value"] = image_type["values"][0][0]
             # rendering location preview
             if req.args != "new":
-                html = self.call("locations.render", location)
+                html = self.call("admin-locations.render", location)
                 if html:
                     fields.insert(0, {"type": "html", "html": html})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
@@ -169,6 +169,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         self.rhook("admin-locations.format-list", self.format_list)
         self.rhook("ext-admin-locations.image-map", self.admin_image_map, priv="locations.editor")
         self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
+        self.rhook("admin-locations.render", self.render)
 
     def form_render(self, db_loc, fields):
         for fld in fields:
@@ -277,17 +278,45 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                     hint = req.param("hint-%d" % zone_id).strip()
                     if hint:
                         zone["hint"] = hint
+                    # action
+                    action = req.param("v_action-%d" % zone_id)
+                    zone["action"] = action;
+                    if action == "none":
+                        del zone["action"]
+                    elif action == "move":
+                        loc = req.param("v_location-%d" % zone_id)
+                        if not loc:
+                            errors["v_location-%d" % zone_id] = self._("Location not specified")
+                        else:
+                            loc_obj = self.location(loc)
+                            if not loc_obj.valid():
+                                errors["v_location-%d" % zone_id] = self._("Invalid location specified")
+                            else:
+                                zone["loc"] = loc
+                    else:
+                        errors["v_action-%d" % zone_id] = self._("No action specified")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
             location.db_location.store()
-            self.call("web.response_json", {"success": True, "redirect": "locations/editor"})
+            self.call("web.response_json", {"success": True, "redirect": "locations/image-map/%s" % location.uuid, "parameters": {"saved": 1}})
         # Loading zones
         zones = []
         for zone in location.db_location.get("static_zones"):
             zones.append({
                 "polygon": zone.get("polygon"),
                 "hint": jsencode(zone.get("hint")),
+                "action": zone.get("action", "none"),
+                "loc": zone.get("loc")
+            })
+        # Loading locations
+        locations = []
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        for db_loc in lst:
+            locations.append({
+                "id": db_loc.uuid,
+                "name": jsencode(db_loc.get("name"))
             })
         vars = {
             "image": location.db_location.get("image_static"),
@@ -295,7 +324,37 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             "height": location.db_location.get("image_static_h"),
             "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
             "submit_url": "/admin-locations/image-map/%s" % location.uuid,
-            "zones": zones
+            "zones": zones,
+            "actions": [("none", self._("No action")), ("move", self._("Move to another location"))],
+            "locations": locations,
+            "LocationEditor": self._("Switch to the location editor"),
+            "loc": {
+                "id": location.uuid,
+            },
         }
-        
+        req = self.req()
+        if req.param("saved"):
+            vars["saved"] = {"text": self._("Location saved successfully")}
         self.call("admin.response_template", "admin/locations/imagemap.html", vars)
+
+    def render(self, location):
+        if location.image_type == "static":
+            zones = []
+            for zone in location.db_location.get("static_zones"):
+                zones.append({
+                    "polygon": zone.get("polygon"),
+                    "action": zone.get("action"),
+                    "loc": zone.get("loc"),
+                })
+            vars = {
+                "loc": {
+                    "id": location.uuid,
+                    "image": location.db_location.get("image_static"),
+                },
+                "zones": zones,
+                "MapEditor": self._("Switch to the image map editor"),
+            }
+            req = self.req()
+            if req.param("saved"):
+                vars["saved"] = {"text": self._("Image map saved successfully")}
+            raise Hooks.Return(self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars))
