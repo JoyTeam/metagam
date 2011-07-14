@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-14 16:01+0400\n"
+"POT-Creation-Date: 2011-07-14 16:25+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -257,14 +257,14 @@ msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr ""
 
 #: mg/socio/__init__.py:688 mg/socio/__init__.py:1891 mg/socio/smiles.py:160
-#: mg/socio/smiles.py:162 mg/admin/__init__.py:323 mg/mmo/locations.py:193
-#: mg/mmo/locations.py:195 mg/constructor/design.py:408
+#: mg/socio/smiles.py:162 mg/admin/__init__.py:323 mg/mmo/locations.py:192
+#: mg/mmo/locations.py:194 mg/constructor/design.py:408
 #: mg/constructor/design.py:411 mg/constructor/logo.py:23
 #: mg/constructor/logo.py:266
 msgid "Image format not recognized"
 msgstr ""
 
-#: mg/socio/__init__.py:742 mg/admin/__init__.py:347 mg/mmo/locations.py:219
+#: mg/socio/__init__.py:742 mg/admin/__init__.py:347 mg/mmo/locations.py:218
 #: mg/constructor/design.py:401
 msgid "Upload an image"
 msgstr ""
@@ -295,7 +295,7 @@ msgstr ""
 msgid "User %s"
 msgstr ""
 
-#: mg/socio/__init__.py:769 mg/socio/telegrams.py:106 mg/game/money.py:1247
+#: mg/socio/__init__.py:769 mg/socio/telegrams.py:106 mg/game/money.py:1251
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr ""
@@ -1564,7 +1564,7 @@ msgstr ""
 msgid "Privilege: %s"
 msgstr ""
 
-#: mg/core/auth.py:1165 mg/game/money.py:714 mg/game/money.py:1251
+#: mg/core/auth.py:1165 mg/game/money.py:718 mg/game/money.py:1255
 #: mg/constructor/dashboard.py:137
 msgid "Update"
 msgstr ""
@@ -1896,7 +1896,7 @@ msgstr ""
 msgid "Currencies"
 msgstr ""
 
-#: mg/game/money.py:394 mg/game/money.py:593
+#: mg/game/money.py:394 mg/game/money.py:597
 msgid "New currency"
 msgstr ""
 
@@ -1909,7 +1909,7 @@ msgstr ""
 msgid "Currency name is mandatory"
 msgstr ""
 
-#: mg/game/money.py:424 mg/game/money.py:597
+#: mg/game/money.py:424 mg/game/money.py:601
 msgid "Currency name"
 msgstr ""
 
@@ -1986,298 +1986,302 @@ msgstr ""
 msgid "You must supply real money price for this currency"
 msgstr ""
 
-#: mg/game/money.py:518 mg/game/money.py:668 mg/game/money.py:848
+#: mg/game/money.py:518 mg/game/money.py:672 mg/game/money.py:852
 msgid "Invalid number format"
 msgstr ""
 
-#: mg/game/money.py:520
+#: mg/game/money.py:520 mg/game/money.py:524
+msgid "You can't change real money exchange rate after game publication"
+msgstr ""
+
+#: mg/game/money.py:522
 msgid "Select real money currency"
 msgstr ""
 
-#: mg/game/money.py:567
+#: mg/game/money.py:571
 msgid ""
 "Currency code (for example, GLD for gold, SLVR for silver, DMND for diamonds "
 "and so on).<br /><span class=\"no\">You won't have an ability to change the "
 "code later. Think twice before saving</span>"
 msgstr ""
 
-#: mg/game/money.py:568
+#: mg/game/money.py:572
 msgid ""
 "Currency name: singular and plural forms delimited by \"/\". For example: "
 "\"Dollar/Dollars\""
 msgstr ""
 
-#: mg/game/money.py:569
+#: mg/game/money.py:573
 msgid "Currency name: plural form. For example: \"Dollars\""
 msgstr ""
 
-#: mg/game/money.py:571
+#: mg/game/money.py:575
 msgid ""
 "Currency name in English: singular and plural forms delimited by \"/\". For "
 "example: \"Dollar/Dollars\""
 msgstr ""
 
-#: mg/game/money.py:572
+#: mg/game/money.py:576
 msgid "Values precision (number of digits after decimal point)"
 msgstr ""
 
-#: mg/game/money.py:573
+#: mg/game/money.py:577
 msgid "Currency description"
 msgstr ""
 
-#: mg/game/money.py:574
+#: mg/game/money.py:578
 msgid ""
 "Real money. Set this checkbox if this currency is sold for real money. Your "
 "game must have one real money currency"
 msgstr ""
 
-#: mg/game/money.py:575
+#: mg/game/money.py:579
 msgid "Real money price for 1 unit of the currency"
 msgstr ""
 
-#: mg/game/money.py:576
+#: mg/game/money.py:580
 msgid "Real money currency"
 msgstr ""
 
-#: mg/game/money.py:597
+#: mg/game/money.py:601
 msgid "Currency code"
 msgstr ""
 
-#: mg/game/money.py:597
+#: mg/game/money.py:601
 msgid "Real money"
 msgstr ""
 
-#: mg/game/money.py:597
+#: mg/game/money.py:601
 msgid "Declension samples"
 msgstr ""
 
-#: mg/game/money.py:610 mg/game/money.py:749
+#: mg/game/money.py:614 mg/game/money.py:753
 msgid "Give money"
 msgstr ""
 
-#: mg/game/money.py:634
+#: mg/game/money.py:638
 msgid "Give amount"
 msgstr ""
 
-#: mg/game/money.py:635 mg/game/money.py:678 mg/game/money.py:727
-#: mg/game/money.py:741 mg/constructor/auth.py:302
+#: mg/game/money.py:639 mg/game/money.py:682 mg/game/money.py:731
+#: mg/game/money.py:745 mg/constructor/auth.py:302
 msgid "Currency"
 msgstr ""
 
-#: mg/game/money.py:636
+#: mg/game/money.py:640
 msgid "Give"
 msgstr ""
 
-#: mg/game/money.py:644 mg/game/money.py:749
+#: mg/game/money.py:648 mg/game/money.py:753
 msgid "Take money"
 msgstr ""
 
-#: mg/game/money.py:660 mg/game/money.py:833
+#: mg/game/money.py:664 mg/game/money.py:837
 msgid "Invalid currency"
 msgstr ""
 
-#: mg/game/money.py:664 mg/game/money.py:840
+#: mg/game/money.py:668 mg/game/money.py:844
 msgid "Amount must be greater than 0"
 msgstr ""
 
-#: mg/game/money.py:666 mg/game/money.py:844
+#: mg/game/money.py:670 mg/game/money.py:848
 msgid "Invalid amount precision"
 msgstr ""
 
-#: mg/game/money.py:677
+#: mg/game/money.py:681
 msgid "Take amount"
 msgstr ""
 
-#: mg/game/money.py:679
+#: mg/game/money.py:683
 msgid "Take"
 msgstr ""
 
-#: mg/game/money.py:687
+#: mg/game/money.py:691
 #, python-format
 msgid "Account %s"
 msgstr ""
 
-#: mg/game/money.py:709
+#: mg/game/money.py:713
 msgid "Performed"
 msgstr ""
 
-#: mg/game/money.py:710 mg/game/money.py:741 mg/game/money.py:1248
+#: mg/game/money.py:714 mg/game/money.py:745 mg/game/money.py:1252
 msgid "Amount"
 msgstr ""
 
-#: mg/game/money.py:711 mg/game/money.py:727
+#: mg/game/money.py:715 mg/game/money.py:731
 msgid "Balance"
 msgstr ""
 
-#: mg/game/money.py:712 mg/game/money.py:741 mg/constructor/design.py:867
+#: mg/game/money.py:716 mg/game/money.py:745 mg/constructor/design.py:867
 #: mg/constructor/game.py:205
 msgid "Description"
 msgstr ""
 
-#: mg/game/money.py:727
+#: mg/game/money.py:731
 msgid "Account Id"
 msgstr ""
 
-#: mg/game/money.py:727
+#: mg/game/money.py:731
 msgid "Locked"
 msgstr ""
 
-#: mg/game/money.py:727
+#: mg/game/money.py:731
 msgid "Low limit"
 msgstr ""
 
-#: mg/game/money.py:741
+#: mg/game/money.py:745
 msgid "Lock ID"
 msgstr ""
 
-#: mg/game/money.py:748
+#: mg/game/money.py:752
 msgid "Money operations"
 msgstr ""
 
-#: mg/game/money.py:753
+#: mg/game/money.py:757
 msgid "Access to users money"
 msgstr ""
 
-#: mg/game/money.py:754
+#: mg/game/money.py:758
 msgid "Giving and taking money"
 msgstr ""
 
-#: mg/game/money.py:755
+#: mg/game/money.py:759
 msgid "Currencies editor"
 msgstr ""
 
-#: mg/game/money.py:768
+#: mg/game/money.py:772
 msgid ""
 "You have not configured real money currency yet. Before launching your game "
 "you must configure its real money system&nbsp;&mdash; set up a currency and "
 "set it the 'real money' attribute."
 msgstr ""
 
-#: mg/game/money.py:768
+#: mg/game/money.py:772
 msgid "Open currency settings"
 msgstr ""
 
-#: mg/game/money.py:776
+#: mg/game/money.py:780
 msgid "Real money name"
 msgstr ""
 
-#: mg/game/money.py:777
+#: mg/game/money.py:781
 msgid "Declensions"
 msgstr ""
 
-#: mg/game/money.py:778
+#: mg/game/money.py:782
 msgid "Real in English"
 msgstr ""
 
-#: mg/game/money.py:779
+#: mg/game/money.py:783
 msgid "Exchange rate"
 msgstr ""
 
-#: mg/game/money.py:782
+#: mg/game/money.py:786
 msgid "Real money currency name"
 msgstr ""
 
-#: mg/game/money.py:782
+#: mg/game/money.py:786
 msgid "absent"
 msgstr ""
 
-#: mg/game/money.py:810
+#: mg/game/money.py:814
 msgid "Given by the administration"
 msgstr ""
 
-#: mg/game/money.py:816
+#: mg/game/money.py:820
 msgid "Taken by the administration"
 msgstr ""
 
-#: mg/game/money.py:869
+#: mg/game/money.py:873
 msgid "2pay payment"
 msgstr ""
 
-#: mg/game/money.py:875
+#: mg/game/money.py:879
 msgid "2pay chargeback"
 msgstr ""
 
-#: mg/game/money.py:880
+#: mg/game/money.py:884
 msgid "2pay integration"
 msgstr ""
 
-#: mg/game/money.py:880
+#: mg/game/money.py:884
 msgid "open dashboard"
 msgstr ""
 
-#: mg/game/money.py:1108
+#: mg/game/money.py:1112
 msgid "Enter character name:"
 msgstr ""
 
-#: mg/game/money.py:1118
+#: mg/game/money.py:1122
 msgid "Character name:"
 msgstr ""
 
-#: mg/game/money.py:1241
+#: mg/game/money.py:1245
 msgid "Edit settings"
 msgstr ""
 
-#: mg/game/money.py:1242
+#: mg/game/money.py:1246
 msgid "Payment URL"
 msgstr ""
 
-#: mg/game/money.py:1243
+#: mg/game/money.py:1247
 msgid "Secret code"
 msgstr ""
 
-#: mg/game/money.py:1244
+#: mg/game/money.py:1248
 msgid "Secret code for adding games"
 msgstr ""
 
-#: mg/game/money.py:1245
+#: mg/game/money.py:1249
 msgid "2pay time"
 msgstr ""
 
-#: mg/game/money.py:1246
+#: mg/game/money.py:1250
 msgid "Our time"
 msgstr ""
 
-#: mg/game/money.py:1249
+#: mg/game/money.py:1253
 msgid "Chargeback"
 msgstr ""
 
-#: mg/game/money.py:1252
+#: mg/game/money.py:1256
 msgid "Id"
 msgstr ""
 
-#: mg/game/money.py:1253
+#: mg/game/money.py:1257
 msgid "Project ID"
 msgstr ""
 
-#: mg/game/money.py:1254
+#: mg/game/money.py:1258
 msgid "Contragent ID"
 msgstr ""
 
-#: mg/game/money.py:1283
+#: mg/game/money.py:1287
 msgid "2pay project id"
 msgstr ""
 
-#: mg/game/money.py:1284
+#: mg/game/money.py:1288
 msgid "2pay contragent id"
 msgstr ""
 
-#: mg/game/money.py:1285
+#: mg/game/money.py:1289
 msgid "2pay secret"
 msgstr ""
 
-#: mg/game/money.py:1286
+#: mg/game/money.py:1290
 msgid "2pay secret for adding games"
 msgstr ""
 
-#: mg/game/money.py:1298
+#: mg/game/money.py:1302
 msgid "2pay dashboard"
 msgstr ""
 
-#: mg/game/money.py:1300
+#: mg/game/money.py:1304
 msgid "Settings editor"
 msgstr ""
 
-#: mg/game/money.py:1304
+#: mg/game/money.py:1308
 msgid "Constructor: 2pay integration"
 msgstr ""
 
@@ -2358,86 +2362,82 @@ msgstr ""
 msgid "Functions"
 msgstr ""
 
-#: mg/mmo/locations.py:177
+#: mg/mmo/locations.py:176
 msgid "Static image"
 msgstr ""
 
-#: mg/mmo/locations.py:178
+#: mg/mmo/locations.py:177
 msgid "Replace location image (if necessary)"
 msgstr ""
 
-#: mg/mmo/locations.py:178
+#: mg/mmo/locations.py:177
 msgid "Upload location image"
 msgstr ""
 
-#: mg/mmo/locations.py:214
+#: mg/mmo/locations.py:213
 msgid "Image format must be GIF, JPEG or PNG"
 msgstr ""
 
-#: mg/mmo/locations.py:237 mg/mmo/locations.py:247
-msgid "Image map"
+#: mg/mmo/locations.py:236
+msgid "Map"
 msgstr ""
 
-#: mg/mmo/locations.py:242
-msgid "edit image map"
-msgstr ""
-
-#: mg/mmo/locations.py:267
+#: mg/mmo/locations.py:256
 msgid "Polygon may not be empty"
 msgstr ""
 
-#: mg/mmo/locations.py:269
+#: mg/mmo/locations.py:258
 msgid "Odd number of coordinates"
 msgstr ""
 
-#: mg/mmo/locations.py:271
+#: mg/mmo/locations.py:260
 msgid "Minimal number of points is 3"
 msgstr ""
 
-#: mg/mmo/locations.py:275
+#: mg/mmo/locations.py:264
 msgid "Invalid non-integer coordinate encountered"
 msgstr ""
 
-#: mg/mmo/locations.py:289
+#: mg/mmo/locations.py:278
 msgid "Location not specified"
 msgstr ""
 
-#: mg/mmo/locations.py:293
+#: mg/mmo/locations.py:282
 msgid "Invalid location specified"
 msgstr ""
 
-#: mg/mmo/locations.py:297
+#: mg/mmo/locations.py:286
 msgid "No action specified"
 msgstr ""
 
-#: mg/mmo/locations.py:325
+#: mg/mmo/locations.py:314
 msgid ""
 "Warning! Internet Explorer browser is not supported. Location editor may "
 "work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully "
 "supported"
 msgstr ""
 
-#: mg/mmo/locations.py:328
+#: mg/mmo/locations.py:317
 msgid "No action"
 msgstr ""
 
-#: mg/mmo/locations.py:328
+#: mg/mmo/locations.py:317
 msgid "Move to another location"
 msgstr ""
 
-#: mg/mmo/locations.py:330
+#: mg/mmo/locations.py:319
 msgid "Switch to the location editor"
 msgstr ""
 
-#: mg/mmo/locations.py:337
+#: mg/mmo/locations.py:326
 msgid "Location saved successfully"
 msgstr ""
 
-#: mg/mmo/locations.py:355
+#: mg/mmo/locations.py:344
 msgid "Switch to the image map editor"
 msgstr ""
 
-#: mg/mmo/locations.py:359
+#: mg/mmo/locations.py:348
 msgid "Image map saved successfully"
 msgstr ""
 

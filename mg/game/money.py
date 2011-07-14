@@ -516,8 +516,12 @@ class MoneyAdmin(Module):
                             errors["real_price"] = self._("You must supply real money price for this currency")
                         elif not re_valid_real_price.match(real_price):
                             errors["real_price"] = self._("Invalid number format")
+                        elif (project.get("moderation") or project.get("published")) and real_price != info.get("real_price"):
+                            errors["real_price"] = self._("You can't change real money exchange rate after game publication")
                         if real_currency not in ["RUR", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
                             errors["v_real_currency"] = self._("Select real money currency")
+                        elif (project.get("moderation") or project.get("published")) and real_currency != info.get("real_currency"):
+                            errors["v_real_currency"] = self._("You can't change real money exchange rate after game publication")
                     if len(errors) or errormsg:
                         self.call("web.response_json", {"success": False, "errors": errors, "errormsg": errormsg})
                     # storing

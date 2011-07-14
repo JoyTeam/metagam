@@ -99,9 +99,9 @@ class LocationsAdmin(ConstructorModule):
             fields.append({"name": "name", "value": db_loc.get("name"), "label": self._("Location name")})
             if lang == "ru":
                 fields.append({"name": "name_g", "value": db_loc.get("name_g"), "label": self._("Location name in genitive")})
-                fields.append({"name": "name_a", "value": db_loc.get("name_a"), "label": self._("Location name in accusative")})
+                fields.append({"name": "name_a", "value": db_loc.get("name_a"), "label": self._("Location name in accusative"), "inline": True})
                 fields.append({"name": "name_w", "value": db_loc.get("name_w"), "label": self._("Location name (where?) - 'in the Some Location'")})
-                fields.append({"name": "name_t", "value": db_loc.get("name_t"), "label": self._("Location name (to where?) - 'to the Some Location'")})
+                fields.append({"name": "name_t", "value": db_loc.get("name_t"), "label": self._("Location name (to where?) - 'to the Some Location'"), "inline": True})
             image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
             fields.append(image_type)
             self.call("admin-locations.editor-form-render", db_loc, fields)
@@ -233,7 +233,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             self.call("cluster.static_delete", flags["old_image_static"])
 
     def headmenu_image_map(self, args):
-        return [self._("Image map"), "locations/editor/%s" % args]
+        return [self._("Map"), "locations/editor/%s" % args]
 
     def admin_image_map(self):
         req = self.req()
