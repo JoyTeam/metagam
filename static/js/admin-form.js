@@ -298,6 +298,10 @@ Form = Ext.extend(AdminResponse, {
 			this.doLayout();
 	},
 	custom_submit: function(url) {
+		var saved = Ext.query('.admin-saved', admincontent.dom);
+		for (var i = 0; i < saved.length; i++) {
+			saved[i].style.display = 'none';
+		}
 		var form = Ext.getCmp('admin-form-' + form_id);
 		form.getForm().submit({
 			url: url,
