@@ -78,6 +78,7 @@ class Interface(ConstructorModule):
         self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
+        self.rhook("game.response_internal", self.game_response_internal)
         self.rhook("game.error", self.game_error)
         self.rhook("game.form", self.game_form)
         self.rhook("auth.form", self.game_form)
@@ -96,6 +97,7 @@ class Interface(ConstructorModule):
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
         self.rhook("gamecabinet.render", self.game_cabinet_render)
+        self.rhook("main-frame.error", self.main_frame_error)
         
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
@@ -149,6 +151,11 @@ class Interface(ConstructorModule):
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
 
+    def main_frame_error(self, msg):
+        vars = {
+        }
+        self.call("game.response_internal", "error.html", vars, msg)
+
     def game_error(self, msg):
         vars = {
             "title": self._("Error"),
@@ -166,6 +173,11 @@ class Interface(ConstructorModule):
         design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
         self.call("design.response", design, "external.html", content, vars)
+
+    def game_response_internal(self, template, vars, content=""):
+        design = self.design("gameinterface")
+        content = self.call("design.parse", design, template, content, vars)
+        self.call("design.response", design, "internal.html", content, vars)
 
     def game_cabinet(self, player):
         characters = []
@@ -217,7 +229,7 @@ class Interface(ConstructorModule):
         vars["js_init"] = ["Game.setup_game_layout();"]
         vars["send"] = self._("send")
         if project.get("published"):
-            vars["main_init"] = "/interface/sample"
+            vars["main_init"] = "/location"
         else:
             vars["main_init"] = "/project/status"
         if self.conf("debug.ext"):
@@ -678,7 +690,7 @@ class Interface(ConstructorModule):
                         block["flex"] = intz(width_flex)
                 else:
                     errors["v_width_type"] = self._("Select valid type")
-            if block["type"] == "html" or block["header"] == "header":
+            if block["type"] == "html" or block["type"] == "header":
                 block["html"] = req.param("html")
             block["order"] = intz(req.param("order"))
             block["title"] = req.param("title")
@@ -1056,3 +1068,4 @@ class Interface(ConstructorModule):
         else:
             text = self._('<h1>Welcome to your new game!</h1><p>Now you can open <a href="/admin" target="_blank">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>')
         self.call("web.response_global", text, {})
+

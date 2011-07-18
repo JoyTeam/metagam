@@ -1,5 +1,7 @@
 /* LAYOUT */
 body { background-image: url(body-bg-1.jpg) }
+a:link, a:visited { color: #385428 }
+a:hover, a:active { color: #3b7730 }
 
 /* BOX */
 .box-0 { background-color: #9e9e86; color: #291c0e }
@@ -26,3 +28,6 @@ body { background-image: url(body-bg-1.jpg) }
 .form-list-messages-top, .form-list-messages-bottom { color: #2b7118 }
 .form-error { color: #903b24 }
 
+/* INTERNAL */
+#page-internal-body { background: #9e9e86; color: #291c0e }
+.game-error { color: #c00000; font-weight: bold }

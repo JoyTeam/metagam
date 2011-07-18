@@ -3,10 +3,11 @@
 #main-and-chat, #roster-and-chat, #chat-and-roster, #main-panel-group { background: none }
 .x-layout-split { background: #808080 }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
+img { border: none }
 
 /* COMMON COLORS */
 .ext-el-mask { background-color: #000000 }
-.x-window-tl, .x-window-tc, .x-window-tr, .x-window-ml, .x-window-mc, .x-window-mr, .x-window-bl, .x-window-bc, .x-window-br, .x-window-mc { background: transparent; border-color: transparent }
+.game-error { color: red; text-align: center; padding: 50px }
 
 /* MAIN FRAME */
 #main { height: 100%; background-color: #ffffff }
@@ -33,6 +34,7 @@
 #smiles-container { height: 100% }
 #smiles-container .box-0, #smiles-container .sbox-0 { height: 100% }
 .chat-smile { margin: 2px; cursor: pointer }
+#smiles-window .x-window-tl, #smiles-window .x-window-tc, #smiles-window .x-window-tr, #smiles-window .x-window-ml, #smiles-window .x-window-mc, #smiles-window .x-window-mr, #smiles-window .x-window-bl, #smiles-window .x-window-bc, #smiles-window .x-window-br, #smiles-window .x-window-mc { background: transparent; border-color: transparent }
 
 /* ROSTER */
 #chat-roster { height: 100% }
@@ -65,3 +67,7 @@
 .form-desc { vertical-align: top; font-weight: bold }
 .form-error { color: #ff0000; font-weight: normal; font-size: 11px }
 .form-list-messages-top, .form-list-messages-bottom { font-weight: bold }
+
+/* INTERNAL */
+#page-internal-html { height: 100%; padding: 0; margin: 0 }
+#page-internal-body { height: 100%; padding: 0; margin: 0; background: #000000; color: #ffffff }

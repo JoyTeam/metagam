@@ -2,10 +2,11 @@ from mg import *
 from mg.constructor import *
 import re
 
-re_find_tags = re.compile(r'{(NAME|NAME_CHAT|GENDER:[^}]+)}')
+re_find_tags = re.compile(r'{(NAME|NAME_CHAT|GENDER:[^}]+|LOCATION(?:|_G|_A|_W|_T|_F))}')
 re_gender = re.compile(r'^GENDER:(.+)$')
 re_name = re.compile(r'^NAME$')
 re_name_chat = re.compile(r'^NAME_CHAT$')
+re_location = re.compile(r'^LOCATION(|_G|_A|_W|_T|_F)$')
 
 class QuestParserVariables(ConstructorModule):
     def __init__(self, app, kwargs, fqn="mg.constructor.quest.QuestParserVariables"):
@@ -56,6 +57,14 @@ class QuestParserVariables(ConstructorModule):
                 self._chat_name = None
             return self._chat_name
 
+    @property
+    def loc(self):
+        try:
+            return self._location
+        except AttributeError:
+            self._location = self.kwargs.get("location")
+            return self._location
+
 class QuestEngine(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
@@ -75,6 +84,8 @@ class QuestEngine(ConstructorModule):
             if self.sub(re_name_chat, self.name_chat, match.group(1), tokens, variables):
                 continue
             if self.sub(re_gender, self.gender, match.group(1), tokens, variables):
+                continue
+            if self.sub(re_location, self.loc, match.group(1), tokens, variables):
                 continue
             tokens.append(text[match_start:match_end])
         if len(text) > start:
@@ -105,3 +116,21 @@ class QuestEngine(ConstructorModule):
 
     def name_chat(self, match, variables):
         return variables.chat_name
+
+    def loc(self, match, variables):
+        loc = variables.loc
+        if loc is None:
+            return ""
+        tp = match.group(1)
+        if tp == "_G":
+            return loc.name_w
+        elif tp == "_A":
+            return loc.name_a
+        elif tp == "_W":
+            return loc.name_w
+        elif tp == "_T":
+            return loc.name_t
+        elif tp == "_F":
+            return loc.name_f
+        else:
+            return loc.name

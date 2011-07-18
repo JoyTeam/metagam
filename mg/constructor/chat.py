@@ -3,7 +3,7 @@ from mg.constructor import *
 import datetime
 import re
 
-re_chat_characters = re.compile(r'\[(chf|ch):([a-f0-9]{32})\]')
+re_chat_characters = re.compile(r'\[(chf|cht|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
 re_chat_recipient = re.compile(r'^\s*(to|private)\s*\[([^\]]+)\]\s*(.*)$')
 re_loc_channel = re.compile(r'^loc-(\S+)$')
@@ -64,6 +64,7 @@ class Chat(ConstructorModule):
         self.rhook("session.character-online", self.character_online)
         self.rhook("session.character-offline", self.character_offline)
         self.rhook("session.character-init", self.character_init)
+        self.rhook("chat.channel-info", self.channel_info)
         self.rhook("chat.channel-join", self.channel_join)
         self.rhook("chat.channel-unjoin", self.channel_unjoin)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -72,6 +73,18 @@ class Chat(ConstructorModule):
             self.rhook("ext-admin-chat.debug", self.chat_debug, priv="chat.config")
         self.rhook("chat.character-channels", self.character_channels)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("locations.character_before_set", self.location_before_set)
+        self.rhook("locations.character_after_set", self.location_after_set)
+
+    def location_before_set(self, character, new_location, instance):
+        msg = self.msg_entered_location()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % new_location.uuid)
+
+    def location_after_set(self, character, old_location, instance):
+        msg = self.msg_left_location()
+        if msg:
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % old_location.uuid)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -172,6 +185,8 @@ class Chat(ConstructorModule):
             # chat messages
             config.set("chat.msg_went_online", req.param("msg_went_online"))
             config.set("chat.msg_went_offline", req.param("msg_went_offline"))
+            config.set("chat.msg_entered_location", req.param("msg_entered_location"))
+            config.set("chat.msg_left_location", req.param("msg_left_location"))
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -197,6 +212,8 @@ class Chat(ConstructorModule):
                 cmd_dip = "/%s" % cmd_dip
             msg_went_online = self.msg_went_online()
             msg_went_offline = self.msg_went_offline()
+            msg_entered_location = self.msg_entered_location()
+            msg_left_location = self.msg_left_location()
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
@@ -209,6 +226,8 @@ class Chat(ConstructorModule):
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
             {"name": "msg_went_online", "label": self._("Message about character went online"), "value": msg_went_online},
             {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": msg_went_offline},
+            {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": msg_entered_location},
+            {"name": "msg_left_location", "label": self._("Message about character left location"), "value": msg_left_location},
         ]
         self.call("admin.form", fields=fields)
 
@@ -226,6 +245,9 @@ class Chat(ConstructorModule):
         # list of channels
         channels = []
         self.call("chat.character-channels", character, channels)
+        for ch in channels:
+            if re_loc_channel.match(ch["id"]):
+                ch["id"] = "loc"
         chatmode = self.chatmode
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode:
@@ -309,23 +331,27 @@ class Chat(ConstructorModule):
             if not char:
                 self.call("web.response_json", {"error": self._("Character '%s' not found") % htmlescape(name)})
             if private:
-                prefixes.append("private [[ch:%s]] " % char.uuid)
+                prefixes.append("private [[cht:%s]] " % char.uuid)
             else:
-                prefixes.append("to [[ch:%s]] " % char.uuid)
+                prefixes.append("to [[cht:%s]] " % char.uuid)
             recipients.append(char)
         if author not in recipients:
             recipients.append(author)
         # access control
-        if channel == "wld" or channel == "loc" or channel == "trd" and self.conf("chat.trade-channel") or channel == "dip" and self.conf("chat.diplomacy-channel"):
+        if channel == "wld" or channel == "loc":
+            pass
+        elif channel == "trd" and self.conf("chat.trade-channel"):
+            pass
+        elif channel == "dip" and self.conf("chat.diplomacy-channel"):
             pass
         elif channel == "dbg" and self.conf("chat.debug-channel") and self.debug_access(author):
             pass
         else:
-            self.call("web.response_json", {"error": self._("No access to this chat channel")})
+            self.call("web.response_json", {"error": self._("No access to the '%s' chat channel") % htmlescape(channel)})
         # translating channel name
         if channel == "loc":
-            # TODO: convert to loc-%s format
-            pass
+            character = self.character(user)
+            channel = "loc-%s" % (character.location.uuid if character.location else None)
         # formatting html
         tokens = [{"text": text}]
         self.call("chat.parse", tokens)
@@ -354,15 +380,10 @@ class Chat(ConstructorModule):
                 characters = recipients
             elif channel == "wld" or channel == "trd" or channel == "dip":
                 characters = self.characters.tech_online
-            elif channel == "dbg":
+            else:
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel)
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 characters = [self.character(uuid) for uuid in character_uuids]
-            else:
-                m = re_loc_channel.match(channel)
-                if m:
-                    loc_uuid = m.group(1)
-                    # TODO: load location list
             # loading list of sessions corresponding to the characters
             sessions = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % char.uuid for char in characters])
             # loading list of characters able to view the message
@@ -379,7 +400,7 @@ class Chat(ConstructorModule):
         if not hide_time:
             now = datetime.datetime.utcnow().strftime("%H:%M:%S")
             tokens.append({"time": now, "mentioned": mentioned})
-        # replacing character tags [chf:UUID], [ch:UUID] etc
+        # replacing character tags [chf:UUID], [cht:UUID], [ch:UUID] etc
         start = 0
         for match in re_chat_characters.finditer(html):
             match_start, match_end = match.span()
@@ -390,9 +411,9 @@ class Chat(ConstructorModule):
             mentioned_uuids.add(character)
             character = self.character(character)
             mentioned.add(character)
-            if tp == "chf" or tp == "ch":
-                token = {"character": character, "mentioned": mentioned}
-                if viewers is not None and character.uuid not in viewers:
+            if tp == "chf" or tp == "cht" or tp == "ch":
+                token = {"character": character, "mentioned": mentioned, "type": tp}
+                if tp != "ch" and viewers is not None and character.uuid not in viewers:
                     token["missing"] = True
                 tokens.append(token)
         if len(html) > start:
@@ -464,6 +485,12 @@ class Chat(ConstructorModule):
     def msg_went_offline(self):
         return self.conf("chat.msg_went_offline", self._("{NAME_CHAT} {GENDER:went,went} offline"))
 
+    def msg_entered_location(self):
+        return self.conf("chat.msg_entered_location", self._("{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"))
+
+    def msg_left_location(self):
+        return self.conf("chat.msg_left_location", self._("{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"))
+
     def character_online(self, character):
         msg = self.msg_went_online()
         if msg:
@@ -479,12 +506,24 @@ class Chat(ConstructorModule):
         channels = []
         self.call("chat.character-channels", character, channels)
         # reload_channels resets destroyes all channels not listed in the 'channels' list and unconditionaly clears online lists
-        self.call("stream.character", character, "chat", "reload_channels", channels=channels)
+        show_channels = []
+        for ch in channels:
+            if re_loc_channel.match(ch["id"]):
+                ch_copy = ch.copy()
+                ch_copy["id"] = "loc"
+                show_channels.append(ch_copy)
+            else:
+                show_channels.append(ch)
+        self.call("stream.character", character, "chat", "reload_channels", channels=show_channels)
         # send information about all characters on all subscribed channels
         syschannel = "id_%s" % session_uuid
         for channel in channels:
             if channel.get("roster"):
-                lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel["id"])
+                if channel["id"] == "loc":
+                    channel_id = "loc-%s" % (character.location.uuid if character.location else None)
+                else:
+                    channel_id = channel["id"]
+                lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 for char_uuid in character_uuids:
                     char = self.character(char_uuid)
@@ -498,13 +537,19 @@ class Chat(ConstructorModule):
         lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
         lst.load(silent=True)
         for ent in lst:
-            info = self.channel_info(ent.get("channel"))
+            channel_id = ent.get("channel")
+            info = self.channel_info(channel_id)
             if ent.get("roster"):
                 info["roster"] = True
             self.call("chat.channel-unjoin", character, info)
 
     def channel_join(self, character, channel, send_myself=True):
         channel_id = channel["id"]
+        if channel_id == "loc":
+            channel_id = "loc-%s" % (character.location.uuid if character.location else None)
+            roster_channel_id = "loc"
+        else:
+            roster_channel_id = channel_id
         with self.lock(["chat-channel.%s" % channel_id]):
             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
             obj.set("character", character.uuid)
@@ -533,13 +578,13 @@ class Chat(ConstructorModule):
                     if send_myself and len(mychannels):
                         self.call("stream.packet", mychannels, "chat", "channel_create", **channel)
                     if syschannels:
-                        self.call("stream.packet", syschannels, "chat", "roster_add", character=character.roster_info, channel=channel_id)
+                        self.call("stream.packet", syschannels, "chat", "roster_add", character=character.roster_info, channel=roster_channel_id)
                     for char_uuid in character_uuids:
                         if char_uuid in characters_online:
                             if send_myself and char_uuid != character.uuid and len(mychannels):
                                 char = self.character(char_uuid)
                                 for ch in mychannels:
-                                    self.call("stream.packet", ch, "chat", "roster_add", character=char.roster_info, channel=channel_id)
+                                    self.call("stream.packet", ch, "chat", "roster_add", character=char.roster_info, channel=roster_channel_id)
                         else:
                             # dropping obsolete database record
                             self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
@@ -550,6 +595,13 @@ class Chat(ConstructorModule):
 
     def channel_unjoin(self, character, channel):
         channel_id = channel["id"]
+        if channel_id == "loc":
+            roster_channel_id = "loc"
+            channel_id = "loc-%s" % (character.location.uuid if character.location else None)
+        elif re_loc_channel.match(channel_id):
+            roster_channel_id = "loc"
+        else:
+            roster_channel_id = channel_id
         with self.lock(["chat-channel.%s" % channel_id]):
             if channel.get("roster"):
                 # list of characters subscribed to this channel
@@ -564,7 +616,7 @@ class Chat(ConstructorModule):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
                     if syschannels:
-                        self.call("stream.packet", syschannels, "chat", "roster_remove", character=character.uuid, channel=channel_id)
+                        self.call("stream.packet", syschannels, "chat", "roster_remove", character=character.uuid, channel=roster_channel_id)
                     characters_online.add(character.uuid)
                     # dropping obsolete database records
                     for char_uuid in character_uuids:
@@ -671,12 +723,6 @@ class Chat(ConstructorModule):
             channel["chatbox"] = location_separate
             channel["switchable"] = location_separate
             channel["writable"] = True
-        elif channel_id == "loc":
-            channel["title"] = self._("channel///Location")
-            channel["writable"] = True
-            channel["roster"] = True
-            channel["switchable"] = True
-            channel["chatbox"] = True
         elif channel_id == "trd":
             channel["title"] = self._("channel///Trade")
             channel["chatbox"] = True
@@ -693,6 +739,13 @@ class Chat(ConstructorModule):
             channel["switchable"] = True
             channel["writable"] = True
             channel["roster"] = True
+        elif channel_id == "loc":
+            channel["title"] = self._("channel///Location")
+            channel["writable"] = True
+            channel["roster"] = True
+            channel["switchable"] = True
+            channel["chatbox"] = True
+            channel["permanent"] = True
         if channel.get("chatbox") or channel.get("switchable"):
             # default channel button image
             channel["button_image"] = "/st/game/chat/chat-channel"
@@ -718,5 +771,5 @@ class Chat(ConstructorModule):
                     ok = False
                 if ok:
                     channel["button_image"] = "%s/%s" % (design.get("uri"), filename)
-        self.call("chat.channel-info", channel)
+        self.call("chat.generate-channel-info", channel)
         return channel

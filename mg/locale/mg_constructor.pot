@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-14 16:25+0400\n"
+"POT-Creation-Date: 2011-07-18 16:16+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,10 +21,10 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:126 static/js/realplexor-stream.js:20
-#: static/js/admin-form.js:165 static/js/admin-form.js:168
-#: static/js/admin-form.js:323 static/js/admin-form.js:326
-#: static/js/chat.js:365 static/js/chat.js:373
+#: static/js/admin.js:126 static/js/locations.js:21 static/js/locations.js:27
+#: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
+#: static/js/admin-form.js:168 static/js/admin-form.js:323
+#: static/js/admin-form.js:326 static/js/chat.js:379 static/js/chat.js:387
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -44,6 +44,10 @@ msgstr ""
 
 #: static/js/admin.js:229
 msgid "To the main page"
+msgstr ""
+
+#: static/js/locations.js:27
+msgid "Couldn't send command to the server"
 msgstr ""
 
 #: static/js/realplexor-stream.js:21
@@ -150,7 +154,7 @@ msgstr ""
 msgid "Sending data..."
 msgstr ""
 
-#: static/js/chat.js:373
+#: static/js/chat.js:387
 msgid "Couldn't deliver message to the server"
 msgstr ""
 

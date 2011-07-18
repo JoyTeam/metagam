@@ -147,14 +147,6 @@ class Character(Module):
             return self._sex
 
     @property
-    def location(self):
-        try:
-            return self._location
-        except AttributeError:
-            self._location = None
-            return self._location
-
-    @property
     def html(self):
         try:
             return self._html
@@ -205,6 +197,38 @@ class Character(Module):
                 "name": self.name
             }
             return self._roster_info
+
+    @property
+    def location(self):
+        try:
+            return self._location[0]
+        except AttributeError:
+            self._location = self.call("locations.character_get", self) or [None, None, None]
+            return self._location[0]
+
+    @property
+    def instance(self):
+        try:
+            return self._location[1]
+        except AttributeError:
+            self._location = self.call("locations.character_get", self) or [None, None, None]
+            return self._location[1]
+
+    @property
+    def location_delay(self):
+        try:
+            return self._location[2]
+        except AttributeError:
+            self._location = self.call("locations.character_get", self) or [None, None, None]
+            return self._location[2]
+
+    def set_location(self, location, instance=None, delay=None):
+        old_location = self.location
+        old_instance = self.instance
+        self.call("locations.character_before_set", self, location, instance)
+        self.call("locations.character_set", self, location, instance, delay)
+        self._location = [location, instance, delay]
+        self.call("locations.character_after_set", self, old_location, old_instance)
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

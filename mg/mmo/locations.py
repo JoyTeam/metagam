@@ -7,10 +7,6 @@ import re
 
 re_polygon_param = re.compile(r'^polygon-(\d+)$')
 
-class Locations(ConstructorModule):
-    def register(self):
-        ConstructorModule.register(self)
-
 class LocationsAdmin(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
@@ -19,6 +15,8 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("menu-admin-locations.index", self.menu_locations_index)
         self.rhook("ext-admin-locations.editor", self.admin_locations_editor, priv="locations.editor")
         self.rhook("headmenu-admin-locations.editor", self.headmenu_locations_editor)
+        self.rhook("ext-admin-locations.config", self.admin_locations_config, priv="locations.config")
+        self.rhook("headmenu-admin-locations.config", self.headmenu_locations_config)
 
     def child_modules(self):
         lst = ["mg.mmo.locations.LocationsStaticImages", "mg.mmo.locations.LocationsStaticImagesAdmin"]
@@ -28,10 +26,12 @@ class LocationsAdmin(ConstructorModule):
         menu.append({"id": "locations.index", "text": self._("Locations"), "order": 20})
 
     def menu_locations_index(self, menu):
-        menu.append({"id": "locations/editor", "text": self._("Locations list"), "order": 0, "leaf": True})
+        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 0, "leaf": True})
+        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 1, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "locations.editor", "name": self._("Locations editor")})
+        perms.append({"id": "locations.config", "name": self._("Locations configuration")})
 
     def headmenu_locations_editor(self, args):
         if args == "new":
@@ -50,7 +50,7 @@ class LocationsAdmin(ConstructorModule):
             if req.args != "new":
                 location = self.location(req.args)
                 if not location.valid():
-                    self.call("web.response_json_html", {"success": True, "redirect": "locations/editor"})
+                    self.call("web.response_json", {"success": True, "redirect": "locations/editor"})
                 db_loc = location.db_location
             else:
                 db_loc = self.obj(DBLocation)
@@ -65,22 +65,27 @@ class LocationsAdmin(ConstructorModule):
                     errors["name"] = self._("Name contains forbidden symbols")
                 else:
                     db_loc.set("name", name)
-                if lang == "ru" and req.param("name_g"):
-                    db_loc.set("name_g", req.param("name_g"))
-                else:
-                    db_loc.delkey("name_g")
-                if lang == "ru" and req.param("name_a"):
-                    db_loc.set("name_a", req.param("name_a"))
-                else:
-                    db_loc.delkey("name_a")
-                if lang == "ru" and req.param("name_w"):
-                    db_loc.set("name_w", req.param("name_w"))
-                else:
-                    db_loc.delkey("name_w")
-                if lang == "ru" and req.param("name_t"):
-                    db_loc.set("name_t", req.param("name_t"))
-                else:
-                    db_loc.delkey("name_t")
+                if lang == "ru":
+                    if req.param("name_g"):
+                        db_loc.set("name_g", req.param("name_g"))
+                    else:
+                        db_loc.delkey("name_g")
+                    if req.param("name_a"):
+                        db_loc.set("name_a", req.param("name_a"))
+                    else:
+                        db_loc.delkey("name_a")
+                    if req.param("name_w"):
+                        db_loc.set("name_w", req.param("name_w"))
+                    else:
+                        db_loc.delkey("name_w")
+                    if req.param("name_t"):
+                        db_loc.set("name_t", req.param("name_t"))
+                    else:
+                        db_loc.delkey("name_t")
+                    if req.param("name_f"):
+                        db_loc.set("name_f", req.param("name_f"))
+                    else:
+                        db_loc.delkey("name_f")
                 db_loc.set("image_type", req.param("v_image_type"))
                 flags = {}
                 self.call("admin-locations.editor-form-validate", db_loc, flags, errors)
@@ -102,6 +107,7 @@ class LocationsAdmin(ConstructorModule):
                 fields.append({"name": "name_a", "value": db_loc.get("name_a"), "label": self._("Location name in accusative"), "inline": True})
                 fields.append({"name": "name_w", "value": db_loc.get("name_w"), "label": self._("Location name (where?) - 'in the Some Location'")})
                 fields.append({"name": "name_t", "value": db_loc.get("name_t"), "label": self._("Location name (to where?) - 'to the Some Location'"), "inline": True})
+                fields.append({"name": "name_f", "value": db_loc.get("name_f"), "label": self._("Location name (from where?) - 'from the Some Location'"), "inline": True})
             image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
             fields.append(image_type)
             self.call("admin-locations.editor-form-render", db_loc, fields)
@@ -149,6 +155,32 @@ class LocationsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def headmenu_locations_config(self, args):
+        return self._("Locations configuration")
+
+    def admin_locations_config(self):
+        req = self.req()
+        if req.ok():
+            errors = {}
+            config = self.app().config_updater()
+            start_location = req.param("v_start_location")
+            if start_location:
+                loc = self.location(start_location)
+                if not loc.valid():
+                    errors["v_start_location"] = self._("Invalid starting location")
+                config.set("locations.startloc", start_location)
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
+        fields = [
+            {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations, "allow_blank": True},
+        ]
+        self.call("admin.form", fields=fields)
+
 class LocationsStaticImages(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
@@ -156,8 +188,22 @@ class LocationsStaticImages(ConstructorModule):
 
     def render(self, location):
         if location.image_type == "static":
-            html = '<img src="%s" alt="" />' % location.db_location.get("image_static")
-            raise Hooks.Return(html)
+            zones = []
+            for zone in location.db_location.get("static_zones"):
+                zones.append({
+                    "polygon": zone.get("polygon"),
+                    "action": zone.get("action"),
+                    "loc": zone.get("loc"),
+                })
+            vars = {
+                "loc": {
+                    "id": location.uuid,
+                    "image": location.db_location.get("image_static"),
+                },
+                "zones": zones,
+            }
+            design = self.design("gameinterface")
+            raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
 
 class LocationsStaticImagesAdmin(ConstructorModule):
     def register(self):
@@ -347,3 +393,90 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             if req.param("saved"):
                 vars["saved"] = {"text": self._("Image map saved successfully")}
             raise Hooks.Return(self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars))
+
+class Locations(ConstructorModule):
+    def register(self):
+        ConstructorModule.register(self)
+        self.rhook("locations.character_get", self.get)
+        self.rhook("locations.character_before_set", self.before_set)
+        self.rhook("locations.character_set", self.lset)
+        self.rhook("locations.character_after_set", self.after_set)
+        self.rhook("ext-location.index", self.ext_location, priv="logged")
+        self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("ext-location.move", self.ext_move, priv="logged")
+
+    def get(self, character):
+        try:
+            info = self.obj(DBCharacterLocation, character.uuid)
+        except ObjectNotFoundException:
+            start_location = self.conf("locations.startloc")
+            if start_location:
+                info = self.obj(DBCharacterLocation, character.uuid, data={})
+                info.set("location", start_location)
+                info.store()
+                loc = self.location(start_location)
+                self.after_set(character, loc, None)
+                delay = None
+            else:
+                loc = None
+                instance = None
+                delay = None
+        else:
+            loc = self.location(info.get("location"))
+            instance = info.get("instance")
+            delay = info.get("delay")
+        return [loc, instance, delay]
+
+    def before_set(self, character, new_location, instance):
+        self.call("chat.channel-unjoin", character, self.call("chat.channel-info", "loc"))
+
+    def lset(self, character, new_location, instance, delay):
+        info = self.obj(DBCharacterLocation, character.uuid)
+        info.set("location", new_location.uuid)
+        if instance is None:
+            info.delkey("instance")
+        else:
+            info.set("instance", instance)
+        if delay is None:
+            info.delkey("delay")
+        else:
+            info.set("delay", delay)
+        info.store()
+
+    def after_set(self, character, old_location, instance):
+        self.call("chat.channel-join", character, self.call("chat.channel-info", "loc"))
+
+    def ext_location(self):
+        req = self.req()
+        character = self.character(req.user())
+        location = character.location
+        if location is None:
+            lst = self.objlist(DBLocationList, query_index="all")
+            if len(lst):
+                self.call("main-frame.error", '%s <a href="/admin#locations/config" target="_blank">%s</a>' % (self._("Starting location not configured."), self._("Open locations configuration")))
+            else:
+                self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
+        html = self.call("locations.render", location)
+        if html is None:
+            self.call("main-frame.error", self._("No visual image for location '%s'") % location.name)
+        vars = {}
+        self.call("game.response_internal", "location.html", vars, html)
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("locations")
+
+    def ext_move(self):
+        req = self.req()
+        character = self.character(req.user())
+        with self.lock(["CharacterLocation-%s" % character.uuid, "session.%s" % req.session().uuid]):
+            if not character.tech_online:
+                self.call("web.response_json", {"ok": False, "error": self._("Character offline")})
+            if character.location_delay and character.location_delay > self.now():
+                self.call("web.response_json", {"ok": False, "error": self._("You are busy"), "hide_title": True})
+            old_location = character.location
+            new_location = self.location(req.param("location"))
+            if not new_location.valid():
+                self.call("web.response_json", {"ok": False, "error": self._("No such location")})
+            delay = 20
+            character.set_location(new_location, character.instance, self.now(delay))
+            self.call("web.response_json", {"ok": True, "name": new_location.name, "delay": delay})

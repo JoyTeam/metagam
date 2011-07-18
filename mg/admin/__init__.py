@@ -349,4 +349,3 @@ class AdminInterface(Module):
             self.call("web.response_json_html", {"success": False, "errors": errors})
         else:
             self.call("web.response_json_html", {"success": False, "errmsg": self._("Unknown error uploading image")})
-            

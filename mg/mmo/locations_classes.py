@@ -18,6 +18,25 @@ class DBLocationList(CassandraObjectList):
         kwargs["cls"] = DBLocation
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DBCharacterLocation(CassandraObject):
+    _indexes = {
+        "location": [["location"]],
+        "instance": [["instance"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterLocation-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBCharacterLocation._indexes
+
+class DBCharacterLocationList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterLocation-"
+        kwargs["cls"] = DBCharacterLocation
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Location(Module):
     def __init__(self, app, uuid, fqn="mg.mmo.locations.Location"):
         Module.__init__(self, app, fqn)
@@ -40,12 +59,44 @@ class Location(Module):
             return self._name
 
     @property
-    def name_where(self):
+    def name_g(self):
         try:
-            return self._name_where
+            return self._name_g
         except AttributeError:
-            self._name_where = self.db_location.get("name_where") or self.db_location.get("name")
-            return self._name_where
+            self._name_g = self.db_location.get("name_g") or self.db_location.get("name")
+            return self._name_g
+
+    @property
+    def name_a(self):
+        try:
+            return self._name_a
+        except AttributeError:
+            self._name_a = self.db_location.get("name_a") or self.db_location.get("name")
+            return self._name_a
+
+    @property
+    def name_w(self):
+        try:
+            return self._name_w
+        except AttributeError:
+            self._name_w = self.db_location.get("name_w") or self.db_location.get("name")
+            return self._name_w
+
+    @property
+    def name_f(self):
+        try:
+            return self._name_f
+        except AttributeError:
+            self._name_f = self.db_location.get("name_f") or self.db_location.get("name")
+            return self._name_f
+
+    @property
+    def name_t(self):
+        try:
+            return self._name_t
+        except AttributeError:
+            self._name_t = self.db_location.get("name_t") or self.db_location.get("name")
+            return self._name_t
 
     def valid(self):
         try:

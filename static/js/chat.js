@@ -109,6 +109,20 @@ Chat.roster_tab_create = function(ch) {
 	this.roster_header_update();
 };
 
+/* Remove all characters from the roster */
+Chat.roster_clear = function(ch) {
+	if (!this.roster_chars_element)
+		return;
+	for (var i = 0; i < ch.roster_characters.length; i++) {
+		var c = ch.roster_characters[i];
+		if (c.element) {
+			c.element.destroy()
+		}
+	}
+	ch.roster_characters = new Array();
+	ch.roster_characters_by_id = new Array();
+};
+
 /* Destroy roster tab */
 Chat.roster_tab_destroy = function(ch) {
 	if (!this.roster_chars_element)
@@ -501,7 +515,11 @@ Chat.roster_remove = function(pkt) {
 		character.element = undefined;
 	}
 	if (character.id == Game.character) {
-		this.channel_destroy(ch);
+		if (ch.permanent) {
+			this.roster_clear(ch);
+		} else {
+			this.channel_destroy(ch);
+		}
 	}
 };
 

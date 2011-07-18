@@ -1,0 +1,10 @@
+<div class="location-static">
+<map name="locmap-[%loc.id%]">
+[%foreach zone in zones%]
+[%if zone.action=='move'%]
+<area href="javascript:void(0)" onclick="parent.Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%end%]
+[%end%]
+</map>
+<img src="[%loc.image%]" alt="" usemap="#locmap-[%loc.id%]" />
+</div>
