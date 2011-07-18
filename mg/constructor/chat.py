@@ -494,7 +494,7 @@ class Chat(ConstructorModule):
     def character_online(self, character):
         msg = self.msg_went_online()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character))
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel="wld")
         # joining channels
         channels = []
         self.call("chat.character-channels", character, channels)
@@ -532,7 +532,7 @@ class Chat(ConstructorModule):
     def character_offline(self, character):
         msg = self.msg_went_offline()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character))
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel="wld")
         # unjoining all channels
         lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
         lst.load(silent=True)
