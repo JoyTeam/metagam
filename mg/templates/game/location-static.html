@@ -2,7 +2,7 @@
 <map name="locmap-[%loc.id%]">
 [%foreach zone in zones%]
 [%if zone.action=='move'%]
-<area href="javascript:void(0)" onclick="parent.Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+<area class="loc-tr-[%zone.loc%]" href="javascript:void(0)" onclick="parent.Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
 [%end%]
 [%end%]
 </map>

@@ -213,13 +213,13 @@ class Realplexor(Module):
         rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")
         rpl.send(ids, data)
 
-    def packet(self, ids, cls, method, **kwargs):
+    def packet(self, ids, method_cls, method, **kwargs):
         if ids == None:
             session = self.req().session()
             if session is None:
                 self.call("web.require_login")
             ids = "id_%s" % session.uuid
-        kwargs["cls"] = cls
+        kwargs["method_cls"] = method_cls
         kwargs["method"] = method
         # [a, b, c] will be sent immediately
         # a will be delayed

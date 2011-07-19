@@ -63,7 +63,7 @@ Stream.ping = function() {
 };
 
 Stream.packet_received = function(pkt) {
-	var handler = this.stream_handlers[pkt.cls];
+	var handler = this.stream_handlers[pkt.method_cls];
 	if (!handler)
 		return;
 	var method = handler[pkt.method];

@@ -16,7 +16,6 @@ wait(['imagemap-editor'], function() {
 	[%foreach zone in zones%]
 	var zone = ImageMapEditor.new_zone();
 	zone.setPolygonStr('[%zone.polygon%]');
-	zone.hint = '[%zone.hint%]';
 	zone.action = '[%zone.action%]';
 	zone.loc = '[%zone.loc%]';
 	zone.render(ImageMapEditor.form);

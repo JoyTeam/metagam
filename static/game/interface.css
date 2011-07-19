@@ -4,6 +4,8 @@
 .x-layout-split { background: #808080 }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
 img { border: none }
+table, tr, td { padding: 0; margin: 0; border: none }
+table { border-collapse: collapse; empty-cells: show }
 
 /* COMMON COLORS */
 .ext-el-mask { background-color: #000000 }
@@ -25,7 +27,10 @@ img { border: none }
 #chat-input-control { width: 100%; }
 .chat-button { cursor: pointer }
 .chat-clickable { cursor: pointer }
+.chat-msg-char { font-weight: bold }
 .chat-msg-char-missing { text-decoration: line-through }
+.chat-msg-auth { color: #606060 }
+.chat-msg-move { color: #408040 }
 #chat-roster-header-content { text-align: center; overflow: auto }
 #chat-roster-buttons-content { text-align: center }
 #chat-channel-buttons img { vertical-align: top; margin: 0 auto 0 auto }
@@ -63,11 +68,25 @@ img { border: none }
 #page-external-4 { padding: 0 }
 
 /* FORM */
-.form-control { padding: 0 30px 20px 0; vertical-align: top }
-.form-desc { vertical-align: top; font-weight: bold }
+.form-control { padding: 0 30px 0 0; vertical-align: top }
+.form-control-padding { padding: 20px 30px 0 0; vertical-align: top }
+.form-control-checkbox { padding: 0 30px 0px 0; vertical-align: top }
+.form-desc { vertical-align: top; font-weight: bold; padding: 0 30px 5px 0 }
+.form-desc-padding { vertical-align: top; font-weight: bold; padding: 20px 30px 5px 0 }
 .form-error { color: #ff0000; font-weight: normal; font-size: 11px }
 .form-list-messages-top, .form-list-messages-bottom { font-weight: bold }
 
 /* INTERNAL */
 #page-internal-html { height: 100%; padding: 0; margin: 0 }
-#page-internal-body { height: 100%; padding: 0; margin: 0; background: #000000; color: #ffffff }
+#page-internal-body { padding: 10px; margin: 0; background: #000000; color: #ffffff }
+
+/* PROGRESS BARS */
+.progress-bars-horizontal { width: 100%; height: 100% }
+.progress-bars-vertical { width: 100%; height: 100% }
+.progress-horizontal, .progress-horizontal-1, .progress-horizontal-2, .progress-horizontal-3, .progress-horizontal-4, .progress-horizontal-5, .progress-horizontal-6, .progress-horizontal-7, .progress-horizontal-8, .progress-horizontal-9 { height: 100% }
+.progress-vertical, .progress-vertical-1, .progress-vertical-2, .progress-vertical-3, .progress-vertical-4, .progress-vertical-5, .progress-vertical-6, .progress-vertical-7, .progress-vertical-8, .progress-vertical-9 { height: 100% }
+.progress-indicator { background-color: #202080 }
+.progress-indicator-horizontal { height: 100% }
+.location-movement-full { background-color: #208020 }
+.location-movement-notfull { background-color: #802020 }
+.progress-bars-vertical-td { vertical-align: bottom }

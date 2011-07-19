@@ -31,3 +31,20 @@ a:hover, a:active { color: #3b7730 }
 /* INTERNAL */
 #page-internal-body { background: #9e9e86; color: #291c0e }
 .game-error { color: #c00000; font-weight: bold }
+
+/* PROGRESS BARS */
+.progress-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.progress-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.progress-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.progress-bars-horizontal { height: 25px; margin-top: 25px }
+.progress-bars-horizontal-td { padding: 0 13px 0 14px }
+.progress-vertical { background-image: url(progress-vertical-bg.png); background-repeat: repeat-y; background-position: 50% 0% }
+.progress-vertical-1 { background-image: url(progress-vertical-top.png); background-repeat: no-repeat; background-position: 50% 0% }
+.progress-vertical-2 { background-image: url(progress-vertical-bottom.png); background-repeat: no-repeat; background-position: 50% 100% }
+.progress-bars-vertical { width: 25px; margin-left: 25px }
+.progress-bars-vertical-td { padding: 14px 0 13px 0 }
+
+/* TIPS */
+.x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr { background-image: url(tip-sprite.gif) }
+.x-tip .x-tip-body { color: #ffffff }
+.x-tip-anchor { background-image: url(tip-anchor-sprite.gif); }

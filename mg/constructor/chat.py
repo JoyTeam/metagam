@@ -75,16 +75,17 @@ class Chat(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("locations.character_before_set", self.location_before_set)
         self.rhook("locations.character_after_set", self.location_after_set)
+        self.rhook("interface.settings-form", self.settings_form)
 
     def location_before_set(self, character, new_location, instance):
         msg = self.msg_entered_location()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % new_location.uuid)
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % new_location.uuid, cls="move")
 
     def location_after_set(self, character, old_location, instance):
         msg = self.msg_left_location()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % old_location.uuid)
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % old_location.uuid, cls="move")
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -187,6 +188,7 @@ class Chat(ConstructorModule):
             config.set("chat.msg_went_offline", req.param("msg_went_offline"))
             config.set("chat.msg_entered_location", req.param("msg_entered_location"))
             config.set("chat.msg_left_location", req.param("msg_left_location"))
+            config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -214,6 +216,7 @@ class Chat(ConstructorModule):
             msg_went_offline = self.msg_went_offline()
             msg_entered_location = self.msg_entered_location()
             msg_left_location = self.msg_left_location()
+            auth_msg_channel = self.auth_msg_channel()
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
@@ -224,12 +227,19 @@ class Chat(ConstructorModule):
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
+            {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld"},
             {"name": "msg_went_online", "label": self._("Message about character went online"), "value": msg_went_online},
             {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": msg_went_offline},
             {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": msg_entered_location},
             {"name": "msg_left_location", "label": self._("Message about character left location"), "value": msg_left_location},
         ]
         self.call("admin.form", fields=fields)
+
+    def auth_msg_channel(self, character=None):
+        channel = self.conf("chat.auth-msg-channel", "loc")
+        if channel == "loc" and character:
+            channel = "loc-%s" % (character.location.uuid if character.location else None)
+        return channel
 
     @property
     def chatmode(self):
@@ -252,6 +262,9 @@ class Chat(ConstructorModule):
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode:
             vars["layout"]["chat_channels"] = True
+        move = "true" if character.db_settings.get("chat_move", True) else "false"
+        auth = "true" if character.db_settings.get("chat_auth", True) else "false"
+        vars["js_init"].append("Chat.filters({move: %s, auth: %s});" % (move, auth));
 
     def gameinterface_advice_files(self, files):
         chatmode = self.chatmode
@@ -357,10 +370,10 @@ class Chat(ConstructorModule):
         self.call("chat.parse", tokens)
         html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens))
         # sending message
-        self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author)
+        self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author, manual=True, hl=True)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
-    def message(self, html=None, hide_time=False, channel=None, private=None, recipients=None, author=None):
+    def message(self, html=None, hide_time=False, channel=None, private=None, recipients=None, author=None, sound=None, manual=None, **kwargs):
         try:
             req = self.req()
         except AttributeError:
@@ -418,9 +431,10 @@ class Chat(ConstructorModule):
                 tokens.append(token)
         if len(html) > start:
             tokens.append({"html": html[start:]})
-        message = {
-            "channel": self.channel2tab(channel),
-        }
+        message = kwargs
+        message["channel"] = self.channel2tab(channel)
+        html_head = u''
+        html_tail = u''
         if viewers is not None:
             # enumerating all recipients and preparing HTML version of the message for everyone
             universal = []
@@ -439,11 +453,11 @@ class Chat(ConstructorModule):
                 messages.append((["id_%s" % sess_uuid for sess_uuid in universal], html))
             for msg in messages:
                 # sending message
-                message["html"] = msg[1]
+                message["html"] = html_head + msg[1] + html_tail
                 self.call("stream.packet", msg[0], "chat", "msg", **message)
         else:
             # system message
-            message["html"] = u''.join([self.render_token(token, None) for token in tokens])
+            message["html"] = html_head + u''.join([self.render_token(token, None) for token in tokens]) + html_tail
             self.call("stream.packet", "global", "chat", "msg", **message)
 
     def render_token(self, token, viewer_uuid, private=False):
@@ -494,7 +508,7 @@ class Chat(ConstructorModule):
     def character_online(self, character):
         msg = self.msg_went_online()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel="wld")
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel=self.auth_msg_channel(character), cls="auth")
         # joining channels
         channels = []
         self.call("chat.character-channels", character, channels)
@@ -532,7 +546,7 @@ class Chat(ConstructorModule):
     def character_offline(self, character):
         msg = self.msg_went_offline()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel="wld")
+            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel=self.auth_msg_channel(character), cls="auth")
         # unjoining all channels
         lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
         lst.load(silent=True)
@@ -773,3 +787,15 @@ class Chat(ConstructorModule):
                     channel["button_image"] = "%s/%s" % (design.get("uri"), filename)
         self.call("chat.generate-channel-info", channel)
         return channel
+
+    def settings_form(self, form, action, settings):
+        if action == "render":
+            form.checkbox(self._("Character went online/offline"), "chat_auth", settings.get("chat_auth", True), description=self._("System messages in the chat"))
+            form.checkbox(self._("Other characters' movement"), "chat_move", settings.get("chat_move", True))
+        elif action == "store":
+            req = self.req()
+            auth = True if req.param("chat_auth") else False
+            move = True if req.param("chat_move") else False
+            settings.set("chat_auth", auth)
+            settings.set("chat_move", move)
+            self.call("stream.packet", ["id_%s" % req.session().uuid], "chat", "filters", auth=auth, move=move)

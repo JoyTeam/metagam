@@ -1051,7 +1051,7 @@ class DesignMod(Module):
                 return None
             except EOFError:
                 pass
-            template_image.convert("RGBA")
+            template_image = template_image.convert("RGBA")
             # loading icon
             icon_path = "%s/data/icons/%s" % (mg.__path__[0], icon)
             try:
@@ -1059,6 +1059,7 @@ class DesignMod(Module):
                 if icon_image.load() is None:
                     self.error("Error parsing %s", icon_path)
                     return None
+                icon_image = icon_image.convert("RGBA")
             except IOError:
                 self.error("Image %s format not recognized", icon_path)
                 return None
@@ -1095,7 +1096,7 @@ class DesignMod(Module):
                     return None
                 except EOFError:
                     pass
-                over_image.convert("RGBA")
+                over_image = over_image.convert("RGBA")
                 over_w, over_h = over_image.size
                 template_image.paste(over_image, ((template_w - over_w) / 2, (template_h - over_h) / 2), over_image)
             # uploading image

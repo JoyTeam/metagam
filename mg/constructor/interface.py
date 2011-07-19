@@ -8,6 +8,7 @@ import re
 import hashlib
 import mg
 from uuid import uuid4
+from interface_classes import *
 
 caching = False
 
@@ -90,15 +91,21 @@ class Interface(ConstructorModule):
         self.rhook("headmenu-admin-gameinterface.blocks", self.headmenu_blocks)
         self.rhook("ext-admin-gameinterface.blocks", self.gameinterface_blocks, priv="design")
         self.rhook("headmenu-admin-gameinterface.buttons", self.headmenu_buttons)
-        self.rhook("ext-admin-gameinterface.buttons", self.gameinterface_buttons, priv="design")
-        self.rhook("ext-interface.handler", self.interface_index, priv="logged")
+        self.rhook("ext-admin-gameinterface.buttons", self.admin_gameinterface_buttons, priv="design")
+        self.rhook("ext-interface.settings", self.settings, priv="logged")
         self.rhook("ext-project.status", self.project_status, priv="logged")
         self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
         self.rhook("gamecabinet.render", self.game_cabinet_render)
         self.rhook("main-frame.error", self.main_frame_error)
-        
+        self.rhook("main-frame.form", self.main_frame_form)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
+
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
         msg["user_inactive"] = self._("Character is not active. Check your e-mail and follow activation link")
@@ -164,6 +171,9 @@ class Interface(ConstructorModule):
 
     def game_form(self, form, vars):
         self.call("game.response_external", "form.html", vars, form.html(vars))
+
+    def main_frame_form(self, form, vars):
+        self.call("game.response_internal", "form.html", vars, form.html(vars))
 
     def game_response(self, template, vars, content=""):
         design = self.design("gameinterface")
@@ -241,12 +251,15 @@ class Interface(ConstructorModule):
         for panel in self.panels():
             rblocks = []
             for block in panel["blocks"]:
+                html = block.get("html")
+                if html:
+                    html = self.call("web.parse_inline_layout", html, {})
                 rblock = {
                     "id": block["id"],
                     "tp": block["type"],
                     "width": block.get("width"),
                     "flex": block.get("flex"),
-                    "html": jsencode(block.get("html")),
+                    "html": jsencode(html),
                     "cls": block.get("class"),
                 }
                 if block["type"] == "buttons":
@@ -298,6 +311,11 @@ class Interface(ConstructorModule):
                         rblock["buttons_top"] = True
                     if design and "%s-bottom.png" % block.get("class") in design.get("files"):
                         rblock["buttons_bottom"] = True
+                elif block["type"] == "progress":
+                    progress_types = [{"id": jsencode(pt)} for pt in block.get("progress_types", [])]
+                    if progress_types:
+                        progress_types[-1]["lst"] = True
+                    rblock["progress_types"] = progress_types
                 rblocks.append(rblock)
             if rblocks:
                 rblocks[-1]["lst"] = True
@@ -413,13 +431,6 @@ class Interface(ConstructorModule):
         if len(vars["js_modules"]):
             vars["js_modules"][-1]["lst"] = True
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
-
-    def interface_index(self):
-        req = self.req()
-        response = "<h1>%s</h1>" % htmlescape(req.uri())
-        for i in range(0, 10000):
-            response += "OK ";
-        self.call("web.response_global", response, {})
 
     def panels(self):
         panels = []
@@ -620,6 +631,7 @@ class Interface(ConstructorModule):
             "empty": self._("Empty space"),
             "html": self._("Raw HTML"),
             "header": self._("Header"),
+            "progress": self._("Progress bar"),
         }
         blocks = []
         for block in panel["blocks"]:
@@ -692,6 +704,8 @@ class Interface(ConstructorModule):
                     errors["v_width_type"] = self._("Select valid type")
             if block["type"] == "html" or block["type"] == "header":
                 block["html"] = req.param("html")
+            if block["type"] == "progress":
+                block["progress_types"] = [s.strip() for s in req.param("progress_types").strip().split(",")]
             block["order"] = intz(req.param("order"))
             block["title"] = req.param("title")
             cls = req.param("class")
@@ -727,6 +741,9 @@ class Interface(ConstructorModule):
                 order = block.get("order")
                 title = block.get("title")
                 cls = block.get("class")
+                progress_types = block.get("progress_types")
+                if progress_types is not None:
+                    progress_types = ','.join(progress_types)
             else:
                 tp = "buttons"
                 html = ""
@@ -736,14 +753,19 @@ class Interface(ConstructorModule):
                         order = b["order"] + 10
                 title = ""
                 cls = ""
+                progress_types = ""
+        progress_values = []
+        self.call("admin-interface.progress-bars", progress_values)
+        progress_values = ''.join(['<li><strong>%s</strong> &mdash; %s</li>' % (t["code"], t["description"]) for t in progress_values])
         fields = [
             {"name": "title", "label": self._("Block title (visible to administrators only)"), "value": title},
             {"name": "class", "label": self._("CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"), "value": cls, "remove_label_separator": True},
-            {"type": "combo", "name": "type", "label": self._("Block type"), "value": tp, "values": [("buttons", self._("Buttons")), ("header", self._("Header")), ("empty", self._("Empty space")), ("html", self._("Raw HTML"))], "disabled": True if block else False},
+            {"type": "combo", "name": "type", "label": self._("Block type"), "value": tp, "values": [("buttons", self._("Buttons")), ("header", self._("Header")), ("empty", self._("Empty space")), ("html", self._("Raw HTML")), ("progress", self._("Progress bar"))], "disabled": True if block else False},
             {"type": "combo", "name": "width_type", "label": self._("Block height") if panel.get("vert") else self._("Block width"), "value": width_type, "values": [("static", self._("width///Static")), ("flex", self._("width///Flexible"))], "condition": "[type]!='buttons'"},
             {"name": "width_static", "label": self._("Height in pixels") if panel.get("vert") else self._("Width in pixels"), "value": width_static, "condition": "[type]!='buttons' && [width_type]=='static'", "inline": True},
             {"name": "width_flex", "label": self._("Relative height") if panel.get("vert") else self._("Relative width"), "value": width_flex, "condition": "[type]!='buttons' && [width_type]=='flex'", "inline": True},
             {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html' || [type]=='header'"},
+            {"name": "progress_types", "label": '%s<ul>%s</ul>' % (self._("Progress bars in this block (delimited by commas). Valid values are:"), progress_values), "value": progress_types, "condition": "[type]=='progress'", "remove_label_separator": True},
             {"name": "order", "label": self._("Sort order"), "value": order},
         ]
         self.call("admin.form", fields=fields)
@@ -754,7 +776,7 @@ class Interface(ConstructorModule):
         buttons.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
         return buttons
 
-    def gameinterface_buttons(self):
+    def admin_gameinterface_buttons(self):
         req = self.req()
         if req.args == "new":
             return self.button_editor(None)
@@ -1069,3 +1091,26 @@ class Interface(ConstructorModule):
             text = self._('<h1>Welcome to your new game!</h1><p>Now you can open <a href="/admin" target="_blank">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>')
         self.call("web.response_global", text, {})
 
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "settings",
+            "href": "/interface/settings",
+            "target": "main",
+            "icon": "settings.png",
+            "title": self._("Settings"),
+            "block": "top-menu",
+            "order": 10,
+        })
+
+    def settings(self):
+        req = self.req()
+        form = self.call("web.form")
+        settings = self.obj(DBCharacterSettings, req.user(), silent=True)
+        if req.ok():
+            self.call("interface.settings-form", form, "validate", settings)
+            if not form.errors:
+                self.call("interface.settings-form", form, "store", settings)
+                settings.store()
+                self.call("web.redirect", "/location")
+        self.call("interface.settings-form", form, "render", settings)
+        self.call("main-frame.form", form, {})

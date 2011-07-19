@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-18 16:16+0400\n"
+"POT-Creation-Date: 2011-07-19 18:42+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,10 +21,10 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:126 static/js/locations.js:21 static/js/locations.js:27
+#: static/js/admin.js:126 static/js/locations.js:22 static/js/locations.js:28
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:379 static/js/chat.js:387
+#: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -46,7 +46,7 @@ msgstr ""
 msgid "To the main page"
 msgstr ""
 
-#: static/js/locations.js:27
+#: static/js/locations.js:28
 msgid "Couldn't send command to the server"
 msgstr ""
 
@@ -54,7 +54,8 @@ msgstr ""
 msgid "Connection terminated"
 msgstr ""
 
-#: static/js/realplexor-stream.js:75
+#: static/js/realplexor-stream.js:75 static/js/game-interface.js:54
+#: static/js/game-interface.js:141 static/js/game-interface.js:170
 msgid "Exception"
 msgstr ""
 
@@ -67,30 +68,26 @@ msgid "Polygon vertices"
 msgstr ""
 
 #: static/js/imagemap-editor.js:45
-msgid "Mouse over hint"
-msgstr ""
-
-#: static/js/imagemap-editor.js:59
 msgid "Click action"
 msgstr ""
 
-#: static/js/imagemap-editor.js:84
+#: static/js/imagemap-editor.js:70
 msgid "Target location"
 msgstr ""
 
-#: static/js/imagemap-editor.js:152
+#: static/js/imagemap-editor.js:138
 msgid "Number of corrdinates must not be odd"
 msgstr ""
 
-#: static/js/imagemap-editor.js:156
+#: static/js/imagemap-editor.js:142
 msgid "Minimal number of vertices - 3"
 msgstr ""
 
-#: static/js/imagemap-editor.js:162
+#: static/js/imagemap-editor.js:148
 msgid "Invalid non-integer coordinate encountered"
 msgstr ""
 
-#: static/js/imagemap-editor.js:220
+#: static/js/imagemap-editor.js:206
 msgid "Save"
 msgstr ""
 
@@ -154,11 +151,11 @@ msgstr ""
 msgid "Sending data..."
 msgstr ""
 
-#: static/js/chat.js:387
+#: static/js/chat.js:397
 msgid "Couldn't deliver message to the server"
 msgstr ""
 
-#: mg/templates/game/interface.js:416
+#: mg/templates/game/interface.js:443
 msgid "Misconfigured layout scheme"
 msgstr ""
 

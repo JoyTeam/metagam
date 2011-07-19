@@ -2,7 +2,8 @@ from mg import *
 
 class DBLocation(CassandraObject):
     _indexes = {
-        "all": [[]],
+        "all": [[], "name"],
+        "name": [["name"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -113,4 +114,20 @@ class Location(Module):
         except AttributeError:
             self._image_type = self.db_location.get("image_type")
             return self._image_type
+
+    @property
+    def transitions(self):
+        try:
+            return self._transitions
+        except AttributeError:
+            self._transitions = self.db_location.get("transitions")
+            return self._transitions
+
+    @property
+    def delay(self):
+        try:
+            return self._delay
+        except AttributeError:
+            self._delay = self.db_location.get("delay", 20)
+            return self._delay
 

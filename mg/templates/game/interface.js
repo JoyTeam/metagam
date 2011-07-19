@@ -28,6 +28,9 @@ var Game = {
 						}[%unless btn.lst%],[%end%]
 					    	[%end%]
 					][%end%]
+					[%if blk.progress_types%], progress_types: [
+						[%foreach pt in blk.progress_types%]'[%pt.id%]'[%unless pt.lst%],[%end%][%end%]
+					][%end%]
 				}[%unless blk.lst%], [%end%]
 			    	[%end%]
 			]
@@ -218,6 +221,29 @@ Game.panel = function(id, options) {
 				block_el.html = block.html;
 			} else if (block.tp == 'header') {
 				block_el.html = '<div class="panel-header">' + block.html + '</div>';
+			} else if (block.tp == 'progress') {
+				var cls = 'progress-' + (options.vertical ? 'vertical' : 'horizontal');
+				var bars;
+				if (block.progress_types.length) {
+					if (options.vertical) {
+						bars = '<table class="progress-bars-vertical"><tr>';
+						var width = Math.floor(100 / block.progress_types.length);
+						for (var j = 0; j < block.progress_types.length; j++) {
+							bars += '<td class="progress-bars-vertical-td" style="width: ' + width + '%"><div class="progress-indicator progress-indicator-vertical progress-' + block.progress_types[j] + '" style="height: 0px"></div></td>';
+						}
+						bars += '</tr></table>';
+					} else {
+						bars = '<table class="progress-bars-horizontal">';
+						var height = Math.floor(100 / block.progress_types.length);
+						for (var j = 0; j < block.progress_types.length; j++) {
+							bars += '<tr style="height: ' + height + '%"><td class="progress-bars-horizontal-td"><div class="progress-indicator progress-indicator-horizontal progress-' + block.progress_types[j] + '" style="width: 0px"></div></td></tr>';
+						}
+						bars += '</table>';
+					}
+				} else {
+					bars = '';
+				}
+				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="' + cls + '-9">' + bars + '</div></div></div></div></div></div></div></div></div></div>';
 			} else {
 				block_el.html = block.tp;
 			}
@@ -291,6 +317,7 @@ Game.setup_game_layout = function() {
 		onLayout: function(shallow, forceLayout) {
 			if (shallow !== true) {
 				Ext.getCmp('main-layout').doLayout(false, forceLayout);
+				Game.onLayout();
 			}
 		}
 	});

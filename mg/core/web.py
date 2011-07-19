@@ -410,7 +410,6 @@ class WebApplication(Application):
             res = res.content
         if getattr(request, "cache", None):
             res = ["".join([str(chunk) for chunk in res])]
-            #print "storing page cache page%s" % urldecode(request.uri()).encode("utf-8")
             self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
             mcid = getattr(request, "web_cache_mcid", None)
             if mcid:
@@ -681,7 +680,7 @@ class Web(Module):
                 raise
             except Exception as e:
                 self.error(traceback.format_exc())
-                res = ""
+                res = htmlescape('%s %s' % (e.__class__, e))
             if res is None:
                 res = ""
             tokens[i] = res
@@ -818,6 +817,15 @@ class WebForm(object):
         """
         if not self.submit_created:
             self.submit(None, None, self.module._("Save"))
+        if self.rows:
+            self.rows[0]["fst"] = True
+            self.rows[-1]["lst"] = True
+            for row in self.rows:
+                for col in row["cols"]:
+                    if col.get("padding_top"):
+                        row["padding_top"] = True
+                        break
+                        
         vars = {
             "form_action": self.action,
             "form_hidden": self._hidden,
@@ -952,6 +960,7 @@ class WebForm(object):
         if name is not None:
             kwargs["submit_name"] = name
         kwargs["element_submit"] = True
+        kwargs["padding_top"] = True
         self.control(desc, name, **kwargs)
         self.submit_created = True
 

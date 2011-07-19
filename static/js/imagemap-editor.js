@@ -39,20 +39,6 @@ ImageMapZone.prototype.render = function(form) {
 					},
 				},
 				{
-					id: 'elem_hint-' + this.id,
-					items: {
-						id: 'form-field-hint-' + this.id,
-						fieldLabel: gt.gettext('Mouse over hint'),
-						name: 'hint-' + this.id,
-						value: this.hint,
-						xtype: 'textfield',
-						allowBlank: true,
-						msgTarget: 'side',
-						anchor: '-30',
-						autoHeight: true
-					}
-				},
-				{
 					id: 'elem_action-' + this.id,
 					items: {
 						id: 'form-field-action-' + this.id,

@@ -1,5 +1,6 @@
 from mg import *
 from uuid import uuid4
+from interface_classes import *
 import re
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
@@ -229,6 +230,14 @@ class Character(Module):
         self.call("locations.character_set", self, location, instance, delay)
         self._location = [location, instance, delay]
         self.call("locations.character_after_set", self, old_location, old_instance)
+
+    @property
+    def db_settings(self):
+        try:
+            return self._db_settings
+        except AttributeError:
+            self._db_settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
+            return self._db_settings
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

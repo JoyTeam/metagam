@@ -1,6 +1,8 @@
 var Chat = {
 	channels: new Array(),
-	channels_by_id: new Array()
+	channels_by_id: new Array(),
+	chat_filters: new Array(),
+	classes: ['auth', 'move']
 };
 
 Chat.initialize = function() {
@@ -275,13 +277,21 @@ Chat.msg = function(pkt) {
 		if (!ch)
 			return;
 	}
+	var ctspan = document.createElement('span');
+	if (pkt.cls) {
+		ctspan.className = 'chat-msg-' + pkt.cls;
+	}
+	if (pkt.cls && this.chat_filters[pkt.cls] === false) {
+		ctspan.style.display = 'none';
+	}
+	ctspan.innerHTML = pkt.html;
 	var div = document.createElement('div');
-	div.innerHTML = pkt.html;
+	div.appendChild(ctspan);
 	if (this.mode == 1) {
 		ch.box_content.el.dom.appendChild(div);
 		if (ch.id == this.active_channel) {
 			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn) {
+		} else if (ch.btn && pkt.hl) {
 			ch.btn.el.dom.src = ch.button_image + '-new.png';
 		}
 	} else if (this.mode == 2) {
@@ -290,7 +300,7 @@ Chat.msg = function(pkt) {
 		this.box_content.el.dom.appendChild(div);
 		if (ch.visible) {
 			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn) {
+		} else if (ch.btn && pkt.hl) {
 			ch.btn.el.dom.src = ch.button_image + '-new.png';
 		}
 	} else if (this.mode == 0) {
@@ -554,6 +564,18 @@ Chat.open_first_tab = function() {
 		}
 	}
 	this.active_channel = undefined;
+};
+
+/* Update chat filters */
+Chat.filters = function(pkt) {
+	this.chat_filters = pkt;
+	for (var i = 0; i < this.classes.length; i++) {
+		var els = Ext.query('.chat-msg-' + this.classes[i]);
+		var cls = this.chat_filters[this.classes[i]] ? 'block' : 'none';
+		for (var j = 0; j < els.length; j++) {
+			els[j].style.display = cls;
+		}
+	}
 };
 
 Chat.clear = function() {

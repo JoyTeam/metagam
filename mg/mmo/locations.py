@@ -17,6 +17,14 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("headmenu-admin-locations.editor", self.headmenu_locations_editor)
         self.rhook("ext-admin-locations.config", self.admin_locations_config, priv="locations.config")
         self.rhook("headmenu-admin-locations.config", self.headmenu_locations_config)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("admin-interface.progress-bars", self.progress_bars)
+        self.rhook("admin-locations.valid-transitions", self.valid_transitions)
+        self.rhook("admin-locations.update-transitions", self.update_transitions)
+
+    def objclasses_list(self, objclasses):
+        objclasses["CharacterLocation"] = (DBCharacterLocation, DBCharacterLocationList)
+        objclasses["Location"] = (DBLocation, DBLocationList)
 
     def child_modules(self):
         lst = ["mg.mmo.locations.LocationsStaticImages", "mg.mmo.locations.LocationsStaticImagesAdmin"]
@@ -86,6 +94,23 @@ class LocationsAdmin(ConstructorModule):
                         db_loc.set("name_f", req.param("name_f"))
                     else:
                         db_loc.delkey("name_f")
+                val = req.param("delay")
+                if not valid_nonnegative_int(val):
+                    errors["delay"] = self._("Delay must be a non-negative integer value")
+                else:
+                    db_loc.set("delay", intz(val))
+                for dest in ["up", "left", "right", "down"]:
+                    loc = req.param("v_loc_%s" % dest)
+                    if loc:
+                        loc = self.location(loc)
+                        if not loc.valid():
+                            errors["v_loc_%s" % dest] = self._("Invalid location selected")
+                        elif loc.uuid == db_loc.uuid:
+                            errors["v_loc_%s" % dest] = self._("Link to the same location")
+                        else:
+                            db_loc.set("loc_%s" % dest, loc.uuid)
+                    else:
+                        db_loc.delkey("loc_%s" % dest)
                 db_loc.set("image_type", req.param("v_image_type"))
                 flags = {}
                 self.call("admin-locations.editor-form-validate", db_loc, flags, errors)
@@ -96,6 +121,12 @@ class LocationsAdmin(ConstructorModule):
                     self.call("web.response_json_html", {"success": False, "errors": errors})
                 # storing
                 self.call("admin-locations.editor-form-store", db_loc, flags)
+                self.call("admin-locations.update-transitions", db_loc)
+                transitions = db_loc.get("transitions", {})
+                for loc_id, info in transitions.iteritems():
+                    info["hint"] = req.param("tr-%s-hint" % loc_id).strip()
+                    val = req.param("tr-%s-delay" % loc_id).strip()
+                    info["delay"] = intz(val) if val != "" else None
                 db_loc.store()
                 self.call("admin-locations.editor-form-cleanup", db_loc, flags)
                 self.call("web.response_json_html", {"success": True, "redirect": "locations/editor/%s" % location.uuid, "parameters": {"saved": 1}})
@@ -108,6 +139,18 @@ class LocationsAdmin(ConstructorModule):
                 fields.append({"name": "name_w", "value": db_loc.get("name_w"), "label": self._("Location name (where?) - 'in the Some Location'")})
                 fields.append({"name": "name_t", "value": db_loc.get("name_t"), "label": self._("Location name (to where?) - 'to the Some Location'"), "inline": True})
                 fields.append({"name": "name_f", "value": db_loc.get("name_f"), "label": self._("Location name (from where?) - 'from the Some Location'"), "inline": True})
+            # timing
+            fields.append({"name": "delay", "label": self._("Delay when moving to this location and from it"), "value": location.delay})
+            # left/right/up/down navigation
+            lst = self.objlist(DBLocationList, query_index="all")
+            lst.load()
+            locations = [(loc.uuid, loc.get("name")) for loc in lst if loc.uuid != db_loc.uuid]
+            locations.insert(0, ("", "---------------"))
+            fields.append({"name": "loc_up", "label": self._("Location to the up"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_up", "")})
+            fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_left", "")})
+            fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_right", ""), "inline": True})
+            fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_down", "")})
+            # image type
             image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
             fields.append(image_type)
             self.call("admin-locations.editor-form-render", db_loc, fields)
@@ -118,6 +161,14 @@ class LocationsAdmin(ConstructorModule):
                 html = self.call("admin-locations.render", location)
                 if html:
                     fields.insert(0, {"type": "html", "html": html})
+            # transitions
+            for loc_id, info in db_loc.get("transitions", {}).iteritems():
+                loc = self.location(loc_id)
+                if not loc.valid():
+                    continue
+                fields.append({"type": "header", "html": '%s: %s' % (self._("Transition"), loc.name_t)})
+                fields.append({"name": "tr-%s-hint" % loc_id, "label": self._("Hint when mouse over the link"), "value": info.get("hint")})
+                fields.append({"name": "tr-%s-delay" % loc_id, "label": self._("Delay when moving to this location (if not specified delay will be calculated as sum of delays on both locations)"), "value": info.get("delay")})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         rows = []
         locations = []
@@ -181,6 +232,28 @@ class LocationsAdmin(ConstructorModule):
         ]
         self.call("admin.form", fields=fields)
 
+    def progress_bars(self, bars):
+        bars.append({"code": "location-movement", "description": self._("Delay when moving between locations")})
+
+    def valid_transitions(self, db_loc, valid_transitions):
+        for dest in ["up", "left", "right", "down"]:
+            loc = db_loc.get("loc_%s" % dest)
+            if loc:
+                valid_transitions.add(loc)
+
+    def update_transitions(self, db_loc):
+        transitions = db_loc.get("transitions", {})
+        db_loc.set("transitions", transitions)
+        valid_transitions = set()
+        self.call("admin-locations.valid-transitions", db_loc, valid_transitions)
+        for loc in transitions.keys():
+            if loc not in valid_transitions:
+                del transitions[loc]
+        for loc in valid_transitions:
+            if loc not in transitions:
+                transitions[loc] = {}
+        db_loc.touch()
+
 class LocationsStaticImages(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
@@ -215,6 +288,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         self.rhook("ext-admin-locations.image-map", self.admin_image_map, priv="locations.editor")
         self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
         self.rhook("admin-locations.render", self.render)
+        self.rhook("admin-locations.valid-transitions", self.valid_transitions)
 
     def form_render(self, db_loc, fields):
         for fld in fields:
@@ -309,10 +383,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                             if not valid_int(coo):
                                 errors["polygon-%d" % zone_id] = self._("Invalid non-integer coordinate encountered")
                                 break
-                    # hint
-                    hint = req.param("hint-%d" % zone_id).strip()
-                    if hint:
-                        zone["hint"] = hint
                     # action
                     action = req.param("v_action-%d" % zone_id)
                     zone["action"] = action;
@@ -326,6 +396,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                             loc_obj = self.location(loc)
                             if not loc_obj.valid():
                                 errors["v_location-%d" % zone_id] = self._("Invalid location specified")
+                            elif loc_obj.uuid == location.uuid:
+                                errors["v_location-%d" % zone_id] = self._("Link to the same location")
                             else:
                                 zone["loc"] = loc
                     else:
@@ -333,6 +405,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
+            self.call("admin-locations.update-transitions", location.db_location)
             location.db_location.store()
             self.call("web.response_json", {"success": True, "redirect": "locations/image-map/%s" % location.uuid, "parameters": {"saved": 1}})
         # Loading zones
@@ -340,7 +413,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         for zone in location.db_location.get("static_zones"):
             zones.append({
                 "polygon": zone.get("polygon"),
-                "hint": jsencode(zone.get("hint")),
                 "action": zone.get("action", "none"),
                 "loc": zone.get("loc")
             })
@@ -349,10 +421,11 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         lst = self.objlist(DBLocationList, query_index="all")
         lst.load()
         for db_loc in lst:
-            locations.append({
-                "id": db_loc.uuid,
-                "name": jsencode(db_loc.get("name"))
-            })
+            if db_loc.uuid != location.uuid:
+                locations.append({
+                    "id": db_loc.uuid,
+                    "name": jsencode(db_loc.get("name"))
+                })
         vars = {
             "image": location.db_location.get("image_static"),
             "width": location.db_location.get("image_static_w"),
@@ -394,6 +467,12 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 vars["saved"] = {"text": self._("Image map saved successfully")}
             raise Hooks.Return(self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars))
 
+    def valid_transitions(self, db_loc, valid_transitions):
+        if db_loc.get("image_type") == "static":
+            for zone in db_loc.get("static_zones"):
+                if zone.get("action") == "move" and zone.get("loc"):
+                    valid_transitions.add(zone.get("loc"))
+
 class Locations(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
@@ -404,6 +483,7 @@ class Locations(ConstructorModule):
         self.rhook("ext-location.index", self.ext_location, priv="logged")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("ext-location.move", self.ext_move, priv="logged")
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
 
     def get(self, character):
         try:
@@ -459,11 +539,35 @@ class Locations(ConstructorModule):
         html = self.call("locations.render", location)
         if html is None:
             self.call("main-frame.error", self._("No visual image for location '%s'") % location.name)
-        vars = {}
+        transitions = []
+        for loc_id, info in location.transitions.iteritems():
+            transitions.append({
+                "loc": loc_id,
+                "hint": jsencode(info.get("hint"))
+            })
+        vars = {
+            "transitions": transitions,
+            "load_extjs": {
+                "qtips": True,
+            }
+        }
+        print "debug_ext=%s" % self.conf("debug.ext")
+        if self.conf("debug.ext"):
+            vars["debug_ext"] = True
         self.call("game.response_internal", "location.html", vars, html)
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("locations")
+        now = self.now()
+        if character.location_delay is None or now >= character.location_delay[1]:
+            vars["js_init"].append("Game.progress_set('location-movement', 1);")
+        else:
+            now = unix_timestamp(now)
+            start = unix_timestamp(character.location_delay[0])
+            end = unix_timestamp(character.location_delay[1])
+            current_ratio = (now - start) * 1.0 / (end - start)
+            time_till_end = (end - now) * 1000
+            vars["js_init"].append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
 
     def ext_move(self):
         req = self.req()
@@ -471,12 +575,33 @@ class Locations(ConstructorModule):
         with self.lock(["CharacterLocation-%s" % character.uuid, "session.%s" % req.session().uuid]):
             if not character.tech_online:
                 self.call("web.response_json", {"ok": False, "error": self._("Character offline")})
-            if character.location_delay and character.location_delay > self.now():
+            if character.location_delay and character.location_delay[1] > self.now():
                 self.call("web.response_json", {"ok": False, "error": self._("You are busy"), "hide_title": True})
             old_location = character.location
-            new_location = self.location(req.param("location"))
+            new_location_id = req.param("location")
+            # validating transition
+            trans = old_location.transitions.get(new_location_id)
+            if not trans:
+                self.call("web.response_json", {"ok": False, "error": self._("No way")})
+            new_location = self.location(new_location_id)
             if not new_location.valid():
                 self.call("web.response_json", {"ok": False, "error": self._("No such location")})
-            delay = 20
-            character.set_location(new_location, character.instance, self.now(delay))
+            delay = trans.get("delay")
+            print "transition delay: %s" % delay
+            if delay is None:
+                delay = old_location.delay + new_location.delay
+                print "calculated delay: %s" % delay
+            character.set_location(new_location, character.instance, [self.now(), self.now(delay)])
             self.call("web.response_json", {"ok": True, "name": new_location.name, "delay": delay})
+
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "location",
+            "href": "/location",
+            "target": "main",
+            "icon": "location.png",
+            "title": self._("Location"),
+            "block": "top-menu",
+            "order": 0,
+        })
+

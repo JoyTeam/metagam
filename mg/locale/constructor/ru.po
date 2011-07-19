@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-18 16:16+0400\n"
+"POT-Creation-Date: 2011-07-19 18:42+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -23,10 +23,10 @@ msgstr ""
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/js/admin.js:126 static/js/locations.js:21 static/js/locations.js:27
+#: static/js/admin.js:126 static/js/locations.js:22 static/js/locations.js:28
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:379 static/js/chat.js:387
+#: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -48,7 +48,7 @@ msgstr "Ошибка при разборе ответа сервера"
 msgid "To the main page"
 msgstr "На главную страницу"
 
-#: static/js/locations.js:27
+#: static/js/locations.js:28
 #, fuzzy
 msgid "Couldn't send command to the server"
 msgstr "Не удалось отправить сообщение на сервер"
@@ -57,7 +57,8 @@ msgstr "Не удалось отправить сообщение на серв�
 msgid "Connection terminated"
 msgstr "Соединение прервано"
 
-#: static/js/realplexor-stream.js:75
+#: static/js/realplexor-stream.js:75 static/js/game-interface.js:54
+#: static/js/game-interface.js:141 static/js/game-interface.js:170
 msgid "Exception"
 msgstr "Исключение"
 
@@ -70,30 +71,26 @@ msgid "Polygon vertices"
 msgstr "Вершины многоугольника"
 
 #: static/js/imagemap-editor.js:45
-msgid "Mouse over hint"
-msgstr "Подсказка при наведении мыши"
-
-#: static/js/imagemap-editor.js:59
 msgid "Click action"
 msgstr "Действие при клике"
 
-#: static/js/imagemap-editor.js:84
+#: static/js/imagemap-editor.js:70
 msgid "Target location"
 msgstr "Целевая локация"
 
-#: static/js/imagemap-editor.js:152
+#: static/js/imagemap-editor.js:138
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
 
-#: static/js/imagemap-editor.js:156
+#: static/js/imagemap-editor.js:142
 msgid "Minimal number of vertices - 3"
 msgstr "Минимальное количество вершин - 3"
 
-#: static/js/imagemap-editor.js:162
+#: static/js/imagemap-editor.js:148
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
 
-#: static/js/imagemap-editor.js:220
+#: static/js/imagemap-editor.js:206
 msgid "Save"
 msgstr "Сохранить"
 
@@ -157,11 +154,11 @@ msgstr "Ошибка на сервере: %s"
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/chat.js:387
+#: static/js/chat.js:397
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 
-#: mg/templates/game/interface.js:416
+#: mg/templates/game/interface.js:443
 msgid "Misconfigured layout scheme"
 msgstr "Схема расположения не настроена"
 
@@ -257,6 +254,9 @@ msgstr "Предварительный просмотр"
 #: mg/templates/constructor/setup/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
+
+#~ msgid "Mouse over hint"
+#~ msgstr "Подсказка при наведении мыши"
 
 #~ msgid "Error during registration"
 #~ msgstr "Ошибка во время регистрации"
