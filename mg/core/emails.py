@@ -408,6 +408,8 @@ class EmailSender(Module):
                                             image_num += 1
                                             part = MIMEImage(response.body, subtype)
                                             part.add_header("Content-ID", "<image%d>" % image_num)
+                                            filename = src.split("/")[-1]
+                                            part.add_header("Content-Disposition", "attachment; filename=%s" % filename)
                                             parts.append(part)
                                             content += u'%scid:image%d%s' % (before, image_num, after)
                                         else:
