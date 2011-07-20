@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 18:42+0400\n"
+"POT-Creation-Date: 2011-07-20 17:38+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:126 static/js/locations.js:22 static/js/locations.js:28
+#: static/js/admin.js:126 static/js/locations.js:23 static/js/locations.js:29
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
 #: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
@@ -46,7 +46,7 @@ msgstr ""
 msgid "To the main page"
 msgstr ""
 
-#: static/js/locations.js:28
+#: static/js/locations.js:29
 msgid "Couldn't send command to the server"
 msgstr ""
 
@@ -155,7 +155,7 @@ msgstr ""
 msgid "Couldn't deliver message to the server"
 msgstr ""
 
-#: mg/templates/game/interface.js:443
+#: mg/templates/game/interface.js:247
 msgid "Misconfigured layout scheme"
 msgstr ""
 

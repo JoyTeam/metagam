@@ -1,5 +1,7 @@
 from mg import *
 
+default_location_delay = 20
+
 class DBLocation(CassandraObject):
     _indexes = {
         "all": [[], "name"],
@@ -128,6 +130,6 @@ class Location(Module):
         try:
             return self._delay
         except AttributeError:
-            self._delay = self.db_location.get("delay", 20)
+            self._delay = self.db_location.get("delay", default_location_delay)
             return self._delay
 

@@ -36,7 +36,8 @@ a:hover, a:active { color: #3b7730 }
 .progress-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
 .progress-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
 .progress-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
-.progress-bars-horizontal { height: 25px; margin-top: 25px }
+.progress-bars-horizontal { height: 50px }
+.progress-bars-horizontal-margin { height: 25px }
 .progress-bars-horizontal-td { padding: 0 13px 0 14px }
 .progress-vertical { background-image: url(progress-vertical-bg.png); background-repeat: repeat-y; background-position: 50% 0% }
 .progress-vertical-1 { background-image: url(progress-vertical-top.png); background-repeat: no-repeat; background-position: 50% 0% }
@@ -44,7 +45,21 @@ a:hover, a:active { color: #3b7730 }
 .progress-bars-vertical { width: 25px; margin-left: 25px }
 .progress-bars-vertical-td { padding: 14px 0 13px 0 }
 
+/* PANEL HEADERS */
+.panel-header-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.panel-header-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.panel-header-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.panel-header-horizontal-9 { height: 50px }
+.panel-header-horizontal-margin { height: 25px }
+.panel-header-horizontal-10 { padding: 0 16px 0 17px; color: #0b4700 }
+
 /* TIPS */
 .x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr { background-image: url(tip-sprite.gif) }
 .x-tip .x-tip-body { color: #ffffff }
-.x-tip-anchor { background-image: url(tip-anchor-sprite.gif); }
+.x-tip-anchor { background-image: url(tip-anchor-sprite.gif) }
+
+/* POPUP MENU */
+.x-menu { background-image: url(menu.gif) }
+.x-menu-item-active { background-color: #807f6c; border-color: #6f452b; background-image: url(menu-item-over.gif) }
+.x-menu-floating { border-color: #6f452b }
+.x-menu-item-active a.x-menu-item { border-color: #6f452b }

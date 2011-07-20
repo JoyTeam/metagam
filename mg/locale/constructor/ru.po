@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 18:42+0400\n"
+"POT-Creation-Date: 2011-07-20 17:38+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/js/admin.js:126 static/js/locations.js:22 static/js/locations.js:28
+#: static/js/admin.js:126 static/js/locations.js:23 static/js/locations.js:29
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
 #: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
@@ -48,7 +48,7 @@ msgstr "Ошибка при разборе ответа сервера"
 msgid "To the main page"
 msgstr "На главную страницу"
 
-#: static/js/locations.js:28
+#: static/js/locations.js:29
 #, fuzzy
 msgid "Couldn't send command to the server"
 msgstr "Не удалось отправить сообщение на сервер"
@@ -158,7 +158,7 @@ msgstr "Отправка данных..."
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 
-#: mg/templates/game/interface.js:443
+#: mg/templates/game/interface.js:247
 msgid "Misconfigured layout scheme"
 msgstr "Схема расположения не настроена"
 

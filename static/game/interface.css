@@ -6,6 +6,7 @@
 img { border: none }
 table, tr, td { padding: 0; margin: 0; border: none }
 table { border-collapse: collapse; empty-cells: show }
+area { border: none }
 
 /* COMMON COLORS */
 .ext-el-mask { background-color: #000000 }
@@ -90,3 +91,16 @@ table { border-collapse: collapse; empty-cells: show }
 .location-movement-full { background-color: #208020 }
 .location-movement-notfull { background-color: #802020 }
 .progress-bars-vertical-td { vertical-align: bottom }
+
+/* LOCATION */
+.location-arrows-row1, .location-arrows-row2, .location-arrows-row3 { height: 50px }
+.location-arrows-col1, .location-arrows-col2, .location-arrows-col3 { width: 50px; text-align: center }
+#loc-layout-image { vertical-align: top }
+#loc-layout-arrows { padding-left: 40px }
+#loc-layout-transitions { padding-top: 10px }
+
+/* PANEL HEADERS */
+.panel-header-horizontal, .panel-header-horizontal-1, .panel-header-horizontal-2, .panel-header-horizontal-3, .panel-header-horizontal-4, .panel-header-horizontal-5, .panel-header-horizontal-6, .panel-header-horizontal-7, .panel-header-horizontal-8, .panel-header-horizontal-9 { height: 100% }
+.panel-header-horizontal-9 { width: 100% }
+.panel-header-horizontal-10 { text-align: center; text-overflow: hidden; font-size: 16px; font-weight: bold; color: #ffffff }
+.block-location-name .panel-header-horizontal-10 { text-align: left }
