@@ -353,7 +353,7 @@ Game.panel = function(id, options) {
 				block_el.html = block.html;
 			} else if (block.tp == 'header') {
 				var cls = 'panel-header-' + (options.vertical ? 'vertical' : 'horizontal');
-				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><table class="' + cls + '-9"><tr class="panel-header-horizontal-margin"><td></td></tr><tr><td class="' + cls + '-10">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div>';
+				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="panel-header-horizontal-margin"></div><table class="' + cls + '-9"><tr><td class="' + cls + '-10">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div>';
 			} else if (block.tp == 'progress') {
 				var cls = 'progress-' + (options.vertical ? 'vertical' : 'horizontal');
 				var bars;
@@ -366,7 +366,7 @@ Game.panel = function(id, options) {
 						}
 						bars += '</tr></table>';
 					} else {
-						bars = '<table class="progress-bars-horizontal"><tr class="progress-bars-horizontal-margin"><td></td></tr>';
+						bars = '<div class="progress-bars-horizontal-margin"></div><table class="progress-bars-horizontal">';
 						var height = Math.floor(100 / block.progress_types.length);
 						for (var j = 0; j < block.progress_types.length; j++) {
 							bars += '<tr style="height: ' + height + '%"><td class="progress-bars-horizontal-td"><div class="progress-indicator progress-indicator-horizontal progress-' + block.progress_types[j] + '" style="width: 0px"></div></td></tr>';
