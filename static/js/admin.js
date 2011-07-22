@@ -20,6 +20,7 @@ var topmenu;
 var advicecontent;
 var ver_suffix = '-' + Math.round(Math.random() * 100000000);
 ver = ver + ver_suffix;
+var headmenu;
 
 function adm_response(res)
 {
@@ -40,13 +41,27 @@ function adm_response(res)
 			hidden: true,
 			cls: 'admin-content'
 		});
-		if (res.headmenu)
+		if (res.headmenu) {
+			headmenu = res.headmenu;
+			var tokens = new Array();
+			for (var i = 0; i < headmenu.length; i++) {
+				var html = headmenu[i].html;
+				var href = headmenu[i].href;
+				if (href) {
+					html = '<a href="/admin?_nd=' + Math.random() + '#' + href + '" onclick="adm(\'' + href + '\'); return false;">' + html + '</a>';
+					expand_menu(href);
+				}
+				tokens.push(html);
+			}
 			admincontent.add({
 				border: false,
 				autoHeight: true,
-				html: res.headmenu,
+				html: tokens.join(' / '),
 				cls: 'admin-headmenu'
 			});
+		} else {
+			headmenu = undefined;
+		}
 		adminmain.add(admincontent);
 		adminmain.doLayout();
 		if (res.script) {

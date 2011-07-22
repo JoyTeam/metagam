@@ -218,12 +218,12 @@ class ForumAdmin(Module):
         self.call("permissions.forum", perms)
 
     def menu_socio_index(self, menu):
-        req = self.req()
-        if req.has_access("forum.categories"):
-            menu.append({"id": "forum.index", "text": self._("Forum")})
+        menu.append({"id": "forum.index", "text": self._("Forum"), "order": 10})
 
     def menu_forum_index(self, menu):
-        menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True, "order": 20})
+        req = self.req()
+        if req.has_access("forum.categories"):
+            menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True, "order": 20})
 
     def admin_categories(self):
         categories = []
@@ -444,6 +444,10 @@ class Socio(Module):
         self.rhook("socio.fulltext_search", self.fulltext_search)
         self.rhook("socio.user", self.socio_user)
         self.rhook("socio.semi_user", self.socio_semi_user)
+        self.rhook("socio.response", self.response)
+        self.rhook("socio.response_template", self.response_template)
+        self.rhook("socio.response_simple", self.response_simple)
+        self.rhook("socio.response_simple_template", self.response_simple_template)
 
     def socio_user(self):
         req = self.req()
@@ -553,6 +557,26 @@ class Socio(Module):
             render_objects = [(v, k) for k, v in render_objects.iteritems()]
             render_objects.sort(reverse=True)
         return render_objects
+
+    def response(self, content, vars):
+        vars["global_html"] = "constructor/socio_global.html"
+        self.call("forum.setup-menu", vars)
+        self.call("web.response_global", content, vars)
+
+    def response_template(self, template, vars):
+        vars["global_html"] = "constructor/socio_global.html"
+        self.call("forum.setup-menu", vars)
+        self.call("web.response_template", 'socio/%s' % template, vars)
+
+    def response_simple(self, content, vars):
+        vars["global_html"] = "constructor/socio_simple_global.html"
+        self.call("forum.setup-menu", vars)
+        self.call("web.response_global", content, vars)
+
+    def response_simple_template(self, template, vars):
+        vars["global_html"] = "constructor/socio_simple_global.html"
+        self.call("forum.setup-menu", vars)
+        self.call("web.response_template", 'socio/%s' % template, vars)
 
     def template(self, name, default=None):
         templates = {}
@@ -737,7 +761,7 @@ class Socio(Module):
                             "image": socio_image.uuid,
                             "id": req.args,
                         }
-                        self.call("web.response_template", "socio/uploaded.html", vars)
+                        self.call("socio.response_simple_template", "uploaded.html", vars)
             elif not form.errors:
                 form.error("image", self._("Upload an image"))
             
@@ -747,7 +771,7 @@ class Socio(Module):
         vars = {
             "title": self._("Upload image")
         }
-        self.call("web.response_global", form.html(), vars)
+        self.call("socio.response_simple", form.html(), vars)
 
     def ext_user(self):
         req = self.req()
@@ -763,12 +787,12 @@ class Socio(Module):
         if status:
             params.append({"name": self._("Status"), "value": htmlescape(status)})
         vars = {
-                "title": self._("User %s") % name,
-                "name": name,
-                "params": params,
-                "User": self._("User"),
+            "title": self._("User %s") % name,
+            "name": name,
+            "params": params,
+            "User": self._("User"),
         }
-        self.call("web.response_template", self.call("socio.template", "user", "socio/user.html"), vars)
+        self.call("socio.response_template", self.call("socio.template", "user", "user.html"), vars)
 
 class Forum(Module):
     def register(self):
@@ -781,9 +805,7 @@ class Forum(Module):
         self.rhook("forum.reply", self.reply)                           # reply in the topic
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
-        self.rhook("forum.response", self.response)
         self.rhook("forum.setup-menu", self.setup_menu)
-        self.rhook("forum.response_template", self.response_template)
         self.rhook("forum.sync", self.sync)
         self.rhook("ext-forum.index", self.ext_index, priv="public")
         self.rhook("ext-forum.cat", self.ext_category, priv="public")
@@ -853,14 +875,6 @@ class Forum(Module):
         else:
             vars["socio_message_top"] = self.conf("socio.message-top")
 
-    def response(self, content, vars):
-        self.call("forum.setup-menu", vars)
-        self.call("web.response_global", content, vars)
-
-    def response_template(self, template, vars):
-        self.call("forum.setup-menu", vars)
-        self.call("web.response_template", template, vars)
-
     def ext_index(self):
         req = self.req()
         user_uuid = self.call("socio.user")
@@ -929,7 +943,7 @@ class Forum(Module):
             ],
         }
         self.call("forum.vars-index", vars)
-        self.call("forum.response_template", "socio/index.html", vars)
+        self.call("socio.response_template", "index.html", vars)
 
     def category(self, id):
         for cat in self.categories():
@@ -1140,7 +1154,7 @@ class Forum(Module):
             pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
         self.call("forum.vars-category", vars)
-        self.call("forum.response_template", "socio/category.html", vars)
+        self.call("socio.response_template", "category.html", vars)
 
     def load_settings(self, list, signatures, avatars, statuses):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
@@ -1264,7 +1278,7 @@ class Forum(Module):
                 { "html": self._("New topic") },
             ],
         }
-        self.call("forum.response", form.html(), vars)
+        self.call("socio.response", form.html(), vars)
 
     def newtopic(self, cat, author, subject, content, tags="", created=None):
         topic = self.obj(ForumTopic)
@@ -1534,7 +1548,7 @@ class Forum(Module):
             vars["pages"] = pages_list
         vars["share_url"] = htmlescape("http://%s%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
         self.call("forum.vars-topic", vars)
-        self.call("forum.response_template", "socio/topic.html", vars)
+        self.call("socio.response_template", "topic.html", vars)
 
     def lastread(self, user_uuid, topic_uuid, category_uuid):
         if user_uuid is None:
@@ -1688,7 +1702,7 @@ class Forum(Module):
                 { "html": self._("Reply") },
             ],
         }
-        self.call("forum.response", form.html(), vars)
+        self.call("socio.response", form.html(), vars)
 
     def update_last(self, cat, stat):
         topics = self.objlist(ForumTopicList, query_index="category-list", query_equal=cat["id"], query_reversed=True, query_limit=1)
@@ -1838,7 +1852,7 @@ class Forum(Module):
                 form.input(self._("Tags (delimited with commas)"), "tags", tags)
             self.call("forum.topic-form", topic, form, "form")
         form.submit(None, None, self._("Save"))
-        self.call("forum.response", form.html(), vars)
+        self.call("socio.response", form.html(), vars)
 
     def ext_settings(self):
         req = self.req()
@@ -1961,7 +1975,7 @@ class Forum(Module):
         for cat in categories:
             form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
         form.add_message_top('<a href="%s">%s</a>' % (redirect, self._("Return")))
-        self.call("forum.response", form.html(), vars)
+        self.call("socio.response", form.html(), vars)
 
     def ext_subscribe(self):
         req = self.req()
@@ -2091,7 +2105,7 @@ class Forum(Module):
         vars = {
             "title": self._("Move topic: %s") % topic.get("subject")
         }
-        self.call("forum.response", form.html(), vars)
+        self.call("socio.response", form.html(), vars)
 
     def auth_registered(self, user):
         settings = self.obj(UserForumSettings, user.uuid, {})
@@ -2292,7 +2306,7 @@ class Forum(Module):
             ],
         }
         self.call("forum.vars-category", vars)
-        self.call("forum.response_template", "socio/category.html", vars)
+        self.call("socio.response_template", "category.html", vars)
 
     def ext_search(self):
         req = self.req()
@@ -2373,7 +2387,7 @@ class Forum(Module):
             "Tags": self._("Tags"),
             "new_post_form": "" if len(posts) else self._("Nothing found")
         }
-        self.call("forum.response_template", "socio/topic.html", vars)
+        self.call("socio.response_template", "topic.html", vars)
 
     def ext_subscribed(self):
         req = self.req()
@@ -2408,7 +2422,7 @@ class Forum(Module):
             ],
         }
         self.call("forum.vars-category", vars)
-        self.call("forum.response_template", "socio/category.html", vars)
+        self.call("socio.response_template", "category.html", vars)
 
     def ext_tags(self):
         app_tag = str(self.app().tag)
@@ -2426,7 +2440,7 @@ class Forum(Module):
             ],
         }
         self.call("forum.vars-tags", vars)
-        self.call("forum.response_template", "socio/tags.html", vars)
+        self.call("socio.response_template", "tags.html", vars)
 
     def news(self, vars, category, limit=5, template=None):
         req = self.req()
@@ -2458,8 +2472,9 @@ class Forum(Module):
         vars["ReadMore"] = self._("Read more")
         vars["Comment"] = self._("Comment")
         if template is None:
-            template = self.call("socio.template", "news", "socio/news.html")
-        return self.call("web.parse_template", template, vars)
+            template = self.call("socio.template", "news", "news.html")
+        if template:
+            return self.call("web.parse_template", 'socio/%s' % template, vars)
 
 class SocioAdmin(Module):
     def register(self):

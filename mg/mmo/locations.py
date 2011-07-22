@@ -34,8 +34,8 @@ class LocationsAdmin(ConstructorModule):
         menu.append({"id": "locations.index", "text": self._("Locations"), "order": 20})
 
     def menu_locations_index(self, menu):
-        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 0, "leaf": True})
-        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 1, "leaf": True})
+        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 0, "leaf": True})
+        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 1, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "locations.editor", "name": self._("Locations editor")})

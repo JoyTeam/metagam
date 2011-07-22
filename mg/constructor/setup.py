@@ -18,7 +18,7 @@ class ProjectSetupWizard(Wizard):
         self.config.set("state", "intro")
         
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True, "order": 10})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Setup wizard"), "leaf": True, "admin_index": True, "order": 10, "icon": "/st-mg/menu/wizard.png"})
 
     def request(self, cmd):
         req = self.req()

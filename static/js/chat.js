@@ -249,7 +249,7 @@ Chat.tab_open = function(id, change_write_selector) {
 			}
 			this.active_channel = id;
 			ch.box_content.show();
-			this.scroll_button();
+			this.scroll_bottom();
 			if (this.mode == 1 && ch.btn) {
 				ch.btn.el.dom.src = ch.button_image + '-on.png';
 			}

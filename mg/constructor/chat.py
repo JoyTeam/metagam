@@ -76,7 +76,8 @@ class DBChatDebugList(CassandraObjectList):
 class Chat(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
-        self.rhook("menu-admin-game.index", self.menu_game_index)
+        self.rhook("menu-admin-socio.index", self.menu_socio_index)
+        self.rhook("menu-admin-chat.index", self.menu_chat_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-chat.config", self.headmenu_chat_config)
         self.rhook("ext-admin-chat.config", self.chat_config, priv="chat.config")
@@ -162,12 +163,15 @@ class Chat(ConstructorModule):
         objclasses["ChatChannelCharacter"] = (DBChatChannelCharacter, DBChatChannelCharacterList)
         objclasses["ChatDebug"] = (DBChatDebug, DBChatDebugList)
 
-    def menu_game_index(self, menu):
+    def menu_socio_index(self, menu):
+        menu.append({"id": "chat.index", "text": self._("Chat"), "order": 5})
+
+    def menu_chat_index(self, menu):
         req = self.req()
         if req.has_access("chat.config"):
             menu.append({"id": "chat/config", "text": self._("Chat configuration"), "leaf": True, "order": 10})
             if self.conf("chat.debug-channel"):
-                menu.append({"id": "chat/debug", "text": self._("Debug channel"), "leaf": True, "order": 11})
+                menu.append({"id": "chat/debug", "text": self._("Debug chat channel"), "leaf": True, "order": 11})
 
     def permissions_list(self, perms):
         perms.append({"id": "chat.config", "name": self._("Chat configuration editor")})

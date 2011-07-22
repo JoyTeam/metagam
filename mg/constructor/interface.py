@@ -84,7 +84,8 @@ class Interface(ConstructorModule):
         self.rhook("game.form", self.game_form)
         self.rhook("auth.form", self.game_form)
         self.rhook("auth.messages", self.auth_messages)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout, priv="design")
         self.rhook("headmenu-admin-gameinterface.panels", self.headmenu_panels)
         self.rhook("ext-admin-gameinterface.panels", self.gameinterface_panels, priv="design")
@@ -388,13 +389,17 @@ class Interface(ConstructorModule):
         self.call("stream.login", session.uuid, character.uuid)
         self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
 
-    def menu_design_index(self, menu):
+    def menu_root_index(self, menu):
+        menu.append({"id": "indexpage.index", "text": self._("Index page"), "order": 10})
+        menu.append({"id": "gameinterface.index", "text": self._("Game interface"), "order": 13})
+
+    def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("design"):
-            menu.append({"id": "gameinterface/layout", "text": self._("Game interface layout"), "leaf": True, "order": 2})
-            menu.append({"id": "gameinterface/panels", "text": self._("Game interface panels"), "leaf": True, "order": 3})
-            menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 4})
-            menu.append({"id": "gameinterface/buttons", "text": self._("Game interface buttons"), "leaf": True, "order": 5})
+            menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4})
+            menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7})
+            menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10})
+            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons"), "leaf": True, "order": 12})
 
     def gameinterface_layout(self):
         req = self.req()

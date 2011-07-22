@@ -130,7 +130,7 @@ class AuthAdmin(ConstructorModule):
 class Auth(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
-        self.rhook("menu-admin-users.index", self.menu_users_index)
+        self.rhook("menu-admin-auth.index", self.menu_auth_index)
         self.rhook("ext-admin-players.auth", self.admin_players_auth, priv="players.auth")
         self.rhook("headmenu-admin-players.auth", self.headmenu_players_auth)
         self.rhook("permissions.list", self.permissions_list)
@@ -210,12 +210,12 @@ class Auth(ConstructorModule):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
         perms.append({"id": "users.authorized", "name": self._("Viewing list of authorized users")})
 
-    def menu_users_index(self, menu):
+    def menu_auth_index(self, menu):
         req = self.req()
         if req.has_access("players.auth"):
-            menu.append({"id": "players/auth", "text": self._("Players authentication"), "leaf": True, "order": 10})
+            menu.append({"id": "players/auth", "text": self._("Authentication configuration"), "leaf": True, "order": 1})
         if req.has_access("users.authorized"):
-            menu.append({"id": "characters/online", "text": self._("List of characters online"), "leaf": True, "order": 30})
+            menu.append({"id": "characters/online", "text": self._("List of characters online"), "leaf": True, "order": 5})
 
     def headmenu_players_auth(self, args):
         return self._("Players authentication settings")
@@ -565,7 +565,7 @@ class Auth(ConstructorModule):
         vars = {
             "tables": [
                 {
-                    "header": [self._("Session"), self._("Character"), self._("Updated")],
+                    "header": [self._("Character"), self._("Session updated")],
                     "rows": rows
                 }
             ]
@@ -573,7 +573,8 @@ class Auth(ConstructorModule):
         lst = self.objlist(SessionList, query_index="authorized", query_equal="1")
         lst.load(silent=True)
         for sess in lst:
-            rows.append([sess.uuid, sess.get("user"), sess.get("updated")])
+            character = self.character(sess.get("user"))
+            rows.append(['<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (character.uuid, character.name), self.call("l10n.timeencode2", sess.get("updated"))])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def characters_tech_online(self, lst):

@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+[%if title%]<title>[%title%][%title_suffix%]</title>[%end%]
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+[%if htmlmeta.keywords%]<meta http-equiv="keywords" content="[%htmlmeta.keywords%]" />[%end%]
+[%if htmlmeta.description%]<meta http-equiv="description" content="[%htmlmeta.description%]" />[%end%]
+<link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/socio/main.css" />
+<script type="text/javascript" src="/st-mg/[%ver%]/js/socio.js"></script>
+[%head%]</head><body>
+<table id="page-layout">
+	<tr> 
+		<td id="page-left"><div></div></td>
+		<td id="page-layout-content">
+			<div id="page-top">
+				<div id="page-top1"><div id="page-top2"><div id="page-top3"><div id="page-top4">
+				<form method="post" id="search-form" action="/"></form>
+				<form onsubmit="return run_search();" action="/">
+				<table id="socio-topmenu"><tr>
+				[%if topmenu_left%]<td id="socio-topmenu-left">[%for ent in topmenu_left%][%if ent.header%]<span class="socio-topmenu-header">[%end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%if ent.header%]</span>[%end%][%unless ent.lst +%] <img src="/st-mg/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%end%]</td>[%end%]
+				[%if topmenu_right%]<td id="socio-topmenu-right">[%for ent in topmenu_right%][%if ent.image%][%if ent.href%]<a href="[%ent.href%]">[%end%]<img src="[%ent.image%]" alt="" />[%if ent.href%]</a>[%end +%] [%+ end%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%ent.suffix%][%if ent.search%]<input id="socio-top-search" value="[%search_query%]" /> <a href="javascript:void(0)" onclick="return run_search();">[%ent.button%]</a>[%end%][%unless ent.lst +%] <img src="/st-mg/constructor/cabinet/delim-sm.gif" alt="" /> [%+ end%][%end%]</td>[%end%]
+				</tr></table>
+				</form>
+				</div></div></div></div>
+			</div>
+			<div id="page-content">
+				<div id="page-width"></div>
+				[%if menu_left or menu_right%]
+				<table id="socio-menu"><tr>
+				[%if menu_left%]<td id="socio-menu-left">[%for ent in menu_left%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</td>[%end%]
+				[%if menu_right%]<td id="socio-menu-right">[%for ent in menu_right%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</td>[%end%]
+				</tr></table>
+				[%end%]
+				[%if socio_message_top%]<div class="socio-message-top">[%socio_message_top%]</div>[%end%]
+				[%content%]
+				<div id="socio-counters">[%counters%]</div>
+			</div>
+		</td>
+		<td id="page-right"><div></div></td>
+	</tr>
+</table>
+[%if search_query%]<script type="text/javascript">document.getElementById('socio-top-search').focus();</script>[%end%]
+</body></html>

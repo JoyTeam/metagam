@@ -378,13 +378,13 @@ class MoneyAdmin(Module):
         self.rhook("ext-admin-money.currencies", self.admin_money_currencies, priv="money.currencies")
         self.rhook("headmenu-admin-money.currencies", self.headmenu_money_currencies)
         self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-money.index", self.menu_money_index)
+        self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("constructor.project-params", self.project_params)
 
     def menu_root_index(self, menu):
-        menu.append({"id": "money.index", "text": self._("Money"), "order": 100})
+        menu.append({"id": "economy.index", "text": self._("Economy"), "order": 100})
 
-    def menu_money_index(self, menu):
+    def menu_economy_index(self, menu):
         req = self.req()
         if req.has_access("money.currencies"):
             menu.append({"id": "money/currencies", "text": self._("Currencies"), "leaf": True})
