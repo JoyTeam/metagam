@@ -17,16 +17,30 @@ a:hover, a:active { color: #3b7730 }
 .box-0 a:link, .box-0 a:visited { color: #32410f }
 .box-0 a:hover, .box-0 a:active { color: #607c1c }
 
+.sbox-0 { background-color: #9e9e86; color: #291c0e }
+.sbox-1 { background-image: url(sbox-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.sbox-2 { background-image: url(sbox-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.sbox-3 { background-image: url(sbox-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.sbox-4 { background-image: url(sbox-bottom.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.sbox-5 { background-image: url(sbox-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.sbox-6 { background-image: url(sbox-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.sbox-7 { background-image: url(sbox-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.sbox-8 { background-image: url(sbox-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+
 /* MENU */
 .block-horizontal { padding-top: 9px }
 
 /* CHAT */
 #chat-frame, #chat-roster { background-color: #9e9e86 }
 .x-layout-split { background: #283420 }
+#chat-input-content { padding-top: 4px }
+#chat-box { color: #291c0e }
 
 /* FORMS */
 .form-list-messages-top, .form-list-messages-bottom { color: #2b7118 }
 .form-error { color: #903b24 }
+.chat-roster-channel { color: #291c0e }
+.chat-roster-characters { color: #291c0e }
 
 /* INTERNAL */
 #page-internal-body { background: #9e9e86; color: #291c0e }
