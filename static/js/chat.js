@@ -248,7 +248,7 @@ Chat.tab_open = function(id, change_write_selector) {
 			}
 			this.active_channel = id;
 			ch.box_content.show();
-			this.box_content.el.scroll('down', 1000000, false);
+			this.scroll_button();
 			if (this.mode == 1 && ch.btn) {
 				ch.btn.el.dom.src = ch.button_image + '-on.png';
 			}
@@ -269,47 +269,91 @@ Chat.focus = function() {
 
 /* Receive message from the server */
 Chat.msg = function(pkt) {
-	if (this.mode != 0) {
-		var ch = this.channels_by_id[pkt.channel];
-		if (!ch)
-			return undefined;
-	}
-	var ctspan = document.createElement('span');
-	if (pkt.cls) {
-		ctspan.className = 'chat-msg-' + pkt.cls;
-	}
-	if (pkt.cls && this.chat_filters[pkt.cls] === false) {
-		ctspan.style.display = 'none';
-	}
-	ctspan.innerHTML = pkt.html;
-	var div = document.createElement('div');
-	div.className = 'chat-msg';
-	if (pkt.id)
-		div.id = pkt.id;
-	div.appendChild(ctspan);
-	div.className = div.className + ' cmc-' + ch.id;
-	if (pkt.priv)
-		div.className = div.className + ' chat-private';
-	if (this.mode == 1) {
-		ch.box_content.el.dom.appendChild(div);
-		if (ch.id == this.active_channel) {
-			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn && pkt.hl) {
-			ch.btn.el.dom.src = ch.button_image + '-new.png';
+	return this.msg_list({messages: [pkt]})[0];
+};
+
+/* Receive message list */
+Chat.msg_list = function(pkt) {
+	var messages = pkt.messages;
+	var divs = new Array();
+	var fragments = new Array();
+	var scroll = false;
+	for (var mi = 0; mi < messages.length; mi++) {
+		var msg = messages[mi];
+		if (this.mode != 0) {
+			var ch = this.channels_by_id[msg.channel];
+			if (!ch)
+				continue;
 		}
-	} else if (this.mode == 2) {
-		div.style.display = ch.visible ? 'block' : 'none';
-		this.box_content.el.dom.appendChild(div);
-		if (ch.visible) {
-			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn && pkt.hl) {
-			ch.btn.el.dom.src = ch.button_image + '-new.png';
+		/* message divs are joined into fragments to speed up rendering */
+		var fragment_id;
+		if (this.mode == 1) {
+			fragment_id = ch.id;
+		} else {
+			fragment_id = '_main';
 		}
-	} else if (this.mode == 0) {
-		this.box_content.el.dom.appendChild(div);
-		this.box_content.el.scroll('down', 1000000, true);
+		var fragment = fragments[fragment_id];
+		if (!fragment) {
+			fragment = document.createDocumentFragment();
+			fragments[fragment_id] = fragment;
+		}
+		/* formatting message */
+		var ctspan = document.createElement('span');
+		if (msg.cls) {
+			ctspan.className = 'chat-msg-' + msg.cls;
+		}
+		if (msg.cls && this.chat_filters[msg.cls] === false) {
+			ctspan.style.display = 'none';
+		}
+		ctspan.innerHTML = msg.html;
+		var div = document.createElement('div');
+		div.className = 'chat-msg';
+		if (msg.id)
+			div.id = msg.id;
+		div.appendChild(ctspan);
+		div.className = div.className + ' cmc-' + ch.id;
+		if (msg.priv)
+			div.className = div.className + ' chat-private';
+		/* storing message */
+		fragment.appendChild(div);
+		if (this.mode == 1) {
+			if (ch.id == this.active_channel) {
+				scroll = true;
+			} else if (ch.btn && msg.hl) {
+				ch.btn.el.dom.src = ch.button_image + '-new.png';
+			}
+		} else if (this.mode == 2) {
+			div.style.display = ch.visible ? 'block' : 'none';
+			if (ch.visible) {
+				scroll = true;
+			} else if (ch.btn && msg.hl) {
+				ch.btn.el.dom.src = ch.button_image + '-new.png';
+			}
+		} else if (this.mode == 0) {
+			scroll = true;
+		}
+		divs.push(div);
 	}
-	return div;
+	/* adding fragments to the chatbox */
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		var fragment = fragments[ch.id];
+		if (fragment) {
+			ch.box_content.el.dom.appendChild(fragment);
+		}
+	}
+	var fragment = fragments['_main'];
+	if (fragment) {
+		this.box_content.el.dom.appendChild(fragment);
+	}
+	if (!pkt.scroll_disable) {
+		if (pkt.scroll_bottom) {
+			this.scroll_bottom();
+		} else if (scroll) {
+			this.box_content.el.scroll('down', 1000000, true);
+		}
+	}
+	return divs;
 };
 
 /* Toggle chatbox tab visibility */
@@ -321,7 +365,7 @@ Chat.channel_toggle = function(id) {
 		} else {
 			this.channel_show(id);
 		}
-		this.box_content.el.scroll('down', 1000000, false);
+		this.scroll_bottom();
 	}
 	this.focus();
 };
@@ -586,17 +630,26 @@ Chat.current_location = function(pkt) {
 	var old = this.last_location_msg;
 	if (old && !old.nextSibling && old.parentNode)
 		old.parentNode.removeChild(old);
-	this.last_location_msg = this.msg({
-		id: 'msg-current-location',
-		channel: 'loc',
-		html: pkt.html,
-		cls: 'your-location'
+	this.last_location_msg = this.msg_list({
+		messages: [{
+			id: 'msg-current-location',
+			channel: 'loc',
+			html: pkt.html,
+			cls: 'your-location'
+		}],
+		scroll_disable: pkt.scroll_disable
 	});
 };
 
 /* Clear all messages in the loc channel */
 Chat.clear_loc = function(pkt) {
 	Ext.each(Ext.query('.cmc-loc'), function(el) { el.parentNode.removeChild(el); })
+};
+
+/* Scroll screen to the bottom */
+Chat.scroll_bottom = function(pkt) {
+	this.box_content.el.stopFx();
+	this.box_content.el.scroll('down', 1000000, false);
 };
 
 Chat.clear = function() {

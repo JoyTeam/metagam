@@ -3,8 +3,8 @@ from mg.constructor import *
 import datetime
 import re
 
-old_messages_limit = 30
-old_private_messages_limit = 300
+old_messages_limit = 10
+old_private_messages_limit = 100
 
 re_chat_characters = re.compile(r'\[(chf|cht|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
@@ -122,12 +122,16 @@ class Chat(ConstructorModule):
         # current location message
         msg = self.msg_you_entered_location()
         if msg:
-            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location))
+            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
         # old messages
         msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
         msgs.load(silent=True)
-        for msg in reversed(msgs):
-            self.call("stream.character", character, "chat", "msg", channel="loc", cls=msg.get("cls"), html=msg.get("html"))
+        messages = [{
+            "channel": "loc",
+            "cls": msg.get("cls"),
+            "html": msg.get("html"),
+        } for msg in reversed(msgs)]
+        self.call("stream.character", character, "chat", "msg_list", messages=messages, scroll_bottom=True)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -624,13 +628,20 @@ class Chat(ConstructorModule):
         for msg in msgs:
             messages.append(msg)
         # send old messages
-        messages.sort(cmp=lambda x, y: cmp(x.get("created"), y.get("created")))
-        for msg in messages:
-            self.call("stream.packet", syschannel, "chat", "msg", channel=self.channel2tab(msg.get("channel")), cls=msg.get("cls"), html=msg.get("html"), priv=msg.get("priv"))
+        if len(messages):
+            messages.sort(cmp=lambda x, y: cmp(x.get("created"), y.get("created")))
+            messages = [{
+                "channel": self.channel2tab(msg.get("channel")),
+                "cls": msg.get("cls"),
+                "html": msg.get("html"),
+                "priv": msg.get("priv"),
+            } for msg in messages]
+            self.call("stream.packet", syschannel, "chat", "msg_list", messages=messages, scroll_disable=True)
         # current location
         msg = self.msg_you_entered_location()
         if msg:
-            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location))
+            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
+        self.call("stream.character", character, "chat", "scroll_bottom")
 
     def character_offline(self, character):
         msg = self.msg_went_offline()
