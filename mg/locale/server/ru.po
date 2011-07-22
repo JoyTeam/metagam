@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-20 17:38+0400\n"
-"PO-Revision-Date: 2011-07-20 17:42+0300\n"
+"POT-Creation-Date: 2011-07-21 17:08+0400\n"
+"PO-Revision-Date: 2011-07-21 17:11+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -70,16 +70,16 @@ msgstr "Разделы форума"
 
 #: mg/socio/__init__.py:237
 #: mg/socio/smiles.py:230
-#: mg/constructor/players.py:461
+#: mg/constructor/players.py:470
 #: mg/constructor/interface.py:595
-#: mg/constructor/interface.py:1234
+#: mg/constructor/interface.py:1237
 msgid "Code"
 msgstr "Код"
 
 #: mg/socio/__init__.py:238
 #: mg/constructor/interface.py:596
 #: mg/constructor/interface.py:656
-#: mg/constructor/interface.py:1235
+#: mg/constructor/interface.py:1238
 #: mg/constructor/design.py:1172
 msgid "Title"
 msgstr "Название"
@@ -87,7 +87,7 @@ msgstr "Название"
 #: mg/socio/__init__.py:239
 #: mg/socio/smiles.py:232
 #: mg/core/auth.py:1326
-#: mg/constructor/players.py:463
+#: mg/constructor/players.py:472
 #: mg/constructor/interface.py:653
 #: mg/constructor/interface.py:848
 msgid "Order"
@@ -98,11 +98,11 @@ msgstr "Порядок"
 #: mg/socio/smiles.py:233
 #: mg/core/auth.py:1024
 #: mg/mmo/locations.py:199
-#: mg/constructor/players.py:464
+#: mg/constructor/players.py:473
 #: mg/constructor/interface.py:597
 #: mg/constructor/interface.py:654
 #: mg/constructor/interface.py:849
-#: mg/constructor/interface.py:1236
+#: mg/constructor/interface.py:1239
 msgid "Editing"
 msgstr "Редактирование"
 
@@ -113,12 +113,12 @@ msgstr "Редактирование"
 #: mg/socio/smiles.py:215
 #: mg/core/auth.py:1023
 #: mg/mmo/locations.py:181
-#: mg/constructor/players.py:466
+#: mg/constructor/players.py:475
 #: mg/constructor/project.py:250
 #: mg/constructor/interface.py:598
 #: mg/constructor/interface.py:657
 #: mg/constructor/interface.py:889
-#: mg/constructor/interface.py:1238
+#: mg/constructor/interface.py:1241
 #: mg/constructor/design.py:1630
 msgid "edit"
 msgstr "редактировать"
@@ -134,10 +134,10 @@ msgstr "доступ"
 
 #: mg/socio/__init__.py:244
 #: mg/socio/smiles.py:234
-#: mg/constructor/players.py:465
+#: mg/constructor/players.py:474
 #: mg/constructor/interface.py:655
 #: mg/constructor/interface.py:850
-#: mg/constructor/interface.py:1237
+#: mg/constructor/interface.py:1240
 #: mg/constructor/design.py:1174
 msgid "Deletion"
 msgstr "Удаление"
@@ -146,10 +146,10 @@ msgstr "Удаление"
 #: mg/socio/__init__.py:1449
 #: mg/socio/__init__.py:1491
 #: mg/socio/smiles.py:216
-#: mg/constructor/players.py:467
+#: mg/constructor/players.py:476
 #: mg/constructor/interface.py:658
 #: mg/constructor/interface.py:851
-#: mg/constructor/interface.py:1239
+#: mg/constructor/interface.py:1242
 #: mg/constructor/design.py:1177
 #: mg/constructor/design.py:1630
 msgid "delete"
@@ -184,9 +184,9 @@ msgid "Top category title"
 msgstr "Раздел верхнего уровня"
 
 #: mg/socio/__init__.py:309
-#: mg/constructor/players.py:447
+#: mg/constructor/players.py:456
 #: mg/constructor/interface.py:802
-#: mg/constructor/interface.py:1155
+#: mg/constructor/interface.py:1158
 msgid "Sort order"
 msgstr "Порядок сортировки"
 
@@ -669,7 +669,7 @@ msgstr "Сообщения интерфейса"
 #: mg/core/emails.py:75
 #: mg/core/realplexor.py:356
 #: mg/mmo/locations.py:226
-#: mg/constructor/auth.py:285
+#: mg/constructor/auth.py:290
 #: mg/constructor/interface.py:426
 msgid "Settings stored"
 msgstr "Настройки сохранены"
@@ -752,7 +752,7 @@ msgid "Yes"
 msgstr "Да"
 
 #: mg/socio/telegrams.py:101
-#: mg/constructor/auth.py:298
+#: mg/constructor/auth.py:303
 msgid "No"
 msgstr "Нет"
 
@@ -1269,7 +1269,7 @@ msgid "App"
 msgstr "Прилож"
 
 #: mg/core/daemons.py:415
-#: mg/constructor/auth.py:563
+#: mg/constructor/auth.py:568
 msgid "Updated"
 msgstr "Обновлено"
 
@@ -1321,8 +1321,8 @@ msgid "Enter your user name"
 msgstr "Введите ваше имя пользователя"
 
 #: mg/core/auth.py:362
-#: mg/constructor/auth.py:368
-#: mg/constructor/auth.py:889
+#: mg/constructor/auth.py:373
+#: mg/constructor/auth.py:894
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
@@ -1330,14 +1330,14 @@ msgstr "Это имя уже занято"
 #: mg/core/auth.py:742
 #: mg/constructor/setup.py:190
 #: mg/constructor/admin.py:472
-#: mg/constructor/auth.py:395
+#: mg/constructor/auth.py:400
 msgid "Enter your password"
 msgstr "Введите ваш пароль"
 
 #: mg/core/auth.py:366
 #: mg/core/auth.py:836
 #: mg/constructor/setup.py:192
-#: mg/constructor/auth.py:397
+#: mg/constructor/auth.py:402
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
 
@@ -1356,7 +1356,7 @@ msgstr "Укажите ваш пол"
 
 #: mg/core/auth.py:376
 #: mg/constructor/setup.py:186
-#: mg/constructor/auth.py:385
+#: mg/constructor/auth.py:390
 msgid "Enter your e-mail address"
 msgstr "Введите ваш адрес e-mail"
 
@@ -1364,7 +1364,7 @@ msgstr "Введите ваш адрес e-mail"
 #: mg/core/auth.py:532
 #: mg/core/auth.py:935
 #: mg/constructor/setup.py:188
-#: mg/constructor/auth.py:387
+#: mg/constructor/auth.py:392
 msgid "Enter correct e-mail"
 msgstr "Введите правильный адрес e-mail"
 
@@ -1372,15 +1372,15 @@ msgstr "Введите правильный адрес e-mail"
 #: mg/core/auth.py:537
 #: mg/core/auth.py:899
 #: mg/core/auth.py:940
-#: mg/constructor/auth.py:392
+#: mg/constructor/auth.py:397
 msgid "There is another user with this email"
 msgstr "Уже есть пользователь с этим e-mail"
 
 #: mg/core/auth.py:385
 #: mg/core/auth.py:521
-#: mg/constructor/auth.py:343
-#: mg/constructor/auth.py:400
-#: mg/constructor/auth.py:906
+#: mg/constructor/auth.py:348
+#: mg/constructor/auth.py:405
+#: mg/constructor/auth.py:911
 msgid "Enter numbers from the picture"
 msgstr "Введите цифры с картинки"
 
@@ -1388,22 +1388,22 @@ msgstr "Введите цифры с картинки"
 #: mg/core/auth.py:392
 #: mg/core/auth.py:526
 #: mg/core/auth.py:528
-#: mg/constructor/auth.py:405
-#: mg/constructor/auth.py:407
-#: mg/constructor/auth.py:911
-#: mg/constructor/auth.py:913
+#: mg/constructor/auth.py:410
+#: mg/constructor/auth.py:412
+#: mg/constructor/auth.py:916
+#: mg/constructor/auth.py:918
 msgid "Incorrect number"
 msgstr "Неверное число"
 
 #: mg/core/auth.py:426
 #: mg/core/auth.py:551
-#: mg/constructor/auth.py:465
+#: mg/constructor/auth.py:470
 msgid "Account activation"
 msgstr "Активация аккаунта"
 
 #: mg/core/auth.py:427
 #: mg/core/auth.py:552
-#: mg/constructor/auth.py:466
+#: mg/constructor/auth.py:471
 msgid ""
 "Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n"
 "\n"
@@ -1431,21 +1431,21 @@ msgstr "Имя пользователя"
 
 #: mg/core/auth.py:435
 #: mg/constructor/setup.py:220
-#: mg/constructor/auth.py:325
+#: mg/constructor/auth.py:330
 msgid "Sex"
 msgstr "Пол"
 
 #: mg/core/auth.py:435
 #: mg/core/emails.py:460
 #: mg/constructor/setup.py:220
-#: mg/constructor/auth.py:325
+#: mg/constructor/auth.py:330
 msgid "Male"
 msgstr "Мужской"
 
 #: mg/core/auth.py:435
 #: mg/core/emails.py:460
 #: mg/constructor/setup.py:220
-#: mg/constructor/auth.py:325
+#: mg/constructor/auth.py:330
 msgid "Female"
 msgstr "Женский"
 
@@ -1466,7 +1466,7 @@ msgstr "Подтвердите пароль"
 
 #: mg/core/auth.py:439
 #: mg/core/auth.py:558
-#: mg/constructor/auth.py:953
+#: mg/constructor/auth.py:958
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
@@ -1800,8 +1800,8 @@ msgid "Registration"
 msgstr "Регистрация"
 
 #: mg/core/auth.py:1188
-#: mg/constructor/players.py:462
-#: mg/constructor/auth.py:324
+#: mg/constructor/players.py:471
+#: mg/constructor/auth.py:329
 msgid "Name"
 msgstr "Имя"
 
@@ -1881,7 +1881,7 @@ msgstr "Конфигурация e-mail"
 #: mg/constructor/admin.py:152
 #: mg/constructor/admin.py:157
 #: mg/constructor/admin.py:178
-#: mg/constructor/interface.py:1180
+#: mg/constructor/interface.py:1183
 #: mg/constructor/design.py:1357
 #: mg/constructor/design.py:1797
 msgid "Settings"
@@ -2104,7 +2104,7 @@ msgstr "Проект"
 
 #: mg/core/realplexor.py:378
 #: mg/constructor/auth.py:49
-#: mg/constructor/auth.py:563
+#: mg/constructor/auth.py:568
 msgid "Session"
 msgstr "Сессия"
 
@@ -2300,7 +2300,7 @@ msgstr "Сумма к выдаче"
 #: mg/game/money.py:682
 #: mg/game/money.py:731
 #: mg/game/money.py:745
-#: mg/constructor/auth.py:302
+#: mg/constructor/auth.py:307
 msgid "Currency"
 msgstr "Валюта"
 
@@ -2783,120 +2783,120 @@ msgstr "Нет такой локации"
 msgid "No location"
 msgstr "Нет локации"
 
-#: mg/constructor/players.py:310
-#: mg/constructor/players.py:477
+#: mg/constructor/players.py:319
+#: mg/constructor/players.py:486
 msgid "Character form"
 msgstr "Анкета персонажа"
 
-#: mg/constructor/players.py:335
+#: mg/constructor/players.py:344
 msgid "Custom field"
 msgstr "Пользовательское поле"
 
-#: mg/constructor/players.py:335
-#: mg/constructor/chat.py:671
-#: mg/constructor/auth.py:324
+#: mg/constructor/players.py:344
+#: mg/constructor/chat.py:680
+#: mg/constructor/auth.py:329
 msgid "Character name"
 msgstr "Имя персонажа"
 
-#: mg/constructor/players.py:335
-#: mg/constructor/auth.py:325
+#: mg/constructor/players.py:344
+#: mg/constructor/auth.py:330
 msgid "Character sex"
 msgstr "Пол персонажа"
 
-#: mg/constructor/players.py:387
-#: mg/constructor/chat.py:143
+#: mg/constructor/players.py:396
+#: mg/constructor/chat.py:146
 #: mg/constructor/interface.py:390
 msgid "Invalid selection"
 msgstr "Неверный выбор"
 
-#: mg/constructor/players.py:389
+#: mg/constructor/players.py:398
 msgid "Name may not be empty"
 msgstr "Имя не может быть пустым"
 
-#: mg/constructor/players.py:391
+#: mg/constructor/players.py:400
 msgid "Description may not be empty"
 msgstr "Описание не может быть пустым"
 
-#: mg/constructor/players.py:393
+#: mg/constructor/players.py:402
 msgid "Prompt may not be empty"
 msgstr "Приглашение не может быть пустым"
 
-#: mg/constructor/players.py:413
+#: mg/constructor/players.py:422
 msgid "Number expected"
 msgstr "Требуется число"
 
-#: mg/constructor/players.py:423
+#: mg/constructor/players.py:432
 msgid "Specify list of values"
 msgstr "Укажите список значений"
 
-#: mg/constructor/players.py:430
+#: mg/constructor/players.py:439
 msgid "Invalid format"
 msgstr "Неверный формат"
 
-#: mg/constructor/players.py:444
+#: mg/constructor/players.py:453
 msgid "Short description for administrators"
 msgstr "Короткое описание для администраторов"
 
-#: mg/constructor/players.py:445
+#: mg/constructor/players.py:454
 msgid "Form control type"
 msgstr "Тип поля"
 
-#: mg/constructor/players.py:445
+#: mg/constructor/players.py:454
 msgid "text input"
 msgstr "текстовое поле"
 
-#: mg/constructor/players.py:445
+#: mg/constructor/players.py:454
 msgid "combo box"
 msgstr "выпадающий список"
 
-#: mg/constructor/players.py:445
+#: mg/constructor/players.py:454
 msgid "text area"
 msgstr "большое текстовое поле"
 
-#: mg/constructor/players.py:446
+#: mg/constructor/players.py:455
 msgid "Possible options. Format: 0:first value|1:second value|2:third value"
 msgstr "Возможные варианты. Формат: 0:первое значение|1:второе значение|3:третье значение"
 
-#: mg/constructor/players.py:448
+#: mg/constructor/players.py:457
 msgid "Description for players"
 msgstr "Описание для игроков"
 
-#: mg/constructor/players.py:449
+#: mg/constructor/players.py:458
 msgid "Input prompt for players"
 msgstr "Текст рядом с полем ввода в анкете"
 
-#: mg/constructor/players.py:450
+#: mg/constructor/players.py:459
 msgid "Show on registration"
 msgstr "Показывать при регистрации"
 
-#: mg/constructor/players.py:451
+#: mg/constructor/players.py:460
 msgid "The field is mandatory after this character level ('0' if not mandatory)"
 msgstr "Это поле является обязательным, начиная с этого уровня персонажа ('0', если необязательное)"
 
-#: mg/constructor/players.py:454
+#: mg/constructor/players.py:463
 msgid "Field type"
 msgstr "Тип поля"
 
-#: mg/constructor/players.py:460
+#: mg/constructor/players.py:469
 msgid "Create new field"
 msgstr "Создать новое поле"
 
-#: mg/constructor/players.py:468
+#: mg/constructor/players.py:477
 msgid "recover"
 msgstr "восстановить"
 
-#: mg/constructor/players.py:469
+#: mg/constructor/players.py:478
 msgid "Here you can customize parameters entered by player in the character form. These are not game parameters like strength and agility. Character form is a simple text fields like 'Legend', 'Motto' etc."
 msgstr "Здесь вы можете настроить параметры, которые игроки вводят в анкете персонажа. Это не игровые параметры типа силы или ловкости. Анкета персонажа - это обычные текстовые поля типа \"Легенда\", \"Девиз\" и т.д."
 
-#: mg/constructor/players.py:474
+#: mg/constructor/players.py:483
 msgid "New field"
 msgstr "Новое поле"
 
-#: mg/constructor/players.py:505
-#: mg/constructor/chat.py:698
+#: mg/constructor/players.py:514
+#: mg/constructor/chat.py:707
 #: mg/constructor/auth.py:49
-#: mg/constructor/auth.py:563
+#: mg/constructor/auth.py:568
 msgid "Character"
 msgstr "Персонаж"
 
@@ -3020,8 +3020,8 @@ msgid "Launch the constructor"
 msgstr "Запустить конструктор"
 
 #: mg/constructor/setup.py:182
-#: mg/constructor/auth.py:362
-#: mg/constructor/auth.py:883
+#: mg/constructor/auth.py:367
+#: mg/constructor/auth.py:888
 msgid "This field is mandatory"
 msgstr "Это обязательное поле"
 
@@ -3287,243 +3287,251 @@ msgstr "Переписка с {0}"
 msgid "MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games"
 msgstr "MMO Constructor - http://www.mmoconstructor.ru - конструктор браузерных онлайн-игр"
 
-#: mg/constructor/chat.py:95
+#: mg/constructor/chat.py:98
 msgid "Clear chat"
 msgstr "Очистить чат"
 
-#: mg/constructor/chat.py:104
+#: mg/constructor/chat.py:107
 msgid "Transliteration"
 msgstr "Транслитерация"
 
-#: mg/constructor/chat.py:116
-#: mg/constructor/chat.py:125
+#: mg/constructor/chat.py:119
+#: mg/constructor/chat.py:128
 msgid "Chat configuration"
 msgstr "Конфигурация чата"
 
-#: mg/constructor/chat.py:118
+#: mg/constructor/chat.py:121
 msgid "Debug channel"
 msgstr "Отладочный канал"
 
-#: mg/constructor/chat.py:121
+#: mg/constructor/chat.py:124
 msgid "Chat configuration editor"
 msgstr "Редактор конфигурации чата"
 
-#: mg/constructor/chat.py:154
-#: mg/constructor/chat.py:163
-#: mg/constructor/chat.py:173
-#: mg/constructor/chat.py:183
+#: mg/constructor/chat.py:157
+#: mg/constructor/chat.py:166
+#: mg/constructor/chat.py:176
+#: mg/constructor/chat.py:186
 msgid "Chat command must begin with / and must not contain whitespace characters"
 msgstr "Команда чата должна начинаться с / и не может содержать пробелов"
 
-#: mg/constructor/chat.py:196
+#: mg/constructor/chat.py:200
 msgid "Chat configuration stored"
 msgstr "Конфигурация чата сохранена"
 
-#: mg/constructor/chat.py:221
+#: mg/constructor/chat.py:226
 msgid "Chat channels mode"
 msgstr "Режим каналов чата"
 
-#: mg/constructor/chat.py:221
+#: mg/constructor/chat.py:226
 msgid "Channels disabled"
 msgstr "Каналы отключены"
 
-#: mg/constructor/chat.py:221
+#: mg/constructor/chat.py:226
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
 
-#: mg/constructor/chat.py:221
+#: mg/constructor/chat.py:226
 msgid "Channel selection checkboxes"
 msgstr "Чекбоксы для выбора каналов"
 
-#: mg/constructor/chat.py:222
+#: mg/constructor/chat.py:227
 msgid "Location chat is separated from the main channel"
 msgstr "Чат локации отделён от главного канала"
 
-#: mg/constructor/chat.py:223
+#: mg/constructor/chat.py:228
 msgid "Debugging channel enabled"
 msgstr "Включить отладочный канал"
 
-#: mg/constructor/chat.py:224
+#: mg/constructor/chat.py:229
 msgid "Trading channel enabled"
 msgstr "Включить торговый канал"
 
-#: mg/constructor/chat.py:225
+#: mg/constructor/chat.py:230
 msgid "Diplomacy channel enabled"
 msgstr "Включить дипломатический канал"
 
-#: mg/constructor/chat.py:226
+#: mg/constructor/chat.py:231
 msgid "Chat command for writing to the entire world channel"
 msgstr "Команда чата для написания сообщения на весь мир"
 
-#: mg/constructor/chat.py:227
+#: mg/constructor/chat.py:232
 msgid "Chat command for writing to the current location channel"
 msgstr "Команда чата для написания в канал текущей локации"
 
-#: mg/constructor/chat.py:228
-#: mg/constructor/chat.py:229
+#: mg/constructor/chat.py:233
+#: mg/constructor/chat.py:234
 msgid "Chat command for writing to the trading channel"
 msgstr "Команда чата для написания в торговый канал"
 
-#: mg/constructor/chat.py:230
+#: mg/constructor/chat.py:235
 msgid "Should online/offline messages be visible worldwide"
 msgstr "Должны ли сообщения о входах/выходах из игры быть видимыми на весь мир"
 
-#: mg/constructor/chat.py:231
+#: mg/constructor/chat.py:236
 msgid "Message about character went online"
 msgstr "Сообщение о том, что персонаж вошёл в игру"
 
-#: mg/constructor/chat.py:232
+#: mg/constructor/chat.py:237
 msgid "Message about character went offline"
 msgstr "Сообщение о том, что персонаж вышел из игры"
 
-#: mg/constructor/chat.py:233
+#: mg/constructor/chat.py:238
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
 
-#: mg/constructor/chat.py:234
+#: mg/constructor/chat.py:239
 msgid "Message about character left location"
 msgstr "Сообщение о том, что персонаж ушёл из локации"
 
-#: mg/constructor/chat.py:276
+#: mg/constructor/chat.py:240
+msgid "Message about your character entered location"
+msgstr "Сообщение о том, что ваш персонаж перешёл в локацию"
+
+#: mg/constructor/chat.py:282
 #, python-format
 msgid "Chat channel '%s' disabled"
 msgstr "Канал чата '%s' отключен"
 
-#: mg/constructor/chat.py:277
+#: mg/constructor/chat.py:283
 #, python-format
 msgid "Chat channel '%s' enabled"
 msgstr "Канал чата '%s' включен"
 
-#: mg/constructor/chat.py:278
+#: mg/constructor/chat.py:284
 #, python-format
 msgid "Chat channel '%s' has new messages"
 msgstr "На канале чата '%s' появились новые сообщения"
 
-#: mg/constructor/chat.py:279
+#: mg/constructor/chat.py:285
 msgid "Chat channel button template: state ON"
 msgstr "Шаблон кнопки каналов чата: состояние ВКЛ"
 
-#: mg/constructor/chat.py:280
+#: mg/constructor/chat.py:286
 msgid "Chat channel button template: state OFF"
 msgstr "Шаблон кнопки каналов чата: состояние ВЫКЛ"
 
-#: mg/constructor/chat.py:281
+#: mg/constructor/chat.py:287
 msgid "Chat channel button template: state NEW"
 msgstr "Шаблон кнопки каналов чата: состояние НОВЫЕ"
 
-#: mg/constructor/chat.py:301
+#: mg/constructor/chat.py:307
 #, python-format
 msgid "Silence till %s"
 msgstr "Молчанка до %s"
 
-#: mg/constructor/chat.py:327
+#: mg/constructor/chat.py:333
 #, python-format
 msgid "Unrecognized command: /%s"
 msgstr "Неизвестная команда: /%s"
 
-#: mg/constructor/chat.py:345
+#: mg/constructor/chat.py:351
 #, python-format
 msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
-#: mg/constructor/chat.py:363
+#: mg/constructor/chat.py:369
 #, python-format
 msgid "No access to the '%s' chat channel"
 msgstr "Нет доступа к каналу чата '%s'"
 
-#: mg/constructor/chat.py:497
+#: mg/constructor/chat.py:503
 msgid "{NAME_CHAT} {GENDER:went,went} online"
 msgstr "{NAME_CHAT} {GENDER:вошёл,вошла} в игру"
 
-#: mg/constructor/chat.py:500
+#: mg/constructor/chat.py:506
 msgid "{NAME_CHAT} {GENDER:went,went} offline"
 msgstr "{NAME_CHAT} {GENDER:вышел,вышла} из игры"
 
-#: mg/constructor/chat.py:503
+#: mg/constructor/chat.py:509
 msgid "{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"
 msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_T}"
 
-#: mg/constructor/chat.py:506
+#: mg/constructor/chat.py:512
+msgid "You are at the {LOCATION}"
+msgstr "Вы находитесь {LOCATION_W}"
+
+#: mg/constructor/chat.py:515
 msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
 msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_F}"
 
-#: mg/constructor/chat.py:647
+#: mg/constructor/chat.py:656
 msgid "Joining character"
 msgstr "Добавление персонажа"
 
-#: mg/constructor/chat.py:648
+#: mg/constructor/chat.py:657
 msgid "Chat debug channel"
 msgstr "Отладочный канал чата"
 
-#: mg/constructor/chat.py:657
+#: mg/constructor/chat.py:666
 msgid "Enter character name"
 msgstr "Введите имя персонажа"
 
-#: mg/constructor/chat.py:661
+#: mg/constructor/chat.py:670
 #: mg/constructor/interface.py:113
 msgid "Character not found"
 msgstr "Персонаж не найден"
 
-#: mg/constructor/chat.py:687
+#: mg/constructor/chat.py:696
 msgid "unjoin"
 msgstr "исключить"
 
-#: mg/constructor/chat.py:694
+#: mg/constructor/chat.py:703
 msgid "Join character"
 msgstr "Добавить персонажа"
 
-#: mg/constructor/chat.py:698
+#: mg/constructor/chat.py:707
 msgid "Unjoining"
 msgstr "Исключение"
 
-#: mg/constructor/chat.py:733
+#: mg/constructor/chat.py:742
 msgid "channel///System"
 msgstr "Система"
 
-#: mg/constructor/chat.py:736
+#: mg/constructor/chat.py:745
 msgid "channel///World"
 msgstr "Мир"
 
-#: mg/constructor/chat.py:741
+#: mg/constructor/chat.py:750
 msgid "channel///Trade"
 msgstr "Торговля"
 
-#: mg/constructor/chat.py:746
+#: mg/constructor/chat.py:755
 msgid "channel///Diplomacy"
 msgstr "Дипломатия"
 
-#: mg/constructor/chat.py:751
+#: mg/constructor/chat.py:760
 msgid "channel///Debug"
 msgstr "Отладка"
 
-#: mg/constructor/chat.py:757
+#: mg/constructor/chat.py:766
 msgid "channel///Location"
 msgstr "Локация"
 
-#: mg/constructor/chat.py:773
+#: mg/constructor/chat.py:782
 #, python-format
 msgid "Error generating %s-on.png"
 msgstr "Ошибка при генерации %s-on.png"
 
-#: mg/constructor/chat.py:778
+#: mg/constructor/chat.py:787
 #, python-format
 msgid "Error generating %s-off.png"
 msgstr "Ошибка при генерации %s-off.png"
 
-#: mg/constructor/chat.py:783
+#: mg/constructor/chat.py:792
 #, python-format
 msgid "Error generating %s-new.png"
 msgstr "Ошибка при генерации %s-new.png"
 
-#: mg/constructor/chat.py:793
+#: mg/constructor/chat.py:802
 msgid "Character went online/offline"
 msgstr "Персонаж онлайн/оффлайн"
 
-#: mg/constructor/chat.py:793
+#: mg/constructor/chat.py:802
 msgid "System messages in the chat"
 msgstr "Системные сообщения в чате"
 
-#: mg/constructor/chat.py:794
+#: mg/constructor/chat.py:803
 msgid "Other characters' movement"
 msgstr "Перемещение других персонажей"
 
@@ -3797,171 +3805,171 @@ msgstr "отсоединено"
 msgid "Sessions monitor"
 msgstr "Монитор сессий"
 
-#: mg/constructor/auth.py:175
+#: mg/constructor/auth.py:180
 msgid "Admin Offline"
 msgstr "Администратор Оффлайн"
 
-#: mg/constructor/auth.py:175
-#: mg/constructor/auth.py:177
+#: mg/constructor/auth.py:180
+#: mg/constructor/auth.py:182
 msgid "To access this page enter the game first"
 msgstr "Чтобы получить доступ к этой странице, войдите в игру"
 
-#: mg/constructor/auth.py:205
-#: mg/constructor/auth.py:216
+#: mg/constructor/auth.py:210
+#: mg/constructor/auth.py:221
 msgid "Players authentication settings"
 msgstr "Настройки аутентификации игроков"
 
-#: mg/constructor/auth.py:206
+#: mg/constructor/auth.py:211
 msgid "Viewing list of authorized users"
 msgstr "Просмотр списка авторизованных пользователей"
 
-#: mg/constructor/auth.py:211
+#: mg/constructor/auth.py:216
 msgid "Players authentication"
 msgstr "Аутентификация игроков"
 
-#: mg/constructor/auth.py:213
+#: mg/constructor/auth.py:218
 msgid "List of characters online"
 msgstr "Список пользователей онлайн"
 
-#: mg/constructor/auth.py:228
+#: mg/constructor/auth.py:233
 msgid "Make valid selection"
 msgstr "Сделайте верный выбор"
 
-#: mg/constructor/auth.py:236
-#: mg/constructor/auth.py:244
-#: mg/constructor/auth.py:274
+#: mg/constructor/auth.py:241
+#: mg/constructor/auth.py:249
+#: mg/constructor/auth.py:279
 msgid "Invalid number"
 msgstr "Неверное число"
 
-#: mg/constructor/auth.py:240
-#: mg/constructor/auth.py:248
+#: mg/constructor/auth.py:245
+#: mg/constructor/auth.py:253
 msgid "Minimal value is 1"
 msgstr "Минимальное значение - 1"
 
-#: mg/constructor/auth.py:252
+#: mg/constructor/auth.py:257
 msgid "Free characters can't be greater than max characters"
 msgstr "Количество бесплатных персонажей не может быть больше максимального количества персонажей"
 
-#: mg/constructor/auth.py:298
+#: mg/constructor/auth.py:303
 msgid "Are players allowed to play more than 1 character"
 msgstr "Разрешено ли игрокам играть более, чем 1 персонажем"
 
-#: mg/constructor/auth.py:298
+#: mg/constructor/auth.py:303
 msgid "Yes, but play them by turn"
 msgstr "Да, но играть ими только по очереди"
 
-#: mg/constructor/auth.py:298
+#: mg/constructor/auth.py:303
 msgid "Yes, play them simultaneously"
 msgstr "Да, можно играть ими одновременно"
 
-#: mg/constructor/auth.py:299
+#: mg/constructor/auth.py:304
 msgid "Number of characters per player allowed for free"
 msgstr "Количество персонажей на игрока, разрешённое иметь бесплатно"
 
-#: mg/constructor/auth.py:300
+#: mg/constructor/auth.py:305
 msgid "Maximal number of characters per player allowed"
 msgstr "Максимальное количество разрешённых персонажей на игрока"
 
-#: mg/constructor/auth.py:301
+#: mg/constructor/auth.py:306
 msgid "Price for one extra character over free limit"
 msgstr "Цена за персонажа сверх бесплатного лимита"
 
-#: mg/constructor/auth.py:303
+#: mg/constructor/auth.py:308
 msgid "Login sequence"
 msgstr "Последовательность входа в игру"
 
-#: mg/constructor/auth.py:303
+#: mg/constructor/auth.py:308
 msgid "Enter the game immediately after login"
 msgstr "Вход в игру сразу после аутентификации"
 
-#: mg/constructor/auth.py:303
+#: mg/constructor/auth.py:308
 msgid "Open player cabinet after login"
 msgstr "После аутентификации открывать личный кабинет игрока"
 
-#: mg/constructor/auth.py:304
+#: mg/constructor/auth.py:309
 msgid "Require email activation"
 msgstr "Требовать активацию e-mail"
 
-#: mg/constructor/auth.py:306
+#: mg/constructor/auth.py:311
 msgid "Activation is required after this number of days ('0' if require on registration)"
 msgstr "Требовать активацию после этого количества дней ('0', если требовать сразу при регистрации)"
 
-#: mg/constructor/auth.py:307
+#: mg/constructor/auth.py:312
 msgid "Manual validation of every character name"
 msgstr "Ручная проверка каждого имени персонажа"
 
-#: mg/constructor/auth.py:324
+#: mg/constructor/auth.py:329
 msgid "Enter your character name"
 msgstr "Введите имя вашего персонажа"
 
-#: mg/constructor/auth.py:325
+#: mg/constructor/auth.py:330
 msgid "sex///Who is your character"
 msgstr "Кем является ваш персонаж"
 
-#: mg/constructor/auth.py:341
+#: mg/constructor/auth.py:346
 msgid "Your e-mail address"
 msgstr "Ваш адрес e-mail"
 
-#: mg/constructor/auth.py:342
+#: mg/constructor/auth.py:347
 msgid "Your password"
 msgstr "Ваш пароль"
 
-#: mg/constructor/auth.py:381
-#: mg/constructor/auth.py:902
+#: mg/constructor/auth.py:386
+#: mg/constructor/auth.py:907
 msgid "Make a valid selection"
 msgstr "Сделайте верный выбор"
 
-#: mg/constructor/auth.py:489
+#: mg/constructor/auth.py:494
 msgid "Invalid characters in the name. Only latin and russian letters, numbers, spaces, symbols '_', and '-' are allowed"
 msgstr "Недопустимые символы в имени. Можно использовать только цифры, латинские и русские буквы, цифры, пробелы, а также символы '_' и '-'"
 
-#: mg/constructor/auth.py:509
-#: mg/constructor/auth.py:542
-#: mg/constructor/auth.py:981
+#: mg/constructor/auth.py:514
+#: mg/constructor/auth.py:547
+#: mg/constructor/auth.py:986
 msgid "No characters assigned to this player"
 msgstr "Этому игроку не назначено ни одного персонажа"
 
-#: mg/constructor/auth.py:556
+#: mg/constructor/auth.py:561
 msgid "Error logging in"
 msgstr "Ошибка при входе"
 
-#: mg/constructor/auth.py:854
+#: mg/constructor/auth.py:859
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
 
-#: mg/constructor/auth.py:942
+#: mg/constructor/auth.py:947
 #: mg/constructor/interface.py:216
 msgid "Create a new character"
 msgstr "Создать нового персонажа"
 
-#: mg/constructor/auth.py:954
+#: mg/constructor/auth.py:959
 msgid "Create a character"
 msgstr "Создать персонажа"
 
-#: mg/constructor/auth.py:958
+#: mg/constructor/auth.py:963
 msgid "You are not logged in. <a href=\"/\">Please login</a> and retry activation"
 msgstr "Вы не произвели вход. Пожалуйста, <a href=\"/\">зайдите снова</a> и повторите активацию"
 
-#: mg/constructor/auth.py:1014
+#: mg/constructor/auth.py:1018
 msgid "Related player"
 msgstr "Связанный игрок"
 
-#: mg/constructor/auth.py:1022
+#: mg/constructor/auth.py:1026
 #, python-format
 msgid "Related character %s"
 msgstr "Связанный персонаж %s"
 
-#: mg/constructor/auth.py:1032
+#: mg/constructor/auth.py:1036
 #: mg/constructor/interface.py:215
 #: mg/constructor/design.py:1797
 msgid "Logout"
 msgstr "Завершение сеанса"
 
-#: mg/constructor/auth.py:1040
+#: mg/constructor/auth.py:1044
 msgid "Reload"
 msgstr "Перезагрузить"
 
-#: mg/constructor/auth.py:1049
+#: mg/constructor/auth.py:1053
 msgid "Administrative interface"
 msgstr "Административный интерфейс"
 
@@ -3995,7 +4003,7 @@ msgid "Game interface panels"
 msgstr "Панели игрового интерфейса"
 
 #: mg/constructor/interface.py:379
-#: mg/constructor/interface.py:1254
+#: mg/constructor/interface.py:1257
 msgid "Popup menus"
 msgstr "Выпадающие меню"
 
@@ -4244,13 +4252,13 @@ msgid "n/a"
 msgstr "н/д"
 
 #: mg/constructor/interface.py:863
-#: mg/constructor/interface.py:1146
+#: mg/constructor/interface.py:1149
 #, python-format
 msgid "Panel: %s"
 msgstr "Панель: %s"
 
 #: mg/constructor/interface.py:872
-#: mg/constructor/interface.py:1151
+#: mg/constructor/interface.py:1154
 #, python-format
 msgid "Popup menu: %s"
 msgstr "Выпадающее меню: %s"
@@ -4319,79 +4327,79 @@ msgstr "Изображение должно быть JPEG, PNG или GIF"
 msgid "You must upload an image"
 msgstr "Вы должны загрузить изображение"
 
-#: mg/constructor/interface.py:1154
+#: mg/constructor/interface.py:1157
 msgid "Buttons block"
 msgstr "Блок кнопок"
 
-#: mg/constructor/interface.py:1156
+#: mg/constructor/interface.py:1159
 msgid "Button image"
 msgstr "Изображение для кнопки"
 
-#: mg/constructor/interface.py:1157
+#: mg/constructor/interface.py:1160
 msgid "Button hint"
 msgstr "Подсказка для кнопки"
 
-#: mg/constructor/interface.py:1158
+#: mg/constructor/interface.py:1161
 msgid "Button action"
 msgstr "Действие для кнопки"
 
-#: mg/constructor/interface.py:1158
+#: mg/constructor/interface.py:1161
 msgid "Open hyperlink"
 msgstr "Открыть гиперссылку"
 
-#: mg/constructor/interface.py:1158
+#: mg/constructor/interface.py:1161
 msgid "Execute JavaScript"
 msgstr "Выполнить JavaScript"
 
-#: mg/constructor/interface.py:1158
+#: mg/constructor/interface.py:1161
 msgid "Open popup menu"
 msgstr "Открыть выпадающее меню"
 
-#: mg/constructor/interface.py:1159
+#: mg/constructor/interface.py:1162
 msgid "Button href"
 msgstr "Ссылка"
 
-#: mg/constructor/interface.py:1160
+#: mg/constructor/interface.py:1163
 msgid "Target frame"
 msgstr "В каком фрейме открыть"
 
-#: mg/constructor/interface.py:1160
+#: mg/constructor/interface.py:1163
 msgid "Main game frame"
 msgstr "Главный игровой фрейм"
 
-#: mg/constructor/interface.py:1160
+#: mg/constructor/interface.py:1163
 msgid "New window"
 msgstr "Новое окно"
 
-#: mg/constructor/interface.py:1161
+#: mg/constructor/interface.py:1164
 msgid "Popup menu"
 msgstr "Выпадающее меню"
 
-#: mg/constructor/interface.py:1162
+#: mg/constructor/interface.py:1165
 msgid "Javascript onclick"
 msgstr "JavaScript onclick"
 
-#: mg/constructor/interface.py:1169
+#: mg/constructor/interface.py:1172
 msgid "<p>Your game is currently on moderation. You may continue setting it up.</p><p><a href=\"/admin\" target=\"_blank\">Administrative interface</a></p>"
 msgstr "<p>Ваша игра в данный момент находится на модерации. Вы можете продолжить её настройку.</p><p><a href=\"/admin\" target=\"_blank\">Административный интерфейс</a></p>"
 
-#: mg/constructor/interface.py:1171
+#: mg/constructor/interface.py:1174
 msgid "<h1>Welcome to your new game!</h1><p>Now you can open <a href=\"/admin\" target=\"_blank\">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>"
 msgstr "<h1>Добро пожаловать в вашу новую игру!</h1><p>Сейчас вы можете открыть <a href=\"/admin\" target=\"_blank\">административный интерфейс</a> и выполнить несколько шагов, необходимых для запуска вашей игры.</p><p>Добро пожаловать в мир креативной разработки игр, и желаем удачи!</p>"
 
-#: mg/constructor/interface.py:1221
+#: mg/constructor/interface.py:1224
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
 
-#: mg/constructor/interface.py:1229
+#: mg/constructor/interface.py:1232
 msgid "Popup menu title (visible to administrators only)"
 msgstr "Название выпадающего меню (видно только администраторам)"
 
-#: mg/constructor/interface.py:1233
+#: mg/constructor/interface.py:1236
 msgid "New popup menu"
 msgstr "Новое выпадающее меню"
 
-#: mg/constructor/interface.py:1240
+#: mg/constructor/interface.py:1243
 msgid "Are you sure want to delete this popup menu?"
 msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
 

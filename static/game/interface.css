@@ -28,6 +28,7 @@ area { border: none }
 #chat-input-control { width: 100%; }
 .chat-button { cursor: pointer }
 .chat-clickable { cursor: pointer }
+.chat-msg { margin-right: 4px; margin-left: 4px }
 .chat-msg-char { font-weight: bold }
 .chat-msg-char-missing { text-decoration: line-through }
 .chat-msg-auth { color: #606060 }
@@ -41,6 +42,7 @@ area { border: none }
 #smiles-container .box-0, #smiles-container .sbox-0 { height: 100% }
 .chat-smile { margin: 2px; cursor: pointer }
 #smiles-window .x-window-tl, #smiles-window .x-window-tc, #smiles-window .x-window-tr, #smiles-window .x-window-ml, #smiles-window .x-window-mc, #smiles-window .x-window-mr, #smiles-window .x-window-bl, #smiles-window .x-window-bc, #smiles-window .x-window-br, #smiles-window .x-window-mc { background: transparent; border-color: transparent }
+#msg-current-location { background-color: #404040; color: #ffffff; padding: 2px 10px 2px 10px; margin-top: 4px; margin-bottom: 4px; text-align: center }
 
 /* ROSTER */
 #chat-roster { height: 100% }

@@ -164,6 +164,11 @@ class Auth(ConstructorModule):
         self.rhook("stream.character", self.stream_character)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("session.character-sessions", self.character_sessions)
+
+    def character_sessions(self, character, sessions):
+        lst = self.objlist(SessionList, query_index="authorized-user", query_equal="1-%s" % character.uuid)
+        sessions.extend(lst.uuids())
 
     def require_login(self):
         if not self.app().project.get("inactive"):
@@ -997,11 +1002,10 @@ class Auth(ConstructorModule):
     def cleanup_inactive_users(self):
         raise Hooks.Return(None)
 
-    def stream_character(self, character, cls, method, **kwargs):
-        lst = self.objlist(SessionList, query_index="authorized-user", query_equal="1-%s" % character.uuid)
-        ids = ["id_%s" % sess_uuid for char_uuid, sess_uuid in lst.index_values(2)]
+    def stream_character(self, character, method_cls, method, **kwargs):
+        ids = ["id_%s" % sess_uuid for sess_uuid in character.sessions]
         if ids:
-            self.call("stream.packet", ids, cls, method, **kwargs)
+            self.call("stream.packet", ids, method_cls, method, **kwargs)
 
     def user_tables(self, user, tables):
         req = self.req()

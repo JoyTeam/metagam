@@ -239,6 +239,15 @@ class Character(Module):
             self._db_settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._db_settings
 
+    @property
+    def sessions(self):
+        try:
+            return self._sessions
+        except AttributeError:
+            self._sessions = []
+            self.call("session.character-sessions", self, self._sessions)
+            return self._sessions
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)

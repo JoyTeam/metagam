@@ -20,10 +20,7 @@ Chat.initialize = function() {
 	});
 	this.box_content = new Ext.BoxComponent({
 		applyTo: 'chat-box-content',
-		autoScroll: true,
-		style: {
-			height: '100%'
-		}
+		autoScroll: true
 	});
 };
 
@@ -275,7 +272,7 @@ Chat.msg = function(pkt) {
 	if (this.mode != 0) {
 		var ch = this.channels_by_id[pkt.channel];
 		if (!ch)
-			return;
+			return undefined;
 	}
 	var ctspan = document.createElement('span');
 	if (pkt.cls) {
@@ -286,7 +283,13 @@ Chat.msg = function(pkt) {
 	}
 	ctspan.innerHTML = pkt.html;
 	var div = document.createElement('div');
+	div.className = 'chat-msg';
+	if (pkt.id)
+		div.id = pkt.id;
 	div.appendChild(ctspan);
+	div.className = div.className + ' cmc-' + ch.id;
+	if (pkt.priv)
+		div.className = div.className + ' chat-private';
 	if (this.mode == 1) {
 		ch.box_content.el.dom.appendChild(div);
 		if (ch.id == this.active_channel) {
@@ -295,7 +298,6 @@ Chat.msg = function(pkt) {
 			ch.btn.el.dom.src = ch.button_image + '-new.png';
 		}
 	} else if (this.mode == 2) {
-		div.className = 'cmc-' + ch.id;
 		div.style.display = ch.visible ? 'block' : 'none';
 		this.box_content.el.dom.appendChild(div);
 		if (ch.visible) {
@@ -307,6 +309,7 @@ Chat.msg = function(pkt) {
 		this.box_content.el.dom.appendChild(div);
 		this.box_content.el.scroll('down', 1000000, true);
 	}
+	return div;
 };
 
 /* Toggle chatbox tab visibility */
@@ -576,6 +579,24 @@ Chat.filters = function(pkt) {
 			els[j].style.display = cls;
 		}
 	}
+};
+
+/* Update chat message about current location */
+Chat.current_location = function(pkt) {
+	var old = this.last_location_msg;
+	if (old && !old.nextSibling && old.parentNode)
+		old.parentNode.removeChild(old);
+	this.last_location_msg = this.msg({
+		id: 'msg-current-location',
+		channel: 'loc',
+		html: pkt.html,
+		cls: 'your-location'
+	});
+};
+
+/* Clear all messages in the loc channel */
+Chat.clear_loc = function(pkt) {
+	Ext.each(Ext.query('.cmc-loc'), function(el) { el.parentNode.removeChild(el); })
 };
 
 Chat.clear = function() {
