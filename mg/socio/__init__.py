@@ -223,7 +223,7 @@ class ForumAdmin(Module):
             menu.append({"id": "forum.index", "text": self._("Forum")})
 
     def menu_forum_index(self, menu):
-        menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True })
+        menu.append({ "id": "forum/categories", "text": self._("Forum categories"), "leaf": True, "order": 20})
 
     def admin_categories(self):
         categories = []
@@ -2465,7 +2465,7 @@ class SocioAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("menu-admin-socio.index", self.menu_socio_index)
+        self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
         self.rhook("socio-admin.message-silence", self.message_silence)
 
@@ -2475,10 +2475,10 @@ class SocioAdmin(Module):
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
 
-    def menu_socio_index(self, menu):
+    def menu_forum_index(self, menu):
         req = self.req()
         if req.has_access("socio.messages"):
-            menu.append({"id": "socio/messages", "text": self._("Interface messages"), "leaf": True})
+            menu.append({"id": "socio/messages", "text": self._("Interface messages"), "leaf": True, "order": 10})
 
     def admin_socio_messages(self):
         req = self.req()
