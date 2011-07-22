@@ -278,8 +278,8 @@ class ClusterAdmin(Module):
         perms.append({"id": "monitoring", "name": self._("Cluster monitoring")})
 
     def menu_root_index(self, menu):
-        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": -50})
-        menu.append({"id": "cluster.monitoring", "text": self._("Monitoring"), "order": -60})
+        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": 28})
+        menu.append({"id": "cluster.monitoring", "text": self._("Monitoring"), "order": 29})
 
     def menu_cluster_monitoring(self, menu):
         req = self.req()
