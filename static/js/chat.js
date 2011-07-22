@@ -2,7 +2,8 @@ var Chat = {
 	channels: new Array(),
 	channels_by_id: new Array(),
 	chat_filters: new Array(),
-	classes: ['auth', 'move']
+	classes: ['auth', 'move'],
+	chatbox_limit: 1000
 };
 
 Chat.initialize = function() {
@@ -339,12 +340,20 @@ Chat.msg_list = function(pkt) {
 		var ch = this.channels[i];
 		var fragment = fragments[ch.id];
 		if (fragment) {
-			ch.box_content.el.dom.appendChild(fragment);
+			var container = ch.box_content.el.dom;
+			container.appendChild(fragment);
+			while (container.childNodes.length > this.chatbox_limit) {
+				container.removeChild(container.firstChild);
+			}
 		}
 	}
 	var fragment = fragments['_main'];
 	if (fragment) {
-		this.box_content.el.dom.appendChild(fragment);
+		var container = this.box_content.el.dom;
+		container.appendChild(fragment);
+		while (container.childNodes.length > this.chatbox_limit) {
+			container.removeChild(container.firstChild);
+		}
 	}
 	if (!pkt.scroll_disable) {
 		if (pkt.scroll_bottom) {
@@ -401,6 +410,90 @@ Chat.submit = function() {
 	var val = this.input_control.dom.value;
 	if (!val)
 		return;
+	if (this.transl) {
+		var tokens = this.parse_input(val);
+		tokens.text = tokens.text.replace(/([bvgdhzjklmnprstfc])'/g, '$1ь');
+		tokens.text = tokens.text.replace(/([BVGDHZJKLMNPRSTFC])'/g, '$1Ь');
+		tokens.text = tokens.text.replace(/e'/g, 'э');
+		tokens.text = tokens.text.replace(/E'/g, 'Э');
+		tokens.text = tokens.text.replace(/sch/g, 'щ');
+		tokens.text = tokens.text.replace(/tsh/g, 'щ');
+		tokens.text = tokens.text.replace(/S[cC][hH]/g, 'Щ');
+		tokens.text = tokens.text.replace(/T[sS][hH]/g, 'Щ');
+		tokens.text = tokens.text.replace(/jo/g, 'ё');
+		tokens.text = tokens.text.replace(/ju/g, 'ю');
+		tokens.text = tokens.text.replace(/ja/g, 'я');
+		tokens.text = tokens.text.replace(/yo/g, 'ё');
+		tokens.text = tokens.text.replace(/yu/g, 'ю');
+		tokens.text = tokens.text.replace(/ya/g, 'я');
+		tokens.text = tokens.text.replace(/J[oO]/g, 'Ё');
+		tokens.text = tokens.text.replace(/J[uU]/g, 'Ю');
+		tokens.text = tokens.text.replace(/J[aA]/g, 'Я');
+		tokens.text = tokens.text.replace(/Y[oO]/g, 'Ё');
+		tokens.text = tokens.text.replace(/Y[uU]/g, 'Ю');
+		tokens.text = tokens.text.replace(/Y[aA]/g, 'Я');
+		tokens.text = tokens.text.replace(/zh/g, 'ж');
+		tokens.text = tokens.text.replace(/kh/g, 'х');
+		tokens.text = tokens.text.replace(/ts/g, 'ц');
+		tokens.text = tokens.text.replace(/ch/g, 'ч');
+		tokens.text = tokens.text.replace(/sh/g, 'ш');
+		tokens.text = tokens.text.replace(/Z[hH]/g, 'Ж');
+		tokens.text = tokens.text.replace(/K[hH]/g, 'Х');
+		tokens.text = tokens.text.replace(/T[sS]/g, 'Ц');
+		tokens.text = tokens.text.replace(/C[hH]/g, 'Ч');
+		tokens.text = tokens.text.replace(/S[hH]/g, 'Ш');
+		tokens.text = tokens.text.replace(/a/g, 'а');
+		tokens.text = tokens.text.replace(/b/g, 'б');
+		tokens.text = tokens.text.replace(/v/g, 'в');
+		tokens.text = tokens.text.replace(/w/g, 'в');
+		tokens.text = tokens.text.replace(/g/g, 'г');
+		tokens.text = tokens.text.replace(/d/g, 'д');
+		tokens.text = tokens.text.replace(/e/g, 'е');
+		tokens.text = tokens.text.replace(/z/g, 'з');
+		tokens.text = tokens.text.replace(/i/g, 'и');
+		tokens.text = tokens.text.replace(/j/g, 'й');
+		tokens.text = tokens.text.replace(/k/g, 'к');
+		tokens.text = tokens.text.replace(/l/g, 'л');
+		tokens.text = tokens.text.replace(/m/g, 'м');
+		tokens.text = tokens.text.replace(/n/g, 'н');
+		tokens.text = tokens.text.replace(/o/g, 'о');
+		tokens.text = tokens.text.replace(/p/g, 'п');
+		tokens.text = tokens.text.replace(/r/g, 'р');
+		tokens.text = tokens.text.replace(/s/g, 'с');
+		tokens.text = tokens.text.replace(/t/g, 'т');
+		tokens.text = tokens.text.replace(/u/g, 'у');
+		tokens.text = tokens.text.replace(/f/g, 'ф');
+		tokens.text = tokens.text.replace(/h/g, 'х');
+		tokens.text = tokens.text.replace(/x/g, 'х');
+		tokens.text = tokens.text.replace(/y/g, 'ы');
+		tokens.text = tokens.text.replace(/c/g, 'ц');
+		tokens.text = tokens.text.replace(/A/g, 'А');
+		tokens.text = tokens.text.replace(/B/g, 'Б');
+		tokens.text = tokens.text.replace(/V/g, 'В');
+		tokens.text = tokens.text.replace(/W/g, 'В');
+		tokens.text = tokens.text.replace(/G/g, 'Г');
+		tokens.text = tokens.text.replace(/D/g, 'Д');
+		tokens.text = tokens.text.replace(/E/g, 'Е');
+		tokens.text = tokens.text.replace(/Z/g, 'З');
+		tokens.text = tokens.text.replace(/I/g, 'И');
+		tokens.text = tokens.text.replace(/J/g, 'Й');
+		tokens.text = tokens.text.replace(/K/g, 'К');
+		tokens.text = tokens.text.replace(/L/g, 'Л');
+		tokens.text = tokens.text.replace(/M/g, 'М');
+		tokens.text = tokens.text.replace(/N/g, 'Н');
+		tokens.text = tokens.text.replace(/O/g, 'О');
+		tokens.text = tokens.text.replace(/P/g, 'П');
+		tokens.text = tokens.text.replace(/R/g, 'Р');
+		tokens.text = tokens.text.replace(/S/g, 'С');
+		tokens.text = tokens.text.replace(/T/g, 'Т');
+		tokens.text = tokens.text.replace(/U/g, 'У');
+		tokens.text = tokens.text.replace(/F/g, 'Ф');
+		tokens.text = tokens.text.replace(/H/g, 'Х');
+		tokens.text = tokens.text.replace(/X/g, 'Х');
+		tokens.text = tokens.text.replace(/Y/g, 'Ы');
+		tokens.text = tokens.text.replace(/C/g, 'Ц');
+		val = this.generate_input(tokens);
+	}
 	this.submit_locked = true;
 	this.input_control.dom.onkeypress = function() { return false; }
 	var channel = this.active_channel;
@@ -627,9 +720,6 @@ Chat.filters = function(pkt) {
 
 /* Update chat message about current location */
 Chat.current_location = function(pkt) {
-	var old = this.last_location_msg;
-	if (old && !old.nextSibling && old.parentNode)
-		old.parentNode.removeChild(old);
 	this.last_location_msg = this.msg_list({
 		messages: [{
 			id: 'msg-current-location',
@@ -652,13 +742,44 @@ Chat.scroll_bottom = function(pkt) {
 	this.box_content.el.scroll('down', 1000000, false);
 };
 
+/* Activate default channel after loading */
+Chat.open_default_channel = function(pkt) {
+	if (this.mode == 1) {
+		this.tab_open('loc', true);
+	}
+	if (this.channel_control_element) {
+		this.channel_control_element.value = 'loc';
+	}
+};
+
 Chat.clear = function() {
-	alert('Clearing chat');
+	if (this.box_content) {
+		var container = this.box_content.el.dom;
+		while (container.lastChild) {
+			container.removeChild(container.lastChild);
+		}
+	}
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		if (ch.box_content) {
+			var container = ch.box_content.el.dom;
+			while (container.lastChild) {
+				container.removeChild(container.lastChild);
+			}
+		}
+	}
 }
 
 Chat.translit = function() {
-	alert('Switching translit');
-}
+	var btn = Game.buttons['roster-translit'];
+	if (!btn)
+		return;
+	this.transl = !this.transl;
+	var src = this.transl ? btn.image2 : btn.image;
+	if (src) {
+		Ext.each(Ext.query('.btn-roster-translit'), function(el) { el.src = src; });
+	}
+};
 
 wait(['realplexor-stream'], function() {
 	loaded('chat');

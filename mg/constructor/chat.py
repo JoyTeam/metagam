@@ -119,19 +119,24 @@ class Chat(ConstructorModule):
         if msg:
             self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % old_location.uuid, cls="move")
         self.call("stream.character", character, "chat", "clear_loc")
+        # old messages
+        msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
+        msgs.load(silent=True)
+        if len(msgs):
+            msg = self.msg_location_messages()
+            if msg:
+                self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
+            messages = [{
+                "channel": "loc",
+                "cls": msg.get("cls"),
+                "html": msg.get("html"),
+            } for msg in reversed(msgs)]
+            self.call("stream.character", character, "chat", "msg_list", messages=messages, scroll_disable=True)
         # current location message
         msg = self.msg_you_entered_location()
         if msg:
             self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
-        # old messages
-        msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
-        msgs.load(silent=True)
-        messages = [{
-            "channel": "loc",
-            "cls": msg.get("cls"),
-            "html": msg.get("html"),
-        } for msg in reversed(msgs)]
-        self.call("stream.character", character, "chat", "msg_list", messages=messages, scroll_bottom=True)
+        self.call("stream.character", character, "chat", "scroll_bottom")
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -146,7 +151,8 @@ class Chat(ConstructorModule):
             buttons.append({
                 "id": "roster-translit",
                 "onclick": "Chat.translit()",
-                "icon": "roster-translit.png",
+                "icon": "roster-translit-off.png",
+                "icon2": "roster-translit-on.png",
                 "title": self._("Transliteration"),
                 "block": "roster-buttons-menu",
                 "order": 15,
@@ -235,6 +241,7 @@ class Chat(ConstructorModule):
             config.set("chat.msg_entered_location", req.param("msg_entered_location"))
             config.set("chat.msg_left_location", req.param("msg_left_location"))
             config.set("chat.msg_you_entered_location", req.param("msg_you_entered_location"))
+            config.set("chat.msg_location_messages", req.param("msg_location_messages"))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
             # analysing errors
             if len(errors):
@@ -264,6 +271,7 @@ class Chat(ConstructorModule):
             msg_entered_location = self.msg_entered_location()
             msg_left_location = self.msg_left_location()
             msg_you_entered_location = self.msg_you_entered_location()
+            msg_location_messages = self.msg_location_messages()
             auth_msg_channel = self.auth_msg_channel()
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
@@ -281,6 +289,7 @@ class Chat(ConstructorModule):
             {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": msg_entered_location},
             {"name": "msg_left_location", "label": self._("Message about character left location"), "value": msg_left_location},
             {"name": "msg_you_entered_location", "label": self._("Message about your character entered location"), "value": msg_you_entered_location},
+            {"name": "msg_location_messages", "label": self._("Message heading messages from new location"), "value": msg_location_messages},
         ]
         self.call("admin.form", fields=fields)
 
@@ -301,12 +310,12 @@ class Chat(ConstructorModule):
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("chat")
         vars["js_init"].append("Chat.initialize();")
-        # list of channels
-        channels = []
-        self.call("chat.character-channels", character, channels)
-        for ch in channels:
-            if re_loc_channel.match(ch["id"]):
-                ch["id"] = "loc"
+#        # list of channels
+#        channels = []
+#        self.call("chat.character-channels", character, channels)
+#        for ch in channels:
+#            if re_loc_channel.match(ch["id"]):
+#                ch["id"] = "loc"
         chatmode = self.chatmode
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode:
@@ -506,6 +515,7 @@ class Chat(ConstructorModule):
                             dbmsg = self.obj(DBChatMessage)
                             dbmsg.set("created", sysnow)
                             dbmsg.set("channel", "char-%s" % char.uuid)
+                            dbmsg.set("real_channel", channel)
                             dbmsg.set("html", html)
                             dbmsg.set("priv", True)
                             dbmsg.set("cls", message.get("cls"))
@@ -572,7 +582,10 @@ class Chat(ConstructorModule):
         return self.conf("chat.msg_entered_location", self._("{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"))
 
     def msg_you_entered_location(self):
-        return self.conf("chat.msg_you_entered_location", self._("You are at the {LOCATION}"))
+        return self.conf("chat.msg_you_entered_location", self._("You moved to the {LOCATION}"))
+
+    def msg_location_messages(self):
+        return self.conf("chat.msg_location_messages", self._("Messages from the {LOCATION}"))
 
     def msg_left_location(self):
         return self.conf("chat.msg_left_location", self._("{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"))
@@ -623,9 +636,10 @@ class Chat(ConstructorModule):
                     char = self.character(char_uuid)
                     self.call("stream.packet", syschannel, "chat", "roster_add", character=char.roster_info, channel=channel["id"])
         # loading old personal messages
-        lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal="char-%s" % character.uuid, query_reversed=True, query_limit=old_private_messages_limit)
-        lst.load(silent=True)
+        msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="char-%s" % character.uuid, query_reversed=True, query_limit=old_private_messages_limit)
+        msgs.load(silent=True)
         for msg in msgs:
+            msg.set("channel", msg.get("real_channel", "loc"))
             messages.append(msg)
         # send old messages
         if len(messages):
@@ -637,11 +651,12 @@ class Chat(ConstructorModule):
                 "priv": msg.get("priv"),
             } for msg in messages]
             self.call("stream.packet", syschannel, "chat", "msg_list", messages=messages, scroll_disable=True)
-        # current location
-        msg = self.msg_you_entered_location()
-        if msg:
-            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
+#        # current location
+#        msg = self.msg_you_entered_location()
+#        if msg:
+#            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
         self.call("stream.character", character, "chat", "scroll_bottom")
+        self.call("stream.character", character, "chat", "open_default_channel")
 
     def character_offline(self, character):
         msg = self.msg_went_offline()

@@ -325,6 +325,7 @@ class Interface(ConstructorModule):
             vars["popups"] = popups
 
     def render_button(self, btn, layout, design, generated, cls):
+        # Primary image
         image = btn.get("image")
         if not image.startswith("http://"):
             # If some module is disabled we should hide
@@ -338,18 +339,34 @@ class Interface(ConstructorModule):
                     image = "%s/%s" % (design.get("uri"), image)
                 else:
                     image = "/st/icons/%s" % btn["icon"]
+            elif not design and btn.get("icon") and btn["icon"] in default_icons:
+                image = "/st-mg/game/default-interface/%s" % btn["icon"]
+            elif btn.get("icon"):
+                image = "/st/icons/%s" % btn["icon"]
             else:
-                if not design and btn.get("icon") and btn["icon"] in default_icons:
-                    image = "/st-mg/game/default-interface/%s" % btn["icon"]
-                elif btn.get("icon"):
-                    image = "/st/icons/%s" % btn["icon"]
-                else:
-                    image = "/st/game/invalid.png"
+                image = "/st/game/invalid.png"
         rbtn = {
+            "id": btn["id"],
             "image": image,
             "title": jsencode(htmlescape(btn.get("title"))),
             "popup": jsencode(btn.get("popup")),
         }
+        # Secondary image
+        image = btn.get("icon2")
+        if image:
+            if design and image in design.get("files"):
+                image = "%s/%s" % (design.get("uri"), image)
+            elif design and cls:
+                if self.call("design.prepare_button", design, image, "%s-bg.png" % cls, image, over="%s-over.png" % cls):
+                    image = "%s/%s" % (design.get("uri"), image)
+                else:
+                    image = "/st/icons/%s" % image
+            elif not design and image in default_icons:
+                image = "/st-mg/game/default-interface/%s" % image
+            else:
+                image = "/st/icons/%s" % image
+            rbtn["image2"] = image
+        # Button actions
         if btn.get("onclick"):
             rbtn["onclick"] = jsencode(htmlescape(btn.get("onclick")))
         elif btn.get("href"):
@@ -1071,6 +1088,8 @@ class Interface(ConstructorModule):
                         if blk["id"] == block:
                             image = "%s-%s" % (blk["class"], prototype["icon"])
                             btn["icon"] = prototype["icon"]
+                            if prototype.get("icon2"):
+                                btn["icon2"] = prototype["icon2"]
                             found = True
                 if not found:
                     try:
@@ -1080,6 +1099,10 @@ class Interface(ConstructorModule):
                     else:
                         image = prototype["icon"]
                         btn["icon"] = image
+                        try:
+                            del btn["icon2"]
+                        except KeyError:
+                            pass
 
             if not image:
                 errors["image"] = self._("You must upload an image")

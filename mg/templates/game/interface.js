@@ -21,8 +21,10 @@ var Game = {
 					[%if blk.buttons%], buttons: [
 						[%foreach btn in blk.buttons%]
 						{
+							id: '[%btn.id%]',
 							image: '[%btn.image%]',
 							title: '[%btn.title%]'
+							[%if btn.image2%], image2: '[%btn.image2%]'[%end%]
 							[%if btn.href%], href: '[%btn.href%]'[%end%]
 							[%if btn.target%], target: '[%btn.target%]'[%end%]
 							[%if btn.onclick%], onclick: '[%btn.onclick%]'[%end%]
@@ -44,8 +46,10 @@ var Game = {
 			buttons: [
 				[%foreach btn in popup.buttons%]
 				{
+					id: '[%btn.id%]',
 					image: '[%btn.image%]',
 					title: '[%btn.title%]'
+					[%if btn.image2%], image2: '[%btn.image2%]'[%end%]
 					[%if btn.href%], href: '[%btn.href%]'[%end%]
 					[%if btn.target%], target: '[%btn.target%]'[%end%]
 					[%if btn.onclick%], onclick: '[%btn.onclick%]'[%end%]
@@ -55,7 +59,8 @@ var Game = {
 			]
 		}[%unless popup.lst%], [%+ end%]
 		[%end +%]
-	}
+	},
+	buttons: new Array()
 };
 
 Game.setup_game_layout = function() {

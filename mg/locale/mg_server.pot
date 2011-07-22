@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-21 17:08+0400\n"
+"POT-Creation-Date: 2011-07-22 12:41+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2551,7 +2551,7 @@ msgstr ""
 msgid "Custom field"
 msgstr ""
 
-#: mg/constructor/players.py:344 mg/constructor/chat.py:680
+#: mg/constructor/players.py:344 mg/constructor/chat.py:784
 #: mg/constructor/auth.py:329
 msgid "Character name"
 msgstr ""
@@ -2560,7 +2560,7 @@ msgstr ""
 msgid "Character sex"
 msgstr ""
 
-#: mg/constructor/players.py:396 mg/constructor/chat.py:146
+#: mg/constructor/players.py:396 mg/constructor/chat.py:194
 #: mg/constructor/interface.py:390
 msgid "Invalid selection"
 msgstr ""
@@ -2653,7 +2653,7 @@ msgstr ""
 msgid "New field"
 msgstr ""
 
-#: mg/constructor/players.py:514 mg/constructor/chat.py:707
+#: mg/constructor/players.py:514 mg/constructor/chat.py:811
 #: mg/constructor/auth.py:49 mg/constructor/auth.py:568
 msgid "Character"
 msgstr ""
@@ -3030,247 +3030,255 @@ msgid ""
 "based online games"
 msgstr ""
 
-#: mg/constructor/chat.py:98
+#: mg/constructor/chat.py:146
 msgid "Clear chat"
 msgstr ""
 
-#: mg/constructor/chat.py:107
+#: mg/constructor/chat.py:155
 msgid "Transliteration"
 msgstr ""
 
-#: mg/constructor/chat.py:119 mg/constructor/chat.py:128
+#: mg/constructor/chat.py:167 mg/constructor/chat.py:176
 msgid "Chat configuration"
 msgstr ""
 
-#: mg/constructor/chat.py:121
+#: mg/constructor/chat.py:169
 msgid "Debug channel"
 msgstr ""
 
-#: mg/constructor/chat.py:124
+#: mg/constructor/chat.py:172
 msgid "Chat configuration editor"
 msgstr ""
 
-#: mg/constructor/chat.py:157 mg/constructor/chat.py:166
-#: mg/constructor/chat.py:176 mg/constructor/chat.py:186
+#: mg/constructor/chat.py:205 mg/constructor/chat.py:214
+#: mg/constructor/chat.py:224 mg/constructor/chat.py:234
 msgid ""
 "Chat command must begin with / and must not contain whitespace characters"
 msgstr ""
 
-#: mg/constructor/chat.py:200
+#: mg/constructor/chat.py:249
 msgid "Chat configuration stored"
 msgstr ""
 
-#: mg/constructor/chat.py:226
+#: mg/constructor/chat.py:276
 msgid "Chat channels mode"
 msgstr ""
 
-#: mg/constructor/chat.py:226
+#: mg/constructor/chat.py:276
 msgid "Channels disabled"
 msgstr ""
 
-#: mg/constructor/chat.py:226
+#: mg/constructor/chat.py:276
 msgid "Every channel on a separate tab"
 msgstr ""
 
-#: mg/constructor/chat.py:226
+#: mg/constructor/chat.py:276
 msgid "Channel selection checkboxes"
 msgstr ""
 
-#: mg/constructor/chat.py:227
+#: mg/constructor/chat.py:277
 msgid "Location chat is separated from the main channel"
 msgstr ""
 
-#: mg/constructor/chat.py:228
+#: mg/constructor/chat.py:278
 msgid "Debugging channel enabled"
 msgstr ""
 
-#: mg/constructor/chat.py:229
+#: mg/constructor/chat.py:279
 msgid "Trading channel enabled"
 msgstr ""
 
-#: mg/constructor/chat.py:230
+#: mg/constructor/chat.py:280
 msgid "Diplomacy channel enabled"
 msgstr ""
 
-#: mg/constructor/chat.py:231
+#: mg/constructor/chat.py:281
 msgid "Chat command for writing to the entire world channel"
 msgstr ""
 
-#: mg/constructor/chat.py:232
+#: mg/constructor/chat.py:282
 msgid "Chat command for writing to the current location channel"
 msgstr ""
 
-#: mg/constructor/chat.py:233 mg/constructor/chat.py:234
+#: mg/constructor/chat.py:283 mg/constructor/chat.py:284
 msgid "Chat command for writing to the trading channel"
 msgstr ""
 
-#: mg/constructor/chat.py:235
+#: mg/constructor/chat.py:285
 msgid "Should online/offline messages be visible worldwide"
 msgstr ""
 
-#: mg/constructor/chat.py:236
+#: mg/constructor/chat.py:286
 msgid "Message about character went online"
 msgstr ""
 
-#: mg/constructor/chat.py:237
+#: mg/constructor/chat.py:287
 msgid "Message about character went offline"
 msgstr ""
 
-#: mg/constructor/chat.py:238
+#: mg/constructor/chat.py:288
 msgid "Message about character entered location"
 msgstr ""
 
-#: mg/constructor/chat.py:239
+#: mg/constructor/chat.py:289
 msgid "Message about character left location"
 msgstr ""
 
-#: mg/constructor/chat.py:240
+#: mg/constructor/chat.py:290
 msgid "Message about your character entered location"
 msgstr ""
 
-#: mg/constructor/chat.py:282
-#, python-format
-msgid "Chat channel '%s' disabled"
-msgstr ""
-
-#: mg/constructor/chat.py:283
-#, python-format
-msgid "Chat channel '%s' enabled"
-msgstr ""
-
-#: mg/constructor/chat.py:284
-#, python-format
-msgid "Chat channel '%s' has new messages"
-msgstr ""
-
-#: mg/constructor/chat.py:285
-msgid "Chat channel button template: state ON"
-msgstr ""
-
-#: mg/constructor/chat.py:286
-msgid "Chat channel button template: state OFF"
-msgstr ""
-
-#: mg/constructor/chat.py:287
-msgid "Chat channel button template: state NEW"
-msgstr ""
-
-#: mg/constructor/chat.py:307
-#, python-format
-msgid "Silence till %s"
+#: mg/constructor/chat.py:291
+msgid "Message heading messages from new location"
 msgstr ""
 
 #: mg/constructor/chat.py:333
 #, python-format
+msgid "Chat channel '%s' disabled"
+msgstr ""
+
+#: mg/constructor/chat.py:334
+#, python-format
+msgid "Chat channel '%s' enabled"
+msgstr ""
+
+#: mg/constructor/chat.py:335
+#, python-format
+msgid "Chat channel '%s' has new messages"
+msgstr ""
+
+#: mg/constructor/chat.py:336
+msgid "Chat channel button template: state ON"
+msgstr ""
+
+#: mg/constructor/chat.py:337
+msgid "Chat channel button template: state OFF"
+msgstr ""
+
+#: mg/constructor/chat.py:338
+msgid "Chat channel button template: state NEW"
+msgstr ""
+
+#: mg/constructor/chat.py:358
+#, python-format
+msgid "Silence till %s"
+msgstr ""
+
+#: mg/constructor/chat.py:384
+#, python-format
 msgid "Unrecognized command: /%s"
 msgstr ""
 
-#: mg/constructor/chat.py:351
+#: mg/constructor/chat.py:402
 #, python-format
 msgid "Character '%s' not found"
 msgstr ""
 
-#: mg/constructor/chat.py:369
+#: mg/constructor/chat.py:420
 #, python-format
 msgid "No access to the '%s' chat channel"
 msgstr ""
 
-#: mg/constructor/chat.py:503
+#: mg/constructor/chat.py:575
 msgid "{NAME_CHAT} {GENDER:went,went} online"
 msgstr ""
 
-#: mg/constructor/chat.py:506
+#: mg/constructor/chat.py:578
 msgid "{NAME_CHAT} {GENDER:went,went} offline"
 msgstr ""
 
-#: mg/constructor/chat.py:509
+#: mg/constructor/chat.py:581
 msgid "{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"
 msgstr ""
 
-#: mg/constructor/chat.py:512
-msgid "You are at the {LOCATION}"
+#: mg/constructor/chat.py:584
+msgid "You moved to the {LOCATION}"
 msgstr ""
 
-#: mg/constructor/chat.py:515
+#: mg/constructor/chat.py:587
+msgid "Messages from the {LOCATION}"
+msgstr ""
+
+#: mg/constructor/chat.py:590
 msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
 msgstr ""
 
-#: mg/constructor/chat.py:656
+#: mg/constructor/chat.py:760
 msgid "Joining character"
 msgstr ""
 
-#: mg/constructor/chat.py:657
+#: mg/constructor/chat.py:761
 msgid "Chat debug channel"
 msgstr ""
 
-#: mg/constructor/chat.py:666
+#: mg/constructor/chat.py:770
 msgid "Enter character name"
 msgstr ""
 
-#: mg/constructor/chat.py:670 mg/constructor/interface.py:113
+#: mg/constructor/chat.py:774 mg/constructor/interface.py:113
 msgid "Character not found"
 msgstr ""
 
-#: mg/constructor/chat.py:696
+#: mg/constructor/chat.py:800
 msgid "unjoin"
 msgstr ""
 
-#: mg/constructor/chat.py:703
+#: mg/constructor/chat.py:807
 msgid "Join character"
 msgstr ""
 
-#: mg/constructor/chat.py:707
+#: mg/constructor/chat.py:811
 msgid "Unjoining"
 msgstr ""
 
-#: mg/constructor/chat.py:742
+#: mg/constructor/chat.py:846
 msgid "channel///System"
 msgstr ""
 
-#: mg/constructor/chat.py:745
+#: mg/constructor/chat.py:849
 msgid "channel///World"
 msgstr ""
 
-#: mg/constructor/chat.py:750
+#: mg/constructor/chat.py:854
 msgid "channel///Trade"
 msgstr ""
 
-#: mg/constructor/chat.py:755
+#: mg/constructor/chat.py:859
 msgid "channel///Diplomacy"
 msgstr ""
 
-#: mg/constructor/chat.py:760
+#: mg/constructor/chat.py:864
 msgid "channel///Debug"
 msgstr ""
 
-#: mg/constructor/chat.py:766
+#: mg/constructor/chat.py:870
 msgid "channel///Location"
 msgstr ""
 
-#: mg/constructor/chat.py:782
+#: mg/constructor/chat.py:886
 #, python-format
 msgid "Error generating %s-on.png"
 msgstr ""
 
-#: mg/constructor/chat.py:787
+#: mg/constructor/chat.py:891
 #, python-format
 msgid "Error generating %s-off.png"
 msgstr ""
 
-#: mg/constructor/chat.py:792
+#: mg/constructor/chat.py:896
 #, python-format
 msgid "Error generating %s-new.png"
 msgstr ""
 
-#: mg/constructor/chat.py:802
+#: mg/constructor/chat.py:906
 msgid "Character went online/offline"
 msgstr ""
 
-#: mg/constructor/chat.py:802
+#: mg/constructor/chat.py:906
 msgid "System messages in the chat"
 msgstr ""
 
-#: mg/constructor/chat.py:803
+#: mg/constructor/chat.py:907
 msgid "Other characters' movement"
 msgstr ""
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-20 17:38+0400\n"
+"POT-Creation-Date: 2011-07-22 12:39+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -26,7 +26,7 @@ msgstr "Советы гуру"
 #: static/js/admin.js:126 static/js/locations.js:23 static/js/locations.js:29
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
+#: static/js/admin-form.js:326 static/js/chat.js:436 static/js/chat.js:444
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -154,7 +154,7 @@ msgstr "Ошибка на сервере: %s"
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/chat.js:397
+#: static/js/chat.js:444
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 

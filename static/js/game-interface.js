@@ -408,15 +408,21 @@ Game.get_btn_id = function() {
 Game.render_button = function(btn) {
 	var att = '';
 	var btn_id = this.get_btn_id();
+	var classes = new Array();
 	if (btn.onclick) {
-		att += ' onclick="' + btn.onclick + '" class="clickable"';
+		att += ' onclick="' + btn.onclick + '"';
+		classes.push('clickable');
 	} else if (btn.popup) {
-		att += ' onclick="Game.popup(\'panel-btn-' + btn_id + '\', \'' + btn.popup + '\');" class="clickable"';
+		att += ' onclick="Game.popup(\'panel-btn-' + btn_id + '\', \'' + btn.popup + '\');"';
+		classes.push('clickable');
 	}
+	classes.push('btn-' + btn.id);
+	att += ' class="' + classes.join(' ') + '"';
 	var img = '<img id="panel-btn-' + btn_id + '" src="' + btn.image + '" alt="" title="' + btn.title + '"' + att + ' />';
 	if (btn.href && !btn.onclick) {
 		img = '<a href="' + btn.href + '" target="' + btn.target + '">' + img + '</a>';
 	}
+	this.buttons[btn.id] = btn;
 	return img;
 };
 
