@@ -1000,17 +1000,17 @@ class DesignMod(Module):
             "mg.constructor.design.DesignAdmin",
         ]
 
-    def parse(self, design, template, content, vars):
+    def parse(self, design, template, content, vars, design_type="game"):
         if design and template in design.get("files"):
             template = self.httpfile("%s/%s" % (design.get("uri"), template))
         else:
-            template = "game/%s" % template
+            template = "%s/%s" % (design_type, template)
         vars["design_root"] = design.get("uri") if design else None
         vars["content"] = content
         return self.call("web.parse_layout", template, vars)
 
-    def response(self, design, template, content, vars):
-        self.call("web.response", self.parse(design, template, content, vars))
+    def response(self, design, template, content, vars, design_type="game"):
+        self.call("web.response", self.parse(design, template, content, vars, design_type))
 
     def prepare_button(self, design, target_filename, template, icon, over=None):
         """
@@ -1119,7 +1119,6 @@ class DesignMod(Module):
 class DesignAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("design-admin.editor", self.editor)
         self.rhook("design-admin.delete", self.delete)
         self.rhook("design-admin.headmenu", self.headmenu)
@@ -1127,11 +1126,6 @@ class DesignAdmin(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "design", "name": self._("Design configuration")})
-
-    def menu_root_index(self, menu):
-        req = self.req()
-        if req.has_access("design"):
-            menu.append({"id": "design.index", "text": self._("Design"), "order": 110})
 
     def editor(self, group):
         self.call("admin.advice", {"title": self._("Preview feature"), "content": self._('Use "preview" feature to check your design before installing it to the project. Then press "Reload" several times to check design on arbitrary data.')}, {"title": self._("Multiple browsers"), "content": self._('Check your design in the most popular browsers.') + u' <a href="http://www.google.com/search?q={0}" target="_blank">{1}</a>.'.format(urlencode(self._("google///browser statistics")), self._("Find the most popular browsers"))})
@@ -1363,7 +1357,7 @@ class IndexPage(Module):
 class IndexPageAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("menu-admin-indexpage.index", self.menu_indexpage_index)
         self.rhook("ext-admin-indexpage.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
         self.rhook("admin-indexpage.validate", self.validate)
@@ -1381,8 +1375,10 @@ class IndexPageAdmin(Module):
         else:
             return self.call("design-admin.headmenu", "indexpage", args)
 
-    def menu_design_index(self, menu):
-        menu.append({"id": "indexpage/design", "text": self._("Index page"), "leaf": True, "order": 1})
+    def menu_indexpage_index(self, menu):
+        req = self.req()
+        if req.has_access("design"):
+            menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
         self.call("design-admin.editor", "indexpage")
@@ -1522,8 +1518,10 @@ class SocioInterface(ConstructorModule):
         self.rhook("forum.vars-tags", self.forum_vars_tags)
         self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
-        self.rhook("forum.response", self.response, priority=10)
-        self.rhook("forum.response_template", self.response_template, priority=10)
+        self.rhook("socio.response", self.response, priority=10)
+        self.rhook("socio.response_template", self.response_template, priority=10)
+        self.rhook("socio.response_simple", self.response_simple, priority=10)
+        self.rhook("socio.response_simple_template", self.response_simple_template, priority=10)
 
     def recommended_actions(self, actions):
         if not self.conf("sociointerface.design"):
@@ -1532,7 +1530,7 @@ class SocioInterface(ConstructorModule):
     def templates(self):
         output = cStringIO.StringIO()
         zip = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
-        for filename in ["index.html", "category.html", "topic.html", "tags.html"]:
+        for filename in ["global.html", "global-simple.html", "index.html", "category.html", "topic.html", "tags.html"]:
             zip.write("%s/templates/socio/%s" % (mg.__path__[0], filename), filename)
         zip.close()
         self.call("web.response", output.getvalue(), "application/zip")
@@ -1571,17 +1569,29 @@ class SocioInterface(ConstructorModule):
     def response(self, content, vars):
         self.call("forum.setup-menu", vars)
         design = self.design("sociointerface")
-        self.call("design.response", design, "index.html", content, vars)
+        self.call("design.response", design, "global.html", content, vars, "socio")
 
     def response_template(self, template, vars):
         self.call("forum.setup-menu", vars)
         design = self.design("sociointerface")
-        self.call("design.response", design, "index.html", self.call("web.parse_template", template, vars), vars)
+        content = self.call("design.parse", design, template, None, vars, "socio")
+        self.call("design.response", design, "global.html", content, vars, "socio")
+
+    def response_simple(self, content, vars):
+        self.call("forum.setup-menu", vars)
+        design = self.design("sociointerface")
+        self.call("design.response", design, "global-simple.html", content, vars, "socio")
+
+    def response_simple_template(self, template, vars):
+        self.call("forum.setup-menu", vars)
+        design = self.design("sociointerface")
+        content = self.call("design.parse", design, template, None, vars, "socio")
+        self.call("design.response", design, "global-simple.html", content, vars, "socio")
 
 class SocioInterfaceAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("ext-admin-sociointerface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-sociointerface.design", self.headmenu_design)
         self.rhook("admin-sociointerface.validate", self.validate)
@@ -1594,8 +1604,10 @@ class SocioInterfaceAdmin(Module):
         else:
             return self.call("design-admin.headmenu", "sociointerface", args)
 
-    def menu_design_index(self, menu):
-        menu.append({"id": "sociointerface/design", "text": self._("Socio interface"), "leaf": True, "order": 3})
+    def menu_forum_index(self, menu):
+        req = self.req()
+        if req.has_access("design"):
+            menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
         self.call("design-admin.editor", "sociointerface")
@@ -1607,8 +1619,8 @@ class SocioInterfaceAdmin(Module):
         elif len(html) > 1:
             errors.append(self._("Socio interface design package must not contain more than one HTML file"))
         files = design.get("files")
-        if not files.get("index.html", None):
-            errors.append(self._("index.html must exist in the socio interface design package"))
+        if not files.get("global.html", None):
+            errors.append(self._("global.html must exist in the socio interface design package"))
         if not design.get("css"):
             errors.append(self._("Socio interface design package must contain a CSS file"))
 
@@ -1827,7 +1839,7 @@ class SocioInterfaceAdmin(Module):
             demo_messages.extend(demo_subjects)
             vars["socio_message_top"] = random.choice(demo_messages)
         content = self.call("web.parse_template", "socio/%s" % filename, vars)
-        self.call("design.response", design, "index.html", content, vars)
+        self.call("design.response", design, "global.html", content, vars)
 
 class GameInterface(Module):
     def register(self):
@@ -1836,7 +1848,7 @@ class GameInterface(Module):
 class GameInterfaceAdmin(ConstructorModule):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-gameinterface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)
         self.rhook("admin-gameinterface.validate", self.validate)
@@ -1857,8 +1869,10 @@ class GameInterfaceAdmin(ConstructorModule):
         else:
             return self.call("design-admin.headmenu", "gameinterface", args)
 
-    def menu_design_index(self, menu):
-        menu.append({"id": "gameinterface/design", "text": self._("Game interface"), "leaf": True, "order": 2})
+    def menu_gameinterface_index(self, menu):
+        req = self.req()
+        if req.has_access("design"):
+            menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
         self.call("design-admin.editor", "gameinterface")

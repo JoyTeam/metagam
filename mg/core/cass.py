@@ -811,7 +811,7 @@ class CassandraObjectList(object):
         return res
 
     def __str__(self):
-        return str(self.uuids())
+        return self.__class__.__name__ + str(self.uuids())
 
     def sort(self, *args, **kwargs):
         return self.dict.sort(*args, **kwargs)

@@ -30,7 +30,7 @@ class SiteAdmin(Module):
         else:
             indexing = self.conf("indexing.enabled", True)
         fields = [
-            {"name": "indexing", "type": "checkbox", "label": self._("Site indexing enabled"), "checked": indexing},
+            {"name": "indexing", "type": "checkbox", "label": self._("Allow web search engines index this site"), "checked": indexing},
         ]
         self.call("admin.form", fields=fields)
 

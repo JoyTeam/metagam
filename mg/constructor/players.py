@@ -239,6 +239,15 @@ class Character(Module):
             self._db_settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._db_settings
 
+    @property
+    def sessions(self):
+        try:
+            return self._sessions
+        except AttributeError:
+            self._sessions = []
+            self.call("session.character-sessions", self, self._sessions)
+            return self._sessions
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)
@@ -295,7 +304,8 @@ class Characters(Module):
 class CharactersMod(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-users.index", self.menu_users_index)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("ext-admin-characters.form", self.admin_characters_form, priv="players.auth")
         self.rhook("headmenu-admin-characters.form", self.headmenu_characters_form)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -304,7 +314,10 @@ class CharactersMod(Module):
         self.rhook("dossier.before-display", self.dossier_before_display)
         self.rhook("dossier.after-display", self.dossier_after_display)
 
-    def menu_users_index(self, menu):
+    def menu_root_index(self, menu):
+        menu.append({"id": "characters.index", "text": self._("Characters"), "order": 20})
+
+    def menu_characters_index(self, menu):
         req = self.req()
         if req.has_access("players.auth"):
             menu.append({"id": "characters/form", "text": self._("Character form"), "leaf": True, "order": 20})

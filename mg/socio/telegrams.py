@@ -110,7 +110,7 @@ class Telegrams(Module):
                 {"href": "/telegrams/send", "html": params.get("send_telegram", self._("Send new telegram")), "lst": True}
             ]
         }
-        self.call("web.response_template", "socio/telegrams-contragents.html", vars)
+        self.call("socio.response_template", "telegrams-contragents.html", vars)
 
     def telegrams_send(self):
         params = {}
@@ -144,7 +144,7 @@ class Telegrams(Module):
                 {"html": params.get("send_telegram", self._("Send new telegram")), "lst": True}
             ]
         }
-        self.call("web.response_global", form.html(vars), vars)
+        self.call("socio.response", form.html(vars), vars)
 
     def system_user(self, tag, name):
         lst = self.objlist(UserList, query_index="tag", query_equal=tag)
@@ -265,4 +265,4 @@ class Telegrams(Module):
             ],
             "form": "" if read_only else form.html()
         }
-        self.call("web.response_template", "socio/telegrams-user.html", vars)
+        self.call("socio.response_template", "telegrams-user.html", vars)

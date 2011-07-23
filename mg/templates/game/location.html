@@ -3,7 +3,6 @@
 <script type="text/javascript">
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	transition_init();
 	[%foreach tr in transitions%]
 	transition_hint('[%tr.loc%]', '[%tr.hint%]');
 	[%end%]

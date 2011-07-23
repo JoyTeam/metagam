@@ -111,17 +111,18 @@ class AdminInterface(Module):
         while group is not None:
             res = self.call("headmenu-%s.%s" % (group, hook), args)
             if res is None:
-                #menu.append(htmlescape("headmenu-%s.%s" % (group, hook)))
                 break
             else:
                 if type(res) == list:
                     if first:
-                        if type(res[0]) == unicode:
-                            menu.append(res[0].encode("utf-8"))
-                        else:
-                            menu.append(res[0])
+                        menu.append({
+                            "html": res[0]
+                        })
                     else:
-                        menu.append(self.link([], href, res[0]))
+                        menu.append({
+                            "html": res[0],
+                            "href": href
+                        })
                     if len(res) == 2:
                         href = res[1]
                         m = re_split_3.match(href)
@@ -141,16 +142,18 @@ class AdminInterface(Module):
                         break
                 else:
                     if first:
-                        if type(res) == unicode:
-                            menu.append(res.encode("utf-8"))
-                        else:
-                            menu.append(res)
+                        menu.append({
+                            "html": res
+                        })
                     else:
-                        menu.append(self.link([], href, res))
+                        menu.append({
+                            "href": href,
+                            "html": res
+                        })
                     break
             first = False
         menu.reverse()
-        return " / ".join(menu)
+        return menu
 
     def response_params(self):
         return {

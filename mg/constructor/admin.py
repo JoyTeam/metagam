@@ -125,15 +125,13 @@ class Constructor(Module):
         req = self.req()
         topmenu = []
         cabmenu = []
-        if vars.get("global_html"):
-            return
         if req.group == "index" and req.hook == "index":
             vars["global_html"] = "constructor/index_global.html"
         elif req.group == "constructor" and req.hook == "newgame":
             vars["global_html"] = "constructor/cabinet_global.html"
             cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
         elif req.group == "socio" and req.hook == "image":
-            vars["global_html"] = "constructor/socio_simple_global.html"
+            pass
         elif req.group == "auth":
             if req.hook == "change" or req.hook == "email":
                 vars["global_html"] = "constructor/cabinet_global.html"
@@ -162,7 +160,6 @@ class Constructor(Module):
                     cabmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "title": link["html"], "href": link["href"], "left": True, "suffix": link["suffix"]})
                 cabmenu.append({"image": "/st/constructor/cabinet/logout.gif", "title": self._("Logout %s") % htmlescape(user.get("name")), "href": "/auth/logout"})
         elif req.group == "forum" or req.group == "socio":
-            vars["global_html"] = "constructor/socio_global.html"
             vars["title_suffix"] = " - %s" % self._("MMO Constructor Forum")
             redirect = req.param("redirect")
             redirect_param = True
@@ -187,7 +184,6 @@ class Constructor(Module):
             if redirect_param:
                 topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
         elif req.group == "telegrams":
-            vars["global_html"] = "constructor/socio_global.html"
             vars["title_suffix"] = " - %s" % self._("MMO Constructor")
             topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
             links = []
@@ -196,7 +192,7 @@ class Constructor(Module):
                 topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
             topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
         elif req.group == "doc":
-            vars["global_html"] = "constructor/socio_global.html"
+            #vars["global_html"] = "constructor/socio_global.html"
             topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
             if req.user():
                 topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})

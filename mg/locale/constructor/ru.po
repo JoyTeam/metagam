@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-19 18:42+0400\n"
+"POT-Creation-Date: 2011-07-22 17:01+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -19,14 +19,14 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: static/js/admin.js:81
+#: static/js/admin.js:96
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/js/admin.js:126 static/js/locations.js:22 static/js/locations.js:28
+#: static/js/admin.js:141 static/js/locations.js:23 static/js/locations.js:29
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
 #: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:389 static/js/chat.js:397
+#: static/js/admin-form.js:326 static/js/chat.js:529 static/js/chat.js:537
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -40,15 +40,15 @@ msgstr "Советы гуру"
 msgid "Error"
 msgstr "Ошибка"
 
-#: static/js/admin.js:126
+#: static/js/admin.js:141
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
 
-#: static/js/admin.js:229
+#: static/js/admin.js:244
 msgid "To the main page"
 msgstr "На главную страницу"
 
-#: static/js/locations.js:28
+#: static/js/locations.js:29
 #, fuzzy
 msgid "Couldn't send command to the server"
 msgstr "Не удалось отправить сообщение на сервер"
@@ -154,11 +154,11 @@ msgstr "Ошибка на сервере: %s"
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/chat.js:397
+#: static/js/chat.js:537
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 
-#: mg/templates/game/interface.js:443
+#: mg/templates/game/interface.js:252
 msgid "Misconfigured layout scheme"
 msgstr "Схема расположения не настроена"
 

@@ -54,7 +54,7 @@ class EmailAdmin(Module):
         perms.append({"id": "email.settings", "name": self._("Email configuration")})
 
     def menu_root_index(self, menu):
-        menu.append({"id": "email.index", "text": self._("E-mail")})
+        menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def menu_email_index(self, menu):
         req = self.req()

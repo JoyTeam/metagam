@@ -14,7 +14,7 @@ caching = False
 
 re_block_del = re.compile('^del\/(\S+)\/(\S+)$')
 re_block_edit = re.compile('^(\S+)\/(\S+)$')
-re_button_del = re.compile('^del\/(\S+)$')
+re_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
 
 default_icons = set([
@@ -84,10 +84,13 @@ class Interface(ConstructorModule):
         self.rhook("game.form", self.game_form)
         self.rhook("auth.form", self.game_form)
         self.rhook("auth.messages", self.auth_messages)
-        self.rhook("menu-admin-design.index", self.menu_design_index)
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-gameinterface.layout", self.gameinterface_layout, priv="design")
         self.rhook("headmenu-admin-gameinterface.panels", self.headmenu_panels)
         self.rhook("ext-admin-gameinterface.panels", self.gameinterface_panels, priv="design")
+        self.rhook("headmenu-admin-gameinterface.popups", self.headmenu_popups)
+        self.rhook("ext-admin-gameinterface.popups", self.gameinterface_popups, priv="design")
         self.rhook("headmenu-admin-gameinterface.blocks", self.headmenu_blocks)
         self.rhook("ext-admin-gameinterface.blocks", self.gameinterface_blocks, priv="design")
         self.rhook("headmenu-admin-gameinterface.buttons", self.headmenu_buttons)
@@ -105,6 +108,7 @@ class Interface(ConstructorModule):
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
+        objclasses["Popup"] = (DBPopup, DBPopupList)
 
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
@@ -244,9 +248,10 @@ class Interface(ConstructorModule):
             vars["main_init"] = "/project/status"
         if self.conf("debug.ext"):
             vars["debug_ext"] = True
-        # Rendering button panels
+        # Rendering buttons
         generated = set([btn["id"] for btn in self.generated_buttons()])
         layout = self.buttons_layout()
+        # Rendering panels
         panels = []
         for panel in self.panels():
             rblocks = []
@@ -260,46 +265,16 @@ class Interface(ConstructorModule):
                     "width": block.get("width"),
                     "flex": block.get("flex"),
                     "html": jsencode(html),
-                    "cls": block.get("class"),
+                    "cls": jsencode(block.get("class")),
                 }
                 if block["type"] == "buttons":
                     buttons = []
                     btn_list = layout.get(block["id"])
                     if btn_list:
                         for btn in btn_list:
-                            image = btn.get("image")
-                            if image.startswith("http://"):
-                                pass
-                            else:
-                                # If some module is disabled we should hide
-                                # all its buttons
-                                if btn["id"] not in generated:
-                                    continue
-                                if design and image in design.get("files"):
-                                    image = "%s/%s" % (design.get("uri"), image)
-                                elif design and block.get("class") and btn.get("icon"):
-                                    if self.call("design.prepare_button", design, image, "%s-bg.png" % block["class"], btn["icon"], over="%s-over.png" % block["class"]):
-                                        image = "%s/%s" % (design.get("uri"), image)
-                                    else:
-                                        image = "/st-mg/game/invalid.png"
-                                else:
-                                    if not design and btn.get("icon") and btn["icon"] in default_icons:
-                                        image = "/st-mg/game/default-interface/%s" % btn["icon"]
-                                    else:
-                                        image = "/st-mg/game/invalid.png"
-                            rbtn = {
-                                "image": image,
-                                "title": jsencode(htmlescape(btn.get("title"))),
-                            }
-                            if btn.get("onclick"):
-                                rbtn["onclick"] = jsencode(htmlescape(btn.get("onclick")))
-                            elif btn.get("href"):
-                                if btn["target"] == "main":
-                                    rbtn["onclick"] = jsencode(htmlescape("Game.main_open('%s')" % jsencode(btn.get("href"))))
-                                else:
-                                    rbtn["href"] = jsencode(htmlescape(btn.get("href")))
-                                    rbtn["target"] = jsencode(htmlescape(btn.get("target")))
-                            buttons.append(rbtn)
+                            rbtn = self.render_button(btn, layout, design, generated, block.get("class"))
+                            if rbtn:
+                                buttons.append(rbtn)
                     if buttons:
                         buttons[-1]["lst"] = True
                     rblock["buttons"] = buttons
@@ -327,6 +302,81 @@ class Interface(ConstructorModule):
         if panels:
             panels[-1]["lst"] = True
             vars["panels"] = panels
+        # Rendering popups
+        lst = self.objlist(DBPopupList, query_index="all")
+        lst.load()
+        popups = []
+        for popup in lst:
+            rpopup = {
+                "id": popup.uuid
+            }
+            buttons = []
+            btn_list = layout.get(popup.uuid)
+            if btn_list:
+                for btn in btn_list:
+                    rbtn = self.render_button(btn, layout, design, generated, None)
+                    if rbtn:
+                        buttons.append(rbtn)
+            if buttons:
+                buttons[-1]["lst"] = True
+            rpopup["buttons"] = buttons
+            popups.append(rpopup)
+        if popups:
+            popups[-1]["lst"] = True
+            vars["popups"] = popups
+
+    def render_button(self, btn, layout, design, generated, cls):
+        # Primary image
+        image = btn.get("image")
+        if not image.startswith("http://"):
+            # If some module is disabled we should hide
+            # all its buttons
+            if btn["id"] not in generated:
+                return None
+            if design and image in design.get("files"):
+                image = "%s/%s" % (design.get("uri"), image)
+            elif design and cls and btn.get("icon"):
+                if self.call("design.prepare_button", design, image, "%s-bg.png" % cls, btn["icon"], over="%s-over.png" % cls):
+                    image = "%s/%s" % (design.get("uri"), image)
+                else:
+                    image = "/st/icons/%s" % btn["icon"]
+            elif not design and btn.get("icon") and btn["icon"] in default_icons:
+                image = "/st-mg/game/default-interface/%s" % btn["icon"]
+            elif btn.get("icon"):
+                image = "/st/icons/%s" % btn["icon"]
+            else:
+                image = "/st/game/invalid.png"
+        rbtn = {
+            "id": btn["id"],
+            "image": image,
+            "title": jsencode(htmlescape(btn.get("title"))),
+            "popup": jsencode(btn.get("popup")),
+        }
+        # Secondary image
+        image = btn.get("icon2")
+        if image:
+            if design and image in design.get("files"):
+                image = "%s/%s" % (design.get("uri"), image)
+            elif design and cls:
+                if self.call("design.prepare_button", design, image, "%s-bg.png" % cls, image, over="%s-over.png" % cls):
+                    image = "%s/%s" % (design.get("uri"), image)
+                else:
+                    image = "/st/icons/%s" % image
+            elif not design and image in default_icons:
+                image = "/st-mg/game/default-interface/%s" % image
+            else:
+                image = "/st/icons/%s" % image
+            rbtn["image2"] = image
+        # Button actions
+        if btn.get("onclick"):
+            rbtn["onclick"] = jsencode(htmlescape(btn.get("onclick")))
+        elif btn.get("href"):
+            if btn["target"] == "main":
+                rbtn["onclick"] = jsencode(htmlescape("Game.main_open('%s')" % jsencode(btn.get("href"))))
+            else:
+                rbtn["href"] = jsencode(htmlescape(btn.get("href")))
+                rbtn["target"] = jsencode(htmlescape(btn.get("target")))
+        return rbtn
 
     def game_interface(self, character):
         design = self.design("gameinterface")
@@ -339,12 +389,17 @@ class Interface(ConstructorModule):
         self.call("stream.login", session.uuid, character.uuid)
         self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
 
-    def menu_design_index(self, menu):
+    def menu_root_index(self, menu):
+        menu.append({"id": "indexpage.index", "text": self._("Index page"), "order": 10})
+        menu.append({"id": "gameinterface.index", "text": self._("Game interface"), "order": 13})
+
+    def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("design"):
-            menu.append({"id": "gameinterface/layout", "text": self._("Game interface layout"), "leaf": True, "order": 2})
-            menu.append({"id": "gameinterface/panels", "text": self._("Game interface panels"), "leaf": True, "order": 3})
-            menu.append({"id": "gameinterface/buttons", "text": self._("Game interface buttons"), "leaf": True, "order": 4})
+            menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4})
+            menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7})
+            menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10})
+            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons"), "leaf": True, "order": 12})
 
     def gameinterface_layout(self):
         req = self.req()
@@ -780,7 +835,7 @@ class Interface(ConstructorModule):
         req = self.req()
         if req.args == "new":
             return self.button_editor(None)
-        m = re_button_del.match(req.args)
+        m = re_del.match(req.args)
         if m:
             button_id = m.group(1)
             # Removing button from the layout
@@ -827,11 +882,20 @@ class Interface(ConstructorModule):
             for block in panel["blocks"]:
                 if block["type"] == "buttons":
                     show_block = {
-                        "title": htmlescape(block.get("title")),
+                        "title": self._("Panel: %s") % htmlescape(block.get("title")),
                         "buttons": []
                     }
                     vars["blocks"].append(show_block)
                     valid_blocks[block["id"]] = show_block
+        popups = self.objlist(DBPopupList, query_index="all")
+        popups.load()
+        for popup in popups:
+            show_block = {
+                "title": self._("Popup menu: %s") % htmlescape(popup.get("title")),
+                "buttons": []
+            }
+            vars["blocks"].append(show_block)
+            valid_blocks[popup.uuid] = show_block
         # Looking at the buttons layout and assigning buttons to the panels
         # Remebering assigned buttons
         assigned_buttons = {}
@@ -861,6 +925,13 @@ class Interface(ConstructorModule):
                 btn["action"] = self._("href///<strong>{0}</strong> to {1}").format(btn["href"], btn.get("target"))
             elif btn.get("onclick"):
                 btn["action"] = btn["onclick"]
+            elif btn.get("popup"):
+                try:
+                    popup = self.obj(DBPopup, btn.get("popup"))
+                except ObjectNotFoundException:
+                    btn["action"] = self._("open invalid popup menu")
+                else:
+                    btn["action"] = self._('open popup menu <strong><hook:admin.link href="gameinterface/popups/{0}" title="{1}" /></strong>').format(popup.uuid, htmlescape(popup.get("title")))
             btn["may_delete"] = True
             if btn.get("image") and btn["image"].startswith("http://"):
                 btn["image"] = '<img src="%s" alt="" title="%s" />' % (btn["image"], btn.get("title"))
@@ -953,6 +1024,7 @@ class Interface(ConstructorModule):
             href = req.param("href")
             target = req.param("v_target")
             onclick = req.param("onclick")
+            popup = req.param("v_popup")
             # Creating new button
             btn = {
                 "id": button_id,
@@ -965,7 +1037,7 @@ class Interface(ConstructorModule):
                     errors["onclick"] = self._("Specify JavaScript action")
                 else:
                     btn["onclick"] = onclick
-            else:
+            elif action == "href":
                 if not href:
                     errors["href"] = self._("Specify URL")
                 elif target != "_blank" and not href.startswith("/"):
@@ -973,6 +1045,13 @@ class Interface(ConstructorModule):
                 else:
                     btn["href"] = href
                     btn["target"] = target
+            elif action == "popup":
+                if not popup:
+                    errors["v_popup"] = self._("Select a popup menu")
+                else:
+                    btn["popup"] = popup
+            else:
+                errors["v_action"] = self._("Select an action")
             # Button block
             if not block:
                 errors["v_block"] = self._("Select buttons block where to place the button")
@@ -1008,11 +1087,28 @@ class Interface(ConstructorModule):
                         image = self.call("cluster.static_upload", "button", ext, content_type, image_data)
             # Changing image name according to the prototype
             if not image_data and not user and (not image or not image.startswith("http://")):
+                found = False
                 for panel in self.panels():
                     for blk in panel["blocks"]:
                         if blk["id"] == block:
                             image = "%s-%s" % (blk["class"], prototype["icon"])
                             btn["icon"] = prototype["icon"]
+                            if prototype.get("icon2"):
+                                btn["icon2"] = prototype["icon2"]
+                            found = True
+                if not found:
+                    try:
+                        pop = self.obj(DBPopup, block)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        image = prototype["icon"]
+                        btn["icon"] = image
+                        try:
+                            del btn["icon2"]
+                        except KeyError:
+                            pass
+
             if not image:
                 errors["image"] = self._("You must upload an image")
             else:
@@ -1039,8 +1135,12 @@ class Interface(ConstructorModule):
                             break
                 href = button.get("href")
                 onclick = button.get("onclick")
+                popup = button.get("popup")
                 if onclick:
                     action = "javascript"
+                    target = "_blank"
+                elif popup:
+                    action = "popup"
                     target = "_blank"
                 else:
                     action = "href"
@@ -1056,7 +1156,10 @@ class Interface(ConstructorModule):
                         if valid_block:
                             break
                     if not valid_block:
-                        block = ""
+                        try:
+                            self.obj(DBPopup, block)
+                        except ObjectNotFoundException:
+                            block = ""
             else:
                 block = ""
                 order = 50
@@ -1066,19 +1169,27 @@ class Interface(ConstructorModule):
                 onclick = ""
                 target = "_blank"
                 action = "href"
+                popup = ""
         blocks = []
         for panel in self.panels():
             for blk in panel["blocks"]:
                 if blk["type"] == "buttons":
-                    blocks.append((blk["id"], blk.get("title") or blk["id"]))
+                    blocks.append((blk["id"], self._("Panel: %s") % (blk.get("title") or blk["id"])))
+        lst = self.objlist(DBPopupList, query_index="all")
+        lst.load()
+        popups = []
+        for p in lst:
+            blocks.append((p.uuid, self._("Popup menu: %s") % p.get("title")))
+            popups.append((p.uuid, p.get("title")))
         fields = [
-            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block},
+            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block, "allow_blank": True},
             {"name": "order", "label": self._("Sort order"), "value": order, "inline": True},
             {"type": "fileuploadfield", "name": "image", "label": self._("Button image")},
             {"name": "title", "label": self._("Button hint"), "value": title},
-            {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript"))]},
+            {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]},
             {"name": "href", "label": self._("Button href"), "value": href, "condition": "[[action]]=='href'"},
-            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True},
+            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True, "allow_blank": True},
+            {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'", "allow_blank": True},
             {"name": "onclick", "label": self._("Javascript onclick"), "value": onclick, "condition": "[[action]]=='javascript'"},
         ]
         self.call("admin.form", fields=fields, modules=["FileUploadField"])
@@ -1114,3 +1225,61 @@ class Interface(ConstructorModule):
                 self.call("web.redirect", "/location")
         self.call("interface.settings-form", form, "render", settings)
         self.call("main-frame.form", form, {})
+
+    def gameinterface_popups(self):
+        req = self.req()
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                popup_id = m.group(1)
+                try:
+                    self.obj(DBPopup, popup_id).remove()
+                except ObjectNotFoundException:
+                    pass
+                self.call("admin.redirect", "gameinterface/popups")
+                
+            if req.args == "new":
+                popup = self.obj(DBPopup)
+            else:
+                try:
+                    popup = self.obj(DBPopup, req.args)
+                except ObjectNotFoundException:
+                    self.call("admin.redirect", "gameinterface/popups")
+            if req.ok():
+                errors = {}
+                title = req.param("title")
+                if not title:
+                    errors["title"] = self._("This parameter is mandatory")
+                else:
+                    popup.set("title", title)
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                popup.store()
+                self.call("admin.redirect", "gameinterface/popups")
+            fields = [
+                {"name": "title", "label": self._("Popup menu title (visible to administrators only)"), "value": popup.get("title")},
+            ]
+            self.call("admin.form", fields=fields)
+        vars = {
+            "NewPopup": self._("New popup menu"),
+            "Code": self._("Code"),
+            "Title": self._("Title"),
+            "Editing": self._("Editing"),
+            "Deletion": self._("Deletion"),
+            "edit": self._("edit"),
+            "delete": self._("delete"),
+            "ConfirmDelete": self._("Are you sure want to delete this popup menu?"),
+        }
+        popups = []
+        lst = self.objlist(DBPopupList, query_index="all")
+        lst.load()
+        for ent in lst:
+            popups.append({
+                "id": ent.uuid,
+                "title": ent.get("title"),
+            })
+        vars["popups"] = popups
+        self.call("admin.response_template", "admin/gameinterface/popups.html", vars)
+
+    def headmenu_popups(self, args):
+        return self._("Popup menus")

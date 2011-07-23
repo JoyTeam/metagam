@@ -1,0 +1,8 @@
+<div class="admin-links"><hook:admin.link href="gameinterface/popups/new" title="[%NewPopup%]" /></div>
+
+<table class="list">
+	<tr class="header"><td class="header">[%Title%]</td><td>[%Editing%]</td><td>[%Deletion%]</tr>
+	[%foreach popup in popups%]
+	<tr><td>[%popup.title%]</td><td><hook:admin.link href="gameinterface/popups/[%popup.id%]" title="[%edit%]" /></td><td><hook:admin.link href="gameinterface/popups/del/[%popup.id%]" title="[%delete%]" confirm="[%ConfirmDelete%]" /></td></tr>
+	[%end%]
+</table>

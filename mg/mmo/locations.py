@@ -34,8 +34,8 @@ class LocationsAdmin(ConstructorModule):
         menu.append({"id": "locations.index", "text": self._("Locations"), "order": 20})
 
     def menu_locations_index(self, menu):
-        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 0, "leaf": True})
-        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 1, "leaf": True})
+        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 0, "leaf": True})
+        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 1, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "locations.editor", "name": self._("Locations editor")})
@@ -129,7 +129,7 @@ class LocationsAdmin(ConstructorModule):
                     info["delay"] = intz(val) if val != "" else None
                 db_loc.store()
                 self.call("admin-locations.editor-form-cleanup", db_loc, flags)
-                self.call("web.response_json_html", {"success": True, "redirect": "locations/editor/%s" % location.uuid, "parameters": {"saved": 1}})
+                self.call("web.response_json_html", {"success": True, "redirect": "locations/editor/%s" % db_loc.uuid, "parameters": {"saved": 1}})
             # rendering form
             fields = []
             fields.append({"name": "name", "value": db_loc.get("name"), "label": self._("Location name")})
@@ -140,7 +140,7 @@ class LocationsAdmin(ConstructorModule):
                 fields.append({"name": "name_t", "value": db_loc.get("name_t"), "label": self._("Location name (to where?) - 'to the Some Location'"), "inline": True})
                 fields.append({"name": "name_f", "value": db_loc.get("name_f"), "label": self._("Location name (from where?) - 'from the Some Location'"), "inline": True})
             # timing
-            fields.append({"name": "delay", "label": self._("Delay when moving to this location and from it"), "value": location.delay})
+            fields.append({"name": "delay", "label": self._("Delay when moving to this location and from it"), "value": db_loc.get("delay", default_location_delay)})
             # left/right/up/down navigation
             lst = self.objlist(DBLocationList, query_index="all")
             lst.load()
@@ -258,16 +258,18 @@ class LocationsStaticImages(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
         self.rhook("locations.render", self.render)
+        self.rhook("hook-location.image", self.hook_image)
 
     def render(self, location):
         if location.image_type == "static":
             zones = []
-            for zone in location.db_location.get("static_zones"):
-                zones.append({
-                    "polygon": zone.get("polygon"),
-                    "action": zone.get("action"),
-                    "loc": zone.get("loc"),
-                })
+            if location.db_location.get("static_zones"):
+                for zone in location.db_location.get("static_zones"):
+                    zones.append({
+                        "polygon": zone.get("polygon"),
+                        "action": zone.get("action"),
+                        "loc": zone.get("loc"),
+                    })
             vars = {
                 "loc": {
                     "id": location.uuid,
@@ -277,6 +279,17 @@ class LocationsStaticImages(ConstructorModule):
             }
             design = self.design("gameinterface")
             raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
+
+    def hook_image(self, vars):
+        if not vars.get("load_extjs"):
+            vars["load_extjs"] = {}
+        vars["load_extjs"]["qtips"] = True
+        try:
+            location = self.location(vars["location"]["id"])
+        except KeyError:
+            pass
+        else:
+            self.render(location)
 
 class LocationsStaticImagesAdmin(ConstructorModule):
     def register(self):
@@ -410,12 +423,13 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             self.call("web.response_json", {"success": True, "redirect": "locations/image-map/%s" % location.uuid, "parameters": {"saved": 1}})
         # Loading zones
         zones = []
-        for zone in location.db_location.get("static_zones"):
-            zones.append({
-                "polygon": zone.get("polygon"),
-                "action": zone.get("action", "none"),
-                "loc": zone.get("loc")
-            })
+        if location.db_location.get("static_zones"):
+            for zone in location.db_location.get("static_zones"):
+                zones.append({
+                    "polygon": zone.get("polygon"),
+                    "action": zone.get("action", "none"),
+                    "loc": zone.get("loc")
+                })
         # Loading locations
         locations = []
         lst = self.objlist(DBLocationList, query_index="all")
@@ -448,12 +462,13 @@ class LocationsStaticImagesAdmin(ConstructorModule):
     def render(self, location):
         if location.image_type == "static":
             zones = []
-            for zone in location.db_location.get("static_zones"):
-                zones.append({
-                    "polygon": zone.get("polygon"),
-                    "action": zone.get("action"),
-                    "loc": zone.get("loc"),
-                })
+            if location.db_location.get("static_zones"):
+                for zone in location.db_location.get("static_zones"):
+                    zones.append({
+                        "polygon": zone.get("polygon"),
+                        "action": zone.get("action"),
+                        "loc": zone.get("loc"),
+                    })
             vars = {
                 "loc": {
                     "id": location.uuid,
@@ -469,9 +484,10 @@ class LocationsStaticImagesAdmin(ConstructorModule):
 
     def valid_transitions(self, db_loc, valid_transitions):
         if db_loc.get("image_type") == "static":
-            for zone in db_loc.get("static_zones"):
-                if zone.get("action") == "move" and zone.get("loc"):
-                    valid_transitions.add(zone.get("loc"))
+            if db_loc.get("static_zones"):
+                for zone in db_loc.get("static_zones"):
+                    if zone.get("action") == "move" and zone.get("loc"):
+                        valid_transitions.add(zone.get("loc"))
 
 class Locations(ConstructorModule):
     def register(self):
@@ -484,6 +500,9 @@ class Locations(ConstructorModule):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("ext-location.move", self.ext_move, priv="logged")
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("hook-location.arrows", self.hook_arrows)
+        self.rhook("hook-location.transitions", self.hook_transitions)
+        self.rhook("hook-location.name", self.hook_name)
 
     def get(self, character):
         try:
@@ -497,6 +516,7 @@ class Locations(ConstructorModule):
                 loc = self.location(start_location)
                 self.after_set(character, loc, None)
                 delay = None
+                instance = None
             else:
                 loc = None
                 instance = None
@@ -536,24 +556,21 @@ class Locations(ConstructorModule):
                 self.call("main-frame.error", '%s <a href="/admin#locations/config" target="_blank">%s</a>' % (self._("Starting location not configured."), self._("Open locations configuration")))
             else:
                 self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
-        html = self.call("locations.render", location)
-        if html is None:
-            self.call("main-frame.error", self._("No visual image for location '%s'") % location.name)
+        vars = {
+            "location": {
+                "id": location.uuid
+            },
+            "debug_ext": self.conf("debug.ext"),
+        }
         transitions = []
         for loc_id, info in location.transitions.iteritems():
             transitions.append({
                 "loc": loc_id,
                 "hint": jsencode(info.get("hint"))
             })
-        vars = {
-            "transitions": transitions,
-            "load_extjs": {
-                "qtips": True,
-            }
-        }
-        print "debug_ext=%s" % self.conf("debug.ext")
-        if self.conf("debug.ext"):
-            vars["debug_ext"] = True
+        vars["transitions"] = transitions
+        design = self.design("gameinterface")
+        html = self.call("design.parse", design, "location-layout.html", None, vars)
         self.call("game.response_internal", "location.html", vars, html)
 
     def gameinterface_render(self, character, vars, design):
@@ -587,12 +604,16 @@ class Locations(ConstructorModule):
             if not new_location.valid():
                 self.call("web.response_json", {"ok": False, "error": self._("No such location")})
             delay = trans.get("delay")
-            print "transition delay: %s" % delay
             if delay is None:
                 delay = old_location.delay + new_location.delay
-                print "calculated delay: %s" % delay
             character.set_location(new_location, character.instance, [self.now(), self.now(delay)])
-            self.call("web.response_json", {"ok": True, "name": new_location.name, "delay": delay})
+            self.call("web.response_json", {
+                "ok": True,
+                "id": new_location.uuid,
+                "name": new_location.name,
+                "name_w": new_location.name_w,
+                "delay": delay,
+            })
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -605,3 +626,49 @@ class Locations(ConstructorModule):
             "order": 0,
         })
 
+    def hook_arrows(self, vars):
+        req = self.req()
+        character = self.character(req.user())
+        location = character.location
+        design = self.design("gameinterface")
+        arrows = {}
+        for dest in ["up", "down", "left", "right"]:
+            loc_id = location.db_location.get("loc_%s" % dest)
+            if loc_id:
+                arrows["img_%s" % dest] = "%s/location-%s.png" % (design.get("uri"), dest) if design.get("files").get("location-%s.png" % dest) else "/st/game/default-interface/%s.png" % dest
+                arrows["loc_%s" % dest] = loc_id
+        vars["location_arrows"] = arrows
+        raise Hooks.Return(self.call("design.parse", design, "location-arrows.html", None, vars))
+
+    def hook_transitions(self, vars):
+        req = self.req()
+        character = self.character(req.user())
+        location = character.location
+        design = self.design("gameinterface")
+        transitions = []
+        for loc_id, info in location.transitions.iteritems():
+            loc = self.location(loc_id)
+            if not loc.valid():
+                continue
+            transitions.append({
+                "loc": loc_id,
+                "name": loc.name,
+            })
+        if transitions:
+            transitions.sort(cmp=lambda x, y: cmp(x["name"], y["name"]))
+            transitions[-1]["lst"] = True
+            vars["location_transitions"] = transitions
+        raise Hooks.Return(self.call("design.parse", design, "location-transitions.html", None, vars))
+
+    def hook_name(self, vars, declension=None):
+        req = self.req()
+        character = self.character(req.user())
+        location = character.location
+        if location is None:
+            name = self._("No location")
+        elif declension == "w":
+            name = location.name_w
+        else:
+            name = location.name
+            declension = None
+        raise Hooks.Return('<span class="location-name%s">%s</span>' % (('-%s' % declension) if declension else "", name))

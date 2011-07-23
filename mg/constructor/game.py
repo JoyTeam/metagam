@@ -26,7 +26,10 @@ class Game(Module):
                 recommended_actions.append({"icon": "/st/img/exclamation.png", "content": u'%s <hook:admin.link href="game/profile" title="%s" />' % (self._("Your game has no configured description. Before publishing your game you must provide a relevant description."), self._("Open the game profile")), "order": 0, "before_launch": True})
 
     def menu_root_index(self, menu):
-        menu.append({"id": "game.index", "text": self._("Game"), "order": 100})
+        menu.append({"id": "game.index", "text": self._("Game"), "order": 20})
+        req = self.req()
+        if req.has_access("project.admin"):
+            menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png"})
 
     def permissions_list(self, perms):
         perms.append({"id": "game.profile", "name": self._("Game profile editor")})
@@ -35,11 +38,9 @@ class Game(Module):
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("game.profile"):
-            menu.append({"id": "game/profile", "text": self._("Game profile editor"), "leaf": True})
+            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10})
         if req.has_access("game.logo"):
-            menu.append({"id": "game/logo", "text": self._("Game logo editor"), "leaf": True})
-        if req.has_access("project.admin"):
-            menu.append({"id": "game/modules", "text": self._("Game modules"), "leaf": True, "order": -10})
+            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20})
 
     def headmenu_profile(self, args):
         return self._("Game profile")

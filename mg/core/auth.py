@@ -272,7 +272,7 @@ class Interface(Module):
         Module.register(self)
         self.rhook("auth.permissions", self.auth_permissions)
         self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-users.index", self.menu_users_index)
+        self.rhook("menu-admin-auth.index", self.menu_auth_index)
         self.rhook("ext-admin-auth.permissions", self.admin_permissions, priv="permissions")
         self.rhook("headmenu-admin-auth.permissions", self.headmenu_permissions)
         self.rhook("ext-admin-auth.editpermissions", self.admin_editpermissions, priv="permissions")
@@ -985,16 +985,18 @@ class Interface(Module):
         return perms
 
     def menu_root_index(self, menu):
-        menu.append({"id": "users.index", "text": self._("Users"), "order": 500})
+        menu.append({"id": "auth.index", "text": self._("Authentication"), "order": 500})
+        req = self.req()
+        if req.has_access("users"):
+            menu.append({"id": "auth/user-dashboard/%s" % req.user(), "text": self._("My dossier"), "leaf": True, "order": 2, "icon": "/st-mg/menu/myform.png"})
+            menu.append({"id": "auth/user-find", "text": self._("Find user"), "leaf": True, "order": 3, "icon": "/st-mg/menu/find.png"})
 
-    def menu_users_index(self, menu):
+    def menu_auth_index(self, menu):
         req = self.req()
         if req.has_access("permissions") or req.has_access("admin"):
-            menu.append({"id": "auth/permissions", "text": self._("Permissions"), "leaf": True})
+            menu.append({"id": "auth/permissions", "text": self._("Permissions"), "leaf": True, "order": 10})
         if req.has_access("users"):
-            menu.append({"id": "auth/user-dashboard/%s" % req.user(), "text": self._("My dashboard"), "leaf": True})
-            menu.append({"id": "auth/user-find", "text": self._("Find user"), "leaf": True})
-            menu.append({"id": "auth/user-lastreg", "text": self._("Last registered users"), "leaf": True})
+            menu.append({"id": "auth/user-lastreg", "text": self._("Last registered users"), "leaf": True, "order": 20})
 
     def admin_permissions(self):
         req = self.req()

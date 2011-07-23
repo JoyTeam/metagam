@@ -126,7 +126,7 @@ class ConstructorProjectAdmin(Module):
         else:
             req = self.req()
             if req.has_access("project.admin"):
-                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20})
+                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20, "icon": "/st-mg/menu/dashboard.png"})
 
     def project_destroy(self):
         if self.app().project.get("inactive"):

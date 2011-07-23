@@ -1,9 +1,7 @@
-function transition_init()
-{
-}
-
 function transition_hint(loc_id, hint)
 {
+	if (!hint)
+		return;
 	var els = Ext.query('.loc-tr-' + loc_id);
 	for (var i = 0; i < els.length; i++) {
 		new Ext.ToolTip({

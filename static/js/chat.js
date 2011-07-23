@@ -2,7 +2,8 @@ var Chat = {
 	channels: new Array(),
 	channels_by_id: new Array(),
 	chat_filters: new Array(),
-	classes: ['auth', 'move']
+	classes: ['auth', 'move'],
+	chatbox_limit: 1000
 };
 
 Chat.initialize = function() {
@@ -20,10 +21,7 @@ Chat.initialize = function() {
 	});
 	this.box_content = new Ext.BoxComponent({
 		applyTo: 'chat-box-content',
-		autoScroll: true,
-		style: {
-			height: '100%'
-		}
+		autoScroll: true
 	});
 };
 
@@ -251,7 +249,7 @@ Chat.tab_open = function(id, change_write_selector) {
 			}
 			this.active_channel = id;
 			ch.box_content.show();
-			this.box_content.el.scroll('down', 1000000, false);
+			this.scroll_bottom();
 			if (this.mode == 1 && ch.btn) {
 				ch.btn.el.dom.src = ch.button_image + '-on.png';
 			}
@@ -272,41 +270,99 @@ Chat.focus = function() {
 
 /* Receive message from the server */
 Chat.msg = function(pkt) {
-	if (this.mode != 0) {
-		var ch = this.channels_by_id[pkt.channel];
-		if (!ch)
-			return;
-	}
-	var ctspan = document.createElement('span');
-	if (pkt.cls) {
-		ctspan.className = 'chat-msg-' + pkt.cls;
-	}
-	if (pkt.cls && this.chat_filters[pkt.cls] === false) {
-		ctspan.style.display = 'none';
-	}
-	ctspan.innerHTML = pkt.html;
-	var div = document.createElement('div');
-	div.appendChild(ctspan);
-	if (this.mode == 1) {
-		ch.box_content.el.dom.appendChild(div);
-		if (ch.id == this.active_channel) {
-			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn && pkt.hl) {
-			ch.btn.el.dom.src = ch.button_image + '-new.png';
+	return this.msg_list({messages: [pkt]})[0];
+};
+
+/* Receive message list */
+Chat.msg_list = function(pkt) {
+	var messages = pkt.messages;
+	var divs = new Array();
+	var fragments = new Array();
+	var scroll = false;
+	for (var mi = 0; mi < messages.length; mi++) {
+		var msg = messages[mi];
+		if (this.mode != 0) {
+			var ch = this.channels_by_id[msg.channel];
+			if (!ch)
+				continue;
 		}
-	} else if (this.mode == 2) {
-		div.className = 'cmc-' + ch.id;
-		div.style.display = ch.visible ? 'block' : 'none';
-		this.box_content.el.dom.appendChild(div);
-		if (ch.visible) {
-			this.box_content.el.scroll('down', 1000000, true);
-		} else if (ch.btn && pkt.hl) {
-			ch.btn.el.dom.src = ch.button_image + '-new.png';
+		/* message divs are joined into fragments to speed up rendering */
+		var fragment_id;
+		if (this.mode == 1) {
+			fragment_id = ch.id;
+		} else {
+			fragment_id = '_main';
 		}
-	} else if (this.mode == 0) {
-		this.box_content.el.dom.appendChild(div);
-		this.box_content.el.scroll('down', 1000000, true);
+		var fragment = fragments[fragment_id];
+		if (!fragment) {
+			fragment = document.createDocumentFragment();
+			fragments[fragment_id] = fragment;
+		}
+		/* formatting message */
+		var ctspan = document.createElement('span');
+		if (msg.cls) {
+			ctspan.className = 'chat-msg-' + msg.cls;
+		}
+		if (msg.cls && this.chat_filters[msg.cls] === false) {
+			ctspan.style.display = 'none';
+		}
+		ctspan.innerHTML = msg.html;
+		var div = document.createElement('div');
+		div.className = 'chat-msg';
+		if (msg.id)
+			div.id = msg.id;
+		div.appendChild(ctspan);
+		div.className = div.className + ' cmc-' + ch.id;
+		if (msg.priv)
+			div.className = div.className + ' chat-private';
+		/* storing message */
+		fragment.appendChild(div);
+		if (this.mode == 1) {
+			if (ch.id == this.active_channel) {
+				scroll = true;
+			} else if (ch.btn && msg.hl) {
+				ch.btn.el.dom.src = ch.button_image + '-new.png';
+			}
+		} else if (this.mode == 2) {
+			div.style.display = ch.visible ? 'block' : 'none';
+			if (ch.visible) {
+				scroll = true;
+			} else if (ch.btn && msg.hl) {
+				ch.btn.el.dom.src = ch.button_image + '-new.png';
+			}
+		} else if (this.mode == 0) {
+			scroll = true;
+		}
+		divs.push(div);
 	}
+	/* adding fragments to the chatbox */
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		var fragment = fragments[ch.id];
+		if (fragment) {
+			var container = ch.box_content.el.dom;
+			container.appendChild(fragment);
+			while (container.childNodes.length > this.chatbox_limit) {
+				container.removeChild(container.firstChild);
+			}
+		}
+	}
+	var fragment = fragments['_main'];
+	if (fragment) {
+		var container = this.box_content.el.dom;
+		container.appendChild(fragment);
+		while (container.childNodes.length > this.chatbox_limit) {
+			container.removeChild(container.firstChild);
+		}
+	}
+	if (!pkt.scroll_disable) {
+		if (pkt.scroll_bottom) {
+			this.scroll_bottom();
+		} else if (scroll) {
+			this.box_content.el.scroll('down', 1000000, true);
+		}
+	}
+	return divs;
 };
 
 /* Toggle chatbox tab visibility */
@@ -318,7 +374,7 @@ Chat.channel_toggle = function(id) {
 		} else {
 			this.channel_show(id);
 		}
-		this.box_content.el.scroll('down', 1000000, false);
+		this.scroll_bottom();
 	}
 	this.focus();
 };
@@ -354,6 +410,90 @@ Chat.submit = function() {
 	var val = this.input_control.dom.value;
 	if (!val)
 		return;
+	if (this.transl) {
+		var tokens = this.parse_input(val);
+		tokens.text = tokens.text.replace(/([bvgdhzjklmnprstfc])'/g, '$1ь');
+		tokens.text = tokens.text.replace(/([BVGDHZJKLMNPRSTFC])'/g, '$1Ь');
+		tokens.text = tokens.text.replace(/e'/g, 'э');
+		tokens.text = tokens.text.replace(/E'/g, 'Э');
+		tokens.text = tokens.text.replace(/sch/g, 'щ');
+		tokens.text = tokens.text.replace(/tsh/g, 'щ');
+		tokens.text = tokens.text.replace(/S[cC][hH]/g, 'Щ');
+		tokens.text = tokens.text.replace(/T[sS][hH]/g, 'Щ');
+		tokens.text = tokens.text.replace(/jo/g, 'ё');
+		tokens.text = tokens.text.replace(/ju/g, 'ю');
+		tokens.text = tokens.text.replace(/ja/g, 'я');
+		tokens.text = tokens.text.replace(/yo/g, 'ё');
+		tokens.text = tokens.text.replace(/yu/g, 'ю');
+		tokens.text = tokens.text.replace(/ya/g, 'я');
+		tokens.text = tokens.text.replace(/J[oO]/g, 'Ё');
+		tokens.text = tokens.text.replace(/J[uU]/g, 'Ю');
+		tokens.text = tokens.text.replace(/J[aA]/g, 'Я');
+		tokens.text = tokens.text.replace(/Y[oO]/g, 'Ё');
+		tokens.text = tokens.text.replace(/Y[uU]/g, 'Ю');
+		tokens.text = tokens.text.replace(/Y[aA]/g, 'Я');
+		tokens.text = tokens.text.replace(/zh/g, 'ж');
+		tokens.text = tokens.text.replace(/kh/g, 'х');
+		tokens.text = tokens.text.replace(/ts/g, 'ц');
+		tokens.text = tokens.text.replace(/ch/g, 'ч');
+		tokens.text = tokens.text.replace(/sh/g, 'ш');
+		tokens.text = tokens.text.replace(/Z[hH]/g, 'Ж');
+		tokens.text = tokens.text.replace(/K[hH]/g, 'Х');
+		tokens.text = tokens.text.replace(/T[sS]/g, 'Ц');
+		tokens.text = tokens.text.replace(/C[hH]/g, 'Ч');
+		tokens.text = tokens.text.replace(/S[hH]/g, 'Ш');
+		tokens.text = tokens.text.replace(/a/g, 'а');
+		tokens.text = tokens.text.replace(/b/g, 'б');
+		tokens.text = tokens.text.replace(/v/g, 'в');
+		tokens.text = tokens.text.replace(/w/g, 'в');
+		tokens.text = tokens.text.replace(/g/g, 'г');
+		tokens.text = tokens.text.replace(/d/g, 'д');
+		tokens.text = tokens.text.replace(/e/g, 'е');
+		tokens.text = tokens.text.replace(/z/g, 'з');
+		tokens.text = tokens.text.replace(/i/g, 'и');
+		tokens.text = tokens.text.replace(/j/g, 'й');
+		tokens.text = tokens.text.replace(/k/g, 'к');
+		tokens.text = tokens.text.replace(/l/g, 'л');
+		tokens.text = tokens.text.replace(/m/g, 'м');
+		tokens.text = tokens.text.replace(/n/g, 'н');
+		tokens.text = tokens.text.replace(/o/g, 'о');
+		tokens.text = tokens.text.replace(/p/g, 'п');
+		tokens.text = tokens.text.replace(/r/g, 'р');
+		tokens.text = tokens.text.replace(/s/g, 'с');
+		tokens.text = tokens.text.replace(/t/g, 'т');
+		tokens.text = tokens.text.replace(/u/g, 'у');
+		tokens.text = tokens.text.replace(/f/g, 'ф');
+		tokens.text = tokens.text.replace(/h/g, 'х');
+		tokens.text = tokens.text.replace(/x/g, 'х');
+		tokens.text = tokens.text.replace(/y/g, 'ы');
+		tokens.text = tokens.text.replace(/c/g, 'ц');
+		tokens.text = tokens.text.replace(/A/g, 'А');
+		tokens.text = tokens.text.replace(/B/g, 'Б');
+		tokens.text = tokens.text.replace(/V/g, 'В');
+		tokens.text = tokens.text.replace(/W/g, 'В');
+		tokens.text = tokens.text.replace(/G/g, 'Г');
+		tokens.text = tokens.text.replace(/D/g, 'Д');
+		tokens.text = tokens.text.replace(/E/g, 'Е');
+		tokens.text = tokens.text.replace(/Z/g, 'З');
+		tokens.text = tokens.text.replace(/I/g, 'И');
+		tokens.text = tokens.text.replace(/J/g, 'Й');
+		tokens.text = tokens.text.replace(/K/g, 'К');
+		tokens.text = tokens.text.replace(/L/g, 'Л');
+		tokens.text = tokens.text.replace(/M/g, 'М');
+		tokens.text = tokens.text.replace(/N/g, 'Н');
+		tokens.text = tokens.text.replace(/O/g, 'О');
+		tokens.text = tokens.text.replace(/P/g, 'П');
+		tokens.text = tokens.text.replace(/R/g, 'Р');
+		tokens.text = tokens.text.replace(/S/g, 'С');
+		tokens.text = tokens.text.replace(/T/g, 'Т');
+		tokens.text = tokens.text.replace(/U/g, 'У');
+		tokens.text = tokens.text.replace(/F/g, 'Ф');
+		tokens.text = tokens.text.replace(/H/g, 'Х');
+		tokens.text = tokens.text.replace(/X/g, 'Х');
+		tokens.text = tokens.text.replace(/Y/g, 'Ы');
+		tokens.text = tokens.text.replace(/C/g, 'Ц');
+		val = this.generate_input(tokens);
+	}
 	this.submit_locked = true;
 	this.input_control.dom.onkeypress = function() { return false; }
 	var channel = this.active_channel;
@@ -578,13 +718,68 @@ Chat.filters = function(pkt) {
 	}
 };
 
+/* Update chat message about current location */
+Chat.current_location = function(pkt) {
+	this.last_location_msg = this.msg_list({
+		messages: [{
+			id: 'msg-current-location',
+			channel: 'loc',
+			html: pkt.html,
+			cls: 'your-location'
+		}],
+		scroll_disable: pkt.scroll_disable
+	});
+};
+
+/* Clear all messages in the loc channel */
+Chat.clear_loc = function(pkt) {
+	Ext.each(Ext.query('.cmc-loc'), function(el) { el.parentNode.removeChild(el); })
+};
+
+/* Scroll screen to the bottom */
+Chat.scroll_bottom = function(pkt) {
+	this.box_content.el.stopFx();
+	this.box_content.el.scroll('down', 1000000, false);
+};
+
+/* Activate default channel after loading */
+Chat.open_default_channel = function(pkt) {
+	if (this.mode == 1) {
+		this.tab_open('loc', true);
+	}
+	if (this.channel_control_element) {
+		this.channel_control_element.value = 'loc';
+	}
+};
+
 Chat.clear = function() {
-	alert('Clearing chat');
+	if (this.box_content) {
+		var container = this.box_content.el.dom;
+		while (container.lastChild) {
+			container.removeChild(container.lastChild);
+		}
+	}
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		if (ch.box_content) {
+			var container = ch.box_content.el.dom;
+			while (container.lastChild) {
+				container.removeChild(container.lastChild);
+			}
+		}
+	}
 }
 
 Chat.translit = function() {
-	alert('Switching translit');
-}
+	var btn = Game.buttons['roster-translit'];
+	if (!btn)
+		return;
+	this.transl = !this.transl;
+	var src = this.transl ? btn.image2 : btn.image;
+	if (src) {
+		Ext.each(Ext.query('.btn-roster-translit'), function(el) { el.src = src; });
+	}
+};
 
 wait(['realplexor-stream'], function() {
 	loaded('chat');

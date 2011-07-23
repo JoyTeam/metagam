@@ -171,7 +171,7 @@ class DomainRegWizard(Wizard):
         self.config.set("redirect_fail", redirect_fail)
 
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain registration wizard"), "leaf": True, "order": 20})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain registration wizard"), "leaf": True, "order": 20, "icon": "/st-mg/menu/wizard.png"})
 
     def request(self, cmd):
         req = self.req()
@@ -667,7 +667,7 @@ class DomainWizard(Wizard):
         self.config.set("redirect_fail", kwargs["redirect_fail"])
         
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain wizard"), "leaf": True, "order": 20})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Domain wizard"), "leaf": True, "order": 20, "icon": "/st-mg/menu/wizard.png"})
 
     def domain_registered(self, domain, arg):
         self.config.set("domain", domain)

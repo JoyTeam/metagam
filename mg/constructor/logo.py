@@ -117,7 +117,7 @@ class LogoWizard(Wizard):
                 self.config.set("shape%d_title" % shape_id, title)
 
     def menu(self, menu):
-        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Logo constructor"), "leaf": True, "order": 20})
+        menu.append({"id": "wizard/call/%s" % self.uuid, "text": self._("Logo constructor"), "leaf": True, "order": 20, "icon": "/st-mg/menu/wizard.png"})
 
     def download_image(self, uri):
         if type(uri) == unicode:
