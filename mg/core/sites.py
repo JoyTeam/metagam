@@ -17,12 +17,12 @@ class SiteAdmin(Module):
     def menu_site(self, menu):
         req = self.req()
         if req.has_access("site.robots"):
-            menu.append({"id": "site/robots", "text": "robots.txt", "leaf": True})
+            menu.append({"id": "site/robots", "text": "robots.txt", "leaf": True, "order": 10})
 
     def robots(self):
         req = self.req()
         indexing = True if req.param("indexing") else False
-        if req.param("ok"):
+        if req.ok():
             config = self.app().config_updater()
             config.set("indexing.enabled", indexing)
             config.store()
@@ -62,7 +62,7 @@ class CountersAdmin(Module):
         req = self.req()
         html = req.param("html")
         head = req.param("head")
-        if req.param("ok"):
+        if req.ok():
             config = self.app().config_updater()
             config.set("counters.html", html)
             config.set("counters.head", head)

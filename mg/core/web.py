@@ -214,7 +214,10 @@ class Request(object):
                 return None
         except AttributeError:
             pass
-        self._session = self.app.hooks.call("session.get", create)
+        try:
+            self._session = self.app.hooks.call("session.get", create)
+        except AttributeError:
+            self._session = None
         return self._session
 
     def user(self):
@@ -546,7 +549,7 @@ class Web(Module):
     def core_appconfig(self):
         req = self.req()
         factory = self.app().inst.appfactory
-        app = factory.get_by_tag(req.args)
+        app = factory.get_by_tag(req.args, False)
         if app:
             if app.hooks.dynamic:
                 factory.remove_by_tag(req.args)

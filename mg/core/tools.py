@@ -11,6 +11,8 @@ re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
 re_valid_int = re.compile(r'^-?[0-9]+$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
+re_frac_part = re.compile(r'\..*?[1-9]')
+re_remove_frac = re.compile(r'\..*')
 
 def urldecode(str):
     if str is None:
@@ -121,6 +123,13 @@ def datetime_to_human(str):
     y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
     return "%02d.%02d.%04d %02d:%02d:%02d" % (int(d), int(m), int(y), int(hh), int(mm), int(ss))
 
+def time_to_human(str):
+    m = re_datetime.match(str)
+    if not m:
+        return None
+    y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
+    return "%02d:%02d:%02d" % (int(hh), int(mm), int(ss))
+
 def date_to_human(str):
     m = re_date.match(str)
     if not m:
@@ -135,3 +144,14 @@ def date_from_human(str):
     d, m, y, t = m.group(1, 2, 3, 4)
     return "%04d-%02d-%02d %s" % (int(y), int(m), int(d), t if t else "00:00:00")
 
+def nn(num):
+    if num is None:
+        return 0
+    if type(num) == int:
+        return num
+    if type(num) == float:
+        num = '%f' % num
+    num = str(num)
+    if re_frac_part.search(num):
+        return float(num)
+    return int(re_remove_frac.sub('', num))

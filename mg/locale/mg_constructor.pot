@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-22 17:01+0400\n"
+"POT-Creation-Date: 2011-07-25 15:01+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,9 +22,9 @@ msgid "Guru advice"
 msgstr ""
 
 #: static/js/admin.js:141 static/js/locations.js:23 static/js/locations.js:29
-#: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
-#: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:529 static/js/chat.js:537
+#: static/js/realplexor-stream.js:20 static/js/admin-form.js:164
+#: static/js/admin-form.js:167 static/js/admin-form.js:322
+#: static/js/admin-form.js:325 static/js/chat.js:529 static/js/chat.js:537
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -103,12 +103,12 @@ msgstr ""
 msgid "Presets:"
 msgstr ""
 
-#: static/js/admin-form.js:105
+#: static/js/admin-form.js:104
 #: mg/templates/constructor/setup/logo-wizard.html:74
 msgid "Upload file"
 msgstr ""
 
-#: static/js/admin-form.js:113 static/js/admin-form.js:272
+#: static/js/admin-form.js:112 static/js/admin-form.js:271
 #: mg/templates/admin/auth/write-dossier.html:23
 #: mg/templates/constructor/setup/domain-wizard.html:82
 #: mg/templates/constructor/setup/domain.html:64
@@ -119,25 +119,25 @@ msgstr ""
 msgid "Please wait..."
 msgstr ""
 
-#: static/js/admin-form.js:126
+#: static/js/admin-form.js:125
 msgid "Upload image"
 msgstr ""
 
-#: static/js/admin-form.js:139
+#: static/js/admin-form.js:138
 msgid "Or provide image URL"
 msgstr ""
 
-#: static/js/admin-form.js:148 mg/templates/constructor/setup/logo.html:80
+#: static/js/admin-form.js:147 mg/templates/constructor/setup/logo.html:80
 #: mg/templates/constructor/setup/logo-wizard.html:102
 msgid "Upload"
 msgstr ""
 
-#: static/js/admin-form.js:152 mg/templates/constructor/setup/logo.html:83
+#: static/js/admin-form.js:151 mg/templates/constructor/setup/logo.html:83
 #: mg/templates/constructor/setup/logo-wizard.html:40
 msgid "Uploading data..."
 msgstr ""
 
-#: static/js/admin-form.js:168 static/js/admin-form.js:326
+#: static/js/admin-form.js:167 static/js/admin-form.js:325
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
@@ -147,7 +147,7 @@ msgstr ""
 msgid "Server error: %s"
 msgstr ""
 
-#: static/js/admin-form.js:308
+#: static/js/admin-form.js:307
 msgid "Sending data..."
 msgstr ""
 

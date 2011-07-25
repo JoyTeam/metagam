@@ -119,7 +119,7 @@ class Interface(ConstructorModule):
         session_param = req.param("session")
         if session_param and req.environ.get("REQUEST_METHOD") == "POST":
             session = req.session()
-            if session.uuid != session_param:
+            if not session or session.uuid != session_param:
                 self.call("web.redirect", "/")
             user = session.get("user")
             if not user:
@@ -1182,14 +1182,14 @@ class Interface(ConstructorModule):
             blocks.append((p.uuid, self._("Popup menu: %s") % p.get("title")))
             popups.append((p.uuid, p.get("title")))
         fields = [
-            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block, "allow_blank": True},
+            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block},
             {"name": "order", "label": self._("Sort order"), "value": order, "inline": True},
             {"type": "fileuploadfield", "name": "image", "label": self._("Button image")},
             {"name": "title", "label": self._("Button hint"), "value": title},
             {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]},
             {"name": "href", "label": self._("Button href"), "value": href, "condition": "[[action]]=='href'"},
-            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True, "allow_blank": True},
-            {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'", "allow_blank": True},
+            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True},
+            {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'"},
             {"name": "onclick", "label": self._("Javascript onclick"), "value": onclick, "condition": "[[action]]=='javascript'"},
         ]
         self.call("admin.form", fields=fields, modules=["FileUploadField"])

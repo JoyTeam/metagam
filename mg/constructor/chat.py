@@ -472,7 +472,7 @@ class Chat(ConstructorModule):
         # time
         sysnow = self.now()
         if not hide_time:
-            now = datetime.datetime.utcnow().strftime("%H:%M:%S")
+            now = time_to_human(self.now_local())
             tokens.append({"time": now, "mentioned": mentioned})
         # replacing character tags [chf:UUID], [cht:UUID], [ch:UUID] etc
         start = 0

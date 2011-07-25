@@ -1,6 +1,6 @@
 from mg import *
 from mg.core.whois_client import *
-from mg.game.money import MemberMoney
+from mg.game.money_classes import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest

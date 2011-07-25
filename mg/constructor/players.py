@@ -1,6 +1,7 @@
 from mg import *
 from uuid import uuid4
-from interface_classes import *
+from mg.constructor.interface_classes import *
+from mg.game.money_classes import *
 import re
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
@@ -247,6 +248,14 @@ class Character(Module):
             self._sessions = []
             self.call("session.character-sessions", self, self._sessions)
             return self._sessions
+
+    @property
+    def money(self):
+        try:
+            return self._money
+        except AttributeError:
+            self._money = MemberMoney(self.app(), self.uuid)
+            return self._money
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

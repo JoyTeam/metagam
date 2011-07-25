@@ -3,6 +3,9 @@ from mg.core.auth import *
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from uuid import uuid4
+from mg.game.money_classes import *
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
+import cStringIO
 import xml.dom.minidom
 import hashlib
 import re
@@ -14,353 +17,6 @@ re_questions = re.compile('\?')
 re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
 re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
 re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
-
-class Account(CassandraObject):
-    _indexes = {
-        "all": [[]],
-        "member": [["member"]],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Account._indexes
-
-    def balance(self):
-        return float(self.get("balance"))
-
-    def low_limit(self):
-        return float(self.get("low_limit"))
-
-    def locked(self):
-        return float(self.get("locked"))
-
-    def available(self):
-        return self.balance() - self.locked()
-
-    # credit and debit
-
-    def credit(self, amount, currency_info):
-        self.set("balance", currency_info["format"] % (self.balance() + amount))
-
-    def force_debit(self, amount, currency_info):
-        self.set("balance", currency_info["format"] % (self.balance() - amount))
-
-    def debit(self, amount, currency_info):
-        if self.available() - amount < self.low_limit():
-            return False
-        self.force_debit(amount, currency_info)
-        return True
-
-    # money locking
-
-    def force_lock(self, amount, currency_info):
-        self.set("locked", currency_info["format"] % (self.locked() + amount))
-
-    def unlock(self, amount, currency_info):
-        val = self.locked() - amount
-        if val < 0:
-            val = 0
-        self.set("locked", currency_info["format"] % val)
-
-    def lock(self, amount, currency_info):
-        if self.available() - amount < self.low_limit():
-            return False
-        self.force_lock(amount, currency_info)
-        return True
-
-class AccountList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        kwargs["cls"] = Account
-        CassandraObjectList.__init__(self, *args, **kwargs)
-
-class AccountLock(CassandraObject):
-    _indexes = {
-        "account": [["account"], "created"],
-        "member": [["member"], "created"],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AccountLock._indexes
-
-class AccountLockList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        kwargs["cls"] = AccountLock
-        CassandraObjectList.__init__(self, *args, **kwargs)
-
-class AccountOperation(CassandraObject):
-    _indexes = {
-        "account": [["account"], "performed"],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AccountOperation._indexes
-
-class AccountOperationList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        kwargs["cls"] = AccountOperation
-        CassandraObjectList.__init__(self, *args, **kwargs)
-
-class Payment2pay(CassandraObject):
-    _indexes = {
-        "all": [[], "performed"],
-        "user": [["user"], "performed"],
-        "date": [[], "date"],
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Payment2pay._indexes
-
-class Payment2payList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
-        kwargs["cls"] = Payment2pay
-        CassandraObjectList.__init__(self, *args, **kwargs)
-
-class MemberMoney(object):
-    def __init__(self, app, member):
-        self.app = app
-        self.member = member
-
-    def accounts(self):
-        try:
-            return self._accounts
-        except AttributeError:
-            pass
-        list = self.app.objlist(AccountList, query_index="member", query_equal=self.member)
-        list.load(silent=True)
-        self._accounts = list
-        return list
-
-    def locks(self):
-        list = self.app.objlist(AccountLockList, query_index="member", query_equal=self.member)
-        list.load(silent=True)
-        return list
-
-    def account(self, currency, create=False):
-        for acc in self.accounts():
-            if acc.get("currency") == currency:
-                return acc
-        if not create:
-            return None
-        account = self.app.obj(Account)
-        account.set("member", self.member)
-        account.set("balance", 0)
-        account.set("currency", currency)
-        account.set("locked", 0)
-        account.set("low_limit", 0)
-        account.store()
-        return account
-
-    def description(self, description):
-        "Looks for description info"
-        info = self.app.hooks.call("money-description.%s" % description)
-        if info is None:
-            raise RuntimeError("Invalid money transfer description")
-        return info
-
-    def description_validate(self, description, kwargs):
-        info = self.description(description)
-        for arg in info["args"]:
-            if not kwargs.has_key(arg):
-                raise RuntimeError("Missing argument %s for description %s" % (arg, description))
-
-    def credit(self, amount, currency, description, **kwargs):
-        self.description_validate(description, kwargs)
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
-            account = self.account(currency, True)
-            account.credit(amount, currency_info)
-            op = self.app.obj(AccountOperation)
-            for key, val in kwargs.iteritems():
-                op.set(key, val)
-            op.set("account", account.uuid)
-            op.set("performed", self.app.now())
-            op.set("amount", currency_info["format"] % amount)
-            op.set("balance", currency_info["format"] % account.balance())
-            op.set("description", description)
-            account.store()
-            op.store()
-
-    def debit(self, amount, currency, description, **kwargs):
-        self.description_validate(description, kwargs)
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
-            account = self.account(currency, False)
-            if account is None:
-                return False
-            if not account.debit(amount, currency_info):
-                return False
-            op = self.app.obj(AccountOperation)
-            for key, val in kwargs.iteritems():
-                op.set(key, val)
-            op.set("account", account.uuid)
-            op.set("performed", self.app.now())
-            op.set("amount", currency_info["format"] % -amount)
-            op.set("balance", currency_info["format"] % account.balance())
-            op.set("description", description)
-            account.store()
-            op.store()
-            return True
-
-    def force_debit(self, amount, currency, description, **kwargs):
-        self.description_validate(description, kwargs)
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
-            account = self.account(currency, True)
-            account.force_debit(amount, currency_info)
-            op = self.app.obj(AccountOperation)
-            for key, val in kwargs.iteritems():
-                op.set(key, val)
-            op.set("account", account.uuid)
-            op.set("performed", self.app.now())
-            op.set("amount", currency_info["format"] % -amount)
-            op.set("balance", currency_info["format"] % account.balance())
-            op.set("description", description)
-            account.store()
-            op.store()
-
-    def transfer(self, member, amount, currency, description, **kwargs):
-        self.description_validate(description, kwargs)
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member, "MemberMoney.%s" % member]):
-            target = MemberMoney(self.app, member)
-            account_from = self.account(currency, False)
-            if account_from is None:
-                return False
-            account_to = target.account(currency, True)
-            if not account_from.debit(amount, currency_info):
-                return False
-            account_to.credit(amount, currency_info)
-            performed = self.app.now()
-            op1 = self.app.obj(AccountOperation)
-            for key, val in kwargs.iteritems():
-                op1.set(key, val)
-            op1.set("account", account_from.uuid)
-            op1.set("performed", performed)
-            op1.set("amount", currency_info["format"] % -amount)
-            op1.set("balance", currency_info["format"] % account_from.balance())
-            op1.set("description", description)
-            op2 = self.app.obj(AccountOperation)
-            for key, val in kwargs.iteritems():
-                op2.set(key, val)
-            op2.set("account", account_to.uuid)
-            op2.set("performed", performed)
-            op2.set("amount", currency_info["format"] % amount)
-            op2.set("balance", currency_info["format"] % account_to.balance())
-            op2.set("description", description)
-            op1.set("reference", op2.uuid)
-            op2.set("reference", op1.uuid)
-            account_from.store()
-            account_to.store()
-            op1.store()
-            op2.store()
-            return True
-
-    def lock(self, amount, currency, description, **kwargs):
-        self.description_validate(description, kwargs)
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
-            account = self.account(currency, False)
-            if not account:
-                return None
-            lock = self.app.obj(AccountLock)
-            lock.set("member", self.member)
-            lock.set("account", account.uuid)
-            lock.set("amount", currency_info["format"] % amount)
-            lock.set("currency", currency)
-            lock.set("description", description)
-            lock.set("created", self.app.now())
-            for key, val in kwargs.iteritems():
-                lock.set(key, val)
-            if not account.lock(amount, currency_info):
-                return None
-            account.store()
-            lock.store()
-            return lock
-
-    def unlock(self, lock_uuid):
-        currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        with self.app.lock(["MemberMoney.%s" % self.member]):
-            try:
-                lock = self.app.obj(AccountLock, lock_uuid)
-            except ObjectNotFoundException:
-                return None
-            else:
-                account = self.app.obj(Account, lock.get("account"))
-                currency_info = currencies.get(account.get("currency"))
-                if currency_info is None:
-                    return None
-                account.unlock(float(lock.get("amount")), currency_info)
-                account.store()
-                lock.remove()
-                return lock
-
-    def balance(self, currency):
-        account = self.account(currency)
-        if account is None:
-            return 0
-        return account.balance()
-    
-    def available(self, currency):
-        account = self.account(currency)
-        if account is None:
-            return 0
-        return account.available()
 
 class MoneyAdmin(Module):
     def register(self):
@@ -380,6 +36,12 @@ class MoneyAdmin(Module):
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("constructor.project-params", self.project_params)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["Account"] = (Account, AccountList)
+        objclasses["AccountLock"] = (AccountLock, AccountLockList)
+        objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
 
     def menu_root_index(self, menu):
         menu.append({"id": "economy.index", "text": self._("Economy"), "order": 100})
@@ -427,6 +89,7 @@ class MoneyAdmin(Module):
                 self.call("admin.form", fields=fields)
             elif req.args:
                 if req.ok():
+                    self.call("web.upload_handler")
                     code = req.param("code").strip()
                     name_en = req.param("name_en").strip()
                     name_local = req.param("name_local").strip()
@@ -491,10 +154,6 @@ class MoneyAdmin(Module):
                                     errors["name_en"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
                                 elif (project.get("moderation") or project.get("published")) and name_en != info.get("name_en") and info.get("real"):
                                     errors["name_en"] = self._("You can't change real money currency name after game publication")
-                    m = re_invalid_symbol.search(description)
-                    if m:
-                        sym = m.group(1)
-                        errors["description"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
                     if precision < 0:
                         errors["precision"] = self._("Precision can't be negative")
                     elif precision > 4:
@@ -516,14 +175,61 @@ class MoneyAdmin(Module):
                             errors["real_price"] = self._("You must supply real money price for this currency")
                         elif not re_valid_real_price.match(real_price):
                             errors["real_price"] = self._("Invalid number format")
-                        elif (project.get("moderation") or project.get("published")) and real_price != info.get("real_price"):
+                        elif (project.get("moderation") or project.get("published")) and float(real_price) != float(info.get("real_price")):
                             errors["real_price"] = self._("You can't change real money exchange rate after game publication")
                         if real_currency not in ["RUR", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
                             errors["v_real_currency"] = self._("Select real money currency")
                         elif (project.get("moderation") or project.get("published")) and real_currency != info.get("real_currency"):
                             errors["v_real_currency"] = self._("You can't change real money exchange rate after game publication")
+                    # images
+                    image_data = req.param_raw("image")
+                    image_obj = None
+                    if image_data:
+                        try:
+                            image_obj = Image.open(cStringIO.StringIO(image_data))
+                            if image_obj.load() is None:
+                                raise IOError
+                        except IOError:
+                            errors["image"] = self._("Image format not recognized")
+                        except OverflowError:
+                            errors["image"] = self._("Image format not recognized")
+                        else:
+                            if image_obj.format == "GIF":
+                                image_ext = "gif"
+                                image_content_type = "image/gif"
+                            elif image_obj.format == "PNG":
+                                image_ext = "png"
+                                image_content_type = "image/png"
+                            elif image_obj.format == "JPEG":
+                                image_ext = "jpg"
+                                image_content_type = "image/jpeg"
+                            else:
+                                errors["image"] = self._("Image format must be GIF, JPEG or PNG")
+                    icon_data = req.param_raw("icon")
+                    icon_obj = None
+                    if icon_data:
+                        try:
+                            icon_obj = Image.open(cStringIO.StringIO(icon_data))
+                            if icon_obj.load() is None:
+                                raise IOError
+                        except IOError:
+                            errors["icon"] = self._("Image format not recognized")
+                        except OverflowError:
+                            errors["icon"] = self._("Image format not recognized")
+                        else:
+                            if icon_obj.format == "GIF":
+                                icon_ext = "gif"
+                                icon_content_type = "image/gif"
+                            elif icon_obj.format == "PNG":
+                                icon_ext = "png"
+                                icon_content_type = "image/png"
+                            elif icon_obj.format == "JPEG":
+                                icon_ext = "jpg"
+                                icon_content_type = "image/jpeg"
+                            else:
+                                errors["icon"] = self._("Image format must be GIF, JPEG or PNG")
                     if len(errors) or errormsg:
-                        self.call("web.response_json", {"success": False, "errors": errors, "errormsg": errormsg})
+                        self.call("web.response_json_html", {"success": False, "errors": errors, "errormsg": errormsg})
                     # storing
                     lst = self.conf("money.currencies", {})
                     if req.args == "new":
@@ -541,10 +247,21 @@ class MoneyAdmin(Module):
                     if real:
                         info["real_price"] = floatz(real_price)
                         info["real_currency"] = real_currency
+                    # storing images
+                    old_images = []
+                    if image_obj:
+                        old_images.append(info.get("image"))
+                        info["image"] = self.call("cluster.static_upload", "currencies", image_ext, image_content_type, image_data)
+                    if icon_obj:
+                        old_images.append(info.get("icon"))
+                        info["icon"] = self.call("cluster.static_upload", "currencies", icon_ext, icon_content_type, icon_data)
                     config = self.app().config_updater()
                     config.set("money.currencies", lst)
                     config.store()
-                    self.call("admin.redirect", "money/currencies")
+                    for uri in old_images:
+                        if uri:
+                            self.call("cluster.static_delete", uri)
+                    self.call("web.response_json_html", {"success": True, "redirect": "money/currencies"})
                 elif req.args == "new":
                     description = ""
                     real = False
@@ -578,7 +295,9 @@ class MoneyAdmin(Module):
                 fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
                 fields.append({"name": "real_price", "label": self._("Real money price for 1 unit of the currency"), "value": real_price, "condition": "[real]"})
                 fields.append({"name": "real_currency", "type": "combo", "label": self._("Real money currency"), "value": real_currency, "condition": "[real]", "values": [("RUR", "RUR"), ("USD", "USD"), ("EUR", "EUR"), ("UAH", "UAH"), ("BYR", "BYR"), ("GBP", "GBP"), ("KZT", "KZT")]})
-                self.call("admin.form", fields=fields)
+                fields.append({"name": "image", "label": self._("Currency image (approx 60x60)"), "type": "fileuploadfield"})
+                fields.append({"name": "icon", "label": self._("Currency icon (approx 16x16)"), "type": "fileuploadfield"})
+                self.call("admin.form", fields=fields, modules=["FileUploadField"])
             else:
                 rows = []
                 for code in sorted(currencies.keys()):
@@ -587,7 +306,13 @@ class MoneyAdmin(Module):
                     declensions = []
                     for i in (0, 1, 2, 5, 10, 21):
                         declensions.append("<nobr>%d %s</nobr>" % (i, self.call("l10n.literal_value", i, info.get("name_local"))))
-                    rows.append(['<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code), self.call("l10n.literal_value", 1, info.get("name_plural")), real, ", ".join(declensions)])
+                    code = '<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code)
+                    if info.get("icon"):
+                        code += ' <img src="%s" alt="" class="inline-icon" />' % info["icon"]
+                    name = info.get("name_plural")
+                    if info.get("image"):
+                        name += '<br /><img src="%s" alt="" />' % info["image"]
+                    rows.append([code, name, real, ", ".join(declensions)])
                 vars = {
                     "tables": [
                         {
@@ -636,7 +361,7 @@ class MoneyAdmin(Module):
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Give amount"), "value": amount})
-        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()], "allow_blank": True})
+        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()]})
         buttons = [{"text": self._("Give")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -679,7 +404,7 @@ class MoneyAdmin(Module):
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Take amount"), "value": amount})
-        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()], "allow_blank": True})
+        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()]})
         buttons = [{"text": self._("Take")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -699,9 +424,9 @@ class MoneyAdmin(Module):
         currencies = {}
         self.call("currencies.list", currencies)
         operations = []
-        list = self.objlist(AccountOperationList, query_index="account", query_equal=account.uuid, query_reversed=True)
-        list.load(silent=True)
-        for op in list:
+        lst = self.objlist(AccountOperationList, query_index="account", query_equal=account.uuid, query_reversed=True)
+        lst.load(silent=True)
+        for op in lst:
             description = self.call("money-description.%s" % op.get("description"))
             operations.append({
                 "performed": op.get("performed"),
@@ -725,16 +450,14 @@ class MoneyAdmin(Module):
     def user_tables(self, user, tables):
         if self.req().has_access("users.money"):
             member = MemberMoney(self.app(), user.uuid)
-            accounts = member.accounts()
-            if len(accounts):
+            if len(member.accounts):
                 tables.append({
                     "header": [self._("Account Id"), self._("Currency"), self._("Balance"), self._("Locked"), self._("Low limit")],
-                    "rows": [('<hook:admin.link href="money/account/{0}" title="{0}" />'.format(a.uuid), a.get("currency"), a.get("balance"), a.get("locked"), a.get("low_limit")) for a in accounts]
+                    "rows": [('<hook:admin.link href="money/account/{0}" title="{0}" />'.format(a.uuid), a.get("currency"), a.get("balance"), a.get("locked"), a.get("low_limit")) for a in member.accounts]
                 })
-            locks = member.locks()
-            if len(locks):
+            if len(member.locks):
                 rows = []
-                for l in locks:
+                for l in member.locks:
                     description_info = member.description(l.get("description"))
                     if description_info:
                         desc = description_info["text"] % l.data
@@ -785,76 +508,6 @@ class MoneyAdmin(Module):
         if not real_ok:
             params.append({"name": self._("Real money currency name"), "value": '<span class="no">%s</span>' % self._("absent"), "moderated": True})
 
-class Money(Module):
-    def register(self):
-        Module.register(self)
-        self.rhook("currencies.list", self.currencies_list, priority=-1000)
-        self.rhook("money-description.admin-give", self.money_description_admin_give)
-        self.rhook("money-description.admin-take", self.money_description_admin_take)
-        self.rhook("money.member-money", self.member_money)
-        self.rhook("money.valid_amount", self.valid_amount)
-        self.rhook("objclasses.list", self.objclasses_list)
-
-    def currencies_list(self, currencies):
-        if self.app().tag == "main":
-            currencies["MM$"] = {
-                "format": "%.2f",
-                "description": "MM$",
-                "real": True,
-            }
-        else:
-            lst = self.conf("money.currencies")
-            if lst:
-                for code, info in lst.iteritems():
-                    currencies[code] = info
-
-    def money_description_admin_give(self):
-        return {
-            "args": ["admin"],
-            "text": self._("Given by the administration"),
-        }
-
-    def money_description_admin_take(self):
-        return {
-            "args": ["admin"],
-            "text": self._("Taken by the administration"),
-        }
-
-    def objclasses_list(self, objclasses):
-        objclasses["Account"] = (Account, AccountList)
-        objclasses["AccountLock"] = (AccountLock, AccountLockList)
-        objclasses["AccountOperation"] = (AccountOperation, AccountOperationList)
-
-    def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
-        valid = True
-        # checking currency
-        currencies = {}
-        self.call("currencies.list", currencies)
-        currency_info = currencies.get(currency)
-        if currency_info is None:
-            valid = False
-            if errors is not None and currency_field:
-                errors[currency_field] = self._("Invalid currency")
-        # checking amount
-        try:
-            amount = float(amount)
-            if amount <= 0:
-                valid = False
-                if errors is not None and amount_field:
-                    errors[amount_field] = self._("Amount must be greater than 0")
-            elif currency_info is not None and amount != float(currency_info["format"] % amount):
-                valid = False
-                if errors is not None and amount_field:
-                    errors[amount_field] = self._("Invalid amount precision")
-        except ValueError:
-            valid = False
-            if errors is not None and amount_field:
-                errors[amount_field] = self._("Invalid number format")
-        return valid
-
-    def member_money(self, member_uuid):
-        return MemberMoney(self.app(), member_uuid)
-
 class TwoPay(Module):
     def register(self):
         Module.register(self)
@@ -866,6 +519,7 @@ class TwoPay(Module):
         self.rhook("2pay.payport-params", self.payport_params)
         self.rhook("2pay.payment-params", self.payment_params)
         self.rhook("2pay.register", self.register_2pay)
+        self.rhook("gameinterface.render", self.gameinterface_render)
 
     def money_description_2pay_pay(self):
         return {
@@ -904,6 +558,7 @@ class TwoPay(Module):
         id = None
         id_shop = None
         sum = None
+        self.debug("2pay Request: %s", req.param_dict())
         try:
             secret = self.conf("2pay.secret")
             if type(secret) == unicode:
@@ -978,6 +633,7 @@ class TwoPay(Module):
                         except ObjectNotFoundException:
                             result = 2
                     result = 0
+                    id = None
             elif command is None:
                 result = 4
                 comment = "Command not supplied"
@@ -988,7 +644,6 @@ class TwoPay(Module):
         except Exception as e:
             result = 1
             comment = str(e)
-        req.content_type = "application/xml"
         doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "response", None)
         response = doc.documentElement
         if id is not None:
@@ -1012,7 +667,7 @@ class TwoPay(Module):
             elt.appendChild(doc.createTextNode(comment))
             response.appendChild(elt)
         self.debug("2pay Response: %s", response.toxml("utf-8"))
-        self.call("web.response", doc.toxml("windows-1251"), {})
+        self.call("web.response", doc.toxml("windows-1251"), "application/xml")
 
     def payport_params(self, params, owner_uuid):
         payport = {}
@@ -1176,17 +831,13 @@ class TwoPay(Module):
                     self.debug(u"2pay response: %s %s", response.status_code, response.body)
                     if response.status_code == 200:
                         response = xml.dom.minidom.parseString(response.body)
-                        print "parsed XML"
                         if response.documentElement.tagName == "response":
-                            print "tagname OK"
                             result = response.documentElement.getElementsByTagName("result")
-                            print "result fetched"
                             if result and self.getText(result[0].childNodes) == "OK":
-                                print "result OK"
                                 game_id = response.documentElement.getElementsByTagName("gameId")
                                 if game_id:
                                     game_id = self.getText(game_id[0].childNodes)
-                                    print "game_id: %s" % game_id
+                                    self.debug("game_id: %s", game_id)
                                     game_id = intz(game_id)
                                     config = self.app().config_updater()
                                     config.set("2pay.secret", secret)
@@ -1206,6 +857,13 @@ class TwoPay(Module):
                 rc = rc + node.data
         return rc
 
+    def gameinterface_render(self, character, vars, design):
+        if self.conf("2pay.project-id"):
+            vars["js_modules"].add("xsolla")
+            vars["js_init"].append("Xsolla.project = %d;" % self.conf("2pay.project-id"))
+            vars["js_init"].append("Xsolla.email = '%s';" % jsencode(urlencode(character.player.email)))
+            vars["js_init"].append("Xsolla.name = '%s';" % jsencode(urlencode(character.name)))
+            vars["js_init"].append("Xsolla.lang = '%s';" % self.call("l10n.lang"))
 
 class TwoPayAdmin(Module):
     def register(self):
@@ -1306,4 +964,68 @@ class TwoPayAdmin(Module):
     def permissions_list(self, perms):
         if self.app().tag == "main":
             perms.append({"id": "constructor.projects-2pay", "name": self._("Constructor: 2pay integration")})
+
+class Money(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("currencies.list", self.currencies_list, priority=-1000)
+        self.rhook("money-description.admin-give", self.money_description_admin_give)
+        self.rhook("money-description.admin-take", self.money_description_admin_take)
+        self.rhook("money.member-money", self.member_money)
+        self.rhook("money.valid_amount", self.valid_amount)
+
+    def currencies_list(self, currencies):
+        if self.app().tag == "main":
+            currencies["MM$"] = {
+                "format": "%.2f",
+                "description": "MM$",
+                "real": True,
+            }
+        else:
+            lst = self.conf("money.currencies")
+            if lst:
+                for code, info in lst.iteritems():
+                    currencies[code] = info
+
+    def money_description_admin_give(self):
+        return {
+            "args": ["admin"],
+            "text": self._("Given by the administration"),
+        }
+
+    def money_description_admin_take(self):
+        return {
+            "args": ["admin"],
+            "text": self._("Taken by the administration"),
+        }
+
+    def valid_amount(self, amount, currency, errors=None, amount_field=None, currency_field=None):
+        valid = True
+        # checking currency
+        currencies = {}
+        self.call("currencies.list", currencies)
+        currency_info = currencies.get(currency)
+        if currency_info is None:
+            valid = False
+            if errors is not None and currency_field:
+                errors[currency_field] = self._("Invalid currency")
+        # checking amount
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Amount must be greater than 0")
+            elif currency_info is not None and amount != float(currency_info["format"] % amount):
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Invalid amount precision")
+        except ValueError:
+            valid = False
+            if errors is not None and amount_field:
+                errors[amount_field] = self._("Invalid number format")
+        return valid
+
+    def member_money(self, member_uuid):
+        return MemberMoney(self.app(), member_uuid)
 

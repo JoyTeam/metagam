@@ -51,6 +51,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .text ul{list-style: disc; margin: 10px 0px 10px 35px;}
 .text ol{list-style: none; margin: 10px 0px 10px 20px;}
 .auto-panel{margin: 3px 0px 3px 0px}
+.inline-icon { vertical-align: middle }
 .bottom-form { margin: 10px 0 10px 0 }
 .admin-form .x-panel-btns .x-toolbar-cell {padding: 10px 15px 0px 0px;}
 .x-form-file-wrap { position: relative; height: 22px; }

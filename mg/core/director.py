@@ -93,14 +93,7 @@ class Director(Module):
                         if fact_server is not None:
                             fact_port = fact_server.get("port")
                             if fact_port is None or fact_port == port:
-                                del self.app().servers_online[server_id]
-                                self.store_servers_online()
-                                self.servers_online_updated()
-                                # removing status object
-                                st = self.obj(WorkerStatus, server_id, silent=True)
-                                st.remove()
-                                # additional actions
-                                self.call("director.unregistering_server", server_id)
+                                self.server_offline(server_id)
                 # examining WorkerStatus records
                 lst = self.objlist(WorkerStatusList, query_index="all")
                 lst.load(silent=True)
@@ -140,6 +133,16 @@ class Director(Module):
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(10)
+
+    def server_offline(self, server_id):
+        del self.app().servers_online[server_id]
+        self.store_servers_online()
+        self.servers_online_updated()
+        # removing status object
+        st = self.obj(WorkerStatus, server_id, silent=True)
+        st.remove()
+        # additional actions
+        self.call("director.unregistering_server", server_id)
 
     def appfactory(self):
         raise Hooks.Return(ApplicationFactory(self.app().inst))
@@ -226,6 +229,12 @@ class Director(Module):
                         try:
                             request = cnn.get("/core/reload-hard")
                             cnn.perform(request)
+                        except IOError as e:
+                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
+                            self.server_offline(server_id)
+                        except TimeoutError as e:
+                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
+                            self.server_offline(server_id)
                         finally:
                             cnn.close()
                 except Exception as e:

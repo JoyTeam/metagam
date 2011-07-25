@@ -146,10 +146,10 @@ class LocationsAdmin(ConstructorModule):
             lst.load()
             locations = [(loc.uuid, loc.get("name")) for loc in lst if loc.uuid != db_loc.uuid]
             locations.insert(0, ("", "---------------"))
-            fields.append({"name": "loc_up", "label": self._("Location to the up"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_up", "")})
-            fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_left", "")})
-            fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_right", ""), "inline": True})
-            fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_down", "")})
+            fields.append({"name": "loc_up", "label": self._("Location to the up"), "type": "combo", "values": locations, "value": db_loc.get("loc_up", "")})
+            fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "value": db_loc.get("loc_left", "")})
+            fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "value": db_loc.get("loc_right", ""), "inline": True})
+            fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "value": db_loc.get("loc_down", "")})
             # image type
             image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
             fields.append(image_type)
@@ -228,7 +228,7 @@ class LocationsAdmin(ConstructorModule):
         lst.load()
         locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
         fields = [
-            {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations, "allow_blank": True},
+            {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
         ]
         self.call("admin.form", fields=fields)
 

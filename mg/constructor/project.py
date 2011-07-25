@@ -52,7 +52,8 @@ class ConstructorProject(Module):
             ])
             if project.get("published"):
                 lst.extend([
-                    "mg.game.money.TwoPay"
+                    "mg.game.money.TwoPay",
+                    "mg.constructor.money.Money",
                 ])
             if self.conf("module.sociointerface"):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])

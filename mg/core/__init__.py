@@ -96,7 +96,7 @@ class Hooks(object):
                         modules.add(mod)
             modules = list(modules)
             if len(modules):
-                self.app().modules.load(modules, silent=True)
+                self.app().modules.load(modules, silent=True, auto_loaded=True)
             for g in load_groups:
                 self.loaded_groups.add(g)
 
@@ -352,7 +352,7 @@ class Module(object):
 
     def rdep(self, modules):
         "Register module dependency. This module will be loaded automatically"
-        self.app().modules._load(modules)
+        self.app().modules._load(modules, auto_loaded=True)
 
     def conf(self, key, default=None, reset_cache=False):
         "Syntactic sugar for app.config.get(key)"
@@ -431,6 +431,9 @@ class Module(object):
 
     def now(self, add=0):
         return self.app().now(add)
+
+    def now_local(self, add=0):
+        return self.app().now_local(add)
 
     def lock(self, *args, **kwargs):
         return self.app().lock(*args, **kwargs)
@@ -561,22 +564,26 @@ class Modules(object):
     def __init__(self, app):
         self.app = weakref.ref(app)
         self.loaded_modules = dict()
+        self.not_auto_loaded = set()
 
-    def load(self, modules, silent=False):
+    def load(self, modules, silent=False, auto_loaded=False):
         """
         Load requested modules.
         modules - list of module names (format: "mg.group.Class" means
         silent - don't fail on ImportError
+        auto_loaded - remove this modules on full reload
         "import Class from mg.group")
         """
         with self.app().inst.modules_lock:
-            return self._load(modules, silent)
+            return self._load(modules, silent, auto_loaded)
 
-    def _load(self, modules, silent=False):
+    def _load(self, modules, silent=False, auto_loaded=False):
         "The same as load but without locking"
         errors = 0
         app = self.app()
         for mod in modules:
+            if not auto_loaded:
+                self.not_auto_loaded.add(mod)
             if mod not in self.loaded_modules:
                 #logging.getLogger("mg.core.Modules").debug("LOAD MODULE %s", mod)
                 m = re_module_path.match(mod)
@@ -617,18 +624,27 @@ class Modules(object):
             modules = self.loaded_modules.keys()
             self.loaded_modules.clear()
             self.app().hooks.unregister_all()
-            return self._load(modules)
+            return self._load(modules, auto_loaded=True)
 
     def load_all(self):
         "Load all available modules"
         with self.app().inst.modules_lock:
+            # removing automatically loaded modules
+            modules = []
             complete = set()
+            for mod in self.loaded_modules.keys():
+                if mod in self.not_auto_loaded:
+                    modules.append(mod)
+            self.loaded_modules.clear()
+            self.app().hooks.unregister_all()
+            self._load(modules)
             repeat = True
             while repeat:
                 repeat = False
                 for name, mod in self.loaded_modules.items():
                     if name not in complete:
-                        self._load(mod.child_modules())
+                        children = mod.child_modules()
+                        self._load(children, auto_loaded=True)
                         complete.add(name)
                         repeat = True
 
@@ -869,6 +885,12 @@ class Application(object):
     def now(self, add=0):
         return (datetime.datetime.utcnow() + datetime.timedelta(seconds=add)).strftime("%Y-%m-%d %H:%M:%S")
 
+    def now_local(self, add=0):
+        now = self.hooks.call("l10n.now_local", add)
+        if not now:
+            return self.now(add)
+        return now.strftime("%Y-%m-%d %H:%M:%S")
+
     def store_config_hooks(self, notify=True):
         self.config.store()
         self.modules.load_all()
@@ -933,13 +955,15 @@ class ApplicationFactory(object):
         except KeyError:
             pass
 
-    def get_by_tag(self, tag):
+    def get_by_tag(self, tag, load=True):
         "Find application by tag and load it"
         with self.lock:
             try:
                 return self.applications[tag]
             except KeyError:
                 pass
+            if not load:
+                return None
             app = self.load(tag)
             if app is None:
                 return None

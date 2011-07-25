@@ -92,7 +92,6 @@ Form = Ext.extend(AdminResponse, {
 					elt.triggerAction = 'all';
 					elt.hiddenName = 'v_' + elt.name;
 					elt.hiddenValue = elt.value;
-					elt.allowBlank = it.allow_blank;
 					elt.listWidth = 600;
 				} else if (elt.xtype == 'password') {
 					elt.xtype = 'textfield';

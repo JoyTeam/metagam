@@ -1107,8 +1107,8 @@ class Forum(Module):
             page = 1
         elif page > pages:
             page = pages
-        del topics[0:(page - 1) * tpp]
         del topics[page * tpp:]
+        del topics[0:(page - 1) * tpp]
         topics.load()
         return topics, page, pages
 

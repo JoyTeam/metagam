@@ -67,4 +67,4 @@ class Documentation(Module):
             menu.append({"html": vars.get("short_title", vars.get("title"))})
             menu[-1]["lst"] = True
             vars["menu_left"] = menu
-        self.call("web.response_global", '<div class="doc-content">%s</div>' % content, vars)
+        self.call("socio.response", '<div class="doc-content">%s</div>' % content, vars)

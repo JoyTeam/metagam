@@ -1,27 +1,28 @@
-from mg.core import Module
+from mg import *
 from operator import itemgetter
 import Stemmer
 import gettext
 import mg
 import os
 import re
+import datetime
 
 def gettext_noop(x):
     return x
 
 timeencode2_month = {
-    "01": gettext_noop("of January"),
-    "02": gettext_noop("of February"),
-    "03": gettext_noop("of March"),
-    "04": gettext_noop("of April"),
-    "05": gettext_noop("of May"),
-    "06": gettext_noop("of June"),
-    "07": gettext_noop("of July"),
-    "08": gettext_noop("of August"),
-    "09": gettext_noop("of September"),
-    "10": gettext_noop("of October"),
-    "11": gettext_noop("of November"),
-    "12": gettext_noop("of December")
+    1: gettext_noop("of January"),
+    2: gettext_noop("of February"),
+    3: gettext_noop("of March"),
+    4: gettext_noop("of April"),
+    5: gettext_noop("of May"),
+    6: gettext_noop("of June"),
+    7: gettext_noop("of July"),
+    8: gettext_noop("of August"),
+    9: gettext_noop("of September"),
+    10: gettext_noop("of October"),
+    11: gettext_noop("of November"),
+    12: gettext_noop("of December")
 }
 
 translations = {}
@@ -35,7 +36,39 @@ for lang in os.listdir(localedir):
     except OSError:
         pass
 
+re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
+
+ZERO = datetime.timedelta(0)
+
+class UTC(datetime.tzinfo):
+    """UTC"""
+
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
+
+utc = UTC()
+
+class FixedOffset(datetime.tzinfo):
+    """Fixed offset in minutes east from UTC."""
+
+    def __init__(self, offset):
+        self.__offset = datetime.timedelta(minutes = offset)
+
+    def utcoffset(self, dt):
+        return self.__offset
+
+    def tzname(self, dt):
+        return "Fixed(%d)" % self.__offset
+
+    def dst(self, dt):
+        return ZERO
 
 class L10n(Module):
     def register(self):
@@ -54,6 +87,18 @@ class L10n(Module):
         self.rhook("l10n.literal_values_valid", self.l10n_literal_values_valid)
         self.rhook("l10n.literal_values_sample", self.l10n_literal_values_sample)
         self.rhook("l10n.literal_interval", self.l10n_literal_interval)
+        self.rhook("menu-admin-site.index", self.menu_site)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("ext-admin-site.timezone", self.admin_timezone, priv="site.timezone")
+        self.rhook("l10n.now_local", self.now_local)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "site.timezone", "name": self._("Site time zone settings")})
+
+    def menu_site(self, menu):
+        req = self.req()
+        if req.has_access("site.timezone"):
+            menu.append({"id": "site/timezone", "text": self._("Time zone"), "leaf": True, "order": 20})
 
     def l10n_domain(self):
         return "mg_server"
@@ -175,43 +220,56 @@ class L10n(Module):
     def universal_variables(self, struct):
         struct["lang"] = self.call("l10n.lang")
 
-    def l10n_timeencode2(self, time):
-        m = re_timeencode2.match(time)
+    @property
+    def tzinfo(self):
+        try:
+            return self._tzinfo
+        except AttributeError:
+            self._tzinfo = FixedOffset(self.conf("l10n.timezone", 0) * 60)
+            return self._tzinfo
+
+    def timeencode2(self, time):
+        m = re_datetime.match(time)
         if not m:
-            return ""
-        year, month, day, time = m.group(1, 2, 3, 4)
-        year = int(year)
-        day = int(day)
+            return None, None
+        year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+        dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc).astimezone(self.tzinfo)
         th = "th"
-        day100 = day % 100
+        day100 = dt.day % 100
         if day100 <= 10 or day100 >= 20:
-            day10 = day % 10
+            day10 = dt.day % 10
             if day10 == 1:
                 th = "st"
             elif day10 == 2:
                 th = "nd"
             elif day10 == 3:
                 th = "rd"
-        return self._("at the {2:d}{4} {1}, {0} {3}").format(year, self._(timeencode2_month.get(month)), day, time, th)
+        return dt, th
+
+    def l10n_timeencode2(self, time):
+        dt, th = self.timeencode2(time)
+        if not dt:
+            return None
+        return self._("at the {day:d}{th} {month}, {year} {hour:02d}:{min:02d}").format(
+            year=dt.year,
+            month=self._(timeencode2_month.get(dt.month)),
+            day=dt.day,
+            hour=dt.hour,
+            min=dt.minute,
+            sec=dt.second,
+            th=th
+        )
 
     def l10n_dateencode2(self, time):
-        m = re_timeencode2.match(time)
-        if not m:
-            return ""
-        year, month, day, time = m.group(1, 2, 3, 4)
-        year = int(year)
-        day = int(day)
-        th = "th"
-        day100 = day % 100
-        if day100 <= 10 or day100 >= 20:
-            day10 = day % 10
-            if day10 == 1:
-                th = "st"
-            elif day10 == 2:
-                th = "nd"
-            elif day10 == 3:
-                th = "rd"
-        return self._("{2:d}{3} {1}, {0}").format(year, self._(timeencode2_month.get(month)), day, th)
+        dt, th = self.timeencode2(time)
+        if not dt:
+            return None
+        return self._("at the {day:d}{th} {month}, {year}").format(
+            year=dt.year,
+            month=self._(timeencode2_month.get(dt.month)),
+            day=dt.day,
+            th=th
+        )
 
     def l10n_literal_value(self, val, values):
         if values is None:
@@ -270,3 +328,33 @@ class L10n(Module):
         if not items or seconds > 0:
             items.append("%d %s" % (seconds, self.call("l10n.literal_value", seconds, self._("second/seconds"))))
         return " ".join(items)
+
+    def admin_timezone(self):
+        req = self.req()
+        timezones = []
+        valid_timezones = set()
+        for offset in xrange(-12, 13):
+            timezones.append((str(offset), "UTC{offset:+d}".format(offset=offset)))
+            valid_timezones.add(str(offset))
+        if req.ok():
+            errors = {}
+            config = self.app().config_updater()
+            timezone = req.param("v_timezone")
+            if timezone not in valid_timezones:
+                errors["v_timezone"] = self._("Select a valid timezone")
+            else:
+                config.set("l10n.timezone", intz(timezone))
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            timezone = self.conf("l10n.timezone", 0)
+        fields = [
+            {"name": "timezone", "label": self._("Site time zone"), "value": timezone, "type": "combo", "values": timezones},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def now_local(self, add=0):
+        return datetime.datetime.now(self.tzinfo) + datetime.timedelta(seconds=add)
+
