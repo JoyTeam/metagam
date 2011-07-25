@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-25 16:56+0400\n"
+"POT-Creation-Date: 2011-07-25 18:08+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -563,7 +563,7 @@ msgstr ""
 msgid "Interface messages"
 msgstr ""
 
-#: mg/socio/__init__.py:2505 mg/core/l10n.py:305 mg/core/sites.py:29
+#: mg/socio/__init__.py:2505 mg/core/l10n.py:350 mg/core/sites.py:29
 #: mg/core/emails.py:75 mg/core/realplexor.py:356 mg/mmo/locations.py:226
 #: mg/constructor/auth.py:290 mg/constructor/interface.py:448
 msgid "Settings stored"
@@ -925,39 +925,43 @@ msgstr ""
 msgid "of December"
 msgstr ""
 
-#: mg/core/l10n.py:64
+#: mg/core/l10n.py:96
 msgid "Site time zone settings"
 msgstr ""
 
-#: mg/core/l10n.py:69
+#: mg/core/l10n.py:101
 msgid "Time zone"
 msgstr ""
 
-#: mg/core/l10n.py:208
+#: mg/core/l10n.py:253
 msgid "at the {day:d}{th} {month}, {year} {hour:02d}:{min:02d}"
 msgstr ""
 
-#: mg/core/l10n.py:238
-msgid "{2:d}{3} {1}, {0}"
+#: mg/core/l10n.py:267
+msgid "at the {day:d}{th} {month}, {year}"
 msgstr ""
 
-#: mg/core/l10n.py:289
+#: mg/core/l10n.py:323
 msgid "day/days"
 msgstr ""
 
-#: mg/core/l10n.py:291
+#: mg/core/l10n.py:325
 msgid "hour/hours"
 msgstr ""
 
-#: mg/core/l10n.py:293
+#: mg/core/l10n.py:327
 msgid "minute/minutes"
 msgstr ""
 
-#: mg/core/l10n.py:295
+#: mg/core/l10n.py:329
 msgid "second/seconds"
 msgstr ""
 
-#: mg/core/l10n.py:309
+#: mg/core/l10n.py:344
+msgid "Select a valid timezone"
+msgstr ""
+
+#: mg/core/l10n.py:354
 msgid "Site time zone"
 msgstr ""
 

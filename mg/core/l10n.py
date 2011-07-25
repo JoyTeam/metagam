@@ -225,7 +225,7 @@ class L10n(Module):
         try:
             return self._tzinfo
         except AttributeError:
-            self._tzinfo = FixedOffset(self.conf("l10n.timezone", 0) * 60)
+            self._tzinfo = FixedOffset(self.tzoffset() * 60)
             return self._tzinfo
 
     def timeencode2(self, time):
@@ -349,7 +349,7 @@ class L10n(Module):
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         else:
-            timezone = self.conf("l10n.timezone", 0)
+            timezone = self.tzoffset()
         fields = [
             {"name": "timezone", "label": self._("Site time zone"), "value": timezone, "type": "combo", "values": timezones},
         ]
@@ -357,4 +357,13 @@ class L10n(Module):
 
     def now_local(self, add=0):
         return datetime.datetime.now(self.tzinfo) + datetime.timedelta(seconds=add)
+
+    def tzoffset(self):
+        offset = self.call("l10n.timezone")
+        if offset is not None:
+            return offset
+        if self.l10n_lang() == "ru":
+            return 4
+        else:
+            return 0
 
