@@ -1,6 +1,6 @@
 from mg import *
 from mg.constructor import *
-from mg.game.money_classes import *
+from mg.core.money_classes import *
 
 operations_per_page = 50
 
@@ -96,13 +96,26 @@ class Money(ConstructorModule):
             operations = []
             for op in lst:
                 description = self.call("money-description.%s" % op.get("description"))
-                operations.append({
+                rop = {
                     "performed": self.call("l10n.timeencode2", op.get("performed")),
                     "amount": op.get("amount"),
                     "balance": op.get("balance"),
-                    "description": description["text"] % op.data if description else op.get("description"),
                     "cls": "money-plus" if op.get("balance") >= 0 else "money-minus",
-                })
+                }
+                rop["description"] = op.get("description")
+                if description:
+                    watchdog = 0
+                    while True:
+                        watchdog += 1
+                        if watchdog >= 100:
+                            break
+                        try:
+                            rop["description"] = description["text"].format(**op.data)
+                        except KeyError as e:
+                            op.data[e.args[0]] = "{%s}" % e.args[0]
+                        else:
+                            break
+                operations.append(rop)
             vars["operations"] = operations
             if pages > 1:
                 url = req.uri()

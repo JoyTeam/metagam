@@ -36,7 +36,7 @@ class ConstructorProject(Module):
         if not project.get("inactive"):
             lst.extend([
                 "mg.constructor.game.Game",
-                "mg.game.money.Money", "mg.game.money.MoneyAdmin",
+                "mg.core.money.Money", "mg.core.money.MoneyAdmin",
                 "mg.core.realplexor.Realplexor",
                 "mg.constructor.chat.Chat",
                 "mg.constructor.interface.Dynamic",
@@ -52,13 +52,16 @@ class ConstructorProject(Module):
             ])
             if project.get("published"):
                 lst.extend([
-                    "mg.game.money.TwoPay",
+                    "mg.core.money.TwoPay",
                     "mg.constructor.money.Money",
+                    "mg.constructor.paidservices.PaidServices",
+                    "mg.constructor.paidservices.PaidServicesAdmin",
+                    "mg.core.modifiers.Modifiers",
                 ])
             if self.conf("module.sociointerface"):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
                 if self.conf("module.forum"):
-                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin"])
+                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin", "mg.socio.paidservices.PaidServices"])
                 if self.conf("module.smiles"):
                     lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
         return lst

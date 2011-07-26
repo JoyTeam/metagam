@@ -26,9 +26,9 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
-            "mg.constructor.admin.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
+            "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin",
-            "mg.game.money.TwoPay", "mg.game.money.TwoPayAdmin",
+            "mg.core.money.TwoPay", "mg.core.money.TwoPayAdmin",
             "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
@@ -38,6 +38,7 @@ class Constructor(Module):
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
             "mg.core.emails.EmailSender",
             "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+            "mg.core.modifiers.ModifiersManager",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")

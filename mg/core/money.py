@@ -3,13 +3,14 @@ from mg.core.auth import *
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from uuid import uuid4
-from mg.game.money_classes import *
+from mg.core.money_classes import *
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import cStringIO
 import xml.dom.minidom
 import hashlib
 import re
 import random
+import math
 
 re_uuid_cmd = re.compile(r'^([0-9a-z]+)/(.+)$')
 re_valid_code = re.compile(r'^[A-Z]{2,5}$')
@@ -17,6 +18,24 @@ re_questions = re.compile('\?')
 re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
 re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
 re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
+re_decimal_comma = re.compile(',')
+
+default_rates = {
+    "RUB": 1,
+    "USD": 28,
+    "EUR": 40,
+    "GBP": 45,
+    "KZT": 19 / 100,
+    "BYR": 56 / 10000,
+    "UAH": 34.7092 / 10,
+}
+
+def getText(nodelist):
+    rc = ""
+    for node in nodelist:
+        if node.nodeType == node.TEXT_NODE:
+            rc = rc + node.data
+    return rc
 
 class MoneyAdmin(Module):
     def register(self):
@@ -177,10 +196,16 @@ class MoneyAdmin(Module):
                             errors["real_price"] = self._("Invalid number format")
                         elif (project.get("moderation") or project.get("published")) and float(real_price) != float(info.get("real_price")):
                             errors["real_price"] = self._("You can't change real money exchange rate after game publication")
-                        if real_currency not in ["RUR", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
+                        if real_currency not in ["RUB", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
                             errors["v_real_currency"] = self._("Select real money currency")
                         elif (project.get("moderation") or project.get("published")) and real_currency != info.get("real_currency"):
                             errors["v_real_currency"] = self._("You can't change real money exchange rate after game publication")
+                        if "real_price" not in errors and "v_real_currency" not in errors:
+                            rate = self.stock_rate(real_currency)
+                            real_roubles = float(real_price) * rate
+                            min_step = real_roubles * (0.1 ** int(precision))
+                            if min_step > 50:
+                                errors["real_price"] = self._("Minimal step of payment in this currency is {min_step:f} roubles (1 {currency} = {rate} RUB, precision = {precision}). It is too big for micropayments. Lower you currency rate").format(min_step=min_step, currency=real_currency, rate=rate, precision=0.1**precision)
                     # images
                     image_data = req.param_raw("image")
                     image_obj = None
@@ -247,6 +272,7 @@ class MoneyAdmin(Module):
                     if real:
                         info["real_price"] = floatz(real_price)
                         info["real_currency"] = real_currency
+                        info["real_roubles"] = real_roubles
                     # storing images
                     old_images = []
                     if image_obj:
@@ -270,7 +296,7 @@ class MoneyAdmin(Module):
                     name_en = req.param("name_en")
                     precision = 2
                     real_price = 30
-                    real_currency = "RUR"
+                    real_currency = "RUB"
                 else:
                     info = currencies.get(req.args)
                     if not info:
@@ -294,7 +320,7 @@ class MoneyAdmin(Module):
                 fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
                 fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
                 fields.append({"name": "real_price", "label": self._("Real money price for 1 unit of the currency"), "value": real_price, "condition": "[real]"})
-                fields.append({"name": "real_currency", "type": "combo", "label": self._("Real money currency"), "value": real_currency, "condition": "[real]", "values": [("RUR", "RUR"), ("USD", "USD"), ("EUR", "EUR"), ("UAH", "UAH"), ("BYR", "BYR"), ("GBP", "GBP"), ("KZT", "KZT")]})
+                fields.append({"name": "real_currency", "type": "combo", "label": self._("Real money currency"), "value": real_currency, "condition": "[real]", "values": [("RUB", "RUB"), ("USD", "USD"), ("EUR", "EUR"), ("UAH", "UAH"), ("BYR", "BYR"), ("GBP", "GBP"), ("KZT", "KZT")]})
                 fields.append({"name": "image", "label": self._("Currency image (approx 60x60)"), "type": "fileuploadfield"})
                 fields.append({"name": "icon", "label": self._("Currency icon (approx 16x16)"), "type": "fileuploadfield"})
                 self.call("admin.form", fields=fields, modules=["FileUploadField"])
@@ -484,14 +510,7 @@ class MoneyAdmin(Module):
     def recommended_actions(self, recommended_actions):
         req = self.req()
         if req.has_access("money.currencies"):
-            currencies = {}
-            self.call("currencies.list", currencies)
-            real_ok = False
-            for cur in currencies.values():
-                if cur.get("real"):
-                    real_ok = True
-                    break
-            if not real_ok:
+            if not self.call("money.real-currency"):
                 recommended_actions.append({"icon": "/st/img/coins.png", "content": u'%s <hook:admin.link href="money/currencies" title="%s" />' % (self._("You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."), self._("Open currency settings")), "order": 90, "before_launch": True})
 
     def project_params(self, params):
@@ -504,9 +523,46 @@ class MoneyAdmin(Module):
                 params.append({"name": self._("Declensions"), "value": cur.get("name_local")})
                 params.append({"name": self._("Real in English"), "value": cur.get("name_en"), "moderated": True})
                 params.append({"name": self._("Exchange rate"), "value": "1 %s = %s %s" % (code, cur.get("real_price"), cur.get("real_currency")), "moderated": True})
+                params.append({"name": self._("Exchange to roubles"), "value": "1 %s = %s RUB" % (code, cur.get("real_roubles")), "moderated": True})
                 real_ok = True
         if not real_ok:
             params.append({"name": self._("Real money currency name"), "value": '<span class="no">%s</span>' % self._("absent"), "moderated": True})
+
+    def stock_rate(self, currency):
+        rates = self.stock_rates()
+        if rates and currency in rates:
+            return rates[currency]
+        return default_rates.get(currency, 1)
+
+    def stock_rates(self):
+        rates = self.main_app().mc.get("cbr-stock-rates")
+        if rates:
+            return rates
+        try:
+            data = self.download("http://www.cbr.ru/scripts/XML_daily.asp")
+        except DownloadError:
+            return None
+        rates = {}
+        response = xml.dom.minidom.parseString(data)
+        if response.documentElement.tagName == "ValCurs":
+            valutes = response.documentElement.getElementsByTagName("Valute")
+            for valute in valutes:
+                code = None
+                rate = None
+                nominal = None
+                for param in valute.childNodes:
+                    if param.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
+                        if param.tagName == "CharCode":
+                            code = getText(param.childNodes)
+                        elif param.tagName == "Value":
+                            rate = float(re_decimal_comma.sub('.', getText(param.childNodes)))
+                        elif param.tagName == "Nominal":
+                            nominal = float(re_decimal_comma.sub('.', getText(param.childNodes)))
+                if code and rate and nominal and code in default_rates:
+                    rates[code] = rate / nominal
+        self.debug("Loaded CBR stock rates: %s", rates)
+        self.main_app().mc.set("cbr-stock-rates", rates)
+        return rates
 
 class TwoPay(Module):
     def register(self):
@@ -520,6 +576,14 @@ class TwoPay(Module):
         self.rhook("2pay.payment-params", self.payment_params)
         self.rhook("2pay.register", self.register_2pay)
         self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
+
+    def not_enough_funds(self, currency):
+        project_id = self.conf("2pay.project-id")
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % htmlescape(currency), project_id, self._("Open payment interface")))
 
     def money_description_2pay_pay(self):
         return {
@@ -539,15 +603,6 @@ class TwoPay(Module):
 
     def objclasses_list(self, objclasses):
         objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
-
-    def real_currency(self):
-        currencies = {}
-        self.call("currencies.list", currencies)
-        real_ok = False
-        for code, cur in currencies.iteritems():
-            if cur.get("real"):
-                return code
-        return None
 
     def payment_2pay(self):
         req = self.req()
@@ -606,7 +661,7 @@ class TwoPay(Module):
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 member = MemberMoney(self.app(), user.uuid)
-                                member.credit(sum_v, self.real_currency(), "2pay-pay", payment_id=id, payment_performed=date)
+                                member.credit(sum_v, self.call("money.real-currency"), "2pay-pay", payment_id=id, payment_performed=date)
                                 payment.store()
                                 result = 0
                                 id_shop = id
@@ -627,7 +682,7 @@ class TwoPay(Module):
                             else:
                                 payment.set("cancelled", self.now())
                                 member = MemberMoney(self.app(), payment.get("user"))
-                                member.force_debit(payment.get("sum"), self.real_currency(), "2pay-chargeback", payment_id=id)
+                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "2pay-chargeback", payment_id=id)
                                 payment.store()
                                 result = 0
                         except ObjectNotFoundException:
@@ -742,7 +797,7 @@ class TwoPay(Module):
                 request.appendChild(elt)
                 elt = doc.createElement("valuta")
                 currencies = {
-                    "RUR": "1",
+                    "RUB": "1",
                     "USD": "2",
                     "EUR": "3",
                     "UAH": "4",
@@ -833,10 +888,10 @@ class TwoPay(Module):
                         response = xml.dom.minidom.parseString(response.body)
                         if response.documentElement.tagName == "response":
                             result = response.documentElement.getElementsByTagName("result")
-                            if result and self.getText(result[0].childNodes) == "OK":
+                            if result and getText(result[0].childNodes) == "OK":
                                 game_id = response.documentElement.getElementsByTagName("gameId")
                                 if game_id:
-                                    game_id = self.getText(game_id[0].childNodes)
+                                    game_id = getText(game_id[0].childNodes)
                                     self.debug("game_id: %s", game_id)
                                     game_id = intz(game_id)
                                     config = self.app().config_updater()
@@ -849,13 +904,6 @@ class TwoPay(Module):
             self.error("Error registering in the 2pay system: %s", e)
         except TimeoutError:
             self.error("Error registering in the 2pay system: Timed out")
-
-    def getText(self, nodelist):
-        rc = ""
-        for node in nodelist:
-            if node.nodeType == node.TEXT_NODE:
-                rc = rc + node.data
-        return rc
 
     def gameinterface_render(self, character, vars, design):
         if self.conf("2pay.project-id"):
@@ -973,10 +1021,19 @@ class Money(Module):
         self.rhook("money-description.admin-take", self.money_description_admin_take)
         self.rhook("money.member-money", self.member_money)
         self.rhook("money.valid_amount", self.valid_amount)
+        self.rhook("money.real-currency", self.real_currency)
+        self.rhook("money.format-price", self.format_price)
+        self.rhook("money.price-html", self.price_html)
+        self.rhook("money.currency-info", self.currency_info)
+        self.rhook("money.not-enough-funds", self.not_enough_funds)
+
+    def not_enough_funds(self, currency):
+        return self._("Not enough %s") % currency
 
     def currencies_list(self, currencies):
         if self.app().tag == "main":
             currencies["MM$"] = {
+                "code": "MM$",
                 "format": "%.2f",
                 "description": "MM$",
                 "real": True,
@@ -985,7 +1042,14 @@ class Money(Module):
             lst = self.conf("money.currencies")
             if lst:
                 for code, info in lst.iteritems():
+                    info["code"] = code
                     currencies[code] = info
+
+    def real_currency(self):
+        for code, cur in self.currencies().iteritems():
+            if cur.get("real"):
+                return code
+        return None
 
     def money_description_admin_give(self):
         return {
@@ -1029,3 +1093,27 @@ class Money(Module):
     def member_money(self, member_uuid):
         return MemberMoney(self.app(), member_uuid)
 
+    def format_price(self, price, currency):
+        cinfo = self.currency_info(currency)
+        min_val = 0.1 ** cinfo["precision"]
+        price = math.ceil(price / min_val) * min_val
+        if price < min_val:
+            price = min_val
+        return price
+
+    def price_html(self, price, currency):
+        cinfo = self.currency_info(currency)
+        html_price = cinfo["format"] % price
+        html_currency = '<img src="%s" alt="%s" />' % (cinfo["icon"], cinfo["code"]) if cinfo.get("icon") else cinfo["code"]
+        return '<span class="price"><span class="money-amount">%s</span> <span class="money-currency">%s</span></span>' % (html_price, html_currency)
+
+    def currencies(self):
+        try:
+            return self._currencies
+        except AttributeError:
+            self._currencies = {}
+            self.call("currencies.list", self._currencies)
+            return self._currencies
+
+    def currency_info(self, currency):
+        return self.currencies().get(currency)

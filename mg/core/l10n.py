@@ -87,6 +87,7 @@ class L10n(Module):
         self.rhook("l10n.literal_values_valid", self.l10n_literal_values_valid)
         self.rhook("l10n.literal_values_sample", self.l10n_literal_values_sample)
         self.rhook("l10n.literal_interval", self.l10n_literal_interval)
+        self.rhook("l10n.literal_interval_a", self.l10n_literal_interval_a)
         self.rhook("menu-admin-site.index", self.menu_site)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.timezone", self.admin_timezone, priv="site.timezone")
@@ -310,7 +311,7 @@ class L10n(Module):
             return len(values) == 3
         return len(values) == 2
 
-    def l10n_literal_interval(self, seconds):
+    def l10n_literal_interval(self, seconds, html=False):
         seconds = int(seconds)
         minutes = seconds / 60
         seconds -= minutes * 60
@@ -320,13 +321,40 @@ class L10n(Module):
         hours -= days * 24
         items = []
         if days:
-            items.append("%d %s" % (days, self.call("l10n.literal_value", days, self._("day/days"))))
+            show_days = '<span class="value">%s</span>' % days if html else days
+            items.append("%s %s" % (show_days, self.call("l10n.literal_value", days, self._("day/days"))))
         if hours > 0:
-            items.append("%d %s" % (hours, self.call("l10n.literal_value", hours, self._("hour/hours"))))
+            show_hours = '<span class="value">%s</span>' % hours if html else hours
+            items.append("%s %s" % (show_hours, self.call("l10n.literal_value", hours, self._("hour/hours"))))
         if minutes > 0:
-            items.append("%d %s" % (minutes, self.call("l10n.literal_value", minutes, self._("minute/minutes"))))
+            show_minutes = '<span class="value">%s</span>' % minutes if html else minutes
+            items.append("%s %s" % (show_minutes, self.call("l10n.literal_value", minutes, self._("minute/minutes"))))
         if not items or seconds > 0:
-            items.append("%d %s" % (seconds, self.call("l10n.literal_value", seconds, self._("second/seconds"))))
+            show_seconds = '<span class="value">%s</span>' % seconds if html else seconds
+            items.append("%s %s" % (show_seconds, self.call("l10n.literal_value", seconds, self._("second/seconds"))))
+        return " ".join(items)
+
+    def l10n_literal_interval_a(self, seconds, html=False):
+        seconds = int(seconds)
+        minutes = seconds / 60
+        seconds -= minutes * 60
+        hours = minutes / 60
+        minutes -= hours * 60
+        days = hours / 24
+        hours -= days * 24
+        items = []
+        if days:
+            show_days = '<span class="value">%s</span>' % days if html else days
+            items.append("%s %s" % (show_days, self.call("l10n.literal_value", days, self._("accusative///day/days"))))
+        if hours > 0:
+            show_hours = '<span class="value">%s</span>' % hours if html else hours
+            items.append("%s %s" % (show_hours, self.call("l10n.literal_value", hours, self._("accusative///hour/hours"))))
+        if minutes > 0:
+            show_minutes = '<span class="value">%s</span>' % minutes if html else minutes
+            items.append("%s %s" % (show_minutes, self.call("l10n.literal_value", minutes, self._("accusative///minute/minutes"))))
+        if not items or seconds > 0:
+            show_seconds = '<span class="value">%s</span>' % seconds if html else seconds
+            items.append("%s %s" % (show_seconds, self.call("l10n.literal_value", seconds, self._("accusative///second/seconds"))))
         return " ".join(items)
 
     def admin_timezone(self):

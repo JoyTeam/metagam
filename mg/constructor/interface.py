@@ -105,6 +105,12 @@ class Interface(ConstructorModule):
         self.rhook("main-frame.form", self.main_frame_form)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("forum.setup-menu", self.forum_setup_menu)
+
+    def forum_setup_menu(self, vars):
+        design = self.design("gameinterface")
+        if design:
+            vars["game_design_uri"] = design.get("uri")
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)

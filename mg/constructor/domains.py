@@ -1,6 +1,6 @@
 from mg import *
 from mg.core.whois_client import *
-from mg.game.money_classes import MemberMoney
+from mg.core.money_classes import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
@@ -431,7 +431,7 @@ class DomainsAdmin(Module):
     def money_description_domain_reg(self):
         return {
             "args": ["domain"],
-            "text": self._("Domain registration: %(domain)s"),
+            "text": self._("Domain registration: {domain}"),
         }
 
     def objclasses_list(self, objclasses):

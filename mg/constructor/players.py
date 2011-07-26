@@ -1,7 +1,7 @@
 from mg import *
 from uuid import uuid4
 from mg.constructor.interface_classes import *
-from mg.game.money_classes import *
+from mg.core.money_classes import *
 import re
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')

@@ -1,4 +1,9 @@
-body { font-family: Verdana; font-size: 12px }
-td { font-size: 12px }
-img { vertical-align: middle }
-.clickable { cursor: pointer }
+/* MONEY VALUES */
+.money-amount { font-weight: bold; color: #008000 }
+.money-currency { font-weight: bold }
+
+/* PRICES */
+.price { white-space: nowrap }
+
+/* ANY OTHER VALUES */
+.value { font-weight: bold }

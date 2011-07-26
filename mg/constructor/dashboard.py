@@ -238,7 +238,7 @@ class ProjectDashboard(Module):
                 project.delkey("moderation")
                 project.delkey("moderation_reject")
                 project.set("published", self.now())
-                app.modules.load(["mg.game.money.TwoPay"])
+                app.modules.load(["mg.core.money.TwoPay"])
                 if not app.config.get("2pay.project-id"):
                     app.hooks.call("2pay.register")
                 app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.").format(project.get("title_short")))

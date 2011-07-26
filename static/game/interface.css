@@ -1,12 +1,17 @@
+/* COMMON */
+body { font-family: Verdana; font-size: 12px }
+td { font-size: 12px }
+img { vertical-align: middle; border: none }
+.clickable { cursor: pointer }
+table, tr, td { padding: 0; margin: 0; border: none }
+table { border-collapse: collapse; empty-cells: show }
+area { border: none }
+
 /* LAYOUT */
 #page-content { background: none }
 #main-and-chat, #roster-and-chat, #chat-and-roster, #main-panel-group { background: none }
 .x-layout-split { background: #808080 }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
-img { border: none }
-table, tr, td { padding: 0; margin: 0; border: none }
-table { border-collapse: collapse; empty-cells: show }
-area { border: none }
 
 /* COMMON COLORS */
 .ext-el-mask { background-color: #000000 }
@@ -117,16 +122,16 @@ area { border: none }
 .item-info-td { vertical-align: top; padding: 2px 0 10px 0 }
 .item-description { color: #404040; padding-top: 5px }
 
-/* MONEY VALUES */
-.money-amount { font-weight: bold; color: #008000 }
-.money-currency { font-weight: bold }
-
 /* LOGS */
 .log-header .log-td { font-weight: bold; border-bottom: solid 1px #404040 }
-.log-td { padding: 0 30px 0 0 }
+.log-td { padding: 0 30px 0 0; vertical-align: top }
 .log-right { text-align: right }
+.log-nowrap { white-space: nowrap }
 
 /* PAGES */
 .main-pages-top { padding-bottom: 10px }
 .main-pages-bottom { padding-top: 10px }
 .main-pages span { font-weight: bold }
+
+/* PAID SERVICES */
+.service-active { color: #008000 }
