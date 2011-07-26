@@ -6,7 +6,7 @@ from uuid import uuid4
 from mg.core.cluster import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
-from PIL import Image
+from PIL import Image, ImageEnhance
 from mg.core.auth import PermissionsEditor
 from itertools import *
 import re
@@ -1159,11 +1159,13 @@ class Forum(Module):
     def load_settings(self, list, signatures, avatars, statuses):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
         if len(authors):
+            grayscale_support = self.call("paidservices.socio-coloured-avatar")
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
+                grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio-coloured-avatar")
                 signatures[obj.uuid] = obj.get("signature_html")
-                avatars[obj.uuid] = obj.get("avatar")
+                avatars[obj.uuid] = obj.get("avatar_gray" if grayscale else "avatar")
                 statuses[obj.uuid] = htmlescape(obj.get("status"))
         for ent in list:
             author = ent.get("author")
@@ -1883,6 +1885,9 @@ class Forum(Module):
         notify = {}
         for cat in categories:
             notify[cat["id"]] = req.param("notify_%s" % cat["id"])
+        # paid services
+        grayscale_support = self.call("paidservices.socio-coloured-avatar")
+        grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio-coloured-avatar")
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1939,14 +1944,24 @@ class Forum(Module):
                             top = (height - 100) / 2
                             image_obj = image_obj.crop((left, top, left + 100, top + 100))
             if not form.errors:
+                old_uri = []
                 if image_obj:
                     # storing
                     im_data = cStringIO.StringIO()
                     image_obj.save(im_data, target_format)
                     im_data = im_data.getvalue()
+                    if grayscale_support:
+                        gray_data = cStringIO.StringIO()
+                        ImageEnhance.Brightness(image_obj.convert("L")).enhance(2.0).save(gray_data, target_format)
+                        gray_data = gray_data.getvalue()
                     try:
-                        uri = self.call("cluster.static_upload", "avatars", ext, content_type, im_data)
-                        settings.set("avatar", uri)
+                        old_uri.append(settings.get("avatar"))
+                        old_uri.append(settings.get("avatar_gray"))
+                        settings.set("avatar", self.call("cluster.static_upload", "avatars", ext, content_type, im_data))
+                        if grayscale_support:
+                            settings.set("avatar_gray", self.call("cluster.static_upload", "avatars", ext, content_type, gray_data))
+                        else:
+                            settings.delkey("avatar_gray")
                     except StaticUploadError as e:
                         form.error("avatar", unicode(e))
                 settings.set("signature", signature)
@@ -1962,6 +1977,9 @@ class Forum(Module):
                     settings.delkey("notify_any")
                 settings.set("notify_replies", True if notify_replies else False)
                 settings.store()
+                for uri in old_uri:
+                    if uri:
+                        self.call("cluster.static_delete", uri)
                 self.call("web.redirect", redirect)
         else:
             signature = settings.get("signature")
@@ -1969,12 +1987,17 @@ class Forum(Module):
             for cat in categories:
                 notify[cat["id"]] = settings.get("notify_%s" % cat["id"], cat.get("default_subscribe"))
         form.hidden("redirect", redirect)
-        form.file(self._("Your avatar"), "avatar")
+        form.file(self._("Change avatar") if avatar else self._("Your avatar"), "avatar")
         form.texteditor(self._("Your forum signature"), "signature", signature)
         form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
         for cat in categories:
             form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
         form.add_message_top('<a href="%s">%s</a>' % (redirect, self._("Return")))
+        avatar = settings.get("avatar_gray" if grayscale else "avatar")
+        if avatar:
+            form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
+        if grayscale:
+            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/coloured-avatar">please subscribe</a>'))
         self.call("socio.response", form.html(), vars)
 
     def ext_subscribe(self):

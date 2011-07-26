@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-26 14:35+0400\n"
+"POT-Creation-Date: 2011-07-26 19:01+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -26,7 +26,7 @@ msgstr "Советы гуру"
 #: static/js/admin.js:141 static/js/locations.js:23 static/js/locations.js:29
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:164
 #: static/js/admin-form.js:167 static/js/admin-form.js:322
-#: static/js/admin-form.js:325 static/js/chat.js:531 static/js/chat.js:539
+#: static/js/admin-form.js:325 static/js/chat.js:533 static/js/chat.js:541
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -57,8 +57,8 @@ msgstr "Не удалось отправить сообщение на серв�
 msgid "Connection terminated"
 msgstr "Соединение прервано"
 
-#: static/js/realplexor-stream.js:75 static/js/game-interface.js:54
-#: static/js/game-interface.js:141 static/js/game-interface.js:170
+#: static/js/realplexor-stream.js:75 static/js/game-interface.js:59
+#: static/js/game-interface.js:146 static/js/game-interface.js:175
 msgid "Exception"
 msgstr "Исключение"
 
@@ -154,7 +154,7 @@ msgstr "Ошибка на сервере: %s"
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/chat.js:539
+#: static/js/chat.js:541
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 

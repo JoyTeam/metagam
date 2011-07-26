@@ -6,7 +6,7 @@
 [%if form_texteditors%]<script type="text/javascript" src="/st-mg/[%ver%]/js/texteditor.js"></script>[%end%]
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="form-std" name="stdform">
 [%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
-[%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div>[%html%]</div>[%end%]</div>[%end%]
+[%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div class="form-list-message-top">[%html%]</div>[%end%]</div>[%end%]
 [%if errors_on_top%]
 	[%for row in form_rows%]
 		[%for col in row.cols%]
@@ -77,7 +77,7 @@
 </table>
 [%end%]
 <div>[%for hidden in form_hidden%]<input type="hidden" name="[%hidden.name%]" value="[%hidden.value%]" />[%end%]</div>
-[%if form_bottom%]<div class="form-list-messages-bottom">[%for html in form_bottom%]<div>[%html%]</div>[%end%]</div>[%end%]
+[%if form_bottom%]<div class="form-list-messages-bottom">[%for html in form_bottom%]<div class="form-list-message-bottom">[%html%]</div>[%end%]</div>[%end%]
 </form>
 </div>
 <div class="form-bottom"></div>

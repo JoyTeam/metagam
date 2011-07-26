@@ -12,6 +12,8 @@ class PaidServices(ConstructorModule):
         self.rhook("ext-paidservices.index", self.paidservices_index, priv="logged")
         self.rhook("paidservices.offers", self.offers)
         self.rhook("paidservices.prolong", self.prolong)
+        self.rhook("paidservices.render", self.render)
+        self.rhook("modifiers.destroyed", self.modifiers_destroyed)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -48,6 +50,11 @@ class PaidServices(ConstructorModule):
     def paidservices_index(self):
         service_ids = []
         self.call("paidservices.available", service_ids)
+        vars = {}
+        self.render(service_ids, vars)
+        self.call("game.response_internal", "paid-services.html", vars)
+
+    def render(self, service_ids, vars):
         services = []
         for srv_id in service_ids:
             srv = self.call("paidservices.%s" % srv_id)
@@ -65,16 +72,13 @@ class PaidServices(ConstructorModule):
                 srv["status_cls"] = "service-inactive"
             srv["offers"] = self.offers(srv)
             services.append(srv)
-        vars = {
-            "services": services,
-            "PaidService": self._("Paid service"),
-            "Description": self._("Description"),
-            "Price": self._("Price"),
-            "Status": self._("Status"),
-        }
-        self.call("game.response_internal", "paid-services.html", vars)
+        vars["services"] = services
+        vars["PaidService"] = self._("Paid service")
+        vars["Description"] = self._("Description")
+        vars["Price"] = self._("Price")
+        vars["Status"] = self._("Status")
 
-    def prolong(self, target_type, target, kind, period, price, currency, user=None):
+    def prolong(self, target_type, target, kind, period, price, currency, user=None, **kwargs):
         if user is None:
             req = self.req()
             user = req.user()
@@ -82,5 +86,24 @@ class PaidServices(ConstructorModule):
             money = MemberMoney(self.app(), user)
             if not money.debit(price, currency, kind, period=self.call("l10n.literal_interval", period), period_a=self.call("l10n.literal_interval_a", period)):
                 return False
-            self.call("modifiers.prolong", "user", user, kind, 1, period)
+            self.call("modifiers.prolong", "user", user, kind, 1, period, **kwargs)
             return True
+
+    def modifiers_destroyed(self, mod):
+        print "modifiers_destroyed %s: %s" % (mod.uuid, mod.data)
+        if not mod.get("auto_prolong"):
+            return
+        print "prolong ok"
+        srv = self.call("paidservices.%s" % mod.get("kind"))
+        if not srv:
+            return
+        print "srv ok"
+        if mod.get("target_type") != "user":
+            return
+        user = mod.get("target")
+        print "user ok: %s" % user
+        for offer in self.offers(srv):
+            if offer.get("period") == mod.get("period"):
+                print "offer ok"
+                self.call("paidservices.prolong", "user", user, mod.get("kind"), offer.get("period"), offer.get("price"), offer.get("currency"), user=user, auto_prolong=True)
+                break

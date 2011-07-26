@@ -453,12 +453,25 @@ class MoneyAdmin(Module):
         lst = self.objlist(AccountOperationList, query_index="account", query_equal=account.uuid, query_reversed=True)
         lst.load(silent=True)
         for op in lst:
-            description = self.call("money-description.%s" % op.get("description"))
+            rdescription = op.get("description")
+            description = self.call("money-description.%s" % rdescription)
+            if description:
+                watchdog = 0
+                while True:
+                    watchdog += 1
+                    if watchdog >= 100:
+                        break
+                    try:
+                        rdescription = description["text"].format(**op.data)
+                    except KeyError as e:
+                        op.data[e.args[0]] = "{%s}" % e.args[0]
+                    else:
+                        break
             operations.append({
                 "performed": op.get("performed"),
                 "amount": op.get("amount"),
                 "balance": op.get("balance"),
-                "description": description["text"] % op.data if description else op.get("description")
+                "description": rdescription,
             })
         vars = {
             "Performed": self._("Performed"),
