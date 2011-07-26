@@ -50,7 +50,7 @@ area { border: none }
 .chat-smile { margin: 2px; cursor: pointer }
 #smiles-window .x-window-tl, #smiles-window .x-window-tc, #smiles-window .x-window-tr, #smiles-window .x-window-ml, #smiles-window .x-window-mc, #smiles-window .x-window-mr, #smiles-window .x-window-bl, #smiles-window .x-window-bc, #smiles-window .x-window-br, #smiles-window .x-window-mc { background: transparent; border-color: transparent }
 #payment-window .x-window-tl, #payment-window .x-window-tc, #payment-window .x-window-tr, #payment-window .x-window-ml, #payment-window .x-window-mc, #payment-window .x-window-mr, #payment-window .x-window-bl, #payment-window .x-window-bc, #payment-window .x-window-br, #payment-window .x-window-mc { background: transparent; border-color: transparent }
-#msg-current-location { background-color: #404040; color: #ffffff; padding: 2px 10px 2px 10px; margin-top: 4px; margin-bottom: 4px; text-align: center }
+.chat-div-your-location { background-color: #404040; color: #ffffff; padding: 2px 10px 2px 10px; margin-top: 4px; margin-bottom: 4px; text-align: center }
 
 /* ROSTER */
 #chat-roster { height: 100% }

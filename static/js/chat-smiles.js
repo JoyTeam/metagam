@@ -39,6 +39,7 @@ Smiles.show = function() {
 			}
 			Ext.get('smiles-content').update(html);
 		}
+		Ext.getCmp('smiles-container').doLayout();
 		this.initialized = true;
 	}
 	this.win.setPosition(this.win_x, this.win_y);

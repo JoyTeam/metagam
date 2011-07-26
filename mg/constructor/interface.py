@@ -106,6 +106,10 @@ class Interface(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("web.setup_design", self.web_setup_design)
+        self.rhook("ext-empty.index", self.empty, priv="logged")
+
+    def empty(self):
+        self.call("game.response_internal", "empty.html", {})
 
     def web_setup_design(self, vars):
         req = self.req()

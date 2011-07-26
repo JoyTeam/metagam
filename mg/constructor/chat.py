@@ -385,6 +385,9 @@ class Chat(ConstructorModule):
                 channel = "trd"
             elif cmd == self.cmd_dip() and self.conf("chat.diplomacy-channel"):
                 channel = "dip"
+            elif cmd == "empty":
+                self.call("stream.character", author, "game", "main_open", uri="http://%s/empty" % self.app().canonical_domain)
+                self.call("web.response_json", {"ok": True})
             else:
                 self.call("web.response_json", {"error": self._("Unrecognized command: /%s") % htmlescape(cmd)})
         # extracting recipients

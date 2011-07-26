@@ -311,6 +311,8 @@ Chat.msg_list = function(pkt) {
 		div.className = 'chat-msg';
 		if (msg.id)
 			div.id = msg.id;
+		if (msg.cls)
+			div.className = div.className + ' chat-div-' + msg.cls;
 		div.appendChild(ctspan);
 		div.className = div.className + ' cmc-' + ch.id;
 		if (msg.priv)
@@ -520,10 +522,12 @@ Chat.submit = function() {
 				this.focus();
 				if (res.ok) {
 					this.input_control.dom.value = '';
-					if (this.mode == 1) {
-						this.tab_open(res.channel);
-					} else if (this.mode == 2) {
-						this.channel_show(res.channel);
+					if (res.channels) {
+						if (this.mode == 1) {
+							this.tab_open(res.channel);
+						} else if (this.mode == 2) {
+							this.channel_show(res.channel);
+						}
 					}
 				} else if (res.error) {
 					Game.error(res.hide_title ? '' : gt.gettext('Error'), res.error);

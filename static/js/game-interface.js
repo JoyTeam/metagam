@@ -47,6 +47,11 @@ Game.error = function(title, str) {
 
 Game.main_open = function(uri) {
 	try {
+		if (uri.uri)
+			uri = uri.uri;
+	} catch (e) {
+	}
+	try {
 		var iframe = Ext.getCmp('main-iframe');
 		var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
 		win.location.href = uri;

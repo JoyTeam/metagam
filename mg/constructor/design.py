@@ -374,7 +374,7 @@ class Puzzle(object):
             draw.rectangle((0, 0, width, height), fill=(0, 0, 0, 0), outline=(0, 0, 0, 0))
             del draw
             img = self.image.crop((left, top, left + width, top + height))
-            image.paste(img, None, img)
+            image.paste(img.convert("RGB"), None, img)
 
 class DesignGenerator(Module):
     def __init__(self, app):
@@ -445,7 +445,7 @@ class DesignGenerator(Module):
         self.design = design
         design.set("group", self.group())
         design.set("uploaded", self.now())
-        dir = "%s/data/design/%s/%s" % (mg.__path__[0], self.group(), self.id())
+        dir = "%s/data/design/%s" % (mg.__path__[0], self.id())
         html = []
         self.html_list = html
         css = []
@@ -522,12 +522,12 @@ class DesignGenerator(Module):
 
     def edit_css(self, filename):
         parser = CSSParser()
-        css = parser.parseFile("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename), "utf-8")
+        css = parser.parseFile("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename), "utf-8")
         self.css[filename] = css
         return css
 
     def load_image(self, filename):
-        image = Image.open("%s/data/design/%s/%s/%s" % (mg.__path__[0], self.group(), self.id(), filename)).convert("RGBA")
+        image = Image.open("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename)).convert("RGBA")
         stackless.schedule()
         return image
 
@@ -621,9 +621,9 @@ class DesignIndexMagicLands(DesignGenerator):
         height = int(height + 0.5)
         self.puzzle.image.paste(self.base_image.resize((width, height), Image.ANTIALIAS), (535 - width / 2, (404 - height) / 3))
         over = self.temp_image("index_top-over.png")
-        self.puzzle.image.paste(over, (0, 297), over)
+        self.puzzle.image.paste(over.convert("RGB"), (0, 297), over)
         login = self.temp_image("login.png")
-        self.puzzle.image.paste(login, (792, 85), login)
+        self.puzzle.image.paste(login.convert("RGB"), (792, 85), login)
 
 class DesignIndexBrokenStones(DesignGenerator):
     def group(self): return "indexpage"
@@ -664,7 +664,7 @@ class DesignIndexBrokenStones(DesignGenerator):
     def colorize(self, image, black, white):
         image = image.convert("RGBA")
         new_image = Image.new("RGBA", image.size, (0, 0, 0, 0))
-        new_image.paste(ImageOps.colorize(ImageOps.grayscale(image), black, white), (0, 0), image)
+        new_image.paste(ImageOps.colorize(ImageOps.grayscale(image), black, white).convert("RGB"), (0, 0), image)
         return new_image
 
     def process(self):
@@ -692,7 +692,7 @@ class DesignIndexBrokenStones(DesignGenerator):
         self.puzzle.image.paste(base_image, (512 - 880 / 2, 0))
         body_top = self.temp_image("body-top.png")
         body_top_colorized = self.colorize(body_top, self.body_dark, self.body_light)
-        self.puzzle.image.paste(body_top_colorized, (0, 0), body_top)
+        self.puzzle.image.paste(body_top_colorized.convert("RGB"), (0, 0), body_top)
         # game logo
         game_logo = self.temp_image("game-logo.png")
         game_logo_colorized = self.colorize(game_logo, self.body_dark, self.body_light)
@@ -729,12 +729,12 @@ class DesignIndexBrokenStones(DesignGenerator):
             y += hl
         del draw
         game_logo_glow_mask = game_logo_mask.filter(ImageFilter.BLUR).filter(ImageFilter.BLUR)
-        game_logo_colorized.paste(game_logo_glow, (0, 0), game_logo_glow_mask)
-        game_logo_colorized.paste(game_logo_color, (0, 0), game_logo_mask)
-        self.puzzle.image.paste(game_logo_colorized, (350, 300), game_logo)
+        game_logo_colorized.paste(game_logo_glow.convert("RGB"), (0, 0), game_logo_glow_mask)
+        game_logo_colorized.paste(game_logo_colo.convert("RGB"), (0, 0), game_logo_mask)
+        self.puzzle.image.paste(game_logo_colorized.convert("RGB"), (350, 300), game_logo)
         # band
         band = self.temp_image("band.png")
-        self.puzzle.image.paste(band, (0, 0), band)
+        self.puzzle.image.paste(band.convert("RGB"), (0, 0), band)
         self.create_element("body-top.jpg", "JPEG", 0, 0, 1024, 627)
         # CSS
         css = self.edit_css("index.css")
@@ -919,15 +919,15 @@ class DesignIndexCommonBlocks(DesignGenerator):
             # Drawing border on the puzzle
             x = 0
             while x < base_width + border_left + border_right:
-                self.puzzle.image.paste(box_bottom, (x, base_height), box_bottom)
+                self.puzzle.image.paste(box_bottom.convert("RGB"), (x, base_height), box_bottom)
                 x += box_bottom.size[0]
             y = 0
             while y < base_height + border_bottom:
-                self.puzzle.image.paste(box_left, (0, y), box_left)
-                self.puzzle.image.paste(box_right, (border_left + base_width, y), box_right)
+                self.puzzle.image.paste(box_left.convert("RGB"), (0, y), box_left)
+                self.puzzle.image.paste(box_right.convert("RGB"), (border_left + base_width, y), box_right)
                 y += box_left.size[1]
-            self.puzzle.image.paste(box_left_bottom, (0, base_height + border_bottom - box_left_bottom.size[1]), box_left_bottom)
-            self.puzzle.image.paste(box_right_bottom, (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_bottom - box_right_bottom.size[1]), box_right_bottom)
+            self.puzzle.image.paste(box_left_bottom.convert("RGB"), (0, base_height + border_bottom - box_left_bottom.size[1]), box_left_bottom)
+            self.puzzle.image.paste(box_right_bottom.convert("RGB"), (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_bottom - box_right_bottom.size[1]), box_right_bottom)
         elif self.scheme == 3 or self.scheme == 4:
             # Scaling base image
             target_base_width = 482.0 - border_left - border_right
@@ -947,23 +947,53 @@ class DesignIndexCommonBlocks(DesignGenerator):
             # Drawing border on the puzzle
             x = 0
             while x < base_width + border_left + border_right:
-                self.puzzle.image.paste(box_top, (x, 0), box_top)
-                self.puzzle.image.paste(box_bottom, (x, base_height + border_top), box_bottom)
+                self.puzzle.image.paste(box_top.convert("RGB"), (x, 0), box_top)
+                self.puzzle.image.paste(box_bottom.convert("RGB"), (x, base_height + border_top), box_bottom)
                 x += box_bottom.size[0]
             y = 0
             while y < base_height + border_top + border_bottom:
-                self.puzzle.image.paste(box_left, (0, y), box_left)
-                self.puzzle.image.paste(box_right, (border_left + base_width, y), box_right)
+                self.puzzle.image.paste(box_left.convert("RGB"), (0, y), box_left)
+                self.puzzle.image.paste(box_right.convert("RGB"), (border_left + base_width, y), box_right)
                 y += box_left.size[1]
-            self.puzzle.image.paste(box_left_bottom, (0, base_height + border_top + border_bottom - box_left_bottom.size[1]), box_left_bottom)
-            self.puzzle.image.paste(box_right_bottom, (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_top + border_bottom - box_right_bottom.size[1]), box_right_bottom)
-            self.puzzle.image.paste(box_left_top, (0, 0), box_left_top)
-            self.puzzle.image.paste(box_right_top, (base_width + border_left + border_right - box_right_top.size[0], 0), box_right_top)
+            self.puzzle.image.paste(box_left_bottom.convert("RGB"), (0, base_height + border_top + border_bottom - box_left_bottom.size[1]), box_left_bottom)
+            self.puzzle.image.paste(box_right_bottom.convert("RGB"), (base_width + border_left + border_right - box_right_bottom.size[0], base_height + border_top + border_bottom - box_right_bottom.size[1]), box_right_bottom)
+            self.puzzle.image.paste(box_left_top.convert("RGB"), (0, 0), box_left_top)
+            self.puzzle.image.paste(box_right_top.convert("RGB"), (base_width + border_left + border_right - box_right_top.size[0], 0), box_right_top)
 
 class DesignIndexRustedMetal(DesignIndexCommonBlocks):
     def id(self): return "index-rusted-metal"
     def name(self): return self._("Rusted Metal")
     def preview(self): return "/st/constructor/design/gen/index-rusted-metal.jpg"
+
+class DesignIndexJungle(DesignIndexCommonBlocks):
+    def id(self): return "index-jungle"
+    def name(self): return self._("Jungle")
+    def preview(self): return "/st/constructor/design/gen/index-jungle.jpg"
+
+class DesignIndexCelticCastle(DesignIndexCommonBlocks):
+    def id(self): return "index-celtic-castle"
+    def name(self): return self._("Celtic Castle")
+    def preview(self): return "/st/constructor/design/gen/index-celtic-castle.jpg"
+
+class DesignIndexSpace(DesignIndexCommonBlocks):
+    def id(self): return "index-space"
+    def name(self): return self._("Space")
+    def preview(self): return "/st/constructor/design/gen/index-space.jpg"
+
+class DesignIndexPinky(DesignIndexCommonBlocks):
+    def id(self): return "index-pinky"
+    def name(self): return self._("Pinky")
+    def preview(self): return "/st/constructor/design/gen/index-pinky.jpg"
+
+class DesignIndexMedieval(DesignIndexCommonBlocks):
+    def id(self): return "index-medieval"
+    def name(self): return self._("Medieval")
+    def preview(self): return "/st/constructor/design/gen/index-medieval.jpg"
+
+class DesignIndexSubmarine(DesignIndexCommonBlocks):
+    def id(self): return "index-submarine"
+    def name(self): return self._("Submarine")
+    def preview(self): return "/st/constructor/design/gen/index-submarine.jpg"
 
 class DesignGameInterfaceTest(DesignGenerator):
     def group(self): return "gameinterface"
@@ -976,6 +1006,42 @@ class DesignGameInterfaceRustedMetal(DesignGenerator):
     def id(self): return "game-rusted-metal"
     def name(self): return self._("Rusted Metal")
     def preview(self): return "/st/constructor/design/gen/game-rusted-metal.jpg"
+
+class DesignGameInterfaceJungle(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-jungle"
+    def name(self): return self._("Jungle")
+    def preview(self): return "/st/constructor/design/gen/game-jungle.jpg"
+
+class DesignGameInterfaceCelticCastle(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-celtic-castle"
+    def name(self): return self._("Celtic Castle")
+    def preview(self): return "/st/constructor/design/gen/game-celtic-castle.jpg"
+
+class DesignGameInterfaceSpace(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-space"
+    def name(self): return self._("Space")
+    def preview(self): return "/st/constructor/design/gen/game-space.jpg"
+
+class DesignGameInterfacePinky(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-pinky"
+    def name(self): return self._("Pinky")
+    def preview(self): return "/st/constructor/design/gen/game-pinky.jpg"
+
+class DesignGameInterfaceMedieval(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-medieval"
+    def name(self): return self._("Medieval")
+    def preview(self): return "/st/constructor/design/gen/game-medieval.jpg"
+
+class DesignGameInterfaceSubmarine(DesignGenerator):
+    def group(self): return "gameinterface"
+    def id(self): return "game-submarine"
+    def name(self): return self._("Submarine")
+    def preview(self): return "/st/constructor/design/gen/game-submarine.jpg"
 
 class DesignMod(Module):
     def register(self):
@@ -1071,7 +1137,7 @@ class DesignMod(Module):
 #           self.debug("Loaded: %s and %s. Mastering image %s/%s", template_uri, icon_path, design.get("uri"), target_filename)
             template_w, template_h = template_image.size
             icon_w, icon_h = icon_image.size
-            template_image.paste(icon_image, ((template_w - icon_w) / 2, (template_h - icon_h) / 2), icon_image)
+            template_image.paste(icon_image.convert("RGB"), ((template_w - icon_w) / 2, (template_h - icon_h) / 2), icon_image)
             if over and over in design.get("files"):
                 # loading overlay image
                 over_uri = "%s/%s" % (design.get("uri"), over)
@@ -1099,7 +1165,7 @@ class DesignMod(Module):
                     pass
                 over_image = over_image.convert("RGBA")
                 over_w, over_h = over_image.size
-                template_image.paste(over_image, ((template_w - over_w) / 2, (template_h - over_h) / 2), over_image)
+                template_image.paste(over_image.convert("RGB"), ((template_w - over_w) / 2, (template_h - over_h) / 2), over_image)
             # uploading image
             stream = cStringIO.StringIO()
             template_image.save(stream, "PNG")
@@ -1507,8 +1573,14 @@ class IndexPageAdmin(Module):
         vars["main_host"] = self.app().inst.config["main_host"]
 
     def generators(self, gens):
-        gens.append(DesignIndexBrokenStones)
+#        gens.append(DesignIndexBrokenStones)
         gens.append(DesignIndexRustedMetal)
+        gens.append(DesignIndexJungle)
+        gens.append(DesignIndexCelticCastle)
+        gens.append(DesignIndexSpace)
+        gens.append(DesignIndexPinky)
+        gens.append(DesignIndexMedieval)
+        gens.append(DesignIndexSubmarine)
 
 class SocioInterface(ConstructorModule):
     def register(self):
@@ -1900,8 +1972,13 @@ class GameInterfaceAdmin(ConstructorModule):
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files})
 
     def generators(self, gens):
-        gens.append(DesignGameInterfaceTest)
         gens.append(DesignGameInterfaceRustedMetal)
+        gens.append(DesignGameInterfaceJungle)
+        gens.append(DesignGameInterfaceCelticCastle)
+        gens.append(DesignGameInterfaceSpace)
+        gens.append(DesignGameInterfacePinky)
+        gens.append(DesignGameInterfaceMedieval)
+        gens.append(DesignGameInterfaceSubmarine)
 
     def previews(self, design, previews):
         previews.append({"filename": "interface.html", "title": self._("Game interface")})
