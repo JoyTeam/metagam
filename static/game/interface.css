@@ -134,4 +134,5 @@ area { border: none }
 .main-pages span { font-weight: bold }
 
 /* PAID SERVICES */
+.service-inactive { color: #c00000 }
 .service-active { color: #008000 }

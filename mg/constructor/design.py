@@ -1010,6 +1010,7 @@ class DesignMod(Module):
         return self.call("web.parse_layout", template, vars)
 
     def response(self, design, template, content, vars, design_type="game"):
+        self.call("web.setup_design", vars)
         self.call("web.response", self.parse(design, template, content, vars, design_type))
 
     def prepare_button(self, design, target_filename, template, icon, over=None):
@@ -1918,6 +1919,7 @@ class GameInterfaceAdmin(ConstructorModule):
             self.call("gameinterface.render", char, vars, design)
             self.call("gameinterface.gamejs", char, vars, design)
             self.call("gameinterface.blocks", char, vars, design)
+            self.call("web.setup_design", vars)
             self.call("web.response", self.call("web.parse_template", "game/frameset.html", vars))
         elif filename == "cabinet.html" or filename == "error.html" or filename == "form.html":
             demo_users = [self._("Mike"), self._("Ivan Ivanov"), self._("John Smith"), self._("Lizard the killer"), self._("Crazy Warrior From Hell")]

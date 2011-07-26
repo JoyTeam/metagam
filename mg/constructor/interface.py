@@ -105,12 +105,47 @@ class Interface(ConstructorModule):
         self.rhook("main-frame.form", self.main_frame_form)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("forum.setup-menu", self.forum_setup_menu)
+        self.rhook("web.setup_design", self.web_setup_design)
 
-    def forum_setup_menu(self, vars):
-        design = self.design("gameinterface")
-        if design:
-            vars["game_design_uri"] = design.get("uri")
+    def web_setup_design(self, vars):
+        req = self.req()
+        topmenu = []
+        if req.group == "forum" or req.group == "socio":
+            design = self.design("gameinterface")
+            if design:
+                vars["game_design_uri"] = design.get("uri")
+            vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
+            redirect = req.param("redirect")
+            redirect_param = True
+            if redirect is None or redirect == "":
+                redirect = req.uri()
+                redirect_param = False
+            redirect = urlencode(redirect)
+            if req.hook == "settings":
+                pass
+            else:
+                topmenu.append({"search": True, "button": self._("socio-top///Search")})
+                if req.user():
+                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
+                else:
+                    topmenu.append({"href": "/", "html": self._("Log into the game")})
+            if redirect_param:
+                topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
+        # Topmenu
+        if len(topmenu):
+            topmenu_left = []
+            topmenu_right = []
+            for ent in topmenu:
+                if ent.get("left"):
+                    topmenu_left.append(ent)
+                else:
+                    topmenu_right.append(ent)
+            if len(topmenu_left):
+                topmenu_left[-1]["lst"] = True
+                vars["topmenu_left"] = topmenu_left
+            if len(topmenu_right):
+                topmenu_right[-1]["lst"] = True
+                vars["topmenu_right"] = topmenu_right
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
