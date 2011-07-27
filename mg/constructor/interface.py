@@ -540,7 +540,7 @@ class Interface(ConstructorModule):
                 "title": self._("Top panel"),
                 "order": 1,
             })
-        if self.conf("gameinterface.panel-main-left", False):
+        if self.conf("gameinterface.panel-main-left", True):
             panels.append({
                 "id": "main-left",
                 "title": self._("Left of the main frame"),
@@ -572,28 +572,53 @@ class Interface(ConstructorModule):
         blocks = []
         if panel_id == "top":
             blocks.append({
-                "id": "top-left",
-                "type": "header",
-                "html": htmlescape(self.app().project.get("title_short", "").upper()),
+                "id": uuid4().hex,
+                "type": "empty",
                 "order": 0,
+                "width": 10,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "header",
+                "html": self._('You are in the <hook:location.name />'),
+                "order": 20,
                 "flex": 1,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "empty",
+                "order": 40,
+                "width": 10,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "progress",
+                "progress_types": ["location-movement"],
+                "order": 60,
+                "flex": 1,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "empty",
+                "order": 80,
+                "width": 10,
             })
             blocks.append({
                 "id": "top-menu",
                 "type": "buttons",
-                "order": 10,
+                "order": 100,
                 "title": self._("Top menu"),
                 "class": "horizontal",
             })
             blocks.append({
-                "id": "top-right",
+                "id": uuid4().hex,
                 "type": "empty",
-                "order": 100,
-                "flex": 1,
+                "order": 120,
+                "width": 10,
             })
         elif panel_id == "roster-buttons":
             blocks.append({
-                "id": "roster-buttons-left",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -606,14 +631,14 @@ class Interface(ConstructorModule):
                 "class": "roster-buttons",
             })
             blocks.append({
-                "id": "roster-buttons-right",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
             })
         elif panel_id == "main-left":
             blocks.append({
-                "id": "main-left-top",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -626,14 +651,14 @@ class Interface(ConstructorModule):
                 "class": "vertical",
             })
             blocks.append({
-                "id": "main-left-bottom",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
             })
         elif panel_id == "main-right":
             blocks.append({
-                "id": "main-right-top",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -646,7 +671,7 @@ class Interface(ConstructorModule):
                 "class": "vertical",
             })
             blocks.append({
-                "id": "main-right-bottom",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,

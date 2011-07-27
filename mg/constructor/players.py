@@ -1,7 +1,6 @@
 from mg.constructor import *
 from uuid import uuid4
 from mg.constructor.player_classes import *
-from mg.core.money_classes import *
 import re
 
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
@@ -29,6 +28,11 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.name-params", self.name_params)
         self.rhook("characters.name-tokens", self.name_tokens)
         self.rhook("characters.name-render", self.name_render)
+        self.rhook("characters.name-fixup", self.name_fixup)
+
+    def name_fixup(self, character, purpose, params):
+        if purpose == "admin":
+            params["NAME"] = u'<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (character.uuid, htmlescape(params["NAME"]))
 
     def permissions_list(self, perms):
         perms.append({"id": "characters.names", "name": self._("Character names rendering editor")})

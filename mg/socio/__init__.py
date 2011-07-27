@@ -731,13 +731,16 @@ class Socio(Module):
                         th = image_obj.convert("RGB")
                         th.thumbnail((800, 800), Image.ANTIALIAS)
                         th_data = cStringIO.StringIO()
-                        th.save(th_data, "JPEG")
+                        th.save(th_data, "JPEG", quality=98)
                         th_data = th_data.getvalue()
                         th_ext = "jpg"
                         th_content_type = "image/jpeg"
                     if target_format != format:
                         im_data = cStringIO.StringIO()
-                        image_obj.save(im_data, target_format)
+                        kwargs = {}
+                        if target_format == "JPEG":
+                            kwargs["quality"] = 95
+                        image_obj.save(im_data, target_format, **kwargs)
                         im_data = im_data.getvalue()
                     else:
                         im_data = image
@@ -1262,16 +1265,21 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
-                user = self.obj(User, self.call("socio.user"))
-                topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
-                self.call("forum.topic-form", topic, form, "store")
-                self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+                if req.param("publish"):
+                    user = self.obj(User, self.call("socio.user"))
+                    topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
+                    self.call("forum.topic-form", topic, form, "store")
+                    self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+                else:
+                    form.add_message_top('<div class="socio-preview">%s</div>' % self.call("socio.format_text", content))
         if cat.get("manual_date"):
             form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         if params.get("show_tags", True):
             form.input(self._("Tags (delimited with commas)"), "tags", tags)
+        form.submit(None, None, self._("Preview"))
+        form.submit(None, "publish", self._("Publish"), inline=True)
         self.call("forum.topic-form", None, form, "form")
         vars = {
             "category": cat,

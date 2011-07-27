@@ -106,6 +106,7 @@ class Chat(ConstructorModule):
         self.rhook("characters.name-purposes", self.name_purposes)
         self.rhook("characters.name-purpose-chat", self.name_purpose_chat)
         self.rhook("characters.name-purpose-roster", self.name_purpose_roster)
+        self.rhook("characters.name-fixup", self.name_fixup)
 
     def name_purpose_chat(self):
         return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}
@@ -116,6 +117,11 @@ class Chat(ConstructorModule):
     def name_purposes(self, purposes):
         purposes.append(self.name_purpose_chat())
         purposes.append(self.name_purpose_roster())
+
+    def name_fixup(self, character, purpose, params):
+        if purpose == "roster":
+            js = "Chat.click(['%s']); return false" % jsencode(character.name)
+            params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, params["NAME"])
 
     def schedule(self, sched):
         sched.add("chat.cleanup", "10 1 * * *", priority=10)
@@ -657,7 +663,7 @@ class Chat(ConstructorModule):
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 for char_uuid in character_uuids:
                     char = self.character(char_uuid)
-                    self.call("stream.packet", syschannel, "chat", "roster_add", character=char.roster_info, channel=channel["id"])
+                    self.call("stream.packet", syschannel, "chat", "roster_add", character=self.roster_info(char), channel=channel["id"])
         # loading old personal messages
         msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="char-%s" % character.uuid, query_reversed=True, query_limit=old_private_messages_limit)
         msgs.load(silent=True)
@@ -708,7 +714,7 @@ class Chat(ConstructorModule):
             obj.set("channel", channel_id)
             if channel.get("roster"):
                 obj.set("roster", True)
-                obj.set("roster_info", character.roster_info)
+                obj.set("roster_info", self.roster_info(character))
             obj.store()
             if channel.get("roster"):
                 # list of characters subscribed to this channel
@@ -730,13 +736,13 @@ class Chat(ConstructorModule):
                     if send_myself and len(mychannels):
                         self.call("stream.packet", mychannels, "chat", "channel_create", **channel)
                     if syschannels:
-                        self.call("stream.packet", syschannels, "chat", "roster_add", character=character.roster_info, channel=roster_channel_id)
+                        self.call("stream.packet", syschannels, "chat", "roster_add", character=self.roster_info(character), channel=roster_channel_id)
                     for char_uuid in character_uuids:
                         if char_uuid in characters_online:
                             if send_myself and char_uuid != character.uuid and len(mychannels):
                                 char = self.character(char_uuid)
                                 for ch in mychannels:
-                                    self.call("stream.packet", ch, "chat", "roster_add", character=char.roster_info, channel=roster_channel_id)
+                                    self.call("stream.packet", ch, "chat", "roster_add", character=self.roster_info(char), channel=roster_channel_id)
                         else:
                             # dropping obsolete database record
                             self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
@@ -937,3 +943,15 @@ class Chat(ConstructorModule):
             settings.set("chat_auth", auth)
             settings.set("chat_move", move)
             self.call("stream.packet", ["id_%s" % req.session().uuid], "chat", "filters", auth=auth, move=move)
+
+    def roster_info(self, character):
+        try:
+            return character._roster_info
+        except AttributeError:
+            character._roster_info = {
+                "id": character.uuid,
+                "name": character.name,
+                "html": character.html("roster"),
+            }
+            return character._roster_info
+

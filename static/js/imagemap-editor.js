@@ -108,7 +108,6 @@ ImageMapZone.prototype.deactivate = function() {
 };
 
 ImageMapZone.prototype.cleanup = function() {
-	this.uninstall_global_events();
 	this.form.form_cmp.remove(this.cmp);
 	for (var ci = this.form.conditions.length - 1; ci >= 0; ci--) {
 		if (this.form.conditions[ci].id == 'elem_location-' + this.id) {
@@ -163,6 +162,7 @@ ImageMapZone.prototype.update_polygon_str = function() {
 ImageMapEditor = {};
 
 ImageMapEditor.cleanup = function() {
+	this.uninstall_global_events();
 	this.zones = new Array();
 	this.mouse = new Array();
 	this.handler_size = 8;

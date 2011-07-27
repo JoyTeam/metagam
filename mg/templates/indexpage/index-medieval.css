@@ -1,4 +1,6 @@
 .box-0 { background-color: #d8d8b4; color: #383816 }
-.box-0 a:link, .box-0 a:visited, #field-submit-a:link, #field-submit-a:visited { color: #098d45 }
-.box-0 a:hover, .box-0 a:active, #field-submit-a:hover, #field-submit-a:active { color: #461e82 }
+.box-0 a:link, .box-0 a:visited { color: #098d45 }
+.box-0 a:hover, .box-0 a:active { color: #044d25 }
+.box-0 a.field-submit-a:link, .box-0 a.field-submit-a:visited { color: #383816; font-weight: bold }
+.box-0 a.field-submit-a:hover, .box-0 a.field-submit-a:active { color: #000000; font-weight: bold }
 .box-9 { padding: 32px }

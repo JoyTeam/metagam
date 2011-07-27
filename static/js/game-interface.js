@@ -359,7 +359,7 @@ Game.panel = function(id, options) {
 				block_el.html = block.html;
 			} else if (block.tp == 'header') {
 				var cls = 'panel-header-' + (options.vertical ? 'vertical' : 'horizontal');
-				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="panel-header-horizontal-margin"></div><table class="' + cls + '-9"><tr><td class="' + cls + '-10">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div>';
+				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="panel-header-horizontal-margin"></div><div class="' + cls + '-content-1"><div class="' + cls + '-10"><div class="' + cls + '-11"><table class="' + cls + '-9"><tr><td class="' + cls + '-12">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></div>';
 			} else if (block.tp == 'progress') {
 				var cls = 'progress-' + (options.vertical ? 'vertical' : 'horizontal');
 				var bars;

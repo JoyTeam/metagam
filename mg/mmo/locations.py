@@ -622,7 +622,7 @@ class Locations(ConstructorModule):
             "target": "main",
             "icon": "location.png",
             "title": self._("Location"),
-            "block": "top-menu",
+            "block": "left-menu",
             "order": 0,
         })
 

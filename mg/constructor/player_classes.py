@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.constructor.interface_classes import *
+from mg.core.money_classes import *
 
 # Database objects
 
@@ -168,6 +169,7 @@ class Character(Module):
                 template = pinfo["default"] if pinfo else "{NAME}"
             self.call("characters.name-params", [self], params)
             params = params[self.uuid]
+            self.call("characters.name-fixup", self, purpose, params)
             val = self.call("characters.name-render", template, params)
             mc.set(mcid, val)
         html[purpose] = val
@@ -192,17 +194,6 @@ class Character(Module):
     @property
     def lock(self):
         return self.lock(["character.%s" % self.uuid])
-
-    @property
-    def roster_info(self):
-        try:
-            return self._roster_info
-        except AttributeError:
-            self._roster_info = {
-                "id": self.uuid,
-                "name": self.name
-            }
-            return self._roster_info
 
     @property
     def location(self):

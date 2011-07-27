@@ -574,7 +574,7 @@ class Auth(ConstructorModule):
         lst.load(silent=True)
         for sess in lst:
             character = self.character(sess.get("user"))
-            rows.append(['<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (character.uuid, character.name), self.call("l10n.timeencode2", sess.get("updated"))])
+            rows.append([character.html("admin"), self.call("l10n.timeencode2", sess.get("updated"))])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def characters_tech_online(self, lst):

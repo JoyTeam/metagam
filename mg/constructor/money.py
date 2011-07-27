@@ -18,7 +18,7 @@ class Money(ConstructorModule):
             "target": "main",
             "icon": "money.png",
             "title": self._("Money"),
-            "block": "top-menu",
+            "block": "left-menu",
             "order": 0,
         })
 

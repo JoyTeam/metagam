@@ -47,7 +47,7 @@ function report_failure(text)
 	var tr = document.createElement('tr');
 	var td = document.createElement('td');
 	td.className = 'report-overlay-td';
-	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a href="javascript:void(0)" onclick="return report_close();">Закрыть</a></div>' + '</div></div></div></div></div></div></div></div></div></div></td></tr></table>';
+	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a class="field-submit-a" href="javascript:void(0)" onclick="return report_close();">Закрыть</a></div>' + '</div></div></div></div></div></div></div></div></div></div></td></tr></table>';
 	tr.appendChild(td);
 	tbody.appendChild(tr);
 	table.appendChild(tbody);
@@ -93,7 +93,7 @@ function dialog(text)
 	var tr = document.createElement('tr');
 	var td = document.createElement('td');
 	td.className = 'dialog-overlay-td';
-	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a href="javascript:void(0)" onclick="return dialog_close();">Закрыть</a></div>' + '</div></div></div></div></div></div></div></div></div></div></td></tr></table>';
+	td.innerHTML = '<table class="message-window"><tr><td class="message-window-td"><div class="box-0"><div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8"><div class="box-9"><table class="message-text"><tr><td class="message-text-td">' + text + '</td></tr></table>' + '<div class="message-button"><a class="field-submit-a" href="javascript:void(0)" onclick="return dialog_close();">Закрыть</a></div>' + '</div></div></div></div></div></div></div></div></div></div></td></tr></table>';
 	tr.appendChild(td);
 	tbody.appendChild(tr);
 	table.appendChild(tbody);
@@ -181,7 +181,7 @@ function auth_register()
 {
 	if (in_dialog || in_report)
 		return false;
-	var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
+	var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" class="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
 	dialog(html);
 	auth_register_field(0);
 	return false;

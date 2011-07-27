@@ -638,7 +638,7 @@ Chat.roster_add = function(pkt) {
 	if (ch.roster_chars) {
 		character.element = new Ext.BoxComponent({
 			renderTo: ch.roster_chars.el,
-			html: '<span class="chat-roster-char chat-clickable" onclick="return Chat.click([\'' + jsencode(char_info.name) + '\']);">' + htmlescape(char_info.name) + '</span>'
+			html: char_info.html
 		});
 	}
 	ch.roster_characters.push(character);

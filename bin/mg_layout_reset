@@ -1,0 +1,9 @@
+#!/bin/sh
+bin/mg_conf_set $1 gameinterface.buttons-layout null
+bin/mg_conf_set $1 gameinterface.panel-top true
+bin/mg_conf_set $1 gameinterface.panel-main-left true
+bin/mg_conf_set $1 gameinterface.panel-main-right false
+bin/mg_conf_set $1 gameinterface.blocks-top null
+bin/mg_conf_set $1 gameinterface.blocks-main-left null
+bin/mg_conf_set $1 gameinterface.blocks-main-right null
+bin/mg_conf_set $1 gameinterface.blocks-roster-buttons null
