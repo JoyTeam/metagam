@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-27 14:24+0400\n"
+"POT-Creation-Date: 2011-07-27 16:11+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,15 +75,15 @@ msgstr ""
 msgid "Target location"
 msgstr ""
 
-#: static/js/imagemap-editor.js:138
+#: static/js/imagemap-editor.js:137
 msgid "Number of corrdinates must not be odd"
 msgstr ""
 
-#: static/js/imagemap-editor.js:142
+#: static/js/imagemap-editor.js:141
 msgid "Minimal number of vertices - 3"
 msgstr ""
 
-#: static/js/imagemap-editor.js:148
+#: static/js/imagemap-editor.js:147
 msgid "Invalid non-integer coordinate encountered"
 msgstr ""
 

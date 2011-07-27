@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-27 14:24+0400\n"
-"PO-Revision-Date: 2011-07-27 14:26+0300\n"
+"POT-Creation-Date: 2011-07-27 16:11+0400\n"
+"PO-Revision-Date: 2011-07-27 16:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -52,16 +52,16 @@ msgstr "Форум"
 
 #: mg/socio/__init__.py:226
 #: mg/socio/__init__.py:251
-#: mg/socio/__init__.py:941
-#: mg/socio/__init__.py:1133
-#: mg/socio/__init__.py:1280
-#: mg/socio/__init__.py:1461
-#: mg/socio/__init__.py:1703
-#: mg/socio/__init__.py:1788
-#: mg/socio/__init__.py:2331
-#: mg/socio/__init__.py:2411
-#: mg/socio/__init__.py:2448
-#: mg/socio/__init__.py:2466
+#: mg/socio/__init__.py:944
+#: mg/socio/__init__.py:1136
+#: mg/socio/__init__.py:1288
+#: mg/socio/__init__.py:1469
+#: mg/socio/__init__.py:1711
+#: mg/socio/__init__.py:1796
+#: mg/socio/__init__.py:2339
+#: mg/socio/__init__.py:2419
+#: mg/socio/__init__.py:2456
+#: mg/socio/__init__.py:2474
 #: mg/constructor/design.py:1612
 #: mg/constructor/design.py:1618
 #: mg/constructor/design.py:1701
@@ -70,7 +70,7 @@ msgstr "Разделы форума"
 
 #: mg/socio/__init__.py:237
 #: mg/socio/smiles.py:230
-#: mg/constructor/players.py:200
+#: mg/constructor/players.py:199
 #: mg/constructor/interface.py:687
 #: mg/constructor/interface.py:1335
 msgid "Code"
@@ -87,19 +87,19 @@ msgstr "Название"
 #: mg/socio/__init__.py:239
 #: mg/socio/smiles.py:232
 #: mg/core/auth.py:1328
-#: mg/constructor/players.py:202
+#: mg/constructor/players.py:201
 #: mg/constructor/interface.py:745
 #: mg/constructor/interface.py:940
 msgid "Order"
 msgstr "Порядок"
 
 #: mg/socio/__init__.py:240
-#: mg/socio/__init__.py:1791
+#: mg/socio/__init__.py:1799
 #: mg/socio/smiles.py:233
 #: mg/core/auth.py:1026
 #: mg/mmo/locations.py:199
-#: mg/constructor/players.py:203
-#: mg/constructor/players.py:365
+#: mg/constructor/players.py:202
+#: mg/constructor/players.py:364
 #: mg/constructor/paidservices.py:261
 #: mg/constructor/interface.py:689
 #: mg/constructor/interface.py:746
@@ -110,13 +110,13 @@ msgstr "Редактирование"
 
 #: mg/socio/__init__.py:241
 #: mg/socio/__init__.py:400
-#: mg/socio/__init__.py:1469
-#: mg/socio/__init__.py:1511
+#: mg/socio/__init__.py:1477
+#: mg/socio/__init__.py:1519
 #: mg/socio/smiles.py:215
 #: mg/core/auth.py:1025
 #: mg/mmo/locations.py:181
-#: mg/constructor/players.py:205
-#: mg/constructor/players.py:357
+#: mg/constructor/players.py:204
+#: mg/constructor/players.py:356
 #: mg/constructor/paidservices.py:214
 #: mg/constructor/paidservices.py:248
 #: mg/constructor/project.py:254
@@ -139,7 +139,7 @@ msgstr "доступ"
 
 #: mg/socio/__init__.py:244
 #: mg/socio/smiles.py:234
-#: mg/constructor/players.py:204
+#: mg/constructor/players.py:203
 #: mg/constructor/paidservices.py:262
 #: mg/constructor/interface.py:747
 #: mg/constructor/interface.py:942
@@ -149,10 +149,10 @@ msgid "Deletion"
 msgstr "Удаление"
 
 #: mg/socio/__init__.py:245
-#: mg/socio/__init__.py:1467
-#: mg/socio/__init__.py:1509
+#: mg/socio/__init__.py:1475
+#: mg/socio/__init__.py:1517
 #: mg/socio/smiles.py:216
-#: mg/constructor/players.py:206
+#: mg/constructor/players.py:205
 #: mg/constructor/paidservices.py:249
 #: mg/constructor/interface.py:750
 #: mg/constructor/interface.py:943
@@ -191,7 +191,7 @@ msgid "Top category title"
 msgstr "Раздел верхнего уровня"
 
 #: mg/socio/__init__.py:309
-#: mg/constructor/players.py:186
+#: mg/constructor/players.py:185
 #: mg/constructor/interface.py:894
 #: mg/constructor/interface.py:1256
 msgid "Sort order"
@@ -260,7 +260,7 @@ msgstr "Запрещено модерировать"
 
 #: mg/socio/__init__.py:392
 #: mg/socio/__init__.py:419
-#: mg/socio/__init__.py:788
+#: mg/socio/__init__.py:791
 #: mg/core/cluster.py:294
 #: mg/constructor/paidservices.py:110
 #: mg/constructor/paidservices.py:226
@@ -323,7 +323,7 @@ msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
 
 #: mg/socio/__init__.py:712
-#: mg/socio/__init__.py:1914
+#: mg/socio/__init__.py:1922
 #: mg/socio/smiles.py:160
 #: mg/socio/smiles.py:162
 #: mg/core/money.py:218
@@ -340,173 +340,182 @@ msgstr "Таймаут при скачивании картинки. Огран�
 msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
-#: mg/socio/__init__.py:766
+#: mg/socio/__init__.py:769
 #: mg/admin/__init__.py:350
 #: mg/mmo/locations.py:351
 #: mg/constructor/design.py:401
 msgid "Upload an image"
 msgstr "Загрузите изображение"
 
-#: mg/socio/__init__.py:768
+#: mg/socio/__init__.py:771
 #: mg/socio/smiles.py:231
 #: mg/core/web.py:853
 msgid "Image"
 msgstr "Картинка"
 
-#: mg/socio/__init__.py:769
+#: mg/socio/__init__.py:772
 msgid "Or Internet address"
 msgstr "Или введите Internet-адрес"
 
-#: mg/socio/__init__.py:770
+#: mg/socio/__init__.py:773
 #: mg/constructor/design.py:1276
 #: mg/constructor/game.py:166
 msgid "Upload"
 msgstr "Загрузить"
 
-#: mg/socio/__init__.py:772
+#: mg/socio/__init__.py:775
 msgid "Upload image"
 msgstr "Загрузка изображения"
 
-#: mg/socio/__init__.py:785
+#: mg/socio/__init__.py:788
 msgid "user///Registered"
 msgstr "Регистрация"
 
-#: mg/socio/__init__.py:790
+#: mg/socio/__init__.py:793
 #: mg/core/auth.py:1135
 #, python-format
 msgid "User %s"
 msgstr "Пользователь %s"
 
-#: mg/socio/__init__.py:793
+#: mg/socio/__init__.py:796
 #: mg/socio/telegrams.py:106
 #: mg/core/money.py:970
 #: mg/constructor/invitations.py:94
 msgid "User"
 msgstr "Пользователь"
 
-#: mg/socio/__init__.py:841
+#: mg/socio/__init__.py:844
 #: mg/constructor/project.py:80
 #: mg/constructor/design.py:1540
 msgid "Game forum"
 msgstr "Форум игры"
 
-#: mg/socio/__init__.py:942
-#: mg/socio/__init__.py:2444
-#: mg/socio/__init__.py:2449
+#: mg/socio/__init__.py:945
+#: mg/socio/__init__.py:2452
+#: mg/socio/__init__.py:2457
 msgid "Subscribed topics"
 msgstr "Подписанные темы"
 
-#: mg/socio/__init__.py:1137
-#: mg/socio/__init__.py:1278
-#: mg/socio/__init__.py:1282
+#: mg/socio/__init__.py:1140
+#: mg/socio/__init__.py:1286
+#: mg/socio/__init__.py:1290
 #: mg/constructor/design.py:1621
 #: mg/constructor/design.py:1903
 msgid "New topic"
 msgstr "Новая тема"
 
-#: mg/socio/__init__.py:1194
-#: mg/socio/__init__.py:1231
+#: mg/socio/__init__.py:1197
+#: mg/socio/__init__.py:1234
 #: mg/constructor/design.py:1714
 #: mg/constructor/game.py:41
 msgid "Profile"
 msgstr "Профиль"
 
-#: mg/socio/__init__.py:1255
-#: mg/socio/__init__.py:1825
+#: mg/socio/__init__.py:1258
+#: mg/socio/__init__.py:1833
 msgid "Enter topic subject"
 msgstr "Введите тему сообщения"
 
-#: mg/socio/__init__.py:1257
-#: mg/socio/__init__.py:1827
+#: mg/socio/__init__.py:1260
+#: mg/socio/__init__.py:1835
 msgid "Enter topic content"
 msgstr "Введите текст сообщения"
 
-#: mg/socio/__init__.py:1262
+#: mg/socio/__init__.py:1265
 msgid "Invalid datetime format"
 msgstr "Неверный формат даты и времени"
 
-#: mg/socio/__init__.py:1270
+#: mg/socio/__init__.py:1276
 msgid "Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"
 msgstr "Дата темы (дд.мм.гггг или дд.мм.гггг чч:мм:сс)"
 
-#: mg/socio/__init__.py:1271
-#: mg/socio/__init__.py:1853
+#: mg/socio/__init__.py:1277
+#: mg/socio/__init__.py:1861
 #: mg/core/emails.py:326
 msgid "Subject"
 msgstr "Тема"
 
-#: mg/socio/__init__.py:1272
+#: mg/socio/__init__.py:1278
 msgid "Content"
 msgstr "Содержание"
 
-#: mg/socio/__init__.py:1274
-#: mg/socio/__init__.py:1856
+#: mg/socio/__init__.py:1280
+#: mg/socio/__init__.py:1864
 msgid "Tags (delimited with commas)"
 msgstr "Теги (разделяются запятыми)"
 
-#: mg/socio/__init__.py:1463
-#: mg/socio/__init__.py:1705
-#: mg/socio/__init__.py:1790
+#: mg/socio/__init__.py:1281
+#: mg/constructor/design.py:1234
+msgid "Preview"
+msgstr "Предпросмотр"
+
+#: mg/socio/__init__.py:1282
+msgid "Publish"
+msgstr "Опубликовать"
+
+#: mg/socio/__init__.py:1471
+#: mg/socio/__init__.py:1713
+#: mg/socio/__init__.py:1798
 msgid "Topic"
 msgstr "Тема"
 
-#: mg/socio/__init__.py:1471
-#: mg/socio/__init__.py:1513
+#: mg/socio/__init__.py:1479
+#: mg/socio/__init__.py:1521
 #: mg/constructor/design.py:1715
 msgid "reply"
 msgstr "ответить"
 
-#: mg/socio/__init__.py:1492
+#: mg/socio/__init__.py:1500
 msgid "unsubscribe"
 msgstr "отписаться"
 
-#: mg/socio/__init__.py:1494
+#: mg/socio/__init__.py:1502
 msgid "subscribe"
 msgstr "подписаться"
 
-#: mg/socio/__init__.py:1497
+#: mg/socio/__init__.py:1505
 msgid "unpin"
 msgstr "открепить"
 
-#: mg/socio/__init__.py:1499
+#: mg/socio/__init__.py:1507
 msgid "pin"
 msgstr "закрепить"
 
-#: mg/socio/__init__.py:1501
+#: mg/socio/__init__.py:1509
 msgid "move"
 msgstr "перенести"
 
-#: mg/socio/__init__.py:1521
-#: mg/socio/__init__.py:1680
-#: mg/socio/__init__.py:1799
+#: mg/socio/__init__.py:1529
+#: mg/socio/__init__.py:1688
+#: mg/socio/__init__.py:1807
 msgid "Enter post content"
 msgstr "Введите текст сообщения"
 
-#: mg/socio/__init__.py:1523
+#: mg/socio/__init__.py:1531
 msgid "Access denied"
 msgstr "Доступ запрещён"
 
-#: mg/socio/__init__.py:1539
-#: mg/socio/__init__.py:1697
-#: mg/socio/__init__.py:1701
-#: mg/socio/__init__.py:1706
+#: mg/socio/__init__.py:1547
+#: mg/socio/__init__.py:1705
+#: mg/socio/__init__.py:1709
+#: mg/socio/__init__.py:1714
 msgid "Reply"
 msgstr "Ответить"
 
-#: mg/socio/__init__.py:1795
+#: mg/socio/__init__.py:1803
 msgid "Edit post"
 msgstr "Редактирование ответа"
 
-#: mg/socio/__init__.py:1817
+#: mg/socio/__init__.py:1825
 msgid "Edit topic"
 msgstr "Редактирование темы"
 
-#: mg/socio/__init__.py:1831
+#: mg/socio/__init__.py:1839
 #, python-format
 msgid "Tag '%s' is invalid - only letters, digits, spaces, underscore and minus are allowed"
 msgstr "Недопустимый тег '%s' - разрешены только буквы, цифры, пробелы, подчёркивания и минусы"
 
-#: mg/socio/__init__.py:1858
+#: mg/socio/__init__.py:1866
 #: mg/core/web.py:822
 #: mg/core/director.py:403
 #: mg/admin/__init__.py:264
@@ -515,86 +524,86 @@ msgstr "Недопустимый тег '%s' - разрешены только �
 msgid "Save"
 msgstr "Сохранить"
 
-#: mg/socio/__init__.py:1869
+#: mg/socio/__init__.py:1877
 #: mg/constructor/admin.py:310
 msgid "Forum settings"
 msgstr "Настройки форума"
 
-#: mg/socio/__init__.py:1902
+#: mg/socio/__init__.py:1910
 msgid "Signature can't contain more than 4 lines"
 msgstr "В подписи не может быть более 4 строк"
 
-#: mg/socio/__init__.py:1906
+#: mg/socio/__init__.py:1914
 msgid "Signature line couldn't be longer than 80 symbols"
 msgstr "Строка подписи не может быть длиннее 80 символов"
 
-#: mg/socio/__init__.py:1908
+#: mg/socio/__init__.py:1916
 msgid "Signature couldn't contain images"
 msgstr "В подпись нельзя вставлять картинки"
 
-#: mg/socio/__init__.py:1931
+#: mg/socio/__init__.py:1939
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
 
-#: mg/socio/__init__.py:1995
+#: mg/socio/__init__.py:2003
 msgid "Change avatar"
 msgstr "Изменить аватар"
 
-#: mg/socio/__init__.py:1995
+#: mg/socio/__init__.py:2003
 msgid "Your avatar"
 msgstr "Ваш аватар"
 
-#: mg/socio/__init__.py:1996
+#: mg/socio/__init__.py:2004
 msgid "Your forum signature"
 msgstr "Ваша подпись на форуме"
 
-#: mg/socio/__init__.py:1997
+#: mg/socio/__init__.py:2005
 msgid "Replies in subscribed topics"
 msgstr "Ответы в подписанных темах"
 
-#: mg/socio/__init__.py:1997
+#: mg/socio/__init__.py:2005
 msgid "E-mail notifications"
 msgstr "Уведомления на почту"
 
-#: mg/socio/__init__.py:1999
+#: mg/socio/__init__.py:2007
 msgid "New topics in '{topcat} / {cat}'"
 msgstr "Новые темы в '{topcat} / {cat}'"
 
-#: mg/socio/__init__.py:2000
+#: mg/socio/__init__.py:2008
 #: mg/core/auth.py:598
 #: mg/constructor/money.py:74
 #: mg/constructor/dashboard.py:293
 msgid "Return"
 msgstr "Возврат"
 
-#: mg/socio/__init__.py:2005
+#: mg/socio/__init__.py:2013
 msgid "You can use grayscale avatars only. To get an ability to upload coloured avatars <a href=\"/socio/coloured-avatar\">please subscribe</a>"
 msgstr "Вы можете использовать только чёрно-белые аватары. Чтобы получить возможность загружать цветные аватары, <a href=\"/socio/coloured-avatar\">пожалуйста, подключите соответствующую услугу</a>"
 
-#: mg/socio/__init__.py:2109
+#: mg/socio/__init__.py:2117
 msgid "Select category"
 msgstr "Выберите раздел"
 
-#: mg/socio/__init__.py:2131
+#: mg/socio/__init__.py:2139
 msgid "Category where to move"
 msgstr "Раздел, в который перенести"
 
-#: mg/socio/__init__.py:2132
+#: mg/socio/__init__.py:2140
 #: mg/constructor/design.py:1903
 msgid "Move"
 msgstr "Перенести"
 
-#: mg/socio/__init__.py:2134
+#: mg/socio/__init__.py:2142
 #, python-format
 msgid "Move topic: %s"
 msgstr "Перемещение темы: %s"
 
-#: mg/socio/__init__.py:2180
+#: mg/socio/__init__.py:2188
 #, python-format
 msgid "New topic: %s"
 msgstr "Новая тема: %s"
 
-#: mg/socio/__init__.py:2180
+#: mg/socio/__init__.py:2188
 msgid ""
 "{author_name} has started new topic: {topic_subject}\n"
 "\n"
@@ -604,12 +613,12 @@ msgstr ""
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}"
 
-#: mg/socio/__init__.py:2230
+#: mg/socio/__init__.py:2238
 #, python-format
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
-#: mg/socio/__init__.py:2230
+#: mg/socio/__init__.py:2238
 msgid ""
 "{author_name} has replied in the topic: {topic_subject}\n"
 "\n"
@@ -619,75 +628,75 @@ msgstr ""
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
 
-#: mg/socio/__init__.py:2324
+#: mg/socio/__init__.py:2332
 #: mg/constructor/design.py:1622
 msgid "Author"
 msgstr "Автор"
 
-#: mg/socio/__init__.py:2325
+#: mg/socio/__init__.py:2333
 #: mg/constructor/design.py:1614
 #: mg/constructor/design.py:1623
 msgid "Replies"
 msgstr "Ответов"
 
-#: mg/socio/__init__.py:2326
+#: mg/socio/__init__.py:2334
 #: mg/constructor/design.py:1624
 msgid "Last reply"
 msgstr "Последний ответ"
 
-#: mg/socio/__init__.py:2327
+#: mg/socio/__init__.py:2335
 #: mg/constructor/design.py:1617
 #: mg/constructor/design.py:1625
 msgid "by"
 msgstr "от"
 
-#: mg/socio/__init__.py:2329
-#: mg/socio/__init__.py:2416
+#: mg/socio/__init__.py:2337
+#: mg/socio/__init__.py:2424
 msgid "Nothing found"
 msgstr "Ничего не найдено"
 
-#: mg/socio/__init__.py:2332
-#: mg/socio/__init__.py:2415
-#: mg/socio/__init__.py:2467
+#: mg/socio/__init__.py:2340
+#: mg/socio/__init__.py:2423
+#: mg/socio/__init__.py:2475
 #: mg/constructor/design.py:1637
 msgid "Tags"
 msgstr "Теги"
 
-#: mg/socio/__init__.py:2389
-#: mg/socio/__init__.py:2402
+#: mg/socio/__init__.py:2397
+#: mg/socio/__init__.py:2410
 #: mg/core/emails.py:310
 msgid "open"
 msgstr "открыть"
 
-#: mg/socio/__init__.py:2412
+#: mg/socio/__init__.py:2420
 msgid "results///Search"
 msgstr "Поиск"
 
-#: mg/socio/__init__.py:2446
+#: mg/socio/__init__.py:2454
 msgid "You have not subscribed to any topic"
 msgstr "Вы не подписаны ни на одну тему"
 
-#: mg/socio/__init__.py:2500
+#: mg/socio/__init__.py:2508
 msgid "Read more"
 msgstr "Читать далее"
 
-#: mg/socio/__init__.py:2501
+#: mg/socio/__init__.py:2509
 msgid "Comment"
 msgstr "Комментировать"
 
-#: mg/socio/__init__.py:2516
+#: mg/socio/__init__.py:2524
 msgid "Your access to the forum is temporarily blocked till {till}"
 msgstr "Ваш доступ к форуму заблокирован до {till}"
 
-#: mg/socio/__init__.py:2519
+#: mg/socio/__init__.py:2527
 msgid "Socio interface message editor"
 msgstr "Редактор сообщений в интерфейсе социалки"
 
-#: mg/socio/__init__.py:2524
+#: mg/socio/__init__.py:2532
 msgid "Interface messages"
 msgstr "Сообщения интерфейса"
 
-#: mg/socio/__init__.py:2533
+#: mg/socio/__init__.py:2541
 #: mg/core/l10n.py:378
 #: mg/core/sites.py:29
 #: mg/core/emails.py:75
@@ -698,11 +707,11 @@ msgstr "Сообщения интерфейса"
 msgid "Settings stored"
 msgstr "Настройки сохранены"
 
-#: mg/socio/__init__.py:2538
+#: mg/socio/__init__.py:2546
 msgid "Top message"
 msgstr "Верхнее сообщение"
 
-#: mg/socio/__init__.py:2539
+#: mg/socio/__init__.py:2547
 msgid "Silence message"
 msgstr "Сообщение для молчанки"
 
@@ -1894,7 +1903,7 @@ msgid "Registration"
 msgstr "Регистрация"
 
 #: mg/core/auth.py:1190
-#: mg/constructor/players.py:201
+#: mg/constructor/players.py:200
 #: mg/constructor/auth.py:329
 msgid "Name"
 msgstr "Имя"
@@ -2665,7 +2674,7 @@ msgid "Realplexor monitor"
 msgstr "Монитор Realplexor"
 
 #: mg/admin/__init__.py:39
-#: mg/constructor/players.py:267
+#: mg/constructor/players.py:266
 msgid "Administration interface"
 msgstr "Административный интерфейс"
 
@@ -2917,147 +2926,147 @@ msgstr "Нет такой локации"
 msgid "No location"
 msgstr "Нет локации"
 
-#: mg/constructor/players.py:39
+#: mg/constructor/players.py:38
 msgid "Character names rendering editor"
 msgstr "Редактор отображения имён персонажей"
 
-#: mg/constructor/players.py:42
+#: mg/constructor/players.py:41
 msgid "Characters"
 msgstr "Персонажи"
 
-#: mg/constructor/players.py:47
-#: mg/constructor/players.py:216
+#: mg/constructor/players.py:46
+#: mg/constructor/players.py:215
 msgid "Character form"
 msgstr "Анкета персонажа"
 
-#: mg/constructor/players.py:49
-#: mg/constructor/players.py:293
+#: mg/constructor/players.py:48
+#: mg/constructor/players.py:292
 msgid "Character names"
 msgstr "Имена персонажей"
 
-#: mg/constructor/players.py:74
+#: mg/constructor/players.py:73
 msgid "Custom field"
 msgstr "Пользовательское поле"
 
-#: mg/constructor/players.py:74
-#: mg/constructor/players.py:283
+#: mg/constructor/players.py:73
+#: mg/constructor/players.py:282
 #: mg/constructor/chat.py:815
 #: mg/constructor/auth.py:329
 msgid "Character name"
 msgstr "Имя персонажа"
 
-#: mg/constructor/players.py:74
+#: mg/constructor/players.py:73
 #: mg/constructor/auth.py:330
 msgid "Character sex"
 msgstr "Пол персонажа"
 
-#: mg/constructor/players.py:126
+#: mg/constructor/players.py:125
 #: mg/constructor/chat.py:219
 #: mg/constructor/interface.py:457
 msgid "Invalid selection"
 msgstr "Неверный выбор"
 
-#: mg/constructor/players.py:128
+#: mg/constructor/players.py:127
 msgid "Name may not be empty"
 msgstr "Имя не может быть пустым"
 
-#: mg/constructor/players.py:130
+#: mg/constructor/players.py:129
 msgid "Description may not be empty"
 msgstr "Описание не может быть пустым"
 
-#: mg/constructor/players.py:132
+#: mg/constructor/players.py:131
 msgid "Prompt may not be empty"
 msgstr "Приглашение не может быть пустым"
 
-#: mg/constructor/players.py:152
+#: mg/constructor/players.py:151
 msgid "Number expected"
 msgstr "Требуется число"
 
-#: mg/constructor/players.py:162
+#: mg/constructor/players.py:161
 msgid "Specify list of values"
 msgstr "Укажите список значений"
 
-#: mg/constructor/players.py:169
+#: mg/constructor/players.py:168
 msgid "Invalid format"
 msgstr "Неверный формат"
 
-#: mg/constructor/players.py:183
+#: mg/constructor/players.py:182
 msgid "Short description for administrators"
 msgstr "Короткое описание для администраторов"
 
-#: mg/constructor/players.py:184
+#: mg/constructor/players.py:183
 msgid "Form control type"
 msgstr "Тип поля"
 
-#: mg/constructor/players.py:184
+#: mg/constructor/players.py:183
 msgid "text input"
 msgstr "текстовое поле"
 
-#: mg/constructor/players.py:184
+#: mg/constructor/players.py:183
 msgid "combo box"
 msgstr "выпадающий список"
 
-#: mg/constructor/players.py:184
+#: mg/constructor/players.py:183
 msgid "text area"
 msgstr "большое текстовое поле"
 
-#: mg/constructor/players.py:185
+#: mg/constructor/players.py:184
 msgid "Possible options. Format: 0:first value|1:second value|2:third value"
 msgstr "Возможные варианты. Формат: 0:первое значение|1:второе значение|3:третье значение"
 
-#: mg/constructor/players.py:187
+#: mg/constructor/players.py:186
 msgid "Description for players"
 msgstr "Описание для игроков"
 
-#: mg/constructor/players.py:188
+#: mg/constructor/players.py:187
 msgid "Input prompt for players"
 msgstr "Текст рядом с полем ввода в анкете"
 
-#: mg/constructor/players.py:189
+#: mg/constructor/players.py:188
 msgid "Show on registration"
 msgstr "Показывать при регистрации"
 
-#: mg/constructor/players.py:190
+#: mg/constructor/players.py:189
 msgid "The field is mandatory after this character level ('0' if not mandatory)"
 msgstr "Это поле является обязательным, начиная с этого уровня персонажа ('0', если необязательное)"
 
-#: mg/constructor/players.py:193
+#: mg/constructor/players.py:192
 msgid "Field type"
 msgstr "Тип поля"
 
-#: mg/constructor/players.py:199
+#: mg/constructor/players.py:198
 msgid "Create new field"
 msgstr "Создать новое поле"
 
-#: mg/constructor/players.py:207
+#: mg/constructor/players.py:206
 msgid "recover"
 msgstr "восстановить"
 
-#: mg/constructor/players.py:208
+#: mg/constructor/players.py:207
 msgid "Here you can customize parameters entered by player in the character form. These are not game parameters like strength and agility. Character form is a simple text fields like 'Legend', 'Motto' etc."
 msgstr "Здесь вы можете настроить параметры, которые игроки вводят в анкете персонажа. Это не игровые параметры типа силы или ловкости. Анкета персонажа - это обычные текстовые поля типа \"Легенда\", \"Девиз\" и т.д."
 
-#: mg/constructor/players.py:213
+#: mg/constructor/players.py:212
 msgid "New field"
 msgstr "Новое поле"
 
-#: mg/constructor/players.py:241
-#: mg/constructor/players.py:278
+#: mg/constructor/players.py:240
+#: mg/constructor/players.py:277
 #: mg/constructor/chat.py:842
 #: mg/constructor/auth.py:49
 #: mg/constructor/auth.py:568
 msgid "Character"
 msgstr "Персонаж"
 
-#: mg/constructor/players.py:264
+#: mg/constructor/players.py:263
 msgid "Default"
 msgstr "По умолчанию"
 
-#: mg/constructor/players.py:284
+#: mg/constructor/players.py:283
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
 
-#: mg/constructor/players.py:324
+#: mg/constructor/players.py:323
 #: mg/constructor/setup.py:182
 #: mg/constructor/paidservices.py:278
 #: mg/constructor/paidservices.py:282
@@ -3067,20 +3076,20 @@ msgstr "Иконка инфы персонажа"
 msgid "This field is mandatory"
 msgstr "Это обязательное поле"
 
-#: mg/constructor/players.py:329
+#: mg/constructor/players.py:328
 #, python-format
 msgid "Unknown token {%s}"
 msgstr "Неизвестный элемент {%s}"
 
-#: mg/constructor/players.py:343
+#: mg/constructor/players.py:342
 msgid "Name template (valid tags are shown above)"
 msgstr "Шаблон имени (допустимые теги приведены выше)"
 
-#: mg/constructor/players.py:363
+#: mg/constructor/players.py:362
 msgid "Purpose"
 msgstr "Цель"
 
-#: mg/constructor/players.py:364
+#: mg/constructor/players.py:363
 msgid "Format"
 msgstr "Формат"
 
@@ -5003,10 +5012,6 @@ msgstr "Загрузить пакет оформления с вашего ко�
 #: mg/constructor/design.py:1232
 msgid "Uploaded"
 msgstr "Загружено"
-
-#: mg/constructor/design.py:1234
-msgid "Preview"
-msgstr "Предпросмотр"
 
 #: mg/constructor/design.py:1236
 msgid "Installation"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-26 19:01+0400\n"
+"POT-Creation-Date: 2011-07-27 16:11+0400\n"
 "PO-Revision-Date: 2011-07-14 16:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -78,15 +78,15 @@ msgstr "Действие при клике"
 msgid "Target location"
 msgstr "Целевая локация"
 
-#: static/js/imagemap-editor.js:138
+#: static/js/imagemap-editor.js:137
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
 
-#: static/js/imagemap-editor.js:142
+#: static/js/imagemap-editor.js:141
 msgid "Minimal number of vertices - 3"
 msgstr "Минимальное количество вершин - 3"
 
-#: static/js/imagemap-editor.js:148
+#: static/js/imagemap-editor.js:147
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
 
