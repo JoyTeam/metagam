@@ -10,7 +10,10 @@
 			<a href="[%srv.href%]"[%if srv.target +%] target="[%srv.target%]"[%end%]>[%srv.name%]</a>
 			[%foreach offer in srv.offers%]<div>[%offer.html%]</div>[%end%]
 		</td>
-		<td class="log-td log-nowrap[%if srv.status_cls +%] [%+ srv.status_cls%][%end%]">[%srv.status%]</td>
+		<td class="log-td log-nowrap">
+			[%if srv.status_cls%]<span class="[%srv.status_cls%]">[%end%][%srv.status%][%if srv.status_cls%]</span>[%end%]
+			[%if srv.auto_prolong%]<div>[%srv.auto_prolong.status%] &mdash; <a href="[%srv.auto_prolong.href%]?redirect=/paidservices">[%srv.auto_prolong.cmd%]</a></div>[%end%]
+		</td>
 		<td class="log-td">[%srv.description%]</td>
 	</tr>
 [%end%]

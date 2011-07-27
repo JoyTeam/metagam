@@ -1,5 +1,5 @@
 from mg import *
-from mg.constructor.players import Character, Player, Characters
+from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmo.locations_classes import Location
 
 class ConstructorModule(Module):

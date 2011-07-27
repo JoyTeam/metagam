@@ -251,13 +251,14 @@ Game.element = function(eid, cel, el) {
 	var container_options = {
 		id: eid + '-content-container',
 		applyTo: insert_here,
-		height: '100%',
 		layout: 'vbox',
 		layoutConfig: {
 			align: 'stretch'
 		},
 		items: [el]
 	};
+	if (!el.no_height)
+		container_options.height = '100%';
 	if (el.vertical) {
 		el.vertical = undefined;
 		container_options.width = '100%';

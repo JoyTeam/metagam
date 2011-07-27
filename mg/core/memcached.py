@@ -6,6 +6,7 @@ import time
 import logging
 import traceback
 import concurrence
+import random
 
 class MemcachedPool(object):
     """
@@ -232,6 +233,25 @@ class Memcached(object):
             raise
         self.pool.put(connection)
         return res
+
+    def get_ver(self, group):
+        ver = self.get("GRP-%s" % group)
+        if ver is None:
+            ver = random.randrange(0, 1000000000)
+            self.set("GRP-%s" % group, ver)
+        return ver
+
+    def incr_ver(self, group):
+        res = self.incr("GRP-%s" % group)
+        if res[0] != MemcacheResult.OK:
+            ver = random.randrange(0, 1000000000)
+            self.set("GRP-%s" % group, ver)
+
+    def ver(self, groups):
+        key = '/ver'
+        for g in groups:
+            key += '/%s' % self.get_ver(g)
+        return key
 
 class MemcachedLock(object):
     """

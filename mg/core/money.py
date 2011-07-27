@@ -387,7 +387,7 @@ class MoneyAdmin(Module):
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Give amount"), "value": amount})
-        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()]})
+        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
         buttons = [{"text": self._("Give")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -430,7 +430,7 @@ class MoneyAdmin(Module):
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Take amount"), "value": amount})
-        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()]})
+        fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
         buttons = [{"text": self._("Take")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -596,7 +596,7 @@ class TwoPay(Module):
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
-                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % htmlescape(currency), project_id, self._("Open payment interface")))
+                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self._("Open payment interface")))
 
     def money_description_2pay_pay(self):
         return {
@@ -1041,7 +1041,8 @@ class Money(Module):
         self.rhook("money.not-enough-funds", self.not_enough_funds)
 
     def not_enough_funds(self, currency):
-        return self._("Not enough %s") % currency
+        cinfo = self.call("money.currency-info", currency)
+        return self._("Not enough %s") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency))
 
     def currencies_list(self, currencies):
         if self.app().tag == "main":
@@ -1050,6 +1051,7 @@ class Money(Module):
                 "format": "%.2f",
                 "description": "MM$",
                 "real": True,
+                "name_plural": self._("MMO Constructor Dollars"),
             }
         else:
             lst = self.conf("money.currencies")

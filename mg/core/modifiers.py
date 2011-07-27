@@ -213,6 +213,7 @@ class Modifiers(Module):
                     res["maxtill"] = till
                 if till < res["mintill"]:
                     res["mintill"] = till
+                res["mods"].append(ent)
             else:
                 res = {
                     "cnt": 1,
@@ -220,6 +221,7 @@ class Modifiers(Module):
                     "maxval": val,
                     "mintill": till,
                     "maxtill": till,
+                    "mods": [ent],
                 }
                 modifiers[kind] = res
         if cache:

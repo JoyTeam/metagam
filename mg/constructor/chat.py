@@ -13,6 +13,7 @@ re_loc_channel = re.compile(r'^loc-(\S+)$')
 re_valid_command = re.compile(r'^/(\S+)$')
 re_after_dash = re.compile(r'-.*')
 re_unjoin = re.compile(r'^unjoin/(\S+)$')
+re_character_name = re.compile(r'(<span class="char-name">.*?</span>)')
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
@@ -102,6 +103,19 @@ class Chat(ConstructorModule):
         self.rhook("interface.settings-form", self.settings_form)
         self.rhook("all.schedule", self.schedule)
         self.rhook("chat.cleanup", self.cleanup)
+        self.rhook("characters.name-purposes", self.name_purposes)
+        self.rhook("characters.name-purpose-chat", self.name_purpose_chat)
+        self.rhook("characters.name-purpose-roster", self.name_purpose_roster)
+
+    def name_purpose_chat(self):
+        return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}
+
+    def name_purpose_roster(self):
+        return {"id": "roster", "title": self._("Roster"), "order": 20, "default": "{NAME} {INFO}"}
+
+    def name_purposes(self, purposes):
+        purposes.append(self.name_purpose_chat())
+        purposes.append(self.name_purpose_roster())
 
     def schedule(self, sched):
         sched.add("chat.cleanup", "10 1 * * *", priority=10)
@@ -364,7 +378,7 @@ class Chat(ConstructorModule):
         author = self.character(user)
         text = req.param("text") 
         prefixes = []
-        prefixes.append("[[chf:%s]] " % user)
+        prefixes.append("[chf:%s] " % user)
         channel = req.param("channel")
         if channel == "sys" or channel == "":
             if self.conf("chat.location-separate"):
@@ -409,9 +423,9 @@ class Chat(ConstructorModule):
             if not char:
                 self.call("web.response_json", {"error": self._("Character '%s' not found") % htmlescape(name)})
             if private:
-                prefixes.append("private [[cht:%s]] " % char.uuid)
+                prefixes.append("private [cht:%s] " % char.uuid)
             else:
-                prefixes.append("to [[cht:%s]] " % char.uuid)
+                prefixes.append("to [cht:%s] " % char.uuid)
             recipients.append(char)
         if author not in recipients:
             recipients.append(author)
@@ -559,14 +573,16 @@ class Chat(ConstructorModule):
             recipients = ["'%s'" % jsencode(ch.name) for ch in token["mentioned"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
             if recipients:
                 add_cls += " clickable"
-                add_tag += ' onclick="Chat.click([%s]%s)"' % (",".join(recipients), (", 1" if private else ""))
-            return u'<span class="chat-msg-char%s"%s>%s</span>' % (add_cls, add_tag, char.html_chat)
+                js = 'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
+                add_tag += ' onclick="{0}" ondblclick="{0}"'.format(js)
+            return re_character_name.sub(ur'<span class="chat-msg-char%s"%s>\1</span>' % (add_cls, add_tag), char.html("chat"))
         now = token.get("time")
         if now:
             recipients = [char for char in token["mentioned"] if char.uuid != viewer_uuid] if viewer_uuid else token["mentioned"]
             if recipients:
                 recipient_names = ["'%s'" % jsencode(char.name) for char in recipients]
-                return u'<span class="chat-msg-time clickable" onclick="Chat.click([%s])">%s</span> ' % (",".join(recipient_names), now)
+                js = "Chat.click([%s]); return false" % ",".join(recipient_names)
+                return u'<span class="chat-msg-time clickable" onclick="{0}" ondblclick="{0}">{1}</span> '.format(js, now)
             else:
                 return u'<span class="chat-msg-time">%s</span> ' % now
 
@@ -806,7 +822,7 @@ class Chat(ConstructorModule):
         lst = self.objlist(DBChatDebugList, query_index="all")
         for char_uuid in lst.uuids():
             char = self.character(char_uuid)
-            rows.append([char.html_admin, '<hook:admin.link href="chat/debug/unjoin/%s" title="%s" />' % (char.uuid, self._("unjoin"))])
+            rows.append([char.html("admin"), '<hook:admin.link href="chat/debug/unjoin/%s" title="%s" />' % (char.uuid, self._("unjoin"))])
         vars = {
             "tables": [
                 {

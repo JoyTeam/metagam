@@ -25,25 +25,19 @@ class PaidServices(Module):
             return None
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
-        srv = {
+        return {
             "id": "socio-coloured-avatar",
             "name": self._("Coloured avatar on the forum"),
             "description": self._("Basically your avatar can be monochrome only. If you want coloured avatar you can use this option"),
             "subscription": True,
-            "default_period": 60,
-            #"default_period": 30 * 86400,
-            "default_price": self.call("money.format-price", 30 / cinfo.get("real_roubles", 1), cur),
-            "default_currency": cur,
             "href": "/socio/coloured-avatar",
             "target": "_blank",
+            "subscription": True,
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 30 / cinfo.get("real_roubles", 1), cur),
+            "default_currency": cur,
+            "default_enabled": True,
         }
-        mod = self.call("modifiers.kind", req.user(), "socio-coloured-avatar")
-        if mod:
-            srv["active"] = True
-            srv["active_till"] = mod.get("maxtill")
-        else:
-            srv["active"] = False
-        return srv
 
     def ext_paid_services(self):
         req = self.req()

@@ -1160,6 +1160,8 @@ class Forum(Module):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
         if len(authors):
             grayscale_support = self.call("paidservices.socio-coloured-avatar")
+            if grayscale_support:
+                grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
@@ -1887,6 +1889,8 @@ class Forum(Module):
             notify[cat["id"]] = req.param("notify_%s" % cat["id"])
         # paid services
         grayscale_support = self.call("paidservices.socio-coloured-avatar")
+        if grayscale_support:
+            grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
         grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio-coloured-avatar")
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
@@ -1952,7 +1956,8 @@ class Forum(Module):
                     im_data = im_data.getvalue()
                     if grayscale_support:
                         gray_data = cStringIO.StringIO()
-                        ImageEnhance.Brightness(image_obj.convert("L")).enhance(2.0).save(gray_data, target_format)
+                        ImageEnhance.Brightness(image_obj.convert("L")).enhance(1.5).save(gray_data, target_format)
+                        #image_obj.convert("L").save(gray_data, target_format)
                         gray_data = gray_data.getvalue()
                     try:
                         old_uri.append(settings.get("avatar"))

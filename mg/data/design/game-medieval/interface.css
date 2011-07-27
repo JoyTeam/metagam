@@ -53,9 +53,9 @@ a:hover, a:active { color: #461e82 }
 .panel-header-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
 .panel-header-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
 .panel-header-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
-.panel-header-horizontal-margin { height: 25px }
+.panel-header-horizontal-margin { height: 26px }
 .panel-header-horizontal-9 { height: 24px }
-.panel-header-horizontal-10 { padding: 0 17px 0 18px; color: #ffffff }
+.panel-header-horizontal-10 { padding: 0 27px 0 28px; color: #ffffff }
 
 /* TIPS */
 .x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr { background-image: url(tip-sprite.gif) }
