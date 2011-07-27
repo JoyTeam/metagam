@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-27 16:11+0400\n"
+"POT-Creation-Date: 2011-07-27 17:14+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4279,7 +4279,7 @@ msgstr ""
 
 #: mg/constructor/interface.py:955 mg/constructor/interface.py:1247
 #, python-format
-msgid "Panel: %s"
+msgid "Button block: %s"
 msgstr ""
 
 #: mg/constructor/interface.py:964 mg/constructor/interface.py:1252

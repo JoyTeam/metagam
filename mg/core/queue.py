@@ -239,7 +239,7 @@ class QueueRunner(Module):
         try:
             res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (tag, str(task.get("hook"))), {
                 "args": json.dumps(task.get("args")),
-            })
+            }, timeout=3600)
             if res.get("error"):
                 self.warning("%s.%s(%s) - %s", tag, task.get("hook"), task.get("args"), res)
             success = True

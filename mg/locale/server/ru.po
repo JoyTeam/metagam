@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-27 16:11+0400\n"
-"PO-Revision-Date: 2011-07-27 16:12+0300\n"
+"POT-Creation-Date: 2011-07-27 17:13+0400\n"
+"PO-Revision-Date: 2011-07-27 18:03+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4581,8 +4581,8 @@ msgstr "н/д"
 #: mg/constructor/interface.py:955
 #: mg/constructor/interface.py:1247
 #, python-format
-msgid "Panel: %s"
-msgstr "Панель: %s"
+msgid "Button block: %s"
+msgstr "Блок кнопок: %s"
 
 #: mg/constructor/interface.py:964
 #: mg/constructor/interface.py:1252
@@ -6667,6 +6667,8 @@ msgstr "Отказ в модерации"
 msgid "Registration failed"
 msgstr "Регистрация не удалась"
 
+#~ msgid "Panel: %s"
+#~ msgstr "Панель: %s"
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
 #~ msgid "{2:d}{3} {1}, {0}"

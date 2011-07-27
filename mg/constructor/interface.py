@@ -952,7 +952,7 @@ class Interface(ConstructorModule):
             for block in panel["blocks"]:
                 if block["type"] == "buttons":
                     show_block = {
-                        "title": self._("Panel: %s") % htmlescape(block.get("title")),
+                        "title": self._("Button block: %s") % htmlescape(block.get("title")),
                         "buttons": []
                     }
                     vars["blocks"].append(show_block)
@@ -1244,7 +1244,7 @@ class Interface(ConstructorModule):
         for panel in self.panels():
             for blk in panel["blocks"]:
                 if blk["type"] == "buttons":
-                    blocks.append((blk["id"], self._("Panel: %s") % (blk.get("title") or blk["id"])))
+                    blocks.append((blk["id"], self._("Button block: %s") % (blk.get("title") or blk["id"])))
         lst = self.objlist(DBPopupList, query_index="all")
         lst.load()
         popups = []
