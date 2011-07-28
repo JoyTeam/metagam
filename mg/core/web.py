@@ -331,7 +331,10 @@ class WebDaemon(object):
                     e = e.encode("utf-8")
                 return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
             except Exception as e:
-                self.logger.exception(e)
+                try:
+                    self.logger.exception(e)
+                except Exception as e2:
+                    print "Unhandled exception: %s" % e2
                 try:
                     if getattr(request, "upload_handler", None):
                         return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))

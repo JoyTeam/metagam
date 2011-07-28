@@ -79,7 +79,10 @@ class MoneyAdmin(Module):
 
     def admin_money_currencies(self):
         req = self.req()
-        project = self.app().project
+        try:
+            project = self.app().project
+        except AttributeError:
+            project = None
         with self.lock(["currencies"]):
             currencies = {}
             self.call("currencies.list", currencies)
@@ -133,6 +136,7 @@ class MoneyAdmin(Module):
                         elif currencies.get(code):
                             errors["code"] = self._("This currency name is busy")
                         info = {}
+                        currencies[req.args] = info
                     else:
                         info = currencies.get(req.args)
                     if not name_local:
@@ -155,7 +159,7 @@ class MoneyAdmin(Module):
                         if m:
                             sym = m.group(1)
                             errors["name_plural"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
-                        elif (project.get("moderation") or project.get("published")) and name_plural != info.get("name_plural") and info.get("real"):
+                        elif project and (project.get("moderation") or project.get("published")) and name_plural != info.get("name_plural") and info.get("real"):
                             errors["name_plural"] = self._("You can't change real money currency name after game publication")
                     if lang != "en":
                         if not name_en:
@@ -171,13 +175,13 @@ class MoneyAdmin(Module):
                                 if m:
                                     sym = m.group(1)
                                     errors["name_en"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
-                                elif (project.get("moderation") or project.get("published")) and name_en != info.get("name_en") and info.get("real"):
+                                elif project and (project.get("moderation") or project.get("published")) and name_en != info.get("name_en") and info.get("real"):
                                     errors["name_en"] = self._("You can't change real money currency name after game publication")
                     if precision < 0:
                         errors["precision"] = self._("Precision can't be negative")
                     elif precision > 4:
                         errors["precision"] = self._("Maximal supported precision is 4")
-                    elif (project.get("moderation") or project.get("published")) and info.get("real") and precision != info.get("precision"):
+                    elif project and (project.get("moderation") or project.get("published")) and info.get("real") and precision != info.get("precision"):
                         errors["precision"] = self._("You can't change real money currency precision after game publication")
                     if real:
                         for c, i in currencies.iteritems():
@@ -187,18 +191,18 @@ class MoneyAdmin(Module):
                         if precision != 0 and precision != 2:
                             errors["precision"] = self._("Real money currency must have precision 0 or 2 (limitation of the payment system)")
                     else:
-                        if (project.get("moderation") or project.get("published")) and info.get("real"):
+                        if project and (project.get("moderation") or project.get("published")) and info.get("real"):
                             errormsg = self._("You can't remove real money currency after game publication")
                     if real:
                         if not real_price:
                             errors["real_price"] = self._("You must supply real money price for this currency")
                         elif not re_valid_real_price.match(real_price):
                             errors["real_price"] = self._("Invalid number format")
-                        elif (project.get("moderation") or project.get("published")) and float(real_price) != float(info.get("real_price")):
+                        elif project and (project.get("moderation") or project.get("published")) and float(real_price) != float(info.get("real_price")):
                             errors["real_price"] = self._("You can't change real money exchange rate after game publication")
                         if real_currency not in ["RUB", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
                             errors["v_real_currency"] = self._("Select real money currency")
-                        elif (project.get("moderation") or project.get("published")) and real_currency != info.get("real_currency"):
+                        elif project and (project.get("moderation") or project.get("published")) and real_currency != info.get("real_currency"):
                             errors["v_real_currency"] = self._("You can't change real money exchange rate after game publication")
                         if "real_price" not in errors and "v_real_currency" not in errors:
                             rate = self.stock_rate(real_currency)
@@ -256,9 +260,6 @@ class MoneyAdmin(Module):
                     if len(errors) or errormsg:
                         self.call("web.response_json_html", {"success": False, "errors": errors, "errormsg": errormsg})
                     # storing
-                    lst = self.conf("money.currencies", {})
-                    if req.args == "new":
-                        lst[code] = info
                     info["name_local"] = name_local
                     info["name_plural"] = name_plural
                     if lang == "en":
@@ -282,7 +283,7 @@ class MoneyAdmin(Module):
                         old_images.append(info.get("icon"))
                         info["icon"] = self.call("cluster.static_upload", "currencies", icon_ext, icon_content_type, icon_data)
                     config = self.app().config_updater()
-                    config.set("money.currencies", lst)
+                    config.set("money.currencies", currencies)
                     config.store()
                     for uri in old_images:
                         if uri:
@@ -590,9 +591,17 @@ class TwoPay(Module):
         self.rhook("2pay.register", self.register_2pay)
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
+        self.rhook("money.donate-message", self.donate_message)
+
+    def donate_message(self, currency):
+        project_id = intz(self.conf("2pay.project-id"))
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                return '<a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self._("Open payment interface"))
 
     def not_enough_funds(self, currency):
-        project_id = self.conf("2pay.project-id")
+        project_id = intz(self.conf("2pay.project-id"))
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
@@ -1045,20 +1054,11 @@ class Money(Module):
         return self._("Not enough %s") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency))
 
     def currencies_list(self, currencies):
-        if self.app().tag == "main":
-            currencies["MM$"] = {
-                "code": "MM$",
-                "format": "%.2f",
-                "description": "MM$",
-                "real": True,
-                "name_plural": self._("MMO Constructor Dollars"),
-            }
-        else:
-            lst = self.conf("money.currencies")
-            if lst:
-                for code, info in lst.iteritems():
-                    info["code"] = code
-                    currencies[code] = info
+        lst = self.conf("money.currencies")
+        if lst:
+            for code, info in lst.iteritems():
+                info["code"] = code
+                currencies[code] = info
 
     def real_currency(self):
         try:

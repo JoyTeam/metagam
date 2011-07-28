@@ -19,6 +19,7 @@ img { vertical-align: middle; border: none }
 .socio-message { margin-top: 20px }
 #socio-counters { padding-top: 50px; text-align: right }
 .socio-message-top { border: solid 1px #dd6419; margin: 20px 0 30px 0; padding: 20px; background-color: #ececec }
+.socio-content-menu { padding: 10px 0 20px 0 }
 
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
@@ -133,3 +134,4 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 /* PAID SERVICES */
 .service-inactive { color: #c00000 }
 .service-active { color: #008000 }
+

@@ -4,7 +4,6 @@ class PaidServices(Module):
     def register(self):
         Module.register(self)
         self.rhook("paidservices.available", self.srv_available)
-        self.rhook("paidservices.socio-available", self.srv_available)
         self.rhook("ext-socio.paid-services", self.ext_paid_services, priv="logged")
         self.rhook("ext-socio.paid-service", self.ext_paid_service, priv="logged")
         # coloured avatar
@@ -21,34 +20,27 @@ class PaidServices(Module):
         self.rhook("money-description.socio-premium-pack", self.money_description_premium_pack)
 
     def srv_available(self, services):
-        services.append("socio-coloured-avatar")
-        services.append("socio-signature-images")
-        services.append("socio-signature-smiles")
-        services.append("socio-premium-pack")
+        services.append({"id": "socio-coloured-avatar", "type": "socio"})
+        services.append({"id": "socio-signature-images", "type": "socio"})
+        services.append({"id": "socio-signature-smiles", "type": "socio"})
+        services.append({"id": "socio-premium-pack", "type": "socio"})
 
     def ext_paid_services(self):
         req = self.req()
         vars = {
             "title": self._("Forum paid services"),
-            "menu_left": [
-                {
-                    "html": self._("Forum paid services"),
-                    "lst": True
-                }
-            ]
         }
         service_ids = []
-        self.call("paidservices.socio-available", service_ids)
+        self.call("paidservices.available", service_ids)
+        servier_ids = [srv for srv in service_ids if srv.get("type") == "socio"]
         self.call("paidservices.render", service_ids, vars)
         self.call("socio.response_template", "paid-services.html", vars)
 
     def ext_paid_service(self):
         req = self.req()
-        service_ids = []
-        self.call("paidservices.socio-available", service_ids)
-        if req.args not in service_ids:
-            self.call("web.not_found")
         pinfo = self.call("paidservices.%s" % req.args)
+        if pinfo.get("type") != "socio":
+            self.call("web.not_found")
         vars = {
             "title": pinfo["name"],
             "menu_left": [
@@ -76,7 +68,10 @@ class PaidServices(Module):
             if not form.errors:
                 o = offers[offer]
                 if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
-                    self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), "/forum/settings", pinfo["success_message"]), vars)
+                    if pinfo.get("success_url"):
+                        self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["success_url"], pinfo["success_message"]), vars)
+                    else:
+                        self.call("web.redirect", "/socio/paid-services")
                 else:
                     form.error("offer", self.call("money.not-enough-funds", o["currency"]))
         for i in xrange(0, len(offers)):
@@ -105,10 +100,11 @@ class PaidServices(Module):
             "description": self._("Basically your avatar can be monochrome only. If you want coloured avatar you can use this option"),
             "subscription": True,
             "type": "socio",
-            "default_period": 365 * 86400,
-            "default_price": self.call("money.format-price", 150 / cinfo.get("real_roubles", 1), cur),
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
+            "success_url": "/forum/settings",
             "success_message": self._("Now upload your new coloured avatar"),
         }
 
@@ -132,10 +128,11 @@ class PaidServices(Module):
             "description": self._("Basically your can not use images in your forum signature. If you want to use images you can use this option"),
             "subscription": True,
             "type": "socio",
-            "default_period": 365 * 86400,
-            "default_price": self.call("money.format-price", 100 / cinfo.get("real_roubles", 1), cur),
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
+            "success_url": "/forum/settings",
             "success_message": self._("Now include some images to your signature"),
         }
 
@@ -159,10 +156,11 @@ class PaidServices(Module):
             "description": self._("Basically your can not use smiles in your forum signature. If you want to use smiles you can use this option"),
             "subscription": True,
             "type": "socio",
-            "default_period": 365 * 86400,
-            "default_price": self.call("money.format-price", 100 / cinfo.get("real_roubles", 1), cur),
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
+            "success_url": "/forum/settings",
             "success_message": self._("Now include some smiles to your signature"),
         }
 
@@ -191,5 +189,6 @@ class PaidServices(Module):
             "default_price": self.call("money.format-price", 300 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
+            "success_url": "/forum/settings",
             "success_message": self._("Now you can use all premium forum settings"),
         }

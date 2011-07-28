@@ -5,7 +5,9 @@ from uuid import uuid4
 
 re_cmd = re.compile(r'^(enable|disable)/(\S+)$')
 re_cmd_edit = re.compile(r'^(\S+)/(\d+|new)$')
+re_cmd_del = re.compile(r'^(\S+)/del/(\d+)$')
 re_cmd_pack = re.compile(r'^pack/(\S+)$')
+re_del = re.compile(r'del/(\S+)')
 
 class PaidServices(ConstructorModule):
     def register(self):
@@ -20,6 +22,9 @@ class PaidServices(ConstructorModule):
         self.rhook("ext-paidservices.prolong-enable", self.paidservices_prolong, priv="logged")
         self.rhook("ext-paidservices.prolong-disable", self.paidservices_prolong, priv="logged")
         self.rhook("paidservices.available", self.available, priority=100)
+        for srv_id in self.conf("paidservices.manual-packs", []):
+            self.rhook("paidservices.%s" % srv_id["id"], curry(self.manual_info, srv_id["id"]))
+            self.rhook("money-description.%s" % srv_id["id"], curry(self.manual_money_description, srv_id["id"]))
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -72,12 +77,13 @@ class PaidServices(ConstructorModule):
 
     def render(self, service_ids, vars):
         req = self.req()
+        character = self.character(req.user())
         services = []
         for srv_id in service_ids:
-            srv = self.call("paidservices.%s" % srv_id)
+            srv = self.call("paidservices.%s" % srv_id["id"])
             if not srv:
                 continue
-            if not self.conf("paidservices.enabled-%s" % srv_id, srv["default_enabled"]):
+            if not self.conf("paidservices.enabled-%s" % srv_id["id"], srv.get("default_enabled")):
                 continue
             if srv.get("subscription"):
                 mod = self.call("modifiers.kind", req.user(), srv["id"])
@@ -107,12 +113,37 @@ class PaidServices(ConstructorModule):
                     srv["status"] = self._("service///inactive")
                     srv["status_cls"] = "service-inactive"
             srv["offers"] = self.offers(srv)
+            if not srv["offers"]:
+                continue
             services.append(srv)
         vars["services"] = services
         vars["PaidService"] = self._("Paid service")
         vars["Description"] = self._("Description")
         vars["Price"] = self._("Price")
         vars["Status"] = self._("Status")
+        vars["YourMoney"] = self._("Your money")
+        money = character.money
+        currencies = {}
+        self.call("currencies.list", currencies)
+        accounts = []
+        for currency, currency_info in currencies.iteritems():
+            account = money.account(currency)
+            if account:
+                balance = nn(account.get("balance"))
+                locked = nn(account.get("locked"))
+            else:
+                balance = 0
+                locked = 0
+            html = self.call("money.price-html", balance, currency)
+            donate = self.call("money.donate-message", currency)
+            if donate:
+                html = '%s (%s)' % (html, donate)
+            accounts.append({
+                "html": html,
+            })
+        if accounts:
+            accounts[-1]["lst"] = True
+            vars["money"] = accounts
 
     def prolong(self, target_type, target, kind, period, price, currency, user=None, **kwargs):
         if user is None:
@@ -125,7 +156,6 @@ class PaidServices(ConstructorModule):
             self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
             pack = kwargs.get("pack")
             if pack:
-                print "pack: %s" % pack
                 kwargs["auto_prolong"] = False
                 del kwargs["pack"]
                 for kind in pack:
@@ -195,20 +225,26 @@ class PaidServices(ConstructorModule):
             "subscription": True,
             "type": srv.get("type"),
             "pack": srv.get("pack"),
+            "manual": True,
+        }
+
+    def manual_money_description(self, srv_id):
+        srv = self.conf("paidservices.info-%s" % srv_id, {})
+        return {
+            "args": ["period", "period_a"],
+            "name": self._("paidservice///{name} for {{period}}").format(name=srv.get("name")),
         }
 
     def ext_paid_service(self):
         req = self.req()
-        service_ids = []
-        self.call("paidservices.available", service_ids)
-        if req.args not in service_ids:
-            self.call("web.not_found")
         pinfo = self.call("paidservices.%s" % req.args)
+        if not pinfo:
+            self.call("web.not_found")
         vars = {
             "menu_left": [
                 {
-                    "href": "/socio/paid-services",
-                    "html": self._("Forum paid services"),
+                    "href": "/paidservices",
+                    "html": self._("Paid services"),
                 }, {
                     "html": pinfo["name"],
                     "lst": True
@@ -230,14 +266,14 @@ class PaidServices(ConstructorModule):
             if not form.errors:
                 o = offers[offer]
                 if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
-                    self.call("game.response_internal", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), "/paidservices", pinfo["success_message"]), vars)
+                    self.call("web.redirect", "/paidservices")
                 else:
                     form.error("offer", self.call("money.not-enough-funds", o["currency"]))
         for i in xrange(0, len(offers)):
             o = offers[i]
             form.radio(o["html"], "offer", i, offer)
         form.submit(None, None, btn_title)
-        self.call("game.response_internal", form.html(), vars)
+        self.call("game.internal_form", form, vars)
 
 class PaidServicesAdmin(ConstructorModule):
     def register(self):
@@ -251,16 +287,18 @@ class PaidServicesAdmin(ConstructorModule):
         perms.append({"id": "paidservices.editor", "name": self._("Paid services editor")})
 
     def menu_economy_index(self, menu):
-        menu.append({"id": "paidservices/editor", "text": self._("Paid services"), "icon": "/st-mg/menu/coin.gif", "leaf": True})
+        req = self.req()
+        if req.has_access("paidservices.editor"):
+            menu.append({"id": "paidservices/editor", "text": self._("Paid services"), "icon": "/st-mg/menu/coin.gif", "leaf": True})
 
     def headmenu_paidservices_editor(self, args):
         m = re_cmd_pack.match(args)
         if m:
             uuid = m.group(1)
             if uuid == "new":
-                return [self._("New pack"), "paidservices/editor"]
+                return [self._("New packet"), "paidservices/editor"]
             else:
-                return [self._("Pack properties"), "paidservices/editor"]
+                return [self._("Packet properties"), "paidservices/editor"]
         elif args:
             m = re_cmd_edit.match(args)
             if m:
@@ -282,7 +320,17 @@ class PaidServicesAdmin(ConstructorModule):
         m = re_cmd_pack.match(req.args)
         if m:
             uuid = m.group(1)
-            # loading available pack components
+            m = re_del.match(uuid)
+            if m:
+                uuid = m.group(1)
+                packs = self.conf("paidservices.manual-packs", [])
+                packs = [p for p in packs if p["id"] != uuid]
+                config = self.app().config_updater()
+                config.set("paidservices.manual-packs", packs)
+                config.delete("paidservices.info-%s" % uuid)
+                config.store()
+                self.call("admin.redirect", "paidservices/editor")
+            # loading available packet components
             service_ids = []
             self.call("paidservices.available", service_ids)
             valid_components = set()
@@ -293,16 +341,15 @@ class PaidServicesAdmin(ConstructorModule):
             else:
                 components = []
                 for srv_id in service_ids:
-                    srv = self.call("paidservices.%s" % srv_id)
+                    srv = self.call("paidservices.%s" % srv_id["id"])
                     if not srv or srv.get("pack") or not srv.get("subscription"):
                         continue
-                    valid_components.add(srv_id)
-                    components.append({"id": srv_id, "name": srv["name"], "type": srv["type"]})
+                    valid_components.add(srv_id["id"])
+                    components.append({"id": srv_id["id"], "name": srv["name"], "type": srv["type"]})
             if req.ok():
                 # processing form
                 errors = {}
                 tp = None
-                pack = []
                 packs = self.conf("paidservices.manual-packs", [])
                 name = req.param("name").strip()
                 if not name:
@@ -310,11 +357,11 @@ class PaidServicesAdmin(ConstructorModule):
                 description = req.param("description").strip()
                 if not description:
                     errors["description"] = self._("This field is mandatory")
-                for c in components:
-                    if req.param("cmp-%s" % c["id"]):
-                        if tp is None:
-                            tp = c.get("type")
-                        pack.append(c["id"])
+                if uuid == "new":
+                    for c in components:
+                        if req.param("cmp-%s" % c["id"]):
+                            if tp is None:
+                                tp = c.get("type")
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing
@@ -322,11 +369,16 @@ class PaidServicesAdmin(ConstructorModule):
                 if uuid == "new":
                     config.set("paidservices.manual-packs", packs)
                     uuid = uuid4().hex
-                    packs.append(uuid)
+                    pack = []
+                    for c in components:
+                        if req.param("cmp-%s" % c["id"]):
+                            pack.append(c["id"])
                     info = {
+                        "id": uuid,
                         "pack": pack,
                         "type": tp
                     }
+                    packs.append(info)
                 info["name"] = name
                 info["description"] = description
                 config.set("paidservices.info-%s" % uuid, info)
@@ -339,8 +391,8 @@ class PaidServicesAdmin(ConstructorModule):
                 name = info.get("name")
                 description = info.get("description")
             fields = [
-                {"name": "name", "value": name, "label": self._("Pack name")},
-                {"name": "description", "value": description, "label": self._("Pack description")},
+                {"name": "name", "value": name, "label": self._("Packet name")},
+                {"name": "description", "value": description, "label": self._("Packet description")},
             ]
             if uuid == "new":
                 first = True
@@ -358,6 +410,17 @@ class PaidServicesAdmin(ConstructorModule):
             config.store()
             self.call("admin.redirect", "paidservices/editor")
         elif req.args:
+            m = re_cmd_del.match(req.args)
+            if m:
+                srv_id, offer_id = m.group(1, 2)
+                offer_id = int(offer_id)
+                offers = self.call("paidservices.offers", srv_id)
+                if offers and offer_id < len(offers):
+                    del offers[offer_id:offer_id + 1]
+                    config = self.app().config_updater()
+                    config.set("paidservices.offers-%s" % srv_id, offers)
+                    config.store()
+                self.call("admin.redirect", "paidservices/editor/%s" % srv_id)
             m = re_cmd_edit.match(req.args)
             if m:
                 srv_id, offer_id = m.group(1, 2)
@@ -370,37 +433,56 @@ class PaidServicesAdmin(ConstructorModule):
             self.call("admin.redirect", "paidservices/editor")
         service_ids = []
         self.call("paidservices.available", service_ids)
+        service_info = {}
+        for srv_id in service_ids:
+            srv = self.call("paidservices.%s" % srv_id["id"])
+            if not srv:
+                continue
+            service_info[srv_id["id"]] = srv
         rows = []
         for srv_id in service_ids:
-            srv = self.call("paidservices.%s" % srv_id)
+            srv = service_info.get(srv_id["id"])
             if not srv:
                 continue
             # current status
-            status = self.conf("paidservices.enabled-%s" % srv_id, srv["default_enabled"])
+            status = self.conf("paidservices.enabled-%s" % srv_id["id"], srv.get("default_enabled"))
             if status:
-                status = '%s<br /><hook:admin.link href="paidservices/editor/disable/%s" title="%s" />' % (self._("service///enabled"), srv_id, self._("disable"))
+                status = '%s<br /><hook:admin.link href="paidservices/editor/disable/%s" title="%s" />' % (self._("service///enabled"), srv_id["id"], self._("disable"))
             else:
-                status = '%s<br /><hook:admin.link href="paidservices/editor/enable/%s" title="%s" />' % (self._("service///disabled"), srv_id, self._("enable"))
+                status = '%s<br /><hook:admin.link href="paidservices/editor/enable/%s" title="%s" />' % (self._("service///disabled"), srv_id["id"], self._("enable"))
             # offers list
             offers = self.call("paidservices.offers", srv)
             offers = ['<div>%s</div>' % off["html"] for off in offers]
-            offers.append('<hook:admin.link href="paidservices/editor/%s" title="%s" />' % (srv_id, self._("edit")))
+            offers.append('<hook:admin.link href="paidservices/editor/%s" title="%s" />' % (srv_id["id"], self._("edit")))
             offers = ''.join(offers)
+            name = '<strong>%s</strong>' % srv.get("name")
+            if srv.get("pack"):
+                name += '<ul>'
+                for s in srv.get("pack"):
+                    s_info = service_info.get(s)
+                    name += '<li>%s</li>' % (s_info.get("name") if s_info else self._("Unknown service %s") % s)
+                name += '</ul>'
+            if srv.get("manual"):
+                control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" /><br /><hook:admin.link href="paidservices/editor/pack/del/%s" title="%s" confirm="%s" />' % (srv_id["id"], self._("edit"), srv_id["id"], self._("delete"), self._("Are you sure want to delete this packet?"))
+            else:
+                control = None
             rows.append([
-                srv.get("name"),
+                name,
                 status,
                 offers,
+                control,
             ])
         vars = {
             "tables": [
                 {
                     "links": [
-                        {"hook": "paidservices/editor/pack/new", "text": self._("New paid services pack"), "lst": True},
+                        {"hook": "paidservices/editor/pack/new", "text": self._("New paid services packet"), "lst": True},
                     ],
                     "header": [
                         self._("Paid service"),
                         self._("Status"),
                         self._("Prices"),
+                        self._("Control"),
                     ],
                     "rows": rows,
                 }

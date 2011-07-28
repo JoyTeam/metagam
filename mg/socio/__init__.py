@@ -1947,7 +1947,7 @@ class Forum(Module):
                                 break
                             else:
                                 if paid_images_support and not self.call("modifiers.kind", user_uuid, "socio-signature-images"):
-                                    form.error("signature", self._('To use images in the signature <a href="/socio/paid-service/socio-signature-images" target="_blank">subscribe to the corresponding service</a>'))
+                                    form.error("signature", self._('To use images in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
                                     break
                                 else:
                                     for img_id in images:
@@ -1990,7 +1990,7 @@ class Forum(Module):
                         form.error("signature", self._("Signature can't contain smiles"))
                     else:
                         if paid_smiles_support and not self.call("modifiers.kind", user_uuid, "socio-signature-smiles"):
-                            form.error("signature", self._('To use smiles in the signature <a href="/socio/paid-service/socio-signature-smiles" target="_blank">subscribe to the corresponding service</a>'))
+                            form.error("signature", self._('To use smiles in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
                         else:
                             max_s = self.conf("socio.signature-max-smiles", 3)
                             if smiles_present > max_s:

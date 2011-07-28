@@ -958,7 +958,7 @@ class Auth(ConstructorModule):
                 form.input(field["name"], field["code"], values.get(field["code"]))
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
         form.submit(None, None, self._("Create a character"))
-        self.call("game.form", form, vars)
+        self.call("game.external_form", form, vars)
 
     def login_before_activate(self, redirect):
         self.call("game.error", self._('You are not logged in. <a href="/">Please login</a> and retry activation'))

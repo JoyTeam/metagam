@@ -46,7 +46,7 @@ class ProjectDashboard(Module):
                 })
 
     def menu_root_index(self, menu):
-        menu.append({"id": "constructor.index", "text": self._("Constructor"), "order": -100})
+        menu.append({"id": "constructor.index", "text": self._("Constructor"), "order": 10})
 
     def headmenu_project_dashboard(self, args):
         app = self.app().inst.appfactory.get_by_tag(args)
@@ -62,10 +62,10 @@ class ProjectDashboard(Module):
     def menu_constructor_index(self, menu):
         req = self.req()
         if req.has_access("constructor.settings"):
-            menu.append({"id": "constructor/settings", "text": self._("Global settings"), "leaf": True})
+            menu.append({"id": "constructor/settings", "text": self._("Global settings"), "leaf": True, "order": 10})
         if req.has_access("constructor.projects"):
-            menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True})
-            menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True})
+            menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True, "order": 20})
+            menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True, "order": 30})
 
     def ext_project_find(self):
         req = self.req()

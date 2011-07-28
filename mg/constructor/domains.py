@@ -438,7 +438,7 @@ class DomainsAdmin(Module):
         objclasses["Domain"] = (Domain, DomainList)
 
     def menu_root_index(self, menu):
-        menu.append({"id": "domains.index", "text": self._("Domains")})
+        menu.append({"id": "domains.index", "text": self._("Domains"), "order": 15})
 
     def menu_domains_index(self, menu):
         req = self.req()

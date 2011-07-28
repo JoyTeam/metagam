@@ -1,3 +1,4 @@
+[%if money%]<div class="socio-content-menu">[%YourMoney%]: [%foreach ent in money%][%ent.html%][%unless ent.lst +%] &middot; [%+end%][%end%]</div>[%end%]
 <table class="log-table">
 	<tr class="log-header">
 		<td class="log-td">[%PaidService%]</td>
@@ -7,10 +8,13 @@
 [%foreach srv in services%]
 	<tr>
 		<td class="log-td log-nowrap">
-			<a href="[%srv.href%]">[%srv.name%]</a>
+			<a href="/socio/paid-service/[%srv.id%]">[%srv.name%]</a>
 			[%foreach offer in srv.offers%]<div>[%offer.html%]</div>[%end%]
 		</td>
-		<td class="log-td log-nowrap[%if srv.status_cls +%] [%+ srv.status_cls%][%end%]">[%srv.status%]</td>
+		<td class="log-td log-nowrap">
+			[%if srv.status_cls%]<span class="[%srv.status_cls%]">[%end%][%srv.status%][%if srv.status_cls%]</span>[%end%]
+			[%if srv.auto_prolong%]<div>[%srv.auto_prolong.status%] &mdash; <a href="[%srv.auto_prolong.href%]?redirect=/socio/paid-services">[%srv.auto_prolong.cmd%]</a></div>[%end%]
+		</td>
 		<td class="log-td">[%srv.description%]</td>
 	</tr>
 [%end%]

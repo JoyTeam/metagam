@@ -80,9 +80,11 @@ class Interface(ConstructorModule):
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
         self.rhook("game.response_internal", self.game_response_internal)
+        self.rhook("game.info", self.game_info)
         self.rhook("game.error", self.game_error)
-        self.rhook("game.form", self.game_form)
-        self.rhook("auth.form", self.game_form)
+        self.rhook("game.internal_form", self.game_internal_form)
+        self.rhook("game.external_form", self.game_external_form)
+        self.rhook("auth.form", self.game_external_form)
         self.rhook("auth.messages", self.auth_messages)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
@@ -212,13 +214,22 @@ class Interface(ConstructorModule):
         }
         self.call("game.response_internal", "error.html", vars, msg)
 
+    def game_info(self, msg):
+        vars = {
+            "title": self._("Info"),
+        }
+        self.call("game.response_external", "info.html", vars, msg)
+
     def game_error(self, msg):
         vars = {
             "title": self._("Error"),
         }
         self.call("game.response_external", "error.html", vars, msg)
 
-    def game_form(self, form, vars):
+    def game_internal_form(self, form, vars):
+        self.call("game.response_internal", "form.html", vars, form.html(vars))
+
+    def game_external_form(self, form, vars):
         self.call("game.response_external", "form.html", vars, form.html(vars))
 
     def main_frame_form(self, form, vars):

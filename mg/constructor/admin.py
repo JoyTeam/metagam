@@ -26,7 +26,7 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
-            "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.constructor.dashboard.ProjectDashboard",
+            "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.core.money.MoneyAdmin", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin",
             "mg.core.money.TwoPay", "mg.core.money.TwoPayAdmin",
             "mg.constructor.design.SocioInterface",
@@ -38,7 +38,9 @@ class Constructor(Module):
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
             "mg.core.emails.EmailSender",
             "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
-            "mg.core.modifiers.ModifiersManager",
+            "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
+            "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
+            "mg.socio.paidservices.PaidServices",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -66,6 +68,25 @@ class Constructor(Module):
         self.rhook("telegrams.params", self.telegrams_params)
         self.rhook("email.sender", self.email_sender)
         self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
+        self.rhook("currencies.list", self.currencies_list, priority=100)
+
+    def currencies_list(self, currencies):
+        currencies["MM$"] = {
+            "real": True,
+            "code": "MM$",
+            "description": self._("This currency is sold for real money"),
+            "format": "%.2f",
+            "image": "/st-mg/constructor/money/mmdollar-image.png",
+            "icon": "/st-mg/constructor/money/mmdollar-icon.png",
+            "real_price": 30.0,
+            "real_currency": "RUB",
+            "real_roubles": 30.0,
+            "precision": 2,
+            "name_plural": self._("MMO Constructor Dollars"),
+            "name_local": self._("MMO Constructor Dollar/MMO Constructor Dollars"),
+            "name_en": "MMO Constructor Dollar/MMO Constructor Dollars",
+        }
+        raise Hooks.Return()
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -171,6 +192,8 @@ class Constructor(Module):
             if req.hook == "settings":
                 pass
             else:
+                if req.user():
+                    topmenu.append({"href": "/socio/paid-services", "image": "/st/constructor/cabinet/premium.png", "html": self._("Premium")})
                 topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
                     topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
