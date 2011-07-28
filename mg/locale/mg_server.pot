@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-28 17:58+0400\n"
+"POT-Creation-Date: 2011-07-28 18:18+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,7 +43,8 @@ msgstr ""
 msgid "Forum moderation"
 msgstr ""
 
-#: mg/socio/__init__.py:221 mg/constructor/admin.py:18
+#: mg/socio/__init__.py:221 mg/socio/paidservices.py:35
+#: mg/socio/paidservices.py:58 mg/constructor/admin.py:18
 #: mg/constructor/admin.py:178 mg/constructor/admin.py:212
 #: mg/constructor/admin.py:220 mg/constructor/project.py:79
 msgid "Forum"
@@ -754,96 +755,97 @@ msgstr ""
 msgid "Smile editor"
 msgstr ""
 
-#: mg/socio/paidservices.py:31 mg/socio/paidservices.py:49
+#: mg/socio/paidservices.py:31 mg/socio/paidservices.py:37
+#: mg/socio/paidservices.py:61
 msgid "Forum paid services"
 msgstr ""
 
-#: mg/socio/paidservices.py:60 mg/socio/limits.py:181
+#: mg/socio/paidservices.py:72 mg/socio/limits.py:181
 #: mg/constructor/paidservices.py:258
 msgid "Prolong"
 msgstr ""
 
-#: mg/socio/paidservices.py:62 mg/constructor/paidservices.py:260
+#: mg/socio/paidservices.py:74 mg/constructor/paidservices.py:260
 msgid "Buy"
 msgstr ""
 
-#: mg/socio/paidservices.py:67 mg/constructor/paidservices.py:265
+#: mg/socio/paidservices.py:79 mg/constructor/paidservices.py:265
 msgid "Select an offer"
 msgstr ""
 
-#: mg/socio/paidservices.py:72
+#: mg/socio/paidservices.py:84
 msgid "Subscription successful."
 msgstr ""
 
-#: mg/socio/paidservices.py:88
+#: mg/socio/paidservices.py:100
 msgid "Coloured avatar for {period}"
 msgstr ""
 
-#: mg/socio/paidservices.py:99
+#: mg/socio/paidservices.py:111
 msgid "Coloured avatar on the forum"
 msgstr ""
 
-#: mg/socio/paidservices.py:100
+#: mg/socio/paidservices.py:112
 msgid ""
 "Basically your avatar can be monochrome only. If you want coloured avatar "
 "you can use this option"
 msgstr ""
 
-#: mg/socio/paidservices.py:108
+#: mg/socio/paidservices.py:120
 msgid "Now upload your new coloured avatar"
 msgstr ""
 
-#: mg/socio/paidservices.py:116
+#: mg/socio/paidservices.py:128
 msgid "Images in the signature for {period}"
 msgstr ""
 
-#: mg/socio/paidservices.py:127
+#: mg/socio/paidservices.py:139
 msgid "Images in the signature"
 msgstr ""
 
-#: mg/socio/paidservices.py:128
+#: mg/socio/paidservices.py:140
 msgid ""
 "Basically your can not use images in your forum signature. If you want to "
 "use images you can use this option"
 msgstr ""
 
-#: mg/socio/paidservices.py:136
+#: mg/socio/paidservices.py:148
 msgid "Now include some images to your signature"
 msgstr ""
 
-#: mg/socio/paidservices.py:144
+#: mg/socio/paidservices.py:156
 msgid "Smiles in the signature for {period}"
 msgstr ""
 
-#: mg/socio/paidservices.py:155
+#: mg/socio/paidservices.py:167
 msgid "Smiles in the signature"
 msgstr ""
 
-#: mg/socio/paidservices.py:156
+#: mg/socio/paidservices.py:168
 msgid ""
 "Basically your can not use smiles in your forum signature. If you want to "
 "use smiles you can use this option"
 msgstr ""
 
-#: mg/socio/paidservices.py:164
+#: mg/socio/paidservices.py:176
 msgid "Now include some smiles to your signature"
 msgstr ""
 
-#: mg/socio/paidservices.py:172
+#: mg/socio/paidservices.py:184
 msgid "Socio premium pack for {period}"
 msgstr ""
 
-#: mg/socio/paidservices.py:183
+#: mg/socio/paidservices.py:195
 msgid "Premium pack on the forum"
 msgstr ""
 
-#: mg/socio/paidservices.py:185
+#: mg/socio/paidservices.py:197
 msgid ""
 "This option allows you to use coloured avatar and to include images and "
 "smiles to your signature on the forum"
 msgstr ""
 
-#: mg/socio/paidservices.py:193
+#: mg/socio/paidservices.py:205
 msgid "Now you can use all premium forum settings"
 msgstr ""
 

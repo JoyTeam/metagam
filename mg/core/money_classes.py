@@ -38,7 +38,7 @@ class Account(CassandraObject):
         self.set("balance", currency_info["format"] % (self.balance() - amount))
 
     def debit(self, amount, currency_info):
-        if self.available() - amount < self.low_limit():
+        if self.available() - amount < self.low_limit() - 1e-6:
             return False
         self.force_debit(amount, currency_info)
         return True
@@ -55,7 +55,7 @@ class Account(CassandraObject):
         self.set("locked", currency_info["format"] % val)
 
     def lock(self, amount, currency_info):
-        if self.available() - amount < self.low_limit():
+        if self.available() - amount < self.low_limit() - 1e-6:
             return False
         self.force_lock(amount, currency_info)
         return True

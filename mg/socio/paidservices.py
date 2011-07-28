@@ -29,6 +29,15 @@ class PaidServices(Module):
         req = self.req()
         vars = {
             "title": self._("Forum paid services"),
+            "menu_left": [
+                {
+                    "href": "/forum",
+                    "html": self._("Forum"),
+                }, {
+                    "html": self._("Forum paid services"),
+                    "lst": True
+                }
+            ]
         }
         service_ids = []
         self.call("paidservices.available", service_ids)
@@ -45,6 +54,9 @@ class PaidServices(Module):
             "title": pinfo["name"],
             "menu_left": [
                 {
+                    "href": "/forum",
+                    "html": self._("Forum"),
+                }, {
                     "href": "/socio/paid-services",
                     "html": self._("Forum paid services"),
                 }, {
