@@ -165,7 +165,7 @@ class Queue(Module):
 
     def queue_generate(self):
         sched = self.call("queue.schedule", empty=True)
-        self.call("all.schedule", sched)
+        self.call("queue-gen.schedule", sched)
         self.debug("generated schedule for the project %s: %s", sched.uuid, sched.data["entries"])
         sched.store()
         self.call("cluster.query_director", "/schedule/update/%s" % sched.uuid)
@@ -222,10 +222,8 @@ class QueueRunner(Module):
                         else:
                             self.error("Missing cls: %s" % task.data)
                             task.remove()
-                    else:
-                        Tasklet.sleep(5)
                 else:
-                    Tasklet.sleep(1)
+                    Tasklet.sleep(3)
             except Exception as e:
                 logging.getLogger("mg.core.queue.Queue").exception(e)
 

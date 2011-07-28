@@ -1061,10 +1061,14 @@ class Money(Module):
                     currencies[code] = info
 
     def real_currency(self):
-        for code, cur in self.currencies().iteritems():
-            if cur.get("real"):
-                return code
-        return None
+        try:
+            return self._real_currency
+        except AttributeError:
+            self._real_currency = None
+            for code, cur in self.currencies().iteritems():
+                if cur.get("real"):
+                    self._real_currency = code
+            return self._real_currency
 
     def money_description_admin_give(self):
         return {

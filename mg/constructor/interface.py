@@ -575,7 +575,7 @@ class Interface(ConstructorModule):
                 "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
-                "width": 10,
+                "width": 90,
             })
             blocks.append({
                 "id": uuid4().hex,

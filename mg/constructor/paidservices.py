@@ -1,9 +1,11 @@
 from mg.constructor import *
 from mg.core.money_classes import *
 import re
+from uuid import uuid4
 
 re_cmd = re.compile(r'^(enable|disable)/(\S+)$')
 re_cmd_edit = re.compile(r'^(\S+)/(\d+|new)$')
+re_cmd_pack = re.compile(r'^pack/(\S+)$')
 
 class PaidServices(ConstructorModule):
     def register(self):
@@ -14,8 +16,10 @@ class PaidServices(ConstructorModule):
         self.rhook("paidservices.render", self.render)
         self.rhook("modifiers.destroyed", self.modifiers_destroyed)
         self.rhook("ext-paidservices.index", self.paidservices_index, priv="logged")
+        self.rhook("ext-paidservices.paid-service", self.ext_paid_service, priv="logged")
         self.rhook("ext-paidservices.prolong-enable", self.paidservices_prolong, priv="logged")
         self.rhook("ext-paidservices.prolong-disable", self.paidservices_prolong, priv="logged")
+        self.rhook("paidservices.available", self.available, priority=100)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -36,11 +40,12 @@ class PaidServices(ConstructorModule):
         offers = self.conf("paidservices.offers-%s" % srv["id"])
         if offers is None:
             offers = []
-            offers.append({
-                "price": srv["default_price"],
-                "currency": srv["default_currency"],
-                "period": srv.get("default_period"),
-            })
+            if srv.get("default_price"):
+                offers.append({
+                    "price": srv["default_price"],
+                    "currency": srv["default_currency"],
+                    "period": srv.get("default_period"),
+                })
             config = self.app().config_updater()
             config.set("paidservices.offers-%s" % srv["id"], offers)
             config.store()
@@ -117,7 +122,22 @@ class PaidServices(ConstructorModule):
             money = MemberMoney(self.app(), user)
             if not money.debit(price, currency, kind, period=self.call("l10n.literal_interval", period), period_a=self.call("l10n.literal_interval_a", period)):
                 return False
-            self.call("modifiers.prolong", "user", user, kind, 1, period, **kwargs)
+            self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
+            pack = kwargs.get("pack")
+            if pack:
+                print "pack: %s" % pack
+                kwargs["auto_prolong"] = False
+                del kwargs["pack"]
+                for kind in pack:
+                    # disabling auto_prolong for all dependant kinds
+                    mod = self.call("modifiers.kind", target, kind)
+                    if mod:
+                        for m in mod["mods"]:
+                            if m.get("auto_prolong"):
+                                m.set("auto_prolong", False)
+                                m.store()
+                    # prolonging given kind
+                    self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
             return True
 
     def modifiers_destroyed(self, mod):
@@ -129,10 +149,28 @@ class PaidServices(ConstructorModule):
         if mod.get("target_type") != "user":
             return
         user = mod.get("target")
-        for offer in self.offers(srv):
+        # searching the closes match to old period
+        best_offer = None
+        offers = self.offers(srv)
+        # searching for exact period match
+        for offer in offers:
             if offer.get("period") == mod.get("period"):
-                self.call("paidservices.prolong", "user", user, mod.get("kind"), offer.get("period"), offer.get("price"), offer.get("currency"), user=user, auto_prolong=True)
+                best_offer = offer
                 break
+        # searching for the greatest period less than previous one
+        if not best_offer:
+            for offer in offers:
+                if offer.get("period") < mod.get("period"):
+                    if best_offer is None or offer.get("period") > best_offer:
+                        best_offer = offer
+        # searching for the least period greater than previous one
+        if not best_offer:
+            for offer in offers:
+                if offer.get("period") > mod.get("period"):
+                    if best_offer is None or offer.get("period") < best_offer:
+                        best_offer = offer
+        if best_offer:
+            self.call("paidservices.prolong", "user", user, mod.get("kind"), best_offer.get("period"), best_offer.get("price"), best_offer.get("currency"), user=user, auto_prolong=True, pack=mod.get("pack"))
 
     def paidservices_prolong(self):
         req = self.req()
@@ -144,6 +182,62 @@ class PaidServices(ConstructorModule):
                     m.set("auto_prolong", auto_prolong)
                     m.store()
             self.call("web.redirect", req.param("redirect") or "/paidservices")
+
+    def available(self, services):
+        services.extend(self.conf("paidservices.manual-packs", []))
+
+    def manual_info(self, srv_id):
+        srv = self.conf("paidservices.info-%s" % srv_id, {})
+        return {
+            "id": srv_id,
+            "name": srv.get("name"),
+            "description": srv.get("description"),
+            "subscription": True,
+            "type": srv.get("type"),
+            "pack": srv.get("pack"),
+        }
+
+    def ext_paid_service(self):
+        req = self.req()
+        service_ids = []
+        self.call("paidservices.available", service_ids)
+        if req.args not in service_ids:
+            self.call("web.not_found")
+        pinfo = self.call("paidservices.%s" % req.args)
+        vars = {
+            "menu_left": [
+                {
+                    "href": "/socio/paid-services",
+                    "html": self._("Forum paid services"),
+                }, {
+                    "html": pinfo["name"],
+                    "lst": True
+                }
+            ]
+        }
+        form = self.call("web.form")
+        offer = intz(req.param("offer"))
+        mod = self.call("modifiers.kind", req.user(), pinfo["id"])
+        if mod:
+            btn_title = self._("Prolong")
+        else:
+            btn_title = self._("Buy")
+        form.add_message_top(pinfo["description"])
+        offers = self.call("paidservices.offers", pinfo["id"])
+        if req.ok():
+            if offer < 0 or offer >= len(offers):
+                form.error("offer", self._("Select an offer"))
+            if not form.errors:
+                o = offers[offer]
+                if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
+                    self.call("game.response_internal", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), "/paidservices", pinfo["success_message"]), vars)
+                else:
+                    form.error("offer", self.call("money.not-enough-funds", o["currency"]))
+        for i in xrange(0, len(offers)):
+            o = offers[i]
+            form.radio(o["html"], "offer", i, offer)
+        form.submit(None, None, btn_title)
+        self.call("game.response_internal", form.html(), vars)
 
 class PaidServicesAdmin(ConstructorModule):
     def register(self):
@@ -160,7 +254,14 @@ class PaidServicesAdmin(ConstructorModule):
         menu.append({"id": "paidservices/editor", "text": self._("Paid services"), "icon": "/st-mg/menu/coin.gif", "leaf": True})
 
     def headmenu_paidservices_editor(self, args):
-        if args:
+        m = re_cmd_pack.match(args)
+        if m:
+            uuid = m.group(1)
+            if uuid == "new":
+                return [self._("New pack"), "paidservices/editor"]
+            else:
+                return [self._("Pack properties"), "paidservices/editor"]
+        elif args:
             m = re_cmd_edit.match(args)
             if m:
                 srv_id, offer_id = m.group(1, 2)
@@ -173,10 +274,82 @@ class PaidServicesAdmin(ConstructorModule):
                 return [srv["name"], "paidservices/editor"]
             else:
                 return [htmlescape(args), "paidservices/editor"]
-        return self._("Paid services")
+        else:
+            return self._("Paid services")
 
     def admin_paidservices_editor(self):
         req = self.req()
+        m = re_cmd_pack.match(req.args)
+        if m:
+            uuid = m.group(1)
+            # loading available pack components
+            service_ids = []
+            self.call("paidservices.available", service_ids)
+            valid_components = set()
+            if uuid != "new":
+                info = self.conf("paidservices.info-%s" % uuid)
+                if info is None:
+                    self.call("admin.redirect", "paidservices/editor")
+            else:
+                components = []
+                for srv_id in service_ids:
+                    srv = self.call("paidservices.%s" % srv_id)
+                    if not srv or srv.get("pack") or not srv.get("subscription"):
+                        continue
+                    valid_components.add(srv_id)
+                    components.append({"id": srv_id, "name": srv["name"], "type": srv["type"]})
+            if req.ok():
+                # processing form
+                errors = {}
+                tp = None
+                pack = []
+                packs = self.conf("paidservices.manual-packs", [])
+                name = req.param("name").strip()
+                if not name:
+                    errors["name"] = self._("This field is mandatory")
+                description = req.param("description").strip()
+                if not description:
+                    errors["description"] = self._("This field is mandatory")
+                for c in components:
+                    if req.param("cmp-%s" % c["id"]):
+                        if tp is None:
+                            tp = c.get("type")
+                        pack.append(c["id"])
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # storing
+                config = self.app().config_updater()
+                if uuid == "new":
+                    config.set("paidservices.manual-packs", packs)
+                    uuid = uuid4().hex
+                    packs.append(uuid)
+                    info = {
+                        "pack": pack,
+                        "type": tp
+                    }
+                info["name"] = name
+                info["description"] = description
+                config.set("paidservices.info-%s" % uuid, info)
+                config.store()
+                self.call("admin.redirect", "paidservices/editor")
+            elif uuid == "new":
+                name = ""
+                description = ""
+            else:
+                name = info.get("name")
+                description = info.get("description")
+            fields = [
+                {"name": "name", "value": name, "label": self._("Pack name")},
+                {"name": "description", "value": description, "label": self._("Pack description")},
+            ]
+            if uuid == "new":
+                first = True
+                for c in components:
+                    fields.append({"name": "cmp-%s" % c["id"], "label": c["name"], "type": "checkbox"})
+                    if first:
+                        first = False
+                        fields[-1]["desc"] = self._("Select paid services to include in the pack")
+            self.call("admin.form", fields=fields)
         m = re_cmd.match(req.args)
         if m:
             cmd, srv_id = m.group(1, 2)
@@ -221,6 +394,9 @@ class PaidServicesAdmin(ConstructorModule):
         vars = {
             "tables": [
                 {
+                    "links": [
+                        {"hook": "paidservices/editor/pack/new", "text": self._("New paid services pack"), "lst": True},
+                    ],
                     "header": [
                         self._("Paid service"),
                         self._("Status"),

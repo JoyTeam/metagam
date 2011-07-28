@@ -28,6 +28,7 @@ class DBModifier(CassandraObject):
     """
     _indexes = {
         "target": [["target"]],
+        "target-kind": [["target", "kind"]],
         "till": [[], "till"],
     }
 
@@ -74,7 +75,7 @@ class ModifiersDaemon(Daemon):
                 modifiers = self.objlist(DBAlienModifierList, query_index="till", query_finish=self.now())
                 modifiers.load(silent=True)
                 for mod in modifiers:
-                    self.call("queue.add", "modifiers.stop", {"mod": mod.uuid}, retry_on_fail=True, app_tag=mod.get("app"), app_cls=mod.get("cls", "metagam"))
+                    self.call("queue.add", "modifiers.stop", {"mod": mod.uuid}, retry_on_fail=True, app_tag=mod.get("app"), app_cls=mod.get("cls", "metagam"), unique="mod-%s" % mod.uuid)
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(3)
@@ -87,7 +88,7 @@ class Modifiers(Module):
         self.rhook("modifiers.prolong", self.mod_prolong)
         self.rhook("modifiers.list", self.mod_list)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("modifiers.cleanup", self.mod_cleanup)
         self.rhook("modifiers.stop", self.mod_stop)
 
@@ -117,6 +118,10 @@ class Modifiers(Module):
         try:
             modifier = self.obj(DBModifier, mod)
         except ObjectNotFoundException:
+            try:
+                self.main_app().obj(DBAlienModifier, mod).remove()
+            except ObjectNotFoundException:
+                pass
             pass
         else:
             modifier.remove()
@@ -146,11 +151,14 @@ class Modifiers(Module):
             mod = self.mod_kind(target, kind)
             if mod:
                 # Prolong
-                self.objlist(DBModifierList, query_index="target", query_equal=target).remove()
-                self._mod_add(target_type, target, kind, value, from_unixtime(unix_timestamp(mod["maxtill"]) + period), period=period, **kwargs)
+                till = from_unixtime(unix_timestamp(mod["maxtill"]) + period)
+                lst = self.objlist(DBModifierList, query_index="target-kind", query_equal='%s-%s' % (target, kind))
+                m = self._mod_add(target_type, target, kind, value, till, period=period, **kwargs)
+                lst.remove()
             else:
                 # Add new
-                self._mod_add(target_type, target, kind, value, self.now(period), period=period, **kwargs)
+                till = self.now(period)
+                m = self._mod_add(target_type, target, kind, value, till, period=period, **kwargs)
             # Invalidating cache
             try:
                 del self.req()._modifiers_cache[target]
@@ -178,14 +186,15 @@ class Modifiers(Module):
         mobj.set("cls", self.app().inst.cls)
         mobj.store()
         obj.store()
+        return obj
 
     def mod_list(self, target):
         cache = False
         try:
             req = self.req()
         except AttributeError:
-            pass
-        else:
+            req = None
+        if req:
             try:
                 modifiers_cache = req._modifiers_cache
             except AttributeError:
@@ -195,7 +204,6 @@ class Modifiers(Module):
                 return modifiers_cache[target]
             except KeyError:
                 pass
-            cache = True
         modifiers = {}
         lst = self.objlist(DBModifierList, query_index="target", query_equal=target)
         lst.load(silent=True)
@@ -224,7 +232,9 @@ class Modifiers(Module):
                     "mods": [ent],
                 }
                 modifiers[kind] = res
-        if cache:
+        for mod in modifiers.values():
+            mod["mods"].sort(cmp=lambda x, y: cmp(x.get("till"), y.get("till")))
+        if req:
             modifiers_cache[target] = modifiers
         return modifiers
 

@@ -48,7 +48,7 @@ class Constructor(Module):
         self.rhook("ext-debug.validate", self.debug_validate, priv="public")
         self.rhook("ext-constructor.newgame", self.constructor_newgame, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("core.appfactory", self.appfactory)
         self.rhook("core.webdaemon", self.webdaemon)

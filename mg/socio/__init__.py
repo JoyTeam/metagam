@@ -25,7 +25,7 @@ re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
-re_images = re.compile(r'\[img:[0-9a-f]+\]')
+re_images = re.compile(r'\[img:([0-9a-f]+)\]')
 re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|code|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
 re_color = re.compile(r'^#[0-9a-f]{6}$')
 re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
@@ -613,6 +613,8 @@ class Socio(Module):
         m = re_img.match(html)
         if m:
             before, id, after = m.group(1, 2, 3)
+            if options.get("no_images"):
+                return self.format_text(before, options) + self.format_text(after, options)
             try:
                 image = self.obj(SocioImage, id)
             except ObjectNotFoundException:
@@ -641,12 +643,17 @@ class Socio(Module):
         # smiles
         smiles = self.call("smiles.dict")
         tokens = self.call("smiles.split", html)
+        smiles_cnt = 0
+        max_smiles = options.get("max_smiles")
         if tokens and len(tokens) > 1:
             result = u""
             for token in tokens:
                 info = smiles.get(token)
                 if info:
-                    result += '<img src="%s" alt="" class="socio-smile" />' % info["image"]
+                    if not options.get("no_smiles"):
+                        smiles_cnt += 1
+                        if max_smiles is None or smiles_cnt <= max_smiles:
+                            result += '<img src="%s" alt="" class="socio-smile" />' % info["image"]
                 else:
                     result += self.format_text(token, options)
             return result
@@ -829,7 +836,7 @@ class Forum(Module):
         self.rhook("ext-forum.subscribed", self.ext_subscribed, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("hook-forum.news", self.news)
         self.rhook("forum.may_read", self.may_read)
         self.rhook("forum.may_write", self.may_write)
@@ -1165,11 +1172,21 @@ class Forum(Module):
             grayscale_support = self.call("paidservices.socio-coloured-avatar")
             if grayscale_support:
                 grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
+            paid_images_support = self.call("paidservices.socio-signature-images")
+            if paid_images_support:
+                paid_images_support = self.conf("paidservices.enabled-socio-signature-images", paid_images_support["default_enabled"])
+            paid_smiles_support = self.call("paidservices.socio-signature-smiles")
+            if paid_smiles_support:
+                paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
                 grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio-coloured-avatar")
-                signatures[obj.uuid] = obj.get("signature_html")
+                signatures[obj.uuid] = self.call("socio.format_text", obj.get("signature"), {
+                    "no_images": not self.conf("socio.signature-images", True) or (paid_images_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-images")),
+                    "no_smiles": not self.conf("socio.signature-smiles", True) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-smiles")),
+                    "max_smiles": self.conf("socio.signature-max-smiles", 3),
+                })
                 avatars[obj.uuid] = obj.get("avatar_gray" if grayscale else "avatar")
                 statuses[obj.uuid] = htmlescape(obj.get("status"))
         for ent in list:
@@ -1900,6 +1917,12 @@ class Forum(Module):
         if grayscale_support:
             grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
         grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio-coloured-avatar")
+        paid_images_support = self.call("paidservices.socio-signature-images")
+        if paid_images_support:
+            paid_images_support = self.conf("paidservices.enabled-socio-signature-images", paid_images_support["default_enabled"])
+        paid_smiles_support = self.call("paidservices.socio-signature-smiles")
+        if paid_smiles_support:
+            paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1909,11 +1932,69 @@ class Forum(Module):
             if len(lines) > 4:
                 form.error("signature", self._("Signature can't contain more than 4 lines"))
             else:
+                smiles = self.call("smiles.dict")
+                total_w = 0
+                total_h = 0
+                smiles_present = 0
                 for line in lines:
                     if len(line) > 80:
                         form.error("signature", self._("Signature line couldn't be longer than 80 symbols"))
-                    elif re_images.match(line):
-                        form.error("signature", self._("Signature couldn't contain images"))
+                    else:
+                        images = re_images.findall(line)
+                        if images:
+                            if not self.conf("socio.signature-images", True):
+                                form.error("signature", self._("Signature can't contain images"))
+                                break
+                            else:
+                                if paid_images_support and not self.call("modifiers.kind", user_uuid, "socio-signature-images"):
+                                    form.error("signature", self._('To use images in the signature <a href="/socio/paid-service/socio-signature-images" target="_blank">subscribe to the corresponding service</a>'))
+                                    break
+                                else:
+                                    for img_id in images:
+                                        try:
+                                            img = self.obj(SocioImage, img_id)
+                                        except ObjectNotFoundException:
+                                            form.error("signature", self._("Invalid image: [img:%s]") % img_id)
+                                            break
+                                        img_uri = img.get("thumbnail") or img.get("image")
+                                        try:
+                                            img_data = self.download(img_uri)
+                                        except DownloadError:
+                                            form.error("signature", self._("Error downloading [img:%s]") % img_id)
+                                            break
+                                        try:
+                                            img_obj = Image.open(cStringIO.StringIO(img_data))
+                                            if img_obj.load() is None:
+                                                form.error("signature", self._("Image [img:%s] format error") % img_id)
+                                                break
+                                        except IOError:
+                                            form.error("signature", self._("Image [img:%s] IO error") % img_id)
+                                            break
+                                        except OverflowError:
+                                            form.error("signature", self._("Image [img:%s] overflow error") % img_id)
+                                            break
+                                        img_w, img_h = img_obj.size
+                                        total_w += img_w
+                                        total_h += img_h
+                        tokens = self.call("smiles.split", line)
+                        if tokens and len(tokens) > 1:
+                            for token in tokens:
+                                if smiles.get(token):
+                                    smiles_present += 1
+                max_w = self.conf("socio.signature-images-width", 800)
+                max_h = self.conf("socio.signature-images-height", 60)
+                if total_w > max_w or total_h > max_h:
+                    form.error("signature", self._("Total dimensions of images in your signature are {img_w}x{img_h}. Max permitted are {max_w}x{max_h}. Resize your images to meet this condition").format(img_w=total_w, img_h=total_h, max_w=max_w, max_h=max_h))
+                if smiles_present > 0:
+                    if not self.conf("socio.signature-smiles", False):
+                        form.error("signature", self._("Signature can't contain smiles"))
+                    else:
+                        if paid_smiles_support and not self.call("modifiers.kind", user_uuid, "socio-signature-smiles"):
+                            form.error("signature", self._('To use smiles in the signature <a href="/socio/paid-service/socio-signature-smiles" target="_blank">subscribe to the corresponding service</a>'))
+                        else:
+                            max_s = self.conf("socio.signature-max-smiles", 3)
+                            if smiles_present > max_s:
+                                form.error("signature", self._("Signature can contain at most {max} {smiles}").format(max=max_s, smiles=self.call("l10n.literal_value", max_s, self._("smile/smiles"))))
             image_obj = None
             if avatar:
                 try:
@@ -1978,7 +2059,7 @@ class Forum(Module):
                     except StaticUploadError as e:
                         form.error("avatar", unicode(e))
                 settings.set("signature", signature)
-                settings.set("signature_html", self.call("socio.format_text", signature))
+                settings.delkey("signature_html")
                 notify_any = False
                 for cat in categories:
                     settings.set("notify_%s" % cat["id"], True if notify[cat["id"]] else False)
@@ -2519,15 +2600,19 @@ class SocioAdmin(Module):
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
         self.rhook("socio-admin.message-silence", self.message_silence)
+        self.rhook("ext-admin-socio.config", self.admin_socio_config, priv="socio.config")
 
     def message_silence(self):
         return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))
 
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
+        perms.append({"id": "socio.config", "name": self._("Socio configuration")})
 
     def menu_forum_index(self, menu):
         req = self.req()
+        if req.has_access("socio.config"):
+            menu.append({"id": "socio/config", "text": self._("Configuration"), "leaf": True, "order": 9})
         if req.has_access("socio.messages"):
             menu.append({"id": "socio/messages", "text": self._("Interface messages"), "leaf": True, "order": 10})
 
@@ -2548,3 +2633,55 @@ class SocioAdmin(Module):
         ]
         self.call("admin.form", fields=fields)
 
+    def admin_socio_config(self):
+        req = self.req()
+        if req.ok():
+            errors = {}
+            config = self.app().config_updater()
+            config.set("socio.signature-images", True if req.param("signature_images") else False)
+            config.set("socio.signature-smiles", True if req.param("signature_smiles") else False)
+            width = req.param("width")
+            if not valid_nonnegative_int(width):
+                errors["width"] = self._("Invalid number format")
+            else:
+                width = int(width)
+                if width < 300:
+                    errors["width"] = self._("Minimal value is %d") % 300
+                else:
+                    config.set("socio.signature-images-width", width)
+            height = req.param("height")
+            if not valid_nonnegative_int(height):
+                errors["height"] = self._("Invalid number format")
+            else:
+                height = int(height)
+                if height < 16:
+                    errors["height"] = self._("Minimal value is %d") % 16
+                else:
+                    config.set("socio.signature-images-height", height)
+            maxs = req.param("maxs")
+            if not valid_nonnegative_int(maxs):
+                errors["maxs"] = self._("Invalid number format")
+            else:
+                maxs = int(maxs)
+                if maxs < 1:
+                    errors["maxs"] = self._("Minimal value is %d") % 1
+                else:
+                    config.set("socio.signature-max-smiles", maxs)
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            signature_images = self.conf("socio.signature-images", True)
+            width = self.conf("socio.signature-images-width", 800)
+            height = self.conf("socio.signature-images-height", 60)
+            signature_smiles = self.conf("socio.signature-smiles", False)
+            maxs = self.conf("socio.signature-max-smiles", 3)
+        fields = [
+            {"type": "checkbox", "name": "signature_images", "label": self._("Allow images in signatures"), "checked": signature_images},
+            {"name": "width", "label": self._("Limit for sum width of all images in the signature"), "value": width},
+            {"name": "height", "label": self._("Limit for sum height of all images in the signature"), "value": height},
+            {"type": "checkbox", "name": "signature_smiles", "label": self._("Allow smiles in signatures"), "checked": signature_smiles},
+            {"name": "maxs", "label": self._("Maximal number of smiles in the signature"), "value": maxs},
+        ]
+        self.call("admin.form", fields=fields)

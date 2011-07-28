@@ -82,7 +82,7 @@ class LimitsAdmin(Module):
     def register(self):
         Module.register(self)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-limits.cleanup", self.cleanup)
         self.rhook("permissions.chat", self.permissions_chat)
         self.rhook("permissions.forum", self.permissions_forum)

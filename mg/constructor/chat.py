@@ -101,7 +101,7 @@ class Chat(ConstructorModule):
         self.rhook("locations.character_before_set", self.location_before_set)
         self.rhook("locations.character_after_set", self.location_after_set)
         self.rhook("interface.settings-form", self.settings_form)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("chat.cleanup", self.cleanup)
         self.rhook("characters.name-purposes", self.name_purposes)
         self.rhook("characters.name-purpose-chat", self.name_purpose_chat)

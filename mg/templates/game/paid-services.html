@@ -7,7 +7,7 @@
 [%foreach srv in services%]
 	<tr>
 		<td class="log-td log-nowrap">
-			<a href="[%srv.href%]"[%if srv.target +%] target="[%srv.target%]"[%end%]>[%srv.name%]</a>
+			<a href="/paidservices/paid-service/[%srv.id%]" target="[%srv.target%]">[%srv.name%]</a>
 			[%foreach offer in srv.offers%]<div>[%offer.html%]</div>[%end%]
 		</td>
 		<td class="log-td log-nowrap">

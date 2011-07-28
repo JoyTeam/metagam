@@ -89,7 +89,7 @@ area { border: none }
 
 /* INTERNAL */
 #page-internal-html { height: 100%; padding: 0; margin: 0 }
-#page-internal-body { padding: 10px; margin: 0; background: #000000; color: #ffffff }
+#page-internal-body { padding: 10px; margin: 0; background: #ffffff; color: #000000 }
 .main-return { padding-bottom: 10px }
 
 /* PROGRESS BARS */
@@ -112,8 +112,8 @@ area { border: none }
 
 /* PANEL HEADERS */
 .panel-header-horizontal, .panel-header-horizontal-1, .panel-header-horizontal-2, .panel-header-horizontal-3, .panel-header-horizontal-4, .panel-header-horizontal-5, .panel-header-horizontal-6, .panel-header-horizontal-7, .panel-header-horizontal-8, .panel-header-horizontal-9 { height: 100% }
-.panel-header-horizontal-9 { width: 100% }
-.panel-header-horizontal-10 { text-align: center; font-weight: bold; color: #ffffff }
+.panel-header-horizontal-9 { width: 100%; height: 24px }
+.panel-header-horizontal-10 { text-align: center; font-weight: bold; color: #000000; padding: 0 15px 0 15px }
 .panel-header-horizontal-11 { width: 100%; overflow: hidden }
 .panel-header-horizontal-12 { font-size: 16px; white-space: nowrap }
 .block-location-name .panel-header-horizontal-10 { text-align: left }

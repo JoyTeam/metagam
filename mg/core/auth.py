@@ -282,7 +282,7 @@ class Interface(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("auth.cleanup", self.cleanup)
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users)
         self.rhook("ext-auth.register", self.ext_register, priv="public")
