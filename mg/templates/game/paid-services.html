@@ -1,3 +1,4 @@
+[%if money%]<div class="main-frame-content-menu">[%YourMoney%]: [%foreach ent in money%][%ent.html%][%unless ent.lst +%] &bull; [%+end%][%end%]</div>[%end%]
 <table class="log-table">
 	<tr class="log-header">
 		<td class="log-td">[%PaidService%]</td>

@@ -1297,14 +1297,14 @@ class Interface(ConstructorModule):
     def settings(self):
         req = self.req()
         form = self.call("web.form")
-        settings = self.obj(DBCharacterSettings, req.user(), silent=True)
+        character = self.character(req.user())
         if req.ok():
-            self.call("interface.settings-form", form, "validate", settings)
+            self.call("interface.settings-form", form, "validate", character.settings)
             if not form.errors:
-                self.call("interface.settings-form", form, "store", settings)
-                settings.store()
+                self.call("interface.settings-form", form, "store", character.settings)
+                character.settings.store()
                 self.call("web.redirect", "/location")
-        self.call("interface.settings-form", form, "render", settings)
+        self.call("interface.settings-form", form, "render", character.settings)
         self.call("main-frame.form", form, {})
 
     def gameinterface_popups(self):

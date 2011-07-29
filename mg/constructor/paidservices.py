@@ -266,7 +266,10 @@ class PaidServices(ConstructorModule):
             if not form.errors:
                 o = offers[offer]
                 if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
-                    self.call("web.redirect", "/paidservices")
+                    if pinfo.get("socio_success_url"):
+                        self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["socio_success_url"], pinfo["socio_success_message"]), vars)
+                    else:
+                        self.call("web.redirect", "/paidservices")
                 else:
                     form.error("offer", self.call("money.not-enough-funds", o["currency"]))
         for i in xrange(0, len(offers)):
@@ -320,16 +323,18 @@ class PaidServicesAdmin(ConstructorModule):
         m = re_cmd_pack.match(req.args)
         if m:
             uuid = m.group(1)
-            m = re_del.match(uuid)
-            if m:
-                uuid = m.group(1)
-                packs = self.conf("paidservices.manual-packs", [])
-                packs = [p for p in packs if p["id"] != uuid]
-                config = self.app().config_updater()
-                config.set("paidservices.manual-packs", packs)
-                config.delete("paidservices.info-%s" % uuid)
-                config.store()
-                self.call("admin.redirect", "paidservices/editor")
+            if False:
+                # We may not destroy the pack completely - money-descriptions must remain untouched
+                m = re_del.match(uuid)
+                if m:
+                    uuid = m.group(1)
+                    packs = self.conf("paidservices.manual-packs", [])
+                    packs = [p for p in packs if p["id"] != uuid]
+                    config = self.app().config_updater()
+                    config.set("paidservices.manual-packs", packs)
+                    config.delete("paidservices.info-%s" % uuid)
+                    config.store()
+                    self.call("admin.redirect", "paidservices/editor")
             # loading available packet components
             service_ids = []
             self.call("paidservices.available", service_ids)
@@ -463,7 +468,8 @@ class PaidServicesAdmin(ConstructorModule):
                     name += '<li>%s</li>' % (s_info.get("name") if s_info else self._("Unknown service %s") % s)
                 name += '</ul>'
             if srv.get("manual"):
-                control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" /><br /><hook:admin.link href="paidservices/editor/pack/del/%s" title="%s" confirm="%s" />' % (srv_id["id"], self._("edit"), srv_id["id"], self._("delete"), self._("Are you sure want to delete this packet?"))
+                #control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" /><br /><hook:admin.link href="paidservices/editor/pack/del/%s" title="%s" confirm="%s" />' % (srv_id["id"], self._("edit"), srv_id["id"], self._("delete"), self._("Are you sure want to delete this packet?"))
+                control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" />' % (srv_id["id"], self._("edit"))
             else:
                 control = None
             rows.append([

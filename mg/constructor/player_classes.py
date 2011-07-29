@@ -77,6 +77,23 @@ class DBCharacterOnlineList(CassandraObjectList):
         kwargs["cls"] = DBCharacterOnline
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DBCharacterSettings(CassandraObject):
+    _indexes = {
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterSettings-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBCharacterSettings._indexes
+
+class DBCharacterSettingsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharacterSettings-"
+        kwargs["cls"] = DBCharacterSettings
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 # Business logic objects
 
 class Character(Module):
@@ -251,6 +268,14 @@ class Character(Module):
         except AttributeError:
             self._money = MemberMoney(self.app(), self.uuid)
             return self._money
+
+    @property
+    def settings(self):
+        try:
+            return self._settings
+        except AttributeError:
+            self._settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
+            return self._settings
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

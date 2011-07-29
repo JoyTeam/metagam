@@ -14,6 +14,7 @@ re_valid_command = re.compile(r'^/(\S+)$')
 re_after_dash = re.compile(r'-.*')
 re_unjoin = re.compile(r'^unjoin/(\S+)$')
 re_character_name = re.compile(r'(<span class="char-name">.*?</span>)')
+re_color = re.compile(r'(#[0-9a-f]{6})')
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
@@ -107,6 +108,9 @@ class Chat(ConstructorModule):
         self.rhook("characters.name-purpose-chat", self.name_purpose_chat)
         self.rhook("characters.name-purpose-roster", self.name_purpose_roster)
         self.rhook("characters.name-fixup", self.name_fixup)
+        self.rhook("paidservices.available", self.paid_services_available)
+        self.rhook("paidservices.chat-colours", self.srv_chat_colours)
+        self.rhook("money-description.chat-colours", self.money_description_chat_colours)
 
     def name_purpose_chat(self):
         return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}
@@ -267,6 +271,8 @@ class Chat(ConstructorModule):
             config.set("chat.msg_you_entered_location", req.param("msg_you_entered_location"))
             config.set("chat.msg_location_messages", req.param("msg_location_messages"))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
+            # colors
+            config.set("chat.colors", re_color.findall(req.param("colors").lower()))
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -297,6 +303,7 @@ class Chat(ConstructorModule):
             msg_you_entered_location = self.msg_you_entered_location()
             msg_location_messages = self.msg_location_messages()
             auth_msg_channel = self.auth_msg_channel()
+            colors = "\n".join(self.chat_colors())
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
@@ -314,6 +321,7 @@ class Chat(ConstructorModule):
             {"name": "msg_left_location", "label": self._("Message about character left location"), "value": msg_left_location},
             {"name": "msg_you_entered_location", "label": self._("Message about your character entered location"), "value": msg_you_entered_location},
             {"name": "msg_location_messages", "label": self._("Message heading messages from new location"), "value": msg_location_messages},
+            {"name": "colors", "label": self._("Chat colours players are allowed to use (newline separated)"), "value": colors, "type": "textarea"},
         ]
         self.call("admin.form", fields=fields)
 
@@ -453,7 +461,17 @@ class Chat(ConstructorModule):
         # formatting html
         tokens = [{"text": text}]
         self.call("chat.parse", tokens)
-        html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens))
+        body_html = "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens)
+        color = author.settings.get("chat_color")
+        if color:
+            paid_colours_support = self.call("paidservices.chat-colours")
+            if paid_colours_support:
+                paid_colours_support = self.conf("paidservices.enabled-chat-colours", paid_colours_support["default_enabled"])
+            if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat-colours"):
+                color = None
+        if color:
+            body_html = '<span style="color: %s">%s</span>' % (color, body_html)
+        html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), body_html)
         # sending message
         self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author, manual=True, hl=True)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
@@ -933,16 +951,57 @@ class Chat(ConstructorModule):
         return channel
 
     def settings_form(self, form, action, settings):
+        req = self.req()
+        user_uuid = req.user()
         if action == "render":
-            form.checkbox(self._("Character went online/offline"), "chat_auth", settings.get("chat_auth", True), description=self._("System messages in the chat"))
-            form.checkbox(self._("Other characters' movement"), "chat_move", settings.get("chat_move", True))
+            form.checkbox(self._("Character went online/offline"), "chat_auth", req.param("chat_auth") if req.ok() else settings.get("chat_auth", True), description=self._("System messages in the chat"))
+            form.checkbox(self._("Other characters' movement"), "chat_move", req.param("chat_move") if req.ok() else settings.get("chat_move", True))
+            colors = []
+            colors.append({"value": "", "description": self._("Default")})
+            for col in self.chat_colors():
+                colors.append({"value": col, "description": col, "bgcolor": col})
+            if len(colors) > 1:
+                form.select(self._("Chat messages colour"), "chat_color", req.param("chat_color") if req.ok() else settings.get("chat_color", ""), colors)
+        elif action == "validate":
+            color = req.param("chat_color")
+            if color:
+                if color not in self.chat_colors():
+                    form.error("chat_color", self._("Select a valid colour"))
+                else:
+                    paid_colours_support = self.call("paidservices.chat-colours")
+                    if paid_colours_support:
+                        paid_colours_support = self.conf("paidservices.enabled-chat-colours", paid_colours_support["default_enabled"])
+                    if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat-colours"):
+                        form.error("chat_color", self._('To use colours in the chat <a href="/paidservices">subscribe to the corresponding service</a>'))
         elif action == "store":
             req = self.req()
             auth = True if req.param("chat_auth") else False
             move = True if req.param("chat_move") else False
             settings.set("chat_auth", auth)
             settings.set("chat_move", move)
+            settings.set("chat_color", req.param("chat_color") or None)
             self.call("stream.packet", ["id_%s" % req.session().uuid], "chat", "filters", auth=auth, move=move)
+
+    def chat_colors(self):
+        colors = self.conf("chat.colors")
+        if colors is None:
+            colors = [
+                '#000000',
+                '#806080',
+                '#800000',
+                '#006000',
+                '#000080',
+                '#806000',
+                '#006080',
+                '#800080',
+                '#c06000',
+                '#808000',
+                '#0060c0',
+                '#008080',
+                '#8000c0',
+                '#c00080',
+            ]
+        return colors
 
     def roster_info(self, character):
         try:
@@ -955,3 +1014,31 @@ class Chat(ConstructorModule):
             }
             return character._roster_info
 
+    def paid_services_available(self, services):
+        services.append({"id": "chat-colours", "type": "main"})
+
+    def money_description_chat_colours(self):
+        return {
+            "args": ["period", "period_a"],
+            "text": self._("Colours in the chat for {period}"),
+        }
+
+    def srv_chat_colours(self):
+        cur = self.call("money.real-currency")
+        if not cur:
+            return None
+        cinfo = self.call("money.currency-info", cur)
+        req = self.req()
+        return {
+            "id": "chat-colours",
+            "name": self._("Colours in the chat"),
+            "description": self._("Basically your can not use colours in the chat - all messages are the same colour. If you want to use arbitrary colours you can use this option"),
+            "subscription": True,
+            "type": "main",
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 100 / cinfo.get("real_roubles", 1), cur),
+            "default_currency": cur,
+            "default_enabled": True,
+            "main_success_url": "/settings",
+            "main_success_message": self._("Now select a colour for your messages"),
+        }

@@ -15,6 +15,9 @@ class PaidServices(Module):
         # signature smiles
         self.rhook("paidservices.socio-signature-smiles", self.srv_signature_smiles)
         self.rhook("money-description.socio-signature-smiles", self.money_description_signature_smiles)
+        # signature colours
+        self.rhook("paidservices.socio-signature-colours", self.srv_signature_colours)
+        self.rhook("money-description.socio-signature-colours", self.money_description_signature_colours)
         # premium pack
         self.rhook("paidservices.socio-premium-pack", self.srv_premium_pack)
         self.rhook("money-description.socio-premium-pack", self.money_description_premium_pack)
@@ -23,6 +26,7 @@ class PaidServices(Module):
         services.append({"id": "socio-coloured-avatar", "type": "socio"})
         services.append({"id": "socio-signature-images", "type": "socio"})
         services.append({"id": "socio-signature-smiles", "type": "socio"})
+        services.append({"id": "socio-signature-colours", "type": "socio"})
         services.append({"id": "socio-premium-pack", "type": "socio"})
 
     def ext_paid_services(self):
@@ -41,7 +45,7 @@ class PaidServices(Module):
         }
         service_ids = []
         self.call("paidservices.available", service_ids)
-        servier_ids = [srv for srv in service_ids if srv.get("type") == "socio"]
+        service_ids = [srv for srv in service_ids if srv.get("type") == "socio"]
         self.call("paidservices.render", service_ids, vars)
         self.call("socio.response_template", "paid-services.html", vars)
 
@@ -80,8 +84,8 @@ class PaidServices(Module):
             if not form.errors:
                 o = offers[offer]
                 if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
-                    if pinfo.get("success_url"):
-                        self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["success_url"], pinfo["success_message"]), vars)
+                    if pinfo.get("socio_success_url"):
+                        self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["socio_success_url"], pinfo["socio_success_message"]), vars)
                     else:
                         self.call("web.redirect", "/socio/paid-services")
                 else:
@@ -116,8 +120,8 @@ class PaidServices(Module):
             "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
-            "success_url": "/forum/settings",
-            "success_message": self._("Now upload your new coloured avatar"),
+            "socio_success_url": "/forum/settings",
+            "socio_success_message": self._("Now upload your new coloured avatar"),
         }
 
     # signature images
@@ -144,8 +148,8 @@ class PaidServices(Module):
             "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
-            "success_url": "/forum/settings",
-            "success_message": self._("Now include some images to your signature"),
+            "socio_success_url": "/forum/settings",
+            "socio_success_message": self._("Now include some images to your signature"),
         }
 
     # signature smiles
@@ -172,8 +176,36 @@ class PaidServices(Module):
             "default_price": self.call("money.format-price", 60 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
-            "success_url": "/forum/settings",
-            "success_message": self._("Now include some smiles to your signature"),
+            "socio_success_url": "/forum/settings",
+            "socio_success_message": self._("Now include some smiles to your signature"),
+        }
+
+    # signature colours
+
+    def money_description_signature_colours(self):
+        return {
+            "args": ["period", "period_a"],
+            "text": self._("Colours in the signature for {period}"),
+        }
+
+    def srv_signature_colours(self):
+        cur = self.call("money.real-currency")
+        if not cur:
+            return None
+        cinfo = self.call("money.currency-info", cur)
+        req = self.req()
+        return {
+            "id": "socio-signature-colours",
+            "name": self._("Colours in the signature"),
+            "description": self._("Basically your can not use colours in your forum signature. If you want to use colours you can use this option"),
+            "subscription": True,
+            "type": "socio",
+            "default_period": 30 * 86400,
+            "default_price": self.call("money.format-price", 10 / cinfo.get("real_roubles", 1), cur),
+            "default_currency": cur,
+            "default_enabled": True,
+            "socio_success_url": "/forum/settings",
+            "socio_success_message": self._("Now include some colours to your signature"),
         }
 
     # premium pack
@@ -194,13 +226,13 @@ class PaidServices(Module):
             "id": "socio-premium-pack",
             "name": self._("Premium pack on the forum"),
             "subscription": True,
-            "description": self._("This option allows you to use coloured avatar and to include images and smiles to your signature on the forum"),
-            "pack": ["socio-coloured-avatar", "socio-signature-smiles", "socio-signature-images"],
+            "description": self._("This option allows you to use coloured avatar and to include images, smiles and coloured text to your signature on the forum"),
+            "pack": ["socio-coloured-avatar", "socio-signature-smiles", "socio-signature-images", "socio-signature-colours"],
             "type": "socio",
             "default_period": 365 * 86400,
             "default_price": self.call("money.format-price", 300 / cinfo.get("real_roubles", 1), cur),
             "default_currency": cur,
             "default_enabled": True,
-            "success_url": "/forum/settings",
-            "success_message": self._("Now you can use all premium forum settings"),
+            "socio_success_url": "/forum/settings",
+            "socio_success_message": self._("Now you can use all premium forum settings"),
         }

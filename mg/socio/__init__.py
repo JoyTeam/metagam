@@ -28,6 +28,7 @@ re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
 re_images = re.compile(r'\[img:([0-9a-f]+)\]')
 re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|code|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
 re_color = re.compile(r'^#[0-9a-f]{6}$')
+re_color_present = re.compile(r'\[color')
 re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
 re_cut = re.compile(r'\s*\[cut\]')
 re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
@@ -590,7 +591,7 @@ class Socio(Module):
         if m:
             before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
             if tag == "color":
-                if re_color.match(arg):
+                if re_color.match(arg) and not options.get("no_colours"):
                     return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
             elif tag == "url":
                 if re_url.match(arg):
@@ -1178,13 +1179,18 @@ class Forum(Module):
             paid_smiles_support = self.call("paidservices.socio-signature-smiles")
             if paid_smiles_support:
                 paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
+            paid_colours_support = self.call("paidservices.socio-signature-colours")
+            if paid_colours_support:
+                paid_colours_support = self.conf("paidservices.enabled-socio-signature-colours", paid_colours_support["default_enabled"])
+            # loading settings
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
                 grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio-coloured-avatar")
                 signatures[obj.uuid] = self.call("socio.format_text", obj.get("signature"), {
                     "no_images": not self.conf("socio.signature-images", True) or (paid_images_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-images")),
-                    "no_smiles": not self.conf("socio.signature-smiles", True) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-smiles")),
+                    "no_smiles": not self.conf("socio.signature-smiles", False) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-smiles")),
+                    "no_colours": not self.conf("socio.signature-colours", True) or (paid_colours_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-colours")),
                     "max_smiles": self.conf("socio.signature-max-smiles", 3),
                 })
                 avatars[obj.uuid] = obj.get("avatar_gray" if grayscale else "avatar")
@@ -1923,6 +1929,9 @@ class Forum(Module):
         paid_smiles_support = self.call("paidservices.socio-signature-smiles")
         if paid_smiles_support:
             paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
+        paid_colours_support = self.call("paidservices.socio-signature-colours")
+        if paid_colours_support:
+            paid_colours_support = self.conf("paidservices.enabled-socio-signature-colours", paid_colours_support["default_enabled"])
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1936,6 +1945,7 @@ class Forum(Module):
                 total_w = 0
                 total_h = 0
                 smiles_present = 0
+                colours_present = False
                 for line in lines:
                     if len(line) > 80:
                         form.error("signature", self._("Signature line couldn't be longer than 80 symbols"))
@@ -1981,6 +1991,8 @@ class Forum(Module):
                             for token in tokens:
                                 if smiles.get(token):
                                     smiles_present += 1
+                        if re_color_present.search(line):
+                            colours_present = True
                 max_w = self.conf("socio.signature-images-width", 800)
                 max_h = self.conf("socio.signature-images-height", 60)
                 if total_w > max_w or total_h > max_h:
@@ -1995,6 +2007,12 @@ class Forum(Module):
                             max_s = self.conf("socio.signature-max-smiles", 3)
                             if smiles_present > max_s:
                                 form.error("signature", self._("Signature can contain at most {max} {smiles}").format(max=max_s, smiles=self.call("l10n.literal_value", max_s, self._("smile/smiles"))))
+                if colours_present:
+                    if not self.conf("socio.signature-colours", True):
+                        form.error("signature", self._("Signature can't contain colours"))
+                    else:
+                        if paid_colours_support and not self.call("modifiers.kind", user_uuid, "socio-signature-colours"):
+                            form.error("signature", self._('To use colours in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
             image_obj = None
             if avatar:
                 try:
@@ -2640,6 +2658,7 @@ class SocioAdmin(Module):
             config = self.app().config_updater()
             config.set("socio.signature-images", True if req.param("signature_images") else False)
             config.set("socio.signature-smiles", True if req.param("signature_smiles") else False)
+            config.set("socio.signature-colours", True if req.param("signature_colours") else False)
             width = req.param("width")
             if not valid_nonnegative_int(width):
                 errors["width"] = self._("Invalid number format")
@@ -2677,11 +2696,13 @@ class SocioAdmin(Module):
             height = self.conf("socio.signature-images-height", 60)
             signature_smiles = self.conf("socio.signature-smiles", False)
             maxs = self.conf("socio.signature-max-smiles", 3)
+            signature_colours = self.conf("socio.signature-colours", True)
         fields = [
             {"type": "checkbox", "name": "signature_images", "label": self._("Allow images in signatures"), "checked": signature_images},
             {"name": "width", "label": self._("Limit for sum width of all images in the signature"), "value": width},
             {"name": "height", "label": self._("Limit for sum height of all images in the signature"), "value": height},
             {"type": "checkbox", "name": "signature_smiles", "label": self._("Allow smiles in signatures"), "checked": signature_smiles},
             {"name": "maxs", "label": self._("Maximal number of smiles in the signature"), "value": maxs},
+            {"type": "checkbox", "name": "signature_colours", "label": self._("Allow colours in signatures"), "checked": signature_colours},
         ]
         self.call("admin.form", fields=fields)

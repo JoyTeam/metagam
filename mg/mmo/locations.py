@@ -1,6 +1,7 @@
 from mg import *
 from mg.constructor import *
 from mg.mmo.locations_classes import *
+from mg.constructor.quest_classes import *
 import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import re
@@ -215,11 +216,22 @@ class LocationsAdmin(ConstructorModule):
             errors = {}
             config = self.app().config_updater()
             start_location = req.param("v_start_location")
+            movement_delay = req.param("movement_delay")
             if start_location:
                 loc = self.location(start_location)
                 if not loc.valid():
                     errors["v_start_location"] = self._("Invalid starting location")
                 config.set("locations.startloc", start_location)
+            if not movement_delay:
+                errors["movement_delay"] = self._("This field is mandatory")
+            else:
+                try:
+                    config.set("locations.movement-delay", self.call("quest.parse", movement_delay))
+                except ParserError as e:
+                    html = self._(e.val)
+                    if e.exc:
+                        html += '<br />%s' % htmlescape(e.exc)
+                    errors["movement_delay"] = html
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
@@ -229,8 +241,15 @@ class LocationsAdmin(ConstructorModule):
         locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
         fields = [
             {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
+            {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("quest.help-icon-expressions")), "value": self.call("quest.unparse", self.location_delay_expression())},
         ]
         self.call("admin.form", fields=fields)
+
+    def location_delay_expression(self):
+        delay = self.conf("locations.movement-delay")
+        if delay is None:
+            delay = ['/', ['glob', 'base_delay'], ['+', 1, ['.', ['.', ['glob', 'char'], 'maxval'], 'fastmove']]]
+        return delay
 
     def progress_bars(self, bars):
         bars.append({"code": "location-movement", "description": self._("Delay when moving between locations")})
@@ -503,6 +522,9 @@ class Locations(ConstructorModule):
         self.rhook("hook-location.arrows", self.hook_arrows)
         self.rhook("hook-location.transitions", self.hook_transitions)
         self.rhook("hook-location.name", self.hook_name)
+        self.rhook("paidservices.available", self.paid_services_available)
+        self.rhook("paidservices.fast-movement", self.srv_fast_movement)
+        self.rhook("money-description.fast-movement", self.money_description_fast_movement)
 
     def get(self, character):
         try:
@@ -672,3 +694,30 @@ class Locations(ConstructorModule):
             name = location.name
             declension = None
         raise Hooks.Return('<span class="location-name%s">%s</span>' % (('-%s' % declension) if declension else "", name))
+
+    def paid_services_available(self, services):
+        services.append({"id": "fast-movement", "type": "main"})
+
+    def money_description_fast_movement(self):
+        return {
+            "args": ["period", "period_a"],
+            "text": self._("Fast movement across the locations for {period}"),
+        }
+
+    def srv_fast_movement(self):
+        cur = self.call("money.real-currency")
+        if not cur:
+            return None
+        cinfo = self.call("money.currency-info", cur)
+        req = self.req()
+        return {
+            "id": "fast-movement",
+            "name": self._("Fast movement across the locations"),
+            "description": self._("If you want to move across locations faster you may use this service"),
+            "subscription": True,
+            "type": "main",
+            "default_period": 5 * 86400,
+            "default_price": self.call("money.format-price", 30 / cinfo.get("real_roubles", 1), cur),
+            "default_currency": cur,
+            "default_enabled": True,
+        }

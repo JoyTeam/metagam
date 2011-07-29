@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor import *
+from mg.constructor.quest_classes import *
 import re
 
 re_find_tags = re.compile(r'{(NAME|NAME_CHAT|GENDER:[^}]+|LOCATION(?:|_G|_A|_W|_T|_F))}')
@@ -69,6 +70,9 @@ class QuestEngine(ConstructorModule):
     def register(self):
         ConstructorModule.register(self)
         self.rhook("quest.format_text", self.format_text)
+        self.rhook("quest.help-icon-expressions", self.help_icon_expressions)
+        self.rhook("quest.parse", self.parse)
+        self.rhook("quest.unparse", self.unparse)
 
     def format_text(self, text, **kwargs):
         tokens = []
@@ -134,3 +138,81 @@ class QuestEngine(ConstructorModule):
             return loc.name_f
         else:
             return loc.name
+
+    def help_icon_expressions(self):
+        return ''
+
+    @property
+    def parser_spec(self):
+        inst = self.app().inst
+        try:
+            return inst._parser_spec
+        except AttributeError:
+            inst._parser_spec = Parsing.Spec(sys.modules[__name__], skinny=False)
+            return inst._parser_spec
+
+    def parse(self, text):
+        parser = Parser(self.parser_spec)
+        try:
+            parser.scan(text)
+            # Tell the parser that the end of input has been reached.
+            try:
+                parser.eoi()
+            except Parsing.SyntaxError as e:
+                raise ParserError("Expression unexpectedly ended", exc)
+        except ParserResult as e:
+            return e.val
+
+    def priority(self, val):
+        tp = type(val)
+        if tp is not list:
+            prio = 100
+        elif val is None:
+            prio = 100
+        else:
+            cmd = val[0]
+            if cmd == 'glob':
+                prio = 100
+            elif cmd == '.':
+                prio = 4
+            elif cmd == '?':
+                prio = 3
+            elif cmd == '*' or cmd == '/':
+                prio = 2
+            elif cmd == '+' or cmd == '-':
+                prio = 1
+            else:
+                raise ParserError("Invalid cmd: '%s'" % cmd)
+        return prio
+
+    def wrap(self, val, parent):
+        val_priority = self.priority(val)
+        parent_priority = self.priority(parent)
+        if val_priority >= parent_priority:
+            return self.unparse(val)
+        else:
+            return '(%s)' % self.unparse(val)
+
+    def unparse(self, val):
+        tp = type(val)
+        if tp is list:
+            cmd = val[0]
+            if cmd == '+' or cmd == '-' or cmd == '*' or cmd == '/':
+                return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
+            elif cmd == '?':
+                return '%s ? %s : %s' % (self.wrap(val[1], val), self.wrap(val[2], val), self.wrap(val[3], val))
+            elif cmd == '.':
+                return '%s.%s' % (self.wrap(val[1], val), val[2])
+            elif cmd == 'glob':
+                return val[1]
+            else:
+                raise ParserError("Invalid cmd: '%s'" % cmd)
+        elif tp is str or tp is unicode:
+            if '"' in val:
+                return "'%s'" % val
+            else:
+                return '"%s"' % val
+        elif val is None:
+            return "none"
+        else:
+            return str(val)
