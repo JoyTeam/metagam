@@ -69,6 +69,14 @@ class Constructor(Module):
         self.rhook("email.sender", self.email_sender)
         self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
         self.rhook("currencies.list", self.currencies_list, priority=100)
+        self.rhook("2pay.payment-args", self.payment_args)
+
+    def payment_args(self, args, options):
+        req = self.req()
+        if req.user():
+            user = self.obj(User, req.user())
+            args["v1"] = user.get("name")
+            args["email"] = user.get("email")
 
     def currencies_list(self, currencies):
         currencies["MM$"] = {
