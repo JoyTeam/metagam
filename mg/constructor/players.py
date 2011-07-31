@@ -6,6 +6,8 @@ import re
 re_delete_recover = re.compile(r'^(delete|recover)/(\S+)$')
 re_combo_value = re.compile(r'\s*(\S+)\s*:\s*(.*?)\s*$')
 re_tokens = re.compile(r'{([^{}]+)}')
+re_valid_identifier = re.compile(r'^u_[a-z0-9_]+$', re.IGNORECASE)
+re_newline = re.compile(r'\n')
 
 class CharactersMod(ConstructorModule):
     def register(self):
@@ -31,6 +33,21 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.name-fixup", self.name_fixup)
         self.rhook("headmenu-admin-characters.validate-names", self.headmenu_validate_names)
         self.rhook("ext-admin-characters.validate-names", self.admin_validate_names, priv="change.usernames")
+        self.rhook("ext-character.info", self.character_info, priv="public")
+        self.rhook("character.info-avatar", self.character_info_avatar)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("ext-interface.character-form", self.interface_character_form, priv="logged")
+
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "character-form",
+            "href": "/interface/character-form",
+            "target": "main",
+            "icon": "character.png",
+            "title": self._("Character form"),
+            "block": "left-menu",
+            "order": 0,
+        })
 
     def name_fixup(self, character, purpose, params):
         if purpose == "admin":
@@ -133,6 +150,16 @@ class CharactersMod(ConstructorModule):
                     errors["description"] = self._("Description may not be empty")
                 if not prompt:
                     errors["prompt"] = self._("Prompt may not be empty")
+                if req.args == "new":
+                    new_code = req.param("code").strip()
+                    if not new_code:
+                        errors["code"] = self._("This field is mandatory")
+                    elif not re_valid_identifier.match(new_code):
+                        errors["code"] = self._("Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'")
+                    else:
+                        for fld in character_form:
+                            if fld["code"] == new_code:
+                                errors["code"] = self._("This code is busy")
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # Storing data
@@ -144,15 +171,13 @@ class CharactersMod(ConstructorModule):
                     "std": std
                 }
                 if req.args == "new":
-                    val["code"] = uuid4().hex
+                    val["code"] = new_code
                 else:
                     val["code"] = req.args
                 if std == 1 or std == 2:
                     val["reg"] = True
                 else:
                     val["reg"] = reg
-                    if not valid_nonnegative_int(mandatory_level):
-                        errors["mandatory_level"] = self._("Number expected")
                     val["mandatory_level"] = intz(mandatory_level)
                 if std == 1:
                     val["type"] = 0
@@ -196,6 +221,8 @@ class CharactersMod(ConstructorModule):
                 fields.insert(0, {"name": "std", "type": "combo", "label": self._("Field type"), "value": std, "values": std_values})
             else:
                 fields.insert(0, {"name": "std", "type": "hidden", "value": std})
+            if req.args == "new":
+                fields.insert(1, {"name": "code", "label": self._("Field code (identifier for scripting)"), "value": "u_"})
             self.call("admin.form", fields=fields)
         self.call("admin.response_template", "admin/auth/character-form.html", {
             "fields": character_form,
@@ -415,3 +442,99 @@ class CharactersMod(ConstructorModule):
             fields.append({"name": "ok-%s" % ent.uuid, "type": "checkbox", "label": self._("Good name"), "desc": htmlescape(ent.get("name"))})
             fields.append({"name": "name-%s" % ent.uuid, "label": self._("Change"), "inline": True, "condition": "![ok-%s]" % ent.uuid})
         self.call("admin.form", fields=fields)
+
+    def character_info_avatar(self, character):
+        design = self.design("gameinterface")
+        vars = {
+            "avatar_image": "/st-mg/constructor/avatars/%s.jpg" % ("female" if character.sex else "male"),
+        }
+        return self.call("design.parse", design, "character-info-avatar.html", None, vars)
+
+    def character_info(self):
+        req = self.req()
+        character = self.character(req.args)
+        if not character.valid:
+            self.call("web.not_found")
+        params = []
+        vars = {
+            "title": htmlescape(character.name),
+            "character": {
+                "html": character.html(),
+                "avatar": character.info_avatar(),
+                "name": character.name,
+                "sex": character.sex,
+            }
+        }
+        if not character.restraints.get("hide-info"):
+            character_form = self.call("character.form")
+            for fld in character_form:
+                if not fld.get("std"):
+                    code = fld.get("code")
+                    if fld.get("type") == 1:
+                        val = None
+                        val_code = character.db_form.get(code)
+                        for ent in fld["values"]:
+                            if ent[0] == val_code:
+                                val = ent[1]
+                                break
+                    else:
+                        val = re_newline.sub('<br />', htmlescape(character.db_form.get(code)))
+                    vars["character"][code] = val
+                    if val:
+                        params.append({"name": htmlescape(fld.get("name")), "value": val})
+        if params:
+            print "params=%s" % params
+            vars["character"]["params"] = params
+        self.call("game.response_external", "character-info.html", vars)
+
+    def interface_character_form(self):
+        req = self.req()
+        character = self.character(req.user())
+        vars = {}
+        form = self.call("web.form")
+        form.textarea_rows = 6
+        fields = self.call("character.form")
+        fields = [fld for fld in fields if not fld.get("deleted") and not fld.get("std")]
+        values = {}
+        if req.ok():
+            for fld in fields:
+                code = fld["code"]
+                val = req.param(code).strip()
+                if fld.get("mandatory_level") and not val:
+                    form.error(code, self._("This field is mandatory"))
+                elif fld.get("type") == 1:
+                    if not val and not std and not fld.get("mandatory_level"):
+                        # empty value is ok
+                        val = None
+                    else:
+                        # checking acceptable values
+                        ok = False
+                        for v in fld["values"]:
+                            if v[0] == val:
+                                ok = True
+                                break
+                        if not ok:
+                            form.error(code, self._("Make a valid selection"))
+                values[code] = val
+            if not form.errors:
+                for fld in fields:
+                    code = fld["code"]
+                    character.db_form.set(code, values.get(code))
+                character.db_form.store()
+                self.call("main-frame.info", self._("Information stored"))
+        else:
+            for field in fields:
+                code = field["code"]
+                values[code] = character.db_form.get(code)
+        for field in fields:
+            code = field["code"]
+            name = field["name"]
+            tp = field.get("type")
+            if tp == 1:
+                options = [{"value": v, "description": d} for v, d in field["values"]]
+                form.select(name, code, values.get(code), options)
+            elif tp == 2:
+                form.textarea(name, code, values.get(code))
+            else:
+                form.input(name, code, values.get(code))
+        self.call("game.internal_form", form, vars)

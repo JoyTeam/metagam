@@ -127,6 +127,14 @@ class Character(Module):
             return self._db_user
 
     @property
+    def db_form(self):
+        try:
+            return self._db_form
+        except AttributeError:
+            self._db_form = self.obj(DBCharacterForm, self.uuid, silent=True)
+            return self._db_form
+
+    @property
     def name(self):
         try:
             return self._name
@@ -317,6 +325,13 @@ class Character(Module):
             self.call("restraints.check", self.uuid, restraints)
             self._restraints = restraints
             return restraints
+
+    def info_avatar(self):
+        try:
+            return self._info_avatar
+        except AttributeError:
+            self._info_avatar = self.call("character.info-avatar", self)
+            return self._info_avatar
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

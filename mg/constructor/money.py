@@ -26,7 +26,7 @@ class Money(ConstructorModule):
             "icon": "money.png",
             "title": self._("Money"),
             "block": "left-menu",
-            "order": 0,
+            "order": 7,
         })
 
     def money_index(self):

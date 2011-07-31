@@ -384,8 +384,10 @@ class Auth(ConstructorModule):
     def character_form(self):
         fields = self.conf("auth.char_form", [])
         if not len(fields):
-            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character name"), "prompt": self._("Enter your character name")})
+            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character's name"), "prompt": self._("Enter your character name")})
             fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
+            fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
+            fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
         return copy.deepcopy(fields)
 
     def jsencode_character_form(self, lst):
@@ -421,15 +423,15 @@ class Auth(ConstructorModule):
         for fld in fields:
             code = fld["code"]
             val = req.param(code).strip()
-            if not fld.get("mandatory_level") and not val:
+            if fld.get("mandatory_level") and not val:
                 errors[code] = self._("This field is mandatory")
-            elif fld["std"] == 1:
+            elif fld.get("std") == 1:
                 # character name. checking validity
                 if not re.match(params["name_re"], val, re.UNICODE):
                     errors[code] = params["name_invalid_re"]
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
-            elif fld["type"] == 1:
+            elif fld.get("type") == 1:
                 if not val and not std and not fld.get("mandatory_level"):
                     # empty value is ok
                     val = None
@@ -955,15 +957,15 @@ class Auth(ConstructorModule):
             for fld in fields:
                 code = fld["code"]
                 val = req.param(code).strip()
-                if not fld.get("mandatory_level") and not val:
+                if fld.get("mandatory_level") and not val:
                     form.error(code, self._("This field is mandatory"))
-                elif fld["std"] == 1:
+                elif fld.get("std") == 1:
                     # character name. checking validity
                     if not re.match(params["name_re"], val, re.UNICODE):
                         form.error(code, params["name_invalid_re"])
                     elif self.call("session.find_user", val):
                         form.error(code, self._("This name is taken already"))
-                elif fld["type"] == 1:
+                elif fld.get("type") == 1:
                     if not val and not std and not fld.get("mandatory_level"):
                         # empty value is ok
                         val = None

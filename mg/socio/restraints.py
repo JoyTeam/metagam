@@ -1,7 +1,7 @@
 from mg import *
 import re
 
-re_restraint_kind = re.compile(r'^(\S+)/(forum-silence|chat-silence|ban)$')
+re_restraint_kind = re.compile(r'^(\S+)/(forum-silence|chat-silence|ban|hide-info)$')
 
 class UserRestraint(CassandraObject):
     _indexes = {
@@ -66,6 +66,8 @@ class Restraints(Module):
                 ent.store()
         if kind == "chat-silence":
             content = self._("Chat silence")
+        if kind == "hide-info":
+            content = self._("Hide info")
         elif kind == "forum-silence":
             content = self._("Forum silence")
         elif kind == "ban":
@@ -106,6 +108,7 @@ class RestraintsAdmin(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "restraints.ban", "name": self._("Banning users")})
+        perms.append({"id": "restraints.hide-info", "name": self._("Hiding user's info")})
 
     def permissions_chat(self, perms):
         perms.append({"id": "restraints.chat-silence", "name": self._("Settings silence restraints for users in the chat")})
@@ -120,6 +123,7 @@ class RestraintsAdmin(Module):
         params = []
         kinds = {
             "chat-silence": self._("Chat silence"),
+            "hide-info": self._("Hide info"),
             "forum-silence": self._("Forum silence"),
             "ban": self._("Ban"),
         }
@@ -197,6 +201,8 @@ class RestraintsAdmin(Module):
             user_uuid, kind = m.group(1, 2)
             if kind == "chat-silence":
                 return [self._("Chat silence"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
+            elif kind == "hide-info":
+                return [self._("Hide info"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
             elif kind == "forum-silence":
                 return [self._("Forum silence"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
             elif kind == "ban":

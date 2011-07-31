@@ -104,6 +104,7 @@ class Interface(ConstructorModule):
         self.rhook("gameinterface.blocks", self.blocks)
         self.rhook("gamecabinet.render", self.game_cabinet_render)
         self.rhook("main-frame.error", self.main_frame_error)
+        self.rhook("main-frame.info", self.main_frame_info)
         self.rhook("main-frame.form", self.main_frame_form)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -208,6 +209,11 @@ class Interface(ConstructorModule):
             links[-1]["lst"] = True
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
+
+    def main_frame_info(self, msg):
+        vars = {
+        }
+        self.call("game.response_internal", "info.html", vars, msg)
 
     def main_frame_error(self, msg):
         vars = {

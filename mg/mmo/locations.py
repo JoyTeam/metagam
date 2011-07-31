@@ -633,7 +633,7 @@ class Locations(ConstructorModule):
             "icon": "location.png",
             "title": self._("Location"),
             "block": "left-menu",
-            "order": 0,
+            "order": 3,
         })
 
     def hook_arrows(self, vars):

@@ -1,0 +1,21 @@
+<table class="charinfo-layout">
+	<tr>
+		<td class="charinfo-layout-avatar">
+			<div class="charinfo-name">[%character.html%]</div>
+			<div class="charinfo-avatar">[%character.avatar%]</div>
+			[%if character.motto%]<div class="charinfo-motto">[%character.motto%]</div>[%end%]
+		</td>
+		[%if character.params%]
+		<td class="charinfo-layout-info">
+			<table class="charinfo-table-info">
+				[%foreach param in character.params%]
+				<tr>
+					<td class="charinfo-param-name">[%param.name%]</td>
+					<td class="charinfo-param-value">[%param.value%]</td>
+				</tr>
+				[%end%]
+			</table>
+		</td>
+		[%end%]
+	</tr>
+</table>
