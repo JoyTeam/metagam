@@ -380,10 +380,10 @@ class Chat(ConstructorModule):
     def post(self):
         req = self.req()
         user = req.user()
-        limits = {}
-        self.call("limits.check", user, limits)
-        if limits.get("chat-silence"):
-            self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.timeencode2", limits["chat-silence"].get("till")), "hide_title": True})
+        restraints = {}
+        self.call("restraints.check", user, restraints)
+        if restraints.get("chat-silence"):
+            self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till")), "hide_title": True})
         author = self.character(user)
         text = req.param("text") 
         prefixes = []
@@ -585,15 +585,15 @@ class Chat(ConstructorModule):
             return html
         char = token.get("character")
         if char:
-            add_cls = ""
-            add_tag = ""
+            add_cls = u""
+            add_tag = u""
             if token.get("missing"):
-                add_cls += " chat-msg-char-missing"
+                add_cls += u" chat-msg-char-missing"
             recipients = ["'%s'" % jsencode(ch.name) for ch in token["mentioned"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
             if recipients:
                 add_cls += " clickable"
-                js = 'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
-                add_tag += ' onclick="{0}" ondblclick="{0}"'.format(js)
+                js = u'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
+                add_tag += u' onclick="{0}" ondblclick="{0}"'.format(js)
             return re_character_name.sub(ur'<span class="chat-msg-char%s"%s>\1</span>' % (add_cls, add_tag), char.html("chat"))
         now = token.get("time")
         if now:

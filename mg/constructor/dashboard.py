@@ -41,6 +41,8 @@ class ProjectDashboard(Module):
                         status = self._("projstatus///not published")
                     rows.append((u'<hook:admin.link href="constructor/project-dashboard/{0}" title="{1}" />'.format(p.get("uuid"), htmlescape(p.get("title_short"))), p.get("title_code"), status))
                 tables.append({
+                    "title": self._("Games"),
+                    "order": 50,
                     "header": [self._("Project name"), self._("Project code"), self._("Status")],
                     "rows": rows
                 })

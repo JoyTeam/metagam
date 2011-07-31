@@ -29,6 +29,8 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.name-tokens", self.name_tokens)
         self.rhook("characters.name-render", self.name_render)
         self.rhook("characters.name-fixup", self.name_fixup)
+        self.rhook("headmenu-admin-characters.validate-names", self.headmenu_validate_names)
+        self.rhook("ext-admin-characters.validate-names", self.admin_validate_names, priv="change.usernames")
 
     def name_fixup(self, character, purpose, params):
         if purpose == "admin":
@@ -46,6 +48,8 @@ class CharactersMod(ConstructorModule):
             menu.append({"id": "characters/form", "text": self._("Character form"), "leaf": True, "order": 20})
         if req.has_access("characters.names"):
             menu.append({"id": "characters/names", "text": self._("Character names"), "leaf": True, "order": 25})
+        if self.conf("auth.validate_names") and req.has_access("change.usernames"):
+            menu.append({"id": "characters/validate-names", "text": self._("Names check"), "leaf": True, "order": 30})
 
     def admin_characters_form(self):
         req = self.req()
@@ -368,3 +372,46 @@ class CharactersMod(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def headmenu_validate_names(self, args):
+        return self._("Names check")
+
+    def admin_validate_names(self):
+        req = self.req()
+        lst = self.objlist(UserList, query_index="check", query_equal="1")
+        if req.ok():
+            # auth params
+            params = {}
+            self.call("auth.form_params", params)
+            with self.lock(["User.%s" % ent.uuid for ent in lst]):
+                errors = {}
+                for ent in lst:
+                    ent.load()
+                    if req.param("ok-%s" % ent.uuid):
+                        ent.delkey("check")
+                        ent.store()
+                    else:
+                        name = req.param("name-%s" % ent.uuid)
+                        if name:
+                            if not re.match(params["name_re"], name, re.UNICODE):
+                                errors["name-%s" % ent.uuid] = params["name_invalid_re"]
+                            else:
+                                existing = self.call("session.find_user", name, return_id=True)
+                                if existing and existing != ent.uuid:
+                                    errors["name-%s" % ent.uuid] = self._("This name is taken already")
+                                else:
+                                    ent.delkey("check")
+                                    ent.set("name", name)
+                                    ent.set("name_lower", name.lower())
+                                    ent.store()
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+            self.call("admin.redirect", "characters/validate-names")
+        lst.load(silent=True)
+        if not len(lst):
+            self.call("admin.response", self._("All names were checked. Thank you"), {})
+        fields = []
+        for ent in lst:
+            fields.append({"name": "ok-%s" % ent.uuid, "type": "checkbox", "label": self._("Good name"), "desc": htmlescape(ent.get("name"))})
+            fields.append({"name": "name-%s" % ent.uuid, "label": self._("Change"), "inline": True, "condition": "![ok-%s]" % ent.uuid})
+        self.call("admin.form", fields=fields)

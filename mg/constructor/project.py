@@ -47,7 +47,7 @@ class ConstructorProject(Module):
                 "mg.constructor.script.ScriptEngine",
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
-                "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+                "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
             ])
             if project.get("published"):
@@ -101,7 +101,7 @@ class ConstructorProject(Module):
     def email_sender(self, params):
         project = self.app().project
         params["name"] = project.get("title_short")
-        params["prefix"] = u"[%s] " % project.get("title_code")
+        params["prefix"] = u"[%s] " % project.get("title_code").lower()
         params["signature"] = u"%s - http://www.%s" % (project.get("title_full"), project.get("domain"))
 
 class ConstructorProjectAdmin(Module):

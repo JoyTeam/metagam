@@ -11,8 +11,8 @@ import re
 import json
 
 re_remove_admin = re.compile(r'^admin-')
-re_split_3 = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
-re_split_2 = re.compile(r'^([^/]+)/([^/]+)$')
+re_split_3 = re.compile(r'^([^/]+)/([^/\?]+)/([^\?]+)(?:|\?.*)$')
+re_split_2 = re.compile(r'^([^/]+)/([^/\?]+)(?:|\?.*)$')
 re_form_condition = re.compile(r'\[([a-z_][a-z0-9_\-]*)\]')
 
 class AdminInterface(Module):

@@ -37,7 +37,7 @@ class Constructor(Module):
             "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin", "mg.core.auth.Dossiers",
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
             "mg.core.emails.EmailSender",
-            "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+            "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
             "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
             "mg.socio.paidservices.PaidServices",

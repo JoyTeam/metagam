@@ -311,8 +311,8 @@ class EmailSender(Module):
         lst.load()
         for ent in lst:
             rows.append([
-                self.call("l10n.timeencode2", ent.get("created")),
-                self.call("l10n.timeencode2", ent.get("sent")) if ent.get("sent") else None,
+                self.call("l10n.time_local", ent.get("created")),
+                self.call("l10n.time_local", ent.get("sent")) if ent.get("sent") else None,
                 htmlescape(ent.get("subject")),
                 '<hook:admin.link href="email/sender/%s" title="%s" />' % (ent.uuid, self._("open")),
                 '<hook:admin.link href="email/sender/options/%s" title="%s" />' % (ent.uuid, self._("delivery options")),

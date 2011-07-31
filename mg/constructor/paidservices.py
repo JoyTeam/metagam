@@ -90,7 +90,7 @@ class PaidServices(ConstructorModule):
                 mod = self.call("modifiers.kind", req.user(), srv["id"])
                 if mod:
                     if mod.get("maxtill"):
-                        srv["status"] = self._("service///active till %s") % self.call("l10n.timeencode2", mod["maxtill"])
+                        srv["status"] = self._("service///active till %s") % self.call("l10n.time_local", mod["maxtill"])
                     else:
                         srv["status"] = self._("service///active")
                     srv["status_cls"] = "service-active"
@@ -233,7 +233,7 @@ class PaidServices(ConstructorModule):
         srv = self.conf("paidservices.info-%s" % srv_id, {})
         return {
             "args": ["period", "period_a"],
-            "name": self._("paidservice///{name} for {{period}}").format(name=srv.get("name")),
+            "text": self._("paidservice///{name} for {{period}}").format(name=srv.get("name")),
         }
 
     def ext_paid_service(self):

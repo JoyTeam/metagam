@@ -655,6 +655,8 @@ class DomainsAdmin(Module):
                     "pending": self._("pending"),
                 }
                 tables.append({
+                    "title": self._("Domains"),
+                    "order": 40,
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
                     "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
                 })

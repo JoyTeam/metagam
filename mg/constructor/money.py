@@ -10,6 +10,13 @@ class Money(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-money.index", self.money_index, priv="logged")
         self.rhook("ext-money.operations", self.money_operations, priv="logged")
+        self.rhook("2pay.payment-args", self.payment_args)
+
+    def payment_args(self, args, options):
+        character = options.get("character")
+        if character:
+            args["v1"] = character.name
+            args["email"] = character.player.email
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -97,7 +104,7 @@ class Money(ConstructorModule):
             for op in lst:
                 description = self.call("money-description.%s" % op.get("description"))
                 rop = {
-                    "performed": self.call("l10n.timeencode2", op.get("performed")),
+                    "performed": self.call("l10n.time_local", op.get("performed")),
                     "amount": op.get("amount"),
                     "balance": op.get("balance"),
                     "cls": "money-plus" if op.get("balance") >= 0 else "money-minus",

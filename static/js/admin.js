@@ -188,6 +188,18 @@ function adm(node_id, parameters)
 		Ext.Ajax.abort(admin_ajax_trans);
 	if (node_id) {
 		document.location.replace(base_url + '#' + node_id);
+		var args_res = /^(.*?)\?(.*)$/.exec(node_id);
+		if (args_res) {
+			var args = args_res[2].split('&');
+			node_id = args_res[1];
+			parameters = parameters || {};
+			for (var i = 0; i < args.length; i++) {
+				var res = /^(.*?)=(.*)$/.exec(args[i]);
+				if (res) {
+					parameters[res[1]] = res[2];
+				}
+			}
+		}
 		admin_ajax_trans = Ext.Ajax.request({
 			url: '/admin-' + node_id + '/ver' + ver,
 			params: parameters,

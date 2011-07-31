@@ -363,7 +363,7 @@ class ScriptEngine(ConstructorModule):
             else:
                 expression = self.call("script.parse-expression", expression)
         except ScriptParserError as e:
-            html = htmlescape(self._(e.val).format(**e.kwargs))
+            html = htmlescape(e.val.format(**e.kwargs))
             if e.exc:
                 html += '<br />%s' % htmlescape(e.exc)
             errors[name] = html

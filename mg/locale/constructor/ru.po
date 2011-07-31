@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-31 12:29+0400\n"
+"POT-Creation-Date: 2011-07-31 17:10+0400\n"
 "PO-Revision-Date: 2011-07-31 12:38+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
@@ -16,21 +16,17 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: static/js/admin.js:96
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/js/admin.js:141
-#: static/js/locations.js:23
-#: static/js/realplexor-stream.js:20
-#: static/js/admin-form.js:164
-#: static/js/admin-form.js:167
-#: static/js/admin-form.js:322
-#: static/js/admin-form.js:325
-#: static/js/chat.js:533
-#: static/js/chat.js:541
+#: static/js/admin.js:141 static/js/locations.js:23
+#: static/js/realplexor-stream.js:20 static/js/admin-form.js:164
+#: static/js/admin-form.js:167 static/js/admin-form.js:322
+#: static/js/admin-form.js:325 static/js/chat.js:533 static/js/chat.js:541
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -48,7 +44,7 @@ msgstr "Ошибка"
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
 
-#: static/js/admin.js:244
+#: static/js/admin.js:256
 msgid "To the main page"
 msgstr "На главную страницу"
 
@@ -60,10 +56,8 @@ msgstr "Ошибка связи с сервером"
 msgid "Connection terminated"
 msgstr "Соединение прервано"
 
-#: static/js/realplexor-stream.js:75
-#: static/js/game-interface.js:59
-#: static/js/game-interface.js:146
-#: static/js/game-interface.js:175
+#: static/js/realplexor-stream.js:75 static/js/game-interface.js:59
+#: static/js/game-interface.js:146 static/js/game-interface.js:175
 msgid "Exception"
 msgstr "Исключение"
 
@@ -116,8 +110,7 @@ msgstr "Предустановки:"
 msgid "Upload file"
 msgstr "Загрузить файл"
 
-#: static/js/admin-form.js:112
-#: static/js/admin-form.js:271
+#: static/js/admin-form.js:112 static/js/admin-form.js:271
 #: mg/templates/admin/auth/write-dossier.html:23
 #: mg/templates/constructor/setup/domain-wizard.html:82
 #: mg/templates/constructor/setup/domain.html:64
@@ -136,20 +129,17 @@ msgstr "Загрузите изображение"
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
 
-#: static/js/admin-form.js:147
-#: mg/templates/constructor/setup/logo.html:80
+#: static/js/admin-form.js:147 mg/templates/constructor/setup/logo.html:80
 #: mg/templates/constructor/setup/logo-wizard.html:102
 msgid "Upload"
 msgstr "Загрузить"
 
-#: static/js/admin-form.js:151
-#: mg/templates/constructor/setup/logo.html:83
+#: static/js/admin-form.js:151 mg/templates/constructor/setup/logo.html:83
 #: mg/templates/constructor/setup/logo-wizard.html:40
 msgid "Uploading data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:167
-#: static/js/admin-form.js:325
+#: static/js/admin-form.js:167 static/js/admin-form.js:325
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
@@ -171,18 +161,15 @@ msgstr "Не удалось отправить сообщение на серв�
 msgid "Misconfigured layout scheme"
 msgstr "Схема расположения не настроена"
 
-#: mg/templates/game/indexpage.js:132
-#: mg/templates/game/indexpage.js:248
+#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:248
 msgid "Server is in the local mode"
 msgstr "Сервер находится в локальном режиме"
 
-#: mg/templates/game/indexpage.js:167
-#: mg/templates/game/indexpage.js:300
+#: mg/templates/game/indexpage.js:167 mg/templates/game/indexpage.js:300
 msgid "Server is temporarily unavailable"
 msgstr "Сервер временно недоступен"
 
-#: mg/templates/game/indexpage.js:184
-#: mg/templates/game/indexpage.js:214
+#: mg/templates/game/indexpage.js:184 mg/templates/game/indexpage.js:214
 msgid "Next >"
 msgstr "Далее >"
 
@@ -270,38 +257,54 @@ msgstr "Применить"
 #, fuzzy
 #~ msgid "Couldn't send command to the server"
 #~ msgstr "Не удалось отправить сообщение на сервер"
+
 #~ msgid "Mouse over hint"
 #~ msgstr "Подсказка при наведении мыши"
+
 #~ msgid "Error during registration"
 #~ msgstr "Ошибка во время регистрации"
+
 #~ msgid "Abort"
 #~ msgstr "Прервать"
+
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
+
 #~ msgid "Subscription confirmation"
 #~ msgstr "Подтверждение подписки"
+
 #~ msgid "You have successfully subscribed to the project news"
 #~ msgstr "Вы успешно подписались на новости проекта"
+
 #~ msgid "E-mail address"
 #~ msgstr "Адрес e-mail"
+
 #~ msgid "Subsciption to the project news"
 #~ msgstr "Подписка на новости проекта"
+
 #~ msgid "Error loading %s: %s"
 #~ msgstr "Ошибка при загрузке %s: %s"
+
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
+
 #~ msgid "Category description"
 #~ msgstr "Описание раздела"
+
 #~ msgid "Order"
 #~ msgstr "Порядок"
+
 #~ msgid "New category"
 #~ msgstr "Новый раздел"
+
 #~ msgid "Stay tuned"
 #~ msgstr "Хочу быть в курсе"
+
 #~ msgid "Project status notifications"
 #~ msgstr "Уведомление о статусе разработки"
+
 #~ msgid "Notify me on everything interesting"
 #~ msgstr "Сообщайте мне обо всём интересном"
+
 #~ msgid "Login"
 #~ msgstr "Вход"
-

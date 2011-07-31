@@ -10,7 +10,7 @@ import datetime
 def gettext_noop(x):
     return x
 
-timeencode2_month = {
+time_local_month = {
     1: gettext_noop("of January"),
     2: gettext_noop("of February"),
     3: gettext_noop("of March"),
@@ -37,7 +37,7 @@ for lang in os.listdir(localedir):
         pass
 
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
-re_timeencode2 = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
+re_time_local = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
 
 ZERO = datetime.timedelta(0)
 
@@ -80,8 +80,8 @@ class L10n(Module):
         self.rhook("l10n.ngettext", self.l10n_ngettext)
         self.rhook("l10n.set_request_lang", self.l10n_set_request_lang)
         self.rhook("web.universal_variables", self.universal_variables)
-        self.rhook("l10n.dateencode2", self.l10n_dateencode2)
-        self.rhook("l10n.timeencode2", self.l10n_timeencode2)
+        self.rhook("l10n.date_local", self.l10n_date_local)
+        self.rhook("l10n.time_local", self.l10n_time_local)
         self.rhook("l10n.stemmer", self.l10n_stemmer)
         self.rhook("l10n.literal_value", self.l10n_literal_value)
         self.rhook("l10n.literal_values_valid", self.l10n_literal_values_valid)
@@ -229,7 +229,7 @@ class L10n(Module):
             self._tzinfo = FixedOffset(self.tzoffset() * 60)
             return self._tzinfo
 
-    def timeencode2(self, time):
+    def time_local(self, time):
         m = re_datetime.match(time)
         if not m:
             return None, None
@@ -247,13 +247,13 @@ class L10n(Module):
                 th = "rd"
         return dt, th
 
-    def l10n_timeencode2(self, time):
-        dt, th = self.timeencode2(time)
+    def l10n_time_local(self, time):
+        dt, th = self.time_local(time)
         if not dt:
             return None
         return self._("at the {day:d}{th} {month}, {year} {hour:02d}:{min:02d}").format(
             year=dt.year,
-            month=self._(timeencode2_month.get(dt.month)),
+            month=self._(time_local_month.get(dt.month)),
             day=dt.day,
             hour=dt.hour,
             min=dt.minute,
@@ -261,13 +261,13 @@ class L10n(Module):
             th=th
         )
 
-    def l10n_dateencode2(self, time):
-        dt, th = self.timeencode2(time)
+    def l10n_date_local(self, time):
+        dt, th = self.time_local(time)
         if not dt:
             return None
         return self._("at the {day:d}{th} {month}, {year}").format(
             year=dt.year,
-            month=self._(timeencode2_month.get(dt.month)),
+            month=self._(time_local_month.get(dt.month)),
             day=dt.day,
             th=th
         )

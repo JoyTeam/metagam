@@ -110,6 +110,15 @@ class Character(Module):
             return self._db_character
 
     @property
+    def valid(self):
+        try:
+            self.db_character
+        except ObjectNotFoundException:
+            return False
+        else:
+            return True
+
+    @property
     def db_user(self):
         try:
             return self._db_user
@@ -299,6 +308,16 @@ class Character(Module):
         else:
             raise AttributeError(attr)
 
+    @property
+    def restraints(self):
+        try:
+            return self._restraints
+        except AttributeError:
+            restraints = {}
+            self.call("restraints.check", self.uuid, restraints)
+            self._restraints = restraints
+            return restraints
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)
@@ -346,6 +365,31 @@ class Player(Module):
             return self.call("modifiers.obj", self.uuid)
         else:
             raise AttributeError(attr)
+
+    @property
+    def characters(self):
+        try:
+            return self._characters
+        except AttributeError:
+            try:
+                req = self.req()
+                try:
+                    characters = req.character
+                except AttributeError:
+                    characters = {}
+                    req.characters = characters
+            except AttributeError:
+                characters = {}
+            lst = self.objlist(DBCharacterList, query_index="player", query_equal=self.uuid)
+            chars = []
+            for ent in lst:
+                character = characters.get(ent.uuid)
+                if not character:
+                    character = Character(self.app(), ent.uuid)
+                    characters[ent.uuid] = character
+                chars.append(character)
+            self._characters = chars
+            return chars
 
 class Characters(Module):
     def __init__(self, app, fqn="mg.constructor.players.Characters"):

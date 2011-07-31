@@ -46,7 +46,6 @@ class MoneyAdmin(Module):
         self.rhook("headmenu-admin-money.take", self.headmenu_money_take)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("auth.user-tables", self.user_tables)
-        self.rhook("auth.user-options", self.user_options)
         self.rhook("ext-admin-money.account", self.admin_money_account, priv="users.money")
         self.rhook("headmenu-admin-money.account", self.headmenu_money_account)
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
@@ -363,7 +362,7 @@ class MoneyAdmin(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Give money"), "auth/user-dashboard/%s" % args]
+        return [self._("Give money"), "auth/user-dashboard/%s?active_tab=money" % args]
 
     def admin_money_give(self):
         req = self.req()
@@ -383,7 +382,7 @@ class MoneyAdmin(Module):
             amount = float(amount)
             member = MemberMoney(self.app(), user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user())
-            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"
         fields = []
@@ -397,7 +396,7 @@ class MoneyAdmin(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("Take money"), "auth/user-dashboard/%s" % args]
+        return [self._("Take money"), "auth/user-dashboard/%s?active_tab=money" % args]
 
     def admin_money_take(self):
         req = self.req()
@@ -426,7 +425,7 @@ class MoneyAdmin(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
             member.force_debit(amount, currency, "admin-take", admin=req.user())
-            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"
         fields = []
@@ -440,7 +439,7 @@ class MoneyAdmin(Module):
             acc = self.obj(Account, args)
         except ObjectNotFoundException:
             return
-        return [self._("Account %s") % acc.uuid, "auth/user-dashboard/%s" % acc.get("member")]
+        return [self._("Account %s") % acc.get("currency"), "auth/user-dashboard/%s?active_tab=money" % acc.get("member")]
 
     def admin_money_account(self):
         req = self.req()
@@ -469,7 +468,7 @@ class MoneyAdmin(Module):
                     else:
                         break
             operations.append({
-                "performed": op.get("performed"),
+                "performed": self.call("l10n.time_local", op.get("performed")),
                 "amount": op.get("amount"),
                 "balance": op.get("balance"),
                 "description": rdescription,
@@ -488,13 +487,22 @@ class MoneyAdmin(Module):
         self.call("admin.response_template", "admin/money/account.html", vars)
 
     def user_tables(self, user, tables):
-        if self.req().has_access("users.money"):
+        req = self.req()
+        if req.has_access("users.money"):
             member = MemberMoney(self.app(), user.uuid)
-            if len(member.accounts):
-                tables.append({
-                    "header": [self._("Account Id"), self._("Currency"), self._("Balance"), self._("Locked"), self._("Low limit")],
-                    "rows": [('<hook:admin.link href="money/account/{0}" title="{0}" />'.format(a.uuid), a.get("currency"), a.get("balance"), a.get("locked"), a.get("low_limit")) for a in member.accounts]
-                })
+            links = []
+            if req.has_access("users.money.give"):
+                links.append({"hook": "money/give/%s" % user.uuid, "text": self._("Give money")})
+                links.append({"hook": "money/take/%s" % user.uuid, "text": self._("Take money"), "lst": True})
+            tbl = {
+                "type": "money",
+                "title": self._("Money"),
+                "order": 20,
+                "links": links,
+                "header": [self._("Account Id"), self._("Currency"), self._("Balance"), self._("Locked"), self._("Low limit")],
+                "rows": [('<hook:admin.link href="money/account/{0}" title="{0}" />'.format(a.uuid), a.get("currency"), a.get("balance"), a.get("locked"), a.get("low_limit")) for a in member.accounts]
+            }
+            tables.append(tbl)
             if len(member.locks):
                 rows = []
                 for l in member.locks:
@@ -504,17 +512,14 @@ class MoneyAdmin(Module):
                     else:
                         desc = l.get("description")
                     rows.append((l.uuid, l.get("amount"), l.get("currency"), desc))
-                tables.append({
+                tbl = {
+                    "type": "money_locks",
+                    "title": self._("Money locks"),
+                    "order": 21,
                     "header": [self._("Lock ID"), self._("Amount"), self._("Currency"), self._("Description")],
                     "rows": rows
-                })
-
-    def user_options(self, user, options):
-        if self.req().has_access("users.money.give"):
-            options.append({
-                "title": self._("Money operations"),
-                "value": u'<hook:admin.link href="money/give/{0}" title="{1}" /> &bull; <hook:admin.link href="money/take/{0}" title="{2}" />'.format(user.uuid, self._("Give money"), self._("Take money"))
-            })
+                }
+                tables.append(tbl)
 
     def permissions_list(self, perms):
         perms.append({"id": "users.money", "name": self._("Access to users money")})
@@ -593,19 +598,29 @@ class TwoPay(Module):
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
         self.rhook("money.donate-message", self.donate_message)
 
-    def donate_message(self, currency):
-        project_id = intz(self.conf("2pay.project-id"))
-        if project_id:
-            cinfo = self.call("money.currency-info", currency)
-            if cinfo and cinfo.get("real"):
-                return '<a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self._("Open payment interface"))
+    def append_args(self, options):
+        args = {}
+        self.call("2pay.payment-args", args, options)
+        append = ""
+        for key, val in args.iteritems():
+            if type(val) == unicode:
+                val = val.encode("cp1251")
+            append += '&%s=%s' % (key, urlencode(val))
+        return append
 
-    def not_enough_funds(self, currency):
+    def donate_message(self, currency, **kwargs):
         project_id = intz(self.conf("2pay.project-id"))
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
-                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self._("Open payment interface")))
+                return '<a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
+
+    def not_enough_funds(self, currency, **kwargs):
+        project_id = intz(self.conf("2pay.project-id"))
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self.append_args(kwargs), self._("Open payment interface")))
 
     def money_description_2pay_pay(self):
         return {
@@ -959,7 +974,7 @@ class TwoPayAdmin(Module):
             for pay in list:
                 payments.append({
                     "id": pay.uuid,
-                    "performed": pay.get("performed"),
+                    "performed": self.call("l10n.time_local", pay.get("performed")),
                     "date": pay.get("date"),
                     "user": pay.get("user"),
                     "v1": htmlescape(pay.get("v1")) if pay.get("v1") else pay.get("user"),
@@ -1049,7 +1064,7 @@ class Money(Module):
         self.rhook("money.currency-info", self.currency_info)
         self.rhook("money.not-enough-funds", self.not_enough_funds)
 
-    def not_enough_funds(self, currency):
+    def not_enough_funds(self, currency, **kwargs):
         cinfo = self.call("money.currency-info", currency)
         return self._("Not enough %s") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency))
 

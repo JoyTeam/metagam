@@ -32,7 +32,7 @@ function report_failure(text)
 	img.style.height = viewport.height + 'px';
 	img.style.zIndex = 2000;
 	img.className = 'report-overlay';
-	img.src = 'http://www.[%main_host%]/st-mg/img/dark.png';
+	img.src = '/st-mg/img/dark.png';
 	$$('body')[0].appendChild(img);
 
 	var table = document.createElement('table');
@@ -78,7 +78,7 @@ function dialog(text)
 	img.style.height = viewport.height + 'px';
 	img.style.zIndex = 2000;
 	img.className = 'dialog-overlay';
-	img.src = 'http://www.[%main_host%]/st-mg/img/dark.png';
+	img.src = '/st-mg/img/dark.png';
 	$$('body')[0].appendChild(img);
 
 	var table = document.createElement('table');

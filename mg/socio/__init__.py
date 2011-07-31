@@ -397,7 +397,9 @@ class ForumAdmin(Module):
             params.append((self._("Avatar"), '<img src="%s" alt="" />' % avatar))
         if len(params):
             tables.append({
-                "title": self._("Socio settings"),
+                "type": "socio",
+                "title": self._("Socio"),
+                "order": 20,
                 "links": [{"hook": "socio/user/%s" % user.uuid, "text": self._("edit"), "lst": True}],
                 "rows": params,
             })
@@ -413,7 +415,7 @@ class ForumAdmin(Module):
             settings.set("signature", req.param("signature"))
             settings.set("status", req.param("status"))
             settings.store()
-            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "socio"})
         fields = [
             {
                 "name": "status",
@@ -430,7 +432,7 @@ class ForumAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def headmenu_user(self, args):
-        return [self._("Socio settings"), "auth/user-dashboard/%s" % args]
+        return [self._("Socio settings"), "auth/user-dashboard/%s?active_tab=socio" % args]
 
 class Socio(Module):
     def register(self):
@@ -793,7 +795,7 @@ class Socio(Module):
         settings = self.obj(UserForumSettings, user.uuid, silent=True)
         name = htmlescape(user.get("name"))
         params = []
-        params.append({"name": self._("user///Registered"), "value": self.call("l10n.dateencode2", from_unixtime(user.get("created")))})
+        params.append({"name": self._("user///Registered"), "value": self.call("l10n.date_local", from_unixtime(user.get("created")))})
         status = settings.get("status")
         if status:
             params.append({"name": self._("Status"), "value": htmlescape(status)})
@@ -882,7 +884,7 @@ class Forum(Module):
                 vars["menu_right"] = menu_right
         silence = self.silence(self.call("socio.user"))
         if silence:
-            vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.timeencode2", silence.get("till")))
+            vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.time_local", silence.get("till")))
         else:
             vars["socio_message_top"] = self.conf("socio.message-top")
 
@@ -1016,9 +1018,9 @@ class Forum(Module):
     def silence(self, user):
         if user is None:
             return None
-        limits = {}
-        self.call("limits.check", user, limits)
-        return limits.get("forum-silence")
+        restraints = {}
+        self.call("restraints.check", user, restraints)
+        return restraints.get("forum-silence")
 
     def may_write(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
@@ -1211,11 +1213,11 @@ class Forum(Module):
             topic["subject_html"] = htmlescape(topic.get("subject"))
             topic["author_html"] = topic.get("author_html")
             topic["posts"] = intz(topic.get("posts"))
-            topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
-            topic["literal_created_date"] = self.call("l10n.dateencode2", topic.get("created"))
+            topic["literal_created"] = self.call("l10n.time_local", topic.get("created"))
+            topic["literal_created_date"] = self.call("l10n.date_local", topic.get("created"))
             topic["created_date"] = re_format_date.sub(r'\3.\2.\1', topic.get("created"))
             if topic.get("last_post_created"):
-                topic["last_post_created"] = self.call("l10n.timeencode2", topic["last_post_created"])
+                topic["last_post_created"] = self.call("l10n.time_local", topic["last_post_created"])
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % topic.get("author")})
             self.call("socio.author_menu", topic.get("author"), topic.get("author_html"), menu)
@@ -1252,7 +1254,7 @@ class Forum(Module):
             post["posts"] = intz(post.get("posts"))
             if post.get("content_html") is None:
                 post["content_html"] = self.call("socio.format_text", post.get("content"))
-            post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
+            post["literal_created"] = self.call("l10n.time_local", post.get("created"))
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % post.get("author")})
             self.call("socio.author_menu", post.get("author"), post.get("author_html"), menu)
@@ -1337,7 +1339,7 @@ class Forum(Module):
             topic.set("author_html", author_html)
             last["author_html"] = author_html
             last["subject_html"] = htmlescape(subject)
-            last["updated"] = self.call("l10n.timeencode2", created)
+            last["updated"] = self.call("l10n.time_local", created)
         catstat.set("last", last)
         topic.set("subject", subject)
         topic.sync()
@@ -1439,7 +1441,7 @@ class Forum(Module):
                 post.set("author_html", author_html)
                 last["author_html"] = author_html
                 last["subject_html"] = htmlescape(topic.get("subject"))
-                last["updated"] = self.call("l10n.timeencode2", now)
+                last["updated"] = self.call("l10n.time_local", now)
             catstat.set("last", last)
             post.set("content", content)
             post.set("content_html", self.call("socio.format_text", content))
@@ -1755,14 +1757,14 @@ class Forum(Module):
                 "post": last_post.uuid,
                 "author_html": last_post.get("author_html"),
                 "subject_html": htmlescape(topic.get("subject")),
-                "updated": self.call("l10n.timeencode2", last_post.get("created")),
+                "updated": self.call("l10n.time_local", last_post.get("created")),
             })
         else:
             stat.set("last", {
                 "topic": last_topic.uuid,
                 "author_html": last_topic.get("author_html"),
                 "subject_html": htmlescape(last_topic.get("subject")),
-                "updated": self.call("l10n.timeencode2", last_topic.get("created")),
+                "updated": self.call("l10n.time_local", last_topic.get("created")),
             })
 
     def ext_delete(self):
@@ -2369,14 +2371,14 @@ class Forum(Module):
                     "post": last_post.uuid,
                     "author_html": last_post.get("author_html"),
                     "subject_html": htmlescape(topic.get("subject")),
-                    "updated": self.call("l10n.timeencode2", last_post.get("created")),
+                    "updated": self.call("l10n.time_local", last_post.get("created")),
                 })
             else:
                 stat.set("last", {
                     "topic": last_topic.uuid,
                     "author_html": last_topic.get("author_html"),
                     "subject_html": htmlescape(last_topic.get("subject")),
-                    "updated": self.call("l10n.timeencode2", last_topic.get("created")),
+                    "updated": self.call("l10n.time_local", last_topic.get("created")),
                 })
             stat.store()
         # Updating tags
