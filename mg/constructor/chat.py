@@ -109,8 +109,8 @@ class Chat(ConstructorModule):
         self.rhook("characters.name-purpose-roster", self.name_purpose_roster)
         self.rhook("characters.name-fixup", self.name_fixup)
         self.rhook("paidservices.available", self.paid_services_available)
-        self.rhook("paidservices.chat-colours", self.srv_chat_colours)
-        self.rhook("money-description.chat-colours", self.money_description_chat_colours)
+        self.rhook("paidservices.chat_colours", self.srv_chat_colours)
+        self.rhook("money-description.chat_colours", self.money_description_chat_colours)
 
     def name_purpose_chat(self):
         return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}
@@ -137,12 +137,12 @@ class Chat(ConstructorModule):
     def location_before_set(self, character, new_location, instance):
         msg = self.msg_entered_location()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % new_location.uuid, cls="move")
+            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": character.location, "loc_to": new_location}, description="Character entered location"), channel="loc-%s" % new_location.uuid, cls="move")
 
     def location_after_set(self, character, old_location, instance):
         msg = self.msg_left_location()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character, location=character.location), channel="loc-%s" % old_location.uuid, cls="move")
+            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Character left location"), channel="loc-%s" % old_location.uuid, cls="move")
         self.call("stream.character", character, "chat", "clear_loc")
         # old messages
         msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
@@ -150,7 +150,7 @@ class Chat(ConstructorModule):
         if len(msgs):
             msg = self.msg_location_messages()
             if msg:
-                self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
+                self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Location messages"), scroll_disable=True)
             messages = [{
                 "channel": "loc",
                 "cls": msg.get("cls"),
@@ -160,7 +160,7 @@ class Chat(ConstructorModule):
         # current location message
         msg = self.msg_you_entered_location()
         if msg:
-            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
+            self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description=self._("You entered location")), scroll_disable=True)
         self.call("stream.character", character, "chat", "scroll_bottom")
 
     def gameinterface_buttons(self, buttons):
@@ -264,12 +264,13 @@ class Chat(ConstructorModule):
                     else:
                         config.set("chat.cmd-dip", "")
             # chat messages
-            config.set("chat.msg_went_online", req.param("msg_went_online"))
-            config.set("chat.msg_went_offline", req.param("msg_went_offline"))
-            config.set("chat.msg_entered_location", req.param("msg_entered_location"))
-            config.set("chat.msg_left_location", req.param("msg_left_location"))
-            config.set("chat.msg_you_entered_location", req.param("msg_you_entered_location"))
-            config.set("chat.msg_location_messages", req.param("msg_location_messages"))
+            char = self.character(req.user())
+            config.set("chat.msg_went_online", self.call("script.admin-text", "msg_went_online", errors, globs={"char": char}, require_glob=["char"]))
+            config.set("chat.msg_went_offline", self.call("script.admin-text", "msg_went_offline", errors, globs={"char": char}, require_glob=["char"]))
+            config.set("chat.msg_entered_location", self.call("script.admin-text", "msg_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
+            config.set("chat.msg_left_location", self.call("script.admin-text", "msg_left_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
+            config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["loc_to"]))
+            config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
             # colors
             config.set("chat.colors", re_color.findall(req.param("colors").lower()))
@@ -296,12 +297,6 @@ class Chat(ConstructorModule):
             cmd_dip = self.cmd_dip()
             if cmd_dip != "":
                 cmd_dip = "/%s" % cmd_dip
-            msg_went_online = self.msg_went_online()
-            msg_went_offline = self.msg_went_offline()
-            msg_entered_location = self.msg_entered_location()
-            msg_left_location = self.msg_left_location()
-            msg_you_entered_location = self.msg_you_entered_location()
-            msg_location_messages = self.msg_location_messages()
             auth_msg_channel = self.auth_msg_channel()
             colors = "\n".join(self.chat_colors())
         fields = [
@@ -315,12 +310,12 @@ class Chat(ConstructorModule):
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
             {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld"},
-            {"name": "msg_went_online", "label": self._("Message about character went online"), "value": msg_went_online},
-            {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": msg_went_offline},
-            {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": msg_entered_location},
-            {"name": "msg_left_location", "label": self._("Message about character left location"), "value": msg_left_location},
-            {"name": "msg_you_entered_location", "label": self._("Message about your character entered location"), "value": msg_you_entered_location},
-            {"name": "msg_location_messages", "label": self._("Message heading messages from new location"), "value": msg_location_messages},
+            {"name": "msg_went_online", "label": self._("Message about character went online"), "value": self.call("script.unparse-text", self.msg_went_online())},
+            {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": self.call("script.unparse-text", self.msg_went_offline())},
+            {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": self.call("script.unparse-text", self.msg_entered_location())},
+            {"name": "msg_left_location", "label": self._("Message about character left location"), "value": self.call("script.unparse-text", self.msg_left_location())},
+            {"name": "msg_you_entered_location", "label": self._("Message about your character entered location"), "value": self.call("script.unparse-text", self.msg_you_entered_location())},
+            {"name": "msg_location_messages", "label": self._("Message heading messages from new location"), "value": self.call("script.unparse-text", self.msg_location_messages())},
             {"name": "colors", "label": self._("Chat colours players are allowed to use (newline separated)"), "value": colors, "type": "textarea"},
         ]
         self.call("admin.form", fields=fields)
@@ -464,10 +459,10 @@ class Chat(ConstructorModule):
         body_html = "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens)
         color = author.settings.get("chat_color")
         if color:
-            paid_colours_support = self.call("paidservices.chat-colours")
+            paid_colours_support = self.call("paidservices.chat_colours")
             if paid_colours_support:
-                paid_colours_support = self.conf("paidservices.enabled-chat-colours", paid_colours_support["default_enabled"])
-            if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat-colours"):
+                paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
+            if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat_colours"):
                 color = None
         if color:
             body_html = '<span style="color: %s">%s</span>' % (color, body_html)
@@ -620,27 +615,45 @@ class Chat(ConstructorModule):
         return channel
 
     def msg_went_online(self):
-        return self.conf("chat.msg_went_online", self._("{NAME_CHAT} {GENDER:went,went} online"))
+        msg = self.conf("chat.msg_went_online")
+        if type(msg) is list:
+            return msg
+        return [[".", ["glob", "char"], "chatname"], " ", ["index", [".", ["glob", "char"], "sex"], self._("maleonline///went"), self._("femaleonline///went")], " ", self._("went///online")]
 
     def msg_went_offline(self):
-        return self.conf("chat.msg_went_offline", self._("{NAME_CHAT} {GENDER:went,went} offline"))
+        msg = self.conf("chat.msg_went_offline")
+        if type(msg) is list:
+            return msg
+        return [[".", ["glob", "char"], "chatname"], " ", ["index", [".", ["glob", "char"], "sex"], self._("maleoffline///went"), self._("femaleoffline///went")], " ", self._("went///offline")]
 
     def msg_entered_location(self):
-        return self.conf("chat.msg_entered_location", self._("{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"))
+        msg = self.conf("chat.msg_entered_location")
+        if type(msg) is list:
+            return msg
+        return [[".", ["glob", "char"], "chatname"], " ", ["index", [".", ["glob", "char"], "sex"], self._("malefrom///has come"), self._("femalefrom///has come")], " ", self._("come///from"), " ", [".", ["glob", "loc_from"], "name_f"]]
 
     def msg_you_entered_location(self):
-        return self.conf("chat.msg_you_entered_location", self._("You moved to the {LOCATION}"))
+        msg = self.conf("chat.msg_you_entered_location")
+        if type(msg) is list:
+            return msg
+        return [self._("location///You are now at the"), " ", [".", ["glob", "loc_to"], "name_w"]]
 
     def msg_location_messages(self):
-        return self.conf("chat.msg_location_messages", self._("Messages from the {LOCATION}"))
+        msg = self.conf("chat.msg_location_messages")
+        if type(msg) is list:
+            return msg
+        return [self._("location///Messages from the"), " ", [".", ["glob", "loc_to"], "name_f"]]
 
     def msg_left_location(self):
-        return self.conf("chat.msg_left_location", self._("{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"))
+        msg = self.conf("chat.msg_left_location")
+        if type(msg) is list:
+            return msg
+        return [[".", ["glob", "char"], "chatname"], " ", ["index", [".", ["glob", "char"], "sex"], self._("male///has gone"), self._("female///has gone")], " ", self._("gone///to"), " ", [".", ["glob", "loc_to"], "name_t"]]
 
     def character_online(self, character):
         msg = self.msg_went_online()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel=self.auth_msg_channel(character), cls="auth")
+            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character}, description=self._("Character went online")), channel=self.auth_msg_channel(character), cls="auth")
         # joining channels
         channels = []
         self.call("chat.character-channels", character, channels)
@@ -698,17 +711,13 @@ class Chat(ConstructorModule):
                 "priv": msg.get("priv"),
             } for msg in messages]
             self.call("stream.packet", syschannel, "chat", "msg_list", messages=messages, scroll_disable=True)
-#        # current location
-#        msg = self.msg_you_entered_location()
-#        if msg:
-#            self.call("stream.character", character, "chat", "current_location", html=self.call("quest.format_text", msg, character=character, location=character.location), scroll_disable=True)
         self.call("stream.character", character, "chat", "scroll_bottom")
         self.call("stream.character", character, "chat", "open_default_channel")
 
     def character_offline(self, character):
         msg = self.msg_went_offline()
         if msg:
-            self.call("chat.message", html=self.call("quest.format_text", msg, character=character), channel=self.auth_msg_channel(character), cls="auth")
+            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character}, description=self._("Character went offline")), channel=self.auth_msg_channel(character), cls="auth")
         # unjoining all channels
         lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
         lst.load(silent=True)
@@ -968,10 +977,10 @@ class Chat(ConstructorModule):
                 if color not in self.chat_colors():
                     form.error("chat_color", self._("Select a valid colour"))
                 else:
-                    paid_colours_support = self.call("paidservices.chat-colours")
+                    paid_colours_support = self.call("paidservices.chat_colours")
                     if paid_colours_support:
-                        paid_colours_support = self.conf("paidservices.enabled-chat-colours", paid_colours_support["default_enabled"])
-                    if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat-colours"):
+                        paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
+                    if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat_colours"):
                         form.error("chat_color", self._('To use colours in the chat <a href="/paidservices">subscribe to the corresponding service</a>'))
         elif action == "store":
             req = self.req()
@@ -1015,7 +1024,7 @@ class Chat(ConstructorModule):
             return character._roster_info
 
     def paid_services_available(self, services):
-        services.append({"id": "chat-colours", "type": "main"})
+        services.append({"id": "chat_colours", "type": "main"})
 
     def money_description_chat_colours(self):
         return {
@@ -1030,7 +1039,7 @@ class Chat(ConstructorModule):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "chat-colours",
+            "id": "chat_colours",
             "name": self._("Colours in the chat"),
             "description": self._("Basically your can not use colours in the chat - all messages are the same colour. If you want to use arbitrary colours you can use this option"),
             "subscription": True,

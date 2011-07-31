@@ -1,0 +1,17 @@
+<h1>[%text%]</h1>
+<table border="1">
+[%if host%]<tr><td>[%Host%]</td><td><strong>[%host%]</strong></td></tr>[%end%]
+[%if uri%]<tr><td>[%URL%]</td><td><strong>[%uri%]</strong></td></tr>[%end%]
+[%if context%]<tr><td>[%Context%]</td><td><strong>[%context%]</strong></td></tr>[%end%]
+[%if expression%]<tr><td>[%Expression%]</td><td><strong>[%expression%]</strong></td></tr>[%end%]
+</table>
+[%if params%]
+<h1>[%RequestParameters%]</h1>
+<table border="1">[%foreach ent in params%]<tr><td>[%ent.key%]</td><td>[%foreach val in ent.values%]<div><strong>[%val%]</strong></div>[%end%]</td></tr>[%end%]</table>
+[%end%]
+[%if session%]
+<h1>[%Session%]</h1>
+<table border="1">
+<tr><td>User</td><td>[%if session.user%]<strong>[%session.user%]</strong>[%else%]none[%end%]</td></tr>
+</table>
+[%end%]

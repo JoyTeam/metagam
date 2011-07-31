@@ -7,27 +7,27 @@ class PaidServices(Module):
         self.rhook("ext-socio.paid-services", self.ext_paid_services, priv="logged")
         self.rhook("ext-socio.paid-service", self.ext_paid_service, priv="logged")
         # coloured avatar
-        self.rhook("paidservices.socio-coloured-avatar", self.srv_coloured_avatar)
-        self.rhook("money-description.socio-coloured-avatar", self.money_description_coloured_avatar)
+        self.rhook("paidservices.socio_coloured_avatar", self.srv_coloured_avatar)
+        self.rhook("money-description.socio_coloured_avatar", self.money_description_coloured_avatar)
         # signature images
-        self.rhook("paidservices.socio-signature-images", self.srv_signature_images)
-        self.rhook("money-description.socio-signature-images", self.money_description_signature_images)
+        self.rhook("paidservices.socio_signature_images", self.srv_signature_images)
+        self.rhook("money-description.socio_signature_images", self.money_description_signature_images)
         # signature smiles
-        self.rhook("paidservices.socio-signature-smiles", self.srv_signature_smiles)
-        self.rhook("money-description.socio-signature-smiles", self.money_description_signature_smiles)
+        self.rhook("paidservices.socio_signature_smiles", self.srv_signature_smiles)
+        self.rhook("money-description.socio_signature_smiles", self.money_description_signature_smiles)
         # signature colours
-        self.rhook("paidservices.socio-signature-colours", self.srv_signature_colours)
-        self.rhook("money-description.socio-signature-colours", self.money_description_signature_colours)
+        self.rhook("paidservices.socio_signature_colours", self.srv_signature_colours)
+        self.rhook("money-description.socio_signature_colours", self.money_description_signature_colours)
         # premium pack
-        self.rhook("paidservices.socio-premium-pack", self.srv_premium_pack)
-        self.rhook("money-description.socio-premium-pack", self.money_description_premium_pack)
+        self.rhook("paidservices.socio_premium_pack", self.srv_premium_pack)
+        self.rhook("money-description.socio_premium_pack", self.money_description_premium_pack)
 
     def srv_available(self, services):
-        services.append({"id": "socio-coloured-avatar", "type": "socio"})
-        services.append({"id": "socio-signature-images", "type": "socio"})
-        services.append({"id": "socio-signature-smiles", "type": "socio"})
-        services.append({"id": "socio-signature-colours", "type": "socio"})
-        services.append({"id": "socio-premium-pack", "type": "socio"})
+        services.append({"id": "socio_coloured_avatar", "type": "socio"})
+        services.append({"id": "socio_signature_images", "type": "socio"})
+        services.append({"id": "socio_signature_smiles", "type": "socio"})
+        services.append({"id": "socio_signature_colours", "type": "socio"})
+        services.append({"id": "socio_premium_pack", "type": "socio"})
 
     def ext_paid_services(self):
         req = self.req()
@@ -111,7 +111,7 @@ class PaidServices(Module):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "socio-coloured-avatar",
+            "id": "socio_coloured_avatar",
             "name": self._("Coloured avatar on the forum"),
             "description": self._("Basically your avatar can be monochrome only. If you want coloured avatar you can use this option"),
             "subscription": True,
@@ -139,7 +139,7 @@ class PaidServices(Module):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "socio-signature-images",
+            "id": "socio_signature_images",
             "name": self._("Images in the signature"),
             "description": self._("Basically your can not use images in your forum signature. If you want to use images you can use this option"),
             "subscription": True,
@@ -167,7 +167,7 @@ class PaidServices(Module):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "socio-signature-smiles",
+            "id": "socio_signature_smiles",
             "name": self._("Smiles in the signature"),
             "description": self._("Basically your can not use smiles in your forum signature. If you want to use smiles you can use this option"),
             "subscription": True,
@@ -195,7 +195,7 @@ class PaidServices(Module):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "socio-signature-colours",
+            "id": "socio_signature_colours",
             "name": self._("Colours in the signature"),
             "description": self._("Basically your can not use colours in your forum signature. If you want to use colours you can use this option"),
             "subscription": True,
@@ -223,11 +223,11 @@ class PaidServices(Module):
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "socio-premium-pack",
+            "id": "socio_premium_pack",
             "name": self._("Premium pack on the forum"),
             "subscription": True,
             "description": self._("This option allows you to use coloured avatar and to include images, smiles and coloured text to your signature on the forum"),
-            "pack": ["socio-coloured-avatar", "socio-signature-smiles", "socio-signature-images", "socio-signature-colours"],
+            "pack": ["socio_coloured_avatar", "socio_signature_smiles", "socio_signature_images", "socio_signature_colours"],
             "type": "socio",
             "default_period": 365 * 86400,
             "default_price": self.call("money.format-price", 300 / cinfo.get("real_roubles", 1), cur),

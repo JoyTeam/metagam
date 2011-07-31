@@ -1,6 +1,7 @@
 from mg import *
 from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmo.locations_classes import Location
+from mg.constructor.script_classes import ScriptError, ScriptParserError
 
 class ConstructorModule(Module):
     def character(self, uuid):

@@ -449,10 +449,11 @@ class Auth(ConstructorModule):
         character_user.set("last_login", now_ts)
         character_user.set("name", values["name"])
         character_user.set("name_lower", values["name"].lower())
+        character_user.set("sex", values["sex"])
         character_form = self.obj(DBCharacterForm, character.uuid, {})
         for fld in fields:
             code = fld["code"]
-            if code == "name":
+            if code == "name" or code == "sex":
                 continue
             val = values.get(code)
             if val is None:

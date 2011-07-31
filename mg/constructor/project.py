@@ -44,7 +44,7 @@ class ConstructorProject(Module):
                 "mg.constructor.design.DesignMod",
                 "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
-                "mg.constructor.quest.QuestEngine",
+                "mg.constructor.script.ScriptEngine",
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
                 "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",

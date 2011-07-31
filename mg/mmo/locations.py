@@ -1,7 +1,6 @@
 from mg import *
 from mg.constructor import *
 from mg.mmo.locations_classes import *
-from mg.constructor.quest_classes import *
 import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import re
@@ -222,16 +221,8 @@ class LocationsAdmin(ConstructorModule):
                 if not loc.valid():
                     errors["v_start_location"] = self._("Invalid starting location")
                 config.set("locations.startloc", start_location)
-            if not movement_delay:
-                errors["movement_delay"] = self._("This field is mandatory")
-            else:
-                try:
-                    config.set("locations.movement-delay", self.call("quest.parse", movement_delay))
-                except ParserError as e:
-                    html = self._(e.val)
-                    if e.exc:
-                        html += '<br />%s' % htmlescape(e.exc)
-                    errors["movement_delay"] = html
+            char = self.character(req.user())
+            config.set("locations.movement-delay", self.call("script.admin-expression", "movement_delay", errors, globs={"char": char, "base_delay": 1}, require_glob=["base_delay"]))
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
@@ -241,15 +232,9 @@ class LocationsAdmin(ConstructorModule):
         locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
         fields = [
             {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
-            {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("quest.help-icon-expressions")), "value": self.call("quest.unparse", self.location_delay_expression())},
+            {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("locations.movement_delay"))},
         ]
         self.call("admin.form", fields=fields)
-
-    def location_delay_expression(self):
-        delay = self.conf("locations.movement-delay")
-        if delay is None:
-            delay = ['/', ['glob', 'base_delay'], ['+', 1, ['.', ['.', ['glob', 'char'], 'maxval'], 'fastmove']]]
-        return delay
 
     def progress_bars(self, bars):
         bars.append({"code": "location-movement", "description": self._("Delay when moving between locations")})
@@ -523,8 +508,9 @@ class Locations(ConstructorModule):
         self.rhook("hook-location.transitions", self.hook_transitions)
         self.rhook("hook-location.name", self.hook_name)
         self.rhook("paidservices.available", self.paid_services_available)
-        self.rhook("paidservices.fast-movement", self.srv_fast_movement)
-        self.rhook("money-description.fast-movement", self.money_description_fast_movement)
+        self.rhook("paidservices.fastmove", self.srv_fastmove)
+        self.rhook("money-description.fastmove", self.money_description_fastmove)
+        self.rhook("locations.movement_delay", self.movement_delay)
 
     def get(self, character):
         try:
@@ -628,6 +614,8 @@ class Locations(ConstructorModule):
             delay = trans.get("delay")
             if delay is None:
                 delay = old_location.delay + new_location.delay
+            # evaluating delay
+            delay = self.call("script.evaluate-expression", self.movement_delay(), {"char": character, "base_delay": delay}, description=self._("Location movement delay"))
             character.set_location(new_location, character.instance, [self.now(), self.now(delay)])
             self.call("web.response_json", {
                 "ok": True,
@@ -696,22 +684,22 @@ class Locations(ConstructorModule):
         raise Hooks.Return('<span class="location-name%s">%s</span>' % (('-%s' % declension) if declension else "", name))
 
     def paid_services_available(self, services):
-        services.append({"id": "fast-movement", "type": "main"})
+        services.append({"id": "fastmove", "type": "main"})
 
-    def money_description_fast_movement(self):
+    def money_description_fastmove(self):
         return {
             "args": ["period", "period_a"],
             "text": self._("Fast movement across the locations for {period}"),
         }
 
-    def srv_fast_movement(self):
+    def srv_fastmove(self):
         cur = self.call("money.real-currency")
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
         return {
-            "id": "fast-movement",
+            "id": "fastmove",
             "name": self._("Fast movement across the locations"),
             "description": self._("If you want to move across locations faster you may use this service"),
             "subscription": True,
@@ -721,3 +709,10 @@ class Locations(ConstructorModule):
             "default_currency": cur,
             "default_enabled": True,
         }
+
+    def movement_delay(self):
+        delay = self.conf("locations.movement-delay")
+        if delay is None:
+            delay = ['/', ['glob', 'base_delay'], ['+', 1, ['.', ['.', ['glob', 'char'], 'mod'], 'fastmove']]]
+        return delay
+

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-29 09:49+0400\n"
+"POT-Creation-Date: 2011-07-31 12:29+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "Guru advice"
 msgstr ""
 
-#: static/js/admin.js:141 static/js/locations.js:23 static/js/locations.js:29
+#: static/js/admin.js:141 static/js/locations.js:23
 #: static/js/realplexor-stream.js:20 static/js/admin-form.js:164
 #: static/js/admin-form.js:167 static/js/admin-form.js:322
 #: static/js/admin-form.js:325 static/js/chat.js:533 static/js/chat.js:541
@@ -47,7 +47,7 @@ msgid "To the main page"
 msgstr ""
 
 #: static/js/locations.js:29
-msgid "Couldn't send command to the server"
+msgid "Error connecting to the server"
 msgstr ""
 
 #: static/js/realplexor-stream.js:21

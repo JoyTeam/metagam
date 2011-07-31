@@ -8,6 +8,7 @@ re_cmd_edit = re.compile(r'^(\S+)/(\d+|new)$')
 re_cmd_del = re.compile(r'^(\S+)/del/(\d+)$')
 re_cmd_pack = re.compile(r'^pack/(\S+)$')
 re_del = re.compile(r'del/(\S+)')
+re_valid_identifier = re.compile(r'^u_[a-z0-9_]+$', re.IGNORECASE)
 
 class PaidServices(ConstructorModule):
     def register(self):
@@ -367,13 +368,20 @@ class PaidServicesAdmin(ConstructorModule):
                         if req.param("cmp-%s" % c["id"]):
                             if tp is None:
                                 tp = c.get("type")
+                    new_uuid = req.param("uuid")
+                    if not new_uuid:
+                        errors["uuid"] = self._("This field is mandatory")
+                    elif not re_valid_identifier.match(new_uuid):
+                        errors["uuid"] = self._("Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'")
+                    elif self.call("paidservices.%s" % new_uuid):
+                        errors["uuid"] = self._("You already have paid service with same ID")
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing
                 config = self.app().config_updater()
                 if uuid == "new":
                     config.set("paidservices.manual-packs", packs)
-                    uuid = uuid4().hex
+                    uuid = new_uuid
                     pack = []
                     for c in components:
                         if req.param("cmp-%s" % c["id"]):
@@ -400,6 +408,7 @@ class PaidServicesAdmin(ConstructorModule):
                 {"name": "description", "value": description, "label": self._("Packet description")},
             ]
             if uuid == "new":
+                fields.insert(0, {"name": "uuid", "label": self._("Packet identifier (for usage in scripting)"), "value": "u_"})
                 first = True
                 for c in components:
                     fields.append({"name": "cmp-%s" % c["id"], "label": c["name"], "type": "checkbox"})
@@ -460,7 +469,7 @@ class PaidServicesAdmin(ConstructorModule):
             offers = ['<div>%s</div>' % off["html"] for off in offers]
             offers.append('<hook:admin.link href="paidservices/editor/%s" title="%s" />' % (srv_id["id"], self._("edit")))
             offers = ''.join(offers)
-            name = '<strong>%s</strong>' % srv.get("name")
+            name = '<strong>%s</strong><br />char.mod.%s' % (srv.get("name"), srv_id["id"])
             if srv.get("pack"):
                 name += '<ul>'
                 for s in srv.get("pack"):

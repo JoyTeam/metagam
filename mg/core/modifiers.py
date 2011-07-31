@@ -80,6 +80,15 @@ class ModifiersDaemon(Daemon):
                 self.exception(e)
             Tasklet.sleep(3)
 
+class Mods(Module):
+    def __init__(self, app, target):
+        Module.__init__(self, app, "mg.constructor.players.Modifiers")
+        self.target = target
+
+    def script_attr(self, attr):
+        mods = self.call("modifiers.list", self.target)
+        return 1 if attr in mods else 0
+
 class Modifiers(Module):
     def register(self):
         Module.register(self)
@@ -91,6 +100,10 @@ class Modifiers(Module):
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("modifiers.cleanup", self.mod_cleanup)
         self.rhook("modifiers.stop", self.mod_stop)
+        self.rhook("modifiers.obj", self.mod_obj)
+
+    def mod_obj(self, target):
+        return Mods(self.app(), target)
 
     def schedule(self, sched):
         sched.add("modifiers.cleanup", "20 1 * * *", priority=10)

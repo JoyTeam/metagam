@@ -133,3 +133,20 @@ class Location(Module):
             self._delay = self.db_location.get("delay", default_location_delay)
             return self._delay
 
+    def script_attr(self, attr):
+        if attr == "id":
+            return self.uuid
+        elif attr == "name":
+            return self.name
+        elif attr == "name_g":
+            return self.name_g
+        elif attr == "name_a":
+            return self.name_a
+        elif attr == "name_f":
+            return self.name_f
+        elif attr == "name_t":
+            return self.name_t
+        elif attr == "name_w":
+            return self.name_w
+        else:
+            raise AttributeError(attr)

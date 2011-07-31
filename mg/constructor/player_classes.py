@@ -277,6 +277,28 @@ class Character(Module):
             self._settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._settings
 
+    def script_attr(self, attr):
+        if attr == "id":
+            return self.uuid
+        elif attr == "player":
+            return self.player
+        elif attr == "money":
+            return self.money
+        elif attr == "location":
+            return self.location
+        elif attr == "tech_online":
+            return self.tech_online
+        elif attr == "name":
+            return self.name
+        elif attr == "chatname":
+            return "[ch:%s]" % self.uuid
+        elif attr == "sex":
+            return self.sex
+        elif attr == "mod":
+            return self.call("modifiers.obj", self.uuid)
+        else:
+            raise AttributeError(attr)
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)
@@ -314,6 +336,16 @@ class Player(Module):
         except AttributeError:
             self._email = self.db_user.get("email")
             return self._email
+
+    def script_attr(self, attr):
+        if attr == "email":
+            return self.email
+        elif attr == "id":
+            return self.uuid
+        elif attr == "mod":
+            return self.call("modifiers.obj", self.uuid)
+        else:
+            raise AttributeError(attr)
 
 class Characters(Module):
     def __init__(self, app, fqn="mg.constructor.players.Characters"):

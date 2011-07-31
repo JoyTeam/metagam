@@ -91,7 +91,7 @@ class Email(Module):
         self.rhook("email.users", self.email_users)
         self.rhook("exception.report", self.exception_report)
 
-    def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True):
+    def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
         if not immediately:
             return self.call("queue.add", "email.send", {
                 "to_email": to_email,
@@ -103,6 +103,7 @@ class Email(Module):
                 "immediately": True,
                 "subtype": subtype,
                 "signature": signature,
+                "headers": headers,
             }, retry_on_fail=True)
         params = {
             "email": "robot@%s" % self.app().inst.config["main_host"],
@@ -137,6 +138,12 @@ class Email(Module):
                 now = datetime.datetime.now()
                 stamp = time.mktime(now.timetuple())
                 msg["Date"] = formatdate(timeval=stamp, localtime=False, usegmt=True)
+                try:
+                    msg["X-Metagam-Project"] = self.app().tag
+                except AttributeError:
+                    pass
+                for key, val in headers.iteritems():
+                    msg[key] = val
                 body = msg.as_string()
             s.sendmail("<%s>" % from_email, ["<%s>" % to_email], body)
         except SMTPRecipientsRefused as e:
@@ -481,6 +488,10 @@ class EmailSender(Module):
         multipart["From"] = "%s <%s>" % (Header(params["name"], "utf-8"), params["email"])
         multipart["To"] = "%s <%s>" % (Header(name, "utf-8"), email)
         multipart["type"] = "text/html"
+        try:
+            multipart["X-Metagam-Project"] = self.app().tag
+        except AttributeError:
+            pass
         now = datetime.datetime.now()
         stamp = time.mktime(now.timetuple())
         multipart["Date"] = formatdate(timeval=stamp, localtime=False, usegmt=True)

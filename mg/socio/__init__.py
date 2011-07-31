@@ -1170,27 +1170,27 @@ class Forum(Module):
     def load_settings(self, list, signatures, avatars, statuses):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
         if len(authors):
-            grayscale_support = self.call("paidservices.socio-coloured-avatar")
+            grayscale_support = self.call("paidservices.socio_coloured_avatar")
             if grayscale_support:
-                grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
-            paid_images_support = self.call("paidservices.socio-signature-images")
+                grayscale_support = self.conf("paidservices.enabled-socio_coloured_avatar", grayscale_support["default_enabled"])
+            paid_images_support = self.call("paidservices.socio_signature_images")
             if paid_images_support:
-                paid_images_support = self.conf("paidservices.enabled-socio-signature-images", paid_images_support["default_enabled"])
-            paid_smiles_support = self.call("paidservices.socio-signature-smiles")
+                paid_images_support = self.conf("paidservices.enabled-socio_signature_images", paid_images_support["default_enabled"])
+            paid_smiles_support = self.call("paidservices.socio_signature_smiles")
             if paid_smiles_support:
-                paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
-            paid_colours_support = self.call("paidservices.socio-signature-colours")
+                paid_smiles_support = self.conf("paidservices.enabled-socio_signature_smiles", paid_smiles_support["default_enabled"])
+            paid_colours_support = self.call("paidservices.socio_signature_colours")
             if paid_colours_support:
-                paid_colours_support = self.conf("paidservices.enabled-socio-signature-colours", paid_colours_support["default_enabled"])
+                paid_colours_support = self.conf("paidservices.enabled-socio_signature_colours", paid_colours_support["default_enabled"])
             # loading settings
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
-                grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio-coloured-avatar")
+                grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio_coloured_avatar")
                 signatures[obj.uuid] = self.call("socio.format_text", obj.get("signature"), {
-                    "no_images": not self.conf("socio.signature-images", True) or (paid_images_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-images")),
-                    "no_smiles": not self.conf("socio.signature-smiles", False) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-smiles")),
-                    "no_colours": not self.conf("socio.signature-colours", True) or (paid_colours_support and not self.call("modifiers.kind", obj.uuid, "socio-signature-colours")),
+                    "no_images": not self.conf("socio.signature-images", True) or (paid_images_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_images")),
+                    "no_smiles": not self.conf("socio.signature-smiles", False) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_smiles")),
+                    "no_colours": not self.conf("socio.signature-colours", True) or (paid_colours_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_colours")),
                     "max_smiles": self.conf("socio.signature-max-smiles", 3),
                 })
                 avatars[obj.uuid] = obj.get("avatar_gray" if grayscale else "avatar")
@@ -1919,19 +1919,19 @@ class Forum(Module):
         for cat in categories:
             notify[cat["id"]] = req.param("notify_%s" % cat["id"])
         # paid services
-        grayscale_support = self.call("paidservices.socio-coloured-avatar")
+        grayscale_support = self.call("paidservices.socio_coloured_avatar")
         if grayscale_support:
-            grayscale_support = self.conf("paidservices.enabled-socio-coloured-avatar", grayscale_support["default_enabled"])
-        grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio-coloured-avatar")
-        paid_images_support = self.call("paidservices.socio-signature-images")
+            grayscale_support = self.conf("paidservices.enabled-socio_coloured_avatar", grayscale_support["default_enabled"])
+        grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio_coloured_avatar")
+        paid_images_support = self.call("paidservices.socio_signature_images")
         if paid_images_support:
-            paid_images_support = self.conf("paidservices.enabled-socio-signature-images", paid_images_support["default_enabled"])
-        paid_smiles_support = self.call("paidservices.socio-signature-smiles")
+            paid_images_support = self.conf("paidservices.enabled-socio_signature_images", paid_images_support["default_enabled"])
+        paid_smiles_support = self.call("paidservices.socio_signature_smiles")
         if paid_smiles_support:
-            paid_smiles_support = self.conf("paidservices.enabled-socio-signature-smiles", paid_smiles_support["default_enabled"])
-        paid_colours_support = self.call("paidservices.socio-signature-colours")
+            paid_smiles_support = self.conf("paidservices.enabled-socio_signature_smiles", paid_smiles_support["default_enabled"])
+        paid_colours_support = self.call("paidservices.socio_signature_colours")
         if paid_colours_support:
-            paid_colours_support = self.conf("paidservices.enabled-socio-signature-colours", paid_colours_support["default_enabled"])
+            paid_colours_support = self.conf("paidservices.enabled-socio_signature_colours", paid_colours_support["default_enabled"])
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1956,7 +1956,7 @@ class Forum(Module):
                                 form.error("signature", self._("Signature can't contain images"))
                                 break
                             else:
-                                if paid_images_support and not self.call("modifiers.kind", user_uuid, "socio-signature-images"):
+                                if paid_images_support and not self.call("modifiers.kind", user_uuid, "socio_signature_images"):
                                     form.error("signature", self._('To use images in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
                                     break
                                 else:
@@ -2001,7 +2001,7 @@ class Forum(Module):
                     if not self.conf("socio.signature-smiles", False):
                         form.error("signature", self._("Signature can't contain smiles"))
                     else:
-                        if paid_smiles_support and not self.call("modifiers.kind", user_uuid, "socio-signature-smiles"):
+                        if paid_smiles_support and not self.call("modifiers.kind", user_uuid, "socio_signature_smiles"):
                             form.error("signature", self._('To use smiles in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
                         else:
                             max_s = self.conf("socio.signature-max-smiles", 3)
@@ -2011,7 +2011,7 @@ class Forum(Module):
                     if not self.conf("socio.signature-colours", True):
                         form.error("signature", self._("Signature can't contain colours"))
                     else:
-                        if paid_colours_support and not self.call("modifiers.kind", user_uuid, "socio-signature-colours"):
+                        if paid_colours_support and not self.call("modifiers.kind", user_uuid, "socio_signature_colours"):
                             form.error("signature", self._('To use colours in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
             image_obj = None
             if avatar:
