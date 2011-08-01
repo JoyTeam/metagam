@@ -272,6 +272,7 @@ class RealplexorDaemon(Daemon):
 
     def main(self):
         resync = True
+        self.call("stream.init")
         while not self.terminate:
             try:
                 rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
@@ -319,6 +320,7 @@ class RealplexorDaemon(Daemon):
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(1)
+        self.call("stream.done")
 
 class RealplexorAdmin(Module):
     def register(self):

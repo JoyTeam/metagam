@@ -58,6 +58,7 @@ class ConstructorProject(Module):
                     "mg.constructor.paidservices.PaidServices",
                     "mg.constructor.paidservices.PaidServicesAdmin",
                     "mg.core.modifiers.Modifiers",
+                    "mg.constructor.marketing.GameReporter",
                 ])
             if self.conf("module.sociointerface"):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])

@@ -231,18 +231,21 @@ class Sessions(Module):
                 if cache:
                     req._session = session
                 return session
+        elif not create:
+            req._session = None
+            return None
         sid = uuid4().hex
-        args = {}
-        if domain is None:
-            domain = req.environ.get("HTTP_X_REAL_HOST")
-        if domain is not None:
-            #domain = re.sub(r'^www\.', '', domain)
-            args["domain"] = "." + domain
-        args["path"] = "/"
-        args["expires"] = format_date_time(time.mktime(datetime.datetime.now().timetuple()) + 90 * 86400)
-        req.set_cookie(cookie_name, sid, **args)
         session = self.obj(Session, sid, {})
         if create:
+            args = {}
+            if domain is None:
+                domain = req.environ.get("HTTP_X_REAL_HOST")
+            if domain is not None:
+                #domain = re.sub(r'^www\.', '', domain)
+                args["domain"] = "." + domain
+            args["path"] = "/"
+            args["expires"] = format_date_time(time.mktime(datetime.datetime.now().timetuple()) + 90 * 86400)
+            req.set_cookie(cookie_name, sid, **args)
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))

@@ -435,6 +435,9 @@ class Module(object):
     def now_local(self, add=0):
         return self.app().now_local(add)
 
+    def yesterday_interval(self):
+        return self.app().yesterday_interval()
+
     def lock(self, *args, **kwargs):
         return self.app().lock(*args, **kwargs)
 
@@ -890,6 +893,12 @@ class Application(object):
         if not now:
             return self.now(add)
         return now.strftime("%Y-%m-%d %H:%M:%S")
+
+    def yesterday_interval(self):
+        now = datetime.datetime.utcnow()
+        yesterday = (now + datetime.timedelta(seconds=-86400)).strftime("%Y-%m-%d")
+        today = now.strftime("%Y-%m-%d")
+        return '%s 00:00:00' % yesterday, '%s 00:00:00' % today
 
     def store_config_hooks(self, notify=True):
         self.config.store()

@@ -23,6 +23,24 @@ default_icons = set([
     "game-reload.png",
 ])
 
+class DBFirstVisit(CassandraObject):
+    _indexes = {
+        "all": [[]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "FirstVisit-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBFirstVisit._indexes
+
+class DBFirstVisitList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "FirstVisit-"
+        kwargs["cls"] = DBFirstVisit
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class Dynamic(Module):
     def register(self):
         Module.register(self)
@@ -157,6 +175,7 @@ class Interface(ConstructorModule):
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
         objclasses["Popup"] = (DBPopup, DBPopupList)
+        objclasses["FirstVisit"] = (DBFirstVisit, DBFirstVisitList)
 
     def auth_messages(self, msg):
         msg["name_unknown"] = self._("Character not found")
@@ -164,9 +183,13 @@ class Interface(ConstructorModule):
 
     def index(self):
         req = self.req()
+        session = req.session()
+        if not session:
+            obj = self.obj(DBFirstVisit, req.remote_addr(), silent=True)
+            obj.touch()
+            obj.store()
         session_param = req.param("session")
         if session_param and req.environ.get("REQUEST_METHOD") == "POST":
-            session = req.session()
             if not session or session.uuid != session_param:
                 self.call("web.redirect", "/")
             user = session.get("user")

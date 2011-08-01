@@ -3,7 +3,9 @@
 use strict;
 use utf8;
 use lib ($0 =~ /(.*)\//) ? $1 : '.';
+
 use mg::instance;
+use Data::Dumper;
 
 my $inst = mg::instance->new;
 my $sql = $inst->sql->{dbh};
@@ -18,7 +20,11 @@ while (1) {
 	# processing records
 	for my $ent (@$lst) {
 		no strict 'refs';
-		my $handler = \&{"handlers::$ent->{type}"} or die "Unknown DBExport type $ent->{type}\n";
+		my $handler = "handlers::$ent->{type}";
+		unless (defined &{$handler}) {
+			local $Data::Dumper::Indent = 0;
+			die "Unknown DBExport $ent->{type}: " . Dumper($ent) . "\n";
+		}
 		$handler->($inst, $ent);
 	}
 
@@ -29,6 +35,8 @@ while (1) {
 
 package handlers;
 
+use Data::Dumper;
+
 sub test
 {
 	my $inst = shift;
@@ -36,3 +44,4 @@ sub test
 
 	print "storing test\n";
 }
+

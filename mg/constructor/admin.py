@@ -42,7 +42,6 @@ class Constructor(Module):
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
             "mg.socio.paidservices.PaidServices",
             "mg.core.dbexport.Export",
-            "mg.constructor.marketing.GameReporter",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
