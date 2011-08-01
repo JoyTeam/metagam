@@ -11,30 +11,54 @@ our (@sql_other, @sql_create_index, @sql_drop_index, @sql_create_foreign_key, @s
 our $db = $inst->sql->{dbh};
 
 sql_init();
-sql_table('income',
+sql_table('donate',
 	[
-		'uuid' => [ -type=>'varchar(32)', -null=>0 ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
-		'income' => [ -type=>'decimal(16,2)', -null=>0 ],
-		'chargebacks' => [ -type=>'decimal(16,2)', -null=>0 ],
+		'income_cnt' => [ -type=>'integer', -null=>0 ],
+		'income_amount' => [ -type=>'decimal(16,2)', -null=>0 ],
+		'chargebacks_cnt' => [ -type=>'integer', -null=>0 ],
+		'chargebacks_amount' => [ -type=>'decimal(16,2)', -null=>0 ],
 	], [
-		'index' => 'uuid',
 		'index' => 'app,period',
-		'index' => 'period',
+	]
+);
+sql_table('donators',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'user' => [ -type=>'varchar(32)', -null=>0 ],
+		'income_cnt' => [ -type=>'integer', -null=>0 ],
+		'income_amount' => [ -type=>'decimal(16,2)', -null=>0 ],
+		'chargebacks_cnt' => [ -type=>'integer', -null=>0 ],
+		'chargebacks_amount' => [ -type=>'decimal(16,2)', -null=>0 ],
+	], [
+		'index' => 'app,period,user',
 	]
 );
 sql_table('visits',
 	[
-		'uuid' => [ -type=>'varchar(32)', -null=>0 ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
-		'peakonline' => [ -type=>'integer', -null=>0 ],
-		'users' => [ -type=>'integer', -null=>0 ],
+		'peak_ccu' => [ -type=>'integer', -null=>0 ],
+		'ccu_dist' => [ -type=>'varchar(150)', -null=>0 ],
+		'new_users' => [ -type=>'integer', -null=>0 ],
+		'registered' => [ -type=>'integer', -null=>0 ],
+		'returned' => [ -type=>'integer', -null=>0 ],
+		'abandoned' => [ -type=>'integer', -null=>0 ],
+		'active' => [ -type=>'integer', -null=>0 ],
 	], [
-		'index' => 'uuid',
 		'index' => 'app,period',
-		'index' => 'period',
+	]
+);
+sql_table('active_players',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'player' => [ -type=>'varchar(32)', -null=>0 ],
+		'online' => [ -type=>'integer', -null=>0 ],
+	], [
+		'index' => 'app,period',
 	]
 );
 sql_done();

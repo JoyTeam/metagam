@@ -691,15 +691,20 @@ class Xsolla(Module):
                                 id_shop = id
                                 sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
+                                currency = self.call("money.real-currency")
+                                cinfo = self.call("money.currency-info", currency)
+                                amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
                                 payment = self.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
+                                payment.set("amount_rub", amount_rub)
                                 member = MemberMoney(self.app(), user.uuid)
-                                member.credit(sum_v, self.call("money.real-currency"), "xsolla-pay", payment_id=id, payment_performed=date)
+                                member.credit(sum_v, currency, "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
+                                self.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
                                 result = 0
                                 id_shop = id
                     else:
@@ -721,6 +726,7 @@ class Xsolla(Module):
                                 member = MemberMoney(self.app(), payment.get("user"))
                                 member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
+                                self.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
                                 result = 0
                         except ObjectNotFoundException:
                             result = 2
