@@ -111,7 +111,7 @@ class AccountOperationList(CassandraObjectList):
         kwargs["cls"] = AccountOperation
         CassandraObjectList.__init__(self, *args, **kwargs)
 
-class Payment2pay(CassandraObject):
+class PaymentXsolla(CassandraObject):
     _indexes = {
         "all": [[], "performed"],
         "user": [["user"], "performed"],
@@ -119,20 +119,20 @@ class Payment2pay(CassandraObject):
     }
 
     def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
+        kwargs["clsprefix"] = "PaymentXsolla-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
+        kwargs["clsprefix"] = "PaymentXsolla-"
         CassandraObject.__init__(self, *args, **kwargs)
 
     def indexes(self):
-        return Payment2pay._indexes
+        return PaymentXsolla._indexes
 
-class Payment2payList(CassandraObjectList):
+class PaymentXsollaList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Payment2pay-"
-        kwargs["cls"] = Payment2pay
+        kwargs["clsprefix"] = "PaymentXsolla-"
+        kwargs["cls"] = PaymentXsolla
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class MemberMoney(object):

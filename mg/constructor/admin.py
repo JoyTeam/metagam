@@ -28,7 +28,7 @@ class Constructor(Module):
             "mg.core.projects.Projects",
             "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.core.money.MoneyAdmin", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin",
-            "mg.core.money.TwoPay", "mg.core.money.TwoPayAdmin",
+            "mg.core.money.Xsolla", "mg.core.money.XsollaAdmin",
             "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
@@ -41,6 +41,8 @@ class Constructor(Module):
             "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
             "mg.socio.paidservices.PaidServices",
+            "mg.core.dbexport.Export",
+            "mg.constructor.marketing.GameReporter",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -69,7 +71,7 @@ class Constructor(Module):
         self.rhook("email.sender", self.email_sender)
         self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
         self.rhook("currencies.list", self.currencies_list, priority=100)
-        self.rhook("2pay.payment-args", self.payment_args)
+        self.rhook("xsolla.payment-args", self.payment_args)
 
     def payment_args(self, args, options):
         req = self.req()

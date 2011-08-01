@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-31 22:04+0400\n"
+"POT-Creation-Date: 2011-08-01 15:34+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,7 +87,7 @@ msgstr ""
 msgid "Select silence interval"
 msgstr ""
 
-#: mg/socio/restraints.py:162 mg/constructor/dashboard.py:265
+#: mg/socio/restraints.py:162 mg/constructor/dashboard.py:266
 msgid "Reason is mandatory"
 msgstr ""
 
@@ -601,7 +601,7 @@ msgid ""
 "allowed"
 msgstr ""
 
-#: mg/socio/__init__.py:1891 mg/core/web.py:825 mg/core/director.py:403
+#: mg/socio/__init__.py:1891 mg/core/web.py:825 mg/core/director.py:435
 #: mg/admin/__init__.py:264 mg/constructor/setup.py:161
 #: mg/constructor/setup.py:225
 msgid "Save"
@@ -717,7 +717,7 @@ msgid "New topics in '{topcat} / {cat}'"
 msgstr ""
 
 #: mg/socio/__init__.py:2109 mg/core/auth.py:619 mg/constructor/money.py:81
-#: mg/constructor/dashboard.py:295
+#: mg/constructor/dashboard.py:296
 msgid "Return"
 msgstr ""
 
@@ -852,7 +852,7 @@ msgstr ""
 
 #: mg/socio/__init__.py:2666 mg/socio/__init__.py:2675
 #: mg/socio/__init__.py:2684 mg/core/money.py:199 mg/core/money.py:423
-#: mg/core/money.py:1124 mg/constructor/paidservices.py:553
+#: mg/core/money.py:1123 mg/constructor/paidservices.py:553
 #: mg/constructor/paidservices.py:567
 msgid "Invalid number format"
 msgstr ""
@@ -1583,7 +1583,7 @@ msgid "Enter a number (6 digits) from the picture"
 msgstr ""
 
 #: mg/core/auth.py:462 mg/constructor/admin.py:215
-#: mg/constructor/dashboard.py:187
+#: mg/constructor/dashboard.py:188
 msgid "Register"
 msgstr ""
 
@@ -2188,47 +2188,63 @@ msgstr ""
 msgid "Recipient's sex"
 msgstr ""
 
-#: mg/core/director.py:315
+#: mg/core/director.py:316
 msgid "Welcome to the cluster control center"
 msgstr ""
 
-#: mg/core/director.py:316
+#: mg/core/director.py:317
 msgid "Change cluster settings"
 msgstr ""
 
-#: mg/core/director.py:322
+#: mg/core/director.py:323
 msgid "List of servers online"
 msgstr ""
 
-#: mg/core/director.py:387
+#: mg/core/director.py:411
 msgid "Cluster settings"
 msgstr ""
 
-#: mg/core/director.py:389
+#: mg/core/director.py:413
 msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 msgstr ""
 
-#: mg/core/director.py:391
+#: mg/core/director.py:415
 msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 msgstr ""
 
-#: mg/core/director.py:393
+#: mg/core/director.py:417
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr ""
 
-#: mg/core/director.py:395
+#: mg/core/director.py:419
 msgid "<strong>Main application host name</strong> (without www)"
 msgstr ""
 
-#: mg/core/director.py:397
+#: mg/core/director.py:421
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr ""
 
-#: mg/core/director.py:399
-msgid "<strong>SMTP server</strong> (host)"
+#: mg/core/director.py:423
+msgid "<strong>SMTP server</strong>"
 msgstr ""
 
-#: mg/core/director.py:401
+#: mg/core/director.py:425
+msgid "<strong>MySQL server</strong>"
+msgstr ""
+
+#: mg/core/director.py:427
+msgid "<strong>MySQL database</strong>"
+msgstr ""
+
+#: mg/core/director.py:429
+msgid "<strong>MySQL user</strong>"
+msgstr ""
+
+#: mg/core/director.py:431
+msgid "<strong>MySQL password</strong>"
+msgstr ""
+
+#: mg/core/director.py:433
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr ""
 
@@ -2435,15 +2451,15 @@ msgstr ""
 msgid "Take money"
 msgstr ""
 
-#: mg/core/money.py:415 mg/core/money.py:1109
+#: mg/core/money.py:415 mg/core/money.py:1108
 msgid "Invalid currency"
 msgstr ""
 
-#: mg/core/money.py:419 mg/core/money.py:1116
+#: mg/core/money.py:419 mg/core/money.py:1115
 msgid "Amount must be greater than 0"
 msgstr ""
 
-#: mg/core/money.py:421 mg/core/money.py:1120
+#: mg/core/money.py:421 mg/core/money.py:1119
 msgid "Invalid amount precision"
 msgstr ""
 
@@ -2549,29 +2565,29 @@ msgstr ""
 msgid "absent"
 msgstr ""
 
-#: mg/core/money.py:616 mg/core/money.py:623
+#: mg/core/money.py:603
+msgid "Xsolla integration"
+msgstr ""
+
+#: mg/core/money.py:603
+msgid "open dashboard"
+msgstr ""
+
+#: mg/core/money.py:620 mg/core/money.py:627
 msgid "Open payment interface"
 msgstr ""
 
-#: mg/core/money.py:623
+#: mg/core/money.py:627
 #, python-format
 msgid "Not enough %s."
 msgstr ""
 
-#: mg/core/money.py:628
-msgid "2pay payment"
+#: mg/core/money.py:632
+msgid "Xsolla payment"
 msgstr ""
 
-#: mg/core/money.py:634
-msgid "2pay chargeback"
-msgstr ""
-
-#: mg/core/money.py:639
-msgid "2pay integration"
-msgstr ""
-
-#: mg/core/money.py:639
-msgid "open dashboard"
+#: mg/core/money.py:638
+msgid "Xsolla chargeback"
 msgstr ""
 
 #: mg/core/money.py:859
@@ -2599,7 +2615,7 @@ msgid "Secret code for adding games"
 msgstr ""
 
 #: mg/core/money.py:992
-msgid "2pay time"
+msgid "Xsolla time"
 msgstr ""
 
 #: mg/core/money.py:993
@@ -2623,43 +2639,43 @@ msgid "Contragent ID"
 msgstr ""
 
 #: mg/core/money.py:1030
-msgid "2pay project id"
+msgid "Xsolla project id"
 msgstr ""
 
 #: mg/core/money.py:1031
-msgid "2pay contragent id"
+msgid "Xsolla contragent id"
 msgstr ""
 
 #: mg/core/money.py:1032
-msgid "2pay secret"
+msgid "Xsolla secret"
 msgstr ""
 
 #: mg/core/money.py:1033
-msgid "2pay secret for adding games"
+msgid "Xsolla secret for adding games"
 msgstr ""
 
 #: mg/core/money.py:1045
-msgid "2pay dashboard"
+msgid "Xsolla dashboard"
 msgstr ""
 
 #: mg/core/money.py:1047
 msgid "Settings editor"
 msgstr ""
 
-#: mg/core/money.py:1051
-msgid "Constructor: 2pay integration"
+#: mg/core/money.py:1050
+msgid "Constructor: Xsolla integration"
 msgstr ""
 
-#: mg/core/money.py:1069
+#: mg/core/money.py:1068
 #, python-format
 msgid "Not enough %s"
 msgstr ""
 
-#: mg/core/money.py:1091
+#: mg/core/money.py:1090
 msgid "Given by the administration"
 msgstr ""
 
-#: mg/core/money.py:1097
+#: mg/core/money.py:1096
 msgid "Taken by the administration"
 msgstr ""
 
@@ -3471,12 +3487,12 @@ msgstr ""
 msgid "Change e-mail"
 msgstr ""
 
-#: mg/constructor/admin.py:390 mg/constructor/dashboard.py:223
+#: mg/constructor/admin.py:390 mg/constructor/dashboard.py:224
 msgid "Registration closed"
 msgstr ""
 
 #: mg/constructor/admin.py:391 mg/constructor/admin.py:409
-#: mg/constructor/dashboard.py:221
+#: mg/constructor/dashboard.py:222
 msgid "Open registration of new games is unavailable at the moment"
 msgstr ""
 
@@ -7012,87 +7028,87 @@ msgstr ""
 msgid "This game is being set up by its administrator"
 msgstr ""
 
-#: mg/constructor/dashboard.py:187
-msgid "This game is not registered in the 2pay system."
-msgstr ""
-
-#: mg/constructor/dashboard.py:194
-msgid "Constructor: global settings"
+#: mg/constructor/dashboard.py:188
+msgid "This game is not registered in the Xsolla system."
 msgstr ""
 
 #: mg/constructor/dashboard.py:195
-msgid "Constructor: projects"
+msgid "Constructor: global settings"
 msgstr ""
 
 #: mg/constructor/dashboard.py:196
-msgid "Constructor: publishing projects (moderation)"
+msgid "Constructor: projects"
 msgstr ""
 
 #: mg/constructor/dashboard.py:197
+msgid "Constructor: publishing projects (moderation)"
+msgstr ""
+
+#: mg/constructor/dashboard.py:198
 msgid "Constructor: unpublishing projects"
 msgstr ""
 
-#: mg/constructor/dashboard.py:215
+#: mg/constructor/dashboard.py:216
 msgid "Constructor settings stored"
 msgstr ""
 
-#: mg/constructor/dashboard.py:223
+#: mg/constructor/dashboard.py:224
 msgid "Registration on invitations"
 msgstr ""
 
-#: mg/constructor/dashboard.py:223
+#: mg/constructor/dashboard.py:224
 msgid "Open registration"
 msgstr ""
 
-#: mg/constructor/dashboard.py:224
+#: mg/constructor/dashboard.py:225
 msgid "HTML message about registration on invitations"
 msgstr ""
 
-#: mg/constructor/dashboard.py:225
+#: mg/constructor/dashboard.py:226
 msgid "Email of projects moderator"
 msgstr ""
 
-#: mg/constructor/dashboard.py:226
+#: mg/constructor/dashboard.py:227
 msgid "Projects domain"
 msgstr ""
 
-#: mg/constructor/dashboard.py:246
+#: mg/constructor/dashboard.py:247
 #, python-format
 msgid "Moderation passed: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:246
+#: mg/constructor/dashboard.py:247
 msgid "Congratulations! Your game '{0}' has passed moderation successfully."
 msgstr ""
 
-#: mg/constructor/dashboard.py:269
+#: mg/constructor/dashboard.py:270
 #, python-format
 msgid "Moderation reject reason: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:271
+#: mg/constructor/dashboard.py:272
 #, python-format
 msgid "Moderation reject: %s"
 msgstr ""
 
-#: mg/constructor/dashboard.py:271
+#: mg/constructor/dashboard.py:272
 msgid ""
 "Your game '{0}' hasn't passed moderation.\n"
 "Reason: {1}"
 msgstr ""
 
-#: mg/constructor/dashboard.py:276
+#: mg/constructor/dashboard.py:277
 msgid "Reject reason"
 msgstr ""
 
-#: mg/constructor/dashboard.py:277
+#: mg/constructor/dashboard.py:278
 msgid "moderation///Reject"
 msgstr ""
 
-#: mg/constructor/dashboard.py:282
+#: mg/constructor/dashboard.py:283
 msgid "Moderation reject"
 msgstr ""
 
-#: mg/constructor/dashboard.py:295
+#: mg/constructor/dashboard.py:296
 msgid "Registration failed"
 msgstr ""

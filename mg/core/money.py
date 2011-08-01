@@ -583,24 +583,28 @@ class MoneyAdmin(Module):
         self.main_app().mc.set("cbr-stock-rates", rates)
         return rates
 
-class TwoPay(Module):
+class Xsolla(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-ext-payment.2pay", self.payment_2pay, priv="public")
-        self.rhook("money-description.2pay-pay", self.money_description_2pay_pay)
-        self.rhook("money-description.2pay-chargeback", self.money_description_2pay_chargeback)
-        self.rhook("constructor.project-options", self.project_options)
+        self.rhook("ext-ext-payment.2pay", self.payment_xsolla, priv="public")
+        self.rhook("money-description.xsolla-pay", self.money_description_xsolla_pay)
+        self.rhook("money-description.xsolla-chargeback", self.money_description_xsolla_chargeback)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("2pay.payport-params", self.payport_params)
-        self.rhook("2pay.payment-params", self.payment_params)
-        self.rhook("2pay.register", self.register_2pay)
+        self.rhook("xsolla.payport-params", self.payport_params)
+        self.rhook("xsolla.payment-params", self.payment_params)
+        self.rhook("xsolla.register", self.register_xsolla)
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
         self.rhook("money.donate-message", self.donate_message)
+        self.rhook("constructor.project-options", self.project_options)
+
+    def project_options(self, options):
+        if self.req().has_access("constructor.projects-xsolla"):
+            options.append({"title": self._("Xsolla integration"), "value": '<hook:admin.link href="constructor/project-xsolla/%s" title="%s" />' % (self.app().tag, self._("open dashboard"))})
 
     def append_args(self, options):
         args = {}
-        self.call("2pay.payment-args", args, options)
+        self.call("xsolla.payment-args", args, options)
         append = ""
         for key, val in args.iteritems():
             if type(val) == unicode:
@@ -609,39 +613,35 @@ class TwoPay(Module):
         return append
 
     def donate_message(self, currency, **kwargs):
-        project_id = intz(self.conf("2pay.project-id"))
+        project_id = intz(self.conf("xsolla.project-id"))
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
                 return '<a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
 
     def not_enough_funds(self, currency, **kwargs):
-        project_id = intz(self.conf("2pay.project-id"))
+        project_id = intz(self.conf("xsolla.project-id"))
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
                 raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self.append_args(kwargs), self._("Open payment interface")))
 
-    def money_description_2pay_pay(self):
+    def money_description_xsolla_pay(self):
         return {
             "args": ["payment_id", "payment_performed"],
-            "text": self._("2pay payment"),
+            "text": self._("Xsolla payment"),
         }
 
-    def money_description_2pay_chargeback(self):
+    def money_description_xsolla_chargeback(self):
         return {
             "args": ["payment_id"],
-            "text": self._("2pay chargeback"),
+            "text": self._("Xsolla chargeback"),
         }
 
-    def project_options(self, options):
-        if self.req().has_access("constructor.projects-2pay"):
-            options.append({"title": self._("2pay integration"), "value": '<hook:admin.link href="constructor/project-2pay/%s" title="%s" />' % (self.app().tag, self._("open dashboard"))})
-
     def objclasses_list(self, objclasses):
-        objclasses["Payment2pay"] = (Payment2pay, Payment2payList)
+        objclasses["PaymentXsolla"] = (PaymentXsolla, PaymentXsollaList)
 
-    def payment_2pay(self):
+    def payment_xsolla(self):
         req = self.req()
         command = req.param_raw("command")
         sign = req.param_raw("md5")
@@ -650,9 +650,9 @@ class TwoPay(Module):
         id = None
         id_shop = None
         sum = None
-        self.debug("2pay Request: %s", req.param_dict())
+        self.debug("Xsolla Request: %s", req.param_dict())
         try:
-            secret = self.conf("2pay.secret")
+            secret = self.conf("xsolla.secret")
             if type(secret) == unicode:
                 secret = secret.encode("windows-1251")
             if secret is None or secret == "":
@@ -665,7 +665,7 @@ class TwoPay(Module):
                     comment = "Invalid MD5 signature"
                 else:
                     v1 = v1.decode("windows-1251")
-                    self.debug("2pay Request: command=check, v1=%s", v1)
+                    self.debug("Xsolla Request: command=check, v1=%s", v1)
                     if self.call("session.find_user", v1):
                         result = 0
                     else:
@@ -681,24 +681,24 @@ class TwoPay(Module):
                 else:
                     v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
-                    self.debug("2pay Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
+                    self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
                     user = self.call("session.find_user", v1)
                     if user:
-                        with self.lock(["Payment2pay.%s" % id]):
+                        with self.lock(["PaymentXsolla.%s" % id]):
                             try:
-                                existing = self.obj(Payment2pay, id)
+                                existing = self.obj(PaymentXsolla, id)
                                 result = 0
                                 id_shop = id
                                 sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
-                                payment = self.obj(Payment2pay, id, data={})
+                                payment = self.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 member = MemberMoney(self.app(), user.uuid)
-                                member.credit(sum_v, self.call("money.real-currency"), "2pay-pay", payment_id=id, payment_performed=date)
+                                member.credit(sum_v, self.call("money.real-currency"), "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
                                 result = 0
                                 id_shop = id
@@ -710,16 +710,16 @@ class TwoPay(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    self.debug("2pay Request: command=cancel, id=%s", id)
-                    with self.lock(["Payment2pay.%s" % id]):
+                    self.debug("Xsolla Request: command=cancel, id=%s", id)
+                    with self.lock(["PaymentXsolla.%s" % id]):
                         try:
-                            payment = self.obj(Payment2pay, id)
+                            payment = self.obj(PaymentXsolla, id)
                             if payment.get("cancelled"):
                                 result = 0
                             else:
                                 payment.set("cancelled", self.now())
                                 member = MemberMoney(self.app(), payment.get("user"))
-                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "2pay-chargeback", payment_id=id)
+                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
                                 result = 0
                         except ObjectNotFoundException:
@@ -730,7 +730,7 @@ class TwoPay(Module):
                 result = 4
                 comment = "Command not supplied"
             else:
-                self.debug("2pay Request: command=%s", command)
+                self.debug("Xsolla Request: command=%s", command)
                 result = 4
                 comment = "This command is not implemented"
         except Exception as e:
@@ -758,7 +758,7 @@ class TwoPay(Module):
             elt = doc.createElement("comment")
             elt.appendChild(doc.createTextNode(comment))
             response.appendChild(elt)
-        self.debug("2pay Response: %s", response.toxml("utf-8"))
+        self.debug("Xsolla Response: %s", response.toxml("utf-8"))
         self.call("web.response", doc.toxml("windows-1251"), "application/xml")
 
     def payport_params(self, params, owner_uuid):
@@ -770,9 +770,9 @@ class TwoPay(Module):
         else:
             payport["email"] = jsencode(owner.get("email"))
             payport["name"] = jsencode(owner.get("name"))
-        payport["project_id"] = self.conf("2pay.project-id")
+        payport["project_id"] = self.conf("xsolla.project-id")
         payport["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
-        params["twopay_payport"] = payport
+        params["xsolla_payport"] = payport
 
     def payment_params(self, params, owner_uuid):
         payment = {}
@@ -783,18 +783,18 @@ class TwoPay(Module):
         else:
             payment["email"] = urlencode(owner.get("email").encode("windows-1251"))
             payment["name"] = urlencode(owner.get("name").encode("windows-1251"))
-        payment["project_id"] = self.conf("2pay.project-id")
+        payment["project_id"] = self.conf("xsolla.project-id")
         payment["language"] = {"ru": 0, "fr": 2}.get(self.call("l10n.lang"), 1)
-        params["twopay_payment"] = payment
+        params["xsolla_payment"] = payment
 
-    def register_2pay(self):
-        self.info("Registering in the 2pay system")
+    def register_xsolla(self):
+        self.info("Registering in the Xsolla system")
         project = self.app().project
         lang = self.call("l10n.lang")
         doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "response", None)
         request = doc.documentElement
         # Master ID
-        master_id = str(self.main_app().config.get("2pay.contragent-id"))
+        master_id = str(self.main_app().config.get("xsolla.contragent-id"))
         elt = doc.createElement("id")
         elt.appendChild(doc.createTextNode(master_id))
         request.appendChild(elt)
@@ -900,13 +900,13 @@ class TwoPay(Module):
         elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
         request.appendChild(elt)
         xmldata = request.toxml("utf-8")
-        self.debug(u"2pay request: %s", xmldata)
+        self.debug(u"Xsolla request: %s", xmldata)
         # Signature
-        sign_str = str("%s%s%s") % (master_id, rnd, self.main_app().config.get("2pay.secret-addgame"))
+        sign_str = str("%s%s%s") % (master_id, rnd, self.main_app().config.get("xsolla.secret-addgame"))
         sign = hashlib.md5(sign_str).hexdigest().lower()
-        self.debug(u"2pay signing string '%s': %s", sign_str, sign)
+        self.debug(u"Xsolla signing string '%s': %s", sign_str, sign)
         query = "xml=%s&sign=%s" % (urlencode(xmldata), urlencode(sign))
-        self.debug(u"2pay urlencoded query: %s", query)
+        self.debug(u"Xsolla urlencoded query: %s", query)
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
@@ -920,7 +920,7 @@ class TwoPay(Module):
                     request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
                     request.add_header("Content-length", len(query))
                     response = cnn.perform(request)
-                    self.debug(u"2pay response: %s %s", response.status_code, response.body)
+                    self.debug(u"Xsolla response: %s %s", response.status_code, response.body)
                     if response.status_code == 200:
                         response = xml.dom.minidom.parseString(response.body)
                         if response.documentElement.tagName == "response":
@@ -932,32 +932,32 @@ class TwoPay(Module):
                                     self.debug("game_id: %s", game_id)
                                     game_id = intz(game_id)
                                     config = self.app().config_updater()
-                                    config.set("2pay.secret", secret)
-                                    config.set("2pay.project-id", game_id)
+                                    config.set("xsolla.secret", secret)
+                                    config.set("xsolla.project-id", game_id)
                                     config.store()
                 finally:
                     cnn.close()
         except IOError as e:
-            self.error("Error registering in the 2pay system: %s", e)
+            self.error("Error registering in the Xsolla system: %s", e)
         except TimeoutError:
-            self.error("Error registering in the 2pay system: Timed out")
+            self.error("Error registering in the Xsolla system: Timed out")
 
     def gameinterface_render(self, character, vars, design):
-        if self.conf("2pay.project-id"):
+        if self.conf("xsolla.project-id"):
             vars["js_modules"].add("xsolla")
-            vars["js_init"].append("Xsolla.project = %d;" % self.conf("2pay.project-id"))
+            vars["js_init"].append("Xsolla.project = %d;" % self.conf("xsolla.project-id"))
             vars["js_init"].append("Xsolla.email = '%s';" % jsencode(urlencode(character.player.email)))
             vars["js_init"].append("Xsolla.name = '%s';" % jsencode(urlencode(character.name)))
             vars["js_init"].append("Xsolla.lang = '%s';" % self.call("l10n.lang"))
 
-class TwoPayAdmin(Module):
+class XsollaAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("ext-admin-constructor.project-2pay", self.project_2pay, priv="constructor.projects-2pay")
-        self.rhook("headmenu-admin-constructor.project-2pay", self.headmenu_project_2pay)
+        self.rhook("ext-admin-constructor.project-xsolla", self.project_xsolla, priv="constructor.projects-xsolla")
+        self.rhook("headmenu-admin-constructor.project-xsolla", self.headmenu_project_xsolla)
         self.rhook("permissions.list", self.permissions_list)
 
-    def project_2pay(self):
+    def project_xsolla(self):
         req = self.req()
         uuid = req.args
         cmd = ""
@@ -969,7 +969,7 @@ class TwoPayAdmin(Module):
             self.call("web.not_found")
         if cmd == "":
             payments = []
-            list = self.objlist(Payment2payList, query_index="date", query_reversed=True)
+            list = self.objlist(PaymentXsollaList, query_index="date", query_reversed=True)
             list.load(silent=True)
             for pay in list:
                 payments.append({
@@ -989,7 +989,7 @@ class TwoPayAdmin(Module):
                 "PaymentURL": self._("Payment URL"),
                 "SecretCode": self._("Secret code"),
                 "SecretCodeAddGame": self._("Secret code for adding games"),
-                "Time2pay": self._("2pay time"),
+                "TimeXsolla": self._("Xsolla time"),
                 "OurTime": self._("Our time"),
                 "User": self._("User"),
                 "Amount": self._("Amount"),
@@ -1001,13 +1001,13 @@ class TwoPayAdmin(Module):
                 "ContragentID": self._("Contragent ID"),
             }
             vars["settings"] = {
-                "secret": htmlescape(app.config.get("2pay.secret")),
-                "secret_addgame": htmlescape(app.config.get("2pay.secret-addgame")),
-                "project_id": htmlescape(app.config.get("2pay.project-id")),
-                "contragent_id": htmlescape(app.config.get("2pay.contragent-id")),
+                "secret": htmlescape(app.config.get("xsolla.secret")),
+                "secret_addgame": htmlescape(app.config.get("xsolla.secret-addgame")),
+                "project_id": htmlescape(app.config.get("xsolla.project-id")),
+                "contragent_id": htmlescape(app.config.get("xsolla.contragent-id")),
                 "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
             }
-            self.call("admin.response_template", "admin/money/2pay-dashboard.html", vars)
+            self.call("admin.response_template", "admin/money/xsolla-dashboard.html", vars)
         elif cmd == "settings":
             secret = req.param("secret")
             secret_addgame = req.param("secret_addgame")
@@ -1015,40 +1015,39 @@ class TwoPayAdmin(Module):
             contragent_id = req.param("contragent_id")
             if req.param("ok"):
                 config = app.config_updater()
-                config.set("2pay.secret", secret)
-                config.set("2pay.secret-addgame", secret_addgame)
-                config.set("2pay.project-id", project_id)
-                config.set("2pay.contragent-id", contragent_id)
+                config.set("xsolla.secret", secret)
+                config.set("xsolla.secret-addgame", secret_addgame)
+                config.set("xsolla.project-id", project_id)
+                config.set("xsolla.contragent-id", contragent_id)
                 config.store()
-                self.call("admin.redirect", "constructor/project-2pay/%s" % uuid)
+                self.call("admin.redirect", "constructor/project-xsolla/%s" % uuid)
             else:
-                secret = app.config.get("2pay.secret")
-                secret_addgame = app.config.get("2pay.secret-addgame")
-                project_id = app.config.get("2pay.project-id")
-                contragent_id = app.config.get("2pay.contragent-id")
+                secret = app.config.get("xsolla.secret")
+                secret_addgame = app.config.get("xsolla.secret-addgame")
+                project_id = app.config.get("xsolla.project-id")
+                contragent_id = app.config.get("xsolla.contragent-id")
             fields = []
-            fields.append({"name": "project_id", "label": self._("2pay project id"), "value": project_id})
-            fields.append({"name": "contragent_id", "label": self._("2pay contragent id"), "value": contragent_id})
-            fields.append({"name": "secret", "label": self._("2pay secret"), "value": secret})
-            fields.append({"name": "secret_addgame", "label": self._("2pay secret for adding games"), "value": secret_addgame})
+            fields.append({"name": "project_id", "label": self._("Xsolla project id"), "value": project_id})
+            fields.append({"name": "contragent_id", "label": self._("Xsolla contragent id"), "value": contragent_id})
+            fields.append({"name": "secret", "label": self._("Xsolla secret"), "value": secret})
+            fields.append({"name": "secret_addgame", "label": self._("Xsolla secret for adding games"), "value": secret_addgame})
             self.call("admin.form", fields=fields)
         else:
             self.call("web.not_found")
 
-    def headmenu_project_2pay(self, args):
+    def headmenu_project_xsolla(self, args):
         uuid = args
         cmd = ""
         m = re_uuid_cmd.match(args)
         if m:
             uuid, cmd = m.group(1, 2)
         if cmd == "":
-            return [self._("2pay dashboard"), "constructor/project-dashboard/%s" % uuid]
+            return [self._("Xsolla dashboard"), "constructor/project-dashboard/%s" % uuid]
         elif cmd == "settings":
-            return [self._("Settings editor"), "constructor/project-2pay/%s" % uuid]
+            return [self._("Settings editor"), "constructor/project-xsolla/%s" % uuid]
 
     def permissions_list(self, perms):
-        if self.app().tag == "main":
-            perms.append({"id": "constructor.projects-2pay", "name": self._("Constructor: 2pay integration")})
+        perms.append({"id": "constructor.projects-xsolla", "name": self._("Constructor: Xsolla integration")})
 
 class Money(Module):
     def register(self):

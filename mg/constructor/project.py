@@ -31,6 +31,7 @@ class ConstructorProject(Module):
             "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
             "mg.constructor.logo.LogoAdmin",
+            "mg.core.dbexport.Export",
         ]
         project = self.app().project
         if not project.get("inactive"):
@@ -52,7 +53,7 @@ class ConstructorProject(Module):
             ])
             if project.get("published"):
                 lst.extend([
-                    "mg.core.money.TwoPay",
+                    "mg.core.money.Xsolla",
                     "mg.constructor.money.Money",
                     "mg.constructor.paidservices.PaidServices",
                     "mg.constructor.paidservices.PaidServicesAdmin",

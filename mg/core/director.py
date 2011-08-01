@@ -26,6 +26,7 @@ class Director(Module):
         self.rhook("int-index.index", self.director_index, priv="public")
         self.rhook("int-director.setup", self.director_setup, priv="public")
         self.rhook("int-director.config", self.director_config, priv="public")
+        self.rhook("int-director.servers", self.director_servers, priv="public")
         self.rhook("director.reload_servers", self.reload_servers)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("director.queue_workers", self.director_queue_workers)
@@ -338,6 +339,14 @@ class Director(Module):
             conf["storage"] = ["storage"]
         if conf.get("smtp_server") is None:
             conf["smtp_server"] = "localhost"
+        if conf.get("mysql_server") is None:
+            conf["mysql_server"] = "localhost"
+        if conf.get("mysql_database") is None:
+            conf["mysql_database"] = "metagam"
+        if conf.get("mysql_user") is None:
+            conf["mysql_user"] = "metagam"
+        if conf.get("mysql_password") is None:
+            conf["mysql_password"] = ""
         if conf.get("locale") is None:
             conf["locale"] = "en"
         self.app().inst.config = conf
@@ -345,6 +354,9 @@ class Director(Module):
 
     def director_config(self):
         self.call("web.response_json", self.config())
+
+    def director_servers(self):
+        self.call("web.response_json", self.app().servers_online)
 
     def split_host_port(self, str, defport):
         ent = re.split(':', str)
@@ -361,6 +373,10 @@ class Director(Module):
         main_host = request.param("main_host")
         admin_user = request.param("admin_user")
         smtp_server = request.param("smtp_server")
+        mysql_server = request.param("mysql_server")
+        mysql_database = request.param("mysql_database")
+        mysql_user = request.param("mysql_user")
+        mysql_password = request.param("mysql_password")
         locale = request.param("locale")
         config = self.config()
         if self.ok():
@@ -370,6 +386,10 @@ class Director(Module):
             config["main_host"] = main_host
             config["admin_user"] = admin_user
             config["smtp_server"] = smtp_server
+            config["mysql_server"] = mysql_server
+            config["mysql_database"] = mysql_database
+            config["mysql_user"] = mysql_user
+            config["mysql_password"] = mysql_password
             config["locale"] = locale
             self.app().config.set("director.config", config)
             self.app().config.store()
@@ -382,6 +402,10 @@ class Director(Module):
             main_host = config["main_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")
+            mysql_server = config.get("mysql_server")
+            mysql_database = config.get("mysql_database")
+            mysql_user = config.get("mysql_user")
+            mysql_password = config.get("mysql_password")
             locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Cluster settings"),
@@ -396,8 +420,16 @@ class Director(Module):
                 "main_host": main_host,
                 "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),
                 "admin_user": admin_user,
-                "smtp_server_desc": self._("<strong>SMTP server</strong> (host)"),
+                "smtp_server_desc": self._("<strong>SMTP server</strong>"),
                 "smtp_server": smtp_server,
+                "mysql_server_desc": self._("<strong>MySQL server</strong>"),
+                "mysql_server": mysql_server,
+                "mysql_database_desc": self._("<strong>MySQL database</strong>"),
+                "mysql_database": mysql_database,
+                "mysql_user_desc": self._("<strong>MySQL user</strong>"),
+                "mysql_user": mysql_user,
+                "mysql_password_desc": self._("<strong>MySQL password</strong>"),
+                "mysql_password": mysql_password,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
                 "submit_desc": self._("Save")

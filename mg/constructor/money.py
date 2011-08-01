@@ -10,7 +10,7 @@ class Money(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-money.index", self.money_index, priv="logged")
         self.rhook("ext-money.operations", self.money_operations, priv="logged")
-        self.rhook("2pay.payment-args", self.payment_args)
+        self.rhook("xsolla.payment-args", self.payment_args)
 
     def payment_args(self, args, options):
         character = options.get("character")
