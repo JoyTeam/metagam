@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-02 21:18+0400\n"
+"POT-Creation-Date: 2011-08-02 21:24+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3788,8 +3788,8 @@ msgstr ""
 #: mg/constructor/admin.py:591
 #, python-format
 msgid ""
-"This WMID is assigned already to user '%s'. You can't assign one WMID to "
-"several accounts"
+"This WMID is assigned already to the user <strong>%s</strong>. You can't "
+"assign one WMID to several accounts"
 msgstr ""
 
 #: mg/constructor/admin.py:602

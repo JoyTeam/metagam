@@ -327,10 +327,26 @@ class Constructor(Module):
         req = self.req()
         menu = []
         menu_projects = []
+        vars = {
+            "title": self._("Cabinet"),
+        }
         # constructor admin
         perms = req.permissions()
         if len(perms):
             menu_projects.append({"href": "/admin", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Constructor administration")})
+        columns = 4
+        if not self.call("wmid.check", req.user()):
+            vars["cabinet_wmbtn"] = {
+                "href": "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"),
+                "title": self._("Verify your WMID")
+            }
+            lang = self.call("l10n.lang")
+            if lang == "ru":
+                url = "https://start.webmoney.ru/"
+            else:
+                url = "https://start.wmtransfer.com/"
+            vars["cabinet_comment"] = self._('<p>Dear users, we intend to make the best platform for massively-multiplayer games development. Since the project is related to gaming there are many kids around it. MMO Constructor policy supposes that the project is for people of the full legal age. To keep our service free of illiterate people, trolls and flooders we ask you to confirm your identity. Please note we don\'t request your personal data in any way &mdash; it will be kept in the WebMoney system only.</p><ul><li><a href="{url}" target="_blank">Register in the WebMoney system</a> (if not already)</li><li>Press "Verify your WMID" button</li></ul><p>You will receive earned money to the linked WebMoeny account.</p>').format(url=url)
+            columns = 3
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
         projects.load(silent=True)
@@ -349,30 +365,17 @@ class Constructor(Module):
                 if logo is None:
                     logo = "/st/constructor/cabinet/untitled.gif"
                 menu_projects.append({"href": href, "image": logo, "text": title})
-                if len(menu_projects) >= 4:
+                if len(menu_projects) >= columns:
                     menu.append(menu_projects)
                     menu_projects = []
         if len(menu_projects):
             menu.append(menu_projects)
-        vars = {
-            "title": self._("Cabinet"),
-            "cabinet_menu": menu if len(menu) else None,
-        }
+        if menu:
+            vars["cabinet_menu"] = menu
         vars["cabinet_leftbtn"] = {
             "href": "/constructor/newgame",
             "title": self._("Create a new game")
         }
-        if not self.call("wmid.check", req.user()):
-            vars["cabinet_wmbtn"] = {
-                "href": "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"),
-                "title": self._("Verify your WMID")
-            }
-            lang = self.call("l10n.lang")
-            if lang == "ru":
-                url = "https://start.webmoney.ru/"
-            else:
-                url = "https://start.wmtransfer.com/"
-            vars["cabinet_comment"] = self._('<p>Dear users, we intend to make the best platform for massively-multiplayer games development. Since the project is related to gaming there are many kids around it. MMO Constructor policy supposes that the project is for people of the full legal age. To keep our service free of illiterate people, trolls and flooders we ask you to confirm your identity. Please note we don\'t request your personal data in any way &mdash; it will be kept in the WebMoney system only.</p><ul><li><a href="{url}" target="_blank">Register in the WebMoney system</a> (if not already)</li><li>Press "Verify your WMID" button</li></ul><p>You will receive earned money to the linked WebMoeny account.</p>').format(url=url)
         self.call("web.response_global", None, vars)
 
     def cabinet_settings(self):
@@ -588,7 +591,7 @@ class Constructor(Module):
                         user = self.obj(User, lst[0].get("user"))
                         vars = {
                             "title": self._("WMID is assigned to another user"),
-                            "text": self._("This WMID is assigned already to user '%s'. You can't assign one WMID to several accounts") % htmlescape(user.get("name")),
+                            "text": self._("This WMID is assigned already to the user <strong>%s</strong>. You can't assign one WMID to several accounts") % htmlescape(user.get("name")),
                         }
                         self.call("web.response_template", "constructor/setup/info.html", vars)
                     obj = self.obj(DBUserWMID)
