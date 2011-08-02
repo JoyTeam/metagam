@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-02 21:40+0400\n"
-"PO-Revision-Date: 2011-07-11 01:07+0300\n"
+"POT-Creation-Date: 2011-08-02 21:30+0400\n"
+"PO-Revision-Date: 2011-08-02 21:24+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -106,21 +106,20 @@ msgstr "Кабинет"
 
 #: mg/constructor/admin.py:107
 msgid "Managing authorized WMIDs"
-msgstr ""
+msgstr "Управление авторизованными WMID"
 
 #: mg/constructor/admin.py:120
-#, fuzzy
 msgid "This currency is sold for real money"
-msgstr "Это название валюты занято"
+msgstr "Эта валюта продаётся за реальные деньги"
 
 #: mg/constructor/admin.py:128
-#, fuzzy
 msgid "MMO Constructor Dollars"
-msgstr "Форум MMO Constructor"
+msgstr "Доллары MMO Constructor"
 
 #: mg/constructor/admin.py:129
 msgid "MMO Constructor Dollar/MMO Constructor Dollars"
 msgstr ""
+"Доллар MMO Constructor/Доллара MMO Constructor/Долларов MMO Constructor"
 
 #: mg/constructor/admin.py:143
 msgid "You must confirm you are of the full legal age"
@@ -206,7 +205,7 @@ msgstr "Форум MMO Constructor"
 
 #: mg/constructor/admin.py:239
 msgid "Premium"
-msgstr ""
+msgstr "Премиум"
 
 #: mg/constructor/admin.py:240
 msgid "socio-top///Search"
@@ -278,7 +277,7 @@ msgstr "Администрирование конструктора"
 
 #: mg/constructor/admin.py:341
 msgid "Verify your WMID"
-msgstr ""
+msgstr "Проверить ваш WMID"
 
 #: mg/constructor/admin.py:348
 msgid ""
@@ -293,6 +292,17 @@ msgid ""
 "\"Verify your WMID\" button</li></ul><p>You will receive earned money to the "
 "linked WebMoeny account.</p>"
 msgstr ""
+"<p>Дорогие пользователи, поскольку данный проект связан с играми, вокруг "
+"него крутится много детей. Политика MMO Constructor предполагает, что "
+"пользователями являются только совершеннолетние лица.</p><p>Чтобы вам не "
+"пришлось сталкиваться при общении на форуме с неграмотными людьми, троллями "
+"и флудерами, мы просим всех пользователей идентифицироваться. Пожалуйста, "
+"обратите внимание, что мы никоим образом не запрашиваем ваши персональные "
+"данные &mdash; они будут храниться только в системе WebMoney.</p><ul><li><a "
+"href=\"{url}\" target=\"_blank\">Зарегистрируйтесь в системе WebMoney</a> "
+"(если ещё не зарегистрированы);</li><li>нажмите кнопку \"Проверить ваш WMID"
+"\".</li></ul><p>На привязанный аккаунт WebMoney вы также будете получать и "
+"деньги, заработанные в Конструкторе.</p>"
 
 #: mg/constructor/admin.py:357
 msgid "Untitled game"
@@ -321,15 +331,15 @@ msgstr "Настройки форума"
 #: mg/constructor/admin.py:395
 #, python-format
 msgid "Your verified WMID: %s"
-msgstr ""
+msgstr "Ваш проверенный WMID: %s"
 
 #: mg/constructor/admin.py:438
 msgid "Verified WMID required"
-msgstr ""
+msgstr "Требуется проверенный WMID"
 
 #: mg/constructor/admin.py:439
 msgid "You haven't passed WMID verification yet"
-msgstr ""
+msgstr "Вы ещё не прошли проверку WMID"
 
 #: mg/constructor/admin.py:446 mg/constructor/dashboard.py:224
 msgid "Registration closed"
@@ -415,17 +425,16 @@ msgstr ""
 
 #: mg/constructor/admin.py:582
 msgid "WMID verified already"
-msgstr ""
+msgstr "WMID уже проверен"
 
 #: mg/constructor/admin.py:583
 #, python-format
 msgid "You have verified WMID already: %s"
-msgstr ""
+msgstr "У вас уже есть проверенный WMID: %s"
 
 #: mg/constructor/admin.py:593
-#, fuzzy
 msgid "WMID is assigned to another user"
-msgstr "Сделать запись в досье"
+msgstr "WMID уже назначен другому пользователю"
 
 #: mg/constructor/admin.py:594
 #, python-format
@@ -433,39 +442,37 @@ msgid ""
 "This WMID is assigned already to the user <strong>%s</strong>. You can't "
 "assign one WMID to several accounts"
 msgstr ""
+"Этот WMID уже назначен пользователю <strong>%s</strong>. Вы не можете "
+"назначить один WMID нескольким аккаунтам"
 
 #: mg/constructor/admin.py:605
 msgid "WMID verified"
-msgstr ""
+msgstr "WMID проверен"
 
 #: mg/constructor/admin.py:606
 #, python-format
 msgid "We have verified your WMID <strong>'%s'</strong> successfully"
-msgstr ""
+msgstr "Мы убедились, что ваш WMID &mdash; <strong>%s</strong>. Спасибо."
 
 #: mg/constructor/admin.py:621
-#, fuzzy
 msgid "Are you sure want to delete this WMID?"
-msgstr "Вы уверены, что хотите удалить этот блок?"
+msgstr "Вы уверены, что хотите удалить этот WMID?"
 
 #: mg/constructor/admin.py:621 mg/constructor/admin.py:637
-#, fuzzy
 msgid "Authorized WMID"
-msgstr "авторизовано"
+msgstr "Авторизованный WMID"
 
 #: mg/constructor/admin.py:621
 msgid "none"
-msgstr ""
+msgstr "нет"
 
 #: mg/constructor/admin.py:621 mg/socio/restraints.py:135
-#, fuzzy
 msgid "remove"
-msgstr "Удалить"
+msgstr "удалить"
 
 #: mg/constructor/admin.py:638
-#, fuzzy
 msgid "Not authorized WMID"
-msgstr "авторизовано"
+msgstr "Неавторизованный WMID"
 
 #: mg/constructor/auth.py:42
 msgid "Sessions"
@@ -511,9 +518,8 @@ msgid "Sessions monitor"
 msgstr "Монитор сессий"
 
 #: mg/constructor/auth.py:187
-#, fuzzy
 msgid "New character: {name}"
-msgstr "Введите имя персонажа"
+msgstr "Новый персонаж: {name}"
 
 #: mg/constructor/auth.py:238
 msgid "Admin Offline"
@@ -532,9 +538,8 @@ msgid "Viewing list of authorized users"
 msgstr "Просмотр списка авторизованных пользователей"
 
 #: mg/constructor/auth.py:274
-#, fuzzy
 msgid "Authentication configuration"
-msgstr "Конфигурация чата"
+msgstr "Настройка аутентификации"
 
 #: mg/constructor/auth.py:276
 msgid "List of characters online"
@@ -629,7 +634,6 @@ msgid "Manual validation of every character name"
 msgstr "Ручная проверка каждого имени персонажа"
 
 #: mg/constructor/auth.py:387
-#, fuzzy
 msgid "Character's name"
 msgstr "Имя персонажа"
 
@@ -647,12 +651,12 @@ msgid "Character sex"
 msgstr "Пол персонажа"
 
 #: mg/constructor/auth.py:388 mg/constructor/setup.py:220 mg/core/auth.py:459
-#: mg/core/emails.py:469
+#: mg/core/emails.py:467
 msgid "Female"
 msgstr "Женский"
 
 #: mg/constructor/auth.py:388 mg/constructor/setup.py:220 mg/core/auth.py:459
-#: mg/core/emails.py:469
+#: mg/core/emails.py:467
 msgid "Male"
 msgstr "Мужской"
 
@@ -662,36 +666,31 @@ msgstr "Пол"
 
 #: mg/constructor/auth.py:388
 msgid "sex///Who is your character"
-msgstr "Кем является ваш персонаж"
+msgstr "Кто ваш персонаж?"
 
 #: mg/constructor/auth.py:389
-#, fuzzy
 msgid "Character's motto"
-msgstr "Персонаж '%s' не найден"
+msgstr "Девиз персонажа"
 
 #: mg/constructor/auth.py:389
-#, fuzzy
 msgid "Enter your character's motto"
-msgstr "Введите имя вашего персонажа"
+msgstr "Введите девиз вашего персонажа"
 
 #: mg/constructor/auth.py:389
-#, fuzzy
 msgid "Motto"
-msgstr "Низ"
+msgstr "Девиз"
 
 #: mg/constructor/auth.py:390
-#, fuzzy
 msgid "Character's legend"
-msgstr "Пол персонажа"
+msgstr "Легенда персонажа"
 
 #: mg/constructor/auth.py:390
-#, fuzzy
 msgid "Enter your character's legend"
-msgstr "Введите имя вашего персонажа"
+msgstr "Введите легенду вашего персонажа"
 
 #: mg/constructor/auth.py:390
 msgid "Legend"
-msgstr ""
+msgstr "Легенда"
 
 #: mg/constructor/auth.py:406
 msgid "Your e-mail address"
@@ -792,30 +791,27 @@ msgstr "Этому игроку не назначено ни одного пер
 #: mg/constructor/auth.py:1087 mg/constructor/auth.py:1104
 #, python-format
 msgid "You are banned till %s"
-msgstr ""
+msgstr "Вы забанены до %s"
 
 #: mg/constructor/auth.py:628
 msgid "Error logging in"
 msgstr "Ошибка при входе"
 
 #: mg/constructor/auth.py:635
-#, fuzzy
 msgid "Session updated"
-msgstr "Сессия"
+msgstr "Сессия обновлена"
 
 #: mg/constructor/auth.py:922
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
 
 #: mg/constructor/auth.py:994
-#, fuzzy
 msgid "Select a payer"
-msgstr "Выберите верный тип"
+msgstr "Выберите плательщика"
 
 #: mg/constructor/auth.py:1003
-#, fuzzy
 msgid "Select a valid payer"
-msgstr "Выберите верный тип"
+msgstr "Выберите корректного плательщика"
 
 #: mg/constructor/auth.py:1035 mg/constructor/interface.py:280
 msgid "Create a new character"
@@ -830,10 +826,12 @@ msgid ""
 "Registration of the next character will cost you {price}<br />Select a "
 "character who will pay for the registration"
 msgstr ""
+"Регистрация следующего персонажа стоит {price}<br />Выберите персонажа, "
+"который оплатит регистрацию"
 
 #: mg/constructor/auth.py:1058
 msgid "{name} &mdash; balance {balance}{donate}"
-msgstr ""
+msgstr "{name} &mdash; баланс {balance}{donate}"
 
 #: mg/constructor/auth.py:1059
 msgid "Create a character"
@@ -847,24 +845,21 @@ msgstr ""
 "повторите активацию"
 
 #: mg/constructor/auth.py:1124
-#, fuzzy
 msgid "Player account"
-msgstr "Денежные счета"
+msgstr "Аккаунт игрока"
 
 #: mg/constructor/auth.py:1129
-#, fuzzy, python-format
+#, python-format
 msgid "Character %s"
-msgstr "Пол персонажа"
+msgstr "Персонаж %s"
 
 #: mg/constructor/auth.py:1149
-#, fuzzy
 msgid "Track character"
-msgstr "Создать персонажа"
+msgstr "Отследить персонажа"
 
 #: mg/constructor/auth.py:1172
-#, fuzzy
 msgid "Track player"
-msgstr "Связанный игрок"
+msgstr "Отследить игрока"
 
 #: mg/constructor/auth.py:1181 mg/constructor/design.py:1908
 #: mg/constructor/interface.py:279
@@ -881,17 +876,15 @@ msgstr "Административный интерфейс"
 
 #: mg/constructor/chat.py:116 mg/constructor/chat.py:191
 msgid "Chat"
-msgstr ""
+msgstr "Чат"
 
 #: mg/constructor/chat.py:119
-#, fuzzy
 msgid "Roster"
-msgstr "Регистрация"
+msgstr "Ростер"
 
 #: mg/constructor/chat.py:163
-#, fuzzy
 msgid "You entered location"
-msgstr "Документация"
+msgstr "Вы перешли в локацию"
 
 #: mg/constructor/chat.py:171
 msgid "Clear chat"
@@ -906,9 +899,8 @@ msgid "Chat configuration"
 msgstr "Конфигурация чата"
 
 #: mg/constructor/chat.py:198
-#, fuzzy
 msgid "Debug chat channel"
-msgstr "Отладочный канал"
+msgstr "Отладочный канал чата"
 
 #: mg/constructor/chat.py:201
 msgid "Chat configuration editor"
@@ -975,7 +967,7 @@ msgstr "Команда чата для написания в торговый к
 
 #: mg/constructor/chat.py:312
 msgid "Should online/offline messages be visible worldwide"
-msgstr ""
+msgstr "Должны ли сообщения о входах/выходах из игры быть видимыми на весь мир"
 
 #: mg/constructor/chat.py:313
 msgid "Message about character went online"
@@ -986,27 +978,24 @@ msgid "Message about character went offline"
 msgstr "Сообщение о том, что персонаж вышел из игры"
 
 #: mg/constructor/chat.py:315
-#, fuzzy
 msgid "Message about character entered location"
-msgstr "Сообщение о том, что персонаж вошёл в игру"
+msgstr "Сообщение о том, что персонаж вошёл в локацию"
 
 #: mg/constructor/chat.py:316
-#, fuzzy
 msgid "Message about character left location"
-msgstr "Сообщение о том, что персонаж вошёл в игру"
+msgstr "Сообщение о том, что персонаж ушёл из локации"
 
 #: mg/constructor/chat.py:317
-#, fuzzy
 msgid "Message about your character entered location"
-msgstr "Сообщение о том, что персонаж вошёл в игру"
+msgstr "Сообщение о том, что ваш персонаж перешёл в локацию"
 
 #: mg/constructor/chat.py:318
 msgid "Message heading messages from new location"
-msgstr ""
+msgstr "Заголовок, который предшествует сообщениям из новой локации"
 
 #: mg/constructor/chat.py:319
 msgid "Chat colours players are allowed to use (newline separated)"
-msgstr ""
+msgstr "Какие цвета игроки могут использовать в чате (каждый с новой строки)"
 
 #: mg/constructor/chat.py:361
 #, python-format
@@ -1038,7 +1027,7 @@ msgstr "Шаблон кнопки каналов чата: состояние Н
 #: mg/constructor/chat.py:386
 #, python-format
 msgid "Silence till %s"
-msgstr ""
+msgstr "Молчанка до %s"
 
 #: mg/constructor/chat.py:415
 #, python-format
@@ -1051,76 +1040,73 @@ msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
 #: mg/constructor/chat.py:451
-#, fuzzy, python-format
+#, python-format
 msgid "No access to the '%s' chat channel"
-msgstr "Нет доступа к этому каналу чата"
+msgstr "Нет доступа к каналу чата '%s'"
 
 #: mg/constructor/chat.py:621
 msgid "femaleonline///went"
-msgstr ""
+msgstr "вошла"
 
 #: mg/constructor/chat.py:621
 msgid "maleonline///went"
-msgstr ""
+msgstr "вошёл"
 
 #: mg/constructor/chat.py:621
-#, fuzzy
 msgid "went///online"
-msgstr "онлайн"
+msgstr "в игру"
 
 #: mg/constructor/chat.py:627
 msgid "femaleoffline///went"
-msgstr ""
+msgstr "вышла"
 
 #: mg/constructor/chat.py:627
 msgid "maleoffline///went"
-msgstr ""
+msgstr "вышел"
 
 #: mg/constructor/chat.py:627
 msgid "went///offline"
-msgstr ""
+msgstr "из игры"
 
 #: mg/constructor/chat.py:633
 msgid "come///from"
-msgstr ""
+msgstr " "
 
 #: mg/constructor/chat.py:633
 msgid "femalefrom///has come"
-msgstr ""
+msgstr "пришла"
 
 #: mg/constructor/chat.py:633
 msgid "malefrom///has come"
-msgstr ""
+msgstr "пришёл"
 
 #: mg/constructor/chat.py:639
 msgid "location///You are now at the"
-msgstr ""
+msgstr "Вы сейчас"
 
 #: mg/constructor/chat.py:645
 msgid "location///Messages from the"
-msgstr ""
+msgstr "Сообщения"
 
 #: mg/constructor/chat.py:651
 msgid "female///has gone"
-msgstr ""
+msgstr "ушла"
 
 #: mg/constructor/chat.py:651
 msgid "gone///to"
-msgstr ""
+msgstr " "
 
 #: mg/constructor/chat.py:651
 msgid "male///has gone"
-msgstr ""
+msgstr "ушёл"
 
 #: mg/constructor/chat.py:656
-#, fuzzy
 msgid "Character went online"
-msgstr "Персонаж не найден"
+msgstr "Персонаж вошёл в игру"
 
 #: mg/constructor/chat.py:720
-#, fuzzy
 msgid "Character went offline"
-msgstr "Персонаж не найден"
+msgstr "Персонаж вышел из игры"
 
 #: mg/constructor/chat.py:818
 msgid "Joining character"
@@ -1195,57 +1181,56 @@ msgid "Error generating %s-new.png"
 msgstr "Ошибка при генерации %s-new.png"
 
 #: mg/constructor/chat.py:966
-#, fuzzy
 msgid "Character went online/offline"
-msgstr "Сообщение о том, что персонаж вышел из игры"
+msgstr "Персонаж онлайн/оффлайн"
 
 #: mg/constructor/chat.py:966
-#, fuzzy
 msgid "System messages in the chat"
-msgstr "Введите текст сообщения"
+msgstr "Системные сообщения в чате"
 
 #: mg/constructor/chat.py:967
-#, fuzzy
 msgid "Other characters' movement"
-msgstr "Введите имя персонажа"
+msgstr "Перемещение других персонажей"
 
 #: mg/constructor/chat.py:969 mg/constructor/players.py:294
 msgid "Default"
-msgstr ""
+msgstr "По умолчанию"
 
 #: mg/constructor/chat.py:973
-#, fuzzy
 msgid "Chat messages colour"
-msgstr "Последнее сообщение"
+msgstr "Цвет сообщений в чате"
 
 #: mg/constructor/chat.py:978
-#, fuzzy
 msgid "Select a valid colour"
-msgstr "Выберите роль"
+msgstr "Выберите корректный цвет"
 
 #: mg/constructor/chat.py:984
 msgid ""
 "To use colours in the chat <a href=\"/paidservices\">subscribe to the "
 "corresponding service</a>"
 msgstr ""
+"Чтобы использовать цвета в чате, <a href=\"/paid-services\">подключите "
+"соответствующую услугу</a>"
 
 #: mg/constructor/chat.py:1032
 msgid "Colours in the chat for {period}"
-msgstr ""
+msgstr "Цвета в чате на {period_a}"
 
 #: mg/constructor/chat.py:1043
 msgid "Colours in the chat"
-msgstr ""
+msgstr "Цвета в чате"
 
 #: mg/constructor/chat.py:1044
 msgid ""
 "Basically your can not use colours in the chat - all messages are the same "
 "colour. If you want to use arbitrary colours you can use this option"
 msgstr ""
+"Изначально вы не можете менять цвет своих сообщений в чате. Если вы хотите "
+"писать цветные сообщения, воспользуйтесь этой услугой"
 
 #: mg/constructor/chat.py:1052
 msgid "Now select a colour for your messages"
-msgstr ""
+msgstr "Теперь выберите цвет ваших сообщений"
 
 #: mg/constructor/dashboard.py:35
 msgid "projstatus///inactive"
@@ -1264,9 +1249,8 @@ msgid "projstatus///not published"
 msgstr "не опубликован"
 
 #: mg/constructor/dashboard.py:44
-#, fuzzy
 msgid "Games"
-msgstr "Игра"
+msgstr "Игры"
 
 #: mg/constructor/dashboard.py:46
 msgid "Project code"
@@ -1431,9 +1415,8 @@ msgid "This game is being set up by its administrator"
 msgstr "Эта игра настраивается её администратором"
 
 #: mg/constructor/dashboard.py:188
-#, fuzzy
 msgid "This game is not registered in the Xsolla system."
-msgstr "Эта игра не зарегистрирована в системе 2pay."
+msgstr "Эта игра не зарегистрирована в системе Xsolla."
 
 #: mg/constructor/dashboard.py:195
 msgid "Constructor: global settings"
@@ -1748,27 +1731,27 @@ msgstr "Ржавый Металл"
 
 #: mg/constructor/design.py:970 mg/constructor/design.py:1013
 msgid "Jungle"
-msgstr ""
+msgstr "Джунгли"
 
 #: mg/constructor/design.py:975 mg/constructor/design.py:1019
 msgid "Celtic Castle"
-msgstr ""
+msgstr "Кельтский замок"
 
 #: mg/constructor/design.py:980 mg/constructor/design.py:1025
 msgid "Space"
-msgstr ""
+msgstr "Космос"
 
 #: mg/constructor/design.py:985 mg/constructor/design.py:1031
 msgid "Pinky"
-msgstr ""
+msgstr "Розовенький"
 
 #: mg/constructor/design.py:990 mg/constructor/design.py:1037
 msgid "Medieval"
-msgstr ""
+msgstr "Средневековье"
 
 #: mg/constructor/design.py:995 mg/constructor/design.py:1043
 msgid "Submarine"
-msgstr ""
+msgstr "Подводная лодка"
 
 #: mg/constructor/design.py:1001
 msgid "Test"
@@ -1776,7 +1759,7 @@ msgstr "Тест"
 
 #: mg/constructor/design.py:1053
 msgid "Game '[%game.title_short%]' Forum"
-msgstr ""
+msgstr "Форум игры \"[%game.title_short%]\""
 
 #: mg/constructor/design.py:1217
 msgid "Design configuration"
@@ -1957,9 +1940,8 @@ msgstr "Оформление титульной страницы"
 
 #: mg/constructor/design.py:1470 mg/constructor/design.py:1709
 #: mg/constructor/design.py:1974
-#, fuzzy
 msgid "Design template"
-msgstr "Шаблоны оформления"
+msgstr "Шаблон оформления"
 
 #: mg/constructor/design.py:1478
 msgid "Index page design package must contain an HTML file"
@@ -2308,9 +2290,8 @@ msgid "Socio interface design package must not contain more than one HTML file"
 msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
 
 #: mg/constructor/design.py:1722
-#, fuzzy
 msgid "global.html must exist in the socio interface design package"
-msgstr "В пакете оформления интерфейса социалки должен быть файл index.html"
+msgstr "В пакете оформления интерфейса социалки должен быть файл global.html"
 
 #: mg/constructor/design.py:1724
 msgid "Socio interface design package must contain a CSS file"
@@ -3042,9 +3023,8 @@ msgid "Domains: administrator's personal data"
 msgstr "Домены: персональные данные администратора"
 
 #: mg/constructor/domains.py:434
-#, fuzzy
 msgid "Domain registration: {domain}"
-msgstr "Регистрация домена: %(domain)s"
+msgstr "Регистрация домена: {domain}"
 
 #: mg/constructor/domains.py:441 mg/constructor/domains.py:658
 msgid "Domains"
@@ -3294,9 +3274,8 @@ msgid "Game"
 msgstr "Игра"
 
 #: mg/constructor/game.py:32
-#, fuzzy
 msgid "Game system modules"
-msgstr "Модули игры"
+msgstr "Системные модули игры"
 
 #: mg/constructor/game.py:35
 msgid "Game profile editor"
@@ -3458,7 +3437,7 @@ msgstr "Персонаж неактивен. Проверьте почту и п
 
 #: mg/constructor/interface.py:226
 msgid "Info"
-msgstr ""
+msgstr "Инфо"
 
 #: mg/constructor/interface.py:270
 msgid "Game cabinet"
@@ -3473,33 +3452,28 @@ msgid "send"
 msgstr "отправить"
 
 #: mg/constructor/interface.py:395 mg/constructor/interface.py:397
-#, fuzzy
 msgid "Game interface menu"
-msgstr "Оформление интерфейса игры"
+msgstr "Меню игрового интерфейса"
 
 #: mg/constructor/interface.py:465
 msgid "Index page"
 msgstr "Титульная страница"
 
 #: mg/constructor/interface.py:471
-#, fuzzy
 msgid "Layout scheme"
-msgstr "Общая схема интерфейса"
+msgstr "Схема размещения"
 
 #: mg/constructor/interface.py:472
-#, fuzzy
 msgid "Interface panels"
-msgstr "Панели игрового интерфейса"
+msgstr "Панели интерфейса"
 
 #: mg/constructor/interface.py:473 mg/constructor/interface.py:1387
-#, fuzzy
 msgid "Popup menus"
-msgstr "Верхнее меню"
+msgstr "Выпадающие меню"
 
 #: mg/constructor/interface.py:474 mg/constructor/socio.py:299
-#, fuzzy
 msgid "Buttons editor"
-msgstr "Редактор кнопки"
+msgstr "Редактор кнопок"
 
 #: mg/constructor/interface.py:490 mg/constructor/interface.py:496
 #: mg/constructor/interface.py:502 mg/constructor/interface.py:508
@@ -3561,7 +3535,7 @@ msgstr "Панель кнопок ростера"
 
 #: mg/constructor/interface.py:610
 msgid "You are in the <hook:location.name />"
-msgstr ""
+msgstr "Вы находитесь <hook:location.name declension=\"w\" />"
 
 #: mg/constructor/interface.py:637
 msgid "Top menu"
@@ -3646,7 +3620,7 @@ msgstr "Заголовок"
 
 #: mg/constructor/interface.py:786 mg/constructor/interface.py:915
 msgid "Progress bar"
-msgstr ""
+msgstr "Прогресс-бар"
 
 #: mg/constructor/interface.py:801
 msgid "auto"
@@ -3734,6 +3708,7 @@ msgstr "HTML-содержимое"
 #: mg/constructor/interface.py:920
 msgid "Progress bars in this block (delimited by commas). Valid values are:"
 msgstr ""
+"Прогресс-бары в этом блоке (разделяются запятыми). Допустимые значения:"
 
 #: mg/constructor/interface.py:921 mg/constructor/interface.py:1287
 #: mg/constructor/players.py:214 mg/constructor/socio.py:285
@@ -3759,14 +3734,14 @@ msgstr "н/д"
 
 #: mg/constructor/interface.py:982 mg/constructor/interface.py:1278
 #: mg/constructor/socio.py:109
-#, fuzzy, python-format
+#, python-format
 msgid "Button block: %s"
-msgstr "Блок кнопок"
+msgstr "Блок кнопок: %s"
 
 #: mg/constructor/interface.py:991 mg/constructor/interface.py:1283
-#, fuzzy, python-format
+#, python-format
 msgid "Popup menu: %s"
-msgstr "Верхнее меню"
+msgstr "Выпадающее меню: %s"
 
 #: mg/constructor/interface.py:1017 mg/constructor/socio.py:135
 msgid "show"
@@ -3778,13 +3753,15 @@ msgstr "<strong>{0}</strong> в {1}"
 
 #: mg/constructor/interface.py:1029
 msgid "open invalid popup menu"
-msgstr ""
+msgstr "открыть некорректное выпадающие меню"
 
 #: mg/constructor/interface.py:1031
 msgid ""
 "open popup menu <strong><hook:admin.link href=\"gameinterface/popups/{0}\" "
 "title=\"{1}\" /></strong>"
 msgstr ""
+"открыть выпадающее меню <strong><hook:admin.link href=\"gameinterface/popups/"
+"{0}\" title=\"{1}\" /></strong>"
 
 #: mg/constructor/interface.py:1036
 msgid "wildcard///block-class"
@@ -3816,14 +3793,12 @@ msgstr ""
 "Внутриигровые URL должны быть относительными (начинаться с символа '/')"
 
 #: mg/constructor/interface.py:1149
-#, fuzzy
 msgid "Select a popup menu"
-msgstr "Укажите ваш пол"
+msgstr "Выберите выпадающее меню"
 
 #: mg/constructor/interface.py:1153 mg/constructor/socio.py:218
-#, fuzzy
 msgid "Select an action"
-msgstr "Выберите раздел"
+msgstr "Выберите действие"
 
 #: mg/constructor/interface.py:1156
 msgid "Select buttons block where to place the button"
@@ -3851,7 +3826,7 @@ msgstr "Изображение для кнопки"
 
 #: mg/constructor/interface.py:1289
 msgid "Condition (when to show the button)"
-msgstr ""
+msgstr "Условие (при котором показывать кнопку)"
 
 #: mg/constructor/interface.py:1290
 msgid "Button hint"
@@ -3870,9 +3845,8 @@ msgid "Open hyperlink"
 msgstr "Открыть гиперссылку"
 
 #: mg/constructor/interface.py:1291
-#, fuzzy
 msgid "Open popup menu"
-msgstr "Верхнее меню"
+msgstr "Открыть выпадающее меню"
 
 #: mg/constructor/interface.py:1292
 msgid "Button href"
@@ -3891,9 +3865,8 @@ msgid "Target frame"
 msgstr "В каком фрейме открыть"
 
 #: mg/constructor/interface.py:1294
-#, fuzzy
 msgid "Popup menu"
-msgstr "Верхнее меню"
+msgstr "Выпадающее меню"
 
 #: mg/constructor/interface.py:1295 mg/constructor/socio.py:292
 msgid "Javascript onclick"
@@ -3921,24 +3894,20 @@ msgstr ""
 "в мир креативной разработки игр, и желаем удачи!</p>"
 
 #: mg/constructor/interface.py:1354
-#, fuzzy
 msgid "This parameter is mandatory"
-msgstr "Это обязательное поле"
+msgstr "Это обязательный параметр"
 
 #: mg/constructor/interface.py:1362
-#, fuzzy
 msgid "Popup menu title (visible to administrators only)"
-msgstr "Название блока (видно только администраторам)"
+msgstr "Название выпадающего меню (видно только администраторам)"
 
 #: mg/constructor/interface.py:1366
-#, fuzzy
 msgid "New popup menu"
-msgstr "Верхнее меню"
+msgstr "Новое выпадающее меню"
 
 #: mg/constructor/interface.py:1373
-#, fuzzy
 msgid "Are you sure want to delete this popup menu?"
-msgstr "Вы уверены, что хотите удалить этот смайлик?"
+msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
 
 #: mg/constructor/invitations.py:43
 msgid "Invitations"
@@ -4173,196 +4142,179 @@ msgstr "Деньги"
 
 #: mg/constructor/money.py:55
 msgid "money///open history"
-msgstr ""
+msgstr "открыть историю"
 
 #: mg/constructor/money.py:57
 #, python-format
 msgid "money///buy %s"
-msgstr ""
+msgstr "купить %s"
 
 #: mg/constructor/money.py:131
-#, fuzzy
 msgid "moneyop///Performed"
-msgstr "Время"
+msgstr "Дата операции"
 
 #: mg/constructor/money.py:132
 msgid "moneyop///Amount"
-msgstr ""
+msgstr "Сумма"
 
 #: mg/constructor/money.py:133
 msgid "moneyop///Balance"
-msgstr ""
+msgstr "Остаток"
 
 #: mg/constructor/money.py:134
-#, fuzzy
 msgid "moneyop///Description"
 msgstr "Описание"
 
 #: mg/constructor/paidservices.py:36 mg/constructor/paidservices.py:248
 #: mg/constructor/paidservices.py:296 mg/constructor/paidservices.py:320
 #: mg/socio/paidservices.py:30
-#, fuzzy
 msgid "Paid services"
-msgstr "Услуги"
+msgstr "Платные услуги"
 
 #: mg/constructor/paidservices.py:62
 msgid "{price} for {period}"
-msgstr ""
+msgstr "{price} на {period_a}"
 
 #: mg/constructor/paidservices.py:93
 #, python-format
 msgid "service///active till %s"
-msgstr ""
+msgstr "активна до %s"
 
 #: mg/constructor/paidservices.py:95
 msgid "service///active"
-msgstr ""
+msgstr "активна"
 
 #: mg/constructor/paidservices.py:103
 msgid "Auto prolong: enabled"
-msgstr ""
+msgstr "Автопродление: включено"
 
 #: mg/constructor/paidservices.py:109
 msgid "Auto prolong: disabled"
-msgstr ""
+msgstr "Автопродление: выключено"
 
 #: mg/constructor/paidservices.py:114
-#, fuzzy
 msgid "service///inactive"
-msgstr "неактивен"
+msgstr "неактивна"
 
 #: mg/constructor/paidservices.py:121 mg/constructor/paidservices.py:497
-#, fuzzy
 msgid "Paid service"
-msgstr "Услуги"
+msgstr "Платная услуга"
 
 #: mg/constructor/paidservices.py:123 mg/constructor/paidservices.py:532
 #: mg/constructor/paidservices.py:609
 msgid "Price"
-msgstr ""
+msgstr "Цена"
 
 #: mg/constructor/paidservices.py:125
-#, fuzzy
 msgid "Your money"
-msgstr "Реальные деньги"
+msgstr "Ваши деньги"
 
 #: mg/constructor/paidservices.py:236
 msgid "paidservice///{name} for {{period}}"
-msgstr ""
+msgstr "{name} на {{period_a}}"
 
 #: mg/constructor/paidservices.py:259 mg/socio/paidservices.py:88
 #: mg/socio/restraints.py:193
 msgid "Prolong"
-msgstr ""
+msgstr "Продлить"
 
 #: mg/constructor/paidservices.py:261 mg/socio/paidservices.py:90
 msgid "Buy"
-msgstr ""
+msgstr "Купить"
 
 #: mg/constructor/paidservices.py:266 mg/socio/paidservices.py:95
-#, fuzzy
 msgid "Select an offer"
-msgstr "Выберите роль"
+msgstr "Выберите предложение"
 
 #: mg/constructor/paidservices.py:271 mg/socio/paidservices.py:100
 msgid "Subscription successful."
-msgstr ""
+msgstr "Подписка успешна."
 
 #: mg/constructor/paidservices.py:291
-#, fuzzy
 msgid "Paid services editor"
-msgstr "Редактор профиля игры"
+msgstr "Редактор платных услуг"
 
 #: mg/constructor/paidservices.py:303
-#, fuzzy
 msgid "New packet"
-msgstr "Новая панель"
+msgstr "Новый пакет"
 
 #: mg/constructor/paidservices.py:305
 msgid "Packet properties"
-msgstr ""
+msgstr "Свойства пакета"
 
 #: mg/constructor/paidservices.py:311 mg/constructor/paidservices.py:528
-#, fuzzy
 msgid "New offer"
-msgstr "Новое поле"
+msgstr "Новое предложение"
 
 #: mg/constructor/paidservices.py:313
-#, fuzzy, python-format
+#, python-format
 msgid "Offer %s"
-msgstr "за %s"
+msgstr "Предложение %s"
 
 #: mg/constructor/paidservices.py:375 mg/constructor/players.py:158
 msgid ""
 "Identifier must start with 'u_'. Other symbols may be latin letters, digits "
 "or '_'"
 msgstr ""
+"Идентификатор должен начинаться с \"u_\". Остальные символы могут быть "
+"латинскими буквами, цифрами или \"_\""
 
 #: mg/constructor/paidservices.py:377
-#, fuzzy
 msgid "You already have paid service with same ID"
-msgstr "У вас уже есть валюта, продаваемая за реальные деньги"
+msgstr "У вас уже есть платная услуга с таким же идентификатором"
 
 #: mg/constructor/paidservices.py:407
-#, fuzzy
 msgid "Packet name"
-msgstr "Название проекта"
+msgstr "Название пакета"
 
 #: mg/constructor/paidservices.py:408
-#, fuzzy
 msgid "Packet description"
-msgstr "Описание игры"
+msgstr "Описание пакета"
 
 #: mg/constructor/paidservices.py:411
 msgid "Packet identifier (for usage in scripting)"
-msgstr ""
+msgstr "Идентификатор пакета (для использования в скриптах)"
 
 #: mg/constructor/paidservices.py:417
 msgid "Select paid services to include in the pack"
-msgstr ""
+msgstr "Выберите платные услуги, которые необходимо поместить в пакет"
 
 #: mg/constructor/paidservices.py:464
-#, fuzzy
 msgid "service///enabled"
-msgstr "включен"
+msgstr "включена"
 
 #: mg/constructor/paidservices.py:466
-#, fuzzy
 msgid "service///disabled"
-msgstr "отключен"
+msgstr "отключена"
 
 #: mg/constructor/paidservices.py:477
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown service %s"
-msgstr "Неизвестная проблема"
+msgstr "Неизвестная услуга %s"
 
 #: mg/constructor/paidservices.py:494
 msgid "New paid services packet"
-msgstr ""
+msgstr "Новый пакет платных услуг"
 
 #: mg/constructor/paidservices.py:499
-#, fuzzy
 msgid "Prices"
-msgstr "Услуги"
+msgstr "Цены"
 
 #: mg/constructor/paidservices.py:500
 msgid "Control"
-msgstr ""
+msgstr "Управление"
 
 #: mg/constructor/paidservices.py:522
-#, fuzzy
 msgid "Are you sure want to delete this offer?"
-msgstr "Вы уверены, что хотите удалить этот блок?"
+msgstr "Вы уверены, что хотите удалить это предложение?"
 
 #: mg/constructor/paidservices.py:531
-#, fuzzy
 msgid "Duration"
-msgstr "Документация"
+msgstr "Время действия"
 
 #: mg/constructor/paidservices.py:533
-#, fuzzy
 msgid "Representation"
-msgstr "Регистрация"
+msgstr "Представление"
 
 #: mg/constructor/paidservices.py:553 mg/constructor/paidservices.py:567
 #: mg/core/money.py:199 mg/core/money.py:423 mg/core/money.py:1129
@@ -4372,18 +4324,16 @@ msgid "Invalid number format"
 msgstr "Неверный формат числа"
 
 #: mg/constructor/paidservices.py:559
-#, fuzzy
 msgid "Select valid currency"
-msgstr "Выберите роль"
+msgstr "Выберите валюту"
 
 #: mg/constructor/paidservices.py:563
-#, fuzzy
 msgid "Price is too low"
-msgstr "Доменное имя слишком длинное"
+msgstr "Цена слишком низкая"
 
 #: mg/constructor/paidservices.py:608
 msgid "Period (in seconds)"
-msgstr ""
+msgstr "Период (в секундах)"
 
 #: mg/constructor/players.py:47 mg/constructor/players.py:65
 #: mg/constructor/players.py:246
@@ -4391,24 +4341,20 @@ msgid "Character form"
 msgstr "Анкета персонажа"
 
 #: mg/constructor/players.py:57
-#, fuzzy
 msgid "Character names rendering editor"
-msgstr "Имя персонажа или e-mail"
+msgstr "Редактор отображения имён персонажей"
 
 #: mg/constructor/players.py:60
-#, fuzzy
 msgid "Characters"
-msgstr "Персонаж"
+msgstr "Персонажи"
 
 #: mg/constructor/players.py:67 mg/constructor/players.py:323
-#, fuzzy
 msgid "Character names"
-msgstr "Имя персонажа"
+msgstr "Имена персонажей"
 
 #: mg/constructor/players.py:69 mg/constructor/players.py:404
-#, fuzzy
 msgid "Names check"
-msgstr "Перепроверка"
+msgstr "Проверка имён"
 
 #: mg/constructor/players.py:94
 msgid "Custom field"
@@ -4427,9 +4373,8 @@ msgid "Prompt may not be empty"
 msgstr "Приглашение не может быть пустым"
 
 #: mg/constructor/players.py:162
-#, fuzzy
 msgid "This code is busy"
-msgstr "Это название валюты занято"
+msgstr "Этот код занят"
 
 #: mg/constructor/players.py:190
 msgid "Specify list of values"
@@ -4490,7 +4435,7 @@ msgstr "Тип поля"
 
 #: mg/constructor/players.py:225
 msgid "Field code (identifier for scripting)"
-msgstr ""
+msgstr "Код поля (для использования в скриптах)"
 
 #: mg/constructor/players.py:229
 msgid "Create new field"
@@ -4515,45 +4460,41 @@ msgid "New field"
 msgstr "Новое поле"
 
 #: mg/constructor/players.py:314
-#, fuzzy
 msgid "Character info icon"
-msgstr "Персонаж не найден"
+msgstr "Иконка инфы персонажа"
 
 #: mg/constructor/players.py:359
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown token {%s}"
-msgstr "Неизвестная проблема"
+msgstr "Неизвестный элемент {%s}"
 
 #: mg/constructor/players.py:373
 msgid "Name template (valid tags are shown above)"
-msgstr ""
+msgstr "Шаблон имени (допустимые теги приведены выше)"
 
 #: mg/constructor/players.py:393
 msgid "Purpose"
-msgstr ""
+msgstr "Цель"
 
 #: mg/constructor/players.py:394
-#, fuzzy
 msgid "Format"
-msgstr "Форма"
+msgstr "Формат"
 
 #: mg/constructor/players.py:439
 msgid "All names were checked. Thank you"
-msgstr ""
+msgstr "Все имена проверены. Спасибо"
 
 #: mg/constructor/players.py:442
-#, fuzzy
 msgid "Good name"
-msgstr "Имя метода"
+msgstr "Хорошее имя"
 
 #: mg/constructor/players.py:443 mg/core/auth.py:893 mg/core/auth.py:980
 msgid "Change"
 msgstr "Изменить"
 
 #: mg/constructor/players.py:524
-#, fuzzy
 msgid "Information stored"
-msgstr "Конфигурация чата сохранена"
+msgstr "Информация сохранена"
 
 #: mg/constructor/project.py:74
 msgid "Social modules"
@@ -4783,102 +4724,108 @@ msgstr "Всё верно. Отправить на модерацию"
 
 #: mg/constructor/script.py:171
 msgid "Couldn't convert '{token}' (type '{type}') to string"
-msgstr ""
+msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку"
 
 #: mg/constructor/script.py:200 mg/constructor/script.py:238
 msgid "Left operand of '{operator}' must be numeric ('{val}' is '{type}')"
 msgstr ""
+"Левый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" имеет "
+"тип \"{type}\")"
 
 #: mg/constructor/script.py:205
 msgid "Right operand of '{operator}' must be numeric ('{val}' is {type}'"
 msgstr ""
+"Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
+"имеет тип \"{type}\")"
 
 #: mg/constructor/script.py:215
 msgid "Division by zero: '{val}' == 0"
-msgstr ""
+msgstr "Деление на 0: ({val}) == 0"
 
 #: mg/constructor/script.py:243
 msgid "Right operand of '{operator}' must be numeric ('{val}' is '{type}')"
 msgstr ""
+"Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
+"имеет тип \"{type}\")"
 
 #: mg/constructor/script.py:289
 msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
 msgstr ""
+"Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип "
+"\"{type}\")"
 
 #: mg/constructor/script.py:298
 msgid "Unknown script engine function: {fname}"
-msgstr ""
+msgstr "Неизвестная функция скриптового движка: {fname}"
 
 #: mg/constructor/script.py:302
 msgid "Global variable '{glob}' not found"
-msgstr ""
+msgstr "Глобальная переменная \"{glob}\" не найдена"
 
 #: mg/constructor/script.py:310
 msgid "Empty value '{val}' has no attributes"
-msgstr ""
+msgstr "У пустого значения \"{val}\" нет атрибутов"
 
 #: mg/constructor/script.py:312
 msgid "Integer '{val}' has no attributes"
-msgstr ""
+msgstr "У целого числа \"{val}\" нет атрибутов"
 
 #: mg/constructor/script.py:314
 msgid "Float '{val}' has no attributes"
-msgstr ""
+msgstr "У числа \"{val}\" нет атрибутов"
 
 #: mg/constructor/script.py:316
 msgid "String '{val}' has no attributes"
-msgstr ""
+msgstr "У строки \"{val}\" нет атрибутов"
 
 #: mg/constructor/script.py:319
 msgid "Object '{val}' has no attributes"
-msgstr ""
+msgstr "У объекта \"{val}\" нет атрибутов"
 
 #: mg/constructor/script.py:323
 msgid "Object '{val}' has no attribute '{att}'"
-msgstr ""
+msgstr "У объекта \"{val}\" нет атрибута \"{att}\""
 
 #: mg/constructor/script.py:333
 msgid "Unknown script engine operation: {op}"
-msgstr ""
+msgstr "Неизвестная операция скриптового движка: {op}"
 
 #: mg/constructor/script.py:356
 msgid "You must use global variable '{var}' in your expression"
-msgstr ""
+msgstr "В вашем выражении обязательно должна участвовать переменная \"{var}\""
 
 #: mg/constructor/script.py:403
 msgid "Request parameters"
-msgstr ""
+msgstr "Параметры запроса"
 
 #: mg/constructor/script.py:405
 msgid "Host"
-msgstr ""
+msgstr "Хост"
 
 #: mg/constructor/script.py:406
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: mg/constructor/script.py:407
-#, fuzzy
 msgid "Context"
-msgstr "Содержание"
+msgstr "Контекст"
 
 #: mg/constructor/script.py:408
-#, fuzzy
 msgid "Expression"
-msgstr "Сессия"
+msgstr "Выражение"
 
 #: mg/constructor/script_classes.py:274 mg/constructor/script_classes.py:306
 msgid "Parse error near '{input}'"
-msgstr ""
+msgstr "Ошибка парсинга рядом с \"{input}\""
 
 #: mg/constructor/script_classes.py:302
 msgid "Unknown token near '{input}'"
-msgstr ""
+msgstr "Неизвестный элемент рядом с \"{input}\""
 
 #: mg/constructor/script_classes.py:337 mg/constructor/script_classes.py:348
 #, python-format
 msgid "Expression '%s' is invalid: unexpected end of line"
-msgstr ""
+msgstr "Выражение \"%s\" внезапно оборвалось"
 
 #: mg/constructor/setup.py:21
 msgid "Setup wizard"
@@ -4998,19 +4945,16 @@ msgid "Administrator's e-mail"
 msgstr "E-mail администратора"
 
 #: mg/constructor/socio.py:58
-#, fuzzy
 msgid "Socio interface buttons"
-msgstr "Кнопки игрового интерфейса"
+msgstr "Кнопки интерфейса социалки"
 
 #: mg/constructor/socio.py:140
-#, fuzzy
 msgid "href///<strong>{0}</strong>"
-msgstr "<strong>{0}</strong> в {1}"
+msgstr "<strong>{0}</strong>"
 
 #: mg/constructor/socio.py:221
-#, fuzzy
 msgid "Select interface where to place the button"
-msgstr "Выберите блок кнопок, куда поместить кнопку"
+msgstr "Выберите интерфейс, куда поместить кнопку"
 
 #: mg/constructor/socio.py:284
 msgid "Socio interface"
@@ -5018,35 +4962,31 @@ msgstr "Интерфейс социалки"
 
 #: mg/constructor/socio.py:286
 msgid "Show on the left side"
-msgstr ""
+msgstr "Показать с левой стороны"
 
 #: mg/constructor/socio.py:287
 msgid "Condition (when to show the link)"
-msgstr ""
+msgstr "Условие (при котором показывать ссылку)"
 
 #: mg/constructor/socio.py:288
 msgid "Link text"
-msgstr ""
+msgstr "Текст ссылки"
 
 #: mg/constructor/socio.py:289
-#, fuzzy
 msgid "Search box"
-msgstr "Искать"
+msgstr "Блок поиска"
 
 #: mg/constructor/socio.py:290
-#, fuzzy
 msgid "Link href"
 msgstr "Ссылка"
 
 #: mg/constructor/socio.py:291
-#, fuzzy
 msgid "Current window"
-msgstr "Текущий логотип"
+msgstr "Текущее окно"
 
 #: mg/constructor/socio.py:320 mg/constructor/socio.py:322
-#, fuzzy
 msgid "Socio top menu"
-msgstr "Верхнее меню"
+msgstr "Верхнее меню социальных интерфейсов"
 
 #: mg/core/auth.py:377
 msgid ""
@@ -5319,13 +5259,12 @@ msgid "Change passwords for other users"
 msgstr "Изменение пароля другим пользователям"
 
 #: mg/core/auth.py:996
-#, fuzzy
 msgid "Change names for other users"
-msgstr "Изменение пароля другим пользователям"
+msgstr "Изменение имён другим пользователям"
 
 #: mg/core/auth.py:997
 msgid "Multicharing tracker"
-msgstr ""
+msgstr "Мультоловка"
 
 #: mg/core/auth.py:1014 mg/core/auth.py:1198
 msgid "Authentication"
@@ -5333,7 +5272,7 @@ msgstr "Аутентификация"
 
 #: mg/core/auth.py:1017
 msgid "My dossier"
-msgstr ""
+msgstr "Моё досье"
 
 #: mg/core/auth.py:1018
 msgid "Find user"
@@ -5382,13 +5321,12 @@ msgid "User %s"
 msgstr "Пользователь %s"
 
 #: mg/core/auth.py:1206 mg/core/auth.py:1292
-#, fuzzy
 msgid "Change name"
-msgstr "Имя персонажа"
+msgstr "Изменить имя"
 
 #: mg/core/auth.py:1208
 msgid "Track user"
-msgstr ""
+msgstr "Отследить пользователя"
 
 #: mg/core/auth.py:1241
 msgid "Active"
@@ -5399,23 +5337,20 @@ msgid "ID"
 msgstr "ID"
 
 #: mg/core/auth.py:1272
-#, fuzzy
 msgid "Specify new name"
-msgstr "Укажите имя метода"
+msgstr "Укажите новое имя"
 
 #: mg/core/auth.py:1274
 msgid "This user can't have a name"
-msgstr ""
+msgstr "Этот пользователь не может иметь имени"
 
 #: mg/core/auth.py:1290
-#, fuzzy
 msgid "New name"
-msgstr "Переименовать"
+msgstr "Новое имя"
 
 #: mg/core/auth.py:1296
-#, fuzzy
 msgid "Name changing"
-msgstr "Изменение e-mail"
+msgstr "Изменение имени"
 
 #: mg/core/auth.py:1308
 msgid "Specify new password"
@@ -5423,43 +5358,41 @@ msgstr "Укажите новый пароль"
 
 #: mg/core/auth.py:1310
 msgid "This user can't have a password"
-msgstr ""
+msgstr "Этот пользователь не может иметь пароль"
 
 #: mg/core/auth.py:1346
 msgid "Tracking"
-msgstr ""
+msgstr "Отслеживание"
 
 #: mg/core/auth.py:1349
 msgid "Tracking player"
-msgstr ""
+msgstr "Отслеживание игрока"
 
 #: mg/core/auth.py:1352
 #, python-format
 msgid "Tracking IP %s"
-msgstr ""
+msgstr "Отслеживание IP %s"
 
 #: mg/core/auth.py:1355
 #, python-format
 msgid "Tracking Cookie %s"
-msgstr ""
+msgstr "Отслеживание куки %s"
 
 #: mg/core/auth.py:1414 mg/core/money.py:477
 msgid "Performed"
-msgstr "Исполнено"
+msgstr "Произведено"
 
 #: mg/core/auth.py:1415
-#, fuzzy
 msgid "IP address"
-msgstr "Почтовый адрес"
+msgstr "IP-адрес"
 
 #: mg/core/auth.py:1416
 msgid "Cookie"
-msgstr ""
+msgstr "Кука"
 
 #: mg/core/auth.py:1418
-#, fuzzy
 msgid "Player"
-msgstr "Исполнено"
+msgstr "Игрок"
 
 #: mg/core/auth.py:1476 mg/core/auth.py:1486
 msgid "Select valid role"
@@ -5486,9 +5419,8 @@ msgid "Permission"
 msgstr "Разрешение"
 
 #: mg/core/auth.py:1514
-#, fuzzy
 msgid "Error on match"
-msgstr "Пароли не совпадают"
+msgstr "Ошибка при срабатывании"
 
 #: mg/core/auth.py:1538
 msgid "Viewing users dossiers"
@@ -5500,7 +5432,7 @@ msgstr "Сделать запись в досье"
 
 #: mg/core/auth.py:1569
 msgid "Dossier"
-msgstr ""
+msgstr "Досье"
 
 #: mg/core/auth.py:1571
 msgid "Administrator"
@@ -5671,39 +5603,32 @@ msgid "<strong>Administrator</strong> (uuid)"
 msgstr "<strong>Администратор</strong> (uuid)"
 
 #: mg/core/director.py:433
-#, fuzzy
 msgid "<strong>SMTP server</strong>"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>Сервер SMTP</strong>"
 
 #: mg/core/director.py:435
-#, fuzzy
 msgid "<strong>MySQL server</strong>"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>Сервер MySQL</strong>"
 
 #: mg/core/director.py:437
-#, fuzzy
 msgid "<strong>MySQL database</strong>"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>База данных MySQL</strong>"
 
 #: mg/core/director.py:439
-#, fuzzy
 msgid "<strong>MySQL user</strong>"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>Пользователь MySQL</strong>"
 
 #: mg/core/director.py:441
-#, fuzzy
 msgid "<strong>MySQL password</strong>"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>Пароль MySQL</strong>"
 
 #: mg/core/director.py:443
-#, fuzzy
 msgid "<strong>HTTP proxy to w3s.wmtransfer.com</strong> (host:port)"
-msgstr "<strong>Сервер SMTP</strong> (host)"
+msgstr "<strong>HTTP-прокси до w3s.wmtransfer.com</strong> (хост:порт)"
 
 #: mg/core/director.py:445
-#, fuzzy
 msgid "<strong>HTTP proxy to login.wmtransfer.com</strong> (host:port)"
-msgstr "<strong>Сервер Syslog</strong> (host)"
+msgstr "<strong>HTTP-прокси до login.wmtransfer.com</strong> (хост:порт)"
 
 #: mg/core/director.py:447
 msgid "<strong>Global locale</strong> (en, ru)"
@@ -5843,47 +5768,47 @@ msgstr "%s: Доступ запрещён"
 msgid "%s: Internal server error"
 msgstr "%s: Внутренняя ошибка сервера"
 
-#: mg/core/emails.py:423
+#: mg/core/emails.py:421
 #, python-format
 msgid "URL %s is not an image"
 msgstr "URL %s - это не изображение"
 
-#: mg/core/emails.py:425
+#: mg/core/emails.py:423
 #, python-format
 msgid "Timeout on downloading %s. Time limit - 30 sec"
 msgstr "Таймаут при скачивании %s. Ограничение по времени - 30 сек"
 
-#: mg/core/emails.py:449
+#: mg/core/emails.py:447
 msgid "Message was sent successfully"
 msgstr "Сообщение было успешно отправлено"
 
-#: mg/core/emails.py:458
+#: mg/core/emails.py:456
 msgid "message was queued for delivery/messages were queued for delivery"
 msgstr ""
 "сообщение было поставлено в очередь на доставку/сообщения было поставлено в "
 "очередь на доставку/сообщений было поставлено в очередь на доставку"
 
-#: mg/core/emails.py:466
+#: mg/core/emails.py:464
 msgid "Mass delivery (to all users)"
 msgstr "Массовая доставка (всем пользователям)"
 
-#: mg/core/emails.py:466
+#: mg/core/emails.py:464
 msgid "Test delivery (to the administrator)"
 msgstr "Тестовая доставка (администратору)"
 
-#: mg/core/emails.py:467
+#: mg/core/emails.py:465
 msgid "Destination email"
 msgstr "E-mail получателя"
 
-#: mg/core/emails.py:468
+#: mg/core/emails.py:466
 msgid "Recipient's name"
 msgstr "Имя получателя"
 
-#: mg/core/emails.py:469
+#: mg/core/emails.py:467
 msgid "Recipient's sex"
 msgstr "Пол получателя"
 
-#: mg/core/emails.py:472 mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
+#: mg/core/emails.py:470 mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
 msgid "Send"
 msgstr "Отправить"
 
@@ -5936,68 +5861,64 @@ msgid "of December"
 msgstr "декабря"
 
 #: mg/core/l10n.py:97
-#, fuzzy
 msgid "Site time zone settings"
-msgstr "Настройки Twitter"
+msgstr "Настройка часового пояса"
 
 #: mg/core/l10n.py:102
-#, fuzzy
 msgid "Time zone"
-msgstr "Таймаут"
+msgstr "Часовой пояс"
 
 #: mg/core/l10n.py:254
 msgid "at the {day:d}{th} {month}, {year} {hour:02d}:{min:02d}"
-msgstr ""
+msgstr "{day:d} {month} {year} {hour:02d}:{min:02d}"
 
 #: mg/core/l10n.py:268
-#, fuzzy
 msgid "at the {day:d}{th} {month}, {year}"
-msgstr "{2:02d} {1} {0} в {3}"
+msgstr "{day:d} {month} {year}"
 
 #: mg/core/l10n.py:325
 msgid "day/days"
-msgstr ""
+msgstr "день/дня/дней"
 
 #: mg/core/l10n.py:328
 msgid "hour/hours"
-msgstr ""
+msgstr "час/часа/часов"
 
 #: mg/core/l10n.py:331
 msgid "minute/minutes"
-msgstr ""
+msgstr "минута/минуты/минут"
 
 #: mg/core/l10n.py:334
 msgid "second/seconds"
-msgstr ""
+msgstr "секунда/секунды/секунд"
 
 #: mg/core/l10n.py:348
 msgid "accusative///day/days"
-msgstr ""
+msgstr "день/дня/дней"
 
 #: mg/core/l10n.py:351
 msgid "accusative///hour/hours"
-msgstr ""
+msgstr "час/часа/часов"
 
 #: mg/core/l10n.py:354
 msgid "accusative///minute/minutes"
-msgstr ""
+msgstr "минуту/минуты/минут"
 
 #: mg/core/l10n.py:357
 msgid "accusative///second/seconds"
-msgstr ""
+msgstr "секунду/секунды/секунд"
 
 #: mg/core/l10n.py:372
-#, fuzzy
 msgid "Select a valid timezone"
-msgstr "Выберите верный тип"
+msgstr "Выберите верный часовой пояс"
 
 #: mg/core/l10n.py:382
 msgid "Site time zone"
-msgstr ""
+msgstr "Часовой пояс на сайте"
 
 #: mg/core/money.py:65
 msgid "Economy"
-msgstr ""
+msgstr "Экономика"
 
 #: mg/core/money.py:70
 msgid "Currencies"
@@ -6090,9 +6011,9 @@ msgid "You must supply real money price for this currency"
 msgstr "Вы должны задать цену в реальных деньгах за эту валюту"
 
 #: mg/core/money.py:201 mg/core/money.py:205
-#, fuzzy
 msgid "You can't change real money exchange rate after game publication"
-msgstr "Вы не можете изменять название реальной валюты после публикации игры"
+msgstr ""
+"Вы не можете изменять курс обмена реальной валюты после публикации игры"
 
 #: mg/core/money.py:203
 msgid "Select real money currency"
@@ -6104,11 +6025,13 @@ msgid ""
 "{currency} = {rate} RUB, precision = {precision}). It is too big for "
 "micropayments. Lower you currency rate"
 msgstr ""
+"Минимальный шаг платежа в этой валюте получается {min_step:f} руб (1 "
+"{currency} = {rate} руб, точность = {precision}). Это слишком много для "
+"микроплатежей. Снизьте стоимость единицы валюты"
 
 #: mg/core/money.py:235 mg/core/money.py:258 mg/mmo/locations.py:350
-#, fuzzy
 msgid "Image format must be GIF, JPEG or PNG"
-msgstr "Изображение должно быть JPEG, PNG или GIF"
+msgstr "Изображение должно быть в формате GIF, JPEG или PNG"
 
 #: mg/core/money.py:314
 msgid ""
@@ -6166,11 +6089,11 @@ msgstr "Реальная валюта"
 
 #: mg/core/money.py:324
 msgid "Currency image (approx 60x60)"
-msgstr ""
+msgstr "Картинка для валюты (примерно 60x60)"
 
 #: mg/core/money.py:325
 msgid "Currency icon (approx 16x16)"
-msgstr ""
+msgstr "Иконка для валюты (примерно 16x16)"
 
 #: mg/core/money.py:352
 msgid "Currency code"
@@ -6246,9 +6169,8 @@ msgid "Low limit"
 msgstr "Нижний предел"
 
 #: mg/core/money.py:517
-#, fuzzy
 msgid "Money locks"
-msgstr "Денежные счета"
+msgstr "Блокировки денег"
 
 #: mg/core/money.py:519
 msgid "Lock ID"
@@ -6297,9 +6219,8 @@ msgid "Exchange rate"
 msgstr "Курс обмена"
 
 #: mg/core/money.py:545
-#, fuzzy
 msgid "Exchange to roubles"
-msgstr "Курс обмена"
+msgstr "Цена в рублях"
 
 #: mg/core/money.py:548
 msgid "Real money currency name"
@@ -6310,33 +6231,29 @@ msgid "absent"
 msgstr "отсутствует"
 
 #: mg/core/money.py:603
-#, fuzzy
 msgid "Xsolla integration"
-msgstr "Интеграция с 2pay"
+msgstr "Интеграция с Xsolla"
 
 #: mg/core/money.py:603
 msgid "open dashboard"
 msgstr "открыть панель управления"
 
 #: mg/core/money.py:620 mg/core/money.py:627
-#, fuzzy
 msgid "Open payment interface"
-msgstr "Интерфейс игры"
+msgstr "Пополнить счёт"
 
 #: mg/core/money.py:627
 #, python-format
 msgid "Not enough %s."
-msgstr ""
+msgstr "Недостаточно %s."
 
 #: mg/core/money.py:632
-#, fuzzy
 msgid "Xsolla payment"
-msgstr "Платёж 2pay"
+msgstr "Платёж Xsolla"
 
 #: mg/core/money.py:638
-#, fuzzy
 msgid "Xsolla chargeback"
-msgstr "Возврат платежа 2pay"
+msgstr "Возврат платежа Xsolla"
 
 #: mg/core/money.py:865
 msgid "Enter character name:"
@@ -6363,9 +6280,8 @@ msgid "Secret code for adding games"
 msgstr "Секретный код для добавления игр"
 
 #: mg/core/money.py:998
-#, fuzzy
 msgid "Xsolla time"
-msgstr "Время 2pay"
+msgstr "Время Xsolla"
 
 #: mg/core/money.py:999
 msgid "Our time"
@@ -6388,43 +6304,37 @@ msgid "Contragent ID"
 msgstr "ID контрагента"
 
 #: mg/core/money.py:1036
-#, fuzzy
 msgid "Xsolla project id"
-msgstr "ID проекта в 2pay"
+msgstr "ID проекта в Xsolla"
 
 #: mg/core/money.py:1037
-#, fuzzy
 msgid "Xsolla contragent id"
-msgstr "ID контрагента 2pay"
+msgstr "ID контрагента Xsolla"
 
 #: mg/core/money.py:1038
-#, fuzzy
 msgid "Xsolla secret"
-msgstr "Секретный код 2pay"
+msgstr "Секретный код Xsolla"
 
 #: mg/core/money.py:1039
-#, fuzzy
 msgid "Xsolla secret for adding games"
-msgstr "Секретный код 2pay для добавления игр"
+msgstr "Секретный код Xsolla для добавления игр"
 
 #: mg/core/money.py:1051
-#, fuzzy
 msgid "Xsolla dashboard"
-msgstr "открыть панель управления"
+msgstr "Панель управления Xsolla"
 
 #: mg/core/money.py:1053
 msgid "Settings editor"
 msgstr "Редактор настроек"
 
 #: mg/core/money.py:1056
-#, fuzzy
 msgid "Constructor: Xsolla integration"
-msgstr "Конструктор: интеграция с 2pay"
+msgstr "Конструктор: интеграция с Xsolla"
 
 #: mg/core/money.py:1074
 #, python-format
 msgid "Not enough %s"
-msgstr ""
+msgstr "Недостаточно %s"
 
 #: mg/core/money.py:1096
 msgid "Given by the administration"
@@ -6435,28 +6345,25 @@ msgid "Taken by the administration"
 msgstr "Изъято администрацией"
 
 #: mg/core/money.py:1168
-#, fuzzy
 msgid "WebMoney authentication settings"
-msgstr "Настройки аутентификации игроков"
+msgstr "Настройки аутентификации WebMoney"
 
 #: mg/core/money.py:1173
-#, fuzzy
 msgid "WebMoney authentication"
-msgstr "Аттестат WebMoney"
+msgstr "Аутентификация WebMoney"
 
 #: mg/core/money.py:1184
 msgid "WMID for WMLogin"
-msgstr ""
+msgstr "WMID для WMLogin"
 
 #: mg/core/money.py:1185
 #, python-format
 msgid "RID for URL '%s'"
-msgstr ""
+msgstr "RID для URL '%s'"
 
 #: mg/core/money.py:1233
-#, fuzzy
 msgid "Authorize"
-msgstr "авторизовано"
+msgstr "Авторизовать"
 
 #: mg/core/realplexor.py:339
 msgid "Realplexor configuration"
@@ -6492,7 +6399,7 @@ msgstr "Администрирование robots.txt"
 
 #: mg/core/sites.py:33
 msgid "Allow web search engines index this site"
-msgstr ""
+msgstr "Позволить поисковым системам индексировать этот сайт"
 
 #: mg/core/sites.py:54
 msgid "Counters administration"
@@ -6591,202 +6498,181 @@ msgid "Transliterate to Russian"
 msgstr "Транслитерация на русский"
 
 #: mg/mmo/locations.py:34 mg/mmo/locations.py:53
-#, fuzzy
 msgid "Locations"
-msgstr "Действие"
+msgstr "Локации"
 
 #: mg/mmo/locations.py:37 mg/mmo/locations.py:42 mg/mmo/locations.py:210
-#, fuzzy
 msgid "Locations configuration"
-msgstr "Конфигурация чата"
+msgstr "Конфигурация локаций"
 
 #: mg/mmo/locations.py:38 mg/mmo/locations.py:41
-#, fuzzy
 msgid "Locations editor"
-msgstr "Редактор логотипа"
+msgstr "Редактор локаций"
 
 #: mg/mmo/locations.py:46 mg/mmo/locations.py:192
-#, fuzzy
 msgid "New location"
-msgstr "Новое приглашение"
+msgstr "Новая локация"
 
 #: mg/mmo/locations.py:52
-#, fuzzy
 msgid "Editor"
-msgstr "Редактирование ответа"
+msgstr "Редактор"
 
 #: mg/mmo/locations.py:71
-#, fuzzy
 msgid "Name is mandatory"
-msgstr "Укажите причину"
+msgstr "Имя - обязательный параметр"
 
 #: mg/mmo/locations.py:73
-#, fuzzy
 msgid "Name contains forbidden symbols"
-msgstr "Код смайлика содержит запрещённый символ '%s'"
+msgstr "Имя содержит запрещённые символы"
 
 #: mg/mmo/locations.py:99
 msgid "Delay must be a non-negative integer value"
-msgstr ""
+msgstr "Задержка должна быть неотрицательным целым числом"
 
 #: mg/mmo/locations.py:107
-#, fuzzy
 msgid "Invalid location selected"
-msgstr "Неверный код активации"
+msgstr "Выбрана неверная локация"
 
 #: mg/mmo/locations.py:109 mg/mmo/locations.py:417
 msgid "Link to the same location"
-msgstr ""
+msgstr "Ссылка на ту же самую локацию"
 
 #: mg/mmo/locations.py:118
-#, fuzzy
 msgid "Select valid image type"
-msgstr "Выберите верный тип"
+msgstr "Укажите тип изображения"
 
 #: mg/mmo/locations.py:135
-#, fuzzy
 msgid "Location name"
-msgstr "Доменное имя"
+msgstr "Название локации"
 
 #: mg/mmo/locations.py:137
 msgid "Location name in genitive"
-msgstr ""
+msgstr "Название локации в родительном падеже"
 
 #: mg/mmo/locations.py:138
 msgid "Location name in accusative"
-msgstr ""
+msgstr "Название локации в винительном падеже"
 
 #: mg/mmo/locations.py:139
 msgid "Location name (where?) - 'in the Some Location'"
-msgstr ""
+msgstr "Название локации (ответ на вопрос \"где\") - \"в Некоторой Локации\""
 
 #: mg/mmo/locations.py:140
 msgid "Location name (to where?) - 'to the Some Location'"
-msgstr ""
+msgstr "Название локации (ответ на вопрос \"куда\") - \"в Некоторую Локацию\""
 
 #: mg/mmo/locations.py:141
 msgid "Location name (from where?) - 'from the Some Location'"
 msgstr ""
+"Название локации (ответ на вопрос \"откуда\") - \"из Некоторой Локации\""
 
 #: mg/mmo/locations.py:143
 msgid "Delay when moving to this location and from it"
-msgstr ""
+msgstr "Задержка при переходе в эту локацию и из неё"
 
 #: mg/mmo/locations.py:149
 msgid "Location to the up"
-msgstr ""
+msgstr "Локация сверху"
 
 #: mg/mmo/locations.py:150
 msgid "Location to the left"
-msgstr ""
+msgstr "Локация слева"
 
 #: mg/mmo/locations.py:151
 msgid "Location to the right"
-msgstr ""
+msgstr "Локация справа"
 
 #: mg/mmo/locations.py:152
-#, fuzzy
 msgid "Location to the down"
-msgstr "для назначения домена"
+msgstr "Локация снизу"
 
 #: mg/mmo/locations.py:154
-#, fuzzy
 msgid "Image type"
-msgstr "Картинка"
+msgstr "Тип изображения"
 
 #: mg/mmo/locations.py:169
-#, fuzzy
 msgid "Transition"
-msgstr "Транслитерация"
+msgstr "Переход"
 
 #: mg/mmo/locations.py:170
 msgid "Hint when mouse over the link"
-msgstr ""
+msgstr "Подсказка при наведении мыши на ссылку"
 
 #: mg/mmo/locations.py:171
 msgid ""
 "Delay when moving to this location (if not specified delay will be "
 "calculated as sum of delays on both locations)"
 msgstr ""
+"Задержка при перемещении в эту локацию (если не указана, то задержка будет "
+"вычислена как сумма задержек обеих локаций)"
 
 #: mg/mmo/locations.py:197 mg/mmo/locations.py:634
-#, fuzzy
 msgid "Location"
-msgstr "Действие"
+msgstr "Локация"
 
 #: mg/mmo/locations.py:198
-#, fuzzy
 msgid "Functions"
-msgstr "Действие"
+msgstr "Функции"
 
 #: mg/mmo/locations.py:222
-#, fuzzy
 msgid "Invalid starting location"
-msgstr "Неверный выбор"
+msgstr "Неверная стартовая локация"
 
 #: mg/mmo/locations.py:234
-#, fuzzy
 msgid "Starting location for the new character"
-msgstr "Ручная проверка каждого имени персонажа"
+msgstr "Стартовая локация для нового персонажа"
 
 #: mg/mmo/locations.py:235
 msgid "Location movement delay expression"
-msgstr ""
+msgstr "Выражение для задержки перехода между локациями"
 
 #: mg/mmo/locations.py:240
 msgid "Delay when moving between locations"
-msgstr ""
+msgstr "Задержка при перемещении между локациями"
 
 #: mg/mmo/locations.py:313
-#, fuzzy
 msgid "Static image"
-msgstr "Картинка смайлика"
+msgstr "Статическая картинка"
 
 #: mg/mmo/locations.py:314
 msgid "Replace location image (if necessary)"
-msgstr ""
+msgstr "Замена изображение локации (если необходимо)"
 
 #: mg/mmo/locations.py:314
-#, fuzzy
 msgid "Upload location image"
-msgstr "Загрузите файл с логотипом"
+msgstr "Загрузите изображение локации"
 
 #: mg/mmo/locations.py:373
 msgid "Map"
-msgstr ""
+msgstr "Карта"
 
 #: mg/mmo/locations.py:393
-#, fuzzy
 msgid "Polygon may not be empty"
-msgstr "Приглашение не может быть пустым"
+msgstr "Многоугольник не может быть пустым"
 
 #: mg/mmo/locations.py:395
-#, fuzzy
 msgid "Odd number of coordinates"
-msgstr "Неверный формат числа"
+msgstr "Нечётное количество координат"
 
 #: mg/mmo/locations.py:397
 msgid "Minimal number of points is 3"
-msgstr ""
+msgstr "Минимальное количество точек - 3"
 
 #: mg/mmo/locations.py:401
 msgid "Invalid non-integer coordinate encountered"
-msgstr ""
+msgstr "Найдена неверная координата, не являющаяся целым числом"
 
 #: mg/mmo/locations.py:411
-#, fuzzy
 msgid "Location not specified"
-msgstr "DOCTYPE не указан"
+msgstr "Локация не указана"
 
 #: mg/mmo/locations.py:415
-#, fuzzy
 msgid "Invalid location specified"
-msgstr "Указан неверный пол"
+msgstr "Указана неверная локация"
 
 #: mg/mmo/locations.py:421
-#, fuzzy
 msgid "No action specified"
-msgstr "Установлено безопасное соединение"
+msgstr "Действие не выбрано"
 
 #: mg/mmo/locations.py:451
 msgid ""
@@ -6794,92 +6680,87 @@ msgid ""
 "work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully "
 "supported"
 msgstr ""
+"Внимание! Internet Explorer не поддерживается. Редактор локаций может "
+"работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, "
+"Google Chrome и Opera."
 
 #: mg/mmo/locations.py:454
-#, fuzzy
 msgid "Move to another location"
-msgstr "Какая-то другая строка"
+msgstr "Переход в другую локацию"
 
 #: mg/mmo/locations.py:454
-#, fuzzy
 msgid "No action"
-msgstr "Действие для кнопки"
+msgstr "Нет действия"
 
 #: mg/mmo/locations.py:456
 msgid "Switch to the location editor"
-msgstr ""
+msgstr "Переключиться в режим редактора локации"
 
 #: mg/mmo/locations.py:463
-#, fuzzy
 msgid "Location saved successfully"
-msgstr "Сообщение было успешно отправлено"
+msgstr "Локация успешно сохранена"
 
 #: mg/mmo/locations.py:482
-#, fuzzy
 msgid "Switch to the image map editor"
-msgstr "Редактор сообщений в интерфейсе социалки"
+msgstr "Переключиться в режим редактора карты изображения"
 
 #: mg/mmo/locations.py:486
-#, fuzzy
 msgid "Image map saved successfully"
-msgstr "Сообщение было успешно отправлено"
+msgstr "Карта изображения успешно сохранена"
 
 #: mg/mmo/locations.py:564
-#, fuzzy
 msgid "Open locations configuration"
-msgstr "Настройка оформления"
+msgstr "Открыть настройку локаций"
 
 #: mg/mmo/locations.py:564
 msgid "Starting location not configured."
-msgstr ""
+msgstr "Стартовая локация не настроена"
 
 #: mg/mmo/locations.py:566
 msgid "No locations defined."
-msgstr ""
+msgstr "Локации отсутствуют."
 
 #: mg/mmo/locations.py:566
-#, fuzzy
 msgid "Open locations editor"
-msgstr "Редактор настроек"
+msgstr "Открыть редактор локаций"
 
 #: mg/mmo/locations.py:602
-#, fuzzy
 msgid "Character offline"
-msgstr "Имя персонажа"
+msgstr "Персонаж в оффлайне"
 
 #: mg/mmo/locations.py:604
 msgid "You are busy"
-msgstr ""
+msgstr "Вы заняты"
 
 #: mg/mmo/locations.py:610
 msgid "No way"
-msgstr ""
+msgstr "Нет пути"
 
 #: mg/mmo/locations.py:613
-#, fuzzy
 msgid "No such location"
-msgstr "Нет такого раздела"
+msgstr "Нет такой локации"
 
 #: mg/mmo/locations.py:618
 msgid "Location movement delay"
-msgstr ""
+msgstr "Задержка при перемещении по локациям"
 
 #: mg/mmo/locations.py:678
-#, fuzzy
 msgid "No location"
-msgstr "Приложение"
+msgstr "Нет локации"
 
 #: mg/mmo/locations.py:692
 msgid "Fast movement across the locations for {period}"
-msgstr ""
+msgstr "Ускоренное перемещение по локациям на {period_a}"
 
 #: mg/mmo/locations.py:703
 msgid "Fast movement across the locations"
-msgstr ""
+msgstr "Быстрое перемещение по локациям"
 
 #: mg/mmo/locations.py:704
 msgid "If you want to move across locations faster you may use this service"
 msgstr ""
+"Если вы хотите быстрее переходить по локациям, можете воспользоваться этой "
+"услугой"
 
 #: mg/socio/__init__.py:211
 msgid "Defining categories"
@@ -7040,19 +6921,16 @@ msgid "Subscribed topics"
 msgstr "Подписанные темы"
 
 #: mg/socio/__init__.py:1052
-#, fuzzy
 msgid "You are not logged in"
-msgstr "Не вошедший в систему"
+msgstr "Вы не вошли в систему"
 
 #: mg/socio/__init__.py:1056 mg/socio/__init__.py:1081
-#, fuzzy
 msgid "Silence restraint"
-msgstr "Открытая регистрация"
+msgstr "Наказание: молчание"
 
 #: mg/socio/__init__.py:1077
-#, fuzzy
 msgid "You are not logged on"
-msgstr "У вас недостаточно средств"
+msgstr "Вы не вошли в систему"
 
 #: mg/socio/__init__.py:1332 mg/socio/__init__.py:1914
 msgid "Enter topic subject"
@@ -7079,9 +6957,8 @@ msgid "Tags (delimited with commas)"
 msgstr "Теги (разделяются запятыми)"
 
 #: mg/socio/__init__.py:1356
-#, fuzzy
 msgid "Publish"
-msgstr "Снять с публикации"
+msgstr "Опубликовать"
 
 #: mg/socio/__init__.py:1545 mg/socio/__init__.py:1794
 #: mg/socio/__init__.py:1879
@@ -7148,86 +7025,90 @@ msgid "Signature line couldn't be longer than 80 symbols"
 msgstr "Строка подписи не может быть длиннее 80 символов"
 
 #: mg/socio/__init__.py:2014
-#, fuzzy
 msgid "Signature can't contain images"
-msgstr "В подпись нельзя вставлять картинки"
+msgstr "В подпись нельзя вставлять смайлики"
 
 #: mg/socio/__init__.py:2018
 msgid ""
 "To use images in the signature <a href=\"/socio/paid-services\">subscribe to "
 "the corresponding service</a>"
 msgstr ""
+"Чтобы использовать изображения в подписи, <a href=\"/socio/paid-services"
+"\">подключите соответствующую услугу</a>"
 
 #: mg/socio/__init__.py:2025
-#, fuzzy, python-format
+#, python-format
 msgid "Invalid image: [img:%s]"
-msgstr "Неверный символ: '%s'"
+msgstr "Неверное изображение: [img:%s]"
 
 #: mg/socio/__init__.py:2031
-#, fuzzy, python-format
+#, python-format
 msgid "Error downloading [img:%s]"
-msgstr "Ошибка при входе"
+msgstr "Ошибка при загрузке [img:%s]"
 
 #: mg/socio/__init__.py:2036
 #, python-format
 msgid "Image [img:%s] format error"
-msgstr ""
+msgstr "Ошибка формата изображения [img:%s]"
 
 #: mg/socio/__init__.py:2039
 #, python-format
 msgid "Image [img:%s] IO error"
-msgstr ""
+msgstr "Ошибка при чтении [img:%s]"
 
 #: mg/socio/__init__.py:2042
 #, python-format
 msgid "Image [img:%s] overflow error"
-msgstr ""
+msgstr "Ошибка переполнения в изображении [img:%s]"
 
 #: mg/socio/__init__.py:2057
 msgid ""
 "Total dimensions of images in your signature are {img_w}x{img_h}. Max "
 "permitted are {max_w}x{max_h}. Resize your images to meet this condition"
 msgstr ""
+"Суммарные размеры изображений в вашей подписи {img_w}x{img_h}. Максимально "
+"допустимые - {max_w}x{max_h}. Уменьшите ваши изображения, чтобы "
+"удовлетворить данным требованиям"
 
 #: mg/socio/__init__.py:2060
-#, fuzzy
 msgid "Signature can't contain smiles"
-msgstr "В подпись нельзя вставлять картинки"
+msgstr "В подпись нельзя вставлять смайлики"
 
 #: mg/socio/__init__.py:2063
 msgid ""
 "To use smiles in the signature <a href=\"/socio/paid-services\">subscribe to "
 "the corresponding service</a>"
 msgstr ""
+"Чтобы использовать смайлики в подписи, <a href=\"/socio/paid-services"
+"\">подключите соответствующую услугу</a>"
 
 #: mg/socio/__init__.py:2067
-#, fuzzy
 msgid "Signature can contain at most {max} {smiles}"
-msgstr "В подписи не может быть более 4 строк"
+msgstr "В подписи может быть только {max} {smiles}"
 
 #: mg/socio/__init__.py:2067
 msgid "smile/smiles"
-msgstr ""
+msgstr "смайлик/смайлика/смайликов"
 
 #: mg/socio/__init__.py:2070
-#, fuzzy
 msgid "Signature can't contain colours"
-msgstr "В подписи не может быть более 4 строк"
+msgstr "Подпись не может быть цветной"
 
 #: mg/socio/__init__.py:2073
 msgid ""
 "To use colours in the signature <a href=\"/socio/paid-services\">subscribe "
 "to the corresponding service</a>"
 msgstr ""
+"Чтобы использовать цвета в подписи, <a href=\"/socio/paid-services"
+"\">подключите соответствующую услугу</a>"
 
 #: mg/socio/__init__.py:2096
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
 
 #: mg/socio/__init__.py:2160
-#, fuzzy
 msgid "Change avatar"
-msgstr "Изменить пароль"
+msgstr "Изменить аватар"
 
 #: mg/socio/__init__.py:2160
 msgid "Your avatar"
@@ -7254,6 +7135,9 @@ msgid ""
 "You can use grayscale avatars only. To get an ability to upload coloured "
 "avatars <a href=\"/socio/paid-services\">please subscribe</a>"
 msgstr ""
+"Вы можете использовать только чёрно-белые аватары. Чтобы получить "
+"возможность загружать цветные аватары, <a href=\"/socio/paid-services"
+"\">пожалуйста, подключите соответствующую услугу</a>"
 
 #: mg/socio/__init__.py:2274
 msgid "Select category"
@@ -7320,21 +7204,19 @@ msgstr "Комментировать"
 
 #: mg/socio/__init__.py:2682
 msgid "Your access to the forum is temporarily blocked till {till}"
-msgstr ""
+msgstr "Ваш доступ к форуму заблокирован до {till}"
 
 #: mg/socio/__init__.py:2685
 msgid "Socio interface message editor"
 msgstr "Редактор сообщений в интерфейсе социалки"
 
 #: mg/socio/__init__.py:2686
-#, fuzzy
 msgid "Socio configuration"
-msgstr "Конфигурация e-mail"
+msgstr "Конфигурация социалки"
 
 #: mg/socio/__init__.py:2691
-#, fuzzy
 msgid "Configuration"
-msgstr "Конфигурация чата"
+msgstr "Конфигурация"
 
 #: mg/socio/__init__.py:2693
 msgid "Interface messages"
@@ -7345,305 +7227,300 @@ msgid "Top message"
 msgstr "Верхнее сообщение"
 
 #: mg/socio/__init__.py:2708
-#, fuzzy
 msgid "Silence message"
-msgstr "Отправить новое сообщение"
+msgstr "Сообщение для молчанки"
 
 #: mg/socio/__init__.py:2726 mg/socio/__init__.py:2735
 #: mg/socio/__init__.py:2744
-#, fuzzy, python-format
+#, python-format
 msgid "Minimal value is %d"
-msgstr "Минимальное значение - 1"
+msgstr "Минимальное значение - %d"
 
 #: mg/socio/__init__.py:2759
 msgid "Allow images in signatures"
-msgstr ""
+msgstr "Разрешить изображения в подписях"
 
 #: mg/socio/__init__.py:2760
 msgid "Limit for sum width of all images in the signature"
-msgstr ""
+msgstr "Ограничение суммарной ширины для всех изображений в подписи"
 
 #: mg/socio/__init__.py:2761
 msgid "Limit for sum height of all images in the signature"
-msgstr ""
+msgstr "Ограничение суммарной высоты для всех изображений в подписи"
 
 #: mg/socio/__init__.py:2762
 msgid "Allow smiles in signatures"
-msgstr ""
+msgstr "Разрешить смайлики в подписях"
 
 #: mg/socio/__init__.py:2763
 msgid "Maximal number of smiles in the signature"
-msgstr ""
+msgstr "Максимальное количество смайликов в подписи"
 
 #: mg/socio/__init__.py:2764
 msgid "Allow colours in signatures"
-msgstr ""
+msgstr "Разрешить цвета в подписях"
 
 #: mg/socio/paidservices.py:47 mg/socio/paidservices.py:53
 #: mg/socio/paidservices.py:77
-#, fuzzy
 msgid "Forum paid services"
-msgstr "Разделы форума"
+msgstr "Платные услуги форума"
 
 #: mg/socio/paidservices.py:116
 msgid "Coloured avatar for {period}"
-msgstr ""
+msgstr "Цветной аватар на {period_a}"
 
 #: mg/socio/paidservices.py:127
 msgid "Coloured avatar on the forum"
-msgstr ""
+msgstr "Цветной аватар на форуме"
 
 #: mg/socio/paidservices.py:128
 msgid ""
 "Basically your avatar can be monochrome only. If you want coloured avatar "
 "you can use this option"
 msgstr ""
+"Изначально ваш аватар может быть только чёрно-белым. Воспользуйтесь этой "
+"услугой, если вы хотите установить себе цветной аватар"
 
 #: mg/socio/paidservices.py:136
 msgid "Now upload your new coloured avatar"
-msgstr ""
+msgstr "Теперь загрузите ваш новый цветной аватар"
 
 #: mg/socio/paidservices.py:144
 msgid "Images in the signature for {period}"
-msgstr ""
+msgstr "Изображения в подписи на {period_a}"
 
 #: mg/socio/paidservices.py:155
-#, fuzzy
 msgid "Images in the signature"
-msgstr "Очень странная подпись"
+msgstr "Изображения в подписи"
 
 #: mg/socio/paidservices.py:156
 msgid ""
 "Basically your can not use images in your forum signature. If you want to "
 "use images you can use this option"
 msgstr ""
+"Изначально вы не можете вставлять картинки в подпись на форуме. Если вы "
+"хотите иметь подпись с картинками, воспользуйтесь этой услугой"
 
 #: mg/socio/paidservices.py:164
 msgid "Now include some images to your signature"
-msgstr ""
+msgstr "Теперь вы можете вставить картинки в вашу подпись"
 
 #: mg/socio/paidservices.py:172
 msgid "Smiles in the signature for {period}"
-msgstr ""
+msgstr "Смайлики в подписи на {period_a}"
 
 #: mg/socio/paidservices.py:183
-#, fuzzy
 msgid "Smiles in the signature"
-msgstr "Очень странная подпись"
+msgstr "Смайлики в подписи"
 
 #: mg/socio/paidservices.py:184
 msgid ""
 "Basically your can not use smiles in your forum signature. If you want to "
 "use smiles you can use this option"
 msgstr ""
+"Изначально вы не можете вставлять смайлики в подпись на форуме. Если вы "
+"хотите иметь подпись со смайликами, воспользуйтесь этой опцией"
 
 #: mg/socio/paidservices.py:192
 msgid "Now include some smiles to your signature"
-msgstr ""
+msgstr "Теперь вы можете поместить немного смайликов в вашу подпись"
 
 #: mg/socio/paidservices.py:200
 msgid "Colours in the signature for {period}"
-msgstr ""
+msgstr "Цвета в подписи на {period_a}"
 
 #: mg/socio/paidservices.py:211
-#, fuzzy
 msgid "Colours in the signature"
-msgstr "Ваша подпись на форуме"
+msgstr "Цвета в подписи"
 
 #: mg/socio/paidservices.py:212
 msgid ""
 "Basically your can not use colours in your forum signature. If you want to "
 "use colours you can use this option"
 msgstr ""
+"Изначально вы не можете использовать цвета в подписи на форуме. Если вы "
+"хотите иметь цветную подпись, воспользуйтесь этой опцией"
 
 #: mg/socio/paidservices.py:220
 msgid "Now include some colours to your signature"
-msgstr ""
+msgstr "Теперь вы можете раскрасить вашу подпись"
 
 #: mg/socio/paidservices.py:228
 msgid "Socio premium pack for {period}"
-msgstr ""
+msgstr "Форумный премиум-пакет на {period_a}"
 
 #: mg/socio/paidservices.py:239
 msgid "Premium pack on the forum"
-msgstr ""
+msgstr "Премиум-пакет на форуме"
 
 #: mg/socio/paidservices.py:241
 msgid ""
 "This option allows you to use coloured avatar and to include images, smiles "
 "and coloured text to your signature on the forum"
 msgstr ""
+"Эта опция позволяет вам использовать на форуме цветной аватар и включать в "
+"подпись картинки, смайлики и цвета"
 
 #: mg/socio/paidservices.py:249
 msgid "Now you can use all premium forum settings"
-msgstr ""
+msgstr "Теперь вы можете воспользоваться премиум-услугами в настройках форума"
 
 #: mg/socio/restraints.py:68 mg/socio/restraints.py:125
 #: mg/socio/restraints.py:203
 msgid "Chat silence"
-msgstr ""
+msgstr "Молчанка в чате"
 
 #: mg/socio/restraints.py:70 mg/socio/restraints.py:126
 #: mg/socio/restraints.py:205
 msgid "Hide info"
-msgstr ""
+msgstr "Скрыть инфо"
 
 #: mg/socio/restraints.py:72 mg/socio/restraints.py:127
 #: mg/socio/restraints.py:207
-#, fuzzy
 msgid "Forum silence"
-msgstr "Настройки форума"
+msgstr "Молчанка на форуме"
 
 #: mg/socio/restraints.py:74 mg/socio/restraints.py:128
 #: mg/socio/restraints.py:209
-#, fuzzy
 msgid "Ban"
-msgstr "Баланс"
+msgstr "Бан"
 
 #: mg/socio/restraints.py:79
 msgid "plus"
-msgstr ""
+msgstr "плюс"
 
 #: mg/socio/restraints.py:110
-#, fuzzy
 msgid "Banning users"
-msgstr "Найти пользователя"
+msgstr "Бан пользователей"
 
 #: mg/socio/restraints.py:111
-#, fuzzy
 msgid "Hiding user's info"
-msgstr "Просмотр досье пользователей"
+msgstr "Сокрытие информации пользователя"
 
 #: mg/socio/restraints.py:114
 msgid "Settings silence restraints for users in the chat"
-msgstr ""
+msgstr "Молчанки пользователям в чате"
 
 #: mg/socio/restraints.py:117
 msgid "Settings silence restraints for users on the forum"
-msgstr ""
+msgstr "Молчанки пользователям на форуме"
 
 #: mg/socio/restraints.py:134
 #, python-format
 msgid "till %s"
-msgstr ""
+msgstr "до %s"
 
 #: mg/socio/restraints.py:135
-#, fuzzy
 msgid "change"
-msgstr "Изменить"
+msgstr "изменить"
 
 #: mg/socio/restraints.py:138
 msgid "restraint///give"
-msgstr ""
+msgstr "выдать"
 
 #: mg/socio/restraints.py:143
-#, fuzzy
 msgid "Restraints"
-msgstr "Регистрация"
+msgstr "Наказания"
 
 #: mg/socio/restraints.py:159
 msgid "Select silence interval"
-msgstr ""
+msgstr "Выберите интервал молчания"
 
 #: mg/socio/restraints.py:165
-#, fuzzy
 msgid "Select correct mode"
-msgstr "Выберите режим доставки"
+msgstr "Выберите верный режим"
 
 #: mg/socio/restraints.py:171
 msgid "1 minute"
-msgstr ""
+msgstr "1 минута"
 
 #: mg/socio/restraints.py:172
 msgid "5 minutes"
-msgstr ""
+msgstr "5 минут"
 
 #: mg/socio/restraints.py:173
 msgid "10 minutes"
-msgstr ""
+msgstr "10 минут"
 
 #: mg/socio/restraints.py:174
 msgid "30 minutes"
-msgstr ""
+msgstr "30 минут"
 
 #: mg/socio/restraints.py:175
 msgid "1 hour"
-msgstr ""
+msgstr "1 час"
 
 #: mg/socio/restraints.py:176
 msgid "2 hours"
-msgstr ""
+msgstr "2 часа"
 
 #: mg/socio/restraints.py:177
 msgid "3 hours"
-msgstr ""
+msgstr "3 часа"
 
 #: mg/socio/restraints.py:178
 msgid "6 hours"
-msgstr ""
+msgstr "6 часов"
 
 #: mg/socio/restraints.py:179
 msgid "12 hours"
-msgstr ""
+msgstr "12 часов"
 
 #: mg/socio/restraints.py:180
 msgid "1 day"
-msgstr ""
+msgstr "1 сутки"
 
 #: mg/socio/restraints.py:181
 msgid "2 days"
-msgstr ""
+msgstr "2 суток"
 
 #: mg/socio/restraints.py:182
 msgid "4 days"
-msgstr ""
+msgstr "5 суток"
 
 #: mg/socio/restraints.py:183
 msgid "1 week"
-msgstr ""
+msgstr "1 неделя"
 
 #: mg/socio/restraints.py:184
 msgid "2 weeks"
-msgstr ""
+msgstr "2 недели"
 
 #: mg/socio/restraints.py:185
 msgid "3 weeks"
-msgstr ""
+msgstr "3 недели"
 
 #: mg/socio/restraints.py:186
 msgid "30 days"
-msgstr ""
+msgstr "30 суток"
 
 #: mg/socio/restraints.py:187
 msgid "60 days"
-msgstr ""
+msgstr "60 суток"
 
 #: mg/socio/restraints.py:188
 msgid "90 days"
-msgstr ""
+msgstr "90 суток"
 
 #: mg/socio/restraints.py:189
 msgid "1 year"
-msgstr ""
+msgstr "1 год"
 
 #: mg/socio/restraints.py:192
 msgid "Silence time"
-msgstr ""
+msgstr "Время молчанки"
 
 #: mg/socio/restraints.py:193
-#, fuzzy
 msgid "Replace"
-msgstr "Ответов"
+msgstr "Заменить"
 
 #: mg/socio/restraints.py:193
-#, fuzzy
 msgid "Restraint setting mode"
-msgstr "Настройки конструктора сохранены"
+msgstr "Режим выдачи наказаний"
 
 #: mg/socio/restraints.py:194
-#, fuzzy
 msgid "Reason"
-msgstr "Причина отказа"
+msgstr "Причина"
 
 #: mg/socio/smiles.py:71
 msgid "Show smiles"
@@ -7767,26 +7644,26 @@ msgstr "Получено"
 msgid "Time"
 msgstr "Время"
 
-#~ msgid "{2:d}{3} {1}, {0}"
-#~ msgstr "{2:02d} {1} {0}"
+#~ msgid "Value 'none' has no attributes"
+#~ msgstr "У значения \"none\" нет атрибутов"
 
-#~ msgid "Site indexing enabled"
-#~ msgstr "Индексация сайта включена"
+#~ msgid "Log into the game"
+#~ msgstr "Войдите в игру"
 
-#~ msgid "Users"
-#~ msgstr "Пользователи"
+#~ msgid "Number expected"
+#~ msgstr "Требуется число"
 
-#~ msgid "My dashboard"
-#~ msgstr "Моя информация"
+#~ msgid "Related player"
+#~ msgstr "Связанный игрок"
+
+#~ msgid "Related character %s"
+#~ msgstr "Связанный персонаж %s"
+
+#~ msgid "User limits"
+#~ msgstr "Ограничения пользователя"
 
 #~ msgid "Money operations"
 #~ msgstr "Денежные операции"
-
-#~ msgid "2pay dashboard"
-#~ msgstr "Панель управления 2pay"
-
-#~ msgid "Design"
-#~ msgstr "Оформление"
 
 #~ msgid "{NAME_CHAT} {GENDER:went,went} online"
 #~ msgstr "{NAME_CHAT} {GENDER:вошёл,вошла} в игру"
@@ -7794,17 +7671,71 @@ msgstr "Время"
 #~ msgid "{NAME_CHAT} {GENDER:went,went} offline"
 #~ msgstr "{NAME_CHAT} {GENDER:вышел,вышла} из игры"
 
-#~ msgid "Game interface layout"
-#~ msgstr "Настройка игрового интерфейса"
+#~ msgid "{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"
+#~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_T}"
 
-#~ msgid "Number expected"
-#~ msgstr "Требуется число"
+#~ msgid "You moved to the {LOCATION}"
+#~ msgstr "Вы перешли {LOCATION_T}"
+
+#~ msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
+#~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_F}"
+
+#~ msgid "Are you sure want to delete this packet?"
+#~ msgstr "Вы уверены, что хотите удалить этот пакет?"
+
+#~ msgid "Coloured avatars on the forum"
+#~ msgstr "Цветные аватары на форуме"
+
+#~ msgid "Panel: %s"
+#~ msgstr "Панель: %s"
+
+#~ msgid "Subscribe"
+#~ msgstr "Подписаться"
+
+#~ msgid "{2:d}{3} {1}, {0}"
+#~ msgstr "{2:02d} {1} {0}"
+
+#~ msgid "at the {2:d}{4} {1}, {0} {3}"
+#~ msgstr "{2:d} {1} {0} {3}"
+
+#~ msgid "Users"
+#~ msgstr "Пользователи"
 
 #~ msgid "Players authentication"
 #~ msgstr "Аутентификация игроков"
 
-#~ msgid "Related character %s"
-#~ msgstr "Связанный персонаж %s"
+#~ msgid "Game interface layout"
+#~ msgstr "Настройка игрового интерфейса"
+
+#~ msgid "Design"
+#~ msgstr "Оформление"
+
+#~ msgid "Site indexing enabled"
+#~ msgstr "Индексация сайта включена"
+
+#~ msgid "My dashboard"
+#~ msgstr "Моя информация"
+
+#~ msgid "No visual image for location '%s'"
+#~ msgstr "Для локации '%s' отсутствует визуальное изображение"
+
+#~ msgid "{NAME_CHAT} {GENDER:entered,entered} {LOCATION}"
+#~ msgstr "{NAME_CHAT} {GENDER:пришёл,пришла} {LOCATION_T}"
+
+#~ msgid "Locations list"
+#~ msgstr "Список локаций"
+
+#~ msgid "Image map"
+#~ msgstr "Карта изображения"
+
+#~ msgid "edit image map"
+#~ msgstr "редактировать карту изображения"
+
+#~ msgid "set chat silence"
+#~ msgstr "выдать молчанку в чате"
+
+#~ msgid "set forum silence"
+#~ msgstr "выдать молчанку на форуме"
 
 #~ msgid "Parameter"
 #~ msgstr "Параметр"
