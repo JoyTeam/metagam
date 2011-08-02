@@ -8,7 +8,7 @@ use mg::instance;
 use Data::Dumper;
 
 my $inst = mg::instance->new;
-my $sql = $inst->sql->{dbh};
+my $db = $inst->sql->{dbh};
 my @workers = $inst->cluster->workers_of_class('metagam') or die "No metagam workers\n";
 my $worker = $workers[int(rand(@workers))];
 
@@ -33,9 +33,9 @@ while (1) {
 	my $res = $inst->cluster->post($worker, '/dbexport/delete', {uuids => join(',', @uuids)});
 }
 
-package handlers;
+$db->do('delete from active_players where period < date_sub(now(), interval 90 day)');
 
-use Data::Dumper;
+package handlers;
 
 sub online
 {
@@ -46,10 +46,13 @@ sub online
 	$period =~ s/ \d\d:\d\d:\d\d//;
 	$db->do('delete from visits where app=? and period=?', undef, $ent->{app}, $period);
 	$db->do('delete from active_players where app=? and period=?', undef, $ent->{app}, $period);
-	$db->do('insert into visits(app, period, peak_ccu, ccu_dist, new_users, registered, returned, abandoned, active) values (?, ?, ?, ?, ?, ?, ?, ?, ?)', undef, $ent->{app}, $period, $ent->{peak_ccu}, join(',', @{$ent->{ccu_dist}}), $ent->{new_users}, $ent->{registered}, $ent->{returned}, $ent->{left}, $ent->{active});
 	while (my ($player, $online) = each %{$ent->{players}}) {
 		$db->do('insert into active_players(app, period, player, online) values (?, ?, ?, ?)', undef, $ent->{app}, $period, $player, $online);
 	}
+	my ($mau) = $db->selectrow_array('select count(1) from (select player from active_players where app=? and period between date_sub(?, interval 29 day) and ? group by player) apl', undef, $ent->{app}, $period, $period);
+	my ($wau) = $db->selectrow_array('select count(1) from (select player from active_players where app=? and period between date_sub(?, interval 6 day) and ? group by player) apl', undef, $ent->{app}, $period, $period);
+	my ($dau) = $db->selectrow_array('select count(1) from (select player from active_players where app=? and period=? group by player) apl', undef, $ent->{app}, $period);
+	$db->do('insert into visits(app, period, peak_ccu, ccu_dist, new_users, registered, returned, abandoned, active, dau, wau, mau) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', undef, $ent->{app}, $period, $ent->{peak_ccu}, join(',', @{$ent->{ccu_dist}}), $ent->{new_users}, $ent->{registered}, $ent->{returned}, $ent->{left}, $ent->{active}, $dau, $wau, $mau);
 }
 
 sub donate

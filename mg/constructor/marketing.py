@@ -15,8 +15,6 @@ class GameReporter(ConstructorModule):
 
     def marketing_report(self):
         since, till = self.yesterday_interval()
-        since = "2011-08-01 00:00:00"
-        till = "2011-08-02 00:00:00"
         app_tag = self.app().tag
         self.debug("a=%s: Preparing marketing report %s - %s", app_tag, since, till)
         # mapping: character_id => player_id
@@ -62,7 +60,7 @@ class GameReporter(ConstructorModule):
             player_uuid = ent.get("player")
             session_uuid = ent.get("session")
             active_players.add(player_uuid)
-            #self.debug("a=%s %s char=%s, player=%s, sess=%s", performed, act, char_uuid, player_uuid, session_uuid)
+            self.debug("a=%s %s char=%s, player=%s, sess=%s", performed, act, char_uuid, player_uuid, session_uuid)
             if performed < till:
                 # actual date
                 went_online = False
@@ -206,8 +204,8 @@ class GameReporter(ConstructorModule):
                     ent.set("active", 2)
                     returned += 1
             lst.store()
-        # loading list of active players that are really inactive for 30 days
-        lst = self.objlist(DBPlayerList, query_index="active", query_equal="2", query_finish=self.now(-86400 * 30))
+        # loading list of active players that are really inactive for 14 days
+        lst = self.objlist(DBPlayerList, query_index="active", query_equal="2", query_finish=self.now(-86400 * 14))
         lst.load(silent=True)
         left = 0
         for ent in lst:

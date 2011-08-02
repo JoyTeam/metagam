@@ -47,6 +47,9 @@ sql_table('visits',
 		'returned' => [ -type=>'integer', -null=>0 ],
 		'abandoned' => [ -type=>'integer', -null=>0 ],
 		'active' => [ -type=>'integer', -null=>0 ],
+		'dau' => [ -type=>'integer', -null=>0 ],
+		'wau' => [ -type=>'integer', -null=>0 ],
+		'mau' => [ -type=>'integer', -null=>0 ],
 	], [
 		'index' => 'app,period',
 	]
@@ -59,6 +62,7 @@ sql_table('active_players',
 		'online' => [ -type=>'integer', -null=>0 ],
 	], [
 		'index' => 'app,period',
+		'index' => 'period',
 	]
 );
 sql_done();

@@ -1156,3 +1156,109 @@ class Money(Module):
 
     def currency_info(self, currency):
         return self.currencies().get(currency)
+
+class WebMoneyAdmin(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-auth.index", self.menu_auth_index)
+        self.rhook("ext-admin-wmlogin.settings", self.auth_settings, priv="webmoney.auth")
+
+    def permissions_list(self, perms):
+        perms.append({"id": "webmoney.auth", "name": self._("WebMoney authentication settings")})
+
+    def menu_auth_index(self, menu):
+        req = self.req()
+        if req.has_access("webmoney.auth"):
+            menu.append({"id": "wmlogin/settings", "text": self._("WebMoney authentication"), "leaf": True, "order": 20})
+
+    def auth_settings(self):
+        req = self.req()
+        if req.ok():
+            config = self.app().config_updater()
+            config.set("wmlogin.wmid", req.param("wmid"))
+            config.set("wmlogin.rid", req.param("rid"))
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "wmid", "label": self._("WMID for WMLogin"), "value": self.conf("wmlogin.wmid")},
+            {"name": "rid", "label": self._("RID for URL '%s'") % ("http://%s/webmoney/checkticket" % req.host()), "value": self.conf("wmlogin.rid")},
+        ]
+        self.call("admin.form", fields=fields)
+
+class WebMoney(Module):
+    def register(self):
+        Module.register(self)
+        self.rhook("ext-webmoney.checkticket", self.check_ticket, priv="logged")
+        self.rhook("ext-webmoney.testauth", self.test_auth, priv="logged")
+
+    def check_ticket(self):
+        req = self.req()
+        self.debug("WMLogin auth: %s", req.param_dict())
+        ticket = req.param("WmLogin_Ticket")
+        authtype = req.param("WmLogin_AuthType")
+        remote_addr = req.param("WmLogin_UserAddress")
+        user_wmid = req.param("WmLogin_WMID")
+        rid = req.param("WmLogin_UrlID")
+        service_wmid = self.conf("wmlogin.wmid")
+        if rid != self.conf("wmlogin.rid"):
+            self.error("WMLogin received rid=%s, expected=%s", rid, self.conf("wmlogin.rid"))
+            self.call("web.forbidden")
+        # validating ticket
+        doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "request", None)
+        request = doc.documentElement
+        request.appendChild(doc.createElement("siteHolder")).appendChild(doc.createTextNode(service_wmid))
+        request.appendChild(doc.createElement("user")).appendChild(doc.createTextNode(user_wmid))
+        request.appendChild(doc.createElement("ticket")).appendChild(doc.createTextNode(ticket))
+        request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
+        request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
+        request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
+        response = self.wm_query("/ws/authorize.xiface", request)
+        doc = response.documentElement
+        if doc.tagName != "response":
+            raise RuntimeError("Unexpected response from WMLogin")
+        retval = doc.getAttribute("retval")
+        sval = doc.getAttribute("sval")
+        if retval == "0":
+            self.call("wmlogin.authorized", authtype=authtype, remote_addr=remote_addr, wmid=user_wmid)
+        else:
+            self.error("WMLogin auth failed: retval=%s, sval=%s", retval, sval)
+            self.call("web.forbidden")
+
+    def test_auth(self):
+        req = self.req()
+        if req.ok():
+            self.call("web.redirect", "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"))
+        form = self.call("web.form")
+        form.submit(None, None, self._("Authorize"))
+        self.call("web.response", form.html())
+
+    def wm_query(self, url, request):
+        reqdata = request.toxml("utf-8")
+        self.debug("WMLogin reqdata: %s", reqdata)
+        wm_gate = self.app().inst.config.get("wm_login_gate", "localhost:86").split(":")
+        host = str(wm_gate[0])
+        port = int(wm_gate[1])
+        try:
+            with Timeout.push(20):
+                cnn = HTTPConnection()
+                try:
+                    cnn.connect((host, port))
+                except IOError as e:
+                    raise HTTPError("Error connecting to %s:%d" % (host, port))
+                try:
+                    request = cnn.post(str(url), reqdata)
+                    request.host = "login.wmtransfer.com"
+                    request.add_header("Content-type", "application/xml")
+                    request.add_header("Content-length", len(reqdata))
+                    print request
+                    response = cnn.perform(request)
+                    if response.status_code != 200:
+                        raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, url, response.status))
+                    response = xml.dom.minidom.parseString(response.body)
+                    self.debug("WMLogin request: %s", response.toxml("utf-8"))
+                    return response
+                finally:
+                    cnn.close()
+        except TimeoutError:
+            raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, url))

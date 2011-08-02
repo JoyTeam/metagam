@@ -345,7 +345,7 @@ class Interface(Module):
         captchas.remove()
         autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
         autologins.remove()
-        authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365))
+        authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365 * 86400))
         authlog.remove()
 
     def cleanup_inactive_users(self):
@@ -1470,43 +1470,49 @@ class PermissionsEditor(Module):
             ord = intz(req.param("ord"))
             role = req.param("v_role")
             perm = req.param("v_perm")
+            error = req.param("error").strip()
             if role or perm:
                 if not role or not roles_dict.get(role):
                     errors["role"] = self._("Select valid role")
                 if not perm or not permissions_dict.get(perm):
                     errors["perm"] = self._("Select valid permission")
-                new_rules.append((ord, role, perm))
+                new_rules.append((ord, role, perm, error))
             for n in range(0, rules_cnt):
                 ord = intz(req.param("ord%d" % n))
                 role = req.param("v_role%d" % n)
                 perm = req.param("v_perm%d" % n)
+                error = req.param("error%d" % n).strip()
                 if not role or not roles_dict.get(role):
                     errors["role%d" % n] = self._("Select valid role")
                 if not perm or not permissions_dict.get(perm):
                     errors["perm%d" % n] = self._("Select valid permission")
-                new_rules.append((ord, role, perm))
+                new_rules.append((ord, role, perm, error))
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             new_rules.sort(key=itemgetter(0))
-            new_rules = [(role, perm) for ord, role, perm in new_rules]
+            new_rules = [(role, perm, error) for ord, role, perm, error in new_rules]
             self.perms.set("rules", new_rules)
             self.perms.store()
             self.call("admin.redirect", "forum/access/%s" % self.uuid)
         rules = self.perms.get("rules")
         for n in range(0, len(rules)):
             rule = rules[n]
+            error = rule[2] if len(rule) >= 3 else None
             fields.append({"name": "ord%d" % n, "value": n + 1, "width": 100})
             fields.append({"name": "role%d" % n, "type": "combo", "values": roles, "value": rule[0], "inline": True})
             fields.append({"name": "perm%d" % n, "type": "combo", "values": self.permissions, "value": rule[1], "inline": True})
+            fields.append({"name": "error%d" % n, "value": error, "inline": True})
             fields.append({"type": "button", "width": 100, "text": self._("Delete"), "action": "forum/access/%s/del/%d" % (self.uuid, n), "inline": True})
         fields.append({"name": "ord", "value": len(rules) + 1, "label": self._("Add") if rules else None, "width": 100})
         fields.append({"name": "role", "type": "combo", "values": roles, "label": "&nbsp;" if rules else None, "inline": True})
         fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "&nbsp;" if rules else None, "inline": True})
+        fields.append({"name": "error", "inline": True, "label": "&nbsp;"})
         fields.append({"type": "empty", "width": 100, "inline": True})
         fields[0]["label"] = self._("Order")
         fields[1]["label"] = self._("Role")
         fields[2]["label"] = self._("Permission")
-        fields[3]["label"] = "&nbsp;"
+        fields[3]["label"] = self._("Error on match")
+        fields[4]["label"] = "&nbsp;"
         fields.append({"type": "hidden", "name": "rules", "value": len(rules)})
         self.call("admin.form", fields=fields)
 
