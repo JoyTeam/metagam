@@ -1,7 +1,7 @@
 /* LAYOUT */
 body { background-image: url(body-bg-1.jpg) }
 a:link, a:visited { color: #07375d }
-a:hover, a:active { color: #0d67ae }
+a:hover, a:active { color: #acdbe7 }
 #main { background-color: #07375d }
 
 /* BOX */
@@ -16,7 +16,7 @@ a:hover, a:active { color: #0d67ae }
 .box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
 .box-9 { padding: 31px }
 .box-0 a:link, .box-0 a:visited { color: #4fc7e7 }
-.box-0 a:hover, .box-0 a:active { color: #b987be }
+.box-0 a:hover, .box-0 a:active { color: #acdbe7 }
 
 /* MENU */
 .block-horizontal { padding-top: 9px }

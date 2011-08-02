@@ -62,7 +62,7 @@
 	[%if col.show_smiles and smile_categories%]
 		<div class="form-smiles">[%smiles%]</div>
 		<div>[%for cat in smile_categories%]<a href="javascript:void(0)" onclick="smile_category('[%col.name%]', '[%cat.id%]'); return false">[%cat.name%]</a> [%end%]</div>
-		<p id="[%col.name%]_smiles"></p>
+		<div id="[%col.name%]_smiles" style="padding: 3px 0 3px 0"></div>
 		[%for cat in smile_categories%]
 			<div id="smiles_[%col.name%]_[%cat.id%]" style="display: none">
 			[%for sm in cat.smiles%]<img src="[%sm.image%]" alt="" class="form-clickable" onclick="add_code('[%col.name%]', this, '[%sm.code%]', '', 1)" /> [%end%]

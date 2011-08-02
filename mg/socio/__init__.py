@@ -1940,7 +1940,7 @@ class Forum(Module):
                 content = topic_content.get("content")
                 tags = ", ".join(topic_content.get("tags")) if topic_content.get("tags") else ""
             form.input(self._("Subject"), "subject", subject)
-            form.texteditor(None, "content", content)
+            form.texteditor(self._("Content"), "content", content)
             if params.get("show_tags", True):
                 form.input(self._("Tags (delimited with commas)"), "tags", tags)
             self.call("forum.topic-form", topic, form, "form")

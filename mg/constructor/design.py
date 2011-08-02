@@ -1063,7 +1063,37 @@ class DesignSocioCommonBlocks(DesignGenerator):
 class DesignSocioRustedMetal(DesignSocioCommonBlocks):
     def id(self): return "socio-rusted-metal"
     def name(self): return self._("Rusted Metal")
-    def preview(self): return "/st/constructor/design/gen/index-rusted-metal.jpg"
+    def preview(self): return "/st/constructor/design/gen/socio-rusted-metal.jpg"
+
+class DesignSocioCelticCastle(DesignSocioCommonBlocks):
+    def id(self): return "socio-celtic-castle"
+    def name(self): return self._("Celtic Castle")
+    def preview(self): return "/st/constructor/design/gen/socio-celtic-castle.jpg"
+
+class DesignSocioJungle(DesignSocioCommonBlocks):
+    def id(self): return "socio-jungle"
+    def name(self): return self._("Jungle")
+    def preview(self): return "/st/constructor/design/gen/socio-jungle.jpg"
+
+class DesignSocioMedieval(DesignSocioCommonBlocks):
+    def id(self): return "socio-medieval"
+    def name(self): return self._("Medieval")
+    def preview(self): return "/st/constructor/design/gen/socio-medieval.jpg"
+
+class DesignSocioPinky(DesignSocioCommonBlocks):
+    def id(self): return "socio-pinky"
+    def name(self): return self._("Pinky")
+    def preview(self): return "/st/constructor/design/gen/socio-pinky.jpg"
+
+class DesignSocioSpace(DesignSocioCommonBlocks):
+    def id(self): return "socio-space"
+    def name(self): return self._("Space")
+    def preview(self): return "/st/constructor/design/gen/socio-space.jpg"
+
+class DesignSocioSubmarine(DesignSocioCommonBlocks):
+    def id(self): return "socio-submarine"
+    def name(self): return self._("Submarine")
+    def preview(self): return "/st/constructor/design/gen/socio-submarine.jpg"
 
 class DesignMod(Module):
     def register(self):
@@ -1696,6 +1726,12 @@ class SocioInterfaceAdmin(Module):
 
     def generators(self, gens):
         gens.append(DesignSocioRustedMetal)
+        gens.append(DesignSocioCelticCastle)
+        gens.append(DesignSocioJungle)
+        gens.append(DesignSocioMedieval)
+        gens.append(DesignSocioPinky)
+        gens.append(DesignSocioSpace)
+        gens.append(DesignSocioSubmarine)
 
     def headmenu_design(self, args):
         if args == "":
@@ -1889,12 +1925,19 @@ class SocioInterfaceAdmin(Module):
                     last_show = show
                 pages_list[-1]["lst"] = True
                 vars["pages"] = pages_list
+        vars["topmenu"] = []
         if random.random() < 0.9:
             if random.random() < 0.5:
-                vars["topmenu_left"] = [{"header": True, "html": self._("Some header"), "lst": True}]
+                vars["topmenu"].append({
+                    "id": "left",
+                    "items": [{"header": True, "html": self._("Some header"), "lst": True}]
+                })
             else:
                 lst = []
-                vars["topmenu_left"] = lst
+                vars["topmenu"].append({
+                    "id": "left",
+                    "items": lst
+                })
                 for i in range(0, random.randrange(1, 3)):
                     lst.append({
                         "html": self._("Menu item"),
@@ -1902,7 +1945,10 @@ class SocioInterfaceAdmin(Module):
                     })
                 lst[-1]["lst"] = True
         lst = []
-        vars["topmenu_right"] = lst
+        vars["topmenu"].append({
+            "id": "right",
+            "items": lst
+        })
         for i in range(0, random.randrange(1, 3)):
             lst.append({
                 "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
@@ -1910,7 +1956,7 @@ class SocioInterfaceAdmin(Module):
                 "image": "http://%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
             })
         if random.random() < 0.8:
-            lst.insert(0, {"search": True, "button": self._("Search")})
+            lst.insert(0, {"search": True, "html": self._("Search")})
         lst[-1]["lst"] = True
         if random.random() < 0.8:
             lst = []

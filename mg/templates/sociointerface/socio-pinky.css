@@ -1,0 +1,16 @@
+body { background: url(body-bg-1.jpg) }
+#page-top1, #page-layout-content, .socio-message-top { background: #f6c8ae; color: #3c3b39 }
+.socio-thick, .socio-semithick, .socio-thin, .socio-delim-left, .socio-delim-right { background: #d8a487 }
+.socio-thick, #socio-topic-bottom { border-top: solid 1px #c78b69 }
+.socio-semithick { border-bottom: solid 1px #c78b69 }
+a:link, a:visited, #socio-topmenu a:link, #socio-topmenu a:visited, td.socio-catname a:link, td.socio-catname a:visited, .socio-last a:link, .socio-last a:visited, #socio-menu a:link, #socio-menu a:visited, .socio-pages-list a:link, .socio-pages-list a:visited, .socio-member-menu a:link, .socio-member-menu a:visited, .socio-actions a:link, .socio-actions a:visited, #socio-menu, .socio-name a:link, .socio-name a:visited, .socio-lastcomment a:link, .socio-lastcomment a:hover, .socio-actions, .socio-post-content a:link, .socio-post-content a:visited, .link { color: #7e4939 }
+a:hover, a:active, #socio-topmenu a:hover, #socio-topmenu a:active, td.socio-catname a:hover, td.socio-catname a:active, .socio-last a:hover, .socio-last a:active, #socio-menu a:hover, #socio-menu a:active, .socio-pages-list a:hover, .socio-pages-list a:active, .socio-member-menu a:hover, .socio-member-menu a:active, .socio-actions a:hover, .socio-actions a:active, .socio-name a:hover, .socio-name a:active, .socio-lastcomment a:hover, .socio-lastcomment a:active, .socio-post-content a:hover, .socio-post-content a:active, .link:hover { color: #5d7d00 }
+.socio-avatar img, .socio-message-top, .quote, .code { background-color: #f6b794; border: solid 1px #c78b69 }
+#page-top2 { background-image: url(sbox-bottom.png); background-position: 0% 100%; background-repeat: repeat-x }
+#page-top3 { background-image: url(sbox-top.png); background-position: 0% 0%; background-repeat: repeat-x }
+#page-top4 { padding: 20px 60px 20px 60px }
+#page-left { background-image: url(sbox-left.png); background-position: 100% 0%; background-repeat: repeat-y }
+#page-right { background-image: url(sbox-right.png); background-position: 0% 0%; background-repeat: repeat-y }
+.socio-topmenu-header, .socio-index-title, .socio-cathead, .socio-topic-created, .socio-delim-left, .socio-signature, .socio-topic-pages, .socio-pages, .socio-pages-list, .socio-top-cat, #socio-topic-title, .socio-member-name, .socio-post-title, .form-list-messages-top, .form-list-messages-bottom { color: #986456 }
+.socio-post-delim a:link, .socio-post-delim a:visited { color: #8e3f34 }
+.socio-post-delim a:hover, .socio-post-delim a:active { color: #9b4539 }

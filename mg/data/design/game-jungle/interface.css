@@ -1,7 +1,7 @@
 /* LAYOUT */
 body { background-image: url(body-bg-1.jpg) }
 a:link, a:visited { color: #e54a27 }
-a:hover, a:active { color: #6e3278 }
+a:hover, a:active { color: #e57d65 }
 
 /* BOX */
 .box-0 { background-color: #f9d891; color: #2a421c }
@@ -15,7 +15,7 @@ a:hover, a:active { color: #6e3278 }
 .box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
 .box-9 { padding: 25px }
 .box-0 a:link, .box-0 a:visited { color: #e54a27 }
-.box-0 a:hover, .box-0 a:active { color: #6e3278 }
+.box-0 a:hover, .box-0 a:active { color: #e57d65 }
 
 /* MENU */
 .block-horizontal { padding-top: 9px }
