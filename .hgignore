@@ -9,6 +9,7 @@ tests/*.err
 depl
 static/robots.txt
 static/constructor/gettext-*.js
+mg/locale/mg_*.pot
 
 syntax: regexp
 .*\#.*\#$
