@@ -126,51 +126,29 @@ class Interface(ConstructorModule):
         self.rhook("main-frame.form", self.main_frame_form)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-empty.index", self.empty, priv="logged")
+        self.rhook("sociointerface.buttons", self.buttons)
+
+    def buttons(self, buttons):
+        buttons.append({
+            "id": "forum-game",
+            "href": "/",
+            "title": self._("Game"),
+            "target": "_self",
+            "block": "forum",
+            "order": -10,
+            "left": True,
+        })
+        buttons.append({
+            "id": "forum-search",
+            "search": True,
+            "title": self._("Search"),
+            "block": "forum",
+            "order": -10,
+        })
 
     def empty(self):
         self.call("game.response_internal", "empty.html", {})
-
-    def web_setup_design(self, vars):
-        req = self.req()
-        topmenu = []
-        if req.group == "forum" or req.group == "socio":
-            design = self.design("gameinterface")
-            if design:
-                vars["game_design_uri"] = design.get("uri")
-            vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
-            redirect = req.param("redirect")
-            redirect_param = True
-            if redirect is None or redirect == "":
-                redirect = req.uri()
-                redirect_param = False
-            redirect = urlencode(redirect)
-            if req.hook == "settings":
-                pass
-            else:
-                topmenu.append({"search": True, "button": self._("socio-top///Search")})
-                if req.user():
-                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
-                else:
-                    topmenu.append({"href": "/", "html": self._("Log into the game")})
-            if redirect_param:
-                topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
-        # Topmenu
-        if len(topmenu):
-            topmenu_left = []
-            topmenu_right = []
-            for ent in topmenu:
-                if ent.get("left"):
-                    topmenu_left.append(ent)
-                else:
-                    topmenu_right.append(ent)
-            if len(topmenu_left):
-                topmenu_left[-1]["lst"] = True
-                vars["topmenu_left"] = topmenu_left
-            if len(topmenu_right):
-                topmenu_right[-1]["lst"] = True
-                vars["topmenu_right"] = topmenu_right
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
@@ -337,6 +315,7 @@ class Interface(ConstructorModule):
         generated = set([btn["id"] for btn in self.generated_buttons()])
         layout = self.buttons_layout()
         # Rendering panels
+        globs = {"char": character}
         panels = []
         for panel in self.panels():
             rblocks = []
@@ -357,7 +336,7 @@ class Interface(ConstructorModule):
                     btn_list = layout.get(block["id"])
                     if btn_list:
                         for btn in btn_list:
-                            rbtn = self.render_button(btn, layout, design, generated, block.get("class"))
+                            rbtn = self.render_button(btn, layout, design, generated, block.get("class"), globs=globs)
                             if rbtn:
                                 buttons.append(rbtn)
                     if buttons:
@@ -388,6 +367,7 @@ class Interface(ConstructorModule):
             panels[-1]["lst"] = True
             vars["panels"] = panels
         # Rendering popups
+        globs = {"char": character}
         lst = self.objlist(DBPopupList, query_index="all")
         lst.load()
         popups = []
@@ -399,7 +379,7 @@ class Interface(ConstructorModule):
             btn_list = layout.get(popup.uuid)
             if btn_list:
                 for btn in btn_list:
-                    rbtn = self.render_button(btn, layout, design, generated, None)
+                    rbtn = self.render_button(btn, layout, design, generated, None, globs=globs)
                     if rbtn:
                         buttons.append(rbtn)
             if buttons:
@@ -410,7 +390,14 @@ class Interface(ConstructorModule):
             popups[-1]["lst"] = True
             vars["popups"] = popups
 
-    def render_button(self, btn, layout, design, generated, cls):
+    def render_button(self, btn, layout, design, generated, cls, globs):
+        try:
+            if btn.get("condition") and not self.call("script.evaluate-expression", btn["condition"], globs, description=self._("Game interface menu")):
+                return None
+            title = self.call("script.evaluate-text", btn["title"], globs, description=self._("Game interface menu")) if btn.get("title") else None
+        except ScriptError as e:
+            self.call("exception.report", e)
+            return None
         # Primary image
         image = btn.get("image")
         if not image.startswith("http://"):
@@ -434,7 +421,7 @@ class Interface(ConstructorModule):
         rbtn = {
             "id": btn["id"],
             "image": image,
-            "title": jsencode(htmlescape(btn.get("title"))),
+            "title": jsencode(htmlescape(title)),
             "popup": jsencode(btn.get("popup")),
         }
         # Secondary image
@@ -484,7 +471,7 @@ class Interface(ConstructorModule):
             menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4})
             menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7})
             menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10})
-            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons"), "leaf": True, "order": 12})
+            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons editor"), "leaf": True, "order": 12})
 
     def gameinterface_layout(self):
         req = self.req()
@@ -1030,7 +1017,7 @@ class Interface(ConstructorModule):
                 show_btn["edit"] = self._("show")
         # Preparing buttons to rendering
         for btn in assigned_buttons.values():
-            btn["title"] = htmlescape(btn.get("title"))
+            btn["title"] = htmlescape(self.call("script.unparse-text", btn.get("title")))
             if btn.get("href"):
                 btn["action"] = self._("href///<strong>{0}</strong> to {1}").format(btn["href"], btn.get("target"))
             elif btn.get("onclick"):
@@ -1064,7 +1051,7 @@ class Interface(ConstructorModule):
             for block_id, btn_list in layout.iteritems():
                 for btn in btn_list:
                     if btn["id"] == args:
-                        return [htmlescape(btn["title"]), "gameinterface/buttons"]
+                        return [htmlescape(self.call("script.unparse-text", btn["title"])), "gameinterface/buttons"]
             return [self._("Button editor"), "gameinterface/buttons"]
         return self._("Game interface buttons")
 
@@ -1136,10 +1123,12 @@ class Interface(ConstructorModule):
             onclick = req.param("onclick")
             popup = req.param("v_popup")
             # Creating new button
+            char = self.character(req.user())
             btn = {
                 "id": button_id,
                 "order": order,
-                "title": title,
+                "title": self.call("script.admin-text", "title", errors, globs={"char": char}),
+                "condition": self.call("script.admin-expression", "condition", errors, globs={"char": char}) if req.param("condition").strip() else None,
             }
             # Button action
             if action == "javascript":
@@ -1246,6 +1235,7 @@ class Interface(ConstructorModule):
                 href = button.get("href")
                 onclick = button.get("onclick")
                 popup = button.get("popup")
+                condition = button.get("condition")
                 if onclick:
                     action = "javascript"
                     target = "_blank"
@@ -1280,6 +1270,7 @@ class Interface(ConstructorModule):
                 target = "_blank"
                 action = "href"
                 popup = ""
+                condition = None
         blocks = []
         for panel in self.panels():
             for blk in panel["blocks"]:
@@ -1295,7 +1286,8 @@ class Interface(ConstructorModule):
             {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block},
             {"name": "order", "label": self._("Sort order"), "value": order, "inline": True},
             {"type": "fileuploadfield", "name": "image", "label": self._("Button image")},
-            {"name": "title", "label": self._("Button hint"), "value": title},
+            {"name": "condition", "label": self._("Condition (when to show the button)"), "value": self.call("script.unparse-expression", condition) if condition else None},
+            {"name": "title", "label": self._("Button hint"), "value": self.call("script.unparse-text", title)},
             {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]},
             {"name": "href", "label": self._("Button href"), "value": href, "condition": "[[action]]=='href'"},
             {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True},

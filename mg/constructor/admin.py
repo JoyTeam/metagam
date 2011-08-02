@@ -430,13 +430,12 @@ class Constructor(Module):
 
     def constructor_newgame(self):
         req = self.req()
-        if not self.call("wmid.check", req.user()):
+        if not self.call("wmid.check", req.user()) and False:
             vars = {
                 "title": self._("Verified WMID required"),
                 "text": self._("You haven't passed WMID verification yet"),
             }
             self.call("web.response_template", "constructor/setup/info.html", vars)
-
         # Registration on invitations
         invitations = self.conf("constructor.invitations")
         if invitations == 2:

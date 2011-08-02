@@ -6,6 +6,7 @@ class PaidServices(Module):
         self.rhook("paidservices.available", self.srv_available)
         self.rhook("ext-socio.paid-services", self.ext_paid_services, priv="logged")
         self.rhook("ext-socio.paid-service", self.ext_paid_service, priv="logged")
+        self.rhook("sociointerface.buttons", self.buttons)
         # coloured avatar
         self.rhook("paidservices.socio_coloured_avatar", self.srv_coloured_avatar)
         self.rhook("money-description.socio_coloured_avatar", self.money_description_coloured_avatar)
@@ -21,6 +22,17 @@ class PaidServices(Module):
         # premium pack
         self.rhook("paidservices.socio_premium_pack", self.srv_premium_pack)
         self.rhook("money-description.socio_premium_pack", self.money_description_premium_pack)
+
+    def buttons(self, buttons):
+        buttons.append({
+            "id": "forum-paidservices",
+            "href": "/socio/paid-services",
+            "title": self._("Paid services"),
+            "condition": ['glob', 'char'],
+            "target": "_self",
+            "block": "forum",
+            "order": 3,
+        })
 
     def srv_available(self, services):
         services.append({"id": "socio_coloured_avatar", "type": "socio"})

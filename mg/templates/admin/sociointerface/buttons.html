@@ -1,0 +1,13 @@
+<p class="admin-submenu"><hook:admin.link href="sociointerface/buttons/new" title="[%NewButton%]" /></p>
+
+[%foreach blk in blocks%]
+<p class="text"><h1>[%blk.title%]</h1></p>
+[%if blk.buttons%]
+<table class="list">
+	<tr class="header"><td class="header">[%Action%]</td>[%unless blk.hide_order%]<td>[%Order%]</td>[%end%]<td>[%Editing%]</td>[%unless blk.hide_deletion%]<td>[%Deletion%]</td>[%end%]</tr>
+	[%foreach btn in blk.buttons%]
+	<tr><td><strong>[%btn.title%]</strong></td>[%unless blk.hide_order%]<td>[%btn.order%]</td>[%end%]<td><hook:admin.link href="sociointerface/buttons/[%btn.id%]" title="[%btn.edit%]" /></td>[%unless blk.hide_deletion%]<td>[%if btn.may_delete%]<hook:admin.link href="sociointerface/buttons/del/[%btn.id%]" title="[%delete%]" confirm="[%ConfirmDelete%]" />[%else%][%NA%][%end%]</td>[%end%]</tr>
+	[%end%]
+</table>
+[%end%]
+[%end%]

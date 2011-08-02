@@ -451,6 +451,22 @@ class Socio(Module):
         self.rhook("socio.response_template", self.response_template)
         self.rhook("socio.response_simple", self.response_simple)
         self.rhook("socio.response_simple_template", self.response_simple_template)
+        self.rhook("socio.button-blocks", self.button_blocks)
+        self.rhook("sociointerface.buttons", self.buttons)
+
+    def button_blocks(self, blocks):
+        blocks.append({"id": "forum", "title": self._("Forum"), "class": "forum"})
+
+    def buttons(self, buttons):
+        buttons.append({
+            "id": "forum-settings",
+            "href": "/forum/settings",
+            "title": self._("Settings"),
+            "condition": ['glob', 'char'],
+            "target": "_self",
+            "block": "forum",
+            "order": 5,
+        })
 
     def socio_user(self):
         req = self.req()
@@ -2151,7 +2167,7 @@ class Forum(Module):
         if avatar:
             form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
         if grayscale:
-            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/coloured-avatar">please subscribe</a>'))
+            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/paid-services">please subscribe</a>'))
         self.call("socio.response", form.html(), vars)
 
     def ext_subscribe(self):
