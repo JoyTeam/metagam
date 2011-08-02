@@ -18,7 +18,7 @@ mg/locale/mg_server.pot: $(server_sources)
 	find . -name '*.py' > .src-files
 	xgettext -d mg_server -f .src-files -L Python --copyright-holder=$(copyright) \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		--force-po -kgettext_noop
+		--force-po -kgettext_noop -F
 	rm .src-files
 	mv mg_server.po mg/locale/mg_server.pot
 	mkdir -p mg/locale/server
@@ -26,6 +26,7 @@ mg/locale/server/%.po: mg/locale/mg_server.pot
 	msgmerge -U $@ $<
 	touch $@
 mg/locale/%/LC_MESSAGES/mg_server.mo: mg/locale/server/%.po
+	mkdir -p `dirname $@`
 	msgfmt -o $@ $<
 
 # ============= MODULE: constructor ===============
@@ -35,7 +36,7 @@ constructor_js_files := $(foreach lang,$(langs),static/constructor/gettext-$(lan
 mg/locale/mg_constructor.pot: $(constructor_sources)
 	xgettext -d mg_constructor -L Python --copyright-holder=$(copyright) --force-po \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		-kgettext_noop --from-code=utf-8 \
+		-kgettext_noop --from-code=utf-8 -F \
 		$(constructor_sources)
 	mv mg_constructor.po mg/locale/mg_constructor.pot
 	mkdir -p mg/locale/constructor

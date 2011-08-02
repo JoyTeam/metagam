@@ -56,6 +56,12 @@ a:hover, a:active { color: #f4a377 }
 #cab-leftbtn-in div { padding-bottom: 33px }
 #cab-leftbtn-in a:link, #cab-leftbtn a:visited { color: #ffffff }
 #cab-leftbtn-in a:hover, #cab-leftbtn a:active { color: #eeddd3 }
+#cab-wmbtn-td { padding: 14px 10px 25px 20px; }
+#cab-wmbtn { width: 127px; height: 202px; margin: 0 auto; background-image: url(/st/constructor/cabinet/wmbtn.gif); background-repeat: no-repeat; background-position: 50% 0%; margin-bottom: 20px }
+#cab-wmbtn-in { padding: 33px 15px 5px 15px }
+#cab-wmbtn-in div { padding-bottom: 33px }
+#cab-wmbtn-in a:link, #cab-wmbtn a:visited { color: #ffffff }
+#cab-wmbtn-in a:hover, #cab-wmbtn a:active { color: #eeddd3 }
 #cab-right-menu { padding: 14px 20px 25px 10px }
 #cab-right-menu .c1 { background-color: #ffffff }
 #cab-right-menu .c2 { background-image: url(/st/constructor/cabinet/lt.gif); background-repeat: no-repeat; background-position: 0% 0% }
@@ -65,6 +71,7 @@ a:hover, a:active { color: #f4a377 }
 #cab-right-icons td { text-align: center; vertical-align: top; padding: 20px 10px 0px 10px; width: 135px }
 #cab-right-icons .text td { padding: 10px 10px 20px 10px }
 #cab-comment { color: #777777; font-size: 12px; padding: 10px 0px 10px 0px; text-align: justify }
+#cab-center { color: #777777; font-size: 12px; padding: 10px 0px 10px 0px; text-align: center }
 #cab-menu td { color: #01709a; font-weight: bold }
 #cab-menu a:link, #cab-menu a:visited { font-weight: normal; color: #01709a; }
 #cab-menu a:hover, #cab-menu a:active { font-weight: normal; color: #0390ca; }

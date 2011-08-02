@@ -25,7 +25,7 @@ class Export(Module):
         self.rhook("int-dbexport.get", self.get, priv="public")
         self.rhook("int-dbexport.delete", self.delete, priv="public")
 
-    def add(self, tp, data):
+    def add(self, tp, **data):
         obj = self.int_app().obj(DBExport)
         for key, val in data.iteritems():
             obj.set(key, val)

@@ -125,6 +125,8 @@ class ScriptEngine(ConstructorModule):
             return e.val
 
     def unparse_text(self, val):
+        if type(val) != list:
+            return unicode(val)
         res = ""
         for arg in val:
             ta = type(arg)
@@ -139,7 +141,7 @@ class ScriptEngine(ConstructorModule):
                         if argtxt.strip():
                             empty = False
                     if not empty:
-                        res += u"{%s:%s}" % (self.unparse_expression(arg[1]), ",".join(tokens))
+                        res += u"[%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
                 else:
                     res += u'{%s}' % self.unparse_expression(arg)
             elif arg is not None:
@@ -147,6 +149,8 @@ class ScriptEngine(ConstructorModule):
         return res
 
     def evaluate_text(self, tokens, globs={}, used_globs=None, description=None, env=None):
+        if type(tokens) != list:
+            return unicode(tokens)
         if env is None:
             env = ScriptEnvironment()
         env.globs = globs
@@ -186,6 +190,9 @@ class ScriptEngine(ConstructorModule):
         if cmd == '+' or cmd == '-' or cmd == '*' or cmd == '/':
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
+            # Strings concatenation
+            if cmd == '+' and (type(arg1) is str or type(arg1) is unicode) and (type(arg2) is str or type(arg2) is unicode):
+                return arg1 + arg2
             # Validating type of the left operand
             if type(arg1) is str or type(arg1) is unicode:
                 arg1 = floatz(arg1)
@@ -258,12 +265,18 @@ class ScriptEngine(ConstructorModule):
             return 1 if arg1 or arg2 else 0
         elif cmd == '?':
             arg1 = self._evaluate(val[1], env)
-            arg2 = self._evaluate(val[2], env)
-            arg3 = self._evaluate(val[3], env)
-            if arg1:
-                return arg2
+            if env.used_globs is None:
+                if arg1:
+                    return self._evaluate(val[2], env)
+                else:
+                    return self._evaluate(val[3], env)
             else:
-                return arg3
+                arg2 = self._evaluate(val[2], env)
+                arg3 = self._evaluate(val[3], env)
+                if arg1:
+                    return arg2
+                else:
+                    return arg3
         elif cmd == "call":
             fname = val[1]
             if fname == "min" or fname == "max":
@@ -294,7 +307,7 @@ class ScriptEngine(ConstructorModule):
         elif cmd == ".":
             obj = self._evaluate(val[1], env)
             if obj is None:
-                raise ScriptTypeError(self._("Value 'none' has no attributes"), env)
+                raise ScriptTypeError(self._("Empty value '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             if type(obj) is int:
                 raise ScriptTypeError(self._("Integer '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             if type(obj) is float:

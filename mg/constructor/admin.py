@@ -8,6 +8,29 @@ from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
 import time
 import datetime
+import re
+
+re_wmauth_remove = re.compile(r'^([0-9a-f]+)/([0-9a-f]+)$')
+
+class DBUserWMID(CassandraObject):
+    _indexes = {
+        "all": [[], "added"],
+        "user": [["user"]],
+        "wmid": [["wmid"]],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "UserWMID-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBUserWMID._indexes
+
+class DBUserWMIDList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "UserWMID-"
+        kwargs["cls"] = DBUserWMID
+        CassandraObjectList.__init__(self, *args, **kwargs)
 
 class ConstructorUtils(Module):
     def register(self):
@@ -42,7 +65,7 @@ class Constructor(Module):
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
             "mg.socio.paidservices.PaidServices",
             "mg.core.dbexport.Export",
-            "mg.constructor.marketing.GameReporter",
+            "mg.core.money.WebMoney", "mg.core.money.WebMoneyAdmin",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -72,6 +95,16 @@ class Constructor(Module):
         self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
         self.rhook("currencies.list", self.currencies_list, priority=100)
         self.rhook("xsolla.payment-args", self.payment_args)
+        self.rhook("wmlogin.authorized", self.wmlogin_authorized)
+        self.rhook("wmid.check", self.wmid_check)
+        self.rhook("auth.user-auth-table", self.auth_user_table)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("ext-admin-wmauth.remove", self.wmauth_remove, priv="auth.wmid")
+        self.rhook("security.list-roles", self.list_roles)
+        self.rhook("security.users-roles", self.users_roles)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "auth.wmid", "name": self._("Managing authorized WMIDs")})
 
     def payment_args(self, args, options):
         req = self.req()
@@ -159,7 +192,7 @@ class Constructor(Module):
         cabmenu = []
         if req.group == "index" and req.hook == "index":
             vars["global_html"] = "constructor/index_global.html"
-        elif req.group == "constructor" and req.hook == "newgame":
+        elif req.group == "constructor" and req.hook == "newgame" or req.group == "webmoney":
             vars["global_html"] = "constructor/cabinet_global.html"
             cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
         elif req.group == "socio" and req.hook == "image":
@@ -294,14 +327,29 @@ class Constructor(Module):
         req = self.req()
         menu = []
         menu_projects = []
+        vars = {
+            "title": self._("Cabinet"),
+        }
         # constructor admin
         perms = req.permissions()
         if len(perms):
             menu_projects.append({"href": "/admin", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Constructor administration")})
+        columns = 4
+        if not self.call("wmid.check", req.user()):
+            vars["cabinet_wmbtn"] = {
+                "href": "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"),
+                "title": self._("Verify your WMID")
+            }
+            lang = self.call("l10n.lang")
+            if lang == "ru":
+                url = "https://start.webmoney.ru/"
+            else:
+                url = "https://start.wmtransfer.com/"
+            vars["cabinet_comment"] = self._('<p>Dear users, we intend to make the best platform for massively-multiplayer games development. Since the project is related to gaming there are many kids around it. MMO Constructor policy supposes that the project is for people of the full legal age. To keep our service free of illiterate people, trolls and flooders we ask you to confirm your identity. Please note we don\'t request your personal data in any way &mdash; it will be kept in the WebMoney system only.</p><ul><li><a href="{url}" target="_blank">Register in the WebMoney system</a> (if not already)</li><li>Press "Verify your WMID" button</li></ul><p>You will receive earned money to the linked WebMoeny account.</p>').format(url=url)
+            columns = 3
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())
         projects.load(silent=True)
-        comment = None
         if len(projects):
             for project in projects:
                 title = project.get("title_short")
@@ -317,23 +365,21 @@ class Constructor(Module):
                 if logo is None:
                     logo = "/st/constructor/cabinet/untitled.gif"
                 menu_projects.append({"href": href, "image": logo, "text": title})
-                if len(menu_projects) >= 4:
+                if len(menu_projects) >= columns:
                     menu.append(menu_projects)
                     menu_projects = []
         if len(menu_projects):
             menu.append(menu_projects)
-        vars = {
-            "title": self._("Cabinet"),
-            "cabinet_menu": menu if len(menu) else None,
-            "cabinet_leftbtn": {
-                "href": "/constructor/newgame",
-                "title": self._("Create a new game")
-            },
-            "cabinet_comment": comment,
+        if menu:
+            vars["cabinet_menu"] = menu
+        vars["cabinet_leftbtn"] = {
+            "href": "/constructor/newgame",
+            "title": self._("Create a new game")
         }
         self.call("web.response_global", None, vars)
 
     def cabinet_settings(self):
+        req = self.req()
         vars = {
             "title": self._("MMO Constructor Settings"),
             "cabinet_menu": [
@@ -341,10 +387,12 @@ class Constructor(Module):
                     { "href": "/auth/change", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change password") },
                     { "href": "/auth/email", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Change e-mail") },
                     { "href": "/forum/settings?redirect=/cabinet/settings", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("Forum settings") },
-#                    { "href": "/constructor/certificate", "image": "/st/constructor/cabinet/untitled.gif", "text": self._("WebMoney Certification") },
                 ],
             ],
         }
+        wmids = self.wmid_check(req.user())
+        if wmids:
+            vars["cabinet_center"] = self._("Your verified WMID: %s") % (', '.join(['<strong>%s</strong>' % wmid for wmid in wmids]))
         self.call("web.response_global", None, vars)
 
     def debug_validate(self):
@@ -385,6 +433,12 @@ class Constructor(Module):
 
     def constructor_newgame(self):
         req = self.req()
+        if not self.call("wmid.check", req.user()) and False:
+            vars = {
+                "title": self._("Verified WMID required"),
+                "text": self._("You haven't passed WMID verification yet"),
+            }
+            self.call("web.response_template", "constructor/setup/info.html", vars)
         # Registration on invitations
         invitations = self.conf("constructor.invitations")
         if invitations == 2:
@@ -392,7 +446,7 @@ class Constructor(Module):
                 "title": self._("Registration closed"),
                 "text": self.conf("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment")),
             }
-            self.call("web.response_template", "constructor/setup/closed.html", vars)
+            self.call("web.response_template", "constructor/setup/info.html", vars)
         elif invitations:
             if not self.call("invitation.ok", req.user(), "newproject"):
                 invitation = req.param("invitation")
@@ -519,3 +573,79 @@ class Constructor(Module):
         params["prefix"] = "[mmo] "
         params["signature"] = self._("MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games")
 
+    def wmlogin_authorized(self, authtype, remote_addr, wmid):
+        req = self.req()
+        with self.lock(["WMLogin.%s" % req.user(), "WMLogin.%s" % wmid]):
+            wmids = self.wmid_check(req.user())
+            if wmids and wmid not in wmids:
+                vars = {
+                    "title": self._("WMID verified already"),
+                    "text": self._("You have verified WMID already: %s") % (', '.wmids),
+                }
+                self.call("web.response_template", "constructor/setup/info.html", vars)
+            else:
+                if not wmids or wmid not in wmids:
+                    lst = self.objlist(DBUserWMIDList, query_index="wmid", query_equal=wmid)
+                    lst.load()
+                    if len(lst):
+                        user = self.obj(User, lst[0].get("user"))
+                        vars = {
+                            "title": self._("WMID is assigned to another user"),
+                            "text": self._("This WMID is assigned already to the user <strong>%s</strong>. You can't assign one WMID to several accounts") % htmlescape(user.get("name")),
+                        }
+                        self.call("web.response_template", "constructor/setup/info.html", vars)
+                    obj = self.obj(DBUserWMID)
+                    obj.set("added", self.now())
+                    obj.set("user", req.user())
+                    obj.set("wmid", wmid)
+                    obj.set("authtype", authtype)
+                    obj.set("ip", remote_addr)
+                    obj.store()
+                vars = {
+                    "title": self._("WMID verified"),
+                    "text": self._("We have verified your WMID <strong>'%s'</strong> successfully") % wmid,
+                }
+                self.call("web.response_template", "constructor/setup/info.html", vars)
+
+    def wmid_check(self, user_uuid):
+        lst = self.objlist(DBUserWMIDList, query_index="user", query_equal=user_uuid)
+        if not len(lst):
+            return None
+        lst.load()
+        return [ent.get("wmid") for ent in lst]
+
+    def auth_user_table(self, user, tbl):
+        req = self.req()
+        if req.has_access("auth.wmid"):
+            wmids = self.wmid_check(user.uuid)
+            tbl["rows"].append([self._("Authorized WMID"), ', '.join([u'<strong>{wmid}</strong> &mdash; <hook:admin.link href="wmauth/remove/{user}/{wmid}" title="{remove}" confirm="{confirm}" />'.format(wmid=wmid, user=user.uuid, remove=self._("remove"), confirm=self._("Are you sure want to delete this WMID?")) for wmid in wmids]) if wmids else self._("none")])
+
+    def wmauth_remove(self):
+        req = self.req()
+        m = re_wmauth_remove.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        user_uuid, wmid = m.group(1, 2)
+        lst = self.objlist(DBUserWMIDList, query_index="user", query_equal=user_uuid)
+        lst.load()
+        for ent in lst:
+            if ent.get("wmid") == wmid:
+                ent.remove()
+        self.call("admin.redirect", "auth/user-dashboard/%s" % user_uuid, {"active_tab": "auth"})
+
+    def list_roles(self, roles):
+        roles.append(("wmid", self._("Authorized WMID")))
+        roles.append(("nowmid", self._("Not authorized WMID")))
+
+    def users_roles(self, users, roles):
+        authorized = set()
+        lst = self.objlist(DBUserWMIDList, query_index="user", query_equal=users)
+        lst.load()
+        for ent in lst:
+            authorized.add(ent.get("user"))
+        for user in users:
+            role = "wmid" if user in authorized else "nowmid"
+            try:
+                roles[user].append(role)
+            except KeyError:
+                roles[user] = [rol]

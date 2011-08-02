@@ -114,7 +114,7 @@ class SmilesAdmin(Module):
     def menu_socio_index(self, menu):
         req = self.req()
         if req.has_access("socio.smiles"):
-            menu.append({"id": "socio/smiles", "text": self._("Smiles editor"), "leaf": True})
+            menu.append({"id": "socio/smiles", "text": self._("Smiles editor"), "leaf": True, "order": 5})
 
     def admin_socio_smiles(self):
         req = self.req()

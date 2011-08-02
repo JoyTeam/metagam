@@ -26,7 +26,7 @@ class ConstructorProject(Module):
             "mg.constructor.project.ConstructorProjectAdmin",
             "mg.constructor.admin.ConstructorUtils",
             "mg.constructor.domains.Domains",
-            "mg.socio.Socio",
+            "mg.socio.Socio", "mg.constructor.socio.Socio",
             "mg.constructor.auth.Auth",
             "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
@@ -58,6 +58,7 @@ class ConstructorProject(Module):
                     "mg.constructor.paidservices.PaidServices",
                     "mg.constructor.paidservices.PaidServicesAdmin",
                     "mg.core.modifiers.Modifiers",
+                    "mg.constructor.marketing.GameReporter",
                 ])
             if self.conf("module.sociointerface"):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
@@ -91,13 +92,12 @@ class ConstructorProject(Module):
 
     def web_setup_design(self, vars):
         req = self.req()
-        if vars.get("global_html"):
-            return
+        if not vars.get("global_html"):
+            if req.group == "admin":
+                vars["global_html"] = "constructor/admin_global.html"
+            else:
+                vars["global_html"] = "game/global.html"
         vars["main_host"] = self.app().inst.config.get("main_host")
-        if req.group == "admin":
-            vars["global_html"] = "constructor/admin_global.html"
-        else:
-            vars["global_html"] = "game/global.html"
 
     def email_sender(self, params):
         project = self.app().project

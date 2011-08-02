@@ -1,0 +1,24 @@
+html { height: 100%; margin: 0; padding: 0 }
+body { height: 100%; margin: 0 auto; padding: 0 }
+form { margin: 0; padding: 0 }
+table { border-spacing: 0; border-collapse: collapse; margin: 0 }
+td { padding: 0 }
+
+#socio-topmenu-left { padding-left: 0 }
+
+#page-top { position: absolute; left: 0; top: 0; width: 100%; z-index: 10 }
+#socio-topmenu { height: 40px }
+#page-layout { width: 100%; height: 100% }
+#page-left { width: 60px }
+#page-left div { width: 60px }
+#page-right { width: 60px }
+#page-right div { width: 60px }
+#page-width { width: 800px }
+#page-layout-content { vertical-align: top }
+#page-content { padding: 110px 40px 25px 40px }
+.socio-up { display: none }
+.socio-tags { padding-top: 20px }
+.link { text-decoration: underline; cursor: pointer }
+
+[% include "sociointerface/${tpl}.css" %]
+

@@ -451,6 +451,22 @@ class Socio(Module):
         self.rhook("socio.response_template", self.response_template)
         self.rhook("socio.response_simple", self.response_simple)
         self.rhook("socio.response_simple_template", self.response_simple_template)
+        self.rhook("socio.button-blocks", self.button_blocks)
+        self.rhook("sociointerface.buttons", self.buttons)
+
+    def button_blocks(self, blocks):
+        blocks.append({"id": "forum", "title": self._("Forum"), "class": "forum"})
+
+    def buttons(self, buttons):
+        buttons.append({
+            "id": "forum-settings",
+            "href": "/forum/settings",
+            "title": self._("Settings"),
+            "condition": ['glob', 'char'],
+            "target": "_self",
+            "block": "forum",
+            "order": 5,
+        })
 
     def socio_user(self):
         req = self.req()
@@ -467,7 +483,11 @@ class Socio(Module):
             return req._socio_semi_user
         except AttributeError:
             pass
-        req._socio_semi_user = req.session().semi_user()
+        sess = req.session()
+        if sess is None:
+            req._socio_semi_user = None
+        else:
+            req._socio_semi_user = sess.semi_user()
         return req._socio_semi_user
 
     def child_modules(self):
@@ -982,14 +1002,14 @@ class Forum(Module):
         return cats
 
     def load_rules(self, cat_ids):
-        list = self.objlist(ForumPermissionsList, cat_ids)
-        list.load(silent=True)
-        rules = dict([(perm.uuid, perm.get("rules")) for perm in list])
+        lst = self.objlist(ForumPermissionsList, cat_ids)
+        lst.load(silent=True)
+        rules = dict([(ent.uuid, ent.get("rules")) for ent in lst])
         for cat in cat_ids:
             if not rules.get(cat):
-                list = []
-                self.call("forum-admin.default_rules", list)
-                rules[cat] = list
+                lst = []
+                self.call("forum-admin.default_rules", lst)
+                rules[cat] = lst
         return rules
 
     def load_rules_roles(self, user_uuid, cat, rules=None, roles=None):
@@ -1008,7 +1028,9 @@ class Forum(Module):
         rules, roles = self.load_rules_roles(user_uuid, cat, rules, roles)
         if rules is None:
             return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if (perm == "+R" or perm == "+W") and role in roles:
                 return True
             if perm == "-R" and role in roles:
@@ -1022,37 +1044,53 @@ class Forum(Module):
         self.call("restraints.check", user, restraints)
         return restraints.get("forum-silence")
 
-    def may_write(self, cat, topic=None, rules=None, roles=None):
+    def may_write(self, cat, topic=None, rules=None, roles=None, errors=None):
         req = self.req()
         user = self.call("socio.user")
         if user is None:
+            if errors is not None:
+                errors["may_write"] = self._("You are not logged in")
             return False
         if self.silence(user):
+            if errors is not None:
+                errors["may_write"] = self._("Silence restraint")
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
             return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if perm == "+W" and role in roles:
                 return True
             if (perm == "-W" or perm == "-R") and role in roles:
+                if errors is not None and len(ent) >= 3 and ent[2]:
+                    errors["may_write"] = ent[2]
                 return False
         return False
 
-    def may_create_topic(self, cat, topic=None, rules=None, roles=None):
+    def may_create_topic(self, cat, topic=None, rules=None, roles=None, errors=None):
         req = self.req()
         user = self.call("socio.user")
         if user is None:
+            if errors is not None:
+                errors["may_create_topic"] = self._("You are not logged on")
             return False
         if self.silence(user):
+            if errors is not None:
+                errors["may_create_topic"] = self._("Silence restraint")
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
             return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if (perm == "+C") and role in roles:
                 return True
             if (perm == "-C" or perm == "-R") and role in roles:
+                if errors is not None and len(ent) >= 3 and ent[2]:
+                    errors["may_create_topic"] = ent[2]
                 return False
         return False
 
@@ -1066,10 +1104,14 @@ class Forum(Module):
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
             return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if (perm == "-W" or perm == "-R") and role in roles:
                 return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if perm == "-M" and role in roles:
                 break
             if perm == "+M" and role in roles:
@@ -1092,10 +1134,14 @@ class Forum(Module):
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
             return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if (perm == "-W" or perm == "-R") and role in roles:
                 return False
-        for role, perm in rules:
+        for ent in rules:
+            role = ent[0]
+            perm = ent[1]
             if perm == "-M" and role in roles:
                 return False
             if perm == "+M" and role in roles:
@@ -1146,8 +1192,11 @@ class Forum(Module):
             { "href": "/forum", "html": self._("Forum categories") },
             { "html": cat["title"] },
         ]
-        if self.may_create_topic(user_uuid, cat, rules=rules, roles=roles):
+        errors = {}
+        if self.may_create_topic(user_uuid, cat, rules=rules, roles=roles, errors=errors):
             menu.append({"href": "/forum/newtopic/%s" % cat["id"], "html": self._("New topic"), "right": True})
+        elif errors.get("may_create_topic"):
+            menu.append({"html": errors["may_create_topic"], "right": True})
         vars = {
             "title": cat["title"],
             "category": cat,
@@ -1550,10 +1599,11 @@ class Forum(Module):
         content = req.param("content")
         form = self.call("web.form", action="/forum/topic/" + topic.uuid + "#post-form")
         if req.ok():
+            errors = {}
             if not content:
                 form.error("content", self._("Enter post content"))
-            elif not self.may_write(cat, rules=rules, roles=roles):
-                form.error("content", self._("Access denied"))
+            elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
+                form.error("content", errors.get("may_write", self._("Access denied")))
             if not form.errors:
                 user = self.obj(User, self.call("socio.user"))
                 post, page = self.call("forum.reply", cat, topic, user, content)
@@ -1567,10 +1617,16 @@ class Forum(Module):
             "posts": posts,
             "menu": menu,
         }
-        if req.ok() or (self.may_write(cat, rules=rules, roles=roles) and (page == pages)):
+        errors = {}
+        if req.ok() or (self.may_write(cat, rules=rules, roles=roles, errors=errors) and (page == pages)):
+            if errors.get("may_write"):
+                form.error("content", errors["may_write"])
             form.texteditor(None, "content", content)
             form.submit(None, None, self._("Reply"))
             vars["new_post_form"] = form.html()
+        else:
+            if errors.get("may_write"):
+                vars["new_post_form"] = u'<div class="socio-access-error">%s</div>' % errors["may_write"]
         if pages > 1:
             pages_list = []
             last_show = None
@@ -2111,7 +2167,7 @@ class Forum(Module):
         if avatar:
             form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
         if grayscale:
-            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/coloured-avatar">please subscribe</a>'))
+            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/paid-services">please subscribe</a>'))
         self.call("socio.response", form.html(), vars)
 
     def ext_subscribe(self):

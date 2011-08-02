@@ -7,6 +7,7 @@ from mg.core.money_classes import *
 class DBPlayer(CassandraObject):
     _indexes = {
         "created": [[], "created"],
+        "active": [["active"], "last_visit"],
     }
 
     def __init__(self, *args, **kwargs):

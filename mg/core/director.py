@@ -347,6 +347,10 @@ class Director(Module):
             conf["mysql_user"] = "metagam"
         if conf.get("mysql_password") is None:
             conf["mysql_password"] = ""
+        if conf.get("wm_w3s_gate") is None:
+            conf["wm_w3s_gate"] = "localhost:85"
+        if conf.get("wm_login_gate") is None:
+            conf["wm_login_gate"] = "localhost:86"
         if conf.get("locale") is None:
             conf["locale"] = "en"
         self.app().inst.config = conf
@@ -377,6 +381,8 @@ class Director(Module):
         mysql_database = request.param("mysql_database")
         mysql_user = request.param("mysql_user")
         mysql_password = request.param("mysql_password")
+        wm_w3s_gate = request.param("wm_w3s_gate")
+        wm_login_gate = request.param("wm_login_gate")
         locale = request.param("locale")
         config = self.config()
         if self.ok():
@@ -390,6 +396,8 @@ class Director(Module):
             config["mysql_database"] = mysql_database
             config["mysql_user"] = mysql_user
             config["mysql_password"] = mysql_password
+            config["wm_w3s_gate"] = wm_w3s_gate
+            config["wm_login_gate"] = wm_login_gate
             config["locale"] = locale
             self.app().config.set("director.config", config)
             self.app().config.store()
@@ -406,6 +414,8 @@ class Director(Module):
             mysql_database = config.get("mysql_database")
             mysql_user = config.get("mysql_user")
             mysql_password = config.get("mysql_password")
+            wm_w3s_gate = config.get("wm_w3s_gate")
+            wm_login_gate = config.get("wm_login_gate")
             locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Cluster settings"),
@@ -430,6 +440,10 @@ class Director(Module):
                 "mysql_user": mysql_user,
                 "mysql_password_desc": self._("<strong>MySQL password</strong>"),
                 "mysql_password": mysql_password,
+                "wm_w3s_gate_desc": self._("<strong>HTTP proxy to w3s.wmtransfer.com</strong> (host:port)"),
+                "wm_w3s_gate": wm_w3s_gate,
+                "wm_login_gate_desc": self._("<strong>HTTP proxy to login.wmtransfer.com</strong> (host:port)"),
+                "wm_login_gate": wm_login_gate,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
                 "submit_desc": self._("Save")

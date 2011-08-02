@@ -1043,6 +1043,28 @@ class DesignGameInterfaceSubmarine(DesignGenerator):
     def name(self): return self._("Submarine")
     def preview(self): return "/st/constructor/design/gen/game-submarine.jpg"
 
+class DesignSocioCommonBlocks(DesignGenerator):
+    def group(self): return "sociointerface"
+
+    def generate_files(self):
+        vars = {
+            "tpl": self.id(),
+            "lang": self.call("l10n.lang"),
+            "GameForum": self._("Game '[%game.title_short%]' Forum")
+        }
+        data = self.call("web.parse_template", "sociointerface/common-blocks.html", vars)
+        self.add_file("global.html", "text/html", data)
+        vars = {
+            "tpl": self.id(),
+            "lang": self.call("l10n.lang"),
+        }
+        self.add_file("main.css", "text/css", self.call("web.parse_template", "sociointerface/common-blocks.css", vars))
+
+class DesignSocioRustedMetal(DesignSocioCommonBlocks):
+    def id(self): return "socio-rusted-metal"
+    def name(self): return self._("Rusted Metal")
+    def preview(self): return "/st/constructor/design/gen/index-rusted-metal.jpg"
+
 class DesignMod(Module):
     def register(self):
         Module.register(self)
@@ -1664,12 +1686,16 @@ class SocioInterface(ConstructorModule):
 class SocioInterfaceAdmin(Module):
     def register(self):
         Module.register(self)
-        self.rhook("menu-admin-forum.index", self.menu_forum_index)
+        self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("ext-admin-sociointerface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-sociointerface.design", self.headmenu_design)
         self.rhook("admin-sociointerface.validate", self.validate)
         self.rhook("admin-sociointerface.previews", self.previews)
         self.rhook("admin-sociointerface.preview", self.preview)
+        self.rhook("admin-sociointerface.generators", self.generators)
+
+    def generators(self, gens):
+        gens.append(DesignSocioRustedMetal)
 
     def headmenu_design(self, args):
         if args == "":
@@ -1677,7 +1703,7 @@ class SocioInterfaceAdmin(Module):
         else:
             return self.call("design-admin.headmenu", "sociointerface", args)
 
-    def menu_forum_index(self, menu):
+    def menu_socio_index(self, menu):
         req = self.req()
         if req.has_access("design"):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
@@ -1865,7 +1891,7 @@ class SocioInterfaceAdmin(Module):
                 vars["pages"] = pages_list
         if random.random() < 0.9:
             if random.random() < 0.5:
-                vars["topmenu_left"] = [{"header": True, "html": self._("Some header")}]
+                vars["topmenu_left"] = [{"header": True, "html": self._("Some header"), "lst": True}]
             else:
                 lst = []
                 vars["topmenu_left"] = lst
