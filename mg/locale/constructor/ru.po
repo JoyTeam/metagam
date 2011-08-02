@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-07-22 17:01+0400\n"
-"PO-Revision-Date: 2011-07-14 16:02+0300\n"
+"POT-Creation-Date: 2011-07-31 17:10+0400\n"
+"PO-Revision-Date: 2011-07-31 12:38+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -23,10 +23,10 @@ msgstr ""
 msgid "Guru advice"
 msgstr "Советы гуру"
 
-#: static/js/admin.js:141 static/js/locations.js:23 static/js/locations.js:29
-#: static/js/realplexor-stream.js:20 static/js/admin-form.js:165
-#: static/js/admin-form.js:168 static/js/admin-form.js:323
-#: static/js/admin-form.js:326 static/js/chat.js:529 static/js/chat.js:537
+#: static/js/admin.js:141 static/js/locations.js:23
+#: static/js/realplexor-stream.js:20 static/js/admin-form.js:164
+#: static/js/admin-form.js:167 static/js/admin-form.js:322
+#: static/js/admin-form.js:325 static/js/chat.js:533 static/js/chat.js:541
 #: mg/templates/admin/auth/write-dossier.html:39
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:41
@@ -44,21 +44,20 @@ msgstr "Ошибка"
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
 
-#: static/js/admin.js:244
+#: static/js/admin.js:256
 msgid "To the main page"
 msgstr "На главную страницу"
 
 #: static/js/locations.js:29
-#, fuzzy
-msgid "Couldn't send command to the server"
-msgstr "Не удалось отправить сообщение на сервер"
+msgid "Error connecting to the server"
+msgstr "Ошибка связи с сервером"
 
 #: static/js/realplexor-stream.js:21
 msgid "Connection terminated"
 msgstr "Соединение прервано"
 
-#: static/js/realplexor-stream.js:75 static/js/game-interface.js:54
-#: static/js/game-interface.js:141 static/js/game-interface.js:170
+#: static/js/realplexor-stream.js:75 static/js/game-interface.js:59
+#: static/js/game-interface.js:146 static/js/game-interface.js:175
 msgid "Exception"
 msgstr "Исключение"
 
@@ -78,15 +77,15 @@ msgstr "Действие при клике"
 msgid "Target location"
 msgstr "Целевая локация"
 
-#: static/js/imagemap-editor.js:138
+#: static/js/imagemap-editor.js:137
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
 
-#: static/js/imagemap-editor.js:142
+#: static/js/imagemap-editor.js:141
 msgid "Minimal number of vertices - 3"
 msgstr "Минимальное количество вершин - 3"
 
-#: static/js/imagemap-editor.js:148
+#: static/js/imagemap-editor.js:147
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
 
@@ -106,12 +105,12 @@ msgstr "Вставка изображения"
 msgid "Presets:"
 msgstr "Предустановки:"
 
-#: static/js/admin-form.js:105
+#: static/js/admin-form.js:104
 #: mg/templates/constructor/setup/logo-wizard.html:74
 msgid "Upload file"
 msgstr "Загрузить файл"
 
-#: static/js/admin-form.js:113 static/js/admin-form.js:272
+#: static/js/admin-form.js:112 static/js/admin-form.js:271
 #: mg/templates/admin/auth/write-dossier.html:23
 #: mg/templates/constructor/setup/domain-wizard.html:82
 #: mg/templates/constructor/setup/domain.html:64
@@ -122,25 +121,25 @@ msgstr "Загрузить файл"
 msgid "Please wait..."
 msgstr "Пожалуйста, подождите..."
 
-#: static/js/admin-form.js:126
+#: static/js/admin-form.js:125
 msgid "Upload image"
 msgstr "Загрузите изображение"
 
-#: static/js/admin-form.js:139
+#: static/js/admin-form.js:138
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
 
-#: static/js/admin-form.js:148 mg/templates/constructor/setup/logo.html:80
+#: static/js/admin-form.js:147 mg/templates/constructor/setup/logo.html:80
 #: mg/templates/constructor/setup/logo-wizard.html:102
 msgid "Upload"
 msgstr "Загрузить"
 
-#: static/js/admin-form.js:152 mg/templates/constructor/setup/logo.html:83
+#: static/js/admin-form.js:151 mg/templates/constructor/setup/logo.html:83
 #: mg/templates/constructor/setup/logo-wizard.html:40
 msgid "Uploading data..."
 msgstr "Отправка данных..."
 
-#: static/js/admin-form.js:168 static/js/admin-form.js:326
+#: static/js/admin-form.js:167 static/js/admin-form.js:325
 #: mg/templates/admin/auth/write-dossier.html:42
 #: mg/templates/constructor/setup/domain-wizard.html:44
 #: mg/templates/constructor/setup/domain.html:43
@@ -150,11 +149,11 @@ msgstr "Отправка данных..."
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: static/js/admin-form.js:308
+#: static/js/admin-form.js:307
 msgid "Sending data..."
 msgstr "Отправка данных..."
 
-#: static/js/chat.js:537
+#: static/js/chat.js:541
 msgid "Couldn't deliver message to the server"
 msgstr "Не удалось отправить сообщение на сервер"
 
@@ -254,6 +253,10 @@ msgstr "Предварительный просмотр"
 #: mg/templates/constructor/setup/logo-wizard.html:278
 msgid "Apply"
 msgstr "Применить"
+
+#, fuzzy
+#~ msgid "Couldn't send command to the server"
+#~ msgstr "Не удалось отправить сообщение на сервер"
 
 #~ msgid "Mouse over hint"
 #~ msgstr "Подсказка при наведении мыши"

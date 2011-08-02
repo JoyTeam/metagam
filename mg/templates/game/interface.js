@@ -79,7 +79,7 @@ Game.setup_game_layout = function() {
 	if (Ext.get('chat-channel-buttons')) {
 		var channel_buttons;
 		if (Ext.get('chat-channel-buttons').hasClass('layout-left')) {
-			channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto'});
+			channel_buttons = this.element('chat-channel-buttons', {region: 'west'}, {vertical: true, layout: 'auto', no_height: true});
 			channel_buttons.height = undefined;
 			chat.region = 'center';
 			chat = {

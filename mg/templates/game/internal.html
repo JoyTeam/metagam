@@ -51,6 +51,12 @@
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
 	</head>
 	<body id="page-internal-body">
+		[%if menu_left or menu_right%]
+		<table id="main-frame-menu"><tr>
+		[%if menu_left%]<td id="main-frame-menu-left">[%for ent in menu_left%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</td>[%end%]
+		[%if menu_right%]<td id="main-frame-menu-right">[%for ent in menu_right%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</td>[%end%]
+		</tr></table>
+		[%end%]
 		[%content%]
 	</body>
 </html>

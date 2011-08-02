@@ -1,0 +1,73 @@
+/* LAYOUT */
+body { background-image: url(body-bg-1.jpg) }
+a:link, a:visited { color: #07375d }
+a:hover, a:active { color: #0d67ae }
+#main { background-color: #07375d }
+
+/* BOX */
+.box-0 { background-color: #07375d; color: #ffffff }
+.box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.box-4 { background-image: url(box-bottom.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.box-5 { background-image: url(box-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+.box-9 { padding: 31px }
+.box-0 a:link, .box-0 a:visited { color: #4fc7e7 }
+.box-0 a:hover, .box-0 a:active { color: #b987be }
+
+/* MENU */
+.block-horizontal { padding-top: 9px }
+
+/* CHAT */
+#chat-frame, #chat-roster { background-color: #07375d; color: #ffffff }
+.x-layout-split { background: #032032}
+
+/* FORMS */
+.form-list-messages-top, .form-list-messages-bottom { color: #00d21e }
+.form-error { color: #ff3c28 }
+.chat-roster-channel { color: #ffffff }
+.chat-roster-characters { color: #ffffff }
+
+/* INTERNAL */
+#page-internal-body { background: #dff5fb; color: #000000 }
+.game-error { color: #ff3c28; font-weight: bold }
+
+/* PROGRESS BARS */
+.progress-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.progress-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.progress-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.progress-bars-horizontal-margin { height: 24px }
+.progress-bars-horizontal { height: 26px }
+.progress-bars-horizontal-td { padding: 0 12px 0 13px }
+.progress-vertical { background-image: url(progress-vertical-bg.png); background-repeat: repeat-y; background-position: 50% 0% }
+.progress-vertical-1 { background-image: url(progress-vertical-top.png); background-repeat: no-repeat; background-position: 50% 0% }
+.progress-vertical-2 { background-image: url(progress-vertical-bottom.png); background-repeat: no-repeat; background-position: 50% 100% }
+.progress-bars-vertical { width: 26px; margin-left: 24px }
+.progress-bars-vertical-td { padding: 12px 0 13px 0 }
+.location-movement-full { background-color: #4fc7e7 }
+.location-movement-notfull { background-color: #ff3c28 }
+
+/* PANEL HEADERS */
+.panel-header-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.panel-header-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.panel-header-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.panel-header-horizontal-margin { height: 25px }
+.panel-header-horizontal-9 { height: 24px }
+.panel-header-horizontal-10 { padding: 0 16px 0 17px; color: #ffffff }
+
+/* TIPS */
+.x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr { background-image: url(tip-sprite.gif) }
+.x-tip .x-tip-body { color: #ffffff }
+.x-tip-anchor { background-image: url(tip-anchor-sprite.gif) }
+
+/* POPUP MENU */
+.x-menu { background-image: url(menu.gif) }
+.x-menu-item-active { background-color: #7bd0e5; border-color: #72cddc; background-image: url(menu-item-over.gif) }
+.x-menu-floating { border-color: #72cddc }
+.x-menu-item-active a.x-menu-item { border-color: #72cddc }
+
+/* LOCATION */
+.chat-div-your-location { background-color: #afeafb; color: #07375d }

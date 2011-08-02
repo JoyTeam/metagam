@@ -146,10 +146,10 @@ class LocationsAdmin(ConstructorModule):
             lst.load()
             locations = [(loc.uuid, loc.get("name")) for loc in lst if loc.uuid != db_loc.uuid]
             locations.insert(0, ("", "---------------"))
-            fields.append({"name": "loc_up", "label": self._("Location to the up"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_up", "")})
-            fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_left", "")})
-            fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_right", ""), "inline": True})
-            fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "allow_blank": True, "value": db_loc.get("loc_down", "")})
+            fields.append({"name": "loc_up", "label": self._("Location to the up"), "type": "combo", "values": locations, "value": db_loc.get("loc_up", "")})
+            fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "value": db_loc.get("loc_left", "")})
+            fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "value": db_loc.get("loc_right", ""), "inline": True})
+            fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "value": db_loc.get("loc_down", "")})
             # image type
             image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
             fields.append(image_type)
@@ -215,11 +215,14 @@ class LocationsAdmin(ConstructorModule):
             errors = {}
             config = self.app().config_updater()
             start_location = req.param("v_start_location")
+            movement_delay = req.param("movement_delay")
             if start_location:
                 loc = self.location(start_location)
                 if not loc.valid():
                     errors["v_start_location"] = self._("Invalid starting location")
                 config.set("locations.startloc", start_location)
+            char = self.character(req.user())
+            config.set("locations.movement-delay", self.call("script.admin-expression", "movement_delay", errors, globs={"char": char, "base_delay": 1}, require_glob=["base_delay"]))
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
@@ -228,7 +231,8 @@ class LocationsAdmin(ConstructorModule):
         lst.load()
         locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
         fields = [
-            {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations, "allow_blank": True},
+            {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
+            {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("locations.movement_delay"))},
         ]
         self.call("admin.form", fields=fields)
 
@@ -503,6 +507,10 @@ class Locations(ConstructorModule):
         self.rhook("hook-location.arrows", self.hook_arrows)
         self.rhook("hook-location.transitions", self.hook_transitions)
         self.rhook("hook-location.name", self.hook_name)
+        self.rhook("paidservices.available", self.paid_services_available)
+        self.rhook("paidservices.fastmove", self.srv_fastmove)
+        self.rhook("money-description.fastmove", self.money_description_fastmove)
+        self.rhook("locations.movement_delay", self.movement_delay)
 
     def get(self, character):
         try:
@@ -606,6 +614,8 @@ class Locations(ConstructorModule):
             delay = trans.get("delay")
             if delay is None:
                 delay = old_location.delay + new_location.delay
+            # evaluating delay
+            delay = self.call("script.evaluate-expression", self.movement_delay(), {"char": character, "base_delay": delay}, description=self._("Location movement delay"))
             character.set_location(new_location, character.instance, [self.now(), self.now(delay)])
             self.call("web.response_json", {
                 "ok": True,
@@ -622,8 +632,8 @@ class Locations(ConstructorModule):
             "target": "main",
             "icon": "location.png",
             "title": self._("Location"),
-            "block": "top-menu",
-            "order": 0,
+            "block": "left-menu",
+            "order": 3,
         })
 
     def hook_arrows(self, vars):
@@ -672,3 +682,37 @@ class Locations(ConstructorModule):
             name = location.name
             declension = None
         raise Hooks.Return('<span class="location-name%s">%s</span>' % (('-%s' % declension) if declension else "", name))
+
+    def paid_services_available(self, services):
+        services.append({"id": "fastmove", "type": "main"})
+
+    def money_description_fastmove(self):
+        return {
+            "args": ["period", "period_a"],
+            "text": self._("Fast movement across the locations for {period}"),
+        }
+
+    def srv_fastmove(self):
+        cur = self.call("money.real-currency")
+        if not cur:
+            return None
+        cinfo = self.call("money.currency-info", cur)
+        req = self.req()
+        return {
+            "id": "fastmove",
+            "name": self._("Fast movement across the locations"),
+            "description": self._("If you want to move across locations faster you may use this service"),
+            "subscription": True,
+            "type": "main",
+            "default_period": 5 * 86400,
+            "default_price": self.call("money.format-price", 30 / cinfo.get("real_roubles", 1), cur),
+            "default_currency": cur,
+            "default_enabled": True,
+        }
+
+    def movement_delay(self):
+        delay = self.conf("locations.movement-delay")
+        if delay is None:
+            delay = ['/', ['glob', 'base_delay'], ['+', 1, ['.', ['.', ['glob', 'char'], 'mod'], 'fastmove']]]
+        return delay
+

@@ -11,8 +11,8 @@ import re
 import json
 
 re_remove_admin = re.compile(r'^admin-')
-re_split_3 = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
-re_split_2 = re.compile(r'^([^/]+)/([^/]+)$')
+re_split_3 = re.compile(r'^([^/]+)/([^/\?]+)/([^\?]+)(?:|\?.*)$')
+re_split_2 = re.compile(r'^([^/]+)/([^/\?]+)(?:|\?.*)$')
 re_form_condition = re.compile(r'\[([a-z_][a-z0-9_\-]*)\]')
 
 class AdminInterface(Module):
@@ -41,7 +41,7 @@ class AdminInterface(Module):
             "debug_ext": self.conf("debug.ext"),
         }
         if getattr(self.app(), "project", None):
-            self.app().inst.appfactory.get_by_tag("main").hooks.call("2pay.payment-params", vars, self.app().project.get("owner"))
+            self.app().inst.appfactory.get_by_tag("main").hooks.call("xsolla.payment-params", vars, self.app().project.get("owner"))
         self.call("web.response_template", "admin/index.html", vars)
 
     def menu_compare(self, x, y):

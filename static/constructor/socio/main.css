@@ -6,6 +6,7 @@ img { border: none }
 h1 { color: #0078ac; font-size: 21px; font-weight: bold }
 a:link, a:visited { color: #dd6419 }
 a:hover, a:active { color: #ed8439 }
+
 /* LAYOUT */
 #page-top { position: relative; height: 57px; margin: 0 -96px 0 -96px; left: 0; top: 0 }
 #page-layout { width: 100%; height: 100% }
@@ -20,10 +21,12 @@ a:hover, a:active { color: #ed8439 }
 #page-top4 { padding: 0px 96px 0px 61px }
 #page-layout-content { vertical-align: top }
 #page-content { padding: 25px 0px 25px 0px }
+
 /* FORM */
 .form { margin-top: 30px }
 #search-form { margin: 0 }
-.form-desc { color: #0078ac; font-size: 17px; font-weight: bold; padding: 10px 0px 10px 0px }
+.form-desc { color: #0078ac; font-size: 17px; font-weight: bold; padding: 0px 0px 5px 0px }
+.form-desc-padding { color: #0078ac; font-size: 17px; font-weight: bold; padding: 10px 0px 5px 0px }
 .form-w100 { width: 100% }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
 input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 20px 0px }
@@ -39,6 +42,7 @@ input.form-file { font-size: 13px }
 .form-editor-toolbox td { padding: 0px 4px 10px 0px }
 .form-submit { margin-top: 10px }
 .form-clickable { cursor: pointer }
+
 /* TAGS */
 .socio-tags { padding-top: 10px; color: #81878a }
 .socio-tags-list { color: #dd6419 }
@@ -46,6 +50,7 @@ input.form-file { font-size: 13px }
 .socio-tags-list a:hover, .socio-tags-list a:active { color: #ed8439 }
 .socio-tags-list .socio-thick { margin: 20px 0px 15px 0px; }
 .socio-tags-list .socio-semithick { margin-top: 20px }
+
 /* DOCUMENTATION */
 .doc-content a:link, .doc-content a:visited { color: #dd6419 }
 .doc-content a:hover, .doc-content a:active { color: #ed8439 }

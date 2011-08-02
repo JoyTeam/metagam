@@ -1,3 +1,5 @@
+a, a:visited { color: #000040 }
+img { vertical-align: middle; border: none }
 #socio-topmenu { height: 46px; width: 100%; white-space: nowrap }
 #socio-topmenu-left { padding-left: 70px }
 #socio-topmenu-right { text-align: right; padding-left: 20px }
@@ -17,6 +19,8 @@
 .socio-message { margin-top: 20px }
 #socio-counters { padding-top: 50px; text-align: right }
 .socio-message-top { border: solid 1px #dd6419; margin: 20px 0 30px 0; padding: 20px; background-color: #ececec }
+.socio-content-menu { padding: 10px 0 20px 0 }
+
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
 .socio-index-title { font-size: 15px; color: #0078ac; font-weight: bold; text-align: left; padding: 0px 4px 7px 0px }
@@ -29,6 +33,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-last { padding-left: 30px; font-size: 12px }
 .socio-last a:link, .socio-last a:visited { color: #026691 }
 .socio-last a:hover, .socio-last a:active { color: #0386b1 }
+
 /* CATEGORY */
 .socio-catauthor { width: 20% }
 .socio-catcomments { width: 8% }
@@ -50,6 +55,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-topic-created { color: #535c5f; font-size: 11px }
 .socio-topiclist-pages { font-size: 11px }
 .socio-category-title div { display: none }
+
 /* TOPIC */
 .socio-mark { vertical-align: middle }
 #socio-topic-head { width: 100% }
@@ -93,18 +99,39 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .quote .author { color: #dd6419; font-size: 11px; padding-bottom: 5px; }
 .code { background-color: #eaeaff; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
 #socio-topic-bottom { width: 100%; border-top: solid 1px #dd6419; margin-top: 30px }
-#socio-topic-bottom .socio-topic-pages { padding-top: 5px }
+#socio-topic-bottom .socio-topic-pages { padding-top: 6px }
+.socio-preview { color: #000000 }
+
 /* NEWS */
 .socio-news { padding: 10px 0px 5px 0px }
 .socio-news-head { font-weight: bold; padding-bottom: 15px }
 .socio-news-date { color: #007cbf }
 .socio-news-actions { font-size: 12px; text-align: right; padding-top: 5px }
+
 /* USER PROFILE */
 .socio-user-name { font-size: 16px; font-weight: bold; padding-bottom: 20px }
 .socio-user-param { font-weight: bold }
 .socio-user-param-name { font-weight: normal }
+
 /* LISTS */
 .socio-list-header td { vertical-align: top; padding: 3px 40px 3px 0px; font-weight: bold }
 .socio-list-cell { vertical-align: top; padding: 3px 40px 3px 0px }
+
 /* DOC */
 .devel-progress-table td { padding: 3px 0 3px 40px }
+
+/* FORM */
+.form-list-messages-top { padding-bottom: 10px; color: #606060 }
+.form-list-messages-bottom { padding-top: 10px; color: #606060 }
+.form-list-message-top { padding-bottom: 10px }
+
+/* LOGS */
+.log-header .log-td { font-weight: bold; border-bottom: solid 1px #404040 }
+.log-td { padding: 5px 30px 0 0; vertical-align: top }
+.log-right { text-align: right }
+.log-nowrap { white-space: nowrap }
+
+/* PAID SERVICES */
+.service-inactive { color: #c00000 }
+.service-active { color: #008000 }
+

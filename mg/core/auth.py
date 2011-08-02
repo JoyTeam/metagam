@@ -14,7 +14,15 @@ import random
 import hashlib
 import cgi
 
+log_per_page = 50000
+
 re_newline = re.compile(r'\n')
+re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
+re_track_user = re.compile(r'^user/([a-f0-9]+)$')
+re_track_player = re.compile(r'^player/([a-f0-9]+)$')
+re_track_cookie = re.compile(r'^cookie/([a-f0-9]+)$')
+re_track_ip = re.compile(r'^ip/([0-9a-f\.:]+)$')
+re_short = re.compile(r'^(.{6}).*(.{6})$')
 
 class User(CassandraObject):
     _indexes = {
@@ -24,6 +32,7 @@ class User(CassandraObject):
         "inactive": [["inactive"], "created"],
         "email": [["email"]],
         "tag": [["tag"]],
+        "check": [["check"], "created"],
     }
 
     def __init__(self, *args, **kwargs):
@@ -130,6 +139,7 @@ class AuthLog(CassandraObject):
     _indexes = {
         "performed": [[], "performed"],
         "user-performed": [["user"], "performed"],
+        "player-performed": [["player"], "performed"],
         "session-performed": [["session"], "performed"],
         "ip-performed": [["ip"], "performed"],
     }
@@ -177,8 +187,13 @@ class Sessions(Module):
         self.rhook("session.log", self.log)
 
     def log(self, **kwargs):
+        self.call("session.log-fix", kwargs)
         ent = self.obj(AuthLog)
         for key, value in kwargs.iteritems():
+            if key == "session":
+                m = hashlib.md5()
+                m.update(value)
+                value = m.hexdigest()
             ent.set(key, value)
         ent.set("performed", self.now())
         ent.store()
@@ -282,7 +297,7 @@ class Interface(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("auth.cleanup", self.cleanup)
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users)
         self.rhook("ext-auth.register", self.ext_register, priv="public")
@@ -305,6 +320,10 @@ class Interface(Module):
         self.rhook("user.email", self.user_email)
         self.rhook("ext-admin-auth.change-password", self.admin_change_password, priv="change.passwords")
         self.rhook("headmenu-admin-auth.change-password", self.headmenu_change_password)
+        self.rhook("ext-admin-auth.change-name", self.admin_change_name, priv="change.names")
+        self.rhook("headmenu-admin-auth.change-name", self.headmenu_change_name)
+        self.rhook("ext-admin-auth.track", self.admin_auth_track, priv="auth.tracking")
+        self.rhook("headmenu-admin-auth.track", self.headmenu_auth_track, priv="auth.tracking")
 
     def user_email(self, user_uuid):
         user = self.obj(User, user_uuid)
@@ -323,6 +342,8 @@ class Interface(Module):
         captchas.remove()
         autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
         autologins.remove()
+        authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365))
+        authlog.remove()
 
     def cleanup_inactive_users(self):
         users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
@@ -969,6 +990,8 @@ class Interface(Module):
         perms.append({"id": "permissions", "name": self._("User permissions editor")})
         perms.append({"id": "users", "name": self._("User profiles")})
         perms.append({"id": "change.passwords", "name": self._("Change passwords for other users")})
+        perms.append({"id": "change.usernames", "name": self._("Change names for other users")})
+        perms.append({"id": "auth.tracking", "name": self._("Multicharing tracker")})
 
     def auth_permissions(self, user_id):
         perms = {}
@@ -1132,7 +1155,7 @@ class Interface(Module):
             user = self.obj(User, args)
         except ObjectNotFoundException:
             return
-        return [self._("User %s") % htmlescape(user.get("name"))]
+        return [self._("User %s") % htmlescape(user.get("name", user.uuid))]
 
     def ext_user_find(self):
         req = self.req()
@@ -1167,19 +1190,44 @@ class Interface(Module):
             "Update": self._("Update"),
         }
         tables = []
+        tbl = {
+            "type": "auth",
+            "title": self._("Authentication"),
+            "order": -10,
+            "links": [],
+            "rows": [],
+        }
+        if req.has_access("change.passwords"):
+            tbl["links"].append({"id": "chpass", "hook": "auth/change-password/%s" % user.uuid, "text": self._("Change password")})
+        if req.has_access("change.names"):
+            tbl["links"].append({"id": "chname", "hook": "auth/change-name/%s" % user.uuid, "text": self._("Change name")})
+        if req.has_access("auth.tracking"):
+            tbl["links"].append({"id": "tracking", "hook": "auth/track/user/%s" % user.uuid, "text": self._("Track user")})
+        self.call("auth.user-auth-table", user, tbl)
+        if not tbl["rows"]:
+            del tbl["rows"]
+        if tbl.get("links") or tbl.get("rows"):
+            tables.append(tbl)
         self.call("auth.user-tables", user, tables)
         if len(tables):
             tables.sort(cmp=lambda a, b: cmp(a.get("order", 0), b.get("order", 0)))
+            for tbl in tables:
+                if tbl.get("links") is not None:
+                    if tbl["links"]:
+                        tbl["links"][-1]["lst"] = True
+                    else:
+                        del tbl["links"]
+            active_tab = intz(req.param("active_tab"))
+            for i in xrange(0, len(tables)):
+                tbl = tables[i]
+                if tbl.get("type"):
+                    if req.param("active_tab") == tbl.get("type"):
+                        active_tab = i
+                else:
+                    tbl["type"] = str(i)
+            tables[-1]["lst"] = True
             vars["tables"] = tables
-        options = []
-        if req.has_access("change.passwords"):
-            options.append({
-                "title": self._("Authentication"),
-                "value": '<hook:admin.link href="auth/change-password/%s" title="%s" />' % (user.uuid, self._("Change password")),
-            })
-        self.call("auth.user-options", user, options)
-        if len(options):
-            vars["options"] = options
+            vars["active_tab"] = active_tab
         self.call("admin.response_template", "admin/auth/user-dashboard.html", vars)
 
     def ext_user_lastreg(self):
@@ -1202,6 +1250,48 @@ class Interface(Module):
         autologin.store()
         return autologin.uuid
 
+    def admin_change_name(self):
+        req = self.req()
+        try:
+            user = self.obj(User, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        if req.ok():
+            with self.lock(["User.%s" % user.uuid]):
+                user.load()
+                # auth params
+                params = {}
+                self.call("auth.form_params", params)
+                # checking form
+                errors = {}
+                name = req.param("name")
+                if not name:
+                    errors["name"] = self._("Specify new name")
+                elif not user.get("name"):
+                    errors["name"] = self._("This user can't have a name")
+                elif not re.match(params["name_re"], name, re.UNICODE):
+                    errors["name"] = params["name_invalid_re"]
+                else:
+                    existing = self.call("session.find_user", name, return_id=True)
+                    if existing and existing != user.uuid:
+                        errors["name"] = self._("This name is taken already")
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # storing
+                user.set("name", name)
+                user.set("name_lower", name.lower())
+                user.store()
+                self.call("auth.name-changed", user, name)
+                self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "auth"})
+        fields = []
+        fields.append({"name": "name", "label": self._("New name"), "value": user.get("name")})
+        buttons = []
+        buttons.append({"text": self._("Change name")})
+        self.call("admin.form", fields=fields, buttons=buttons)
+
+    def headmenu_change_name(self, args):
+        return [self._("Name changing"), "auth/user-dashboard/%s?active_tab=auth" % args]
+
     def admin_change_password(self):
         req = self.req()
         try:
@@ -1213,28 +1303,31 @@ class Interface(Module):
             password = req.param("password")
             if not password:
                 errors["password"] = self._("Specify new password")
-            else:
-                salt = ""
-                letters = "abcdefghijklmnopqrstuvwxyz"
-                for i in range(0, 10):
-                    salt += random.choice(letters)
-                user.set("salt", salt)
-                user.set("pass_reminder", self.password_reminder(password))
-                m = hashlib.md5()
-                m.update(salt + password.encode("utf-8"))
-                user.set("pass_hash", m.hexdigest())
-                user.store()
-                my_session = req.session()
-                sessions = self.objlist(SessionList, query_index="user", query_equal=user.uuid)
-                for sess in sessions:
-                    if sess.uuid != my_session.uuid:
-                        with self.lock(["session.%s" % sess.uuid]):
-                            sess.load()
-                            sess.delkey("user")
-                            sess.delkey("semi_user")
-                            sess.store()
-                self.call("auth.password-changed", user, password)
-            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            elif not user.get("password"):
+                errors["password"] = self._("This user can't have a password")
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            salt = ""
+            letters = "abcdefghijklmnopqrstuvwxyz"
+            for i in range(0, 10):
+                salt += random.choice(letters)
+            user.set("salt", salt)
+            user.set("pass_reminder", self.password_reminder(password))
+            m = hashlib.md5()
+            m.update(salt + password.encode("utf-8"))
+            user.set("pass_hash", m.hexdigest())
+            user.store()
+            my_session = req.session()
+            sessions = self.objlist(SessionList, query_index="user", query_equal=user.uuid)
+            for sess in sessions:
+                if sess.uuid != my_session.uuid:
+                    with self.lock(["session.%s" % sess.uuid]):
+                        sess.load()
+                        sess.delkey("user")
+                        sess.delkey("semi_user")
+                        sess.store()
+            self.call("auth.password-changed", user, password)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "auth"})
         fields = []
         fields.append({"name": "password", "label": self._("New password")})
         buttons = []
@@ -1242,9 +1335,91 @@ class Interface(Module):
         self.call("admin.form", fields=fields, buttons=buttons)
 
     def headmenu_change_password(self, args):
-        return [self._("Password changing"), "auth/user-dashboard/%s" % args]
+        return [self._("Password changing"), "auth/user-dashboard/%s?active_tab=auth" % args]
 
-re_permissions_args = re.compile(r'^([a-f0-9]+)(?:(.+)|)$', re.DOTALL)
+    def headmenu_auth_track(self, args):
+        m = re_track_user.match(args)
+        if m:
+            return [self._("Tracking"), "auth/user-dashboard/%s?active_tab=auth" % m.group(1)]
+        m = re_track_player.match(args)
+        if m:
+            return [self._("Tracking player"), "auth/user-dashboard/%s?active_tab=auth" % m.group(1)]
+        m = re_track_ip.match(args)
+        if m:
+            return [self._("Tracking IP %s") % m.group(1)]
+        m = re_track_cookie.match(args)
+        if m:
+            return [self._("Tracking Cookie %s") % m.group(1)]
+
+    def admin_auth_track(self):
+        req = self.req()
+        m = re_track_user.match(req.args)
+        if m:
+            index = "user-performed"
+            equal = m.group(1)
+        else:
+            m = re_track_player.match(req.args)
+            if m:
+                index = "player-performed"
+                equal = m.group(1)
+            else:
+                m = re_track_cookie.match(req.args)
+                if m:
+                    index = "session-performed"
+                    equal = m.group(1)
+                else:
+                    m = re_track_ip.match(req.args)
+                    if m:
+                        index = "ip-performed"
+                        equal = m.group(1)
+                    else:
+                        self.call("web.not_found")
+        rows = []
+        lst = self.objlist(AuthLogList, query_index=index, query_equal=equal, query_reversed=True, query_limit=log_per_page)
+        lst.load()
+        users = {}
+        for ent in lst:
+            if ent.get("user"):
+                users[ent.get("user")] = None
+        if len(users):
+            lst2 = self.objlist(UserList, users.keys())
+            lst2.load()
+            for ent in lst2:
+                users[ent.uuid] = ent
+        for ent in lst:
+            user = ent.get("user")
+            if user:
+                uinfo = users.get(user)
+                user = '<hook:admin.link href="auth/track/user/%s" title="%s" />' % (user, htmlescape(uinfo.get("name", user)) if uinfo else user)
+            player = ent.get("player")
+            if player:
+                player = '<hook:admin.link href="auth/track/player/%s" title="%s" />' % (player, re_short.sub(r'\1...', player))
+            cookie = ent.get("session")
+            cookie_short = re_short.sub(r'\1...', cookie)
+            rows.append([
+                self.call("l10n.time_local", ent.get("performed")),
+                '<hook:admin.link href="auth/track/ip/{ip}" title="{ip}" />'.format(ip=ent.get("ip")) if ent.get("ip") else None,
+                '<hook:admin.link href="auth/track/cookie/{cookie}" title="{cookie_short}" />'.format(cookie=cookie, cookie_short=cookie_short),
+                user,
+                player,
+                ent.get("act"),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Performed"),
+                        self._("IP address"),
+                        self._("Cookie"),
+                        self._("User"),
+                        self._("Player"),
+                        self._("Action"),
+                    ],
+                    "rows": rows,
+                }
+            ],
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
 class PermissionsEditor(Module):
     """ PermissionsEditor is a interface to grant and revoke permissions, view actual permissions """
@@ -1322,8 +1497,8 @@ class PermissionsEditor(Module):
             fields.append({"name": "perm%d" % n, "type": "combo", "values": self.permissions, "value": rule[1], "inline": True})
             fields.append({"type": "button", "width": 100, "text": self._("Delete"), "action": "forum/access/%s/del/%d" % (self.uuid, n), "inline": True})
         fields.append({"name": "ord", "value": len(rules) + 1, "label": self._("Add") if rules else None, "width": 100})
-        fields.append({"name": "role", "type": "combo", "values": roles, "label": "&nbsp;" if rules else None, "allow_blank": True, "inline": True})
-        fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "&nbsp;" if rules else None, "allow_blank": True, "inline": True})
+        fields.append({"name": "role", "type": "combo", "values": roles, "label": "&nbsp;" if rules else None, "inline": True})
+        fields.append({"name": "perm", "type": "combo", "values": self.permissions, "label": "&nbsp;" if rules else None, "inline": True})
         fields.append({"type": "empty", "width": 100, "inline": True})
         fields[0]["label"] = self._("Order")
         fields[1]["label"] = self._("Role")
@@ -1381,6 +1556,8 @@ class Dossiers(Module):
                 content = re_newline.sub('<br />', htmlescape(ent.get("content")))
                 dossier_entries.append([ent.get("performed"), u'<hook:admin.link href="auth/user-dashboard/{0}" title="{1}" />'.format(admin.uuid, htmlescape(admin.get("name"))) if admin else None, content])
             table = {
+                "type": "dossier",
+                "title": self._("Dossier"),
                 "order": 100,
                 "header": [self._("dossier///Performed"), self._("Administrator"), self._("Event")],
                 "rows": dossier_entries,
@@ -1411,4 +1588,4 @@ class Dossiers(Module):
         if len(errors):
             self.call("web.response_json", {"success": False, "errors": errors})
         rec = self.call("dossier.write", user=user.uuid, admin=req.user(), content=content)
-        self.call("web.response_json", {"success": True, "redirect": "auth/user-dashboard/%s" % rec.get("user")})
+        self.call("admin.redirect", "auth/user-dashboard/%s" % req.args, {"active_tab": "dossier"})

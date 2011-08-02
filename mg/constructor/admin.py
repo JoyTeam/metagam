@@ -26,9 +26,9 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
-            "mg.constructor.admin.ConstructorUtils", "mg.game.money.Money", "mg.constructor.dashboard.ProjectDashboard",
+            "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.core.money.MoneyAdmin", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin",
-            "mg.game.money.TwoPay", "mg.game.money.TwoPayAdmin",
+            "mg.core.money.Xsolla", "mg.core.money.XsollaAdmin",
             "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
@@ -37,7 +37,12 @@ class Constructor(Module):
             "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin", "mg.core.auth.Dossiers",
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
             "mg.core.emails.EmailSender",
-            "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+            "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
+            "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
+            "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
+            "mg.socio.paidservices.PaidServices",
+            "mg.core.dbexport.Export",
+            "mg.constructor.marketing.GameReporter",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -47,7 +52,7 @@ class Constructor(Module):
         self.rhook("ext-debug.validate", self.debug_validate, priv="public")
         self.rhook("ext-constructor.newgame", self.constructor_newgame, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("core.appfactory", self.appfactory)
         self.rhook("core.webdaemon", self.webdaemon)
@@ -65,6 +70,33 @@ class Constructor(Module):
         self.rhook("telegrams.params", self.telegrams_params)
         self.rhook("email.sender", self.email_sender)
         self.rhook("ext-constructor.game", self.constructor_game, priv="logged")
+        self.rhook("currencies.list", self.currencies_list, priority=100)
+        self.rhook("xsolla.payment-args", self.payment_args)
+
+    def payment_args(self, args, options):
+        req = self.req()
+        if req.user():
+            user = self.obj(User, req.user())
+            args["v1"] = user.get("name")
+            args["email"] = user.get("email")
+
+    def currencies_list(self, currencies):
+        currencies["MM$"] = {
+            "real": True,
+            "code": "MM$",
+            "description": self._("This currency is sold for real money"),
+            "format": "%.2f",
+            "image": "/st-mg/constructor/money/mmdollar-image.png",
+            "icon": "/st-mg/constructor/money/mmdollar-icon.png",
+            "real_price": 30.0,
+            "real_currency": "RUB",
+            "real_roubles": 30.0,
+            "precision": 2,
+            "name_plural": self._("MMO Constructor Dollars"),
+            "name_local": self._("MMO Constructor Dollar/MMO Constructor Dollars"),
+            "name_en": "MMO Constructor Dollar/MMO Constructor Dollars",
+        }
+        raise Hooks.Return()
 
     def test_delay(self):
         Tasklet.sleep(20)
@@ -170,6 +202,8 @@ class Constructor(Module):
             if req.hook == "settings":
                 pass
             else:
+                if req.user():
+                    topmenu.append({"href": "/socio/paid-services", "image": "/st/constructor/cabinet/premium.png", "html": self._("Premium")})
                 topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
                     topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})

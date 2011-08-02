@@ -1,0 +1,17 @@
+[%if settings%]
+<table class="menu">
+<tr><td class="header">[%ProjectID%]</td><td>[%settings.project_id%]</td></tr>
+<tr><td class="header">[%ContragentID%]</td><td>[%settings.contragent_id%]</td></tr>
+<tr><td class="header">[%PaymentURL%]</td><td>[%settings.payment_url%]</td></tr>
+<tr><td class="header">[%SecretCode%]</td><td>[%settings.secret%]</td></tr>
+[%if settings.secret_addgame%]<tr><td class="header">[%SecretCodeAddGame%]</td><td>[%settings.secret_addgame%]</td></tr>[%end%]
+</table>
+[%end%]
+<div class="text">
+<p><hook:admin.link href="constructor/project-xsolla/[%project.uuid%]/settings" title="[%EditSettings%]" /></p>
+<p><hook:admin.link href="constructor/project-xsolla/[%project.uuid%]" title="[%Update%]" /></p>
+</div>
+<table class="list">
+<tr class="header"><td>[%Id%]</td><td>[%TimeXsolla%]</td><td>[%OurTime%]</td><td>[%User%]</td><td>[%Amount%]</td><td>[%Chargeback%]</td></tr>
+[%foreach payment in payments%]<tr><td>[%payment.id%]</td><td>[%payment.date%]</td><td>[%payment.performed%]</td><td>[%payment.v1%]</td><td>[%payment.sum%]</td><td>[%payment.cancelled%]</td></tr>[%end%]
+</table>

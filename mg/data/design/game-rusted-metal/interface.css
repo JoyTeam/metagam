@@ -1,0 +1,82 @@
+/* LAYOUT */
+body { background-image: url(body-bg-1.jpg) }
+a:link, a:visited { color: #385428 }
+a:hover, a:active { color: #3b7730 }
+
+/* BOX */
+.box-0 { background-color: #9e9e86; color: #291c0e }
+.box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.box-4 { background-image: url(box-bottom.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.box-5 { background-image: url(box-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.box-6 { background-image: url(box-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.box-7 { background-image: url(box-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.box-8 { background-image: url(box-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+.box-9 { padding: 41px }
+.box-0 a:link, .box-0 a:visited { color: #32410f }
+.box-0 a:hover, .box-0 a:active { color: #607c1c }
+
+.sbox-0 { background-color: #9e9e86; color: #291c0e }
+.sbox-1 { background-image: url(sbox-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
+.sbox-2 { background-image: url(sbox-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
+.sbox-3 { background-image: url(sbox-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
+.sbox-4 { background-image: url(sbox-bottom.png); background-position: 50% 100%; background-repeat: repeat-x; height: 100% }
+.sbox-5 { background-image: url(sbox-left-bottom.png); background-position: 0% 100%; background-repeat: no-repeat; height: 100% }
+.sbox-6 { background-image: url(sbox-right-bottom.png); background-position: 100% 100%; background-repeat: no-repeat; height: 100% }
+.sbox-7 { background-image: url(sbox-left-top.png); background-position: 0% 0%; background-repeat: no-repeat; height: 100% }
+.sbox-8 { background-image: url(sbox-right-top.png); background-position: 100% 0%; background-repeat: no-repeat; height: 100% }
+
+/* MENU */
+.block-horizontal { padding-top: 9px }
+
+/* CHAT */
+#chat-frame, #chat-roster { background-color: #9e9e86 }
+.x-layout-split { background: #283420 }
+#chat-input-content { padding-top: 4px }
+#chat-box { color: #291c0e }
+
+/* FORMS */
+.form-list-messages-top, .form-list-messages-bottom { color: #2b7118 }
+.form-error { color: #903b24 }
+.chat-roster-channel { color: #291c0e }
+.chat-roster-characters { color: #291c0e }
+
+/* INTERNAL */
+#page-internal-body { background: #9e9e86; color: #291c0e }
+.game-error { color: #c00000; font-weight: bold }
+
+/* PROGRESS BARS */
+.progress-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.progress-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.progress-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.progress-bars-horizontal-margin { height: 25px }
+.progress-bars-horizontal { height: 25px }
+.progress-bars-horizontal-td { padding: 0 13px 0 14px }
+.progress-vertical { background-image: url(progress-vertical-bg.png); background-repeat: repeat-y; background-position: 50% 0% }
+.progress-vertical-1 { background-image: url(progress-vertical-top.png); background-repeat: no-repeat; background-position: 50% 0% }
+.progress-vertical-2 { background-image: url(progress-vertical-bottom.png); background-repeat: no-repeat; background-position: 50% 100% }
+.progress-bars-vertical { width: 25px; margin-left: 25px }
+.progress-bars-vertical-td { padding: 14px 0 13px 0 }
+
+/* PANEL HEADERS */
+.panel-header-horizontal { background-image: url(progress-horizontal-bg.png); background-repeat: repeat-x; background-position: 0% 50% }
+.panel-header-horizontal-1 { background-image: url(progress-horizontal-left.png); background-repeat: no-repeat; background-position: 0% 50% }
+.panel-header-horizontal-2 { background-image: url(progress-horizontal-right.png); background-repeat: no-repeat; background-position: 100% 50% }
+.panel-header-horizontal-margin { height: 25px }
+.panel-header-horizontal-9 { height: 24px }
+.panel-header-horizontal-10 { padding: 0 16px 0 17px; color: #0b4700 }
+
+/* TIPS */
+.x-tip .x-tip-tc, .x-tip .x-tip-tl, .x-tip .x-tip-tr, .x-tip .x-tip-bc, .x-tip .x-tip-bl, .x-tip .x-tip-br, .x-tip .x-tip-ml, .x-tip .x-tip-mr { background-image: url(tip-sprite.gif) }
+.x-tip .x-tip-body { color: #ffffff }
+.x-tip-anchor { background-image: url(tip-anchor-sprite.gif) }
+
+/* POPUP MENU */
+.x-menu { background-image: url(menu.gif) }
+.x-menu-item-active { background-color: #807f6c; border-color: #6f452b; background-image: url(menu-item-over.gif) }
+.x-menu-floating { border-color: #6f452b }
+.x-menu-item-active a.x-menu-item { border-color: #6f452b }
+
+/* LOCATION */
+.chat-div-your-location { background-color: #725726 }

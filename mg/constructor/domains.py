@@ -1,6 +1,6 @@
 from mg import *
 from mg.core.whois_client import *
-from mg.game.money import MemberMoney
+from mg.core.money_classes import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
@@ -431,14 +431,14 @@ class DomainsAdmin(Module):
     def money_description_domain_reg(self):
         return {
             "args": ["domain"],
-            "text": self._("Domain registration: %(domain)s"),
+            "text": self._("Domain registration: {domain}"),
         }
 
     def objclasses_list(self, objclasses):
         objclasses["Domain"] = (Domain, DomainList)
 
     def menu_root_index(self, menu):
-        menu.append({"id": "domains.index", "text": self._("Domains")})
+        menu.append({"id": "domains.index", "text": self._("Domains"), "order": 15})
 
     def menu_domains_index(self, menu):
         req = self.req()
@@ -655,6 +655,8 @@ class DomainsAdmin(Module):
                     "pending": self._("pending"),
                 }
                 tables.append({
+                    "title": self._("Domains"),
+                    "order": 40,
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
                     "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
                 })

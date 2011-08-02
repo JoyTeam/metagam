@@ -80,9 +80,11 @@ class Interface(ConstructorModule):
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
         self.rhook("game.response_internal", self.game_response_internal)
+        self.rhook("game.info", self.game_info)
         self.rhook("game.error", self.game_error)
-        self.rhook("game.form", self.game_form)
-        self.rhook("auth.form", self.game_form)
+        self.rhook("game.internal_form", self.game_internal_form)
+        self.rhook("game.external_form", self.game_external_form)
+        self.rhook("auth.form", self.game_external_form)
         self.rhook("auth.messages", self.auth_messages)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
@@ -102,9 +104,55 @@ class Interface(ConstructorModule):
         self.rhook("gameinterface.blocks", self.blocks)
         self.rhook("gamecabinet.render", self.game_cabinet_render)
         self.rhook("main-frame.error", self.main_frame_error)
+        self.rhook("main-frame.info", self.main_frame_info)
         self.rhook("main-frame.form", self.main_frame_form)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("web.setup_design", self.web_setup_design)
+        self.rhook("ext-empty.index", self.empty, priv="logged")
+
+    def empty(self):
+        self.call("game.response_internal", "empty.html", {})
+
+    def web_setup_design(self, vars):
+        req = self.req()
+        topmenu = []
+        if req.group == "forum" or req.group == "socio":
+            design = self.design("gameinterface")
+            if design:
+                vars["game_design_uri"] = design.get("uri")
+            vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
+            redirect = req.param("redirect")
+            redirect_param = True
+            if redirect is None or redirect == "":
+                redirect = req.uri()
+                redirect_param = False
+            redirect = urlencode(redirect)
+            if req.hook == "settings":
+                pass
+            else:
+                topmenu.append({"search": True, "button": self._("socio-top///Search")})
+                if req.user():
+                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
+                else:
+                    topmenu.append({"href": "/", "html": self._("Log into the game")})
+            if redirect_param:
+                topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
+        # Topmenu
+        if len(topmenu):
+            topmenu_left = []
+            topmenu_right = []
+            for ent in topmenu:
+                if ent.get("left"):
+                    topmenu_left.append(ent)
+                else:
+                    topmenu_right.append(ent)
+            if len(topmenu_left):
+                topmenu_left[-1]["lst"] = True
+                vars["topmenu_left"] = topmenu_left
+            if len(topmenu_right):
+                topmenu_right[-1]["lst"] = True
+                vars["topmenu_right"] = topmenu_right
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
@@ -119,7 +167,7 @@ class Interface(ConstructorModule):
         session_param = req.param("session")
         if session_param and req.environ.get("REQUEST_METHOD") == "POST":
             session = req.session()
-            if session.uuid != session_param:
+            if not session or session.uuid != session_param:
                 self.call("web.redirect", "/")
             user = session.get("user")
             if not user:
@@ -162,10 +210,21 @@ class Interface(ConstructorModule):
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
 
+    def main_frame_info(self, msg):
+        vars = {
+        }
+        self.call("game.response_internal", "info.html", vars, msg)
+
     def main_frame_error(self, msg):
         vars = {
         }
         self.call("game.response_internal", "error.html", vars, msg)
+
+    def game_info(self, msg):
+        vars = {
+            "title": self._("Info"),
+        }
+        self.call("game.response_external", "info.html", vars, msg)
 
     def game_error(self, msg):
         vars = {
@@ -173,7 +232,10 @@ class Interface(ConstructorModule):
         }
         self.call("game.response_external", "error.html", vars, msg)
 
-    def game_form(self, form, vars):
+    def game_internal_form(self, form, vars):
+        self.call("game.response_internal", "form.html", vars, form.html(vars))
+
+    def game_external_form(self, form, vars):
         self.call("game.response_external", "form.html", vars, form.html(vars))
 
     def main_frame_form(self, form, vars):
@@ -495,7 +557,7 @@ class Interface(ConstructorModule):
                 "title": self._("Top panel"),
                 "order": 1,
             })
-        if self.conf("gameinterface.panel-main-left", False):
+        if self.conf("gameinterface.panel-main-left", True):
             panels.append({
                 "id": "main-left",
                 "title": self._("Left of the main frame"),
@@ -527,28 +589,53 @@ class Interface(ConstructorModule):
         blocks = []
         if panel_id == "top":
             blocks.append({
-                "id": "top-left",
-                "type": "header",
-                "html": htmlescape(self.app().project.get("title_short", "").upper()),
+                "id": uuid4().hex,
+                "type": "empty",
                 "order": 0,
+                "width": 90,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "header",
+                "html": self._('You are in the <hook:location.name />'),
+                "order": 20,
                 "flex": 1,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "empty",
+                "order": 40,
+                "width": 10,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "progress",
+                "progress_types": ["location-movement"],
+                "order": 60,
+                "flex": 1,
+            })
+            blocks.append({
+                "id": uuid4().hex,
+                "type": "empty",
+                "order": 80,
+                "width": 10,
             })
             blocks.append({
                 "id": "top-menu",
                 "type": "buttons",
-                "order": 10,
+                "order": 100,
                 "title": self._("Top menu"),
                 "class": "horizontal",
             })
             blocks.append({
-                "id": "top-right",
+                "id": uuid4().hex,
                 "type": "empty",
-                "order": 100,
-                "flex": 1,
+                "order": 120,
+                "width": 10,
             })
         elif panel_id == "roster-buttons":
             blocks.append({
-                "id": "roster-buttons-left",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -561,14 +648,14 @@ class Interface(ConstructorModule):
                 "class": "roster-buttons",
             })
             blocks.append({
-                "id": "roster-buttons-right",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
             })
         elif panel_id == "main-left":
             blocks.append({
-                "id": "main-left-top",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -581,14 +668,14 @@ class Interface(ConstructorModule):
                 "class": "vertical",
             })
             blocks.append({
-                "id": "main-left-bottom",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
             })
         elif panel_id == "main-right":
             blocks.append({
-                "id": "main-right-top",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 0,
                 "flex": 1,
@@ -601,7 +688,7 @@ class Interface(ConstructorModule):
                 "class": "vertical",
             })
             blocks.append({
-                "id": "main-right-bottom",
+                "id": uuid4().hex,
                 "type": "empty",
                 "order": 100,
                 "flex": 1,
@@ -882,7 +969,7 @@ class Interface(ConstructorModule):
             for block in panel["blocks"]:
                 if block["type"] == "buttons":
                     show_block = {
-                        "title": self._("Panel: %s") % htmlescape(block.get("title")),
+                        "title": self._("Button block: %s") % htmlescape(block.get("title")),
                         "buttons": []
                     }
                     vars["blocks"].append(show_block)
@@ -1174,7 +1261,7 @@ class Interface(ConstructorModule):
         for panel in self.panels():
             for blk in panel["blocks"]:
                 if blk["type"] == "buttons":
-                    blocks.append((blk["id"], self._("Panel: %s") % (blk.get("title") or blk["id"])))
+                    blocks.append((blk["id"], self._("Button block: %s") % (blk.get("title") or blk["id"])))
         lst = self.objlist(DBPopupList, query_index="all")
         lst.load()
         popups = []
@@ -1182,14 +1269,14 @@ class Interface(ConstructorModule):
             blocks.append((p.uuid, self._("Popup menu: %s") % p.get("title")))
             popups.append((p.uuid, p.get("title")))
         fields = [
-            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block, "allow_blank": True},
+            {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block},
             {"name": "order", "label": self._("Sort order"), "value": order, "inline": True},
             {"type": "fileuploadfield", "name": "image", "label": self._("Button image")},
             {"name": "title", "label": self._("Button hint"), "value": title},
             {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]},
             {"name": "href", "label": self._("Button href"), "value": href, "condition": "[[action]]=='href'"},
-            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True, "allow_blank": True},
-            {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'", "allow_blank": True},
+            {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True},
+            {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'"},
             {"name": "onclick", "label": self._("Javascript onclick"), "value": onclick, "condition": "[[action]]=='javascript'"},
         ]
         self.call("admin.form", fields=fields, modules=["FileUploadField"])
@@ -1216,14 +1303,14 @@ class Interface(ConstructorModule):
     def settings(self):
         req = self.req()
         form = self.call("web.form")
-        settings = self.obj(DBCharacterSettings, req.user(), silent=True)
+        character = self.character(req.user())
         if req.ok():
-            self.call("interface.settings-form", form, "validate", settings)
+            self.call("interface.settings-form", form, "validate", character.settings)
             if not form.errors:
-                self.call("interface.settings-form", form, "store", settings)
-                settings.store()
+                self.call("interface.settings-form", form, "store", character.settings)
+                character.settings.store()
                 self.call("web.redirect", "/location")
-        self.call("interface.settings-form", form, "render", settings)
+        self.call("interface.settings-form", form, "render", character.settings)
         self.call("main-frame.form", form, {})
 
     def gameinterface_popups(self):

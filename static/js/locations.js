@@ -26,7 +26,7 @@ Locations.move = function(loc_id) {
 		}).createDelegate(this),
 		failure: (function (response, opts) {
 			this.submit_locked = false;
-			Game.error(gt.gettext('Error'), gt.gettext('Couldn\'t send command to the server'));
+			Game.error(undefined, gt.gettext('Error connecting to the server'));
 		}).createDelegate(this)
 	});
 };

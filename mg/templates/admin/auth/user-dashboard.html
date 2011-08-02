@@ -1,9 +1,33 @@
 <div class="text">
-<div class="links"><hook:admin.link href="auth/user-dashboard/[%user.uuid%]" title="[%Update%]" /></div>
+	<div class="links"><a href="javascript:void(0)" onclick="try{adm('auth/user-dashboard/[%user.uuid%]?active_tab=' + Ext.getCmp('char-panel').getActiveTab().tabId);} catch (e) {} return false">[%Update%]</a></div>
+</div>
+
 [%foreach table in tables%]
-[%if table.title%]<h2>[%table.title%]</h2>[%end%]
+<div class="x-hidden" id="tbl-[%table.type%]">
 [%table.before%]
 [%if table.links%]<div class="links">[%foreach link in table.links%][%if link.href%]<a href="[%link.href%]">[%link.text%]</a>[%end%][%if link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%end%][%unless link.lst +%] / [%+ end%][%end%]</div>[%end%]
+[%if table.header or table.rows %]
 <table class="menu">[%if table.header%]<tr class="header">[%foreach col in table.header%]<td>[%col%]</td>[%end%]</tr>[%end%][%foreach row in table.rows%]<tr>[%foreach col in row%]<td>[%col%]</td>[%end%]</tr>[%end%]</table>[%end%]
-[%if options%]<table class="menu">[%foreach option in options%]<tr><td class="header">[%option.title%]</td><td>[%option.value%]</td></tr>[%end%]</table>[%end%]
 </div>
+[%end%]
+
+<div id="char-form"></div>
+
+<script type="text/javascript">
+new Ext.TabPanel({
+	id: 'char-panel',
+	renderTo: 'char-form',
+	activeTab: [%active_tab%],
+	items: [[%foreach table in tables%]{
+		title: '[%table.title%]',
+		contentEl: 'tbl-[%table.type%]',
+		tabId: '[%table.type%]'
+	}[%unless table.lst%],[%end%][%end%]],
+	bodyStyle: 'padding: 10px',
+	listeners: {
+		tabchange: function(panel, tab) {
+			document.location.replace(base_url + '#auth/user-dashboard/[%user.uuid%]?active_tab=' + tab.tabId);
+		}
+	}
+});
+</script>

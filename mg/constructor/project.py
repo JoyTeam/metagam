@@ -31,12 +31,13 @@ class ConstructorProject(Module):
             "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
             "mg.constructor.logo.LogoAdmin",
+            "mg.core.dbexport.Export",
         ]
         project = self.app().project
         if not project.get("inactive"):
             lst.extend([
                 "mg.constructor.game.Game",
-                "mg.game.money.Money", "mg.game.money.MoneyAdmin",
+                "mg.core.money.Money", "mg.core.money.MoneyAdmin",
                 "mg.core.realplexor.Realplexor",
                 "mg.constructor.chat.Chat",
                 "mg.constructor.interface.Dynamic",
@@ -44,20 +45,24 @@ class ConstructorProject(Module):
                 "mg.constructor.design.DesignMod",
                 "mg.constructor.design.IndexPage", "mg.constructor.design.IndexPageAdmin",
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
-                "mg.constructor.quest.QuestEngine",
+                "mg.constructor.script.ScriptEngine",
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
-                "mg.socio.limits.Limits", "mg.socio.limits.LimitsAdmin",
+                "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
             ])
             if project.get("published"):
                 lst.extend([
-                    "mg.game.money.TwoPay"
+                    "mg.core.money.Xsolla",
+                    "mg.constructor.money.Money",
+                    "mg.constructor.paidservices.PaidServices",
+                    "mg.constructor.paidservices.PaidServicesAdmin",
+                    "mg.core.modifiers.Modifiers",
                 ])
             if self.conf("module.sociointerface"):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
                 if self.conf("module.forum"):
-                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin"])
+                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin", "mg.socio.paidservices.PaidServices"])
                 if self.conf("module.smiles"):
                     lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
         return lst
@@ -97,7 +102,7 @@ class ConstructorProject(Module):
     def email_sender(self, params):
         project = self.app().project
         params["name"] = project.get("title_short")
-        params["prefix"] = u"[%s] " % project.get("title_code")
+        params["prefix"] = u"[%s] " % project.get("title_code").lower()
         params["signature"] = u"%s - http://www.%s" % (project.get("title_full"), project.get("domain"))
 
 class ConstructorProjectAdmin(Module):

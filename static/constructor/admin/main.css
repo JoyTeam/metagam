@@ -51,6 +51,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .text ul{list-style: disc; margin: 10px 0px 10px 35px;}
 .text ol{list-style: none; margin: 10px 0px 10px 20px;}
 .auto-panel{margin: 3px 0px 3px 0px}
+.inline-icon { vertical-align: middle }
 .bottom-form { margin: 10px 0 10px 0 }
 .admin-form .x-panel-btns .x-toolbar-cell {padding: 10px 15px 0px 0px;}
 .x-form-file-wrap { position: relative; height: 22px; }
@@ -75,12 +76,12 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .enough { color: #208020 }
 .not-enough { color: #ff4040 }
 table.menu { margin: 0 0 10px 0 }
-table.menu td { padding: 3px 30px 3px 2px; vertical-align: top }
-table.menu tr.header td { background-color: #f0f0f0; padding: 5px 30px 5px 2px; color: #000000; font-weight: bold }
+table.menu td { padding: 2px 30px 2px 0px; vertical-align: top }
+table.menu tr.header td { border-top: solid 1px #c0c0c0; border-bottom: solid 1px #c0c0c0; padding: 2px 30px 2px 0px; color: #000000; font-weight: bold }
 table.menu td.header { background-color: #f0f0f0; color: #000000; font-weight: bold }
 .header-nowrap { white-space: nowrap }
 table.menu td.subheader { font-weight: bold; font-size: 16px }
-.links { margin-bottom: 10px }
+.links { padding-bottom: 20px }
 .moderated { border: solid 1px #c00000; padding: 3px; font-weight: bold }
 .admin-message-green { border: solid 1px #008000; color: #00c000; padding: 10px; margin: 10px 0 10px 0 }
 .admin-message-red { border: solid 1px #e00000; color: #ff0000; padding: 10px; margin: 10px 0 10px 0 }

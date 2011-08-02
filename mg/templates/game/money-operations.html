@@ -1,0 +1,19 @@
+[%if ret%]<div class="main-return"><a href="[%ret.href%]">[%ret.html%]</a></div>[%end%]
+[%if pages%]<div class="main-pages main-pages-top">[%foreach page in pages%][%if page.href%]<a href="[%page.href%]">[%else%]<span>[%end%][%page.html%][%if page.href%]</a>[%else%]</span>[%end%][%unless page.lst +%] &middot; [%+ end%][%end%]</div>[%end%]
+<table class="log-table">
+	<tr class="log-header">
+		<td class="log-td">[%Performed%]</td>
+		<td class="log-td log-right">[%Amount%]</td>
+		<td class="log-td log-right">[%Balance%]</td>
+		<td class="log-td">[%Description%]</td>
+	</tr>
+[%foreach operation in operations%]
+	<tr>
+		<td class="log-td">[%operation.performed%]</td>
+		<td class="log-td log-right[%if operation.cls +%] [%+ operation.cls%][%end%]">[%operation.amount%]</td>
+		<td class="log-td log-right">[%operation.balance%]</td>
+		<td class="log-td">[%operation.description%]</td>
+	</tr>
+[%end%]
+</table>
+[%if pages%]<div class="main-pages main-pages-bottom">[%foreach page in pages%][%if page.href%]<a href="[%page.href%]">[%else%]<span>[%end%][%page.html%][%if page.href%]</a>[%else%]</span>[%end%][%unless page.lst +%] &middot; [%+ end%][%end%]</div>[%end%]

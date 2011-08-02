@@ -1,14 +1,16 @@
-[%if project.published%]
-<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/arrow-right.png" alt="" /></td><td class="admin-recommended-content">[%PublishedAt +%] [%+ project.published%][%if project.unpublish%]. <hook:admin.link confirm="[%ConfirmUnpublish%]" href="constructor/project-unpublish/[%project.uuid%]" title="[%unpublish%]" />[%end%]</td></tr></table>
-[%elsif project.moderation%]
-<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/help-hint.png" alt="" /></td><td class="admin-recommended-content">[%if project.publish%][%WaitingModeration%]: <hook:admin.link href="constructor/project-publish/[%project.uuid%]" title="[%permit%]" /> &bull; <hook:admin.link href="constructor/project-reject/[%project.uuid%]" title="[%reject%]" />[%end%]</td></tr></table>
-[%elsif project.inactive%]
-<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/exclamation.png" alt="" /></td><td class="admin-recommended-content">[%GameInactive%]</td></tr></table>
-[%else%]
-<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/applications-development.png" alt="" /></td><td class="admin-recommended-content">[%GameSetup%]</td></tr></table>
-[%end%]
-[%if project.moderation_reject%]
-<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/application-exit.png" alt="" /></td><td class="admin-recommended-content">[%project.moderation_reject%]</td></tr></table>
+[%unless project.main%]
+	[%if project.published%]
+	<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/arrow-right.png" alt="" /></td><td class="admin-recommended-content">[%PublishedAt +%] [%+ project.published%][%if project.unpublish%]. <hook:admin.link confirm="[%ConfirmUnpublish%]" href="constructor/project-unpublish/[%project.uuid%]" title="[%unpublish%]" />[%end%]</td></tr></table>
+	[%elsif project.moderation%]
+	<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/help-hint.png" alt="" /></td><td class="admin-recommended-content">[%if project.publish%][%WaitingModeration%]: <hook:admin.link href="constructor/project-publish/[%project.uuid%]" title="[%permit%]" /> &bull; <hook:admin.link href="constructor/project-reject/[%project.uuid%]" title="[%reject%]" />[%end%]</td></tr></table>
+	[%elsif project.inactive%]
+	<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/exclamation.png" alt="" /></td><td class="admin-recommended-content">[%GameInactive%]</td></tr></table>
+	[%else%]
+	<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/applications-development.png" alt="" /></td><td class="admin-recommended-content">[%GameSetup%]</td></tr></table>
+	[%end%]
+	[%if project.moderation_reject%]
+	<table class="admin-recommended-table"><tr><td class="admin-recommended-icon"><img src="/st/img/application-exit.png" alt="" /></td><td class="admin-recommended-content">[%project.moderation_reject%]</td></tr></table>
+	[%end%]
 [%end%]
 [%if project.notifications%]
 <table class="admin-recommended-table">
@@ -21,14 +23,16 @@
 <div class="text">
 <p><hook:admin.link href="constructor/project-dashboard/[%project.uuid%]" title="[%Update%]" /></p>
 <table class="menu">
-<tr><td class="header header-nowrap">[%Created%]</td><td><strong>[%project.created%]</strong> [%+ by +%] <hook:admin.link href="auth/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>
-[%if project.title_full%]<tr><td class="header header-nowrap">[%TitleFull%]</td><td><div class="moderated">[%project.title_full%]</div></td></tr>[%end%]
-[%if project.title_short%]<tr><td class="header header-nowrap">[%TitleShort%]</td><td><div class="moderated">[%project.title_short%]</div></td></tr>[%end%]
-[%if project.title_en%]<tr><td class="header header-nowrap">[%TitleEn%]</td><td><div class="moderated">[%project.title_en%]</div></td></tr>[%end%]
-[%if project.title_code%]<tr><td class="header header-nowrap">[%TitleCode%]</td><td>[%project.title_code%]</td></tr>[%end%]
-<tr><td class="header header-nowrap">[%GameDescription%]</td><td><div class="moderated" style="font-weight: normal">[%project.description%]</div></td></tr>
-<tr><td class="header header-nowrap">[%Domain%]</td><td><div class="moderated"><a href="http://www.[%project.domain%]" target="_blank">[%project.domain%]</a></div></td></tr>
-<tr><td class="header header-nowrap">[%Logo%]</td><td>[%if project.logo%]<img src="[%project.logo%]" alt="" />[%end%]</td></tr>
+[%unless project.main%]
+	<tr><td class="header header-nowrap">[%Created%]</td><td><strong>[%project.created%]</strong> [%+ by +%] <hook:admin.link href="auth/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>
+	[%if project.title_full%]<tr><td class="header header-nowrap">[%TitleFull%]</td><td><div class="moderated">[%project.title_full%]</div></td></tr>[%end%]
+	[%if project.title_short%]<tr><td class="header header-nowrap">[%TitleShort%]</td><td><div class="moderated">[%project.title_short%]</div></td></tr>[%end%]
+	[%if project.title_en%]<tr><td class="header header-nowrap">[%TitleEn%]</td><td><div class="moderated">[%project.title_en%]</div></td></tr>[%end%]
+	[%if project.title_code%]<tr><td class="header header-nowrap">[%TitleCode%]</td><td>[%project.title_code%]</td></tr>[%end%]
+	<tr><td class="header header-nowrap">[%GameDescription%]</td><td><div class="moderated" style="font-weight: normal">[%project.description%]</div></td></tr>
+	<tr><td class="header header-nowrap">[%Domain%]</td><td><div class="moderated"><a href="http://www.[%project.domain%]" target="_blank">[%project.domain%]</a></div></td></tr>
+	<tr><td class="header header-nowrap">[%Logo%]</td><td>[%if project.logo%]<img src="[%project.logo%]" alt="" />[%end%]</td></tr>
+[%end%]
 [%for param in project.params%]<tr><td class="header header-nowrap">[%param.name%]</td><td>[%if param.moderated%]<div class="moderated">[%end%][%param.value%][%if param.moderated%]</div>[%end%]</td></tr>[%end%]
 </table>
 [%if options%]<table class="menu">[%foreach option in options%]<tr><td class="header header-nowrap">[%option.title%]</td><td>[%option.value%]</td></tr>[%end%]</table>[%end%]

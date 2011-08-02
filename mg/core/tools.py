@@ -8,9 +8,12 @@ import calendar
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
 re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
+re_valid_nonnegative_float = re.compile(r'^[0-9]+(?:|\.[0-9]+)$')
 re_valid_int = re.compile(r'^-?[0-9]+$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
+re_frac_part = re.compile(r'\..*?[1-9]')
+re_remove_frac = re.compile(r'\..*')
 
 def urldecode(str):
     if str is None:
@@ -41,6 +44,9 @@ def valid_int(str):
 
 def valid_nonnegative_int(str):
     return re_valid_nonnegative_int.match(str)
+
+def valid_nonnegative_float(str):
+    return re_valid_nonnegative_float.match(str)
 
 def jsencode(val):
     if val is None:
@@ -121,6 +127,13 @@ def datetime_to_human(str):
     y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
     return "%02d.%02d.%04d %02d:%02d:%02d" % (int(d), int(m), int(y), int(hh), int(mm), int(ss))
 
+def time_to_human(str):
+    m = re_datetime.match(str)
+    if not m:
+        return None
+    y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
+    return "%02d:%02d:%02d" % (int(hh), int(mm), int(ss))
+
 def date_to_human(str):
     m = re_date.match(str)
     if not m:
@@ -135,3 +148,29 @@ def date_from_human(str):
     d, m, y, t = m.group(1, 2, 3, 4)
     return "%04d-%02d-%02d %s" % (int(y), int(m), int(d), t if t else "00:00:00")
 
+def nn(num):
+    if num is None:
+        return 0
+    if type(num) == int:
+        return num
+    if type(num) == float:
+        num = '%f' % num
+    num = str(num)
+    if re_frac_part.search(num):
+        return float(num)
+    return int(re_remove_frac.sub('', num))
+
+class curry:
+    def __init__(self, fun, *args, **kwargs):
+        self.fun = fun
+        self.pending = args[:]
+        self.kwargs = kwargs.copy()
+
+    def __call__(self, *args, **kwargs):
+        if kwargs and self.kwargs:
+            kw = self.kwargs.copy()
+            kw.update(kwargs)
+        else:
+            kw = kwargs or self.kwargs
+
+        return self.fun(*(self.pending + args), **kw)

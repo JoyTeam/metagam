@@ -1,0 +1,15 @@
+<table class="items-table">
+[%foreach account in accounts%]
+<tr>
+	<td class="item-image-td">[%if account.currency.image%]<img src="[%account.currency.image%]" alt="" class="item-image" />[%end%]</td>
+	<td class="item-info-td">
+		<span class="money-amount">[%account.balance%]</span> <span class="money-currency">[%account.balance_currency%]</span>
+		[%if account.menu%]<div class="item-menu">[%foreach ent in account.menu%]
+			[%if ent.href%]<a href="[%ent.href%]"[%if ent.onclick +%] onclick="[%ent.onclick%]"[%end%]>[%end%][%ent.html%][%if ent.href%]</a>[%end%]
+			[%unless ent.lst +%] / [%+ end%]
+		[%end%]</div>[%end%]
+		[%if account.currency.description%]<div class="item-description">[%account.currency.description%]</div>[%end%]
+	</td>
+</tr>
+[%end%]
+</table>

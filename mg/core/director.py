@@ -13,7 +13,7 @@ class Director(Module):
     def register(self):
         Module.register(self)
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
-            "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin"])
+            "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin", "mg.core.modifiers.ModifiersManager"])
         self.config()
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", {})
@@ -26,6 +26,7 @@ class Director(Module):
         self.rhook("int-index.index", self.director_index, priv="public")
         self.rhook("int-director.setup", self.director_setup, priv="public")
         self.rhook("int-director.config", self.director_config, priv="public")
+        self.rhook("int-director.servers", self.director_servers, priv="public")
         self.rhook("director.reload_servers", self.reload_servers)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("director.queue_workers", self.director_queue_workers)
@@ -93,14 +94,7 @@ class Director(Module):
                         if fact_server is not None:
                             fact_port = fact_server.get("port")
                             if fact_port is None or fact_port == port:
-                                del self.app().servers_online[server_id]
-                                self.store_servers_online()
-                                self.servers_online_updated()
-                                # removing status object
-                                st = self.obj(WorkerStatus, server_id, silent=True)
-                                st.remove()
-                                # additional actions
-                                self.call("director.unregistering_server", server_id)
+                                self.server_offline(server_id)
                 # examining WorkerStatus records
                 lst = self.objlist(WorkerStatusList, query_index="all")
                 lst.load(silent=True)
@@ -140,6 +134,16 @@ class Director(Module):
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(10)
+
+    def server_offline(self, server_id):
+        del self.app().servers_online[server_id]
+        self.store_servers_online()
+        self.servers_online_updated()
+        # removing status object
+        st = self.obj(WorkerStatus, server_id, silent=True)
+        st.remove()
+        # additional actions
+        self.call("director.unregistering_server", server_id)
 
     def appfactory(self):
         raise Hooks.Return(ApplicationFactory(self.app().inst))
@@ -226,6 +230,12 @@ class Director(Module):
                         try:
                             request = cnn.get("/core/reload-hard")
                             cnn.perform(request)
+                        except IOError as e:
+                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
+                            self.server_offline(server_id)
+                        except TimeoutError as e:
+                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
+                            self.server_offline(server_id)
                         finally:
                             cnn.close()
                 except Exception as e:
@@ -329,6 +339,14 @@ class Director(Module):
             conf["storage"] = ["storage"]
         if conf.get("smtp_server") is None:
             conf["smtp_server"] = "localhost"
+        if conf.get("mysql_server") is None:
+            conf["mysql_server"] = "localhost"
+        if conf.get("mysql_database") is None:
+            conf["mysql_database"] = "metagam"
+        if conf.get("mysql_user") is None:
+            conf["mysql_user"] = "metagam"
+        if conf.get("mysql_password") is None:
+            conf["mysql_password"] = ""
         if conf.get("locale") is None:
             conf["locale"] = "en"
         self.app().inst.config = conf
@@ -336,6 +354,9 @@ class Director(Module):
 
     def director_config(self):
         self.call("web.response_json", self.config())
+
+    def director_servers(self):
+        self.call("web.response_json", self.app().servers_online)
 
     def split_host_port(self, str, defport):
         ent = re.split(':', str)
@@ -352,6 +373,10 @@ class Director(Module):
         main_host = request.param("main_host")
         admin_user = request.param("admin_user")
         smtp_server = request.param("smtp_server")
+        mysql_server = request.param("mysql_server")
+        mysql_database = request.param("mysql_database")
+        mysql_user = request.param("mysql_user")
+        mysql_password = request.param("mysql_password")
         locale = request.param("locale")
         config = self.config()
         if self.ok():
@@ -361,6 +386,10 @@ class Director(Module):
             config["main_host"] = main_host
             config["admin_user"] = admin_user
             config["smtp_server"] = smtp_server
+            config["mysql_server"] = mysql_server
+            config["mysql_database"] = mysql_database
+            config["mysql_user"] = mysql_user
+            config["mysql_password"] = mysql_password
             config["locale"] = locale
             self.app().config.set("director.config", config)
             self.app().config.store()
@@ -373,6 +402,10 @@ class Director(Module):
             main_host = config["main_host"]
             admin_user = config.get("admin_user")
             smtp_server = config.get("smtp_server")
+            mysql_server = config.get("mysql_server")
+            mysql_database = config.get("mysql_database")
+            mysql_user = config.get("mysql_user")
+            mysql_password = config.get("mysql_password")
             locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Cluster settings"),
@@ -387,8 +420,16 @@ class Director(Module):
                 "main_host": main_host,
                 "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),
                 "admin_user": admin_user,
-                "smtp_server_desc": self._("<strong>SMTP server</strong> (host)"),
+                "smtp_server_desc": self._("<strong>SMTP server</strong>"),
                 "smtp_server": smtp_server,
+                "mysql_server_desc": self._("<strong>MySQL server</strong>"),
+                "mysql_server": mysql_server,
+                "mysql_database_desc": self._("<strong>MySQL database</strong>"),
+                "mysql_database": mysql_database,
+                "mysql_user_desc": self._("<strong>MySQL user</strong>"),
+                "mysql_user": mysql_user,
+                "mysql_password_desc": self._("<strong>MySQL password</strong>"),
+                "mysql_password": mysql_password,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
                 "submit_desc": self._("Save")

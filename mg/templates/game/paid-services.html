@@ -1,0 +1,21 @@
+[%if money%]<div class="main-frame-content-menu">[%YourMoney%]: [%foreach ent in money%][%ent.html%][%unless ent.lst +%] &bull; [%+end%][%end%]</div>[%end%]
+<table class="log-table">
+	<tr class="log-header">
+		<td class="log-td">[%PaidService%]</td>
+		<td class="log-td">[%Status%]</td>
+		<td class="log-td">[%Description%]</td>
+	</tr>
+[%foreach srv in services%]
+	<tr>
+		<td class="log-td log-nowrap">
+			<a href="/paidservices/paid-service/[%srv.id%]" target="[%srv.target%]">[%srv.name%]</a>
+			[%foreach offer in srv.offers%]<div>[%offer.html%]</div>[%end%]
+		</td>
+		<td class="log-td log-nowrap">
+			[%if srv.status_cls%]<span class="[%srv.status_cls%]">[%end%][%srv.status%][%if srv.status_cls%]</span>[%end%]
+			[%if srv.auto_prolong%]<div>[%srv.auto_prolong.status%] &mdash; <a href="[%srv.auto_prolong.href%]?redirect=/paidservices">[%srv.auto_prolong.cmd%]</a></div>[%end%]
+		</td>
+		<td class="log-td">[%srv.description%]</td>
+	</tr>
+[%end%]
+</table>

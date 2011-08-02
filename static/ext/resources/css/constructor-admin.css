@@ -260,8 +260,7 @@ ul.x-tab-strip-bottom{
 }
 
 .x-form-invalid, textarea.x-form-invalid {
-    background-color:#fff;
-	background-color: #ffebeb;
+	background: #ffebeb;
 	border-color:#c30;
 }
 

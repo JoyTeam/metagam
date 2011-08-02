@@ -47,6 +47,11 @@ Game.error = function(title, str) {
 
 Game.main_open = function(uri) {
 	try {
+		if (uri.uri)
+			uri = uri.uri;
+	} catch (e) {
+	}
+	try {
 		var iframe = Ext.getCmp('main-iframe');
 		var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
 		win.location.href = uri;
@@ -246,13 +251,14 @@ Game.element = function(eid, cel, el) {
 	var container_options = {
 		id: eid + '-content-container',
 		applyTo: insert_here,
-		height: '100%',
 		layout: 'vbox',
 		layoutConfig: {
 			align: 'stretch'
 		},
 		items: [el]
 	};
+	if (!el.no_height)
+		container_options.height = '100%';
 	if (el.vertical) {
 		el.vertical = undefined;
 		container_options.width = '100%';
@@ -353,7 +359,7 @@ Game.panel = function(id, options) {
 				block_el.html = block.html;
 			} else if (block.tp == 'header') {
 				var cls = 'panel-header-' + (options.vertical ? 'vertical' : 'horizontal');
-				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="panel-header-horizontal-margin"></div><table class="' + cls + '-9"><tr><td class="' + cls + '-10">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div>';
+				block_el.html = '<div class="' + cls + '"><div class="' + cls + '-1"><div class="' + cls + '-2"><div class="' + cls + '-3"><div class="' + cls + '-4"><div class="' + cls + '-5"><div class="' + cls + '-6"><div class="' + cls + '-7"><div class="' + cls + '-8"><div class="panel-header-horizontal-margin"></div><div class="' + cls + '-content-1"><div class="' + cls + '-10"><div class="' + cls + '-11"><table class="' + cls + '-9"><tr><td class="' + cls + '-12">' + block.html + '</td></tr></table></div></div></div></div></div></div></div></div></div></div></div></div>';
 			} else if (block.tp == 'progress') {
 				var cls = 'progress-' + (options.vertical ? 'vertical' : 'horizontal');
 				var bars;

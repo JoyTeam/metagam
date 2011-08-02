@@ -94,7 +94,7 @@ class AuthAdmin(ConstructorModule):
                                     if user:
                                         session.set("semi_user", user)
                                         session.delkey("user")
-                                        self.call("session.log", act="disconnect", session=session.uuid, user=user)
+                                        self.call("session.log", act="disconnect", session=session.uuid, user=user, ip=session.get("ip"))
                                     session.delkey("character")
                                     session.delkey("authorized")
                                     session.set("updated", self.now())
@@ -162,9 +162,67 @@ class Auth(ConstructorModule):
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
         self.rhook("stream.character", self.stream_character)
-        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("auth.user-auth-table", self.user_auth_table)
+        self.rhook("auth.user-tables", self.user_tables, priority=-100)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("session.character-sessions", self.character_sessions)
+        self.rhook("restraints.set", self.restraints_set)
+        self.rhook("money-description.multicharing", self.money_description_multicharing)
+        self.rhook("session.log-fix", self.log_fix)
+
+    def log_fix(self, args):
+        if args.get("user"):
+            char = self.character(args["user"])
+            if char.valid:
+                args["player"] = char.player.uuid
+            else:
+                player = self.player(args["user"])
+                if player.valid:
+                    args["player"] = args["user"]
+                    del args["user"]
+
+    def money_description_multicharing(self):
+        return {
+            "args": ["name"],
+            "text": self._("New character: {name}"),
+        }
+
+    def restraints_set(self, user_uuid, *args, **kwargs):
+        if kwargs.get("kind") == "ban":
+            # Dropping session of banned user
+            appsessions = self.main_app().objlist(AppSessionList, query_index="character", query_equal=user_uuid)
+            appsessions.load(silent=True)
+            for appsession in appsessions:
+                session_uuid = appsession.get("session")
+                with self.lock(["session.%s" % session_uuid]):
+                    try:
+                        appsession.load()
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        old_state = appsession.get("state")
+                        if old_state == 1 or old_state == 2:
+                            if old_state:
+                                self.debug("Session %s banned. State: %s => None" % (session_uuid, old_state))
+                            try:
+                                session = self.obj(Session, session_uuid)
+                            except ObjectNotFoundException as e:
+                                self.exception(e)
+                            else:
+                                # updating session
+                                user = session.get("user")
+                                session.delkey("semiuser")
+                                session.delkey("user")
+                                session.delkey("character")
+                                session.delkey("authorized")
+                                session.set("updated", self.now())
+                                # storing
+                                session.store()
+                        else:
+                            self.debug("Session %s banned. Clearing it forced. State: %s => None" % (session_uuid, old_state))
+                        appsession.remove()
+                        # notifying session
+                        self.call("stream.send", ["id_%s" % session_uuid], {"packets": [{"method_cls": "game", "method": "close"}]})
 
     def character_sessions(self, character, sessions):
         lst = self.objlist(SessionList, query_index="authorized-user", query_equal="1-%s" % character.uuid)
@@ -304,7 +362,7 @@ class Auth(ConstructorModule):
             {"name": "free_chars", "label": self._("Number of characters per player allowed for free"), "value": free_chars, "condition": "[multicharing]>0" },
             {"name": "max_chars", "label": self._("Maximal number of characters per player allowed"), "value": max_chars, "inline": True, "condition": "[multicharing]>0" },
             {"name": "multichar_price", "label": self._("Price for one extra character over free limit"), "value": multichar_price, "condition": "[multicharing]>0 && [max_chars]>[free_chars]" },
-            {"name": "multichar_currency", "label": self._("Currency"), "type": "combo", "value": multichar_currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()], "allow_blank": True, "condition": "[multicharing]>0 && [max_chars]>[free_chars]", "inline": True},
+            {"name": "multichar_currency", "label": self._("Currency"), "type": "combo", "value": multichar_currency, "values": [(code, info["description"]) for code, info in currencies.iteritems()], "condition": "[multicharing]>0 && [max_chars]>[free_chars]", "inline": True},
             {"name": "cabinet", "type": "combo", "label": self._("Login sequence"), "value": cabinet, "condition": "![multicharing]", "values": [(0, self._("Enter the game immediately after login")), (1, self._("Open player cabinet after login"))]},
             {"name": "activate_email", "type": "checkbox", "label": self._("Require email activation"), "checked": activate_email},
 #            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
@@ -326,8 +384,10 @@ class Auth(ConstructorModule):
     def character_form(self):
         fields = self.conf("auth.char_form", [])
         if not len(fields):
-            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character name"), "prompt": self._("Enter your character name")})
+            fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character's name"), "prompt": self._("Enter your character name")})
             fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
+            fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
+            fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
         return copy.deepcopy(fields)
 
     def jsencode_character_form(self, lst):
@@ -363,15 +423,15 @@ class Auth(ConstructorModule):
         for fld in fields:
             code = fld["code"]
             val = req.param(code).strip()
-            if not fld.get("mandatory_level") and not val:
+            if fld.get("mandatory_level") and not val:
                 errors[code] = self._("This field is mandatory")
-            elif fld["std"] == 1:
+            elif fld.get("std") == 1:
                 # character name. checking validity
                 if not re.match(params["name_re"], val, re.UNICODE):
                     errors[code] = params["name_invalid_re"]
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
-            elif fld["type"] == 1:
+            elif fld.get("type") == 1:
                 if not val and not std and not fld.get("mandatory_level"):
                     # empty value is ok
                     val = None
@@ -449,10 +509,13 @@ class Auth(ConstructorModule):
         character_user.set("last_login", now_ts)
         character_user.set("name", values["name"])
         character_user.set("name_lower", values["name"].lower())
+        character_user.set("sex", intz(values["sex"]))
+        if self.conf("auth.validate_names"):
+            character_user.set("check", 1)
         character_form = self.obj(DBCharacterForm, character.uuid, {})
         for fld in fields:
             code = fld["code"]
-            if code == "name":
+            if code == "name" or code == "sex":
                 continue
             val = values.get(code)
             if val is None:
@@ -540,6 +603,10 @@ class Auth(ConstructorModule):
             # Looking for character
             chars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
             if len(chars):
+                restraints = {}
+                self.call("restraints.check", chars[0].uuid, restraints)
+                if restraints.get("ban"):
+                    self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"])})
                 session = req.session(True)
                 self.call("stream.login", session.uuid, chars[0].uuid)
                 self.call("web.response_json", {"ok": 1, "session": session.uuid})
@@ -574,7 +641,7 @@ class Auth(ConstructorModule):
         lst.load(silent=True)
         for sess in lst:
             character = self.character(sess.get("user"))
-            rows.append(['<hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (character.uuid, character.name), self.call("l10n.timeencode2", sess.get("updated"))])
+            rows.append([character.html("admin"), self.call("l10n.time_local", sess.get("updated"))])
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def characters_tech_online(self, lst):
@@ -615,7 +682,7 @@ class Auth(ConstructorModule):
                 # storing
                 session.store()
                 appsession.store()
-                self.call("session.log", act="reconnect", session=session.uuid, user=character_uuid)
+                self.call("session.log", act="reconnect", session=session.uuid, user=character_uuid, ip=session.get("ip"))
                 self.stream_character_online(character_uuid)
                 logout_others = True
                 self.call("session.character-init", session.uuid, self.character(character_uuid))
@@ -664,7 +731,6 @@ class Auth(ConstructorModule):
                 except ObjectNotFoundException:
                     pass
                 else:
-                    self.debug("Dropping session %s" % session_uuid)
                     old_state = appsession.get("state")
                     if old_state == 1 or old_state == 2:
                         if old_state:
@@ -688,7 +754,7 @@ class Auth(ConstructorModule):
                         self.debug("Session %s is timed out. Clearing it forced. State: %s => None" % (session_uuid, old_state))
                     appsession.remove()
                     # notifying session
-                    self.call("stream.send", ["id_%s" % session_uuid], {"packets": [{"cls": "game", "method": "close"}]})
+                    self.call("stream.send", ["id_%s" % session_uuid], {"packets": [{"method_cls": "game", "method": "close"}]})
 
     def stream_ready(self):
         req = self.req()
@@ -760,7 +826,7 @@ class Auth(ConstructorModule):
                 # storing
                 session.store()
                 appsession.store()
-                self.call("session.log", act="disconnect", session=session.uuid, user=character_uuid)
+                self.call("session.log", act="disconnect", session=session.uuid, user=character_uuid, ip=session.get("ip"))
                 self.stream_character_offline(character_uuid)
 
     def stream_login(self, session_uuid, character_uuid):
@@ -795,10 +861,10 @@ class Auth(ConstructorModule):
             session.store()
             appsession.store()
             if went_offline:
-                self.call("session.log", act="logout", session=session.uuid, user=old_character)
+                self.call("session.log", act="logout", session=session.uuid, user=old_character, ip=session.get("ip"))
                 self.stream_character_offline(old_character)
             if went_online:
-                self.call("session.log", act="login", session=session.uuid, user=character_uuid)
+                self.call("session.log", act="login", session=session.uuid, user=character_uuid, ip=session.get("ip"))
                 self.stream_character_online(character_uuid)
             logout_others = True
         if logout_others:
@@ -829,7 +895,7 @@ class Auth(ConstructorModule):
             session.store()
             appsession.remove()
             if went_offline:
-                self.call("session.log", act="logout", session=session.uuid, user=character_uuid)
+                self.call("session.log", act="logout", session=session.uuid, user=character_uuid, ip=session.get("ip"))
                 self.stream_character_offline(character_uuid)
 
     def gameinterface_render(self, character, vars, design):
@@ -847,32 +913,38 @@ class Auth(ConstructorModule):
         session = req.session()
         if not session or not session.get("user"):
             self.call("web.redirect", "/")
-        try:
-            player = self.obj(DBPlayer, session.get("user"))
-        except ObjectNotFoundException:
-            pass
-        else:
+        player = self.player(session.get("user"))
+        if player.valid:
             if req.args == "new":
                 if not self.conf("auth.multicharing"):
                     self.call("web.not_found")
-                chars = self.objlist(DBCharacterList, query_index="player", query_equal=player.uuid)
-                if len(chars) >= self.conf("auth.max_chars", 5):
+                if len(player.characters) >= self.conf("auth.max_chars", 5):
                     self.call("game.error", self._("You can't create more characters"))
-                return self.new_character(player)
-            try:
-                character = self.obj(DBCharacter, req.args)
-            except ObjectNotFoundException:
+                paid = len(player.characters) >= self.conf("auth.free_chars", 1)
+                return self.new_character(player, paid=paid)
+            character = self.character(req.args)
+            if not character.valid:
                 self.call("web.forbidden")
-            if character.get("player") != player.uuid:
+            if character.player.uuid != player.uuid:
                 self.error("Hacking attempt. Player %s requested access to character %s", player.uuid, req.args)
                 self.call("web.forbidden")
+            if character.restraints.get("ban"):
+                self.call("game.error", self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"]))
             self.call("stream.login", session.uuid, character.uuid)
         self.call("web.post_redirect", "/", {"session": session.uuid})
 
-    def new_character(self, player):
+    def new_character(self, player, paid):
         req = self.req()
         session = req.session()
         form = self.call("web.form")
+        # list of possible payers
+        if paid:
+            valid_payers = set()
+            for char in player.characters:
+                valid_payers.add(char.uuid)
+            payer = req.param("payer")
+            pay_price = self.conf("auth.multichar_price", 5)
+            pay_currency = self.conf("auth.multichar_currency")
         # registragion form
         fields = self.character_form()
         fields = [fld for fld in fields if not fld.get("deleted") and fld.get("reg")]
@@ -885,15 +957,15 @@ class Auth(ConstructorModule):
             for fld in fields:
                 code = fld["code"]
                 val = req.param(code).strip()
-                if not fld.get("mandatory_level") and not val:
+                if fld.get("mandatory_level") and not val:
                     form.error(code, self._("This field is mandatory"))
-                elif fld["std"] == 1:
+                elif fld.get("std") == 1:
                     # character name. checking validity
                     if not re.match(params["name_re"], val, re.UNICODE):
                         form.error(code, params["name_invalid_re"])
                     elif self.call("session.find_user", val):
                         form.error(code, self._("This name is taken already"))
-                elif fld["type"] == 1:
+                elif fld.get("type") == 1:
                     if not val and not std and not fld.get("mandatory_level"):
                         # empty value is ok
                         val = None
@@ -917,6 +989,18 @@ class Auth(ConstructorModule):
                         form.error("captcha", self._("Incorrect number"))
                 except ObjectNotFoundException:
                     form.error("captcha", self._("Incorrect number"))
+            if not form.errors and paid:
+                if not payer:
+                    form.error("payer", self._("Select a payer"))
+                else:
+                    found = False
+                    for char in player.characters:
+                        if char.uuid == payer:
+                            found = True
+                            if not char.money.debit(pay_price, pay_currency, "multicharing", name=values["name"]):
+                                form.error("payer", self.call("money.not-enough-funds", pay_currency, character=char))
+                    if not found:
+                        form.error("payer", self._("Select a valid payer"))
             if not form.errors:
                 now = self.now()
                 now_ts = "%020d" % time.time()
@@ -929,10 +1013,13 @@ class Auth(ConstructorModule):
                 character_user.set("last_login", now_ts)
                 character_user.set("name", values["name"])
                 character_user.set("name_lower", values["name"].lower())
+                character_user.set("sex", intz(values["sex"]))
+                if self.conf("auth.validate_names"):
+                    character_user.set("check", 1)
                 character_form = self.obj(DBCharacterForm, character.uuid, {})
                 for fld in fields:
                     code = fld["code"]
-                    if code == "name":
+                    if code == "name" or code == "sex":
                         continue
                     val = values.get(code)
                     if val is None:
@@ -957,8 +1044,20 @@ class Auth(ConstructorModule):
             else:
                 form.input(field["name"], field["code"], values.get(field["code"]))
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
+        if paid:
+            first = True
+            for char in player.characters:
+                kwargs = {}
+                if first:
+                    kwargs["description"] = self._("Registration of the next character will cost you {price}<br />Select a character who will pay for the registration").format(price=self.call("money.price-html", pay_price, pay_currency))
+                    first = False
+                balance = char.money.available(pay_currency)
+                donate = self.call("money.donate-message", pay_currency, character=char)
+                if donate:
+                    donate = ' &mdash; %s' % donate
+                form.radio(self._('{name} &mdash; balance {balance}{donate}').format(name=char.html(), balance=self.call("money.price-html", balance, pay_currency), donate=donate), "payer", char.uuid, payer, **kwargs)
         form.submit(None, None, self._("Create a character"))
-        self.call("game.form", form, vars)
+        self.call("game.external_form", form, vars)
 
     def login_before_activate(self, redirect):
         self.call("game.error", self._('You are not logged in. <a href="/">Please login</a> and retry activation'))
@@ -982,6 +1081,10 @@ class Auth(ConstructorModule):
         # Everything is OK. Redirecting user to the game interface or to the cabinet
         chars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
         if len(chars):
+            restraints = {}
+            self.call("restraints.check", chars[0].uuid, restraints)
+            if restraints.get("ban"):
+                self.call("game.error", self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"]))
             self.call("stream.login", session.uuid, chars[0].uuid)
         if self.conf("auth.allow-create-first-character"):
             self.call("game.error", self._("No characters assigned to this player"))
@@ -995,6 +1098,10 @@ class Auth(ConstructorModule):
         except ObjectNotFoundException:
             pass
         else:
+            restraints = {}
+            self.call("restraints.check", autologin.get("user"), restraints)
+            if restraints.get("ban"):
+                self.call("game.error", self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"]))
             self.info("Autologging in character %s", autologin.get("user"))
             self.call("stream.login", session.uuid, autologin.get("user"))
             autologin.remove()
@@ -1008,26 +1115,63 @@ class Auth(ConstructorModule):
         if ids:
             self.call("stream.packet", ids, method_cls, method, **kwargs)
 
-    def user_tables(self, user, tables):
+    def user_auth_table(self, user, table):
         req = self.req()
         if user.get("name"):
             # character
             character = self.character(user.uuid)
             player = character.player
-            tables.append({
-                "rows": [
-                    (self._("Related player"), '<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(player.uuid))
-                ]
-            })
+            table["rows"].append([self._("Player account"), '<hook:admin.link href="auth/user-dashboard/{0}?active_tab=auth" title="{0}" />'.format(player.uuid)])
         else:
             #player
             dbchars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
             chars = [self.character(char.uuid) for char in dbchars]
-            tables.append({
-                "rows": [(self._("Related character %s") % htmlescape(char.name), '<hook:admin.link href="auth/user-dashboard/{0}" title="{0}" />'.format(char.uuid)) for char in chars]
-            })
+            table["rows"].extend([[self._("Character %s") % char.uuid, char.html("admin")] for char in chars])
             player = self.player(user.uuid)
             character = None
+
+    def user_tables(self, user, tables):
+        if user.get("name"):
+            # Character user
+            i = 0
+            while i < len(tables):
+                tbl = tables[i]
+                if tbl.get("links"):
+                    j = 0
+                    links = tbl["links"]
+                    while j < len(links):
+                        link = links[j]
+                        lid = link.get("id")
+                        if lid == "chpass":
+                            del links[j:j+1]
+                            continue
+                        elif lid == "tracking":
+                            link["text"] = self._("Track character")
+                        j += 1
+                i += 1
+        else:
+            # Player user
+            i = 0
+            while i < len(tables):
+                tbl = tables[i]
+                tp = tbl.get("type")
+                if tp == "money" or tp == "money_locks" or tp == "socio" or tp == "restraints" or tp == "dossier":
+                    del tables[i:i+1]
+                    continue
+                if tbl.get("links"):
+                    j = 0
+                    links = tbl["links"]
+                    while j < len(links):
+                        link = links[j]
+                        lid = link.get("id")
+                        if lid == "chname":
+                            del links[j:j+1]
+                            continue
+                        elif lid == "tracking":
+                            link["hook"] = "auth/track/player/%s" % user.uuid
+                            link["text"] = self._("Track player")
+                        j += 1
+                i += 1
 
     def gameinterface_buttons(self, buttons):
         buttons.append({

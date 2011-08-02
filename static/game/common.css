@@ -1,4 +1,21 @@
-body { font-family: Verdana; font-size: 12px }
-td { font-size: 12px }
-img { vertical-align: middle }
-.clickable { cursor: pointer }
+/* MONEY VALUES */
+.money-amount { font-weight: bold; color: #008000 }
+.money-currency { font-weight: bold }
+.money-currency img { vertical-align: middle }
+
+/* PRICES */
+.price { white-space: nowrap }
+
+/* ANY OTHER VALUES */
+.value { font-weight: bold }
+
+/* ICONS */
+.icon { vertical-align: middle; border: none }
+
+/* CHARACTER NAMES */
+.char-name { font-weight: bold }
+
+/* PAID SERVICES */
+.service-inactive { color: #c00000 }
+.service-active { color: #008000 }
+

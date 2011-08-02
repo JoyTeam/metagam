@@ -6,7 +6,7 @@ from uuid import uuid4
 from mg.core.cluster import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
-from PIL import Image
+from PIL import Image, ImageEnhance
 from mg.core.auth import PermissionsEditor
 from itertools import *
 import re
@@ -25,9 +25,10 @@ re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
-re_images = re.compile(r'\[img:[0-9a-f]+\]')
+re_images = re.compile(r'\[img:([0-9a-f]+)\]')
 re_tag = re.compile(r'^(.*?)\[(b|s|i|u|color|quote|code|url)(?:=([^\[\]]+)|)\](.*?)\[/\2\](.*)$', re.DOTALL)
 re_color = re.compile(r'^#[0-9a-f]{6}$')
+re_color_present = re.compile(r'\[color')
 re_url = re.compile(r'^((http|https|ftp):/|)/\S+$')
 re_cut = re.compile(r'\s*\[cut\]')
 re_softhyphen = re.compile(r'(\S{110})', re.DOTALL)
@@ -396,7 +397,9 @@ class ForumAdmin(Module):
             params.append((self._("Avatar"), '<img src="%s" alt="" />' % avatar))
         if len(params):
             tables.append({
-                "title": self._("Socio settings"),
+                "type": "socio",
+                "title": self._("Socio"),
+                "order": 20,
                 "links": [{"hook": "socio/user/%s" % user.uuid, "text": self._("edit"), "lst": True}],
                 "rows": params,
             })
@@ -412,7 +415,7 @@ class ForumAdmin(Module):
             settings.set("signature", req.param("signature"))
             settings.set("status", req.param("status"))
             settings.store()
-            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid)
+            self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "socio"})
         fields = [
             {
                 "name": "status",
@@ -429,7 +432,7 @@ class ForumAdmin(Module):
         self.call("admin.form", fields=fields)
 
     def headmenu_user(self, args):
-        return [self._("Socio settings"), "auth/user-dashboard/%s" % args]
+        return [self._("Socio settings"), "auth/user-dashboard/%s?active_tab=socio" % args]
 
 class Socio(Module):
     def register(self):
@@ -590,7 +593,7 @@ class Socio(Module):
         if m:
             before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
             if tag == "color":
-                if re_color.match(arg):
+                if re_color.match(arg) and not options.get("no_colours"):
                     return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
             elif tag == "url":
                 if re_url.match(arg):
@@ -613,6 +616,8 @@ class Socio(Module):
         m = re_img.match(html)
         if m:
             before, id, after = m.group(1, 2, 3)
+            if options.get("no_images"):
+                return self.format_text(before, options) + self.format_text(after, options)
             try:
                 image = self.obj(SocioImage, id)
             except ObjectNotFoundException:
@@ -641,12 +646,17 @@ class Socio(Module):
         # smiles
         smiles = self.call("smiles.dict")
         tokens = self.call("smiles.split", html)
+        smiles_cnt = 0
+        max_smiles = options.get("max_smiles")
         if tokens and len(tokens) > 1:
             result = u""
             for token in tokens:
                 info = smiles.get(token)
                 if info:
-                    result += '<img src="%s" alt="" class="socio-smile" />' % info["image"]
+                    if not options.get("no_smiles"):
+                        smiles_cnt += 1
+                        if max_smiles is None or smiles_cnt <= max_smiles:
+                            result += '<img src="%s" alt="" class="socio-smile" />' % info["image"]
                 else:
                     result += self.format_text(token, options)
             return result
@@ -731,13 +741,16 @@ class Socio(Module):
                         th = image_obj.convert("RGB")
                         th.thumbnail((800, 800), Image.ANTIALIAS)
                         th_data = cStringIO.StringIO()
-                        th.save(th_data, "JPEG")
+                        th.save(th_data, "JPEG", quality=98)
                         th_data = th_data.getvalue()
                         th_ext = "jpg"
                         th_content_type = "image/jpeg"
                     if target_format != format:
                         im_data = cStringIO.StringIO()
-                        image_obj.save(im_data, target_format)
+                        kwargs = {}
+                        if target_format == "JPEG":
+                            kwargs["quality"] = 95
+                        image_obj.save(im_data, target_format, **kwargs)
                         im_data = im_data.getvalue()
                     else:
                         im_data = image
@@ -782,7 +795,7 @@ class Socio(Module):
         settings = self.obj(UserForumSettings, user.uuid, silent=True)
         name = htmlescape(user.get("name"))
         params = []
-        params.append({"name": self._("user///Registered"), "value": self.call("l10n.dateencode2", from_unixtime(user.get("created")))})
+        params.append({"name": self._("user///Registered"), "value": self.call("l10n.date_local", from_unixtime(user.get("created")))})
         status = settings.get("status")
         if status:
             params.append({"name": self._("Status"), "value": htmlescape(status)})
@@ -826,7 +839,7 @@ class Forum(Module):
         self.rhook("ext-forum.subscribed", self.ext_subscribed, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
-        self.rhook("all.schedule", self.schedule)
+        self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("hook-forum.news", self.news)
         self.rhook("forum.may_read", self.may_read)
         self.rhook("forum.may_write", self.may_write)
@@ -871,7 +884,7 @@ class Forum(Module):
                 vars["menu_right"] = menu_right
         silence = self.silence(self.call("socio.user"))
         if silence:
-            vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.timeencode2", silence.get("till")))
+            vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.time_local", silence.get("till")))
         else:
             vars["socio_message_top"] = self.conf("socio.message-top")
 
@@ -1005,9 +1018,9 @@ class Forum(Module):
     def silence(self, user):
         if user is None:
             return None
-        limits = {}
-        self.call("limits.check", user, limits)
-        return limits.get("forum-silence")
+        restraints = {}
+        self.call("restraints.check", user, restraints)
+        return restraints.get("forum-silence")
 
     def may_write(self, cat, topic=None, rules=None, roles=None):
         req = self.req()
@@ -1107,8 +1120,8 @@ class Forum(Module):
             page = 1
         elif page > pages:
             page = pages
-        del topics[0:(page - 1) * tpp]
         del topics[page * tpp:]
+        del topics[0:(page - 1) * tpp]
         topics.load()
         return topics, page, pages
 
@@ -1159,11 +1172,30 @@ class Forum(Module):
     def load_settings(self, list, signatures, avatars, statuses):
         authors = dict([(ent.get("author"), True) for ent in list if ent.get("author")]).keys()
         if len(authors):
+            grayscale_support = self.call("paidservices.socio_coloured_avatar")
+            if grayscale_support:
+                grayscale_support = self.conf("paidservices.enabled-socio_coloured_avatar", grayscale_support["default_enabled"])
+            paid_images_support = self.call("paidservices.socio_signature_images")
+            if paid_images_support:
+                paid_images_support = self.conf("paidservices.enabled-socio_signature_images", paid_images_support["default_enabled"])
+            paid_smiles_support = self.call("paidservices.socio_signature_smiles")
+            if paid_smiles_support:
+                paid_smiles_support = self.conf("paidservices.enabled-socio_signature_smiles", paid_smiles_support["default_enabled"])
+            paid_colours_support = self.call("paidservices.socio_signature_colours")
+            if paid_colours_support:
+                paid_colours_support = self.conf("paidservices.enabled-socio_signature_colours", paid_colours_support["default_enabled"])
+            # loading settings
             authors_list = self.objlist(UserForumSettingsList, authors)
             authors_list.load(silent=True)
             for obj in authors_list:
-                signatures[obj.uuid] = obj.get("signature_html")
-                avatars[obj.uuid] = obj.get("avatar")
+                grayscale = grayscale_support and not self.call("modifiers.kind", obj.uuid, "socio_coloured_avatar")
+                signatures[obj.uuid] = self.call("socio.format_text", obj.get("signature"), {
+                    "no_images": not self.conf("socio.signature-images", True) or (paid_images_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_images")),
+                    "no_smiles": not self.conf("socio.signature-smiles", False) or (paid_smiles_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_smiles")),
+                    "no_colours": not self.conf("socio.signature-colours", True) or (paid_colours_support and not self.call("modifiers.kind", obj.uuid, "socio_signature_colours")),
+                    "max_smiles": self.conf("socio.signature-max-smiles", 3),
+                })
+                avatars[obj.uuid] = obj.get("avatar_gray" if grayscale else "avatar")
                 statuses[obj.uuid] = htmlescape(obj.get("status"))
         for ent in list:
             author = ent.get("author")
@@ -1181,11 +1213,11 @@ class Forum(Module):
             topic["subject_html"] = htmlescape(topic.get("subject"))
             topic["author_html"] = topic.get("author_html")
             topic["posts"] = intz(topic.get("posts"))
-            topic["literal_created"] = self.call("l10n.timeencode2", topic.get("created"))
-            topic["literal_created_date"] = self.call("l10n.dateencode2", topic.get("created"))
+            topic["literal_created"] = self.call("l10n.time_local", topic.get("created"))
+            topic["literal_created_date"] = self.call("l10n.date_local", topic.get("created"))
             topic["created_date"] = re_format_date.sub(r'\3.\2.\1', topic.get("created"))
             if topic.get("last_post_created"):
-                topic["last_post_created"] = self.call("l10n.timeencode2", topic["last_post_created"])
+                topic["last_post_created"] = self.call("l10n.time_local", topic["last_post_created"])
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % topic.get("author")})
             self.call("socio.author_menu", topic.get("author"), topic.get("author_html"), menu)
@@ -1222,7 +1254,7 @@ class Forum(Module):
             post["posts"] = intz(post.get("posts"))
             if post.get("content_html") is None:
                 post["content_html"] = self.call("socio.format_text", post.get("content"))
-            post["literal_created"] = self.call("l10n.timeencode2", post.get("created"))
+            post["literal_created"] = self.call("l10n.time_local", post.get("created"))
             menu = []
             menu.append({"title": self._("Profile"), "href": "/socio/user/%s" % post.get("author")})
             self.call("socio.author_menu", post.get("author"), post.get("author_html"), menu)
@@ -1258,16 +1290,21 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
-                user = self.obj(User, self.call("socio.user"))
-                topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
-                self.call("forum.topic-form", topic, form, "store")
-                self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+                if req.param("publish"):
+                    user = self.obj(User, self.call("socio.user"))
+                    topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
+                    self.call("forum.topic-form", topic, form, "store")
+                    self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+                else:
+                    form.add_message_top('<div class="socio-preview">%s</div>' % self.call("socio.format_text", content))
         if cat.get("manual_date"):
             form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         if params.get("show_tags", True):
             form.input(self._("Tags (delimited with commas)"), "tags", tags)
+        form.submit(None, None, self._("Preview"))
+        form.submit(None, "publish", self._("Publish"), inline=True)
         self.call("forum.topic-form", None, form, "form")
         vars = {
             "category": cat,
@@ -1302,7 +1339,7 @@ class Forum(Module):
             topic.set("author_html", author_html)
             last["author_html"] = author_html
             last["subject_html"] = htmlescape(subject)
-            last["updated"] = self.call("l10n.timeencode2", created)
+            last["updated"] = self.call("l10n.time_local", created)
         catstat.set("last", last)
         topic.set("subject", subject)
         topic.sync()
@@ -1404,7 +1441,7 @@ class Forum(Module):
                 post.set("author_html", author_html)
                 last["author_html"] = author_html
                 last["subject_html"] = htmlescape(topic.get("subject"))
-                last["updated"] = self.call("l10n.timeencode2", now)
+                last["updated"] = self.call("l10n.time_local", now)
             catstat.set("last", last)
             post.set("content", content)
             post.set("content_html", self.call("socio.format_text", content))
@@ -1720,14 +1757,14 @@ class Forum(Module):
                 "post": last_post.uuid,
                 "author_html": last_post.get("author_html"),
                 "subject_html": htmlescape(topic.get("subject")),
-                "updated": self.call("l10n.timeencode2", last_post.get("created")),
+                "updated": self.call("l10n.time_local", last_post.get("created")),
             })
         else:
             stat.set("last", {
                 "topic": last_topic.uuid,
                 "author_html": last_topic.get("author_html"),
                 "subject_html": htmlescape(last_topic.get("subject")),
-                "updated": self.call("l10n.timeencode2", last_topic.get("created")),
+                "updated": self.call("l10n.time_local", last_topic.get("created")),
             })
 
     def ext_delete(self):
@@ -1883,6 +1920,20 @@ class Forum(Module):
         notify = {}
         for cat in categories:
             notify[cat["id"]] = req.param("notify_%s" % cat["id"])
+        # paid services
+        grayscale_support = self.call("paidservices.socio_coloured_avatar")
+        if grayscale_support:
+            grayscale_support = self.conf("paidservices.enabled-socio_coloured_avatar", grayscale_support["default_enabled"])
+        grayscale = grayscale_support and not self.call("modifiers.kind", user_uuid, "socio_coloured_avatar")
+        paid_images_support = self.call("paidservices.socio_signature_images")
+        if paid_images_support:
+            paid_images_support = self.conf("paidservices.enabled-socio_signature_images", paid_images_support["default_enabled"])
+        paid_smiles_support = self.call("paidservices.socio_signature_smiles")
+        if paid_smiles_support:
+            paid_smiles_support = self.conf("paidservices.enabled-socio_signature_smiles", paid_smiles_support["default_enabled"])
+        paid_colours_support = self.call("paidservices.socio_signature_colours")
+        if paid_colours_support:
+            paid_colours_support = self.conf("paidservices.enabled-socio_signature_colours", paid_colours_support["default_enabled"])
         if req.ok():
             signature = re_trim.sub(r'\1', signature)
             signature = re_r.sub('', signature)
@@ -1892,11 +1943,78 @@ class Forum(Module):
             if len(lines) > 4:
                 form.error("signature", self._("Signature can't contain more than 4 lines"))
             else:
+                smiles = self.call("smiles.dict")
+                total_w = 0
+                total_h = 0
+                smiles_present = 0
+                colours_present = False
                 for line in lines:
                     if len(line) > 80:
                         form.error("signature", self._("Signature line couldn't be longer than 80 symbols"))
-                    elif re_images.match(line):
-                        form.error("signature", self._("Signature couldn't contain images"))
+                    else:
+                        images = re_images.findall(line)
+                        if images:
+                            if not self.conf("socio.signature-images", True):
+                                form.error("signature", self._("Signature can't contain images"))
+                                break
+                            else:
+                                if paid_images_support and not self.call("modifiers.kind", user_uuid, "socio_signature_images"):
+                                    form.error("signature", self._('To use images in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
+                                    break
+                                else:
+                                    for img_id in images:
+                                        try:
+                                            img = self.obj(SocioImage, img_id)
+                                        except ObjectNotFoundException:
+                                            form.error("signature", self._("Invalid image: [img:%s]") % img_id)
+                                            break
+                                        img_uri = img.get("thumbnail") or img.get("image")
+                                        try:
+                                            img_data = self.download(img_uri)
+                                        except DownloadError:
+                                            form.error("signature", self._("Error downloading [img:%s]") % img_id)
+                                            break
+                                        try:
+                                            img_obj = Image.open(cStringIO.StringIO(img_data))
+                                            if img_obj.load() is None:
+                                                form.error("signature", self._("Image [img:%s] format error") % img_id)
+                                                break
+                                        except IOError:
+                                            form.error("signature", self._("Image [img:%s] IO error") % img_id)
+                                            break
+                                        except OverflowError:
+                                            form.error("signature", self._("Image [img:%s] overflow error") % img_id)
+                                            break
+                                        img_w, img_h = img_obj.size
+                                        total_w += img_w
+                                        total_h += img_h
+                        tokens = self.call("smiles.split", line)
+                        if tokens and len(tokens) > 1:
+                            for token in tokens:
+                                if smiles.get(token):
+                                    smiles_present += 1
+                        if re_color_present.search(line):
+                            colours_present = True
+                max_w = self.conf("socio.signature-images-width", 800)
+                max_h = self.conf("socio.signature-images-height", 60)
+                if total_w > max_w or total_h > max_h:
+                    form.error("signature", self._("Total dimensions of images in your signature are {img_w}x{img_h}. Max permitted are {max_w}x{max_h}. Resize your images to meet this condition").format(img_w=total_w, img_h=total_h, max_w=max_w, max_h=max_h))
+                if smiles_present > 0:
+                    if not self.conf("socio.signature-smiles", False):
+                        form.error("signature", self._("Signature can't contain smiles"))
+                    else:
+                        if paid_smiles_support and not self.call("modifiers.kind", user_uuid, "socio_signature_smiles"):
+                            form.error("signature", self._('To use smiles in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
+                        else:
+                            max_s = self.conf("socio.signature-max-smiles", 3)
+                            if smiles_present > max_s:
+                                form.error("signature", self._("Signature can contain at most {max} {smiles}").format(max=max_s, smiles=self.call("l10n.literal_value", max_s, self._("smile/smiles"))))
+                if colours_present:
+                    if not self.conf("socio.signature-colours", True):
+                        form.error("signature", self._("Signature can't contain colours"))
+                    else:
+                        if paid_colours_support and not self.call("modifiers.kind", user_uuid, "socio_signature_colours"):
+                            form.error("signature", self._('To use colours in the signature <a href="/socio/paid-services">subscribe to the corresponding service</a>'))
             image_obj = None
             if avatar:
                 try:
@@ -1939,18 +2057,29 @@ class Forum(Module):
                             top = (height - 100) / 2
                             image_obj = image_obj.crop((left, top, left + 100, top + 100))
             if not form.errors:
+                old_uri = []
                 if image_obj:
                     # storing
                     im_data = cStringIO.StringIO()
                     image_obj.save(im_data, target_format)
                     im_data = im_data.getvalue()
+                    if grayscale_support:
+                        gray_data = cStringIO.StringIO()
+                        ImageEnhance.Brightness(image_obj.convert("L")).enhance(1.5).save(gray_data, target_format)
+                        #image_obj.convert("L").save(gray_data, target_format)
+                        gray_data = gray_data.getvalue()
                     try:
-                        uri = self.call("cluster.static_upload", "avatars", ext, content_type, im_data)
-                        settings.set("avatar", uri)
+                        old_uri.append(settings.get("avatar"))
+                        old_uri.append(settings.get("avatar_gray"))
+                        settings.set("avatar", self.call("cluster.static_upload", "avatars", ext, content_type, im_data))
+                        if grayscale_support:
+                            settings.set("avatar_gray", self.call("cluster.static_upload", "avatars", ext, content_type, gray_data))
+                        else:
+                            settings.delkey("avatar_gray")
                     except StaticUploadError as e:
                         form.error("avatar", unicode(e))
                 settings.set("signature", signature)
-                settings.set("signature_html", self.call("socio.format_text", signature))
+                settings.delkey("signature_html")
                 notify_any = False
                 for cat in categories:
                     settings.set("notify_%s" % cat["id"], True if notify[cat["id"]] else False)
@@ -1962,6 +2091,9 @@ class Forum(Module):
                     settings.delkey("notify_any")
                 settings.set("notify_replies", True if notify_replies else False)
                 settings.store()
+                for uri in old_uri:
+                    if uri:
+                        self.call("cluster.static_delete", uri)
                 self.call("web.redirect", redirect)
         else:
             signature = settings.get("signature")
@@ -1969,12 +2101,17 @@ class Forum(Module):
             for cat in categories:
                 notify[cat["id"]] = settings.get("notify_%s" % cat["id"], cat.get("default_subscribe"))
         form.hidden("redirect", redirect)
-        form.file(self._("Your avatar"), "avatar")
+        form.file(self._("Change avatar") if avatar else self._("Your avatar"), "avatar")
         form.texteditor(self._("Your forum signature"), "signature", signature)
         form.checkbox(self._("Replies in subscribed topics"), "notify_replies", notify_replies, description=self._("E-mail notifications"))
         for cat in categories:
             form.checkbox(self._("New topics in '{topcat} / {cat}'").format(topcat=cat["topcat"], cat=cat["title"]), "notify_%s" % cat["id"], notify.get(cat["id"]))
         form.add_message_top('<a href="%s">%s</a>' % (redirect, self._("Return")))
+        avatar = settings.get("avatar_gray" if grayscale else "avatar")
+        if avatar:
+            form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
+        if grayscale:
+            form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/coloured-avatar">please subscribe</a>'))
         self.call("socio.response", form.html(), vars)
 
     def ext_subscribe(self):
@@ -2234,14 +2371,14 @@ class Forum(Module):
                     "post": last_post.uuid,
                     "author_html": last_post.get("author_html"),
                     "subject_html": htmlescape(topic.get("subject")),
-                    "updated": self.call("l10n.timeencode2", last_post.get("created")),
+                    "updated": self.call("l10n.time_local", last_post.get("created")),
                 })
             else:
                 stat.set("last", {
                     "topic": last_topic.uuid,
                     "author_html": last_topic.get("author_html"),
                     "subject_html": htmlescape(last_topic.get("subject")),
-                    "updated": self.call("l10n.timeencode2", last_topic.get("created")),
+                    "updated": self.call("l10n.time_local", last_topic.get("created")),
                 })
             stat.store()
         # Updating tags
@@ -2483,15 +2620,19 @@ class SocioAdmin(Module):
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
         self.rhook("socio-admin.message-silence", self.message_silence)
+        self.rhook("ext-admin-socio.config", self.admin_socio_config, priv="socio.config")
 
     def message_silence(self):
         return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))
 
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
+        perms.append({"id": "socio.config", "name": self._("Socio configuration")})
 
     def menu_forum_index(self, menu):
         req = self.req()
+        if req.has_access("socio.config"):
+            menu.append({"id": "socio/config", "text": self._("Configuration"), "leaf": True, "order": 9})
         if req.has_access("socio.messages"):
             menu.append({"id": "socio/messages", "text": self._("Interface messages"), "leaf": True, "order": 10})
 
@@ -2512,3 +2653,58 @@ class SocioAdmin(Module):
         ]
         self.call("admin.form", fields=fields)
 
+    def admin_socio_config(self):
+        req = self.req()
+        if req.ok():
+            errors = {}
+            config = self.app().config_updater()
+            config.set("socio.signature-images", True if req.param("signature_images") else False)
+            config.set("socio.signature-smiles", True if req.param("signature_smiles") else False)
+            config.set("socio.signature-colours", True if req.param("signature_colours") else False)
+            width = req.param("width")
+            if not valid_nonnegative_int(width):
+                errors["width"] = self._("Invalid number format")
+            else:
+                width = int(width)
+                if width < 300:
+                    errors["width"] = self._("Minimal value is %d") % 300
+                else:
+                    config.set("socio.signature-images-width", width)
+            height = req.param("height")
+            if not valid_nonnegative_int(height):
+                errors["height"] = self._("Invalid number format")
+            else:
+                height = int(height)
+                if height < 16:
+                    errors["height"] = self._("Minimal value is %d") % 16
+                else:
+                    config.set("socio.signature-images-height", height)
+            maxs = req.param("maxs")
+            if not valid_nonnegative_int(maxs):
+                errors["maxs"] = self._("Invalid number format")
+            else:
+                maxs = int(maxs)
+                if maxs < 1:
+                    errors["maxs"] = self._("Minimal value is %d") % 1
+                else:
+                    config.set("socio.signature-max-smiles", maxs)
+            if len(errors):
+                self.call("web.response_json", {"success": False, "errors": errors})
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        else:
+            signature_images = self.conf("socio.signature-images", True)
+            width = self.conf("socio.signature-images-width", 800)
+            height = self.conf("socio.signature-images-height", 60)
+            signature_smiles = self.conf("socio.signature-smiles", False)
+            maxs = self.conf("socio.signature-max-smiles", 3)
+            signature_colours = self.conf("socio.signature-colours", True)
+        fields = [
+            {"type": "checkbox", "name": "signature_images", "label": self._("Allow images in signatures"), "checked": signature_images},
+            {"name": "width", "label": self._("Limit for sum width of all images in the signature"), "value": width},
+            {"name": "height", "label": self._("Limit for sum height of all images in the signature"), "value": height},
+            {"type": "checkbox", "name": "signature_smiles", "label": self._("Allow smiles in signatures"), "checked": signature_smiles},
+            {"name": "maxs", "label": self._("Maximal number of smiles in the signature"), "value": maxs},
+            {"type": "checkbox", "name": "signature_colours", "label": self._("Allow colours in signatures"), "checked": signature_colours},
+        ]
+        self.call("admin.form", fields=fields)

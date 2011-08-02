@@ -72,7 +72,7 @@ class Cluster(Module):
         """
         return dir_query(uri, params)
 
-    def query_server(self, host, port, uri, params={}):
+    def query_server(self, host, port, uri, params={}, timeout=20):
         """
         Connect to an arbitrary server and query given URI
         host:port - server socket
@@ -80,7 +80,7 @@ class Cluster(Module):
         params - HTTP form params
         Return value: received response (application/json will be decoded automatically)
         """
-        return query(host, port, uri, params)
+        return query(host, port, uri, params, timeout=timeout)
 
     def servers_online(self):
         """
@@ -242,9 +242,9 @@ class Cluster(Module):
 def dir_query(uri, params):
     return query("director", 3000, uri, params)
 
-def query(host, port, uri, params):
+def query(host, port, uri, params, timeout=20):
     try:
-        with Timeout.push(20):
+        with Timeout.push(timeout):
             cnn = HTTPConnection()
             try:
                 cnn.connect((str(host), int(port)))
