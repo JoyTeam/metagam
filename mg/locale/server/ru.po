@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-02 21:30+0400\n"
+"POT-Creation-Date: 2011-08-02 21:42+0400\n"
 "PO-Revision-Date: 2011-08-02 21:24+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -651,12 +651,12 @@ msgid "Character sex"
 msgstr "Пол персонажа"
 
 #: mg/constructor/auth.py:388 mg/constructor/setup.py:220 mg/core/auth.py:459
-#: mg/core/emails.py:467
+#: mg/core/emails.py:469
 msgid "Female"
 msgstr "Женский"
 
 #: mg/constructor/auth.py:388 mg/constructor/setup.py:220 mg/core/auth.py:459
-#: mg/core/emails.py:467
+#: mg/core/emails.py:469
 msgid "Male"
 msgstr "Мужской"
 
@@ -5768,47 +5768,47 @@ msgstr "%s: Доступ запрещён"
 msgid "%s: Internal server error"
 msgstr "%s: Внутренняя ошибка сервера"
 
-#: mg/core/emails.py:421
+#: mg/core/emails.py:423
 #, python-format
 msgid "URL %s is not an image"
 msgstr "URL %s - это не изображение"
 
-#: mg/core/emails.py:423
+#: mg/core/emails.py:425
 #, python-format
 msgid "Timeout on downloading %s. Time limit - 30 sec"
 msgstr "Таймаут при скачивании %s. Ограничение по времени - 30 сек"
 
-#: mg/core/emails.py:447
+#: mg/core/emails.py:449
 msgid "Message was sent successfully"
 msgstr "Сообщение было успешно отправлено"
 
-#: mg/core/emails.py:456
+#: mg/core/emails.py:458
 msgid "message was queued for delivery/messages were queued for delivery"
 msgstr ""
 "сообщение было поставлено в очередь на доставку/сообщения было поставлено в "
 "очередь на доставку/сообщений было поставлено в очередь на доставку"
 
-#: mg/core/emails.py:464
+#: mg/core/emails.py:466
 msgid "Mass delivery (to all users)"
 msgstr "Массовая доставка (всем пользователям)"
 
-#: mg/core/emails.py:464
+#: mg/core/emails.py:466
 msgid "Test delivery (to the administrator)"
 msgstr "Тестовая доставка (администратору)"
 
-#: mg/core/emails.py:465
+#: mg/core/emails.py:467
 msgid "Destination email"
 msgstr "E-mail получателя"
 
-#: mg/core/emails.py:466
+#: mg/core/emails.py:468
 msgid "Recipient's name"
 msgstr "Имя получателя"
 
-#: mg/core/emails.py:467
+#: mg/core/emails.py:469
 msgid "Recipient's sex"
 msgstr "Пол получателя"
 
-#: mg/core/emails.py:470 mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
+#: mg/core/emails.py:472 mg/socio/telegrams.py:139 mg/socio/telegrams.py:254
 msgid "Send"
 msgstr "Отправить"
 
