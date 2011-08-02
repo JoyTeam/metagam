@@ -467,7 +467,11 @@ class Socio(Module):
             return req._socio_semi_user
         except AttributeError:
             pass
-        req._socio_semi_user = req.session().semi_user()
+        sess = req.session()
+        if sess is None:
+            req._socio_semi_user = None
+        else:
+            req._socio_semi_user = sess.semi_user()
         return req._socio_semi_user
 
     def child_modules(self):

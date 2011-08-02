@@ -62,9 +62,9 @@
 [%end%]
 </table>
 
-[%if pages%]<table id="socio-topic-bottom"><tr><td class="socio-topic-pages">
+<table id="socio-topic-bottom"><tr><td class="socio-topic-pages">[%if pages%]
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
-</td></tr></table>[%end%]
+[%end%]</td></tr></table>
 
 <a name="post-form"></a>
 [%new_post_form%]
