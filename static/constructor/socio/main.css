@@ -26,10 +26,10 @@ a:hover, a:active { color: #ed8439 }
 .form { margin-top: 30px }
 #search-form { margin: 0 }
 .form-desc { color: #0078ac; font-size: 17px; font-weight: bold; padding: 0px 0px 5px 0px }
-.form-desc-padding { color: #0078ac; font-size: 17px; font-weight: bold; padding: 10px 0px 5px 0px }
+.form-desc-padding { color: #0078ac; font-size: 17px; font-weight: bold; padding: 20px 0px 5px 0px }
 .form-w100 { width: 100% }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
-input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 20px 0px }
+input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 3px 0px }
 input.form-file { font-size: 13px }
 .form-std-form-row { width: 100% }
 .form-list-messages-top a:link, .form-list-messages-top a:visited { color: #dd6419 }
@@ -40,7 +40,6 @@ input.form-file { font-size: 13px }
 .form-list-messages-bottom a:hover, .form-list-messages-bottom a:active { color: #ed8439 }
 .form-error { color: #ff6347; font-size: 12px }
 .form-editor-toolbox td { padding: 0px 4px 10px 0px }
-.form-submit { margin-top: 10px }
 .form-clickable { cursor: pointer }
 
 /* TAGS */
@@ -61,3 +60,24 @@ input.form-file { font-size: 13px }
 .doc-code-preview img { margin: 10px 0px 10px 0px }
 .float-block { float: left; padding: 0px 30px 15px 0px }
 .float-end { clear: both }
+
+/* REQUEST AUCTION */
+#reqauction-myreq { width: 400px; float: right }
+#reqauction-content { padding-right: 440px }
+.reqauction-list-title { margin: 0; padding: 0 }
+.reqauction-votes { text-align: right }
+.reqauction-priority { text-align: right; padding-right: 0 }
+.reqauction-actions { white-space: nowrap }
+.menu-counter { font-weight: bold; color: #ff0000 }
+.req-menu { margin: 20px 0 20px 0 }
+.req-author-text { border-top: solid 1px #404040; margin: 10px 0 0 0; padding: 10px 0 20px 0; font-size: 12px }
+.req-text { padding-top: 20px }
+.req-info { width: 100% }
+.req-info-title { padding-right: 30px; vertical-align: top }
+.req-info-title h1 { margin: 5px 0 0 0; padding: 0 }
+.req-info-right { vertical-align: top }
+.req-info-right table { margin: 0 0 0 auto }
+.req-info-param { font-weight: bold; width: 50px }
+.req-info-value { font-weight: bold; font-size: 28px; color: #dd6419; padding: 0 0 0 10px; width: 50px }
+.req-error { padding-top: 50px; color: #dd1919 }
+.req-dependencies { padding-top: 20px }

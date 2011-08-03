@@ -19,240 +19,156 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: mg/templates/admin/auth/write-dossier.html:23
-#: mg/templates/constructor/setup/domain-wizard.html:82
-#: mg/templates/constructor/setup/domain.html:64
-#: mg/templates/constructor/setup/logo-wizard.html:80
-#: mg/templates/constructor/setup/logo-wizard.html:119
-#: mg/templates/constructor/setup/logo-wizard.html:230
-#: mg/templates/constructor/setup/logo.html:57 static/js/admin-form.js:112
-#: static/js/admin-form.js:271
-msgid "Please wait..."
-msgstr "Пожалуйста, подождите..."
+msgid "Abort wizard"
+msgstr "Прервать мастер"
 
-#: mg/templates/admin/auth/write-dossier.html:39
-#: mg/templates/admin/auth/write-dossier.html:42
-#: mg/templates/constructor/setup/domain-wizard.html:41
-#: mg/templates/constructor/setup/domain-wizard.html:44
-#: mg/templates/constructor/setup/domain.html:40
-#: mg/templates/constructor/setup/domain.html:43
-#: mg/templates/constructor/setup/logo-wizard.html:63
-#: mg/templates/constructor/setup/logo-wizard.html:66
-#: mg/templates/constructor/setup/logo.html:95
-#: mg/templates/constructor/setup/logo.html:98 static/js/admin-form.js:164
-#: static/js/admin-form.js:167 static/js/admin-form.js:322
-#: static/js/admin-form.js:325 static/js/admin.js:141 static/js/chat.js:533
-#: static/js/chat.js:541 static/js/locations.js:23
-#: static/js/realplexor-stream.js:20
+msgid "Apply"
+msgstr "Применить"
+
+msgid "Browse..."
+msgstr "Обзор..."
+
+msgid "Buy MM$"
+msgstr "Купить MM$"
+
+msgid "Check availability"
+msgstr "Проверить доступность"
+
+msgid "Click action"
+msgstr "Действие при клике"
+
+msgid "Connection terminated"
+msgstr "Соединение прервано"
+
+msgid "Couldn't deliver message to the server"
+msgstr "Не удалось отправить сообщение на сервер"
+
+msgid "Effects"
+msgstr "Эффекты"
+
 msgid "Error"
 msgstr "Ошибка"
 
-#: mg/templates/admin/auth/write-dossier.html:42
-#: mg/templates/constructor/setup/domain-wizard.html:44
-#: mg/templates/constructor/setup/domain.html:43
-#: mg/templates/constructor/setup/logo-wizard.html:66
-#: mg/templates/constructor/setup/logo.html:98 static/js/admin-form.js:167
-#: static/js/admin-form.js:325
+msgid "Error connecting to the server"
+msgstr "Ошибка связи с сервером"
+
+msgid "Error parsing server response"
+msgstr "Ошибка при разборе ответа сервера"
+
+msgid "Exception"
+msgstr "Исключение"
+
+msgid "Fill"
+msgstr "Заливка"
+
+msgid "Guru advice"
+msgstr "Советы гуру"
+
+msgid "I agree to the terms and conditions"
+msgstr "Я принимаю условия соглашения"
+
+msgid "I don't agree"
+msgstr "Я не согласен"
+
+msgid "Insert Image"
+msgstr "Вставка изображения"
+
+msgid "Invalid non-integer coordinate encountered"
+msgstr "Найдена неверная координата, не являющаяся целым числом"
+
+msgid "Minimal number of vertices - 3"
+msgstr "Минимальное количество вершин - 3"
+
+msgid "Misconfigured layout scheme"
+msgstr "Схема расположения не настроена"
+
+msgid "Next"
+msgstr "Далее"
+
+msgid "Next >"
+msgstr "Далее >"
+
+msgid "Number of corrdinates must not be odd"
+msgstr "Количество координат не может быть нечётным"
+
+msgid "Or provide image URL"
+msgstr "Или укажите его URL"
+
+msgid "Passwords don't match"
+msgstr "Пароли не совпадают"
+
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+msgid "Polygon vertices"
+msgstr "Вершины многоугольника"
+
+msgid "Presets:"
+msgstr "Предустановки:"
+
+msgid "Preview"
+msgstr "Предварительный просмотр"
+
+msgid "Previous"
+msgstr "Назад"
+
+msgid "Register"
+msgstr "Регистрация"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Select"
+msgstr "Выбрать"
+
+msgid "Sending data..."
+msgstr "Отправка данных..."
+
 #, python-format
 msgid "Server error: %s"
 msgstr "Ошибка на сервере: %s"
 
-#: mg/templates/constructor/setup/domain-wizard.html:126
-msgid "Check availability"
-msgstr "Проверить доступность"
-
-#: mg/templates/constructor/setup/domain-wizard.html:161
-msgid "Buy MM$"
-msgstr "Купить MM$"
-
-#: mg/templates/constructor/setup/domain-wizard.html:258
-#: mg/templates/constructor/setup/domain.html:90
-#: mg/templates/constructor/setup/logo-wizard.html:281
-msgid "Abort wizard"
-msgstr "Прервать мастер"
-
-#: mg/templates/constructor/setup/form.html:18
-#: mg/templates/constructor/setup/logo.html:126
-msgid "Previous"
-msgstr "Назад"
-
-#: mg/templates/constructor/setup/intro-en.html:12
-#: mg/templates/constructor/setup/intro-ru.html:18
-#: mg/templates/constructor/setup/logo.html:130
-msgid "Next"
-msgstr "Далее"
-
-#: mg/templates/constructor/setup/logo-wizard.html:40
-#: mg/templates/constructor/setup/logo.html:83 static/js/admin-form.js:151
-msgid "Uploading data..."
-msgstr "Отправка данных..."
-
-#: mg/templates/constructor/setup/logo-wizard.html:74
-#: static/js/admin-form.js:104
-msgid "Upload file"
-msgstr "Загрузить файл"
-
-#: mg/templates/constructor/setup/logo-wizard.html:102
-#: mg/templates/constructor/setup/logo.html:80 static/js/admin-form.js:147
-msgid "Upload"
-msgstr "Загрузить"
-
-#: mg/templates/constructor/setup/logo-wizard.html:113
-msgid "Solid color"
-msgstr "Сплошной цвет"
-
-#: mg/templates/constructor/setup/logo-wizard.html:146
-msgid "Select"
-msgstr "Выбрать"
-
-#: mg/templates/constructor/setup/logo-wizard.html:213
-msgid "Smooth contour"
-msgstr "Сглаженные края"
-
-#: mg/templates/constructor/setup/logo-wizard.html:242
-msgid "Shape"
-msgstr "Форма"
-
-#: mg/templates/constructor/setup/logo-wizard.html:245
-msgid "Fill"
-msgstr "Заливка"
-
-#: mg/templates/constructor/setup/logo-wizard.html:248
-msgid "Effects"
-msgstr "Эффекты"
-
-#: mg/templates/constructor/setup/logo-wizard.html:256
-msgid "Preview"
-msgstr "Предварительный просмотр"
-
-#: mg/templates/constructor/setup/logo-wizard.html:278
-msgid "Apply"
-msgstr "Применить"
-
-#: mg/templates/constructor/setup/offer-ru.html:40
-msgid "I agree to the terms and conditions"
-msgstr "Я принимаю условия соглашения"
-
-#: mg/templates/constructor/setup/offer-ru.html:43
-msgid "I don't agree"
-msgstr "Я не согласен"
-
-#: mg/templates/game/indexpage.js:132 mg/templates/game/indexpage.js:248
 msgid "Server is in the local mode"
 msgstr "Сервер находится в локальном режиме"
 
-#: mg/templates/game/indexpage.js:167 mg/templates/game/indexpage.js:300
 msgid "Server is temporarily unavailable"
 msgstr "Сервер временно недоступен"
 
-#: mg/templates/game/indexpage.js:184 mg/templates/game/indexpage.js:214
-msgid "Next >"
-msgstr "Далее >"
+msgid "Shape"
+msgstr "Форма"
 
-#: mg/templates/game/indexpage.js:214
-msgid "Register"
-msgstr "Регистрация"
+msgid "Smooth contour"
+msgstr "Сглаженные края"
 
-#: mg/templates/game/indexpage.js:223
-msgid "This field may not be empty"
-msgstr "Это поле не может быть пустым"
+msgid "Solid color"
+msgstr "Сплошной цвет"
 
-#: mg/templates/game/indexpage.js:231
-msgid "Type your password twice"
-msgstr "Введите свой пароль дважды"
-
-#: mg/templates/game/indexpage.js:235
-msgid "Passwords don't match"
-msgstr "Пароли не совпадают"
-
-#: mg/templates/game/interface.js:252
-msgid "Misconfigured layout scheme"
-msgstr "Схема расположения не настроена"
-
-#: static/js/FileUploadField.js:21
-msgid "Browse..."
-msgstr "Обзор..."
-
-#: static/js/HtmlEditorImage.js:30
-msgid "Insert Image"
-msgstr "Вставка изображения"
-
-#: static/js/admin-form-presets.js:11
-msgid "Presets:"
-msgstr "Предустановки:"
-
-#: static/js/admin-form.js:125
-msgid "Upload image"
-msgstr "Загрузите изображение"
-
-#: static/js/admin-form.js:138
-msgid "Or provide image URL"
-msgstr "Или укажите его URL"
-
-#: static/js/admin-form.js:307
-msgid "Sending data..."
-msgstr "Отправка данных..."
-
-#: static/js/admin.js:96
-msgid "Guru advice"
-msgstr "Советы гуру"
-
-#: static/js/admin.js:141
-msgid "Error parsing server response"
-msgstr "Ошибка при разборе ответа сервера"
-
-#: static/js/admin.js:256
-msgid "To the main page"
-msgstr "На главную страницу"
-
-#: static/js/chat.js:541
-msgid "Couldn't deliver message to the server"
-msgstr "Не удалось отправить сообщение на сервер"
-
-#: static/js/game-interface.js:59 static/js/game-interface.js:146
-#: static/js/game-interface.js:175 static/js/realplexor-stream.js:75
-msgid "Exception"
-msgstr "Исключение"
-
-#: static/js/imagemap-editor.js:10
-msgid "Zone"
-msgstr "Зона"
-
-#: static/js/imagemap-editor.js:31
-msgid "Polygon vertices"
-msgstr "Вершины многоугольника"
-
-#: static/js/imagemap-editor.js:45
-msgid "Click action"
-msgstr "Действие при клике"
-
-#: static/js/imagemap-editor.js:70
 msgid "Target location"
 msgstr "Целевая локация"
 
-#: static/js/imagemap-editor.js:137
-msgid "Number of corrdinates must not be odd"
-msgstr "Количество координат не может быть нечётным"
+msgid "This field may not be empty"
+msgstr "Это поле не может быть пустым"
 
-#: static/js/imagemap-editor.js:141
-msgid "Minimal number of vertices - 3"
-msgstr "Минимальное количество вершин - 3"
+msgid "To the main page"
+msgstr "На главную страницу"
 
-#: static/js/imagemap-editor.js:147
-msgid "Invalid non-integer coordinate encountered"
-msgstr "Найдена неверная координата, не являющаяся целым числом"
+msgid "Type your password twice"
+msgstr "Введите свой пароль дважды"
 
-#: static/js/imagemap-editor.js:206
-msgid "Save"
-msgstr "Сохранить"
+msgid "Upload"
+msgstr "Загрузить"
 
-#: static/js/locations.js:29
-msgid "Error connecting to the server"
-msgstr "Ошибка связи с сервером"
+msgid "Upload file"
+msgstr "Загрузить файл"
 
-#: static/js/realplexor-stream.js:21
-msgid "Connection terminated"
-msgstr "Соединение прервано"
+msgid "Upload image"
+msgstr "Загрузите изображение"
+
+msgid "Uploading data..."
+msgstr "Отправка данных..."
+
+msgid "Zone"
+msgstr "Зона"
 
 #, fuzzy
 #~ msgid "Couldn't send command to the server"

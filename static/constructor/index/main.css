@@ -9,6 +9,8 @@ img { border: none }
 #cab-toplogo { height: 200px; width: 100% }
 #cab-toplogo td { text-align: center }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
+#page-bottom a:link, #page-bottom a:visited { color: #90c8dd }
+#page-bottom a:hover, #page-bottom a:active { color: #a0d8ed }
 #page-alpha { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/alpha.gif); background-repeat: no-repeat; }
 #page-beta { width: 165px; height: 142px; position: absolute; left: 0; top: 0; background-image: url(/st/constructor/index/beta.gif); background-repeat: no-repeat; }
 #index-div { background-image: url(/st/constructor/index/indexlogo.jpg); background-repeat: no-repeat; background-position: 50% 50%; height: 600px }
@@ -50,19 +52,19 @@ a:hover, a:active { color: #f4a377 }
 #cab-content { width: 875px; margin: 0 auto; background-image: url(/st/constructor/cabinet/bg.gif); }
 #cab-layout { margin: 0 auto; }
 #cab-layout td { vertical-align: top }
-#cab-leftbtn-td { padding: 14px 10px 25px 20px; }
+#cab-leftbtn-td { padding: 14px 5px 25px 20px; }
 #cab-leftbtn { width: 127px; height: 202px; margin: 0 auto; background-image: url(/st/constructor/cabinet/leftbtn.gif); background-repeat: no-repeat; background-position: 50% 0% }
 #cab-leftbtn-in { padding: 33px 15px 5px 15px }
 #cab-leftbtn-in div { padding-bottom: 33px }
 #cab-leftbtn-in a:link, #cab-leftbtn a:visited { color: #ffffff }
 #cab-leftbtn-in a:hover, #cab-leftbtn a:active { color: #eeddd3 }
-#cab-wmbtn-td { padding: 14px 10px 25px 20px; }
+#cab-wmbtn-td { padding: 14px 5px 25px 20px; }
 #cab-wmbtn { width: 127px; height: 202px; margin: 0 auto; background-image: url(/st/constructor/cabinet/wmbtn.gif); background-repeat: no-repeat; background-position: 50% 0%; margin-bottom: 20px }
 #cab-wmbtn-in { padding: 33px 15px 5px 15px }
 #cab-wmbtn-in div { padding-bottom: 33px }
 #cab-wmbtn-in a:link, #cab-wmbtn a:visited { color: #ffffff }
 #cab-wmbtn-in a:hover, #cab-wmbtn a:active { color: #eeddd3 }
-#cab-right-menu { padding: 14px 20px 25px 10px }
+#cab-right-menu { padding: 14px 20px 25px 20px }
 #cab-right-menu .c1 { background-color: #ffffff }
 #cab-right-menu .c2 { background-image: url(/st/constructor/cabinet/lt.gif); background-repeat: no-repeat; background-position: 0% 0% }
 #cab-right-menu .c3 { background-image: url(/st/constructor/cabinet/rt.gif); background-repeat: no-repeat; background-position: 100% 0% }

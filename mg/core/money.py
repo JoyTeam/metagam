@@ -693,7 +693,8 @@ class Xsolla(Module):
                             except ObjectNotFoundException:
                                 currency = self.call("money.real-currency")
                                 cinfo = self.call("money.currency-info", currency)
-                                amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
+                                amount_rub = floatz(req.param("transfer_sum"))
+#                               amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
                                 payment = self.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
@@ -1191,6 +1192,7 @@ class WebMoney(Module):
         Module.register(self)
         self.rhook("ext-webmoney.checkticket", self.check_ticket, priv="logged")
         self.rhook("ext-webmoney.testauth", self.test_auth, priv="logged")
+        self.rhook("wmcert.get", self.wmcert_get)
 
     def check_ticket(self):
         req = self.req()
@@ -1213,7 +1215,7 @@ class WebMoney(Module):
         request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
         request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
         request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
-        response = self.wm_query("/ws/authorize.xiface", request)
+        response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
         doc = response.documentElement
         if doc.tagName != "response":
             raise RuntimeError("Unexpected response from WMLogin")
@@ -1233,10 +1235,10 @@ class WebMoney(Module):
         form.submit(None, None, self._("Authorize"))
         self.call("web.response", form.html())
 
-    def wm_query(self, url, request):
+    def wm_query(self, gate_name, gate_host, url, request):
         reqdata = request.toxml("utf-8")
-        self.debug("WMLogin reqdata: %s", reqdata)
-        wm_gate = self.app().inst.config.get("wm_login_gate", "localhost:86").split(":")
+        self.debug("WM reqdata: %s", reqdata)
+        wm_gate = self.app().inst.config.get(gate_name, "unknown:0").split(":")
         host = str(wm_gate[0])
         port = int(wm_gate[1])
         try:
@@ -1248,17 +1250,40 @@ class WebMoney(Module):
                     raise HTTPError("Error connecting to %s:%d" % (host, port))
                 try:
                     request = cnn.post(str(url), reqdata)
-                    request.host = "login.wmtransfer.com"
+                    request.host = gate_host
                     request.add_header("Content-type", "application/xml")
                     request.add_header("Content-length", len(reqdata))
-                    print request
                     response = cnn.perform(request)
                     if response.status_code != 200:
                         raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, url, response.status))
                     response = xml.dom.minidom.parseString(response.body)
-                    self.debug("WMLogin request: %s", response.toxml("utf-8"))
+                    self.debug("WM request: %s", response.toxml("utf-8"))
                     return response
                 finally:
                     cnn.close()
         except TimeoutError:
             raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, url))
+
+    def wmcert_get(self, wmid):
+        doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "request", None)
+        request = doc.documentElement
+        request.appendChild(doc.createElement("wmid")).appendChild(doc.createTextNode(""))
+        request.appendChild(doc.createElement("passportwmid")).appendChild(doc.createTextNode(wmid))
+        request.appendChild(doc.createElement("sign")).appendChild(doc.createTextNode(""))
+        params = request.appendChild(doc.createElement("params"))
+        params.appendChild(doc.createElement("dict")).appendChild(doc.createTextNode("0"))
+        params.appendChild(doc.createElement("info")).appendChild(doc.createTextNode("0"))
+        params.appendChild(doc.createElement("mode")).appendChild(doc.createTextNode("0"))
+        response = self.wm_query("wm_passport_gate", "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
+        doc = response.documentElement
+        if doc.tagName != "response":
+            raise RuntimeError("Unexpected response from WMPassport")
+        if doc.getAttribute("retval") != "0":
+            return 0
+        level = 0
+        for cert in doc.getElementsByTagName("row"):
+            if cert.getAttribute("recalled") == "0":
+                lvl = int(cert.getAttribute("tid"))
+                if lvl > level:
+                    level = lvl
+        return level

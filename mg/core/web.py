@@ -827,10 +827,15 @@ class WebForm(object):
             self.rows[0]["fst"] = True
             self.rows[-1]["lst"] = True
             for row in self.rows:
+                padding_top_requested = False
+                any_desc = False
                 for col in row["cols"]:
                     if col.get("padding_top"):
-                        row["padding_top"] = True
-                        break
+                        padding_top_requested = True
+                    if col.get("desc") or col.get("error"):
+                        any_desc = True
+                if padding_top_requested and not any_desc:
+                    row["padding_top"] = True
                         
         vars = {
             "form_action": self.action,

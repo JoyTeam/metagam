@@ -1,0 +1,29 @@
+<table class="req-info"><tr>
+		<td class="req-info-title"><h1>[%request.title%]</h1></td>
+[%if request.info.votes or request.info.priority or request.info.status%]
+		<td class="req-info-right"><table><tr>
+[%if request.info.votes or request.info.priority%]
+		<td class="req-info-param">[%request.info.Votes%]</td>
+		<td class="req-info-value">[%request.info.votes%]</td>
+[%end%]
+[%if request.info.priority%]
+		<td class="req-info-param">[%request.info.Priority%]</td>
+		<td class="req-info-value">[%request.info.priority%]</td>
+[%end%]
+[%if request.info.status%]
+		<td class="req-info-param">[%request.info.Status%]</td>
+		<td class="req-info-value">[%request.info.status%]</td>
+[%end%]
+		</tr></table></td>
+[%end%]
+</tr></table>
+[%if request.text%]<div class="req-text">[%request.text%]</div>[%end%]
+[%if request.dependencies%]<div class="req-dependencies">[%for ent in request.dependencies%]<div>[%ent%]</div>[%end%]</div>[%end%]
+[%if request.menu%]<div class="req-menu">[%foreach ent in request.menu%]<a href="[%ent.href%]">[%ent.html%]</a>[%unless ent.lst +%] / [%+ end%][%end%]</div>[%end%]
+[%if request.author_text%]
+<div class="req-author-text">[%request.author_text%]
+[%if request.forum_topic%]<div class="req-forum-topic"><a href="/forum/topic/[%request.forum_topic%]">[%ForumDiscussion%]</a></div>[%end%]
+</div>[%end%]
+[%foreach txt in request.linked_texts%]<div class="req-author-text">[%txt.html%]
+[%if txt.forum_topic%]<div class="req-forum-topic"><a href="/forum/topic/[%txt.forum_topic%]">[%ForumDiscussion%]</a></div>[%end%]
+</div>[%end%]

@@ -1,0 +1,8 @@
+[%for tbl in tables%]
+[%if tbl.title%]<h1 class="reqauction-list-title">[%tbl.title%]</h1>[%end%]
+[%if tbl.comment%]<div class="reqauction-comment">[%tbl.comment%]</div>[%end%]
+<table class="log-table">
+	<tr class="log-header">[%for col in tbl.cols%]<td class="log-td[%if col.cls +%] [%+ col.cls%][%end%]">[%col.title%]</td>[%end%]</tr>
+	[%for row in tbl.rows%]<tr>[%for col in row%]<td class="log-td[%if col.cls +%] [%+ col.cls%][%end%]">[%if col.href%]<a href="[%col.href%]"[%if col.confirm +%] onclick="return confirm('[%col.confirm%]')"[%end%]>[%end%][%col.html%][%if col.href%]</a>[%end%]</td>[%end%]</tr>[%end%]
+</table>
+[%end%]

@@ -66,6 +66,7 @@ class Constructor(Module):
             "mg.socio.paidservices.PaidServices",
             "mg.core.dbexport.Export",
             "mg.core.money.WebMoney", "mg.core.money.WebMoneyAdmin",
+            "mg.constructor.reqauction.ReqAuction",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -208,6 +209,13 @@ class Constructor(Module):
                 cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Return to the Settings"), "href": "/cabinet/settings"})
             else:
                 vars["global_html"] = "constructor/index_global.html"
+        elif req.group == "reqauction":
+            vars["title_suffix"] = " - %s" % self._("MMO Constructor Requests auction")
+            vars["global_html"] = "constructor/socio_global.html"
+            topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
+            if req.user():
+                topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
+            topmenu.append({"html": self._("MMO Constructor Requests auction"), "header": True, "left": True})
         elif req.group == "cabinet":
             vars["global_html"] = "constructor/cabinet_global.html"
             vars["ToTheMainPage"] = self._("To the main page")
@@ -216,9 +224,10 @@ class Constructor(Module):
                 cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
             elif req.hook == "index":
                 user = self.obj(User, req.user())
-                cabmenu.append({"image": "/st/constructor/cabinet/doc.gif", "title": self._("Documentation"), "href": "/doc", "left": True})
-                cabmenu.append({"image": "/st/constructor/cabinet/settings.gif", "title": self._("Settings"), "href": "/cabinet/settings", "left": True})
-                cabmenu.append({"image": "/st/constructor/cabinet/forum.gif", "title": self._("Forum"), "href": "/forum", "left": True})
+                cabmenu.append({"title": self._("Documentation"), "href": "/doc", "left": True})
+                cabmenu.append({"title": self._("Settings"), "href": "/cabinet/settings", "left": True})
+                cabmenu.append({"title": self._("Requests auction"), "href": "/reqauction", "left": True})
+                cabmenu.append({"title": self._("Forum"), "href": "/forum", "left": True})
                 links = []
                 self.call("telegrams.menu", links)
                 for link in links:
@@ -236,7 +245,7 @@ class Constructor(Module):
                 pass
             else:
                 if req.user():
-                    topmenu.append({"href": "/socio/paid-services", "image": "/st/constructor/cabinet/premium.png", "html": self._("Premium")})
+                    topmenu.append({"href": "/socio/paid-services", "html": self._("Premium")})
                 topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
                     topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
@@ -302,6 +311,7 @@ class Constructor(Module):
     def universal_variables(self, vars):
         vars["ConstructorTitle"] = self._("Browser-based Games Constructor")
         vars["ConstructorCopyright"] = self._("Copyright &copy; Joy Team, 2009-%s") % datetime.datetime.utcnow().strftime("%Y")
+        vars["ConstructorSupport"] = '<a href="mailto:support@{0}">support@{0}</a>'.format(self.app().inst.config["main_host"])
 
     def redirects(self, tbl):
         tbl["login"] = "/cabinet"
@@ -345,7 +355,7 @@ class Constructor(Module):
                 url = "https://start.webmoney.ru/"
             else:
                 url = "https://start.wmtransfer.com/"
-            vars["cabinet_comment"] = self._('<p>Dear users, we intend to make the best platform for massively-multiplayer games development. Since the project is related to gaming there are many kids around it. MMO Constructor policy supposes that the project is for people of the full legal age. To keep our service free of illiterate people, trolls and flooders we ask you to confirm your identity. Please note we don\'t request your personal data in any way &mdash; it will be kept in the WebMoney system only.</p><ul><li><a href="{url}" target="_blank">Register in the WebMoney system</a> (if not already)</li><li>Press "Verify your WMID" button</li></ul><p>You will receive earned money to the linked WebMoeny account.</p>').format(url=url)
+            vars["cabinet_comment"] = self._('<p>To get an ability to write to the forum and to use the Request auction follow the steps given below:</p><ul><li><a href="{url}" target="_blank">Register in the WebMoney system</a> please</li><li>Press "Verify your WMID" button</li></ul><p><a href="/doc/wmcertificates"><strong>For what reason we require it</strong></a></p>').format(url=url)
             columns = 3
         # list of games
         projects = self.app().inst.int_app.objlist(ProjectList, query_index="owner", query_equal=req.user())

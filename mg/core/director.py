@@ -349,6 +349,8 @@ class Director(Module):
             conf["mysql_password"] = ""
         if conf.get("wm_w3s_gate") is None:
             conf["wm_w3s_gate"] = "localhost:85"
+        if conf.get("wm_passport_gate") is None:
+            conf["wm_passport_gate"] = "localhost:87"
         if conf.get("wm_login_gate") is None:
             conf["wm_login_gate"] = "localhost:86"
         if conf.get("locale") is None:
@@ -382,6 +384,7 @@ class Director(Module):
         mysql_user = request.param("mysql_user")
         mysql_password = request.param("mysql_password")
         wm_w3s_gate = request.param("wm_w3s_gate")
+        wm_passport_gate = request.param("wm_passport_gate")
         wm_login_gate = request.param("wm_login_gate")
         locale = request.param("locale")
         config = self.config()
@@ -397,6 +400,7 @@ class Director(Module):
             config["mysql_user"] = mysql_user
             config["mysql_password"] = mysql_password
             config["wm_w3s_gate"] = wm_w3s_gate
+            config["wm_passport_gate"] = wm_passport_gate
             config["wm_login_gate"] = wm_login_gate
             config["locale"] = locale
             self.app().config.set("director.config", config)
@@ -415,6 +419,7 @@ class Director(Module):
             mysql_user = config.get("mysql_user")
             mysql_password = config.get("mysql_password")
             wm_w3s_gate = config.get("wm_w3s_gate")
+            wm_passport_gate = config.get("wm_passport_gate")
             wm_login_gate = config.get("wm_login_gate")
             locale = config.get("locale")
         return self.call("web.response_template", "director/setup.html", {
@@ -444,6 +449,8 @@ class Director(Module):
                 "wm_w3s_gate": wm_w3s_gate,
                 "wm_login_gate_desc": self._("<strong>HTTP proxy to login.wmtransfer.com</strong> (host:port)"),
                 "wm_login_gate": wm_login_gate,
+                "wm_passport_gate_desc": self._("<strong>HTTP proxy to passport.webmoney.ru</strong> (host:port)"),
+                "wm_passport_gate": wm_passport_gate,
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
                 "locale": locale,
                 "submit_desc": self._("Save")

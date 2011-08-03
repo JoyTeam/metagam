@@ -18,7 +18,7 @@ mg/locale/mg_server.pot: $(server_sources)
 	find . -name '*.py' > .src-files
 	xgettext -d mg_server -f .src-files -L Python --copyright-holder=$(copyright) \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		--force-po -kgettext_noop -F
+		--force-po -kgettext_noop -s --omit-header --no-location
 	rm .src-files
 	mv mg_server.po mg/locale/mg_server.pot
 	mkdir -p mg/locale/server
@@ -36,7 +36,7 @@ constructor_js_files := $(foreach lang,$(langs),static/constructor/gettext-$(lan
 mg/locale/mg_constructor.pot: $(constructor_sources)
 	xgettext -d mg_constructor -L Python --copyright-holder=$(copyright) --force-po \
 		--package-name=$(package_name) --package-version=$(package_version) \
-		-kgettext_noop --from-code=utf-8 -F \
+		-kgettext_noop --from-code=utf-8 -s --omit-header --no-location \
 		$(constructor_sources)
 	mv mg_constructor.po mg/locale/mg_constructor.pot
 	mkdir -p mg/locale/constructor
