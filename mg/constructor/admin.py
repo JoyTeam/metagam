@@ -347,7 +347,7 @@ class Constructor(Module):
         columns = 4
         if not self.call("wmid.check", req.user()):
             vars["cabinet_wmbtn"] = {
-                "href": "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"),
+                "href": self.call("wmlogin.url"),
                 "title": self._("Verify your WMID")
             }
             lang = self.call("l10n.lang")
@@ -402,8 +402,18 @@ class Constructor(Module):
         }
         wmids = self.wmid_check(req.user())
         if wmids:
-            vars["cabinet_center"] = self._("Your verified WMID: %s") % (', '.join(['<strong>%s</strong>' % wmid for wmid in wmids]))
+            vars["cabinet_center"] = self._('Your verified WMID: {wmid}. <a href="{url}">Check again</a>').format(wmid=', '.join([self._('<strong>{wmid}</strong> (certificate: <strong>{certificate}</strong>)').format(wmid=wmid, certificate=self.cert_name(cert)) for wmid, cert in wmids.iteritems()]), url=self.call("wmlogin.url"))
         self.call("web.response_global", None, vars)
+
+    def cert_name(self, cert):
+        if cert >= 130:
+            return self._("wmcert///personal")
+        elif cert >= 120:
+            return self._("wmcert///initial")
+        elif cert >= 110:
+            return self._("wmcert///formal")
+        else:
+            return self._("wmcert///pseudonymous")
 
     def debug_validate(self):
         req = self.req()
@@ -586,14 +596,24 @@ class Constructor(Module):
     def wmlogin_authorized(self, authtype, remote_addr, wmid):
         req = self.req()
         with self.lock(["WMLogin.%s" % req.user(), "WMLogin.%s" % wmid]):
+            self.debug("User %s uses WMID %s", req.user(), wmid)
             wmids = self.wmid_check(req.user())
+            self.debug("Authorized WMIDS are: %s", wmids)
             if wmids and wmid not in wmids:
                 vars = {
                     "title": self._("WMID verified already"),
-                    "text": self._("You have verified WMID already: %s") % (', '.wmids),
+                    "text": self._("You have verified another WMID already: %s") % (', '.wmids),
                 }
                 self.call("web.response_template", "constructor/setup/info.html", vars)
             else:
+                cert = self.call("wmcert.get", wmid)
+                self.debug("Certificate of %s is %s", wmid, cert)
+                if cert < 110:
+                    vars = {
+                        "title": self._("WMID not verified"),
+                        "text": self._('We have ensured your WMID is <strong>{wmid}</strong>. But to our regret you has not even formal certificate. Please <a href="https://passport.wmtransfer.com/asp/aProcess.asp">get the formal certificate</a> (data are not verified by notaries or the center\'s legal department) and retry WMID verification').format(wmid=wmid, cert=self.cert_name(cert)),
+                    }
+                    self.call("web.response_template", "constructor/setup/info.html", vars)
                 if not wmids or wmid not in wmids:
                     lst = self.objlist(DBUserWMIDList, query_index="wmid", query_equal=wmid)
                     lst.load()
@@ -608,12 +628,19 @@ class Constructor(Module):
                     obj.set("added", self.now())
                     obj.set("user", req.user())
                     obj.set("wmid", wmid)
+                    obj.set("cert", cert)
                     obj.set("authtype", authtype)
                     obj.set("ip", remote_addr)
                     obj.store()
+                elif cert > wmids[wmid]:
+                    lst = self.objlist(DBUserWMIDList, query_index="wmid", query_equal=wmid)
+                    lst.load()
+                    for ent in lst:
+                        ent.set("cert", cert)
+                        ent.store()
                 vars = {
                     "title": self._("WMID verified"),
-                    "text": self._("We have verified your WMID <strong>'%s'</strong> successfully") % wmid,
+                    "text": self._("We have verified your WMID <strong>{wmid}</strong> successfully. Certificate level: <strong>{cert}>/strong>").format(wmid=wmid, cert=self.cert_name(cert)),
                 }
                 self.call("web.response_template", "constructor/setup/info.html", vars)
 
@@ -622,13 +649,13 @@ class Constructor(Module):
         if not len(lst):
             return None
         lst.load()
-        return [ent.get("wmid") for ent in lst]
+        return dict([(ent.get("wmid"), ent.get("cert")) for ent in lst])
 
     def auth_user_table(self, user, tbl):
         req = self.req()
         if req.has_access("auth.wmid"):
             wmids = self.wmid_check(user.uuid)
-            tbl["rows"].append([self._("Authorized WMID"), ', '.join([u'<strong>{wmid}</strong> &mdash; <hook:admin.link href="wmauth/remove/{user}/{wmid}" title="{remove}" confirm="{confirm}" />'.format(wmid=wmid, user=user.uuid, remove=self._("remove"), confirm=self._("Are you sure want to delete this WMID?")) for wmid in wmids]) if wmids else self._("none")])
+            tbl["rows"].append([self._("Authorized WMID"), ', '.join([u'<strong>{wmid}</strong> ({cert}) &mdash; <hook:admin.link href="wmauth/remove/{user}/{wmid}" title="{remove}" confirm="{confirm}" />'.format(cert=self._("wm///certificate: %s") % self.cert_name(cert), wmid=wmid, user=user.uuid, remove=self._("remove"), confirm=self._("Are you sure want to delete this WMID?")) for wmid, cert in wmids.iteritems()]) if wmids else self._("none")])
 
     def wmauth_remove(self):
         req = self.req()

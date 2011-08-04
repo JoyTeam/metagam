@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-03 23:54+0300\n"
+"PO-Revision-Date: 2011-08-04 11:15+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -131,6 +131,9 @@ msgstr "<p>Эта игра - отличный пример игр с очень 
 msgid "<p>To get an ability to write to the forum and to use the Request auction follow the steps given below:</p><ul><li><a href=\"{url}\" target=\"_blank\">Register in the WebMoney system</a> please</li><li>Press \"Verify your WMID\" button</li></ul><p><a href=\"/doc/wmcertificates\"><strong>For what reason we require it</strong></a></p>"
 msgstr "<p>Чтобы получить возможность общаться на форуме и пользоваться Аукционом заявок, пожалуйста, выполните следующие действия:</p><ul><li><a href=\"{url}\" target=\"_blank\">зарегистрируйтесь в системе WebMoney</a>;</li><li>нажмите на кнопку \"Проверить ваш WMID\".</li></ul><p><a href=\"/doc/wmcertificates\"><strong>Зачем все эти сложности</strong></a></p>"
 
+msgid "<p>To use request auction you must have WMID with the <strong>initial certificate</strong>. Your current certificate level is not enough. <a href=\"https://passport.wmtransfer.com/\">Get the initial certificate</a> and recheck your WMID certificate.</p><p><a href=\"{url}\">Recheck your WMID</a></p>"
+msgstr "<p>Чтобы использовать аукцион заявок, вам необходимо иметь WMID с <strong>начальным аттестатом</strong>. Уровень вашего текущего аттестата недостаточен. <a href=\"http://wiki.webmoney.ru/wiki/show/Nachalnyy_attestat\">Получите начальный аттестат</a> и заного проверьте его в конструкторе.</p><p><a href=\"{url}\">Проверить WMID</a></p>"
+
 msgid "<p>We don't offer a free domain name &mdash; you have to register it manually. You may take domain of any level you want: 2nd-level domain (yourgame.com), 3rd-level (game.yourdomain.com) or any other (game.project.person.company.com)</p>"
 msgstr "<p>Мы не предоставляем бесплатное доменное имя &mdash; вам необходимо зарегистрировать его вручную. Вы можете взять домен любого уровня, какой захотите: 2 уровня (yourgame.ru), 3 уровня (game.yourdomain.ru) или любого другого (game.project.person.company.ru)</p>"
 
@@ -178,6 +181,9 @@ msgstr "<strong>Сервер SMTP</strong>"
 
 msgid "<strong>Storage servers</strong> (host, host, ...)"
 msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
+
+msgid "<strong>{wmid}</strong> (certificate: <strong>{certificate}</strong>)"
+msgstr "<strong>{wmid}</strong> (аттестат: <strong>{certificate}</strong>)"
 
 msgid "A complex value"
 msgstr "Сложное значение"
@@ -390,9 +396,6 @@ msgstr "Автор"
 
 msgid "Author text"
 msgstr "Текст автора"
-
-msgid "Authorize"
-msgstr "Авторизовать"
 
 msgid "Authorized WMID"
 msgstr "Авторизованный WMID"
@@ -4173,9 +4176,6 @@ msgstr "Чтобы использовать цвета в подписи, <a hre
 msgid "To use images in the signature <a href=\"/socio/paid-services\">subscribe to the corresponding service</a>"
 msgstr "Чтобы использовать изображения в подписи, <a href=\"/socio/paid-services\">подключите соответствующую услугу</a>"
 
-msgid "To use request auction you must have WMID with the starter certificate. Your current certificate level is not enough"
-msgstr "Чтобы использовать аукцион заявок, вам необходимо иметь WMID с начальным аттестатом. Уровень вашего текущего аттестата недостаточен"
-
 msgid "To use request auction you must have certified WMID"
 msgstr "Чтобы использовать аукцион заявок, вам необходимо иметь аттестованный WMID"
 
@@ -4468,6 +4468,9 @@ msgstr "WMID для WMLogin"
 msgid "WMID is assigned to another user"
 msgstr "WMID уже назначен другому пользователю"
 
+msgid "WMID not verified"
+msgstr "WMID не проверен"
+
 msgid "WMID verified"
 msgstr "WMID проверен"
 
@@ -4480,12 +4483,14 @@ msgstr "Внимание! Internet Explorer не поддерживается. �
 msgid "We are sorry. Your game '{0}' was unpublished."
 msgstr "Приносим извинения. Ваша игра '{0}' снята с публикации."
 
+msgid "We have ensured your WMID is <strong>{wmid}</strong>. But to our regret you has not even formal certificate. Please <a href=\"https://passport.wmtransfer.com/asp/aProcess.asp\">get the formal certificate</a> (data are not verified by notaries or the center's legal department) and retry WMID verification"
+msgstr "Мы убедились что <strong>{wmid}</strong> - это ваш WMID. Но, к сожалению, у него нет даже формального аттестата. Пожалуйста, <a href=\"https://passport.wmtransfer.com/asp/aProcess.asp\">получите формальный аттестат</a> (это просто заполнение онлайн-формы) и повторите проверку WMID"
+
 msgid "We have sent you an e-mail with your password reminder"
 msgstr "Мы отправили вам e-mail с напоминанием пароля"
 
-#, python-format
-msgid "We have verified your WMID <strong>'%s'</strong> successfully"
-msgstr "Мы убедились, что ваш WMID &mdash; <strong>%s</strong>. Спасибо."
+msgid "We have verified your WMID <strong>{wmid}</strong> successfully. Certificate level: <strong>{cert}>/strong>"
+msgstr "Мы убедились, что ваш WMID &mdash; <strong>{wmid}</strong>. Уровень аттестата: <strong>{cert}</strong>. Спасибо."
 
 msgid "Web"
 msgstr "Web"
@@ -4671,8 +4676,8 @@ msgid "You have successfully registered domain <strong>%s</strong>"
 msgstr "Вы успешно зарегистрировали домен <strong>%s</strong>"
 
 #, python-format
-msgid "You have verified WMID already: %s"
-msgstr "У вас уже есть проверенный WMID: %s"
+msgid "You have verified another WMID already: %s"
+msgstr "У вас уже есть другой проверенный WMID: %s"
 
 msgid "You haven't passed WMID verification yet"
 msgstr "Вы ещё не прошли проверку WMID"
@@ -4777,9 +4782,8 @@ msgstr "Ваш проект находится на модерации. Вы н�
 msgid "Your project is published already. You can't change the game logo"
 msgstr "Ваш проект уже опубликован. Вы не можете изменить логотип игры."
 
-#, python-format
-msgid "Your verified WMID: %s"
-msgstr "Ваш проверенный WMID: %s"
+msgid "Your verified WMID: {wmid}. <a href=\"{url}\">Check again</a>"
+msgstr "Ваш проверенный WMID: {wmid}. <a href=\"{url}\">Проверить снова</a>"
 
 msgid "ZIP64 is not supported"
 msgstr "ZIP64 не поддерживается"
@@ -5386,6 +5390,22 @@ msgstr "статическая"
 msgid "wildcard///block-class"
 msgstr "класс-блока"
 
+#, python-format
+msgid "wm///certificate: %s"
+msgstr "аттестат: %s"
+
+msgid "wmcert///formal"
+msgstr "формальный "
+
+msgid "wmcert///initial"
+msgstr "начальный"
+
+msgid "wmcert///personal"
+msgstr "персональный"
+
+msgid "wmcert///pseudonymous"
+msgstr "псевдонима"
+
 msgid "written at"
 msgstr "написано"
 
@@ -5426,6 +5446,10 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Authorize"
+#~ msgstr "Авторизовать"
+#~ msgid "Your verified WMID: %s"
+#~ msgstr "Ваш проверенный WMID: %s"
 #~ msgid "My votes"
 #~ msgstr "Мои голоса"
 #~ msgid ""

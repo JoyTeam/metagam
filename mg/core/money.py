@@ -1191,8 +1191,8 @@ class WebMoney(Module):
     def register(self):
         Module.register(self)
         self.rhook("ext-webmoney.checkticket", self.check_ticket, priv="logged")
-        self.rhook("ext-webmoney.testauth", self.test_auth, priv="logged")
         self.rhook("wmcert.get", self.wmcert_get)
+        self.rhook("wmlogin.url", self.wmlogin_url)
 
     def check_ticket(self):
         req = self.req()
@@ -1226,14 +1226,6 @@ class WebMoney(Module):
         else:
             self.error("WMLogin auth failed: retval=%s, sval=%s", retval, sval)
             self.call("web.forbidden")
-
-    def test_auth(self):
-        req = self.req()
-        if req.ok():
-            self.call("web.redirect", "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s" % self.conf("wmlogin.rid"))
-        form = self.call("web.form")
-        form.submit(None, None, self._("Authorize"))
-        self.call("web.response", form.html())
 
     def wm_query(self, gate_name, gate_host, url, request):
         reqdata = request.toxml("utf-8")
@@ -1287,3 +1279,11 @@ class WebMoney(Module):
                 if lvl > level:
                     level = lvl
         return level
+    
+    def wmlogin_url(self):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            lang = "ru-RU"
+        else:
+            lang = "en-EN"
+        return "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s&lang=%s" % (self.conf("wmlogin.rid"), lang)
