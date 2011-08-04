@@ -360,7 +360,7 @@ class WebDaemon(object):
             res = self.req_handler(request, group, hook, args)
             if res is not None:
                 return res
-        # /group/<SOMETHING_UNPARSED>
+        # /group/<SOMETHING_UNHANDLED>
         m = re_group_something_unparsed.match(uri)
         if m:
             (group, args) = m.group(1, 2)
@@ -428,8 +428,8 @@ class WebApplication(Application):
         return res
 
 re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
-re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>)')
-re_hook_parse = re.compile(r'^<hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*/>$')
+re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*\])')
+re_hook_parse = re.compile(r'^(<|\[)hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*(/>|\])$')
 re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
 
 class Web(Module):
@@ -675,21 +675,22 @@ class Web(Module):
             m = re_hook_parse.match(tokens[i])
             if not m:
                 raise RuntimeError("'%s' could not be parsed as a hook tag" % tokens[i])
-            (hook_name, hook_args) = m.group(1, 2)
-            args = {}
-            for key, value in re_hook_args.findall(hook_args):
-                args[key] = mg.core.tools.htmldecode(value)
-            res = None
-            try:
-                res = self.call("hook-%s" % hook_name, vars, **args)
-            except WebResponse:
-                raise
-            except Exception as e:
-                self.error(traceback.format_exc())
-                res = htmlescape('%s %s' % (e.__class__, e))
-            if res is None:
-                res = ""
-            tokens[i] = res
+            (delimiter, hook_name, hook_args) = m.group(1, 2, 3)
+            if delimiter == "<" or vars.get("allow_bracket_hooks"):
+                args = {}
+                for key, value in re_hook_args.findall(hook_args):
+                    args[key] = mg.core.tools.htmldecode(value)
+                res = None
+                try:
+                    res = self.call("hook-%s" % hook_name, vars, **args)
+                except WebResponse:
+                    raise
+                except Exception as e:
+                    self.error(traceback.format_exc())
+                    res = htmlescape('%s %s' % (e.__class__, e))
+                if res is None:
+                    res = ""
+                tokens[i] = res
             i = i + 2
         for i in range(0, len(tokens)):
             if type(tokens[i]) == unicode:

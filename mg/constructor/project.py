@@ -26,7 +26,6 @@ class ConstructorProject(Module):
             "mg.constructor.project.ConstructorProjectAdmin",
             "mg.constructor.admin.ConstructorUtils",
             "mg.constructor.domains.Domains",
-            "mg.socio.Socio", "mg.constructor.socio.Socio",
             "mg.constructor.auth.Auth",
             "mg.constructor.players.CharactersMod",
             "mg.core.daemons.Daemons",
@@ -60,32 +59,17 @@ class ConstructorProject(Module):
                     "mg.core.modifiers.Modifiers",
                     "mg.constructor.marketing.GameReporter",
                 ])
-            if self.conf("module.sociointerface"):
+            if self.conf("module.socio"):
+                lst.extend(["mg.socio.Socio", "mg.constructor.socio.Socio"])
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
-                if self.conf("module.forum"):
-                    lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin", "mg.socio.paidservices.PaidServices"])
-                if self.conf("module.smiles"):
-                    lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
         return lst
 
     def modules_list(self, modules):
         modules.append({
-            "id": "sociointerface",
+            "id": "socio",
             "name": self._("Social modules"),
             "description": self._("Couple of modules related to social interactions among players (smiles, forums, blogs, etc)"),
         })
-        if self.conf("module.sociointerface"):
-            modules.extend([
-                {
-                    "id": "forum",
-                    "name": self._("Forum"),
-                    "description": self._("Game forum"),
-                }, {
-                    "id": "smiles",
-                    "name": self._("Smiles"),
-                    "description": self._("Smiles support"),
-                }
-            ])
 
     def project_title(self):
         return self.app().project.get("title_short", "New Game")

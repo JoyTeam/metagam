@@ -1119,13 +1119,15 @@ class DesignMod(Module):
         ]
 
     def parse(self, design, template, content, vars, design_type="game"):
-        if design and template in design.get("files"):
-            template = self.httpfile("%s/%s" % (design.get("uri"), template))
-        else:
-            template = "%s/%s" % (design_type, template)
         vars["design_root"] = design.get("uri") if design else None
         vars["content"] = content
-        return self.call("web.parse_layout", template, vars)
+        if design and template in design.get("files"):
+            return self.call("web.parse_layout", self.httpfile("%s/%s" % (design.get("uri"), template)), vars)
+        else:
+            try:
+                return self.call("web.parse_layout", "%s/%s/%s" % (design_type, self.call("l10n.lang"), template), vars)
+            except TemplateException:
+                return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
 
     def response(self, design, template, content, vars, design_type="game"):
         self.call("web.setup_design", vars)
@@ -1643,6 +1645,7 @@ class SocioInterface(ConstructorModule):
         self.rhook("forum.vars-tags", self.forum_vars_tags)
         self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("socio.parse", self.parse, priority=10)
         self.rhook("socio.response", self.response, priority=10)
         self.rhook("socio.response_template", self.response_template, priority=10)
         self.rhook("socio.response_simple", self.response_simple, priority=10)
@@ -1690,6 +1693,10 @@ class SocioInterface(ConstructorModule):
 
     def forum_vars_tags(self, vars):
         vars["title"] = self._("Forum tags")
+
+    def parse(self, template, vars):
+        design = self.design("sociointerface")
+        return self.call("design.parse", design, template, None, vars, "socio")
 
     def response(self, content, vars):
         self.call("forum.setup-menu", vars)

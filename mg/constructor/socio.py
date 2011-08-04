@@ -306,6 +306,8 @@ class Socio(ConstructorModule):
         elif req.group == "forum" or req.group == "socio":
             vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
             block = "forum"
+        elif req.group == "library":
+            block = "library"
         topmenu = []
         uri = req.uri()
         if block:

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-04 11:15+0300\n"
+"PO-Revision-Date: 2011-08-04 16:42+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -364,6 +364,12 @@ msgstr "Вы уверены, что хотите удалить эту кноп�
 msgid "Are you sure want to delete this offer?"
 msgstr "Вы уверены, что хотите удалить это предложение?"
 
+msgid "Are you sure want to delete this page group?"
+msgstr "Вы уверены, что хотите удалить эту группу страниц?"
+
+msgid "Are you sure want to delete this page?"
+msgstr "Вы уверены, что хотите удалить эту страницу?"
+
 msgid "Are you sure want to delete this popup menu?"
 msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
 
@@ -468,8 +474,14 @@ msgstr "День рождения"
 msgid "Block %s"
 msgstr "Блок %s"
 
+msgid "Block content. You may use hooks to include any dynamic content"
+msgstr "Содержимое блока. Вы можете использовать хуки, чтобы включить любой динамический контент"
+
 msgid "Block height"
 msgstr "Высота блока"
+
+msgid "Block sorting order"
+msgstr "Порядок сортировки блока"
 
 msgid "Block title (visible to administrators only)"
 msgstr "Название блока (видно только администраторам)"
@@ -801,6 +813,18 @@ msgstr "Настройки кластера"
 
 msgid "Code"
 msgstr "Код"
+
+msgid "Code can't contain '//'"
+msgstr "Код не может содержать \"//\""
+
+msgid "Code can't end with slash"
+msgstr "Код не может заканчиваться слешом"
+
+msgid "Code can't start with slash"
+msgstr "Код не может начинаться слешом"
+
+msgid "Code of the parent page"
+msgstr "Код родительской страницы"
 
 msgid "Color of block headers"
 msgstr "Цвет заголовков блоков"
@@ -1689,6 +1713,9 @@ msgstr "Имя автора игры"
 msgid "Game cabinet"
 msgstr "Кабинет игры"
 
+msgid "Game chat"
+msgstr "Чат игры"
+
 msgid "Game code"
 msgstr "Код игры"
 
@@ -1735,6 +1762,9 @@ msgstr "Пакет с оформлением игры должен содерж�
 msgid "Game interface menu"
 msgstr "Меню игрового интерфейса"
 
+msgid "Game library"
+msgstr "Библиотека игры"
+
 msgid "Game logo"
 msgstr "Логотип игры"
 
@@ -1777,6 +1807,9 @@ msgstr "Игра снята с публикации: %s"
 
 msgid "Game was unpublished by a moderator"
 msgstr "Игра была снята с публикации модератором"
+
+msgid "Game-related documentation for players"
+msgstr "Информация для игроков, относящаяся к игре"
 
 msgid "Games"
 msgstr "Игры"
@@ -1901,6 +1934,9 @@ msgstr "IP-адрес"
 
 msgid "Id"
 msgstr "Id"
+
+msgid "Identifier must start with 'u_'"
+msgstr "Идентификатор должен начинаться с 'u_'"
 
 msgid "Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор должен начинаться с \"u_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
@@ -2224,6 +2260,19 @@ msgstr "Легенда"
 
 msgid "Library"
 msgstr "Библиотека"
+
+#, python-format
+msgid "Library - %s"
+msgstr "Библиотека - %s"
+
+msgid "Library editing"
+msgstr "Редактирование библиотеки"
+
+msgid "Library page groups"
+msgstr "Группы страниц библиотеки"
+
+msgid "Library pages"
+msgstr "Страницы библиотеки"
 
 msgid "Limit for sum height of all images in the signature"
 msgstr "Ограничение суммарной высоты для всех изображений в подписи"
@@ -2645,6 +2694,12 @@ msgstr "Новое поле"
 msgid "New invitation"
 msgstr "Новое приглашение"
 
+msgid "New library page"
+msgstr "Новая страница библиотеки"
+
+msgid "New library page group"
+msgstr "Новая группа страниц библиотеки"
+
 msgid "New location"
 msgstr "Новая локация"
 
@@ -2659,6 +2714,12 @@ msgstr "Новое предложение"
 
 msgid "New packet"
 msgstr "Новый пакет"
+
+msgid "New page"
+msgstr "Новая страница"
+
+msgid "New page group"
+msgstr "Новая группа страниц"
 
 msgid "New paid services packet"
 msgstr "Новый пакет платных услуг"
@@ -2891,8 +2952,35 @@ msgstr "Название пакета"
 msgid "Packet properties"
 msgstr "Свойства пакета"
 
+msgid "Page code"
+msgstr "Код страницы"
+
+msgid "Page code (latin letters, slashes, digits and '-'). This page code is practically a component of the page URL. This library page will be available as '/library/&lt;code&gt;'. You may use slashes. For example, 'clans/wars' will be available at '/library/clans/wars'. Special code 'index' means library index page: '/library'"
+msgstr "Код страницы (латинские буквы, слеши, цифры и '-'). Этот код страниц на практике является частью URL страниц. Страница библиотеки будет доступна как \"/library/&lt;ваш-код&gt;\". Вы можете использовать слеши. Например, страница \"clans/wars\" будет доступна по адресу \"/library/clans/wars\". Специальный код \"index\" означает титульную страницу библиотеки: \"/library\""
+
+msgid "Page content. You may use hooks to include any dynamic content"
+msgstr "Содержимое страницы. Вы можете использовать хуки, чтобы включить любой динамический контент"
+
+msgid "Page decription (visible to search engines only)"
+msgstr "Описание страницы (видно только поисковым системам)"
+
+msgid "Page group code"
+msgstr "Код группы страниц"
+
+msgid "Page group code (must start with u_ and contain latin letters, digits and '_' symbols)"
+msgstr "Код группы страниц (должен начинаться с \"u_\" и содержать только латинские буквы, цифры и символы \"_\")"
+
+msgid "Page group title"
+msgstr "Название группы страниц"
+
+msgid "Page keywords (visible to search engines). Comma delimited"
+msgstr "Ключевые слова (видны только поисковым системам). Разделитель - запятая"
+
 msgid "Page margins (0 - margin is disabled):"
 msgstr "Поля страницы (0 - поле отключено)"
+
+msgid "Page title"
+msgstr "Название страницы"
 
 msgid "Pages"
 msgstr "На страницу"
@@ -3114,6 +3202,9 @@ msgstr "Загрузите картинку для смайлика"
 
 msgid "Publish"
 msgstr "Опубликовать"
+
+msgid "Publish on the library indexpage"
+msgstr "Опубликовать на титульной странице библиотеки"
 
 msgid "Purpose"
 msgstr "Цель"
@@ -4008,6 +4099,12 @@ msgstr "Самые богатые"
 msgid "There are some very important points in the contract. At least read information in the red panel."
 msgstr "В договоре есть некоторые очень важные пункты. Как минимум, прочтите информацию в красной панели."
 
+msgid "There is a page group with the same code already"
+msgstr "Группа страниц с таким кодом уже существует"
+
+msgid "There is a page with the same code already"
+msgstr "Страница с таким кодом уже существует"
+
 msgid "There is another user with this email"
 msgstr "Уже есть пользователь с этим e-mail"
 
@@ -4017,6 +4114,9 @@ msgstr "Тщательно продумайте структуру раздел�
 #, python-format
 msgid "This WMID is assigned already to the user <strong>%s</strong>. You can't assign one WMID to several accounts"
 msgstr "Этот WMID уже назначен пользователю <strong>%s</strong>. Вы не можете назначить один WMID нескольким аккаунтам"
+
+msgid "This block is shown on the every library page"
+msgstr "Этот блок показывается на каждой странице библиотеки"
 
 msgid "This code in inappropriate for this action"
 msgstr "Этот код не подходит для этого действия"
@@ -4082,6 +4182,9 @@ msgstr "Эта игра опубликована в"
 msgid "This game is waiting for moderation"
 msgstr "Эта игра ожидает модерации"
 
+msgid "This group is a block (HTML portion that will be shown on every page in the group)"
+msgstr "Эта группа является блоком (HTML-куском, который будет показываться на каждой странице из этой группы)"
+
 msgid "This is a sample meta description"
 msgstr "Это пример meta-описания"
 
@@ -4111,6 +4214,9 @@ msgstr "Это имя уже занято"
 
 msgid "This option allows you to use coloured avatar and to include images, smiles and coloured text to your signature on the forum"
 msgstr "Эта опция позволяет вам использовать на форуме цветной аватар и включать в подпись картинки, смайлики и цвета"
+
+msgid "This page is about game chat"
+msgstr "Это страница об игровом чате"
 
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
@@ -4447,6 +4553,9 @@ msgstr "Очень важное значение"
 msgid "Very strange signature"
 msgstr "Очень странная подпись"
 
+msgid "Viewing"
+msgstr "Просмотр"
+
 msgid "Viewing list of authorized users"
 msgstr "Просмотр списка авторизованных пользователей"
 
@@ -4509,6 +4618,9 @@ msgstr "Что вы думаете об этом?"
 
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
+
+msgid "Which groups this page belongs to. If you want any page to show in the group specify an integer value here. This value will be the sorting order of the page in the group"
+msgstr "К каким группам принадлежит эта страница. Если вы хотите, чтобы какая-то страница показалась в группе, укажите здесь целое число. Это число будет порядком сортировки страницы в группе"
 
 msgid "White"
 msgstr "Белый"
@@ -4860,6 +4972,9 @@ msgstr "Торговля"
 msgid "channel///World"
 msgstr "Мир"
 
+msgid "chat"
+msgstr "чат"
+
 msgid "combo box"
 msgstr "выпадающий список"
 
@@ -5041,12 +5156,6 @@ msgstr "разрешить"
 
 msgid "moderation///reject"
 msgstr "отклонить"
-
-msgid "module///disabled"
-msgstr "отключен"
-
-msgid "module///enabled"
-msgstr "включен"
 
 #, python-format
 msgid "money///buy %s"
@@ -5375,6 +5484,9 @@ msgstr "отписаться"
 msgid "user///Registered"
 msgstr "Регистрация"
 
+msgid "view"
+msgstr "просмотреть"
+
 msgid "went///offline"
 msgstr "из игры"
 
@@ -5446,6 +5558,10 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "module///disabled"
+#~ msgstr "отключен"
+#~ msgid "module///enabled"
+#~ msgstr "включен"
 #~ msgid "Authorize"
 #~ msgstr "Авторизовать"
 #~ msgid "Your verified WMID: %s"
@@ -5503,8 +5619,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "Вы перешли {LOCATION_T}"
 #~ msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_F}"
-#~ msgid "Are you sure want to delete this packet?"
-#~ msgstr "Вы уверены, что хотите удалить этот пакет?"
 #~ msgid "Coloured avatars on the forum"
 #~ msgstr "Цветные аватары на форуме"
 #~ msgid "Panel: %s"

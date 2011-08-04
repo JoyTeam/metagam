@@ -177,6 +177,18 @@ class Game(Module):
             return [self._("Logo editor"), "game/logo"]
         return self._("Game logo")
 
+    def render_modules(self, modules, rows, parent=None, padding=0):
+        for mod in modules:
+            if not mod.get("shown") and mod.get("parent") == parent:
+                mod["shown"] = True
+                status = self.conf("module.%s" % mod["id"])
+                rows.append([
+                    '<div class="%s" style="padding-left: %spx; white-space: nowrap">%s</div>' % ("admin-enabled" if status else "admin-disabled", padding, mod["name"]),
+                    mod["description"],
+                    '<hook:admin.link href="game/modules/disable/%s" title="%s" />' % (mod["id"], self._("disable")) if status else '<hook:admin.link href="game/modules/enable/%s" title="%s" />' % (mod["id"], self._("enable")),
+                ])
+                self.render_modules(modules, rows, mod["id"], padding + 30)
+
     def ext_modules(self):
         req = self.req()
         m = re_module_action.match(req.args)
@@ -190,21 +202,13 @@ class Game(Module):
         self.call("modules.list", modules)
         modules.sort(cmp=lambda x, y: cmp(x.get("name"), y.get("name")))
         rows = []
-        for mod in modules:
-            status = self.conf("module.%s" % mod["id"])
-            rows.append([
-                mod["name"],
-                mod["description"],
-                '<span class="admin-enabled">%s</span>' % self._("module///enabled") if status else self._("module///disabled"),
-                '<hook:admin.link href="game/modules/disable/%s" title="%s" />' % (mod["id"], self._("disable")) if status else '<hook:admin.link href="game/modules/enable/%s" title="%s" />' % (mod["id"], self._("enable")),
-            ])
+        self.render_modules(modules, rows)
         vars = {
             "tables": [
                 {
                     "header": [
                         self._("Module"),
                         self._("Description"),
-                        self._("Status"),
                         self._("Action"),
                     ],
                     "rows": rows,

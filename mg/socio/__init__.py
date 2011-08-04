@@ -200,7 +200,6 @@ class ForumAdmin(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.default_rules", self.default_rules)
         self.rhook("ext-admin-forum.delete", self.admin_delete, priv="forum.categories")
-        self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("advice-admin-forum.categories", self.advice_forum_categories)
         self.rhook("advice-admin-forum.category", self.advice_forum_categories)
         self.rhook("auth.user-tables", self.user_tables)
@@ -209,9 +208,6 @@ class ForumAdmin(Module):
 
     def advice_forum_categories(self, args, advice):
         advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
-
-    def menu_root_index(self, menu):
-        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def permissions_list(self, perms):
         perms.append({"id": "forum.categories", "name": self._("Forum categories editor")})
@@ -453,6 +449,37 @@ class Socio(Module):
         self.rhook("socio.response_simple_template", self.response_simple_template)
         self.rhook("socio.button-blocks", self.button_blocks)
         self.rhook("sociointerface.buttons", self.buttons)
+        self.rhook("modules.list", self.modules_list)
+
+    def child_modules(self):
+        lst = ["mg.socio.SocioAdmin"]
+        if self.conf("module.forum"):
+            lst.extend(["mg.socio.Forum", "mg.socio.ForumAdmin", "mg.socio.paidservices.PaidServices"])
+        if self.conf("module.smiles"):
+            lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
+        if self.conf("module.library"):
+            lst.extend(["mg.constructor.library.Library"])
+        return lst
+
+    def modules_list(self, modules):
+        modules.extend([
+            {
+                "id": "forum",
+                "name": self._("Forum"),
+                "description": self._("Game forum"),
+                "parent": "socio",
+            }, {
+                "id": "smiles",
+                "name": self._("Smiles"),
+                "description": self._("Smiles support"),
+                "parent": "socio",
+            }, {
+                "id": "library",
+                "name": self._("Library"),
+                "description": self._("Game-related documentation for players"),
+                "parent": "socio",
+            }
+        ])
 
     def button_blocks(self, blocks):
         blocks.append({"id": "forum", "title": self._("Forum"), "class": "forum"})
@@ -466,6 +493,15 @@ class Socio(Module):
             "target": "_self",
             "block": "forum",
             "order": 5,
+        })
+        buttons.append({
+            "id": "library-forum",
+            "href": "/forum",
+            "title": self._("Forum"),
+            "target": "_self",
+            "block": "library",
+            "order": 10,
+            "left": True,
         })
 
     def socio_user(self):
@@ -489,9 +525,6 @@ class Socio(Module):
         else:
             req._socio_semi_user = sess.semi_user()
         return req._socio_semi_user
-
-    def child_modules(self):
-        return ["mg.socio.SocioAdmin"]
 
     def word_extractor(self, text):
         for chunk in re_text_chunks.finditer(text):
@@ -2677,6 +2710,10 @@ class SocioAdmin(Module):
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
         self.rhook("socio-admin.message-silence", self.message_silence)
         self.rhook("ext-admin-socio.config", self.admin_socio_config, priv="socio.config")
+        self.rhook("menu-admin-root.index", self.menu_root_index)
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def message_silence(self):
         return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))

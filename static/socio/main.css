@@ -140,3 +140,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .service-inactive { color: #c00000 }
 .service-active { color: #008000 }
 
+/* LIBRARY */
+#library-rightmenu { width: 300px; float: right }
+#library-content { margin-right: 340px }
+.library-rightblock { padding-bottom: 40px }

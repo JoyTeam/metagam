@@ -146,6 +146,15 @@ class Interface(ConstructorModule):
             "block": "forum",
             "order": -10,
         })
+        buttons.append({
+            "id": "library-game",
+            "href": "/",
+            "title": self._("Game"),
+            "target": "_self",
+            "block": "library",
+            "order": -10,
+            "left": True,
+        })
 
     def empty(self):
         self.call("game.response_internal", "empty.html", {})

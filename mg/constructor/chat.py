@@ -111,6 +111,22 @@ class Chat(ConstructorModule):
         self.rhook("paidservices.available", self.paid_services_available)
         self.rhook("paidservices.chat_colours", self.srv_chat_colours)
         self.rhook("money-description.chat_colours", self.money_description_chat_colours)
+        self.rhook("library-grp-index.pages", self.library_index_pages)
+        self.rhook("library-page-chat.content", self.library_page_chat)
+
+    def library_index_pages(self, pages):
+        pages.append({"page": "chat", "order": 20})
+
+    def library_page_chat(self):
+        vars = {}
+        return {
+            "code": "chat",
+            "title": self._("Game chat"),
+            "keywords": self._("chat"),
+            "description": self._("This page is about game chat"),
+            "content": self.call("socio.parse", "library-chat.html", vars),
+            "parent": "index",
+        }
 
     def name_purpose_chat(self):
         return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}
