@@ -1,0 +1,60 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+import os
+import logging
+import sys
+import json
+import re
+
+token_ring = 2 ** 127
+parts = 256
+token_part = token_ring / parts
+re_app = re.compile('^(.+?)-(.+)$')
+
+def main():
+    try:
+        inst = Instance("db_backup")
+        inst.download_config()
+        mc = Memcached(inst.mcpool)
+        db = inst.dbpool.dbget("main", mc)
+        created = set()
+        for family in ["Objects", "Indexes"]:
+            for part in xrange(0, parts):
+                start_token = '%d' % (part * token_part)
+                end_token = '%d' % (((part + 1) * token_part) % token_ring)
+                rows = {}
+                lst = db.get_range_slices(ColumnParent(family), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE)
+                for ent in lst:
+                    m = re_app.match(ent.key)
+                    if m and len(ent.columns):
+                        columns = {}
+                        for col in ent.columns:
+                            columns[col.column.name] = col.column.value
+                        app, key = m.group(1, 2)
+                        row = {key: columns}
+                        try:
+                            rows[app].append(row)
+                        except KeyError:
+                            rows[app] = [row]
+                for app, rows_list in rows.iteritems():
+                    filename = "%s-%s.json" % (family, app)
+                    f = open(filename, "a" if filename in created else "w")
+                    created.add(filename)
+                    for row in rows_list:
+                        f.write(json.dumps(row))
+                        f.write("\n")
+                    f.close()
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
