@@ -1,11 +1,12 @@
 /* COMMON */
 body { font-family: Verdana; font-size: 12px }
 td { font-size: 12px }
-img { vertical-align: middle; border: none }
+img { vertical-align: middle; border: 0 none }
 .clickable { cursor: pointer }
 table, tr, td { padding: 0; margin: 0; border: none }
 table { border-collapse: collapse; empty-cells: show }
 area { border: none }
+.public-offer { text-align: justify }
 
 /* LAYOUT */
 #page-content { background: none }
@@ -87,6 +88,7 @@ area { border: none }
 .form-desc-padding { vertical-align: top; font-weight: bold; padding: 20px 30px 5px 0 }
 .form-error { color: #ff0000; font-weight: normal; font-size: 11px }
 .form-list-messages-top, .form-list-messages-bottom { font-weight: bold }
+.form-list-messages-bottom { padding-top: 20px }
 
 /* INTERNAL */
 #page-internal-html { height: 100%; padding: 0; margin: 0 }

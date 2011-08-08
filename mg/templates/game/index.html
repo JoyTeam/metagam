@@ -11,19 +11,19 @@
 <script type="text/javascript" src="/dyn-mg/indexpage.js"></script>
 </head><body>
 	<form action="/" method="post" id="loginform" name="loginform" onsubmit="return auth_login();">
-		<div id="enter-email">
-			login: <input id="email" name="email" value="" title="Имя персонажа или e-mail" />
+		<div id="enter-name">
+			Character name: <input id="name" name="name" value="" title="Character name" />
 		</div>
 		<div id="enter-password">
-			password: <input id="password" type="password" name="password" value="" title="Пароль" />
+			Password: <input id="password" type="password" name="password" value="" title="Password" />
 		</div>
 		<div id="enter-submit">
-			<a href="javascript:void(0)" onclick="return auth_login();">enter</a><br />
+			<a href="javascript:void(0)" onclick="return auth_login();">Enter</a><br />
 			<input type="image" src="/st-mg/img/null.gif" />
 		</div>
 		<div id="enter-remind">
-			<div><a href="javascript:void(0)" onclick="return auth_register();"><strong>register</strong></a></div>
-			<div><a href="javascript:void(0)" onclick="return auth_remind();">forgot your password?</a></div>
+			<div><a href="javascript:void(0)" onclick="return auth_register();"><strong>Register</strong></a></div>
+			<div><a href="javascript:void(0)" onclick="return auth_remind();">Forgotten your password?</a></div>
 		</div>
 	</form>
 </body></html>

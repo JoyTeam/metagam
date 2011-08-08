@@ -6,7 +6,6 @@ import traceback
 
 class ScriptEngine(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("script.help-icon-expressions", self.help_icon_expressions)
         self.rhook("exception.report", self.exception_report, priority=10)
         # Numerical expressions

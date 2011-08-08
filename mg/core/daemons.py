@@ -36,7 +36,6 @@ class DaemonStatusList(CassandraObjectList):
 
 class Daemons(Module):
     def register(self):
-        Module.register(self)
         self.rhook("daemon.query", self.query)
 
     def query(self, daemon_id, method_name, timeout=30, *args, **kwargs):
@@ -143,7 +142,6 @@ class DaemonsManager(Module):
         self.next_status_update = 0
 
     def register(self):
-        Module.register(self)
         self.rhook("daemon.start", self.daemon_start)
         self.rhook("daemon.stop", self.daemon_stop)
         self.rhook("core.fastidle", self.fastidle)

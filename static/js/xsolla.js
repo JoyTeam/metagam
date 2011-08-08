@@ -2,7 +2,7 @@ Xsolla = {};
 
 Xsolla.paystation = function() {
 	if (!this.initialized) {
-		this.url = 'https://secure.xsolla.com/paystation/?projectid=' + this.project + '&id_theme=1&local=' + this.lang + '&email=' + this.email + '&v1=' + this.name;
+		this.url = 'https://secure.xsolla.com/paystation/?projectid=' + this.project + '&id_theme=1&local=' + this.lang + '&v1=' + this.name;
 		this.win = new Ext.Window({
 			id: 'payment-window',
 			modal: true,

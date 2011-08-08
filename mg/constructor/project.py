@@ -6,7 +6,6 @@ re_newline = re.compile(r'\n')
 class ConstructorProject(Module):
     "This is the main module of every project. It must load very fast"
     def register(self):
-        Module.register(self)
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
@@ -49,6 +48,7 @@ class ConstructorProject(Module):
                 "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
                 "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
+                "mg.core.icons.Icons",
             ])
             if project.get("published"):
                 lst.extend([
@@ -57,7 +57,8 @@ class ConstructorProject(Module):
                     "mg.constructor.paidservices.PaidServices",
                     "mg.constructor.paidservices.PaidServicesAdmin",
                     "mg.core.modifiers.Modifiers",
-                    "mg.constructor.marketing.GameReporter",
+                    "mg.constructor.stats.GameReporter",
+                    "mg.core.icons.IconsAdmin",
                 ])
             if self.conf("module.socio"):
                 lst.extend(["mg.socio.Socio", "mg.constructor.socio.Socio"])
@@ -91,7 +92,6 @@ class ConstructorProject(Module):
 
 class ConstructorProjectAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-top.list", self.menu_top_list, priority=10)
         self.rhook("ext-admin-project.destroy", self.project_destroy, priv="project.admin")
         self.rhook("permissions.list", self.permissions_list)
@@ -115,7 +115,7 @@ class ConstructorProjectAdmin(Module):
         else:
             req = self.req()
             if req.has_access("project.admin"):
-                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20, "icon": "/st-mg/menu/dashboard.png"})
+                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20, "icon": "/st-mg/menu/dashboard.png", "even_unpublished": True})
 
     def project_destroy(self):
         if self.app().project.get("inactive"):
@@ -172,12 +172,11 @@ class ConstructorProjectAdmin(Module):
             before_launch.insert(0, {"icon": "/st/img/application-exit.png", "content": htmlescape(project.get("moderation_reject"))})
         if len(before_launch):
             vars["before_launch"] = before_launch
-        if len(others):
+        if len(others) and (project.get("published") or project.get("moderation")):
             vars["recommended_actions"] = others
         if project.get("published"):
             vars["published"] = True
-            vars["IncomeStatistics"] = self._("Income statistics")
-            vars["IncomeStructure"] = self._("Income structure")
+            self.call("game.dashboard", vars)
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):

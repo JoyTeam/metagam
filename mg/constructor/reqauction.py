@@ -69,7 +69,6 @@ class DBRequestDependencyList(CassandraObjectList):
 
 class ReqAuction(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-reqauction.index", self.index, priv="logged")

@@ -47,7 +47,6 @@ class DBModifierList(CassandraObjectList):
 
 class ModifiersManager(Module):
     def register(self):
-        Module.register(self)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("daemons.persistent", self.daemons_persistent)
         self.rhook("int-modifiers.daemon", self.daemon, priv="public")
@@ -91,7 +90,6 @@ class Mods(Module):
 
 class Modifiers(Module):
     def register(self):
-        Module.register(self)
         self.rhook("modifiers.kind", self.mod_kind)
         self.rhook("modifiers.add", self.mod_add)
         self.rhook("modifiers.prolong", self.mod_prolong)

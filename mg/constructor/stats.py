@@ -4,14 +4,39 @@ from mg.constructor.player_classes import DBCharacterOnlineList, DBPlayerList
 from mg.constructor.interface import DBFirstVisitList
 import re
 
+class DBDailyStat(CassandraObject):
+    _indexes = {
+        "period": [[], "period"],
+    }
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "DailyStat-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBDailyStat._indexes
+
+class DBDailyStatList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "DailyStat-"
+        kwargs["cls"] = DBDailyStat
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class GameReporter(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("marketing.report", self.marketing_report)
+        self.rhook("config.changed", self.config_changed)
+        self.rhook("configs.store", self.configs_store)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("stats.daily", self.stats_daily)
+
+    def objclasses_list(self, objclasses):
+        objclasses["DailyStat"] = (DBDailyStat, DBDailyStatList)
 
     def schedule(self, sched):
         sched.add("marketing.report", "0 0 * * *", priority=20)
+        sched.add("configs.store", "50 23 * * *", priority=15)
 
     def marketing_report(self):
         since, till = self.yesterday_interval()
@@ -222,4 +247,33 @@ class GameReporter(ConstructorModule):
         # don't store information about abandoned games
         if len(online_lst) or len(logs) or active > 0:
             self.call("dbexport.add", "online", since=since, till=till, players=player_stats, peak_ccu=peak_ccu, ccu_dist=hours, registered=registered, returned=returned, left=left, active=active, new_users=new_users)
+            self.call("stats.daily", peak_ccu=peak_ccu, ccu_dist=hours, registered=registered, returned=returned, left=left, active=active, new_users=new_users)
 
+    def config_changed(self):
+        project = self.app().project
+        project.load()
+        project.set("config_updated", self.now())
+        project.store()
+
+    def configs_store(self):
+        project = self.app().project
+        project.load()
+        if not project.get("config_updated"):
+            return
+        self.debug("Storing config changes of the project %s", self.app().tag)
+        config = {}
+        lst = self.objlist(ConfigGroupList, query_index="all")
+        lst.load()
+        for ent in lst:
+            config[ent.uuid] = ent.data
+        self.call("dbexport.add", "config", config=config)
+        project.delkey("config_updated")
+        project.store()
+
+    def stats_daily(self, **kwargs):
+        now = self.nowdate()
+        with self.lock(["DailyStat"]):
+            obj = self.obj(DBDailyStat, now, silent=True)
+            for key, val in kwargs.iteritems():
+                obj.set(key, val)
+            obj.store()

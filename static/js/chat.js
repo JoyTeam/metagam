@@ -314,9 +314,11 @@ Chat.msg_list = function(pkt) {
 		if (msg.cls)
 			div.className = div.className + ' chat-div-' + msg.cls;
 		div.appendChild(ctspan);
-		div.className = div.className + ' cmc-' + ch.id;
-		if (msg.priv)
+		if (msg.priv) {
 			div.className = div.className + ' chat-private';
+		} else {
+			div.className = div.className + ' cmc-' + ch.id;
+		}
 		/* storing message */
 		fragment.appendChild(div);
 		if (this.mode == 1) {
@@ -326,10 +328,10 @@ Chat.msg_list = function(pkt) {
 				ch.btn.el.dom.src = ch.button_image + '-new.png';
 			}
 		} else if (this.mode == 2) {
-			div.style.display = ch.visible ? 'block' : 'none';
+			div.style.display = (msg.priv || ch.visible) ? 'block' : 'none';
 			if (ch.visible) {
 				scroll = true;
-			} else if (ch.btn && msg.hl) {
+			} else if (ch.btn && msg.hl && !msg.priv) {
 				ch.btn.el.dom.src = ch.button_image + '-new.png';
 			}
 		} else if (this.mode == 0) {

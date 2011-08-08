@@ -1,11 +1,11 @@
 <script type="text/javascript">var admin_root='http://www.[%main_host%]'</script>
 <link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
 <link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/constructor-admin.css" />
-<script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-base.js"></script>
+<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-base.js"></script>
 [%if debug_ext%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-all-debug-w-comments.js"></script>
+<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
 [%else%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/ext/ext-all.js"></script>
+<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-all.js"></script>
 [%end%]
 <script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/gettext.js"></script>
 [%if lang%]<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
@@ -22,7 +22,6 @@
 <script type="text/javascript" src="http://2pay.ru/gadget/client/html/init.js"></script>
 <script type="text/javascript">
 var _2payProjectID = '[%xsolla_payport.project_id%]';
-var _2payUserEmail = '[%xsolla_payport.email%]';
 var _2payPaymentSum = '[%xsolla_payport.payment_sum%]';
 var _2payVolumeSum = '[%xsolla_payport.amount_sum%]';
 var _2payParamsV1 = '[%xsolla_payport.name%]';
@@ -33,7 +32,6 @@ addEvent(window, 'load', function () { _2payLoadGadget(); });
 [%if xsolla_payment%]
 <script type="text/javascript">
 var xsolla_project_id = '[%xsolla_payment.project_id%]';
-var xsolla_email = '[%xsolla_payment.email%]';
 var xsolla_v1 = '[%xsolla_payment.name%]';
 </script>
 [%end%]

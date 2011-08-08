@@ -6,17 +6,16 @@ operations_per_page = 50
 
 class Money(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-money.index", self.money_index, priv="logged")
         self.rhook("ext-money.operations", self.money_operations, priv="logged")
         self.rhook("xsolla.payment-args", self.payment_args)
+        self.rhook("game.dashboard", self.game_dashboard)
 
     def payment_args(self, args, options):
         character = options.get("character")
         if character:
             args["v1"] = character.name
-            args["email"] = character.player.email
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -132,3 +131,60 @@ class Money(ConstructorModule):
         vars["Amount"] = self._("moneyop///Amount")
         vars["Balance"] = self._("moneyop///Balance")
         vars["Description"] = self._("moneyop///Description")
+
+    def game_dashboard(self, vars):
+        vars["IncomeStructure"] = self._("Income structure")
+        vars["ForTheLastMonth"] = self._("for the last month")
+        vars["LastPayments"] = self._("Last players payments")
+        vars["NoData"] = self._("No data")
+        # income structure
+        lst = self.objlist(PaymentXsollaList, query_index="all", query_start=self.now(-86400 * 30))
+        lst.load()
+        ranges = {}
+        for ent in lst:
+            if ent.get("cancelled"):
+                continue
+            rub = ent.get("amount_rub")
+            if not rub:
+                continue
+            if rub < 300:
+                r = "0-299"
+            elif rub < 1000:
+                r = "300-999"
+            elif rub < 10000:
+                r = "1000-9999"
+            else:
+                r = "10000+"
+            try:
+                ranges[r] += rub
+            except KeyError:
+                ranges[r] = rub
+        if len(ranges):
+            income_ranges = []
+            for r in ["0-299", "300-999", "1000-9999", "10000+"]:
+                income_ranges.append({"text": self._('%s roubl') % r, "amount": int(ranges.get(r, 0))})
+            vars["income_ranges"] = income_ranges
+        # last payments
+        currency = self.call("money.real-currency")
+        lst = self.objlist(PaymentXsollaList, query_index="all", query_reversed=True, query_limit=20)
+        lst.load()
+        rows = []
+        for ent in lst:
+            amount_rub = '%.2f' % ent.get("amount_rub", 0)
+            if ent.get("cancelled"):
+                amount_rub = '<strike>%s</strike>' % amount_rub
+            rows.append([
+                {"html": self.call("l10n.time_local", ent.get("performed"))},
+                {"html": self.character(ent.get("user")).html("admin")},
+                {"html": self.call("money.price-html", ent.get("sum"), currency), "cls": "td-number"},
+                {"html": amount_rub, "cls": "td-number"},
+            ])
+        vars["last_payments"] = {
+            "header": [
+                {"html": self._("payment///Performed")},
+                {"html": self._("Character")},
+                {"html": self._("Amount"), "cls": "td-number"},
+                {"html": self._("Income"), "cls": "td-number"},
+            ],
+            "rows": rows,
+        }

@@ -7,7 +7,6 @@ import time
 
 class CassandraMaintenance(Module):
     def register(self):
-        Module.register(self)
         self.rhook("cassmaint.validate", self.validate)
         self.rhook("cassmaint.load_database", self.load_database)
 

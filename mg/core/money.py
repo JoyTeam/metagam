@@ -39,7 +39,6 @@ def getText(nodelist):
 
 class MoneyAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-admin-money.give", self.admin_money_give, priv="users.money.give")
         self.rhook("headmenu-admin-money.give", self.headmenu_money_give)
         self.rhook("ext-admin-money.take", self.admin_money_take, priv="users.money.give")
@@ -67,7 +66,7 @@ class MoneyAdmin(Module):
     def menu_economy_index(self, menu):
         req = self.req()
         if req.has_access("money.currencies"):
-            menu.append({"id": "money/currencies", "text": self._("Currencies"), "leaf": True})
+            menu.append({"id": "money/currencies", "text": self._("Currencies"), "leaf": True, "even_unpublished": True})
 
     def headmenu_money_currencies(self, args):
         if args == "new" or args == "prenew":
@@ -135,7 +134,7 @@ class MoneyAdmin(Module):
                         elif currencies.get(code):
                             errors["code"] = self._("This currency name is busy")
                         info = {}
-                        currencies[req.args] = info
+                        currencies[code] = info
                     else:
                         info = currencies.get(req.args)
                     if not name_local:
@@ -585,7 +584,6 @@ class MoneyAdmin(Module):
 
 class Xsolla(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-ext-payment.2pay", self.payment_xsolla, priv="public")
         self.rhook("money-description.xsolla-pay", self.money_description_xsolla_pay)
         self.rhook("money-description.xsolla-chargeback", self.money_description_xsolla_chargeback)
@@ -664,7 +662,15 @@ class Xsolla(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    v1 = v1.decode("windows-1251")
+                    try:
+                        v1_1251 = v1.decode("windows-1251")
+                    except Exception:
+                        v1_1251 = None
+                    try:
+                        v1_utf8 = v1.decode("utf-8")
+                    except Exception:
+                        v1_utf8 = None
+                    v1 = v1_utf8 or v1_1251
                     self.debug("Xsolla Request: command=check, v1=%s", v1)
                     if self.call("session.find_user", v1):
                         result = 0
@@ -679,7 +685,15 @@ class Xsolla(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    v1 = v1.decode("windows-1251")
+                    try:
+                        v1_1251 = v1.decode("windows-1251")
+                    except Exception:
+                        v1_1251 = None
+                    try:
+                        v1_utf8 = v1.decode("utf-8")
+                    except Exception:
+                        v1_utf8 = None
+                    v1 = v1_utf8 or v1_1251
                     sum_v = float(sum)
                     self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
                     user = self.call("session.find_user", v1)
@@ -953,13 +967,11 @@ class Xsolla(Module):
         if self.conf("xsolla.project-id"):
             vars["js_modules"].add("xsolla")
             vars["js_init"].append("Xsolla.project = %d;" % self.conf("xsolla.project-id"))
-            vars["js_init"].append("Xsolla.email = '%s';" % jsencode(urlencode(character.player.email)))
             vars["js_init"].append("Xsolla.name = '%s';" % jsencode(urlencode(character.name)))
             vars["js_init"].append("Xsolla.lang = '%s';" % self.call("l10n.lang"))
 
 class XsollaAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-admin-constructor.project-xsolla", self.project_xsolla, priv="constructor.projects-xsolla")
         self.rhook("headmenu-admin-constructor.project-xsolla", self.headmenu_project_xsolla)
         self.rhook("permissions.list", self.permissions_list)
@@ -1058,7 +1070,6 @@ class XsollaAdmin(Module):
 
 class Money(Module):
     def register(self):
-        Module.register(self)
         self.rhook("currencies.list", self.currencies_list, priority=-1000)
         self.rhook("money-description.admin-give", self.money_description_admin_give)
         self.rhook("money-description.admin-take", self.money_description_admin_take)
@@ -1160,7 +1171,6 @@ class Money(Module):
 
 class WebMoneyAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-auth.index", self.menu_auth_index)
         self.rhook("ext-admin-wmlogin.settings", self.auth_settings, priv="webmoney.auth")
@@ -1189,7 +1199,6 @@ class WebMoneyAdmin(Module):
 
 class WebMoney(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-webmoney.checkticket", self.check_ticket, priv="logged")
         self.rhook("wmcert.get", self.wmcert_get)
         self.rhook("wmlogin.url", self.wmlogin_url)

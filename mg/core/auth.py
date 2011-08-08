@@ -179,7 +179,6 @@ class DossierRecordList(CassandraObjectList):
 class Sessions(Module):
     "The mostly used authentication functions. It must load very fast"
     def register(self):
-        Module.register(self)
         self.rhook("session.get", self.get_session)
         self.rhook("session.require_login", self.require_login)
         self.rhook("session.find_user", self.find_user)
@@ -287,7 +286,6 @@ class Sessions(Module):
 class Interface(Module):
     "Functions used in special interfaces (user and admin)"
     def register(self):
-        Module.register(self)
         self.rhook("auth.permissions", self.auth_permissions)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-auth.index", self.menu_auth_index)
@@ -310,6 +308,7 @@ class Interface(Module):
         self.rhook("auth.messages", self.messages, priority=10)
         self.rhook("ext-auth.activate", self.ext_activate, priv="public")
         self.rhook("ext-auth.reactivate", self.ext_reactivate, priv="public")
+        self.rhook("auth.message", self.auth_message)
         self.rhook("ext-auth.remind", self.ext_remind, priv="public")
         self.rhook("ext-auth.change", self.ext_change, priv="logged")
         self.rhook("ext-auth.email", self.ext_email, priv="logged")
@@ -327,6 +326,7 @@ class Interface(Module):
         self.rhook("headmenu-admin-auth.change-name", self.headmenu_change_name)
         self.rhook("ext-admin-auth.track", self.admin_auth_track, priv="auth.tracking")
         self.rhook("headmenu-admin-auth.track", self.headmenu_auth_track, priv="auth.tracking")
+        self.rhook("auth.password-reminder", self.password_reminder)
 
     def user_email(self, user_uuid):
         user = self.obj(User, user_uuid)
@@ -434,7 +434,7 @@ class Interface(Module):
                 for i in range(0, 10):
                     salt += random.choice(letters)
                 user.set("salt", salt)
-                user.set("pass_reminder", self.password_reminder(password1))
+                user.set("pass_reminder", self.call("auth.password-reminder", password1))
                 m = hashlib.md5()
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
@@ -600,15 +600,16 @@ class Interface(Module):
             if not email:
                 form.error("email", self._("Enter your e-mail"))
             if not form.errors:
-                list = self.objlist(UserList, query_index="email", query_equal=email.lower())
-                if not len(list):
+                lst = self.objlist(UserList, query_index="email", query_equal=email.lower())
+                if not len(lst):
                     form.error("email", self._("No users with this e-mail"))
             if not form.errors:
-                list.load()
+                lst.load()
                 name = ""
                 content = ""
-                for user in list:
-                    content += self._("User '{user}' has password '{password}'\n").format(user=user.get("name"), password=user.get("pass_reminder"))
+                for user in lst:
+                    msg = self.call("auth.remind-message", user) or self._("User '{user}' has password '{password}'\n").format(user=user.get("name"), password=user.get("pass_reminder"))
+                    content += msg
                     name = user.get("name")
                 params = {
                     "subject": self._("Password reminder"),
@@ -616,17 +617,20 @@ class Interface(Module):
                 }
                 self.call("auth.remind_email", params)
                 self.call("email.send", email, name, params["subject"], params["content"].format(content=content, host=req.host()))
-                vars["message"] = self._("We have sent you an e-mail with your password reminder")
                 vars["ret"] = {
                     "href": redirect if redirect else "/auth/login",
                     "html": self._("Return")
                 }
-                self.call("web.response_template", "common/message.html", vars)
+                self.call("auth.message", self._("We have sent you an e-mail with your password reminder"), vars)
         form.hidden("redirect", redirect)
         form.input(self._("Your e-mail"), "email", email)
         form.submit(None, None, self._("Remind"))
         self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(), vars)
+
+    def auth_message(self, message, vars):
+        vars["message"] = message
+        self.call("web.response_template", "common/message.html", vars)
 
     def ext_captcha(self):
         req = self.req()
@@ -837,6 +841,9 @@ class Interface(Module):
         if redirects.has_key("change"):
             ret = redirects["change"]
         req = self.req()
+        vars = {
+            "title": self._("Password change"),
+        }
         form = self.call("web.form")
         if req.ok():
             prefix = req.param("prefix")
@@ -846,14 +853,18 @@ class Interface(Module):
         password1 = req.param(prefix + "_p1")
         password2 = req.param(prefix + "_p2")
         if req.ok():
-            user = self.obj(User, req.user())
+            user_uuid = self.call("auth.password-user") or req.user()
+            user = self.obj(User, user_uuid)
             if not password:
                 form.error(prefix + "_p", self._("Enter your old password"))
             if not form.errors:
-                m = hashlib.md5()
-                m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
-                if m.hexdigest() != user.get("pass_hash"):
-                    form.error(prefix + "_p", self._("Incorrect old password"))
+                if not user.get("salt"):
+                    form.error(prefix + "_p", self._("User has not password"))
+                else:
+                    m = hashlib.md5()
+                    m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
+                    if m.hexdigest() != user.get("pass_hash"):
+                        form.error(prefix + "_p", self._("Incorrect old password"))
             if not password1:
                 form.error(prefix + "_p1", self._("Enter your new password"))
             elif len(password1) < 6:
@@ -870,7 +881,7 @@ class Interface(Module):
                 for i in range(0, 10):
                     salt += random.choice(letters)
                 user.set("salt", salt)
-                user.set("pass_reminder", self.password_reminder(password1))
+                user.set("pass_reminder", self.call("auth.password-reminder", password1))
                 m = hashlib.md5()
                 m.update(salt + password1.encode("utf-8"))
                 user.set("pass_hash", m.hexdigest())
@@ -885,15 +896,16 @@ class Interface(Module):
                             sess.delkey("semi_user")
                             sess.store()
                 self.call("auth.password-changed", user, password1)
-                self.call("web.redirect", ret)
+                vars["ret"] = {
+                    "href": ret,
+                    "html": self._("Return")
+                }
+                self.call("auth.message", self._("Your password was changed successfully"), vars)
         form.hidden("prefix", prefix)
         form.password(self._("Old password"), prefix + "_p", password)
         form.password(self._("New password"), prefix + "_p1", password1)
         form.password(self._("Confirm new password"), prefix + "_p2", password2)
         form.submit(None, None, self._("Change"))
-        vars = {
-            "title": self._("Password change"),
-        }
         self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(vars), vars)
 
@@ -1315,7 +1327,7 @@ class Interface(Module):
             for i in range(0, 10):
                 salt += random.choice(letters)
             user.set("salt", salt)
-            user.set("pass_reminder", self.password_reminder(password))
+            user.set("pass_reminder", self.call("auth.password-reminder", password))
             m = hashlib.md5()
             m.update(salt + password.encode("utf-8"))
             user.set("pass_hash", m.hexdigest())
@@ -1528,7 +1540,6 @@ class PermissionsEditor(Module):
 
 class Dossiers(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-auth.write-dossier", self.admin_write_dossier, priv="users.dossiers")

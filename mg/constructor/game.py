@@ -7,7 +7,6 @@ re_module_action = re.compile(r'^(enable|disable)/([a-z0-9\-]+)$')
 
 class Game(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-game.index", self.menu_game_index)
         self.rhook("ext-admin-game.profile", self.ext_profile, priv="game.profile")
@@ -38,9 +37,9 @@ class Game(Module):
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("game.profile"):
-            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10})
+            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True})
         if req.has_access("game.logo"):
-            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20})
+            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20, "even_unpublished": True})
 
     def headmenu_profile(self, args):
         return self._("Game profile")

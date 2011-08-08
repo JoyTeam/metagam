@@ -19,7 +19,6 @@ class DNSCheckError(Exception):
 
 class Domains(Module):
     def register(self):
-        Module.register(self)
         self.rhook("domains.tlds", self.tlds)
         self.rhook("domains.prices", self.prices)
         self.rhook("domains.assign", self.assign)
@@ -408,7 +407,6 @@ class DomainRegWizard(Wizard):
 
 class DomainsAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("money-description.domain-reg", self.money_description_domain_reg)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -655,6 +653,7 @@ class DomainsAdmin(Module):
                     "pending": self._("pending"),
                 }
                 tables.append({
+                    "type": "domains",
                     "title": self._("Domains"),
                     "order": 40,
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
@@ -709,6 +708,7 @@ class DomainWizard(Wizard):
                 self.call("domains.assign", domain)
                 for wiz in wizs:
                     wiz.finish()
+                self.finish()
                 self.call("admin.response", self._('You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="http://{1}/cabinet" target="top">Return to the cabinet</a>').format(domain, self.main_app().canonical_domain), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")

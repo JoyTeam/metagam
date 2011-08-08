@@ -187,7 +187,6 @@ class ForumPermissionsList(CassandraObjectList):
 
 class ForumAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.socio.Forum"])
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
@@ -432,7 +431,6 @@ class ForumAdmin(Module):
 
 class Socio(Module):
     def register(self):
-        Module.register(self)
         self.rhook("socio.format_text", self.format_text)
         self.rhook("ext-socio.image", self.ext_image, priv="logged")
         self.rhook("ext-socio.user", self.ext_user, priv="public")
@@ -616,22 +614,22 @@ class Socio(Module):
 
     def response(self, content, vars):
         vars["global_html"] = "constructor/socio_global.html"
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         self.call("web.response_global", content, vars)
 
     def response_template(self, template, vars):
         vars["global_html"] = "constructor/socio_global.html"
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         self.call("web.response_template", 'socio/%s' % template, vars)
 
     def response_simple(self, content, vars):
         vars["global_html"] = "constructor/socio_simple_global.html"
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         self.call("web.response_global", content, vars)
 
     def response_simple_template(self, template, vars):
         vars["global_html"] = "constructor/socio_simple_global.html"
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         self.call("web.response_template", 'socio/%s' % template, vars)
 
     def template(self, name, default=None):
@@ -862,7 +860,6 @@ class Socio(Module):
 
 class Forum(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.socio.Socio"])
         self.rhook("forum.category", self.category)                     # get forum category by id
         self.rhook("forum.category-by-tag", self.category_by_tag)       # get forum category by tag
@@ -871,7 +868,7 @@ class Forum(Module):
         self.rhook("forum.reply", self.reply)                           # reply in the topic
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
-        self.rhook("forum.setup-menu", self.setup_menu)
+        self.rhook("socio.setup-interface", self.setup_interface)
         self.rhook("forum.sync", self.sync)
         self.rhook("ext-forum.index", self.ext_index, priv="public")
         self.rhook("ext-forum.cat", self.ext_category, priv="public")
@@ -919,7 +916,7 @@ class Forum(Module):
         objclasses["ForumPermissions"] = (ForumPermissions, ForumPermissionsList)
         objclasses["ForumCategoryStat"] = (ForumCategoryStat, ForumCategoryStatList)
 
-    def setup_menu(self, vars):
+    def setup_interface(self, vars):
         req = self.req()
         if vars.get("menu") and len(vars["menu"]):
             menu_left = []
@@ -2704,7 +2701,6 @@ class Forum(Module):
 
 class SocioAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-forum.index", self.menu_forum_index)
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")

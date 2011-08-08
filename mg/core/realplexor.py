@@ -204,7 +204,6 @@ class RealplexorConcurrence(object):
 
 class Realplexor(Module):
     def register(self):
-        Module.register(self)
         self.rhook("stream.send", self.send)
         self.rhook("stream.packet", self.packet)
         self.rhook("web.request_processed", self.request_processed)
@@ -324,7 +323,6 @@ class RealplexorDaemon(Daemon):
 
 class RealplexorAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
         self.rhook("ext-admin-realplexor.settings", self.realplexor_settings, priv="realplexor.config")

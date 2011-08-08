@@ -11,7 +11,6 @@ re_class = re.compile('^upstream (\S+) {')
 
 class Server(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.core.cluster.Cluster", "mg.core.web.Web"])
         self.rhook("int-server.spawn", self.spawn, priv="public")
         self.rhook("int-server.nginx", self.nginx, priv="public")

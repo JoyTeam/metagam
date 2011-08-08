@@ -2,7 +2,6 @@ from mg import *
 
 class SiteAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.robots", self.robots, priv="site.robots")
@@ -36,7 +35,6 @@ class SiteAdmin(Module):
 
 class Counters(Module):
     def register(self):
-        Module.register(self)
         self.rhook("web.setup_design", self.web_setup_design)
 
     def web_setup_design(self, vars):
@@ -45,7 +43,6 @@ class Counters(Module):
 
 class CountersAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-site.index", self.menu_site)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.counters", self.counters, priv="site.counters")

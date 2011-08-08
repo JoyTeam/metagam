@@ -8,47 +8,51 @@
 		[%if load_extjs%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/ext/resources/css/ext-all.css" />
 		[%if debug_ext%]
-		<script type="text/javascript" src="/st/ext/ext-base-debug.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/ext-base-debug.js"></script>
 		[%else%]
-		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/ext-base.js"></script>
 		[%end%]
 		[%if load_extjs.full%]
 			[%if debug_ext%]
-			<script type="text/javascript" src="/st/ext/ext-all-debug-w-comments.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
 			[%else%]
-			<script type="text/javascript" src="/st/ext/ext-all.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/ext-all.js"></script>
 			[%end%]
 		[%else%]
 			[%if debug_ext%]
-			<script type="text/javascript" src="/st/ext/pkgs/ext-core-debug.js"></script>
-			<script type="text/javascript" src="/st/ext/pkgs/ext-foundation-debug.js"></script>
-			<script type="text/javascript" src="/st/ext/pkgs/cmp-foundation-debug.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-core-debug.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-foundation-debug.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/cmp-foundation-debug.js"></script>
 			[%else%]
-			<script type="text/javascript" src="/st/ext/pkgs/ext-core.js"></script>
-			<script type="text/javascript" src="/st/ext/pkgs/ext-foundation.js"></script>
-			<script type="text/javascript" src="/st/ext/pkgs/cmp-foundation.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-core.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-foundation.js"></script>
+			<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/cmp-foundation.js"></script>
 			[%end%]
 			
 			[%if load_extjs.qtips or load_extjs.dd%]
 				[%if debug_ext%]
-				<script type="text/javascript" src="/st/ext/pkgs/ext-dd-debug.js"></script>
+				<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-dd-debug.js"></script>
 				[%else%]
-				<script type="text/javascript" src="/st/ext/pkgs/ext-dd.js"></script>
+				<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/ext-dd.js"></script>
 				[%end%]
 			[%end%]
 			[%if load_extjs.qtips%]
 				[%if debug_ext%]
-				<script type="text/javascript" src="/st/ext/pkgs/pkg-tips-debug.js"></script>
+				<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/pkg-tips-debug.js"></script>
 				[%else%]
-				<script type="text/javascript" src="/st/ext/pkgs/pkg-tips.js"></script>
+				<script type="text/javascript" src="/st/[%ver%]/ext/pkgs/pkg-tips.js"></script>
 				[%end%]
 			[%end%]
 		[%end%]
 		[%end%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/interface.css" />
+		[%if design_root%]
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
+		[%else%]
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
+		[%end%]
 	</head>
 	<body id="page-internal-body">
 		[%if menu_left or menu_right%]

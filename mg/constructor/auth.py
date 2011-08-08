@@ -30,7 +30,6 @@ class AppSessionList(CassandraObjectList):
 
 class AuthAdmin(ConstructorModule):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
         self.rhook("ext-admin-sessions.monitor", self.sessions_monitor, priv="monitoring")
         self.rhook("headmenu-admin-sessions.monitor", self.headmenu_sessions_monitor)
@@ -129,7 +128,6 @@ class AuthAdmin(ConstructorModule):
 
 class Auth(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("menu-admin-auth.index", self.menu_auth_index)
         self.rhook("ext-admin-players.auth", self.admin_players_auth, priv="players.auth")
         self.rhook("headmenu-admin-players.auth", self.headmenu_players_auth)
@@ -169,6 +167,71 @@ class Auth(ConstructorModule):
         self.rhook("restraints.set", self.restraints_set)
         self.rhook("money-description.multicharing", self.money_description_multicharing)
         self.rhook("session.log-fix", self.log_fix)
+        self.rhook("auth.remind-message", self.auth_remind_message)
+        self.rhook("auth.password-reminder", self.password_reminder, priority=10)
+        self.rhook("auth.password-user", self.password_user)
+        self.rhook("auth.message", self.auth_message, priority=10)
+        self.rhook("auth.remind_email", self.remind_email)
+        self.rhook("menu-admin-game.index", self.menu_game_index)
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("ext-admin-auth.close-project", self.close_project, priv="auth.close-project")
+        self.rhook("ext-offer.index", self.offer, priv="public")
+
+    def offer(self):
+        vars = {
+            "title": self._("Terms and conditions (public offer)"),
+        }
+        lang = self.call("l10n.lang")
+        content = self.call("web.parse_template", "constructor/offer-players-%s.html" % lang, vars)
+        self.call("game.info", content, vars)
+
+    def menu_game_index(self, menu):
+        req = self.req()
+        if req.has_access("auth.close-project"):
+            menu.append({"id": "auth/close-project", "text": self._("Close project login"), "leaf": True, "order": 30, "even_unpublished": True})
+
+    def close_project(self):
+        req = self.req()
+        if req.ok():
+            config = self.app().config_updater()
+            config.set("auth.closed", True if req.param("closed") else False)
+            config.set("auth.close-message", req.param("close_message"))
+            if req.param("closed"):
+                self.call("project.closed")
+            else:
+                self.call("project.opened")
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "closed", "type": "checkbox", "label": self._("Close game for all non-authorized users"), "checked": self.conf("auth.closed")},
+            {"name": "close_message", "type": "textarea", "label": self._("Show this message to all non-authorized users"), "value": self.conf("auth.close-message"), "condition": "[closed]"},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def remind_email(self, params):
+        params["content"] = self._("Someone possibly you requested password recovery on the {host} site.\n\n{content}")
+
+    def auth_message(self, message, vars):
+        self.call("game.info", message, vars)
+
+    def auth_remind_message(self, user):
+        content = u''
+        player = self.player(user.uuid)
+        for char in player.characters:
+            content += self._("Your character name is '{name}'\n").format(name=char.name)
+        content += self._("Your password is '{password}'\n").format(password=user.get("pass_reminder"))
+        return content
+
+    def password_reminder(self, password):
+        raise Hooks.Return(password)
+
+    def password_user(self):
+        req = self.req()
+        user = self.obj(User, req.user())
+        if user.get("name"):
+            return self.character(user.uuid).player.uuid
+        else:
+            return user.uuid
 
     def log_fix(self, args):
         if args.get("user"):
@@ -267,6 +330,8 @@ class Auth(ConstructorModule):
     def permissions_list(self, perms):
         perms.append({"id": "players.auth", "name": self._("Players authentication settings")})
         perms.append({"id": "users.authorized", "name": self._("Viewing list of authorized users")})
+        perms.append({"id": "auth.close-project", "name": self._("Game login closing")})
+        perms.append({"id": "auth.enter-closed", "name": self._("May enter even closed game")})
 
     def menu_auth_index(self, menu):
         req = self.req()
@@ -406,9 +471,14 @@ class Auth(ConstructorModule):
         fields.append({"code": "email", "prompt": self._("Your e-mail address")})
         fields.append({"code": "password", "prompt": self._("Your password")})
         fields.append({"code": "captcha", "prompt": self._("Enter numbers from the picture")})
+        fields.insert(0, {"code": "offer", "prompt": self._('Do you accept <a href="/offer" target="_blank">the terms and conditions</a>?')})
         vars["register_fields"] = fields
 
     def player_register(self):
+        if not self.app().project.get("published"):
+            self.call("web.response_json", {"success": False, "error": self._("Registration in this game is disabled yet. To allow new players to register the game must be sent to moderation first.")})
+        if self.conf("auth.closed"):
+            self.call("web.response_json", {"success": False, "error": htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))})
         req = self.req()
         session = req.session(True)
         # registragion form
@@ -496,10 +566,12 @@ class Auth(ConstructorModule):
         for i in range(0, 10):
             salt += random.choice(letters)
         player_user.set("salt", salt)
-        player_user.set("pass_reminder", re.sub(r'^(..).*$', r'\1...', password))
+        player_user.set("pass_reminder", self.call("auth.password-reminder", password))
         m = hashlib.md5()
         m.update(salt + password.encode("utf-8"))
         player_user.set("pass_hash", m.hexdigest())
+        player_user.set("reg_ip", req.remote_addr())
+        player_user.set("reg_agent", req.environ.get("HTTP_USER_AGENT"))
         # Creating character
         character = self.obj(DBCharacter)
         character.set("created", now)
@@ -558,13 +630,13 @@ class Auth(ConstructorModule):
 
     def player_login(self):
         req = self.req()
-        name = req.param("email")
+        name = req.param("name") or req.param("email")
         password = req.param("password")
         msg = {}
         self.call("auth.messages", msg)
         if not name:
             self.call("web.response_json", {"error": msg["name_empty"]})
-        user = self.call("session.find_user", name, allow_email=True)
+        user = self.call("session.find_user", name)
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
         if user.get("name"):
@@ -581,6 +653,15 @@ class Auth(ConstructorModule):
         m.update(user.get("salt").encode("utf-8") + password.encode("utf-8"))
         if m.hexdigest() != user.get("pass_hash"):
             self.call("web.response_json", {"error": msg["password_incorrect"]})
+        if self.conf("auth.closed"):
+            access = False
+            for character in self.player(user.uuid).characters:
+                perms = self.call("auth.permissions", character.uuid)
+                if "project.admin" in perms or "auth.enter-closed" in perms:
+                    access = True
+                    break
+            if not access:
+                self.call("web.response_json", {"success": False, "error": htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))})
         session = req.session(True)
         if user.get("inactive") and self.conf("auth.activate_email", True):
             require_activation = False

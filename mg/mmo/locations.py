@@ -9,7 +9,6 @@ re_polygon_param = re.compile(r'^polygon-(\d+)$')
 
 class LocationsAdmin(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-locations.index", self.menu_locations_index)
@@ -34,8 +33,10 @@ class LocationsAdmin(ConstructorModule):
         menu.append({"id": "locations.index", "text": self._("Locations"), "order": 20})
 
     def menu_locations_index(self, menu):
-        menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 0, "leaf": True})
-        menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 1, "leaf": True})
+        req = self.req()
+        if req.has_access("locations.config"):
+            menu.append({"id": "locations/config", "text": self._("Locations configuration"), "order": 0, "leaf": True})
+            menu.append({"id": "locations/editor", "text": self._("Locations editor"), "order": 1, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "locations.editor", "name": self._("Locations editor")})
@@ -260,7 +261,6 @@ class LocationsAdmin(ConstructorModule):
 
 class LocationsStaticImages(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("locations.render", self.render)
         self.rhook("hook-location.image", self.hook_image)
 
@@ -297,7 +297,6 @@ class LocationsStaticImages(ConstructorModule):
 
 class LocationsStaticImagesAdmin(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("admin-locations.editor-form-render", self.form_render)
         self.rhook("admin-locations.editor-form-validate", self.form_validate)
         self.rhook("admin-locations.editor-form-store", self.form_store)
@@ -495,7 +494,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
 
 class Locations(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("locations.character_get", self.get)
         self.rhook("locations.character_before_set", self.before_set)
         self.rhook("locations.character_set", self.lset)
@@ -675,7 +673,10 @@ class Locations(ConstructorModule):
         character = self.character(req.user())
         location = character.location
         if location is None:
-            name = self._("No location")
+            if declension == "w":
+                name = self._("in the undefined location")
+            else:
+                name = self._("No location")
         elif declension == "w":
             name = location.name_w
         else:

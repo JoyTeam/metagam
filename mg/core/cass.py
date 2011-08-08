@@ -39,6 +39,8 @@ class Cassandra(object):
         self.pool = pool
         self.keyspace = keyspace
         self.mc = mc
+        self._last_time = 0
+        self._last_time_cnt = 0
 
     def apply_keyspace(self, conn):
         if self.keyspace != conn.actual_keyspace:
@@ -204,6 +206,15 @@ class Cassandra(object):
         except:
             self.pool.new()
             raise
+
+    def get_time(self):
+        now = time.time() * 1000
+        if self._last_time == now:
+            self._last_time_cnt += 1
+        else:
+            self._last_time = now
+            self._last_time_cnt = 0
+        return now + self._last_time_cnt
 
 class CassandraPool(object):
     """
@@ -459,7 +470,7 @@ class CassandraObject(object):
         """
         if not self.dirty:
             return
-        timestamp = time.time() * 1000
+        timestamp = self.db.get_time()
         mutations = {}
         mcgroups = set()
         self.mutate(mutations, mcgroups, timestamp)
@@ -473,7 +484,7 @@ class CassandraObject(object):
         Remove object from the database
         """
         #print "removing %s" % self.uuid
-        timestamp = time.time() * 1000
+        timestamp = self.db.get_time()
         row_mcid = self.clsprefix + self.uuid
         row_id = self.dbprefix + row_mcid
         self.db.remove(row_id, ColumnPath("Objects"), timestamp, ConsistencyLevel.QUORUM)
@@ -677,7 +688,7 @@ class CassandraObjectList(object):
                                     if col[1] == obj.uuid:
                                         #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                         if timestamp is None:
-                                            timestamp = time.time() * 1000
+                                            timestamp = self.db.get_time()
                                         mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                         self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                         break
@@ -705,7 +716,7 @@ class CassandraObjectList(object):
                                 if col[1] == obj.uuid:
                                     #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
                                     if timestamp is None:
-                                        timestamp = time.time() * 1000
+                                        timestamp = self.db.get_time()
                                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                     self.db.mc.incr("%s%s/VER" % (obj.clsprefix, self.query_index))
                                     break
@@ -731,7 +742,7 @@ class CassandraObjectList(object):
             for obj in self.dict:
                 if obj.dirty:
                     if timestamp is None:
-                        timestamp = time.time() * 1000
+                        timestamp = self.db.get_time()
                     obj.mutate(mutations, mcgroups, timestamp)
             if len(mutations) > 0:
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
@@ -741,7 +752,7 @@ class CassandraObjectList(object):
     def remove(self):
         self._load_if_not_yet(True)
         if len(self.dict) > 0:
-            timestamp = time.time() * 1000
+            timestamp = self.db.get_time()
             mutations = {}
             mcgroups = set()
             for obj in self.dict:

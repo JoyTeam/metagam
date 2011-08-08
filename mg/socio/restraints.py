@@ -24,7 +24,6 @@ class UserRestraintList(CassandraObjectList):
 
 class Restraints(Module):
     def register(self):
-        Module.register(self)
         self.rhook("restraints.check", self.restraints_check)
         self.rhook("restraints.set", self.restraints_set)
 
@@ -84,7 +83,6 @@ class Restraints(Module):
 
 class RestraintsAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-restraints.cleanup", self.cleanup)

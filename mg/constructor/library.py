@@ -66,7 +66,6 @@ class DBLibraryPageGroupList(CassandraObjectList):
 
 class Library(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-library.index", self.library_index, priv="public")
         self.rhook("ext-library.handler", self.library_handler, priv="public")
@@ -222,7 +221,6 @@ class Library(ConstructorModule):
 
 class LibraryAdmin(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-library.index", self.menu_library_index)
         self.rhook("permissions.list", self.permissions_list)

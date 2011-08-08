@@ -101,3 +101,7 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 .no { color: #e00000 }
 .admin-enabled { color: #00c000; font-weight: bold }
 .x-edit-pictures {background: url(edit-pictures.png) 0 0 no-repeat !important;}
+.no-margins, .text h1.no-margins { margin: 0; padding: 0 }
+#income-structure { padding-top: 10px }
+#last-payments { padding-top: 10px }
+.td-number { text-align: right }

@@ -92,7 +92,6 @@ re_wizard_args_1 = re.compile(r'^([0-9a-f]+)/(.+)$')
 
 class Wizards(Module):
     def register(self):
-        Module.register(self)
         self.rhook("wizards.new", self.wizards_new)
         self.rhook("wizards.list", self.wizards_list)
         self.rhook("wizards.get", self.wizards_get)

@@ -1,11 +1,12 @@
 /* LAYOUT */
 html,body,table,tr,td,form { padding: 0; margin: 0; border: 0; font-size: 13px; font-family: Verdana; }
-body { background-image: url(body-bg-1.jpg) }
+html { height: 100% }
+body { background-image: url(body-bg-1.jpg); height: 100% }
 img { vertical-align: middle; border: 0; }
 table { border-collapse: collapse; }
 
 /* ENTER */
-#enter-email input, #enter-password input { width: 166px; border: solid 1px #5d5c5c; padding: 2px }
+#enter-name input, #enter-password input { width: 166px; border: solid 1px #5d5c5c; padding: 2px }
 #enter-password { padding-top: 8px }
 #enter-submit { padding-top: 8px; font-size: 12px }
 #enter-remind { padding-top: 5px; font-size: 11px }

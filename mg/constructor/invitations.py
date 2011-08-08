@@ -25,7 +25,6 @@ class InvitationList(CassandraObjectList):
 
 class Invitations(Module):
     def register(self):
-        Module.register(self)
         self.rhook("headmenu-admin-constructor.invitations", self.headmenu_constructor_invitations)
         self.rhook("ext-admin-constructor.invitations", self.ext_constructor_invitations, priv="constructor.invitations")
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)

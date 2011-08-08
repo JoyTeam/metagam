@@ -10,50 +10,47 @@
 <div class="text">
 <table class="admin-columns">
 	<tr>
-		<td class="admin-column"><h1>[%IncomeStructure%]</h1><div id="income-structure"></div></td>
-		<td class="admin-column"><h1>[%IncomeStatistics%]</h1><div id="income-statistics"></div></td>
+		<td class="admin-column"><h1 class="no-margins">[%IncomeStructure%]</h1>[%ForTheLastMonth%], RUB<div id="income-structure"></div></td>
+	</tr><tr>
+		<td class="admin-column"><h1 class="no-margins">[%LastPayments%]</h1><div id="last-payments">
+				<table class="menu">[%if last_payments.header%]<tr class="header[%if last_payments.header_nowrap +%] header-nowrap[%end%]">[%foreach col in last_payments.header%]<td[%+ if col.cls%] class="[%col.cls%]"[%end%]>[%col.html%]</td>[%end%]</tr>[%end%][%foreach row in last_payments.rows%]<tr>[%foreach col in row%]<td[%+ if col.cls%] class="[%col.cls%]"[%end%]>[%col.html%]</td>[%end%]</tr>[%end%]</table>
+		</div></td>
 	</tr>
 </table>
 </div>
 <script type="text/javascript">
+	[%if income_ranges%]
 	var store = new Ext.data.JsonStore({
-		fields: ['paysystem', 'amount'],
-		data: [{
-			paysystem: 'Qiwi',
-			amount: 150
-		}, {
-			paysystem: 'Credit cards',
-			amount: 200
-		}, {
-			paysystem: 'Mobile payment',
-			amount: 100
-		}, {
-			paysystem: 'WebMoney',
-			amount: 230
-		}]
+		fields: ['range', 'amount'],
+		data: [[%foreach ent in income_ranges%]{range: '[%ent.text%]', amount: [%ent.amount%]}[%unless ent.lst%],[%end%][%end%]]
 	});
 	new Ext.chart.PieChart({
-		width: 220,
-		height: 300,
+		height: 150,
 		renderTo: 'income-structure',
 		store: store,
 		dataField: 'amount',
-		categoryField: 'paysystem',
+		categoryField: 'range',
 		extraStyle: {
 			legend: {
-				display: 'bottom',
+				display: 'right',
 				padding: 5,
 				font: {
 					family: 'Verdana',
 					size: 11
 				}
+			},
+			font: {
+				name: 'Verdana'
 			}
 		}
 	});
+	[%else%]
+	Ext.getDom('income-structure').innerHTML = '[%NoData%]';
+	[%end%]
 </script>
 [%end%]
+[%if recommended_actions%]
 <div class="text"><h1>[%Tips%]</h1></div>
-[%if recommended_actions %]
 <table class="admin-recommended-table">
 	[%foreach act in recommended_actions%]
 	<tr><td class="admin-recommended-icon"><img src="[%act.icon%]" alt="" /></td><td class="admin-recommended-content">[%act.content%]</td></tr>

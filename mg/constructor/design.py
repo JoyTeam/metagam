@@ -859,7 +859,8 @@ class DesignIndexCommonBlocks(DesignGenerator):
             "tpl": self.id(),
             "scheme": self.scheme,
             "lang": self.call("l10n.lang"),
-            "CharNameOrEmail": self._("Character name or e-mail"),
+            "CharName": self._("Character name"),
+            "Password": self._("Password"),
             "register": self._("registration"),
             "forgot": self._("forgot your password?"),
             "enter": self._("enter"),
@@ -1097,7 +1098,6 @@ class DesignSocioSubmarine(DesignSocioCommonBlocks):
 
 class DesignMod(Module):
     def register(self):
-        Module.register(self)
         self.rhook("design.response", self.response)
         self.rhook("design.parse", self.parse)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -1239,7 +1239,6 @@ class DesignMod(Module):
 
 class DesignAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("design-admin.editor", self.editor)
         self.rhook("design-admin.delete", self.delete)
         self.rhook("design-admin.headmenu", self.headmenu)
@@ -1472,12 +1471,10 @@ class DesignAdmin(Module):
             return [self._("Settings"), "%s/design/gen" % group]
 
 class IndexPage(Module):
-    def register(self):
-        Module.register(self)
+    pass
 
 class IndexPageAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-indexpage.index", self.menu_indexpage_index)
         self.rhook("ext-admin-indexpage.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-indexpage.design", self.headmenu_design)
@@ -1638,7 +1635,6 @@ class IndexPageAdmin(Module):
 
 class SocioInterface(ConstructorModule):
     def register(self):
-        Module.register(self)
         self.rhook("forum.vars-index", self.forum_vars_index)
         self.rhook("forum.vars-category", self.forum_vars_category)
         self.rhook("forum.vars-topic", self.forum_vars_topic)
@@ -1699,30 +1695,29 @@ class SocioInterface(ConstructorModule):
         return self.call("design.parse", design, template, None, vars, "socio")
 
     def response(self, content, vars):
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         design = self.design("sociointerface")
         self.call("design.response", design, "global.html", content, vars, "socio")
 
     def response_template(self, template, vars):
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         design = self.design("sociointerface")
         content = self.call("design.parse", design, template, None, vars, "socio")
         self.call("design.response", design, "global.html", content, vars, "socio")
 
     def response_simple(self, content, vars):
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         design = self.design("sociointerface")
         self.call("design.response", design, "global-simple.html", content, vars, "socio")
 
     def response_simple_template(self, template, vars):
-        self.call("forum.setup-menu", vars)
+        self.call("socio.setup-interface", vars)
         design = self.design("sociointerface")
         content = self.call("design.parse", design, template, None, vars, "socio")
         self.call("design.response", design, "global-simple.html", content, vars, "socio")
 
 class SocioInterfaceAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("ext-admin-sociointerface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-sociointerface.design", self.headmenu_design)
@@ -1994,12 +1989,10 @@ class SocioInterfaceAdmin(Module):
         self.call("design.response", design, "global.html", content, vars)
 
 class GameInterface(Module):
-    def register(self):
-        Module.register(self)
+    pass
 
 class GameInterfaceAdmin(ConstructorModule):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-gameinterface.design", self.ext_design, priv="design")
         self.rhook("headmenu-admin-gameinterface.design", self.headmenu_design)

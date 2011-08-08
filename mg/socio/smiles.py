@@ -11,7 +11,6 @@ re_escape_symbols = re.compile(r'([\+\$\^\&\*\(\)\?])')
 
 class Smiles(Module):
     def register(self):
-        Module.register(self)
         self._re_find = None
         self._smiles = None
         self.rhook("chat.parse", self.chat_parse)
@@ -102,7 +101,6 @@ class Smiles(Module):
 
 class SmilesAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("ext-admin-socio.smiles", self.admin_socio_smiles, priv="socio.smiles")

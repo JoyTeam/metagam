@@ -136,7 +136,7 @@ function auth_login()
 		'method': 'post',
 		request_id: ++last_request_id,
 		parameters: {
-			'email': $('email').value,
+			'name': ($('name') || $('email')).value,
 			'password': $('password').value
 		},
 		onSuccess: function(response) {
@@ -181,9 +181,17 @@ function auth_register()
 {
 	if (in_dialog || in_report)
 		return false;
-	var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" class="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
-	dialog(html);
-	auth_register_field(0);
+	[%if published%]
+		[%if closed%]
+		report_failure('[%close_message%]');
+		[%else%]
+		var html = '<form action="/" method="post" id="registerform" name="registerform" onsubmit="return auth_register_next();"><div id="registerform-content"></div><div id="field-submit"><a id="field-submit-a" class="field-submit-a" href="/" onclick="return auth_register_next();">' + gt.gettext('Next >') + '</a></div><input type="image" src="/st-mg/[%ver%]/img/null.gif" /></form>';
+		dialog(html);
+		auth_register_field(0);
+		[%end%]
+	[%else%]
+	report_failure('[%NotPublished%]');
+	[%end%]
 	return false;
 }
 
@@ -206,6 +214,8 @@ function auth_register_field(i)
 	} else if (fld.code == 'captcha') {
 		inp_html = '<div class="field-input-div"><img id="captcha" src="/auth/captcha?rnd=' + Math.random() + '" alt="" /></div>';
 		inp_html += '<div class="field-input-div"><input id="field-input" type="captcha" class="field-edit" /></div>';
+	} else if (fld.code == 'offer') {
+		inp_html = '<div class="field-input-div"><input type="checkbox" id="field-input" /></div>';
 	} else {
 		inp_html = '<div class="field-input-div"><input id="field-input" value="' + htmlencode(fld.value) + '" class="field-edit" /></div>';
 	}
@@ -218,6 +228,14 @@ function auth_register_field(i)
 
 function auth_register_next()
 {
+	var fld = register_fields[fld_index];
+	if (fld.code == 'offer') {
+		if (!$('field-input').checked) {
+			$('field-error').innerHTML = gt.gettext('To continue registration you must accept the terms and conditions');
+			$('field-input').focus();
+			return false;
+		}
+	}
 	var val = $('field-input').value;
 	if (!val) {
 		$('field-error').innerHTML = gt.gettext('This field may not be empty');
@@ -308,4 +326,5 @@ function auth_register_next()
 
 function auth_remind()
 {
+	document.location = '/auth/remind?redirect=/';
 }

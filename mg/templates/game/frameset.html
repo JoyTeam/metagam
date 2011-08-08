@@ -15,13 +15,13 @@
 		[%else%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
 		[%end%]
-		<script type="text/javascript" src="/st/ext/ext-base.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/ext-base.js"></script>
 		[%if debug_ext%]
-		<script type="text/javascript" src="/st/ext/ext-all-debug-w-comments.js"></script>
-		<script type="text/javascript" src="/st/ext/miframe-debug.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/miframe-debug.js"></script>
 		[%else%]
-		<script type="text/javascript" src="/st/ext/ext-all.js"></script>
-		<script type="text/javascript" src="/st/ext/miframe.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/ext-all.js"></script>
+		<script type="text/javascript" src="/st/[%ver%]/ext/miframe.js"></script>
 		[%end%]
 		<script type="text/javascript" src="/st/[%ver%]/js/gettext.js"></script>
 		[%if lang%]<script type="text/javascript" src="/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
@@ -35,7 +35,6 @@
 		<script type="text/javascript" src="http://2pay.ru/gadget/client/html/init.js"></script>
 		<script type="text/javascript">
 		var _2payProjectID = '[%xsolla_payport.project_id%]';
-		var _2payUserEmail = '[%xsolla_payport.email%]';
 		var _2payPaymentSum = '[%xsolla_payport.payment_sum%]';
 		var _2payVolumeSum = '[%xsolla_payport.amount_sum%]';
 		var _2payParamsV1 = '[%xsolla_payport.name%]';
@@ -46,7 +45,6 @@
 		[%if xsolla_payment%]
 		<script type="text/javascript">
 		var xsolla_project_id = '[%xsolla_payment.project_id%]';
-		var xsolla_email = '[%xsolla_payment.email%]';
 		var xsolla_v1 = '[%xsolla_payment.name%]';
 		</script>
 		[%end%]

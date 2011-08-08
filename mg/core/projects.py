@@ -36,7 +36,6 @@ class ProjectList(CassandraObjectList):
 
 class Projects(Module):
     def register(self):
-        Module.register(self)
         self.rhook("applications.list", self.applications_list)
 
     def applications_list(self, apps):

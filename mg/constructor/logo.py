@@ -7,7 +7,6 @@ import cgi
 
 class LogoAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("admin-logo.uploader", self.logo_uploader)
         self.rhook("admin-logo.store", self.store_logo)
 

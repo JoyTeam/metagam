@@ -62,7 +62,6 @@ class CassandraRestructure(object):
 
 class CommonCassandraStruct(Module):
     def register(self):
-        Module.register(self)
         self.rhook("core.dbstruct", self.cassandra_struct)
         self.rhook("core.dbapply", self.cassandra_apply)
 

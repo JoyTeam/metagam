@@ -39,7 +39,6 @@ class BulkEmailMessageList(CassandraObjectList):
 
 class EmailAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-email.index", self.menu_email_index)
         self.rhook("permissions.list", self.permissions_list)
@@ -86,7 +85,6 @@ class EmailAdmin(Module):
 
 class Email(Module):
     def register(self):
-        Module.register(self)
         self.rhook("email.send", self.email_send)
         self.rhook("email.users", self.email_users)
         self.rhook("exception.report", self.exception_report)
@@ -226,7 +224,6 @@ class Email(Module):
 
 class EmailSender(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-email.index", self.menu_email_index)
         self.rhook("ext-admin-email.sender", self.email_sender, priv="email.sender")

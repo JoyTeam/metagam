@@ -1,3 +1,5 @@
+a:link, a:visited { color: #476a91 }
+a:hover, a:active { color: #678ab1 }
 #panel-top-content { background-image: url(top-panel.gif); background-repeat: repeat-x; background-position: 0% 0%; padding-top: 4px }
 #panel-top-content .panel-header { color: #fdfdff; font-family: "Arial Black", Verdana; font-size: 16px; text-shadow: 0px 0px 1px #a0a0ff, 0px 0px 2px #000000; padding: 5px 0 0 10px }
 .x-layout-split { background: #d9e0e7 }
@@ -7,3 +9,11 @@
 .default-chat-submit-td { width: 138px }
 .chat-roster-characters-content2 { padding: 12px }
 .chat-roster-channel { margin-top: 5px }
+.panel-header-horizontal-margin { height: 3px }
+.panel-header-horizontal-12 { color: #ffffff }
+.progress-bars-horizontal-margin { height: 11px }
+.progress-bars-horizontal { height: 10px }
+.location-movement-full { background: none }
+.block-horizontal img { margin: 4px 5px 0 0 }
+.block-roster-buttons img { margin: 4px 5px 0 0 }
+.game-info { color: #577aa1; width: 600px; text-align: left; margin: 0 auto 0 auto }

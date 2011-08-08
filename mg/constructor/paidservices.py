@@ -12,7 +12,6 @@ re_valid_identifier = re.compile(r'^u_[a-z0-9_]+$', re.IGNORECASE)
 
 class PaidServices(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("paidservices.offers", self.offers)
         self.rhook("paidservices.prolong", self.prolong)
@@ -136,7 +135,7 @@ class PaidServices(ConstructorModule):
                 balance = 0
                 locked = 0
             html = self.call("money.price-html", balance, currency)
-            donate = self.call("money.donate-message", currency)
+            donate = self.call("money.donate-message", currency, character=character)
             if donate:
                 html = '%s (%s)' % (html, donate)
             accounts.append({
@@ -281,7 +280,6 @@ class PaidServices(ConstructorModule):
 
 class PaidServicesAdmin(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("ext-admin-paidservices.editor", self.admin_paidservices_editor, priv="paidservices.editor")

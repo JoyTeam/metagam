@@ -50,7 +50,6 @@ class TempFileList(CassandraObjectList):
 
 class Cluster(Module):
     def register(self):
-        Module.register(self)
         self.rhook("cluster.query_director", self.query_director)
         self.rhook("cluster.query_server", self.query_server)
         self.rhook("cluster.servers_online", self.servers_online)
@@ -267,7 +266,6 @@ def query(host, port, uri, params, timeout=20):
 
 class ClusterAdmin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)

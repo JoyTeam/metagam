@@ -17,11 +17,7 @@ re_block_edit = re.compile('^(\S+)\/(\S+)$')
 re_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
 
-default_icons = set([
-    "auth-logout.png",
-    "game-admin.png",
-    "game-reload.png",
-])
+default_icons = set([])
 
 class DBFirstVisit(CassandraObject):
     _indexes = {
@@ -43,16 +39,19 @@ class DBFirstVisitList(CassandraObjectList):
 
 class Dynamic(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-dyn-mg.indexpage.js", self.indexpage_js, priv="public")
         self.rhook("ext-dyn-mg.indexpage.css", self.indexpage_css, priv="public")
-        self.rhook("auth.char-form-changed", self.char_form_changed)
+        self.rhook("auth.char-form-changed", self.invalidate)
+        self.rhook("project.published", self.invalidate)
+        self.rhook("project.unpublished", self.invalidate)
+        self.rhook("project.opened", self.invalidate)
+        self.rhook("project.closed", self.invalidate)
 
     def indexpage_js_mcid(self):
         ver = self.int_app().config.get("application.version", 0)
         return "indexpage-js-%s" % ver
 
-    def char_form_changed(self):
+    def invalidate(self):
         for mcid in [self.indexpage_js_mcid(), self.indexpage_css_mcid()]:
             self.app().mc.delete(mcid)
 
@@ -68,7 +67,11 @@ class Dynamic(Module):
                     "%s/../static/js/gettext.js" % mg_path,
                     "%s/../static/constructor/gettext-%s.js" % (mg_path, lang),
                 ],
-                "game_domain": self.app().canonical_domain
+                "game_domain": self.app().canonical_domain,
+                "closed": self.conf("auth.closed"),
+                "close_message": jsencode(htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))),
+                "published": self.app().project.get("published"),
+                "NotPublished": self._("Registration in this game is disabled yet. To allow new players to register the game must be sent to moderation first."),
             }
             self.call("indexpage.render", vars)
             data = self.call("web.parse_template", "game/indexpage.js", vars)
@@ -93,7 +96,6 @@ class Dynamic(Module):
 
 class Interface(ConstructorModule):
     def register(self):
-        Module.register(self)
         self.rhook("ext-index.index", self.index, priv="public")
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
@@ -230,10 +232,11 @@ class Interface(ConstructorModule):
         }
         self.call("game.response_internal", "error.html", vars, msg)
 
-    def game_info(self, msg):
-        vars = {
-            "title": self._("Info"),
-        }
+    def game_info(self, msg, vars=None):
+        if vars is None:
+            vars = {}
+        if not vars.get("title"):
+            vars["title"] = self._("Info")
         self.call("game.response_external", "info.html", vars, msg)
 
     def game_error(self, msg):
@@ -306,7 +309,7 @@ class Interface(ConstructorModule):
             "margintop": self.conf("gameinterface.margin-top", 0),
             "marginbottom": self.conf("gameinterface.margin-bottom", 0),
             "panel_top": self.conf("gameinterface.panel-top", True),
-            "panel_main_left": self.conf("gameinterface.panel-main-left", False),
+            "panel_main_left": self.conf("gameinterface.panel-main-left", True),
             "panel_main_right": self.conf("gameinterface.panel-main-right", False),
         }
         vars["domain"] = req.host()
@@ -535,7 +538,7 @@ class Interface(ConstructorModule):
             marginbottom = self.conf("gameinterface.margin-bottom", 0)
             debug_ext = self.conf("debug.ext")
             panel_top = self.conf("gameinterface.panel-top", True)
-            panel_main_left = self.conf("gameinterface.panel-main-left", False)
+            panel_main_left = self.conf("gameinterface.panel-main-left", True)
             panel_main_right = self.conf("gameinterface.panel-main-right", False)
         fields = [
             {"id": "scheme0", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
@@ -1311,7 +1314,7 @@ class Interface(ConstructorModule):
             text = self._('<p>Your game is currently on moderation. You may continue setting it up.</p><p><a href="/admin" target="_blank">Administrative interface</a></p>')
         else:
             text = self._('<h1>Welcome to your new game!</h1><p>Now you can open <a href="/admin" target="_blank">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>')
-        self.call("web.response_global", text, {})
+        self.call("main-frame.info", text)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -1335,6 +1338,7 @@ class Interface(ConstructorModule):
                 character.settings.store()
                 self.call("web.redirect", "/location")
         self.call("interface.settings-form", form, "render", character.settings)
+        form.add_message_bottom('<a href="/auth/change" target="_blank">%s</a>' % self._("Change your password"))
         self.call("main-frame.form", form, {})
 
     def gameinterface_popups(self):

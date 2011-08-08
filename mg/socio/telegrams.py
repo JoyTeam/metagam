@@ -57,7 +57,6 @@ class TelegramContragentList(CassandraObjectList):
 
 class Telegrams(Module):
     def register(self):
-        Module.register(self)
         self.rhook("telegrams.menu", self.menu)
         self.rhook("telegrams.send", self.send)
         self.rhook("ext-telegrams.list", self.telegrams_list, priv="logged")

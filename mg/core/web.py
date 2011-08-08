@@ -439,7 +439,6 @@ class Web(Module):
         self.last_ping = None
 
     def register(self):
-        Module.register(self)
         self.rdep(["mg.core.l10n.L10n"])
         self.rhook("int-core.ping", self.core_ping, priv="public")
         self.rhook("int-core.abort", self.core_abort, priv="public")
@@ -710,7 +709,11 @@ class Web(Module):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_hook_layout", hook, vars), vars))
 
     def web_response_json(self, data):
-        raise WebResponse(self.req().jresponse(data))
+        req = self.req()
+        if getattr(req, "upload_handler", None):
+            raise WebResponse(self.req().uresponse(htmlescape(json.dumps(data))))
+        else:
+            raise WebResponse(self.req().jresponse(data))
 
     def web_response_json_html(self, data):
         raise WebResponse(self.req().uresponse(htmlescape(json.dumps(data))))

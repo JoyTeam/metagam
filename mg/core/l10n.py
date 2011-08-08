@@ -72,7 +72,6 @@ class FixedOffset(datetime.tzinfo):
 
 class L10n(Module):
     def register(self):
-        Module.register(self)
         self.rhook("l10n.domain", self.l10n_domain)
         self.rhook("l10n.lang", self.l10n_lang)
         self.rhook("l10n.translation", self.l10n_translation)

@@ -20,7 +20,6 @@ class DBExportList(CassandraObjectList):
 
 class Export(Module):
     def register(self):
-        Module.register(self)
         self.rhook("dbexport.add", self.add)
         self.rhook("int-dbexport.get", self.get, priv="public")
         self.rhook("int-dbexport.delete", self.delete, priv="public")

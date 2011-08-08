@@ -8,8 +8,12 @@
 		[%head%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/interface.css" />
+		[%if design_root%]
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
 		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
+		[%else%]
+		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
+		[%end%]
 	</head>
 	<body id="page-external-body">
 		<table id="page-external-1"><tr><td id="page-external-2">

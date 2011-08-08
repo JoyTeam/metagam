@@ -7,7 +7,6 @@ re_newline = re.compile(r'\n')
 
 class ProjectDashboard(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.constructor.invitations.Invitations"])
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
@@ -22,6 +21,8 @@ class ProjectDashboard(Module):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-constructor.settings", self.ext_constructor_settings, priv="constructor.settings")
         self.rhook("ext-admin-constructor.register-xsolla", self.ext_project_register_xsolla, priv="constructor.projects.publish")
+        self.rhook("headmenu-admin-constructor.waiting-moderation", self.headmenu_waiting_moderation)
+        self.rhook("ext-admin-constructor.waiting-moderation", self.waiting_moderation, priv="constructor.projects.publish")
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -41,6 +42,7 @@ class ProjectDashboard(Module):
                         status = self._("projstatus///not published")
                     rows.append((u'<hook:admin.link href="constructor/project-dashboard/{0}" title="{1}" />'.format(p.get("uuid"), htmlescape(p.get("title_short"))), p.get("title_code"), status))
                 tables.append({
+                    "type": "games",
                     "title": self._("Games"),
                     "order": 50,
                     "header": [self._("Project name"), self._("Project code"), self._("Status")],
@@ -68,6 +70,36 @@ class ProjectDashboard(Module):
         if req.has_access("constructor.projects"):
             menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True, "order": 20})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True, "order": 30})
+        if req.has_access("constructor.projects.publish"):
+            menu.append({"id": "constructor/waiting-moderation", "text": self._("Waiting for moderation"), "leaf": True, "order": 40})
+
+    def headmenu_waiting_moderation(self, args):
+        return self._("Projects waiting for moderation")
+
+    def waiting_moderation(self):
+        lst = self.int_app().objlist(ProjectList, query_index="moderation", query_equal="1")
+        lst.load()
+        rows = []
+        for ent in lst:
+            user = self.obj(User, ent.get("owner"))
+            rows.append([
+                self.call("l10n.time_local", ent.get("created")),
+                '<hook:admin.link href="constructor/project-dashboard/%s" title="%s" />' % (ent.uuid, htmlescape(ent.get("title_short"))),
+                '<hook:admin.link href="auth/user-dashboard/%s?active_tab=games" title="%s" />' % (user.uuid, htmlescape(user.get("name"))),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Created"),
+                        self._("Project"),
+                        self._("Administrator"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def ext_project_find(self):
         req = self.req()
@@ -112,6 +144,7 @@ class ProjectDashboard(Module):
 #                   dom.remove()
                 project.store()
                 app.store_config_hooks()
+                app.hooks.call("project.unpublished")
         self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
 
     def ext_project_dashboard(self):
@@ -247,7 +280,8 @@ class ProjectDashboard(Module):
                 app.hooks.call("constructor-project.notify-owner", self._("Moderation passed: %s") % project.get("title_short"), self._("Congratulations! Your game '{0}' has passed moderation successfully.").format(project.get("title_short")))
                 project.store()
                 app.store_config_hooks()
-        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+                app.hooks.call("project.published")
+        self.call("admin.redirect", "constructor/waiting-moderation")
 
     def ext_project_reject(self):
         req = self.req()
@@ -272,12 +306,12 @@ class ProjectDashboard(Module):
                     app.hooks.call("constructor-project.notify-owner", self._("Moderation reject: %s") % project.get("title_short"), self._("Your game '{0}' hasn't passed moderation.\nReason: {1}").format(project.get("title_short"), reason))
                     project.store()
                     app.store_config_hooks()
-                    self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+                    self.call("admin.redirect", "constructor/waiting-moderation")
                 fields = []
                 fields.append({"name": "reason", "label": self._("Reject reason")})
                 buttons = [{"text": self._("moderation///Reject")}]
                 self.call("admin.form", fields=fields, buttons=buttons)
-        self.call("admin.redirect", "constructor/project-dashboard/%s" % req.args)
+        self.call("admin.redirect", "constructor/waiting-moderation")
 
     def headmenu_project_reject(self, args):
         return [self._("Moderation reject"), "constructor/project-dashboard/%s" % args]

@@ -29,27 +29,33 @@ class ProjectSetupWizard(Wizard):
                 self.config.set("state", "offer")
                 self.config.store()
                 self.call("admin.redirect", "wizard/call/%s" % self.uuid)
-            vars = {
-                "wizard": self.uuid,
-                "next_text": jsencode(self._("Next")),
-            }
             self.call("admin.advice", {"title": self._("Demo advice"), "content": self._("Look to the right to read some recommendations")})
-            self.call("admin.response_template", "constructor/setup/intro-%s.html" % self.call("l10n.lang"), vars)
+            fields = [
+                {"type": "html", "html": self.call("web.parse_template", "constructor/setup/intro-%s.html" % self.call("l10n.lang"), {})},
+                {"type": "button", "text": self._("Next"), "action": "wizard/call/%s/next" % self.uuid},
+            ]
+            self.call("admin.form", fields=fields, buttons=[])
         elif state == "offer":
             if cmd == "agree":
                 self.config.set("state", "name")
+                self.config.set("reg_ip", req.remote_addr())
+                self.config.set("reg_agent", req.environ.get("HTTP_USER_AGENT"))
                 self.config.store()
                 self.call("admin.redirect", "wizard/call/%s" % self.uuid)
+            self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
             author = self.main_app().obj(User, project.get("owner"))
             vars = {
                 "author": htmlescape(author.get("name")),
-                "wizard": self.uuid,
                 "main_host": self.app().inst.config["main_host"],
             }
-            self.call("admin.advice", {"title": self._("Law importance"), "content": self._("There are some very important points in the contract. At least read information in the red panel.")})
-            self.call("admin.response_template", "constructor/setup/offer-%s.html" % self.call("l10n.lang"), vars)
+            fields = [
+                {"type": "html", "html": self.call("web.parse_template", "constructor/setup/offer-%s.html" % self.call("l10n.lang"), vars)},
+                {"type": "button", "text": self._("I don't agree"), "action": "project/destroy/admin"},
+                {"type": "button", "text": self._("I agree to the terms and conditions"), "action": "wizard/call/%s/agree" % self.uuid, "inline": True},
+            ]
+            self.call("admin.form", fields=fields, buttons=[])
         elif state == "name":
-            if cmd == "name-submit":
+            if req.ok():
                 errors = {}
                 title_full = req.param("title_full")
                 title_short = req.param("title_short")
@@ -102,11 +108,8 @@ class ProjectSetupWizard(Wizard):
                     "inline": True,
                 },
             ]
-            buttons = [
-                {"text": self._("Next"), "url": "admin-wizard/call/%s/name-submit" % self.uuid}
-            ]
             self.call("admin.advice", {"title": self._("Choosing titles"), "content": self._("Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems")})
-            self.call("admin.form", fields=fields, buttons=buttons, title=self._("Title of the game"))
+            self.call("admin.form", fields=fields, title=self._("Title of the game"))
         elif state == "logo":
             wizs = self.call("wizards.find", "logo")
             if cmd == "upload":
@@ -247,6 +250,9 @@ class ProjectSetupWizard(Wizard):
         project.delkey("inactive")
         project.store()
         self.finish()
+        config = self.app().config
+        config.set("project.reg_ip", self.config.get("reg_ip"))
+        config.set("project.reg_agent", self.config.get("reg_agent"))
         self.app().store_config_hooks()
         # administrator requisites
         name = self.config.get("admin_name")

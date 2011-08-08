@@ -11,7 +11,6 @@ re_newline = re.compile(r'\n')
 
 class CharactersMod(ConstructorModule):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("ext-admin-characters.form", self.admin_characters_form, priv="players.auth")
@@ -27,6 +26,8 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.name-purpose-default", self.name_purpose_default)
         self.rhook("characters.name-purpose-admin", self.name_purpose_admin)
         self.rhook("characters.name-sample-params", self.name_sample_params)
+        self.rhook("admin-icons.list", self.icons_list)
+        self.rhook("admin-icons.changed", self.icons_changed)
         self.rhook("characters.name-params", self.name_params)
         self.rhook("characters.name-tokens", self.name_tokens)
         self.rhook("characters.name-render", self.name_render)
@@ -296,18 +297,35 @@ class CharactersMod(ConstructorModule):
     def name_purpose_admin(self):
         return {"id": "admin", "title": self._("Administration interface"), "order": 0, "default": "{NAME}"}
 
+    def icons_list(self, icons):
+        icons.extend([
+            {
+                "code": "char-male",
+                "title": self._("Male character info icon"),
+            },
+            {
+                "code": "char-female",
+                "title": self._("Female character info icon"),
+            },
+        ])
+
+    def icons_changed(self):
+        self.app().mc.incr_ver("character-names")
+
     def name_params(self, characters, params):
-        design = self.design("gameinterface")
         for char in characters:
             ent = params[char.uuid]
             ent["NAME"] = u'<span class="char-name">%s</span>' % htmlescape(char.name)
-            img = "char-female.gif" if char.sex else "char-male.gif"
-            ent["INFO"] = '<a href="/character/info/%s" target="_blank"><img src="%s/%s" alt="" class="icon char-info-icon" /></a>' % (char.uuid, design.get("uri") if design and img in design.get("files") else "/st-mg/icons", img)
+            if char.sex:
+                img = self.call("icon.get", "char-female")
+            else:
+                img = self.call("icon.get", "char-male")
+            ent["INFO"] = '<a href="/character/info/%s" target="_blank"><img src="%s" alt="" class="icon char-info-icon" /></a>' % (char.uuid, img)
 
     def name_sample_params(self, params):
         params["NAME"] = self._("Character")
         design = self.design("gameinterface")
-        params["INFO"] = '<img src="%s/char-male.gif" alt="" class="icon char-info-icon" />' % (design.get("uri") if design and "char-male.gif" in design.get("files") else "/st-mg/icons")
+        params["INFO"] = '<img src="%s" alt="" class="icon char-info-icon" />' % self.call("icon.get", "char-male")
 
     def name_tokens(self, tokens):
         tokens.append({"id": "NAME", "description": self._("Character name")})

@@ -17,7 +17,6 @@ re_form_condition = re.compile(r'\[([a-z_][a-z0-9_\-]*)\]')
 
 class AdminInterface(Module):
     def register(self):
-        Module.register(self)
         self.rhook("ext-admin.index", self.index, priv="logged")
         self.rhook("admin.response_js", self.response_js)
         self.rhook("admin.response_json", self.response_json)
@@ -31,6 +30,10 @@ class AdminInterface(Module):
         self.rhook("admin.form", self.form)
         self.rhook("admin.advice", self.advice)
         self.rhook("ext-admin-image.upload", self.image, priv="logged")
+        self.rhook("config.changed", self.config_changed)
+
+    def config_changed(self):
+        self.update_menu()
 
     def index(self):
         menu = self.makemenu()
@@ -89,8 +92,10 @@ class AdminInterface(Module):
         result = []
         for ent in menu:
             if ent.get("leaf"):
-                ent["href"] = "/admin#%s" % ent.get("id")
-                result.append(ent)
+                project = getattr(self.app(), "project", None)
+                if not project or ent.get("even_unpublished") or self.app().project.get("published"):
+                    ent["href"] = "/admin#%s" % ent.get("id")
+                    result.append(ent)
             else:
                 submenu = self.leftmenunode(ent["id"], ent["text"])
                 if submenu:

@@ -6,6 +6,7 @@ use lib ($0 =~ /(.*)\//) ? $1 : '.';
 
 use mg::instance;
 use Data::Dumper;
+use JSON;
 
 my $inst = mg::instance->new;
 my $db = $inst->sql->{dbh};
@@ -36,6 +37,8 @@ while (1) {
 $db->do('delete from active_players where period < date_sub(now(), interval 90 day)');
 
 package handlers;
+
+use Encode;
 
 sub online
 {
@@ -76,4 +79,19 @@ sub chargeback
 	my $inst = shift;
 	my $ent = shift;
 	donate($inst, $ent, 'chargebacks');
+}
+
+sub config
+{
+	my $inst = shift;
+	my $ent = shift;
+	my $json = JSON->new->canonical;
+	while (my ($grp, $values) = each %{$ent->{config}}) {
+		$values = $json->encode($values);
+		my ($last_values) = $db->selectrow_array('select `values` from `config` where app=? and grp=? order by stored desc limit 1', undef, $ent->{app}, $grp);
+		$last_values = Encode::decode('utf-8', $last_values) if $last_values;
+		if ($last_values ne $values) {
+			$db->do('insert into `config`(app, stored, grp, `values`) values (?, ?, ?, ?)', undef, $ent->{app}, $ent->{stored}, $grp, $values);
+		}
+	}
 }

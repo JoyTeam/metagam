@@ -368,9 +368,13 @@ class Module(object):
         "Syntactic sugar for app.hooks.call(...)"
         return self.app().hooks.call(*args, **kwargs)
 
-    def register(self):
+    def _register(self):
         "Register all required event handlers"
         self.rhook("core.loaded_modules", self.loaded_modules)
+        self.register()
+
+    def register(self):
+        pass
 
     def loaded_modules(self, list):
         "Appends name of the current module to the list"
@@ -616,7 +620,7 @@ class Modules(object):
                     cls = module.__dict__[class_name]
                     obj = cls(app, mod)
                     self.loaded_modules[mod] = obj
-                    obj.register()
+                    obj._register()
                 else:
                     app.inst.modules.remove(module_name)
         return errors
@@ -833,7 +837,7 @@ class ApplicationConfigUpdater(object):
                 if notify:
                     self.app.hooks.call("cluster.appconfig_changed")
             self.params = {}
-            self.app.hooks.call("admin.update_menu")
+            self.app.hooks.call("config.changed")
 
 class Application(object):
     """

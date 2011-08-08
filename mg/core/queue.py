@@ -76,7 +76,6 @@ class ScheduleList(CassandraObjectList):
 
 class Queue(Module):
     def register(self):
-        Module.register(self)
         self.rhook("queue.add", self.queue_add)
         self.rhook("int-queue.run", self.queue_run, priv="public")
         self.rhook("queue.schedule", self.queue_schedule)
@@ -173,7 +172,6 @@ class Queue(Module):
 class QueueRunner(Module):
     "This module runs on the Director and controls schedule execution"
     def register(self):
-        Module.register(self)
         self.rhook("queue.process", self.queue_process)
         self.rhook("queue.processing", self.queue_processing)
         self.rhook("int-schedule.update", self.schedule_update, priv="public")
@@ -201,6 +199,8 @@ class QueueRunner(Module):
                     self.wait_free.receive()
                 tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
                 tasks.load(silent=True)
+                anything_processed = False
+                no_workers_shown = set()
                 if len(tasks):
                     tasks.sort(cmp=lambda x, y: cmp(x.get("priority"), y.get("priority")), reverse=True)
                     if len(tasks) > self.workers:
@@ -215,14 +215,17 @@ class QueueRunner(Module):
                                 workers.append(worker)
                                 self.workers = self.workers - 1
                                 Tasklet.new(self.queue_run)(task, worker)
+                                anything_processed = True
                             else:
-                                self.warning("No workers for class %s. Delaying job" % task.get("cls"))
+                                if not task.get("cls") in no_workers_shown:
+                                    self.warning("No workers for class %s. Delaying job" % task.get("cls"))
+                                    no_workers_shown.add(task.get("cls"))
                                 task.set("priority", task.get("priority") - 1)
                                 task.store()
                         else:
                             self.error("Missing cls: %s" % task.data)
                             task.remove()
-                else:
+                if not anything_processed:
                     Tasklet.sleep(3)
             except Exception as e:
                 logging.getLogger("mg.core.queue.Queue").exception(e)

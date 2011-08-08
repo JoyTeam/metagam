@@ -28,20 +28,4 @@
 [%include constructor/docs/ru/offer.html%]
 </div>
 
-<div id="form"></div>
-
-<script type="text/javascript">
-new Ext.Panel({
-	renderTo: 'form',
-	cls: 'bottom-form',
-	border: false,
-	layout: 'form',
-	buttons: [{
-		text: gt.gettext('I agree to the terms and conditions'),
-		handler: function() { adm('wizard/call/[%wizard%]/agree') }
-	}, {
-		text: gt.gettext("I don't agree"),
-		handler: function() { adm('project/destroy/admin') }
-	}]
-});
-</script>
+<div style="height: 20px"></div>

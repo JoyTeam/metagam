@@ -6,7 +6,6 @@ re_del = re.compile('^del\/(\S+)$')
 
 class Socio(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("headmenu-admin-sociointerface.buttons", self.headmenu_buttons)
         self.rhook("ext-admin-sociointerface.buttons", self.admin_sociointerface_buttons, priv="design")
         self.rhook("menu-admin-socio.index", self.menu_socio_index)

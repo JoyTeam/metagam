@@ -8,7 +8,6 @@ re_doc_tag = re.compile(r'^\s*<!--\s*doc\.([a-z_]+)\s+(.*?)\s*-->\s*(.*)', re.DO
 
 class Documentation(Module):
     def register(self):
-        Module.register(self)
 
         self.rhook("ext-doc.index", self.index, priv="public")
         self.rhook("ext-doc.handler", self.handler, priv="public")

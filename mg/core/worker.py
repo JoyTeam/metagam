@@ -6,7 +6,6 @@ import time
 
 class Worker(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.core.cass_struct.CommonCassandraStruct", "mg.core.cluster.Cluster", "mg.core.web.Web", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.core.daemons.DaemonsManager", "mg.core.dbexport.Export"])
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("worker.run", self.run)

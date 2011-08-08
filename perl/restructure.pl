@@ -65,6 +65,17 @@ sql_table('active_players',
 		'index' => 'period',
 	]
 );
+sql_table('config',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'stored' => [ -type=>'datetime', -null=>0 ],
+		'grp' => [ -type=>'varchar(50)', -null=>0 ],
+		'values' => [ -type=>'text', -null=>0 ],
+	], [
+		'index' => 'app,stored',
+		'index' => 'app,grp,stored',
+	]
+);
 sql_done();
 
 sub sql_field

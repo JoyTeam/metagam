@@ -10,7 +10,6 @@ from cassandra.ttypes import *
 
 class Test1(Module):
     def register(self):
-        Module.register(self)
         self.rhook("core.dbstruct", self.cassandra_struct)
         self.rhook("grp1.test1", self.test1)
         self.rhook("grp1.test2", self.test2)
@@ -30,7 +29,6 @@ class Test1(Module):
 
 class Test2(Module):
     def register(self):
-        Module.register(self)
         self.rhook("grp1.test1", self.test1)
         self.rhook("grp1.test2", self.test2)
         self.rhook("grp2.test3", self.test3)
@@ -46,7 +44,6 @@ class Test2(Module):
 
 class TestJoin(Module):
     def register(self):
-        Module.register(self)
         self.rhook("join.empty", self.empty)
         self.rhook("join.single", self.single)
         self.rhook("join.prio1", self.prio1)

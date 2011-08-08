@@ -77,7 +77,6 @@ class DBChatDebugList(CassandraObjectList):
 
 class Chat(ConstructorModule):
     def register(self):
-        ConstructorModule.register(self)
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("menu-admin-chat.index", self.menu_chat_index)
         self.rhook("permissions.list", self.permissions_list)

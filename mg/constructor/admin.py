@@ -6,6 +6,7 @@ from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterForm, DBCha
 import mg.constructor.common
 from mg.constructor.common import Project, ProjectList
 from uuid import uuid4
+import mg
 import time
 import datetime
 import re
@@ -34,7 +35,6 @@ class DBUserWMIDList(CassandraObjectList):
 
 class ConstructorUtils(Module):
     def register(self):
-        Module.register(self)
         self.rhook("menu-admin-top.list", self.menu_admin_top_list, priority=-500)
 
     def menu_admin_top_list(self, topmenu):
@@ -43,7 +43,6 @@ class ConstructorUtils(Module):
 
 class Constructor(Module):
     def register(self):
-        Module.register(self)
         self.rdep(["mg.core.web.Web"])
         self.rdep(["mg.socio.Socio", "mg.socio.SocioAdmin", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
@@ -103,6 +102,13 @@ class Constructor(Module):
         self.rhook("ext-admin-wmauth.remove", self.wmauth_remove, priv="auth.wmid")
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
+        self.rhook("ext-favicon.ico.index", self.favicon, priv="public")
+
+    def favicon(self):
+        f = open("%s/data/logo/favicon.ico" % mg.__path__[0], "rb")
+        data = f.read()
+        f.close()
+        self.call("web.response", data, "image/x-icon")
 
     def permissions_list(self, perms):
         perms.append({"id": "auth.wmid", "name": self._("Managing authorized WMIDs")})
@@ -248,12 +254,12 @@ class Constructor(Module):
                     topmenu.append({"href": "/socio/paid-services", "html": self._("Premium")})
                 topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
-                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "image": "/st/constructor/cabinet/settings.gif", "html": self._("Settings")})
+                    topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
                     links = []
                     self.call("telegrams.menu", links)
                     for link in links:
                         topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
-                    topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
+                    topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
                 else:
                     topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})

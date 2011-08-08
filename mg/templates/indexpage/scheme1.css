@@ -1,5 +1,5 @@
 /* GENERAL LAYOUT */
-#base-image-1 { width: 100%; background-image: url(base-image.jpg); background-position: 50% 0%; background-repeat: no-repeat }
+#base-image-1 { width: 100%; height: 100%; background-image: url(base-image.jpg); background-position: 50% 0%; background-repeat: no-repeat }
 #page-layout-1 { width: 984px; margin: 0 auto 0 auto }
 #page-layout-1-height { height: 200px }
 #page-layout-1-right { width: 300px; padding-top: 20px; vertical-align: top }

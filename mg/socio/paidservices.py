@@ -2,7 +2,6 @@ from mg import *
 
 class PaidServices(Module):
     def register(self):
-        Module.register(self)
         self.rhook("paidservices.available", self.srv_available)
         self.rhook("ext-socio.paid-services", self.ext_paid_services, priv="logged")
         self.rhook("ext-socio.paid-service", self.ext_paid_service, priv="logged")
