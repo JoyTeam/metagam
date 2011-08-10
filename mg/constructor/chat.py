@@ -325,12 +325,12 @@ class Chat(ConstructorModule):
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
             {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld"},
-            {"name": "msg_went_online", "label": self._("Message about character went online"), "value": self.call("script.unparse-text", self.msg_went_online())},
-            {"name": "msg_went_offline", "label": self._("Message about character went offline"), "value": self.call("script.unparse-text", self.msg_went_offline())},
-            {"name": "msg_entered_location", "label": self._("Message about character entered location"), "value": self.call("script.unparse-text", self.msg_entered_location())},
-            {"name": "msg_left_location", "label": self._("Message about character left location"), "value": self.call("script.unparse-text", self.msg_left_location())},
-            {"name": "msg_you_entered_location", "label": self._("Message about your character entered location"), "value": self.call("script.unparse-text", self.msg_you_entered_location())},
-            {"name": "msg_location_messages", "label": self._("Message heading messages from new location"), "value": self.call("script.unparse-text", self.msg_location_messages())},
+            {"name": "msg_went_online", "label": self._("Message about character went online") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_online())},
+            {"name": "msg_went_offline", "label": self._("Message about character went offline") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_offline())},
+            {"name": "msg_entered_location", "label": self._("Message about character entered location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_entered_location())},
+            {"name": "msg_left_location", "label": self._("Message about character left location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_left_location())},
+            {"name": "msg_you_entered_location", "label": self._("Message about your character entered location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_you_entered_location())},
+            {"name": "msg_location_messages", "label": self._("Message heading messages from new location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_location_messages())},
             {"name": "colors", "label": self._("Chat colours players are allowed to use (newline separated)"), "value": colors, "type": "textarea"},
         ]
         self.call("admin.form", fields=fields)

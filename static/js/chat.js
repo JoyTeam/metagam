@@ -316,7 +316,7 @@ Chat.msg_list = function(pkt) {
 		div.appendChild(ctspan);
 		if (msg.priv) {
 			div.className = div.className + ' chat-private';
-		} else {
+		} else if (ch) {
 			div.className = div.className + ' cmc-' + ch.id;
 		}
 		/* storing message */

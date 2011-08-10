@@ -191,6 +191,7 @@ class ReqAuction(ConstructorModule):
             ],
         }
         vars["myreq"] = self.call("web.parse_template", "constructor/reqauction/list.html", vars_myreq)
+        vars["ReqAuctionDoc"] = self._("Request auction documentation")
         self.call("web.response_template", "constructor/reqauction/global.html", vars)
 
     def response_template(self, template, vars):

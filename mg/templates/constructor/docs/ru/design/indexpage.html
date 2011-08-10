@@ -2,6 +2,7 @@
 <!-- doc.parent index -->
 <!-- doc.keywords титульная страница, онлайн-игра, игра, онлайн, титульная, html -->
 <!-- doc.description Как правильно оформлять html-шаблон титульной страницы в онлайн-играх, созданные на основе конструктора игр -->
+
 <h1>Вёрстка титульной страницы в конструкторе онлайн-игр</h1>
 
 <p><a href="/doc/design/templates">Общая информация о HTML-шаблонах в конструкторе</a></p>
@@ -13,7 +14,7 @@
 	<li>в пакете должен быть, как минимум, один css-файл;</li>
 	<li>в index.html должна быть форма входа в игру с обязательными атрибутами: &lt;form name="loginform" id="loginform" onsubmit="return auth_login();"&gt;;</li>
 	<li>в форме входа в игру должны присутствовать два обязательных поля:<ul>
-		<li>&lt;input id="email" name="email"&gt; &mdash; в это поле можно вводить как e-mail, так и имя персонажа;</li>
+		<li>&lt;input id="name" name="name"&gt; &mdash; поле для ввода имени персонажа;</li>
 		<li>&lt;input id="password" name="password"&gt; &mdash; поле для пароля;</li>
 	</ul></li>
 	<li>ссылка на регистрацию в игре должна быть оформлена как &lt;a href="javascript:void(0)" onclick="return auth_register();"&gt;;</li>
@@ -48,30 +49,51 @@
 		<li>list &mdash; список топ-участников этого рейтинга. Каждый элемент списка имеет параметры:<ul>
 			<li>name &mdash; имя участника рейтинга;</li>
 			<li>value &mdash; значение параметра рейтинга;</li>
-			<li>class &mdash; "rating-even", если участник чётный, и "rating-odd", если нечётный.</li>
+			<li>class &mdash; "rating-even", если участник чётный, и "rating-odd", если нечётный;</li>
 		</ul></li>
 	</ul></li>
+	<li>game_domain &mdash; домен игры.</li>
 </ul>
 
-<p>На странице должна присутствовать форма для входа в игру. Форма должна передаваться на адрес "/" и иметь два параметра&nbsp;&mdash; email и password. Поле email предназначено для ввода e-mail игрока или имени его персонажа. Password&nbsp;&mdash; его пароль. Пример формы:</p>
+<p>На странице должна присутствовать форма для входа в игру. Форма должна передаваться на адрес "/" и иметь два параметра&nbsp;&mdash; name и password. Поле name предназначено для ввода имени персонажа. Password&nbsp;&mdash; его пароль. Пример формы:</p>
 
 <pre class="doc-code-sample">
 &lt;form action="/" method="post" name="loginform"&gt;
-	&lt;input name="email" value="" title="Имя персонажа или e-mail" /&gt;
-	&lt;input type="password" name="password" value="" title="Твой пароль" /&gt;
+	&lt;input name="name" value="" title="Имя персонажа" /&gt;
+	&lt;input type="password" name="password" value="" title="Пароль" /&gt;
 	&lt;input type="submit" value="Войти в игру" /&gt;
 &lt;/form&gt;
 </pre>
 
-<p>Кроме того, следует где-либо на странице разместить ссылки на адреса:</p>
+<h1>С чего начать</h1>
 
+<p>Чтобы сделать хорошее качественное оформление титульной страницы, проще всего взять готовый шаблон из конструктора и доработать его. Возьмём, например, шаблон "Средневековье":</p>
+<img class="doc-screenshot" src="/st/tutorial/indexpage-1.png" alt="" />
+<p>Выберем тип размещения блоков на странице и загрузим картинку, которая послужит фоном:</p>
+<img class="doc-screenshot" src="/st/tutorial/indexpage-2.png" alt="" />
+<p>Затем нажмём на ссылку "установить" и посмотрим, что получилось на главной странице нашей игры:</p>
+<img class="doc-screenshot" src="/st/tutorial/indexpage-3.jpg" alt="" />
+<p>Слева на пустом месте будут новости, когда мы их подключим к игре. Давайте попробуем доработать этот шаблон. Для этого скачаем его себе на компьютер в виде ZIP-архива и распакуем:</p>
 <ul>
-	<li>/auth/remind &mdash; восстановление пароля;</li>
-	<li>/auth/register &mdash; регистрация в игре.</li>
+	<li>base-image.jpg</li>
+	<li>body-bg-1.jpg</li>
+	<li>box-bottom.png</li>
+	<li>box-left-bottom.png</li>
+	<li>box-left.png</li>
+	<li>box-left-top.png</li>
+	<li>box-right-bottom.png</li>
+	<li>box-right.png</li>
+	<li>box-right-top.png</li>
+	<li>box-top.png</li>
+	<li>button.png</li>
+	<li>index.css</li>
+	<li>index.html</li>
 </ul>
+<p>Вёрстка располагается в index.html. Теперь можно её поправить. Давайте для примера поменяем местами содержимое колонок page-layout-2-left и page-layout-2-right. Теперь откроем index.css и поменяем стили каких-нибудь элементов. Скажем, цвет полей ввода. Допишем строчку:
+<pre class="doc-code-sample">
+#name, #password { background: #ff8080 }
+</pre>
+<p>Теперь необходимо запаковать все файлы в ZIP-архив и загрузить обратно в конструктор. Посмотрим, что получилось:</p>
+<img class="doc-screenshot" src="/st/tutorial/indexpage-4.jpg" alt="" />
 
-<h1>Скачивание файлов</h1>
-
-<ul>
-	<li><a href="/st/constructor/design/magiclands-index.zip">Пример пакета с оформлением титульной страницы</a></li>
-</ul>
+<p>Теперь вы можете изменять любые элементы оформления титульных страниц. Если вы хотите изменить оформление какого-то элемента, прежде всего вам понадобится узнать его id или class. Лучшее средство для этого &mdash; отладчик Firebug для браузера Firefox. Скачать его можно <a href="http://getfirebug.com/downloads">с официальной страницы</a>. Кроме того, прочтите <a href="/doc/design/firebug">нашу краткую инструкцию</a>, как пользоваться Firebug.</p>

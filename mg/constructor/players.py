@@ -501,7 +501,6 @@ class CharactersMod(ConstructorModule):
                     if val:
                         params.append({"name": htmlescape(fld.get("name")), "value": val})
         if params:
-            print "params=%s" % params
             vars["character"]["params"] = params
         self.call("game.response_external", "character-info.html", vars)
 

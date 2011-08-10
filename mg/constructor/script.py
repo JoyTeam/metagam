@@ -22,7 +22,7 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.admin-text", self.admin_text)
 
     def help_icon_expressions(self):
-        return ''
+        return ' <a href="http://%s/doc/script" target="_blank"><img class="inline-icon" src="/st/icons/script.gif" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Scripting language reference"))
 
     @property
     def parser_spec(self):
@@ -58,12 +58,14 @@ class ScriptEngine(ConstructorModule):
             elif cmd == "call":
                 prio = 99
             elif cmd == '.':
-                prio = 7
+                prio = 8
             elif cmd == '*' or cmd == '/':
-                prio = 6
+                prio = 7
             elif cmd == '+' or cmd == '-':
-                prio = 5
+                prio = 6
             elif cmd == "==" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<":
+                prio = 5
+            elif cmd == "not":
                 prio = 4
             elif cmd == "and":
                 prio = 3
@@ -75,12 +77,14 @@ class ScriptEngine(ConstructorModule):
                 raise ScriptParserError("Invalid cmd: '%s'" % cmd)
         return prio
 
-    def wrap(self, val, parent):
+    def wrap(self, val, parent, assoc=True):
         # If priority of parent operation is higher than ours
         # wrap in parenthesis
         val_priority = self.priority(val)
         parent_priority = self.priority(parent)
-        if val_priority >= parent_priority:
+        if val_priority > parent_priority:
+            return self.unparse_expression(val)
+        elif val_priority == parent_priority and assoc:
             return self.unparse_expression(val)
         else:
             return '(%s)' % self.unparse_expression(val)
@@ -89,10 +93,16 @@ class ScriptEngine(ConstructorModule):
         tp = type(val)
         if tp is list:
             cmd = val[0]
-            if cmd == '+' or cmd == '-' or cmd == '*' or cmd == '/' or cmd == "and" or cmd == "or" or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">":
+            if cmd == "not":
+                return 'not %s' % self.wrap(val[1], val)
+            elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or":
+                # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
+            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">":
+                # (a OP b) OP c != a OP (b OP c)
+                return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val, False))
             elif cmd == '?':
-                return '%s ? %s : %s' % (self.wrap(val[1], val), self.wrap(val[2], val), self.wrap(val[3], val))
+                return '%s ? %s : %s' % (self.wrap(val[1], val, False), self.wrap(val[2], val, False), self.wrap(val[3], val, False))
             elif cmd == '.':
                 return '%s.%s' % (self.wrap(val[1], val), val[2])
             elif cmd == 'glob':
@@ -241,27 +251,32 @@ class ScriptEngine(ConstructorModule):
             elif type(arg2) is not int and type(arg2) is not float:
                 raise ScriptTypeError(self._("Right operand of '{operator}' must be numeric ('{val}' is '{type}')").format(operator=cmd, val=self.unparse_expression(val[2]), type=type(arg2).__name__), env)
             if cmd == "<":
-                return 1 if s1 < s2 else 0
+                return 1 if arg1 < arg2 else 0
             if cmd == ">":
-                return 1 if s1 > s2 else 0
+                return 1 if arg1 > arg2 else 0
             if cmd == "<=":
-                return 1 if s1 <= s2 else 0
+                return 1 if arg1 <= arg2 else 0
             if cmd == ">=":
-                return 1 if s1 >= s2 else 0
+                return 1 if arg1 >= arg2 else 0
+        elif cmd == "not":
+            arg1 = self._evaluate(val[1], env)
+            return 0 if arg1 else 1
         elif cmd == "and":
             arg1 = self._evaluate(val[1], env)
             # Full boolean eval
             if not arg1 and env.used_globs is None:
-                return 0
+                return arg1
             arg2 = self._evaluate(val[2], env)
-            return 1 if arg1 and arg2 else 0
+            if not arg1:
+                return arg1
+            return arg2
         elif cmd == "or":
             arg1 = self._evaluate(val[1], env)
             # Full boolean eval
             if arg1 and env.used_globs is None:
-                return 1
+                return arg1
             arg2 = self._evaluate(val[2], env)
-            return 1 if arg1 or arg2 else 0
+            return arg2
         elif cmd == '?':
             arg1 = self._evaluate(val[1], env)
             if env.used_globs is None:
@@ -375,16 +390,16 @@ class ScriptEngine(ConstructorModule):
             else:
                 expression = self.call("script.parse-expression", expression)
         except ScriptParserError as e:
-            html = htmlescape(e.val.format(**e.kwargs))
+            html = e.val.format(**e.kwargs)
             if e.exc:
-                html += '<br />%s' % htmlescape(e.exc)
+                html += "\n%s" % e.exc
             errors[name] = html
             return
         # Evaluating
         try:
             self.validate(expression, globs=globs, require_glob=require_glob, text=text)
         except ScriptError as e:
-            errors[name] = htmlescape(e.val)
+            errors[name] = e.val
             return
         # Returning result
         return expression

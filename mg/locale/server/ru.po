@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-08 18:32+0300\n"
+"PO-Revision-Date: 2011-08-10 18:03+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -807,7 +807,7 @@ msgid "Close game for all non-authorized users"
 msgstr "Закрыть игру для всех неавторизованных пользователей"
 
 msgid "Close project login"
-msgstr "Закрыть вход в проект"
+msgstr "Закрыть вход в игру"
 
 msgid "Closing tag '{0}' doesn't match opening tag '{1}'"
 msgstr "Закрывающий тег '{0}' не соответствует открывающему тегу '{1}'"
@@ -1172,6 +1172,9 @@ msgstr "Описание для игроков"
 msgid "Description may not be empty"
 msgstr "Описание не может быть пустым"
 
+msgid "Description of the templates engine"
+msgstr "Описание шаблонизатора"
+
 msgid "Design configuration"
 msgstr "Настройка оформления"
 
@@ -1335,9 +1338,6 @@ msgstr "Отправка e-mail-рассылок"
 
 msgid "Email configuration"
 msgstr "Конфигурация e-mail"
-
-msgid "Email input field must have id=\"email\" and name=\"email\""
-msgstr "Поле ввода e-mail должно иметь id=\"email\" и name=\"email\""
 
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
@@ -1777,6 +1777,9 @@ msgstr "Пакет с оформлением игры должен содерж�
 
 msgid "Game interface menu"
 msgstr "Меню игрового интерфейса"
+
+msgid "Game interface template"
+msgstr "Шаблон игрового интерфейса"
 
 msgid "Game is closed for non-authorized users"
 msgstr "Игра закрыта для неавторизованных пользователей"
@@ -2692,6 +2695,9 @@ msgstr "Изменение имени"
 msgid "Name contains forbidden symbols"
 msgstr "Имя содержит запрещённые символы"
 
+msgid "Name input field must have id=\"name\" and name=\"name\""
+msgstr "Поле ввода имени должно иметь id=\"name\" и name=\"name\""
+
 msgid "Name is mandatory"
 msgstr "Имя - обязательный параметр"
 
@@ -3477,6 +3483,9 @@ msgstr "Представление"
 msgid "Request"
 msgstr "Запрос"
 
+msgid "Request auction documentation"
+msgstr "Документация на аукцион заявок"
+
 msgid "Request parameters"
 msgstr "Параметры запроса"
 
@@ -3576,6 +3585,9 @@ msgstr "Схема '%s' не поддерживается"
 
 msgid "Screenshots"
 msgstr "Скриншоты"
+
+msgid "Scripting language reference"
+msgstr "Описание скриптового языка"
 
 msgid "Search"
 msgstr "Искать"
@@ -4834,8 +4846,8 @@ msgstr "Вы не можете отправлять сообщения сист�
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
 
-msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://{1}/cabinet\" target=\"top\">Return to the cabinet</a>"
-msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://{1}/cabinet\" target=\"top\">Возврат в кабинет</a>"
+msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
+msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -5458,7 +5470,7 @@ msgid "reqauction///implemented on {time}"
 msgstr "реализована {time}"
 
 msgid "reqauction///link to another request"
-msgstr "присоединить к другой заявка"
+msgstr "присоединить к другой заявке"
 
 msgid "reqauction///recall my vote"
 msgstr "отозвать мой голос"
@@ -5728,8 +5740,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "Пользователи"
 #~ msgid "Players authentication"
 #~ msgstr "Аутентификация игроков"
-#~ msgid "Game interface layout"
-#~ msgstr "Настройка игрового интерфейса"
 #~ msgid "Design"
 #~ msgstr "Оформление"
 #~ msgid "Site indexing enabled"

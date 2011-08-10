@@ -1,0 +1,37 @@
+<!-- doc.title Оформление интерфейсов денег в онлайн-игре -->
+<!-- doc.parent design/gameinterface -->
+<!-- doc.keywords оформление, деньги, счета, игровой интерфейс -->
+<!-- doc.description Как правильно оформлять шаблоны денежных интерфейсов в онлайн-играх на конструкторе игр -->
+
+<p>За оформление списка счетов персонажа отвечает файл <a href="/doc/game-template/money-accounts.html">money-accounts.html</a> в шаблоне оформления игры. Он может использовать следующие переменные шаблонизатора:<ul>
+	<li>accounts &mdash; список счетов. У каждого счёта есть следующие параметры:<ul>
+		<li>currency.name_plural &mdash; название валюты во множественном числе;</li>
+		<li>currency.image &mdash; изображение валюты (большое);</li>
+		<li>currency.icon &mdash; иконка валюты;</li>
+		<li>currency.description &mdash; описание валюты;</li>
+		<li>balance &mdash; остаток на счету;</li>
+		<li>balance_currency &mdash; название валюты в склонении, соответствующем числу balance;</li>
+		<li>menu &mdash; меню доступных операций. Это список, у каждого элемента которого есть параметры:<ul>
+			<li>href &mdash; ссылка;</li>
+			<li>onclick &mdash; действие при клике (может отсутствовать);</li>
+			<li>html &mdash; текст ссылки.</li>
+		</ul></li>
+	</ul></li>
+</ul></p>
+
+<p>За оформление истории операций по счёту отвечает файл <a href="/doc/game-template/money-operations.html">money-operations.html</a> в шаблоне оформления игры. Он может использовать следующие переменные шаблонизатора:<ul>
+	<li>ret &mdash; если присутствует, то должна отобразиться ссылка возврата с адресом ret.href и текстом ret.html;</li>
+	<li>pages &mdash; если присутствует, то должен отобразиться блок выбора страниц. Это список, у каждого элемента которого есть параметры:<ul>
+		<li>href &mdash; ссылка (может отсутствовать);</li>
+		<li>html &mdash; текст;</li>
+	</ul></li>
+	<li>Performed, Amount, Balance, Description &mdash; заголовки столбцов. Можно заменить на свои;</li>
+	<li>operations &mdash; список операций. Каждый элемент имеет параметры:<ul>
+		<li>performed &mdash; дата и время операции;</li>
+		<li>amount &mdash; сумма операции;</li>
+		<li>cls &mdash; CSS-класс, которым необходимо выделить сумму операции (может отсутствовать);</li>
+		<li>balance &mdash; остаток на счету после операции;</li>
+		<li>description &mdash; описание операции.</li>
+	</ul></li>
+</ul></p>
+

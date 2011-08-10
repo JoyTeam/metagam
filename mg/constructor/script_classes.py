@@ -65,8 +65,13 @@ class PAndOp(Parsing.Precedence):
 class TokenAnd(Parsing.Token):
     "%token and [pAndOp]"
 
+class PNotOp(Parsing.Precedence):
+    "%left pNotOp >pAndOp"
+class TokenNot(Parsing.Token):
+    "%token not [pNotOp]"
+
 class PCompareOp(Parsing.Precedence):
-    "%left pCompareOp >pAndOp"
+    "%left pCompareOp >pNotOp"
 class TokenEquals(Parsing.Token):
     "%token equals [pCompareOp]"
 class TokenLessThan(Parsing.Token):
@@ -195,13 +200,17 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr gt Expr [pCompareOp]"
         self.val = [">", exprA.val, exprB.val]
 
-    def reduceLessThan(self, exprA, LessThanOp, exprB):
+    def reduceLessEqThan(self, exprA, LessThanOp, exprB):
         "%reduce Expr le Expr [pCompareOp]"
         self.val = ["<=", exprA.val, exprB.val]
 
-    def reduceGreaterThan(self, exprA, GreaterThanOp, exprB):
+    def reduceGreaterEqThan(self, exprA, GreaterThanOp, exprB):
         "%reduce Expr ge Expr [pCompareOp]"
         self.val = [">=", exprA.val, exprB.val]
+
+    def reduceNot(self, NotOp, exprA):
+        "%reduce not Expr [pNotOp]"
+        self.val = ["not", exprA.val]
 
     def reduceAnd(self, exprA, AndOp, exprB):
         "%reduce Expr and Expr [pAndOp]"
@@ -257,6 +266,7 @@ class ScriptParser(Parsing.Lr, Module):
         "none": TokenNone,
         "and": TokenAnd,
         "or": TokenOr,
+        "not": TokenNot,
     }
     funcs = set(["min", "max"])
 

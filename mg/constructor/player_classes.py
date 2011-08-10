@@ -1,6 +1,9 @@
 from mg.constructor import *
 from mg.constructor.interface_classes import *
 from mg.core.money_classes import *
+import re
+
+re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
 
 # Database objects
 
@@ -96,6 +99,17 @@ class DBCharacterSettingsList(CassandraObjectList):
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 # Business logic objects
+
+class Money(MemberMoney):
+    def script_attr(self, attr):
+        m = re_money_script_field.match(attr)
+        if m:
+            field, currency = m.group(1, 2)
+            if field == "balance":
+                return self.balance(currency)
+            elif field == "available":
+                return self.available(currency)
+        raise AttributeError(attr)
 
 class Character(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Character"):
@@ -284,7 +298,7 @@ class Character(Module):
         try:
             return self._money
         except AttributeError:
-            self._money = MemberMoney(self.app(), self.uuid)
+            self._money = Money(self.app(), self.uuid)
             return self._money
 
     @property
@@ -305,6 +319,8 @@ class Character(Module):
         elif attr == "location":
             return self.location
         elif attr == "tech_online":
+            return self.tech_online
+        elif attr == "online":
             return self.tech_online
         elif attr == "name":
             return self.name
@@ -373,9 +389,7 @@ class Player(Module):
             return self._email
 
     def script_attr(self, attr):
-        if attr == "email":
-            return self.email
-        elif attr == "id":
+        if attr == "id":
             return self.uuid
         elif attr == "mod":
             return self.call("modifiers.obj", self.uuid)

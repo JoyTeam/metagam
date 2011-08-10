@@ -1524,13 +1524,13 @@ class IndexPageAdmin(Module):
                         loginform_ok = True
                         if form["onsubmit"] != "return auth_login();":
                             errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
-                        email_ok = False
+                        name_ok = False
                         password_ok = False
                         for inp in form["inputs"]:
-                            if inp["name"] == "email":
-                                email_ok = True
-                                if inp.get("id") != "email":
-                                    errors.append(self._('Email input field must have id="email" and name="email"'))
+                            if inp["name"] == "name":
+                                name_ok = True
+                                if inp.get("id") != "name":
+                                    errors.append(self._('Name input field must have id="name" and name="name"'))
                             if inp["name"] == "password":
                                 password_ok = True
                                 if inp.get("id") != "password":

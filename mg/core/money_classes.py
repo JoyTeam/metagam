@@ -353,4 +353,3 @@ class MemberMoney(object):
             return 0
         return account.available()
 
-
