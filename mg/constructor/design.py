@@ -323,7 +323,7 @@ class DesignZip(Module):
                         vars = {}
                         self.call("admin-%s.preview-data" % group, vars)
                         try:
-                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {}, untrusted=True)
+                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
                         except ImportError as e:
                             errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                         except TemplateException as e:
@@ -502,7 +502,7 @@ class DesignGenerator(Module):
                     vars = {}
                     self.call("admin-%s.preview-data" % self.group(), vars)
                     try:
-                        self.call("web.parse_template", cStringIO.StringIO(parser.output), {}, untrusted=True)
+                        self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
                     except ImportError as e:
                         errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                     except TemplateException as e:
@@ -1130,12 +1130,9 @@ class DesignMod(Module):
         vars["content"] = content
         if design and template in design.get("files"):
             try:
-                return self.call("web.parse_layout", self.httpfile("%s/%s" % (design.get("uri"), template)), vars, untrusted=True)
-            except TemplateException:
-                return '[%s]' % self._("Template error")
-            except ImportError as e:
-                self.exception(e)
-                return '[%s]' % self._("Security error")
+                return self.call("web.parse_layout", self.httpfile("%s/%s" % (design.get("uri"), template)), vars)
+            except TemplateException as e:
+                return htmlescape(e)
         else:
             try:
                 return self.call("web.parse_layout", "%s/%s/%s" % (design_type, self.call("l10n.lang"), template), vars)
@@ -1756,14 +1753,7 @@ class SocioInterfaceAdmin(Module):
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
-        html = design.get("html")
-        if not html:
-            errors.append(self._("Socio interface design package must contain an HTML file"))
-        elif len(html) > 1:
-            errors.append(self._("Socio interface design package must not contain more than one HTML file"))
         files = design.get("files")
-        if not files.get("global.html", None):
-            errors.append(self._("global.html must exist in the socio interface design package"))
         if not design.get("css"):
             errors.append(self._("Socio interface design package must contain a CSS file"))
 
@@ -1991,8 +1981,8 @@ class SocioInterfaceAdmin(Module):
             demo_messages = []
             demo_messages.extend(demo_subjects)
             vars["socio_message_top"] = random.choice(demo_messages)
-        content = self.call("web.parse_template", "socio/%s" % filename, vars)
-        self.call("design.response", design, "global.html", content, vars)
+        content = self.call("design.parse", design, filename, None, vars, "socio")
+        self.call("design.response", design, "global.html", content, vars, design_type="socio")
 
 class GameInterface(Module):
     pass

@@ -74,7 +74,7 @@ class Dynamic(Module):
                 "NotPublished": self._("Registration in this game is disabled yet. To allow new players to register the game must be sent to moderation first."),
             }
             self.call("indexpage.render", vars)
-            data = self.call("web.parse_template", "game/indexpage.js", vars)
+            data = self.call("web.parse_template", "game/indexpage.js", vars, config={"ABSOLUTE": True})
             self.app().mc.set(mcid, data)
         self.call("web.response", data, "text/javascript; charset=utf-8")
 
@@ -563,8 +563,9 @@ class Interface(ConstructorModule):
 
     def blocks(self, character, vars, design):
         if design:
-            obj = self.httpfile("%s/blocks.html" % design.get("uri"))
-            vars["blocks"] = self.call("web.parse_template", obj, vars)
+            vars["blocks"] = self.call("design.parse", design, "blocks.html", None, vars)
+#            obj = self.httpfile("%s/blocks.html" % design.get("uri"))
+#            vars["blocks"] = self.call("web.parse_template", obj, vars)
 
     def game_js(self, character, vars, design):
         req = self.req()

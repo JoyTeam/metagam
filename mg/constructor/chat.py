@@ -700,7 +700,6 @@ class Chat(ConstructorModule):
                 show_channels.append(ch_copy)
             else:
                 show_channels.append(ch)
-        print "reload_channels: %s" % show_channels
         self.call("stream.character", character, "chat", "reload_channels", channels=show_channels)
         # send information about all characters on all subscribed channels
         # also load old messages

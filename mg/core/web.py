@@ -559,7 +559,7 @@ class Web(Module):
                 app.reload()
         self.call("web.response_json", {"ok": 1})
 
-    def web_parse_template(self, filename, vars, config=None, untrusted=False):
+    def web_parse_template(self, filename, vars, config=None):
         try:
             req = self.req()
         except AttributeError:
@@ -570,7 +570,9 @@ class Web(Module):
             if req.templates_len >= 10000000:
                 return "<too-long-templates />"
             req.templates_parsed = req.templates_parsed + 1
-        if self.tpl is None:
+        if self.tpl and config is None:
+            tpl_engine = self.tpl
+        else:
             include_path = [ mg.__path__[0] + "/templates" ]
             self.call("core.template_path", include_path)
             conf = {
@@ -578,7 +580,6 @@ class Web(Module):
                 "ANYCASE": True,
                 "PRE_CHOMP": 1,
                 "POST_CHOMP": 1,
-                "ABSOLUTE": True,
                 "PLUGIN_BASE": ["Unexistent"],
                 "PLUGINS": {
                     "datafile": "Template::Plugin::Disabled::datafile",
@@ -598,18 +599,21 @@ class Web(Module):
                     "wrap": "Template::Plugin::Disabled::wrap",
                 },
             }
-            if untrusted:
-                conf["ABSOLUTE"] = False
             if config is not None:
                 for key, val in config.iteritems():
                     conf[key] = val
-            try:
-                conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
-            except AttributeError, e:
-                provider = Provider(conf)
-                self.app().inst.tpl_provider = provider
-                conf["LOAD_TEMPLATES"] = provider
-            self.tpl = Template(conf)
+            if config is None:
+                try:
+                    conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
+                except AttributeError, e:
+                    provider = Provider(conf)
+                    self.app().inst.tpl_provider = provider
+                    conf["LOAD_TEMPLATES"] = provider
+            else:
+                conf["LOAD_TEMPLATES"] = Provider(conf)
+            tpl_engine = Template(conf)
+            if config is None:
+                self.tpl = tpl_engine
         if vars.get("universal_variables") is None:
             vars["ver"] = self.int_app().config.get("application.version", 0)
             vars["universal_variables"] = True
@@ -623,7 +627,10 @@ class Web(Module):
             self.call("web.universal_variables", vars)
         if type(filename) == unicode:
             filename = filename.encode("utf-8")
-        content = self.tpl.process(filename, vars)
+        try:
+            content = tpl_engine.process(filename, vars)
+        except ImportError as e:
+            raise TemplateException("security", unicode(e))
         if req:
             req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)
@@ -683,8 +690,8 @@ class Web(Module):
     def web_response_template(self, filename, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_template", filename, vars), vars))
 
-    def web_parse_layout(self, filename, vars, config=None, untrusted=False):
-        content = self.call("web.parse_template", filename, vars, config=config, untrusted=untrusted)
+    def web_parse_layout(self, filename, vars, config=None):
+        content = self.call("web.parse_template", filename, vars, config=config)
         return self.call("web.parse_inline_layout", content, vars)
 
     def web_parse_inline_layout(self, content, vars):
