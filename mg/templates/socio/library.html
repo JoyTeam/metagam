@@ -1,2 +1,6 @@
+[%if library_blocks%]
 <div id="library-rightmenu">[%for blk in library_blocks%]<div class="library-rightblock">[%blk%]</div>[%end%]</div>
 <div id="library-content">[%library_content%]</div>
+[%else%]
+<div id="library-content-full">[%library_content%]</div>
+[%end%]

@@ -130,6 +130,10 @@ class Interface(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-empty.index", self.empty, priv="logged")
         self.rhook("sociointerface.buttons", self.buttons)
+        self.rhook("advice-admin-gameinterface.index", self.advice_gameinterface)
+
+    def advice_gameinterface(self, hook, args, advice):
+        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="http://%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
 
     def buttons(self, buttons):
         buttons.append({
@@ -779,6 +783,7 @@ class Interface(ConstructorModule):
             self.call("admin.redirect", "gameinterface/panels")
         vars = {
             "NewBlock": self._("New block"),
+            "ButtonsEditor": self._("Go to the buttons editor"),
             "Type": self._("Type"),
             "Width": self._("Height") if panel.get("vert") else self._("Width"),
             "Order": self._("Order"),
@@ -1377,6 +1382,7 @@ class Interface(ConstructorModule):
             self.call("admin.form", fields=fields)
         vars = {
             "NewPopup": self._("New popup menu"),
+            "ButtonsEditor": self._("Go to the buttons editor"),
             "Code": self._("Code"),
             "Title": self._("Title"),
             "Editing": self._("Editing"),

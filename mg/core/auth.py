@@ -1293,10 +1293,12 @@ class Interface(Module):
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing
-                user.set("name", name)
-                user.set("name_lower", name.lower())
-                user.store()
-                self.call("auth.name-changed", user, name)
+                old_name = user.get("name")
+                if old_name != name:
+                    user.set("name", name)
+                    user.set("name_lower", name.lower())
+                    user.store()
+                    self.call("auth.name-changed", user, old_name, name)
                 self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "auth"})
         fields = []
         fields.append({"name": "name", "label": self._("New name"), "value": user.get("name")})

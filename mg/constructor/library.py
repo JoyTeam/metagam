@@ -179,7 +179,7 @@ class Library(ConstructorModule):
     def page_index(self):
         return {
             "title": self._("Library - %s") % self.app().project.get("title_short"),
-            "content": '<hook:lib.catalog grp="index" />'
+            "content": '[hook:lib.catalog grp="index"]'
         }
 
     def page_groups(self, page_groups):
@@ -229,6 +229,10 @@ class LibraryAdmin(ConstructorModule):
         self.rhook("ext-admin-library.page-groups", self.admin_page_groups, priv="library.edit")
         self.rhook("headmenu-admin-library.page-groups", self.headmenu_page_groups)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("advice-admin-library.index", self.advice_library)
+
+    def advice_library(self, hook, args, advice):
+        advice.append({"title": self._("Library documentation"), "content": self._('You can find detailed information on the library system in the <a href="http://%s/doc/library" target="_blank">library page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def objclasses_list(self, objclasses):
         objclasses["LibraryPage"] = (DBLibraryPage, DBLibraryPageList)

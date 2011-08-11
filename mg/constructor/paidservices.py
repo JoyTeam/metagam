@@ -284,6 +284,11 @@ class PaidServicesAdmin(ConstructorModule):
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("ext-admin-paidservices.editor", self.admin_paidservices_editor, priv="paidservices.editor")
         self.rhook("headmenu-admin-paidservices.editor", self.headmenu_paidservices_editor)
+        self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
+
+    def advice_game_dashboard(self, args, advice):
+        if args == "" and self.app().project.get("published"):
+            advice.append({"title": self._("Paid services"), "content": self._('To raise your income you can offer some subscription-based <hook:admin.link href="paidservices/editor" title="paid services" /> to your players'), "order": 10})
         
     def permissions_list(self, perms):
         perms.append({"id": "paidservices.editor", "name": self._("Paid services editor")})
@@ -319,6 +324,7 @@ class PaidServicesAdmin(ConstructorModule):
 
     def admin_paidservices_editor(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on setting up paid services in your game in the <a href="http://%s/doc/paid-services" target="_blank">paid services manual</a>.') % self.app().inst.config["main_host"]})
         m = re_cmd_pack.match(req.args)
         if m:
             uuid = m.group(1)

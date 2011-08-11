@@ -114,7 +114,7 @@ Game.setup_game_layout = function() {
 		xtype: 'container',
 		layout: 'border',
 		items: [
-			[%if layout.chat_channels%]this.element('chat-roster-header', {region: 'north', loadHeight: true}),[%end%]
+			this.element('chat-roster-header', {region: 'north', loadHeight: true}),
 			this.element('chat-roster-characters', {region: 'center'}),
 			this.panel('roster-buttons', {region: 'south'})
 		]

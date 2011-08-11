@@ -559,7 +559,7 @@ class Web(Module):
                 app.reload()
         self.call("web.response_json", {"ok": 1})
 
-    def web_parse_template(self, filename, vars, config=None):
+    def web_parse_template(self, filename, vars, config=None, untrusted=False):
         try:
             req = self.req()
         except AttributeError:
@@ -578,8 +578,28 @@ class Web(Module):
                 "ANYCASE": True,
                 "PRE_CHOMP": 1,
                 "POST_CHOMP": 1,
-                "ABSOLUTE": True
+                "ABSOLUTE": True,
+                "PLUGIN_BASE": ["Unexistent"],
+                "PLUGINS": {
+                    "datafile": "Template::Plugin::Disabled::datafile",
+                    "date": "Template::Plugin::Disabled::date",
+                    "directory": "Template::Plugin::Disabled::directory",
+                    "file": "Template::Plugin::Disabled::file",
+                    "filter": "Template::Plugin::Disabled::filter",
+                    "format": "Template::Plugin::Disabled::format",
+                    "html": "Template::Plugin::Disabled::html",
+                    "image": "Template::Plugin::Disabled::image",
+                    "iterator": "Template::Plugin::Disabled::iterator",
+                    "math_plugin": "Template::Plugin::Disabled::math_plugin",
+                    "string": "Template::Plugin::Disabled::string",
+                    "table": "Template::Plugin::Disabled::table",
+                    "url": "Template::Plugin::Disabled::url",
+                    "view": "Template::Plugin::Disabled::view",
+                    "wrap": "Template::Plugin::Disabled::wrap",
+                },
             }
+            if untrusted:
+                conf["ABSOLUTE"] = False
             if config is not None:
                 for key, val in config.iteritems():
                     conf[key] = val
@@ -663,8 +683,8 @@ class Web(Module):
     def web_response_template(self, filename, vars):
         raise WebResponse(self.call("web.response_global", self.call("web.parse_template", filename, vars), vars))
 
-    def web_parse_layout(self, filename, vars):
-        content = self.call("web.parse_template", filename, vars)
+    def web_parse_layout(self, filename, vars, config=None, untrusted=False):
+        content = self.call("web.parse_template", filename, vars, config=config, untrusted=untrusted)
         return self.call("web.parse_inline_layout", content, vars)
 
     def web_parse_inline_layout(self, content, vars):

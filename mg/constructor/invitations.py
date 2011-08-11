@@ -54,15 +54,15 @@ class Invitations(Module):
             self.call("web.not_found")
         req = self.req()
         if req.args == "add":
-            if req.param("ok"):
+            if req.ok():
                 person = req.param("person")
                 errors = {}
                 if not person or person == "":
                     errors["person"] = self._("Enter recipient name")
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
-                code = "%04d-%04d-%04d" % (random.randint(0, 10000), random.randint(0, 10000), random.randint(0, 10000))
-                inv = self.obj(Invitation, uuid=code, data={})
+                code = "1%03d-%04d-%04d" % (random.randint(0, 1000), random.randint(0, 10000), random.randint(0, 10000))
+                inv = self.obj(Invitation, uuid=code, silent=True)
                 inv.set("created", self.now())
                 inv.set("person", person)
                 inv.set("type", "newproject")
@@ -73,6 +73,33 @@ class Invitations(Module):
             ]
             buttons = [
                 {"text": self._("Generate invitation code")}
+            ]
+            self.call("admin.form", fields=fields, buttons=buttons)
+        elif req.args == "add-user":
+            if req.ok():
+                name = req.param("name")
+                errors = {}
+                if not name:
+                    errors["name"] = self._("This field is mandatory")
+                else:
+                    user = self.call("session.find_user", name)
+                    if not user:
+                        errors["name"] = self._("User not found")
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                code = "2%03d-%04d-%04d" % (random.randint(0, 1000), random.randint(0, 10000), random.randint(0, 10000))
+                inv = self.obj(Invitation, uuid=code, silent=True)
+                inv.set("created", self.now())
+                inv.set("person", self._("User %s") % user.get("name"))
+                inv.set("type", "newproject")
+                self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code))
+                inv.store()
+                self.call("web.response_json", {"success": True, "redirect": "constructor/invitations"})
+            fields = [
+                {"name": "name", "label": self._("User name")},
+            ]
+            buttons = [
+                {"text": self._("Send invitation code")}
             ]
             self.call("admin.form", fields=fields, buttons=buttons)
         rows = []
@@ -88,7 +115,8 @@ class Invitations(Module):
             "tables": [
                 {
                     "links": [
-                        {"hook": "constructor/invitations/add", "text": self._("Give a new invitation"), "lst": True}
+                        {"hook": "constructor/invitations/add", "text": self._("Give a new invitation")},
+                        {"hook": "constructor/invitations/add-user", "text": self._("Invitation for a user"), "lst": True},
                     ],
                     "header": [self._("Invitation code"), self._("Type"), self._("Person"), self._("User")],
                     "rows": rows,

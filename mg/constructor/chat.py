@@ -117,7 +117,20 @@ class Chat(ConstructorModule):
         pages.append({"page": "chat", "order": 20})
 
     def library_page_chat(self):
-        vars = {}
+        channel_commands = []
+        if self.chatmode:
+            if self.cmd_loc():
+                channel_commands.append({"cmd": self.cmd_loc(), "title": self._("Location channel")})
+            if self.cmd_wld():
+                channel_commands.append({"cmd": self.cmd_wld(), "title": self._("Entire world channel")})
+            if self.cmd_trd() and self.conf("chat.trade-channel"):
+                channel_commands.append({"cmd": self.cmd_trd(), "title": self._("Trade channel")})
+            if self.cmd_dip() and self.conf("chat.diplomacy-channel"):
+                channel_commands.append({"cmd": self.cmd_dip(), "title": self._("Diplomacy channel")})
+        vars = {
+            "chatmode": self.chatmode,
+            "channel_commands": channel_commands if channel_commands else None,
+        }
         return {
             "code": "chat",
             "title": self._("Game chat"),
@@ -150,33 +163,35 @@ class Chat(ConstructorModule):
         msgs.remove()
 
     def location_before_set(self, character, new_location, instance):
-        msg = self.msg_entered_location()
-        if msg:
-            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": character.location, "loc_to": new_location}, description="Character entered location"), channel="loc-%s" % new_location.uuid, cls="move")
+        if self.chatmode:
+            msg = self.msg_entered_location()
+            if msg:
+                self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": character.location, "loc_to": new_location}, description="Character entered location"), channel="loc-%s" % new_location.uuid, cls="move")
 
     def location_after_set(self, character, old_location, instance):
-        msg = self.msg_left_location()
-        if msg:
-            self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Character left location"), channel="loc-%s" % old_location.uuid, cls="move")
-        self.call("stream.character", character, "chat", "clear_loc")
-        # old messages
-        msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
-        msgs.load(silent=True)
-        if len(msgs):
-            msg = self.msg_location_messages()
+        if self.chatmode:
+            msg = self.msg_left_location()
             if msg:
-                self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Location messages"), scroll_disable=True)
-            messages = [{
-                "channel": "loc",
-                "cls": msg.get("cls"),
-                "html": msg.get("html"),
-            } for msg in reversed(msgs)]
-            self.call("stream.character", character, "chat", "msg_list", messages=messages, scroll_disable=True)
-        # current location message
-        msg = self.msg_you_entered_location()
-        if msg:
-            self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description=self._("You entered location")), scroll_disable=True)
-        self.call("stream.character", character, "chat", "scroll_bottom")
+                self.call("chat.message", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Character left location"), channel="loc-%s" % old_location.uuid, cls="move")
+            self.call("stream.character", character, "chat", "clear_loc")
+            # old messages
+            msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal="loc-%s" % character.location.uuid, query_reversed=True, query_limit=old_messages_limit)
+            msgs.load(silent=True)
+            if len(msgs):
+                msg = self.msg_location_messages()
+                if msg:
+                    self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description="Location messages"), scroll_disable=True)
+                messages = [{
+                    "channel": "loc",
+                    "cls": msg.get("cls"),
+                    "html": msg.get("html"),
+                } for msg in reversed(msgs)]
+                self.call("stream.character", character, "chat", "msg_list", messages=messages, scroll_disable=True)
+            # current location message
+            msg = self.msg_you_entered_location()
+            if msg:
+                self.call("stream.character", character, "chat", "current_location", html=self.call("script.evaluate-text", msg, {"char": character, "loc_from": old_location, "loc_to": character.location}, description=self._("You entered location")), scroll_disable=True)
+            self.call("stream.character", character, "chat", "scroll_bottom")
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -221,6 +236,7 @@ class Chat(ConstructorModule):
 
     def chat_config(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="http://%s/doc/chat" target="_blank">chat manual</a>.') % self.app().inst.config["main_host"]})
         if req.param("ok"):
             config = self.app().config_updater()
             errors = {}
@@ -352,12 +368,6 @@ class Chat(ConstructorModule):
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("chat")
         vars["js_init"].append("Chat.initialize();")
-#        # list of channels
-#        channels = []
-#        self.call("chat.character-channels", character, channels)
-#        for ch in channels:
-#            if re_loc_channel.match(ch["id"]):
-#                ch["id"] = "loc"
         chatmode = self.chatmode
         vars["js_init"].append("Chat.mode = %d;" % chatmode)
         if chatmode:
@@ -404,7 +414,9 @@ class Chat(ConstructorModule):
         prefixes = []
         prefixes.append("[chf:%s] " % user)
         channel = req.param("channel")
-        if channel == "sys" or channel == "":
+        if self.chatmode == 0:
+            channel = "wld"
+        elif channel == "sys" or channel == "":
             if self.conf("chat.location-separate"):
                 channel = "wld"
             else:
@@ -688,6 +700,7 @@ class Chat(ConstructorModule):
                 show_channels.append(ch_copy)
             else:
                 show_channels.append(ch)
+        print "reload_channels: %s" % show_channels
         self.call("stream.character", character, "chat", "reload_channels", channels=show_channels)
         # send information about all characters on all subscribed channels
         # also load old messages
@@ -745,6 +758,8 @@ class Chat(ConstructorModule):
 
     def channel_join(self, character, channel, send_myself=True):
         channel_id = channel["id"]
+        if self.chatmode == 0 and channel_id != "sys":
+            return
         if channel_id == "loc":
             channel_id = "loc-%s" % (character.location.uuid if character.location else None)
             roster_channel_id = "loc"
@@ -916,7 +931,11 @@ class Chat(ConstructorModule):
             "id": channel_id
         }
         if channel_id == "sys":
-            channel["title"] = self._("channel///System")
+            if self.chatmode == 0:
+                channel["roster"] = True
+                channel["title"] = self._("channel///World")
+            else:
+                channel["title"] = self._("channel///System")
         elif channel_id == "wld":
             location_separate = True if self.conf("chat.location-separate") else False
             channel["title"] = self._("channel///World")

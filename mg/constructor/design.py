@@ -280,7 +280,9 @@ class DesignZip(Module):
         upload_list = []
         files = {}
         for ent in self.zip.infolist():
-            zip_filename = ent.filename.decode("utf-8")
+            if ent.filename.endswith("/"):
+                continue
+            zip_filename = ent.filename
             count += 1
             size += ent.file_size
             m = re_valid_filename.match(zip_filename)
@@ -307,6 +309,8 @@ class DesignZip(Module):
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
+                    if file["filename"] != "blocks.html" and file["filename"] != "index.html":
+                        continue
                     data = self.zip.read(file["zipname"])
                     try:
                         if file["filename"] == "blocks.html":
@@ -319,14 +323,15 @@ class DesignZip(Module):
                         vars = {}
                         self.call("admin-%s.preview-data" % group, vars)
                         try:
-                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
+                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {}, untrusted=True)
+                        except ImportError as e:
+                            errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                         except TemplateException as e:
                             errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                         else:
                             file["data"] = parser.output
                         parsed_html[file["filename"]] = parser
                     except HTMLParser.HTMLParseError as e:
-                        self.exception(e)
                         msg = e.msg
                         if e.lineno is not None:
                             msg += self._(", at line %d") % e.lineno
@@ -497,7 +502,9 @@ class DesignGenerator(Module):
                     vars = {}
                     self.call("admin-%s.preview-data" % self.group(), vars)
                     try:
-                        self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
+                        self.call("web.parse_template", cStringIO.StringIO(parser.output), {}, untrusted=True)
+                    except ImportError as e:
+                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                     except TemplateException as e:
                         errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
                     else:
@@ -1122,7 +1129,13 @@ class DesignMod(Module):
         vars["design_root"] = design.get("uri") if design else None
         vars["content"] = content
         if design and template in design.get("files"):
-            return self.call("web.parse_layout", self.httpfile("%s/%s" % (design.get("uri"), template)), vars)
+            try:
+                return self.call("web.parse_layout", self.httpfile("%s/%s" % (design.get("uri"), template)), vars, untrusted=True)
+            except TemplateException:
+                return '[%s]' % self._("Template error")
+            except ImportError as e:
+                self.exception(e)
+                return '[%s]' % self._("Security error")
         else:
             try:
                 return self.call("web.parse_layout", "%s/%s/%s" % (design_type, self.call("l10n.lang"), template), vars)
@@ -1499,6 +1512,7 @@ class IndexPageAdmin(Module):
             menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "indexpage")
 
     def validate(self, design, parsed_html, errors):
@@ -1639,7 +1653,6 @@ class SocioInterface(ConstructorModule):
         self.rhook("forum.vars-category", self.forum_vars_category)
         self.rhook("forum.vars-topic", self.forum_vars_topic)
         self.rhook("forum.vars-tags", self.forum_vars_tags)
-        self.rhook("ext-admin-sociointerface.templates", self.templates, priv="public")
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
         self.rhook("socio.parse", self.parse, priority=10)
         self.rhook("socio.response", self.response, priority=10)
@@ -1650,14 +1663,6 @@ class SocioInterface(ConstructorModule):
     def recommended_actions(self, actions):
         if not self.conf("sociointerface.design"):
             actions.append({"icon": "/st/img/exclamation.png", "content": self._('Socio interface design of your game is not configured. Socio interface is shown when forum, library or any other external interface is being accessed. You can upload your own design or select one from the catalog. <hook:admin.link href="sociointerface/design" title="Open configuration" />'), "order": 10})
-
-    def templates(self):
-        output = cStringIO.StringIO()
-        zip = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED)
-        for filename in ["global.html", "global-simple.html", "index.html", "category.html", "topic.html", "tags.html"]:
-            zip.write("%s/templates/socio/%s" % (mg.__path__[0], filename), filename)
-        zip.close()
-        self.call("web.response", output.getvalue(), "application/zip")
 
     def forum_vars_index(self, vars):
         vars["title"] = self._("Forum categories")
@@ -1747,6 +1752,7 @@ class SocioInterfaceAdmin(Module):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
@@ -2020,6 +2026,7 @@ class GameInterfaceAdmin(ConstructorModule):
             menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "gameinterface")
 
     def validate(self, design, parsed_html, errors):
@@ -2041,7 +2048,7 @@ class GameInterfaceAdmin(ConstructorModule):
         files.append({"filename": "form.html", "description": self._("External form (inside the external interface)")})
         self.call("admin-gameinterface.design-files", files)
         files = "".join(["<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (f.get("filename"), f.get("description")) for f in files])
-        advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files})
+        advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files, "order": 50})
 
     def generators(self, gens):
         gens.append(DesignGameInterfaceRustedMetal)

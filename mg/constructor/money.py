@@ -11,6 +11,8 @@ class Money(ConstructorModule):
         self.rhook("ext-money.operations", self.money_operations, priv="logged")
         self.rhook("xsolla.payment-args", self.payment_args)
         self.rhook("game.dashboard", self.game_dashboard)
+        self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
+        self.rhook("advice-admin-money.index", self.advice_money)
 
     def payment_args(self, args, options):
         character = options.get("character")
@@ -188,3 +190,11 @@ class Money(ConstructorModule):
             ],
             "rows": rows,
         }
+
+    def advice_game_dashboard(self, args, advice):
+        if args == "" and self.app().project.get("published"):
+            advice.append({"title": self._("Payments structure"), "content": self._("Payments structure chart shows your gross receipt by single payment size. If you see some payment sizes are not very popular it means you should add some offers requiring such payments and promote them to the players"), "order": 5})
+
+    def advice_money(self, hook, args, advice):
+        advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="http://%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.app().inst.config["main_host"]})
+

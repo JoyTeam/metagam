@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-10 18:03+0300\n"
+"PO-Revision-Date: 2011-08-11 15:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -517,6 +517,14 @@ msgstr "Кирпич №1"
 msgid "Brick #2"
 msgstr "Кирпич №2"
 
+#, python-format
+msgid "Brief description of the logo uploading you can find in the <a href=\"http://%s/doc/newgame#logo\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание по загрузке логотипов вы можете найти в <a href=\"http://%s/doc/newgame#logo\" target=\"_blank\">руководстве</a>."
+
+#, python-format
+msgid "Brief description of this form you can find in the <a href=\"http://%s/doc/newgame#profile\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание этой формы вы можете найти в <a href=\"http://%s/doc/newgame#profile\" target=\"_blank\">руководстве</a>."
+
 msgid "Broken Stones"
 msgstr "Разбитые камни"
 
@@ -659,6 +667,9 @@ msgstr "Персонаж для администратора игры"
 msgid "Character form"
 msgstr "Анкета персонажа"
 
+msgid "Character forms documentation"
+msgstr "Документация на анкету персонажа"
+
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
 
@@ -676,6 +687,9 @@ msgstr "Имена персонажей"
 
 msgid "Character names rendering editor"
 msgstr "Редактор отображения имён персонажей"
+
+msgid "Character names validation"
+msgstr "Проверка имён персонажей"
 
 msgid "Character not found"
 msgstr "Персонаж не найден"
@@ -1193,11 +1207,18 @@ msgstr "E-mail получателя"
 msgid "Destroy this game"
 msgstr "Уничтожить эту игру"
 
+#, python-format
+msgid "Detailed description of the currency setup you can read in the <a href=\"http://%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
+msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"http://%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
+
 msgid "Developers club"
 msgstr "Клуб разработчиков"
 
 msgid "Diplomacy"
 msgstr "Дипломатия"
+
+msgid "Diplomacy channel"
+msgstr "Дипломатический канал"
 
 msgid "Diplomacy channel enabled"
 msgstr "Включить дипломатический канал"
@@ -1498,6 +1519,9 @@ msgstr "Введите ваш пароль"
 msgid "Enter your user name"
 msgstr "Введите ваше имя пользователя"
 
+msgid "Entire world channel"
+msgstr "Общемировой канал"
+
 msgid "Epic war event"
 msgstr "Эпическое событие: война"
 
@@ -1778,6 +1802,9 @@ msgstr "Пакет с оформлением игры должен содерж�
 msgid "Game interface menu"
 msgstr "Меню игрового интерфейса"
 
+msgid "Game interface structure"
+msgstr "Структура игрового интерфейса"
+
 msgid "Game interface template"
 msgstr "Шаблон игрового интерфейса"
 
@@ -1875,6 +1902,9 @@ msgstr "Глобальная переменная \"{glob}\" не найдена
 msgid "Go to the Constructor forum"
 msgstr "Перейти на форум Конструктора"
 
+msgid "Go to the buttons editor"
+msgstr "Перейти к редактору кнопок"
+
 msgid "Go to the domain checker"
 msgstr "Перейдите к проверке домена"
 
@@ -1914,6 +1944,14 @@ msgstr "Высота"
 msgid "Height in pixels"
 msgstr "Высота в пикселях"
 
+msgid ""
+"Hello, {name}.\n"
+"\n"
+"We are glad to invite you for the closed alpha-testing of the MMO Constructor project.\n"
+"Your invitation code is: {code}\n"
+"Feel free to use any features of the MMO Constructor you want."
+msgstr "Здравствуйте, {name}.\n\nМы рады пригласить Вас на закрытое альфа-тестирование проекта MMO Constructor.\n\nВаш код приглашения: {code}\n\nИспользуйте любые возможности MMO Constructor, какие захотите.\nПомните, что всё, чего Вам недостаёт в конструкторе, можно заказать через Аукцион заявок.\nИ ещё мы будем признательны, если после тестирования Вы поругаете или похвалите конструктор на нашем форуме."
+
 #, python-format
 msgid "Here is a list of required files in your design with short descriptions: <ul>%s</ul>"
 msgstr "Это список требуемых от вашего оформления файлов с краткими описаниями: <ul>%s</ul>"
@@ -1941,6 +1979,14 @@ msgstr "Подсказка при наведении мыши на ссылку"
 
 msgid "Host"
 msgstr "Хост"
+
+#, python-format
+msgid "How to enforce character names validation you can read in the <a href=\"http://%s/doc/auth\" target=\"_blank\">basic authentication settings</a> manual page"
+msgstr "О том, как включить обязательную проверку имён персонажей, вы можете прочитать в руководстве на странице <a href=\"http://%s/doc/auth\" target=\"_blank\">Основные настройки аутентификации</a>."
+
+#, python-format
+msgid "How to setup character form you can read in the <a href=\"http://%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
+msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"http://%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
 
 msgid "Hyperlinks color"
 msgstr "Цвет гиперссылок"
@@ -2098,6 +2144,9 @@ msgstr "Вставить изображение"
 msgid "Installation"
 msgstr "Инсталляция"
 
+msgid "Installing trackers"
+msgstr "Установка трекеров"
+
 msgid "Integer '{val}' has no attributes"
 msgstr "У целого числа \"{val}\" нет атрибутов"
 
@@ -2214,6 +2263,12 @@ msgstr "Неверное значение"
 msgid "Invitation code"
 msgstr "Код приглашения"
 
+msgid "Invitation for a user"
+msgstr "Приглашение для пользователя"
+
+msgid "Invitation for the MMO Constructor"
+msgstr "Приглашение в MMO Constructor"
+
 msgid "Invitation required"
 msgstr "Требуется приглашение"
 
@@ -2305,6 +2360,9 @@ msgstr "Библиотека"
 msgid "Library - %s"
 msgstr "Библиотека - %s"
 
+msgid "Library documentation"
+msgstr "Документация на библиотеку"
+
 msgid "Library editing"
 msgstr "Редактирование библиотеки"
 
@@ -2352,6 +2410,9 @@ msgstr "Lizard the killer"
 
 msgid "Location"
 msgstr "Локация"
+
+msgid "Location channel"
+msgstr "Канал локации"
 
 msgid "Location chat is separated from the main channel"
 msgstr "Чат локации отделён от главного канала"
@@ -2403,6 +2464,9 @@ msgstr "Локации"
 
 msgid "Locations configuration"
 msgstr "Конфигурация локаций"
+
+msgid "Locations documentation"
+msgstr "Документация на локации"
 
 msgid "Locations editor"
 msgstr "Редактор локаций"
@@ -2628,6 +2692,9 @@ msgstr "Минимальное значение - %d"
 msgid "Minimal value is 1"
 msgstr "Минимальное значение - 1"
 
+msgid "Minimal value is 2"
+msgstr "Минимальное значение - 2"
+
 msgid "Moderation"
 msgstr "Модерация"
 
@@ -2655,11 +2722,18 @@ msgstr "Требуется модерация"
 msgid "Module"
 msgstr "Модуль"
 
+#, python-format
+msgid "Module structure of the constructor is described in the <a href=\"http://%s/doc/modules\" target=\"_blank\">modules documentation</a>."
+msgstr "Модульная структура конструктора описана в <a href=\"http://%s/doc/modules\" target=\"_blank\">документации на модули</a>."
+
 msgid "Money"
 msgstr "Деньги"
 
 msgid "Money locks"
 msgstr "Блокировки денег"
+
+msgid "Money system documentation"
+msgstr "Документация на денежную систему"
 
 msgid "Monitoring"
 msgstr "Мониторинг"
@@ -2676,6 +2750,15 @@ msgstr "Переход в другую локацию"
 #, python-format
 msgid "Move topic: %s"
 msgstr "Перемещение темы: %s"
+
+msgid "Multicharing in the game"
+msgstr "Мультоводство в игре"
+
+msgid "Multicharing options"
+msgstr "Опции мультоводства"
+
+msgid "Multicharing policy of the game"
+msgstr "Политика мультоводства в игре"
 
 msgid "Multicharing tracker"
 msgstr "Мультоловка"
@@ -2706,6 +2789,9 @@ msgstr "Имя не может быть пустым"
 
 msgid "Name of the administrative character in your game"
 msgstr "Имя административного персонажа в вашей игре"
+
+msgid "Name of your character '{name_from}' was changed to '{name_to}'"
+msgstr "Имя вашего персонажа \"{name_from}\" изменено на \"{name_to}\""
 
 msgid "Name template (valid tags are shown above)"
 msgstr "Шаблон имени (допустимые теги приведены выше)"
@@ -3079,6 +3165,12 @@ msgstr "Пароли не совпадают"
 msgid "Payment URL"
 msgstr "Платёжный URL"
 
+msgid "Payments structure"
+msgstr "Структура платежей"
+
+msgid "Payments structure chart shows your gross receipt by single payment size. If you see some payment sizes are not very popular it means you should add some offers requiring such payments and promote them to the players"
+msgstr "Диаграмма структуры платежей показывает вашу валовую выручку в разбивке по размеру единичного платежа. Если вы видите, что какие-то размеры платежей не очень популярны, это означает, что вам следует добавить какие-нибудь предложения для игроков, за которые им надо будет платить такие суммы, и разрекламировать их."
+
 msgid "Performed"
 msgstr "Произведено"
 
@@ -3286,6 +3378,18 @@ msgstr "Чистый HTML"
 
 msgid "Reactivate"
 msgstr "Активировать повторно"
+
+#, python-format
+msgid "Read <a href=\"http://%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
+
+#, python-format
+msgid "Read <a href=\"http://%s/doc/design/indexpage\" target=\"_blank\">the indexpage design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://%s/doc/design/indexpage\" target=\"_blank\">руководство по оформлению титульной страницы</a>."
+
+#, python-format
+msgid "Read <a href=\"http://%s/doc/design/sociointerface\" target=\"_blank\">the socio interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://%s/doc/design/sociointerface\" target=\"_blank\">руководство по оформлению социальных интерфейсов</a>."
 
 msgid "Read more"
 msgstr "Читать далее"
@@ -3607,6 +3711,9 @@ msgstr "Секретный код для добавления игр"
 msgid "Secure entrance"
 msgstr "Безопасный вход"
 
+msgid "Security error"
+msgstr "Ошибка безопасности"
+
 msgid "Security failure: POST method required"
 msgstr "Отказ системы безопасности: требуется метод POST"
 
@@ -3696,6 +3803,9 @@ msgstr "Отправить"
 
 msgid "Send a new message"
 msgstr "Отправить новое сообщение"
+
+msgid "Send invitation code"
+msgstr "Отправить код приглашения"
 
 msgid "Send new telegram"
 msgstr "Отправить новую телеграмму"
@@ -3897,6 +4007,9 @@ msgstr "Пакет с оформлением социалки не может с
 
 msgid "Socio interface message editor"
 msgstr "Редактор сообщений в интерфейсе социалки"
+
+msgid "Socio interface template"
+msgstr "Шаблон интерфейса социалки"
 
 msgid "Socio premium pack for {period}"
 msgstr "Форумный премиум-пакет на {period_a}"
@@ -4145,6 +4258,9 @@ msgstr "Телеграммы"
 msgid "Telegrams with {0}"
 msgstr "Телеграммы с {0}"
 
+msgid "Template error"
+msgstr "Ошибка шаблона"
+
 msgid "Terms and conditions (public offer)"
 msgstr "Условия пользовательского соглашения (публичная оферта)"
 
@@ -4288,6 +4404,9 @@ msgstr "Это очень длинный текст, в котором вас п
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
 
+msgid "This is the public offer"
+msgstr "Это публичная оферта"
+
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
@@ -4348,6 +4467,9 @@ msgstr "Чтобы получить доступ к этой странице, �
 
 msgid "To customize your letter you may use the following commands in the subject and message content"
 msgstr "Чтобы настроить вид ваших писем, вы можете использовать в теме и содержании письма следующие команды:"
+
+msgid "To raise your income you can offer some subscription-based <hook:admin.link href=\"paidservices/editor\" title=\"paid services\" /> to your players"
+msgstr "Чтобы повысить ваш доход, вы можете предложить игрокам какие-либо <hook:admin.link href=\"paidservices/editor\" title=\"платные услуги\" /> по подписке."
 
 msgid "To the main page"
 msgstr "На главную страницу"
@@ -4422,6 +4544,9 @@ msgstr "Код для отслеживания (перед концом разд
 
 msgid "Tracking player"
 msgstr "Отслеживание игрока"
+
+msgid "Trade channel"
+msgstr "Торговый канал"
 
 msgid "Trading"
 msgstr "Торговля"
@@ -4819,6 +4944,33 @@ msgstr "Вы не вошли в систему"
 msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
+#, python-format
+msgid "You can find detailed information on the game interface rendering in the <a href=\"http://%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
+msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"http://%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
+
+#, python-format
+msgid "You can find detailed information on the library system in the <a href=\"http://%s/doc/library\" target=\"_blank\">library page</a> in the reference manual."
+msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"http://%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
+
+#, python-format
+msgid "You can find detailed information on the location system in the <a href=\"http://%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
+msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"http://%s/doc/locations\" target=\"_blank\">Система локаций</a>."
+
+#, python-format
+msgid "You can find information on authentication setup in your game in the <a href=\"http://%s/doc/auth\" target=\"_blank\">authentication manual</a>."
+msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"http://%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
+
+#, python-format
+msgid "You can find information on chat configuration in the <a href=\"http://%s/doc/chat\" target=\"_blank\">chat manual</a>."
+msgstr "Информацию о настройке чата вы можете найти в <a href=\"http://%s/doc/chat\" target=\"_blank\">руководстве по чату</a>."
+
+#, python-format
+msgid "You can find information on setting up paid services in your game in the <a href=\"http://%s/doc/paid-services\" target=\"_blank\">paid services manual</a>."
+msgstr "Информацию о настройке платных услуг в вашей игре вы можете найти в руководстве в разделе <a href=\"http://%s/doc/paid-services\" target=\"_blank\">Платные услуги</a>."
+
+msgid "You can setup any number of counters on your pages. To do it register in the counting or tracking services and paste the tracking code into this form. The first input field will be put in the [%counters%] template variable and displayed in the counters panel. The second input field will be placed in the &lt;head&gt; section of the HTML document. Google analytics code is placed in the second field."
+msgstr "Вы можете добавить на страницы вашей игры любое количество счётчиков. Чтобы сделать это, зарегистрируйтесь в каталогах, предоставляющих счётчики, на трекинговых сервисах и скопируйте их коды в эту форму. Первое поле ввода будет помещено в переменную шаблонизатора [%counters%] и будет отображаться на странице в блоке счётчиков. Второе поле ввода будет помещено в раздел &lt;head&gt; HTML-документа. Код Google analytics, например, помещается именно во второе поле."
+
 msgid "You can use digits and latin letters only"
 msgstr "Вы можете использовать только цифры и латинские буквы"
 
@@ -4857,6 +5009,9 @@ msgstr "У вас недостаточно средств"
 
 msgid "You have not subscribed to any topic"
 msgstr "Вы не подписаны ни на одну тему"
+
+msgid "You have powerful abilities to look for and punish players violating your multicharing rules. Before you begin enforcing the law <hook:admin.link href=\"players/auth\" title=\"setup rules related to the multicharing\" />."
+msgstr "У вас есть мощные возможности для поиска и наказания игроков, нарушающих ваши правила мультоводства. Перед тем, как использовать карательные меры, <hook:admin.link href=\"players/auth\" title=\"настройте правила\" />, относящиеся к мультоводству."
 
 #, python-format
 msgid ""
@@ -4953,6 +5108,9 @@ msgstr "Ваше имя (на английском языке). Например
 
 msgid "Your name (in your language). For example: <strong>John A Smith</strong>"
 msgstr "Ваше имя (на родном языке, как в паспорте). Например: <strong>Сидоров Иван Петрович</strong>"
+
+msgid "Your name has been changed"
+msgstr "Ваше имя было изменено"
 
 msgid "Your official registration address (in your language)"
 msgstr "Ваш официальный адрес регистрации (на вашем языке)"
@@ -5279,6 +5437,9 @@ msgstr "Дата операции"
 msgid "move"
 msgstr "перенести"
 
+msgid "multicharing, players, characters"
+msgstr "мультоводство, игроки, персонажи"
+
 msgid "n/a"
 msgstr "н/д"
 
@@ -5381,6 +5542,9 @@ msgstr "не опубликован"
 
 msgid "projstatus///published"
 msgstr "опубликован"
+
+msgid "public offer, terms and conditions"
+msgstr "публичная оферта, условия использования"
 
 msgid "recheck"
 msgstr "перепроверить"
@@ -5841,8 +6005,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "В базе данных отсутствует запись о персонаже %s"
 #~ msgid "Upload new design"
 #~ msgstr "Загрузить новое оформление"
-#~ msgid "Security"
-#~ msgstr "Безопасность"
 #~ msgid "Constructor: users"
 #~ msgstr "Конструктор: пользователи"
 #~ msgid "Twitter posting"

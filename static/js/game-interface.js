@@ -201,6 +201,8 @@ Game.fixupContentEl = function(el) {
 };
 
 Game.loadMargins = function(el) {
+	if (!el)
+		return undefined;
 	el = Ext.fly(el);
 	if (!el)
 		return undefined;

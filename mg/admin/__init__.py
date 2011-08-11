@@ -171,7 +171,7 @@ class AdminInterface(Module):
         try:
             req.admin_advice.extend(args)
         except AttributeError:
-            req.admin_advice = args
+            req.admin_advice = list(args)
 
     def params_page(self, params):
         params["headmenu"] = self.headmenu()
@@ -183,6 +183,7 @@ class AdminInterface(Module):
         self.call("advice-%s.%s" % (req.group, req.hook), req.args, advice)
         self.call("advice-%s.index" % req.group, req.hook, req.args, advice)
         self.call("advice.all", req.group, req.hook, req.args, advice)
+        advice.sort(lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
         if len(advice):
             for adv in advice:
                 adv["content"] = self.call("web.parse_inline_layout", adv["content"], {})

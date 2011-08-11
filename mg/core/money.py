@@ -196,7 +196,7 @@ class MoneyAdmin(Module):
                             errors["real_price"] = self._("You must supply real money price for this currency")
                         elif not re_valid_real_price.match(real_price):
                             errors["real_price"] = self._("Invalid number format")
-                        elif project and (project.get("moderation") or project.get("published")) and float(real_price) != float(info.get("real_price")):
+                        elif project and (project.get("moderation") or project.get("published")) and info.get("real_price") and float(real_price) != float(info.get("real_price")):
                             errors["real_price"] = self._("You can't change real money exchange rate after game publication")
                         if real_currency not in ["RUB", "USD", "EUR", "UAH", "BYR", "GBP", "KZT"]:
                             errors["v_real_currency"] = self._("Select real money currency")
@@ -662,15 +662,7 @@ class Xsolla(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    try:
-                        v1_1251 = v1.decode("windows-1251")
-                    except Exception:
-                        v1_1251 = None
-                    try:
-                        v1_utf8 = v1.decode("utf-8")
-                    except Exception:
-                        v1_utf8 = None
-                    v1 = v1_utf8 or v1_1251
+                    v1 = v1.decode("windows-1251")
                     self.debug("Xsolla Request: command=check, v1=%s", v1)
                     if self.call("session.find_user", v1):
                         result = 0
@@ -685,15 +677,7 @@ class Xsolla(Module):
                     result = 3
                     comment = "Invalid MD5 signature"
                 else:
-                    try:
-                        v1_1251 = v1.decode("windows-1251")
-                    except Exception:
-                        v1_1251 = None
-                    try:
-                        v1_utf8 = v1.decode("utf-8")
-                    except Exception:
-                        v1_utf8 = None
-                    v1 = v1_utf8 or v1_1251
+                    v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
                     self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
                     user = self.call("session.find_user", v1)

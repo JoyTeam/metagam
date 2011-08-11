@@ -330,6 +330,9 @@ class Character(Module):
             return self.sex
         elif attr == "mod":
             return self.call("modifiers.obj", self.uuid)
+        elif attr == "anyperm":
+            perms = self.call("auth.permissions", self.uuid)
+            return 1 if perms and len(perms) else 0
         else:
             raise AttributeError(attr)
 

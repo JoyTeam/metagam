@@ -176,6 +176,57 @@ class Auth(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-auth.close-project", self.close_project, priv="auth.close-project")
         self.rhook("ext-offer.index", self.offer, priv="public")
+        self.rhook("advice-admin-auth.user-dashboard", self.advice_user_dashboard)
+        self.rhook("library-grp-index.pages", self.library_index_pages)
+        self.rhook("library-page-offer.content", self.library_page_offer)
+        self.rhook("library-page-multicharing.content", self.library_page_multicharing)
+        self.rhook("auth.name-changed", self.name_changed)
+
+    def name_changed(self, user, old_name, new_name):
+        character = self.character(user.uuid)
+        player = character.player
+        self.call("email.send", player.email, old_name, self._("Your name has been changed"), self._("Name of your character '{name_from}' was changed to '{name_to}'").format(name_from=old_name, name_to=new_name))
+
+    def library_index_pages(self, pages):
+        pages.append({"page": "offer", "order": 1000})
+        pages.append({"page": "multicharing", "order": 10})
+
+    def library_page_multicharing(self):
+        vars = {
+            "multicharing": self.conf("auth.multicharing", 0),
+            "free_chars": self.conf("auth.free_chars", 1),
+            "max_chars": self.conf("auth.max_chars", 5),
+        }
+        multichar_price = self.conf("auth.multichar_price", 5)
+        multichar_currency = self.conf("auth.multichar_currency")
+        if multichar_price and multichar_currency:
+            vars["multichar_price"] = self.call("money.price-html", multichar_price, multichar_currency)
+        lang = self.call("l10n.lang")
+        return {
+            "code": "multicharing",
+            "title": self._("Multicharing in the game"),
+            "keywords": self._("multicharing, players, characters"),
+            "description": self._("Multicharing policy of the game"),
+            "content": self.call("socio.parse", "library-multicharing.html", vars),
+            "parent": "index",
+        }
+
+    def library_page_offer(self):
+        vars = {
+            "title": self._("Terms and conditions (public offer)"),
+        }
+        lang = self.call("l10n.lang")
+        return {
+            "code": "offer",
+            "title": self._("Terms and conditions (public offer)"),
+            "keywords": self._("public offer, terms and conditions"),
+            "description": self._("This is the public offer"),
+            "content": self.call("web.parse_template", "constructor/offer-players-%s.html" % lang, vars),
+            "parent": "index",
+        }
+
+    def advice_user_dashboard(self, args, advice):
+        advice.append({"title": self._("Multicharing options"), "content": self._('You have powerful abilities to look for and punish players violating your multicharing rules. Before you begin enforcing the law <hook:admin.link href="players/auth" title="setup rules related to the multicharing" />.')})
 
     def offer(self):
         vars = {
@@ -345,6 +396,7 @@ class Auth(ConstructorModule):
 
     def admin_players_auth(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="http://%s/doc/auth" target="_blank">authentication manual</a>.') % self.app().inst.config["main_host"]})
         currencies = {}
         self.call("currencies.list", currencies)
         if req.param("ok"):
@@ -372,8 +424,8 @@ class Auth(ConstructorModule):
                         errors["max_chars"] = self._("Invalid number")
                     else:
                         max_chars = int(max_chars)
-                        if max_chars < 1:
-                            errors["max_chars"] = self._("Minimal value is 1")
+                        if max_chars < 2:
+                            errors["max_chars"] = self._("Minimal value is 2")
                         config.set("auth.max_chars", max_chars)
                     if not errors.get("max_chars") and not errors.get("free_chars"):
                         if max_chars < free_chars:
@@ -1278,5 +1330,6 @@ class Auth(ConstructorModule):
             "icon": "game-admin.png",
             "title": self._("Administrative interface"),
             "block": "top-menu",
+            "condition": [".", ["glob", "char"], "anyperm"],
             "order": 90,
         })

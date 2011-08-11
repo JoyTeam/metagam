@@ -8,7 +8,7 @@ Xsolla.paystation = function() {
 			modal: true,
 			closeAction: 'hide',
 			header: false,
-			closable: false,
+			closable: true,
 			items: Game.element('payment', {}, {
 				items: {
 					id: 'paystation-iframe',

@@ -142,5 +142,6 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 
 /* LIBRARY */
 #library-rightmenu { width: 300px; float: right }
-#library-content { margin-right: 340px }
+#library-content { margin-right: 340px; text-align: justify }
 .library-rightblock { padding-bottom: 40px }
+#library-content-full { text-align: justify }

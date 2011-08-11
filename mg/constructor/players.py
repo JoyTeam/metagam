@@ -72,6 +72,7 @@ class CharactersMod(ConstructorModule):
     def admin_characters_form(self):
         req = self.req()
         character_form = self.call("character.form")
+        self.call("admin.advice", {"title": self._("Character forms documentation"), "content": self._('How to setup character form you can read in the <a href="http://%s/doc/character-form" target="_blank">character forms</a> manual page') % self.app().inst.config["main_host"]})
         m = re_delete_recover.match(req.args)
         if m:
             op, code = m.group(1, 2)
@@ -423,6 +424,7 @@ class CharactersMod(ConstructorModule):
 
     def admin_validate_names(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Character names validation"), "content": self._('How to enforce character names validation you can read in the <a href="http://%s/doc/auth" target="_blank">basic authentication settings</a> manual page') % self.app().inst.config["main_host"]})
         lst = self.objlist(UserList, query_index="check", query_equal="1")
         if req.ok():
             # auth params
@@ -446,9 +448,12 @@ class CharactersMod(ConstructorModule):
                                     errors["name-%s" % ent.uuid] = self._("This name is taken already")
                                 else:
                                     ent.delkey("check")
+                                    old_name = ent.get("name")
                                     ent.set("name", name)
                                     ent.set("name_lower", name.lower())
                                     ent.store()
+                                    if old_name != name:
+                                        self.call("auth.name-changed", ent, old_name, name)
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
             self.call("admin.redirect", "characters/validate-names")

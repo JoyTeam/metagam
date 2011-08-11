@@ -57,6 +57,7 @@ class CountersAdmin(Module):
 
     def counters(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Installing trackers"), "content": self._("You can setup any number of counters on your pages. To do it register in the counting or tracking services and paste the tracking code into this form. The first input field will be put in the [%counters%] template variable and displayed in the counters panel. The second input field will be placed in the &lt;head&gt; section of the HTML document. Google analytics code is placed in the second field.")})
         html = req.param("html")
         head = req.param("head")
         if req.ok():
