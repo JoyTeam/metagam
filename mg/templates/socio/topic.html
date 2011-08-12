@@ -5,10 +5,6 @@
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
 
-<table id="socio-like-buttons"><tr>
-	<td id="socio-topic-yandex"><div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,friendfeed,moikrug"></div></td>
-</tr></table>
-
 <table id="socio-categories">
 
 [%if show_topic%]
@@ -25,6 +21,11 @@
 
 <td class="socio-post-content" colspan="2">
 [%topic.content_html%]
+
+<table id="socio-like-buttons"><tr>
+	<td id="socio-topic-yandex"><div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,friendfeed,moikrug"></div></td>
+</tr></table>
+
 </td>
 
 </tr><tr><td class="socio-post-actions-left">
