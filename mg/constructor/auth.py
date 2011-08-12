@@ -1297,7 +1297,7 @@ class Auth(ConstructorModule):
                     while j < len(links):
                         link = links[j]
                         lid = link.get("id")
-                        if lid == "chname":
+                        if lid == "chname" or lid == "perms":
                             del links[j:j+1]
                             continue
                         elif lid == "tracking":

@@ -1218,6 +1218,8 @@ class Interface(Module):
             tbl["links"].append({"id": "chname", "hook": "auth/change-name/%s" % user.uuid, "text": self._("Change name")})
         if req.has_access("auth.tracking"):
             tbl["links"].append({"id": "tracking", "hook": "auth/track/user/%s" % user.uuid, "text": self._("Track user")})
+        if req.has_access("permissions"):
+            tbl["links"].append({"id": "perms", "hook": "auth/edituserpermissions/%s" % user.uuid, "text": self._("Permissions")})
         self.call("auth.user-auth-table", user, tbl)
         if not tbl["rows"]:
             del tbl["rows"]
