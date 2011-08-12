@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-12 15:59+0300\n"
+"PO-Revision-Date: 2011-08-12 16:39+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -312,6 +312,9 @@ msgstr "Разрешить смайлики в подписях"
 
 msgid "Allow users to enter topic dates manually"
 msgstr "Разрешить пользователям вводить даты тем вручную"
+
+msgid "Allow users to inhibit notifications about new topic"
+msgstr "Позволить пользователям отключать оповещения о новой теме"
 
 msgid "Allow web search engines index this site"
 msgstr "Позволить поисковым системам индексировать этот сайт"
@@ -2995,6 +2998,9 @@ msgstr "Обратите внимание, что ваше изображени�
 
 msgid "Nothing found"
 msgstr "Ничего не найдено"
+
+msgid "Notify other users about this topic"
+msgstr "Уведомлять других пользователей об этом топике"
 
 msgid "Notify users about new topics in this category by default"
 msgstr "Уведомлять пользователей о новых темах в этом разделе по умолчанию"
