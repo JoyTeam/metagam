@@ -1199,26 +1199,29 @@ class WebMoney(Module):
         if rid != self.conf("wmlogin.rid"):
             self.error("WMLogin received rid=%s, expected=%s", rid, self.conf("wmlogin.rid"))
             self.call("web.forbidden")
-        # validating ticket
-        doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "request", None)
-        request = doc.documentElement
-        request.appendChild(doc.createElement("siteHolder")).appendChild(doc.createTextNode(service_wmid))
-        request.appendChild(doc.createElement("user")).appendChild(doc.createTextNode(user_wmid))
-        request.appendChild(doc.createElement("ticket")).appendChild(doc.createTextNode(ticket))
-        request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
-        request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
-        request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
-        response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
-        doc = response.documentElement
-        if doc.tagName != "response":
-            raise RuntimeError("Unexpected response from WMLogin")
-        retval = doc.getAttribute("retval")
-        sval = doc.getAttribute("sval")
-        if retval == "0":
-            self.call("wmlogin.authorized", authtype=authtype, remote_addr=remote_addr, wmid=user_wmid)
-        else:
-            self.error("WMLogin auth failed: retval=%s, sval=%s", retval, sval)
-            self.call("web.forbidden")
+        try:
+            # validating ticket
+            doc = xml.dom.minidom.getDOMImplementation().createDocument(None, "request", None)
+            request = doc.documentElement
+            request.appendChild(doc.createElement("siteHolder")).appendChild(doc.createTextNode(service_wmid))
+            request.appendChild(doc.createElement("user")).appendChild(doc.createTextNode(user_wmid))
+            request.appendChild(doc.createElement("ticket")).appendChild(doc.createTextNode(ticket))
+            request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
+            request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
+            request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
+            response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
+            doc = response.documentElement
+            if doc.tagName != "response":
+                raise RuntimeError("Unexpected response from WMLogin")
+            retval = doc.getAttribute("retval")
+            sval = doc.getAttribute("sval")
+            if retval == "0":
+                self.call("wmlogin.authorized", authtype=authtype, remote_addr=remote_addr, wmid=user_wmid)
+            else:
+                self.error("WMLogin auth failed: retval=%s, sval=%s", retval, sval)
+                self.call("web.forbidden")
+        except HTTPError:
+            self.call("web.response_global", self._("Error connecting to the WebMoney server. Try again later"), {})
 
     def wm_query(self, gate_name, gate_host, url, request):
         reqdata = request.toxml("utf-8")
@@ -1244,6 +1247,8 @@ class WebMoney(Module):
                     response = xml.dom.minidom.parseString(response.body)
                     self.debug("WM request: %s", response.toxml("utf-8"))
                     return response
+                except IOError as e:
+                    raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, url, str(e)))
                 finally:
                     cnn.close()
         except TimeoutError:

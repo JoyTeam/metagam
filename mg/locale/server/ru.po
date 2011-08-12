@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-12 09:59+0300\n"
+"PO-Revision-Date: 2011-08-12 15:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1527,6 +1527,9 @@ msgstr "Эпическое событие: война"
 
 msgid "Error"
 msgstr "Ошибка"
+
+msgid "Error connecting to the WebMoney server. Try again later"
+msgstr "Ошибка соединения с сервером WebMoney. Пожалуйста, попробуйте позже"
 
 msgid "Error connecting to the registrar. Try again please"
 msgstr "Ошибка соединения с регистратором. Пожалуйста, попробуйте позже"
