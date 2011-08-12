@@ -669,7 +669,12 @@ class ReqAuction(ConstructorModule):
                             request.delkey("priority")
                             request.delkey("votes")
                             request.store()
-                            self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid).remove()
+                            lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid)
+                            lst.load()
+                            voters = []
+                            for ent in lst:
+                                voters.append(ent.get("user"))
+                            lst.remove()
                             # updating linked requests
                             lst = self.objlist(DBRequestList, query_index="parent", query_equal=request.uuid)
                             lst.load()
@@ -693,6 +698,8 @@ class ReqAuction(ConstructorModule):
                             with self.lock(["Requests.recalc"]):
                                 for uuid in recalculate:
                                     self.recalculate(uuid)
+                            # sending e-mails
+                            self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: http://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid))
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("publish"):
                         request.set("text", text)
