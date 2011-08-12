@@ -62,6 +62,7 @@ class Telegrams(Module):
         self.rhook("ext-telegrams.list", self.telegrams_list, priv="logged")
         self.rhook("ext-telegrams.send", self.telegrams_send, priv="logged")
         self.rhook("ext-telegrams.user", self.telegrams_user, priv="logged")
+        self.rhook("socio.author_menu", self.socio_author_menu)
 
     def menu(self, menu_lst):
         req = self.req()
@@ -265,3 +266,6 @@ class Telegrams(Module):
             "form": "" if read_only else form.html()
         }
         self.call("socio.response_template", "telegrams-user.html", vars)
+
+    def socio_author_menu(self, author_uuid, author_name_html, menu):
+        menu.append({"title": self._("Correspondence"), "href": "/telegrams/user/%s" % author_uuid})
