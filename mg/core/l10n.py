@@ -132,7 +132,7 @@ class L10n(Module):
             return trans
         except IOError as e:
             self.error("Error loading language %s in %s: %s", lang, localedir, e)
-            return l10n_translation(domain, "en")
+            return self.l10n_translation(domain, "en")
 
     def l10n_stemmer(self):
         lang = self.call("l10n.lang")
