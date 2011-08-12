@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-12 09:48+0300\n"
+"PO-Revision-Date: 2011-08-12 09:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3250,6 +3250,9 @@ msgstr "Выпадающие меню"
 
 msgid "Possible options. Format: 0:first value|1:second value|2:third value"
 msgstr "Возможные варианты. Формат: 0:первое значение|1:второе значение|3:третье значение"
+
+msgid "Post reply"
+msgstr "Опубликовать ответ"
 
 msgid "Postal address"
 msgstr "Почтовый адрес"

@@ -1635,9 +1635,13 @@ class Forum(Module):
             elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
                 form.error("content", errors.get("may_write", self._("Access denied")))
             if not form.errors:
-                user = self.obj(User, self.call("socio.user"))
-                post, page = self.call("forum.reply", cat, topic, user, content)
-                self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
+                if req.param("save"):
+                    print "posting reply"
+                    user = self.obj(User, self.call("socio.user"))
+                    post, page = self.call("forum.reply", cat, topic, user, content)
+                    self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
+                else:
+                    form.add_message_top('<div class="socio-preview">%s</div>' % self.call("socio.format_text", content))
         # making web response
         vars = {
             "topic": topic_data,
@@ -1652,7 +1656,10 @@ class Forum(Module):
             if errors.get("may_write"):
                 form.error("content", errors["may_write"])
             form.texteditor(None, "content", content)
-            form.submit(None, None, self._("Reply"))
+            form.submit(None, "preview", self._("Preview"))
+            form.submit(None, "save", self._("Post reply"), inline=True)
+            if req.ok():
+                self.call("socio.response", form.html(), vars)
             vars["new_post_form"] = form.html()
         else:
             if errors.get("may_write"):
