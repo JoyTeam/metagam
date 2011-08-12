@@ -236,7 +236,7 @@ class Chat(ConstructorModule):
 
     def chat_config(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="http://%s/doc/chat" target="_blank">chat manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="http://www.%s/doc/chat" target="_blank">chat manual</a>.') % self.app().inst.config["main_host"]})
         if req.param("ok"):
             config = self.app().config_updater()
             errors = {}

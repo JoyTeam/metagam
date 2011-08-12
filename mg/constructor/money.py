@@ -196,5 +196,5 @@ class Money(ConstructorModule):
             advice.append({"title": self._("Payments structure"), "content": self._("Payments structure chart shows your gross receipt by single payment size. If you see some payment sizes are not very popular it means you should add some offers requiring such payments and promote them to the players"), "order": 5})
 
     def advice_money(self, hook, args, advice):
-        advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="http://%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="http://www.%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.app().inst.config["main_host"]})
 

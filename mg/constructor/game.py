@@ -137,7 +137,7 @@ class Game(Module):
         fields.append({"type": "textarea", "name": "description", "label": self._("Game description"), "value": description})
         fields.append({"name": "indexpage_description", "label": self._("SEO HTML description for the index page"), "value": indexpage_description})
         fields.append({"name": "indexpage_keywords", "label": self._("SEO HELP keywords for the index page"), "value": indexpage_keywords})
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of this form you can find in the <a href="http://%s/doc/newgame#profile" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of this form you can find in the <a href="http://www.%s/doc/newgame#profile" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.form", fields=fields)
 
     def ext_logo(self):
@@ -170,7 +170,7 @@ class Game(Module):
             "logo": project.get("logo"),
             "change": change
         }
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of the logo uploading you can find in the <a href="http://%s/doc/newgame#logo" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of the logo uploading you can find in the <a href="http://www.%s/doc/newgame#logo" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.response_template", "admin/game/logo.html", vars)
 
     def headmenu_logo(self, args):
@@ -216,7 +216,7 @@ class Game(Module):
                 }
             ]
         }
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Module structure of the constructor is described in the <a href="http://%s/doc/modules" target="_blank">modules documentation</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Module structure of the constructor is described in the <a href="http://www.%s/doc/modules" target="_blank">modules documentation</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_modules(self, args):

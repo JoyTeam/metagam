@@ -133,7 +133,7 @@ class Interface(ConstructorModule):
         self.rhook("advice-admin-gameinterface.index", self.advice_gameinterface)
 
     def advice_gameinterface(self, hook, args, advice):
-        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="http://%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="http://www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
 
     def buttons(self, buttons):
         buttons.append({

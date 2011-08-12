@@ -972,9 +972,9 @@ class XsollaAdmin(Module):
             self.call("web.not_found")
         if cmd == "":
             payments = []
-            list = self.objlist(PaymentXsollaList, query_index="date", query_reversed=True)
-            list.load(silent=True)
-            for pay in list:
+            lst = app.objlist(PaymentXsollaList, query_index="date", query_reversed=True)
+            lst.load(silent=True)
+            for pay in lst:
                 payments.append({
                     "id": pay.uuid,
                     "performed": self.call("l10n.time_local", pay.get("performed")),

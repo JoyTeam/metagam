@@ -177,6 +177,8 @@ class ConstructorProjectAdmin(Module):
         if project.get("published"):
             vars["published"] = True
             self.call("game.dashboard", vars)
+        else:
+            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="http://www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):

@@ -22,7 +22,7 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.admin-text", self.admin_text)
 
     def help_icon_expressions(self):
-        return ' <a href="http://%s/doc/script" target="_blank"><img class="inline-icon" src="/st/icons/script.gif" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Scripting language reference"))
+        return ' <a href="http://www.%s/doc/script" target="_blank"><img class="inline-icon" src="/st/icons/script.gif" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Scripting language reference"))
 
     @property
     def parser_spec(self):

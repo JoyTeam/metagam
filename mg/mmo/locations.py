@@ -23,7 +23,7 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("advice-admin-locations.index", self.advice_locations)
 
     def advice_locations(self, hook, args, advice):
-        advice.append({"title": self._("Locations documentation"), "content": self._('You can find detailed information on the location system in the <a href="http://%s/doc/locations" target="_blank">locations page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Locations documentation"), "content": self._('You can find detailed information on the location system in the <a href="http://www.%s/doc/locations" target="_blank">locations page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def objclasses_list(self, objclasses):
         objclasses["CharacterLocation"] = (DBCharacterLocation, DBCharacterLocationList)

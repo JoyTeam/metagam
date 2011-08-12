@@ -71,7 +71,7 @@ deploy: translations
 	bin/mg_compile .
 	mkdir -p depl/bin
 	cp bin/* depl/bin/
-	cp -R mg static depl/
+	cp -R mg static perl depl/
 	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
 	find depl/static -name robots.txt -exec rm -rf {} \;
 	rsync --links --delete -r depl/* admin.mmoconstructor.ru:/home/mg/

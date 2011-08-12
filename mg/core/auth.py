@@ -634,7 +634,7 @@ class Interface(Module):
 
     def ext_captcha(self):
         req = self.req()
-        session = req.session()
+        session = req.session(True)
         if session is None:
             self.call("web.forbidden")
         field = 25

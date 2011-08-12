@@ -396,7 +396,7 @@ class Auth(ConstructorModule):
 
     def admin_players_auth(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="http://%s/doc/auth" target="_blank">authentication manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="http://www.%s/doc/auth" target="_blank">authentication manual</a>.') % self.app().inst.config["main_host"]})
         currencies = {}
         self.call("currencies.list", currencies)
         if req.param("ok"):

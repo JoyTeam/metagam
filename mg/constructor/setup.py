@@ -22,6 +22,7 @@ class ProjectSetupWizard(Wizard):
 
     def request(self, cmd):
         req = self.req()
+        self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about creating the game to launch you can read in the <a href="http://www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         state = self.config.get("state")
         project = self.app().project
         if state == "intro":
@@ -29,7 +30,6 @@ class ProjectSetupWizard(Wizard):
                 self.config.set("state", "offer")
                 self.config.store()
                 self.call("admin.redirect", "wizard/call/%s" % self.uuid)
-            self.call("admin.advice", {"title": self._("Demo advice"), "content": self._("Look to the right to read some recommendations")})
             fields = [
                 {"type": "html", "html": self.call("web.parse_template", "constructor/setup/intro-%s.html" % self.call("l10n.lang"), {})},
                 {"type": "button", "text": self._("Next"), "action": "wizard/call/%s/next" % self.uuid},

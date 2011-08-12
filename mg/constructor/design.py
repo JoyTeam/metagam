@@ -1509,7 +1509,7 @@ class IndexPageAdmin(Module):
             menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "indexpage")
 
     def validate(self, design, parsed_html, errors):
@@ -1749,7 +1749,7 @@ class SocioInterfaceAdmin(Module):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
@@ -2016,7 +2016,7 @@ class GameInterfaceAdmin(ConstructorModule):
             menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "gameinterface")
 
     def validate(self, design, parsed_html, errors):
