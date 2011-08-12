@@ -262,7 +262,8 @@ class ForumAdmin(Module):
             tag = req.param("tag")
             order = req.param("order")
             default_subscribe = req.param("default_subscribe")
-            manual_date = req.param("manual_date")
+            manual_date = True if req.param("manual_date") else False
+            allow_skip_notify = True if req.param("allow_skip_notify") else False
             if title is None or title == "":
                 errors["title"] = self._("Enter category title")
             if topcat is None or topcat == "":
@@ -283,7 +284,8 @@ class ForumAdmin(Module):
             cat["tag"] = tag
             cat["order"] = float(order)
             cat["default_subscribe"] = True if default_subscribe else False
-            cat["manual_date"] = True if manual_date else False
+            cat["manual_date"] = manual_date
+            cat["allow_skip_notify"] = allow_skip_notify
             conf = self.app().config_updater()
             conf.set("forum.categories", categories)
             conf.store()
@@ -330,6 +332,12 @@ class ForumAdmin(Module):
                 "name": "manual_date",
                 "label": self._("Allow users to enter topic dates manually"),
                 "checked": cat.get("manual_date"),
+                "type": "checkbox",
+            },
+            {
+                "name": "allow_skip_notify",
+                "label": self._("Allow users to inhibit notifications about new topic"),
+                "checked": cat.get("allow_skip_notify"),
                 "type": "checkbox",
             },
         ]
@@ -1353,6 +1361,10 @@ class Forum(Module):
             created = req.param("created")
         else:
             created = None
+        if cat.get("allow_skip_notify"):
+            notify = True if req.param("notify") else False
+        else:
+            notify = True
         params = {}
         self.call("forum.params", params)
         tags = req.param("tags")
@@ -1371,13 +1383,15 @@ class Forum(Module):
             if not form.errors:
                 if req.param("publish"):
                     user = self.obj(User, self.call("socio.user"))
-                    topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None)
+                    topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None, notify=notify)
                     self.call("forum.topic-form", topic, form, "store")
                     self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
                 else:
                     form.add_message_top('<div class="socio-preview">%s</div>' % self.call("socio.format_text", content))
         if cat.get("manual_date"):
             form.input(self._("Topic date (dd.mm.yyyy or dd.mm.yyyy hh:mm:ss)"), "created", created)
+        if cat.get("allow_skip_notify"):
+            form.checkbox(self._("Notify other users about this topic"), "notify", notify)
         form.input(self._("Subject"), "subject", subject)
         form.texteditor(self._("Content"), "content", content)
         if params.get("show_tags", True):
@@ -1396,7 +1410,7 @@ class Forum(Module):
         }
         self.call("socio.response", form.html(), vars)
 
-    def newtopic(self, cat, author, subject, content, tags="", created=None):
+    def newtopic(self, cat, author, subject, content, tags="", created=None, notify=True):
         topic = self.obj(ForumTopic)
         topic_content = self.obj(ForumTopicContent, topic.uuid, {})
         if created is None:
@@ -1436,7 +1450,8 @@ class Forum(Module):
         if author is not None:
             self.subscribe(author.uuid, topic.uuid, cat["id"], created)
         catstat.store()
-        self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
+        if notify:
+            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
         return topic
 
     def tags_parse(self, tags_str):
