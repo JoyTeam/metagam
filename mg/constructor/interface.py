@@ -61,6 +61,7 @@ class Dynamic(Module):
         data = self.app().mc.get(mcid)
         if not data or not caching:
             mg_path = mg.__path__[0]
+            project = getattr(self.app(), "project", None)
             vars = {
                 "includes": [
                     "%s/../static/js/prototype.js" % mg_path,
@@ -70,7 +71,7 @@ class Dynamic(Module):
                 "game_domain": self.app().canonical_domain,
                 "closed": self.conf("auth.closed"),
                 "close_message": jsencode(htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))),
-                "published": self.app().project.get("published"),
+                "published": project.get("published") if project else None,
                 "NotPublished": self._("Registration in this game is disabled yet. To allow new players to register the game must be sent to moderation first."),
             }
             self.call("indexpage.render", vars)
