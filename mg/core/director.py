@@ -284,7 +284,7 @@ class Director(Module):
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
-            result["director"] = "ok: application.version=%d" % self.conf("application.version")
+            result["director"] = "ok: application.version=%d" % self.conf("application.version", 0)
         return result
 
     def reload_servers(self, result={}):
