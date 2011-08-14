@@ -608,7 +608,7 @@ class Locations(ConstructorModule):
             new_location_id = req.param("location")
             # validating transition
             trans = old_location.transitions.get(new_location_id)
-            if not trans:
+            if trans is None:
                 self.call("web.response_json", {"ok": False, "error": self._("No way")})
             new_location = self.location(new_location_id)
             if not new_location.valid():
