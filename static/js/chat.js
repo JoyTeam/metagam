@@ -759,7 +759,7 @@ Chat.open_default_channel = function(pkt) {
 };
 
 Chat.clear = function() {
-	if (this.box_content) {
+	if (this.box_content && (this.mode == 0 || this.mode == 2)) {
 		var container = this.box_content.el.dom;
 		while (container.lastChild) {
 			container.removeChild(container.lastChild);

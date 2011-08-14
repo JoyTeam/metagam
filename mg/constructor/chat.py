@@ -708,6 +708,8 @@ class Chat(ConstructorModule):
         for channel in channels:
             if channel["id"] == "loc":
                 channel_id = "loc-%s" % (character.location.uuid if character.location else None)
+            elif channel["id"] == "sys" and self.chatmode == 0:
+                channel_id = "wld"
             else:
                 channel_id = channel["id"]
             # old messages
