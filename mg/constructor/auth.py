@@ -173,7 +173,6 @@ class Auth(ConstructorModule):
         self.rhook("auth.message", self.auth_message, priority=10)
         self.rhook("auth.remind_email", self.remind_email)
         self.rhook("menu-admin-game.index", self.menu_game_index)
-        self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-auth.close-project", self.close_project, priv="auth.close-project")
         self.rhook("ext-offer.index", self.offer, priv="public")
         self.rhook("advice-admin-auth.user-dashboard", self.advice_user_dashboard)
