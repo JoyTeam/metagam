@@ -20,6 +20,7 @@ topics_per_page = 20
 max_word_len = 30
 max_tag_len = 30
 search_results_per_page = 20
+edit_comment_timeout = 900
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
@@ -1155,10 +1156,10 @@ class Forum(Module):
             if perm == "+M" and role in roles:
                 return True
         if post is None:
-            if topic.get("author") == user and topic.get("created") > self.now(-900):
+            if topic.get("author") == user and topic.get("created") > self.now(-edit_comment_timeout):
                 return True
         else:
-            if post.get("author") == user and post.get("created") > self.now(-900):
+            if post.get("author") == user and post.get("created") > self.now(-edit_comment_timeout):
                 return True
         return False
 
