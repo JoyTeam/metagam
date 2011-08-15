@@ -135,11 +135,15 @@ class Cluster(Module):
         finally:
             cnn.close()
 
-    def upload(self, subdir, ext, content_type, data):
+    def upload(self, subdir, ext, content_type, data, filename=None):
         host = str(random.choice(self.app().inst.config["storage"]))
+        tag = self.app().tag
         id = uuid4().hex
-        url = str("/%s/%s/%s%s/%s-%s.%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id, ext))
-        uri = str("http://" + host + url)
+        if filename is None:
+            url = str("/%s/%s/%s%s/%s/%s.%s" % (subdir, tag[0], tag[0], tag[1], tag, id, ext))
+        else:
+            url = str("/%s/%s/%s%s/%s/%s-%s" % (subdir, tag[0], tag[0], tag[1], tag, id, filename))
+        uri = str("//" + host + url)
         cnn = HTTPConnection()
         cnn.connect((str(host), 80))
         try:
@@ -160,8 +164,9 @@ class Cluster(Module):
     def static_upload_zip(self, subdir, zip, upload_list):
         host = str(random.choice(self.app().inst.config["storage"]))
         id = uuid4().hex
-        url = str("/%s/%s/%s%s/%s-%s" % (subdir, random.choice(alphabet), random.choice(alphabet), random.choice(alphabet), self.app().tag, id))
-        uri = str("http://" + host + url)
+        tag = self.app().tag
+        url = str("/%s/%s/%s%s/%s/%s" % (subdir, tag[0], tag[0], tag[1], tag, id))
+        uri = str("//" + host + url)
         for ent in upload_list:
             cnn = HTTPConnection()
             cnn.connect((str(host), 80))
@@ -186,8 +191,8 @@ class Cluster(Module):
                 cnn.close()
         return uri
 
-    def static_upload(self, subdir, ext, content_type, data):
-        uri, url, host, id = self.upload(subdir, ext, content_type, data)
+    def static_upload(self, subdir, ext, content_type, data, filename=None):
+        uri, url, host, id = self.upload(subdir, ext, content_type, data, filename=filename)
         return uri
 
     def static_upload_temp(self, subdir, ext, content_type, data, wizard=None):

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-15 12:34+0300\n"
+"PO-Revision-Date: 2011-08-15 16:44+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -368,6 +368,9 @@ msgstr "Вы уверены, что хотите удалить этот бло�
 msgid "Are you sure want to delete this button?"
 msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
+msgid "Are you sure want to delete this object?"
+msgstr "Вы уверены, что хотите удалить этот объект?"
+
 msgid "Are you sure want to delete this offer?"
 msgstr "Вы уверены, что хотите удалить это предложение?"
 
@@ -397,6 +400,9 @@ msgstr "Творчество"
 
 msgid "Assign a domain name"
 msgstr "Назначить доменное имя"
+
+msgid "Auction"
+msgstr "Аукцион"
 
 msgid "Authentication"
 msgstr "Аутентификация"
@@ -521,12 +527,12 @@ msgid "Brick #2"
 msgstr "Кирпич №2"
 
 #, python-format
-msgid "Brief description of the logo uploading you can find in the <a href=\"http://www.%s/doc/newgame#logo\" target=\"_blank\">reference manual</a>."
-msgstr "Краткое описание по загрузке логотипов вы можете найти в <a href=\"http://www.%s/doc/newgame#logo\" target=\"_blank\">руководстве</a>."
+msgid "Brief description of the logo uploading you can find in the <a href=\"//www.%s/doc/newgame#logo\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание по загрузке логотипов вы можете найти в <a href=\"//www.%s/doc/newgame#logo\" target=\"_blank\">руководстве</a>."
 
 #, python-format
-msgid "Brief description of this form you can find in the <a href=\"http://www.%s/doc/newgame#profile\" target=\"_blank\">reference manual</a>."
-msgstr "Краткое описание этой формы вы можете найти в <a href=\"http://www.%s/doc/newgame#profile\" target=\"_blank\">руководстве</a>."
+msgid "Brief description of this form you can find in the <a href=\"//www.%s/doc/newgame#profile\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание этой формы вы можете найти в <a href=\"//www.%s/doc/newgame#profile\" target=\"_blank\">руководстве</a>."
 
 msgid "Broken Stones"
 msgstr "Разбитые камни"
@@ -955,6 +961,9 @@ msgstr "Содержание"
 msgid "Content must not be empty"
 msgstr "Содержимое не может быть пустым"
 
+msgid "Content type"
+msgstr "Тип контента"
+
 msgid "Content-type not specified. Add <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" /> into the head tag"
 msgstr "Content-type не указан. Добавьте <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\" /> в тег head"
 
@@ -1211,8 +1220,8 @@ msgid "Destroy this game"
 msgstr "Уничтожить эту игру"
 
 #, python-format
-msgid "Detailed description of the currency setup you can read in the <a href=\"http://www.%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
-msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"http://www.%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
+msgid "Detailed description of the currency setup you can read in the <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
+msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
 
 msgid "Developers club"
 msgstr "Клуб разработчиков"
@@ -1365,6 +1374,9 @@ msgstr "Конфигурация e-mail"
 
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
+
+msgid "Email of the request auction moderator"
+msgstr "E-mail модератора аукциона заявок"
 
 msgid "Empty hostname"
 msgstr "Пустое имя хоста"
@@ -1648,6 +1660,9 @@ msgstr "Код поля (для использования в скриптах)"
 
 msgid "Field type"
 msgstr "Тип поля"
+
+msgid "Filename"
+msgstr "Имя файла"
 
 #, python-format
 msgid "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)"
@@ -1995,15 +2010,15 @@ msgid "Host"
 msgstr "Хост"
 
 #, python-format
-msgid "How to enforce character names validation you can read in the <a href=\"http://www.%s/doc/auth\" target=\"_blank\">basic authentication settings</a> manual page"
-msgstr "О том, как включить обязательную проверку имён персонажей, вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/auth\" target=\"_blank\">Основные настройки аутентификации</a>."
+msgid "How to enforce character names validation you can read in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">basic authentication settings</a> manual page"
+msgstr "О том, как включить обязательную проверку имён персонажей, вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/auth\" target=\"_blank\">Основные настройки аутентификации</a>."
 
 msgid "How to launch the game"
 msgstr "Как запустить игру"
 
 #, python-format
-msgid "How to setup character form you can read in the <a href=\"http://www.%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
-msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
+msgid "How to setup character form you can read in the <a href=\"//www.%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
+msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
 
 msgid "Hyperlinks color"
 msgstr "Цвет гиперссылок"
@@ -2604,6 +2619,9 @@ msgstr "Место, где вы можете договориться о пок�
 msgid "Mass delivery (to all users)"
 msgstr "Массовая доставка (всем пользователям)"
 
+msgid "Maximal file size &mdash; 3 megabytes"
+msgstr "Максимальный размер файла &mdash; 3 мегабайта"
+
 msgid "Maximal length - 17 characters"
 msgstr "Максимальная длина - 17 символов"
 
@@ -2741,8 +2759,8 @@ msgid "Module"
 msgstr "Модуль"
 
 #, python-format
-msgid "Module structure of the constructor is described in the <a href=\"http://www.%s/doc/modules\" target=\"_blank\">modules documentation</a>."
-msgstr "Модульная структура конструктора описана в <a href=\"http://www.%s/doc/modules\" target=\"_blank\">документации на модули</a>."
+msgid "Module structure of the constructor is described in the <a href=\"//www.%s/doc/modules\" target=\"_blank\">modules documentation</a>."
+msgstr "Модульная структура конструктора описана в <a href=\"//www.%s/doc/modules\" target=\"_blank\">документации на модули</a>."
 
 msgid "Money"
 msgstr "Деньги"
@@ -2861,6 +2879,9 @@ msgstr "Новое сообщение"
 
 msgid "New name"
 msgstr "Новое имя"
+
+msgid "New object"
+msgstr "Новый объект"
 
 msgid "New offer"
 msgstr "Новое предложение"
@@ -3268,9 +3289,6 @@ msgstr "Почтовый адрес"
 msgid "Precision can't be negative"
 msgstr "Точность не может быть отрицательной"
 
-msgid "Premium"
-msgstr "Премиум"
-
 msgid "Premium pack on the forum"
 msgstr "Премиум-пакет на форуме"
 
@@ -3404,16 +3422,16 @@ msgid "Reactivate"
 msgstr "Активировать повторно"
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
+msgid "Read <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/indexpage\" target=\"_blank\">the indexpage design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/indexpage\" target=\"_blank\">руководство по оформлению титульной страницы</a>."
+msgid "Read <a href=\"//www.%s/doc/design/indexpage\" target=\"_blank\">the indexpage design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/indexpage\" target=\"_blank\">руководство по оформлению титульной страницы</a>."
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/sociointerface\" target=\"_blank\">the socio interface design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/sociointerface\" target=\"_blank\">руководство по оформлению социальных интерфейсов</a>."
+msgid "Read <a href=\"//www.%s/doc/design/sociointerface\" target=\"_blank\">the socio interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/sociointerface\" target=\"_blank\">руководство по оформлению социальных интерфейсов</a>."
 
 msgid "Read more"
 msgstr "Читать далее"
@@ -3611,8 +3629,14 @@ msgstr "Представление"
 msgid "Request"
 msgstr "Запрос"
 
+msgid "Request auction"
+msgstr "Аукцион заявок"
+
 msgid "Request auction documentation"
 msgstr "Документация на аукцион заявок"
+
+msgid "Request auction moderator"
+msgstr "Модератор аукциона заявок"
 
 msgid "Request parameters"
 msgstr "Параметры запроса"
@@ -3842,6 +3866,9 @@ msgstr "Возможности отправки"
 
 msgid "Sent"
 msgstr "Отправлено"
+
+msgid "Server storage of static objects"
+msgstr "Серверное хранилище статических объектов"
 
 msgid "Services"
 msgstr "Услуги"
@@ -4188,19 +4215,31 @@ msgstr "Состояние"
 msgid "Static image"
 msgstr "Статическая картинка"
 
+msgid "Static objects"
+msgstr "Статические объекты"
+
+msgid "Static storage"
+msgstr "Статическое хранилище"
+
 msgid "Status"
 msgstr "Статус"
 
 #, python-format
-msgid "Step-by-step tutorial about creating the game to launch you can read in the <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
-msgstr "Пошаговый учебник по созданию игры вы можете прочитать в <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
+msgid "Step-by-step tutorial about creating the game to launch you can read in the <a href=\"//www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
+msgstr "Пошаговый учебник по созданию игры вы можете прочитать в <a href=\"//www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
 
 #, python-format
-msgid "Step-by-step tutorial about preparing the game to launch you can read in the <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
-msgstr "Пошаговый учебник по подготовке игры к запуску вы можете прочитать в <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
+msgid "Step-by-step tutorial about preparing the game to launch you can read in the <a href=\"//www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
+msgstr "Пошаговый учебник по подготовке игры к запуску вы можете прочитать в <a href=\"//www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
 
 msgid "Stones #1"
 msgstr "Камни №1"
+
+msgid "Storage"
+msgstr "Хранилище"
+
+msgid "Storage documentation"
+msgstr "Документация на хранилище"
 
 msgid "Strike"
 msgstr "Зачёркивание"
@@ -4509,6 +4548,14 @@ msgstr "Чтобы использовать аукцион заявок, вам 
 msgid "To use smiles in the signature <a href=\"/socio/paid-services\">subscribe to the corresponding service</a>"
 msgstr "Чтобы использовать смайлики в подписи, <a href=\"/socio/paid-services\">подключите соответствующую услугу</a>"
 
+#, python-format
+msgid "To use static storage game owner must have a <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">WMID attached to his account</a>"
+msgstr "Чтобы использовать статическое хранилище, к аккаунту владельца игры должен быть <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">присоединён WMID</a>"
+
+#, python-format
+msgid "To use static storage game owner's WMID must have the <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">Initial certificate</a>"
+msgstr "Чтобы использовать статическое хранилище, WMID владельца игры должен иметь <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">Начальный аттестат</a>"
+
 msgid "Top"
 msgstr "Верх"
 
@@ -4677,6 +4724,9 @@ msgstr "Загрузить"
 msgid "Upload an image"
 msgstr "Загрузите изображение"
 
+msgid "Upload an object"
+msgstr "Загрузить объект"
+
 msgid "Upload design package from your computer"
 msgstr "Загрузить пакет оформления с вашего компьютера"
 
@@ -4695,14 +4745,23 @@ msgstr "Загрузите файл с логотипом"
 msgid "Upload new custom 100x75 image..."
 msgstr "Загрузить новую картинку 100x75..."
 
+msgid "Upload new object"
+msgstr "Загрузить новый объект"
+
 msgid "Upload pre-made logo file"
 msgstr "Загрузить готовый файл с логотипом"
 
 msgid "Upload your image"
 msgstr "Загрузите ваше изображение"
 
+msgid "Upload your static object"
+msgstr "Загрузите ваш статический объект"
+
 msgid "Uploaded"
 msgstr "Загружено"
+
+msgid "Uploading static objects to the storage"
+msgstr "Загрузка статических объектов  в хранилище"
 
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."
@@ -4965,28 +5024,32 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
-msgid "You can find detailed information on the game interface rendering in the <a href=\"http://www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
-msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
+msgid "You can find detailed information on the game interface rendering in the <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
+msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
 
 #, python-format
-msgid "You can find detailed information on the library system in the <a href=\"http://www.%s/doc/library\" target=\"_blank\">library page</a> in the reference manual."
-msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
+msgid "You can find detailed information on the library system in the <a href=\"//www.%s/doc/library\" target=\"_blank\">library page</a> in the reference manual."
+msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
 
 #, python-format
-msgid "You can find detailed information on the location system in the <a href=\"http://www.%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
-msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/locations\" target=\"_blank\">Система локаций</a>."
+msgid "You can find detailed information on the location system in the <a href=\"//www.%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
+msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/locations\" target=\"_blank\">Система локаций</a>."
 
 #, python-format
-msgid "You can find information on authentication setup in your game in the <a href=\"http://www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
-msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"http://www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
+msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
+msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
 
 #, python-format
-msgid "You can find information on chat configuration in the <a href=\"http://www.%s/doc/chat\" target=\"_blank\">chat manual</a>."
-msgstr "Информацию о настройке чата вы можете найти в <a href=\"http://www.%s/doc/chat\" target=\"_blank\">руководстве по чату</a>."
+msgid "You can find information on chat configuration in the <a href=\"//www.%s/doc/chat\" target=\"_blank\">chat manual</a>."
+msgstr "Информацию о настройке чата вы можете найти в <a href=\"//www.%s/doc/chat\" target=\"_blank\">руководстве по чату</a>."
 
 #, python-format
-msgid "You can find information on setting up paid services in your game in the <a href=\"http://www.%s/doc/paid-services\" target=\"_blank\">paid services manual</a>."
-msgstr "Информацию о настройке платных услуг в вашей игре вы можете найти в руководстве в разделе <a href=\"http://www.%s/doc/paid-services\" target=\"_blank\">Платные услуги</a>."
+msgid "You can find information on setting up paid services in your game in the <a href=\"//www.%s/doc/paid-services\" target=\"_blank\">paid services manual</a>."
+msgstr "Информацию о настройке платных услуг в вашей игре вы можете найти в руководстве в разделе <a href=\"//www.%s/doc/paid-services\" target=\"_blank\">Платные услуги</a>."
+
+#, python-format
+msgid "You can read detailed information on the static storage in <a href=\"//www.%s/doc/storage\" target=\"_blank\">the documentation</a>"
+msgstr "Подробную информацию о настройке системы статического хранения вы можете прочитать в <a href=\"//www.%s/doc/storage\" target=\"_blank\">документации</a>"
 
 msgid "You can setup any number of counters on your pages. To do it register in the counting or tracking services and paste the tracking code into this form. The first input field will be put in the [%counters%] template variable and displayed in the counters panel. The second input field will be placed in the &lt;head&gt; section of the HTML document. Google analytics code is placed in the second field."
 msgstr "Вы можете добавить на страницы вашей игры любое количество счётчиков. Чтобы сделать это, зарегистрируйтесь в каталогах, предоставляющих счётчики, на трекинговых сервисах и скопируйте их коды в эту форму. Первое поле ввода будет помещено в переменную шаблонизатора [%counters%] и будет отображаться на странице в блоке счётчиков. Второе поле ввода будет помещено в раздел &lt;head&gt; HTML-документа. Код Google analytics, например, помещается именно во второе поле."
@@ -5018,8 +5081,8 @@ msgstr "Вы не можете отправлять сообщения сист�
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
 
-msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
-msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
+msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"//{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
+msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"//{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -5602,6 +5665,14 @@ msgstr "Мои заявки"
 msgid "reqauction///New request"
 msgstr "Новая заявка"
 
+msgid ""
+"reqauction///New request: {title}\n"
+"Please perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}"
+msgstr ""
+"Новый запрос: {title}\n"
+"\n"
+"Пожалуйста, произведите необходимые действия по модерации: http://www.{main_host}/reqauction/moderate/{request}"
+
 msgid "reqauction///Parent request"
 msgstr "Родительская заявка"
 
@@ -5624,6 +5695,10 @@ msgstr "Редактор заявки"
 msgid "reqauction///Request implemented"
 msgstr "Заявка реализована"
 
+#, python-format
+msgid "reqauction///Request moderation: %s"
+msgstr "Модерирование заявки: %s"
+
 msgid "reqauction///Requests moderation"
 msgstr "Модерирование заявок"
 
@@ -5638,6 +5713,14 @@ msgstr "Ожидающие реализации"
 
 msgid "reqauction///You have spent all your voices to other requests. If you want to vote for this request remove one of your votes via the rightmost panel"
 msgstr "Вы потратили все свои голоса на другие заявки. Если вы хотите проголосовать за эту заявку, удалите один из ваших голосов через правую панель"
+
+#, python-format
+msgid "reqauction///[url=/reqauction/view/%s]Request cancelled[/url]"
+msgstr "[url=/reqauction/view/%s]Заявка отменена[/url]"
+
+#, python-format
+msgid "reqauction///[url=/reqauction/view/%s]Request implemented[/url]"
+msgstr "[url=/reqauction/view/%s]Request реализована[/url]"
 
 msgid "reqauction///add dependency"
 msgstr "добавить зависимость"
@@ -5675,13 +5758,13 @@ msgid ""
 "\n"
 "{author_text}\n"
 "\n"
-"Request page: http://{host}/reqauction/view/{request}"
+"[url=//{host}/reqauction/view/{request}]Open request page[/url]"
 msgstr ""
 "{text}\n"
 "\n"
 "{author_text}\n"
 "\n"
-"Страница запроса: http://{host}/reqauction/view/{request}"
+"[url=//{host}/reqauction/view/{request}]Открыть страницу запроса[/url]"
 
 msgid "request///Sent"
 msgstr "Отправлена"
@@ -5851,6 +5934,14 @@ msgstr "{price} на {period_a}"
 
 #~ msgid "Error storing object: %s"
 #~ msgstr "Ошибка при сохранении объекта: %s"
+#~ msgid "Premium"
+#~ msgstr "Премиум"
+
+#, fuzzy
+#~ msgid "To use static storage game owner must have a <a href="
+#~ msgstr ""
+#~ "Чтобы использовать статическое хранилище, к аккаунту владельца игры "
+#~ "должен быть присоединён WMID"
 #~ msgid "Send a message"
 #~ msgstr "Отправить сообщение"
 #~ msgid "reqauction///Request: %s"
@@ -6047,8 +6138,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "В базе данных отсутствует запись об игроке %s"
 #~ msgid "Missing character %s record in the database"
 #~ msgstr "В базе данных отсутствует запись о персонаже %s"
-#~ msgid "Upload new design"
-#~ msgstr "Загрузить новое оформление"
 #~ msgid "Constructor: users"
 #~ msgstr "Конструктор: пользователи"
 #~ msgid "Twitter posting"

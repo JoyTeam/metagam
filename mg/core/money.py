@@ -615,14 +615,14 @@ class Xsolla(Module):
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
-                return '<a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
+                return '<a href="//2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
 
     def not_enough_funds(self, currency, **kwargs):
         project_id = intz(self.conf("xsolla.project-id"))
         if project_id:
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
-                raise Hooks.Return('%s <a href="http://2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self.append_args(kwargs), self._("Open payment interface")))
+                raise Hooks.Return('%s <a href="//2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (self._("Not enough %s.") % (self.call("l10n.literal_value", 100, cinfo.get("name_local")) if cinfo else htmlescape(currency)), project_id, self.append_args(kwargs), self._("Open payment interface")))
 
     def money_description_xsolla_pay(self):
         return {

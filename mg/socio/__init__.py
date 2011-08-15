@@ -1515,7 +1515,13 @@ class Forum(Module):
         return tags
 
     def reply(self, cat, topic, author, content):
+        if type(topic) is str or type(topic) is unicode:
+            topic = self.obj(ForumTopic, topic)
         with self.lock(["ForumTopic-" + topic.uuid]):
+            if cat is None:
+                cat = self.call("forum.category", topic.get("category"))
+                if cat is None:
+                    return
             post = self.obj(ForumPost)
             now = self.now()
             post.set("category", cat["id"])

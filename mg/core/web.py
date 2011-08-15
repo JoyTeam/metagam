@@ -55,7 +55,21 @@ class Request(object):
         self._params_loaded = True
         if self.environ.get("CONTENT_TYPE") is None:
             self.environ["CONTENT_TYPE"] = "application/octet-stream"
-        self._params = cgi.parse(fp = self.environ["wsgi.input"], environ = self.environ, keep_blank_values = 1)
+        self._fs = cgi.FieldStorage(fp=self.environ["wsgi.input"], environ=self.environ, keep_blank_values=1)
+        params = {}
+        params_detail = {}
+        if self._fs.list:
+            for key in self._fs.keys():
+                params[key] = self._fs.getlist(key)
+            for ent in self._fs.list:
+                try:
+                    params[ent.name].append(ent.value)
+                    params_detail[ent.name].append(ent)
+                except KeyError:
+                    params[ent.name] = [ent.value]
+                    params_detail[ent.name] = [ent]
+        self._params = params
+        self._params_detail = params_detail
 
     def param_dict(self):
         "Get directory of all parameters (both GET and POST)"
@@ -68,6 +82,15 @@ class Request(object):
         if self._params_loaded is None:
             self.load_params()
         return map(lambda val: encode(val, "utf-8"), self._params.get(key, []))
+
+    def param_detail(self, key):
+        "Get specific parameter's (both GET and POST) FieldStorage record"
+        if self._params_loaded is None:
+            self.load_params()
+        val = self._params_detail.get(key)
+        if val is None:
+            return None
+        return val[0]
 
     def param_raw(self, key):
         "Get specific parameter (both GET and POST) not attempting to decode"

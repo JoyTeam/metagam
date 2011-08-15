@@ -709,7 +709,7 @@ class DomainWizard(Wizard):
                 for wiz in wizs:
                     wiz.finish()
                 self.finish()
-                self.call("admin.response", self._('You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="http://{1}/cabinet" target="_top">Return to the cabinet</a>').format(domain, self.main_app().canonical_domain), {})
+                self.call("admin.response", self._('You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href="//{1}/cabinet" target="_top">Return to the cabinet</a>').format(domain, self.main_app().canonical_domain), {})
             elif cmd == "register":
                 wizs = self.call("wizards.find", "domain-reg")
                 if len(wizs):

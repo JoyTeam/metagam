@@ -202,12 +202,9 @@ class ReqAuction(ConstructorModule):
         wmids = self.call("wmid.check", req.user())
         if not wmids:
             self.error(self._("Certificate required"), self._("To use request auction you must have certified WMID"))
-        lvl = 0
         for wmid, cert in wmids.iteritems():
             if cert >= 120:
                 return
-            if cert > lvl:
-                lvl = 0
         self.error(self._("Certificate required"), self._('<p>To use request auction you must have WMID with the <strong>initial certificate</strong>. Your current certificate level is not enough. <a href="https://passport.wmtransfer.com/">Get the initial certificate</a> and recheck your WMID certificate.</p><p><a href="{url}">Recheck your WMID</a></p>').format(url=self.call("wmlogin.url")))
 
     def request(self):
@@ -368,6 +365,11 @@ class ReqAuction(ConstructorModule):
             obj.set("user", req.user())
             obj.set("priority", self.user_priority(req.user()))
             obj.store()
+            # sending notification
+            email = self.main_app().config.get("constructor.reqauction-email")
+            if email:
+                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.app().inst.config["main_host"], request=request.uuid)
+                self.main_app().hooks.call("email.send", email, self._("Request auction moderator"), self._("reqauction///Request moderation: %s") % request.get("title"), content)
             self.call("web.redirect", "/reqauction/mine")
 
     def moderation(self):
@@ -465,7 +467,7 @@ class ReqAuction(ConstructorModule):
                             cat = self.call("forum.category-by-tag", "reqauction")
                             if cat:
                                 user = self.obj(User, request.get("author"))
-                                topic = self.call("forum.newtopic", cat, user, request.get("title"), self._("reqauction///{text}\n\n{author_text}\n\nRequest page: http://{host}/reqauction/view/{request}").format(text=text, author_text=author_text, user=user.get("name"), host=req.host(), request=request.uuid).strip())
+                                topic = self.call("forum.newtopic", cat, user, request.get("title"), self._("reqauction///{text}\n\n{author_text}\n\n[url=//{host}/reqauction/view/{request}]Open request page[/url]").format(text=text, author_text=author_text, user=user.get("name"), host=req.host(), request=request.uuid).strip())
                                 if topic:
                                     request.set("forum_topic", topic.uuid)
                             request.store()
@@ -625,7 +627,6 @@ class ReqAuction(ConstructorModule):
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
-                            request.delkey("published_since")
                             request.delkey("canbeparent")
                             request.set("closed", 1)
                             request.set("closed_since", self.now())
@@ -633,15 +634,18 @@ class ReqAuction(ConstructorModule):
                             request.delkey("votes")
                             request.store()
                             self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid).remove()
+                            if request.get("forum_topic"):
+                                self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
                             # updating linked requests
-                            lst = self.objlist(DBRequestList, query_index="parent", query_equal=request.uuid)
+                            lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
                             lst.load()
                             for ent in lst:
                                 ent.delkey("published")
-                                ent.delkey("published_since")
                                 ent.set("closed", 1)
                                 ent.set("closed_since", self.now())
                                 ent.store()
+                                if ent.get("forum_topic"):
+                                    self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
                             # must recalculate parents and children
                             recalculate = set()
                             recalculate.add(request.uuid)
@@ -662,7 +666,6 @@ class ReqAuction(ConstructorModule):
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
-                            request.delkey("published_since")
                             request.delkey("canbeparent")
                             request.set("implemented", 1)
                             request.set("closed_since", self.now())
@@ -675,15 +678,18 @@ class ReqAuction(ConstructorModule):
                             for ent in lst:
                                 voters.append(ent.get("user"))
                             lst.remove()
+                            if request.get("forum_topic"):
+                                self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # updating linked requests
-                            lst = self.objlist(DBRequestList, query_index="parent", query_equal=request.uuid)
+                            lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
                             lst.load()
                             for ent in lst:
                                 ent.delkey("published")
-                                ent.delkey("published_since")
                                 ent.set("implemented", 1)
                                 ent.set("closed_since", self.now())
                                 ent.store()
+                                if ent.get("forum_topic"):
+                                    self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # must recalculate parents and children
                             recalculate = set()
                             recalculate.add(request.uuid)

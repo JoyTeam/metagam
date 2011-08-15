@@ -49,6 +49,7 @@ class ConstructorProject(Module):
                 "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
                 "mg.core.icons.Icons",
+                "mg.socio.SocioAdmin",
             ])
             if project.get("published"):
                 lst.extend([
@@ -63,6 +64,8 @@ class ConstructorProject(Module):
             if self.conf("module.socio"):
                 lst.extend(["mg.socio.Socio", "mg.constructor.socio.Socio"])
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
+            if self.conf("module.storage"):
+                lst.extend(["mg.constructor.storage.StorageAdmin"])
         return lst
 
     def modules_list(self, modules):
@@ -70,6 +73,11 @@ class ConstructorProject(Module):
             "id": "socio",
             "name": self._("Social modules"),
             "description": self._("Couple of modules related to social interactions among players (smiles, forums, blogs, etc)"),
+        })
+        modules.append({
+            "id": "storage",
+            "name": self._("Static storage"),
+            "description": self._("Server storage of static objects"),
         })
 
     def project_title(self):
@@ -96,12 +104,12 @@ class ConstructorProjectAdmin(Module):
         self.rhook("ext-admin-project.destroy", self.project_destroy, priv="project.admin")
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
-        self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
         self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
         self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
         self.rhook("constructor-project.notify-owner", self.notify_owner)
         self.rhook("advice.all", self.advice_all)
         self.rhook("ext-admin-game.moderation", self.game_moderation, priv="project.admin")
+        self.rhook("menu-admin-root.index", self.menu_root_index)
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -120,7 +128,7 @@ class ConstructorProjectAdmin(Module):
     def project_destroy(self):
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        redirect = "http://www.%s/cabinet" % self.app().inst.config["main_host"]
+        redirect = "//www.%s/cabinet" % self.app().inst.config["main_host"]
         req = self.req()
         if req.args == "admin":
             self.call("web.response_json", {"success": True, "redirect_top": redirect})
@@ -178,7 +186,7 @@ class ConstructorProjectAdmin(Module):
             vars["published"] = True
             self.call("game.dashboard", vars)
         else:
-            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="http://www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):

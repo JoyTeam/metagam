@@ -135,7 +135,7 @@ class ConstructorWebDaemon(WebDaemon):
         host = request.host()
         app = self.inst.appfactory.get_by_domain(host)
         if app is None:
-            return request.redirect("http://www.%s" % str(self.inst.config["main_host"]))
+            return request.redirect("//www.%s" % str(self.inst.config["main_host"]))
         if host != app.canonical_domain:
             if group == "index":
                 url = "/"
@@ -145,7 +145,7 @@ class ConstructorWebDaemon(WebDaemon):
                     url = "%s/%s" % (url, hook)
                     if args != "":
                         url = "%s/%s" % (url, args)
-            return request.redirect("http://%s%s" % (app.canonical_domain, url))
+            return request.redirect("//%s%s" % (app.canonical_domain, url))
         request.app = app
         try:
             return app.http_request(request, group, hook, args)

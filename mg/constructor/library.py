@@ -232,7 +232,7 @@ class LibraryAdmin(ConstructorModule):
         self.rhook("advice-admin-library.index", self.advice_library)
 
     def advice_library(self, hook, args, advice):
-        advice.append({"title": self._("Library documentation"), "content": self._('You can find detailed information on the library system in the <a href="http://www.%s/doc/library" target="_blank">library page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Library documentation"), "content": self._('You can find detailed information on the library system in the <a href="//www.%s/doc/library" target="_blank">library page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def objclasses_list(self, objclasses):
         objclasses["LibraryPage"] = (DBLibraryPage, DBLibraryPageList)

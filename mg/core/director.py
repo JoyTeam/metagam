@@ -229,16 +229,11 @@ class Director(Module):
                         try:
                             request = cnn.get("/core/reload-hard")
                             cnn.perform(request)
-                        except IOError as e:
-                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
-                            self.server_offline(server_id)
-                        except TimeoutError as e:
-                            self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
-                            self.server_offline(server_id)
                         finally:
                             cnn.close()
                 except Exception as e:
-                    self.exception(e)
+                    self.error("Error reloading %s (%s:%s): %s", st.uuid, st.get("host"), st.get("port"), e)
+                    self.server_offline(st.uuid)
         self.store_servers_online()
         self.servers_online_updated()
         self.debug("waiting until all workers reload")
@@ -280,7 +275,7 @@ class Director(Module):
 
     def director_reload(self):
         result = {}
-        errors = self.app().reload()
+        errors = self.app().inst.reload()
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
@@ -405,6 +400,7 @@ class Director(Module):
             self.app().config.set("director.config", config)
             self.app().config.store()
             self.director_reload()
+            self.reload_servers()
             self.call("web.redirect", "/")
         else:
             memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
@@ -527,10 +523,13 @@ class Director(Module):
         port = int(request.param("port"))
         # sending configuration
         if params.get("backends"):
-            with Timeout.push(20):
-                self.call("cluster.query_server", host, port, "/server/spawn", {
-                    "workers": params.get("backends"),
-                })
+            try:
+                with Timeout.push(20):
+                    self.call("cluster.query_server", host, port, "/server/spawn", {
+                        "workers": params.get("backends"),
+                    })
+            except Exception as e:
+                self.exception(e)
         # storing online list
         server_id = str(host)
         conf = {
