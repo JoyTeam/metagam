@@ -1322,7 +1322,7 @@ class Interface(Module):
             password = req.param("password")
             if not password:
                 errors["password"] = self._("Specify new password")
-            elif not user.get("password"):
+            elif not user.get("pass_hash"):
                 errors["password"] = self._("This user can't have a password")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
