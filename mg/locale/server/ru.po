@@ -5720,7 +5720,7 @@ msgstr "[url=/reqauction/view/%s]Заявка отменена[/url]"
 
 #, python-format
 msgid "reqauction///[url=/reqauction/view/%s]Request implemented[/url]"
-msgstr "[url=/reqauction/view/%s]Request реализована[/url]"
+msgstr "[url=/reqauction/view/%s]Заявка реализована[/url]"
 
 msgid "reqauction///add dependency"
 msgstr "добавить зависимость"
