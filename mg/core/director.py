@@ -280,7 +280,7 @@ class Director(Module):
 
     def director_reload(self):
         result = {}
-        errors = self.app().reload()
+        errors = self.app().inst.reload()
         if errors:
             result["director"] = "ERRORS: %d" % errors
         else:
