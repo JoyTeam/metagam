@@ -298,6 +298,7 @@ class DesignZip(Module):
             if filename in filenames:
                 list_errors.append(self._("Several files with the same name '%s' encountered") % htmlescape(filename))
                 continue
+            filenames.add(filename)
             if ext == "html":
                 html.append(filename)
             if ext == "css":

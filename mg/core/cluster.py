@@ -181,7 +181,7 @@ class Cluster(Module):
                 request.add_header("Content-length", len(data))
                 response = cnn.perform(request)
                 if response.status_code != 201:
-                    raise StaticUploadError(self._("Error storing object: %s") % response.status)
+                    raise StaticUploadError(self._("Error storing object {name}: {err}").format(name=ent["filename"], err=response.status))
             finally:
                 cnn.close()
         return uri
