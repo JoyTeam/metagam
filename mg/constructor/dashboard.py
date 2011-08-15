@@ -234,6 +234,7 @@ class ProjectDashboard(Module):
         req = self.req()
         invitations = intz(req.param("v_invitations"))
         moderator_email = req.param("moderator_email")
+        reqauction_email = req.param("reqauction_email")
         projects_domain = req.param("projects_domain")
         invitations_text = req.param("invitations_text")
         if req.param("ok"):
@@ -244,6 +245,7 @@ class ProjectDashboard(Module):
             config.set("constructor.invitations", invitations)
             config.set("constructor.invitations-text", invitations_text)
             config.set("constructor.moderator-email", moderator_email)
+            config.set("constructor.reqauction-email", reqauction_email)
             config.set("constructor.projects-domain", projects_domain)
             config.store()
             self.call("admin.response", self._("Constructor settings stored"), {})
@@ -251,12 +253,14 @@ class ProjectDashboard(Module):
             config = self.main_app().config
             invitations = config.get("constructor.invitations")
             moderator_email = config.get("constructor.moderator-email")
+            reqauction_email = config.get("constructor.reqauction-email")
             projects_domain = config.get("constructor.projects-domain", self.app().inst.config["main_host"])
             invitations_text = config.get("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment"))
         fields = [
             {"type": "combo", "name": "invitations", "label": self._("Registration on invitations"), "value": invitations, "values": [(0, self._("Open registration")), (1, self._("Registration on invitations")), (2, self._("Registration closed"))]},
             {"name": "invitations_text", "label": self._("HTML message about registration on invitations"), "value": invitations_text},
             {"name": "moderator_email", "label": self._("Email of projects moderator"), "value": moderator_email},
+            {"name": "reqauction_email", "label": self._("Email of the request auction moderator"), "value": reqauction_email},
             {"name": "projects_domain", "label": self._("Projects domain"), "value": projects_domain},
         ]
         self.call("admin.form", fields=fields)

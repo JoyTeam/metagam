@@ -49,6 +49,7 @@ class ConstructorProject(Module):
                 "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
                 "mg.core.icons.Icons",
+                "mg.socio.SocioAdmin",
             ])
             if project.get("published"):
                 lst.extend([
@@ -117,7 +118,6 @@ class ConstructorProjectAdmin(Module):
 
     def menu_root_index(self, menu):
         project = self.app().project
-        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
         if project.get("inactive"):
             menu[:] = [ent for ent in menu if ent.get("leaf")]
         else:

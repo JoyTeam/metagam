@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-15 15:44+0300\n"
+"PO-Revision-Date: 2011-08-15 16:41+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -400,6 +400,9 @@ msgstr "Творчество"
 
 msgid "Assign a domain name"
 msgstr "Назначить доменное имя"
+
+msgid "Auction"
+msgstr "Аукцион"
 
 msgid "Authentication"
 msgstr "Аутентификация"
@@ -1371,6 +1374,9 @@ msgstr "Конфигурация e-mail"
 
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
+
+msgid "Email of the request auction moderator"
+msgstr "E-mail модератора аукциона заявок"
 
 msgid "Empty hostname"
 msgstr "Пустое имя хоста"
@@ -3284,9 +3290,6 @@ msgstr "Почтовый адрес"
 msgid "Precision can't be negative"
 msgstr "Точность не может быть отрицательной"
 
-msgid "Premium"
-msgstr "Премиум"
-
 msgid "Premium pack on the forum"
 msgstr "Премиум-пакет на форуме"
 
@@ -3627,8 +3630,14 @@ msgstr "Представление"
 msgid "Request"
 msgstr "Запрос"
 
+msgid "Request auction"
+msgstr "Аукцион заявок"
+
 msgid "Request auction documentation"
 msgstr "Документация на аукцион заявок"
+
+msgid "Request auction moderator"
+msgstr "Модератор аукциона заявок"
 
 msgid "Request parameters"
 msgstr "Параметры запроса"
@@ -5657,6 +5666,14 @@ msgstr "Мои заявки"
 msgid "reqauction///New request"
 msgstr "Новая заявка"
 
+msgid ""
+"reqauction///New request: {title}\n"
+"Please perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}"
+msgstr ""
+"Новый запрос: {title}\n"
+"\n"
+"Пожалуйста, произведите необходимые действия по модерации: http://www.{main_host}/reqauction/moderate/{request}"
+
 msgid "reqauction///Parent request"
 msgstr "Родительская заявка"
 
@@ -5679,6 +5696,10 @@ msgstr "Редактор заявки"
 msgid "reqauction///Request implemented"
 msgstr "Заявка реализована"
 
+#, python-format
+msgid "reqauction///Request moderation: %s"
+msgstr "Модерирование заявки: %s"
+
 msgid "reqauction///Requests moderation"
 msgstr "Модерирование заявок"
 
@@ -5693,6 +5714,14 @@ msgstr "Ожидающие реализации"
 
 msgid "reqauction///You have spent all your voices to other requests. If you want to vote for this request remove one of your votes via the rightmost panel"
 msgstr "Вы потратили все свои голоса на другие заявки. Если вы хотите проголосовать за эту заявку, удалите один из ваших голосов через правую панель"
+
+#, python-format
+msgid "reqauction///[url=/reqauction/view/%s]Request cancelled[/url]"
+msgstr "[url=/reqauction/view/%s]Заявка отменена[/url]"
+
+#, python-format
+msgid "reqauction///[url=/reqauction/view/%s]Request implemented[/url]"
+msgstr "[url=/reqauction/view/%s]Request реализована[/url]"
 
 msgid "reqauction///add dependency"
 msgstr "добавить зависимость"
@@ -5903,6 +5932,9 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
+
+#~ msgid "Premium"
+#~ msgstr "Премиум"
 
 #, fuzzy
 #~ msgid "To use static storage game owner must have a <a href="

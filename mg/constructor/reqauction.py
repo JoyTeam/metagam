@@ -365,6 +365,11 @@ class ReqAuction(ConstructorModule):
             obj.set("user", req.user())
             obj.set("priority", self.user_priority(req.user()))
             obj.store()
+            # sending notification
+            email = self.main_app().config.get("constructor.reqauction-email")
+            if email:
+                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.app().inst.config["main_host"], request=request.uuid)
+                self.main_app().hooks.call("email.send", email, self._("Request auction moderator"), self._("reqauction///Request moderation: %s") % request.get("title"), content)
             self.call("web.redirect", "/reqauction/mine")
 
     def moderation(self):
@@ -622,7 +627,6 @@ class ReqAuction(ConstructorModule):
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
-                            request.delkey("published_since")
                             request.delkey("canbeparent")
                             request.set("closed", 1)
                             request.set("closed_since", self.now())
@@ -630,15 +634,18 @@ class ReqAuction(ConstructorModule):
                             request.delkey("votes")
                             request.store()
                             self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid).remove()
+                            if request.get("forum_topic"):
+                                self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
                             # updating linked requests
-                            lst = self.objlist(DBRequestList, query_index="parent", query_equal=request.uuid)
+                            lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
                             lst.load()
                             for ent in lst:
                                 ent.delkey("published")
-                                ent.delkey("published_since")
                                 ent.set("closed", 1)
                                 ent.set("closed_since", self.now())
                                 ent.store()
+                                if ent.get("forum_topic"):
+                                    self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
                             # must recalculate parents and children
                             recalculate = set()
                             recalculate.add(request.uuid)
@@ -659,7 +666,6 @@ class ReqAuction(ConstructorModule):
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
-                            request.delkey("published_since")
                             request.delkey("canbeparent")
                             request.set("implemented", 1)
                             request.set("closed_since", self.now())
@@ -672,15 +678,18 @@ class ReqAuction(ConstructorModule):
                             for ent in lst:
                                 voters.append(ent.get("user"))
                             lst.remove()
+                            if request.get("forum_topic"):
+                                self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # updating linked requests
-                            lst = self.objlist(DBRequestList, query_index="parent", query_equal=request.uuid)
+                            lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
                             lst.load()
                             for ent in lst:
                                 ent.delkey("published")
-                                ent.delkey("published_since")
                                 ent.set("implemented", 1)
                                 ent.set("closed_since", self.now())
                                 ent.store()
+                                if ent.get("forum_topic"):
+                                    self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # must recalculate parents and children
                             recalculate = set()
                             recalculate.add(request.uuid)
