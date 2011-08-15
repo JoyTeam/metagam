@@ -2729,10 +2729,6 @@ class SocioAdmin(Module):
         self.rhook("ext-admin-socio.messages", self.admin_socio_messages, priv="socio.messages")
         self.rhook("socio-admin.message-silence", self.message_silence)
         self.rhook("ext-admin-socio.config", self.admin_socio_config, priv="socio.config")
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-
-    def menu_root_index(self, menu):
-        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def message_silence(self):
         return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))

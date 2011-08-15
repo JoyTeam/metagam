@@ -63,6 +63,8 @@ class ConstructorProject(Module):
             if self.conf("module.socio"):
                 lst.extend(["mg.socio.Socio", "mg.constructor.socio.Socio"])
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
+            if self.conf("module.storage"):
+                lst.extend(["mg.constructor.storage.StorageAdmin"])
         return lst
 
     def modules_list(self, modules):
@@ -70,6 +72,11 @@ class ConstructorProject(Module):
             "id": "socio",
             "name": self._("Social modules"),
             "description": self._("Couple of modules related to social interactions among players (smiles, forums, blogs, etc)"),
+        })
+        modules.append({
+            "id": "storage",
+            "name": self._("Static storage"),
+            "description": self._("Server storage of static objects"),
         })
 
     def project_title(self):
@@ -96,12 +103,12 @@ class ConstructorProjectAdmin(Module):
         self.rhook("ext-admin-project.destroy", self.project_destroy, priv="project.admin")
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
-        self.rhook("menu-admin-root.index", self.menu_root_index, priority=-1000000)
         self.rhook("ext-admin-game.dashboard", self.game_dashboard, priv="project.admin")
         self.rhook("ext-admin-game.domain", self.game_domain, priv="project.admin")
         self.rhook("constructor-project.notify-owner", self.notify_owner)
         self.rhook("advice.all", self.advice_all)
         self.rhook("ext-admin-game.moderation", self.game_moderation, priv="project.admin")
+        self.rhook("menu-admin-root.index", self.menu_root_index)
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -110,6 +117,7 @@ class ConstructorProjectAdmin(Module):
 
     def menu_root_index(self, menu):
         project = self.app().project
+        menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
         if project.get("inactive"):
             menu[:] = [ent for ent in menu if ent.get("leaf")]
         else:
