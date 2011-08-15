@@ -38,8 +38,8 @@ class ConstructorUtils(Module):
         self.rhook("menu-admin-top.list", self.menu_admin_top_list, priority=-500)
 
     def menu_admin_top_list(self, topmenu):
-        topmenu.append({"href": "http://www.%s/forum" % self.app().inst.config["main_host"], "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
-        topmenu.append({"href": "http://www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Cabinet"), "tooltip": self._("Cabinet")})
+        topmenu.append({"href": "//www.%s/forum" % self.app().inst.config["main_host"], "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
+        topmenu.append({"href": "//www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Cabinet"), "tooltip": self._("Cabinet")})
 
 class Constructor(Module):
     def register(self):

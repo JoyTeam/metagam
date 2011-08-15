@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-15 15:23+0300\n"
+"PO-Revision-Date: 2011-08-15 15:44+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -524,12 +524,12 @@ msgid "Brick #2"
 msgstr "Кирпич №2"
 
 #, python-format
-msgid "Brief description of the logo uploading you can find in the <a href=\"http://www.%s/doc/newgame#logo\" target=\"_blank\">reference manual</a>."
-msgstr "Краткое описание по загрузке логотипов вы можете найти в <a href=\"http://www.%s/doc/newgame#logo\" target=\"_blank\">руководстве</a>."
+msgid "Brief description of the logo uploading you can find in the <a href=\"//www.%s/doc/newgame#logo\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание по загрузке логотипов вы можете найти в <a href=\"//www.%s/doc/newgame#logo\" target=\"_blank\">руководстве</a>."
 
 #, python-format
-msgid "Brief description of this form you can find in the <a href=\"http://www.%s/doc/newgame#profile\" target=\"_blank\">reference manual</a>."
-msgstr "Краткое описание этой формы вы можете найти в <a href=\"http://www.%s/doc/newgame#profile\" target=\"_blank\">руководстве</a>."
+msgid "Brief description of this form you can find in the <a href=\"//www.%s/doc/newgame#profile\" target=\"_blank\">reference manual</a>."
+msgstr "Краткое описание этой формы вы можете найти в <a href=\"//www.%s/doc/newgame#profile\" target=\"_blank\">руководстве</a>."
 
 msgid "Broken Stones"
 msgstr "Разбитые камни"
@@ -1217,8 +1217,8 @@ msgid "Destroy this game"
 msgstr "Уничтожить эту игру"
 
 #, python-format
-msgid "Detailed description of the currency setup you can read in the <a href=\"http://www.%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
-msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"http://www.%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
+msgid "Detailed description of the currency setup you can read in the <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
+msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
 
 msgid "Developers club"
 msgstr "Клуб разработчиков"
@@ -2005,15 +2005,15 @@ msgid "Host"
 msgstr "Хост"
 
 #, python-format
-msgid "How to enforce character names validation you can read in the <a href=\"http://www.%s/doc/auth\" target=\"_blank\">basic authentication settings</a> manual page"
-msgstr "О том, как включить обязательную проверку имён персонажей, вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/auth\" target=\"_blank\">Основные настройки аутентификации</a>."
+msgid "How to enforce character names validation you can read in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">basic authentication settings</a> manual page"
+msgstr "О том, как включить обязательную проверку имён персонажей, вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/auth\" target=\"_blank\">Основные настройки аутентификации</a>."
 
 msgid "How to launch the game"
 msgstr "Как запустить игру"
 
 #, python-format
-msgid "How to setup character form you can read in the <a href=\"http://www.%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
-msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
+msgid "How to setup character form you can read in the <a href=\"//www.%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
+msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
 
 msgid "Hyperlinks color"
 msgstr "Цвет гиперссылок"
@@ -2754,8 +2754,8 @@ msgid "Module"
 msgstr "Модуль"
 
 #, python-format
-msgid "Module structure of the constructor is described in the <a href=\"http://www.%s/doc/modules\" target=\"_blank\">modules documentation</a>."
-msgstr "Модульная структура конструктора описана в <a href=\"http://www.%s/doc/modules\" target=\"_blank\">документации на модули</a>."
+msgid "Module structure of the constructor is described in the <a href=\"//www.%s/doc/modules\" target=\"_blank\">modules documentation</a>."
+msgstr "Модульная структура конструктора описана в <a href=\"//www.%s/doc/modules\" target=\"_blank\">документации на модули</a>."
 
 msgid "Money"
 msgstr "Деньги"
@@ -3420,16 +3420,16 @@ msgid "Reactivate"
 msgstr "Активировать повторно"
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
+msgid "Read <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/indexpage\" target=\"_blank\">the indexpage design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/indexpage\" target=\"_blank\">руководство по оформлению титульной страницы</a>."
+msgid "Read <a href=\"//www.%s/doc/design/indexpage\" target=\"_blank\">the indexpage design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/indexpage\" target=\"_blank\">руководство по оформлению титульной страницы</a>."
 
 #, python-format
-msgid "Read <a href=\"http://www.%s/doc/design/sociointerface\" target=\"_blank\">the socio interface design reference manual</a> to create your own template or edit generated one"
-msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"http://www.%s/doc/design/sociointerface\" target=\"_blank\">руководство по оформлению социальных интерфейсов</a>."
+msgid "Read <a href=\"//www.%s/doc/design/sociointerface\" target=\"_blank\">the socio interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/sociointerface\" target=\"_blank\">руководство по оформлению социальных интерфейсов</a>."
 
 msgid "Read more"
 msgstr "Читать далее"
@@ -4217,12 +4217,12 @@ msgid "Status"
 msgstr "Статус"
 
 #, python-format
-msgid "Step-by-step tutorial about creating the game to launch you can read in the <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
-msgstr "Пошаговый учебник по созданию игры вы можете прочитать в <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
+msgid "Step-by-step tutorial about creating the game to launch you can read in the <a href=\"//www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
+msgstr "Пошаговый учебник по созданию игры вы можете прочитать в <a href=\"//www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
 
 #, python-format
-msgid "Step-by-step tutorial about preparing the game to launch you can read in the <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
-msgstr "Пошаговый учебник по подготовке игры к запуску вы можете прочитать в <a href=\"http://www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
+msgid "Step-by-step tutorial about preparing the game to launch you can read in the <a href=\"//www.%s/doc/newgame\" target=\"_blank\">reference manual</a>."
+msgstr "Пошаговый учебник по подготовке игры к запуску вы можете прочитать в <a href=\"//www.%s/doc/newgame\" target=\"_blank\">руководстве пользователя</a>."
 
 msgid "Stones #1"
 msgstr "Камни №1"
@@ -5016,28 +5016,28 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
-msgid "You can find detailed information on the game interface rendering in the <a href=\"http://www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
-msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
+msgid "You can find detailed information on the game interface rendering in the <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
+msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
 
 #, python-format
-msgid "You can find detailed information on the library system in the <a href=\"http://www.%s/doc/library\" target=\"_blank\">library page</a> in the reference manual."
-msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
+msgid "You can find detailed information on the library system in the <a href=\"//www.%s/doc/library\" target=\"_blank\">library page</a> in the reference manual."
+msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
 
 #, python-format
-msgid "You can find detailed information on the location system in the <a href=\"http://www.%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
-msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"http://www.%s/doc/locations\" target=\"_blank\">Система локаций</a>."
+msgid "You can find detailed information on the location system in the <a href=\"//www.%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
+msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/locations\" target=\"_blank\">Система локаций</a>."
 
 #, python-format
-msgid "You can find information on authentication setup in your game in the <a href=\"http://www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
-msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"http://www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
+msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
+msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
 
 #, python-format
-msgid "You can find information on chat configuration in the <a href=\"http://www.%s/doc/chat\" target=\"_blank\">chat manual</a>."
-msgstr "Информацию о настройке чата вы можете найти в <a href=\"http://www.%s/doc/chat\" target=\"_blank\">руководстве по чату</a>."
+msgid "You can find information on chat configuration in the <a href=\"//www.%s/doc/chat\" target=\"_blank\">chat manual</a>."
+msgstr "Информацию о настройке чата вы можете найти в <a href=\"//www.%s/doc/chat\" target=\"_blank\">руководстве по чату</a>."
 
 #, python-format
-msgid "You can find information on setting up paid services in your game in the <a href=\"http://www.%s/doc/paid-services\" target=\"_blank\">paid services manual</a>."
-msgstr "Информацию о настройке платных услуг в вашей игре вы можете найти в руководстве в разделе <a href=\"http://www.%s/doc/paid-services\" target=\"_blank\">Платные услуги</a>."
+msgid "You can find information on setting up paid services in your game in the <a href=\"//www.%s/doc/paid-services\" target=\"_blank\">paid services manual</a>."
+msgstr "Информацию о настройке платных услуг в вашей игре вы можете найти в руководстве в разделе <a href=\"//www.%s/doc/paid-services\" target=\"_blank\">Платные услуги</a>."
 
 #, python-format
 msgid "You can read detailed information on the static storage in <a href=\"//www.%s/doc/storage\" target=\"_blank\">the documentation</a>"
@@ -5073,8 +5073,8 @@ msgstr "Вы не можете отправлять сообщения сист�
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
 
-msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"http://{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
-msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"http://{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
+msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"//{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
+msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"//{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -5730,13 +5730,13 @@ msgid ""
 "\n"
 "{author_text}\n"
 "\n"
-"Request page: http://{host}/reqauction/view/{request}"
+"[url=//{host}/reqauction/view/{request}]Open request page[/url]"
 msgstr ""
 "{text}\n"
 "\n"
 "{author_text}\n"
 "\n"
-"Страница запроса: http://{host}/reqauction/view/{request}"
+"[url=//{host}/reqauction/view/{request}]Открыть страницу запроса[/url]"
 
 msgid "request///Sent"
 msgstr "Отправлена"

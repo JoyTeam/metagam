@@ -324,7 +324,7 @@ class PaidServicesAdmin(ConstructorModule):
 
     def admin_paidservices_editor(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on setting up paid services in your game in the <a href="http://www.%s/doc/paid-services" target="_blank">paid services manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on setting up paid services in your game in the <a href="//www.%s/doc/paid-services" target="_blank">paid services manual</a>.') % self.app().inst.config["main_host"]})
         m = re_cmd_pack.match(req.args)
         if m:
             uuid = m.group(1)

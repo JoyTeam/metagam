@@ -134,7 +134,7 @@ class Interface(ConstructorModule):
         self.rhook("advice-admin-gameinterface.index", self.advice_gameinterface)
 
     def advice_gameinterface(self, hook, args, advice):
-        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="http://www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="//www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
 
     def buttons(self, buttons):
         buttons.append({
@@ -197,7 +197,7 @@ class Interface(ConstructorModule):
                 player = self.player(userobj.uuid)
                 return self.game_cabinet(player)
         if self.app().project.get("inactive"):
-            self.call("web.redirect", "http://www.%s/cabinet" % self.app().inst.config["main_host"])
+            self.call("web.redirect", "//www.%s/cabinet" % self.app().inst.config["main_host"])
         design = self.design("indexpage")
         project = self.app().project
         author_name = self.conf("gameprofile.author_name")
@@ -417,7 +417,7 @@ class Interface(ConstructorModule):
             return None
         # Primary image
         image = btn.get("image")
-        if not image.startswith("http://"):
+        if not (image.startswith("http://") or image.startswith("//")):
             # If some module is disabled we should hide
             # all its buttons
             if btn["id"] not in generated:
@@ -1020,7 +1020,7 @@ class Interface(ConstructorModule):
             show_block = valid_blocks.get(block_id)
             if show_block:
                 for btn in btn_list:
-                    if btn["image"].startswith("http://") or btn["id"] in generated:
+                    if btn["image"].startswith("http://") or btn["image"].startswith("//") or btn["id"] in generated:
                         show_btn = btn.copy()
                         assigned_buttons[btn["id"]] = show_btn
                         show_block["buttons"].append(show_btn)
@@ -1049,7 +1049,7 @@ class Interface(ConstructorModule):
                 else:
                     btn["action"] = self._('open popup menu <strong><hook:admin.link href="gameinterface/popups/{0}" title="{1}" /></strong>').format(popup.uuid, htmlescape(popup.get("title")))
             btn["may_delete"] = True
-            if btn.get("image") and btn["image"].startswith("http://"):
+            if btn.get("image") and (btn["image"].startswith("http://") or btn["image"].startswith("//")):
                 btn["image"] = '<img src="%s" alt="" title="%s" />' % (btn["image"], btn.get("title"))
             if not btn.get("image") and btn.get("icon"):
                 btn["image"] = "<strong>%s-</strong>%s" % (self._("wildcard///block-class"), btn["icon"])
@@ -1204,7 +1204,7 @@ class Interface(ConstructorModule):
                     if content_type:
                         image = self.call("cluster.static_upload", "button", ext, content_type, image_data)
             # Changing image name according to the prototype
-            if not image_data and not user and (not image or not image.startswith("http://")):
+            if not image_data and not user and (not image or not (image.startswith("http://") or image.startswith("//"))):
                 found = False
                 for panel in self.panels():
                     for blk in panel["blocks"]:
@@ -1237,7 +1237,7 @@ class Interface(ConstructorModule):
             config = self.app().config_updater()
             config.set("gameinterface.buttons-layout", layout)
             config.store()
-            if old_image and old_image.startswith("http://") and image_data:
+            if old_image and (old_image.startswith("http://") or old_image.startswith("//")) and image_data:
                 self.call("cluster.static_delete", old_image)
             self.call("web.response_json_html", {"success": True, "redirect": "gameinterface/buttons"})
         else:

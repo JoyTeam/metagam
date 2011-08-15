@@ -241,14 +241,14 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
                     href = m.group(1)
                     for i in range(0, len(attrs)):
                         if attrs[i][0] == att:
-                            attrs[i] = (att, "http://www.%s/st-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                            attrs[i] = (att, "//www.%s/st-mg%s" % (str(self.app().inst.config["main_host"]), href))
                 else:
                     m = re_dyn_mg.match(href)
                     if m:
                         href = m.group(1)
                         for i in range(0, len(attrs)):
                             if attrs[i][0] == att:
-                                attrs[i] = (att, "http://www.%s/dyn-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                                attrs[i] = (att, "//www.%s/dyn-mg%s" % (str(self.app().inst.config["main_host"]), href))
                     else:
                         m = re_design_root_prefix.match(href)
                         if m:
@@ -1258,7 +1258,7 @@ class DesignAdmin(Module):
         perms.append({"id": "design", "name": self._("Design configuration")})
 
     def editor(self, group):
-        self.call("admin.advice", {"title": self._("Preview feature"), "content": self._('Use "preview" feature to check your design before installing it to the project. Then press "Reload" several times to check design on arbitrary data.')}, {"title": self._("Multiple browsers"), "content": self._('Check your design in the most popular browsers.') + u' <a href="http://www.google.com/search?q={0}" target="_blank">{1}</a>.'.format(urlencode(self._("google///browser statistics")), self._("Find the most popular browsers"))})
+        self.call("admin.advice", {"title": self._("Preview feature"), "content": self._('Use "preview" feature to check your design before installing it to the project. Then press "Reload" several times to check design on arbitrary data.')}, {"title": self._("Multiple browsers"), "content": self._('Check your design in the most popular browsers.') + u' <a href="//www.google.com/search?q={0}" target="_blank">{1}</a>.'.format(urlencode(self._("google///browser statistics")), self._("Find the most popular browsers"))})
         with self.lock(["DesignAdmin-%s" % group]):
             req = self.req()
             if req.args == "":
@@ -1509,7 +1509,7 @@ class IndexPageAdmin(Module):
             menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "indexpage")
 
     def validate(self, design, parsed_html, errors):
@@ -1526,9 +1526,9 @@ class IndexPageAdmin(Module):
         for filename, parser in parsed_html.iteritems():
             if filename == "index.html":
                 if not "/indexpage.js" in parser.scripts:
-                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<script type="text/javascript" src="http://www.%s/dyn-mg/indexpage.js"></script>'))
+                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<script type="text/javascript" src="//www.%s/dyn-mg/indexpage.js"></script>'))
                 if not "/indexpage.css" in parser.scripts:
-                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<link rel="stylesheet" href="http://www.%s/dyn-mg/indexpage.css" />'))
+                    errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<link rel="stylesheet" href="//www.%s/dyn-mg/indexpage.css" />'))
                 loginform_ok = False
                 for form in parser.forms:
                     if form["name"] == "loginform" and form["id"] == "loginform":
@@ -1749,7 +1749,7 @@ class SocioInterfaceAdmin(Module):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
@@ -1839,7 +1839,7 @@ class SocioInterfaceAdmin(Module):
                 "subject_html": random.choice(demo_subjects),
                 "subscribed": random.random() < 0.5,
                 "literal_created": random.choice(demo_dates),
-                "avatar": "http://%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
                 "author_html": random.choice(demo_authors),
                 "content_html": random.choice(demo_contents),
             }
@@ -1870,7 +1870,7 @@ class SocioInterfaceAdmin(Module):
                 for i in range(0, random.choice([1, 5, 20])):
                     post = {
                         "literal_created": random.choice(demo_dates),
-                        "avatar": "http://%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                        "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
                         "author_html": random.choice(demo_authors),
                         "content_html": random.choice(demo_contents),
                     }
@@ -1951,7 +1951,7 @@ class SocioInterfaceAdmin(Module):
             lst.append({
                 "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
                 "href": "#" if random.random() < 0.8 else None,
-                "image": "http://%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
+                "image": "//%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
             })
         if random.random() < 0.8:
             lst.insert(0, {"search": True, "html": self._("Search")})
@@ -2016,7 +2016,7 @@ class GameInterfaceAdmin(ConstructorModule):
             menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="http://www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
         self.call("design-admin.editor", "gameinterface")
 
     def validate(self, design, parsed_html, errors):

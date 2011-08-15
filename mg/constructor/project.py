@@ -128,7 +128,7 @@ class ConstructorProjectAdmin(Module):
     def project_destroy(self):
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        redirect = "http://www.%s/cabinet" % self.app().inst.config["main_host"]
+        redirect = "//www.%s/cabinet" % self.app().inst.config["main_host"]
         req = self.req()
         if req.args == "admin":
             self.call("web.response_json", {"success": True, "redirect_top": redirect})
@@ -186,7 +186,7 @@ class ConstructorProjectAdmin(Module):
             vars["published"] = True
             self.call("game.dashboard", vars)
         else:
-            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="http://www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):

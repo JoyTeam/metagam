@@ -462,7 +462,7 @@ class ReqAuction(ConstructorModule):
                             cat = self.call("forum.category-by-tag", "reqauction")
                             if cat:
                                 user = self.obj(User, request.get("author"))
-                                topic = self.call("forum.newtopic", cat, user, request.get("title"), self._("reqauction///{text}\n\n{author_text}\n\nRequest page: http://{host}/reqauction/view/{request}").format(text=text, author_text=author_text, user=user.get("name"), host=req.host(), request=request.uuid).strip())
+                                topic = self.call("forum.newtopic", cat, user, request.get("title"), self._("reqauction///{text}\n\n{author_text}\n\n[url=//{host}/reqauction/view/{request}]Open request page[/url]").format(text=text, author_text=author_text, user=user.get("name"), host=req.host(), request=request.uuid).strip())
                                 if topic:
                                     request.set("forum_topic", topic.uuid)
                             request.store()

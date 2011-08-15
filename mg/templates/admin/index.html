@@ -1,25 +1,25 @@
-<script type="text/javascript">var admin_root='http://www.[%main_host%]'</script>
-<link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
-<link rel="stylesheet" type="text/css" href="http://www.[%main_host%]/st/[%ver%]/ext/resources/css/constructor-admin.css" />
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-base.js"></script>
+<script type="text/javascript">var admin_root='//www.[%main_host%]'</script>
+<link rel="stylesheet" type="text/css" href="//www.[%main_host%]/st/[%ver%]/ext/resources/css/ext-all-notheme.css" />
+<link rel="stylesheet" type="text/css" href="//www.[%main_host%]/st/[%ver%]/ext/resources/css/constructor-admin.css" />
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/ext/ext-base.js"></script>
 [%if debug_ext%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
 [%else%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/ext/ext-all.js"></script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/ext/ext-all.js"></script>
 [%end%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/gettext.js"></script>
-[%if lang%]<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/util.js"></script>
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/depend.js"></script>
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/texteditor.js"></script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/js/gettext.js"></script>
+[%if lang%]<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/constructor/gettext-[%lang%].js"></script>[%end%]
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/js/util.js"></script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/js/depend.js"></script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/js/texteditor.js"></script>
 [%if menu%]<script type="text/javascript">var admin_menu = [%menu%];</script>[%end%]
-<script type="text/javascript">var constructor_index_page = 'http://www.[%main_host%]/';</script>
-<script type="text/javascript" src="http://www.[%main_host%]/st/[%ver%]/js/admin.js"></script>
-<!--[if IE]><script src="http://www.[%main_host%]/st/[%ver%]/js/excanvas.js"></script><![endif]-->
+<script type="text/javascript">var constructor_index_page = '//www.[%main_host%]/';</script>
+<script type="text/javascript" src="//www.[%main_host%]/st/[%ver%]/js/admin.js"></script>
+<!--[if IE]><script src="//www.[%main_host%]/st/[%ver%]/js/excanvas.js"></script><![endif]-->
 ===HEAD===
 [%if xsolla_payport%]
 <div id="cassa2payCanvas"></div>
-<script type="text/javascript" src="http://2pay.ru/gadget/client/html/init.js"></script>
+<script type="text/javascript" src="//2pay.ru/gadget/client/html/init.js"></script>
 <script type="text/javascript">
 var _2payProjectID = '[%xsolla_payport.project_id%]';
 var _2payPaymentSum = '[%xsolla_payport.payment_sum%]';
