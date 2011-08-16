@@ -614,7 +614,7 @@ class Constructor(Module):
             if wmids and wmid not in wmids:
                 vars = {
                     "title": self._("WMID verified already"),
-                    "text": self._("You have verified another WMID already: %s") % (', '.wmids),
+                    "text": self._("You have verified another WMID already: %s") % (', '.join(wmids)),
                 }
                 self.call("web.response_template", "constructor/setup/info.html", vars)
             else:
