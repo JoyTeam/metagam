@@ -159,7 +159,7 @@ class Invitations(Module):
                             if user.uuid not in selected and not user.uuid in exists:
                                 self.debug("selecting user %s", user.uuid)
                                 selected.add(user.uuid)
-                                next_start = user.get("created")
+                            next_start = user.get("created")
                         if next_start is None or next_start <= start:
                             break
                         else:
