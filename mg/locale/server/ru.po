@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-15 16:44+0300\n"
+"PO-Revision-Date: 2011-08-17 09:07+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2311,6 +2311,9 @@ msgstr "Требуется приглашение"
 msgid "Invitations"
 msgstr "Приглашения"
 
+msgid "Invitations count"
+msgstr "Количество приглашений"
+
 msgid "Invitations for the registration"
 msgstr "Приглашения на регистрацию"
 
@@ -2619,6 +2622,13 @@ msgstr "Место, где вы можете договориться о пок�
 msgid "Mass delivery (to all users)"
 msgstr "Массовая доставка (всем пользователям)"
 
+#, python-format
+msgid "Mass user %s"
+msgstr "Массовый пользователь %s"
+
+msgid "Massive invitations"
+msgstr "Массовые приглашения"
+
 msgid "Maximal file size &mdash; 3 megabytes"
 msgstr "Максимальный размер файла &mdash; 3 мегабайта"
 
@@ -2720,6 +2730,9 @@ msgstr "Минимальная длина пароля - 6 символов"
 
 msgid "Minimal step of payment in this currency is {min_step:f} roubles (1 {currency} = {rate} RUB, precision = {precision}). It is too big for micropayments. Lower you currency rate"
 msgstr "Минимальный шаг платежа в этой валюте получается {min_step:f} руб (1 {currency} = {rate} руб, точность = {precision}). Это слишком много для микроплатежей. Снизьте стоимость единицы валюты"
+
+msgid "Minimal value - 1"
+msgstr "Минимальное значение - 1"
 
 #, python-format
 msgid "Minimal value is %d"
@@ -2985,6 +2998,9 @@ msgstr "Нет такой локации"
 
 msgid "No such user"
 msgstr "Нет такого пользователя"
+
+msgid "No users selected"
+msgstr "Пользователи не выбраны"
 
 msgid "No users with this e-mail"
 msgstr "Пользователей с этим e-mail не найдено"
@@ -3822,6 +3838,9 @@ msgstr "Выберите сплошной цвет"
 msgid "Select top level domain"
 msgstr "Выберите домен верхнего уровня"
 
+msgid "Select users"
+msgstr "Выберите пользователей"
+
 msgid "Select valid currency"
 msgstr "Выберите валюту"
 
@@ -3851,6 +3870,9 @@ msgstr "Отправить новое сообщение"
 
 msgid "Send invitation code"
 msgstr "Отправить код приглашения"
+
+msgid "Send invitations"
+msgstr "Отправить приглашения"
 
 msgid "Send new telegram"
 msgstr "Отправить новую телеграмму"
@@ -6005,8 +6027,6 @@ msgstr "{price} на {period_a}"
 #~ "заработанные в Конструкторе.</p>"
 #~ msgid "Value 'none' has no attributes"
 #~ msgstr "У значения \"none\" нет атрибутов"
-#~ msgid "Number expected"
-#~ msgstr "Требуется число"
 #~ msgid "Related player"
 #~ msgstr "Связанный игрок"
 #~ msgid "Related character %s"

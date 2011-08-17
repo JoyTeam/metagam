@@ -52,7 +52,7 @@ class Cassandra(object):
             res = conn.cass.describe_keyspaces(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -62,7 +62,7 @@ class Cassandra(object):
             res = conn.cass.describe_keyspace(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -72,7 +72,7 @@ class Cassandra(object):
             res = conn.cass.system_add_keyspace(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -83,7 +83,7 @@ class Cassandra(object):
             res = conn.cass.system_drop_keyspace(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -94,7 +94,7 @@ class Cassandra(object):
             res = conn.cass.system_add_column_family(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
 
     def system_drop_column_family(self, *args, **kwargs):
@@ -104,7 +104,7 @@ class Cassandra(object):
             res = conn.cass.system_drop_column_family(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -115,7 +115,7 @@ class Cassandra(object):
             res = conn.cass.insert(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -126,7 +126,7 @@ class Cassandra(object):
             res = conn.cass.get_slice(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -137,7 +137,7 @@ class Cassandra(object):
             res = conn.cass.multiget_slice(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -148,7 +148,7 @@ class Cassandra(object):
             res = conn.cass.batch_mutate(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -159,7 +159,7 @@ class Cassandra(object):
             res = conn.cass.insert(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -170,7 +170,7 @@ class Cassandra(object):
             res = conn.cass.remove(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -181,7 +181,7 @@ class Cassandra(object):
             res = conn.cass.get(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -192,7 +192,7 @@ class Cassandra(object):
             res = conn.cass.get_count(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 
@@ -203,7 +203,7 @@ class Cassandra(object):
             res = conn.cass.get_range_slices(*args, **kwargs)
             self.pool.cput(conn)
             return res
-        except:
+        except Exception:
             self.pool.new()
             raise
 

@@ -8,6 +8,7 @@ class Invitation(CassandraObject):
     _indexes = {
         "created": [[], "created"],
         "user-type": [["user", "type"]],
+        "touser": [["touser"]],
     }
 
     def __init__(self, *args, **kwargs):
@@ -45,8 +46,10 @@ class Invitations(Module):
         perms.append({"id": "constructor.invitations", "name": self._("Constructor: giving invitations")})
 
     def headmenu_constructor_invitations(self, args):
-        if args == "add":
+        if args == "add" or args == "add-user":
             return [self._("New invitation"), "constructor/invitations"]
+        elif args == "mass" or args == "mass-send":
+            return [self._("Massive invitations"), "constructor/invitations"]
         return self._("Invitations for the registration")
 
     def ext_constructor_invitations(self):
@@ -92,6 +95,7 @@ class Invitations(Module):
                 inv.set("created", self.now())
                 inv.set("person", self._("User %s") % user.get("name"))
                 inv.set("type", "newproject")
+                inv.set("touser", user.uuid)
                 self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code))
                 inv.store()
                 self.call("web.response_json", {"success": True, "redirect": "constructor/invitations"})
@@ -100,6 +104,75 @@ class Invitations(Module):
             ]
             buttons = [
                 {"text": self._("Send invitation code")}
+            ]
+            self.call("admin.form", fields=fields, buttons=buttons)
+        elif req.args == "mass-send":
+            user_uuids = [uuid for uuid in req.param("users").split(",") if uuid]
+            if not user_uuids:
+                self.call("admin.redirect", "constructor/invitations/mass")
+            lst = self.objlist(UserList, user_uuids)
+            lst.load(silent=True)
+            if not len(lst):
+                self.call("admin.redirect", "constructor/invitations/mass")
+            if req.ok():
+                for user in lst:
+                    if req.param("u_%s" % user.uuid):
+                        self.debug("Inviting user %s", user.uuid)
+                        code = "3%03d-%04d-%04d" % (random.randint(0, 1000), random.randint(0, 10000), random.randint(0, 10000))
+                        inv = self.obj(Invitation, uuid=code, silent=True)
+                        inv.set("created", self.now())
+                        inv.set("person", self._("Mass user %s") % user.get("name"))
+                        inv.set("type", "newproject")
+                        inv.set("touser", user.uuid)
+                        self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code))
+                        inv.store()
+                self.call("admin.redirect", "constructor/invitations")
+            fields = [
+                {"type": "hidden", "name": "users", "value": req.param("users")},
+            ]
+            for ent in lst:
+                fields.append({"type": "checkbox", "name": "u_%s" % ent.uuid, "checked": True, "label": htmlescape(ent.get("name"))})
+            buttons = [
+                {"text": self._("Send invitations")}
+            ]
+            self.call("admin.form", fields=fields, buttons=buttons)
+        elif req.args == "mass":
+            if req.ok():
+                cnt = intz(req.param("cnt"))
+                errors = {}
+                if cnt < 1:
+                    errors["cnt"] = self._("Minimal value - 1")
+                else:
+                    max_users = cnt
+                    selected = set()
+                    start = ""
+                    while len(selected) < max_users:
+                        lst = self.objlist(UserList, query_index="created", query_limit=max_users - len(selected), query_start=start)
+                        lst.load()
+                        self.debug("loaded users: %s", lst.uuids())
+                        exists = self.objlist(InvitationList, query_index="touser", query_equal=lst.uuids())
+                        exists.load()
+                        exists = set([ent.get("touser") for ent in exists])
+                        self.debug("exists: %s", exists)
+                        next_start = None
+                        for user in lst:
+                            if user.uuid not in selected and not user.uuid in exists:
+                                self.debug("selecting user %s", user.uuid)
+                                selected.add(user.uuid)
+                                next_start = user.get("created")
+                        if next_start is None or next_start <= start:
+                            break
+                        else:
+                            start = next_start
+                    if selected:
+                        self.call("admin.redirect", "constructor/invitations/mass-send", {"users": ",".join(selected)})
+                    errors["cnt"] = self._("No users selected")
+                self.call("web.response_json", {"success": False, "errors": errors})
+            fields = [
+                {"name": "cnt", "label": self._("Invitations count"), "value": 3},
+            ]
+            buttons = [
+                {"text": self._("Select users")}
             ]
             self.call("admin.form", fields=fields, buttons=buttons)
         rows = []
@@ -116,7 +189,8 @@ class Invitations(Module):
                 {
                     "links": [
                         {"hook": "constructor/invitations/add", "text": self._("Give a new invitation")},
-                        {"hook": "constructor/invitations/add-user", "text": self._("Invitation for a user"), "lst": True},
+                        {"hook": "constructor/invitations/add-user", "text": self._("Invitation for a user")},
+                        {"hook": "constructor/invitations/mass", "text": self._("Massive invitations"), "lst": True},
                     ],
                     "header": [self._("Invitation code"), self._("Type"), self._("Person"), self._("User")],
                     "rows": rows,
