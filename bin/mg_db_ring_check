@@ -1,0 +1,40 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+import os
+import logging
+import sys
+import json
+import re
+import time
+
+token_ring = 2 ** 127
+
+def main():
+    try:
+        inst = Instance("db_ring_check")
+        inst.download_config()
+        mc = Memcached(inst.mcpool)
+        db = inst.dbpool.dbget("main", mc)
+        created = set()
+        ring = db.describe_ring("main")
+        ring.sort(lambda x, y: cmp(int(x.start_token), int(y.start_token)))
+        count = len(ring)
+        for i in xrange(0, count):
+            proper_token = token_ring / count * i
+            actual_token = int(ring[i].start_token)
+            if proper_token != actual_token:
+                print "endpoint %s has token %d. change it to %d" % (ring[i].endpoints[0], actual_token, proper_token)
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
