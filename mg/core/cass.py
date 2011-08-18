@@ -56,14 +56,16 @@ class Cassandra(object):
                         conn.set_keyspace("system")
                     elif options.get("space"):
                         self.apply_keyspace(conn)
-                res = method(*args, **kwargs)
+                try:
+                    res = method(*args, **kwargs)
+                except NotFoundException:
+                    self.pool.success(conn)
+                    raise
                 self.pool.success(conn)
                 return res
             except AttributeError:
                 raise
             except TimeoutError:
-                raise
-            except NotFoundException:
                 raise
             except Exception as e:
                 self.pool.error(e)
