@@ -63,6 +63,8 @@ class Cassandra(object):
                 raise
             except TimeoutError:
                 raise
+            except NotFoundException:
+                raise
             except Exception as e:
                 self.pool.error(e)
 
@@ -140,6 +142,9 @@ class CassandraPool(object):
         self.hosts.insert(0, self.primary_host)
         del self.connections[:]
 
+    def exception(self, *args, **kwargs):
+        logging.getLogger("mg.core.cass.CassandraPool").exception(*args, **kwargs)
+
     def debug(self, *args, **kwargs):
         logging.getLogger("mg.core.cass.CassandraPool").debug(*args, **kwargs)
 
@@ -161,8 +166,8 @@ class CassandraPool(object):
             bad_host = self.hosts.pop(0)
             self.hosts.append(bad_host)
             del self.connections[:]
-            Tasklet.sleep(1)
             self.debug("Cassandra server %s failed: %s. Trying %s", bad_host, exc, self.hosts[0])
+            Tasklet.sleep(1)
             try:
                 self.success_counter = 0
                 conn = self.new_connection()
