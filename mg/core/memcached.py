@@ -13,15 +13,19 @@ class MemcachedPool(object):
     Handles pool of MemcacheConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=None):
+    def __init__(self, host=("127.0.0.1", 11211), size=256):
         """
         size - max amount of active memcached connections (None if no limit)
         """
-        self.host = host
+        self.host = tuple(host)
         self.connections = []
         self.size = size
         self.allocated = 0
         self.channel = None
+
+    def set_host(self, host):
+        self.host = tuple(host)
+        del self.connections[:]
 
     def new_connection(self):
         "Create a new MemcacheConnection and connect it"
@@ -50,6 +54,9 @@ class MemcachedPool(object):
 
     def put(self, connection):
         "Return a connection to the pool"
+        # If memcached host changed
+        if connection._address != self.host:
+            self.put(self.new_connection())
         # If somebody waits on the channel
         if self.channel is not None and self.channel.balance < 0:
             self.channel.send(connection)

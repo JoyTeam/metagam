@@ -788,7 +788,7 @@ class Instance(object):
                 config[key] = [tuple(ent) for ent in config[key]]
             self.config = config
             self.setup_logger()
-            self.dbpool = CassandraPool(config["cassandra"])
+            self.dbpool = CassandraPool(config["cassandra"], primary_host_id=0)
             self.mcpool = MemcachedPool(config["memcached"][0])
             return config
         finally:

@@ -14,6 +14,7 @@ class Director(Module):
         self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
             "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin", "mg.core.modifiers.ModifiersManager"])
         self.config()
+        self.apply_config()
         self.app().inst.setup_logger()
         self.app().servers_online = self.conf("director.servers", {})
         self.app().servers_online_modified = False
@@ -128,6 +129,8 @@ class Director(Module):
                                 cnn.perform(request)
                                 # will be reached unless timed out
                                 st.remove()
+                            except Exception as e:
+                                self.error("Couldn't abort %s:%s - %s", st.get("host"), st.get("port"), e)
                             finally:
                                 cnn.close()
             except Exception as e:
@@ -352,6 +355,11 @@ class Director(Module):
         self.app().inst.config = conf
         return conf
 
+    def apply_config(self):
+        inst = self.app().inst
+        inst.dbpool.set_host(inst.config["cassandra"], primary_host_id=0)
+        inst.mcpool.set_host(inst.config["memcached"][0])
+
     def director_config(self):
         self.call("web.response_json", self.config())
 
@@ -399,6 +407,7 @@ class Director(Module):
             config["locale"] = locale
             self.app().config.set("director.config", config)
             self.app().config.store()
+            self.apply_config()
             self.director_reload()
             self.reload_servers()
             self.call("web.redirect", "/")

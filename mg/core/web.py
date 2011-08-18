@@ -520,7 +520,10 @@ class Web(Module):
         request = self.req()
         config = request.param("config")
         if config:
-            self.app().inst.config = json.loads(config)
+            inst = self.app().inst
+            inst.config = json.loads(config)
+            inst.dbpool.set_host(inst.config["cassandra"], primary_host_id=0)
+            inst.mcpool.set_host(inst.config["memcached"][0])
         errors = self.app().inst.reload()
         if errors:
             self.call("web.response_json", { "errors": errors })

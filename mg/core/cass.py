@@ -8,6 +8,7 @@ from thrift.transport import TTransport
 from cassandra.Cassandra import Client
 from cassandra.ttypes import *
 from uuid import uuid4
+from concurrence import TimeoutError, Tasklet
 import socket
 import logging
 import time
@@ -40,210 +41,165 @@ class Cassandra(object):
         self.keyspace = keyspace
         self.mc = mc
         self._last_time = 0
-        self._last_time_cnt = 0
 
     def apply_keyspace(self, conn):
         if self.keyspace != conn.actual_keyspace:
             conn.set_keyspace(self.keyspace)
 
+    def execute(self, method_name, options, *args, **kwargs):
+        while True:
+            try:
+                conn = self.pool.cget()
+                method = getattr(conn.cass, method_name)
+                if options:
+                    if options.get("sysspace"):
+                        conn.set_keyspace("system")
+                    elif options.get("space"):
+                        self.apply_keyspace(conn)
+                res = method(*args, **kwargs)
+                self.pool.success(conn)
+                return res
+            except AttributeError:
+                raise
+            except TimeoutError:
+                raise
+            except Exception as e:
+                self.pool.error(e)
+
     def describe_ring(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            res = conn.cass.describe_ring(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("describe_ring", None, *args, **kwargs)
 
     def describe_keyspaces(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            res = conn.cass.describe_keyspaces(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("describe_keyspaces", None, *args, **kwargs)
 
     def describe_keyspace(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            res = conn.cass.describe_keyspace(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("describe_keyspace", None, *args, **kwargs)
 
     def system_add_keyspace(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            res = conn.cass.system_add_keyspace(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("system_add_keyspace", None, *args, **kwargs)
 
     def system_drop_keyspace(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            conn.set_keyspace("system")
-            res = conn.cass.system_drop_keyspace(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("system_drop_keyspace", {"sysspace": True}, *args, **kwargs)
 
     def system_add_column_family(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.system_add_column_family(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
+        return self.execute("system_add_column_family", {"space": True}, *args, **kwargs)
 
     def system_drop_column_family(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.system_drop_column_family(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("system_drop_column_family", {"space": True}, *args, **kwargs)
 
     def insert(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.insert(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("insert", {"space": True}, *args, **kwargs)
 
     def get_slice(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.get_slice(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("get_slice", {"space": True}, *args, **kwargs)
 
     def multiget_slice(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.multiget_slice(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("multiget_slice", {"space": True}, *args, **kwargs)
 
     def batch_mutate(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.batch_mutate(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
-
-    def insert(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.insert(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("batch_mutate", {"space": True}, *args, **kwargs)
 
     def remove(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.remove(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("remove", {"space": True}, *args, **kwargs)
 
     def get(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.get(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("get", {"space": True}, *args, **kwargs)
 
     def get_count(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.get_count(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("get_count", {"space": True}, *args, **kwargs)
 
     def get_range_slices(self, *args, **kwargs):
-        conn = self.pool.cget()
-        try:
-            self.apply_keyspace(conn)
-            res = conn.cass.get_range_slices(*args, **kwargs)
-            self.pool.cput(conn)
-            return res
-        except Exception:
-            self.pool.new()
-            raise
+        return self.execute("get_range_slices", {"space": True}, *args, **kwargs)
 
     def get_time(self):
         now = time.time() * 1000
-        if self._last_time == now:
-            self._last_time_cnt += 1
-        else:
+        if now > self._last_time:
             self._last_time = now
-            self._last_time_cnt = 0
-        return now + self._last_time_cnt
+        else:
+            self._last_time += 1
+        return self._last_time
 
 class CassandraPool(object):
     """
     Handles pool of CassandraConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, hosts=(("127.0.0.1", 9160),), size=None):
-        self.hosts = list(hosts)
+    def __init__(self, hosts=(("127.0.0.1", 9160),), size=256, primary_host_id=0):
+        self.hosts = [tuple(host) for host in hosts]
+        self.primary_host = self.hosts.pop(primary_host_id)
+        self.hosts.insert(0, self.primary_host)
         self.connections = []
         self.size = size
         self.allocated = 0
         self.channel = None
+        self.success_counter = 0
+
+    def set_host(self, hosts, primary_host_id=0):
+        self.hosts = [tuple(host) for host in hosts]
+        self.primary_host = self.hosts.pop(primary_host_id)
+        self.hosts.insert(0, self.primary_host)
+        del self.connections[:]
+
+    def debug(self, *args, **kwargs):
+        logging.getLogger("mg.core.cass.CassandraPool").debug(*args, **kwargs)
 
     def new_connection(self):
-        "Create a new CassandraConnection and connect it"
-        connection = CassandraConnection(self.hosts)
+        "Create a new CassandraConnection and connect to the first host in the list"
+        connection = CassandraConnection(self.hosts[0])
         connection.connect()
-        self.hosts.append(self.hosts.pop(0))
         return connection
+
+    def new_primary_connection(self):
+        "Create a new CassandraConnection and connect to the primary host"
+        connection = CassandraConnection(self.primary_host)
+        connection.connect()
+        return connection
+
+    def error(self, exc):
+        "Notify Pool that currently selected connection is bad"
+        while True:
+            bad_host = self.hosts.pop(0)
+            self.hosts.append(bad_host)
+            del self.connections[:]
+            Tasklet.sleep(1)
+            self.debug("Cassandra server %s failed: %s. Trying %s", bad_host, exc, self.hosts[0])
+            try:
+                self.success_counter = 0
+                conn = self.new_connection()
+                self.cput(conn)
+                return
+            except Exception as e:
+                exc = e
+
+    def success(self, conn):
+        "Notify Pool that connection 'conn' succeeded request"
+        if conn.host == self.hosts[0]:
+            self.success_counter += 1
+            if self.success_counter >= 1000 and self.hosts[0] != self.primary_host:
+                self.debug("Cassandra server %s succeeded %d operations. Probing primary host %s", self.hosts[0], self.success_counter, self.primary_host)
+                self.success_counter = 0
+                try:
+                    primary_conn = self.new_primary_connection()
+                except TimeoutError:
+                    self.cput(conn)
+                    raise
+                except Exception as e:
+                    self.debug("Primary host %s is still dead: %s", self.primary_host, e)
+                    self.cput(conn)
+                else:
+                    self.debug("Connection to the primary host %s succeeded", self.primary_host)
+                    for i in xrange(0, len(self.hosts)):
+                        if self.hosts[i] == self.primary_host:
+                            host = self.hosts.pop(i)
+                            self.hosts.insert(0, host)
+                    del self.connections[:]
+                    self.cput(primary_conn)
+            else:
+                self.cput(conn)
+        else:
+            self.debug("Switching to the server %s", self.hosts[0])
+            conn = self.new_connection()
+            self.cput(conn)
 
     def cget(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be blocked"
@@ -280,12 +236,12 @@ class CassandraPool(object):
 
 class CassandraConnection(object):
     "CassandraConnection - interface to Cassandra database engine"
-    def __init__(self, hosts=(("127.0.0.1", 9160),)):
+    def __init__(self, host=("127.0.0.1", 9160)):
         """
-        hosts - ((host, port), (host, port), ...)
+        host - (hostname, port)
         """
         object.__init__(self)
-        self.hosts = hosts
+        self.host = host
         self.cass = None
         self.actual_keyspace = None
 
@@ -295,7 +251,7 @@ class CassandraConnection(object):
     def connect(self):
         "Establish connection to the cluster"
         try:
-            sock = Socket(self.hosts)
+            sock = Socket([self.host])
             self.trans = TTransport.TFramedTransport(sock)
             proto = TBinaryProtocol.TBinaryProtocolAccelerated(self.trans)
             self.cass = Client(proto)
