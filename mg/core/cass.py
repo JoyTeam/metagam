@@ -46,6 +46,16 @@ class Cassandra(object):
         if self.keyspace != conn.actual_keyspace:
             conn.set_keyspace(self.keyspace)
 
+    def describe_ring(self, *args, **kwargs):
+        conn = self.pool.cget()
+        try:
+            res = conn.cass.describe_ring(*args, **kwargs)
+            self.pool.cput(conn)
+            return res
+        except Exception:
+            self.pool.new()
+            raise
+
     def describe_keyspaces(self, *args, **kwargs):
         conn = self.pool.cget()
         try:

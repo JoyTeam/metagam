@@ -1,5 +1,6 @@
 from mg.core import Module
 from cassandra.ttypes import *
+from concurrence import Tasklet
 import logging
 
 class CassandraDiff(object):
@@ -25,8 +26,19 @@ class CassandraRestructure(object):
         keyspaces = [ksdef.name for ksdef in self.db.describe_keyspaces()]
         family_exists = dict()
         required = set()
-        if not self.db.keyspace in keyspaces:
-            dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
+        if self.db.keyspace not in keyspaces:
+            if "ringtest" not in keyspaces:
+                self.logger.debug("created keyspace ringtest: %s", self.db.system_add_keyspace(KsDef(name="ringtest", strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
+                self.logger.debug("waiting 10 sec")
+                Tasklet.sleep(10)
+            ring = set()
+            for ent in self.db.describe_ring("ringtest"):
+                for ip in ent.endpoints:
+                    ring.add(ip)
+            replication_factor = len(ring)
+            if replication_factor > 3:
+                replication_factor = 3
+            dbdiff.ops.append(("cks", KsDef(name=self.db.keyspace, strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=replication_factor, cf_defs=[])))
         else:
             family_exists = dict([(cfdef.name, cfdef) for cfdef in self.db.describe_keyspace(self.db.keyspace).cf_defs])
         for (name, cfdef) in config.items():
@@ -59,6 +71,9 @@ class CassandraRestructure(object):
                 self.logger.debug("created keyspace %s: %s", cmd[1].name, self.db.system_add_keyspace(cmd[1]))
             else:
                 self.logger.error("invalid command %s", cmd)
+                continue
+            self.logger.debug("waiting 10 sec")
+            Tasklet.sleep(10)
 
 class CommonCassandraStruct(Module):
     def register(self):
