@@ -67,6 +67,8 @@ class Cassandra(object):
                 raise
             except TimeoutError:
                 raise
+            except NotFoundException:
+                raise
             except Exception as e:
                 self.pool.error(e)
 
