@@ -1183,8 +1183,8 @@ class Interface(ConstructorModule):
             # Button image
             image_data = req.param_raw("image")
             if image_data:
-                image_obj = Image.open(cStringIO.StringIO(image_data))
                 try:
+                    image_obj = Image.open(cStringIO.StringIO(image_data))
                     image_obj.verify()
                 except Exception:
                     errors["image"] = self._("Unknown image format")
