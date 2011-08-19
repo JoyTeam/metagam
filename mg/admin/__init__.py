@@ -93,7 +93,7 @@ class AdminInterface(Module):
         for ent in menu:
             if ent.get("leaf"):
                 project = getattr(self.app(), "project", None)
-                if not project or ent.get("even_unpublished") or self.app().project.get("published"):
+                if not project or not self.app().project.get("inactive"):
                     ent["href"] = "/admin#%s" % ent.get("id")
                     result.append(ent)
             else:

@@ -50,16 +50,16 @@ class ConstructorProject(Module):
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
                 "mg.core.icons.Icons",
                 "mg.socio.SocioAdmin",
+                "mg.constructor.money.Money",
+                "mg.constructor.paidservices.PaidServices",
+                "mg.constructor.paidservices.PaidServicesAdmin",
+                "mg.core.modifiers.Modifiers",
+                "mg.core.icons.IconsAdmin",
             ])
             if project.get("published"):
                 lst.extend([
                     "mg.core.money.Xsolla",
-                    "mg.constructor.money.Money",
-                    "mg.constructor.paidservices.PaidServices",
-                    "mg.constructor.paidservices.PaidServicesAdmin",
-                    "mg.core.modifiers.Modifiers",
                     "mg.constructor.stats.GameReporter",
-                    "mg.core.icons.IconsAdmin",
                 ])
             if self.conf("module.socio"):
                 lst.extend(["mg.socio.Socio", "mg.constructor.socio.Socio"])
