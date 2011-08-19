@@ -253,30 +253,34 @@ class Constructor(Module):
             else:
 #                if req.user():
 #                    topmenu.append({"href": "/socio/paid-services", "html": self._("Premium")})
-                topmenu.append({"search": True, "button": self._("socio-top///Search")})
+                if req.group == "forum":
+                    topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
                     topmenu.append({"href": "/forum/settings?redirect=%s" % redirect, "html": self._("Settings")})
                     links = []
                     self.call("telegrams.menu", links)
                     for link in links:
                         topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
-                    topmenu.append({"href": "/doc", "html": self._("Documentation")})
+                topmenu.append({"href": "/doc", "html": self._("Documentation")})
+                if req.group != "forum":
+                    topmenu.append({"href": "/forum", "html": self._("Forum")})
+                if req.user():
                     topmenu.append({"href": "/reqauction", "html": self._("Auction")})
                     topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
                 else:
-                    topmenu.append({"href": "/doc", "html": self._("Documentation")})
                     topmenu.append({"href": "/auth/login?redirect=%s" % redirect, "html": self._("Log in")})
                     topmenu.append({"href": "/auth/register?redirect=%s" % redirect, "html": self._("Register")})
             if redirect_param:
                 topmenu.append({"href": htmlescape(req.param("redirect")), "html": self._("Cancel")})
         elif req.group == "telegrams":
             vars["title_suffix"] = " - %s" % self._("MMO Constructor")
-            topmenu.append({"href": "/forum", "image": "/st/constructor/cabinet/forum.gif", "html": self._("Forum")})
+            topmenu.append({"href": "/doc", "html": self._("Documentation")})
+            topmenu.append({"href": "/forum", "html": self._("Forum")})
             links = []
             self.call("telegrams.menu", links)
             for link in links:
                 topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
-            topmenu.append({"href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif", "html": self._("Cabinet")})
+            topmenu.append({"href": "/cabinet", "html": self._("Cabinet")})
         elif req.group == "doc":
             #vars["global_html"] = "constructor/socio_global.html"
             if req.user():
