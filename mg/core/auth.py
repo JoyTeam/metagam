@@ -1148,22 +1148,31 @@ class Interface(Module):
             roles.append(("perm:%s" % perm["id"], has_priv % perm["name"]))
 
     def users_roles(self, users, roles):
-        list = self.objlist(UserPermissionsList, users)
-        list.load(silent=True)
+        lst = self.objlist(UserPermissionsList, users)
+        lst.load(silent=True)
         perms = ["all", "logged"]
         for user in users:
             try:
                 roles[user].extend(perms)
             except KeyError:
                 roles[user] = ["all", "logged"]
-        for user in list:
+        for user in lst:
             perms = user.get("perms")
             if perms is not None:
-                perms = ["perm:%s" % perm for perm in perms.keys()]
-                try:
-                    roles[user.uuid].extend(perms)
-                except KeyError:
-                    roles[user.uuid] = perms
+                if "project.admin" in perms or "global.admin" in perms:
+                    permissions_list = []
+                    self.call("permissions.list", permissions_list)
+                    perms = ["perm:%s" % perm["id"] for perm in permissions_list]
+                    try:
+                        roles[user.uuid].extend(perms)
+                    except KeyError:
+                        roles[user.uuid] = perms
+                else:
+                    perms = ["perm:%s" % perm for perm in perms.keys()]
+                    try:
+                        roles[user.uuid].extend(perms)
+                    except KeyError:
+                        roles[user.uuid] = perms
 
     def headmenu_user_dashboard(self, args):
         try:
