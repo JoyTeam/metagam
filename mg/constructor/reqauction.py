@@ -431,11 +431,14 @@ class ReqAuction(ConstructorModule):
             # form processing
             form = self.call("web.form")
             if req.ok():
+                title = req.param("title").strip()
                 reason = req.param("reason").strip()
                 parent = req.param("parent")
                 text = req.param("text").strip()
                 author_text = req.param("author_text").strip()
                 time = intz(req.param("time"))
+                if not title:
+                    form.error("title", self._("This field is mandatory"))
                 if not author_text:
                     form.error("author_text", self._("This field is mandatory"))
                 if req.param("reject"):
@@ -444,6 +447,7 @@ class ReqAuction(ConstructorModule):
                     if not form.errors:
                         request.delkey("moderation")
                         request.delkey("moderation_since")
+                        request.set("title", title)
                         request.set("author_text", author_text)
                         request.set("draft", 1)
                         request.set("moderation_reject", reason)
@@ -462,6 +466,7 @@ class ReqAuction(ConstructorModule):
                             request.set("published", 1)
                             request.set("published_since", self.now())
                             request.set("time", time)
+                            request.set("title", title)
                             self.update_priority(request)
                             # creating forum topic
                             cat = self.call("forum.category-by-tag", "reqauction")
@@ -483,6 +488,7 @@ class ReqAuction(ConstructorModule):
                         request.set("text", text)
                         request.set("published", 1)
                         request.set("published_since", self.now())
+                        request.set("title", title)
                         self.update_priority(request)
                         request.store()
                         with self.lock(["Requests.recalc"]):
@@ -495,6 +501,8 @@ class ReqAuction(ConstructorModule):
                 text = ""
                 author_text = request.get("author_text")
                 time = 0
+                title = request.get("title")
+            form.input(self._("Title"), "title", title)
             form.texteditor(self._("reqauction///Request description (may be empty)"), "text", text)
             form.texteditor(self._("Author text"), "author_text", author_text)
             form.input(self._("Time in days to implement this feature"), "time", time)
@@ -618,12 +626,14 @@ class ReqAuction(ConstructorModule):
             form = self.call("web.form")
             if req.ok():
                 time = intz(req.param("time"))
+                title = req.param("title").strip()
                 text = req.param("text").strip()
                 if time <= 0:
                     form.error("time", self._("This field must be greater than zero"))
                 if not form.errors:
                     if req.param("close"):
                         if request.get("published"):
+                            request.set("title", title)
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
@@ -663,6 +673,7 @@ class ReqAuction(ConstructorModule):
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("implemented"):
                         if request.get("published"):
+                            request.set("title", title)
                             request.set("text", text)
                             request.set("time", time)
                             request.delkey("published")
@@ -708,6 +719,7 @@ class ReqAuction(ConstructorModule):
                             self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: http://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid))
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("publish"):
+                        request.set("title", title)
                         request.set("text", text)
                         request.set("time", time)
                         if request.get("published"):
@@ -720,7 +732,9 @@ class ReqAuction(ConstructorModule):
                         form.add_message_top(self.call("socio.format_text", text))
             else:
                 time = request.get("time")
+                title = request.get("title")
                 text = request.get("text")
+            form.input(self._("Title"), "title", title)
             form.texteditor(self._("reqauction///Request description"), "text", text)
             form.input(self._("Time in days to implement this feature"), "time", time)
             form.submit(None, "publish", self._("Save"))
