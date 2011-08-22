@@ -203,9 +203,9 @@ class ReqAuction(ConstructorModule):
         if not wmids:
             self.error(self._("Certificate required"), self._("To use request auction you must have certified WMID"))
         for wmid, cert in wmids.iteritems():
-            if cert >= 120:
+            if cert >= 110:
                 return
-        self.error(self._("Certificate required"), self._('<p>To use request auction you must have WMID with the <strong>initial certificate</strong>. Your current certificate level is not enough. <a href="https://passport.wmtransfer.com/">Get the initial certificate</a> and recheck your WMID certificate.</p><p><a href="{url}">Recheck your WMID</a></p>').format(url=self.call("wmlogin.url")))
+        self.error(self._("Certificate required"), self._('<p>To use request auction you must have WMID with the <strong>formal certificate</strong>. Your current certificate level is not enough. <a href="https://passport.wmtransfer.com/">Get the formal certificate</a> and recheck your WMID certificate.</p><p><a href="{url}">Recheck your WMID</a></p>').format(url=self.call("wmlogin.url")))
 
     def request(self):
         self.cert_check()
