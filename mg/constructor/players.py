@@ -44,7 +44,7 @@ class CharactersMod(ConstructorModule):
             "id": "character-form",
             "href": "/interface/character-form",
             "target": "main",
-            "icon": "character.png",
+            "icon": "character-form.png",
             "title": self._("Character form"),
             "block": "left-menu",
             "order": 0,
