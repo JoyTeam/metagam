@@ -247,7 +247,7 @@ class DomainRegWizard(Wizard):
                     if not re_person.match(person):
                         errors["person"] = self._("Invalid field format")
                     if passport == "":
-                        errors["passport"] = self._("Enter your passport number")
+                        errors["passport"] = self._("Enter your passport number, issuer and issue date")
                     if not re_birth_date.match(birth_date):
                         errors["birth-date"] = self._("Enter birthday in format DD.MM.YYYY")
                     if address_r == "":
