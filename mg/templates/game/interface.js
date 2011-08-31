@@ -302,12 +302,17 @@ Game.setup_game_layout = function() {
 	}
 };
 
+debug_log('calling Ext.onReady');
+
 Ext.onReady(function() {
+	debug_log('ext ready');
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'under';
+	debug_log('ext initialized');
 	wait(['game-interface'], function() {
 		wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
-			[%+ foreach statement in js_init%][%statement +%]
+			debug_log('all modules loaded');
+			[%+ foreach statement in js_init%]try { [%+ statement +%] } catch (e) { Game.error(gt.gettext('Exception'), e) }
 			[%+ end%]
 		});
 	});
