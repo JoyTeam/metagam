@@ -6,6 +6,8 @@ from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 from uuid import uuid4
 
+max_packets_in_frame = 20
+
 re_valid_id = re.compile('^\w+$')
 re_split_headers = re.compile('\r?\n\r?\n')
 re_http_status_line = re.compile('^HTTP/[\d\.]+\s+((\d+)\s+[^\r\n]*)')
@@ -240,12 +242,16 @@ class Realplexor(Module):
             except AttributeError:
                 packets = {}
                 req.stream_packets = packets
+                req.stream_packets_cnt = 0
             try:
                 queue = packets[ids]
             except KeyError:
                 queue = []
                 packets[ids] = queue
             queue.append(kwargs)
+            req.stream_packets_cnt += 1
+            if req.stream_packets_cnt >= max_packets_in_frame:
+                self.flush()
 
     def flush(self):
         try:
@@ -260,6 +266,7 @@ class Realplexor(Module):
             for session_uuid, lst in packets.iteritems():
                 self.call("stream.send", session_uuid, {"packets": lst})
             req.stream_packets = {}
+            req.stream_packets_cnt = 0
 
     def request_processed(self):
         self.flush()

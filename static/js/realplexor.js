@@ -129,7 +129,7 @@ Dklab_Realplexor.prototype.execute = function() {
 		this._executeTimer = setTimeout(function() { th.execute() }, 30);
 		return;
 	}
-	
+
 	// Realplexor loader is ready, run it.
 	this._realplexor.execute(
 		this._map, 

@@ -1035,9 +1035,9 @@ class Auth(ConstructorModule):
         session = req.session()
         # initializing stream
         stream_marker = uuid4().hex
+        vars["js_init"].append("Stream.run_realplexor('%s', %d);" % (stream_marker, time.time() - 3))
         self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
         vars["js_modules"].add("realplexor-stream")
-        vars["js_init"].append("Stream.run_realplexor('%s');" % stream_marker)
         self.call("session.character-init", session.uuid, character)
 
     def auth_character(self):
