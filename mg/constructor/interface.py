@@ -267,11 +267,17 @@ class Interface(ConstructorModule):
     def game_response_external(self, template, vars, content=""):
         design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
+        req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "external.html", content, vars)
 
     def game_response_internal(self, template, vars, content=""):
         design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
+        req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "internal.html", content, vars)
 
     def game_cabinet(self, player):
@@ -293,9 +299,12 @@ class Interface(ConstructorModule):
         self.call("game.response_external", "cabinet.html", vars)
 
     def game_cabinet_render(self, vars):
+        req = self.req()
         vars["SelectYourCharacter"] = self._("Select your character")
         vars["Logout"] = self._("Logout")
         vars["CreateNewCharacter"] = self._("Create a new character")
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
 
     def game_interface_render(self, character, vars, design):
         req = self.req()
