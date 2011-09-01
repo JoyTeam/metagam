@@ -302,18 +302,21 @@ Game.setup_game_layout = function() {
 	}
 };
 
-debug_log('calling Ext.onReady');
+try { debug_log('calling Ext.onReady'); } catch(e) {}
 
 Ext.onReady(function() {
-	debug_log('ext ready');
+	try { debug_log('ext ready'); } catch(e) {}
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'under';
-	debug_log('ext initialized');
+	try { debug_log('ext initialized'); } catch(e) {}
 	wait(['game-interface'], function() {
 		wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
-			debug_log('all modules loaded');
-			[%+ foreach statement in js_init%]try { [%+ statement +%] } catch (e) { Game.error(gt.gettext('Exception'), e) }
+			try { debug_log('all modules loaded'); } catch(e) {}
+			[%+ foreach ent in js_init%]
+				try { debug_log('[%ent.js_cmd%]'); } catch(e) {}
+				try { [%+ ent.cmd +%] } catch (e) { try { debug_log('exception in [%ent.js_cmd%]: ' + e); } catch(e) {} Game.error(gt.gettext('Exception'), e) }
 			[%+ end%]
+			try { debug_log('js_init complete'); } catch(e) {}
 		});
 	});
 });

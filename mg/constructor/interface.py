@@ -575,6 +575,7 @@ class Interface(ConstructorModule):
         vars["js_modules"] = [{"name": mod} for mod in vars["js_modules"]]
         if len(vars["js_modules"]):
             vars["js_modules"][-1]["lst"] = True
+        vars["js_init"] = [{"cmd": cmd, "js_cmd": jsencode(htmlescape(cmd))} for cmd in vars["js_init"]]
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def panels(self):
