@@ -2,6 +2,7 @@ var admin_root = '';
 var Game = {
 	app: '[%app%]',
 	domain: '[%domain%]',
+	base_domain: '[%base_domain%]',
 	character: '[%character%]',
 	design_root: '[%design_root%]',
 	panels: {

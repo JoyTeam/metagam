@@ -6,7 +6,7 @@ function Dklab_Realplexor(fullUrl, namespace, viaDocumentWrite)
 	var VERSION = "1.32";
 
 	// Detect current page hostname.
-	var host = document.location.host;
+	var host = document.domain;
 
 	// Assign initial properties.
 	if (!this.constructor._registry) this.constructor._registry = {}; // all objects registry
@@ -38,15 +38,11 @@ function Dklab_Realplexor(fullUrl, namespace, viaDocumentWrite)
 	if (mHost != host && mHost.lastIndexOf("." + host) != mHost.length - host.length - 1) {
 		throw 'Due to the standard XMLHttpRequest security policy, hostname in URL passed to Dklab_Realplexor (' + mHost + ') must be equals to the current host (' + host + ') or be its direct sub-domain.';
 	} 
-	
 	// Create IFRAME if requested.
 	if (viaDocumentWrite) {
 		document.write(this._iframeTag);
 		this._iframeCreated = true;
 	}
-
-	// Allow realplexor's IFRAME to access outer window.
-	document.domain = host;	
 }
 
 // Static function. 

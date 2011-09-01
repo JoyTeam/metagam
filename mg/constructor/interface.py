@@ -16,6 +16,7 @@ re_block_del = re.compile('^del\/(\S+)\/(\S+)$')
 re_block_edit = re.compile('^(\S+)\/(\S+)$')
 re_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
+re_remove_www = re.compile(r'^www\.', re.IGNORECASE)
 
 default_icons = set([])
 
@@ -318,6 +319,7 @@ class Interface(ConstructorModule):
             "panel_main_right": self.conf("gameinterface.panel-main-right", False),
         }
         vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]
