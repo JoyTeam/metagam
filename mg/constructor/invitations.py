@@ -96,7 +96,9 @@ class Invitations(Module):
                 inv.set("person", self._("User %s") % user.get("name"))
                 inv.set("type", "newproject")
                 inv.set("touser", user.uuid)
-                self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code))
+                content = self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code)
+                self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), content)
+                self.call("telegrams.send", None, user.uuid, content)
                 inv.store()
                 self.call("web.response_json", {"success": True, "redirect": "constructor/invitations"})
             fields = [
@@ -124,7 +126,9 @@ class Invitations(Module):
                         inv.set("person", self._("Mass user %s") % user.get("name"))
                         inv.set("type", "newproject")
                         inv.set("touser", user.uuid)
-                        self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code))
+                        content = self._("Hello, {name}.\n\nWe are glad to invite you for the closed alpha-testing of the MMO Constructor project.\nYour invitation code is: {code}\nFeel free to use any features of the MMO Constructor you want.").format(name=user.get("name"), code=code)
+                        self.call("email.send", user.get("email"), user.get("name"), self._("Invitation for the MMO Constructor"), content)
+                        self.call("telegrams.send", None, user.uuid, content)
                         inv.store()
                 self.call("admin.redirect", "constructor/invitations")
             fields = [

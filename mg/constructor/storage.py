@@ -2,7 +2,7 @@ from mg.constructor import *
 import re
 import mimetypes
 
-re_non_alphanumeric = re.compile(r'[^\w\-\.\(\)]', re.UNICODE)
+re_non_alphanumeric = re.compile(r'[^\w\-\.\(\)]')
 re_find_extension = re.compile(r'^(.*)\.(.*)$')
 re_del = re.compile(r'^del\/(\S+)$')
 

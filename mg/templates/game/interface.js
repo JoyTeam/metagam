@@ -2,6 +2,7 @@ var admin_root = '';
 var Game = {
 	app: '[%app%]',
 	domain: '[%domain%]',
+	base_domain: '[%base_domain%]',
 	character: '[%character%]',
 	design_root: '[%design_root%]',
 	panels: {
@@ -302,13 +303,21 @@ Game.setup_game_layout = function() {
 	}
 };
 
+try { debug_log('calling Ext.onReady'); } catch(e) {}
+
 Ext.onReady(function() {
+	try { debug_log('ext ready'); } catch(e) {}
 	Ext.QuickTips.init();
 	Ext.form.Field.prototype.msgTarget = 'under';
+	try { debug_log('ext initialized'); } catch(e) {}
 	wait(['game-interface'], function() {
 		wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
-			[%+ foreach statement in js_init%][%statement +%]
+			try { debug_log('all modules loaded'); } catch(e) {}
+			[%+ foreach ent in js_init%]
+				try { debug_log('[%ent.js_cmd%]'); } catch(e) {}
+				try { [%+ ent.cmd +%] } catch (e) { try { debug_log('exception in [%ent.js_cmd%]: ' + e); } catch(e) {} Game.error(gt.gettext('Exception'), e) }
 			[%+ end%]
+			try { debug_log('js_init complete'); } catch(e) {}
 		});
 	});
 });

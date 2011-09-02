@@ -5,6 +5,7 @@ import re
 
 old_messages_limit = 10
 old_private_messages_limit = 100
+max_chat_message = 1000
 
 re_chat_characters = re.compile(r'\[(chf|cht|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
@@ -411,6 +412,8 @@ class Chat(ConstructorModule):
             self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till")), "hide_title": True})
         author = self.character(user)
         text = req.param("text") 
+        if len(text) > max_chat_message:
+            self.call("web.response_json", {"error": self._("Maximal message length - {max} characters ({sent} sent)").format(max=max_chat_message, sent=len(text)), "hide_title": True})
         prefixes = []
         prefixes.append("[chf:%s] " % user)
         channel = req.param("channel")

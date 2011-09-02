@@ -343,8 +343,9 @@ class WebDaemon(object):
                 try:
                     uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
                 except UnicodeDecodeError:
-                    request.send_response("404 Not Found", request.headers, "<html><body><h1>404 Not Found</h1></body></html>")
-                return self.request_uri(request, uri)
+                    return request.send_response("404 Not Found", request.headers, "<html><body><h1>404 Not Found</h1></body></html>")
+                else:
+                    return self.request_uri(request, uri)
             except RuntimeError as e:
                 self.logger.error(e)
                 e = u"%s" % e

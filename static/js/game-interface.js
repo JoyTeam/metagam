@@ -473,4 +473,8 @@ Game.popup = function(btn_id, popup_id, parent_menu) {
 	}
 };
 
+Game.refresh_layout = function() {
+	Ext.getCmp('game-viewport').doLayout(false, true);
+};
+
 loaded('game-interface');

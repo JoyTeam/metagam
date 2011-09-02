@@ -1573,8 +1573,8 @@ msgstr "Введите ваш новый пароль"
 msgid "Enter your old password"
 msgstr "Введите ваш старый пароль"
 
-msgid "Enter your passport number"
-msgstr "Введите ваши паспортные данные"
+msgid "Enter your passport number, issuer and issue date"
+msgstr "Введите ваш номер паспорта, кем и когда выдан"
 
 msgid "Enter your password"
 msgstr "Введите ваш пароль"
@@ -2718,6 +2718,8 @@ msgstr "Максимальная длина - 50 символов"
 msgid "Maximal length is 5 letters"
 msgstr "Максимальная длина - 5 символов"
 
+msgid "Maximal message length - {max} characters ({sent} sent)"
+msgstr "Максимальная длина сообщения - {max} символов (отправлено: {sent})"
 msgid "Maximal number of characters per player allowed"
 msgstr "Максимальное количество разрешённых персонажей на игрока"
 
@@ -5541,6 +5543,12 @@ msgstr "обсуждение на форуме"
 
 msgid "documentation"
 msgstr "документация"
+
+msgid "domain///Are you sure want to unassign domain from this game?"
+msgstr "Вы уверены, что хотите отсоединить домен от этой игры?"
+
+msgid "domain///unassign"
+msgstr "отсоединить"
 
 msgid "don't want it anymore"
 msgstr "больше не хочу"

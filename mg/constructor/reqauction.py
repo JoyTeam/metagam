@@ -171,7 +171,7 @@ class ReqAuction(ConstructorModule):
         if req_uuids:
             redirect = urlencode(req.uri())
             lst = self.objlist(DBRequestList, req_uuids)
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 title = htmlescape(ent.get("title"))
                 rows.append([
@@ -332,6 +332,7 @@ class ReqAuction(ConstructorModule):
                 self.call("web.redirect", "/reqauction/mine")
             if not request.get("draft") or request.get("author") != req.user():
                 self.call("web.redirect", "/reqauction/mine")
+            self.objlist(DBRequestVoteList, query_index="request", query_equal=uuid).remove()
             request.remove()
             self.call("web.redirect", "/reqauction/mine")
 

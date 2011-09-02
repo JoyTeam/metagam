@@ -16,6 +16,7 @@ re_block_del = re.compile('^del\/(\S+)\/(\S+)$')
 re_block_edit = re.compile('^(\S+)\/(\S+)$')
 re_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
+re_remove_www = re.compile(r'^www\.', re.IGNORECASE)
 
 default_icons = set([])
 
@@ -267,11 +268,17 @@ class Interface(ConstructorModule):
     def game_response_external(self, template, vars, content=""):
         design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
+        req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "external.html", content, vars)
 
     def game_response_internal(self, template, vars, content=None):
-        content = self.game_parse_internal(template, vars, content)
         design = self.design("gameinterface")
+        content = self.game_parse_internal(template, vars, content)
+        req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "internal.html", content, vars)
 
     def game_parse_internal(self, template, vars, content=None):
@@ -297,9 +304,12 @@ class Interface(ConstructorModule):
         self.call("game.response_external", "cabinet.html", vars)
 
     def game_cabinet_render(self, vars):
+        req = self.req()
         vars["SelectYourCharacter"] = self._("Select your character")
         vars["Logout"] = self._("Logout")
         vars["CreateNewCharacter"] = self._("Create a new character")
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
 
     def game_interface_render(self, character, vars, design):
         req = self.req()
@@ -323,6 +333,7 @@ class Interface(ConstructorModule):
             "panel_main_right": self.conf("gameinterface.panel-main-right", False),
         }
         vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
         vars["js_init"] = ["Game.setup_game_layout();"]
@@ -580,6 +591,8 @@ class Interface(ConstructorModule):
         vars["js_modules"] = [{"name": mod} for mod in vars["js_modules"]]
         if len(vars["js_modules"]):
             vars["js_modules"][-1]["lst"] = True
+        vars["js_init"].append("Game.refresh_layout();")
+        vars["js_init"] = [{"cmd": cmd, "js_cmd": jsencode(htmlescape(cmd))} for cmd in vars["js_init"]]
         vars["game_js"] = self.call("web.parse_template", "game/interface.js", vars)
 
     def panels(self):

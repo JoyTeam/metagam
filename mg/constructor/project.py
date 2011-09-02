@@ -2,6 +2,7 @@ from mg import *
 import re
 
 re_newline = re.compile(r'\n')
+re_remove_www = re.compile(r'^www\.', re.IGNORECASE)
 
 class ConstructorProject(Module):
     "This is the main module of every project. It must load very fast"
@@ -45,7 +46,7 @@ class ConstructorProject(Module):
                 "mg.constructor.design.GameInterface", "mg.constructor.design.GameInterfaceAdmin",
                 "mg.constructor.script.ScriptEngine",
                 "mg.core.auth.Dossiers",
-                "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
+                "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
                 "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
                 "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
                 "mg.core.icons.Icons",
@@ -92,6 +93,8 @@ class ConstructorProject(Module):
 
     def web_setup_design(self, vars):
         req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
         if not vars.get("global_html"):
             if req.group == "admin":
                 vars["global_html"] = "constructor/admin_global.html"
