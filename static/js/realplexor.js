@@ -45,7 +45,6 @@ function Dklab_Realplexor(fullUrl, namespace, viaDocumentWrite)
 		this._iframeCreated = true;
 	}
 
-	// Allow realplexor's IFRAME to access outer window.
 	document.domain = host;	
 }
 

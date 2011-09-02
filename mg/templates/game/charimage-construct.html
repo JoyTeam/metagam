@@ -1,0 +1,14 @@
+[%layout%]
+<script type="text/javascript">
+wait(['charimages'], function() {
+	[%foreach lay in layers%]
+	CharImages.layers.push({
+		id: '[%lay.id%]',
+		images: [[%foreach img in lay.images%]{id: '[%img.id%]', image: '[%img.image%]'}[%unless img.lst%],[%end%][%end%]]
+	});
+	[%end%]
+	[%foreach lay in layers%]
+	[%if lay.image%]CharImages.layer_find('[%lay.id%]', '[%lay.image%]');[%else%]CharImages.layer_select('[%lay.id%]', 0);[%end%]
+	[%end%]
+});
+</script>

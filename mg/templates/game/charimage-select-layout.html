@@ -1,0 +1,22 @@
+<table class="charimgsel-layout">
+	<tr>
+		<td class="charimgsel-layout-image">
+			<img id="charimgsel-image" style="width: [%width%]px; height: [%height%]px;" src="/st/img/null.gif" />
+		</td>
+		<td class="charimgsel-layout-info">
+			<table><tr>
+				<td class="charimgsel-left"><span class="clickable" onclick="CharImages.prev()">&lt;</a></td>
+				<td class="charimgsel-name" id="charimgsel-name"></td>
+				<td class="charimgsel-right"><span class="clickable" onclick="CharImages.next()">&gt;</a></td>
+			</tr></table>
+			<div id="charimgsel-description"></div>
+			<div id="charimgsel-price" class="form-list-messages-top"></div>
+			[%if error%]<div id="charimgsel-error" class="game-error">[%error%]</div>[%end%]
+			<form id="charimgsel-form" method="post" action="/charimage/select">
+				<input type="hidden" name="ok" value="1" />
+				<input type="hidden" id="charimgsel-input" name="image" value="" />
+				<input type="submit" value="[%Select%]" />
+			</form>
+		</td>
+	</tr>
+</table>

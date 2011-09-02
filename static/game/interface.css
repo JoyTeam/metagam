@@ -151,3 +151,25 @@ area { border: none }
 .charinfo-layout-info { padding: 60px 40px 0 20px; vertical-align: top }
 .charinfo-param-name { vertical-align: top; padding: 0 20px 10px 0 }
 .charinfo-param-value { vertical-align: top; font-weight: bold; padding: 0 0 10px 0 }
+
+/* CHARACTER PAGE */
+.charpage-name { font-size: 18px; padding: 10px 20px 0 20px; text-align: center }
+.charpage-avatar { text-align: center; padding: 20px 20px 20px 20px }
+.charpage-layout-avatar { vertical-align: top; padding: 0 20px 0 0 }
+.charpage-layout-actions { vertical-align: top; padding: 24px 20px 0 40px }
+.charpage-layout-info { padding: 10px 20px 0 40px; vertical-align: top }
+.charpage-param-name { vertical-align: top; padding: 0 20px 10px 0 }
+.charpage-param-value { vertical-align: top; font-weight: bold; padding: 0 0 10px 0 }
+.charpage-header { font-weight: bold }
+
+/* AVATAR SELECTOR */
+.charimgsel-layout-image { vertical-align: top; padding: 20px 20px 20px 20px }
+.charimgsel-layout-info { padding: 20px 20px 20px 40px; vertical-align: top }
+.charimgsel-left { width: 20px; text-align: left; font-size: 16px }
+.charimgsel-name { font-size: 18px; width: 300px; border: solid 1px #404040; text-align: center; padding: 5px 0 5px 0 }
+.charimgsel-right { width: 20px; text-align: right; font-size: 16px }
+#charimgsel-description { width: 340px; text-align: center; padding-top: 10px }
+#charimgsel-price { padding-top: 10px; text-align: center }
+#charimgsel-error { padding-top: 10px; text-align: center }
+#charimgsel-form { padding-top: 10px; text-align: center }
+.charimgsel-layer { margin-bottom: 10px }

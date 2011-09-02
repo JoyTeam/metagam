@@ -36,10 +36,21 @@ class CharactersMod(ConstructorModule):
         self.rhook("ext-admin-characters.validate-names", self.admin_validate_names, priv="change.usernames")
         self.rhook("ext-character.info", self.character_info, priv="public")
         self.rhook("character.info-avatar", self.character_info_avatar)
+        self.rhook("character.page-avatar", self.character_page_avatar)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-interface.character-form", self.interface_character_form, priv="logged")
+        self.rhook("ext-interface.character", self.interface_character, priv="logged")
 
     def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "character",
+            "href": "/interface/character",
+            "target": "main",
+            "icon": "character.png",
+            "title": self._("Character"),
+            "block": "left-menu",
+            "order": 0,
+        })
         buttons.append({
             "id": "character-form",
             "href": "/interface/character-form",
@@ -47,7 +58,7 @@ class CharactersMod(ConstructorModule):
             "icon": "character-form.png",
             "title": self._("Character form"),
             "block": "left-menu",
-            "order": 0,
+            "order": 5,
         })
 
     def name_fixup(self, character, purpose, params):
@@ -468,8 +479,11 @@ class CharactersMod(ConstructorModule):
 
     def character_info_avatar(self, character):
         design = self.design("gameinterface")
+        charimage = self.call("charimages.get", character, "charinfo")
+        if charimage is None:
+            charimage = "/st-mg/constructor/avatars/%s-230x440.jpg" % ("female" if character.sex else "male")
         vars = {
-            "avatar_image": "/st-mg/constructor/avatars/%s.jpg" % ("female" if character.sex else "male"),
+            "avatar_image": charimage,
         }
         return self.call("design.parse", design, "character-info-avatar.html", None, vars)
 
@@ -508,6 +522,33 @@ class CharactersMod(ConstructorModule):
         if params:
             vars["character"]["params"] = params
         self.call("game.response_external", "character-info.html", vars)
+
+    def character_page_avatar(self, character):
+        design = self.design("gameinterface")
+        charimage = self.call("charimages.get", character, "charpage")
+        if charimage is None:
+            charimage = "/st-mg/constructor/avatars/%s-115x220.jpg" % ("female" if character.sex else "male")
+        vars = {
+            "avatar_image": charimage,
+        }
+        return self.call("design.parse", design, "character-page-avatar.html", None, vars)
+
+    def interface_character(self):
+        req = self.req()
+        character = self.character(req.user())
+        actions = []
+        self.call("character-page.actions", character, actions)
+        actions.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+        vars = {
+            "character": {
+                "html": character.html(),
+                "avatar": character.page_avatar(),
+                "name": character.name,
+                "sex": character.sex,
+                "actions": actions or None,
+            }
+        }
+        self.call("game.response_internal", "character-page.html", vars)
 
     def interface_character_form(self):
         req = self.req()

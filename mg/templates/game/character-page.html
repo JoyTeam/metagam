@@ -1,0 +1,34 @@
+<table class="charpage-layout">
+	<tr>
+		<td class="charpage-layout-avatar">
+			<div class="charpage-avatar">[%character.avatar%]</div>
+		</td>
+		[%if character.actions%]
+		<td class="charpage-layout-actions">
+			[%foreach act in character.actions%]
+				[%if act.header%]
+					<div class="charpage-header">[%act.header%]</div>
+				[%elsif act.href%]
+					<div class="charpage-action"><a href="[%act.href%]"[%if ent.target +%] target="[%ent.target%]"[%end%]>[%act.text%]</a></div>
+				[%elsif act.onclick%]
+					<div class="charpage-action"><span class="clickable" onclick="[%act.onclick%]">[%act.text%]</span></div>
+				[%end%]
+			[%end%]
+		</td>
+		[%end%]
+		<td class="charpage-layout-info">
+			<div class="charpage-name">[%character.name%]</div>
+			[%if character.params%]
+			<table class="charpage-table-info">
+				[%foreach param in character.params%]
+				<tr>
+					<td class="charpage-param-name">[%param.name%]</td>
+					<td class="charpage-param-value">[%param.value%]</td>
+				</tr>
+				[%end%]
+			</table>
+			[%end%]
+		</td>
+	</tr>
+</table>
+

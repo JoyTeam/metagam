@@ -415,9 +415,9 @@ class MoneyAdmin(Module):
             try:
                 amount = float(amount)
                 if amount <= 0:
-                    errors["amount"] = self._("Amount must be greater than 0")
+                    errors["amount"] = self._("money///Amount must be greater than 0")
                 elif currency_info is not None and amount != float(currency_info["format"] % amount):
-                    errors["amount"] = self._("Invalid amount precision")
+                    errors["amount"] = self._("money///Invalid amount precision")
             except ValueError:
                 errors["amount"] = self._("Invalid number format")
             if len(errors):

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-08-22 12:00+0300\n"
+"PO-Revision-Date: 2011-09-02 12:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -201,6 +201,9 @@ msgstr "Простое значение"
 msgid "A very long forum category title"
 msgstr "Очень длинное название раздела на форуме"
 
+msgid "Ability for players to choose images for the characters"
+msgstr "Доступ игроков к выбору образов для персонажей"
+
 msgid "Absolutely crazy signature line"
 msgstr "Абсолютно сумасшедшая строка подписи"
 
@@ -368,6 +371,9 @@ msgstr "Вы уверены, что хотите удалить этот бло�
 msgid "Are you sure want to delete this button?"
 msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
+msgid "Are you sure want to delete this image?"
+msgstr "Вы уверены, что хотите удалить это изображение?"
+
 msgid "Are you sure want to delete this object?"
 msgstr "Вы уверены, что хотите удалить этот объект?"
 
@@ -427,6 +433,9 @@ msgstr "Автопродление: выключено"
 
 msgid "Auto prolong: enabled"
 msgstr "Автопродление: включено"
+
+msgid "Available to players"
+msgstr "Доступно игрокам"
 
 msgid "Avatar"
 msgstr "Аватар"
@@ -670,6 +679,9 @@ msgstr "Персонаж %s"
 msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
+msgid "Character description"
+msgstr "Описание персонажа"
+
 msgid "Character for the game administrator"
 msgstr "Персонаж для администратора игры"
 
@@ -678,6 +690,33 @@ msgstr "Анкета персонажа"
 
 msgid "Character forms documentation"
 msgstr "Документация на анкету персонажа"
+
+msgid "Character image constructor is unavailable. No layers defined"
+msgstr "Конструктор образов персонажей недоступен. Не заданы слои"
+
+msgid "Character image dimensions on the character info page"
+msgstr "Размер образа персонажа в инфе персонажа"
+
+msgid "Character image dimensions on the ingame character page"
+msgstr "Размеры образа персонажа на внутриигровой странице персонажа"
+
+msgid "Character image layers"
+msgstr "Слои образов персонажей"
+
+msgid "Character image: {name}"
+msgstr "Образ персонажа: {name}"
+
+msgid "Character images"
+msgstr "Образы персонажей"
+
+msgid "Character images configuration"
+msgstr "Настройка образов персонажей"
+
+msgid "Character images editor"
+msgstr "Редактор образов персонажей"
+
+msgid "Character images list"
+msgstr "Список образов персонажей"
 
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
@@ -1185,6 +1224,9 @@ msgstr "Запрещено модерировать"
 msgid "Deny replying"
 msgstr "Запрещено отвечать"
 
+msgid "Deny selection for free"
+msgstr "Запретить бесплатную установку"
+
 #, python-format
 msgid "Depends on: %s"
 msgstr "Зависит от: %s"
@@ -1378,6 +1420,9 @@ msgstr "E-mail модератора проектов"
 msgid "Email of the request auction moderator"
 msgstr "E-mail модератора аукциона заявок"
 
+msgid "Empty dimension encountered"
+msgstr "Пустые размеры"
+
 msgid "Empty hostname"
 msgstr "Пустое имя хоста"
 
@@ -1395,6 +1440,9 @@ msgstr "Включить панель слева от главного фрей�
 
 msgid "Enable panel to the right of the main frame (code 'main-right')"
 msgstr "Включить панель справа от главного фрейма (код 'main-right')"
+
+msgid "Enabled layered character images"
+msgstr "Послойные образы персонажей включены"
 
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
@@ -1609,6 +1657,9 @@ msgstr "Событие"
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
 
+msgid "Every character must select an image after registration (prohibit gameplay with default avatar)"
+msgstr "Каждый персонаж после регистрации должен выбрать образ (запретить игру с образом по умолчанию)"
+
 msgid "Everybody"
 msgstr "Все"
 
@@ -1679,6 +1730,9 @@ msgstr "Найти наиболее популярные браузеры"
 
 msgid "Find user"
 msgstr "Найти пользователя"
+
+msgid "First image selection after registration is free"
+msgstr "После регистрации персонажа выбор первого образа предоставляется бесплатно"
 
 msgid "Float '{val}' has no attributes"
 msgstr "У числа \"{val}\" нет атрибутов"
@@ -2095,6 +2149,9 @@ msgstr "Ошибка формата изображения [img:%s]"
 msgid "Image [img:%s] overflow error"
 msgstr "Ошибка переполнения в изображении [img:%s]"
 
+msgid "Image editor"
+msgstr "Редактор изображения"
+
 msgid "Image format must be GIF, JPEG or PNG"
 msgstr "Изображение должно быть в формате GIF, JPEG или PNG"
 
@@ -2110,11 +2167,18 @@ msgstr "Изображение должно быть JPEG, PNG или GIF"
 msgid "Image type"
 msgstr "Тип изображения"
 
+msgid "Images"
+msgstr "Изображения"
+
 msgid "Images in the signature"
 msgstr "Изображения в подписи"
 
 msgid "Images in the signature for {period}"
 msgstr "Изображения в подписи на {period_a}"
+
+#, python-format
+msgid "Images: %s"
+msgstr "Изображения: %s"
 
 msgid "Implemented"
 msgstr "Реализовано"
@@ -2227,6 +2291,10 @@ msgstr "Неверный формат даты и времени"
 
 msgid "Invalid delete URI"
 msgstr "Неверный URI для удаления"
+
+#, python-format
+msgid "Invalid dimensions format: %s"
+msgstr "Неверный формат размера: %s"
 
 msgid "Invalid domain name"
 msgstr "Неверное имя домена"
@@ -2370,6 +2438,12 @@ msgstr "Запуск вашей игры"
 
 msgid "Law importance"
 msgstr "Важность законов"
+
+msgid "Layer name"
+msgstr "Название слоя"
+
+msgid "Layers editor"
+msgstr "Редактор слоёв"
 
 msgid "Layout scheme"
 msgstr "Схема размещения"
@@ -2647,8 +2721,15 @@ msgstr "Максимальная длина - 5 символов"
 msgid "Maximal number of characters per player allowed"
 msgstr "Максимальное количество разрешённых персонажей на игрока"
 
+#, python-format
+msgid "Maximal number of dimensions is %d"
+msgstr "Максимальное количество размеров - %d"
+
 msgid "Maximal number of smiles in the signature"
 msgstr "Максимальное количество смайликов в подписи"
+
+msgid "Maximal size is 460x880"
+msgstr "Максимальный размер - 460x880"
 
 msgid "Maximal supported precision is 4"
 msgstr "Максимальная поддерживаемая точность - 4"
@@ -2728,6 +2809,9 @@ msgstr "Минимальное количество точек - 3"
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
 
+msgid "Minimal size is 32x32"
+msgstr "Минимальный размер - 32x32"
+
 msgid "Minimal step of payment in this currency is {min_step:f} roubles (1 {currency} = {rate} RUB, precision = {precision}). It is too big for micropayments. Lower you currency rate"
 msgstr "Минимальный шаг платежа в этой валюте получается {min_step:f} руб (1 {currency} = {rate} руб, точность = {precision}). Это слишком много для микроплатежей. Снизьте стоимость единицы валюты"
 
@@ -2743,6 +2827,9 @@ msgstr "Минимальное значение - 1"
 
 msgid "Minimal value is 2"
 msgstr "Минимальное значение - 2"
+
+msgid "Missing image"
+msgstr "Изображение отсутствует"
 
 msgid "Moderation"
 msgstr "Модерация"
@@ -2875,8 +2962,14 @@ msgstr "Новый адрес e-mail"
 msgid "New field"
 msgstr "Новое поле"
 
+msgid "New image"
+msgstr "Новое изображение"
+
 msgid "New invitation"
 msgstr "Новое приглашение"
+
+msgid "New layer"
+msgstr "Новый слой"
 
 msgid "New library page"
 msgstr "Новая страница библиотеки"
@@ -3624,8 +3717,20 @@ msgstr "Заменить"
 msgid "Replace '???' with correct endings"
 msgstr "Замените '???' правильным окончанием"
 
+msgid "Replace all images"
+msgstr "Заменить все изображения"
+
+msgid "Replace images"
+msgstr "Замена изображений"
+
 msgid "Replace location image (if necessary)"
 msgstr "Замена изображение локации (если необходимо)"
+
+msgid "Replace nothing"
+msgstr "Ничего не заменять"
+
+msgid "Replace specific images"
+msgstr "Заменить отдельные изображения"
 
 msgid "Replies"
 msgstr "Ответов"
@@ -4183,6 +4288,9 @@ msgstr "Баварские фермеры отказались уступать 
 msgid "Space"
 msgstr "Космос"
 
+msgid "Specific price"
+msgstr "Особенная цена"
+
 msgid "Specify CSS class"
 msgstr "Укажите CSS-класс"
 
@@ -4262,6 +4370,9 @@ msgstr "Хранилище"
 
 msgid "Storage documentation"
 msgstr "Документация на хранилище"
+
+msgid "Store character images in these dimensions (comma separated)"
+msgstr "Сохранять образы персонажей в этих размерах (разделяются запятыми)"
 
 msgid "Strike"
 msgstr "Зачёркивание"
@@ -4408,6 +4519,9 @@ msgstr "Эта валюта продаётся за реальные деньг�
 
 msgid "This currency name is busy"
 msgstr "Это название валюты занято"
+
+msgid "This dimension must be listed in the list of available dimensions above"
+msgstr "Размер должен быть перечислен в списке доступных размеров выше"
 
 msgid "This domain is a subject to the manual check. This may take up to 3 days"
 msgstr "Этот домен подлежит ручной проверке. Это может занять до 3 дней"
@@ -4830,6 +4944,12 @@ msgstr "Регистрация пользователя"
 
 msgid "Valid XHTML doctype required"
 msgstr "Требуется правильный XHTML doctype"
+
+msgid "Valid formats are: PNG, GIF, JPEG"
+msgstr "Допустимые форматы: PNG, GIF, JPEG"
+
+msgid "Valid formats are: PNG, JPEG, GIF"
+msgstr "Допустимые форматы: PNG, GIF, JPEG"
 
 msgid "Values precision (number of digits after decimal point)"
 msgstr "Точность значений (количество разрядов после десятичной точки)"
@@ -5329,6 +5449,57 @@ msgstr "Торговля"
 msgid "channel///World"
 msgstr "Мир"
 
+msgid "charimage///Construct character image"
+msgstr "Создать образ персонажа"
+
+msgid "charimage///Default female image"
+msgstr "Женский образ по умолчанию"
+
+msgid "charimage///Default male image"
+msgstr "Мужской образ по умолчанию"
+
+msgid "charimage///Image"
+msgstr "Образ"
+
+msgid "charimage///Image {width}x{height}"
+msgstr "Образ {width}x{height}"
+
+msgid "charimage///Price for image change"
+msgstr "Цена за смену образа"
+
+msgid "charimage///Price for this image"
+msgstr "Цена за этот образ"
+
+msgid "charimage///Select"
+msgstr "Установить"
+
+msgid "charimage///Select a valid image"
+msgstr "Выберите образ"
+
+msgid "charimage///Select character image"
+msgstr "Выбрать образ персонажа"
+
+msgid "charimage///user constructed"
+msgstr "созданный пользователем"
+
+msgid "charimages///Are you sure want to delete this image?"
+msgstr "Вы уверены, что хотите удалить этот образ?"
+
+msgid "charimages///Are you sure want to delete this layer?"
+msgstr "Вы уверены, что хотите удалить этот слой?"
+
+msgid "charimages///Image name"
+msgstr "Название образа"
+
+msgid "charimages///Images configuration"
+msgstr "Конфигурация образов"
+
+msgid "charimages///Images editor"
+msgstr "Редактор образов"
+
+msgid "charimages///New image"
+msgstr "Новый образ"
+
 msgid "chat"
 msgstr "чат"
 
@@ -5392,6 +5563,9 @@ msgstr "войти"
 msgid "external"
 msgstr "внешняя"
 
+msgid "female///F"
+msgstr "Ж"
+
 msgid "female///has gone"
 msgstr "ушла"
 
@@ -5416,6 +5590,9 @@ msgstr "забыли ваш пароль?"
 
 msgid "forum"
 msgstr "форум"
+
+msgid "free"
+msgstr "бесплатно"
 
 msgid "game"
 msgstr "игра"
@@ -5453,6 +5630,9 @@ msgstr "<strong>{0}</strong> в {1}"
 msgid "ignore"
 msgstr "игнорировать"
 
+msgid "images"
+msgstr "изображения"
+
 msgid "in the undefined location"
 msgstr "в неопределённой локации"
 
@@ -5479,6 +5659,9 @@ msgstr "вход"
 
 msgid "log out"
 msgstr "выход"
+
+msgid "male///M"
+msgstr "М"
 
 msgid "male///has gone"
 msgstr "ушёл"
@@ -5517,9 +5700,18 @@ msgstr "разрешить"
 msgid "moderation///reject"
 msgstr "отклонить"
 
+msgid "money///Amount must be greater than 0"
+msgstr "Сумма должна быть больше 0"
+
+msgid "money///Invalid amount precision"
+msgstr "Неверная точность суммы"
+
 #, python-format
 msgid "money///buy %s"
 msgstr "купить %s"
+
+msgid "money///free"
+msgstr "бесплатно"
 
 msgid "money///open history"
 msgstr "открыть историю"
@@ -5954,6 +6146,12 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Select"
+#~ msgstr "Выбрать"
+#~ msgid "first time free"
+#~ msgstr "первый раз бесплатно"
+#~ msgid "Select at least one sex"
+#~ msgstr "Выберите, как минимум, один пол"
 #~ msgid "Error storing object: %s"
 #~ msgstr "Ошибка при сохранении объекта: %s"
 #~ msgid "Premium"

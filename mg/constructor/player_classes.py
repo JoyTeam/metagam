@@ -26,6 +26,22 @@ class DBPlayerList(CassandraObjectList):
         kwargs["cls"] = DBPlayer
         CassandraObjectList.__init__(self, *args, **kwargs)
 
+class DBCharImage(CassandraObject):
+    _indexes = {}
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharImage-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBCharImage._indexes
+
+class DBCharImageList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharImage-"
+        kwargs["cls"] = DBCharImage
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
 class DBCharacter(CassandraObject):
     _indexes = {
         "created": [[], "created"],
@@ -123,6 +139,14 @@ class Character(Module):
         except AttributeError:
             self._db_character = self.obj(DBCharacter, self.uuid)
             return self._db_character
+
+    @property
+    def db_charimage(self):
+        try:
+            return self._db_charimage
+        except AttributeError:
+            self._db_charimage = self.obj(DBCharImage, self.uuid)
+            return self._db_charimage
 
     @property
     def valid(self):
@@ -352,6 +376,13 @@ class Character(Module):
         except AttributeError:
             self._info_avatar = self.call("character.info-avatar", self)
             return self._info_avatar
+
+    def page_avatar(self):
+        try:
+            return self._page_avatar
+        except AttributeError:
+            self._page_avatar = self.call("character.page-avatar", self)
+            return self._page_avatar
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

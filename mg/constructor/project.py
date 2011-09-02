@@ -66,6 +66,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.design.SocioInterface", "mg.constructor.design.SocioInterfaceAdmin"])
             if self.conf("module.storage"):
                 lst.extend(["mg.constructor.storage.StorageAdmin"])
+            if self.conf("module.charimages"):
+                lst.extend(["mg.constructor.charimages.CharImagesAdmin", "mg.constructor.charimages.CharImages"])
         return lst
 
     def modules_list(self, modules):
@@ -78,6 +80,11 @@ class ConstructorProject(Module):
             "id": "storage",
             "name": self._("Static storage"),
             "description": self._("Server storage of static objects"),
+        })
+        modules.append({
+            "id": "charimages",
+            "name": self._("Character images"),
+            "description": self._("Ability for players to choose images for the characters"),
         })
 
     def project_title(self):

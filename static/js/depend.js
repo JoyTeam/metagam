@@ -2,6 +2,7 @@ var modules_loaded;
 var modules_loading;
 var modules_waiting;
 var depend_counter = 0;
+var admin_root = '';
 
 if (!modules_loaded) {
 

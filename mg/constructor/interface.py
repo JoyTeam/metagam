@@ -101,6 +101,7 @@ class Interface(ConstructorModule):
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
         self.rhook("game.response_internal", self.game_response_internal)
+        self.rhook("game.parse_internal", self.game_parse_internal)
         self.rhook("game.info", self.game_info)
         self.rhook("game.error", self.game_error)
         self.rhook("game.internal_form", self.game_internal_form)
@@ -268,10 +269,14 @@ class Interface(ConstructorModule):
         content = self.call("design.parse", design, template, content, vars)
         self.call("design.response", design, "external.html", content, vars)
 
-    def game_response_internal(self, template, vars, content=""):
+    def game_response_internal(self, template, vars, content=None):
+        content = self.game_parse_internal(template, vars, content)
         design = self.design("gameinterface")
-        content = self.call("design.parse", design, template, content, vars)
         self.call("design.response", design, "internal.html", content, vars)
+
+    def game_parse_internal(self, template, vars, content=None):
+        design = self.design("gameinterface")
+        return self.call("design.parse", design, template, content, vars)
 
     def game_cabinet(self, player):
         characters = []

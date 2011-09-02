@@ -502,6 +502,14 @@ class CassandraObject(object):
             self.data[key] = value
             self.dirty = True
 
+    def clear(self):
+        """
+        Clear all data
+        """
+        self.index_values()
+        self.data = {}
+        self.dirty = True
+
     def delkey(self, key):
         """
         Delete key

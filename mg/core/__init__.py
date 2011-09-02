@@ -315,8 +315,11 @@ class Config(object):
         with self.app().config_lock:
             if group not in self._config:
                 self._load_groups([group])
-            del self._config[group][name]
-            self._modified.add(group)
+            try:
+                del self._config[group][name]
+                self._modified.add(group)
+            except KeyError:
+                pass
 
     def store(self):
         if len(self._modified):

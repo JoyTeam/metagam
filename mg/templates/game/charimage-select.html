@@ -1,0 +1,9 @@
+[%layout%]
+<script type="text/javascript">
+wait(['charimages'], function() {
+	[%foreach img in images%]
+	CharImages.lst.push({id: '[%img.id%]', name: '[%img.name%]', description: '[%img.description%]', image: '[%img.image%]', price: '[%img.price%]'});
+	[%end%]
+	[%if image%]CharImages.find('[%image%]');[%else%]CharImages.select(0);[%end%]
+});
+</script>
