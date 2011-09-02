@@ -419,12 +419,14 @@ class DomainsAdmin(Module):
         self.rhook("domains.money_unlock", self.money_unlock)
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("ext-admin-domains.unassign", self.ext_unassign, priv="domains.unassign")
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
         perms.append({"id": "domains.dns", "name": self._("Domains: DNS settings")})
         perms.append({"id": "domains.prices", "name": self._("Domains: registration prices")})
         perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
+        perms.append({"id": "domains.unassign", "name": self._("Domains: unassigning")})
 
     def money_description_domain_reg(self):
         return {
@@ -659,6 +661,23 @@ class DomainsAdmin(Module):
                     "header": [self._("Domain"), self._("Registration"), self._("Project")],
                     "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
                 })
+
+    def ext_unassign(self):
+        req = self.req()
+        try:
+            project = self.int_app().obj(Project, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        domain = project.get("domain")
+        if domain:
+            try:
+                obj = self.main_app().obj(Domain, domain)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            project.delkey("domain")
+            obj.remove()
+            project.store()
+        self.call("admin.redirect", "constructor/project-dashboard/%s" % project.uuid)
 
 class DomainWizard(Wizard):
     def new(self, **kwargs):

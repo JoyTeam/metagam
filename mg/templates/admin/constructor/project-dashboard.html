@@ -30,7 +30,7 @@
 	[%if project.title_en%]<tr><td class="header header-nowrap">[%TitleEn%]</td><td><div class="moderated">[%project.title_en%]</div></td></tr>[%end%]
 	[%if project.title_code%]<tr><td class="header header-nowrap">[%TitleCode%]</td><td>[%project.title_code%]</td></tr>[%end%]
 	<tr><td class="header header-nowrap">[%GameDescription%]</td><td><div class="moderated" style="font-weight: normal">[%project.description%]</div></td></tr>
-	<tr><td class="header header-nowrap">[%Domain%]</td><td><div class="moderated"><a href="http://www.[%project.domain%]" target="_blank">[%project.domain%]</a></div></td></tr>
+	<tr><td class="header header-nowrap">[%Domain%]</td><td><div class="moderated"><a href="http://www.[%project.domain%]" target="_blank">[%project.domain%]</a>[%if may_unassign and project.domain +%] &bull; <hook:admin.link confirm="[%ConfirmUnassign%]" href="domains/unassign/[%project.uuid%]" title="[%unassign%]" />[%end%]</div></td></tr>
 	<tr><td class="header header-nowrap">[%Logo%]</td><td>[%if project.logo%]<img src="[%project.logo%]" alt="" />[%end%]</td></tr>
 [%end%]
 [%for param in project.params%]<tr><td class="header header-nowrap">[%param.name%]</td><td>[%if param.moderated%]<div class="moderated">[%end%][%param.value%][%if param.moderated%]</div>[%end%]</td></tr>[%end%]

@@ -178,6 +178,9 @@ class ProjectDashboard(Module):
             "PublishedAt": self._("This game is published at"),
             "GameInactive": self._("This game is inactive yet"),
             "GameSetup": self._("This game is being set up by its administrator"),
+            "unassign": self._("domain///unassign"),
+            "ConfirmUnassign": self._("domain///Are you sure want to unassign domain from this game?"),
+            "may_unassign": req.has_access("domains.unassign"),
         }
         project = getattr(app, "project", None)
         if project:

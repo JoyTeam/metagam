@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-01 15:13+0300\n"
+"PO-Revision-Date: 2011-09-02 12:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1313,6 +1313,9 @@ msgstr "Домены: персональные данные администра
 
 msgid "Domains: registration prices"
 msgstr "Домены: цены на регистрацию"
+
+msgid "Domains: unassigning"
+msgstr "Домены: отсоединение"
 
 msgid "Dossier"
 msgstr "Досье"
@@ -5373,6 +5376,12 @@ msgstr "обсуждение на форуме"
 
 msgid "documentation"
 msgstr "документация"
+
+msgid "domain///Are you sure want to unassign domain from this game?"
+msgstr "Вы уверены, что хотите отсоединить домен от этой игры?"
+
+msgid "domain///unassign"
+msgstr "отсоединить"
 
 msgid "don't want it anymore"
 msgstr "больше не хочу"
