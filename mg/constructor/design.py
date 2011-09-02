@@ -1141,8 +1141,11 @@ class DesignMod(Module):
         else:
             try:
                 return self.call("web.parse_layout", "%s/%s/%s" % (design_type, self.call("l10n.lang"), template), vars)
-            except TemplateException:
-                return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
+            except TemplateException as e:
+                try:
+                    return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
+                except TemplateException:
+                    raise e
 
     def response(self, design, template, content, vars, design_type="game"):
         self.call("web.setup_design", vars)

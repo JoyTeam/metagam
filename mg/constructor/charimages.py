@@ -23,6 +23,47 @@ class CharImages(ConstructorModule):
         self.rhook("ext-charimage.select", self.charimage_select, priv="logged")
         if self.conf("charimages.layers"):
             self.rhook("ext-charimage.construct", self.charimage_construct, priv="logged")
+        self.rhook("library-grp-index.pages", self.library_index_pages)
+        self.rhook("library-page-charimages.content", self.library_page_charimages)
+
+    def library_index_pages(self, pages):
+        pages.append({"page": "charimages", "order": 30})
+
+    def library_page_charimages(self):
+        vars = {
+        }
+        price = self.conf("charimages.price")
+        currency = self.conf("charimages.currency")
+        images = self.call("charimages.for-sex", 0)
+        images.extend(self.call("charimages.for-sex", 1))
+        images = [img for img in images if img["info"].get("available")]
+        if images:
+            vars["images"] = True
+            for img in images:
+                p = img["info"].get("price")
+                c = img["info"].get("currency")
+                if p is None:
+                    p = price
+                    c = currency
+                if p:
+                    vars["paid"] = True
+                    if not img["info"].get("deny_free") and self.conf("charimages.first-free", True):
+                        vars["first_free"] = True
+                elif not img["info"].get("deny_free"):
+                    vars["free"] = True
+        if self.conf("charimages.layers"):
+            vars["layers"] = True
+            if price:
+                vars["paid"] = True
+                vars["price"] = self.call("money.price-html", price, currency)
+        return {
+            "code": "charimages",
+            "title": self._("Character images"),
+            "keywords": self._("character images"),
+            "description": self._("This page describes character images setting rules"),
+            "content": self.call("socio.parse", "library-charimages.html", vars),
+            "parent": "index",
+        }
 
     def money_description_charimage(self):
         return {
@@ -57,7 +98,9 @@ class CharImages(ConstructorModule):
         return uri
 
     def charpage_actions(self, character, actions):
-        if self.call("charimages.for-sex", character.sex):
+        images = self.call("charimages.for-sex", character.sex)
+        images = [img for img in images if img["info"].get("available")]
+        if images:
             actions.append({"href": "/charimage/select", "text": self._("charimage///Select character image"), "order": 10})
         if self.conf("charimages.layers"):
             actions.append({"href": "/charimage/construct", "text": self._("charimage///Construct character image"), "order": 11})
@@ -677,10 +720,11 @@ class CharImagesAdmin(ConstructorModule):
                 price = self.conf("charimages.price")
                 currency = self.conf("charimages.currency")
             tags = []
-            if price:
-                tags.append(self.call("money.price-html", price, currency))
-            if (not price or self.conf("charimages.first-free", True)) and not info.get("deny_free"):
-                tags.append(self._("money///free"))
+            if info.get("available"):
+                if price:
+                    tags.append(self.call("money.price-html", price, currency))
+                if (not price or self.conf("charimages.first-free", True)) and not info.get("deny_free"):
+                    tags.append(self._("money///free"))
             row.extend([
                 '<br />'.join(tags),
                 '<hook:admin.link href="charimages/editor/%s" title="%s" />' % (uuid, self._("edit")),
