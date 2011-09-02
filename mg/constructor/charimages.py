@@ -21,7 +21,8 @@ class CharImages(ConstructorModule):
         self.rhook("character-page.actions", self.charpage_actions)
         self.rhook("money-description.charimage", self.money_description_charimage)
         self.rhook("ext-charimage.select", self.charimage_select, priv="logged")
-        self.rhook("ext-charimage.construct", self.charimage_construct, priv="logged")
+        if self.conf("charimages.layers"):
+            self.rhook("ext-charimage.construct", self.charimage_construct, priv="logged")
 
     def money_description_charimage(self):
         return {
@@ -164,7 +165,7 @@ class CharImages(ConstructorModule):
         vars = {
             "width": width,
             "height": height,
-            "Select": self._("Save"),
+            "Select": self._("charimage///Select"),
             "layers": [],
         }
         sex_key = "sex%d" % character.sex
@@ -220,7 +221,7 @@ class CharImages(ConstructorModule):
         if price:
             vars["price"] = self.call("money.price-html", price, currency)
         else:
-            vars["price"] = self._("free")
+            vars["price"] = self._("money///free")
         # constructing new character image
         if req.ok() and all_selected:
             image = {}
@@ -232,7 +233,7 @@ class CharImages(ConstructorModule):
                     layer = Image.open(cStringIO.StringIO(data))
                     layer.load()
                     image[size].paste(layer.convert("RGB"), (0, 0), layer.convert("RGBA"))
-            ok = True
+            ok = False
             # money
             if not character.money.debit(price, currency, "charimage", name=self._("charimage///user constructed")):
                 vars["error"] = self.call("money.not-enough-funds", currency, character=character)
@@ -347,8 +348,8 @@ class CharImagesAdmin(ConstructorModule):
             dimensions = re_dimensions.split(req.param("dimensions"))
             config = self.app().config_updater()
             errors = {}
-            # require
-            config.set("charimages.require", True if req.param("require") else False)
+#            # require
+#            config.set("charimages.require", True if req.param("require") else False)
             # layers
             config.set("charimages.layers", True if req.param("layers") else False)
             # default images
@@ -441,7 +442,7 @@ class CharImagesAdmin(ConstructorModule):
         fields = [
             {"name": "default0", "label": self._("charimage///Default male image"), "type": "combo", "values": [(ent["id"], ent["info"]["name"]) for ent in images0], "value": self.conf("charimages.default0")},
             {"name": "default1", "label": self._("charimage///Default female image"), "type": "combo", "values": [(ent["id"], ent["info"]["name"]) for ent in images1], "value": self.conf("charimages.default1"), "inline": True},
-            {"name": "require", "label": self._("Every character must select an image after registration (prohibit gameplay with default avatar)"), "checked": self.conf("charimages.require"), "type": "checkbox"},
+#            {"name": "require", "label": self._("Every character must select an image after registration (prohibit gameplay with default avatar)"), "checked": self.conf("charimages.require"), "type": "checkbox"},
             {"name": "dimensions", "label": self._("Store character images in these dimensions (comma separated)"), "value": ", ".join(["%dx%d" % (d["width"], d["height"]) for d in dimensions])},
             {"name": "dim_charinfo", "label": self._("Character image dimensions on the character info page"), "value": self.dim_charinfo()},
             {"name": "dim_charpage", "label": self._("Character image dimensions on the ingame character page"), "value": self.dim_charpage()},
@@ -628,9 +629,9 @@ class CharImagesAdmin(ConstructorModule):
                 self.call("admin.redirect", "charimages/editor")
             fields = [
                 {"name": "name", "label": self._("charimages///Image name"), "value": obj.get("name")},
+                {"name": "description", "label": self._("Character image description"), "type": "textarea", "value": obj.get("description")},
                 {"name": "sex0", "label": self._("Male"), "type": "checkbox", "checked": obj.get("sex0")},
                 {"name": "sex1", "label": self._("Female"), "type": "checkbox", "checked": obj.get("sex1"), "inline": True},
-                {"name": "description", "label": self._("Character description"), "type": "textarea", "value": obj.get("description")},
                 {"name": "available", "label": self._("Available to players"), "type": "checkbox", "checked": obj.get("available")},
                 {"name": "override_price", "label": self._("Specific price"), "checked": True if obj.get("price") is not None else False, "type": "checkbox", "condition": "[available]"},
                 {"name": "deny_free", "label": self._("Deny selection for free"), "checked": obj.get("deny_free"), "type": "checkbox", "inline": True, "condition": "[available]"},

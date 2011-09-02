@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-02 12:13+0300\n"
+"PO-Revision-Date: 2011-09-02 15:25+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -679,9 +679,6 @@ msgstr "Персонаж %s"
 msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
-msgid "Character description"
-msgstr "Описание персонажа"
-
 msgid "Character for the game administrator"
 msgstr "Персонаж для администратора игры"
 
@@ -693,6 +690,9 @@ msgstr "Документация на анкету персонажа"
 
 msgid "Character image constructor is unavailable. No layers defined"
 msgstr "Конструктор образов персонажей недоступен. Не заданы слои"
+
+msgid "Character image description"
+msgstr "Описание образа персонажа"
 
 msgid "Character image dimensions on the character info page"
 msgstr "Размер образа персонажа в инфе персонажа"
@@ -1356,6 +1356,9 @@ msgstr "Домены: персональные данные администра
 msgid "Domains: registration prices"
 msgstr "Домены: цены на регистрацию"
 
+msgid "Domains: unassigning"
+msgstr "Домены: отсоединение"
+
 msgid "Dossier"
 msgstr "Досье"
 
@@ -1656,9 +1659,6 @@ msgstr "Событие"
 
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
-
-msgid "Every character must select an image after registration (prohibit gameplay with default avatar)"
-msgstr "Каждый персонаж после регистрации должен выбрать образ (запретить игру с образом по умолчанию)"
 
 msgid "Everybody"
 msgstr "Все"
@@ -2720,6 +2720,7 @@ msgstr "Максимальная длина - 5 символов"
 
 msgid "Maximal message length - {max} characters ({sent} sent)"
 msgstr "Максимальная длина сообщения - {max} символов (отправлено: {sent})"
+
 msgid "Maximal number of characters per player allowed"
 msgstr "Максимальное количество разрешённых персонажей на игрока"
 
@@ -6154,6 +6155,12 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid ""
+#~ "Every character must select an image after registration (prohibit "
+#~ "gameplay with default avatar)"
+#~ msgstr ""
+#~ "Каждый персонаж после регистрации должен выбрать образ (запретить игру с "
+#~ "образом по умолчанию)"
 #~ msgid "Select"
 #~ msgstr "Выбрать"
 #~ msgid "first time free"
