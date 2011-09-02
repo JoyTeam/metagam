@@ -278,8 +278,11 @@ class CharImages(ConstructorModule):
                     image[size].paste(layer.convert("RGB"), (0, 0), layer.convert("RGBA"))
             ok = False
             # money
-            if not character.money.debit(price, currency, "charimage", name=self._("charimage///user constructed")):
-                vars["error"] = self.call("money.not-enough-funds", currency, character=character)
+            if price:
+                if not character.money.debit(price, currency, "charimage", name=self._("charimage///user constructed")):
+                    vars["error"] = self.call("money.not-enough-funds", currency, character=character)
+                else:
+                    ok = True
             else:
                 ok = True
             # storing
