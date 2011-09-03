@@ -1061,7 +1061,7 @@ class Auth(ConstructorModule):
                 self.error("Hacking attempt. Player %s requested access to character %s", player.uuid, req.args)
                 self.call("web.forbidden")
             if character.restraints.get("ban"):
-                self.call("game.error", self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"]))
+                self.call("game.error", self._("You are banned till %s") % self.call("l10n.time_local", character.restraints["ban"]["till"]))
             self.call("stream.login", session.uuid, character.uuid)
         self.call("web.post_redirect", "/", {"session": session.uuid})
 
