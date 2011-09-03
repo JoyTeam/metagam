@@ -1115,6 +1115,10 @@ class Money(Module):
                 valid = False
                 if errors is not None and amount_field:
                     errors[amount_field] = self._("Amount must be greater than 0")
+            elif amount >= 1000000000:
+                valid = False
+                if errors is not None and amount_field:
+                    errors[amount_field] = self._("Amount must be less than 1000000000")
             elif currency_info is not None and amount != float(currency_info["format"] % amount):
                 valid = False
                 if errors is not None and amount_field:

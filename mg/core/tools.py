@@ -13,6 +13,7 @@ re_valid_int = re.compile(r'^-?[0-9]+$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 re_frac_part = re.compile(r'\..*?[1-9]')
+re_exp_format = re.compile(r'^(\d+|\d+\.\d+)e([+-]\d+)$')
 re_remove_frac = re.compile(r'\..*')
 
 def urldecode(str):
@@ -156,7 +157,7 @@ def nn(num):
     if type(num) == float:
         num = '%f' % num
     num = str(num)
-    if re_frac_part.search(num):
+    if re_frac_part.search(num) or re_exp_format.match(num):
         return float(num)
     return int(re_remove_frac.sub('', num))
 
