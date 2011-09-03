@@ -421,6 +421,10 @@ msgstr "Сумма"
 msgid "Amount must be greater than 0"
 msgstr "Количество должно быть больше 0"
 
+#, fuzzy
+msgid "Amount must be less than 1000000000"
+msgstr "Количество должно быть больше 0"
+
 msgid ""
 "An error message is information displayed when an unexpected condition "
 "occurs, usually on a computer or other device. On modern operating systems "
