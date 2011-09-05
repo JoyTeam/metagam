@@ -715,13 +715,11 @@ class Chat(ConstructorModule):
                 channel_id = "wld"
             else:
                 channel_id = channel["id"]
-            print "loading messages from channel %s" % channel_id
             # old messages
             msgs = self.objlist(DBChatMessageList, query_index="channel", query_equal=channel_id, query_reversed=True, query_limit=old_messages_limit)
             msgs.load(silent=True)
             for msg in msgs:
                 messages.append(msg)
-                print " - message: %s" % msg.data
             # roster
             if channel.get("roster"):
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
@@ -744,7 +742,6 @@ class Chat(ConstructorModule):
                 "html": msg.get("html"),
                 "priv": msg.get("priv"),
             } for msg in messages]
-            print "sending msg list: %s" % messages
             self.call("stream.packet", syschannel, "chat", "msg_list", messages=messages, scroll_disable=True)
         self.call("stream.character", character, "chat", "scroll_bottom")
         self.call("stream.character", character, "chat", "open_default_channel")
