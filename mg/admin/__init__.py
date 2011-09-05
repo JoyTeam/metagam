@@ -70,7 +70,7 @@ class AdminInterface(Module):
             leftmenu["children"] = wizards + leftmenu["children"]
         if not leftmenu:
             req = self.req()
-            if not req.has_access("project.admin"):
+            if not self.call("auth.permissions", req.user()):
                 self.call("web.forbidden")
             leftmenu = []
         else:
