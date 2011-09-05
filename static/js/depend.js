@@ -21,7 +21,7 @@ function wait(m, c)
 	if (entry_ready(wait_entry)) {
 		entry_run(wait_entry);
 	} else {
-		try { debug_log('waiting for modules ' + wait_entry.modules.join(', ')); } catch(e) {}
+		try { debug_log('modules: waiting for ' + wait_entry.modules.join(', ')); } catch(e) {}
 		modules_waiting.push(wait_entry);
 	}
 }
@@ -35,7 +35,7 @@ function entry_ready(wait_entry)
 		var module = wait_entry.modules[i];
 		if (!modules_loaded[module]) {
 			if (!modules_loading[module]) {
-				try { debug_log('loading module ' + module); } catch (e) {}
+				try { debug_log('modules: loading ' + module); } catch (e) {}
 				modules_loading[module] = true;
 				var hd = document.getElementsByTagName('head')[0];
 				var newScript = document.createElement('script');
@@ -59,7 +59,7 @@ function entry_run(wait_entry)
 
 function loaded(module)
 {
-	try { debug_log('module ' + module + ' loaded'); } catch (e) {}
+	try { debug_log('modules: loaded ' + module); } catch (e) {}
 	modules_loaded[module] = true;
 	for (var j = modules_waiting.length - 1; j >= 0; j--) {
 		var wait_entry = modules_waiting[j];
