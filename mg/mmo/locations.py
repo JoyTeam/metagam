@@ -647,7 +647,7 @@ class Locations(ConstructorModule):
         for dest in ["up", "down", "left", "right"]:
             loc_id = location.db_location.get("loc_%s" % dest)
             if loc_id:
-                arrows["img_%s" % dest] = "%s/location-%s.png" % (design.get("uri"), dest) if design.get("files").get("location-%s.png" % dest) else "/st/game/default-interface/%s.png" % dest
+                arrows["img_%s" % dest] = "%s/location-%s.png" % (design.get("uri"), dest) if design and design.get("files").get("location-%s.png" % dest) else "/st/game/default-interface/%s.png" % dest
                 arrows["loc_%s" % dest] = loc_id
         vars["location_arrows"] = arrows
         raise Hooks.Return(self.call("design.parse", design, "location-arrows.html", None, vars))

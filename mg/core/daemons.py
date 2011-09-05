@@ -211,7 +211,7 @@ class DaemonsManager(Module):
                         st = self.status(daemon)
                         inst = self.app().inst
                         if st.get("host") != inst.int_host or st.get("port") != inst.int_port:
-                            self.error("Daemon %s.%s running at the unexpected node %s:%s. Aborting our instance", cls, daemon.id, st.get("host"), st.get("port"))
+                            self.error("Daemon %s.%s running at the unexpected node %s:%s (my socket it %s:%s). Aborting our instance", cls, daemon.id, st.get("host"), st.get("port"), inst.int_host, inst.int_port)
                             try:
                                 del running[daemon.id]
                             except KeyError:
