@@ -3,7 +3,7 @@ import re
 import mimetypes
 
 re_non_alphanumeric = re.compile(r'[^\w\-\.\(\)]')
-re_find_extension = re.compile(r'^(.*)\.(.*)$')
+re_find_extension = re.compile(r'^(.*)(\..*)$')
 re_del = re.compile(r'^del\/(\S+)$')
 
 class DBStaticObject(CassandraObject):
@@ -84,8 +84,6 @@ class StorageAdmin(Module):
                 ob = req.param_detail("ob")
                 if ob is None or not ob.value:
                     errors["ob"] = self._("Upload your static object")
-                elif len(ob.value) > 3 * 1024 * 1024:
-                    errors["ob"] = self._("Maximal file size &mdash; 3 megabytes")
                 else:
                     try:
                         filename = ob.filename.decode("utf-8")
@@ -101,6 +99,17 @@ class StorageAdmin(Module):
                         else:
                             basename = filename
                         filename = basename + ext
+                    else:
+                        m = re_find_extension.match(filename)
+                        if m:
+                            ext = m.group(2)
+                    # size limits
+                    if ext == ".swf":
+                        max_size = 20
+                    else:
+                        max_size = 3
+                    if len(ob.value) > max_size * 1024 * 1024:
+                        errors["ob"] = self._("Maximal file size for this file type &mdash; %d megabytes") % max_size
                 if errors:
                     self.call("web.response_json_html", {"success": False, "errors": errors})
                 uri = self.call("cluster.static_upload", "userstore", None, ob.type, ob.value, filename)
@@ -109,6 +118,7 @@ class StorageAdmin(Module):
                 obj.set("filename_lower", filename.lower())
                 obj.set("created", self.now())
                 obj.set("content_type", ob.type)
+                obj.set("size", len(ob.value))
                 obj.set("uri", uri)
                 obj.store()
                 self.call("admin.redirect", "storage/static")
@@ -120,9 +130,19 @@ class StorageAdmin(Module):
         lst = self.objlist(DBStaticObjectList, query_index="all")
         lst.load()
         for ent in lst:
+            if ent.get("size"):
+                if ent.get("size") >= 1024 * 1024 * 0.1:
+                    size = self._("%.1f Mb") % (ent.get("size") / (1024.0 * 1024.0))
+                elif ent.get("size") >= 1024 * 0.1:
+                    size = self._("%.1f Kb") % (ent.get("size") / (1024.0))
+                else:
+                    size = ent.get("size")
+            else:
+                size = None
             rows.append([
-                ent.get("uri"),
+                '<a href="{0}" target="_blank">{0}</a>'.format(ent.get("uri")),
                 htmlescape(ent.get("filename")),
+                size,
                 ent.get("content_type"),
                 '<hook:admin.link href="storage/static/del/%s" title="%s" confirm="%s" />' % (ent.uuid, self._("delete"), self._("Are you sure want to delete this object?")),
             ])
@@ -135,6 +155,7 @@ class StorageAdmin(Module):
                     "header": [
                         self._("URL"),
                         self._("Filename"),
+                        self._("Size"),
                         self._("Content type"),
                         self._("Deletion"),
                     ],

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-05 11:46+0300\n"
+"PO-Revision-Date: 2011-09-06 10:56+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -24,6 +24,14 @@ msgstr ""
 #, python-format
 msgid "%(price).2f MM$ (approx %(price).2f USD)"
 msgstr "%(price).2f MM$ (приблизительно %(price).2f USD)"
+
+#, python-format
+msgid "%.1f Kb"
+msgstr "%.1f Кб"
+
+#, python-format
+msgid "%.1f Mb"
+msgstr "%.1f Мб"
 
 #, python-format
 msgid "%s Resource not found"
@@ -2706,8 +2714,9 @@ msgstr "Массовый пользователь %s"
 msgid "Massive invitations"
 msgstr "Массовые приглашения"
 
-msgid "Maximal file size &mdash; 3 megabytes"
-msgstr "Максимальный размер файла &mdash; 3 мегабайта"
+#, python-format
+msgid "Maximal file size for this file type &mdash; %d megabytes"
+msgstr "Максимальный размер файла этого типа &mdash; %d мегабайт"
 
 msgid "Maximal length - 17 characters"
 msgstr "Максимальная длина - 17 символов"
@@ -4118,6 +4127,9 @@ msgstr "Часовой пояс на сайте"
 
 msgid "Site time zone settings"
 msgstr "Настройка часового пояса"
+
+msgid "Size"
+msgstr "Размер"
 
 msgid "Sky #1"
 msgstr "Небо №1"
