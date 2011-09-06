@@ -195,9 +195,9 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
-        html = "<%s" % tag
+        html = u"<%s" % tag
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(val))
+            html += u' %s="%s"' % (key, htmlescape(val))
         html += ">";
         self.output += html
 
