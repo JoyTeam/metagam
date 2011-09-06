@@ -277,7 +277,13 @@ class L10n(Module):
         if type(values) == str or type(values) == unicode:
             values = values.split("/")
         lang = self.call("l10n.lang")
-        val = abs(float(val))
+        try:
+            if type(val) is int:
+                val = abs(val)
+            else:
+                val = abs(float(val))
+        except OverflowError:
+            val = 100
         try:
             if lang == "ru":
                 if val != int(val):
