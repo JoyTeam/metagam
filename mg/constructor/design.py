@@ -191,41 +191,41 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
     def __init__(self, app):
         HTMLParser.HTMLParser.__init__(self)
         Module.__init__(self, app, "mg.constructor.design.DesignHTMLUnparser")
-        self.output = ""
+        self.output = ''
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
-        html = u"<%s" % tag
+        html = "<%s" % utf2str(tag)
         for key, val in attrs:
-            html += u' %s="%s"' % (key, htmlescape(val))
+            html += ' %s="%s"' % (utf2str(key), utf2str(htmlescape(val)))
         html += ">";
-        self.output += html
+        self.output += utf2str(html)
 
     def handle_endtag(self, tag):
-        self.output += "</%s>" % tag
+        self.output += "</%s>" % utf2str(tag)
 
     def handle_startendtag(self, tag, attrs):
         self.process_tag(tag, attrs)
-        html = "<%s" % tag
+        html = "<%s" % utf2str(tag)
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(val))
+            html += ' %s="%s"' % (utf2str(key), utf2str(htmlescape(val)))
         html += " />";
         self.output += html
 
     def handle_data(self, data):
-        self.output += data
+        self.output += utf2str(data)
 
     def handle_charref(self, name):
-        self.output += "&#%s;" % name
+        self.output += "&#%s;" % utf2str(name)
 
     def handle_entityref(self, name):
-        self.output += "&%s;" % name
+        self.output += "&%s;" % utf2str(name)
 
     def handle_comment(self, data):
-        self.output += "<!--%s-->" % data
+        self.output += "<!--%s-->" % utf2str(data)
 
     def handle_decl(self, decl):
-        self.output += "<!%s>" % decl
+        self.output += "<!%s>" % utf2str(decl)
 
     def close(self):
         HTMLParser.HTMLParser.close(self)

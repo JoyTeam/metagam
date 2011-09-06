@@ -16,6 +16,13 @@ re_frac_part = re.compile(r'\..*?[1-9]')
 re_exp_format = re.compile(r'^-?(\d+|\d+\.\d+)e([+-]\d+)$')
 re_remove_frac = re.compile(r'\..*')
 
+def utf2str(s):
+    if s is None:
+        return ""
+    if type(s) == unicode:
+        s = s.encode("utf-8")
+    return s
+
 def urldecode(str):
     if str is None:
         return ""
