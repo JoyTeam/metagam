@@ -386,7 +386,7 @@ class L10n(Module):
         return datetime.datetime.now(self.tzinfo) + datetime.timedelta(seconds=add)
 
     def tzoffset(self):
-        offset = self.call("l10n.timezone")
+        offset = self.conf("l10n.timezone")
         if offset is not None:
             return offset
         if self.l10n_lang() == "ru":
