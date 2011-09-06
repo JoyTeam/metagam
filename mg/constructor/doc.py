@@ -5,7 +5,7 @@ import re
 re_valid_docfile = re.compile(r'^[a-z0-9\-]+(/[a-z0-9\-]+)*/?$')
 re_not_found = re.compile(r'^file error - .*: not found$')
 re_doc_tag = re.compile(r'^\s*<!--\s*doc\.([a-z_]+)\s+(.*?)\s*-->\s*(.*)', re.DOTALL)
-re_valid_template = re.compile(r'^[a-z0-9][a-z0-9\-]*\.html$')
+re_valid_template = re.compile(r'^[a-z0-9][a-z0-9\-]*\.(?:html|js)$')
 
 class Documentation(Module):
     def register(self):

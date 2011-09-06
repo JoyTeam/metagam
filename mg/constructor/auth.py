@@ -553,7 +553,7 @@ class Auth(ConstructorModule):
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
             elif fld.get("type") == 1:
-                if not val and not std and not fld.get("mandatory_level"):
+                if not val and not fld.get("std") and not fld.get("mandatory_level"):
                     # empty value is ok
                     val = None
                 else:
