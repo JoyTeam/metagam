@@ -157,7 +157,7 @@ class Library(ConstructorModule):
                 parent_ent = lst[0]
             else:   
                 parent_ent = self.call("library-page-%s.content" % parent)
-                if not parent:
+                if not parent_ent:
                     break
             menu_left.insert(0, {"html": htmlescape(parent_ent.get("title")), "href": "/library" if parent == "index" else "/library/%s" % parent})
             parent = parent_ent.get("parent")
