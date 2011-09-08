@@ -6,7 +6,7 @@ from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 from uuid import uuid4
 
-max_packets_in_frame = 20
+max_packets_in_frame = 5
 
 re_valid_id = re.compile('^\w+$')
 re_split_headers = re.compile('\r?\n\r?\n')

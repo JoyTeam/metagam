@@ -742,7 +742,8 @@ class Chat(ConstructorModule):
                 "html": msg.get("html"),
                 "priv": msg.get("priv"),
             } for msg in messages]
-            self.call("stream.packet", syschannel, "chat", "msg_list", messages=messages, scroll_disable=True)
+            for msg in messages:
+                self.call("stream.packet", syschannel, "chat", "msg", scroll_disable=True, **msg)
         self.call("stream.character", character, "chat", "scroll_bottom")
         self.call("stream.character", character, "chat", "open_default_channel")
 
