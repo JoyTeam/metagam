@@ -88,7 +88,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.process_tag(tag, attrs)
         html = "<%s" % tag
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(val))
+            html += ' %s="%s"' % (key, utf2str(htmlescape(val)))
         html += ">";
         self.output += html
         self.tagstack.append(tag)
@@ -110,7 +110,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.process_tag(tag, attrs)
         html = "<%s" % tag
         for key, val in attrs:
-            html += ' %s="%s"' % (key, htmlescape(val))
+            html += ' %s="%s"' % (key, utf2str(htmlescape(val)))
         html += " />";
         self.output += html
 
@@ -124,7 +124,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         self.output += "&%s;" % name
 
     def handle_comment(self, data):
-        self.output += "<!--%s-->" % data
+        self.output += "<!--%s-->" % utf2str(data)
 
     def handle_decl(self, decl):
         if self.fragment:
