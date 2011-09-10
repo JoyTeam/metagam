@@ -454,7 +454,7 @@ class WebApplication(Application):
         self.hooks.call("web.request_processed")
         return res
 
-re_content = re.compile(r'^(.*)===HEAD===(.*)$', re.DOTALL)
+re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
 re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*\])')
 re_hook_parse = re.compile(r'^(<|\[)hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*(/>|\])$')
 re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
@@ -665,7 +665,7 @@ class Web(Module):
             req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)
         if m:
-            # everything before ===HEAD=== delimiter will pass to the header
+            # everything before <!--HEAD--> delimiter will pass to the header
             (head, content) = m.group(1, 2)
             if vars.get("head") is None:
                 vars["head"] = head
