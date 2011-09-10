@@ -167,7 +167,7 @@ class Email(Module):
         usr = self.objlist(UserList, users)
         usr.load(silent=True)
         for user in usr:
-            self.email_send(user.get("email"), user.get("name"), subject, content, from_email, from_name, immediately=True)
+            self.email_send(self.call("user.email", user), user.get("name"), subject, content, from_email, from_name, immediately=True)
 
     def exception_report(self, exception):
         try:
@@ -449,13 +449,14 @@ class EmailSender(Module):
                 lst.load(silent=True)
                 n = 0
                 for ent in lst:
-                    if ent.get("email"):
-                        self.send(params, parts, ent.get("email"), ent.get("name"), ent.get("sex"), subject, content, immediately=False)
+                    email = self.call("user.email", ent)
+                    if email:
+                        self.send(params, parts, email, ent.get("name"), ent.get("sex"), subject, content, immediately=False)
                         n += 1
                 status = '<span class="yes">%s</span>' % ("%d %s" % (n, self.call("l10n.literal_value", n, self._("message was queued for delivery/messages were queued for delivery"))))
         else:
             user = self.obj(User, req.user())
-            email = user.get("email")
+            email = self.call("user.email", user)
             sex = user.get("sex")
             name = user.get("name")
             mode = 1

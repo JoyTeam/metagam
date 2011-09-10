@@ -180,6 +180,15 @@ class Auth(ConstructorModule):
         self.rhook("library-page-offer.content", self.library_page_offer)
         self.rhook("library-page-multicharing.content", self.library_page_multicharing)
         self.rhook("auth.name-changed", self.name_changed)
+        self.rhook("user.email", self.user_email, priority=10)
+
+    def user_email(self, user_obj):
+        email = user_obj.get("email")
+        if email:
+            raise Hooks.Return(email)
+        char = self.character(user_obj.uuid)
+        if char.player and char.player.valid:
+            raise Hooks.Return(char.player.email)
 
     def name_changed(self, user, old_name, new_name):
         character = self.character(user.uuid)

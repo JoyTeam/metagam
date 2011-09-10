@@ -328,9 +328,8 @@ class Interface(Module):
         self.rhook("headmenu-admin-auth.track", self.headmenu_auth_track, priv="auth.tracking")
         self.rhook("auth.password-reminder", self.password_reminder)
 
-    def user_email(self, user_uuid):
-        user = self.obj(User, user_uuid)
-        return user.get("email")
+    def user_email(self, user_obj):
+        return user_obj.get("email")
 
     def robots_txt(self, disallow):
         disallow.append("/auth/")
