@@ -208,8 +208,9 @@ class CharactersMod(ConstructorModule):
                             m = re_combo_value.match(v)
                             if not m:
                                 errors["values"] = self._("Invalid format")
-                            vl, desc = m.group(1, 2)
-                            val["values"].append([vl, desc])
+                            else:
+                                vl, desc = m.group(1, 2)
+                                val["values"].append([vl, desc])
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 character_form = [fld for fld in character_form if fld["code"] != val["code"]]
