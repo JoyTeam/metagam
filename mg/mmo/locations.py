@@ -579,7 +579,6 @@ class Locations(ConstructorModule):
         vars["transitions"] = transitions
         design = self.design("gameinterface")
         html = self.call("design.parse", design, "location-layout.html", None, vars)
-        print "vars=%s" % vars
         self.call("game.response_internal", "location.html", vars, html)
 
     def gameinterface_render(self, character, vars, design):
