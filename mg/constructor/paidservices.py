@@ -569,12 +569,16 @@ class PaidServicesAdmin(ConstructorModule):
                 errors["period"] = self._("This field is mandatory")
             elif not valid_nonnegative_int(period):
                 errors["period"] = self._("Invalid number format")
+            else:
+                period = int(period)
+                if period > 315360000:
+                    errors["period"] = self._("Max period is %d sec") % 315360000
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             offers = self.conf("paidservices.offers-%s" % srv["id"], [])
             if offer_id == "new":
                 offers.append({
-                    "period": int(period),
+                    "period": period,
                     "price": float(price),
                     "currency": currency,
                 })
