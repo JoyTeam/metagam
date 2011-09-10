@@ -268,7 +268,7 @@ class LocationsStaticImages(ConstructorModule):
         self.rhook("locations.render", self.render)
         self.rhook("hook-location.image", self.hook_image)
 
-    def render(self, location):
+    def render(self, location, vars):
         if location.image_type == "static":
             zones = []
             if location.db_location.get("static_zones"):
@@ -278,13 +278,11 @@ class LocationsStaticImages(ConstructorModule):
                         "action": zone.get("action"),
                         "loc": zone.get("loc"),
                     })
-            vars = {
-                "loc": {
-                    "id": location.uuid,
-                    "image": location.db_location.get("image_static"),
-                },
-                "zones": zones,
+            vars["loc"] = {
+                "id": location.uuid,
+                "image": location.db_location.get("image_static"),
             }
+            vars["zones"] = zones
             design = self.design("gameinterface")
             raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
 
@@ -297,7 +295,7 @@ class LocationsStaticImages(ConstructorModule):
         except KeyError:
             pass
         else:
-            self.render(location)
+            self.render(location, vars)
 
 class LocationsStaticImagesAdmin(ConstructorModule):
     def register(self):
@@ -581,6 +579,7 @@ class Locations(ConstructorModule):
         vars["transitions"] = transitions
         design = self.design("gameinterface")
         html = self.call("design.parse", design, "location-layout.html", None, vars)
+        print "vars=%s" % vars
         self.call("game.response_internal", "location.html", vars, html)
 
     def gameinterface_render(self, character, vars, design):
