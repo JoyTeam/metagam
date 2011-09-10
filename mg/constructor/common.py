@@ -53,7 +53,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         projects_domain = main_app.config.get("constructor.projects-domain", main_host)
         m = re.match("^([0-9a-f]{32})\.%s" % projects_domain, domain)
         if m:
-            return m.groups(1)[0]
+            return str(m.groups(1)[0])
         # permanent game domains
         try:
             domain = main_app.obj(Domain, domain)
@@ -62,7 +62,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
         else:
             tag = domain.get("project")
             if tag is not None:
-                return tag
+                return str(tag)
         return None
 
     def get_by_domain(self, domain):

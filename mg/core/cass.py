@@ -304,6 +304,8 @@ class CassandraObject(object):
             else:
                 self.data = data
         else:
+            if type(uuid) is unicode:
+                uuid = uuid.encode("utf-8")
             self.uuid = uuid
             self.dirty = False
             self.new = False
