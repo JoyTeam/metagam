@@ -86,9 +86,9 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
 
     def handle_starttag(self, tag, attrs):
         self.process_tag(tag, attrs)
-        html = "<%s" % tag
+        html = "<%s" % utf2str(tag)
         for key, val in attrs:
-            html += ' %s="%s"' % (key, utf2str(htmlescape(val)))
+            html += ' %s="%s"' % (utf2str(key), utf2str(htmlescape(val)))
         html += ">";
         self.output += html
         self.tagstack.append(tag)
@@ -103,25 +103,25 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
         expected = self.tagstack.pop() if len(self.tagstack) else None
         if expected != tag:
             raise HTMLParser.HTMLParseError(self._("Closing tag '{0}' doesn't match opening tag '{1}'").format(tag, expected), (self.lineno, self.offset))
-        self.output += "</%s>" % tag
+        self.output += "</%s>" % utf2str(tag)
         self.in_form = None
 
     def handle_startendtag(self, tag, attrs):
         self.process_tag(tag, attrs)
-        html = "<%s" % tag
+        html = "<%s" % utf2str(tag)
         for key, val in attrs:
-            html += ' %s="%s"' % (key, utf2str(htmlescape(val)))
+            html += ' %s="%s"' % (utf2str(key), utf2str(htmlescape(val)))
         html += " />";
         self.output += html
 
     def handle_data(self, data):
-        self.output += data
+        self.output += utf2str(data)
 
     def handle_charref(self, name):
-        self.output += "&#%s;" % name
+        self.output += "&#%s;" % utf2str(name)
 
     def handle_entityref(self, name):
-        self.output += "&%s;" % name
+        self.output += "&%s;" % utf2str(name)
 
     def handle_comment(self, data):
         self.output += "<!--%s-->" % utf2str(data)
@@ -129,7 +129,7 @@ class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     def handle_decl(self, decl):
         if self.fragment:
             raise HTMLParser.HTMLParseError(self._("XML declarations are not allowed here"), (self.lineno, self.offset))
-        self.output += "<!%s>" % decl
+        self.output += "<!%s>" % utf2str(decl)
         if not re_valid_decl.match(decl):
             raise HTMLParser.HTMLParseError(self._("Valid XHTML doctype required"), (self.lineno, self.offset))
         self.decl_ok = True
