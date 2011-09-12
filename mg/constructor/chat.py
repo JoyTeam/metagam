@@ -722,8 +722,11 @@ class Chat(ConstructorModule):
                 messages.append(msg)
             # roster
             if channel.get("roster"):
+                if self.chatmode == 0:
+                    channel_id = "sys"
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
+                self.debug("Character %s init. sending roster for channel %s: %s", character.name, channel_id, character_uuids)
                 for char_uuid in character_uuids:
                     char = self.character(char_uuid)
                     self.call("stream.packet", syschannel, "chat", "roster_add", character=self.roster_info(char), channel=channel["id"])
@@ -763,6 +766,7 @@ class Chat(ConstructorModule):
 
     def channel_join(self, character, channel, send_myself=True):
         channel_id = channel["id"]
+        self.debug("Character %s is attempting to join channel %s (chatmode %s)", character.name, channel_id, self.chatmode)
         if self.chatmode == 0 and channel_id != "sys":
             return
         if channel_id == "loc":
@@ -779,11 +783,13 @@ class Chat(ConstructorModule):
                 obj.set("roster_info", self.roster_info(character))
             obj.store()
             if channel.get("roster"):
+                self.debug("Character %s is joining channel %s with roster", character.name, channel_id)
                 # list of characters subscribed to this channel
                 lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 if not send_myself:
                     character_uuids = [uuid for uuid in character_uuids if uuid != character.uuid]
+                self.debug("Subscribed characters: %s", character_uuids)
                 if len(character_uuids):
                     # load sessions of these characters
                     lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
@@ -845,6 +851,7 @@ class Chat(ConstructorModule):
                             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel_id), silent=True)
                             obj.remove()
             # dropping database record
+            self.info("Unjoining character %s from channel %s", character.uuid, channel_id)
             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
             obj.remove()
 
