@@ -37,7 +37,9 @@ function debug_close()
 	var div = document.getElementById('debug-log');
 	if (div)
 		div.parentNode.removeChild(div);
+	return false;
 }
+
 try {
 	document.addEventListener('keydown', debug_keydown, false);
 } catch (e) {
