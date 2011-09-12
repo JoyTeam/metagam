@@ -601,6 +601,7 @@ class Chat(ConstructorModule):
                 # does anyone want universal HTML?
                 if universal:
                     messages.append((["id_%s" % sess_uuid for sess_uuid in universal], html))
+            self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
             for msg in messages:
                 # sending message
                 message["html"] = html_head + msg[1] + html_tail
