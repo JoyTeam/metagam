@@ -55,6 +55,7 @@ class ParamsAdmin(ConstructorModule):
                 if not param:
                     self.call("admin.redirect", "%s/params" % self.kind)
             if req.ok():
+                char = self.character(req.user())
                 new_param = {}
                 errors = {}
                 # code
@@ -81,6 +82,8 @@ class ParamsAdmin(ConstructorModule):
                         new_param["important"] = True
                     if req.param("public"):
                         new_param["public"] = True
+                    if req.param("condition").strip():
+                        new_param["condition"] = self.call("script.admin-expression", "condition", errors, globs={"char": char})
                 # grouping
                 new_param["grp"] = req.param("grp").strip()
                 new_param["order"] = floatz(req.param("order"))
@@ -93,7 +96,6 @@ class ParamsAdmin(ConstructorModule):
                     if tp == 0:
                         new_param["default"] = nn(req.param("default"))
                     if tp > 0:
-                        char = self.character(req.user())
                         new_param["expression"] = self.call("script.admin-expression", "expression", errors, globs={"char": char})
                     if tp == 2:
                         values_table = []
@@ -177,6 +179,7 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "code", "label": self._("Parameter code (used in scripting)"), "value": param.get("code")},
                 {"name": "name", "label": self._("Parameter name"), "value": param.get("name")},
                 {"name": "owner_visible", "label": self._("Parameter is visible to the owner"), "checked": param.get("owner_visible"), "type": "checkbox"},
+                {"name": "condition", "value": self.call("script.unparse-expression", param.get("condition")) if param.get("condition") else None, "label": "%s%s" % (self._("Visibility condition (empty field means 'always visible')"), self.call("script.help-icon-expressions")), "condition": "[owner_visible]"},
                 {"name": "description", "label": self._("Parameter description (for players)"), "value": param.get("description"), "condition": "[owner_visible]"},
                 {"name": "important", "label": self._("Important parameter (show on the overview page)"), "checked": param.get("important"), "type": "checkbox", "condition": "[owner_visible]"},
                 {"name": "public", "label": self._("Visible in public (show on the public information page)"), "checked": param.get("public"), "type": "checkbox", "condition": "[owner_visible]"},
@@ -342,7 +345,7 @@ class Params(ConstructorModule):
     def params_public(self, obj, params):
         grp = None
         for param in self.call("%s.params" % self.kind):
-            if param.get("owner_visible") and param.get("public"):
+            if param.get("owner_visible") and param.get("public") and self.visibility_condition(param, obj):
                 if param["grp"] != "" and param["grp"] != grp:
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
@@ -357,7 +360,7 @@ class Params(ConstructorModule):
     def params_owner_important(self, obj, params):
         grp = None
         for param in self.call("%s.params" % self.kind):
-            if param.get("owner_visible") and param.get("important"):
+            if param.get("owner_visible") and param.get("important") and self.visibility_condition(param, obj):
                 if param["grp"] != "" and param["grp"] != grp:
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
@@ -372,7 +375,7 @@ class Params(ConstructorModule):
     def params_owner_all(self, obj, params):
         grp = None
         for param in self.call("%s.params" % self.kind):
-            if param.get("owner_visible"):
+            if param.get("owner_visible") and self.visibility_condition(param, obj):
                 if param["grp"] != "" and param["grp"] != grp:
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
@@ -389,6 +392,15 @@ class Params(ConstructorModule):
             if param.get("owner_visible") and not param.get("important"):
                 return True
         return False
+
+    def visibility_condition(self, param, obj):
+        if not param.get("condition"):
+            return True
+        try:
+            return self.call("script.evaluate-expression", param["condition"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}' visibility condition").format(cls=self.kind, param=param["code"], uuid=obj.uuid))
+        except Exception as e:
+            self.exception(e)
+            return False
 
     def library_icon(self, param):
         if not param.get("library_visible"):
