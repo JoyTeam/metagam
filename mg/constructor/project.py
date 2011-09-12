@@ -56,6 +56,8 @@ class ConstructorProject(Module):
                 "mg.constructor.paidservices.PaidServicesAdmin",
                 "mg.core.modifiers.Modifiers",
                 "mg.core.icons.IconsAdmin",
+                "mg.constructor.charparams.CharacterParams",
+                "mg.constructor.charparams.CharacterParamsAdmin",
             ])
             if project.get("published"):
                 lst.extend([

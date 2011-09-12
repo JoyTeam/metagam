@@ -520,6 +520,7 @@ class CharactersMod(ConstructorModule):
                     vars["character"][code] = val
                     if val:
                         params.append({"name": htmlescape(fld.get("name")), "value": val})
+        self.call("characters.params-public", character, params)
         if params:
             vars["character"]["params"] = params
         self.call("game.response_external", "character-info.html", vars)
@@ -549,6 +550,10 @@ class CharactersMod(ConstructorModule):
                 "actions": actions or None,
             }
         }
+        params = []
+        self.call("characters.params-owner-important", character, params)
+        if params:
+            vars["character"]["params"] = params
         self.call("game.response_internal", "character-page.html", vars)
 
     def interface_character_form(self):
