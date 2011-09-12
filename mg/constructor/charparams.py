@@ -41,6 +41,9 @@ class CharacterParams(Params):
         Params.__init__(self, app, fqn)
         self.kind = "characters"
 
+    def child_modules(self):
+        return ["mg.constructor.charparams.CharacterParamsAdmin", "mg.constructor.charparams.CharacterParamsLibrary"]
+
     def register(self):
         Params.register(self)
         self.rhook("character-page.actions", self.charpage_actions)
@@ -63,3 +66,48 @@ class CharacterParams(Params):
         if params:
             vars["character"]["params"] = params
         self.call("game.response_internal", "character-params.html", vars)
+
+class CharacterParamsLibrary(ParamsLibrary):
+    def __init__(self, app, fqn):
+        ParamsLibrary.__init__(self, app, fqn)
+        self.kind = "characters"
+
+    def register(self):
+        ParamsLibrary.register(self)
+        self.rhook("library-grp-index.pages", self.library_index_pages)
+        self.rhook("library-page-charparams.content", self.library_page_charparams)
+
+    def library_index_pages(self, pages):
+        pages.append({"page": "charparams", "order": 40})
+
+    def library_page_charparams(self):
+        params = []
+        grp = None
+        for param in self.call("characters.params"):
+            if param.get("library_visible") and not param.get("library_uri"):
+                if param["grp"] != "" and param["grp"] != grp:
+                    params.append({"header": htmlescape(param["grp"])})
+                    grp = param["grp"]
+                description = param.get("description")
+                if description is None:
+                    if param["type"] == 0:
+                        description = self._("Parameter stored in the database")
+                    else:
+                        description = self._("Derived (calculated) parameter")
+                params.append({
+                    "code": param["code"],
+                    "name": htmlescape(param["name"]),
+                    "description": htmlescape(description),
+                })
+        vars = {
+            "params": params
+        }
+        return {
+            "code": "charparams",
+            "title": self._("Character parameters"),
+            "keywords": self._("character parameters"),
+            "description": self._("This page describes parameters of characters"),
+            "content": self.call("socio.parse", "library-charparams.html", vars),
+            "parent": "index",
+        }
+

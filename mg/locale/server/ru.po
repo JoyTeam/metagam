@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-12 16:29+0300\n"
+"PO-Revision-Date: 2011-09-12 17:28+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -768,6 +768,9 @@ msgstr "Персонаж не найден"
 msgid "Character offline"
 msgstr "Персонаж в оффлайне"
 
+msgid "Character parameters"
+msgstr "Параметры персонажа"
+
 msgid "Character sex"
 msgstr "Пол персонажа"
 
@@ -1268,6 +1271,9 @@ msgstr "Запретить бесплатную установку"
 #, python-format
 msgid "Depends on: %s"
 msgstr "Зависит от: %s"
+
+msgid "Derived (calculated) parameter"
+msgstr "Производный (вычисляемый) параметр"
 
 msgid "Description"
 msgstr "Описание"
@@ -1993,6 +1999,9 @@ msgstr "Сформировать шаблон оформления"
 msgid "Generate invitation code"
 msgstr "Сгенерировать пригласительный код"
 
+msgid "Generate library description automatically"
+msgstr "Сгенерировать описание для библиотеки автоматически"
+
 msgid "Give"
 msgstr "Выдать"
 
@@ -2532,6 +2541,9 @@ msgstr "Документация на библиотеку"
 
 msgid "Library editing"
 msgstr "Редактирование библиотеки"
+
+msgid "Library icon"
+msgstr "Иконка библиотеки"
 
 msgid "Library page groups"
 msgstr "Группы страниц библиотеки"
@@ -3377,6 +3389,9 @@ msgstr "Параметр видим владельцу"
 
 msgid "Parameter name"
 msgstr "Название параметра"
+
+msgid "Parameter stored in the database"
+msgstr "Параметр сохраняется в базе данных"
 
 msgid "Parameter tables are visible in the API"
 msgstr "Публиковать таблицы параметра в API"
@@ -4742,6 +4757,9 @@ msgstr "Эта опция позволяет вам использовать н�
 msgid "This page describes character images setting rules"
 msgstr "Эта страница описывает правила настройки образов персонажей"
 
+msgid "This page describes parameters of characters"
+msgstr "Эта страница описывает параметры персонажей"
+
 msgid "This page is about game chat"
 msgstr "Это страница об игровом чате"
 
@@ -4914,6 +4932,9 @@ msgstr "Попытайтесь описать свой выбор"
 
 msgid "Type"
 msgstr "Тип"
+
+msgid "URI with the description of the parameter"
+msgstr "URI с описанием параметра"
 
 msgid "URL"
 msgstr "URL"
@@ -5594,6 +5615,9 @@ msgstr "Мир"
 
 msgid "character images"
 msgstr "образы персонажей"
+
+msgid "character parameters"
+msgstr "параметры персонажа"
 
 msgid "charimage///Construct character image"
 msgstr "Создать образ персонажа"

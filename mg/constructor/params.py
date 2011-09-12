@@ -151,6 +151,12 @@ class ParamsAdmin(ConstructorModule):
                     new_param["library_visible"] = True
                     if tp == 2 and req.param("library_table"):
                         new_param["library_table"] = True
+                    if not req.param("library_auto"):
+                        uri = req.param("library_uri").strip()
+                        if not uri:
+                            errors["library_uri"] = self._("This field is mandatory")
+                        else:
+                            new_param["library_uri"] = uri
                 # API
                 if req.param("api_values"):
                     new_param["api_values"] = True
@@ -196,6 +202,8 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "visual_table", "value": "\n".join([u"%s: %s" % (ent[0], ent[1]) for ent in param.get("visual_table", [])]), "label": self._("Table of values (HTML allowed). Syntax:<br />1: recruit<br />2: sergeant<br />3: lieutenant<br />4: major"), "condition": "[visual_mode]>0", "type": "textarea", "remove_label_separator": True},
                 {"type": "header", "html": self._("Library settings")},
                 {"name": "library_visible", "label": self._("Publish parameter description in the library"), "checked": param.get("library_visible"), "type": "checkbox"},
+                {"name": "library_auto", "label": self._("Generate library description automatically"), "checked": False if param.get("library_uri") else True, "condition": "[library_visible]", "type": "checkbox"},
+                {"name": "library_uri", "label": self._("URI with the description of the parameter"), "value": param.get("library_uri"), "condition": "[library_visible] && ![library_auto]"},
                 {"name": "library_table", "label": self._("Conversion table is published in the library"), "checked": param.get("library_table"), "type": "checkbox", "condition": "[type]==2 && [library_visible]"},
                 {"type": "header", "html": self._("API settings (API is not implemented yet)")},
                 {"name": "api_values", "label": self._("Parameter values are visible in the API"), "checked": param.get("api_values"), "type": "checkbox"},
@@ -343,6 +351,7 @@ class Params(ConstructorModule):
                 params.append({
                     "name": '<span class="%s-info-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-info-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                    "library_icon": self.library_icon(param),
                 })
 
     def params_owner_important(self, obj, params):
@@ -357,6 +366,7 @@ class Params(ConstructorModule):
                 params.append({
                     "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                    "library_icon": self.library_icon(param),
                 })
 
     def params_owner_all(self, obj, params):
@@ -371,6 +381,7 @@ class Params(ConstructorModule):
                 params.append({
                     "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                    "library_icon": self.library_icon(param),
                 })
 
     def notimportant_params_exist(self):
@@ -378,3 +389,13 @@ class Params(ConstructorModule):
             if param.get("owner_visible") and not param.get("important"):
                 return True
         return False
+
+    def library_icon(self, param):
+        if not param.get("library_visible"):
+            return None
+        uri = param.get("library_uri") or "/library/charparams#%s" % param["code"]
+        return self.call("library.icon", uri)
+
+class ParamsLibrary(ConstructorModule):
+    def register(self):
+        self.rdep(["mg.constructor.params.Fake"])
