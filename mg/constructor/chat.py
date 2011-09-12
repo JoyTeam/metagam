@@ -506,6 +506,7 @@ class Chat(ConstructorModule):
             req = self.req()
         except AttributeError:
             req = None
+        self.debug("Chat message: html=%s, hide_time=%s, channel=%s, private=%s, recipients=%s, author=%s, sound=%s, manual=%s, kwargs=%s", html, hide_time, channel, private, recipients, author, sound, manual, kwargs)
         # channel
         if not channel:
             channel = "sys"
