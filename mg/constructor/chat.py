@@ -341,7 +341,7 @@ class Chat(ConstructorModule):
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
             {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
-            {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld"},
+            {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld", "condition": "[chatmode]>0"},
             {"name": "msg_went_online", "label": self._("Message about character went online") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_online())},
             {"name": "msg_went_offline", "label": self._("Message about character went offline") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_offline())},
             {"name": "msg_entered_location", "label": self._("Message about character entered location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_entered_location())},
@@ -353,6 +353,8 @@ class Chat(ConstructorModule):
         self.call("admin.form", fields=fields)
 
     def auth_msg_channel(self, character=None):
+        if self.chatmode == 0:
+            return "wld"
         channel = self.conf("chat.auth-msg-channel", "loc")
         if channel == "loc" and character:
             channel = "loc-%s" % (character.location.uuid if character.location else None)
@@ -506,7 +508,7 @@ class Chat(ConstructorModule):
             req = self.req()
         except AttributeError:
             req = None
-        self.debug("Chat message: html=%s, hide_time=%s, channel=%s, private=%s, recipients=%s, author=%s, sound=%s, manual=%s, kwargs=%s", html, hide_time, channel, private, recipients, author, sound, manual, kwargs)
+        #self.debug("Chat message: html=%s, hide_time=%s, channel=%s, private=%s, recipients=%s, author=%s, sound=%s, manual=%s, kwargs=%s", html, hide_time, channel, private, recipients, author, sound, manual, kwargs)
         # channel
         if not channel:
             channel = "sys"
@@ -601,7 +603,7 @@ class Chat(ConstructorModule):
                 # does anyone want universal HTML?
                 if universal:
                     messages.append((["id_%s" % sess_uuid for sess_uuid in universal], html))
-            self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
+            #self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
             for msg in messages:
                 # sending message
                 message["html"] = html_head + msg[1] + html_tail
