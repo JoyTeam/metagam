@@ -17,14 +17,20 @@
 		</td>
 		[%end%]
 		<td class="charpage-layout-info">
-			<div class="charpage-name">[%character.name%]</div>
+			<div class="charpage-name">[%character.html%]</div>
 			[%if character.params%]
 			<table class="charpage-table-info">
 				[%foreach param in character.params%]
+				[%if param.header%]
+				<tr>
+					<td colspan=2" class="charpage-param-header">[%param.header%]</td>
+				</tr>
+				[%else%]
 				<tr>
 					<td class="charpage-param-name">[%param.name%]</td>
 					<td class="charpage-param-value">[%param.value%]</td>
 				</tr>
+				[%end%]
 				[%end%]
 			</table>
 			[%end%]
