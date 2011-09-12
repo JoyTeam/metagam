@@ -9,7 +9,7 @@ function debug_keydown(e)
 	if (!e)
 		e = window.event;
 	var keycode = e.keyCode ? e.keyCode : e.which;
-	if (keycode == 120) {
+	if (keycode == 120 || keycode == 113 || keycode == 119) {
 		if (document.getElementById('debug-log')) {
 			debug_close();
 		} else {
