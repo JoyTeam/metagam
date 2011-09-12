@@ -314,7 +314,7 @@ class DesignZip(Module):
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
-                    if file["filename"] != "blocks.html" and file["filename"] != "index.html":
+                    if file["filename"] != "blocks.html" and file["filename"] != "index.html" and file["filename"] != "global.html":
                         continue
                     data = self.zip.read(file["zipname"])
                     try:
