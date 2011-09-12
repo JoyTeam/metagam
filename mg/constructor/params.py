@@ -146,6 +146,18 @@ class ParamsAdmin(ConstructorModule):
                                 errors["visual_table"] = self._("This field is mandatory")
                             else:
                                 new_param["visual_table"] = visual_table
+                # library
+                if req.param("library_visible"):
+                    new_param["library_visible"] = True
+                    if tp == 2 and req.param("library_table"):
+                        new_param["library_table"] = True
+                # API
+                if req.param("api_values"):
+                    new_param["api_values"] = True
+                if tp > 0 and req.param("api_expression"):
+                    new_param["api_expression"] = True
+                if (tp == 2 or mode == 2) and req.param("api_table"):
+                    new_param["api_table"] = True
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 params = [p for p in self.call("%s.params" % self.kind) if p["code"] != new_param.get("code") and p["code"] != param.get("code")]
@@ -182,6 +194,13 @@ class ParamsAdmin(ConstructorModule):
                 ]},
                 {"name": "visual_template", "value": param.get("visual_template"), "label": self._("Value template ({val} &mdash; number, {text} &mdash; text from the table)"), "condition": "[visual_mode]==2"},
                 {"name": "visual_table", "value": "\n".join([u"%s: %s" % (ent[0], ent[1]) for ent in param.get("visual_table", [])]), "label": self._("Table of values (HTML allowed). Syntax:<br />1: recruit<br />2: sergeant<br />3: lieutenant<br />4: major"), "condition": "[visual_mode]>0", "type": "textarea", "remove_label_separator": True},
+                {"type": "header", "html": self._("Library settings")},
+                {"name": "library_visible", "label": self._("Publish parameter description in the library"), "checked": param.get("library_visible"), "type": "checkbox"},
+                {"name": "library_table", "label": self._("Conversion table is published in the library"), "checked": param.get("library_table"), "type": "checkbox", "condition": "[type]==2 && [library_visible]"},
+                {"type": "header", "html": self._("API settings (API is not implemented yet)")},
+                {"name": "api_values", "label": self._("Parameter values are visible in the API"), "checked": param.get("api_values"), "type": "checkbox"},
+                {"name": "api_expression", "label": self._("Parameter expression is visible in the API"), "checked": param.get("api_expression"), "type": "checkbox", "condition": "[type]>0"},
+                {"name": "api_table", "label": self._("Parameter tables are visible in the API"), "checked": param.get("api_table"), "type": "checkbox", "condition": "[type]==2 || [visual_mode]>0"},
             ]
             self.call("admin.form", fields=fields)
         rows = []

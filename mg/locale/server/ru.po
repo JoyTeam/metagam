@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-12 14:22+0300\n"
+"PO-Revision-Date: 2011-09-12 16:29+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -208,6 +208,9 @@ msgstr "Простое значение"
 
 msgid "A very long forum category title"
 msgstr "Очень длинное название раздела на форуме"
+
+msgid "API settings (API is not implemented yet)"
+msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
@@ -1043,6 +1046,9 @@ msgstr "Управление"
 
 msgid "Conversion table (format: min_value - resulting_level). Sample 'experience to level' conversion:<br />0: 1<br />100: 2<br />500: 3<br />3000: 4"
 msgstr "Таблица преобразования (формат: минимальное_значение - результирующий_уровень). Пример преобразования \"опыта в уровень\": <br />0: 1<br />100: 2<br />500: 3<br />3000: 4"
+
+msgid "Conversion table is published in the library"
+msgstr "Публиковать таблицу преобразований в библиотеке"
 
 msgid "Cookie"
 msgstr "Кука"
@@ -2533,6 +2539,9 @@ msgstr "Группы страниц библиотеки"
 msgid "Library pages"
 msgstr "Страницы библиотеки"
 
+msgid "Library settings"
+msgstr "Настройки библиотеки"
+
 msgid "Limit for sum height of all images in the signature"
 msgstr "Ограничение суммарной высоты для всех изображений в подписи"
 
@@ -3351,6 +3360,9 @@ msgstr "Код параметра (для использования в скри
 msgid "Parameter description (for players)"
 msgstr "Описание параметра (для игроков)"
 
+msgid "Parameter expression is visible in the API"
+msgstr "Публиковать формулу параметра в API"
+
 msgid "Parameter group name"
 msgstr "Название группы параметра"
 
@@ -3366,8 +3378,14 @@ msgstr "Параметр видим владельцу"
 msgid "Parameter name"
 msgstr "Название параметра"
 
+msgid "Parameter tables are visible in the API"
+msgstr "Публиковать таблицы параметра в API"
+
 msgid "Parameter value"
 msgstr "Значение параметра"
+
+msgid "Parameter values are visible in the API"
+msgstr "Публиковать значения параметра в API"
 
 msgid "Parameter visualization"
 msgstr "Визуализация параметра"
@@ -3595,6 +3613,9 @@ msgstr "Опубликовать"
 
 msgid "Publish on the library indexpage"
 msgstr "Опубликовать на титульной странице библиотеки"
+
+msgid "Publish parameter description in the library"
+msgstr "Публиковать описание параметра в библиотеке"
 
 msgid "Purpose"
 msgstr "Цель"
@@ -4158,6 +4179,9 @@ msgstr "Показывать при регистрации"
 
 msgid "Show on the left side"
 msgstr "Показать с левой стороны"
+
+msgid "Show parameters of the character"
+msgstr "Показать параметры персонажа"
 
 msgid "Show smiles"
 msgstr "Показать смайлики"
@@ -5466,8 +5490,8 @@ msgstr "На странице должна быть HTML-форма с id=\"logi
 msgid "Your page must have HTML tag: %s"
 msgstr "На странице должен быть тег %s"
 
-msgid "Your passport number"
-msgstr "Ваши паспортные данные"
+msgid "Your passport number, issuer and issue date"
+msgstr "Номер вашего паспорта, кем и когда выдан"
 
 msgid "Your password"
 msgstr "Ваш пароль"
@@ -6283,6 +6307,8 @@ msgstr "{name} &mdash; баланс {balance}{donate}"
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Your passport number"
+#~ msgstr "Ваши паспортные данные"
 #~ msgid "free"
 #~ msgstr "бесплатно"
 #~ msgid ""
