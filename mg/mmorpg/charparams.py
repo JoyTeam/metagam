@@ -1,5 +1,9 @@
-from mg.constructor.params import *
+from mg.mmorpg.params import *
 from mg.constructor.player_classes import *
+import re
+
+re_charparam = re.compile(r'^charparam/(.+)$')
+re_char_params = re.compile(r'char\.p_([a-zA-Z_][a-zA-Z0-9_]*)')
 
 class CharacterParamsAdmin(ParamsAdmin):
     def __init__(self, app, fqn):
@@ -42,7 +46,7 @@ class CharacterParams(Params):
         self.kind = "characters"
 
     def child_modules(self):
-        return ["mg.constructor.charparams.CharacterParamsAdmin", "mg.constructor.charparams.CharacterParamsLibrary"]
+        return ["mg.mmorpg.charparams.CharacterParamsAdmin", "mg.mmorpg.charparams.CharacterParamsLibrary"]
 
     def register(self):
         Params.register(self)
@@ -74,8 +78,12 @@ class CharacterParamsLibrary(ParamsLibrary):
 
     def register(self):
         ParamsLibrary.register(self)
+        self.rdep(["mg.mmorpg.charparams.CharacterParams"])
         self.rhook("library-grp-index.pages", self.library_index_pages)
         self.rhook("library-page-charparams.content", self.library_page_charparams)
+        for param in self.call("characters.params", load_handlers=False):
+            if param.get("library_visible") and param.get("library_table"):
+                self.rhook("library-page-charparam/%s.content" % param["code"], self.library_page_charparam)
 
     def library_index_pages(self, pages):
         pages.append({"page": "charparams", "order": 40})
@@ -94,13 +102,19 @@ class CharacterParamsLibrary(ParamsLibrary):
                         description = self._("Parameter stored in the database")
                     else:
                         description = self._("Derived (calculated) parameter")
-                params.append({
+                rparam = {
                     "code": param["code"],
                     "name": htmlescape(param["name"]),
                     "description": htmlescape(description),
-                })
+                }
+                if param.get("library_table"):
+                    rparam["tables"] = {
+                        "uri": "/library/charparam/%s" % param["code"],
+                    }
+                params.append(rparam)
         vars = {
-            "params": params
+            "params": params,
+            "OpenTable": self._("Open table"),
         }
         return {
             "code": "charparams",
@@ -111,3 +125,60 @@ class CharacterParamsLibrary(ParamsLibrary):
             "parent": "index",
         }
 
+    def param_name(self, m):
+        param = self.call("characters.param", m.group(1))
+        if param:
+            return param["name"]
+        else:
+            return m.group(0)
+
+    def library_page_charparam(self):
+        req = self.req()
+        m = re_charparam.match(req.args) or self.call("web.not_found")
+        param = self.call("characters.param", m.group(1)) or self.call("web.not_found")
+        vars = {
+            "name": htmlescape(param["name"]),
+            "paramdesc": htmlescape(param["description"]),
+        }
+        if param.get("library_table"):
+            # table rows
+            levels = set()
+            values = {}
+            visuals = {}
+            # table header
+            header = []
+            if param.get("values_table"):
+                expr = re_char_params.sub(self.param_name, self.call("script.unparse-expression", param["expression"]))
+                header.append(htmlescape(expr))
+                for ent in param.get("values_table"):
+                    levels.add(ent[1])
+                    values[ent[1]] = ent[0]
+            header.append(vars["name"])
+            if param.get("visual_table"):
+                header.append(self._("Description"))
+                for ent in param.get("visual_table"):
+                    levels.add(ent[0])
+                    visuals[ent[0]] = ent[1]
+            rows = []
+            for level in sorted(levels):
+                row = []
+                if param.get("values_table"):
+                    row.append(values.get(level))
+                row.append(level)
+                if param.get("visual_table"):
+                    row.append(visuals.get(level))
+                rows.append(row)
+            vars["paramtable"] = {
+                "header": header,
+                "rows": rows,
+            }
+        else:
+            return None
+        return {
+            "code": "charparam/%s" % param["code"],
+            "title": vars["name"],
+            "keywords": '%s, %s' % (self._("parameter"), vars["name"]),
+            "description": self._("This page describes parameter %s") % vars["name"],
+            "content": self.call("socio.parse", "library-charparam.html", vars),
+            "parent": "charparams",
+        }

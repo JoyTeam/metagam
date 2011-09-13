@@ -337,6 +337,10 @@ class CharImagesAdmin(ConstructorModule):
         self.rhook("charimages.layers", self.layers)
         self.rhook("charimages.layer-images", self.layer_images)
         self.rhook("charimages.dimensions", self.dimensions)
+        self.rhook("advice-admin-charimages.index", self.advice_charimages)
+
+    def advice_charimages(self, hook, args, advice):
+        advice.append({"title": self._("Characters images documentation"), "content": self._('You can find detailed information on the characters images system in the <a href="//www.%s/doc/character-images" target="_blank">characters images page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def permissions_list(self, perms):
         perms.append({"id": "charimages.config", "name": self._("Character images configuration")})

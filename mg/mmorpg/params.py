@@ -11,7 +11,7 @@ class Fake(ConstructorModule):
 
 class ParamsAdmin(ConstructorModule):
     def register(self):
-        self.rdep(["mg.constructor.params.Fake"])
+        self.rdep(["mg.mmorpg.params.Fake"])
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-%s.params" % self.kind, self.admin_params, priv="%s.params" % self.kind)
         self.rhook("headmenu-admin-%s.params" % self.kind, self.headmenu_params)
@@ -31,6 +31,7 @@ class ParamsAdmin(ConstructorModule):
 
     def admin_params(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.app().inst.config["main_host"]})
         if req.args:
             m = re_del.match(req.args)
             if m:
@@ -269,7 +270,7 @@ class ParamsAdmin(ConstructorModule):
 
 class Params(ConstructorModule):
     def register(self):
-        self.rdep(["mg.constructor.params.Fake"])
+        self.rdep(["mg.mmorpg.params.Fake"])
         self.rhook("%s.params" % self.kind, self.params)
         self.rhook("%s.param" % self.kind, self.param)
         self.rhook("%s.param-value" % self.kind, self.value)
@@ -410,4 +411,4 @@ class Params(ConstructorModule):
 
 class ParamsLibrary(ConstructorModule):
     def register(self):
-        self.rdep(["mg.constructor.params.Fake"])
+        self.rdep(["mg.mmorpg.params.Fake"])

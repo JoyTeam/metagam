@@ -138,8 +138,12 @@ class Hooks(object):
             raise HookFormatException("Invalid hook name: %s" % name)
         (hook_group, hook_name) = m.group(1, 2)
         # ensure handling modules are loaded. "core" handlers are not loaded automatically
-        if self.dynamic and hook_group != "core" and hook_group not in self.loaded_groups:
+        if self.dynamic and hook_group != "core" and hook_group not in self.loaded_groups and kwargs.get("load_handlers") is not False:
             self.load_groups([hook_group])
+        try:
+            del kwargs["load_handlers"]
+        except KeyError:
+            pass
         # call handlers
         handlers = self.handlers.get(name)
         ret = None

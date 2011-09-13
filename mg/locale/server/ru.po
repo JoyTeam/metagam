@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-12 17:42+0300\n"
+"PO-Revision-Date: 2011-09-13 11:38+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -794,6 +794,9 @@ msgstr "Имя персонажа"
 
 msgid "Characters"
 msgstr "Персонажи"
+
+msgid "Characters images documentation"
+msgstr "Документация на образы персонажей"
 
 msgid "Characters parameters"
 msgstr "Параметры персонажей"
@@ -3291,6 +3294,9 @@ msgstr "Открытая регистрация"
 msgid "Open registration of new games is unavailable at the moment"
 msgstr "В данный момент свободная регистрация игр невозможна"
 
+msgid "Open table"
+msgstr "Открыть таблицу"
+
 msgid "Open the game profile"
 msgstr "Открыть профиль игры"
 
@@ -3413,6 +3419,9 @@ msgstr "Параметр с таким кодом уже существует"
 
 msgid "Parameters"
 msgstr "Параметры"
+
+msgid "Parameters documentation"
+msgstr "Документация на систему параметров"
 
 msgid "Parse error near '{input}'"
 msgstr "Ошибка парсинга рядом с \"{input}\""
@@ -4760,6 +4769,10 @@ msgstr "Эта опция позволяет вам использовать н�
 msgid "This page describes character images setting rules"
 msgstr "Эта страница описывает правила настройки образов персонажей"
 
+#, python-format
+msgid "This page describes parameter %s"
+msgstr "Эта страница описывает параметр %s"
+
 msgid "This page describes parameters of characters"
 msgstr "Эта страница описывает параметры персонажей"
 
@@ -5336,6 +5349,10 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
+msgid "You can find detailed information on the characters images system in the <a href=\"//www.%s/doc/character-images\" target=\"_blank\">characters images page</a> in the reference manual."
+msgstr "Подробную информацию о системе образов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-images\" target=\"_blank\">Система образов персонажей</a>."
+
+#, python-format
 msgid "You can find detailed information on the game interface rendering in the <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
 msgstr "Подробную информацию о рендеринге игрового интерфейса вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">структура игрового интерфейса</a>."
 
@@ -5346,6 +5363,10 @@ msgstr "Подробную информацию о настройке библи
 #, python-format
 msgid "You can find detailed information on the location system in the <a href=\"//www.%s/doc/locations\" target=\"_blank\">locations page</a> in the reference manual."
 msgstr "Подробную информацию о системе локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/locations\" target=\"_blank\">Система локаций</a>."
+
+#, python-format
+msgid "You can find detailed information on the parameters system in the <a href=\"//www.%s/doc/parameters\" target=\"_blank\">parameters page</a> in the reference manual."
+msgstr "Подробную информацию о системе параметров вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/parameters\" target=\"_blank\">Система параметров</a>."
 
 #, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
@@ -5991,6 +6012,9 @@ msgstr "открыть выпадающее меню <strong><hook:admin.link hr
 
 msgid "paidservice///{name} for {{period}}"
 msgstr "{name} на {{period_a}}"
+
+msgid "parameter"
+msgstr "параметр"
 
 msgid "parameter///Name"
 msgstr "Название"
