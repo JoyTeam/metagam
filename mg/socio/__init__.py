@@ -1658,7 +1658,6 @@ class Forum(Module):
                 form.error("content", errors.get("may_write", self._("Access denied")))
             if not form.errors:
                 if req.param("save"):
-                    print "posting reply"
                     user = self.obj(User, self.call("socio.user"))
                     post, page = self.call("forum.reply", cat, topic, user, content)
                     self.call("web.redirect", "/forum/topic/%s?page=%d#%s" % (topic.uuid, page, post.uuid))
