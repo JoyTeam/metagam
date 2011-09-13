@@ -140,10 +140,8 @@ class Hooks(object):
         # ensure handling modules are loaded. "core" handlers are not loaded automatically
         if self.dynamic and hook_group != "core" and hook_group not in self.loaded_groups and kwargs.get("load_handlers") is not False:
             self.load_groups([hook_group])
-        try:
+        if "load_handlers" in kwargs:
             del kwargs["load_handlers"]
-        except KeyError:
-            pass
         # call handlers
         handlers = self.handlers.get(name)
         ret = None
