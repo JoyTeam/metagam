@@ -1586,7 +1586,7 @@ class Dossiers(Module):
             for ent in records:
                 admin = users.get(ent.get("admin")) if ent.get("admin") else None
                 content = re_newline.sub('<br />', htmlescape(ent.get("content")))
-                dossier_entries.append([ent.get("performed"), u'<hook:admin.link href="auth/user-dashboard/{0}" title="{1}" />'.format(admin.uuid, htmlescape(admin.get("name"))) if admin else None, content])
+                dossier_entries.append([self.call("l10n.time_local", ent.get("performed")), u'<hook:admin.link href="auth/user-dashboard/{0}" title="{1}" />'.format(admin.uuid, htmlescape(admin.get("name"))) if admin else None, content])
             table = {
                 "type": "dossier",
                 "title": self._("Dossier"),
