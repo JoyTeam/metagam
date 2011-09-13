@@ -39,7 +39,7 @@ re_parbreak = re.compile(r'(\n\s*){2,}')
 re_linebreak = re.compile(r'\n')
 re_img = re.compile(r'^(.*?)\[img:([a-f0-9]+)\](.*)$', re.DOTALL)
 valid = r'\/\w\/\+\%\#\$\&=\?#'
-re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|(?=(?:[a-z][\-a-z0-9]{,30}\.)+[a-z]{2,5}))[\-\.\w]+(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
+re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|(?=www|ftp)|(?=(?:[a-z][\-a-z0-9]{,30}\.)+(?:ru|com|info|net|org|cc|ua|uk)(?![a-z])))[a-z0-9\-\.]+(?<!-)(?::\d+|)(?:[\/#][' + valid + r'\-;:\.\(\)!,]*[' + valid + r']|[\/#]|))(.*)', re.IGNORECASE | re.DOTALL | re.UNICODE)
 re_email = re.compile(r'(.*?)(\w[\w\-\.]*\@[a-z0-9][a-z0-9_\-]*(?:\.[a-z0-9][a-z0-9_\-]*)*)(.*)', re.IGNORECASE | re.DOTALL)
 re_split_tags = re.compile(r'\s*(,\s*)+')
 re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
