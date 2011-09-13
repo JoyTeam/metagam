@@ -1,6 +1,8 @@
 from mg import *
+import re
 
 default_location_delay = 20
+re_param_attr = re.compile(r'^p_(.+)')
 
 class DBLocation(CassandraObject):
     _indexes = {
@@ -38,6 +40,22 @@ class DBCharacterLocationList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "CharacterLocation-"
         kwargs["cls"] = DBCharacterLocation
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class DBLocParams(CassandraObject):
+    _indexes = {}
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "LocParams-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBLocParams._indexes
+
+class DBLocParamsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "LocParams-"
+        kwargs["cls"] = DBLocParams
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Location(Module):
@@ -149,4 +167,33 @@ class Location(Module):
         elif attr == "name_w":
             return self.name_w
         else:
-            raise AttributeError(attr)
+            m = re_param_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param(param)
+            else:
+                raise AttributeError(attr)
+
+    @property
+    def db_params(self):
+        try:
+            return self._db_params
+        except AttributeError:
+            self._db_params = self.obj(DBLocParams, self.uuid, silent=True)
+            return self._db_params
+
+    def param(self, key):
+        try:
+            cache = self._param_cache
+        except AttributeError:
+            cache = {}
+            self._param_cache = cache
+        try:
+            return cache[key]
+        except KeyError:
+            # 'param-value' handles cache storing automatically
+            return self.call("locations.param-value", self, key)
+
+    def script_params(self):
+        return {"loc": self}
+

@@ -22,6 +22,15 @@ class CharacterParamsAdmin(ParamsAdmin):
         self.rhook("characters.params-redirect", self.params_redirect)
         self.rhook("characters.params-obj", self.params_obj)
         self.rhook("characters.param-changed", self.param_changed)
+        self.rhook("characters.script-globs", self.script_globs)
+        self.rhook("characters.require-security-comment", self.require_security_comment)
+
+    def require_security_comment(self):
+        return True
+
+    def script_globs(self):
+        req = self.req()
+        return {"char": self.character(req.user())}
 
     def params_url(self, uuid):
         return "auth/user-dashboard/%s" % uuid

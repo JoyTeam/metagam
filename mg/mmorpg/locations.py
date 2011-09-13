@@ -28,9 +28,10 @@ class LocationsAdmin(ConstructorModule):
     def objclasses_list(self, objclasses):
         objclasses["CharacterLocation"] = (DBCharacterLocation, DBCharacterLocationList)
         objclasses["Location"] = (DBLocation, DBLocationList)
+        objclasses["LocParams"] = (DBLocParams, DBLocParamsList)
 
     def child_modules(self):
-        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin"]
+        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams"]
         return lst
 
     def menu_root_index(self, menu):
@@ -163,6 +164,13 @@ class LocationsAdmin(ConstructorModule):
                 image_type["value"] = image_type["values"][0][0]
             # rendering location preview
             if req.args != "new":
+                # parameters
+                if req.has_access("locations.params-view"):
+                    fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/params.html", {
+                        "loc": db_loc.uuid,
+                        "LocationParams": self._("View location parameters"),
+                    })})
+                # location preview
                 html = self.call("admin-locations.render", location)
                 if html:
                     fields.insert(0, {"type": "html", "html": html})

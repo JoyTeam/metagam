@@ -263,6 +263,7 @@ class CharactersMod(ConstructorModule):
         objclasses["Player"] = (DBPlayer, DBPlayerList)
         objclasses["Character"] = (DBCharacter, DBCharacterList)
         objclasses["CharacterForm"] = (DBCharacterForm, DBCharacterFormList)
+        objclasses["CharParams"] = (DBCharParams, DBCharParamsList)
 
     def dossier_record(self, rec):
         try:

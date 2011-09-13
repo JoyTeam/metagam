@@ -35,7 +35,7 @@ class ParamsAdmin(ConstructorModule):
 
     def admin_params(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 30})
         if req.args:
             m = re_del.match(req.args)
             if m:
@@ -60,7 +60,6 @@ class ParamsAdmin(ConstructorModule):
                 if not param:
                     self.call("admin.redirect", "%s/params" % self.kind)
             if req.ok():
-                char = self.character(req.user())
                 new_param = {}
                 errors = {}
                 # code
@@ -88,7 +87,7 @@ class ParamsAdmin(ConstructorModule):
                     if req.param("public"):
                         new_param["public"] = True
                     if req.param("condition").strip():
-                        new_param["condition"] = self.call("script.admin-expression", "condition", errors, globs={"char": char})
+                        new_param["condition"] = self.call("script.admin-expression", "condition", errors, globs=self.call("%s.script-globs" % self.kind))
                 # grouping
                 new_param["grp"] = req.param("grp").strip()
                 new_param["order"] = floatz(req.param("order"))
@@ -101,7 +100,7 @@ class ParamsAdmin(ConstructorModule):
                     if tp == 0:
                         new_param["default"] = nn(req.param("default"))
                     if tp > 0:
-                        new_param["expression"] = self.call("script.admin-expression", "expression", errors, globs={"char": char})
+                        new_param["expression"] = self.call("script.admin-expression", "expression", errors, globs=self.call("%s.script-globs" % self.kind))
                     if tp == 2:
                         values_table = []
                         for line in req.param("values_table").strip().split("\n"):
@@ -295,6 +294,7 @@ class ParamsAdmin(ConstructorModule):
         db_obj = self.call("%s.params-obj" % self.kind, uuid)
         if not db_obj:
             self.call("web.not_found")
+        require_security_comment = self.call("%s.require-security-comment" % self.kind)
         if req.ok():
             with self.lock(["%s.params.%s" % (self.kind, uuid)]):
                 try:
@@ -312,9 +312,12 @@ class ParamsAdmin(ConstructorModule):
                     value = nn(value)
                     if abs(value) > 1000000000:
                         errors["value"] = self._("Absolute values greater than 1 billion are not supported")
-                comment = req.param("comment").strip()
-                if not comment:
-                    errors["comment"] = self._("This field is mandatory")
+                if require_security_comment:
+                    comment = req.param("comment").strip()
+                    if not comment:
+                        errors["comment"] = self._("This field is mandatory")
+                else:
+                    comment = None
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 if old_value != value:
@@ -326,8 +329,9 @@ class ParamsAdmin(ConstructorModule):
         old_value = db_obj.get(param["code"], param.get("default", 0))
         fields = [
             {"name": "value", "value": old_value, "label": htmlescape(param["name"])},
-            {"name": "comment", "label": '%s%s' % (self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")},
         ]
+        if require_security_comment:
+            fields.append({"name": "comment", "label": '%s%s' % (self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")})
         self.call("admin.form", fields=fields)
 
 class Params(ConstructorModule):
