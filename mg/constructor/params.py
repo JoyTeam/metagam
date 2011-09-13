@@ -5,20 +5,24 @@ re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_values_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(-?(?:\d+|\d+\.\d+))$')
 re_visual_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(.+)$')
 re_del = re.compile(r'^del/(.+)$')
+re_paramedit_args = re.compile(r'^([0-9a-f]+)/([a-zA-Z_][a-zA-Z0-9_]+)$')
 
 class Fake(ConstructorModule):
     pass
 
 class ParamsAdmin(ConstructorModule):
     def register(self):
-        self.rdep(["mg.mmorpg.params.Fake"])
+        self.rdep(["mg.constructor.params.Fake"])
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-%s.params" % self.kind, self.admin_params, priv="%s.params" % self.kind)
         self.rhook("headmenu-admin-%s.params" % self.kind, self.headmenu_params)
+        self.rhook("ext-admin-%s.paramedit" % self.kind, self.admin_paramedit, priv="%s.params-edit" % self.kind)
+        self.rhook("headmenu-admin-%s.paramedit" % self.kind, self.headmenu_paramedit)
 
     def permissions_list(self, perms):
-        perms.append({"id": "%s.params" % self.kind, "name": '%s: %s' % (self.title, self._("editing"))})
+        perms.append({"id": "%s.params" % self.kind, "name": '%s: %s' % (self.title, self._("configuration"))})
         perms.append({"id": "%s.params-view" % self.kind, "name": '%s: %s' % (self.title, self._("viewing"))})
+        perms.append({"id": "%s.params-edit" % self.kind, "name": '%s: %s' % (self.title, self._("editing"))})
 
     def headmenu_params(self, args):
         if args == "new":
@@ -254,23 +258,81 @@ class ParamsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
-    def admin_view_params(self, obj, params):
+    def admin_view_params(self, obj, params, may_edit):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param["grp"] != "" and param["grp"] != grp:
                 params.append(['<strong>%s</strong>' % htmlescape(param["grp"]), None, None, None])
                 grp = param["grp"]
             value = self.call("%s.param-value-rec" % self.kind, obj, param)
-            params.append([
+            rparam = [
                 param["code"],
                 htmlescape(param["name"]),
                 htmlescape(value),
                 self.call("%s.param-html" % self.kind, param, value),
-            ])
+            ]
+            if may_edit and param["type"] == 0:
+                rparam.append('<hook:admin.link href="%s/paramedit/%s/%s" title="%s" />' % (self.kind, obj.uuid, param["code"], self._("change")))
+            params.append(rparam)
+
+    def headmenu_paramedit(self, args):
+        m = re_paramedit_args.match(args)
+        if m:
+            uuid = m.group(1)
+            param = self.call("%s.param" % self.kind, m.group(2))
+            if param:
+                return [htmlescape(param["name"]), self.call("%s.params-url" % self.kind, uuid)]
+
+    def admin_paramedit(self):
+        req = self.req()
+        m = re_paramedit_args.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        uuid = m.group(1)
+        param = self.call("%s.param" % self.kind, m.group(2))
+        if not param or param["type"] != 0:
+            self.call("web.not_found")
+        db_obj = self.call("%s.params-obj" % self.kind, uuid)
+        if not db_obj:
+            self.call("web.not_found")
+        if req.ok():
+            with self.lock(["%s.params.%s" % (self.kind, uuid)]):
+                try:
+                    db_obj.load()
+                except ObjectNotFoundException:
+                    pass
+                old_value = db_obj.get(param["code"], param.get("default", 0))
+                errors = {}
+                value = req.param("value").strip()
+                if not value:
+                    errors["value"] = self._("This field is mandatory")
+                elif not valid_number(value):
+                    errors["value"] = self._("This doesn't look like a number")
+                else:
+                    value = nn(value)
+                    if abs(value) > 1000000000:
+                        errors["value"] = self._("Absolute values greater than 1 billion are not supported")
+                comment = req.param("comment").strip()
+                if not comment:
+                    errors["comment"] = self._("This field is mandatory")
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                if old_value != value:
+                    db_obj.set(param["code"], value)
+                    self.call("security.suspicion", admin=req.user(), action="param.change", kind=self.kind, uuid=uuid, param=param["code"], old_value=old_value, new_value=value, comment=comment)
+                    db_obj.store()
+                self.call("%s.params-redirect" % self.kind, uuid)
+                self.call("admin.response", self._("Parameter value stored"), {})
+        old_value = db_obj.get(param["code"], param.get("default", 0))
+        fields = [
+            {"name": "value", "value": old_value, "label": htmlescape(param["name"])},
+            {"name": "comment", "label": self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")},
+        ]
+        self.call("admin.form", fields=fields)
 
 class Params(ConstructorModule):
     def register(self):
-        self.rdep(["mg.mmorpg.params.Fake"])
+        self.rdep(["mg.constructor.params.Fake"])
         self.rhook("%s.params" % self.kind, self.params)
         self.rhook("%s.param" % self.kind, self.param)
         self.rhook("%s.param-value" % self.kind, self.value)
@@ -411,4 +473,4 @@ class Params(ConstructorModule):
 
 class ParamsLibrary(ConstructorModule):
     def register(self):
-        self.rdep(["mg.mmorpg.params.Fake"])
+        self.rdep(["mg.constructor.params.Fake"])

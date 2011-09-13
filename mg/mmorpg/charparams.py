@@ -1,4 +1,4 @@
-from mg.mmorpg.params import *
+from mg.constructor.params import *
 from mg.constructor.player_classes import *
 import re
 
@@ -18,6 +18,18 @@ class CharacterParamsAdmin(ParamsAdmin):
         ParamsAdmin.register(self)
         self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("characters.params-url", self.params_url)
+        self.rhook("characters.params-redirect", self.params_redirect)
+        self.rhook("characters.params-obj", self.params_obj)
+
+    def params_url(self, uuid):
+        return "auth/user-dashboard/%s" % uuid
+
+    def params_redirect(self, uuid):
+        self.call("admin.redirect", "auth/user-dashboard/%s" % uuid, parameters={"active_tab": "params"})
+
+    def params_obj(self, uuid):
+        return self.character(uuid).db_params
 
     def menu_characters_index(self, menu):
         req = self.req()
@@ -29,13 +41,17 @@ class CharacterParamsAdmin(ParamsAdmin):
         if req.has_access("characters.params-view"):
             character = self.character(user.uuid)
             if character.valid:
+                may_edit = req.has_access("characters.params-edit")
+                header = [self._("Code"), self._("parameter///Name"), self._("Value"), "HTML"]
+                if may_edit:
+                    header.append(self._("Changing"))
                 params = []
-                self.admin_view_params(character, params)
+                self.admin_view_params(character, params, may_edit)
                 tbl = {
                     "type": "params",
                     "title": self._("Parameters"),
                     "order": 50,
-                    "header": [self._("Code"), self._("parameter///Name"), self._("Value"), "HTML"],
+                    "header": header,
                     "rows": params,
                 }
             tables.append(tbl)

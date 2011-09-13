@@ -380,11 +380,13 @@ class CassandraObject(object):
         self.data = self.db.mc.get(row_mcid)
         if self.data == "tomb":
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
+            self.data = {}
             raise ObjectNotFoundException(row_id)
         elif self.data is None:
             try:
                 col = self.db.get(row_id, ColumnPath("Objects", column="data"), ConsistencyLevel.QUORUM).column
             except NotFoundException:
+                self.data = {}
                 raise ObjectNotFoundException(row_id)
             self.data = json.loads(col.value)
             self.db.mc.add(row_mcid, self.data, cache_interval)

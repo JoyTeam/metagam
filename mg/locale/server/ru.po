@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 11:38+0300\n"
+"PO-Revision-Date: 2011-09-13 12:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -214,6 +214,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Absolute values greater than 1 billion are not supported"
+msgstr "Абсолютные значения больше 1 миллиарда не поддерживаются"
 
 msgid "Absolutely crazy signature line"
 msgstr "Абсолютно сумасшедшая строка подписи"
@@ -684,6 +687,9 @@ msgstr "Изменить логотип игры прямо сейчас"
 
 msgid "Change your password"
 msgstr "Изменение пароля"
+
+msgid "Changing"
+msgstr "Изменение"
 
 msgid "Channel selection checkboxes"
 msgstr "Чекбоксы для выбора каналов"
@@ -3408,6 +3414,9 @@ msgstr "Публиковать таблицы параметра в API"
 msgid "Parameter value"
 msgstr "Значение параметра"
 
+msgid "Parameter value stored"
+msgstr "Значение параметра сохранено"
+
 msgid "Parameter values are visible in the API"
 msgstr "Публиковать значения параметра в API"
 
@@ -3732,6 +3741,9 @@ msgstr "Причина"
 
 msgid "Reason is mandatory"
 msgstr "Укажите причину"
+
+msgid "Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
+msgstr "Причина, по которой вы изменяете параметр. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
 msgid "Received"
 msgstr "Получено"
@@ -4680,6 +4692,9 @@ msgstr "Это название валюты занято"
 
 msgid "This dimension must be listed in the list of available dimensions above"
 msgstr "Размер должен быть перечислен в списке доступных размеров выше"
+
+msgid "This doesn't look like a number"
+msgstr "Это не похоже на число"
 
 msgid "This domain is a subject to the manual check. This may take up to 3 days"
 msgstr "Этот домен подлежит ручной проверке. Это может занять до 3 дней"
@@ -5708,6 +5723,9 @@ msgstr " "
 
 msgid "completed"
 msgstr "завершена"
+
+msgid "configuration"
+msgstr "конфигурация"
 
 msgid "confirm"
 msgstr "подтвердить"

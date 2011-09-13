@@ -10,6 +10,7 @@ re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$'
 re_valid_nonnegative_int = re.compile(r'^[0-9]+$')
 re_valid_nonnegative_float = re.compile(r'^[0-9]+(?:|\.[0-9]+)$')
 re_valid_int = re.compile(r'^-?[0-9]+$')
+re_valid_number = re.compile(r'^-?[0-9]+(?:|\.[0-9]+)$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
 re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 re_frac_part = re.compile(r'\..*?[1-9]')
@@ -46,6 +47,9 @@ def floatz(str, onerror=0):
         return float(str)
     except (ValueError, TypeError):
         return onerror
+
+def valid_number(str):
+    return re_valid_number.match(str)
 
 def valid_int(str):
     return re_valid_int.match(str)
