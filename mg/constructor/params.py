@@ -319,7 +319,7 @@ class ParamsAdmin(ConstructorModule):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 if old_value != value:
                     db_obj.set(param["code"], value)
-                    self.call("security.suspicion", admin=req.user(), action="param.change", kind=self.kind, uuid=uuid, param=param["code"], old_value=old_value, new_value=value, comment=comment)
+                    self.call("%s.param-changed" % self.kind, uuid=uuid, param=param, old_value=old_value, new_value=value, comment=comment)
                     db_obj.store()
                 self.call("%s.params-redirect" % self.kind, uuid)
                 self.call("admin.response", self._("Parameter value stored"), {})

@@ -57,6 +57,7 @@ class ConstructorProject(Module):
                 "mg.core.modifiers.Modifiers",
                 "mg.core.icons.IconsAdmin",
                 "mg.mmorpg.charparams.CharacterParams",
+                "mg.constructor.security.Security",
             ])
             if project.get("published"):
                 lst.extend([

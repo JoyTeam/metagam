@@ -21,6 +21,7 @@ class CharacterParamsAdmin(ParamsAdmin):
         self.rhook("characters.params-url", self.params_url)
         self.rhook("characters.params-redirect", self.params_redirect)
         self.rhook("characters.params-obj", self.params_obj)
+        self.rhook("characters.param-changed", self.param_changed)
 
     def params_url(self, uuid):
         return "auth/user-dashboard/%s" % uuid
@@ -55,6 +56,11 @@ class CharacterParamsAdmin(ParamsAdmin):
                     "rows": params,
                 }
             tables.append(tbl)
+
+    def param_changed(self, uuid, param, old_value, new_value, comment):
+        req = self.req()
+        self.call("security.suspicion", admin=req.user(), action="param.change", kind="characters", uuid=uuid, param=param["code"], old_value=old_value, new_value=new_value, comment=comment)
+        self.call("dossier.write", user=uuid, admin=req.user(), content=self._("{param_name} ({param_code}) changed from {old_value} to {new_value}:\n{comment}").format(param_name=param["name"], param_code=param["code"], old_value=old_value, new_value=new_value, comment=comment))
 
 class CharacterParams(Params):
     def __init__(self, app, fqn):
