@@ -150,7 +150,7 @@ class Domains(Module):
                 raise DNSCheckError(self._("Domain {0} has A records but no NS records. Configure your zone correctly").format(checkdomain))
             else:
                 raise DNSCheckError(not_found.format(checkdomain, ", ".join(dnsservers)))
-        return servers
+        return [ns.lower() for ns in servers]
 
     def recommended_actions(self, recommended_actions):
         project = self.app().project
