@@ -64,7 +64,7 @@ class CharacterParamsAdmin(ParamsAdmin):
                     "header": header,
                     "rows": params,
                 }
-            tables.append(tbl)
+                tables.append(tbl)
 
     def param_changed(self, uuid, param, old_value, new_value, comment):
         req = self.req()
