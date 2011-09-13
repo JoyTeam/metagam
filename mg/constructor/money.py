@@ -123,6 +123,8 @@ class Money(ConstructorModule):
                             op.data[e.args[0]] = "{%s}" % e.args[0]
                         else:
                             break
+                if op.get("comment"):
+                    rop["description"] = "%s: %s" % (rop["description"], htmlescape(op.get("comment")))
                 operations.append(rop)
             vars["operations"] = operations
             if pages > 1:

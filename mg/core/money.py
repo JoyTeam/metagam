@@ -376,17 +376,25 @@ class MoneyAdmin(Module):
         if req.param("ok"):
             errors = {}
             self.call("money.valid_amount", amount, currency, errors, "amount", "v_currency")
+            user_comment = req.param("user_comment").strip()
+            admin_comment = req.param("admin_comment").strip()
+            if not admin_comment:
+                errors["admin_comment"] = self._("This field is mandatory")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             amount = float(amount)
             member = MemberMoney(self.app(), user.uuid)
-            member.credit(amount, currency, "admin-give", admin=req.user())
+            member.credit(amount, currency, "admin-give", admin=req.user(), comment=user_comment)
+            self.call("security.suspicion", admin=req.user(), action="money.give", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
+            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Given {money_amount}:\n{comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
             self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Give amount"), "value": amount})
         fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
+        fields.append({"name": "user_comment", "label": self._("Comment for the user (can be empty)")})
+        fields.append({"name": "admin_comment", "label": self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")})
         buttons = [{"text": self._("Give")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -420,16 +428,24 @@ class MoneyAdmin(Module):
                     errors["amount"] = self._("money///Invalid amount precision")
             except ValueError:
                 errors["amount"] = self._("Invalid number format")
+            user_comment = req.param("user_comment").strip()
+            admin_comment = req.param("admin_comment").strip()
+            if not admin_comment:
+                errors["admin_comment"] = self._("This field is mandatory")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             member = MemberMoney(self.app(), user.uuid)
-            member.force_debit(amount, currency, "admin-take", admin=req.user())
+            member.force_debit(amount, currency, "admin-take", admin=req.user(), comment=user_comment)
+            self.call("security.suspicion", admin=req.user(), action="money.take", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
+            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Taken {money_amount}:\n{comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
             self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"
         fields = []
         fields.append({"name": "amount", "label": self._("Take amount"), "value": amount})
         fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
+        fields.append({"name": "user_comment", "label": self._("Comment for the user (can be empty)")})
+        fields.append({"name": "admin_comment", "label": self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")})
         buttons = [{"text": self._("Take")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -466,6 +482,8 @@ class MoneyAdmin(Module):
                         op.data[e.args[0]] = "{%s}" % e.args[0]
                     else:
                         break
+            if op.get("comment"):
+                rdescription = "%s: %s" % (rdescription, htmlescape(op.get("comment")))
             operations.append({
                 "performed": self.call("l10n.time_local", op.get("performed")),
                 "amount": op.get("amount"),
@@ -1061,6 +1079,7 @@ class Money(Module):
         self.rhook("money.valid_amount", self.valid_amount)
         self.rhook("money.real-currency", self.real_currency)
         self.rhook("money.format-price", self.format_price)
+        self.rhook("money.price-text", self.price_text)
         self.rhook("money.price-html", self.price_html)
         self.rhook("money.currency-info", self.currency_info)
         self.rhook("money.not-enough-funds", self.not_enough_funds)
@@ -1139,6 +1158,12 @@ class Money(Module):
         if price < min_val:
             price = min_val
         return price
+
+    def price_text(self, price, currency):
+        cinfo = self.currency_info(currency)
+        text_price = cinfo["format"] % price
+        text_currency = cinfo["code"]
+        return '%s %s' % (text_price, text_currency)
 
     def price_html(self, price, currency):
         cinfo = self.currency_info(currency)

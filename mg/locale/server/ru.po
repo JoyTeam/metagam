@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 13:21+0300\n"
+"PO-Revision-Date: 2011-09-13 13:38+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -962,6 +962,9 @@ msgstr "Цвета в подписи на {period_a}"
 
 msgid "Comment"
 msgstr "Комментировать"
+
+msgid "Comment for the user (can be empty)"
+msgstr "Комментарий для пользователя (может быть пустым)"
 
 msgid "Common game CSS (styles for character icons, level [5] markers etc). This file is included in every game page - index page, game interface, socio interface"
 msgstr "Общеигровой CSS (стили для иконок персонажей, маркеров уровней [5] и т.д.) Этот файл включается в каждую страницу игры - титульную, игровой интерфейс, социальный интерфейс"
@@ -2028,6 +2031,13 @@ msgstr "Выдать деньги"
 
 msgid "Given by the administration"
 msgstr "Выдано администрацией"
+
+msgid ""
+"Given {money_amount}:\n"
+"{comment}"
+msgstr ""
+"Выдано {money_amount}:\n"
+"{comment}"
 
 msgid "Giving and taking money"
 msgstr "Выдача и взятие денег"
@@ -3745,6 +3755,9 @@ msgstr "Укажите причину"
 msgid "Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
 msgstr "Причина, по которой вы изменяете параметр. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
+msgid "Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
+msgstr "Причина, по которой вы выдаёте деньги пользователю. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+
 msgid "Received"
 msgstr "Получено"
 
@@ -4601,6 +4614,13 @@ msgstr "Взять деньги"
 
 msgid "Taken by the administration"
 msgstr "Изъято администрацией"
+
+msgid ""
+"Taken {money_amount}:\n"
+"{comment}"
+msgstr ""
+"Изъято {money_amount}:\n"
+"{comment}"
 
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."

@@ -5,6 +5,7 @@ class SecuritySuspicion(CassandraObject):
         "performed": [[], "performed"],
         "app-performed": [["app"], "performed"],
         "app-action-performed": [["app", "action"], "performed"],
+        "action-performed": [["action"], "performed"],
         "admin-performed": [["admin"], "performed"],
     }
 
