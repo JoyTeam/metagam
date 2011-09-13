@@ -68,16 +68,6 @@ class StorageAdmin(Module):
             self.call("admin.redirect", "storage/static")
         self.call("admin.advice", {"title": self._("Storage documentation"), "content": self._('You can read detailed information on the static storage in <a href="//www.%s/doc/storage" target="_blank">the documentation</a>') % self.app().inst.config["main_host"]})
         if req.args == "new":
-            # certificate check
-            wmids = self.main_app().hooks.call("wmid.check", self.app().project.get("owner"))
-            if not wmids:
-                self.call("admin.response", self._('To use static storage game owner must have a <a href="//www.%s/doc/wmcertificates" target="_blank">WMID attached to his account</a>') % self.app().inst.config["main_host"], {})
-            lvl = 0
-            for wmid, cert in wmids.iteritems():
-                if cert > lvl:
-                    lvl = cert
-            if lvl < 120:
-                self.call("admin.response", self._('To use static storage game owner\'s WMID must have the <a href="//www.%s/doc/wmcertificates" target="_blank">Initial certificate</a>') % self.app().inst.config["main_host"], {})
             if req.ok():
                 self.call("web.upload_handler")
                 errors = {}
@@ -110,6 +100,18 @@ class StorageAdmin(Module):
                         max_size = 3
                     if len(ob.value) > max_size * 1024 * 1024:
                         errors["ob"] = self._("Maximal file size for this file type &mdash; %d megabytes") % max_size
+                    elif len(ob.value) > 30 * 1024:
+                        # certificate check
+                        wmids = self.main_app().hooks.call("wmid.check", self.app().project.get("owner"))
+                        if not wmids:
+                            errors["ob"] = self._('To store static objects larger than 30 kb game owner must have a WMID attached to his account')
+                        else:
+                            lvl = 0
+                            for wmid, cert in wmids.iteritems():
+                                if cert > lvl:
+                                    lvl = cert
+                            if lvl < 120:
+                                errors["ob"] = self._('To store static objects larger than 30 kb game owner\'s WMID must have the Initial certificate')
                 if errors:
                     self.call("web.response_json_html", {"success": False, "errors": errors})
                 uri = self.call("cluster.static_upload", "userstore", None, ob.type, ob.value, filename)

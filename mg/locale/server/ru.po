@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 13:38+0300\n"
+"PO-Revision-Date: 2011-09-13 13:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4869,6 +4869,12 @@ msgstr "Чтобы настроить вид ваших писем, вы мож�
 msgid "To raise your income you can offer some subscription-based <hook:admin.link href=\"paidservices/editor\" title=\"paid services\" /> to your players"
 msgstr "Чтобы повысить ваш доход, вы можете предложить игрокам какие-либо <hook:admin.link href=\"paidservices/editor\" title=\"платные услуги\" /> по подписке."
 
+msgid "To store static objects larger than 30 kb game owner must have a WMID attached to his account"
+msgstr "Чтобы сохранять статические объекты объёмом более 30 килобайт, к аккаунту владельца игры должен быть присоединён WMID"
+
+msgid "To store static objects larger than 30 kb game owner's WMID must have the Initial certificate"
+msgstr "Чтобы сохранять статические объекты объёмом более 30 килобайт, WMID владельца игры должен иметь Начальный аттестат"
+
 msgid "To the main page"
 msgstr "На главную страницу"
 
@@ -4886,14 +4892,6 @@ msgstr "Чтобы использовать аукцион заявок, вам 
 
 msgid "To use smiles in the signature <a href=\"/socio/paid-services\">subscribe to the corresponding service</a>"
 msgstr "Чтобы использовать смайлики в подписи, <a href=\"/socio/paid-services\">подключите соответствующую услугу</a>"
-
-#, python-format
-msgid "To use static storage game owner must have a <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">WMID attached to his account</a>"
-msgstr "Чтобы использовать статическое хранилище, к аккаунту владельца игры должен быть <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">присоединён WMID</a>"
-
-#, python-format
-msgid "To use static storage game owner's WMID must have the <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">Initial certificate</a>"
-msgstr "Чтобы использовать статическое хранилище, WMID владельца игры должен иметь <a href=\"//www.%s/doc/wmcertificates\" target=\"_blank\">Начальный аттестат</a>"
 
 msgid "Top"
 msgstr "Верх"
