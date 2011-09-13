@@ -41,7 +41,7 @@ class ScriptEngine(ConstructorModule):
             try:
                 parser.eoi()
             except Parsing.SyntaxError as e:
-                raise ScriptParserError("Expression unexpectedly ended", exc)
+                raise ScriptParserError("Expression unexpectedly ended", e)
         except ScriptParserResult as e:
             return e.val
 

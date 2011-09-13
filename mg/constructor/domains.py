@@ -203,7 +203,7 @@ class DomainRegWizard(Wizard):
                     if rec.get("user") != self.app().project.get("owner"):
                         errors["domain_name"] = self._("This domain is already registered by another user of the MMO Constructor")
                     elif rec.get("registered") == "pending":
-                        errors["domain_name"] = self._("This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s" % rec.get("registrar_id"))
+                        errors["domain_name"] = self._("This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s") % rec.get("registrar_id")
                     elif rec.get("project"):
                         errors["domain_name"] = self._("This domain is already assigned to a project")
                     else:
@@ -388,7 +388,7 @@ class DomainRegWizard(Wizard):
                 "BeOwnerYourself": self._("MMO Constructor will be the owner of the domain"),
                 "PersonR": self._("Your name (in your language). For example: <strong>John A Smith</strong>"),
                 "Person": self._("Your name (in English). For example: <strong>John A Smith</strong>"),
-                "Passport": self._("Your passport number"),
+                "Passport": self._("Your passport number, issuer and issue date"),
                 "BirthDate": self._("Your birthday in DD.MM.YYYY format. For example: <strong>31.12.1980</strong>"),
                 "AddressR": self._("Your official registration address (in your language)"),
                 "PAddr": self._("Your postal address (in your language)"),

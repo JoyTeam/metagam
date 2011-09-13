@@ -4,6 +4,7 @@ from mg.core.money_classes import *
 import re
 
 re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
+re_param_attr = re.compile(r'^p_(.+)')
 
 # Database objects
 
@@ -40,6 +41,22 @@ class DBCharImageList(CassandraObjectList):
     def __init__(self, *args, **kwargs):
         kwargs["clsprefix"] = "CharImage-"
         kwargs["cls"] = DBCharImage
+        CassandraObjectList.__init__(self, *args, **kwargs)
+
+class DBCharParams(CassandraObject):
+    _indexes = {}
+
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharParams-"
+        CassandraObject.__init__(self, *args, **kwargs)
+
+    def indexes(self):
+        return DBCharParams._indexes
+
+class DBCharParamsList(CassandraObjectList):
+    def __init__(self, *args, **kwargs):
+        kwargs["clsprefix"] = "CharParams-"
+        kwargs["cls"] = DBCharParams
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class DBCharacter(CassandraObject):
@@ -147,6 +164,14 @@ class Character(Module):
         except AttributeError:
             self._db_charimage = self.obj(DBCharImage, self.uuid)
             return self._db_charimage
+
+    @property
+    def db_params(self):
+        try:
+            return self._db_params
+        except AttributeError:
+            self._db_params = self.obj(DBCharParams, self.uuid, silent=True)
+            return self._db_params
 
     @property
     def valid(self):
@@ -358,7 +383,12 @@ class Character(Module):
             perms = self.call("auth.permissions", self.uuid)
             return 1 if perms and len(perms) else 0
         else:
-            raise AttributeError(attr)
+            m = re_param_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param(param)
+            else:
+                raise AttributeError(attr)
 
     @property
     def restraints(self):
@@ -383,6 +413,21 @@ class Character(Module):
         except AttributeError:
             self._page_avatar = self.call("character.page-avatar", self)
             return self._page_avatar
+
+    def param(self, key):
+        try:
+            cache = self._param_cache
+        except AttributeError:
+            cache = {}
+            self._param_cache = cache
+        try:
+            return cache[key]
+        except KeyError:
+            # 'param-value' handles cache storing automatically
+            return self.call("characters.param-value", self, key)
+
+    def script_params(self):
+        return {"char": self}
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

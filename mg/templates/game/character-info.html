@@ -9,10 +9,16 @@
 		<td class="charinfo-layout-info">
 			<table class="charinfo-table-info">
 				[%foreach param in character.params%]
+				[%if param.header%]
+				<tr>
+					<td colspan=2" class="charinfo-param-header">[%param.header%]</td>
+				</tr>
+				[%else%]
 				<tr>
 					<td class="charinfo-param-name">[%param.name%]</td>
-					<td class="charinfo-param-value">[%param.value%]</td>
+					<td class="charinfo-param-value">[%param.value%][%param.library_icon%]</td>
 				</tr>
+				[%end%]
 				[%end%]
 			</table>
 		</td>

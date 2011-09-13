@@ -30,7 +30,7 @@ Form = Ext.extend(AdminResponse, {
 				elem = {
 					border: false,
 					cls: 'text',
-					html: '<h1>' + it.html + '</h1>'
+					html: '<h1 class="admin-form-header">' + it.html + '</h1>'
 				};
 			} else if (it.type == 'html') {
 				elem = {

@@ -1,6 +1,6 @@
 from mg import *
 from mg.constructor import *
-from mg.mmo.locations_classes import *
+from mg.mmorpg.locations_classes import *
 import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import re
@@ -30,7 +30,7 @@ class LocationsAdmin(ConstructorModule):
         objclasses["Location"] = (DBLocation, DBLocationList)
 
     def child_modules(self):
-        lst = ["mg.mmo.locations.LocationsStaticImages", "mg.mmo.locations.LocationsStaticImagesAdmin"]
+        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin"]
         return lst
 
     def menu_root_index(self, menu):

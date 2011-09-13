@@ -1,0 +1,12 @@
+<h1>Параметры персонажа</h1>
+
+[%foreach param in params%]
+[%if param.header%]
+<h2>[%param.header%]</h2>
+[%else%]
+<a name="[%param.code%]"></a>
+<h3>[%param.name%]</h3>
+[%param.description%]
+[%if param.tables%]<p><a href="[%param.tables.uri%]">[%OpenTable%]</a></p>[%end%]
+[%end%]
+[%end%]

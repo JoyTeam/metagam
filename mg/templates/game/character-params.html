@@ -1,0 +1,19 @@
+<div class="charparams-layout">
+	<a href="/interface/character">[%Ret%]</a>
+	[%if character.params%]
+	<table class="charparams-table">
+		[%foreach param in character.params%]
+		[%if param.header%]
+		<tr>
+			<td colspan=2" class="charparams-param-header">[%param.header%]</td>
+		</tr>
+		[%else%]
+		<tr>
+			<td class="charparams-param-name">[%param.name%]</td>
+			<td class="charparams-param-value">[%param.value%][%param.library_icon%]</td>
+		</tr>
+		[%end%]
+		[%end%]
+	</table>
+	[%end%]
+</div>

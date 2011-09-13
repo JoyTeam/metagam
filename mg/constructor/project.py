@@ -48,7 +48,7 @@ class ConstructorProject(Module):
                 "mg.core.auth.Dossiers",
                 "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
                 "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
-                "mg.mmo.locations.Locations", "mg.mmo.locations.LocationsAdmin",
+                "mg.mmorpg.locations.Locations", "mg.mmorpg.locations.LocationsAdmin",
                 "mg.core.icons.Icons",
                 "mg.socio.SocioAdmin",
                 "mg.constructor.money.Money",
@@ -56,6 +56,7 @@ class ConstructorProject(Module):
                 "mg.constructor.paidservices.PaidServicesAdmin",
                 "mg.core.modifiers.Modifiers",
                 "mg.core.icons.IconsAdmin",
+                "mg.mmorpg.charparams.CharacterParams",
             ])
             if project.get("published"):
                 lst.extend([

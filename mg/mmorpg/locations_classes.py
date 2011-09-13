@@ -41,7 +41,7 @@ class DBCharacterLocationList(CassandraObjectList):
         CassandraObjectList.__init__(self, *args, **kwargs)
 
 class Location(Module):
-    def __init__(self, app, uuid, fqn="mg.mmo.locations.Location"):
+    def __init__(self, app, uuid, fqn="mg.mmorpg.locations.Location"):
         Module.__init__(self, app, fqn)
         self.uuid = uuid
 

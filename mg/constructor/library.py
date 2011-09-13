@@ -74,6 +74,19 @@ class Library(ConstructorModule):
         self.rhook("library-page-index.content", self.page_index)
         self.rhook("hook-lib.catalog", self.hook_catalog)
         self.rhook("library.page-groups", self.page_groups)
+        self.rhook("library.icon", self.icon)
+        self.rhook("admin-icons.list", self.icons_list)
+
+    def icons_list(self, icons):
+        icons.append({
+            "code": "library-icon",
+            "title": self._("Library icon"),
+            "default": "/st-mg/icons/library-icon.png",
+        })
+
+    def icon(self, uri):
+        img = self.call("icon.get", "library-icon", default_icon="/st-mg/icons/library-icon.png")
+        return ' <a href="%s" target="_blank"><img src="%s" alt="?" /></a>' % (uri, img)
 
     def button_blocks(self, blocks):
         blocks.append({"id": "library", "title": self._("Library"), "class": "library"})
