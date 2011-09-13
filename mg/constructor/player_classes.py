@@ -268,7 +268,7 @@ class Character(Module):
             self.call("characters.name-params", [self], params)
             params = params[self.uuid]
             self.call("characters.name-fixup", self, purpose, params)
-            val = self.call("characters.name-render", template, params)
+            val = self.call("characters.name-render", template, self, params)
             mc.set(mcid, val)
         html[purpose] = val
         return val

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 15:16+0300\n"
+"PO-Revision-Date: 2011-09-13 17:23+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -214,6 +214,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
+msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
 
 msgid "Absolute values greater than 1 billion are not supported"
 msgstr "Абсолютные значения больше 1 миллиарда не поддерживаются"
@@ -6257,6 +6260,9 @@ msgstr "выдать"
 
 msgid "results///Search"
 msgstr "Поиск"
+
+msgid "script"
+msgstr "скрипт"
 
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"

@@ -354,7 +354,11 @@ class CharactersMod(ConstructorModule):
                 return [htmlescape(args), "characters/names"]
         return self._("Character names")
 
-    def name_render(self, template, params):
+    def name_render(self, template, character, params):
+        try:
+            template = self.call("script.evaluate-text", template, {"char": character})
+        except ScriptError:
+            template = self.call("script.unparse-text", template)
         if type(template) != unicode:
             template = unicode(template)
         watchdog = 0
@@ -385,7 +389,9 @@ class CharactersMod(ConstructorModule):
                 if not template:
                     errors["template"] = self._("This field is mandatory")
                 else:
-                    tokens = re_tokens.findall(template)
+                    char = self.character(req.user())
+                    template = self.call("script.admin-text", "template", errors, {"char": char}, skip_tokens=valid_tokens)
+                    tokens = re_tokens.findall(self.call("script.evaluate-text", template, {"char": char}))
                     for token in tokens:
                         if token not in valid_tokens:
                             errors["template"] = self._("Unknown token {%s}") % htmlescape(token)
@@ -398,11 +404,15 @@ class CharactersMod(ConstructorModule):
                 self.app().mc.incr_ver("character-names")
                 self.call("admin.redirect", "characters/names")
             else:
-                template = self.conf("character.name-template-%s" % pinfo["id"], pinfo["default"])
+                template = self.call("script.unparse-text", self.conf("character.name-template-%s" % pinfo["id"], pinfo["default"]))
+            tokens.append({
+                "id": self._("script"),
+                "description": self._("Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"),
+            })
             tokens_html = '<div class="admin-description">%s</div>' % ''.join(['<div><strong>{%s}</strong> &mdash; %s</div>' % (token["id"], token["description"]) for token in tokens])
             fields = [
                 {"type": "html", "html": tokens_html},
-                {"name": "template", "value": template, "label": self._("Name template (valid tags are shown above)")},
+                {"name": "template", "value": template, "label": '%s%s' % (self._("Name template (valid tags are shown above)"), self.call("script.help-icon-expressions"))},
             ]
             self.call("admin.form", fields=fields)
         purposes = []
@@ -415,7 +425,7 @@ class CharactersMod(ConstructorModule):
             template = self.conf("character.name-template-%s" % purp["id"], purp["default"])
             rows.append([
                 purp["title"],
-                self.name_render(template, sample_params),
+                self.name_render(template, self.character(req.user()), sample_params),
                 '<hook:admin.link href="characters/names/%s" title="%s" />' % (purp["id"], self._("edit")),
             ])
         vars = {

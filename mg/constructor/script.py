@@ -121,8 +121,9 @@ class ScriptEngine(ConstructorModule):
         else:
             return str(val)
 
-    def parse_text(self, text):
+    def parse_text(self, text, skip_tokens=None):
         parser = ScriptTextParser(self.app(), self.parser_spec)
+        parser.skip_tokens = skip_tokens
         try:
             parser.scan(text)
             # Tell the parser that the end of input has been reached.
@@ -377,7 +378,7 @@ class ScriptEngine(ConstructorModule):
         kwargs["text"] = True
         return self.admin_field(*args, **kwargs)
 
-    def admin_field(self, name, errors, globs={}, require_glob=None, text=False):
+    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None):
         req = self.req()
         expression = req.param(name)
         if not expression:
@@ -386,7 +387,7 @@ class ScriptEngine(ConstructorModule):
         # Parsing
         try:
             if text:
-                expression = self.call("script.parse-text", expression)
+                expression = self.call("script.parse-text", expression, skip_tokens=skip_tokens)
             else:
                 expression = self.call("script.parse-expression", expression)
         except ScriptParserError as e:

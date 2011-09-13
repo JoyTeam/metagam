@@ -322,6 +322,7 @@ class ScriptTextParser(Module):
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptTextParser")
         self.spec = spec
+        self.skip_tokens = None
         self.tokens = []
 
     def scan(self, input):
@@ -349,15 +350,20 @@ class ScriptTextParser(Module):
                     self.tokens.append(["index", e.val] + res[2].split(","))
             elif res[3] is not None:
                 # parsing script include: {...}
-                parser = ScriptParser(self.app(), self.spec)
-                try:
-                    parser.scan(res[3])
+                if self.skip_tokens and res[3] in self.skip_tokens:
+                    # reserved tokens
+                    self.tokens.append('{%s}' % res[3])
+                else:
+                    # calling parser
+                    parser = ScriptParser(self.app(), self.spec)
                     try:
-                        parser.eoi()
-                    except Parsing.SyntaxError as e:
-                        raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[2])
-                except ScriptParserResult as e:
-                    self.tokens.append(e.val)
+                        parser.scan(res[3])
+                        try:
+                            parser.eoi()
+                        except Parsing.SyntaxError as e:
+                            raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[2])
+                    except ScriptParserResult as e:
+                        self.tokens.append(e.val)
             pos = token_match.end()
 
     def eoi(self):
