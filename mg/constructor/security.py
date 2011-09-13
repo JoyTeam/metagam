@@ -26,6 +26,7 @@ class Security(ConstructorModule):
     def register(self):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("security.suspicion", self.suspicion)
+        self.rhook("security.icon", self.icon)
 
     def objclasses_list(self, objclasses):
         objclasses["SecuritySuspicion"] = (SecuritySuspicion, SecuritySuspicionList)
@@ -37,3 +38,6 @@ class Security(ConstructorModule):
         for key, value in kwargs.iteritems():
             ent.set(key, value)
         ent.store()
+
+    def icon(self):
+        return ' <a href="//www.%s/doc/security" target="_blank"><img class="inline-icon" src="/st-mg/icons/security-check.png" alt="[sec]" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Read security note"))

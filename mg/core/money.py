@@ -398,7 +398,7 @@ class MoneyAdmin(Module):
         fields.append({"name": "amount", "label": self._("Give amount"), "value": amount})
         fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
         fields.append({"name": "user_comment", "label": self._("Comment for the user (can be empty)")})
-        fields.append({"name": "admin_comment", "label": self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")})
+        fields.append({"name": "admin_comment", "label": '%s%s' % (self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")})
         buttons = [{"text": self._("Give")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -449,7 +449,7 @@ class MoneyAdmin(Module):
         fields.append({"name": "amount", "label": self._("Take amount"), "value": amount})
         fields.append({"name": "currency", "label": self._("Currency"), "type": "combo", "value": currency, "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()]})
         fields.append({"name": "user_comment", "label": self._("Comment for the user (can be empty)")})
-        fields.append({"name": "admin_comment", "label": self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")})
+        fields.append({"name": "admin_comment", "label": '%s%s' % (self._("Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")})
         buttons = [{"text": self._("Take")}]
         self.call("admin.form", fields=fields, buttons=buttons)
 

@@ -326,7 +326,7 @@ class ParamsAdmin(ConstructorModule):
         old_value = db_obj.get(param["code"], param.get("default", 0))
         fields = [
             {"name": "value", "value": old_value, "label": htmlescape(param["name"])},
-            {"name": "comment", "label": self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept")},
+            {"name": "comment", "label": '%s%s' % (self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")},
         ]
         self.call("admin.form", fields=fields)
 

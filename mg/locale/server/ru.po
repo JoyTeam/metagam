@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 14:17+0300\n"
+"PO-Revision-Date: 2011-09-13 14:45+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3706,6 +3706,9 @@ msgstr "О том, как создать ваш собственный шабл�
 
 msgid "Read more"
 msgstr "Читать далее"
+
+msgid "Read security note"
+msgstr "Прочитайте информацию о безопасности"
 
 msgid "Real in English"
 msgstr "Реал на английском"
