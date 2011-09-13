@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 13:47+0300\n"
+"PO-Revision-Date: 2011-09-13 14:05+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1369,6 +1369,9 @@ msgstr "Доменное имя (без www)"
 
 msgid "Domain name can't contain 'www'"
 msgstr "Доменное имя не может содержать 'www'"
+
+msgid "Domain name can't contain double dash ('--'). International domain names are not supported"
+msgstr "Доменное имя не может содержать двух минусов подряд (--). Многоязычные имена доменов не поддерживаются"
 
 msgid "Domain name is too long"
 msgstr "Доменное имя слишком длинное"

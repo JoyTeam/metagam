@@ -13,6 +13,7 @@ re_birth_date = re.compile(r'^\d\d\.\d\d\.\d\d\d\d$')
 re_phone = re.compile(r'^\+\d[ \d]+$')
 re_i7_response = re.compile(r'^<html><body>(\S*):\s*(\d*)\s+(\S*)\s+(\S*)(,\s*in progress|)</body></html>$')
 re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
+re_double_dash = re.compile(r'--')
 
 class DNSCheckError(Exception):
     pass
@@ -188,6 +189,8 @@ class DomainRegWizard(Wizard):
             errors = {}
             if not re.match(r'^[a-z0-9][a-z0-9\-]*$', domain_name):
                 errors["domain_name"] = self._("Invalid domain name. It must begin with letter a-z or digit 0-9 and contain letters, digits and '-' sign")
+            elif re_double_dash.search(domain_name):
+                errors["domain_name"] = self._("Domain name can't contain double dash ('--'). International domain names are not supported")
             if not tld in tlds:
                 errors["tld"] = self._("Select top level domain")
             if len(errors):
@@ -714,6 +717,8 @@ class DomainWizard(Wizard):
                     errors["domain"] = self._("Specify your domain name")
                 elif not re_domain.match(domain):
                     errors["domain"] = self._("Invalid domain name")
+                elif re_double_dash.search(domain):
+                    errors["domain"] = self._("Domain name can't contain double dash ('--'). International domain names are not supported")
                 elif len(domain) > 63:
                     errors["domain"] = self._("Domain name is too long")
                 if not len(errors):
