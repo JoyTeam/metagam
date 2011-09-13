@@ -305,8 +305,9 @@ class L10n(Module):
         lang = self.call("l10n.lang")
         if lang == "ru":
             stemmed = self.stem(singular)
-            return u"{0}/{1}???/{1}???".format(singular, stemmed)
-        return u"{0}/{0}???s".format(singular)
+            return u"{1}???/{1}???/{1}???".format(singular, stemmed)
+        stemmed = self.stem(singular)
+        return u"{1}???/{1}???".format(singular, stemmed)
 
     def l10n_literal_values_valid(self, values):
         if type(values) == str or type(values) == unicode:

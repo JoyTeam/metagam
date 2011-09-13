@@ -100,7 +100,7 @@ class MoneyAdmin(Module):
                     self.call("admin.redirect", "money/currencies/new", {
                         "name_local": self.call("l10n.literal_values_sample", name_local),
                         "name_plural": u"%s???" % self.stem(name_local),
-                        "name_en": u"{0}/{0}???s".format(name_en),
+                        "name_en": u"{0}???/{0}???".format(name_en),
                     })
                 fields = []
                 fields.append({"name": "name_local", "label": self._('Currency name')})
@@ -175,6 +175,10 @@ class MoneyAdmin(Module):
                                     errors["name_en"] = self._("Invalid symbol: '%s'") % htmlescape(sym)
                                 elif project and (project.get("moderation") or project.get("published")) and name_en != info.get("name_en") and info.get("real"):
                                     errors["name_en"] = self._("You can't change real money currency name after game publication")
+                                else:
+                                    for val in values:
+                                        if val.lower() == "golds":
+                                            errors["name_en"] = self._("en///Gold in plural is 'Gold'")
                     if precision < 0:
                         errors["precision"] = self._("Precision can't be negative")
                     elif precision > 4:

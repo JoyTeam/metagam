@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 14:05+0300\n"
+"PO-Revision-Date: 2011-09-13 14:17+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4857,6 +4857,9 @@ msgstr "Код названия"
 msgid "Title in English"
 msgstr "Название на английском языке"
 
+msgid "Title must not be ended with a dot"
+msgstr "Название не может заканчиваться точкой"
+
 msgid "Title of the game"
 msgstr "Название игры"
 
@@ -5489,6 +5492,9 @@ msgstr "Вы ещё не прошли проверку WMID"
 msgid "You must confirm you are of the full legal age"
 msgstr "Вы должны подтвердить, что являетесь совершеннолетним"
 
+msgid "You must not have a space before a colon (:) and must have a space after a colon (:)"
+msgstr "Перед двоеточием (:) не должно быть пробела, а после двоеточия он должен быть"
+
 msgid "You must supply real money price for this currency"
 msgstr "Вы должны задать цену в реальных деньгах за эту валюту"
 
@@ -5801,6 +5807,9 @@ msgstr "редактировать"
 
 msgid "editing"
 msgstr "редактирование"
+
+msgid "en///Gold in plural is 'Gold'"
+msgstr "\"Gold\" во множественном числе будет \"Gold\""
 
 msgid "enable"
 msgstr "включить"

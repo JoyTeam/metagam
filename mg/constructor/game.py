@@ -4,6 +4,7 @@ import re
 re_bad_symbols = re.compile(r'([^\w\- \.,:])', re.UNICODE)
 re_bad_english_symbols = re.compile(r'([^a-z0-9A-Z\-_ \.,:])')
 re_module_action = re.compile(r'^(enable|disable)/([a-z0-9\-]+)$')
+re_invalid_colon = re.compile(r' :|:[^ ]')
 
 class Game(Module):
     def register(self):
@@ -70,6 +71,10 @@ class Game(Module):
                     if m:
                         sym = m.group(1)
                         errors["title_full"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
+                    elif title_full.endswith("."):
+                        errors["title_full"] = self._("Title must not be ended with a dot")
+                    elif re_invalid_colon.search(title_full):
+                        errors["title_full"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_short:
                     errors["title_short"] = self._("Enter short title")
                 elif len(title_short) > 17:
@@ -79,6 +84,10 @@ class Game(Module):
                     if m:
                         sym = m.group(1)
                         errors["title_short"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
+                    elif title_short.endswith("."):
+                        errors["title_short"] = self._("Title must not be ended with a dot")
+                    elif re_invalid_colon.search(title_short):
+                        errors["title_short"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_code:
                     errors["title_code"] = self._("Enter code")
                 elif len(title_code) > 5:
@@ -95,6 +104,10 @@ class Game(Module):
                         if m:
                             sym = m.group(1)
                             errors["title_en"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
+                        elif title_en.endswith("."):
+                            errors["title_en"] = self._("Title must not be ended with a dot")
+                        elif re_invalid_colon.search(title_en):
+                            errors["title_en"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
             if not description:
                 errors["description"] = self._("Game description must not be empty")
             if len(errors):
