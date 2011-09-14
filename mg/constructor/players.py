@@ -46,6 +46,8 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.param-changed", self.characters_param_changed, priority=10)
         self.rhook("auth.name-changed", self.name_changed, priority=10)
         self.rhook("auth.permissions-changed", self.permissions_changed, priority=10)
+        self.rhook("modifier.created", self.modifier_created)
+        self.rhook("modifier.destroyed", self.modifier_destroyed)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -646,3 +648,17 @@ class CharactersMod(ConstructorModule):
     def permissions_changed(self, user):
         character = self.character(user.uuid)
         character.name_invalidate()
+
+    def modifier_created(self, mod):
+        if mod.get("target_type") != "user":
+            return
+        character = self.character(mod.get("target"))
+        if character.valid:
+            character.name_invalidate()
+
+    def modifier_destroyed(self, mod):
+        if mod.get("target_type") != "user":
+            return
+        character = self.character(mod.get("target"))
+        if character.valid:
+            character.name_invalidate()

@@ -107,23 +107,24 @@ class Modifiers(Module):
         sched.add("modifiers.cleanup", "20 1 * * *", priority=10)
 
     def mod_cleanup(self):
-        modifiers = self.objlist(SessionList, query_index="till", query_finish=self.now())
-        modifiers.load(silent=True)
-        modifiers.remove()
-        # Invalidating cache
-        for mod in modifiers:
-            try:
-                del self.req()._modifiers_cache[mod.get("target")]
-            except AttributeError:
-                pass
-            except KeyError:
-                pass
-        # Processing destroyed events
-        for mod in modifiers:
-            try:
-                self.mod_destroyed(mod)
-            except Exception as e:
-                self.exception(e)
+        with self.lock(["ModifiersCleanup"]):
+            modifiers = self.objlist(SessionList, query_index="till", query_finish=self.now())
+            modifiers.load(silent=True)
+            modifiers.remove()
+            # Invalidating cache
+            for mod in modifiers:
+                try:
+                    del self.req()._modifiers_cache[mod.get("target")]
+                except AttributeError:
+                    pass
+                except KeyError:
+                    pass
+            # Processing destroyed events
+            for mod in modifiers:
+                try:
+                    self.mod_destroyed(mod)
+                except Exception as e:
+                    self.exception(e)
 
     def mod_stop(self, mod):
         try:
@@ -152,7 +153,7 @@ class Modifiers(Module):
 
     def mod_destroyed(self, mod):
         self.debug("Destroyed modifier %s: %s", mod.uuid, mod.data)
-        self.call("modifiers.destroyed", mod)
+        self.call("modifier.destroyed", mod)
 
     def objclasses_list(self, objclasses):
         objclasses["Modifier"] = (DBModifier, DBModifierList)
@@ -197,10 +198,30 @@ class Modifiers(Module):
         mobj.set("cls", self.app().inst.cls)
         mobj.store()
         obj.store()
+        # invalidating modifiers cache
+        self.mod_invalidate(target)
+        self.call("modifier.created", obj)
         return obj
 
+    def mod_invalidate(self, target=None):
+        try:
+            req = self.req()
+        except AttributeError:
+            return
+        if target is None:
+            try:
+                delattr(req, "_modifiers_cache")
+            except AttributeError:
+                pass
+        else:
+            try:
+                del req._modifiers_cache[target]
+            except KeyError:
+                pass
+            except AttributeError:
+                pass
+
     def mod_list(self, target):
-        cache = False
         try:
             req = self.req()
         except AttributeError:
@@ -216,12 +237,18 @@ class Modifiers(Module):
             except KeyError:
                 pass
         modifiers = {}
+        now = self.now()
         lst = self.objlist(DBModifierList, query_index="target", query_equal=target)
         lst.load(silent=True)
+        now = None
         for ent in lst:
             kind = ent.get("kind")
             val = ent.get("value")
             till = ent.get("till")
+            if now is None:
+                now = self.now()
+            if now > till:
+                continue
             res = modifiers.get(kind)
             if res:
                 if val > res["maxval"]:

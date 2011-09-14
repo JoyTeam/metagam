@@ -16,7 +16,7 @@ class PaidServices(ConstructorModule):
         self.rhook("paidservices.offers", self.offers)
         self.rhook("paidservices.prolong", self.prolong)
         self.rhook("paidservices.render", self.render)
-        self.rhook("modifiers.destroyed", self.modifiers_destroyed)
+        self.rhook("modifier.destroyed", self.modifier_destroyed)
         self.rhook("ext-paidservices.index", self.paidservices_index, priv="logged")
         self.rhook("ext-paidservices.paid-service", self.ext_paid_service, priv="logged")
         self.rhook("ext-paidservices.prolong-enable", self.paidservices_prolong, priv="logged")
@@ -170,7 +170,7 @@ class PaidServices(ConstructorModule):
                     self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
             return True
 
-    def modifiers_destroyed(self, mod):
+    def modifier_destroyed(self, mod):
         if not mod.get("auto_prolong"):
             return
         srv = self.call("paidservices.%s" % mod.get("kind"))

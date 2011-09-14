@@ -96,7 +96,7 @@ class Queue(Module):
                 app_cls = self.app().inst.cls
             if at is None:
                 at = time.time()
-            else:
+            elif type(at) != int:
                 ct = CronTime(at)
                 if ct.valid:
                     next = ct.next()
