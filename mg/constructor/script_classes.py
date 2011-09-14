@@ -246,7 +246,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Lr, Module):
-    re_token = re.compile(r'\s*(?:(-?\d+\.\d+)|(-?\d+)|(==|>=|<=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:)|"([^"]*)"|\'([^\']+)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'\s*(?:(-?\d+\.\d+)|(-?\d+)|(==|>=|<=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:)|"([^"]*)"|\'([^\']*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
