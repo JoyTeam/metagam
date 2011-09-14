@@ -23,6 +23,7 @@ re_track_player = re.compile(r'^player/([a-f0-9]+)$')
 re_track_cookie = re.compile(r'^cookie/([a-f0-9]+)$')
 re_track_ip = re.compile(r'^ip/([0-9a-f\.:]+)$')
 re_short = re.compile(r'^(.{6}).*(.{6})$')
+re_nonalphanum = re.compile(r'[^a-zA-Z0-9_]')
 
 class User(CassandraObject):
     _indexes = {
@@ -1013,10 +1014,12 @@ class Interface(Module):
             if user_id == self.app().inst.config.get("admin_user"):
                 perms["admin"] = True
                 perms["global.admin"] = True
+                perms["global_admin"] = True
             try:
                 p = self.obj(UserPermissions, user_id)
                 for key in p.get("perms").keys():
                     perms[key] = True
+                    perms[re_nonalphanum.sub('_', key)] = True
             except ObjectNotFoundException:
                 pass
         return perms
@@ -1122,6 +1125,7 @@ class Interface(Module):
             if req.args == req.user():
                 del req._permissions
                 self.call("admin.update_menu")
+            self.call("auth.permissions-changed", user)
             self.call("admin.redirect", "auth/permissions")
         else:
             perm_values = user_permissions.get("perms")

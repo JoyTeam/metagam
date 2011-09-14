@@ -5,6 +5,7 @@ import re
 
 re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
 re_param_attr = re.compile(r'^p_(.+)')
+re_perm_attr = re.compile(r'^perm_(.+)')
 
 # Database objects
 
@@ -206,6 +207,10 @@ class Character(Module):
             self._name = self.db_user.get("name")
             return self._name
 
+    def name_invalidate(self, **kwargs):
+        self.app().mc.incr_ver("character-name.%s" % self.uuid)
+        self.call("character.name-invalidated", self, kwargs)
+
     @property
     def player(self):
         try:
@@ -382,13 +387,21 @@ class Character(Module):
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
             return 1 if perms and len(perms) else 0
-        else:
-            m = re_param_attr.match(attr)
-            if m:
-                param = m.group(1)
-                return self.param(param)
-            else:
-                raise AttributeError(attr)
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.param(param)
+        # permissions
+        m = re_perm_attr.match(attr)
+        if m:
+            perm = m.group(1)
+            perms = self.call("auth.permissions", self.uuid)
+            print "perms=%s" % perms
+            if perms.get(perm) or perms.get("project.admin") or perms.get("global.admin"):
+                return 1
+            return 0
+        raise AttributeError(attr)
 
     @property
     def restraints(self):
