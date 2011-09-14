@@ -621,6 +621,24 @@ Chat.generate_input = function(tokens) {
 	return res;
 };
 
+/* Update character HTML */
+Chat.character_update = function(pkt) {
+	var char_info = pkt.character;
+	for (var i = 0; i < this.channels.length; i++) {
+		var ch = this.channels[i];
+		if (!ch.roster_characters_by_id)
+			continue;
+		var character = ch.roster_characters_by_id[char_info.id];
+		if (!character)
+			continue;
+		character.html = char_info.html;
+		character.name = char_info.name;
+		if (character.element) {
+			character.element.el.update(char_info.html);
+		}
+	}
+};
+
 /* Add a new character to the roster tab */
 Chat.roster_add = function(pkt) {
 	var ch = this.channels_by_id[pkt.channel];

@@ -40,6 +40,12 @@ class CharactersMod(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-interface.character-form", self.interface_character_form, priv="logged")
         self.rhook("ext-interface.character", self.interface_character, priv="logged")
+        self.rhook("session.character-online", self.character_online, priority=10)
+        self.rhook("session.character-offline", self.character_offline, priority=10)
+        self.rhook("locations.character_after_set", self.location_changed, priority=10)
+        self.rhook("characters.param-changed", self.characters_param_changed, priority=10)
+        self.rhook("auth.name-changed", self.name_changed, priority=10)
+        self.rhook("auth.permissions-changed", self.permissions_changed, priority=10)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -374,6 +380,7 @@ class CharactersMod(ConstructorModule):
 
     def admin_characters_names(self):
         req = self.req()
+        self.call("admin.advice", {"title": self._("Character names documentation"), "content": self._('You can find detailed information on the character names system in the <a href="//www.%s/doc/character-names" target="_blank">characer names page</a> in the reference manual.') % self.app().inst.config["main_host"]})
         if req.args:
             pinfo = self.call("characters.name-purpose-%s" % req.args)
             if not pinfo:
@@ -618,3 +625,24 @@ class CharactersMod(ConstructorModule):
             else:
                 form.input(name, code, values.get(code))
         self.call("game.internal_form", form, vars)
+
+    def character_online(self, character):
+        character.name_invalidate(update_chat=False)
+
+    def character_offline(self, character):
+        character.name_invalidate(update_chat=False)
+
+    def location_changed(self, character, old_location, new_location):
+        character.name_invalidate(update_chat=False)
+
+    def characters_param_changed(self, uuid, param, old_value, new_value):
+        character = self.character(uuid)
+        character.name_invalidate()
+
+    def name_changed(self, user, old_name, new_name):
+        character = self.character(user.uuid)
+        character.name_invalidate()
+
+    def permissions_changed(self, user):
+        character = self.character(user.uuid)
+        character.name_invalidate()

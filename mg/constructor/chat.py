@@ -113,6 +113,7 @@ class Chat(ConstructorModule):
         self.rhook("money-description.chat_colours", self.money_description_chat_colours)
         self.rhook("library-grp-index.pages", self.library_index_pages)
         self.rhook("library-page-chat.content", self.library_page_chat)
+        self.rhook("character.name-invalidated", self.character_name_invalidated)
 
     def library_index_pages(self, pages):
         pages.append({"page": "chat", "order": 20})
@@ -1101,3 +1102,23 @@ class Chat(ConstructorModule):
             "main_success_url": "/settings",
             "main_success_message": self._("Now select a colour for your messages"),
         }
+
+    def character_name_invalidated(self, character, args):
+        if args.get("update_chat", True):
+            # notify every character subscribed to rosters with this character that character name has changed
+            users = set()
+            lst = self.objlist(DBChatChannelCharacterList, query_index="character", query_equal=character.uuid)
+            lst.load(silent=True)
+            for ent in lst:
+                channel_id = ent.get("channel")
+                info = self.channel_info(channel_id)
+                if ent.get("roster"):
+                    users_lst = self.objlist(DBChatChannelCharacterList, query_index="channel", query_equal=channel_id)
+                    users_lst.load(silent=True)
+                    for user_ent in users_lst:
+                        users.add(user_ent.get("character"))
+            channels = set()
+            lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % user for user in users])
+            for char_uuid, sess_uuid in lst.index_values(2):
+                channels.add('id_%s' % sess_uuid)
+            self.call("stream.packet", [ch for ch in channels], "chat", "character_update", character=self.roster_info(character))

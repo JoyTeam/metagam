@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-13 17:23+0300\n"
+"PO-Revision-Date: 2011-09-14 12:39+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -421,9 +421,6 @@ msgstr "Вы уверены, что хотите снять проект с пу
 msgid "Are you sure?"
 msgstr "Вы уверены?"
 
-msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
-msgstr "Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип \"{type}\")"
-
 msgid "Art"
 msgstr "Творчество"
 
@@ -764,6 +761,9 @@ msgstr "Имя персонажа:"
 
 msgid "Character names"
 msgstr "Имена персонажей"
+
+msgid "Character names documentation"
+msgstr "Документация на имена персонажей"
 
 msgid "Character names rendering editor"
 msgstr "Редактор отображения имён персонажей"
@@ -2551,9 +2551,6 @@ msgstr "Левое меню"
 msgid "Left of the main frame"
 msgstr "Слева от главного фрейма"
 
-msgid "Left operand of '{operator}' must be numeric ('{val}' is '{type}')"
-msgstr "Левый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" имеет тип \"{type}\")"
-
 msgid "Legend"
 msgstr "Легенда"
 
@@ -3673,7 +3670,7 @@ msgid "Publish parameter description in the library"
 msgstr "Публиковать описание параметра в библиотеке"
 
 msgid "Purpose"
-msgstr "Цель"
+msgstr "Назначение"
 
 #, python-format
 msgid "Query successful. Server response: %s"
@@ -3986,12 +3983,6 @@ msgstr "Правое меню"
 
 msgid "Right of the main frame"
 msgstr "Справа от главного фрейма"
-
-msgid "Right operand of '{operator}' must be numeric ('{val}' is '{type}')"
-msgstr "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" имеет тип \"{type}\")"
-
-msgid "Right operand of '{operator}' must be numeric ('{val}' is {type}'"
-msgstr "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" имеет тип \"{type}\")"
 
 msgid "Ring border"
 msgstr "Кольцевая рамка"
@@ -5400,6 +5391,10 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
+msgid "You can find detailed information on the character names system in the <a href=\"//www.%s/doc/character-names\" target=\"_blank\">characer names page</a> in the reference manual."
+msgstr "Подробную информацию о системе имён персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-names\" target=\"_blank\">Система имён персонажей</a>."
+
+#, python-format
 msgid "You can find detailed information on the characters images system in the <a href=\"//www.%s/doc/character-images\" target=\"_blank\">characters images page</a> in the reference manual."
 msgstr "Подробную информацию о системе образов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-images\" target=\"_blank\">Система образов персонажей</a>."
 
@@ -6431,6 +6426,22 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
+#~ msgstr ""
+#~ "Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип "
+#~ "\"{type}\")"
+#~ msgid "Left operand of '{operator}' must be numeric ('{val}' is '{type}')"
+#~ msgstr ""
+#~ "Левый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
+#~ "имеет тип \"{type}\")"
+#~ msgid "Right operand of '{operator}' must be numeric ('{val}' is '{type}')"
+#~ msgstr ""
+#~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
+#~ "имеет тип \"{type}\")"
+#~ msgid "Right operand of '{operator}' must be numeric ('{val}' is {type}'"
+#~ msgstr ""
+#~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
+#~ "имеет тип \"{type}\")"
 #~ msgid "Your passport number"
 #~ msgstr "Ваши паспортные данные"
 #~ msgid "free"
