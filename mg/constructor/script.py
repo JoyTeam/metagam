@@ -207,12 +207,12 @@ class ScriptEngine(ConstructorModule):
             if type(arg1) is str or type(arg1) is unicode:
                 arg1 = floatz(arg1)
             elif type(arg1) is not int and type(arg1) is not float:
-                raise ScriptTypeError(self._("Left operand of '{operator}' must be numeric ('{val}' is '{type}')").format(operator=cmd, val=self.unparse_expression(val[1]), type=type(arg1).__name__), env)
+                arg1 = 0
             # Validating type of the right operand
             if type(arg2) is str or type(arg2) is unicode:
                 arg2 = floatz(arg2)
             elif type(arg2) is not int and type(arg2) is not float:
-                raise ScriptTypeError(self._("Right operand of '{operator}' must be numeric ('{val}' is {type}'").format(operator=cmd, val=self.unparse_expression(val[2]), type=type(arg2).__name__), env)
+                arg2 = 0
             # Evaluating
             if cmd == '+':
                 return arg1 + arg2
@@ -245,12 +245,12 @@ class ScriptEngine(ConstructorModule):
             if type(arg1) is str or type(arg1) is unicode:
                 arg1 = floatz(arg1)
             elif type(arg1) is not int and type(arg1) is not float:
-                raise ScriptTypeError(self._("Left operand of '{operator}' must be numeric ('{val}' is '{type}')").format(operator=cmd, val=self.unparse_expression(val[1]), type=type(arg1).__name__), env)
+                arg1 = 0
             # Validating type of the right operand
             if type(arg2) is str or type(arg2) is unicode:
                 arg2 = floatz(arg2)
             elif type(arg2) is not int and type(arg2) is not float:
-                raise ScriptTypeError(self._("Right operand of '{operator}' must be numeric ('{val}' is '{type}')").format(operator=cmd, val=self.unparse_expression(val[2]), type=type(arg2).__name__), env)
+                arg2 = 0
             if cmd == "<":
                 return 1 if arg1 < arg2 else 0
             if cmd == ">":
@@ -301,7 +301,7 @@ class ScriptEngine(ConstructorModule):
                     if type(v) is str or type(v) is unicode:
                         v = floatz(v)
                     elif type(v) is not int and type(v) is not float:
-                        raise ScriptTypeError(self._("Arguments of '{func}' must be numeric ('{val}' is '{type}')").format(func=fname, val=self.unparse_expression(val[i]), type=type(v).__name__), env)
+                        v = 0
                     if fname == "min":
                         if res is None or v < res:
                             res = v
