@@ -98,7 +98,11 @@ class ParamsAdmin(ConstructorModule):
                 else:
                     new_param["type"] = tp
                     if tp == 0:
-                        new_param["default"] = nn(req.param("default"))
+                        default = req.param("default")
+                        if not valid_number(default):
+                            errors["default"] = self._("This doesn't look like a number")
+                        else:
+                            new_param["default"] = nn(default)
                     if tp > 0:
                         new_param["expression"] = self.call("script.admin-expression", "expression", errors, globs=self.call("%s.script-globs" % self.kind))
                     if tp == 2:
