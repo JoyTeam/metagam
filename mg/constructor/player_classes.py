@@ -397,7 +397,6 @@ class Character(Module):
         if m:
             perm = m.group(1)
             perms = self.call("auth.permissions", self.uuid)
-            print "perms=%s" % perms
             if perms.get(perm) or perms.get("project.admin") or perms.get("global.admin"):
                 return 1
             return 0
