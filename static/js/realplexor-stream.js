@@ -3,10 +3,10 @@ var Stream = {}
 Stream.stream_handlers = new Array();
 
 Stream.run_realplexor = function(marker, cursor) {
-	try { debug_log('realplexor: initializing http://' + Game.base_domain + '/rpl; prefix=' + Game.app + '_' + '; marker=' + marker + '; cursor=' + cursor); } catch(e) {}
+	try { debug_log('realplexor: initializing http://' + Game.base_domain + '/st/js/realplexor-frame.html; prefix=' + Game.app + '_' + '; marker=' + marker + '; cursor=' + cursor); } catch(e) {}
 	this.marker = marker;
 	this.personal_channel = 'id_' + Ext.util.Cookies.get('mgsess-' + Game.app);
-	this.realplexor = new Dklab_Realplexor('http://' + Game.base_domain + '/rpl', Game.app + '_');
+	this.realplexor = new Dklab_Realplexor('http://' + Game.base_domain + '/st/js/realplexor-frame.html', Game.app + '_');
 	this.realplexor.setCursor(this.personal_channel, cursor);
 	this.realplexor.subscribe(this.personal_channel, this.stream_command.createDelegate(this));
 	this.realplexor.execute();
