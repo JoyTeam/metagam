@@ -151,7 +151,7 @@ class Location(Module):
             self._delay = self.db_location.get("delay", default_location_delay)
             return self._delay
 
-    def script_attr(self, attr):
+    def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
         elif attr == "name":
@@ -170,7 +170,7 @@ class Location(Module):
             m = re_param_attr.match(attr)
             if m:
                 param = m.group(1)
-                return self.param(param)
+                return self.param(param, handle_exceptions)
             else:
                 raise AttributeError(attr)
 
@@ -182,7 +182,7 @@ class Location(Module):
             self._db_params = self.obj(DBLocParams, self.uuid, silent=True)
             return self._db_params
 
-    def param(self, key):
+    def param(self, key, handle_exceptions=True):
         try:
             cache = self._param_cache
         except AttributeError:
@@ -192,7 +192,7 @@ class Location(Module):
             return cache[key]
         except KeyError:
             # 'param-value' handles cache storing automatically
-            return self.call("locations.param-value", self, key)
+            return self.call("locations.param-value", self, key, handle_exceptions)
 
     def script_params(self):
         return {"loc": self}

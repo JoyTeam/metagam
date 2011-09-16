@@ -84,7 +84,7 @@ class Mods(Module):
         Module.__init__(self, app, "mg.constructor.players.Modifiers")
         self.target = target
 
-    def script_attr(self, attr):
+    def script_attr(self, attr, handle_exceptions=True):
         mods = self.call("modifiers.list", self.target)
         return 1 if attr in mods else 0
 

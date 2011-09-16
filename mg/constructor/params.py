@@ -360,13 +360,24 @@ class Params(ConstructorModule):
                 return p
         return None
 
-    def value(self, obj, param_code):
+    def value(self, obj, param_code, handle_exceptions=True):
         param = self.param(param_code)
         if not param:
             return None
-        return self.value_rec(obj, param)
+        return self.value_rec(obj, param, handle_exceptions)
 
-    def value_rec(self, obj, param):
+    def _evaluate(self, obj, param):
+        value = self.call("script.evaluate-expression", param["expression"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}'").format(cls=self.kind, param='p_%s' % param["code"], uuid=obj.uuid))
+        if param["type"] == 2:
+            res = None
+            for ent in param["values_table"]:
+                if ent[0] > value:
+                    break
+                res = ent[1]
+            value = res
+        return value
+
+    def value_rec(self, obj, param, handle_exceptions=True):
         # trying to return cached parameter value
         try:
             cache = obj._param_cache
@@ -381,19 +392,14 @@ class Params(ConstructorModule):
         if param["type"] == 0:
             value = obj.db_params.get(param["code"], param.get("default", 0))
         else:
-            try:
-                value = self.call("script.evaluate-expression", param["expression"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}'").format(cls=self.kind, param=param["code"], uuid=obj.uuid))
-            except Exception as e:
-                self.exception(e)
-                value = None
+            if handle_exceptions:
+                try:
+                    value = self._evaluate(obj, param)
+                except Exception as e:
+                    self.exception(e, silent=True)
+                    return None
             else:
-                if param["type"] == 2:
-                    res = None
-                    for ent in param["values_table"]:
-                        if ent[0] > value:
-                            break
-                        res = ent[1]
-                    value = res
+                value = self._evaluate(obj, param)
         # storing in the cache
         cache[param["code"]] = value
         return value

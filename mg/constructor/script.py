@@ -196,6 +196,14 @@ class ScriptEngine(ConstructorModule):
     def _evaluate(self, val, env):
         if type(val) is not list:
             return val
+        # testing stack overflows
+        try:
+            sys._getframe(900)
+        except ValueError:
+            pass
+        else:
+            # this is a real error
+            raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
         cmd = val[0]
         if cmd == '+' or cmd == '-' or cmd == '*' or cmd == '/':
             arg1 = self._evaluate(val[1], env)
@@ -333,7 +341,7 @@ class ScriptEngine(ConstructorModule):
             if getter is None:
                 raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             try:
-                attval = getter(val[2])
+                attval = getter(val[2], handle_exceptions=False)
             except AttributeError:
                 raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=val[2]), env)
             return attval

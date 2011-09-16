@@ -135,7 +135,7 @@ class DBCharacterSettingsList(CassandraObjectList):
 # Business logic objects
 
 class Money(MemberMoney):
-    def script_attr(self, attr):
+    def script_attr(self, attr, handle_exceptions=True):
         m = re_money_script_field.match(attr)
         if m:
             field, currency = m.group(1, 2)
@@ -363,7 +363,7 @@ class Character(Module):
             self._settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._settings
 
-    def script_attr(self, attr):
+    def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
         elif attr == "player":
@@ -391,7 +391,7 @@ class Character(Module):
         m = re_param_attr.match(attr)
         if m:
             param = m.group(1)
-            return self.param(param)
+            return self.param(param, handle_exceptions)
         # permissions
         m = re_perm_attr.match(attr)
         if m:
@@ -426,7 +426,7 @@ class Character(Module):
             self._page_avatar = self.call("character.page-avatar", self)
             return self._page_avatar
 
-    def param(self, key):
+    def param(self, key, handle_exceptions=True):
         try:
             cache = self._param_cache
         except AttributeError:
@@ -436,7 +436,7 @@ class Character(Module):
             return cache[key]
         except KeyError:
             # 'param-value' handles cache storing automatically
-            return self.call("characters.param-value", self, key)
+            return self.call("characters.param-value", self, key, handle_exceptions)
 
     def script_params(self):
         return {"char": self}
@@ -479,7 +479,7 @@ class Player(Module):
             self._email = self.db_user.get("email")
             return self._email
 
-    def script_attr(self, attr):
+    def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
         elif attr == "mod":

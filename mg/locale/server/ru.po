@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-14 12:39+0300\n"
+"PO-Revision-Date: 2011-09-16 15:17+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2803,6 +2803,9 @@ msgstr "Массовые приглашения"
 #, python-format
 msgid "Max period is %d sec"
 msgstr "Максимальный период - %d сек"
+
+msgid "Max recursion depth exceeded"
+msgstr "Превышена максимальная глубина рекурсии"
 
 #, python-format
 msgid "Maximal file size for this file type &mdash; %d megabytes"

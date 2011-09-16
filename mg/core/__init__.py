@@ -412,8 +412,9 @@ class Module(object):
     def critical(self, msg, *args):
         self.logger().critical(msg, *args)
 
-    def exception(self, exception, *args):
-        self.logger().exception(exception, *args)
+    def exception(self, exception, silent=False, *args):
+        if not silent:
+            self.logger().exception(exception, *args)
         self.call("exception.report", exception)
 
     def _(self, val):
