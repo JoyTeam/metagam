@@ -33,6 +33,12 @@ Stream.stream_command = function(cmd, id) {
 			var cursor = this.realplexor._map[this.personal_channel].cursor;
 			try { debug_log('realplexor: marker found'); } catch(e) {}
 			this.initialized = true;
+			try {
+				var th = this.realplexor.constructor._registry[this.realplexor._iframeId];
+				this.rpl_int = th._realplexor;
+			} catch (e) {
+				Game.error(gt.gettext('Exception'), e);
+			}
 			Ext.TaskMgr.start({
 				interval: 600000,
 				run: this.ping.createDelegate(this)
@@ -63,7 +69,17 @@ Stream.ping = function() {
 					return;
 				}
 			}
-			Game.close();
+			/* A client after being disconnected for 5 minutes restored his connection.
+			 * First request was not /rpl but a /stream/ready. Server replied session is disconnected.
+			 * We must not do Game.close in this case.
+			 * If last successful request to the /rpl was before 3 minutes ago, we must ignore the error. */
+			try {
+				if (this.rpl_int._lastSuccessTime > Game.now() - 3 * 60 * 1000) {
+					Game.close();
+				}
+			} catch (e) {
+				Game.error(gt.gettext('Exception'), e);
+			}
 		}
 	});
 };

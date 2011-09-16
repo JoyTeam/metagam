@@ -286,6 +286,7 @@ Dklab_Realplexor_Loader = {
 			if (!th._lastXmlhttp) return; // abort() called
 			th._lastXmlhttp = null;
 			th._onresponse("" + xmlhttp.responseText);
+			th._lastSuccessTime = new Date().getTime();
 			th = null;
 		}
 		xmlhttp.send(postData);
