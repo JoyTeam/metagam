@@ -282,7 +282,7 @@ class DomainRegWizard(Wizard):
                 params.append(("e-mail", main_config.get("domains.email")))
                 params.append(("private-whois", "yes"))
                 self.info("Querying registrar: %s", params)
-                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r"))) for key, val in params])
+                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
                 error = None
                 try:
                     with Timeout.push(180):
@@ -577,7 +577,7 @@ class DomainsAdmin(Module):
                         params.append(("passwd", self.conf("domains.password")))
                         params.append(("requestid", requestid))
                         self.info("Querying registrar: %s", params)
-                        params = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r"))) for key, val in params])
+                        params = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
                         try:
                             with Timeout.push(180):
                                 cnn = HTTPConnection()
