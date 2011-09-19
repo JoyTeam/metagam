@@ -1133,7 +1133,7 @@ class Interface(Module):
                 perm_values = {}
         fields = []
         for perm in perms:
-            fields.append({"name": "perm%s" % perm["id"], "label": perm["name"], "type": "checkbox", "checked": perm_values.get(perm["id"])})
+            fields.append({"name": "perm%s" % perm["id"], "label": u'%s (perm_%s)' % (perm["name"], re_nonalphanum.sub('_', perm["id"])), "type": "checkbox", "checked": perm_values.get(perm["id"])})
         self.call("admin.form", fields=fields)
 
     def headmenu_edituserpermissions(self, args):
