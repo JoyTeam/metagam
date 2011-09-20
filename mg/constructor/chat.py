@@ -647,7 +647,7 @@ class Chat(ConstructorModule):
             for col in self.chat_colors():
                 if col["id"] == color:
                     if col.get("condition") is not None:
-                        if not self.call("script.evaluate-expression", col["condition"], globs={"char": character}, description=self._("Color condition")):
+                        if not self.call("script.evaluate-expression", col["condition"], globs={"char": author}, description=self._("Color condition")):
                             break
                     else:
                         paid_colours_support = self.call("paidservices.chat_colours")
