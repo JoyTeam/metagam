@@ -1539,18 +1539,18 @@ class IndexPageAdmin(Module):
                     errors.append(self._('Your page must have HTML tag: %s') % htmlescape('<link rel="stylesheet" href="//www.%s/dyn-mg/indexpage.css" />'))
                 loginform_ok = False
                 for form in parser.forms:
-                    if form["name"] == "loginform" and form["id"] == "loginform":
+                    if form.get("name") == "loginform" and form.get("id") == "loginform":
                         loginform_ok = True
                         if form["onsubmit"] != "return auth_login();":
                             errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
                         name_ok = False
                         password_ok = False
                         for inp in form["inputs"]:
-                            if inp["name"] == "name":
+                            if inp.get("name") == "name":
                                 name_ok = True
                                 if inp.get("id") != "name":
                                     errors.append(self._('Name input field must have id="name" and name="name"'))
-                            if inp["name"] == "password":
+                            if inp.get("name") == "password":
                                 password_ok = True
                                 if inp.get("id") != "password":
                                     errors.append(self._('Password input field must have id="password" and name="password"'))
