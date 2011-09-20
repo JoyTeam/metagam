@@ -299,21 +299,21 @@ Chat.msg_list = function(pkt) {
 			fragments[fragment_id] = fragment;
 		}
 		/* formatting message */
-		var ctspan = document.createElement('span');
+		var ctdiv = document.createElement('div');
 		if (msg.cls) {
-			ctspan.className = 'chat-msg-' + msg.cls;
+			ctdiv.className = 'chat-msg-' + msg.cls;
 		}
 		if (msg.cls && this.chat_filters[msg.cls] === false) {
-			ctspan.style.display = 'none';
+			ctdiv.style.display = 'none';
 		}
-		ctspan.innerHTML = msg.html;
+		ctdiv.innerHTML = msg.html;
 		var div = document.createElement('div');
 		div.className = 'chat-msg';
 		if (msg.id)
 			div.id = msg.id;
 		if (msg.cls)
 			div.className = div.className + ' chat-div-' + msg.cls;
-		div.appendChild(ctspan);
+		div.appendChild(ctdiv);
 		if (msg.priv) {
 			div.className = div.className + ' chat-private';
 		} else if (ch) {
