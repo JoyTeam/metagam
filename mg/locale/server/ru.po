@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-09-16 15:17+0300\n"
+"PO-Revision-Date: 2011-09-20 09:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -391,6 +391,9 @@ msgstr "Вы уверены, что хотите удалить этот бло�
 msgid "Are you sure want to delete this button?"
 msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
+msgid "Are you sure want to delete this color?"
+msgstr "Вы уверены, что хотите удалить этот цвет?"
+
 msgid "Are you sure want to delete this image?"
 msgstr "Вы уверены, что хотите удалить это изображение?"
 
@@ -612,8 +615,14 @@ msgstr "Редактор кнопок"
 msgid "Buy"
 msgstr "Купить"
 
+msgid "CSS class name"
+msgstr "Имя CSS-класса"
+
 msgid "CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"
 msgstr "Название CSS-класса:<ul><li>horizontal &mdash; стандартное горизонтальное меню;</li><li>vertical &mdash; стандартное вертикальное меню;</li><li>любое другое значение - пользовательский стиль</li></ul>"
+
+msgid "CSS style declaration"
+msgstr "Описание CSS-стиля"
 
 msgid "Cabinet"
 msgstr "Кабинет"
@@ -804,6 +813,9 @@ msgstr "Имя персонажа"
 msgid "Characters"
 msgstr "Персонажи"
 
+msgid "Characters allowed to use this color (empty field means characters with the corresponding paid service)"
+msgstr "Персонажи, которые могут пользоваться этим цветом (пустое поле означает доступ для персонажей с подключенной платной услугой цветов в чате)"
+
 msgid "Characters images documentation"
 msgstr "Документация на образы персонажей"
 
@@ -840,8 +852,11 @@ msgstr "Шаблон кнопки каналов чата: состояние В
 msgid "Chat channels mode"
 msgstr "Режим каналов чата"
 
-msgid "Chat colours players are allowed to use (newline separated)"
-msgstr "Какие цвета игроки могут использовать в чате (каждый с новой строки)"
+msgid "Chat colors"
+msgstr "Цвета в чате"
+
+msgid "Chat colors configuration"
+msgstr "Конфигурация цветов в чате"
 
 msgid "Chat command for writing to the current location channel"
 msgstr "Команда чата для написания в канал текущей локации"
@@ -939,11 +954,23 @@ msgstr "Код не может начинаться слешом"
 msgid "Code of the parent page"
 msgstr "Код родительской страницы"
 
+msgid "Color (example: '#012def')"
+msgstr "Цвет (например: \"#012def\")"
+
+msgid "Color condition"
+msgstr "Условие цвета"
+
+msgid "Color name"
+msgstr "Название цвета"
+
 msgid "Color of block headers"
 msgstr "Цвет заголовков блоков"
 
 msgid "Color of rating score values"
 msgstr "Цвет чисел в рейтингах"
+
+msgid "Color type"
+msgstr "Тип цвета"
 
 msgid "Coloured avatar for {period}"
 msgstr "Цветной аватар на {period_a}"
@@ -1122,6 +1149,9 @@ msgstr "Создано"
 
 msgid "Cult of the dead cow"
 msgstr "Культ мёртвой коровы"
+
+msgid "Curly brackets are not allowed here"
+msgstr "Фигурные скобки здесь не разрешены"
 
 msgid "Currencies"
 msgstr "Валюты"
@@ -1687,6 +1717,9 @@ msgstr "Ошибка при получении ответа от регистр�
 
 msgid "Error logging in"
 msgstr "Ошибка при входе"
+
+msgid "Error message when attempting to use a color with false condition (HTML allowed)"
+msgstr "Сообщение об ошибке при попытке использовать цвет с ложным условием (разрешён HTML)"
 
 msgid "Error on match"
 msgstr "Ошибка при срабатывании"
@@ -2357,6 +2390,9 @@ msgstr "Недопустимые символы в имени. Можно исп
 
 msgid "Invalid characters in the name. Only latin letters, numbers, symbols '_' and '-' are allowed"
 msgstr "Недопустимые символы в имени. Можно использовать только цифры, латинские буквы, а также символы '_' и '-'"
+
+msgid "Invalid class name. It must begin with a small latin letter a-z. Other letters must be a-z or '-'"
+msgstr "Неверное имя класса. Оно должно начинаться с букв a-z и содержать только буквы и знак '-'"
 
 msgid "Invalid code"
 msgstr "Неверный код"
@@ -3054,6 +3090,9 @@ msgstr "Новый раздел"
 
 msgid "New character: {name}"
 msgstr "Новый персонаж: {name}"
+
+msgid "New color"
+msgstr "Новый цвет"
 
 msgid "New currency"
 msgstr "Новая валюта"
@@ -4281,6 +4320,9 @@ msgstr "Молчанка до %s"
 msgid "Silence time"
 msgstr "Время молчанки"
 
+msgid "Simple colour"
+msgstr "Простой цвет"
+
 msgid "Simply show a number"
 msgstr "Просто показать число"
 
@@ -4565,6 +4607,12 @@ msgstr "Зачёркивание"
 
 msgid "String '{val}' has no attributes"
 msgstr "У строки \"{val}\" нет атрибутов"
+
+msgid "Style"
+msgstr "Стиль"
+
+msgid "Style declaration (example: 'font-weight: bold; border: solid 2px #ff0000; padding: 3px; margin: 3px 0 3px 0')"
+msgstr "Описание стиля (например: \"font-weight: bold; border: solid 2px #ff0000; padding: 3px; margin: 3px 0 3px 0\")"
 
 msgid "Subject"
 msgstr "Тема"
@@ -5420,6 +5468,10 @@ msgstr "Подробную информацию о системе парамет
 #, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
 msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
+
+#, python-format
+msgid "You can find information on chat colors configuration in the <a href=\"//www.%s/doc/chat-colors\" target=\"_blank\">chat colors manual</a>."
+msgstr "Информацию о настройке цветов в чате вы можете найти в <a href=\"//www.%s/doc/chat-colors\" target=\"_blank\">руководстве по цветам в чате</a>."
 
 #, python-format
 msgid "You can find information on chat configuration in the <a href=\"//www.%s/doc/chat\" target=\"_blank\">chat manual</a>."
@@ -6429,6 +6481,9 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Chat colours players are allowed to use (newline separated)"
+#~ msgstr ""
+#~ "Какие цвета игроки могут использовать в чате (каждый с новой строки)"
 #~ msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип "
@@ -6590,8 +6645,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "показать возможности"
 #~ msgid "Error storing object %s: %s"
 #~ msgstr "Ошибка при сохранении объекта %s: %s"
-#~ msgid "CSS class name"
-#~ msgstr "Имя CSS-класса"
 #~ msgid "Gold"
 #~ msgstr "Золото"
 #~ msgid "Owner"

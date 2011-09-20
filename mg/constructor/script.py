@@ -386,10 +386,11 @@ class ScriptEngine(ConstructorModule):
         kwargs["text"] = True
         return self.admin_field(*args, **kwargs)
 
-    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None):
+    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None, expression=None):
         req = self.req()
-        expression = req.param(name)
-        if not expression:
+        if expression is None:
+            expression = req.param(name).strip()
+        if expression == "":
             errors[name] = self._("This field is mandatory")
             return
         # Parsing

@@ -76,6 +76,7 @@ Form = Ext.extend(AdminResponse, {
 					listeners: {},
 					boxLabel: it.boxLabel,
 					width: it.width,
+					height: it.height,
 					disabled: it.disabled
 				};
 				if (it.name)

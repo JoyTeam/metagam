@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor import *
+from uuid import uuid4
 import datetime
 import re
 
@@ -15,7 +16,12 @@ re_valid_command = re.compile(r'^/(\S+)$')
 re_after_dash = re.compile(r'-.*')
 re_unjoin = re.compile(r'^unjoin/(\S+)$')
 re_character_name = re.compile(r'(<span class="char-name">.*?</span>)')
-re_color = re.compile(r'(#[0-9a-f]{6})')
+re_color = re.compile(r'^#[0-9a-f]{6}$')
+re_curly = re.compile(r'[{}]')
+re_valid_cls = re.compile(r'^[a-z][a-z\-]*$')
+re_sharp = re.compile(r'#')
+re_q = re.compile(r'q')
+re_del = re.compile(r'^del/(.+)$')
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
@@ -83,6 +89,8 @@ class Chat(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("headmenu-admin-chat.config", self.headmenu_chat_config)
         self.rhook("ext-admin-chat.config", self.chat_config, priv="chat.config")
+        self.rhook("headmenu-admin-chat.colors", self.headmenu_chat_colors)
+        self.rhook("ext-admin-chat.colors", self.admin_chat_colors, priv="chat.colors")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("admin-gameinterface.design-files", self.gameinterface_advice_files)
         self.rhook("ext-chat.post", self.post, priv="logged")
@@ -227,10 +235,13 @@ class Chat(ConstructorModule):
         if req.has_access("chat.config"):
             menu.append({"id": "chat/config", "text": self._("Chat configuration"), "leaf": True, "order": 10})
             if self.conf("chat.debug-channel"):
-                menu.append({"id": "chat/debug", "text": self._("Debug chat channel"), "leaf": True, "order": 11})
+                menu.append({"id": "chat/debug", "text": self._("Debug chat channel"), "leaf": True, "order": 12})
+        if req.has_access("chat.colors"):
+            menu.append({"id": "chat/colors", "text": self._("Chat colors"), "leaf": True, "order": 11})
 
     def permissions_list(self, perms):
         perms.append({"id": "chat.config", "name": self._("Chat configuration editor")})
+        perms.append({"id": "chat.colors", "name": self._("Chat colors configuration")})
         self.call("permissions.chat", perms)
 
     def headmenu_chat_config(self, args):
@@ -305,8 +316,6 @@ class Chat(ConstructorModule):
             config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["loc_to"]))
             config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
-            # colors
-            config.set("chat.colors", re_color.findall(req.param("colors").lower()))
             # analysing errors
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -331,7 +340,6 @@ class Chat(ConstructorModule):
             if cmd_dip != "":
                 cmd_dip = "/%s" % cmd_dip
             auth_msg_channel = self.auth_msg_channel()
-            colors = "\n".join(self.chat_colors())
         fields = [
             {"name": "chatmode", "label": self._("Chat channels mode"), "type": "combo", "value": chatmode, "values": [(0, self._("Channels disabled")), (1, self._("Every channel on a separate tab")), (2, self._("Channel selection checkboxes"))]},
             {"name": "location-separate", "type": "checkbox", "label": self._("Location chat is separated from the main channel"), "checked": location_separate, "condition": "[chatmode]>0"},
@@ -349,9 +357,151 @@ class Chat(ConstructorModule):
             {"name": "msg_left_location", "label": self._("Message about character left location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_left_location())},
             {"name": "msg_you_entered_location", "label": self._("Message about your character entered location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_you_entered_location())},
             {"name": "msg_location_messages", "label": self._("Message heading messages from new location") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_location_messages())},
-            {"name": "colors", "label": self._("Chat colours players are allowed to use (newline separated)"), "value": colors, "type": "textarea"},
         ]
         self.call("admin.form", fields=fields)
+
+    def headmenu_chat_colors(self, args):
+        if args == "new":
+            return [self._("New color"), "chat/colors"]
+        if args:
+            args = re_q.sub('#', args)
+            colors = self.chat_colors()
+            for col in colors:
+                if col["id"] == args:
+                    return [htmlescape(col["name"]), "chat/colors"]
+        return self._("Chat colors")
+
+    def admin_chat_colors(self):
+        req = self.req()
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat colors configuration in the <a href="//www.%s/doc/chat-colors" target="_blank">chat colors manual</a>.') % self.app().inst.config["main_host"]})
+        colors = self.chat_colors()
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                uuid = m.group(1)
+                uuid = re_q.sub('#', uuid)
+                # deleting
+                colors = [col for col in colors if col.get("id") != uuid]
+                config = self.app().config_updater()
+                config.set("chat.colors", colors)
+                config.store()
+                self.call("admin.redirect", "chat/colors")
+            uuid = re_q.sub('#', req.args)
+            if uuid == "new":
+                info = {
+                    "id": uuid4().hex
+                }
+                order = 0.0
+                for ent in colors:
+                    if ent.get("order", 0.0) >= order:
+                        order = ent.get("order", 0.0) + 10
+                info["order"] = order
+            else:
+                info = None
+                for ent in colors:
+                    if ent.get("id") == uuid:
+                        info = ent
+                        break
+                if info is None:
+                    self.call("admin.redirect", "chat/colors")
+            if req.ok():
+                errors = {}
+                new_info = {
+                    "id": info.get("id"),
+                }
+                tp = intz(req.param("v_tp"))
+                if tp == 0:
+                    color = req.param("color")
+                    if not color:
+                        errors["color"] = self._("This field is mandatory")
+                    elif not re_color.match(color):
+                        errors["color"] = self._("Invalid color format")
+                    else:
+                        new_info["color"] = color
+                elif tp == 1:
+                    style = req.param("style").strip()
+                    if re_curly.search(style):
+                        errors["style"] = self._("Curly brackets are not allowed here")
+                    else:
+                        new_info["style"] = style
+                elif tp == 2:
+                    cls = req.param("class")
+                    if not re_valid_cls.match(cls):
+                        errors["class"] = self._("Invalid class name. It must begin with a small latin letter a-z. Other letters must be a-z or '-'")
+                    else:
+                        new_info["class"] = cls
+                else:
+                    errors["v_tp"] = self._("Make valid selection")
+                # name
+                name = req.param("name").strip()
+                if not name:
+                    errors["name"] = self._("This field is mandatory")
+                else:
+                    new_info["name"] = name
+                # order
+                new_info["order"] = floatz(req.param("order"))
+                # condition
+                if req.param("condition").strip() != "":
+                    char = self.character(req.user())
+                    new_info["condition"] = self.call("script.admin-expression", "condition", errors, globs={"char": char})
+                # error
+                new_info["error"] = req.param("error").strip()
+                if len(errors):
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # store colors
+                colors = [col for col in colors if col.get("id") != new_info["id"]]
+                colors.append(new_info)
+                colors.sort(cmp=lambda x, y: cmp(x.get("order", 0.0), y.get("order", 0.0)) or cmp(x.get("name", ""), y.get("name", "")))
+                config = self.app().config_updater()
+                config.set("chat.colors", colors)
+                config.store()
+                self.call("admin.redirect", "chat/colors")
+            # show form
+            if info.get("class"):
+                tp = 2
+            elif info.get("style") is not None:
+                tp = 1
+            else:
+                tp = 0
+            fields = [
+                {"name": "name", "label": self._("Color name"), "value": info.get("name")},
+                {"name": "order", "label": self._("Sorting order"), "value": info.get("order", 0.0)},
+                {"name": "tp", "label": self._("Color type"), "value": tp, "values": [(0, self._("Simple colour")), (1, self._("CSS style declaration")), (2, self._("CSS class name"))], "type": "combo"},
+                {"name": "color", "label": self._("Color (example: '#012def')"), "value": info.get("color"), "condition": "[tp]==0"},
+                {"name": "style", "label": self._("Style declaration (example: 'font-weight: bold; border: solid 2px #ff0000; padding: 3px; margin: 3px 0 3px 0')"), "value": info.get("style"), "condition": "[tp]==1"},
+                {"name": "class", "label": self._("CSS class name"), "value": info.get("class"), "condition": "[tp]==2"},
+                {"name": "condition", "label": '%s%s' % (self._("Characters allowed to use this color (empty field means characters with the corresponding paid service)"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", info["condition"]) if info.get("condition") is not None else None},
+                {"name": "error", "label": self._("Error message when attempting to use a color with false condition (HTML allowed)"), "value": info.get("error")},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for col in colors:
+            col_id = re_sharp.sub('q', col.get("id"))
+            rows.append([
+                htmlescape(col.get("name")),
+                col.get("order", 0.0),
+                htmlescape(col.get("color") or col.get("style") or '.%s' % col.get("class")),
+                '<hook:admin.link href="chat/colors/%s" title="%s" />' % (col_id, self._("edit")),
+                '<hook:admin.link href="chat/colors/del/%s" title="%s" confirm="%s" />' % (col_id, self._("delete"), self._("Are you sure want to delete this color?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {"hook": "chat/colors/new", "text": self._("New color"), "lst": True},
+                    ],
+                    "header": [
+                        self._("Color name"),
+                        self._("Order"),
+                        self._("Style"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def auth_msg_channel(self, character=None):
         if self.chatmode == 0:
@@ -490,26 +640,39 @@ class Chat(ConstructorModule):
         tokens = [{"text": text}]
         self.call("chat.parse", tokens)
         body_html = "".join(token["html"] if "html" in token else htmlescape(token["text"]) for token in tokens)
+        # chat color
+        color_att = None
         color = author.settings.get("chat_color")
         if color:
-            paid_colours_support = self.call("paidservices.chat_colours")
-            if paid_colours_support:
-                paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
-            if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat_colours"):
-                color = None
-        if color:
-            body_html = '<span style="color: %s">%s</span>' % (color, body_html)
+            for col in self.chat_colors():
+                if col["id"] == color:
+                    if col.get("condition") is not None:
+                        if not self.call("script.evaluate-expression", col["condition"], globs={"char": character}, description=self._("Color condition")):
+                            break
+                    else:
+                        paid_colours_support = self.call("paidservices.chat_colours")
+                        if paid_colours_support:
+                            paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
+                        if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat_colours"):
+                            break
+                    if col.get("color"):
+                        color_att = 'style="color: %s"' % col["color"]
+                    elif col.get("style"):
+                        color_att = 'style="%s"' % htmlescape(col["style"])
+                    elif col.get("class"):
+                        color_att = 'class="%s"' % htmlescape(col["class"])
+                    break
         html = u'{0}<span class="chat-msg-body">{1}</span>'.format("".join(prefixes), body_html)
         # sending message
-        self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author, manual=True, hl=True)
+        self.call("chat.message", html=html, channel=channel, recipients=recipients, private=private, author=author, manual=True, hl=True, div_attr=color_att)
         self.call("web.response_json", {"ok": True, "channel": self.channel2tab(channel)})
 
-    def message(self, html=None, hide_time=False, channel=None, private=None, recipients=None, author=None, sound=None, manual=None, **kwargs):
+    def message(self, html=None, hide_time=False, channel=None, private=None, recipients=None, author=None, sound=None, manual=None, div_attr=None, **kwargs):
         try:
             req = self.req()
         except AttributeError:
             req = None
-        self.debug("Chat message: html=%s, hide_time=%s, channel=%s, private=%s, recipients=%s, author=%s, sound=%s, manual=%s, kwargs=%s", html, hide_time, channel, private, recipients, author, sound, manual, kwargs)
+#        self.debug("Chat message: html=%s, hide_time=%s, channel=%s, private=%s, recipients=%s, author=%s, sound=%s, manual=%s, kwargs=%s", html, hide_time, channel, private, recipients, author, sound, manual, kwargs)
         # channel
         if not channel:
             channel = "sys"
@@ -567,6 +730,9 @@ class Chat(ConstructorModule):
         message["priv"] = private
         html_head = u''
         html_tail = u''
+        if div_attr:
+            html_head = u'<div %s>%s' % (div_attr, html_head)
+            html_tail = u'%s</div>' % html_tail
         if viewers is not None:
             # enumerating all recipients and preparing HTML version of the message for everyone
             universal = []
@@ -581,7 +747,7 @@ class Chat(ConstructorModule):
                     universal.extend(sessions)
             if manual or universal:
                 # generating universal HTML
-                html = u''.join([self.render_token(token, None, private) for token in tokens])
+                html = u'%s%s%s' % (html_head, u''.join([self.render_token(token, None, private) for token in tokens]), html_tail)
                 # store chat message
                 if manual:
                     if private:
@@ -604,7 +770,7 @@ class Chat(ConstructorModule):
                 # does anyone want universal HTML?
                 if universal:
                     messages.append((["id_%s" % sess_uuid for sess_uuid in universal], html))
-            self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
+#            self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
             for msg in messages:
                 # sending message
                 message["html"] = html_head + msg[1] + html_tail
@@ -1013,26 +1179,54 @@ class Chat(ConstructorModule):
     def settings_form(self, form, action, settings):
         req = self.req()
         user_uuid = req.user()
+        char = self.character(req.user())
         if action == "render":
             form.checkbox(self._("Character went online/offline"), "chat_auth", req.param("chat_auth") if req.ok() else settings.get("chat_auth", True), description=self._("System messages in the chat"))
             form.checkbox(self._("Other characters' movement"), "chat_move", req.param("chat_move") if req.ok() else settings.get("chat_move", True))
             colors = []
             colors.append({"value": "", "description": self._("Default")})
             for col in self.chat_colors():
-                colors.append({"value": col, "description": col, "bgcolor": col})
+                if col.get("condition") is not None:
+                    if col.get("error"):
+                        show = True
+                    else:
+                        show = self.call("script.evaluate-expression", col["condition"], globs={"char": char}, description=self._("Color condition"))
+                else:
+                    show = True
+                if show:
+                    colors.append({"value": col["id"], "description": col["name"], "bgcolor": col["color"] if col.get("color") else None})
             if len(colors) > 1:
                 form.select(self._("Chat messages colour"), "chat_color", req.param("chat_color") if req.ok() else settings.get("chat_color", ""), colors)
         elif action == "validate":
             color = req.param("chat_color")
             if color:
-                if color not in self.chat_colors():
+                # condition=None - show always, use only with paid service
+                # condition and error=None - show only if condition is True
+                # condition and error - show always, use only if condition is True
+                found = False
+                for col in self.chat_colors():
+                    if col["id"] == color:
+                        if col.get("condition") is not None:
+                            cond_val = self.call("script.evaluate-expression", col["condition"], globs={"char": char}, description=self._("Color condition"))
+                            if col.get("error"):
+                                found = True
+                            else:
+                                found = cond_val
+                        else:
+                            found = True
+                        if found:
+                            if col.get("condition") is not None:
+                                if not cond_val:
+                                    form.error("chat_color", col.get("error"))
+                            else:
+                                paid_colours_support = self.call("paidservices.chat_colours")
+                                if paid_colours_support:
+                                    paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
+                                if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat_colours"):
+                                    form.error("chat_color", self._('To use colours in the chat <a href="/paidservices">subscribe to the corresponding service</a>'))
+                        break
+                if not found:
                     form.error("chat_color", self._("Select a valid colour"))
-                else:
-                    paid_colours_support = self.call("paidservices.chat_colours")
-                    if paid_colours_support:
-                        paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
-                    if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat_colours"):
-                        form.error("chat_color", self._('To use colours in the chat <a href="/paidservices">subscribe to the corresponding service</a>'))
         elif action == "store":
             req = self.req()
             auth = True if req.param("chat_auth") else False
@@ -1061,6 +1255,11 @@ class Chat(ConstructorModule):
                 '#8000c0',
                 '#c00080',
             ]
+        # replacing old colors format with the new one
+        colors = [col if type(col) == dict else {"id": col, "name": col, "color": col} for col in colors]
+        for col in colors:
+            if not col.get("id"):
+                col["id"] = uuid4().hex
         return colors
 
     def roster_info(self, character):
