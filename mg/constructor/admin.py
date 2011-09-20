@@ -514,7 +514,7 @@ class Constructor(Module):
         # accessing new application
         app = inst.appfactory.get_by_tag(project.uuid)
         # setting up everything
-        app.hooks.call("all.check")
+        app.hooks.call("app.check")
         # creating setup wizard
         app.hooks.call("wizards.new", "mg.constructor.setup.ProjectSetupWizard")
         self.call("web.redirect", "http://%s/admin" % app.domain)

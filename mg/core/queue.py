@@ -80,7 +80,7 @@ class Queue(Module):
         self.rhook("int-queue.run", self.queue_run, priv="public")
         self.rhook("queue.schedule", self.queue_schedule)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("all.check", self.check)
+        self.rhook("app.check", self.check)
         self.rhook("queue.generate", self.queue_generate)
 
     def objclasses_list(self, objclasses):
@@ -185,7 +185,7 @@ class QueueRunner(Module):
         apps = []
         self.call("applications.list", apps)
         for app in apps:
-            self.call("queue.add", "all.check", priority=20, app_tag=app["tag"], unique="all-check-%s" % app, app_cls=app["cls"])
+            self.call("queue.add", "app.check", priority=20, app_tag=app["tag"], unique="app-check-%s" % app, app_cls=app["cls"])
 
     def queue_process(self):
         self.wait_free = channel()
