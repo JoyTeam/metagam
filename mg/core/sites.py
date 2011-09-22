@@ -39,7 +39,7 @@ class Counters(Module):
 
     def web_setup_design(self, vars):
         vars["counters"] = self.conf("counters.html")
-        vars["head"] = vars.get("head", "") + self.conf("counters.head", "")
+        vars["head"] = utf2str(vars.get("head", "")) + utf2str(self.conf("counters.head", ""))
 
 class CountersAdmin(Module):
     def register(self):
