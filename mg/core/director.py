@@ -71,6 +71,7 @@ class Director(Module):
                             try:
                                 request = cnn.get("/core/ping")
                                 request.add_header("Content-type", "application/x-www-form-urlencoded")
+                                request.add_header("Connection", "close")
                                 response = cnn.perform(request)
                                 if response.status_code == 200 and response.get_header("Content-type") == "application/json":
                                     body = json.loads(response.body)
@@ -126,6 +127,7 @@ class Director(Module):
                             cnn.connect((str(st.get("host")), int(st.get("port"))))
                             try:
                                 request = cnn.get("/core/abort")
+                                request.add_header("Connection", "close")
                                 cnn.perform(request)
                                 # will be reached unless timed out
                                 st.remove()
@@ -194,6 +196,7 @@ class Director(Module):
                     cnn.connect((str(st.get("host")), int(st.get("port"))))
                     try:
                         request = cnn.get("/core/reload-hard")
+                        request.add_header("Connection", "close")
                         cnn.perform(request)
                     finally:
                         cnn.close()
@@ -231,6 +234,7 @@ class Director(Module):
                         cnn.connect((str(st.get("host")), int(st.get("port"))))
                         try:
                             request = cnn.get("/core/reload-hard")
+                            request.add_header("Connection", "close")
                             cnn.perform(request)
                         finally:
                             cnn.close()
@@ -266,6 +270,7 @@ class Director(Module):
                                 cnn.connect((str(st.get("host")), int(st.get("port"))))
                                 try:
                                     request = cnn.get("/core/abort")
+                                    request.add_header("Connection", "close")
                                     cnn.perform(request)
                                 finally:
                                     cnn.close()

@@ -36,6 +36,7 @@ class TempFile(CassandraObject):
             request.method = "DELETE"
             request.path = url
             request.host = host
+            request.add_header("Connection", "close")
             cnn.perform(request)
         except Exception:
             pass
@@ -110,6 +111,7 @@ class Cluster(Module):
             request.body = data
             request.add_header("Content-type", content_type)
             request.add_header("Content-length", len(request.body))
+            request.add_header("Connection", "close")
             response = cnn.perform(request)
             if response.status_code != 201:
                 raise StaticUploadError(self._("Error storing object {0}: {1}").format(uri, response.status))
@@ -131,6 +133,7 @@ class Cluster(Module):
             request.method = "DELETE"
             request.path = uri_obj.path
             request.host = uri_obj.hostname
+            request.add_header("Connection", "close")
             cnn.perform(request)
         finally:
             cnn.close()
@@ -154,6 +157,7 @@ class Cluster(Module):
             request.body = data
             request.add_header("Content-type", content_type)
             request.add_header("Content-length", len(request.body))
+            request.add_header("Connection", "close")
             response = cnn.perform(request)
             if response.status_code != 201:
                 raise StaticUploadError(self._("Error storing object {0}: {1}").format(uri, response.status))
@@ -184,6 +188,7 @@ class Cluster(Module):
                 request.body = data
                 request.add_header("Content-type", str(ent["content-type"]))
                 request.add_header("Content-length", len(data))
+                request.add_header("Connection", "close")
                 response = cnn.perform(request)
                 if response.status_code != 201:
                     raise StaticUploadError(self._("Error storing object {name}: {err}").format(name=ent["filename"], err=response.status))
@@ -257,6 +262,7 @@ def query(host, port, uri, params, timeout=20):
             try:
                 request = cnn.post(str(uri), urlencode(params))
                 request.add_header("Content-type", "application/x-www-form-urlencoded")
+                request.add_header("Connection", "close")
                 response = cnn.perform(request)
                 if response.status_code != 200:
                     raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, response.status))

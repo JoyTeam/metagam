@@ -26,6 +26,7 @@ def main():
         cnn = HTTPConnection()
         cnn.connect(("director", 3000))
         request = cnn.get("/director/reload?hard=" + ("0" if options.soft else "1"))
+        request.add_header("Connection", "close")
         response = cnn.perform(request)
         if response.status_code == 200:
             result = json.loads(response.body)

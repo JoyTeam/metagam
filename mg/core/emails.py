@@ -390,6 +390,7 @@ class EmailSender(Module):
                                         port = 80
                                     cnn.connect((url_obj.hostname, port))
                                     request = cnn.get(url_obj.path + url_obj.query)
+                                    request.add_header("Connection", "close")
                                     response = cnn.perform(request)
                                     if response.status_code != 200:
                                         if response.status_code == 404:

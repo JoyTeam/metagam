@@ -60,6 +60,7 @@ class Daemons(Module):
                         uri = uri.encode("utf-8")
                     request = cnn.post(uri, urlencode(params))
                     request.add_header("Content-type", "application/x-www-form-urlencoded")
+                    request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     if response.status_code != 200:
                         raise DaemonError("Daemon returned status %d" % response.status_code)

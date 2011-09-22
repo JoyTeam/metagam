@@ -314,6 +314,7 @@ class DomainRegWizard(Wizard):
                         try:
                             self.info("Registrar request: %s", params)
                             request = cnn.get("/c/registrar?%s" % params_url)
+                            request.add_header("Connection", "close")
                             response = cnn.perform(request)
                             #class Response(object):
                             #    pass
@@ -587,6 +588,7 @@ class DomainsAdmin(Module):
                                     self.error("Error coonecting to the registrar")
                                 try:
                                     request = cnn.get("/c/registrar?%s" % params)
+                                    request.add_header("Connection", "close")
                                     response = cnn.perform(request)
                                     if response.status_code != 200:
                                         self.error("Registrar response: %s", response.status)

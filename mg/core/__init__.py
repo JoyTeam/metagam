@@ -515,6 +515,7 @@ class Module(object):
                         port = 80
                     cnn.connect((url_obj.hostname, port))
                     request = cnn.get(url_obj.path + url_obj.query)
+                    request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     if response.status_code != 200:
                         self.error("Error downloading %s: %s %s", url, response.status_code, response.status)
@@ -554,6 +555,7 @@ class Module(object):
                     request.method = "DELETE"
                     request.path = url_obj.path + url_obj.query
                     request.host = url_obj.hostname
+                    request.add_header("Connection", "close")
                     cnn.perform(request)
             except TimeoutError:
                 self.error("Timeout deleting %s", url)
@@ -788,6 +790,7 @@ class Instance(object):
             raise RuntimeError("Couldn't connect to director:3000: %s" % e)
         try:
             request = cnn.get("/director/config")
+            request.add_header("Connection", "close")
             response = cnn.perform(request)
             config = json.loads(response.body)
             for key in ("memcached", "cassandra"):

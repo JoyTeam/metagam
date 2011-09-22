@@ -127,6 +127,7 @@ class LogoWizard(Wizard):
         resp = None
         try:
             req = cnn.get(uri_obj.path)
+            req.add_header("Connection", "close")
             resp = cnn.perform(req)
             if resp.status_code != 200:
                 raise RuntimeError("Couldn't download %s: %s" % (uri, htmlescape(resp.status)))
