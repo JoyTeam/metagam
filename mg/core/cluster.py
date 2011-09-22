@@ -255,10 +255,7 @@ def query(host, port, uri, params, timeout=20):
     try:
         with Timeout.push(timeout):
             cnn = HTTPConnection()
-            try:
-                cnn.connect((str(host), int(port)))
-            except IOError as e:
-                raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
+            cnn.connect((str(host), int(port)))
             try:
                 request = cnn.post(str(uri), urlencode(params))
                 request.add_header("Content-type", "application/x-www-form-urlencoded")
@@ -272,6 +269,8 @@ def query(host, port, uri, params, timeout=20):
                 return body
             finally:
                 cnn.close()
+    except IOError as e:
+        raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
     except TimeoutError:
         raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, uri))
 
