@@ -185,7 +185,7 @@ class QueueRunner(Module):
         apps = []
         self.call("applications.list", apps)
         for app in apps:
-            self.call("queue.add", "app.check", priority=20, app_tag=app["tag"], unique="app-check-%s" % app, app_cls=app["cls"])
+            self.call("queue.add", "app.check", priority=0, app_tag=app["tag"], unique="app-check-%s" % app, app_cls=app["cls"])
 
     def queue_process(self):
         self.wait_free = channel()
