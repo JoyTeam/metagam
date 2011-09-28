@@ -1462,10 +1462,11 @@ class DesignAdmin(Module):
                             uri = design.get("uri") + "/" + filename
                             data = self.download(uri)
                             if ent.get("content-type") == "text/html":
-                                unparser = DesignHTMLUnparser(self.app())
-                                unparser.feed(data)
-                                unparser.close()
-                                data = unparser.output
+                                if filename == "index.html" or filename == "global.html" or filename == "blocks.html":
+                                    unparser = DesignHTMLUnparser(self.app())
+                                    unparser.feed(data)
+                                    unparser.close()
+                                    data = unparser.output
                             zip.writestr(filename, data)
                         except DownloadError:
                             pass
