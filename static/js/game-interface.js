@@ -221,57 +221,61 @@ Game.element = function(eid, cel, el) {
 	cel.contentEl = eid;
 	cel.onLayout = function(shallow, forceLayout) {
 		if (shallow !== true) {
-			Ext.getCmp(eid + '-content-container').doLayout(false, forceLayout);
+			var cmp = Ext.getCmp(eid + '-content-container');
+			if (cmp)
+				cmp.doLayout(false, forceLayout);
 		}
 	};
 	cel = this.fixupContentEl(cel);
 	cel.id = eid + '-container';
 	Ext.get(eid).dom.style.height = '100%';
 	/* creating content element */
-	el = el || {};
 	var content = Ext.get(eid + '-content');
-	el.margins = content.dom.style.margin;
-	/* save static content items */
-	var children = new Array();
-	var childNodes = content.dom.childNodes;
-	for (var i = childNodes.length - 1; i >= 0; i--) {
-		var node = childNodes[i];
-		content.dom.removeChild(node);
-		children.push(node);
-	}
-	el.html = content.dom.innerHTML;
-	/* 'content' is the innermost container. Remove it and create a new element
-	 * at the same place. */
-	var content_parent = content.parent();
-	var insert_here = content_parent.dom.insertBefore(document.createElement('div'), content.dom);
-	content.remove();
-	el.id = eid + '-content';
-	el.xtype = el.xtype || 'container';
-	el.flex = 1;
-	el.layout = el.layout || 'fit';
-	insert_here.id = eid + '-content-container';
-	var container_options = {
-		id: eid + '-content-container',
-		applyTo: insert_here,
-		layout: 'vbox',
-		layoutConfig: {
-			align: 'stretch'
-		},
-		items: [el]
-	};
-	if (!el.no_height)
-		container_options.height = '100%';
-	if (el.vertical) {
-		el.vertical = undefined;
-		container_options.width = '100%';
-		container_options.layout = 'auto';
-		container_options.layoutConfig = undefined;
-	}
-	var container = new Ext.Container(container_options);
-	/* restore static content items */
-	var dom = Ext.get(eid + '-content').dom;
-	for (var i = children.length - 1; i >= 0; i--) {
-		dom.appendChild(children[i]);
+	if (content.dom.tagName == 'div' || content.dom.tagName == 'DIV') {
+		el = el || {};
+		el.margins = content.dom.style.margin;
+		/* save static content items */
+		var children = new Array();
+		var childNodes = content.dom.childNodes;
+		for (var i = childNodes.length - 1; i >= 0; i--) {
+			var node = childNodes[i];
+			content.dom.removeChild(node);
+			children.push(node);
+		}
+		el.html = content.dom.innerHTML;
+		/* 'content' is the innermost container. Remove it and create a new element
+		 * at the same place. */
+		var content_parent = content.parent();
+		var insert_here = content_parent.dom.insertBefore(document.createElement('div'), content.dom);
+		content.remove();
+		el.id = eid + '-content';
+		el.xtype = el.xtype || 'container';
+		el.flex = 1;
+		el.layout = el.layout || 'fit';
+		insert_here.id = eid + '-content-container';
+		var container_options = {
+			id: eid + '-content-container',
+			applyTo: insert_here,
+			layout: 'vbox',
+			layoutConfig: {
+				align: 'stretch'
+			},
+			items: [el]
+		};
+		if (!el.no_height)
+			container_options.height = '100%';
+		if (el.vertical) {
+			el.vertical = undefined;
+			container_options.width = '100%';
+			container_options.layout = 'auto';
+			container_options.layoutConfig = undefined;
+		}
+		var container = new Ext.Container(container_options);
+		/* restore static content items */
+		var dom = Ext.get(eid + '-content').dom;
+		for (var i = children.length - 1; i >= 0; i--) {
+			dom.appendChild(children[i]);
+		}
 	}
 	return cel;
 };
