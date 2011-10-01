@@ -542,7 +542,7 @@ class ReqAuction(ConstructorModule):
         # voted already
         voted_already = False
         lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             if ent.get("request") == request.uuid:
                 voted_already = True
