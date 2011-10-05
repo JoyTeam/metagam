@@ -75,6 +75,7 @@ class ModifiersDaemon(Daemon):
                 modifiers.load(silent=True)
                 for mod in modifiers:
                     self.call("queue.add", "modifiers.stop", {"mod": mod.uuid}, retry_on_fail=True, app_tag=mod.get("app"), app_cls=mod.get("cls", "metagam"), unique="mod-%s" % mod.uuid)
+                modifiers.remove()
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(3)
@@ -130,17 +131,9 @@ class Modifiers(Module):
         try:
             modifier = self.obj(DBModifier, mod)
         except ObjectNotFoundException:
-            try:
-                self.main_app().obj(DBAlienModifier, mod).remove()
-            except ObjectNotFoundException:
-                pass
             pass
         else:
             modifier.remove()
-            try:
-                self.main_app().obj(DBAlienModifier, mod).remove()
-            except ObjectNotFoundException:
-                pass
             # Invalidating cache
             try:
                 del self.req()._modifiers_cache[modifier.get("target")]
