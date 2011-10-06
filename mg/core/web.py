@@ -500,6 +500,7 @@ class Web(Module):
         self.rhook("web.post_redirect", self.post_redirect)
         self.rhook("ext-robots.txt.index", self.robots_txt, priv="public")
         self.rhook("web.upload_handler", self.web_upload_handler)
+        self.rhook("int-cass.classes", self.cass_classes, priv="public")
 
     def web_upload_handler(self):
         self.req().upload_handler = True
@@ -821,6 +822,20 @@ class Web(Module):
         params = [u'<input type="hidden" name="%s" value="%s" />' % (htmlescape(key), htmlescape(val)) for key, val in params.iteritems()]
         content = '<html><body><form action="%s" method="post" name="autoform">%s</form><script type="text/javascript">document.autoform.submit();</script></body></html>' % (htmlescape(uri), u''.join(params))
         self.call("web.response", content)
+
+    def cass_classes(self):
+        req = self.req()
+        indexes = {}
+        app = self.app().inst.appfactory.get_by_tag(req.args)
+        if app:
+            objclasses = {}
+            app.hooks.call("objclasses.list", objclasses)
+            for name, info in objclasses.iteritems():
+                try:
+                    indexes[name] = info[0]._indexes
+                except AttributeError:
+                    indexes[name] = {}
+        self.call("web.response_json", indexes)
 
 class WebForm(object):
     """
