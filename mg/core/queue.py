@@ -197,7 +197,7 @@ class QueueRunner(Module):
                     Tasklet.new(self.check)()
                 while self.workers <= 0:
                     self.wait_free.receive()
-                tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10000)
+                tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10)
                 tasks.load(silent=True)
                 anything_processed = False
                 no_workers_shown = set()
