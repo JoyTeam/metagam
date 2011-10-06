@@ -169,7 +169,6 @@ class Interface(ConstructorModule):
         self.call("game.response_internal", "empty.html", {})
 
     def objclasses_list(self, objclasses):
-        objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
         objclasses["Popup"] = (DBPopup, DBPopupList)
         objclasses["FirstVisit"] = (DBFirstVisit, DBFirstVisitList)
 
