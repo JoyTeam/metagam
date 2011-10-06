@@ -6,7 +6,7 @@
 <h2>[%servers_online.title%]</h2>
 <ul>
 [%foreach srv in servers_online.list%]
-<li><strong>[%srv.host%]</strong> &mdash; [%srv.type%] &mdash; [%srv.params%]</li>
+<li><strong>[%srv.id%]</strong> ([%srv.host%]:[%srv.port%]) &mdash; [%srv.type%] &mdash; [%srv.params%]</li>
 [%end%]
 </ul>
 [%end%]

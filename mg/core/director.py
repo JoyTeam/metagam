@@ -323,7 +323,13 @@ class Director(Module):
             hosts.sort()
             vars["servers_online"] = {
                 "title": self._("List of servers online"),
-                "list": [{"host": host, "type": info["type"], "params": json.dumps(info["params"])} for host, info in [(host, self.app().servers_online[host]) for host in hosts]]
+                "list": [{
+                    "id": host_id,
+                    "type": info["type"],
+                    "host": info["host"],
+                    "port": info["port"],
+                    "params": json.dumps(info["params"]),
+                } for host_id, info in [(host, self.app().servers_online[host]) for host in hosts]]
             }
         return self.call("web.response_template", "director/index.html", vars)
 
