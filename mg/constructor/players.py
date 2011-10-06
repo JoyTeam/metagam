@@ -378,7 +378,7 @@ class CharactersMod(ConstructorModule):
                 return template.format(**params)
             except KeyError as e:
                 params[e.args[0]] = '{?%s?}' % htmlescape(e.args[0])
-            except ValueError:
+            except Exception:
                 return template
         return template
 
