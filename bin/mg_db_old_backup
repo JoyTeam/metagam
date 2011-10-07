@@ -48,7 +48,6 @@ def main():
 
             # Loading Objects (in the old format)
             for ent in db.get_range_slices(ColumnParent("Objects"), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE):
-                continue
                 m = re_app.match(ent.key)
                 if m and len(ent.columns):
                     app, key = m.group(1, 2)
