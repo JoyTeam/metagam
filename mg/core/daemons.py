@@ -16,23 +16,14 @@ class DaemonError(Exception):
     pass
 
 class DaemonStatus(CassandraObject):
-    _indexes = {
+    clsname = "DaemonStatus"
+    indexes = {
         "updated": [[], "updated"],
         "server_id": [["server_id"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DaemonStatus-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DaemonStatus._indexes
-
 class DaemonStatusList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DaemonStatus-"
-        kwargs["cls"] = DaemonStatus
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DaemonStatus
 
 class Daemons(Module):
     def register(self):

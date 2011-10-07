@@ -14,24 +14,15 @@ import re
 re_wmauth_remove = re.compile(r'^([0-9a-f]+)/([0-9a-f]+)$')
 
 class DBUserWMID(CassandraObject):
-    _indexes = {
+    clsname = "UserWMID"
+    indexes = {
         "all": [[], "added"],
         "user": [["user"]],
         "wmid": [["wmid"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserWMID-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBUserWMID._indexes
-
 class DBUserWMIDList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserWMID-"
-        kwargs["cls"] = DBUserWMID
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBUserWMID
 
 class ConstructorUtils(Module):
     def register(self):
@@ -432,6 +423,7 @@ class Constructor(Module):
             return self._("wmcert///pseudonymous")
 
     def debug_validate(self):
+        return
         req = self.req()
         slices_list = self.call("cassmaint.load_database")
         inst = self.app().inst
@@ -544,7 +536,7 @@ class Constructor(Module):
         inst = self.app().inst
         int_app = inst.int_app
         app = inst.appfactory.get_by_tag(tag)
-        tasks = int_app.objlist(QueueTaskList, query_index="app-at", query_equal=tag)
+        tasks = int_app.objlist(QueueTaskList, query_index="app_at", query_equal=tag)
         tasks.remove()
         sched = int_app.obj(Schedule, tag, silent=True)
         sched.remove()

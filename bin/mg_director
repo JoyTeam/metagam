@@ -11,10 +11,7 @@ def main():
         inst.dbpool = CassandraPool((("director-db", 9160),))
         inst.mcpool = MemcachedPool(("director-mc", 11211))
         app = WebApplication(inst, "int", "int")
-        app.modules.load(["mg.core.director.CassandraStruct"])
-        app.dbrestruct()
         app.modules.load(["mg.core.director.Director"])
-        app.dbrestruct()
         app.hooks.call("director.run")
     except RuntimeError as e:
         logging.error(e)

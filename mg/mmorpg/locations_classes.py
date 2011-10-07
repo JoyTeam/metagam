@@ -5,58 +5,30 @@ default_location_delay = 20
 re_param_attr = re.compile(r'^p_(.+)')
 
 class DBLocation(CassandraObject):
-    _indexes = {
+    clsname = "Location"
+    indexes = {
         "all": [[], "name"],
         "name": [["name"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Location-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBLocation._indexes
-
 class DBLocationList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Location-"
-        kwargs["cls"] = DBLocation
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBLocation
 
 class DBCharacterLocation(CassandraObject):
-    _indexes = {
+    clsname = "CharacterLocation"
+    indexes = {
         "location": [["location"]],
         "instance": [["instance"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterLocation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacterLocation._indexes
-
 class DBCharacterLocationList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterLocation-"
-        kwargs["cls"] = DBCharacterLocation
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharacterLocation
 
 class DBLocParams(CassandraObject):
-    _indexes = {}
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LocParams-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBLocParams._indexes
+    clsname = "LocParams"
 
 class DBLocParamsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LocParams-"
-        kwargs["cls"] = DBLocParams
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBLocParams
 
 class Location(Module):
     def __init__(self, app, uuid, fqn="mg.mmorpg.locations.Location"):

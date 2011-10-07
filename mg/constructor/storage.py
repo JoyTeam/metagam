@@ -7,23 +7,14 @@ re_find_extension = re.compile(r'^(.*)(\..*)$')
 re_del = re.compile(r'^del\/(\S+)$')
 
 class DBStaticObject(CassandraObject):
-    _indexes = {
+    clsname = "StaticObject"
+    indexes = {
         "all": [[], "filename_lower"],
         "created": [[], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "StaticObject-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBStaticObject._indexes
-
 class DBStaticObjectList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "StaticObject-"
-        kwargs["cls"] = DBStaticObject
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBStaticObject
 
 class StorageAdmin(Module):
     def register(self):

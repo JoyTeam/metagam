@@ -12,18 +12,12 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 re_extract_uuid = re.compile(r'-([a-f0-9]{32})\.[a-z0-9]+$')
 
 class TempFile(CassandraObject):
-    _indexes = {
+    clsname = "TempFile"
+    indexes = {
         "till": [[], "till"],
         "wizard": [["wizard"]],
         "app": [["app"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TempFile-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return TempFile._indexes
 
     def delete(self):
         host = str(self.get("host"))
@@ -44,10 +38,7 @@ class TempFile(CassandraObject):
             cnn.close()
 
 class TempFileList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TempFile-"
-        kwargs["cls"] = TempFile
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = TempFile
 
 class Cluster(Module):
     def register(self):

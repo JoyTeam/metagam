@@ -5,24 +5,15 @@ import random
 re_valid_code = re.compile(r'^\d\d\d\d-\d\d\d\d-\d\d\d\d$')
 
 class Invitation(CassandraObject):
-    _indexes = {
+    clsname = "Invitation"
+    indexes = {
         "created": [[], "created"],
-        "user-type": [["user", "type"]],
+        "user_type": [["user", "type"]],
         "touser": [["touser"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Invitation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Invitation._indexes
-
 class InvitationList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Invitation-"
-        kwargs["cls"] = Invitation
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Invitation
 
 class Invitations(Module):
     def register(self):
@@ -204,7 +195,7 @@ class Invitations(Module):
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def invitation_ok(self, user, type):
-        invs = self.objlist(InvitationList, query_index="user-type", query_equal="%s-%s" % (user, type))
+        invs = self.objlist(InvitationList, query_index="user_type", query_equal="%s-%s" % (user, type))
         invs.load(silent=True)
         if len(invs):
             return True

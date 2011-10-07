@@ -1,22 +1,13 @@
 from mg import *
 
 class DBExport(CassandraObject):
-    _indexes = {
+    clsname = "Export"
+    indexes = {
         "all": [[], "stored"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Export-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBExport._indexes
-
 class DBExportList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Export-"
-        kwargs["cls"] = DBExport
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBExport
 
 class Export(Module):
     def register(self):

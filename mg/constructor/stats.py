@@ -5,22 +5,13 @@ from mg.constructor.interface import DBFirstVisitList
 import re
 
 class DBDailyStat(CassandraObject):
-    _indexes = {
+    clsname = "DailyStat"
+    indexes = {
         "period": [[], "period"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DailyStat-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBDailyStat._indexes
-
 class DBDailyStatList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DailyStat-"
-        kwargs["cls"] = DBDailyStat
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBDailyStat
 
 class GameReporter(ConstructorModule):
     def register(self):

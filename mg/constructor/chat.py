@@ -25,62 +25,35 @@ re_del = re.compile(r'^del/(.+)$')
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
-    _indexes = {
+    clsname = "ChatMessage"
+    indexes = {
         "created": [[], "created"],
         "channel": [["channel"], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatMessage-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBChatMessage._indexes
-
 class DBChatMessageList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatMessage-"
-        kwargs["cls"] = DBChatMessage
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBChatMessage
 
 class DBChatChannelCharacter(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
-    _indexes = {
+    clsname = "ChatChannelCharacter"
+    indexes = {
         "channel": [["channel"]],
         "character": [["character"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatChannelCharacter-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBChatChannelCharacter._indexes
-
 class DBChatChannelCharacterList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatChannelCharacter-"
-        kwargs["cls"] = DBChatChannelCharacter
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBChatChannelCharacter
 
 class DBChatDebug(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
-    _indexes = {
+    clsname = "ChatDebug"
+    indexes = {
         "all": [[]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatDebug-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBChatDebug._indexes
-
 class DBChatDebugList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ChatDebug-"
-        kwargs["cls"] = DBChatDebug
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBChatDebug
 
 class Chat(ConstructorModule):
     def register(self):
@@ -691,10 +664,10 @@ class Chat(ConstructorModule):
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 characters = [self.character(uuid) for uuid in character_uuids]
             # loading list of sessions corresponding to the characters
-            sessions = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % char.uuid for char in characters])
+            sessions = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % char.uuid for char in characters])
             # loading list of characters able to view the message
             viewers = {}
-            for char_uuid, sess_uuid in sessions.index_values(2):
+            for char_uuid, sess_uuid in sessions.index_values(5):
                 try:
                     viewers[char_uuid].append(sess_uuid)
                 except KeyError:
@@ -963,11 +936,11 @@ class Chat(ConstructorModule):
                 self.debug("Subscribed characters: %s", character_uuids)
                 if len(character_uuids):
                     # load sessions of these characters
-                    lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+                    lst = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % uuid for uuid in character_uuids])
                     characters_online = set()
                     syschannels = []
                     mychannels = []
-                    for char_uuid, sess_uuid in lst.index_values(2):
+                    for char_uuid, sess_uuid in lst.index_values(5):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
                         if send_myself and character.uuid == char_uuid:
@@ -1006,10 +979,10 @@ class Chat(ConstructorModule):
                 character_uuids = [re_after_dash.sub('', uuid) for uuid in lst.uuids()]
                 if len(character_uuids):
                     # load sessions of these characters
-                    lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % uuid for uuid in character_uuids])
+                    lst = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % uuid for uuid in character_uuids])
                     characters_online = set()
                     syschannels = []
-                    for char_uuid, sess_uuid in lst.index_values(2):
+                    for char_uuid, sess_uuid in lst.index_values(5):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
                     if syschannels:
@@ -1317,7 +1290,7 @@ class Chat(ConstructorModule):
                     for user_ent in users_lst:
                         users.add(user_ent.get("character"))
             channels = set()
-            lst = self.objlist(SessionList, query_index="authorized-user", query_equal=["1-%s" % user for user in users])
-            for char_uuid, sess_uuid in lst.index_values(2):
+            lst = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % user for user in users])
+            for char_uuid, sess_uuid in lst.index_values(5):
                 channels.add('id_%s' % sess_uuid)
             self.call("stream.packet", [ch for ch in channels], "chat", "character_update", character=self.roster_info(character))

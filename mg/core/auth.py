@@ -26,7 +26,8 @@ re_short = re.compile(r'^(.{6}).*(.{6})$')
 re_nonalphanum = re.compile(r'[^a-zA-Z0-9_]')
 
 class User(CassandraObject):
-    _indexes = {
+    clsname = "User"
+    indexes = {
         "created": [[], "created"],
         "last_login": [[], "last_login"],
         "name": [["name_lower"]],
@@ -36,54 +37,29 @@ class User(CassandraObject):
         "check": [["check"], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "User-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return User._indexes
-
 class UserList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "User-"
-        kwargs["cls"] = User
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = User
 
 class UserPermissions(CassandraObject):
-    _indexes = {
+    clsname = "UserPermissions"
+    indexes = {
         "any": [["any"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserPermissions-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return UserPermissions._indexes
 
     def sync(self):
         self.set("any", "1")
 
 class UserPermissionsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserPermissions-"
-        kwargs["cls"] = UserPermissions
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = UserPermissions
 
 class Session(CassandraObject):
-    _indexes = {
+    clsname = "Session"
+    indexes = {
         "valid_till": [[], "valid_till"],
         "user": [["user"]],
         "authorized": [["authorized"]],
-        "authorized-user": [["authorized", "user"]],
+        "authorized_user": [["authorized", "user"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Session-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Session._indexes
 
     def user(self):
         return self.get("user")
@@ -95,87 +71,48 @@ class Session(CassandraObject):
         return self.get("semi_user")
 
 class SessionList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Session-"
-        kwargs["cls"] = Session
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Session
 
 class Captcha(CassandraObject):
-    _indexes = {
+    clsname = "Captcha"
+    indexes = {
         "valid_till": [[], "valid_till"],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Captcha-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Captcha._indexes
 
 class CaptchaList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Captcha-"
-        kwargs["cls"] = Captcha
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Captcha
 
 class AutoLogin(CassandraObject):
-    _indexes = {
+    clsname = "AutoLogin"
+    indexes = {
         "valid_till": [[], "valid_till"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AutoLogin-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AutoLogin._indexes
-
 class AutoLoginList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AutoLogin-"
-        kwargs["cls"] = AutoLogin
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = AutoLogin
 
 class AuthLog(CassandraObject):
-    _indexes = {
+    clsname = "AuthLog"
+    indexes = {
         "performed": [[], "performed"],
-        "user-performed": [["user"], "performed"],
-        "player-performed": [["player"], "performed"],
-        "session-performed": [["session"], "performed"],
-        "ip-performed": [["ip"], "performed"],
+        "user_performed": [["user"], "performed"],
+        "player_performed": [["player"], "performed"],
+        "session_performed": [["session"], "performed"],
+        "ip_performed": [["ip"], "performed"],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AuthLog-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AuthLog._indexes
 
 class AuthLogList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AuthLog-"
-        kwargs["cls"] = AuthLog
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = AuthLog
 
 class DossierRecord(CassandraObject):
-    _indexes = {
-        "user-performed": [["user"], "performed"],
-        "admin-performed": [["admin"], "performed"],
+    clsname = "DossierRecord"
+    indexes = {
+        "user_performed": [["user"], "performed"],
+        "admin_performed": [["admin"], "performed"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DossierRecord-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DossierRecord._indexes
-
 class DossierRecordList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "DossierRecord-"
-        kwargs["cls"] = DossierRecord
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DossierRecord
 
 class Sessions(Module):
     "The mostly used authentication functions. It must load very fast"
@@ -1576,7 +1513,7 @@ class Dossiers(Module):
             }
             self.call("dossier.before-display", dossier_info, vars)
             dossier_entries = []
-            records = self.objlist(DossierRecordList, query_index="user-performed", query_equal=dossier_info["user"], query_reversed=True)
+            records = self.objlist(DossierRecordList, query_index="user_performed", query_equal=dossier_info["user"], query_reversed=True)
             records.load(silent=True)
             users = {}
             for ent in records:

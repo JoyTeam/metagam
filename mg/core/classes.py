@@ -5,22 +5,13 @@ class StaticUploadError(Exception):
     pass
 
 class WorkerStatus(CassandraObject):
-    _indexes = {
+    clsname = "WorkerStatus"
+    indexes = {
         "all": [[]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "WorkerStatus-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return WorkerStatus._indexes
-
 class WorkerStatusList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "WorkerStatus-"
-        kwargs["cls"] = WorkerStatus
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = WorkerStatus
 
 class DoubleResponseException(Exception):
     "start_response called twice on the same request"

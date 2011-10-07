@@ -5,13 +5,9 @@ from mg.core.classes import *
 import re
 import json
 
-class CassandraStruct(Module):
-    def register(self):
-        self.rdep(["mg.core.cass_struct.CommonCassandraStruct"])
-
 class Director(Module):
     def register(self):
-        self.rdep(["mg.core.director.CassandraStruct", "mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
+        self.rdep(["mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
             "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin", "mg.core.modifiers.ModifiersManager"])
         self.config()
         self.apply_config()

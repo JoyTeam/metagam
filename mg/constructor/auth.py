@@ -10,23 +10,14 @@ import random
 import time
 
 class AppSession(CassandraObject):
-    _indexes = {
+    clsname = "AppSession"
+    indexes = {
         "timeout": [[], "timeout"],
         "character": [["character"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AppSession-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AppSession._indexes
-
 class AppSessionList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AppSession-"
-        kwargs["cls"] = AppSession
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = AppSession
 
 class AuthAdmin(ConstructorModule):
     def register(self):
@@ -347,7 +338,7 @@ class Auth(ConstructorModule):
                         self.call("stream.send", ["id_%s" % session_uuid], {"packets": [{"method_cls": "game", "method": "close"}]})
 
     def character_sessions(self, character, sessions):
-        lst = self.objlist(SessionList, query_index="authorized-user", query_equal="1-%s" % character.uuid)
+        lst = self.objlist(SessionList, query_index="authorized_user", query_equal="1-%s" % character.uuid)
         sessions.extend(lst.uuids())
 
     def require_login(self):

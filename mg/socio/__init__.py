@@ -53,50 +53,30 @@ re_valid_tag = re.compile(r'^[\w\- ]+$', re.UNICODE)
 re_whitespace = re.compile(r'\s+')
 
 class UserForumSettings(CassandraObject):
-    _indexes = {
-        "notify-any": [["notify_any"]],
+    clsname = "UserForumSettings"
+    indexes = {
+        "notify_any": [["notify_any"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserForumSettings-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return UserForumSettings._indexes
-
 class UserForumSettingsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserForumSettings-"
-        kwargs["cls"] = UserForumSettings
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = UserForumSettings
 
 class ForumCategoryStat(CassandraObject):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumCategoryStat-"
-        CassandraObject.__init__(self, *args, **kwargs)
+    clsname = "ForumCategoryStat"
 
 class ForumCategoryStatList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumCategoryStat-"
-        kwargs["cls"] = ForumCategoryStat
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumCategoryStat
 
 class ForumTopic(CassandraObject):
-    _indexes = {
-        "category-created": [["category"], "pinned-created"],
-        "category-updated": [["category"], "pinned-updated"],
-        "updated-category": [[], "updated", "category"],
-        "category-list": [["category"], "created"],
+    clsname = "ForumTopic"
+    indexes = {
+        "category_created": [["category"], "pinned-created"],
+        "category_updated": [["category"], "pinned-updated"],
+        "updated_category": [[], "updated", "category"],
+        "category_list": [["category"], "created"],
         "author": [["author"], "created"],
         "tag": [["tag"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumTopic-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return ForumTopic._indexes
 
     def sync(self):
         pinned = 1 if self.get("pinned") else 0
@@ -105,86 +85,49 @@ class ForumTopic(CassandraObject):
         self.set("pinned-updated", str(pinned) + self.get("updated"))
 
 class ForumTopicList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumTopic-"
-        kwargs["cls"] = ForumTopic
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumTopic
 
 class ForumTopicContent(CassandraObject):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumTopicContent-"
-        CassandraObject.__init__(self, *args, **kwargs)
+    clsname = "ForumTopicContent"
 
 class ForumTopicContentList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumTopicContent-"
-        kwargs["cls"] = ForumTopicContent
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumTopicContent
 
 class ForumPost(CassandraObject):
-    _indexes = {
+    clsname = "ForumPost"
+    indexes = {
         "topic": [["topic"], "created"],
         "category": [["category"], "created"],
         "author": [["author"], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumPost-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return ForumPost._indexes
-
 class ForumPostList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumPost-"
-        kwargs["cls"] = ForumPost
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumPost
 
 class SocioImage(CassandraObject):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "SocioImage-"
-        CassandraObject.__init__(self, *args, **kwargs)
+    clsname = "SocioImage"
 
 class ForumLastRead(CassandraObject):
-    _indexes = {
+    clsname = "ForumLastRead"
+    indexes = {
         "category": [["category"]],
-        "topic-user": [["topic", "user"]],
-        "user-subscribed": [["user", "subscribed"]],
-        "topic-subscribed": [["topic", "subscribed"]],
+        "topic_user": [["topic", "user"]],
+        "user_subscribed": [["user", "subscribed"]],
+        "topic_subscribed": [["topic", "subscribed"]],
         "topic": [["topic"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumLastRead-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return ForumLastRead._indexes
-
 class ForumLastReadList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumLastRead-"
-        kwargs["cls"] = ForumLastRead
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumLastRead
 
 class ForumPermissions(CassandraObject):
-    _indexes = {
+    clsname = "ForumPermissions"
+    indexes = {
         "member": [["member"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumPermissions-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return ForumPermissions._indexes
-
 class ForumPermissionsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ForumPermissions-"
-        kwargs["cls"] = ForumPermissions
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ForumPermissions
 
 class ForumAdmin(Module):
     def register(self):
@@ -381,7 +324,7 @@ class ForumAdmin(Module):
         conf = self.app().config_updater()
         conf.set("forum.categories", categories)
         conf.store()
-        list = self.objlist(ForumTopicList, query_index="category-created", query_equal=cat["id"])
+        list = self.objlist(ForumTopicList, query_index="category_created", query_equal=cat["id"])
         list.remove()
         list = self.objlist(ForumPostList, query_index="category", query_equal=cat["id"])
         list.remove()
@@ -571,8 +514,8 @@ class Socio(Module):
         mutations_search = []
         mutations_list = []
         mutations = {
-            "%s-%s" % (app_tag, group): {"Indexes": mutations_search},
-            "%s-%s-%s" % (app_tag, group, uuid): {"Indexes": mutations_list},
+            "*": {"%s_Search" % group: mutations_search},
+            uuid: {"%s_Search" % group: mutations_list},
         }
         for word, count in cnt.iteritems():
             mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), timestamp=timestamp))))
@@ -587,13 +530,13 @@ class Socio(Module):
     def fulltext_remove(self, group, uuid):
         timestamp = time.time() * 1000
         app_tag = str(self.app().tag)
-        words = self.app().db.get_slice("%s-%s-%s" % (app_tag, group, uuid), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        words = self.app().db.get_slice(uuid, ColumnParent("%s_Search" % group), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         mutations = []
         for word in words:
             mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate(["%s//%s" % (word.column.name, str(uuid))]), timestamp=timestamp)))
         if len(mutations):
-            self.db().batch_mutate({"%s-%s" % (app_tag, group): {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
-            self.db().remove("%s-%s-%s" % (app_tag, group, uuid), ColumnPath("Indexes"), timestamp, ConsistencyLevel.QUORUM)
+            self.db().batch_mutate({"*": {"%s_Search" % group: mutations}}, ConsistencyLevel.QUORUM)
+            self.db().remove(uuid, ColumnPath("%s_Search" % group), timestamp, ConsistencyLevel.QUORUM)
 
     def fulltext_search(self, group, words):
         app_tag = str(self.app().tag)
@@ -604,7 +547,7 @@ class Socio(Module):
                 query_search = query_search[0:max_word_len]
             start = (query_search + "//").encode("utf-8")
             finish = (query_search + "/=").encode("utf-8")
-            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("%s-%s" % (app_tag, group), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
+            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice("*", ColumnParent("%s_Search" % group), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
             if render_objects is None:
                 render_objects = objs
             else:
@@ -968,7 +911,7 @@ class Forum(Module):
         unread = {}
         semi_user_uuid = self.call("socio.semi_user")
         if semi_user_uuid:
-            topics = self.objlist(ForumTopicList, query_index="updated-category", query_start=self.now(-31 * 86400))
+            topics = self.objlist(ForumTopicList, query_index="updated_category", query_start=self.now(-31 * 86400))
             re_updated = re.compile(r'^(\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d)-([a-f0-9]+)-[a-f0-9]+$')
             top_updated = {}
             for top in topics.index_data:
@@ -976,7 +919,7 @@ class Forum(Module):
                 if m:
                     upd, cat = m.group(1, 2)
                     top_updated[top[1]] = (upd, cat)
-            lastread_list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal=["%s-%s" % (topic, semi_user_uuid) for topic in top_updated.iterkeys()])
+            lastread_list = self.objlist(ForumLastReadList, query_index="topic_user", query_equal=["%s-%s" % (topic, semi_user_uuid) for topic in top_updated.iterkeys()])
             lastread_list.load()
             lastread = dict([(lr.get("topic"), lr) for lr in lastread_list])
             for top, info in top_updated.iteritems():
@@ -1198,7 +1141,7 @@ class Forum(Module):
         return self.may_moderate(cat, topic, rules, roles)
 
     def topics(self, cat, page=1, tpp=topics_per_page):
-        topics = self.objlist(ForumTopicList, query_index="category-updated", query_equal=cat["id"], query_reversed=True)
+        topics = self.objlist(ForumTopicList, query_index="category_updated", query_equal=cat["id"], query_reversed=True)
         pages = (len(topics) - 1) / tpp + 1
         if pages < 1:
             pages = 1
@@ -1321,7 +1264,7 @@ class Forum(Module):
         req = self.req()
         user_uuid = self.call("socio.semi_user")
         if user_uuid is not None:
-            lastread_list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal=["%s-%s" % (topic["uuid"], user_uuid) for topic in topics])
+            lastread_list = self.objlist(ForumLastReadList, query_index="topic_user", query_equal=["%s-%s" % (topic["uuid"], user_uuid) for topic in topics])
             lastread_list.load()
             lastread = dict([(lr.get("topic"), lr) for lr in lastread_list])
             for topic in topics:
@@ -1481,9 +1424,9 @@ class Forum(Module):
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
             mutations_tags.append(Mutation(ColumnOrSuperColumn(Column(name=tag_short, value=tag, timestamp=timestamp))))
-            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", timestamp=timestamp)))]}
+            mutations[tag_short] = {"ForumTaggedTopics_Search": [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", timestamp=timestamp)))]}
         if len(mutations):
-            mutations["%s-ForumTags" % app_tag] = {"Indexes": mutations_tags}
+            mutations["*"] = {"ForumTags_Search": mutations_tags}
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
         return tags
 
@@ -1503,16 +1446,16 @@ class Forum(Module):
             tag = tag.encode("utf-8")
             tag_short = tag_short.encode("utf-8")
             short_tags.append(tag_short)
-            mutations["%s-ForumTaggedTopics-%s" % (app_tag, tag_short)] = {"Indexes": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), timestamp=timestamp))]}
+            mutations[tag_short] = {"ForumTaggedTopics_Search": [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), timestamp=timestamp))]}
         if len(mutations):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
             mutations = []
             for tag_utf8 in short_tags:
-                topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
+                topics = self.app().db.get_slice(tag_utf8, ColumnParent("ForumTaggedTopics_Search"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
                 if not topics:
                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
             if len(mutations):
-                self.db().batch_mutate({"%s-ForumTags" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
+                self.db().batch_mutate({"*": {"ForumTags_Search": mutations}}, ConsistencyLevel.QUORUM)
         return tags
 
     def reply(self, cat, topic, author, content):
@@ -1705,7 +1648,7 @@ class Forum(Module):
     def lastread(self, user_uuid, topic_uuid, category_uuid):
         if user_uuid is None:
             return None
-        list = self.objlist(ForumLastReadList, query_index="topic-user", query_equal="%s-%s" % (topic_uuid, user_uuid))
+        list = self.objlist(ForumLastReadList, query_index="topic_user", query_equal="%s-%s" % (topic_uuid, user_uuid))
         if len(list):
             list.load()
             return list[0]
@@ -1857,7 +1800,7 @@ class Forum(Module):
         self.call("socio.response", form.html(), vars)
 
     def update_last(self, cat, stat):
-        topics = self.objlist(ForumTopicList, query_index="category-list", query_equal=cat["id"], query_reversed=True, query_limit=1)
+        topics = self.objlist(ForumTopicList, query_index="category_list", query_equal=cat["id"], query_reversed=True, query_limit=1)
         topics.load(silent=True)
         posts = self.objlist(ForumPostList, query_index="category", query_equal=cat["id"], query_reversed=True, query_limit=1)
         posts.load(silent=True)
@@ -2379,7 +2322,7 @@ class Forum(Module):
             topic = self.obj(ForumTopic, topic_uuid)
         except ObjectNotFoundException:
             self.call("web.response_json", {"error": "Topic not found"})
-        subscribers = self.objlist(UserForumSettingsList, query_index="notify-any", query_equal="1")
+        subscribers = self.objlist(UserForumSettingsList, query_index="notify_any", query_equal="1")
         subscribers.load()
         notify_str = "notify_%s" % topic.get("category")
         author = topic.get("author")
@@ -2413,7 +2356,7 @@ class Forum(Module):
             post = self.obj(ForumPost, post_uuid)
         except ObjectNotFoundException:
             self.call("web.response_json", {"error": "Post not found"})
-        subscribers = self.objlist(ForumLastReadList, query_index="topic-subscribed", query_equal="%s-1" % topic.uuid)
+        subscribers = self.objlist(ForumLastReadList, query_index="topic_subscribed", query_equal="%s-1" % topic.uuid)
         subscribers.load()
         author = post.get("author")
         users = []
@@ -2464,7 +2407,7 @@ class Forum(Module):
         self.debug("Synchronizing forum")
         categories = self.categories()
         for cat in categories:
-            topics = self.objlist(ForumTopicList, query_index="category-list", query_equal=cat["id"], query_reversed=True)
+            topics = self.objlist(ForumTopicList, query_index="category_list", query_equal=cat["id"], query_reversed=True)
             for topic in topics:
                 posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
                 posts.load(silent=True)
@@ -2498,18 +2441,18 @@ class Forum(Module):
             stat.store()
         # Updating tags
         app_tag = str(self.app().tag)
-        tags = self.app().db.get_slice("%s-ForumTags" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        tags = self.app().db.get_slice("*", ColumnParent("ForumTags_Search"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         mutations = []
         timestamp = None
         for tag in tags:
             tag_utf8 = tag.column.name
-            topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
+            topics = self.app().db.get_slice(tag_utf8, ColumnParent("ForumTaggedTopics_Search"), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
             if not topics:
                 if timestamp is None:
                     timestamp = time.time() * 1000
                 mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
         if len(mutations):
-            self.db().batch_mutate({"%s-ForumTags" % app_tag: {"Indexes": mutations}}, ConsistencyLevel.QUORUM)
+            self.db().batch_mutate({"*": {"ForumTags_Search": mutations}}, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
 
     def ext_tag(self):
@@ -2534,7 +2477,7 @@ class Forum(Module):
             tag_utf8 = tag_utf8[0:max_tag_len]
         tag_utf8 = tag_utf8.encode("utf-8")
         app_tag = str(self.app().tag)
-        topics = self.app().db.get_slice("%s-ForumTaggedTopics-%s" % (app_tag, tag_utf8), ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        topics = self.app().db.get_slice(tag_utf8, ColumnParent("ForumTaggedTopics_Search"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         # loading topics
         render_topics = [topic.column.name for topic in topics]
         render_topics = self.objlist(ForumTopicList, render_topics)
@@ -2654,7 +2597,7 @@ class Forum(Module):
             if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
                 may_read_category.add(cat["id"])
         # querying
-        lastreadlist = self.objlist(ForumLastReadList, query_index="user-subscribed", query_equal="%s-1" % user_uuid)
+        lastreadlist = self.objlist(ForumLastReadList, query_index="user_subscribed", query_equal="%s-1" % user_uuid)
         lastreadlist.load(silent=True)
         topic_uuids = [lr.get("topic") for lr in lastreadlist if lr.get("category") in may_read_category]
         # loading topics
@@ -2678,7 +2621,7 @@ class Forum(Module):
 
     def ext_tags(self):
         app_tag = str(self.app().tag)
-        tags = self.app().db.get_slice("%s-ForumTags" % app_tag, ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
+        tags = self.app().db.get_slice("*", ColumnParent("ForumTags_Search"), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         tags = [{"html": htmlescape(tag.column.value), "url": urlencode(tag.column.value)} for tag in tags]
         # It seems Cassandra always returns sorted results
         # tags.sort(cmp=lambda x, y: cmp(x["html"], y["html"]))

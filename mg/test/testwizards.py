@@ -28,13 +28,15 @@ class TestWizards(unittest.TestCase):
         self.inst = Instance()
         self.inst.dbpool = CassandraPool((("director-db", 9160),))
         self.inst.mcpool = MemcachedPool(("director-mc", 11211))
-        self.app = Application(self.inst, "mgtest", keyspace="mgtest")
-        self.app.modules.load(["mg.core.cass_struct.CommonCassandraStruct", "mg.admin.wizards.Wizards"])
-        dbstruct = {}
-        self.app.hooks.call("core.dbstruct", dbstruct)
-        self.assertTrue(len(dbstruct) > 0)
-        self.assertTrue("Objects" in dbstruct)
-        self.app.hooks.call("core.dbapply", dbstruct)
+        self.app = Application(self.inst, "mgtest")
+        self.app.modules.load(["mg.admin.wizards.Wizards"])
+        mc = Memcached(self.inst.mcpool, "mgtest-")
+        mc.delete("Cassandra-CF-mgtest-ConfigGroup_Objects")
+        mc.delete("Cassandra-CF-mgtest-ConfigGroup_Index_all")
+        mc.delete("Cassandra-CF-mgtest-HookGroupModules_Objects")
+        mc.delete("Cassandra-CF-mgtest-HookGroupModules_Index_all")
+        mc.delete("Cassandra-CF-mgtest-WizardConfig_Objects")
+        mc.delete("Cassandra-CF-mgtest-WizardConfig_Index_all")
 
     def test01(self):
         for wiz in self.app.hooks.call("wizards.list"):

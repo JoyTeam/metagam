@@ -832,7 +832,7 @@ class Web(Module):
             app.hooks.call("objclasses.list", objclasses)
             for name, info in objclasses.iteritems():
                 try:
-                    indexes[name] = info[0]._indexes
+                    indexes[name] = getattr(info[0].__class__, "indexes", {})
                 except AttributeError:
                     indexes[name] = {}
         self.call("web.response_json", indexes)

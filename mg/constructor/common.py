@@ -6,29 +6,16 @@ import re
 re_remove_www = re.compile(r'^www.', re.IGNORECASE)
 
 class Domain(CassandraObject):
-    _indexes = {
+    clsname = "Domain"
+    indexes = {
         "all": [[], "created"],
         "user": [["user"], "created"],
         "registered": [["registered"], "created"],
         "project": [["project"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Domain._indexes
-
 class DomainList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Domain-"
-        kwargs["cls"] = Domain
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Domain
 
 class ApplicationFactory(mg.core.ApplicationFactory):
     """

@@ -94,14 +94,22 @@ class TestCore(unittest.TestCase):
         self.inst.mcpool = MemcachedPool(("director-mc", 11211))
 
     def test00(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        conn = self.inst.dbpool.cget()
         try:
-            app.db().system_drop_keyspace("mgtest")
+            conn.cass.set_keyspace("system")
+            conn.cass.system_drop_keyspace("mgtest")
         except Exception as e:
             pass
+        self.inst.dbpool.success(conn)
+        mc = Memcached(self.inst.mcpool, "mgtest-")
+        mc.delete("Cassandra-KS-mgtest")
+        mc.delete("Cassandra-CF-mgtest-ConfigGroup_Objects")
+        mc.delete("Cassandra-CF-mgtest-ConfigGroup_Index_all")
+        mc.delete("Cassandra-CF-mgtest-HookGroupModules_Objects")
+        mc.delete("Cassandra-CF-mgtest-HookGroupModules_Index_all")
 
     def test01(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         list = []
         app.hooks.call("core.loaded_modules", list)
         self.assertEqual(len(list), 0)
@@ -111,13 +119,6 @@ class TestCore(unittest.TestCase):
         app.hooks.call("core.loaded_modules", list)
         self.assertEqual(len(list), 1)
         self.assertEqual(list[0], "mg.test.testcore.Test1")
-
-        app.modules.load(["mg.core.cass_struct.CommonCassandraStruct"])
-        dbstruct = {}
-        app.hooks.call("core.dbstruct", dbstruct)
-        self.assertTrue(len(dbstruct) > 0)
-        self.assertTrue("Objects" in dbstruct)
-        app.hooks.call("core.dbapply", dbstruct)
 
         app.config.load_groups(["a", "b", "c"])
         self.assertTrue("a" in app.config._config)
@@ -129,7 +130,7 @@ class TestCore(unittest.TestCase):
         app.config.store()
 
     def test02(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         self.assertEqual(app.config.get("a.key1"), "value1")
         app.config.set("a.key2", "value2")
         app.config.delete("a.key1")
@@ -138,7 +139,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(app.config.get("a.key2"), "value2")
 
     def test03(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         self.assertEqual(app.config.get("a.key1"), None)
         self.assertEqual(app.config.get("a.key2"), "value2")
         self.assertTrue("a" in app.config._config)
@@ -147,17 +148,17 @@ class TestCore(unittest.TestCase):
         self.assertFalse("d" in app.config._config)
 
     def test04(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         app.modules.load(["mg.test.testcore.Test1"])
         app.hooks.store()
 
     def test06(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         app.modules.load(["mg.test.testcore.Test2"])
         app.hooks.store()
 
     def test09(self):
-        app = Application(self.inst, "mgtest", keyspace="mgtest")
+        app = Application(self.inst, "mgtest")
         app.modules.load(["mg.test.testcore.TestJoin"])
         self.assertEqual(app.hooks.call("join.empty"), None)
         self.assertEqual(app.hooks.call("join.single"), "single")

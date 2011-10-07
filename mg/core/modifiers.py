@@ -5,45 +5,27 @@ class DBAlienModifier(CassandraObject):
     DBAlienModifiers are stored in the main database. Special checker process regularly
     looks for expired modifiers in the single index
     """
-    _indexes = {
+    clsname = "AlienModifier"
+    indexes = {
         "till": [[], "till"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AlienModifier-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBAlienModifier._indexes
-
 class DBAlienModifierList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AlienModifier-"
-        kwargs["cls"] = DBAlienModifier
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBAlienModifier
 
 class DBModifier(CassandraObject):
     """
     DBModifiers are stored in the project databases
     """
-    _indexes = {
+    clsname = "Modifier"
+    indexes = {
         "target": [["target"]],
-        "target-kind": [["target", "kind"]],
+        "target_kind": [["target", "kind"]],
         "till": [[], "till"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Modifier-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBModifier._indexes
-
 class DBModifierList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Modifier-"
-        kwargs["cls"] = DBModifier
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBModifier
 
 class ModifiersManager(Module):
     def register(self):
@@ -157,7 +139,7 @@ class Modifiers(Module):
             if mod:
                 # Prolong
                 till = from_unixtime(unix_timestamp(mod["maxtill"]) + period)
-                lst = self.objlist(DBModifierList, query_index="target-kind", query_equal='%s-%s' % (target, kind))
+                lst = self.objlist(DBModifierList, query_index="target_kind", query_equal='%s-%s' % (target, kind))
                 m = self._mod_add(target_type, target, kind, value, till, period=period, **kwargs)
                 lst.remove()
             else:

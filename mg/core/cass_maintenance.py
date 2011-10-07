@@ -24,7 +24,7 @@ class CassandraMaintenance(Module):
         db = app.db
         if slices_list is None:
             slices_list = self.load_database()
-        prefix = app.keyprefix
+        prefix = app.keyspace
         parsers = []
         re_prefix = re.compile('^%s' % prefix)
         index_names = []
@@ -63,12 +63,12 @@ class CassandraMaintenance(Module):
                             data = None
                         if data and type(data) == dict:
                             valid_keys.add(key)
-                            obj = parser[2](db, uuid, data, dbprefix=prefix)
+                            obj = parser[2](db, uuid, data, keyspace=prefix)
                             obj.calculate_indexes()
                             index_values = obj.index_values()
                             update = False
                             for index_name, index_info in index_values.iteritems():
-                                key = "%s%s%s%s" % (prefix, obj.clsprefix, index_name, index_info[0])
+                                key = "%s%s%s%s" % (prefix, obj.clsname, index_name, index_info[0])
                                 if type(key) == unicode:
                                     key = key.encode("utf-8")
                                 index = slices_dict.get(key)

@@ -3,12 +3,13 @@ from mg.constructor import *
 max_votes = 3
 
 class DBRequest(CassandraObject):
-    _indexes = {
+    clsname = "Request"
+    indexes = {
         "all": [[], "created"],
         "draft": [["draft", "author"], "created"],
         "moderation": [["moderation"], "moderation_since"],
-        "published-priority": [["published"], "priority"],
-        "published-since": [["published"], "published_since"],
+        "published_priority": [["published"], "priority"],
+        "published_since": [["published"], "published_since"],
         "closed": [["closed"], "closed_since"],
         "implemented": [["implemented"], "closed_since"],
         "author": [["author"], "created"],
@@ -16,56 +17,28 @@ class DBRequest(CassandraObject):
         "children": [["parent"], "published_since"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Request-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBRequest._indexes
-
 class DBRequestList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Request-"
-        kwargs["cls"] = DBRequest
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBRequest
 
 class DBRequestVote(CassandraObject):
-    _indexes = {
+    clsname = "RequestVote"
+    indexes = {
         "user": [["user"]],
         "request": [["request"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "RequestVote-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBRequestVote._indexes
-
 class DBRequestVoteList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "RequestVote-"
-        kwargs["cls"] = DBRequestVote
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBRequestVote
 
 class DBRequestDependency(CassandraObject):
-    _indexes = {
+    clsname = "RequestDependency"
+    indexes = {
         "parent": [["parent"]],
         "child": [["child"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "RequestDependency-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBRequestDependency._indexes
-
 class DBRequestDependencyList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "RequestDependency-"
-        kwargs["cls"] = DBRequestDependency
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBRequestDependency
 
 class ReqAuction(ConstructorModule):
     def register(self):
@@ -115,7 +88,7 @@ class ReqAuction(ConstructorModule):
         for ent in lst:
             myvotes.add(ent.get("request"))
         # list of requests
-        lst = self.objlist(DBRequestList, query_index="published-priority", query_equal="1", query_reversed=True)
+        lst = self.objlist(DBRequestList, query_index="published_priority", query_equal="1", query_reversed=True)
         lst.load(silent=True)
         rows = []
         for ent in lst:

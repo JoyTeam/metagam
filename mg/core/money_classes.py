@@ -1,21 +1,11 @@
 from mg import *
 
 class Account(CassandraObject):
-    _indexes = {
+    clsname = "Account"
+    indexes = {
         "all": [[]],
         "member": [["member"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Account._indexes
 
     def balance(self):
         return float(self.get("balance"))
@@ -61,79 +51,37 @@ class Account(CassandraObject):
         return True
 
 class AccountList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Account-"
-        kwargs["cls"] = Account
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Account
 
 class AccountLock(CassandraObject):
-    _indexes = {
+    clsname = "AccountLock"
+    indexes = {
         "account": [["account"], "created"],
         "member": [["member"], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AccountLock._indexes
-
 class AccountLockList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountLock-"
-        kwargs["cls"] = AccountLock
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = AccountLock
 
 class AccountOperation(CassandraObject):
-    _indexes = {
+    clsname = "AccountOperation"
+    indexes = {
         "account": [["account"], "performed"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return AccountOperation._indexes
-
 class AccountOperationList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "AccountOperation-"
-        kwargs["cls"] = AccountOperation
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = AccountOperation
 
 class PaymentXsolla(CassandraObject):
-    _indexes = {
+    clsname = "PaymentXsolla"
+    indexes = {
         "all": [[], "performed"],
         "user": [["user"], "performed"],
         "date": [[], "date"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "PaymentXsolla-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "PaymentXsolla-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return PaymentXsolla._indexes
-
 class PaymentXsollaList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "PaymentXsolla-"
-        kwargs["cls"] = PaymentXsolla
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = PaymentXsolla
 
 class MemberMoney(object):
     def __init__(self, app, member):

@@ -7,62 +7,35 @@ re_del = re.compile(r'^del\/(.+)$')
 re_valid_pgcode = re.compile(r'u_[a-z0-9_]+$')
 
 class DBLibraryPage(CassandraObject):
-    _indexes = {
+    clsname = "LibraryPage"
+    indexes = {
         "all": [[], "code"],
         "code": [["code"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryPage-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBLibraryPage._indexes
-
 class DBLibraryPageList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryPage-"
-        kwargs["cls"] = DBLibraryPage
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBLibraryPage
 
 class DBLibraryGroup(CassandraObject):
-    _indexes = {
+    clsname = "LibraryGroup"
+    indexes = {
         "all": [[], "code"],
         "code": [["code"]],
         "everywhere": [["everywhere"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryGroup-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBLibraryGroup._indexes
-
 class DBLibraryGroupList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryGroup-"
-        kwargs["cls"] = DBLibraryGroup
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBLibraryGroup
 
 class DBLibraryPageGroup(CassandraObject):
-    _indexes = {
+    clsname = "LibraryPageGroup"
+    indexes = {
         "grp": [["grp"]],
         "page": [["page"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryPageGroup-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBLibraryPageGroup._indexes
-
 class DBLibraryPageGroupList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "LibraryPageGroup-"
-        kwargs["cls"] = DBLibraryPageGroup
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBLibraryPageGroup
 
 class Library(ConstructorModule):
     def register(self):

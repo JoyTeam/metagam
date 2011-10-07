@@ -4,23 +4,14 @@ import re
 re_restraint_kind = re.compile(r'^(\S+)/(forum-silence|chat-silence|ban|hide-info)$')
 
 class UserRestraint(CassandraObject):
-    _indexes = {
+    clsname = "UserRestraint"
+    indexes = {
         "user": [["user"]],
         "till": [[], "till"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserRestraint-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return UserRestraint._indexes
-
 class UserRestraintList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "UserRestraint-"
-        kwargs["cls"] = UserRestraint
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = UserRestraint
 
 class Restraints(Module):
     def register(self):

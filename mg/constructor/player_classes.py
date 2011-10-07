@@ -10,127 +10,58 @@ re_perm_attr = re.compile(r'^perm_(.+)')
 # Database objects
 
 class DBPlayer(CassandraObject):
-    _indexes = {
+    clsname = "Player"
+    indexes = {
         "created": [[], "created"],
         "active": [["active"], "last_visit"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Player-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBPlayer._indexes
-
 class DBPlayerList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Player-"
-        kwargs["cls"] = DBPlayer
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBPlayer
 
 class DBCharImage(CassandraObject):
-    _indexes = {}
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharImage-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharImage._indexes
+    clsname = "CharImage"
 
 class DBCharImageList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharImage-"
-        kwargs["cls"] = DBCharImage
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharImage
 
 class DBCharParams(CassandraObject):
-    _indexes = {}
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharParams-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharParams._indexes
+    clsname = "CharParams"
 
 class DBCharParamsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharParams-"
-        kwargs["cls"] = DBCharParams
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharParams
 
 class DBCharacter(CassandraObject):
-    _indexes = {
+    clsname = "Character"
+    indexes = {
         "created": [[], "created"],
         "player": [["player"], "created"],
         "admin": [["admin"]]
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Character-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacter._indexes
-
 class DBCharacterList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Character-"
-        kwargs["cls"] = DBCharacter
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharacter
 
 class DBCharacterForm(CassandraObject):
-    _indexes = {
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterForm-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacterForm._indexes
+    clsname = "CharacterForm"
 
 class DBCharacterFormList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterForm-"
-        kwargs["cls"] = DBCharacterForm
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharacterForm
 
 class DBCharacterOnline(CassandraObject):
-    _indexes = {
+    clsname = "CharacterOnline"
+    indexes = {
         "all": [[]]
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterOnline-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacterOnline._indexes
-
 class DBCharacterOnlineList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterOnline-"
-        kwargs["cls"] = DBCharacterOnline
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharacterOnline
 
 class DBCharacterSettings(CassandraObject):
-    _indexes = {
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterSettings-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBCharacterSettings._indexes
+    clsname = "CharacterSettings"
 
 class DBCharacterSettingsList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "CharacterSettings-"
-        kwargs["cls"] = DBCharacterSettings
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBCharacterSettings
 
 # Business logic objects
 

@@ -1,26 +1,17 @@
 from mg.constructor import *
 
 class SecuritySuspicion(CassandraObject):
-    _indexes = {
+    clsname = "SecuritySuspicion"
+    indexes = {
         "performed": [[], "performed"],
-        "app-performed": [["app"], "performed"],
-        "app-action-performed": [["app", "action"], "performed"],
-        "action-performed": [["action"], "performed"],
-        "admin-performed": [["admin"], "performed"],
+        "app_performed": [["app"], "performed"],
+        "app_action_performed": [["app", "action"], "performed"],
+        "action_performed": [["action"], "performed"],
+        "admin_performed": [["admin"], "performed"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "SecuritySuspicion-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return SecuritySuspicion._indexes
-
 class SecuritySuspicionList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "SecuritySuspicion-"
-        kwargs["cls"] = SecuritySuspicion
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = SecuritySuspicion
 
 class Security(ConstructorModule):
     def register(self):

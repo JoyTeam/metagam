@@ -46,24 +46,14 @@ cssutils.ser.prefs.indent = u''
 
 class Design(CassandraObject):
     "A design package (CSS file, multiple image and script files, HTML template)"
-
-    _indexes = {
+    clsname = "Design"
+    indexes = {
         "all": [[], "uploaded"],
         "group": [["group"], "uploaded"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Design-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Design._indexes
-
 class DesignList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Design-"
-        kwargs["cls"] = Design
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Design
 
 class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     "HTML parser validating HTML file received from the user and modifying it adding [%design_root%] prefixes"

@@ -21,22 +21,13 @@ re_remove_www = re.compile(r'^www\.', re.IGNORECASE)
 default_icons = set([])
 
 class DBFirstVisit(CassandraObject):
-    _indexes = {
+    clsname = "FirstVisit"
+    indexes = {
         "all": [[]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "FirstVisit-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return DBFirstVisit._indexes
-
 class DBFirstVisitList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "FirstVisit-"
-        kwargs["cls"] = DBFirstVisit
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = DBFirstVisit
 
 class Dynamic(Module):
     def register(self):

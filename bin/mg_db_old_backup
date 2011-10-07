@@ -13,41 +13,24 @@ token_ring = 2 ** 127
 parts = 256
 token_part = token_ring / parts
 re_app = re.compile(r'^(.+?)-(.+)$')
-re_key = re.compile(r'^([a-zA-Z]+)-(.+)$')
+re_std_index = re.compile(r'^([A-Za-z]+)-(all|created|updated|last_login|valid_till|at|performed|published|user)$')
+re_index = re.compile(r'^([A-Za-z]+)-(name|channel-loc|wmid|user|app-unique|admin|owner|notify-any|any|group|player|session-performed|session|project|app-at|ip-performed|email)-(.+)$')
+re_std_object = re.compile(r'(HookGroupModules|ConfigGroup|DaemonStatus|WorkerStatus|Domain|Schedule)-(.+)')
+re_object = re.compile(r'^([A-Za-z]+)-([0-9a-f]{32})$')
 
 def main():
     try:
-        inst = Instance("db_backup")
-        inst.download_config()
-        int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.cluster.Cluster"])
-
-        # getting class => [workers] mapping
-        servers = int_app.hooks.call("cluster.query_server", "director", 3000, "/director/servers")
-        workers_by_classes = {}
-        for srv_id, info in servers.iteritems():
-            cls = info["params"].get("class")
-            if cls:
-                ent = {
-                    "host": info["host"],
-                    "port": info["port"],
-                }
-                try:
-                    workers_by_classes[cls].append(ent)
-                except KeyError:
-                    workers_by_classes[cls] = [ent]
-
+        db = CassandraConnection(("director-db", 9160))
+        db.connect()
+        db.set_keyspace("main")
         # loading database
-        mc = Memcached(inst.mcpool)
-        db = inst.dbpool.dbget("main", mc)
         created = set()
-        app_classes = {}
         for part in xrange(0, parts):
             start_token = '%d' % (part * token_part)
             end_token = '%d' % (((part + 1) * token_part) % token_ring)
 
             # Loading Objects (in the old format)
-            for ent in db.get_range_slices(ColumnParent("Objects"), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE):
+            for ent in db.cass.get_range_slices(ColumnParent("Objects"), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE):
                 m = re_app.match(ent.key)
                 if m and len(ent.columns):
                     app, key = m.group(1, 2)
@@ -55,46 +38,54 @@ def main():
                     # key may be or Object (ClassName-UUID) or Index (ClassName-IndexName(-IndexEquals)*)
 
                     # Guessing application class and fetching workers for this class
-                    try:
-                        app_classes_list = app_classes[app]
-                    except KeyError:
-                        app_cls = app if app in app_classes else "metagam"
-                        workers = workers_by_classes.get(app_cls)
-                        if workers:
-                            app_classes_list = int_app.hooks.call("cluster.query_server", workers[0]["host"], workers[0]["port"], "/cass/classes/%s" % app)
-                        else:
-                            app_classes_list = {}
-                        app_classes[app] = app_classes_list
+                    if app == "povareshkin":
+                        app_cls = "povareshkin"
+                    elif app == "comfort":
+                        app_cls = "comfort"
+                    elif app == "joyteam":
+                        app_cls = "joyteam"
+                    else:
+                        app_cls = "metagam"
 
                     # Enumerating all indexes and trying to guess - whether this record is Object or Index
-                    m = re_key.match(key)
+                    m = re_std_index.match(key)
                     if m:
-                        cls, uuid = m.group(1, 2)
-                        index_list = app_classes_list.get(cls)
-                        family = "Objects"
-                        if index_list:
-                            for index in index_list:
-                                if uuid.startswith("%s-" % str(index)):
-                                    family = "Index-%s" % index
-                                    uuid = "eq-%s" % uuid[len(index) + 1:]
-                                    break
-                                elif uuid == str(index):
-                                    family = "Index-%s" % index
-                                    uuid = "eq"
-                                    break
+                        cls, index_name = m.group(1, 2)
+                        family = "Index_%s" % re.sub(r'[^a-zA-Z0-9_]', '_', index_name)
+                        uuid = "eq"
                     else:
-                        print "Invalid key '%s' in Objects" % key
-                        continue
+                        m = re_index.match(key)
+                        if m:
+                            cls, index_name, equal = m.group(1, 2, 3)
+                            family = "Index_%s" % re.sub(r'[^a-zA-Z0-9_]', '_', index_name)
+                            uuid = "eq-%s" % equal
+                        else:
+                            m = re_std_object.match(key)
+                            if m:
+                                cls, uuid = m.group(1, 2)
+                                family = "Objects"
+                            else:
+                                m = re_object.match(key)
+                                if m:
+                                    cls, uuid = m.group(1, 2)
+                                    family = "Objects"
+                                else:
+                                    print "Invalid key '%s' in Objects" % key
+                                    continue
 
                     # Storing row
-                    filename = "%s-%s-%s.json" % (app, cls, family)
+                    try:
+                        os.mkdir(app)
+                    except OSError:
+                        pass
+                    filename = "%s/%s_%s.json" % (app, cls, family)
                     f = open(filename, "a" if filename in created else "w")
                     created.add(filename)
                     cols = dict([(col.column.name if col.column.name != "data" or family != "Objects" else "data-%s" % uuid, col.column.value) for col in ent.columns])
                     f.write(json.dumps({uuid: cols}))
                     f.write("\n")
                     f.close()
-            for ent in db.get_range_slices(ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE):
+            for ent in db.cass.get_range_slices(ColumnParent("Indexes"), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE):
                 m = re_app.match(ent.key)
                 if m and len(ent.columns):
                     app, key = m.group(1, 2)
@@ -108,7 +99,11 @@ def main():
                         uuid = "*"
 
                     # Storing row
-                    filename = "%s-%s-%s.json" % (app, cls, family)
+                    try:
+                        os.mkdir(app)
+                    except OSError:
+                        pass
+                    filename = "%s/%s_%s.json" % (app, cls, family)
                     f = open(filename, "a" if filename in created else "w")
                     created.add(filename)
                     cols = dict([(col.column.name, col.column.value) for col in ent.columns])

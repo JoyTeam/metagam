@@ -14,36 +14,21 @@ import datetime
 import calendar
 
 class QueueTask(CassandraObject):
-    _indexes = {
-        "app-at": [["app"], "at"],
+    clsname = "QueueTask"
+    indexes = {
+        "app_at": [["app"], "at"],
         "at": [[], "at"],
-        "app-unique": [["app", "unique"]],
+        "app_unique": [["app", "unique"]],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "QueueTask-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return QueueTask._indexes
 
 class QueueTaskList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "QueueTask-"
-        kwargs["cls"] = QueueTask
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = QueueTask
 
 class Schedule(CassandraObject):
-    _indexes = {
+    clsname = "Schedule"
+    indexes = {
         "updated": [[], "updated"],
     }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Schedule-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Schedule._indexes
 
     def add(self, hook, at, priority=50):
         self.touch()
@@ -69,10 +54,7 @@ class Schedule(CassandraObject):
             self.remove()
 
 class ScheduleList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Schedule-"
-        kwargs["cls"] = Schedule
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Schedule
 
 class Queue(Module):
     def register(self):
@@ -114,7 +96,7 @@ class Queue(Module):
                 "args": args,
             }
             if unique is not None:
-                existing = int_app.objlist(QueueTaskList, query_index="app-unique", query_equal="%s-%s" % (app_tag, unique))
+                existing = int_app.objlist(QueueTaskList, query_index="app_unique", query_equal="%s-%s" % (app_tag, unique))
                 existing.remove()
                 data["unique"] = unique
             if retry_on_fail:
@@ -285,7 +267,7 @@ class QueueRunner(Module):
             entries = sched.get("entries")
         except ObjectNotFoundException:
             entries = {}
-        existing = self.objlist(QueueTaskList, query_index="app-at", query_equal=app_tag)
+        existing = self.objlist(QueueTaskList, query_index="app_at", query_equal=app_tag)
         existing.load(silent=True)
         existing = dict([(task.get("unique"), task) for task in existing if task.get("args").get("schedule")])
         for hook, params in entries.iteritems():

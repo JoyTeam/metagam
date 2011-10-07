@@ -4,23 +4,14 @@ import re
 import sys
 
 class WizardConfig(CassandraObject):
-    _indexes = {
+    clsname = "WizardConfig"
+    indexes = {
         "all": [[]],
         "tag": [["tag"]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "WizardConfig-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return WizardConfig._indexes
-
 class WizardConfigList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "WizardConfig-"
-        kwargs["cls"] = WizardConfig
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = WizardConfig
 
 class Wizard(Module):
     "Wizard is a temporary object keeping state of interactive wizard. It can be updated step by step by a user, committed or aborted"

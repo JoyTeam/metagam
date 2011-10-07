@@ -1,59 +1,30 @@
 from mg import *
 
 class Telegram(CassandraObject):
-    _indexes = {
-    }
-
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Telegram-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return Telegram._indexes
+    clsname = "Telegram"
 
 class TelegramList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "Telegram-"
-        kwargs["cls"] = Telegram
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = Telegram
 
 class TelegramUser(CassandraObject):
-    _indexes = {
+    clsname = "TelegramUser"
+    indexes = {
         "contragent": [["user", "contragent"], "sent"],
         "unread": [["user", "unread"]],
         "telegram": [["telegram"]]
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TelegramUser-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return TelegramUser._indexes
-
 class TelegramUserList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TelegramUser-"
-        kwargs["cls"] = TelegramUser
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = TelegramUser
 
 class TelegramContragent(CassandraObject):
-    _indexes = {
+    clsname = "TelegramContragent"
+    indexes = {
         "user": [["user"], "last_telegram"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TelegramContragent-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return TelegramContragent._indexes
-
 class TelegramContragentList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "TelegramContragent-"
-        kwargs["cls"] = TelegramContragent
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = TelegramContragent
 
 class Telegrams(Module):
     def register(self):

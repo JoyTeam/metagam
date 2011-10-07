@@ -20,22 +20,13 @@ re_image_src = re.compile(r'^(<img.*src=")([^"]+)(".*>)', re.IGNORECASE)
 re_image_type = re.compile(r'^image/(.+)$')
 
 class BulkEmailMessage(CassandraObject):
-    _indexes = {
+    clsname = "BulkEmailMessage"
+    indexes = {
         "created": [[], "created"],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "BulkEmailMessage-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return BulkEmailMessage._indexes
-
 class BulkEmailMessageList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "BulkEmailMessage-"
-        kwargs["cls"] = BulkEmailMessage
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = BulkEmailMessage
 
 class EmailAdmin(Module):
     def register(self):

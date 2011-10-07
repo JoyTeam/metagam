@@ -31,22 +31,13 @@ class HookFormatException(Exception):
     pass
 
 class HookGroupModules(CassandraObject):
-    _indexes = {
+    clsname = "HookGroupModules"
+    indexes = {
         "all": [[]]
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "HookGroupModules-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return HookGroupModules._indexes
-
 class HookGroupModulesList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "HookGroupModules-"
-        kwargs["cls"] = HookGroupModules
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = HookGroupModules
 
 class DownloadError(Exception):
     "Failed Module().download()"
@@ -201,22 +192,13 @@ class Hooks(object):
                 groups.store(dont_load=True)
 
 class ConfigGroup(CassandraObject):
-    _indexes = {
+    clsname = "ConfigGroup"
+    indexes = {
         "all": [[]],
     }
 
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ConfigGroup-"
-        CassandraObject.__init__(self, *args, **kwargs)
-
-    def indexes(self):
-        return ConfigGroup._indexes
-
 class ConfigGroupList(CassandraObjectList):
-    def __init__(self, *args, **kwargs):
-        kwargs["clsprefix"] = "ConfigGroup-"
-        kwargs["cls"] = ConfigGroup
-        CassandraObjectList.__init__(self, *args, **kwargs)
+    objcls = ConfigGroup
 
 class Config(object):
     """
@@ -854,15 +836,15 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, tag, keyspace="main"):
+    def __init__(self, inst, tag):
         """
         inst - Instance object
         tag - Application tag
         """
         self.inst = inst
         self.mc = Memcached(inst.mcpool, prefix="%s-" % tag)
-        self.db = inst.dbpool.dbget(keyspace, self.mc)
-        self.keyprefix = "%s-" % tag
+        self.db = inst.dbpool.dbget(tag, self.mc)
+        self.keyspace = tag
         self.tag = tag
         self.hooks = Hooks(self)
         self.config = Config(self)
@@ -870,12 +852,6 @@ class Application(object):
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.dynamic = False
-
-    def dbrestruct(self):
-        "Check database structure and update if necessary"
-        dbstruct = {}
-        self.hooks.call("core.dbstruct", dbstruct)
-        self.hooks.call("core.dbapply", dbstruct)
 
     def reload(self):
         "Reload all loaded modules"
@@ -886,11 +862,11 @@ class Application(object):
 
     def obj(self, cls, uuid=None, data=None, silent=False):
         "Create CassandraObject instance"
-        return cls(self.db, uuid, data, dbprefix=self.keyprefix, silent=silent)
+        return cls(self.db, uuid=uuid, data=data, silent=silent)
 
     def objlist(self, cls, uuids=None, **kwargs):
         "Create CassandraObjectList instance"
-        return cls(self.db, uuids, dbprefix=self.keyprefix, **kwargs)
+        return cls(self.db, uuids=uuids, **kwargs)
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
