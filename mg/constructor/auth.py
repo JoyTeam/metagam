@@ -59,6 +59,8 @@ class AuthAdmin(ConstructorModule):
             for appsession in appsessions:
                 app_tag = appsession.get("app")
                 app = self.app().inst.appfactory.get_by_tag(app_tag)
+                if not app:
+                    return
                 session_uuid = appsession.get("session")
                 with app.lock(["session.%s" % session_uuid]):
                     try:

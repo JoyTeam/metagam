@@ -107,6 +107,7 @@ class TestCore(unittest.TestCase):
         mc.delete("Cassandra-CF-mgtest-ConfigGroup_Index_all")
         mc.delete("Cassandra-CF-mgtest-HookGroupModules_Objects")
         mc.delete("Cassandra-CF-mgtest-HookGroupModules_Index_all")
+        mc.delete("Cassandra-CF-mgtest-Data")
 
     def test01(self):
         app = Application(self.inst, "mgtest")

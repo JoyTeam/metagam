@@ -37,6 +37,7 @@ class TestWizards(unittest.TestCase):
         mc.delete("Cassandra-CF-mgtest-HookGroupModules_Index_all")
         mc.delete("Cassandra-CF-mgtest-WizardConfig_Objects")
         mc.delete("Cassandra-CF-mgtest-WizardConfig_Index_all")
+        mc.delete("Cassandra-CF-mgtest-Data")
 
     def test01(self):
         for wiz in self.app.hooks.call("wizards.list"):

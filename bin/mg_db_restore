@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from mg import *
-from concurrence import dispatch, quit
+from concurrence import *
 import os
 import logging
 import sys
@@ -11,51 +11,66 @@ import re
 import time
 import dircache
 
-def main():
+def restore_db(semaphore, inst, dirent, now, progress):
     try:
-        inst = Instance("db_restore")
-        inst.download_config()
-        mc = Memcached(inst.mcpool)
-        db = inst.dbpool.dbget("main", mc)
-        created = set()
-        now = time.time() * 1000
-        for dirent in dircache.listdir("."):
-            info = os.stat(dirent)
-            if info.st_mode & 040000:
-                keyspace = dirent
-                for ent in dircache.listdir(dirent):
-                    m = re.match(r'^(\S+).json', ent)
-                    if m:
-                        family = m.group(1)
-                        family = re.sub(r'[^a-zA-Z0-9_]', '_', family)
-                        f = open("%s/%s" % (dirent, ent), "r")
-                        try:
-                            for line in f:
-                                row = json.loads(line.strip())
-                                for key, val in row.iteritems():
-                                    if type(key) is unicode:
-                                        key = key.encode("utf-8")
-                                    mutations = []
-                                    for col_name, col_value in val.iteritems():
-                                        if type(col_name) is unicode:
-                                            col_name = col_name.encode("utf-8")
-                                        if type(col_value) is unicode:
-                                            col_value = col_value.encode("utf-8")
-                                        mutations.append(Mutation(ColumnOrSuperColumn(Column(name=col_name, value=col_value, timestamp=now))))
-                                    mutations = {key: {family: mutations}}
-                                    print "%s.%s.%s" % (keyspace, family, key)
-                                    db.keyspace = keyspace
-                                    db.batch_mutate(mutations, ConsistencyLevel.ONE)
-                        finally:
-                            f.close
-        sys.stdout.flush()
-        os._exit(0)
+        with semaphore:
+            keyspace = dirent
+            mc = Memcached(inst.mcpool)
+            db = inst.dbpool.dbget(keyspace, mc)
+            for ent in dircache.listdir(dirent):
+                m = re.match(r'^(\S+).json', ent)
+                if m:
+                    family = m.group(1)
+                    family = re.sub(r'[^a-zA-Z0-9_]', '_', family)
+                    print "%s.%s" % (keyspace, family)
+                    f = open("%s/%s" % (dirent, ent), "r")
+                    try:
+                        for line in f:
+                            row = json.loads(line.strip())
+                            for key, val in row.iteritems():
+                                if type(key) is unicode:
+                                    key = key.encode("utf-8")
+                                mutations = []
+                                for col_name, col_value in val.iteritems():
+                                    if type(col_name) is unicode:
+                                        col_name = col_name.encode("utf-8")
+                                    if type(col_value) is unicode:
+                                        col_value = col_value.encode("utf-8")
+                                    mutations.append(Mutation(ColumnOrSuperColumn(Column(name=col_name, value=col_value, timestamp=now))))
+                                mutations = {key: {family: mutations}}
+                                #print "%s.%s.%s" % (keyspace, family, key)
+                                db.batch_mutate(mutations, ConsistencyLevel.ONE)
+                                progress.append(time.time())
+                    finally:
+                        f.close()
+            barrier = time.time() - 300
+            progress = [t for t in progress if t > barrier]
+            print "db %s restored. speed: %d rows/min" % (dirent, len(progress) / 5)
     except RuntimeError as e:
         logging.error(e)
         os._exit(1)
     except Exception as e:
         logging.exception(e)
         os._exit(1)
+
+def main():
+    inst = Instance("db_restore")
+    inst.download_config()
+    inst.dbpool.size = 16
+    inst.mcpool.size = 16
+    now = time.time() * 1000
+    semaphore = Semaphore(1)
+    tasklets = []
+    progress = []
+    for dirent in dircache.listdir("."):
+        info = os.stat(dirent)
+        if info.st_mode & 040000:
+            tasklets.append(Tasklet.new(restore_db)(semaphore, inst, dirent, now, progress))
+    for tasklet in tasklets:
+        Tasklet.join(tasklet)
+    print "completed"
+    sys.stdout.flush()
+    os._exit(0)
 
 dispatch(main)
 

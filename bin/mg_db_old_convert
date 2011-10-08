@@ -1,0 +1,73 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import *
+import os
+import logging
+import sys
+import json
+import re
+import time
+import dircache
+
+def restore_db(dirent):
+    print "converting %s" % dirent
+    os.mkdir("new/%s" % dirent)
+    outf = open("new/%s/Data.json" % dirent, "w")
+    for ent in dircache.listdir("old/%s" % dirent):
+        m = re.match(r'^(\S+).json', ent)
+        if m:
+            family = m.group(1)
+            family = re.sub(r'[^a-zA-Z0-9_]', '_', family)
+            f = open("old/%s/%s" % (dirent, ent), "r")
+            m = re.match(r'([A-Za-z0-9]+)_Objects\.json$', ent)
+            if m:
+                clsname = m.group(1)
+                for line in f:
+                    row = json.loads(line.strip())
+                    row = dict([("%s_Object_%s" % (clsname, key), val) for key, val in row.iteritems()])
+                    outf.write(json.dumps(row))
+                    outf.write("\n")
+            else:
+                m = re.match(r'([A-Za-z0-9]+)_Search\.json$', ent)
+                if m:
+                    clsname = m.group(1)
+                    for line in f:
+                        row = json.loads(line.strip())
+                        row = dict([("%s_Search_%s" % (clsname, key), val) for key, val in row.iteritems()])
+                        outf.write(json.dumps(row))
+                        outf.write("\n")
+                else:
+                    m = re.match(r'([A-Za-z0-9]+)_Index_(.+)\.json$', ent)
+                    if m:
+                        clsname, indexname = m.group(1, 2)
+                        for line in f:
+                            row = json.loads(line.strip())
+                            row = dict([("%s_%s_Index_%s" % (clsname, indexname, key), val) for key, val in row.iteritems()])
+                            outf.write(json.dumps(row))
+                            outf.write("\n")
+                    else:
+                        print "invalid filename: %s" % ent
+            f.close()
+    outf.close()
+    print "converted %s" % dirent
+
+def main():
+    try:
+        for dirent in dircache.listdir("old"):
+            info = os.stat("old/%s" % dirent)
+            if info.st_mode & 040000:
+                restore_db(dirent)
+        print "completed"
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+

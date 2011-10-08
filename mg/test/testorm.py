@@ -44,6 +44,7 @@ def cleanup():
         pass
     db.pool.success(conn)
     mc.delete("Cassandra-KS-mgtest")
+    mc.delete("Cassandra-CF-mgtest-Data")
     mc.delete("Cassandra-CF-mgtest-SimpleObject_Objects")
     mc.delete("Cassandra-CF-mgtest-TestObject_Objects")
     mc.delete("Cassandra-CF-mgtest-TestObject_Index_topic")
@@ -299,6 +300,11 @@ class TestORM(unittest.TestCase):
         self.assertEqual(len(lst), 2)
         lst.load(True)
         self.assertEqual(len(lst), 1)
+
+class TestORM_Storage1(TestORM):
+    def setUp(self):
+        TestORM.setUp(self)
+        self.db.storage = 1
 
 def main():
     cleanup()
