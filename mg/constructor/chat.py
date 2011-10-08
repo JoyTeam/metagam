@@ -667,7 +667,7 @@ class Chat(ConstructorModule):
             sessions = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % char.uuid for char in characters])
             # loading list of characters able to view the message
             viewers = {}
-            for char_uuid, sess_uuid in sessions.index_values(5):
+            for char_uuid, sess_uuid in sessions.index_values(2):
                 try:
                     viewers[char_uuid].append(sess_uuid)
                 except KeyError:
@@ -940,7 +940,7 @@ class Chat(ConstructorModule):
                     characters_online = set()
                     syschannels = []
                     mychannels = []
-                    for char_uuid, sess_uuid in lst.index_values(5):
+                    for char_uuid, sess_uuid in lst.index_values(2):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
                         if send_myself and character.uuid == char_uuid:
@@ -982,7 +982,7 @@ class Chat(ConstructorModule):
                     lst = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % uuid for uuid in character_uuids])
                     characters_online = set()
                     syschannels = []
-                    for char_uuid, sess_uuid in lst.index_values(5):
+                    for char_uuid, sess_uuid in lst.index_values(2):
                         characters_online.add(char_uuid)
                         syschannels.append("id_%s" % sess_uuid)
                     if syschannels:
@@ -1291,6 +1291,6 @@ class Chat(ConstructorModule):
                         users.add(user_ent.get("character"))
             channels = set()
             lst = self.objlist(SessionList, query_index="authorized_user", query_equal=["1-%s" % user for user in users])
-            for char_uuid, sess_uuid in lst.index_values(5):
+            for char_uuid, sess_uuid in lst.index_values(2):
                 channels.add('id_%s' % sess_uuid)
             self.call("stream.packet", [ch for ch in channels], "chat", "character_update", character=self.roster_info(character))

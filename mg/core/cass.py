@@ -24,6 +24,7 @@ max_index_length = 10000000
 re_unconfigured_ks = re.compile(r'^Keyspace (.+) does not exist$')
 re_unconfigured_cf = re.compile(r'^unconfigured columnfamily (.+)$')
 re_notagree = re.compile(r'not yet agree')
+re_remove_index_prefix = re.compile(r'^.+?_Index_eq-')
 
 class CassandraError(Exception):
     "This exception can be raised during database queries"
@@ -723,6 +724,7 @@ class CassandraObjectList(object):
         self.query_index = query_index
         cls = self.__class__.objcls
         clsname = cls.clsname
+        self.index_prefix_len = 0
         if uuids is not None:
             self.lst = [cls(db, uuid, {}) for uuid in uuids]
         elif query_index is not None:
@@ -822,12 +824,10 @@ class CassandraObjectList(object):
             obj._indexes = None
 
     def index_values(self, strip_prefix_len=0):
-        if self.db.storage == 0:
-            # len("_" + "_Index_") = 8
-            strip_prefix_len += len(self.db.keyspace) + len(self.__class__.objcls.clsname) + 8
         res = []
         for key, values in self.index_rows.iteritems():
-            stripped_key = key[strip_prefix_len:] if strip_prefix_len else key
+            stripped_key = re_remove_index_prefix.sub('', key)
+            stripped_key = stripped_key[strip_prefix_len:] if strip_prefix_len else stripped_key
             for val in values:
                 res.append((stripped_key, val))
         return res
