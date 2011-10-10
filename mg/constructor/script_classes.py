@@ -317,7 +317,7 @@ class ScriptParser(Parsing.Lr, Module):
             pos = token_match.end()
 
 class ScriptTextParser(Module):
-    re_token = re.compile(r'(.*?)(?:\[([^\]:]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)
+    re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptTextParser")
