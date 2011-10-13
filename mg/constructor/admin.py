@@ -502,6 +502,8 @@ class Constructor(Module):
         project.set("created", self.now())
         project.set("owner", req.user())
         project.set("inactive", 1)
+        project.set("storage", 2)
+        project.set("keyspace", "eden")
         project.store()
         # accessing new application
         app = inst.appfactory.get_by_tag(project.uuid)

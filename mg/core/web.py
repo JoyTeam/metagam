@@ -418,14 +418,14 @@ class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
-    def __init__(self, inst, tag, hook_prefix="ext"):
+    def __init__(self, inst, tag, hook_prefix="ext", storage=0, keyspace=None):
         """
         inst - Instance object
         tag - application tag
         hook_prefix - prefix for hook names, i.e. prefix "web" means that
            URL /group/hook will be mapped to hook name web-group.hook
         """
-        Application.__init__(self, inst, tag)
+        Application.__init__(self, inst, tag, storage, keyspace)
         self.hook_prefix = hook_prefix
         if tag == "int":
             inst.int_app = self

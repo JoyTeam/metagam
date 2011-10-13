@@ -836,14 +836,17 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, tag):
+    def __init__(self, inst, tag, storage=0, keyspace=None):
         """
         inst - Instance object
         tag - Application tag
         """
         self.inst = inst
         self.mc = Memcached(inst.mcpool, prefix="%s-" % tag)
-        self.db = inst.dbpool.dbget(tag, self.mc)
+        if storage == 2:
+            self.db = inst.dbpool.dbget(keyspace, self.mc, storage, tag)
+        else:
+            self.db = inst.dbpool.dbget(tag, self.mc, storage)
         self.keyspace = tag
         self.tag = tag
         self.hooks = Hooks(self)

@@ -11,55 +11,84 @@ import re
 import time
 import dircache
 
-def restore_db(dirent):
-    print "converting %s" % dirent
-    os.mkdir("new/%s" % dirent)
-    outf = open("new/%s/Data.json" % dirent, "w")
+re_project_object = re.compile(r'^Project_Object_([a-f0-9]{32})$')
+re_object = re.compile(r'^(\S+?)_Object_(.+)$')
+re_index = re.compile(r'(\S+?)_(.+?)_Index_(eq.*)$')
+re_search = re.compile(r'(\S+?)_Search_(.+)$')
+
+def convert_db(dirent, created):
     for ent in dircache.listdir("old/%s" % dirent):
-        m = re.match(r'^(\S+).json', ent)
-        if m:
-            family = m.group(1)
-            family = re.sub(r'[^a-zA-Z0-9_]', '_', family)
-            f = open("old/%s/%s" % (dirent, ent), "r")
-            m = re.match(r'([A-Za-z0-9]+)_Objects\.json$', ent)
-            if m:
-                clsname = m.group(1)
-                for line in f:
-                    row = json.loads(line.strip())
-                    row = dict([("%s_Object_%s" % (clsname, key), val) for key, val in row.iteritems()])
-                    outf.write(json.dumps(row))
-                    outf.write("\n")
-            else:
-                m = re.match(r'([A-Za-z0-9]+)_Search\.json$', ent)
-                if m:
-                    clsname = m.group(1)
-                    for line in f:
-                        row = json.loads(line.strip())
-                        row = dict([("%s_Search_%s" % (clsname, key), val) for key, val in row.iteritems()])
-                        outf.write(json.dumps(row))
-                        outf.write("\n")
-                else:
-                    m = re.match(r'([A-Za-z0-9]+)_Index_(.+)\.json$', ent)
-                    if m:
-                        clsname, indexname = m.group(1, 2)
-                        for line in f:
-                            row = json.loads(line.strip())
-                            row = dict([("%s_%s_Index_%s" % (clsname, indexname, key), val) for key, val in row.iteritems()])
-                            outf.write(json.dumps(row))
-                            outf.write("\n")
+        inf = open("old/%s/%s" % (dirent, ent), "r")
+        if ent == "Data.json":
+            if len(dirent) == 32:
+                for line in inf:
+                    ent = json.loads(line)
+                    for key, val in ent.iteritems():
+                        m = re_object.match(key)
+                        if m:
+                            cls, uuid = m.group(1, 2)
+                            filename = "new/games/%s_Objects.json" % cls
+                            key = "%s_%s" % (dirent, uuid)
+                        else:
+                            m = re_index.match(key)
+                            if m:
+                                cls, index_name, index_equals = m.group(1, 2, 3)
+                                filename = "new/games/%s_Indexes.json" % cls
+                                key = "%s_%s_Index_%s" % (dirent, index_name, index_equals)
+                            else:
+                                m = re_search.match(key)
+                                if m:
+                                    cls, tag = m.group(1, 2)
+                                    filename = "new/games/%s_Search.json" % cls
+                                    key = "%s_%s" % (dirent, tag)
+                                else:
+                                    print "unknown row key in old/%s/Data.json: %s" % (dirent, key)
+                    if filename in created:
+                        outf = open(filename, "a")
                     else:
-                        print "invalid filename: %s" % ent
-            f.close()
-    outf.close()
-    print "converted %s" % dirent
+                        outf = open(filename, "w")
+                        created.add(filename)
+                    outf.write(json.dumps({key: val}))
+                    outf.write("\n")
+                    outf.close()
+            else:
+                os.mkdir("new/%s" % dirent)
+                outf = open("new/%s/Data.json" % dirent, "w")
+                for line in inf:
+                    ent = json.loads(line)
+                    for key, val in ent.iteritems():
+                        if dirent == "int":
+                            m = re_project_object.match(key)
+                            if m:
+                                app = m.group(1)
+                                col_key = "data-%s" % app
+                                if col_key in val:
+                                    col_val = json.loads(val[col_key])
+                                    col_val["storage"] = 2
+                                    col_val["keyspace"] = "games"
+                                    val[col_key] = json.dumps(col_val)
+                        outf.write(json.dumps({key: val}))
+                        outf.write("\n")
+                outf.close()
+        else:
+            try:
+                os.mkdir("new/%s" % dirent)
+            except OSError:
+                pass
+            outf = open("new/%s/Data.json" % dirent, "w")
+            for line in inf:
+                outf.write(line)
+            outf.close()
+        inf.close()
 
 def main():
     try:
+        os.mkdir("new/games")
+        created = set()
         for dirent in dircache.listdir("old"):
             info = os.stat("old/%s" % dirent)
             if info.st_mode & 040000:
-                restore_db(dirent)
-        print "completed"
+                convert_db(dirent, created)
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:

@@ -518,10 +518,15 @@ class Socio(Module):
                 "%s_Search_*" % group: {"Data": mutations_search},
                 "%s_Search_%s" % (group, uuid): {"Data": mutations_list},
             }
-        else:
+        elif self.app().db.storage == 1:
             mutations = {
                 "*": {"%s_Search" % group: mutations_search},
                 uuid: {"%s_Search" % group: mutations_list},
+            }
+        elif self.app().db.storage == 2:
+            mutations = {
+                "%s_*" % self.app().db.app: {"%s_Search" % group: mutations_search},
+                "%s_%s" % (self.app().db.app, uuid): {"%s_Search" % group: mutations_list},
             }
         for word, count in cnt.iteritems():
             mutations_search.append(Mutation(ColumnOrSuperColumn(Column(name=(u"%s//%s" % (word, uuid)).encode("utf-8"), value=str(count), timestamp=timestamp))))
@@ -539,8 +544,11 @@ class Socio(Module):
         if self.app().db.storage == 0:
             key = "%s_Search_%s" % (group, uuid)
             cf = "Data"
-        else:
+        elif self.app().db.storage == 1:
             key = uuid
+            cf = "%s_Search" % group
+        elif self.app().db.storage == 2:
+            key = "%s_%s" % (self.app().db.app, uuid)
             cf = "%s_Search" % group
         words = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         mutations = []
@@ -550,9 +558,12 @@ class Socio(Module):
             if self.app().db.storage == 0:
                 self.db().batch_mutate({"%s_Search_*" % group: {cf: mutations}}, ConsistencyLevel.QUORUM)
                 self.db().remove("%s_Search_%s" % (group, uuid), ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
-            else:
+            elif self.app().db.storage == 1:
                 self.db().batch_mutate({"*": {cf: mutations}}, ConsistencyLevel.QUORUM)
                 self.db().remove(uuid, ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
+            elif self.app().db.storage == 2:
+                self.db().batch_mutate({"%s_*" % self.app().db.app: {cf: mutations}}, ConsistencyLevel.QUORUM)
+                self.db().remove("%s_%s" % (self.app().db.app, uuid), ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
 
     def fulltext_search(self, group, words):
         app_tag = str(self.app().tag)
@@ -566,8 +577,11 @@ class Socio(Module):
             if self.app().db.storage == 0:
                 row = "%s_Search_*" % group
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 row = "*"
+                cf = "%s_Search" % group
+            elif self.app().db.storage == 2:
+                row = "%s_*" % self.app().db.app
                 cf = "%s_Search" % group
             objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
             if render_objects is None:
@@ -1449,16 +1463,22 @@ class Forum(Module):
             if self.app().db.storage == 0:
                 key = "ForumTaggedTopics_Search_%s" % tag_short
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 key = tag_short
+                cf = "ForumTaggedTopics_Search"
+            elif self.app().db.storage == 2:
+                key = "%s_%s" % (self.app().db.app, tag_short)
                 cf = "ForumTaggedTopics_Search"
             mutations[key] = {cf: [Mutation(ColumnOrSuperColumn(Column(name=str(uuid), value="1", timestamp=timestamp)))]}
         if len(mutations):
             if self.app().db.storage == 0:
                 key = "ForumTags_Search_*"
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 key = "*"
+                cf = "ForumTags_Search"
+            elif self.app().db.storage == 2:
+                key = "%s_*" % self.app().db.app
                 cf = "ForumTags_Search"
             mutations[key] = {cf: mutations_tags}
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
@@ -1483,8 +1503,11 @@ class Forum(Module):
             if self.app().db.storage == 0:
                 key = "ForumTaggedTopics_Search_%s" % tag_short
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 key = tag_short
+                cf = "ForumTaggedTopics_Search"
+            elif self.app().db.storage == 2:
+                key = "%s_%s" % (self.app().db.app, tag_short)
                 cf = "ForumTaggedTopics_Search"
             mutations[key] = {cf: [Mutation(deletion=Deletion(predicate=SlicePredicate([str(uuid)]), timestamp=timestamp))]}
         if len(mutations):
@@ -1494,8 +1517,11 @@ class Forum(Module):
                 if self.app().db.storage == 0:
                     key = "ForumTaggedTopics_Search_%s" % tag_utf8
                     cf = "Data"
-                else:
+                elif self.app().db.storage == 1:
                     key = tag_utf8
+                    cf = "ForumTaggedTopics_Search"
+                elif self.app().db.storage == 2:
+                    key = "%s_%s" % (self.app().db.app, tag_utf8)
                     cf = "ForumTaggedTopics_Search"
                 topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
                 if not topics:
@@ -1504,8 +1530,11 @@ class Forum(Module):
                 if self.app().db.storage == 0:
                     key = "ForumTags_Search_*"
                     cf = "Data"
-                else:
+                elif self.app().db.storage == 1:
                     key = "*"
+                    cf = "ForumTags_Search"
+                elif self.app().db.storage == 2:
+                    key = "%s_*" % self.app().db.app
                     cf = "ForumTags_Search"
                 self.db().batch_mutate({key: {cf: mutations}}, ConsistencyLevel.QUORUM)
         return tags
@@ -2496,8 +2525,11 @@ class Forum(Module):
         if self.app().db.storage == 0:
             key = "ForumTags_Search_*"
             cf = "Data"
-        else:
+        elif self.app().db.storage == 1:
             key = "*"
+            cf = "ForumTags_Search"
+        elif self.app().db.storage == 2:
+            key = "%s_*" % self.app().db.app
             cf = "ForumTags_Search"
         tags = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         mutations = []
@@ -2507,8 +2539,11 @@ class Forum(Module):
             if self.app().db.storage == 0:
                 key = "ForumTaggedTopics_Search_%s" % tag_utf8
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 key = tag_utf8
+                cf = "ForumTaggedTopics_Search"
+            elif self.app().db.storage == 2:
+                key = "%s_%s" % (self.app().db.app, tag_utf8)
                 cf = "ForumTaggedTopics_Search"
             topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
             if not topics:
@@ -2519,8 +2554,11 @@ class Forum(Module):
             if self.app().db.storage == 0:
                 key = "ForumTags_Search_*"
                 cf = "Data"
-            else:
+            elif self.app().db.storage == 1:
                 key = "*"
+                cf = "ForumTags_Search"
+            elif self.app().db.storage == 2:
+                key = "%s_*" % self.app().db.app
                 cf = "ForumTags_Search"
             self.db().batch_mutate({key: {cf: mutations}}, ConsistencyLevel.QUORUM)
         self.call("web.response_json", {"ok": 1})
@@ -2550,8 +2588,11 @@ class Forum(Module):
         if self.app().db.storage == 0:
             key = "ForumTaggedTopics_Search_%s" % tag_utf8
             cf = "Data"
-        else:
+        elif self.app().db.storage == 1:
             key = tag_utf8
+            cf = "ForumTaggedTopics_Search"
+        elif self.app().db.storage == 2:
+            key = "%s_%s" % (self.app().db.app, tag_utf8)
             cf = "ForumTaggedTopics_Search"
         topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         # loading topics
@@ -2700,8 +2741,11 @@ class Forum(Module):
         if self.app().db.storage == 0:
             key = "ForumTags_Search_*"
             cf = "Data"
-        else:
+        elif self.app().db.storage == 1:
             key = "*"
+            cf = "ForumTags_Search"
+        elif self.app().db.storage == 2:
+            key = "%s_*" % self.app().db.app
             cf = "ForumTags_Search"
         tags = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=10000000)), ConsistencyLevel.QUORUM)
         tags = [{"html": htmlescape(tag.column.value), "url": urlencode(tag.column.value)} for tag in tags]

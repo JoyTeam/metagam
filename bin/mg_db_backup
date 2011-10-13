@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from mg import *
-from concurrence import dispatch, quit
+from concurrence import dispatch, quit, Semaphore
 import os
 import logging
 import sys
@@ -10,33 +10,20 @@ import json
 import re
 
 token_ring = 2 ** 127
-parts = 256
+parts = 1
 token_part = token_ring / parts
 
-def main():
+def db_backup(semaphore, ksdef):
     try:
-        if len(sys.argv) != 2:
-            sys.stderr.write("usage: mg_db_backup <db_host>\n")
-            os._exit(1)
-        # logging
-        modlogger = logging.getLogger("")
-        modlogger.setLevel(logging.DEBUG)
-        stderr_channel = logging.StreamHandler()
-        stderr_channel.setLevel(logging.DEBUG)
-        modlogger.addHandler(stderr_channel)
-        # database
-        db = CassandraConnection((sys.argv[1], 9160))
-        db.connect()
-        for ksdef in db.cass.describe_keyspaces():
+        with semaphore:
             keyspace = ksdef.name
-            if keyspace == "system" or keyspace == "ringtest":
-                continue
+            db = CassandraConnection((sys.argv[1], 9160))
+            db.connect()
             db.cass.set_keyspace(keyspace)
             os.mkdir(keyspace)
-            print keyspace
             for cf in ksdef.cf_defs:
                 family = cf.name
-                print " - %s" % family
+                print "%s.%s" % (keyspace, family)
                 filename = "%s/%s.json" % (keyspace, family)
                 f = open(filename, "w")
                 for part in xrange(0, parts):
@@ -52,6 +39,37 @@ def main():
                             f.write(json.dumps(row))
                             f.write("\n")
                 f.close()
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+def main():
+    try:
+        if len(sys.argv) != 2:
+            sys.stderr.write("usage: mg_db_backup <db_host>\n")
+            os._exit(1)
+        # logging
+        modlogger = logging.getLogger("")
+        modlogger.setLevel(logging.DEBUG)
+        stderr_channel = logging.StreamHandler()
+        stderr_channel.setLevel(logging.DEBUG)
+        modlogger.addHandler(stderr_channel)
+        # parallel processing
+        semaphore = Semaphore(8)
+        tasklets = []
+        # database
+        db = CassandraConnection((sys.argv[1], 9160))
+        db.connect()
+        for ksdef in db.cass.describe_keyspaces():
+            keyspace = ksdef.name
+            if keyspace == "system" or keyspace == "ringtest":
+                continue
+            tasklets.append(Tasklet.new(db_backup)(semaphore, ksdef))
+        for tasklet in tasklets:
+            Tasklet.join(tasklet)
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:

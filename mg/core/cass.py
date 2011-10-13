@@ -55,10 +55,7 @@ class Cassandra(object):
         # 1 - separate CF for every class
         # 2 - several applications in the single keyspace (app is the actual app code)
         self.storage = storage
-        if storage == 2:
-            self.app = app
-        elif app is not None:
-            raise RuntimeError("Cassandra storage mode is %d, app is not None", storage)
+        self.app = app
 
     def apply_keyspace(self, conn):
         if self.keyspace != conn.actual_keyspace:
@@ -371,9 +368,9 @@ class CassandraPool(object):
         "Put a new connection to the pool"
         self.cput(self.new_connection())
 
-    def dbget(self, keyspace, mc):
+    def dbget(self, keyspace, mc, storage=0, app=None):
         "The same as cget, but returns Cassandra wrapper"
-        return Cassandra(self, keyspace, mc)
+        return Cassandra(self, keyspace, mc, storage, app)
 
 class CassandraConnection(object):
     "CassandraConnection - interface to Cassandra database engine"

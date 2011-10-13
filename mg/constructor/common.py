@@ -79,7 +79,11 @@ class ApplicationFactory(mg.core.ApplicationFactory):
                 projects_domain = main_app.config.get("constructor.projects-domain", main_host)
                 domain = "%s.%s" % (tag, projects_domain)
                 canonical_domain = domain
-            app = WebApplication(self.inst, tag, "ext")
+            storage = project.get("storage", 0)
+            if storage == 2:
+                app = WebApplication(self.inst, tag, "ext", storage, project.get("keyspace"))
+            else:
+                app = WebApplication(self.inst, tag, "ext", storage)
             app.hooks.dynamic = True
             app.domain = domain
             app.canonical_domain = canonical_domain
