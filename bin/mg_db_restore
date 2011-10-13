@@ -16,6 +16,13 @@ def main():
         if len(sys.argv) != 2:
             sys.stderr.write("usage: mg_db_restore <db_host>\n")
             os._exit(1)
+        # logging
+        modlogger = logging.getLogger("")
+        modlogger.setLevel(logging.DEBUG)
+        stderr_channel = logging.StreamHandler()
+        stderr_channel.setLevel(logging.DEBUG)
+        modlogger.addHandler(stderr_channel)
+        # database
         dbpool = CassandraPool(((sys.argv[1], 9160),), size=1)
         now = time.time() * 1000
         for dirent in dircache.listdir("."):

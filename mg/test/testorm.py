@@ -51,11 +51,11 @@ def cleanup():
     mc.delete("Cassandra-CF-mgtest-TestObject_Index_created")
     mc.delete("Cassandra-CF-mgtest-TestObject_Index_index")
     mc.delete("Cassandra-CF-mgtest-TestObject_Index_val")
+    mc.delete("Cassandra-CF-mgtest-TestObject_Indexes")
 
 class TestORM(unittest.TestCase):
     def setUp(self):
-        self.mc = Memcached(prefix="mgtest-")
-        self.db = CassandraPool().dbget("mgtest", self.mc)
+        self.db = CassandraPool().dbget("mgtest", mc=None)
 
     def test01(self):
         obj = SimpleObject(self.db)
@@ -305,6 +305,18 @@ class TestORM_Storage1(TestORM):
     def setUp(self):
         TestORM.setUp(self)
         self.db.storage = 1
+
+class TestORM_Storage2(TestORM):
+    def setUp(self):
+        TestORM.setUp(self)
+        self.db.storage = 2
+        self.db.app = "testapp"
+
+class TestORM_Memcached(TestORM):
+    def setUp(self):
+        TestORM.setUp(self)
+        self.mc = Memcached(prefix="mgtest-")
+        self.db = CassandraPool().dbget("mgtest", mc=self.mc)
 
 def main():
     cleanup()

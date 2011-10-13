@@ -46,14 +46,19 @@ class Cassandra(object):
     Wrapper around CassandraConnection class. It puts CassandraConnection
     back to the pool on destruction
     """
-    def __init__(self, pool, keyspace, mc):
+    def __init__(self, pool, keyspace, mc, storage=0, app=None):
         self.pool = pool
         self.keyspace = keyspace
         self.mc = mc
         self._last_time = 0
         # 0 - single CF for all objects
         # 1 - separate CF for every class
-        self.storage = 0
+        # 2 - several applications in the single keyspace (app is the actual app code)
+        self.storage = storage
+        if storage == 2:
+            self.app = app
+        elif app is not None:
+            raise RuntimeError("Cassandra storage mode is %d, app is not None", storage)
 
     def apply_keyspace(self, conn):
         if self.keyspace != conn.actual_keyspace:
@@ -91,15 +96,16 @@ class Cassandra(object):
                             ksdef.strategy_class = "org.apache.cassandra.locator.SimpleStrategy"
                             ksdef.replication_factor = self.replication_factor(conn.cass)
                             ksdef.cf_defs = []
-                            conn.cass.set_keyspace("system")
-                            logger.debug("Created keyspace %s (replication factor %d): %s", ksdef.name, ksdef.replication_factor, conn.cass.system_add_keyspace(ksdef))
+                            sys_conn = self.pool.sys_connection()
+                            sys_conn.cass.set_keyspace("system")
+                            logger.debug("Created keyspace %s (replication factor %d): %s", ksdef.name, ksdef.replication_factor, sys_conn.cass.system_add_keyspace(ksdef))
                             # Setting flag that KS is created already
                             if self.mc:
                                 self.mc.set("Cassandra-KS-%s" % keyspace, 1, 600)
                             with Timeout.push(30):
                                 try:
                                     while True:
-                                        versions = conn.cass.describe_schema_versions()
+                                        versions = sys_conn.cass.describe_schema_versions()
                                         ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
                                         if len(ver_list) < 2:
                                             logger.debug("Cluster schema agree: %s", versions)
@@ -127,15 +133,16 @@ class Cassandra(object):
                             cfdef.key_cache_save_period_in_seconds = 600
                             cfdef.memtable_throughput_in_mb = 1
                             cfdef.memtable_operations_in_millions = 10000 / 1e6
-                            conn.cass.set_keyspace("system")
-                            logger.debug("Created column family %s.%s: %s", self.keyspace, cfdef.name, conn.cass.system_add_column_family(cfdef))
+                            sys_conn = self.pool.sys_connection()
+                            sys_conn.cass.set_keyspace("system")
+                            logger.debug("Created column family %s.%s: %s", self.keyspace, cfdef.name, sys_conn.cass.system_add_column_family(cfdef))
                             # Setting flag that CF is created already
                             if self.mc:
                                 self.mc.set("Cassandra-CF-%s-%s" % (self.keyspace, family), 1, 600)
                             with Timeout.push(30):
                                 try:
                                     while True:
-                                        versions = conn.cass.describe_schema_versions()
+                                        versions = sys_conn.cass.describe_schema_versions()
                                         ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
                                         if len(ver_list) < 2:
                                             logger.debug("Cluster schema agree: %s", versions)
@@ -244,6 +251,7 @@ class CassandraPool(object):
     Connections are created on demand
     """
     def __init__(self, hosts=(("127.0.0.1", 9160),), size=256, primary_host_id=0):
+        self.sys_host = tuple(hosts[0])
         self.hosts = [tuple(host) for host in hosts]
         self.primary_host = self.hosts.pop(primary_host_id)
         self.hosts.insert(0, self.primary_host)
@@ -264,6 +272,12 @@ class CassandraPool(object):
 
     def debug(self, *args, **kwargs):
         logging.getLogger("mg.core.cass.CassandraPool").debug(*args, **kwargs)
+
+    def sys_connection(self):
+        "Create a new CassandraConnection and connect to the system host (for schema changed)"
+        connection = CassandraConnection(self.sys_host)
+        connection.connect()
+        return connection
 
     def new_connection(self):
         "Create a new CassandraConnection and connect to the first host in the list"
@@ -493,7 +507,7 @@ class CassandraObject(object):
         """
         self._indexes = None
         row_mcid = "%s-%s" % (self.__class__.clsname, self.uuid)
-        self.data = self.db.mc.get(row_mcid)
+        self.data = self.db.mc.get(row_mcid) if self.db.mc else None
         if self.data == "tomb":
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
             self.data = {}
@@ -502,13 +516,16 @@ class CassandraObject(object):
             try:
                 if self.db.storage == 0:
                     col = self.db.get("%s_Object_%s" % (self.__class__.clsname, self.uuid), ColumnPath("Data", column="data-%s" % self.uuid), ConsistencyLevel.QUORUM).column
-                else:
+                elif self.db.storage == 1:
                     col = self.db.get(self.uuid, ColumnPath("%s_Objects" % self.__class__.clsname, column="data-%s" % self.uuid), ConsistencyLevel.QUORUM).column
+                elif self.db.storage == 2:
+                    col = self.db.get("%s_%s" % (self.db.app, self.uuid), ColumnPath("%s_Objects" % self.__class__.clsname, column="data-%s" % self.uuid), ConsistencyLevel.QUORUM).column
             except NotFoundException:
                 self.data = {}
                 raise ObjectNotFoundException(self.uuid)
             self.data = json.loads(col.value)
-            self.db.mc.add(row_mcid, self.data, cache_interval)
+            if self.db.mc:
+                self.db.mc.add(row_mcid, self.data, cache_interval)
 #            print "LOAD(DB) %s %s" % (row_id, self.data)
 #        else:
 #            print "LOAD(MC) %s %s" % (row_id, self.data)
@@ -538,9 +555,12 @@ class CassandraObject(object):
                     if self.db.storage == 0:
                         index_row = (u"%s_%s_Index_%s" % (self.__class__.clsname, index_name, old_key[0])).encode("utf-8")
                         cf = "Data"
-                    else:
+                    elif self.db.storage == 1:
                         index_row = unicode(old_key[0]).encode("utf-8")
                         cf = "%s_Index_%s" % (self.__class__.clsname, index_name)
+                    elif self.db.storage == 2:
+                        index_row = (u"%s_%s_Index_%s" % (self.db.app, index_name, old_key[0])).encode("utf-8")
+                        cf = "%s_Indexes" % self.__class__.clsname
                     #print "delete: row=%s, column=%s" % (index_row, old_key[1].encode("utf-8"))
                     m = mutations.get(index_row)
                     if m is None:
@@ -557,9 +577,12 @@ class CassandraObject(object):
                     if self.db.storage == 0:
                         index_row = (u"%s_%s_Index_%s" % (self.__class__.clsname, index_name, key[0])).encode("utf-8")
                         cf = "Data"
-                    else:
+                    elif self.db.storage == 1:
                         index_row = unicode(key[0]).encode("utf-8")
                         cf = "%s_Index_%s" % (self.__class__.clsname, index_name)
+                    elif self.db.storage == 2:
+                        index_row = (u"%s_%s_Index_%s" % (self.db.app, index_name, key[0])).encode("utf-8")
+                        cf = "%s_Indexes" % self.__class__.clsname
                     #print [ index_row, key[1] ]
                     #print "insert: row=%s, column=%s" % (index_row, key[1].encode("utf-8"))
                     m = mutations.get(index_row)
@@ -576,9 +599,12 @@ class CassandraObject(object):
         if self.db.storage == 0:
             cf = "Data"
             row_key = "%s_Object_%s" % (self.__class__.clsname, self.uuid)
-        else:
+        elif self.db.storage == 1:
             cf = "%s_Objects" % self.__class__.clsname
             row_key = self.uuid
+        elif self.db.storage == 2:
+            cf = "%s_Objects" % self.__class__.clsname
+            row_key = "%s_%s" % (self.db.app, self.uuid)
         m = mutations.get(row_key)
         if m is None:
             mutations[row_key] = {cf: [mutation]}
@@ -590,7 +616,8 @@ class CassandraObject(object):
                 mcf.append(mutation)
         logging.getLogger("mg.core.cass.CassandraObject").debug("STORE %s-%s-%s %s", self.db.keyspace, self.__class__.clsname, self.uuid, self.data)
         row_mcid = "%s-%s" % (self.__class__.clsname, self.uuid)
-        self.db.mc.set(row_mcid, self.data, cache_interval)
+        if self.db.mc:
+            self.db.mc.set(row_mcid, self.data, cache_interval)
         self.dirty = False
         self.new = False
 
@@ -606,8 +633,9 @@ class CassandraObject(object):
         self.mutate(mutations, mcgroups, timestamp)
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-            for mcid in mcgroups:
-                self.db.mc.incr(mcid)
+            if self.db.mc:
+                for mcid in mcgroups:
+                    self.db.mc.incr(mcid)
 
     def remove(self):
         """
@@ -618,9 +646,12 @@ class CassandraObject(object):
         row_mcid = "%s-%s" % (self.__class__.clsname, self.uuid)
         if self.db.storage == 0:
             self.db.remove("%s_Object_%s" % (self.__class__.clsname, self.uuid), ColumnPath("Data"), timestamp, ConsistencyLevel.QUORUM)
-        else:
+        elif self.db.storage == 1:
             self.db.remove(self.uuid, ColumnPath("%s_Objects" % self.__class__.clsname), timestamp, ConsistencyLevel.QUORUM)
-        self.db.mc.set(row_mcid, "tomb", cache_interval)
+        elif self.db.storage == 2:
+            self.db.remove("%s_%s" % (self.db.app, self.uuid), ColumnPath("%s_Objects" % self.__class__.clsname), timestamp, ConsistencyLevel.QUORUM)
+        if self.db.mc:
+            self.db.mc.set(row_mcid, "tomb", cache_interval)
         # removing indexes
         mutations = {}
         mcgroups = set()
@@ -629,9 +660,12 @@ class CassandraObject(object):
             if self.db.storage == 0:
                 index_row = (u"%s_%s_Index_%s" % (self.__class__.clsname, index_name, key[0])).encode("utf-8")
                 cf = "Data"
-            else:
+            elif self.db.storage == 1:
                 index_row = unicode(key[0]).encode("utf-8")
                 cf = "%s_Index_%s" % (self.__class__.clsname, index_name)
+            elif self.db.storage == 2:
+                index_row = (u"%s_%s_Index_%s" % (self.db.app, index_name, key[0])).encode("utf-8")
+                cf = "%s_Indexes" % self.__class__.clsname
             mutation = Mutation(deletion=Deletion(predicate=SlicePredicate([key[1].encode("utf-8")]), timestamp=timestamp))
             m = mutations.get(index_row)
             if m is None:
@@ -647,8 +681,9 @@ class CassandraObject(object):
 #       print "REMOVE %s" % row_id
         if len(mutations):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-            for mcid in mcgroups:
-                self.db.mc.incr(mcid)
+            if self.db.mc:
+                for mcid in mcgroups:
+                    self.db.mc.incr(mcid)
         self.dirty = False
         self.new = False
 
@@ -733,10 +768,11 @@ class CassandraObjectList(object):
             self.lst = [cls(db, uuid, {}) for uuid in uuids]
         elif query_index is not None:
             grpmcid = "%s-%s/VER" % (clsname, query_index)
-            grpid = self.db.mc.get(grpmcid)
+            grpid = self.db.mc.get(grpmcid) if self.db.mc else None
             if grpid is None:
                 grpid = random.randint(0, 2000000000)
-                self.db.mc.set(grpmcid, grpid)
+                if self.db.mc:
+                    self.db.mc.set(grpmcid, grpid)
             if type(query_equal) == list:
                 # multiple keys
                 mcids = []
@@ -747,13 +783,15 @@ class CassandraObjectList(object):
                     mcids.append(mcid)
                     if self.db.storage == 0:
                         index_row = "%s_%s_Index_eq-%s" % (clsname, query_index, val)
-                    else:
+                    elif self.db.storage == 1:
                         index_row = "eq-%s" % val
+                    elif self.db.storage == 2:
+                        index_row = "%s_%s_Index_eq-%s" % (self.db.app, query_index, val)
                     if type(index_row) == unicode:
                         index_row = index_row.encode("utf-8")
                     index_rows.append(index_row)
 #               print "loading mcids %s" % mcids
-                d = self.db.mc.get_multi(mcids)
+                d = self.db.mc.get_multi(mcids) if self.db.mc else {}
 #               print d
                 remain_index_rows = []
                 for i in range(0, len(query_equal)):
@@ -769,8 +807,10 @@ class CassandraObjectList(object):
 #                   print "loading index rows %s" % remain_index_rows
                     if self.db.storage == 0:
                         cf = "Data"
-                    else:
+                    elif self.db.storage == 1:
                         cf = "%s_Index_%s" % (clsname, query_index)
+                    elif self.db.storage == 2:
+                        cf = "%s_Indexes" % clsname
                     d = self.db.multiget_slice(remain_index_rows, ColumnParent(column_family=cf), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
 #                   print d
                     for index_row, index_data in d.iteritems():
@@ -779,10 +819,11 @@ class CassandraObjectList(object):
                         self.index_data.extend(index_data)
                         mcid = urlencode("%s-%s-%s/%s/%s/%s/%s/%s" % (clsname, query_index, index_row, query_start, query_finish, query_limit, query_reversed, grpid))
                         #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, index_data)
-                        if len(index_data) < max_index_length:
-                            self.db.mc.set(mcid, index_data)
-                        else:
-                            self.db.mc.delete(mcid)
+                        if self.db.mc:
+                            if len(index_data) < max_index_length:
+                                self.db.mc.set(mcid, index_data)
+                            else:
+                                self.db.mc.delete(mcid)
                 self.index_data.sort(cmp=lambda x, y: cmp(x[0], y[0]), reverse=query_reversed)
                 self.lst = [cls(db, col[1], {}) for col in self.index_data]
                 #print "loaded index data %s" % self.index_data
@@ -794,15 +835,20 @@ class CassandraObjectList(object):
                         index_row = "%s_%s_Index_eq" % (clsname, query_index)
                     else:
                         index_row = "%s_%s_Index_eq-%s" % (clsname, query_index, query_equal)
-                else:
+                elif self.db.storage == 1:
                     if query_equal is None:
                         index_row = "eq"
                     else:
                         index_row = "eq-%s" % query_equal
+                elif self.db.storage == 2:
+                    if query_equal is None:
+                        index_row = "%s_%s_Index_eq" % (self.db.app, query_index)
+                    else:
+                        index_row = "%s_%s_Index_eq-%s" % (self.db.app, query_index, query_equal)
                 if type(index_row) == unicode:
                     index_row = index_row.encode("utf-8")
 #               print "loading mcid %s" % mcid
-                d = self.db.mc.get(mcid)
+                d = self.db.mc.get(mcid) if self.db.mc else None
                 if d is not None:
                     self.index_rows[index_row] = [ent[1] for ent in d]
                     self.index_data = d
@@ -810,16 +856,19 @@ class CassandraObjectList(object):
 #                   print "loading index row %s" % index_row
                     if self.db.storage == 0:
                         cf = "Data"
-                    else:
+                    elif self.db.storage == 1:
                         cf = "%s_Index_%s" % (clsname, query_index)
+                    elif self.db.storage == 2:
+                        cf = "%s_Indexes" % clsname
                     d = self.db.get_slice(index_row, ColumnParent(column_family=cf), SlicePredicate(slice_range=SliceRange(start=query_start, finish=query_finish, reversed=query_reversed, count=query_limit)), ConsistencyLevel.QUORUM)
                     self.index_rows[index_row] = [col.column.value for col in d]
                     self.index_data = [[col.column.name, col.column.value] for col in d]
                     #logging.getLogger("mg.core.cass.CassandraObject").debug("storing mcid %s = %s", mcid, self.index_data)
-                    if len(self.index_data) < max_index_length:
-                        self.db.mc.set(mcid, self.index_data)
-                    else:
-                        self.db.mc.delete(mcid)
+                    if self.db.mc:
+                        if len(self.index_data) < max_index_length:
+                            self.db.mc.set(mcid, self.index_data)
+                        else:
+                            self.db.mc.delete(mcid)
 #               print "loaded index data " % self.index_data
                 self.lst = [cls(db, col[1], {}) for col in self.index_data]
         else:
@@ -840,7 +889,7 @@ class CassandraObjectList(object):
         if len(self.lst) > 0:
             clsname = self.__class__.objcls.clsname
             row_mcids = ["%s-%s" % (clsname, obj.uuid) for obj in self.lst]
-            mc_d = self.db.mc.get_multi(row_mcids)
+            mc_d = self.db.mc.get_multi(row_mcids) if self.db.mc else {}
             if self.db.storage == 0:
                 col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
                 row_ids = ["%s_Object_%s" % (clsname, uuid) for uuid in col_ids]
@@ -848,11 +897,18 @@ class CassandraObjectList(object):
                     db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="Data"), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
                 else:
                     db_d = {}
-            else:
+            elif self.db.storage == 1:
                 col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
                 row_ids = col_ids
                 if row_ids:
-                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in row_ids]), ConsistencyLevel.QUORUM)
+                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
+                else:
+                    db_d = {}
+            elif self.db.storage == 2:
+                col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
+                row_ids = ["%s_%s" % (self.db.app, uuid) for uuid in col_ids]
+                if row_ids:
+                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
                 else:
                     db_d = {}
             recovered = False
@@ -876,13 +932,16 @@ class CassandraObjectList(object):
                                         if timestamp is None:
                                             timestamp = self.db.get_time()
                                         mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
-                                        self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
+                                        if self.db.mc:
+                                            self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
                                         break
                                 if len(mutations):
                                     if self.db.storage == 0:
                                         cf = "Data"
-                                    else:
+                                    elif self.db.storage == 1:
                                         cf = "%s_Index_%s" % (clsname, self.query_index)
+                                    elif self.db.storage == 2:
+                                        cf = "%s_Indexes" % clsname
                                     self.db.batch_mutate(dict([(index_row, {cf: mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
                         else:
                             raise ObjectNotFoundException("UUID %s (keyspace %s, cls %s) not found" % (obj.uuid, obj.db.keyspace, clsname))
@@ -892,13 +951,16 @@ class CassandraObjectList(object):
                 else:
                     if self.db.storage == 0:
                         row_id = "%s_Object_%s" % (clsname, obj.uuid)
-                    else:
+                    elif self.db.storage == 1:
                         row_id = obj.uuid
+                    elif self.db.storage == 2:
+                        row_id = "%s_%s" % (self.db.app, obj.uuid)
                     cols = db_d.get(row_id)
                     if cols:
                         obj.data = json.loads(cols[0].column.value)
                         obj.dirty = False
-                        self.db.mc.add(row_mcid, obj.data, cache_interval)
+                        if self.db.mc:
+                            self.db.mc.add(row_mcid, obj.data, cache_interval)
                         #print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
                     elif silent:
                         obj.valid = False
@@ -912,13 +974,16 @@ class CassandraObjectList(object):
                                     if timestamp is None:
                                         timestamp = self.db.get_time()
                                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
-                                    self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
+                                    if self.db.mc:
+                                        self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
                                     break
                             if len(mutations):
                                 if self.db.storage == 0:
                                     cf = "Data"
-                                else:
+                                elif self.db.storage == 1:
                                     cf = "%s_Index_%s" % (clsname, self.query_index)
+                                elif self.db.storage == 2:
+                                    cf = "%s_Indexes" % clsname
                                 self.db.batch_mutate(dict([(index_row, {cf: mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
                     else:
                         raise ObjectNotFoundException("UUID %s (keyspace %s, cls %s) not found" % (obj.uuid, obj.db.keyspace, clsname))
@@ -944,8 +1009,9 @@ class CassandraObjectList(object):
                     obj.mutate(mutations, mcgroups, timestamp)
             if len(mutations) > 0:
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-                for mcid in mcgroups:
-                    self.db.mc.incr(mcid)
+                if self.db.mc:
+                    for mcid in mcgroups:
+                        self.db.mc.incr(mcid)
 
     def remove(self):
         self._load_if_not_yet(True)
@@ -961,9 +1027,12 @@ class CassandraObjectList(object):
                     if obj.db.storage == 0:
                         index_row = (u"%s_%s_Index_%s" % (obj.__class__.clsname, index_name, key[0])).encode("utf-8")
                         cf = "Data"
-                    else:
+                    elif obj.db.storage == 1:
                         index_row = unicode(key[0]).encode("utf-8")
                         cf = "%s_Index_%s" % (obj.__class__.clsname, index_name)
+                    elif obj.db.storage == 2:
+                        index_row = (u"%s_%s_Index_%s" % (self.db.app, index_name, key[0])).encode("utf-8")
+                        cf = "%s_Indexes" % obj.__class__.clsname
                     m = mutations.get(index_row)
                     if m is None:
                         mutations[index_row] = {cf: [mutation]}
@@ -979,18 +1048,23 @@ class CassandraObjectList(object):
                 if obj.db.storage == 0:
                     row_id = "%s_Object_%s" % (obj.__class__.clsname, obj.uuid)
                     cf = "Data"
-                else:
+                elif obj.db.storage == 1:
                     row_id = obj.uuid
                     cf = "%s_Objects" % obj.__class__.clsname
+                elif obj.db.storage == 2:
+                    row_id = "%s_%s" % (self.db.app, obj.uuid)
+                    cf = "%s_Objects" % obj.__class__.clsname
                 obj.db.remove(row_id, ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
-                obj.db.mc.set(row_mcid, "tomb", cache_interval)
+                if obj.db.mc:
+                    obj.db.mc.set(row_mcid, "tomb", cache_interval)
                 obj.dirty = False
                 obj.new = False
             # removing indexes
             if len(mutations):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
-                for mcid in mcgroups:
-                    self.db.mc.incr(mcid)
+                if self.db.mc:
+                    for mcid in mcgroups:
+                        self.db.mc.incr(mcid)
 
     def __len__(self):
         return self.lst.__len__()
