@@ -16,15 +16,6 @@ class Project(CassandraObject):
 class ProjectList(CassandraObjectList):
     objcls = Project
 
-#    def tag_by_domain(self, domain):
-#        tag = super(ApplicationFactory, self).tag_by_domain(domain)
-#        if tag is not None:
-#            return tag
-#        m = re.match("^([0-9a-f]{32})\.%s" % self.inst.config["main_host"], domain)
-#        if m:
-#            return m.groups(1)[0]
-#        return None
-
 class Projects(Module):
     def register(self):
         self.rhook("applications.list", self.applications_list)

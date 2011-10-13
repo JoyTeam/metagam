@@ -82,7 +82,7 @@ class Cassandra(object):
                         with MemcachedLock(self.mc, ["Cassandra-Reconfigure"], patience=1800):
                             logger = logging.getLogger("mg.core.cass.Cassandra")
                             # Avoiding multiple attempts to create single KS
-                            if self.mc.get("Cassandra-KS-%s" % keyspace):
+                            if self.mc and self.mc.get("Cassandra-KS-%s" % keyspace):
                                 logger.debug("Skipping creation of keyspace %s", keyspace)
                                 raise RetryException
                             logger.debug("Creating keyspace %s", keyspace)
@@ -94,7 +94,8 @@ class Cassandra(object):
                             conn.cass.set_keyspace("system")
                             logger.debug("Created keyspace %s (replication factor %d): %s", ksdef.name, ksdef.replication_factor, conn.cass.system_add_keyspace(ksdef))
                             # Setting flag that KS is created already
-                            self.mc.set("Cassandra-KS-%s" % keyspace, 1, 600)
+                            if self.mc:
+                                self.mc.set("Cassandra-KS-%s" % keyspace, 1, 600)
                             with Timeout.push(30):
                                 try:
                                     while True:
@@ -115,7 +116,7 @@ class Cassandra(object):
                         with MemcachedLock(self.mc, ["Cassandra-Reconfigure"], patience=1800):
                             logger = logging.getLogger("mg.core.cass.Cassandra")
                             # Avoiding multiple attempts to create single CF
-                            if self.mc.get("Cassandra-CF-%s-%s" % (self.keyspace, family)):
+                            if self.mc and self.mc.get("Cassandra-CF-%s-%s" % (self.keyspace, family)):
                                 logger.debug("Skipping creation of column family %s.%s", self.keyspace, family)
                                 raise RetryException
                             logger.debug("Creating column family %s.%s", self.keyspace, family)
@@ -129,7 +130,8 @@ class Cassandra(object):
                             conn.cass.set_keyspace("system")
                             logger.debug("Created column family %s.%s: %s", self.keyspace, cfdef.name, conn.cass.system_add_column_family(cfdef))
                             # Setting flag that CF is created already
-                            self.mc.set("Cassandra-CF-%s-%s" % (self.keyspace, family), 1, 600)
+                            if self.mc:
+                                self.mc.set("Cassandra-CF-%s-%s" % (self.keyspace, family), 1, 600)
                             with Timeout.push(30):
                                 try:
                                     while True:

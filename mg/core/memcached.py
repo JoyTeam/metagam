@@ -281,6 +281,8 @@ class MemcachedLock(object):
         self.__exit__(None, None, None)
 
     def __enter__(self):
+        if self.mc is None:
+            return
         start = None
         while True:
             locked = []
@@ -310,6 +312,8 @@ class MemcachedLock(object):
                 return
 
     def __exit__(self, type, value, traceback):
+        if self.mc is None:
+            return
         if self.locked is not None:
             if time.time() < self.locked + self.ttl:
                 for key in self.keys:

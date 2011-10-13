@@ -119,18 +119,19 @@ class Director(Module):
                             abort = True
                     if abort:
                         with Timeout.push(30):
-                            cnn = HTTPConnection()
-                            cnn.connect((str(st.get("host")), int(st.get("port"))))
                             try:
-                                request = cnn.get("/core/abort")
-                                request.add_header("Connection", "close")
-                                cnn.perform(request)
-                                # will be reached unless timed out
-                                st.remove()
+                                cnn = HTTPConnection()
+                                cnn.connect((str(st.get("host")), int(st.get("port"))))
+                                try:
+                                    request = cnn.get("/core/abort")
+                                    request.add_header("Connection", "close")
+                                    cnn.perform(request)
+                                    # will be reached unless timed out
+                                    st.remove()
+                                finally:
+                                    cnn.close()
                             except Exception as e:
                                 self.error("Couldn't abort %s:%s - %s", st.get("host"), st.get("port"), e)
-                            finally:
-                                cnn.close()
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(10)

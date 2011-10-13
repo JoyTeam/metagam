@@ -12,41 +12,39 @@ import re
 token_ring = 2 ** 127
 parts = 256
 token_part = token_ring / parts
-re_app = re.compile('^(.+?)-(.+)$')
 
 def main():
     try:
-        inst = Instance("db_backup")
-        inst.download_config()
-        mc = Memcached(inst.mcpool)
-        db = inst.dbpool.dbget("main", mc)
-        created = set()
-        for family in ["Objects", "Indexes"]:
-            for part in xrange(0, parts):
-                start_token = '%d' % (part * token_part)
-                end_token = '%d' % (((part + 1) * token_part) % token_ring)
-                rows = {}
-                lst = db.get_range_slices(ColumnParent(family), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE)
-                for ent in lst:
-                    m = re_app.match(ent.key)
-                    if m and len(ent.columns):
-                        columns = {}
-                        for col in ent.columns:
-                            columns[col.column.name] = col.column.value
-                        app, key = m.group(1, 2)
-                        row = {key: columns}
-                        try:
-                            rows[app].append(row)
-                        except KeyError:
-                            rows[app] = [row]
-                for app, rows_list in rows.iteritems():
-                    filename = "%s-%s.json" % (family, app)
-                    f = open(filename, "a" if filename in created else "w")
-                    created.add(filename)
-                    for row in rows_list:
-                        f.write(json.dumps(row))
-                        f.write("\n")
-                    f.close()
+        if len(sys.argv) != 2:
+            sys.stderr.write("usage: mg_db_backup <db_host>\n")
+            os._exit(1)
+        db = CassandraConnection((sys.argv[1], 9160))
+        db.connect()
+        for ksdef in db.cass.describe_keyspaces():
+            keyspace = ksdef.name
+            if keyspace == "system" or keyspace == "ringtest":
+                continue
+            db.cass.set_keyspace(keyspace)
+            os.mkdir(keyspace)
+            print keyspace
+            for cf in ksdef.cf_defs:
+                family = cf.name
+                print " -%s" % family
+                filename = "%s/%s.json" % (keyspace, family)
+                f = open(filename, "w")
+                for part in xrange(0, parts):
+                    start_token = '%d' % (part * token_part)
+                    end_token = '%d' % (((part + 1) * token_part) % token_ring)
+                    lst = db.cass.get_range_slices(ColumnParent(family), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE)
+                    for ent in lst:
+                        if len(ent.columns):
+                            columns = {}
+                            for col in ent.columns:
+                                columns[col.column.name] = col.column.value
+                            row = {ent.key: columns}
+                            f.write(json.dumps(row))
+                            f.write("\n")
+                f.close()
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:

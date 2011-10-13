@@ -11,20 +11,25 @@ import re
 import time
 import dircache
 
-def restore_db(semaphore, inst, dirent, now, progress):
+def main():
     try:
-        with semaphore:
-            keyspace = dirent
-            mc = Memcached(inst.mcpool)
-            db = inst.dbpool.dbget(keyspace, mc)
-            for ent in dircache.listdir(dirent):
-                m = re.match(r'^(\S+).json', ent)
-                if m:
-                    family = m.group(1)
-                    family = re.sub(r'[^a-zA-Z0-9_]', '_', family)
-                    print "%s.%s" % (keyspace, family)
-                    f = open("%s/%s" % (dirent, ent), "r")
-                    try:
+        if len(sys.argv) != 2:
+            sys.stderr.write("usage: mg_db_restore <db_host>\n")
+            os._exit(1)
+        dbpool = CassandraPool(((sys.argv[1], 9160),), size=1)
+        now = time.time() * 1000
+        for dirent in dircache.listdir("."):
+            info = os.stat(dirent)
+            if info.st_mode & 040000:
+                keyspace = dirent
+                print keyspace
+                db = Cassandra(dbpool, keyspace, mc=None)
+                for ent in dircache.listdir(dirent):
+                    m = re.match(r'^(\S+).json', ent)
+                    if m:
+                        family = m.group(1)
+                        print " - %s" % (family)
+                        f = open("%s/%s" % (dirent, ent), "r")
                         for line in f:
                             row = json.loads(line.strip())
                             for key, val in row.iteritems():
@@ -38,39 +43,16 @@ def restore_db(semaphore, inst, dirent, now, progress):
                                         col_value = col_value.encode("utf-8")
                                     mutations.append(Mutation(ColumnOrSuperColumn(Column(name=col_name, value=col_value, timestamp=now))))
                                 mutations = {key: {family: mutations}}
-                                #print "%s.%s.%s" % (keyspace, family, key)
                                 db.batch_mutate(mutations, ConsistencyLevel.ONE)
-                                progress.append(time.time())
-                    finally:
                         f.close()
-            barrier = time.time() - 300
-            progress = [t for t in progress if t > barrier]
-            print "db %s restored. speed: %d rows/min" % (dirent, len(progress) / 5)
+        sys.stdout.flush()
+        os._exit(0)
     except RuntimeError as e:
         logging.error(e)
         os._exit(1)
     except Exception as e:
         logging.exception(e)
         os._exit(1)
-
-def main():
-    inst = Instance("db_restore")
-    inst.download_config()
-    inst.dbpool.size = 16
-    inst.mcpool.size = 16
-    now = time.time() * 1000
-    semaphore = Semaphore(1)
-    tasklets = []
-    progress = []
-    for dirent in dircache.listdir("."):
-        info = os.stat(dirent)
-        if info.st_mode & 040000:
-            tasklets.append(Tasklet.new(restore_db)(semaphore, inst, dirent, now, progress))
-    for tasklet in tasklets:
-        Tasklet.join(tasklet)
-    print "completed"
-    sys.stdout.flush()
-    os._exit(0)
 
 dispatch(main)
 
