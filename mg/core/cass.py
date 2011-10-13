@@ -126,10 +126,10 @@ class Cassandra(object):
                             cfdef = CfDef()
                             cfdef.keyspace = self.keyspace
                             cfdef.name = family
-                            cfdef.key_cache_size = 500
-                            cfdef.key_cache_save_period_in_seconds = 600
-                            cfdef.memtable_throughput_in_mb = 1
-                            cfdef.memtable_operations_in_millions = 10000 / 1e6
+                            cfdef.key_cache_size = 50000
+                            cfdef.key_cache_save_period_in_seconds = 3600
+                            cfdef.memtable_throughput_in_mb = 10
+                            cfdef.memtable_operations_in_millions = 100000 / 1e6
                             sys_conn = self.pool.sys_connection()
                             sys_conn.cass.set_keyspace("system")
                             logger.debug("Created column family %s.%s: %s", self.keyspace, cfdef.name, sys_conn.cass.system_add_column_family(cfdef))
