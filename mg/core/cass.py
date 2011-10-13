@@ -99,7 +99,8 @@ class Cassandra(object):
                                 try:
                                     while True:
                                         versions = conn.cass.describe_schema_versions()
-                                        if len(versions) < 2:
+                                        ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
+                                        if len(ver_list) < 2:
                                             logger.debug("Cluster schema agree: %s", versions)
                                             break
                                         else:
@@ -133,7 +134,8 @@ class Cassandra(object):
                                 try:
                                     while True:
                                         versions = conn.cass.describe_schema_versions()
-                                        if len(versions) < 2:
+                                        ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
+                                        if len(ver_list) < 2:
                                             logger.debug("Cluster schema agree: %s", versions)
                                             break
                                         else:
