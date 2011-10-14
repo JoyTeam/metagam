@@ -81,7 +81,7 @@ class ApplicationFactory(mg.core.ApplicationFactory):
                 canonical_domain = domain
             storage = project.get("storage", 0)
             if storage == 2:
-                app = WebApplication(self.inst, tag, "ext", storage, project.get("keyspace"))
+                app = WebApplication(self.inst, tag, "ext", storage, utf2str(project.get("keyspace")))
             else:
                 app = WebApplication(self.inst, tag, "ext", storage)
             app.hooks.dynamic = True
