@@ -73,6 +73,7 @@ class AuthAdmin(ConstructorModule):
                                 session = app.obj(Session, session_uuid)
                             except ObjectNotFoundException as e:
                                 self.exception(e)
+                                appsession.remove()
                             else:
                                 old_state = appsession.get("state")
                                 if old_state == 1 or old_state == 2:
