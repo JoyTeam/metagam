@@ -2543,6 +2543,7 @@ class Forum(Module):
                 key = tag_utf8
                 cf = "ForumTaggedTopics_Search"
             elif self.app().db.storage == 2:
+                self.debug("Updating ForumTaggedTopics_Search: %s", [self.app().db.app, tag_utf8])
                 key = "%s_%s" % (self.app().db.app, tag_utf8)
                 cf = "ForumTaggedTopics_Search"
             topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
