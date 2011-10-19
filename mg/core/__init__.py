@@ -6,6 +6,7 @@ from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException, CassandraPool
 from mg.core.classes import *
+from mg.core.tools import *
 from uuid import uuid4
 from weakref import WeakValueDictionary
 import weakref
@@ -958,6 +959,7 @@ class ApplicationFactory(object):
 
     def get_by_tag(self, tag, load=True):
         "Find application by tag and load it"
+        tag = utf2str(tag)
         with self.lock:
             try:
                 return self.applications[tag]
