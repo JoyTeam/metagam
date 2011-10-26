@@ -326,6 +326,8 @@ class DesignZip(Module):
                         else:
                             file["data"] = parser.output
                         parsed_html[file["filename"]] = parser
+                    except UnicodeDecodeError:
+                        errors.append(self._("Error parsing {0}: {1}").format(file["filename"], self._("this document is not a valid UTF-8 text")))
                     except HTMLParser.HTMLParseError as e:
                         msg = e.msg
                         if e.lineno is not None:
