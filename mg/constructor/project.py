@@ -71,6 +71,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.storage.StorageAdmin"])
             if self.conf("module.charimages"):
                 lst.extend(["mg.constructor.charimages.CharImagesAdmin", "mg.constructor.charimages.CharImages"])
+            if self.conf("module.inventory"):
+                lst.extend(["mg.mmorpg.inventory.Inventory"])
         return lst
 
     def modules_list(self, modules):
@@ -88,6 +90,11 @@ class ConstructorProject(Module):
             "id": "charimages",
             "name": self._("Character images"),
             "description": self._("Ability for players to choose images for the characters"),
+        })
+        modules.append({
+            "id": "inventory",
+            "name": self._("Inventory system"),
+            "description": self._("Items and inventory"),
         })
 
     def project_title(self):

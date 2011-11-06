@@ -2,43 +2,48 @@ from mg import *
 from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmorpg.locations_classes import Location
 from mg.constructor.script_classes import ScriptError, ScriptParserError
+from mg.mmorpg.inventory_classes import ItemType, dna_join
 
 class ConstructorModule(Module):
+    def find_character(self, name):
+        uuid = self.call("session.find_user", name, return_uuid=True)
+        if not uuid:
+            return None
+        return self.character(uuid)
+
     def character(self, uuid):
         try:
             req = self.req()
         except AttributeError:
             return Character(self.app(), uuid)
-        else:
-            try:
-                characters = req.characters
-            except AttributeError:
-                characters = {}
-                req.characters = characters
-            try:
-                return characters[uuid]
-            except KeyError:
-                obj = Character(self.app(), uuid)
-                characters[uuid] = obj
-                return obj
+        try:
+            characters = req.characters
+        except AttributeError:
+            characters = {}
+            req.characters = characters
+        try:
+            return characters[uuid]
+        except KeyError:
+            obj = Character(self.app(), uuid)
+            characters[uuid] = obj
+            return obj
 
     def player(self, uuid):
         try:
             req = self.req()
         except AttributeError:
             return Player(self.app(), uuid)
-        else:
-            try:
-                players = req.players
-            except AttributeError:
-                players = {}
-                req.players = players
-            try:
-                return players[uuid]
-            except KeyError:
-                obj = Player(self.app(), uuid)
-                players[uuid] = obj
-                return obj
+        try:
+            players = req.players
+        except AttributeError:
+            players = {}
+            req.players = players
+        try:
+            return players[uuid]
+        except KeyError:
+            obj = Player(self.app(), uuid)
+            players[uuid] = obj
+            return obj
 
     @property
     def myself(self):
@@ -109,3 +114,27 @@ class ConstructorModule(Module):
                 locations[uuid] = obj
                 return obj
 
+    def find_item_type(self, name):
+        uuid = self.call("inventory.find_item_type", name)
+        if not uuid:
+            return None
+        return self.item_type(uuid)
+
+    def item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
+        dna = dna_join(uuid, dna_suffix)
+        try:
+            req = self.req()
+        except AttributeError:
+            return ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
+        else:
+            try:
+                item_types = req.item_types
+            except AttributeError:
+                item_types = {}
+                req.item_types = item_types
+            try:
+                return item_types[dna]
+            except KeyError:
+                obj = ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
+                item_types[dna] = obj
+                return obj

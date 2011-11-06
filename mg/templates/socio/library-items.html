@@ -1,0 +1,17 @@
+<table class="items-table">
+[%foreach item in items%]
+<tr>
+	<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image" />[%end%]</td>
+	<td class="item-info-td">
+		<a name="[%item.type%]"></a>
+		<div class="item-info-name">[%item.name%][%if item.quantity%]&nbsp;&mdash; <span class="value quantity">[%item.quantity%]</span> [%+ pcs%][%end%]</div>
+		[%if item.params%]<div class="item-params">
+			[%foreach ent in item.params%][%unless ent.header%]
+			<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span>[%ent.library_icon%]</div>
+			[%end%][%end%]
+		</div>[%end%]
+		[%if item.description%]<div class="item-description">[%item.description%]</div>[%end%]
+	</td>
+</tr>
+[%end%]
+</table>

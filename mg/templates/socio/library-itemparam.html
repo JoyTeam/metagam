@@ -1,0 +1,8 @@
+<h1>[%name%]</h1>
+[%paramdesc%]
+[%if paramtable%]
+<table class="library-param-table">
+	<tr>[%foreach ent in paramtable.header%]<td class="library-param-header">[%ent%]</td>[%end%]</tr>
+	[%foreach r in paramtable.rows%]<tr>[%foreach c in r%]<td>[%c%]</td>[%end%]</tr>[%end%]
+</table>
+[%end%]

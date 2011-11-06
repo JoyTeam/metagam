@@ -16,6 +16,7 @@ re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)')
 re_frac_part = re.compile(r'\..*?[1-9]')
 re_exp_format = re.compile(r'^-?(\d+|\d+\.\d+)e([+-]\d+)$')
 re_remove_frac = re.compile(r'\..*')
+re_month = re.compile(r'^(\d\d\d\d)-(\d\d)')
 
 def utf2str(s):
     if s is None:
@@ -117,7 +118,7 @@ def htmldecode(val):
 def from_unixtime(ts):
     return datetime.datetime.utcfromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M:%S")
 
-def unix_timestamp(val):
+def parse_date(val):
     m = re_datetime.match(val)
     if m:
         y, m, d, hh, mm, ss = m.group(1, 2, 3, 4, 5, 6)
@@ -130,7 +131,54 @@ def unix_timestamp(val):
             ss = 0
         else:
             return None
-    return calendar.timegm(datetime.datetime(int(y), int(m), int(d), int(hh), int(mm), int(ss), tzinfo=None).utctimetuple())
+    return datetime.datetime(int(y), int(m), int(d), int(hh), int(mm), int(ss), tzinfo=None)
+
+def unix_timestamp(val):
+    date = parse_date(val)
+    if date is None:
+        return None
+    return calendar.timegm(date.utctimetuple())
+
+def time_interval(a, b):
+    return unix_timestamp(b) - unix_timestamp(a)
+
+def prev_month(date):
+    m = re_month.match(date)
+    if not m:
+        return None
+    y, m = m.group(1, 2)
+    y = int(y)
+    m = int(m) - 1
+    if m < 1:
+        m = 12
+        y -= 1
+    return "%04d-%02d" % (y, m)
+
+def next_month(date):
+    m = re_month.match(date)
+    if not m:
+        return None
+    y, m = m.group(1, 2)
+    y = int(y)
+    m = int(m) + 1
+    if m > 12:
+        m = 1
+        y += 1
+    return "%04d-%02d" % (y, m)
+
+def prev_date(date):
+    date = parse_date(date)
+    if date is None:
+        return None
+    date = date + datetime.timedelta(days=-1)
+    return date.strftime("%Y-%m-%d")
+
+def next_date(date):
+    date = parse_date(date)
+    if date is None:
+        return None
+    date = date + datetime.timedelta(days=1)
+    return date.strftime("%Y-%m-%d")
 
 def datetime_to_human(str):
     m = re_datetime.match(str)

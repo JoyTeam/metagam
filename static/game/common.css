@@ -6,6 +6,9 @@
 /* PRICES */
 .price { white-space: nowrap }
 
+/* QUANTITY */
+.quantity { color: #008000 }
+
 /* ANY OTHER VALUES */
 .value { font-weight: bold }
 
@@ -19,3 +22,11 @@
 .service-inactive { color: #c00000 }
 .service-active { color: #008000 }
 
+/* ITEM LISTS */
+.item-image { border: solid 1px #404040; margin-right: 20px }
+.item-image-td { vertical-align: top; padding: 5px 0 10px 0 }
+.item-info-td { vertical-align: top; padding: 2px 0 10px 0 }
+.item-info-name { font-weight: bold; font-size: 16px }
+.item-description { color: #404040; padding-top: 5px }
+.item-menu { padding-top: 5px }
+.item-params { padding-top: 5px }

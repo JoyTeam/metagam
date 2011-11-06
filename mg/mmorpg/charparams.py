@@ -83,6 +83,10 @@ class CharacterParams(Params):
         Params.register(self)
         self.rhook("character-page.actions", self.charpage_actions)
         self.rhook("ext-character.params", self.charparams, priv="logged")
+        self.rhook("characters.param-library", self.param_library)
+
+    def param_library(self, param):
+        return "/library/charparams#%s" % param["code"]
 
     def charpage_actions(self, character, actions):
         if self.notimportant_params_exist():
@@ -119,42 +123,45 @@ class CharacterParamsLibrary(ParamsLibrary):
     def library_index_pages(self, pages):
         pages.append({"page": "charparams", "order": 40})
 
-    def library_page_charparams(self):
-        params = []
-        grp = None
-        for param in self.call("characters.params"):
-            if param.get("library_visible") and not param.get("library_uri"):
-                if param["grp"] != "" and param["grp"] != grp:
-                    params.append({"header": htmlescape(param["grp"])})
-                    grp = param["grp"]
-                description = param.get("description")
-                if description is None:
-                    if param["type"] == 0:
-                        description = self._("Parameter stored in the database")
-                    else:
-                        description = self._("Derived (calculated) parameter")
-                rparam = {
-                    "code": param["code"],
-                    "name": htmlescape(param["name"]),
-                    "description": htmlescape(description),
-                }
-                if param.get("library_table"):
-                    rparam["tables"] = {
-                        "uri": "/library/charparam/%s" % param["code"],
-                    }
-                params.append(rparam)
-        vars = {
-            "params": params,
-            "OpenTable": self._("Open table"),
-        }
-        return {
+    def library_page_charparams(self, render_content):
+        pageinfo = {
             "code": "charparams",
             "title": self._("Character parameters"),
             "keywords": self._("character parameters"),
             "description": self._("This page describes parameters of characters"),
-            "content": self.call("socio.parse", "library-charparams.html", vars),
             "parent": "index",
         }
+        if render_content:
+            params = []
+            grp = None
+            for param in self.call("characters.params"):
+                if param.get("library_visible") and not param.get("library_uri"):
+                    if param["grp"] != "" and param["grp"] != grp:
+                        params.append({"header": htmlescape(param["grp"])})
+                        grp = param["grp"]
+                    description = param.get("description")
+                    if description is None:
+                        if param["type"] == 0:
+                            description = self._("Parameter stored in the database")
+                        else:
+                            description = self._("Derived (calculated) parameter")
+                    rparam = {
+                        "code": param["code"],
+                        "name": htmlescape(param["name"]),
+                        "description": htmlescape(description),
+                    }
+                    if param.get("library_table"):
+                        rparam["tables"] = {
+                            "uri": "/library/charparam/%s" % param["code"],
+                        }
+                    params.append(rparam)
+            vars = {
+                "params": params,
+                "OpenTable": self._("Open table"),
+                "CharsParams": self._("Characters parameters"),
+            }
+            pageinfo["content"] = self.call("socio.parse", "library-charparams.html", vars)
+        return pageinfo
 
     def param_name(self, m):
         param = self.call("characters.param", m.group(1))
@@ -163,15 +170,19 @@ class CharacterParamsLibrary(ParamsLibrary):
         else:
             return m.group(0)
 
-    def library_page_charparam(self):
-        req = self.req()
-        m = re_charparam.match(req.args) or self.call("web.not_found")
-        param = self.call("characters.param", m.group(1)) or self.call("web.not_found")
-        vars = {
-            "name": htmlescape(param["name"]),
-            "paramdesc": htmlescape(param["description"]),
-        }
-        if param.get("library_table"):
+    def library_page_charparam(self, render_content):
+        if render_content:
+            req = self.req()
+            m = re_charparam.match(req.args)
+            if not m:
+                return None
+            param = self.call("characters.param", m.group(1))
+            if not param or not param.get("library_table"):
+                return None
+            vars = {
+                "name": htmlescape(param["name"]),
+                "paramdesc": htmlescape(param["description"]),
+            }
             # table rows
             levels = set()
             values = {}
@@ -203,13 +214,11 @@ class CharacterParamsLibrary(ParamsLibrary):
                 "header": header,
                 "rows": rows,
             }
-        else:
-            return None
-        return {
-            "code": "charparam/%s" % param["code"],
-            "title": vars["name"],
-            "keywords": '%s, %s' % (self._("parameter"), vars["name"]),
-            "description": self._("This page describes parameter %s") % vars["name"],
-            "content": self.call("socio.parse", "library-charparam.html", vars),
-            "parent": "charparams",
-        }
+            return {
+                "code": "charparam/%s" % param["code"],
+                "title": vars["name"],
+                "keywords": '%s, %s' % (self._("parameter"), vars["name"]),
+                "description": self._("This page describes parameter %s") % vars["name"],
+                "parent": "charparams",
+                "content": self.call("socio.parse", "library-charparam.html", vars),
+            }

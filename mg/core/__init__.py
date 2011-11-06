@@ -70,8 +70,14 @@ class Hooks(object):
         Load all modules handling any hooks in the given groups
         groups - list of hook group names
         """
-        with self.app().hook_lock:
+        t = Tasklet.current()
+        if getattr(t, "hooks_locked", False):
             self._load_groups(groups)
+        else:
+            with self.app().hook_lock:
+                t.hooks_locked = True
+                self._load_groups(groups)
+                t.hooks_locked = False
 
     def _load_groups(self, groups):
         """
@@ -180,6 +186,8 @@ class Hooks(object):
                     grpset.add(handler[2])
         with self.app().hook_lock:
             with self.app().lock(["HOOK-GROUPS"]):
+                t = Tasklet.current()
+                t.hooks_locked = True
                 old_groups = self.app().objlist(HookGroupModulesList, query_index="all")
                 for obj in old_groups:
                     if not obj.uuid in rec:
@@ -191,6 +199,7 @@ class Hooks(object):
                         obj.set("list", list(grpset))
                         groups.append(obj)
                 groups.store(dont_load=True)
+                t.hooks_locked = False
 
 class ConfigGroup(CassandraObject):
     clsname = "ConfigGroup"
@@ -221,7 +230,7 @@ class Config(object):
         groups - list of config group names
         """
         load_groups = [g for g in groups if g not in self._config]
-        if len(load_groups):
+        if load_groups:
             list = self.app().objlist(ConfigGroupList, load_groups)
             list.load(silent=True)
             for g in list:
@@ -419,6 +428,9 @@ class Module(object):
     def req(self):
         return Tasklet.current().req
 
+    def nowmonth(self):
+        return self.app().nowmonth()
+
     def nowdate(self):
         return self.app().nowdate()
 
@@ -550,6 +562,16 @@ class Module(object):
                 except Exception:
                     pass
 
+    def image_format(self, image):
+        if image.format == "JPEG":
+            return ("jpg", "image/jpeg")
+        elif image.format == "PNG":
+            return ("png", "image/png")
+        elif image.format == "GIF":
+            return ("gif", "image/gif")
+        else:
+            return (None, None)
+
 class ModuleException(Exception):
     "Error during module loading"
     pass
@@ -572,8 +594,15 @@ class Modules(object):
         auto_loaded - remove this modules on full reload
         "import Class from mg.group")
         """
-        with self.app().inst.modules_lock:
+        t = Tasklet.current()
+        if getattr(t, "modules_locked", False):
             return self._load(modules, silent, auto_loaded)
+        else:
+            with self.app().inst.modules_lock:
+                t.modules_locked = True
+                res = self._load(modules, silent, auto_loaded)
+                t.modules_locked = False
+                return res
 
     def _load(self, modules, silent=False, auto_loaded=False):
         "The same as load but without locking"
@@ -619,14 +648,20 @@ class Modules(object):
     def reload(self):
         "Reload all modules"
         with self.app().inst.modules_lock:
+            t = Tasklet.current()
+            t.modules_locked = True
             modules = self.loaded_modules.keys()
             self.loaded_modules.clear()
             self.app().hooks.unregister_all()
-            return self._load(modules, auto_loaded=True)
+            res = self._load(modules, auto_loaded=True)
+            t.modules_locked = False
+            return res
 
     def load_all(self):
         "Load all available modules"
         with self.app().inst.modules_lock:
+            t = Tasklet.current()
+            t.modules_locked = True
             # removing automatically loaded modules
             modules = []
             complete = set()
@@ -645,6 +680,7 @@ class Modules(object):
                         self._load(children, auto_loaded=True)
                         complete.add(name)
                         repeat = True
+            t.modules_locked = False
 
 class Formatter(logging.Formatter):
     def format(self, record):
@@ -874,6 +910,9 @@ class Application(object):
 
     def lock(self, keys, patience=20, delay=0.1, ttl=30):
         return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.server_id) + "-")
+
+    def nowmonth(self):
+        return datetime.datetime.utcnow().strftime("%Y-%m")
 
     def nowdate(self):
         return datetime.datetime.utcnow().strftime("%Y-%m-%d")

@@ -1,0 +1,35 @@
+[%if error%]<div class="error-message inventory-error-message">[%error%]</div>[%end%]
+<div id="pages" class="pager-list"></div>
+[%foreach cat in categories%]
+<div id="page-[%cat.id%]" style="display: [%if cat.visible%]block[%else%]none[%end%]" class="pager-page">
+	<table class="items-table">
+	[%foreach item in cat.items%]
+	<tr>
+		<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image" />[%end%]</td>
+		<td class="item-info-td">
+			<div class="item-info-name">[%item.name%][%if item.quantity%]&nbsp;&mdash; <span class="value quantity">[%item.quantity%]</span> [%+ pcs%][%end%]</div>
+			[%if item.params%]<div class="item-params">
+				[%foreach ent in item.params%][%unless ent.header%]
+				<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span>[%ent.library_icon%]</div>
+				[%end%][%end%]
+			</div>[%end%]
+			[%if item.description%]<div class="item-description">[%item.description%]</div>[%end%]
+			[%if item.menu%]<div class="item-menu">[%foreach ent in item.menu%]
+				[%if ent.href%]<a href="[%ent.href%]"[%if ent.onclick +%] onclick="[%ent.onclick%]"[%end%]>[%end%][%ent.html%][%if ent.href%]</a>[%end%]
+				[%unless ent.lst +%] / [%+ end%]
+			[%end%]</div>[%end%]
+		</td>
+	</tr>
+	[%end%]
+	</table>
+</div>
+[%end%]
+<script type="text/javascript">
+wait(['pager'], function() {
+	var pager = new Pager('pages', 'page-');
+	[%foreach cat in categories%]
+	pager.add('[%cat.id%]', '[%cat.name_html_js%]', [%if cat.visible%]true[%else%]false[%end%]);
+	[%end%]
+	pager.update();
+});
+</script>

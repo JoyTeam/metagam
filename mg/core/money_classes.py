@@ -1,4 +1,7 @@
 from mg import *
+import re
+
+re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
 
 class Account(CassandraObject):
     clsname = "Account"
@@ -301,3 +304,12 @@ class MemberMoney(object):
             return 0
         return account.available()
 
+    def script_attr(self, attr, handle_exceptions=True):
+        m = re_money_script_field.match(attr)
+        if m:
+            field, currency = m.group(1, 2)
+            if field == "balance":
+                return self.balance(currency)
+            elif field == "available":
+                return self.available(currency)
+        raise AttributeError(attr)

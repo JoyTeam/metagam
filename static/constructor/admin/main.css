@@ -106,3 +106,5 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 #income-structure { padding-top: 10px }
 #last-payments { padding-top: 10px }
 .td-number { text-align: right }
+/* TABLES */
+.admin-tbl-message-top { padding-bottom: 15px }

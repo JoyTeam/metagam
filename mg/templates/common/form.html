@@ -4,6 +4,7 @@
 <div class="form-content">
 <div style="width: 350px"></div>
 [%if form_texteditors%]<script type="text/javascript" src="/st-mg/[%ver%]/js/texteditor.js"></script>[%end%]
+[%if form_quantities%]<script type="text/javascript" src="/st-mg/[%ver%]/js/quantity.js"></script>[%end%]
 <form action="[%form_action%]" method="post" enctype="multipart/form-data" class="form-std" name="stdform">
 [%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
 [%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div class="form-list-message-top">[%html%]</div>[%end%]</div>[%end%]
@@ -31,6 +32,13 @@
 	<td width="[%row.width%]%" class="[%if col.td_class%][%col.td_class%][%elsif row.padding_top%]form-control-padding[%else%]form-control[%end%]">
 	[%if col.element_header%][%col.element_header.html%][%end%]
 	[%if col.element_input%]<input id="[%col.name%]" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="form-w100 form-bg" />[%end%]
+	[%if col.element_quantity%]<table class="input-quantity"><tr>
+		<td class="input-quantity-minus"><img src="/st-mg/form/minusmaxd.gif" id="mm_[%col.name%]" alt="" onclick="q_add('[%col.name%]', [%col.min_value - col.max_value%], [%col.min_value%], [%col.max_value%]); return false;" class="clickable" /></td>
+		<td class="input-quantity-minus"><img src="/st-mg/form/minusd.gif" id="m_[%col.name%]" alt="" onclick="q_add('[%col.name%]', -1, [%col.min_value%], [%col.max_value%]); return false;" class="clickable" /></td>
+		<td class="input-quantity-td"><input id="[%col.name%]" name="[%col.name%]" value="[%col.value%]" size="[%form_cols%]" class="form-w100 form-bg input-quantity-input" /></td>
+		<td class="input-quantity-plus"><img src="/st-mg/form/plusd.gif" id="p_[%col.name%]" alt="" onclick="q_add('[%col.name%]', 1, [%col.min_value%], [%col.max_value%]); return false;" class="clickable" /></td>
+		<td class="input-quantity-plus"><img src="/st-mg/form/plusmaxd.gif" id="pm_[%col.name%]" alt="" onclick="q_add('[%col.name%]', [%col.max_value - col.min_value%], [%col.min_value%], [%col.max_value%]); return false;" class="clickable" /></td>
+	</tr></table>[%end%]
 	[%if col.element_range%]<input id="[%col.name%]_min" name="[%col.name%]_min" value="[%col.value_min%]" size="[%form_cols%]" class="form-bg" /> &mdash; <input id="[%col.name%]_max" name="[%col.name%]_max" value="[%col.value_max%]" size="[%form_cols%]" class="form-bg" />[%end%]
 	[%if col.element_checkbox%]<table><tr valign="top"><td><input type="checkbox" class="form-checkbox" name="[%col.name%]" value="1"[%if col.onclick +%] onclick="[%col.onclick%]"[%end%][%if col.checked +%] checked="checked"[%end +%] /></td><td class="form-checkbox-text">[%col.text%]</td></tr></table>[%end%]
 	[%if col.element_radio%]<table><tr><td><input type="radio" class="form-radio" id="[%col.form_control_id%]" name="[%col.name%]" value="[%col.value%]" [%if col.checked%] checked="checked"[%end%] /></td><td style="padding: 3px 0px 0px 4px;" class="form-clickable">[%col.text%]</td></tr></table>[%end%]

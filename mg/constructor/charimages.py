@@ -29,41 +29,43 @@ class CharImages(ConstructorModule):
     def library_index_pages(self, pages):
         pages.append({"page": "charimages", "order": 30})
 
-    def library_page_charimages(self):
-        vars = {
-        }
-        price = self.conf("charimages.price")
-        currency = self.conf("charimages.currency")
-        images = self.call("charimages.for-sex", 0)
-        images.extend(self.call("charimages.for-sex", 1))
-        images = [img for img in images if img["info"].get("available")]
-        if images:
-            vars["images"] = True
-            for img in images:
-                p = img["info"].get("price")
-                c = img["info"].get("currency")
-                if p is None:
-                    p = price
-                    c = currency
-                if p:
-                    vars["paid"] = True
-                    if not img["info"].get("deny_free") and self.conf("charimages.first-free", True):
-                        vars["first_free"] = True
-                elif not img["info"].get("deny_free"):
-                    vars["free"] = True
-        if self.conf("charimages.layers"):
-            vars["layers"] = True
-            if price:
-                vars["paid"] = True
-                vars["price"] = self.call("money.price-html", price, currency)
-        return {
+    def library_page_charimages(self, render_content):
+        pageinfo = {
             "code": "charimages",
             "title": self._("Character images"),
             "keywords": self._("character images"),
             "description": self._("This page describes character images setting rules"),
-            "content": self.call("socio.parse", "library-charimages.html", vars),
             "parent": "index",
         }
+        if render_content:
+            vars = {
+            }
+            price = self.conf("charimages.price")
+            currency = self.conf("charimages.currency")
+            images = self.call("charimages.for-sex", 0)
+            images.extend(self.call("charimages.for-sex", 1))
+            images = [img for img in images if img["info"].get("available")]
+            if images:
+                vars["images"] = True
+                for img in images:
+                    p = img["info"].get("price")
+                    c = img["info"].get("currency")
+                    if p is None:
+                        p = price
+                        c = currency
+                    if p:
+                        vars["paid"] = True
+                        if not img["info"].get("deny_free") and self.conf("charimages.first-free", True):
+                            vars["first_free"] = True
+                    elif not img["info"].get("deny_free"):
+                        vars["free"] = True
+            if self.conf("charimages.layers"):
+                vars["layers"] = True
+                if price:
+                    vars["paid"] = True
+                    vars["price"] = self.call("money.price-html", price, currency)
+            pageinfo["content"] = self.call("socio.parse", "library-charimages.html", vars)
+        return pageinfo
 
     def money_description_charimage(self):
         return {
@@ -511,16 +513,6 @@ class CharImagesAdmin(ConstructorModule):
             if info:
                 return [htmlescape(info["name"]), "charimages/editor"]
         return self._("Character images list")
-
-    def image_format(self, image):
-        if image.format == "JPEG":
-            return ("jpg", "image/jpeg")
-        elif image.format == "PNG":
-            return ("png", "image/png")
-        elif image.format == "GIF":
-            return ("gif", "image/gif")
-        else:
-            return (None, None)
 
     def ext_editor(self):
         dimensions = self.dimensions()

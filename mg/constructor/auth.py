@@ -193,39 +193,43 @@ class Auth(ConstructorModule):
         pages.append({"page": "offer", "order": 1000})
         pages.append({"page": "multicharing", "order": 10})
 
-    def library_page_multicharing(self):
-        vars = {
-            "multicharing": self.conf("auth.multicharing", 0),
-            "free_chars": self.conf("auth.free_chars", 1),
-            "max_chars": self.conf("auth.max_chars", 5),
-        }
-        multichar_price = self.conf("auth.multichar_price", 5)
-        multichar_currency = self.conf("auth.multichar_currency")
-        if multichar_price and multichar_currency:
-            vars["multichar_price"] = self.call("money.price-html", multichar_price, multichar_currency)
-        lang = self.call("l10n.lang")
-        return {
+    def library_page_multicharing(self, render_content):
+        pageinfo = {
             "code": "multicharing",
             "title": self._("Multicharing in the game"),
             "keywords": self._("multicharing, players, characters"),
             "description": self._("Multicharing policy of the game"),
-            "content": self.call("socio.parse", "library-multicharing.html", vars),
             "parent": "index",
         }
+        if render_content:
+            vars = {
+                "multicharing": self.conf("auth.multicharing", 0),
+                "free_chars": self.conf("auth.free_chars", 1),
+                "max_chars": self.conf("auth.max_chars", 5),
+            }
+            multichar_price = self.conf("auth.multichar_price", 5)
+            multichar_currency = self.conf("auth.multichar_currency")
+            if multichar_price and multichar_currency:
+                vars["multichar_price"] = self.call("money.price-html", multichar_price, multichar_currency)
+            lang = self.call("l10n.lang")
+            pageinfo["content"] = self.call("socio.parse", "library-multicharing.html", vars)
+        return pageinfo
 
-    def library_page_offer(self):
-        vars = {
-            "title": self._("Terms and conditions (public offer)"),
-        }
-        lang = self.call("l10n.lang")
-        return {
+    def library_page_offer(self, render_content):
+        pageinfo = {
             "code": "offer",
             "title": self._("Terms and conditions (public offer)"),
             "keywords": self._("public offer, terms and conditions"),
             "description": self._("This is the public offer"),
-            "content": self.call("web.parse_template", "constructor/offer-players-%s.html" % lang, vars),
             "parent": "index",
         }
+        if render_content:
+            vars = {
+                "title": self._("Terms and conditions (public offer)"),
+            }
+            lang = self.call("l10n.lang")
+            pageinfo["content"] = self.call("web.parse_template", "constructor/offer-players-%s.html" % lang, vars)
+        return pageinfo
 
     def advice_user_dashboard(self, args, advice):
         advice.append({"title": self._("Multicharing options"), "content": self._('You have powerful abilities to look for and punish players violating your multicharing rules. Before you begin enforcing the law <hook:admin.link href="players/auth" title="setup rules related to the multicharing" />.')})

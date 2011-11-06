@@ -99,29 +99,31 @@ class Chat(ConstructorModule):
     def library_index_pages(self, pages):
         pages.append({"page": "chat", "order": 20})
 
-    def library_page_chat(self):
-        channel_commands = []
-        if self.chatmode:
-            if self.cmd_loc():
-                channel_commands.append({"cmd": self.cmd_loc(), "title": self._("Location channel")})
-            if self.cmd_wld():
-                channel_commands.append({"cmd": self.cmd_wld(), "title": self._("Entire world channel")})
-            if self.cmd_trd() and self.conf("chat.trade-channel"):
-                channel_commands.append({"cmd": self.cmd_trd(), "title": self._("Trade channel")})
-            if self.cmd_dip() and self.conf("chat.diplomacy-channel"):
-                channel_commands.append({"cmd": self.cmd_dip(), "title": self._("Diplomacy channel")})
-        vars = {
-            "chatmode": self.chatmode,
-            "channel_commands": channel_commands if channel_commands else None,
-        }
-        return {
+    def library_page_chat(self, render_content):
+        pageinfo = {
             "code": "chat",
             "title": self._("Game chat"),
             "keywords": self._("chat"),
             "description": self._("This page is about game chat"),
-            "content": self.call("socio.parse", "library-chat.html", vars),
             "parent": "index",
         }
+        if render_content:
+            channel_commands = []
+            if self.chatmode:
+                if self.cmd_loc():
+                    channel_commands.append({"cmd": self.cmd_loc(), "title": self._("Location channel")})
+                if self.cmd_wld():
+                    channel_commands.append({"cmd": self.cmd_wld(), "title": self._("Entire world channel")})
+                if self.cmd_trd() and self.conf("chat.trade-channel"):
+                    channel_commands.append({"cmd": self.cmd_trd(), "title": self._("Trade channel")})
+                if self.cmd_dip() and self.conf("chat.diplomacy-channel"):
+                    channel_commands.append({"cmd": self.cmd_dip(), "title": self._("Diplomacy channel")})
+            vars = {
+                "chatmode": self.chatmode,
+                "channel_commands": channel_commands if channel_commands else None,
+            }
+            pageinfo["content"] = self.call("socio.parse", "library-chat.html", vars)
+        return pageinfo
 
     def name_purpose_chat(self):
         return {"id": "chat", "title": self._("Chat"), "order": 10, "default": "[{NAME}]"}

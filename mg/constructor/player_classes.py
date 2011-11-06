@@ -3,7 +3,6 @@ from mg.constructor.interface_classes import *
 from mg.core.money_classes import *
 import re
 
-re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
 re_param_attr = re.compile(r'^p_(.+)')
 re_perm_attr = re.compile(r'^perm_(.+)')
 
@@ -64,17 +63,6 @@ class DBCharacterSettingsList(CassandraObjectList):
     objcls = DBCharacterSettings
 
 # Business logic objects
-
-class Money(MemberMoney):
-    def script_attr(self, attr, handle_exceptions=True):
-        m = re_money_script_field.match(attr)
-        if m:
-            field, currency = m.group(1, 2)
-            if field == "balance":
-                return self.balance(currency)
-            elif field == "available":
-                return self.available(currency)
-        raise AttributeError(attr)
 
 class Character(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Character"):
@@ -283,7 +271,7 @@ class Character(Module):
         try:
             return self._money
         except AttributeError:
-            self._money = Money(self.app(), self.uuid)
+            self._money = MemberMoney(self.app(), self.uuid)
             return self._money
 
     @property
@@ -318,6 +306,8 @@ class Character(Module):
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
             return 1 if perms and len(perms) else 0
+        elif attr == "inv":
+            return self.inventory
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -371,6 +361,14 @@ class Character(Module):
 
     def script_params(self):
         return {"char": self}
+
+    @property
+    def inventory(self):
+        try:
+            return self._inventory
+        except AttributeError:
+            self._inventory = self.call("inventory.get", "char", self.uuid)
+            return self._inventory
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

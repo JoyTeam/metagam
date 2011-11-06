@@ -93,7 +93,7 @@ class Library(ConstructorModule):
         if len(lst):
             pent = lst[0]
         else:
-            pent = self.call("library-page-%s.content" % code)
+            pent = self.call("library-page-%s.content" % code, render_content=True)
             if not pent:
                 self.call("web.not_found")
         vars = {
@@ -142,7 +142,7 @@ class Library(ConstructorModule):
             if len(lst):
                 parent_ent = lst[0]
             else:   
-                parent_ent = self.call("library-page-%s.content" % parent)
+                parent_ent = self.call("library-page-%s.content" % parent, render_content=False)
                 if not parent_ent:
                     break
             menu_left.insert(0, {"html": htmlescape(parent_ent.get("title")), "href": "/library" if parent == "index" else "/library/%s" % parent})
@@ -162,11 +162,13 @@ class Library(ConstructorModule):
             "left": True,
         })
 
-    def page_index(self):
-        return {
+    def page_index(self, render_content):
+        pageinfo = {
             "title": self._("Library - %s") % self.app().project.get("title_short"),
-            "content": '[hook:lib.catalog grp="index"]'
         }
+        if render_content:
+            pageinfo["content"] = '[hook:lib.catalog grp="index"]'
+        return pageinfo
 
     def page_groups(self, page_groups):
         page_groups.append({
@@ -199,7 +201,7 @@ class Library(ConstructorModule):
             page_info[ent.get("code")] = ent
         result = []
         for ent in pages:
-            page = page_info.get(ent["page"]) or self.call("library-page-%s.content" % ent["page"])
+            page = page_info.get(ent["page"]) or self.call("library-page-%s.content" % ent["page"], render_content=False)
             if page:
                 code = page.get("code")
                 result.append('<a href="%s">%s</a>' % ("/library" if code == "index" else "/library/%s" % code, htmlescape(page.get("title"))))

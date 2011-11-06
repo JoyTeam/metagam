@@ -859,6 +859,7 @@ class WebForm(object):
         self.messages_top = None
         self.messages_bottom = None
         self.texteditors = False
+        self.quantities = False
         self.errors = False
         self.errors_on_top = False
 
@@ -947,6 +948,8 @@ class WebForm(object):
             if smiles is not None:
                 vars["smile_categories"] = smiles
             vars["form_texteditors"] = True
+        if self.quantities:
+            vars["form_quantities"] = True
         return self.module.call("web.parse_template", self.template, vars)
 
     def error(self, name, text):
@@ -977,6 +980,17 @@ class WebForm(object):
         kwargs["value"] = htmlescape(value)
         kwargs["element_input"] = True
         self.control(desc, name, **kwargs)
+
+    def quantity(self, desc, name, value, min_value, max_value, **kwargs):
+        """
+        <input /> with +/- buttons
+        """
+        kwargs["value"] = htmlescape(value)
+        kwargs["min_value"] = htmlescape(min_value)
+        kwargs["max_value"] = htmlescape(max_value)
+        kwargs["element_quantity"] = True
+        self.control(desc, name, **kwargs)
+        self.quantities = True
 
     def select(self, desc, name, value, options, **kwargs):
         """

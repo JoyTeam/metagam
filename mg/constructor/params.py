@@ -363,8 +363,11 @@ class Params(ConstructorModule):
     def value(self, obj, param_code, handle_exceptions=True):
         param = self.param(param_code)
         if not param:
-            return None
-        return self.value_rec(obj, param, handle_exceptions)
+            if handle_exceptions:
+                return None
+            else:
+                raise AttributeError(param)
+        return self.call("%s.param-value-rec" % self.kind, obj, param, handle_exceptions)
 
     def _evaluate(self, obj, param):
         value = self.call("script.evaluate-expression", param["expression"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}'").format(cls=self.kind, param='p_%s' % param["code"], uuid=obj.uuid))
@@ -430,6 +433,7 @@ class Params(ConstructorModule):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 value_html = self.call("%s.param-html" % self.kind, param, value)
                 params.append({
+                    "value_raw": value,
                     "name": '<span class="%s-info-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-info-%s-value">%s</span>' % (self.kind, param["code"], value_html),
                     "library_icon": self.library_icon(param),
@@ -445,6 +449,7 @@ class Params(ConstructorModule):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 value_html = self.call("%s.param-html" % self.kind, param, value)
                 params.append({
+                    "value_raw": value,
                     "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
                     "library_icon": self.library_icon(param),
@@ -460,6 +465,7 @@ class Params(ConstructorModule):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 value_html = self.call("%s.param-html" % self.kind, param, value)
                 params.append({
+                    "value_raw": value,
                     "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                     "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
                     "library_icon": self.library_icon(param),
@@ -483,7 +489,9 @@ class Params(ConstructorModule):
     def library_icon(self, param):
         if not param.get("library_visible"):
             return None
-        uri = param.get("library_uri") or "/library/charparams#%s" % param["code"]
+        uri = param.get("library_uri") or self.call("%s.param-library" % self.kind, param)
+        if not uri:
+            return None
         return self.call("library.icon", uri)
 
 class ParamsLibrary(ConstructorModule):

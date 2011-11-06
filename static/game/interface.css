@@ -18,6 +18,7 @@ area { border: none }
 .ext-el-mask { background-color: #000000 }
 .game-info { color: #008000; text-align: center; padding: 50px; font-weight: bold }
 .game-error { color: red; text-align: center; padding: 50px; font-weight: bold }
+.error-message { color: #800000; padding: 10px 30px 10px 30px; font-weight: bold; border: solid 1px #800000; margin-bottom: 10px; display: inline-block; }
 
 /* MAIN FRAME */
 #main { height: 100%; background-color: #ffffff }
@@ -89,6 +90,9 @@ area { border: none }
 .form-error { color: #ff0000; font-weight: normal; font-size: 11px }
 .form-list-messages-top, .form-list-messages-bottom { font-weight: bold }
 .form-list-messages-bottom { padding-top: 20px }
+.input-quantity-minus { padding-right: 3px }
+.input-quantity-plus { padding-left: 3px }
+.input-quantity-input { width: 60px }
 
 /* INTERNAL */
 #page-internal-html { height: 100%; padding: 0; margin: 0 }
@@ -121,12 +125,6 @@ area { border: none }
 .panel-header-horizontal-12 { font-size: 16px; white-space: nowrap }
 .block-location-name .panel-header-horizontal-10 { text-align: left }
 .panel-header-horizontal-content-1 { float: left; width: 100%; display: inline }
-
-/* ITEM LISTS */
-.item-image { border: solid 1px #404040; margin-right: 20px }
-.item-image-td { vertical-align: top; padding-bottom: 10px }
-.item-info-td { vertical-align: top; padding: 2px 0 10px 0 }
-.item-description { color: #404040; padding-top: 5px }
 
 /* LOGS */
 .log-header .log-td { font-weight: bold; border-bottom: solid 1px #404040 }
@@ -181,4 +179,7 @@ area { border: none }
 .charparams-param-name { vertical-align: top; padding: 0 20px 0 0 }
 .charparams-param-value { vertical-align: top; font-weight: bold; padding: 0 0 0 0 }
 .charparams-param-header { vertical-align: top; font-weight: bold; padding: 10px 0 10px 0 }
+
+/* PAGER */
+.pager-list { padding: 0 0 10px 0 }
 
