@@ -390,7 +390,7 @@ class MoneyAdmin(Module):
             member = MemberMoney(self.app(), user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user(), comment=user_comment)
             self.call("security.suspicion", admin=req.user(), action="money.give", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
-            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Given {money_amount}:\n{comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
+            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Given {money_amount}: {comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
             self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"
@@ -441,7 +441,7 @@ class MoneyAdmin(Module):
             member = MemberMoney(self.app(), user.uuid)
             member.force_debit(amount, currency, "admin-take", admin=req.user(), comment=user_comment)
             self.call("security.suspicion", admin=req.user(), action="money.take", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
-            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Taken {money_amount}:\n{comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
+            self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Taken {money_amount}: {comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
             self.call("admin.redirect", "auth/user-dashboard/%s" % user.uuid, {"active_tab": "money"})
         else:
             amount = "0"

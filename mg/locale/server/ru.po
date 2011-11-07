@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-07 13:48+0300\n"
+"PO-Revision-Date: 2011-11-07 16:52+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1355,6 +1355,10 @@ msgstr "Задержка при переходе в эту локацию и и�
 msgid "Delete"
 msgstr "Удалить"
 
+#, python-format
+msgid "Delete %s image"
+msgstr "Удалить изображение %s"
+
 msgid "Deletion"
 msgstr "Удаление"
 
@@ -2183,28 +2187,14 @@ msgstr "Выдать {char} ещё предметов этого типа"
 msgid "Given by the administration"
 msgstr "Выдано администрацией"
 
-msgid ""
-"Given {money_amount}:\n"
-"{comment}"
-msgstr ""
-"Выдано {money_amount}:\n"
-"{comment}"
+msgid "Given {money_amount}: {comment}"
+msgstr "Выдано {money_amount}: {comment}"
 
-msgid ""
-"Given {quantity} x {name}:\n"
-"{comment}"
-msgstr ""
-"Выдано {quantity} x {name}:\n"
-"{comment}"
+msgid "Given {quantity} x {name}: {comment}"
+msgstr "Выдано {quantity} x {name}: {comment}"
 
-msgid ""
-"Given:\n"
-"{list}\n"
-"{comment}"
-msgstr ""
-"Выдано:\n"
-"{list}\n"
-"{comment}"
+msgid "Given: {list}: {comment}"
+msgstr "Выдано: {list}: {comment}"
 
 msgid "Giving"
 msgstr "Выдача"
@@ -2364,6 +2354,9 @@ msgstr "Идентификатор должен начинаться с 'u_'"
 
 msgid "Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор должен начинаться с \"u_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "If parameter is modified in the item instance show 'base value + modifier' instead of 'modified value'"
+msgstr "Если параметр модифицирован у экземпляра предмета, то показывать \"базовое значение + модификатор\" вместо \"модифицированного значения\""
 
 #, python-format
 msgid "If this is your first visit, %s."
@@ -4141,6 +4134,9 @@ msgstr "Причина, по которой вы выдаёте предметы
 msgid "Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
 msgstr "Причина, по которой вы выдаёте деньги пользователю. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
+msgid "Reason why do you transfer items between users. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
+msgstr "Причина, по которой вы передаёте предметы между пользователями. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+
 msgid "Reason why do you withdraw items from the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
 msgstr "Причина, по которой вы изымаете предметы у пользователя. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
@@ -5023,15 +5019,14 @@ msgstr "Взять деньги"
 msgid "Taken by the administration"
 msgstr "Изъято администрацией"
 
-msgid ""
-"Taken {money_amount}:\n"
-"{comment}"
-msgstr ""
-"Изъято {money_amount}:\n"
-"{comment}"
+msgid "Taken {money_amount}: {comment}"
+msgstr "Изъято {money_amount}: {comment}"
 
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
+
+msgid "Target character name"
+msgstr "Имя целевого персонажа"
 
 msgid "Target frame"
 msgstr "В каком фрейме открыть"
@@ -5394,6 +5389,22 @@ msgstr "Торговля"
 msgid "Trading channel enabled"
 msgstr "Включить торговый канал"
 
+msgid "Transfer"
+msgstr "Передать"
+
+#, python-format
+msgid "Transfer '%s'"
+msgstr "Передача '%s'"
+
+msgid "Transferred {quantity} x {name} from {source_name}: {comment}"
+msgstr "Передано {quantity} x {name} от {source_name}: {comment}"
+
+msgid "Transferred {quantity} x {name} to {target_name}: {comment}"
+msgstr "Передано {quantity} x {name} для {target_name}: {comment}"
+
+msgid "Transferring"
+msgstr "Передача"
+
 msgid "Transition"
 msgstr "Переход"
 
@@ -5742,12 +5753,8 @@ msgstr "Изъять \"%s\""
 msgid "Withdrawal"
 msgstr "Изъятие"
 
-msgid ""
-"Withdrawn {quantity} x {name}:\n"
-"{comment}"
-msgstr ""
-"Изъято {quantity} x {name}:\n"
-"{comment}"
+msgid "Withdrawn {quantity} x {name}: {comment}"
+msgstr "Изъято {quantity} x {name}: {comment}"
 
 msgid "Wood #1"
 msgstr "Дерево №1"
@@ -6379,6 +6386,9 @@ msgstr "установить"
 msgid "installed"
 msgstr "установлено"
 
+msgid "itemlog///Reference"
+msgstr "Референс"
+
 msgid "itemparam///Expiration"
 msgstr "Срок годности"
 
@@ -6823,6 +6833,9 @@ msgstr "Открыта"
 
 msgid "track"
 msgstr "отследить"
+
+msgid "transfer"
+msgstr "передать"
 
 msgid "unjoin"
 msgstr "исключить"

@@ -180,6 +180,11 @@ def next_date(date):
     date = date + datetime.timedelta(days=1)
     return date.strftime("%Y-%m-%d")
 
+def next_second(time):
+    time = parse_date(time)
+    time += datetime.timedelta(seconds=1)
+    return time.strftime("%Y-%m-%d %H:%M:%S")
+
 def datetime_to_human(str):
     m = re_datetime.match(str)
     if not m:
