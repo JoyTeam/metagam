@@ -36,8 +36,13 @@ for lang in os.listdir(localedir):
     except OSError:
         pass
 
+re_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d)$')
 re_datetime = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d)$')
+re_date_ru = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)$')
+re_datetime_ru = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d) (\d\d):(\d\d):(\d\d)$')
 re_time_local = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d:\d\d):\d\d$')
+re_000000 = re.compile(r' 00:00:00$')
+re_235959 = re.compile(r' 23:59:59$')
 
 ZERO = datetime.timedelta(0)
 
@@ -91,6 +96,11 @@ class L10n(Module):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.timezone", self.admin_timezone, priv="site.timezone")
         self.rhook("l10n.now_local", self.now_local)
+        self.rhook("l10n.date_sample", self.date_sample)
+        self.rhook("l10n.datetime_sample", self.datetime_sample)
+        self.rhook("l10n.parse_date", self.parse_date)
+        self.rhook("l10n.unparse_date", self.unparse_date)
+        self.rhook("l10n.date_round", self.date_round)
 
     def permissions_list(self, perms):
         perms.append({"id": "site.timezone", "name": self._("Site time zone settings")})
@@ -233,7 +243,10 @@ class L10n(Module):
         if not m:
             return None, None
         year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
-        dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc).astimezone(self.tzinfo)
+        try:
+            dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc).astimezone(self.tzinfo)
+        except ValueError:
+            return None, None
         th = "th"
         day100 = dt.day % 100
         if day100 <= 10 or day100 >= 20:
@@ -401,3 +414,129 @@ class L10n(Module):
         else:
             return 0
 
+    def parse_date(self, datestr, dayend=False):
+        if datestr is None:
+            return None
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            m = re_datetime_ru.match(datestr)
+            if m:
+                day, month, year, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+            else:
+                m = re_date_ru.match(datestr)
+                if m:
+                    day, month, year = m.group(1, 2, 3)
+                    if dayend:
+                        h = "23"
+                        m = "59"
+                        s = "59"
+                    else:
+                        h = "00"
+                        m = "00"
+                        s = "00"
+                else:
+                    return None
+        else:
+            m = re_datetime.match(datestr)
+            if m:
+                year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+            else:
+                m = re_date.match(datestr)
+                if m:
+                    year, month, day = m.group(1, 2, 3)
+                    if dayend:
+                        h = "23"
+                        m = "59"
+                        s = "59"
+                    else:
+                        h = "00"
+                        m = "00"
+                        s = "00"
+                else:
+                    return None
+        try:
+            dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=self.tzinfo).astimezone(utc)
+        except ValueError:
+            return None
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    def unparse_date(self, datestr, dayend=False):
+        if datestr is None:
+            return None
+        m = re_datetime.match(datestr)
+        if m:
+            year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+        else:
+            return None
+        try:
+            dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc).astimezone(self.tzinfo)
+        except ValueError:
+            return None
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            dt = dt.strftime("%d.%m.%Y %H:%M:%S")
+        else:
+            dt = dt.strftime("%Y-%m-%d %H:%M:%S")
+        if dayend:
+            dt = re_235959.sub("", dt)
+        else:
+            dt = re_000000.sub("", dt)
+        return dt
+
+    def date_sample(self):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            return "DD.MM.YYYY"
+        else:
+            return "YYYY-MM-DD"
+
+    def datetime_sample(self):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            return "DD.MM.YYYY HH:MM:SS"
+        else:
+            return "YYYY-MM-DD HH:MM:SS"
+
+    # input:
+    #    datestr - datetime in UTC
+    #    rounding - 0-day, 1-week, 2-month, 0-none
+    #    local - rounding must be performed in the local timezone
+    # retval:
+    #    rounded datetime in UTC
+    def date_round(self, datestr, rounding, local=True):
+        if datestr is None:
+            return None
+        if rounding == 3:
+            return datestr
+        m = re_datetime.match(datestr)
+        if m:
+            year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+        else:
+            return None
+        try:
+            dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc)
+        except ValueError:
+            return None
+        # converting from the local timezone
+        if local:
+            dt = dt.astimezone(self.tzinfo)
+        # rounding
+        dt = dt.replace(hour=23, minute=59, second=59)
+        if rounding == 0:
+            pass
+        elif rounding == 1:
+            dt += datetime.timedelta(days=6 - dt.weekday())
+        elif rounding == 2:
+            if dt.month == 12:
+                month = 1
+                year = dt.year + 1
+            else:
+                month = dt.month + 1
+                year = dt.year
+            dt = dt.replace(day=1, month=month, year=year) + datetime.timedelta(days=-1)
+        else:
+            return None
+        # converting to the local timezone
+        if local:
+            dt = dt.astimezone(utc)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")

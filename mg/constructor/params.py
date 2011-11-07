@@ -423,7 +423,7 @@ class Params(ConstructorModule):
         else:
             return value
 
-    def params_public(self, obj, params):
+    def params_public(self, obj, params, **kwargs):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("public") and self.visibility_condition(param, obj):
@@ -431,15 +431,17 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                value_html = self.call("%s.param-html" % self.kind, param, value)
-                params.append({
-                    "value_raw": value,
-                    "name": '<span class="%s-info-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
-                    "value": '<span class="%s-info-%s-value">%s</span>' % (self.kind, param["code"], value_html),
-                    "library_icon": self.library_icon(param),
-                })
+                if value:
+                    value_html = self.call("%s.param-html" % self.kind, param, value)
+                    params.append({
+                        "param_code": param["code"],
+                        "value_raw": value,
+                        "name": '<span class="%s-info-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
+                        "value": '<span class="%s-info-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                        "library_icon": self.library_icon(param),
+                    })
 
-    def params_owner_important(self, obj, params):
+    def params_owner_important(self, obj, params, **kwargs):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("important") and self.visibility_condition(param, obj):
@@ -447,15 +449,17 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                value_html = self.call("%s.param-html" % self.kind, param, value)
-                params.append({
-                    "value_raw": value,
-                    "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
-                    "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
-                    "library_icon": self.library_icon(param),
-                })
+                if value:
+                    value_html = self.call("%s.param-html" % self.kind, param, value)
+                    params.append({
+                        "param_code": param["code"],
+                        "value_raw": value,
+                        "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
+                        "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                        "library_icon": self.library_icon(param),
+                    })
 
-    def params_owner_all(self, obj, params):
+    def params_owner_all(self, obj, params, **kwargs):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and self.visibility_condition(param, obj):
@@ -463,13 +467,15 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                value_html = self.call("%s.param-html" % self.kind, param, value)
-                params.append({
-                    "value_raw": value,
-                    "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
-                    "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
-                    "library_icon": self.library_icon(param),
-                })
+                if value:
+                    value_html = self.call("%s.param-html" % self.kind, param, value)
+                    params.append({
+                        "param_code": param["code"],
+                        "value_raw": value,
+                        "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
+                        "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
+                        "library_icon": self.library_icon(param),
+                    })
 
     def notimportant_params_exist(self):
         for param in self.call("%s.params" % self.kind):

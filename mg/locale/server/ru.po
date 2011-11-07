@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-06 16:30+0300\n"
+"PO-Revision-Date: 2011-11-07 13:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -220,6 +220,12 @@ msgstr "Доступ игроков к выбору образов для пер
 
 msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
 msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
+
+msgid "Absolute expiration time (format: {datetime_sample} or {date_sample}, last date inclusive)"
+msgstr "Абсолютный срок годности (формат: {datetime_sample} или {date_sample}, последняя дата рассматривается включительно)"
+
+msgid "Absolute time"
+msgstr "Абсолютное время"
 
 msgid "Absolute values greater than 1 billion are not supported"
 msgstr "Абсолютные значения больше 1 миллиарда не поддерживаются"
@@ -493,6 +499,9 @@ msgstr "Некорректные символы в названии: %s"
 
 msgid "Balance"
 msgstr "Баланс"
+
+msgid "Balance price for the item"
+msgstr "Балансировочная цена предмета"
 
 msgid "Bamboo #1"
 msgstr "Бамбук №1"
@@ -1246,6 +1255,9 @@ msgstr "Название валюты: множественное число. Н
 msgid "Currency name: singular and plural forms delimited by \"/\". For example: \"Dollar/Dollars\""
 msgstr "Название валюты: формы в числе 1, 2 и 5, разделённые \"/\". Например: \"Доллар/Доллара/Долларов\""
 
+msgid "Currency of the balance price"
+msgstr "Валюта балансировочной цены"
+
 msgid "Current logo"
 msgstr "Текущий логотип"
 
@@ -1596,6 +1608,15 @@ msgstr "Включить панель справа от главного фре�
 msgid "Enabled layered character images"
 msgstr "Послойные образы персонажей включены"
 
+msgid "End of day"
+msgstr "Конец дня"
+
+msgid "End of month"
+msgstr "Конец месяца"
+
+msgid "End of week"
+msgstr "Конец недели"
+
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
@@ -1845,6 +1866,15 @@ msgstr "Цена в рублях"
 
 msgid "Execute JavaScript"
 msgstr "Выполнить JavaScript"
+
+msgid "Expiration"
+msgstr "Срок годности"
+
+msgid "Expiration rounding"
+msgstr "Округление срока годности"
+
+msgid "Expiration settings"
+msgstr "Настройки срока годности"
 
 msgid "Expression"
 msgstr "Выражение"
@@ -2493,6 +2523,9 @@ msgstr "Сообщения интерфейса"
 msgid "Interface panels"
 msgstr "Панели интерфейса"
 
+msgid "Interval"
+msgstr "Интервал"
+
 msgid "Interval is too big"
 msgstr "Интервал слишком велик"
 
@@ -2525,6 +2558,9 @@ msgstr "Неверный формат цвета"
 
 msgid "Invalid currency"
 msgstr "Неверная валюта"
+
+msgid "Invalid date format"
+msgstr "Неверный формат даты"
 
 msgid "Invalid datetime format"
 msgstr "Неверный формат даты и времени"
@@ -2683,8 +2719,11 @@ msgstr "Размер изображения предмета для интерф
 msgid "Item image dimensions in the library"
 msgstr "Размер изображения предмета для библиотеки"
 
-msgid "Item is discardable (script expression)"
-msgstr "Предмет выбрасываемый (скриптовое выражение)"
+msgid "Item images"
+msgstr "Изображения предмета"
+
+msgid "Item is discardable"
+msgstr "Предмет можно выбросить"
 
 msgid "Item name"
 msgstr "Название предмета"
@@ -2813,6 +2852,9 @@ msgstr "Страницы библиотеки"
 
 msgid "Library settings"
 msgstr "Настройки библиотеки"
+
+msgid "Lifetime interval (in seconds)"
+msgstr "Время жизни (в секундах)"
 
 msgid "Limit for sum height of all images in the signature"
 msgstr "Ограничение суммарной высоты для всех изображений в подписи"
@@ -3062,6 +3104,10 @@ msgstr "Максимальное количество ячеек инвента�
 msgid "Maximal file size for this file type &mdash; %d megabytes"
 msgstr "Максимальный размер файла этого типа &mdash; %d мегабайт"
 
+#, python-format
+msgid "Maximal item lifetime is %d seconds"
+msgstr "Максимальное время жизни предмета - %s сек"
+
 msgid "Maximal length - 17 characters"
 msgstr "Максимальная длина - 17 символов"
 
@@ -3168,6 +3214,10 @@ msgstr "Имя метода"
 
 msgid "Mike"
 msgstr "Mike"
+
+#, python-format
+msgid "Minimal item lifetime is %d seconds"
+msgstr "Минимальное время жизни предмета - %s сек"
 
 msgid "Minimal length is 3 letters"
 msgstr "Минимальная длина - 3 символа"
@@ -3482,11 +3532,17 @@ msgstr "Этому игроку не назначено ни одного пер
 msgid "No data"
 msgstr "Нет данных"
 
+msgid "No expiration"
+msgstr "Без срока годности"
+
 msgid "No location"
 msgstr "Нет локации"
 
 msgid "No locations defined."
 msgstr "Локации отсутствуют."
+
+msgid "No rounding"
+msgstr "Нет округления"
 
 msgid "No such category"
 msgstr "Нет такого раздела"
@@ -6041,7 +6097,7 @@ msgid "access"
 msgstr "доступ"
 
 msgid "accusative///day/days"
-msgstr "день/дня/дней"
+msgstr "сутки/суток/суток"
 
 msgid "accusative///hour/hours"
 msgstr "час/часа/часов"
@@ -6182,7 +6238,7 @@ msgid "database///DB"
 msgstr "БД"
 
 msgid "day/days"
-msgstr "день/дня/дней"
+msgstr "сутки/суток/суток"
 
 msgid "default"
 msgstr "умолчание"
@@ -6322,6 +6378,9 @@ msgstr "установить"
 
 msgid "installed"
 msgstr "установлено"
+
+msgid "itemparam///Expiration"
+msgstr "Срок годности"
 
 msgid "items"
 msgstr "предметы"
@@ -6867,6 +6926,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Item is discardable (script expression)"
+#~ msgstr "Предмет выбрасываемый (скриптовое выражение)"
 #~ msgid "Category group"
 #~ msgstr "Группа категорий"
 #~ msgid "Giving '%s'"

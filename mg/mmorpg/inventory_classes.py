@@ -210,7 +210,7 @@ class ItemType(Module):
             return self._db_params
         except KeyError:
             pass
-        obj = self.obj(DBItemTypeParams, self.uuid)
+        obj = self.obj(DBItemTypeParams, self.uuid, silent=True)
         cache[self.uuid] = obj
         self._db_params = obj
         return obj
@@ -252,3 +252,11 @@ class ItemType(Module):
 
     def cat(self, catgroup_id):
         return self.call("item-type.cat", self, catgroup_id)
+
+    @property
+    def expiration(self):
+        try:
+            return self._expiration
+        except AttributeError:
+            self._expiration = self.get("exp-till")
+            return self._expiration

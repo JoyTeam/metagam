@@ -30,3 +30,7 @@
 .item-description { color: #404040; padding-top: 5px }
 .item-menu { padding-top: 5px }
 .item-params { padding-top: 5px }
+
+/* MODIFIED PARAMETERS */
+.param-mod-plus { color: #743900 }
+.param-mod-minus { color: #4d5e69 }
