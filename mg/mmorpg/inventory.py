@@ -1788,6 +1788,15 @@ class Inventory(ConstructorModule):
                             param["value"] = u'<span class="param-mod param-mod-plus">%s</span>' % param["value"]
                         elif mod_value < base_value:
                             param["value"] = u'<span class="param-mod param-mod-minus">%s</span>' % param["value"]
+        # prices
+        if obj.get("balance-price"):
+            print "price OK"
+            value = self.call("money.price-html", obj.get("balance-price"), obj.get("balance-currency"))
+            params.insert(0, {
+                "value_raw": u"%s %s" % (obj.get("balance-price"), obj.get("balance-currency")),
+                "name": '<span class="item-types-page-price-name">%s</span>' % self._("Price"),
+                "value": '<span class="item-types-page-price-value">%s</span>' % value,
+            })
 
 class InventoryLibrary(ConstructorModule):
     def register(self):
