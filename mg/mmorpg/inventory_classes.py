@@ -38,6 +38,7 @@ class DBItemTransfer(CassandraObject):
         "owner_type": [["owner", "type"], "performed"],
         "owner": [["owner"], "performed"],
         "description": [["description"], "performed"],
+        "admin": [["admin"], "performed"],
     }
 
 class DBItemTransferList(CassandraObjectList):

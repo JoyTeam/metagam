@@ -48,7 +48,7 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("ext-admin-inventory.track", self.admin_inventory_track, priv="inventory.track")
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("queue-gen.schedule", self.schedule)
-        self.rhook("inventory.cleanup", self.cleanup)
+        self.rhook("admin-inventory.cleanup", self.cleanup)
         self.rhook("headmenu-admin-inventory.view", self.headmenu_inventory_view)
         self.rhook("ext-admin-inventory.view", self.admin_inventory_view, priv="inventory.track")
         self.rhook("headmenu-admin-item-types.withdraw", self.headmenu_item_types_withdraw)
@@ -58,9 +58,11 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("item-categories.list", self.item_categories_list)
         self.rhook("admin-item-types.params-form-render", self.params_form_render)
         self.rhook("admin-item-types.params-form-save", self.params_form_save)
+        self.rhook("admin-inventory.stats", self.stats)
 
     def schedule(self, sched):
-        sched.add("inventory.cleanup", "15 1 1 * *", priority=5)
+        sched.add("admin-inventory.cleanup", "15 1 1 * *", priority=5)
+        sched.add("admin-inventory.stats", "6 0 * * *", priority=10)
 
     def cleanup(self):
         self.objlist(DBItemTransferList, query_index="performed", query_finish=self.now(-86400 * 365 / 2)).remove()
@@ -1232,6 +1234,52 @@ class InventoryAdmin(ConstructorModule):
         req = self.req()
         if new_param.get("visual_mode") == 0:
             new_param["visual_mods"] = True if req.param("visual_mods") else False
+
+    def stats(self):
+        today = self.nowdate()
+        yesterday = prev_date(today)
+        lst = self.objlist(DBItemTransferList, query_index="performed", query_start=yesterday, query_finish=today)
+        lst.load(silent=True)
+        total = {}
+        descriptions = {}
+        for ent in lst:
+            item_type = ent.get("type")
+            quantity = ent.get("quantity")
+            # total quantity
+            try:
+                total[item_type] += quantity
+            except KeyError:
+                total[item_type] = quantity
+            # descriptions
+            description = ent.get("description")
+            try:
+                hsh = descriptions[description]
+            except KeyError:
+                hsh = {}
+                descriptions[description] = hsh
+            try:
+                hsh[item_type] += quantity
+            except KeyError:
+                hsh[item_type] = quantity
+        kwargs = {}
+        # this condition may be modified if we need to make remains recalculation more rare
+        if True:
+            remains = {}
+            lst = self.objlist(DBMemberInventoryList, query_index="all")
+            lst.load(silent=True)
+            for ent in lst:
+                items = ent.get("items")
+                if not items:
+                    continue
+                for item in items:
+                    item_type = item.get("type")
+                    quantity = item.get("quantity")
+                    try:
+                        remains[item_type] += quantity
+                    except KeyError:
+                        remains[item_type] = quantity
+            kwargs["remains"] = remains
+        self.call("dbexport.add", "inventory_stats", total=total, descriptions=descriptions, date=yesterday, **kwargs)
 
 class MemberInventory(ConstructorModule):
     def __init__(self, app, owtype, uuid):

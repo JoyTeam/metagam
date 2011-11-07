@@ -95,3 +95,43 @@ sub config
 		}
 	}
 }
+
+sub inventory_stats
+{
+	my $inst = shift;
+	my $ent = shift;
+	my $db = $inst->sql->{dbh};
+	$db->do('delete from item_remains where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	$db->do('delete from item_descriptions where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	if ($ent->{remains}) {
+		# storing remains
+		while (my ($item_type, $quantity) = each %{$ent->{remains}}) {
+			$db->do('insert into item_remains(app, period, item_type, quantity) values (?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $item_type, $quantity);
+		}
+	} else {
+		# loading old remains incrementally
+		my %remains;
+		if (my ($prev_date) = $db->selectrow_array('select max(period) from item_remains where app=?', undef, $ent->{app})) {
+			for my $row (@{$db->selectall_arrayref('select item_type, quantity from item_remains where app=? and period=?', undef, $ent->{app}, $prev_date)}) {
+				$remains{$row->{item_type}} = $row->{quantity};
+			}
+		}
+		# updating remains
+		while (my ($item_type, $quantity) = each %{$ent->{total}}) {
+			$remains{$item_type} += $quantity;
+		}
+		# storing remains
+		while (my ($item_type, $quantity) = each %remains) {
+			next if $quantity <= 0;
+			$db->do('insert into item_remains(app, period, item_type, quantity) values (?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $item_type, $quantity);
+		}
+	}
+	# storing descriptions
+	while (my ($description, $hsh) = each %{$ent->{descriptions}}) {
+		while (my ($item_type, $quantity) = each %$hsh) {
+			next unless $quantity;
+			$db->do('insert into item_descriptions(app, period, item_type, description, quantity) values (?, ?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $item_type, $description, $quantity);
+		}
+	}
+}
+

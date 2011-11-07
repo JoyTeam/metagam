@@ -76,6 +76,31 @@ sql_table('config',
 		'index' => 'app,grp,stored',
 	]
 );
+sql_table('item_remains',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+		'quantity' => [ -type=>'integer', -null=>0 ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,item_type,period',
+	]
+);
+sql_table('item_descriptions',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+		'description' => [ -type=>'varchar(32)', -null=>0 ],
+		'quantity' => [ -type=>'integer', -null=>0 ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,item_type,period',
+		'index' => 'app,description,period',
+		'index' => 'app,item_type,description,period',
+	]
+);
 sql_done();
 
 sub sql_field
