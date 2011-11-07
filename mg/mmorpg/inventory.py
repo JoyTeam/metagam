@@ -56,6 +56,8 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("headmenu-admin-item-categories.editor", self.headmenu_item_categories_editor)
         self.rhook("ext-admin-item-categories.editor", self.admin_item_categories_editor, priv="inventory.editor")
         self.rhook("item-categories.list", self.item_categories_list)
+        self.rhook("admin-item-types.params-form-render", self.params_form_render)
+        self.rhook("admin-item-types.params-form-save", self.params_form_save)
 
     def schedule(self, sched):
         sched.add("inventory.cleanup", "15 1 1 * *", priority=5)
@@ -1218,6 +1220,19 @@ class InventoryAdmin(ConstructorModule):
             return [self._("Constraint editor"), "inventory/char-cargo"]
         return self._("Characters cargo constraints")
 
+    def params_form_render(self, param, fields):
+        i = 0
+        while i < len(fields):
+            if fields[i].get("name") == "visual_table":
+                fields.insert(i + 1, {"name": "visual_mods", "type": "checkbox", "checked": param.get("visual_mods"), "label": self._("If parameter is modified in the item instance show 'base value + modifier' instead of 'modified value'"), "condition": "[visual_mode]==0"})
+                i += 1
+            i += 1
+
+    def params_form_save(self, param, new_param, errors):
+        req = self.req()
+        if new_param.get("visual_mode") == 0:
+            new_param["visual_mods"] = True if req.param("visual_mods") else False
+
 class MemberInventory(ConstructorModule):
     def __init__(self, app, owtype, uuid):
         ConstructorModule.__init__(self, app, "mg.mmorpg.inventory.MemberInventory")
@@ -1790,18 +1805,26 @@ class Inventory(ConstructorModule):
                 "value": '<span class="item-types-page-expiration-value">%s</span>' % value_html,
             })
         # highlighting modified parameters
-        for param in params:
-            mod_value = param.get("value_raw")
+        for p in params:
+            param = p.get("param")
+            if not param:
+                continue
+            mod_value = p.get("value_raw")
             if type(mod_value) == float or type(mod_value) == int:
-                code = param.get("param_code")
-                if code:
-                    orig_item_type = self.item_type(obj.uuid)
-                    base_value = orig_item_type.param(code)
-                    if type(base_value) == float or type(base_value) == int:
-                        if mod_value > base_value:
-                            param["value"] = u'<span class="param-mod param-mod-plus">%s</span>' % param["value"]
-                        elif mod_value < base_value:
-                            param["value"] = u'<span class="param-mod param-mod-minus">%s</span>' % param["value"]
+                code = param["code"]
+                orig_item_type = self.item_type(obj.uuid)
+                base_value = orig_item_type.param(code)
+                if type(base_value) == float or type(base_value) == int:
+                    if mod_value > base_value:
+                        if param.get("visual_mode") == 0 and param.get("visual_mods"):
+                            p["value"] = u'<span class="item-types-page-%s-value">%s</span><span class="param-mod param-mod-plus">+%s</span>' % (code, base_value, nn(mod_value-base_value))
+                        else:
+                            p["value"] = u'<span class="param-mod param-mod-plus">%s</span>' % p["value"]
+                    elif mod_value < base_value:
+                        if param.get("visual_mode") == 0 and param.get("visual_mods"):
+                            p["value"] = u'<span class="item-types-page-%s-value">%s</span><span class="param-mod param-mod-minus">%s</span>' % (code, base_value, nn(mod_value-base_value))
+                        else:
+                            p["value"] = u'<span class="param-mod param-mod-minus">%s</span>' % p["value"]
         # prices
         if obj.get("balance-price"):
             value = self.call("money.price-html", obj.get("balance-price"), obj.get("balance-currency"))

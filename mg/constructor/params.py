@@ -174,6 +174,8 @@ class ParamsAdmin(ConstructorModule):
                     new_param["api_expression"] = True
                 if (tp == 2 or mode == 2) and req.param("api_table"):
                     new_param["api_table"] = True
+                # extensions
+                self.call("admin-%s.params-form-save" % self.kind, param, new_param, errors)
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 params = [p for p in self.call("%s.params" % self.kind) if p["code"] != new_param.get("code") and p["code"] != param.get("code")]
@@ -221,6 +223,7 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "api_expression", "label": self._("Parameter expression is visible in the API"), "checked": param.get("api_expression"), "type": "checkbox", "condition": "[type]>0"},
                 {"name": "api_table", "label": self._("Parameter tables are visible in the API"), "checked": param.get("api_table"), "type": "checkbox", "condition": "[type]==2 || [visual_mode]>0"},
             ]
+            self.call("admin-%s.params-form-render" % self.kind, param, fields)
             self.call("admin.form", fields=fields)
         rows = []
         for param in self.call("%s.params" % self.kind):
@@ -434,7 +437,7 @@ class Params(ConstructorModule):
                 if value:
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
-                        "param_code": param["code"],
+                        "param": param,
                         "value_raw": value,
                         "name": '<span class="%s-info-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                         "value": '<span class="%s-info-%s-value">%s</span>' % (self.kind, param["code"], value_html),
@@ -452,7 +455,7 @@ class Params(ConstructorModule):
                 if value:
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
-                        "param_code": param["code"],
+                        "param": param,
                         "value_raw": value,
                         "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                         "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
@@ -470,7 +473,7 @@ class Params(ConstructorModule):
                 if value:
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
-                        "param_code": param["code"],
+                        "param": param,
                         "value_raw": value,
                         "name": '<span class="%s-page-%s-name">%s</span>' % (self.kind, param["code"], htmlescape(param["name"])),
                         "value": '<span class="%s-page-%s-value">%s</span>' % (self.kind, param["code"], value_html),
