@@ -23,6 +23,7 @@ re_dim = re.compile(r'^(\d+)x(\d+)$')
 re_categories_args = re.compile(r'^([a-z]+)(?:|/(.+))$')
 re_del = re.compile(r'^del/(.+)$')
 re_aggregate = re.compile(r'^(sum|min|max)_(.+)')
+re_delimage = re.compile(r'^([a-z0-9]+)/delimage/(\d+x\d+)$')
 
 class InventoryAdmin(ConstructorModule):
     def register(self):
@@ -202,6 +203,19 @@ class InventoryAdmin(ConstructorModule):
         dimensions = self.call("item-types.dimensions")
         req = self.req()
         if req.args:
+            m = re_delimage.match(req.args)
+            if m:
+                uuid, size = m.group(1, 2)
+                try:
+                    obj = self.obj(DBItemType, uuid)
+                except ObjectNotFoundException:
+                    self.call("admin.redirect", "item-types/editor")
+                uri = obj.get("image-%s" % size)
+                if uri:
+                    obj.delkey("image-%s" % size)
+                    obj.store()
+                    self.call("cluster.static_delete", uri)
+                self.call("admin.redirect", "item-types/editor/%s" % uuid)
             if req.args == "new":
                 obj = self.obj(DBItemType)
                 # calculating order
@@ -420,7 +434,7 @@ class InventoryAdmin(ConstructorModule):
                     key = "image-%s" % size
                     uri = obj.get(key)
                     if uri:
-                        fields.append({"type": "html", "html": u'<h1>%s</h1><img src="%s" alt="" />' % (size, uri)})
+                        fields.append({"type": "html", "html": u'<h1>%s</h1><img src="%s" alt="" /> <a href="javascript:void(0)" onclick="adm(\'item-types/editor/%s/delimage/%s\'); return false;">%s</a>' % (size, uri, obj.uuid, size, self._("Delete %s image") % size)})
                 date = self.nowdate()
                 fields.insert(0, {"type": "html", "html": u'<div class="admin-actions"><a href="javascript:void(0)" onclick="adm(\'item-types/paramview/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'item-types/give/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'inventory/track/item-type/%s/%s/00:00:00/%s/00:00:00\'); return false">%s</a></div>' % (obj.uuid, self._("Edit item type parameters"), obj.uuid, self._("Give"), obj.uuid, date, next_date(date), self._("Track"))})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
@@ -1790,7 +1804,6 @@ class Inventory(ConstructorModule):
                             param["value"] = u'<span class="param-mod param-mod-minus">%s</span>' % param["value"]
         # prices
         if obj.get("balance-price"):
-            print "price OK"
             value = self.call("money.price-html", obj.get("balance-price"), obj.get("balance-currency"))
             params.insert(0, {
                 "value_raw": u"%s %s" % (obj.get("balance-price"), obj.get("balance-currency")),
