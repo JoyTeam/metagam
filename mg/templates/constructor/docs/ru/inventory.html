@@ -114,6 +114,24 @@
 	</ul></li>
 </ul></p>
 
+<p>HTML-представление значения параметра имеет сложную структуру. Если параметр не модифицирован, то, он выглядит просто:</p>
+<pre class="doc-code-sample">
+&lt;span class="item-param-value value"&gt;&lt;span class="item-types-page-weight-value"&gt;0.5&lt;/span&gt;&lt;/span&gt;
+</pre>
+<p>Здесь weight &mdash; это код параметра, а 0.5 &mdash; его значение у данного предмета.</p>
+
+<p>Если параметр модифицирован, то, в зависимости от режима отображения, либо выводится итоговое модифицированное значение, либо "базовое плюс модификатор". Режим отображения настраивается в редакторе параметров. Если выбран режим показа модифицированного значения, то HTML-представление имеет вид:</p>
+<pre class="doc-code-sample">
+&lt;span class="item-param-value value"&gt;&lt;span class="param-mod param-mod-plus"&gt;&lt;span class="item-types-page-weight-value"&gt;2&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+</pre>
+<p>Здесь значение параметра обёрнуто в дополнительный span с классами param-mod и param-mod-plus. Если параметр изменён в большую сторону, то добавляется класс param-mod-plus. Если в меньшую, то param-mod-minus.</p>
+<p>Если выбрано представление "базовое значение плюс модификатор", то HTML оформляется так:</p>
+<pre class="doc-code-sample">
+&lt;span class="item-param-value value"&gt;&lt;span class="item-types-page-weight-value"&gt;0.5&lt;/span&gt;&lt;span class="param-mod param-mod-plus"&gt;+1.5&lt;/span&gt;&lt;/span&gt;
+</pre>
+<p>В этом случае классами param-mod и param-mod-plus обёрнуто только прибавленное значение: "+1.5".</p>
+<p>Изменяя CSS-классы param-mod-plus и param-mod-minus, вы можете настроить оформление модифицированных параметров.</p>
+
 <h1>Библиотека</h1>
 
 <p>Общая информация о настройке библиотеки приведена в разделе <a href="/doc/library">Структура библиотеки игры</a>. При подключении модуля инвентаря в библиотеке автоматически появляются разделы "Параметры предметов" (/library/itemparams) и "Каталог предметов" (/library/items).</p>
