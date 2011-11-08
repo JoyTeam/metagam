@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-07 16:52+0300\n"
+"PO-Revision-Date: 2011-11-08 11:44+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -502,6 +502,9 @@ msgstr "Баланс"
 
 msgid "Balance price for the item"
 msgstr "Балансировочная цена предмета"
+
+msgid "Balance prices"
+msgstr "Балансировочные цены"
 
 msgid "Bamboo #1"
 msgstr "Бамбук №1"
@@ -2156,6 +2159,9 @@ msgstr "Игры"
 
 msgid "General layout scheme"
 msgstr "Общая схема интерфейса"
+
+msgid "General recommendation is to set balance price in proportion to the difficulty of obtaining the item. This helps to keep the game well balanced."
+msgstr "Общая рекомендация - устанавливать балансировочную цену пропорционально сложности получения предмета. Это поможет сохранить игровой баланс."
 
 msgid "Generate design template"
 msgstr "Сформировать шаблон оформления"

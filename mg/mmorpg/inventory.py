@@ -444,6 +444,7 @@ class InventoryAdmin(ConstructorModule):
                         fields.append({"type": "html", "html": u'<h1>%s</h1><img src="%s" alt="" /> <a href="javascript:void(0)" onclick="adm(\'item-types/editor/%s/delimage/%s\'); return false;">%s</a>' % (size, uri, obj.uuid, size, self._("Delete %s image") % size)})
                 date = self.nowdate()
                 fields.insert(0, {"type": "html", "html": u'<div class="admin-actions"><a href="javascript:void(0)" onclick="adm(\'item-types/paramview/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'item-types/give/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'inventory/track/item-type/%s/%s/00:00:00/%s/00:00:00\'); return false">%s</a></div>' % (obj.uuid, self._("Edit item type parameters"), obj.uuid, self._("Give"), obj.uuid, date, next_date(date), self._("Track"))})
+            self.call("admin.advice", {"title": self._("Balance prices"), "content": self._("General recommendation is to set balance price in proportion to the difficulty of obtaining the item. This helps to keep the game well balanced."), "order": 30})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         # list of admin categories
         categories = self.call("item-types.categories", "admin")
