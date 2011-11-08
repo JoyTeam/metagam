@@ -1232,6 +1232,9 @@ class DesignMod(Module):
                 template_image.paste(over_image.convert("RGB"), ((template_w - over_w) / 2, (template_h - over_h) / 2), over_image)
             # uploading image
             stream = cStringIO.StringIO()
+            # some bullshit
+            if "icc_profile" in template_image.info:
+                del template_image.info["icc_profile"]
             template_image.save(stream, "PNG")
             try:
                 self.call("cluster.static_put", "%s/%s" % (design.get("uri"), target_filename), "image/png", stream.getvalue())
