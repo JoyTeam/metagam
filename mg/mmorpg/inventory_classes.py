@@ -3,7 +3,7 @@ import re
 import hashlib
 
 re_param_attr = re.compile(r'^p_(.+)')
-re_dna_parse = re.compile(r'^([a-f0-9]+)(?:|-([0-9a-f]+))$')
+re_dna_parse = re.compile(r'^([a-f0-9]+)(?:|_([0-9a-f]+))$')
 
 class DBItemType(CassandraObject):
     clsname = "ItemType"
@@ -47,7 +47,7 @@ class DBItemTransferList(CassandraObjectList):
 def dna_join(item_type, dna_suffix):
     res = item_type or ""
     if dna_suffix:
-        res = "%s-%s" % (res, dna_suffix)
+        res = "%s_%s" % (res, dna_suffix)
     return res
 
 def dna_make(mods):

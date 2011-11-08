@@ -48,6 +48,7 @@ class CharactersMod(ConstructorModule):
         self.rhook("auth.permissions-changed", self.permissions_changed, priority=10)
         self.rhook("modifier.created", self.modifier_created)
         self.rhook("modifier.destroyed", self.modifier_destroyed)
+        self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
@@ -636,6 +637,10 @@ class CharactersMod(ConstructorModule):
 
     def character_offline(self, character):
         character.name_invalidate(update_chat=False)
+
+    def inventory_changed(self, uuid):
+        character = self.character(uuid)
+        character.name_invalidate()
 
     def location_changed(self, character, old_location, new_location):
         character.name_invalidate(update_chat=False)

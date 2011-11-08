@@ -18,12 +18,12 @@ re_month = re.compile(r'^(\d\d\d\d-\d\d)')
 re_date = re.compile(r'^(\d\d\d\d-\d\d-\d\d)')
 re_give_command = re.compile(r'^\s*(.+?)\s*-\s*(\d+)\s*$')
 re_inventory_view = re.compile(r'^(char)/([0-9a-f]+)$')
-re_inventory_withdraw = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|-[0-9a-f]+))$')
-re_inventory_transfer = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|-[0-9a-f]+))$')
+re_inventory_withdraw = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
+re_inventory_transfer = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
 re_dim = re.compile(r'^(\d+)x(\d+)$')
 re_categories_args = re.compile(r'^([a-z]+)(?:|/(.+))$')
 re_del = re.compile(r'^del/(.+)$')
-re_aggregate = re.compile(r'^(sum|min|max)_(.+)')
+re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_delimage = re.compile(r'^([a-z0-9]+)/delimage/(\d+x\d+)$')
 
 class InventoryAdmin(ConstructorModule):
@@ -882,17 +882,18 @@ class InventoryAdmin(ConstructorModule):
         inv = MemberInventory(self.app(), owtype, owner)
         for item_type, quantity in inv.items():
             month = self.nowmonth()
-            dna = item_type.dna_suffix
-            if dna:
-                tokens = [u'<strong>%s</strong>' % htmlescape(dna)]
+            tokens = [
+                u'<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(type=item_type.uuid, owtype=owtype, owner=owner, title=htmlescape(item_type.name), month=month, next_month=next_month(month)),
+                htmlescape(item_type.uuid)
+            ]
+            if item_type.dna_suffix:
+                tokens.append("_%s" % item_type.dna_suffix)
                 mod = item_type.mods.items()
                 mod.sort(cmp=lambda x, y: cmp(x[0], y[0]))
                 for m in mod:
                     tokens.append(u'%s=<span class="value quantity">%s</span>' % (m[0], htmlescape(m[1])))
-                dna = u'<br />'.join(tokens)
             row = [
-                u'<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(type=item_type.uuid, owtype=owtype, owner=owner, title=htmlescape(item_type.name), month=month, next_month=next_month(month)),
-                dna,
+                u'<br />'.join(tokens),
                 quantity,
             ]
             if may_give and may_withdraw:
@@ -901,8 +902,7 @@ class InventoryAdmin(ConstructorModule):
                 row.append(u'<hook:admin.link href="item-types/withdraw/%s/%s/%s" title="%s" />' % (owtype, owner, item_type.dna, self._("withdraw")))
             rows.append(row)
         header = [
-            self._("Item"),
-            self._("DNA"),
+            self._("Item / DNA"),
             self._("Quantity"),
         ]
         if may_give and may_withdraw:
@@ -1416,6 +1416,8 @@ class MemberInventory(ConstructorModule):
         for trans in self.trans:
             trans.store()
         self.trans = []
+        # inventory changed notification
+        self.call("%s-inventory.changed" % self.owtype, self.uuid)
 
     def update(self, *args, **kwargs):
         with self.lock([self.inv_lock()]):
@@ -1625,23 +1627,44 @@ class MemberInventory(ConstructorModule):
         except KeyError:
             pass
         # cache miss. evaluating
-        if aggregate == "sum":
+        if aggregate == "cnt":
+            # looking for item types quantity
             value = 0
+            now = self.now()
+            for item in self._items():
+                if item.get("type") == param:
+                    item_type = self.item_type(item.get("type"), item.get("dna"), item.get("mod"))
+                    if not item_type.expiration or now <= item_type.expiration:
+                        value += item.get("quantity")
+        elif aggregate == "cnt_dna":
+            # looking for item dna quantity
+            item_type, dna_suffix = dna_parse(param)
+            value = 0
+            now = self.now()
+            for item in self._items():
+                if item.get("type") == item_type and item.get("dna") == dna_suffix:
+                    item_type = self.item_type(item.get("type"), item.get("dna"), item.get("mod"))
+                    if not item_type.expiration or now <= item_type.expiration:
+                        value += item.get("quantity")
         else:
-            value = None
-        for item_type, quantity in self.items():
-            v = item_type.param(param, handle_exceptions)
-            if v is not None:
-                if value is None:
-                    value = v
-                elif aggregate == "min":
-                    if v < value:
+            # looking for items parameters
+            if aggregate == "sum":
+                value = 0
+            else:
+                value = None
+            for item_type, quantity in self.items():
+                v = item_type.param(param, handle_exceptions)
+                if v is not None:
+                    if value is None:
                         value = v
-                elif aggregate == "max":
-                    if v > value:
-                        value = v
-                elif aggregate == "sum":
-                    value += v * quantity
+                    elif aggregate == "min":
+                        if v < value:
+                            value = v
+                    elif aggregate == "max":
+                        if v > value:
+                            value = v
+                    elif aggregate == "sum":
+                        value += v * quantity
         # storing in the cache
         cache[key] = value
         return value
