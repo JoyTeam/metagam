@@ -62,7 +62,7 @@ def dna_make(mods):
         elif type(v) == str or type(v) == unicode:
             new_tokens.append((k, urlencode(v)))
         else:
-            raise RuntimeError(self._("Unknown DNA value type"))
+            raise RuntimeError("Unknown DNA value type: %s" % type(v))
     tokens = "&".join('%s=%s' % (k, v) for k, v in new_tokens)
     dna = hashlib.md5(tokens).hexdigest().lower()
     return dna
