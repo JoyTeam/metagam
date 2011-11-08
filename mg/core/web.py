@@ -418,7 +418,7 @@ class WebApplication(Application):
     """
     WebApplication is an Application that can handle http requests
     """
-    def __init__(self, inst, tag, hook_prefix="ext", storage=0, keyspace=None):
+    def __init__(self, inst, tag, hook_prefix="ext", storage=None, keyspace=None):
         """
         inst - Instance object
         tag - application tag

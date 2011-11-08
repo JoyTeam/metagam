@@ -1,0 +1,68 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import *
+import os
+import logging
+import sys
+import json
+import re
+import time
+import dircache
+
+re_object = re.compile(r'^(\S+?)_Object_(.+)$')
+re_index = re.compile(r'(\S+?)_(.+?)_Index_(eq.*)$')
+re_search = re.compile(r'(\S+?)_Search_(.+)$')
+
+def convert_db(dirent, created):
+    os.mkdir("%s-new" % dirent)
+    inf = open("%s/Data.json" % dirent, "r")
+    for line in inf:
+        ent = json.loads(line)
+        for key, val in ent.iteritems():
+            m = re_object.match(key)
+            if m:
+                cls, uuid = m.group(1, 2)
+                filename = "%s-new/%s_Objects.json" % (dirent, cls)
+                key = uuid
+            else:
+                m = re_index.match(key)
+                if m:
+                    cls, index_name, index_equals = m.group(1, 2, 3)
+                    filename = "%s-new/%s_Index_%s.json" % (dirent, cls, index_name)
+                    key = index_equals
+                else:
+                    m = re_search.match(key)
+                    if m:
+                        cls, tag = m.group(1, 2)
+                        filename = "%s-new/%s_Search.json" % (dirent, cls)
+                        key = tag
+                    else:
+                        print "unknown row key in %s/Data.json: %s" % (dirent, key)
+        if filename in created:
+            outf = open(filename, "a")
+        else:
+            outf = open(filename, "w")
+            created.add(filename)
+        outf.write(json.dumps({key: val}))
+        outf.write("\n")
+        outf.close()
+    inf.close()
+
+def main():
+    try:
+        db = sys.argv[1]
+        created = set()
+        convert_db(db, created)
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+

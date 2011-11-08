@@ -873,11 +873,16 @@ class Application(object):
     HTTP requests, call hooks, keep it's own database with configuration,
     data and hooks
     """
-    def __init__(self, inst, tag, storage=0, keyspace=None):
+    def __init__(self, inst, tag, storage=None, keyspace=None):
         """
         inst - Instance object
         tag - Application tag
         """
+        if storage is None:
+            if tag == "int" or tag == "main":
+                storage = 1
+            else:
+                storage = 0
         self.inst = inst
         self.mc = Memcached(inst.mcpool, prefix="%s-" % tag)
         if storage == 2:
