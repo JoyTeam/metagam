@@ -10,10 +10,13 @@ import json
 import re
 import time
 
-key_cache_size = 5000
-key_cache_save_period_in_seconds = 1800
-memtable_throughput_in_mb = 1
-memtable_operations_in_millions = 500 / 1e6
+key_cache_size = 50000
+key_cache_save_period_in_seconds = 3600
+memtable_throughput_in_mb = 10
+memtable_operations_in_millions = 100000 / 1e6
+gc_grace_seconds = 86400
+min_compaction_threshold = 2
+max_compaction_threshold = 4
 
 def main():
     try:
@@ -23,8 +26,9 @@ def main():
         inst = Instance("db_cleanup")
         inst.download_config()
         mc = Memcached(inst.mcpool)
-        db = inst.dbpool.dbget("main", mc)
-        for cfdef in db.describe_keyspace(sys.argv[1]).cf_defs:
+        db = inst.dbpool.sys_connection()
+        db.cass.set_keyspace("system")
+        for cfdef in db.cass.describe_keyspace(sys.argv[1]).cf_defs:
             changed = False
             if cfdef.key_cache_size != key_cache_size:
                 cfdef.key_cache_size = key_cache_size
@@ -38,9 +42,27 @@ def main():
             if cfdef.memtable_operations_in_millions != memtable_operations_in_millions:
                 cfdef.memtable_operations_in_millions = memtable_operations_in_millions
                 changed = True
+            if cfdef.gc_grace_seconds != gc_grace_seconds:
+                cfdef.gc_grace_seconds = gc_grace_seconds
+                changed = True
+            if cfdef.min_compaction_threshold != min_compaction_threshold:
+                cfdef.min_compaction_threshold = min_compaction_threshold
+                changed = True
+            if cfdef.max_compaction_threshold != max_compaction_threshold:
+                cfdef.max_compaction_threshold = max_compaction_threshold
+                changed = True
             if changed:
                 print "updating %s.%s" % (cfdef.keyspace, cfdef.name)
-                db.system_update_column_family(cfdef)
+                db.cass.system_update_column_family(cfdef)
+                while True:
+                    versions = db.cass.describe_schema_versions()
+                    ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
+                    if len(ver_list) < 2:
+                        #print "Cluster schema agree: %s" % versions
+                        break
+                    else:
+                        #print "Cluster schema not yet agree: %s" % versions
+                        Tasklet.sleep(0.1)
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:
