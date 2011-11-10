@@ -25,6 +25,7 @@ re_unconfigured_ks = re.compile(r'^Keyspace (.+) does not exist$')
 re_unconfigured_cf = re.compile(r'^unconfigured columnfamily (.+)$')
 re_notagree = re.compile(r'not yet agree')
 re_remove_index_prefix = re.compile(r'^.+?_Index_eq-')
+re_key_may_not_be_empty = re.compile(r'^Key may not be empty$')
 
 class CassandraError(Exception):
     "This exception can be raised during database queries"
@@ -76,6 +77,8 @@ class Cassandra(object):
                 except NotFoundException:
                     raise
                 except InvalidRequestException as e:
+                    if re_key_may_not_be_empty.match(e.why):
+                        raise e
                     if re_notagree.search(e.why):
                         raise RetryException
                     m = re_unconfigured_ks.match(e.why)
