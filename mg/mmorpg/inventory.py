@@ -1653,7 +1653,7 @@ class MemberInventory(ConstructorModule):
             else:
                 value = None
             for item_type, quantity in self.items():
-                v = item_type.param(param, handle_exceptions)
+                v = nn(item_type.param(param, handle_exceptions))
                 if v is not None:
                     if value is None:
                         value = v
