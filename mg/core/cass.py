@@ -531,6 +531,8 @@ class CassandraObject(object):
             self.data = {}
             raise ObjectNotFoundException(self.uuid)
         elif self.data is None:
+            if len(self.uuid) == 0:
+                raise ObjectNotFoundException(self.uuid)
             try:
                 if self.db.storage == 0:
                     col = self.db.get("%s_Object_%s" % (self.__class__.clsname, self.uuid), ColumnPath("Data", column="data-%s" % self.uuid), ConsistencyLevel.QUORUM).column
