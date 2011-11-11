@@ -1172,6 +1172,8 @@ class Money(Module):
 
     def price_html(self, price, currency):
         cinfo = self.currency_info(currency)
+        if cinfo is None:
+            return '%s ???' % price
         html_price = cinfo["format"] % price
         html_currency = '<img src="%s" alt="%s" />' % (cinfo["icon"], cinfo["code"]) if cinfo.get("icon") else cinfo["code"]
         return '<span class="price"><span class="money-amount">%s</span> <span class="money-currency">%s</span></span>' % (html_price, html_currency)
