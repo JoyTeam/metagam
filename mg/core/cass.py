@@ -35,6 +35,16 @@ class JSONError(CassandraError):
     "JSON or UTF-8 decoding error"
     pass
 
+class DatabaseError(CassandraError):
+    def __init__(self, why):
+        self.why = why
+
+    def __str__(self):
+        return self.why
+
+    def __repr__(self):
+        return self.why
+
 class ObjectNotFoundException(Exception):
     "CassandraObject not found"
     pass
@@ -78,7 +88,7 @@ class Cassandra(object):
                     raise
                 except InvalidRequestException as e:
                     if re_key_may_not_be_empty.match(e.why):
-                        raise e
+                        raise DatabaseError(e.why)
                     if re_notagree.search(e.why):
                         raise RetryException
                     m = re_unconfigured_ks.match(e.why)
@@ -172,6 +182,11 @@ class Cassandra(object):
                 self.pool.error()
                 conn = self.pool.cget()
                 Tasklet.sleep(0.1)
+            except DatabaseError as e:
+                self.pool.error()
+                logger = logging.getLogger("mg.core.cass.Cassandra")
+                logger.exception(e)
+                raise
             except Exception as e:
                 self.pool.error(e)
                 conn = self.pool.cget()

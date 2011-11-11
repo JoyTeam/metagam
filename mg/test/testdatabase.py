@@ -1,7 +1,7 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.core.cass import CassandraConnection, CassandraPool
+from mg.core.cass import CassandraConnection, CassandraPool, DatabaseError
 from mg.core.memcached import Memcached
 import unittest
 from concurrence import dispatch, Tasklet
@@ -41,6 +41,13 @@ class TestDatabase(unittest.TestCase):
         timestamp = time.time() * 1000
         self.db.insert("1", ColumnParent(column_family="Family1"), Column(name="email", value="aml@rulezz.ru - проверка", timestamp=timestamp), ConsistencyLevel.QUORUM)
         self.db.get_slice("1", ColumnParent(column_family="Family1"), SlicePredicate(slice_range=SliceRange(start="", finish="")), ConsistencyLevel.QUORUM)
+
+    def testerror(self):
+        try:
+            self.db.insert("", ColumnParent(column_family="Family1"), Column(name="email", value="somevalue", timestamp=0), ConsistencyLevel.QUORUM)
+            self.assertTrue(False)
+        except DatabaseError as e:
+            self.assertEqual(e.why, "Key may not be empty")
 
 if __name__ == "__main__":
     dispatch(unittest.main)
