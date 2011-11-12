@@ -2580,6 +2580,8 @@ class Forum(Module):
                 may_read_category.add(cat["id"])
         # querying tag
         tag = req.args
+        if not tag:
+            self.call("web.not_found")
         tag_utf8 = tag
         if len(tag_utf8) > max_tag_len:
             tag_utf8 = tag_utf8[0:max_tag_len]
