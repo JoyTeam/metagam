@@ -628,7 +628,7 @@ class Chat(ConstructorModule):
                         paid_colours_support = self.call("paidservices.chat_colours")
                         if paid_colours_support:
                             paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
-                        if paid_colours_support and not self.call("modifiers.kind", author.uuid, "chat_colours"):
+                        if paid_colours_support and not author.modifiers.get("chat_colours"):
                             break
                     if col.get("color"):
                         color_att = 'style="color: %s"' % col["color"]
@@ -1197,7 +1197,7 @@ class Chat(ConstructorModule):
                                 paid_colours_support = self.call("paidservices.chat_colours")
                                 if paid_colours_support:
                                     paid_colours_support = self.conf("paidservices.enabled-chat_colours", paid_colours_support["default_enabled"])
-                                if paid_colours_support and not self.call("modifiers.kind", user_uuid, "chat_colours"):
+                                if paid_colours_support and not char.modifiers.get("chat_colours"):
                                     form.error("chat_color", self._('To use colours in the chat <a href="/paidservices">subscribe to the corresponding service</a>'))
                         break
                 if not found:

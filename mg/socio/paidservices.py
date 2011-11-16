@@ -35,9 +35,12 @@ class PaidServices(Module):
 
     def srv_available(self, services):
         services.append({"id": "socio_coloured_avatar", "type": "socio"})
-        services.append({"id": "socio_signature_images", "type": "socio"})
-        services.append({"id": "socio_signature_smiles", "type": "socio"})
-        services.append({"id": "socio_signature_colours", "type": "socio"})
+        if self.conf("socio.signature-images", True):
+            services.append({"id": "socio_signature_images", "type": "socio"})
+        if self.conf("socio.signature-smiles", False):
+            services.append({"id": "socio_signature_smiles", "type": "socio"})
+        if self.conf("socio.signature-colours", True):
+            services.append({"id": "socio_signature_colours", "type": "socio"})
         services.append({"id": "socio_premium_pack", "type": "socio"})
 
     def ext_paid_services(self):
@@ -82,7 +85,8 @@ class PaidServices(Module):
         }
         form = self.call("web.form")
         offer = intz(req.param("offer"))
-        mod = self.call("modifiers.kind", req.user(), pinfo["id"])
+        mods = self.call("modifiers.obj", "user", req.user())
+        mod = mods.get(pinfo["id"])
         if mod:
             btn_title = self._("Prolong")
         else:
@@ -145,6 +149,8 @@ class PaidServices(Module):
         }
 
     def srv_signature_images(self):
+        if not self.conf("socio.signature-images", True):
+            return None
         cur = self.call("money.real-currency")
         if not cur:
             return None
@@ -173,6 +179,8 @@ class PaidServices(Module):
         }
 
     def srv_signature_smiles(self):
+        if not self.conf("socio.signature-smiles", False):
+            return None
         cur = self.call("money.real-currency")
         if not cur:
             return None
@@ -201,6 +209,8 @@ class PaidServices(Module):
         }
 
     def srv_signature_colours(self):
+        if not self.conf("socio.signature-colours", True):
+            return None
         cur = self.call("money.real-currency")
         if not cur:
             return None
@@ -234,6 +244,7 @@ class PaidServices(Module):
             return None
         cinfo = self.call("money.currency-info", cur)
         req = self.req()
+        pack = []
         return {
             "id": "socio_premium_pack",
             "name": self._("Premium pack on the forum"),
