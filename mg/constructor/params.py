@@ -5,7 +5,7 @@ re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_values_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(-?(?:\d+|\d+\.\d+))$')
 re_visual_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(.+)$')
 re_del = re.compile(r'^del/(.+)$')
-re_paramedit_args = re.compile(r'^([0-9a-f]+)/([a-zA-Z_][a-zA-Z0-9_]+)$')
+re_paramedit_args = re.compile(r'^([0-9a-f]+)/([a-zA-Z_][a-zA-Z0-9_]*)$')
 
 class Fake(ConstructorModule):
     pass
