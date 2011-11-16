@@ -1,6 +1,5 @@
 from mg.constructor import *
 from mg.constructor.interface_classes import *
-from mg.core.money_classes import *
 import re
 
 re_param_attr = re.compile(r'^p_(.+)')
@@ -127,6 +126,14 @@ class Character(Module):
             return self._name
 
     def name_invalidate(self, **kwargs):
+        try:
+            del self._name
+        except AttributeError:
+            pass
+        try:
+            del self._html
+        except AttributeError:
+            pass
         self.app().mc.incr_ver("character-name.%s" % self.uuid)
         self.call("character.name-invalidated", self, kwargs)
 
@@ -215,7 +222,7 @@ class Character(Module):
 
     @property
     def lock(self):
-        return self.lock(["character.%s" % self.uuid])
+        return self.lock(["Character.%s" % self.uuid])
 
     @property
     def location(self):
@@ -271,8 +278,16 @@ class Character(Module):
         try:
             return self._money
         except AttributeError:
-            self._money = MemberMoney(self.app(), self.uuid)
+            self._money = self.call("money.obj", "user", self.uuid)
             return self._money
+
+    @property
+    def modifiers(self):
+        try:
+            return self._modifiers
+        except AttributeError:
+            self._modifiers = self.call("modifiers.obj", "user", self.uuid)
+            return self._modifiers
 
     @property
     def settings(self):
@@ -302,7 +317,7 @@ class Character(Module):
         elif attr == "sex":
             return self.sex
         elif attr == "mod":
-            return self.call("modifiers.obj", self.uuid)
+            return self.modifiers
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
             return 1 if perms and len(perms) else 0

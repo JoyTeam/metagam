@@ -46,8 +46,9 @@ class CharactersMod(ConstructorModule):
         self.rhook("characters.param-changed", self.characters_param_changed, priority=10)
         self.rhook("auth.name-changed", self.name_changed, priority=10)
         self.rhook("auth.permissions-changed", self.permissions_changed, priority=10)
-        self.rhook("modifier.created", self.modifier_created)
-        self.rhook("modifier.destroyed", self.modifier_destroyed)
+        self.rhook("user-modifier.created", self.modifier_created)
+        self.rhook("user-modifier.destroyed", self.modifier_destroyed)
+        self.rhook("user-modifier.expired", self.modifier_expired)
         self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
 
     def gameinterface_buttons(self, buttons):
@@ -657,16 +658,17 @@ class CharactersMod(ConstructorModule):
         character = self.character(user.uuid)
         character.name_invalidate()
 
-    def modifier_created(self, mod):
-        if mod.get("target_type") != "user":
-            return
-        character = self.character(mod.get("target"))
+    def modifier_created(self, mods, mod):
+        character = self.character(mods.uuid)
         if character.valid:
             character.name_invalidate()
 
-    def modifier_destroyed(self, mod):
-        if mod.get("target_type") != "user":
-            return
-        character = self.character(mod.get("target"))
+    def modifier_destroyed(self, mods, mod):
+        character = self.character(mods.uuid)
+        if character.valid:
+            character.name_invalidate()
+
+    def modifier_expired(self, mods, mod):
+        character = self.character(mods.uuid)
         if character.valid:
             character.name_invalidate()

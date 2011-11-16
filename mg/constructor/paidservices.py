@@ -3,6 +3,8 @@ from mg.core.money_classes import *
 import re
 from uuid import uuid4
 
+min_auto_prolong = 86400
+
 re_cmd = re.compile(r'^(enable|disable)/(\S+)$')
 re_cmd_edit = re.compile(r'^(\S+)/(\d+|new)$')
 re_cmd_del = re.compile(r'^(\S+)/del/(\d+)$')
@@ -16,7 +18,7 @@ class PaidServices(ConstructorModule):
         self.rhook("paidservices.offers", self.offers)
         self.rhook("paidservices.prolong", self.prolong)
         self.rhook("paidservices.render", self.render)
-        self.rhook("modifier.destroyed", self.modifier_destroyed)
+        self.rhook("modifier.prolong", self.modifier_prolong)
         self.rhook("ext-paidservices.index", self.paidservices_index, priv="logged")
         self.rhook("ext-paidservices.paid-service", self.ext_paid_service, priv="logged")
         self.rhook("ext-paidservices.prolong-enable", self.paidservices_prolong, priv="logged")
@@ -86,7 +88,7 @@ class PaidServices(ConstructorModule):
             if not self.conf("paidservices.enabled-%s" % srv_id["id"], srv.get("default_enabled")):
                 continue
             if srv.get("subscription"):
-                mod = self.call("modifiers.kind", req.user(), srv["id"])
+                mod = character.modifiers.get(srv["id"])
                 if mod:
                     if mod.get("maxtill"):
                         srv["status"] = self._("service///active till %s") % self.call("l10n.time_local", mod["maxtill"])
@@ -94,28 +96,38 @@ class PaidServices(ConstructorModule):
                         srv["status"] = self._("service///active")
                     srv["status_cls"] = "service-active"
                     auto_prolong = False
+                    enable_auto_prolong = False
                     for m in mod["mods"]:
-                        if m.get("auto_prolong"):
-                            auto_prolong = True
-                    if auto_prolong:
-                        srv["auto_prolong"] = {
-                            "status": self._("Auto prolong: enabled"),
-                            "href": "/paidservices/prolong-disable/%s" % srv["id"],
-                            "cmd": self._("disable"),
-                        }
-                    else:
-                        srv["auto_prolong"] = {
-                            "status": self._("Auto prolong: disabled"),
-                            "href": "/paidservices/prolong-enable/%s" % srv["id"],
-                            "cmd": self._("enable"),
-                        }
+                        if m.get("period") and m.get("period") >= min_auto_prolong and not m.get("dependent"):
+                            enable_auto_prolong = True
+                            if m.get("auto_prolong"):
+                                auto_prolong = True
+                    if enable_auto_prolong:
+                        if auto_prolong:
+                            srv["auto_prolong"] = {
+                                "status": self._("Auto prolong: enabled"),
+                                "href": "/paidservices/prolong-disable/%s" % srv["id"],
+                                "cmd": self._("disable"),
+                            }
+                        else:
+                            srv["auto_prolong"] = {
+                                "status": self._("Auto prolong: disabled"),
+                                "href": "/paidservices/prolong-enable/%s" % srv["id"],
+                                "cmd": self._("enable"),
+                            }
                 else:
                     srv["status"] = self._("service///inactive")
                     srv["status_cls"] = "service-inactive"
             srv["offers"] = self.offers(srv)
             if not srv["offers"]:
                 continue
+            info = self.conf("paidservices.info-%s" % srv_id["id"])
+            if info:
+                srv["name"] = info.get("name")
+                srv["description"] = info.get("description")
+                srv["order"] = info.get("order")
             services.append(srv)
+        services.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         vars["services"] = services
         vars["PaidService"] = self._("Paid service")
         vars["Description"] = self._("Description")
@@ -145,73 +157,78 @@ class PaidServices(ConstructorModule):
             accounts[-1]["lst"] = True
             vars["money"] = accounts
 
-    def prolong(self, target_type, target, kind, period, price, currency, user=None, **kwargs):
-        if user is None:
-            req = self.req()
-            user = req.user()
+    def prolong(self, mods, kind, period, price, currency, user=None, **kwargs):
+        money = self.call("money.obj", mods.target_type, mods.uuid)
         with self.lock(["User.%s" % user]):
-            money = MemberMoney(self.app(), user)
             if not money.debit(price, currency, kind, period=self.call("l10n.literal_interval", period), period_a=self.call("l10n.literal_interval_a", period)):
                 return False
-            self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
-            pack = kwargs.get("pack")
-            if pack:
-                kwargs["auto_prolong"] = False
-                del kwargs["pack"]
-                for kind in pack:
-                    # disabling auto_prolong for all dependant kinds
-                    mod = self.call("modifiers.kind", target, kind)
-                    if mod:
-                        for m in mod["mods"]:
-                            if m.get("auto_prolong"):
-                                m.set("auto_prolong", False)
-                                m.store()
-                    # prolonging given kind
-                    self.call("modifiers.prolong", target_type, target, kind, 1, period, **kwargs)
-            return True
+            with self.lock([mods.lock_key]):
+                mods.load()
+                mods._prolong(kind, 1, period, **kwargs)
+                pack = kwargs.get("pack")
+                if pack:
+                    kwargs["auto_prolong"] = False
+                    kwargs["dependent"] = kind
+                    del kwargs["pack"]
+                    for kind in pack:
+                        # disabling auto_prolong for all dependent kinds
+                        mod = mods.get(kind)
+                        if mod:
+                            for m in mod["mods"]:
+                                if m.get("auto_prolong"):
+                                    del m["auto_prolong"]
+                                m["dependent"] = kind
+                        # prolonging given kind
+                        mods._prolong(kind, 1, period, **kwargs)
+                mods.store(remove_expired=True)
+        mods.notify()
+        return True
 
-    def modifier_destroyed(self, mod):
-        if not mod.get("auto_prolong"):
-            return
+    def modifier_prolong(self, mods, mod):
         srv = self.call("paidservices.%s" % mod.get("kind"))
-        if not srv:
-            return
-        if mod.get("target_type") != "user":
-            return
-        user = mod.get("target")
-        # searching the closes match to old period
-        best_offer = None
-        offers = self.offers(srv)
-        # searching for exact period match
-        for offer in offers:
-            if offer.get("period") == mod.get("period"):
-                best_offer = offer
-                break
-        # searching for the greatest period less than previous one
-        if not best_offer:
+        if srv:
+            # searching the closes match to old period
+            best_offer = None
+            offers = self.offers(srv)
+            # searching for exact period match
             for offer in offers:
-                if offer.get("period") < mod.get("period"):
-                    if best_offer is None or offer.get("period") > best_offer:
-                        best_offer = offer
-        # searching for the least period greater than previous one
-        if not best_offer:
-            for offer in offers:
-                if offer.get("period") > mod.get("period"):
-                    if best_offer is None or offer.get("period") < best_offer:
-                        best_offer = offer
-        if best_offer:
-            self.call("paidservices.prolong", "user", user, mod.get("kind"), best_offer.get("period"), best_offer.get("price"), best_offer.get("currency"), user=user, auto_prolong=True, pack=mod.get("pack"))
+                if offer.get("period") == mod.get("period"):
+                    best_offer = offer
+                    break
+            # searching for the greatest period less than previous one
+            if not best_offer:
+                for offer in offers:
+                    if offer.get("period") < mod.get("period"):
+                        if best_offer is None or offer.get("period") > best_offer:
+                            best_offer = offer
+            # searching for the least period greater than previous one
+            if not best_offer:
+                for offer in offers:
+                    if offer.get("period") > mod.get("period"):
+                        if best_offer is None or offer.get("period") < best_offer:
+                            best_offer = offer
+            if best_offer:
+                auto_prolong = best_offer.get("period") >= min_auto_prolong
+                if self.call("paidservices.prolong", mods, mod.get("kind"), best_offer.get("period"), best_offer.get("price"), best_offer.get("currency"), auto_prolong=auto_prolong, pack=mod.get("pack")):
+                    return
+        # paid service was not prolonged
+        mods.destroy(mod.get("kind"), expiration=True)
 
     def paidservices_prolong(self):
         req = self.req()
-        with self.lock(["Modifiers.%s" % req.user()]):
-            mod = self.call("modifiers.kind", req.user(), req.args)
+        mods = self.call("modifiers.obj", "user", req.user())
+        with self.lock([mods.lock_key]):
+            mods.load()
+            mod = mods.get(req.args)
             if mod:
                 auto_prolong = True if req.hook == "prolong-enable" else False
                 for m in mod["mods"]:
-                    m.set("auto_prolong", auto_prolong)
-                    m.store()
-            self.call("web.redirect", req.param("redirect") or "/paidservices")
+                    if not auto_prolong or m.get("period") and m.get("period") >= min_auto_prolong:
+                        m["auto_prolong"] = auto_prolong
+                        mods.touch()
+            mods.store(remove_expired=True)
+        mods.notify()
+        self.call("web.redirect", req.param("redirect") or "/paidservices")
 
     def available(self, services):
         services.extend(self.conf("paidservices.manual-packs", []))
@@ -253,7 +270,8 @@ class PaidServices(ConstructorModule):
         }
         form = self.call("web.form")
         offer = intz(req.param("offer"))
-        mod = self.call("modifiers.kind", req.user(), pinfo["id"])
+        mods = self.call("modifiers.obj", "user", req.user())
+        mod = mods.get(pinfo["id"])
         if mod:
             btn_title = self._("Prolong")
         else:
@@ -265,11 +283,10 @@ class PaidServices(ConstructorModule):
                 form.error("offer", self._("Select an offer"))
             if not form.errors:
                 o = offers[offer]
-                if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
-                    if pinfo.get("socio_success_url"):
-                        self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["socio_success_url"], pinfo["socio_success_message"]), vars)
-                    else:
-                        self.call("web.redirect", "/paidservices")
+                mods = self.call("modifiers.obj", "user", req.user())
+                auto_prolong = o["period"] >= min_auto_prolong
+                if self.call("paidservices.prolong", mods, pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=auto_prolong, pack=pinfo.get("pack")):
+                    self.call("web.redirect", "/paidservices")
                 else:
                     form.error("offer", self.call("money.not-enough-funds", o["currency"]))
         for i in xrange(0, len(offers)):
@@ -347,7 +364,14 @@ class PaidServicesAdmin(ConstructorModule):
             if uuid != "new":
                 info = self.conf("paidservices.info-%s" % uuid)
                 if info is None:
-                    self.call("admin.redirect", "paidservices/editor")
+                    srv = self.call("paidservices.%s" % uuid)
+                    if not srv:
+                        self.call("admin.redirect", "paidservices/editor")
+                    info = {
+                        "name": srv["name"],
+                        "description": srv["description"],
+                        "order": srv.get("order", 0),
+                    }
             else:
                 components = []
                 for srv_id in service_ids:
@@ -398,17 +422,21 @@ class PaidServicesAdmin(ConstructorModule):
                     packs.append(info)
                 info["name"] = name
                 info["description"] = description
+                info["order"] = floatz(req.param("order"))
                 config.set("paidservices.info-%s" % uuid, info)
                 config.store()
                 self.call("admin.redirect", "paidservices/editor")
             elif uuid == "new":
                 name = ""
                 description = ""
+                order = ""
             else:
                 name = info.get("name")
                 description = info.get("description")
+                order = info.get("order")
             fields = [
                 {"name": "name", "value": name, "label": self._("Packet name")},
+                {"name": "order", "value": order, "label": self._("Sorting order"), "inline": True},
                 {"name": "description", "value": description, "label": self._("Packet description")},
             ]
             if uuid == "new":
@@ -462,6 +490,7 @@ class PaidServicesAdmin(ConstructorModule):
             srv = service_info.get(srv_id["id"])
             if not srv:
                 continue
+            info = self.conf("paidservices.info-%s" % srv_id["id"])
             # current status
             status = self.conf("paidservices.enabled-%s" % srv_id["id"], srv.get("default_enabled"))
             if status:
@@ -473,24 +502,26 @@ class PaidServicesAdmin(ConstructorModule):
             offers = ['<div>%s</div>' % off["html"] for off in offers]
             offers.append('<hook:admin.link href="paidservices/editor/%s" title="%s" />' % (srv_id["id"], self._("edit")))
             offers = ''.join(offers)
-            name = '<strong>%s</strong><br />char.mod.%s' % (srv.get("name"), srv_id["id"])
+            name = '<strong>%s</strong><br />char.mod.%s' % (info.get("name") if info else srv.get("name"), srv_id["id"])
             if srv.get("pack"):
                 name += '<ul>'
                 for s in srv.get("pack"):
                     s_info = service_info.get(s)
                     name += '<li>%s</li>' % (s_info.get("name") if s_info else self._("Unknown service %s") % s)
                 name += '</ul>'
-            if srv.get("manual"):
-                #control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" /><br /><hook:admin.link href="paidservices/editor/pack/del/%s" title="%s" confirm="%s" />' % (srv_id["id"], self._("edit"), srv_id["id"], self._("delete"), self._("Are you sure want to delete this packet?"))
-                control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" />' % (srv_id["id"], self._("edit"))
-            else:
-                control = None
-            rows.append([
+            control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" />' % (srv_id["id"], self._("edit"))
+            #if srv.get("manual"):
+            #    control = '<hook:admin.link href="paidservices/editor/pack/%s" title="%s" />' % (srv_id["id"], self._("edit"))
+            #else:
+            #    control = None
+            rows.append(([
                 name,
                 status,
                 offers,
                 control,
-            ])
+            ], info.get("order", 0) if info else srv.get("order", 0)))
+        rows.sort(cmp=lambda x, y: cmp(x[1], y[1]) or cmp(x[0][0], y[0][0]))
+        rows = [row for row, order in rows]
         vars = {
             "tables": [
                 {

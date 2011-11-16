@@ -242,8 +242,6 @@ class Constructor(Module):
             if req.hook == "settings":
                 pass
             else:
-#                if req.user():
-#                    topmenu.append({"href": "/socio/paid-services", "html": self._("Premium")})
                 if req.group == "forum":
                     topmenu.append({"search": True, "button": self._("socio-top///Search")})
                 if req.user():
@@ -253,6 +251,8 @@ class Constructor(Module):
                     for link in links:
                         topmenu.append({"image": "/st/constructor/cabinet/telegrams%s.gif" % ("-act" if link["suffix"] else ""), "html": link["html"], "href": link["href"], "suffix": link["suffix"]})
                 topmenu.append({"href": "/doc", "html": self._("Documentation")})
+                if req.user():
+                    topmenu.append({"href": "/socio/paid-services", "html": u'<img src="/st-mg/img/coins-16x16.png" alt="{premium}" title="{premium}" />'.format(premium=self._("Premium"))})
                 if req.group != "forum":
                     topmenu.append({"href": "/forum", "html": self._("Forum")})
                 if req.user():

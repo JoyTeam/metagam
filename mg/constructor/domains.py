@@ -1,6 +1,5 @@
 from mg import *
 from mg.core.whois_client import *
-from mg.core.money_classes import MemberMoney
 import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
@@ -404,7 +403,7 @@ class DomainRegWizard(Wizard):
             self.call("admin.response_template", "constructor/setup/domain-wizard.html", vars)
 
     def user_money(self):
-        return self.main_app().hooks.call("money.member-money", self.app().project.get("owner"))
+        return self.main_app().hooks.call("money.obj", "user", self.app().project.get("owner"))
 
     def user_money_available(self):
         return self.user_money().available("MM$")
@@ -632,7 +631,7 @@ class DomainsAdmin(Module):
         money_lock = domain.get("money_lock")
         if money_lock is None:
             return None
-        money = self.call("money.member-money", domain.get("user"))
+        money = self.call("money.obj", "user", domain.get("user"))
         lock = money.unlock(money_lock)
         if lock:
             domain.delkey("money_lock")
@@ -641,7 +640,7 @@ class DomainsAdmin(Module):
             return None
 
     def money_charge(self, domain):
-        money = self.call("money.member-money", domain.get("user"))
+        money = self.call("money.obj", "user", domain.get("user"))
         lock = self.money_unlock(domain)
         if not lock:
             return

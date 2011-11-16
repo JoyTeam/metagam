@@ -1047,7 +1047,7 @@ class InventoryAdmin(ConstructorModule):
                 self.call("web.response_json", {"success": False, "errors": errors})
             # removing items
             now = self.now()
-            with self.lock([inv.inv_lock(), target_inv.inv_lock()]):
+            with self.lock([inv.lock_key, target_inv.lock_key]):
                 inv.load()
                 target_inv.load()
                 item_type_obj = inv._take_dna(dna, quantity, "admin.transfer", admin=req.user(), performed=now, reftype=target_inv.owtype, ref=target_inv.uuid)
@@ -1393,7 +1393,8 @@ class MemberInventory(ConstructorModule):
         self.owtype = owtype
         self.uuid = uuid
 
-    def inv_lock(self):
+    @property
+    def lock_key(self):
         return "Inventory.%s" % self.uuid
 
     def load(self):
@@ -1420,13 +1421,13 @@ class MemberInventory(ConstructorModule):
         self.call("%s-inventory.changed" % self.owtype, self.uuid)
 
     def update(self, *args, **kwargs):
-        with self.lock([self.inv_lock()]):
+        with self.lock([self.lock_key]):
             self.load()
             self.items()
             self.store()
 
     def give(self, *args, **kwargs):
-        with self.lock([self.inv_lock()]):
+        with self.lock([self.lock_key]):
             self.load()
             self._give(*args, **kwargs)
             self.store()
@@ -1551,7 +1552,7 @@ class MemberInventory(ConstructorModule):
         return not_expired
 
     def take_dna(self, *args, **kwargs):
-        with self.lock([self.inv_lock()]):
+        with self.lock([self.lock_key]):
             self.load()
             if not self._take_dna(*args, **kwargs):
                 return False

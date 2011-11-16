@@ -655,7 +655,7 @@ class CassandraObject(object):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
             if self.db.mc:
                 for mcid in mcgroups:
-                    self.db.mc.incr(mcid)
+                    self.db.mc.incr_ver(mcid)
 
     def remove(self):
         """
@@ -703,7 +703,7 @@ class CassandraObject(object):
             self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
             if self.db.mc:
                 for mcid in mcgroups:
-                    self.db.mc.incr(mcid)
+                    self.db.mc.incr_ver(mcid)
         self.dirty = False
         self.new = False
 
@@ -788,7 +788,7 @@ class CassandraObjectList(object):
             self.lst = [cls(db, uuid, {}) for uuid in uuids]
         elif query_index is not None:
             grpmcid = "%s-%s/VER" % (clsname, query_index)
-            grpid = self.db.mc.get(grpmcid) if self.db.mc else None
+            grpid = self.db.mc.get_ver(grpmcid) if self.db.mc else None
             if grpid is None:
                 grpid = random.randint(0, 2000000000)
                 if self.db.mc:
@@ -953,7 +953,7 @@ class CassandraObjectList(object):
                                             timestamp = self.db.get_time()
                                         mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                         if self.db.mc:
-                                            self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
+                                            self.db.mc.incr_ver("%s-%s/VER" % (clsname, self.query_index))
                                         break
                                 if len(mutations):
                                     if self.db.storage == 0:
@@ -995,7 +995,7 @@ class CassandraObjectList(object):
                                         timestamp = self.db.get_time()
                                     mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
                                     if self.db.mc:
-                                        self.db.mc.incr("%s-%s/VER" % (clsname, self.query_index))
+                                        self.db.mc.incr_ver("%s-%s/VER" % (clsname, self.query_index))
                                     break
                             if len(mutations):
                                 if self.db.storage == 0:
@@ -1031,7 +1031,7 @@ class CassandraObjectList(object):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 if self.db.mc:
                     for mcid in mcgroups:
-                        self.db.mc.incr(mcid)
+                        self.db.mc.incr_ver(mcid)
 
     def remove(self):
         self._load_if_not_yet(True)
@@ -1084,7 +1084,7 @@ class CassandraObjectList(object):
                 self.db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
                 if self.db.mc:
                     for mcid in mcgroups:
-                        self.db.mc.incr(mcid)
+                        self.db.mc.incr_ver(mcid)
 
     def __len__(self):
         return self.lst.__len__()

@@ -5,6 +5,7 @@ from mg import *
 from concurrence import dispatch, quit
 from mg.core.projects import ProjectList
 from mg.core.modifiers import *
+from mg.constructor.common import ApplicationFactory
 import os
 import logging
 import sys
@@ -18,6 +19,7 @@ def main():
         inst.int_app = int_app
         appfactory = ApplicationFactory(inst)
         appfactory.add(int_app)
+        inst.appfactory = appfactory
         lst = int_app.objlist(ProjectList, query_index="created")
         lst.load(silent=True)
         for ent in lst:
@@ -30,7 +32,19 @@ def main():
                     modlst = app.objlist(DBModifierList, query_index="till")
                     modlst.load(silent=True)
                     for mod in modlst:
-                        print mod.data
+                        print u"%s: %s" % (name, mod.data)
+                        mods = MemberModifiers(app, mod.get("target_type"), mod.get("target"))
+                        kind = mod.get("kind")
+                        value = mod.get("value")
+                        till = mod.get("till")
+                        del mod.data["target_type"]
+                        del mod.data["target"]
+                        del mod.data["value"]
+                        del mod.data["till"]
+                        mods.add(kind, value, till, **mod.data)
+                        mod.remove()
+                else:
+                    print "Couldn't load application %s" % ent.uuid
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:

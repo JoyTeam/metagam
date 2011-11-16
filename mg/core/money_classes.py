@@ -87,8 +87,9 @@ class PaymentXsollaList(CassandraObjectList):
     objcls = PaymentXsolla
 
 class MemberMoney(object):
-    def __init__(self, app, member):
+    def __init__(self, app, member_type, member):
         self.app = app
+        self.member_type = member_type
         self.member = member
 
     @property
@@ -140,6 +141,10 @@ class MemberMoney(object):
             if not kwargs.has_key(arg):
                 raise RuntimeError("Missing argument %s for description %s" % (arg, description))
 
+    @property
+    def lock_key(self):
+        return "%s-Money.%s" % (self.member_type, self.member)
+
     def credit(self, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
         currencies = {}
@@ -147,7 +152,7 @@ class MemberMoney(object):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
+        with self.app.lock([self.lock_key]):
             account = self.account(currency, True)
             account.credit(amount, currency_info)
             op = self.app.obj(AccountOperation)
@@ -168,7 +173,7 @@ class MemberMoney(object):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
+        with self.app.lock([self.lock_key]):
             account = self.account(currency, False)
             if account is None:
                 return False
@@ -193,7 +198,7 @@ class MemberMoney(object):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
+        with self.app.lock([self.lock_key]):
             account = self.account(currency, True)
             account.force_debit(amount, currency_info)
             op = self.app.obj(AccountOperation)
@@ -207,15 +212,14 @@ class MemberMoney(object):
             account.store()
             op.store()
 
-    def transfer(self, member, amount, currency, description, **kwargs):
+    def transfer(self, target, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
         currencies = {}
         self.app.hooks.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member, "MemberMoney.%s" % member]):
-            target = MemberMoney(self.app, member)
+        with self.app.lock([self.lock_key, target.lock_key]):
             account_from = self.account(currency, False)
             if account_from is None:
                 return False
@@ -255,7 +259,7 @@ class MemberMoney(object):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise RuntimeError("Invalid currency")
-        with self.app.lock(["MemberMoney.%s" % self.member]):
+        with self.app.lock([self.lock_key]):
             account = self.account(currency, False)
             if not account:
                 return None
@@ -277,7 +281,7 @@ class MemberMoney(object):
     def unlock(self, lock_uuid):
         currencies = {}
         self.app.hooks.call("currencies.list", currencies)
-        with self.app.lock(["MemberMoney.%s" % self.member]):
+        with self.app.lock([self.lock_key]):
             try:
                 lock = self.app.obj(AccountLock, lock_uuid)
             except ObjectNotFoundException:

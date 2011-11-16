@@ -387,7 +387,7 @@ class MoneyAdmin(Module):
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             amount = float(amount)
-            member = MemberMoney(self.app(), user.uuid)
+            member = MemberMoney(self.app(), "user", user.uuid)
             member.credit(amount, currency, "admin-give", admin=req.user(), comment=user_comment)
             self.call("security.suspicion", admin=req.user(), action="money.give", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
             self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Given {money_amount}: {comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
@@ -438,7 +438,7 @@ class MoneyAdmin(Module):
                 errors["admin_comment"] = self._("This field is mandatory")
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
-            member = MemberMoney(self.app(), user.uuid)
+            member = MemberMoney(self.app(), "user", user.uuid)
             member.force_debit(amount, currency, "admin-take", admin=req.user(), comment=user_comment)
             self.call("security.suspicion", admin=req.user(), action="money.take", member=user.uuid, amount=amount, currency=currency, comment=admin_comment)
             self.call("dossier.write", user=user.uuid, admin=req.user(), content=self._("Taken {money_amount}: {comment}").format(money_amount=self.call("money.price-text", amount, currency), comment=admin_comment))
@@ -510,7 +510,7 @@ class MoneyAdmin(Module):
     def user_tables(self, user, tables):
         req = self.req()
         if req.has_access("users.money"):
-            member = MemberMoney(self.app(), user.uuid)
+            member = MemberMoney(self.app(), "user", user.uuid)
             links = []
             if req.has_access("users.money.give"):
                 links.append({"hook": "money/give/%s" % user.uuid, "text": self._("Give money")})
@@ -722,7 +722,7 @@ class Xsolla(Module):
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 payment.set("amount_rub", amount_rub)
-                                member = MemberMoney(self.app(), user.uuid)
+                                member = MemberMoney(self.app(), "user", user.uuid)
                                 member.credit(sum_v, currency, "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
                                 self.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
@@ -744,7 +744,7 @@ class Xsolla(Module):
                                 result = 0
                             else:
                                 payment.set("cancelled", self.now())
-                                member = MemberMoney(self.app(), payment.get("user"))
+                                member = MemberMoney(self.app(), "user", payment.get("user"))
                                 member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
                                 self.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
@@ -1080,7 +1080,7 @@ class Money(Module):
         self.rhook("currencies.list", self.currencies_list, priority=-1000)
         self.rhook("money-description.admin-give", self.money_description_admin_give)
         self.rhook("money-description.admin-take", self.money_description_admin_take)
-        self.rhook("money.member-money", self.member_money)
+        self.rhook("money.obj", self.member_money)
         self.rhook("money.valid_amount", self.valid_amount)
         self.rhook("money.real-currency", self.real_currency)
         self.rhook("money.format-price", self.format_price)
@@ -1153,8 +1153,8 @@ class Money(Module):
                 errors[amount_field] = self._("Invalid number format")
         return valid
 
-    def member_money(self, member_uuid):
-        return MemberMoney(self.app(), member_uuid)
+    def member_money(self, member_type, member_uuid):
+        return MemberMoney(self.app(), member_type, member_uuid)
 
     def format_price(self, price, currency):
         cinfo = self.currency_info(currency)

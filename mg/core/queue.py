@@ -118,6 +118,7 @@ class Queue(Module):
             del args["schedule"]
             if args.has_key("at"):
                 del args["at"]
+        req.app = app
         app.hooks.call(hook, **args)
         self.call("web.response_json", {"ok": 1})
 

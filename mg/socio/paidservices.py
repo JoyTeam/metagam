@@ -94,7 +94,8 @@ class PaidServices(Module):
                 form.error("offer", self._("Select an offer"))
             if not form.errors:
                 o = offers[offer]
-                if self.call("paidservices.prolong", "user", req.user(), pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
+                mods = self.call("modifiers.obj", "user", req.user())
+                if self.call("paidservices.prolong", mods, pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=True, pack=pinfo.get("pack")):
                     if pinfo.get("socio_success_url"):
                         self.call("socio.response", '%s <a href="%s">%s</a>' % (self._("Subscription successful."), pinfo["socio_success_url"], pinfo["socio_success_message"]), vars)
                     else:

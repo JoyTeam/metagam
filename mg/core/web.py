@@ -451,7 +451,7 @@ class WebApplication(Application):
             lock = getattr(request, "web_cache_lock", None)
             if lock:
                 lock.__exit__(None, None, None)
-        self.hooks.call("web.request_processed")
+        request.app.hooks.call("web.request_processed")
         return res
 
 re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
