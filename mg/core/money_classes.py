@@ -69,6 +69,7 @@ class AccountLockList(CassandraObjectList):
 class AccountOperation(CassandraObject):
     clsname = "AccountOperation"
     indexes = {
+        "performed": [[], "performed"],
         "account": [["account"], "performed"],
     }
 
@@ -159,6 +160,7 @@ class MemberMoney(object):
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
+            op.set("currency", currency)
             op.set("performed", self.app.now())
             op.set("amount", currency_info["format"] % amount)
             op.set("balance", currency_info["format"] % account.balance())

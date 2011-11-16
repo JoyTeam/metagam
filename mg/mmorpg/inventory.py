@@ -49,7 +49,6 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("ext-admin-inventory.track", self.admin_inventory_track, priv="inventory.track")
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("queue-gen.schedule", self.schedule)
-        self.rhook("admin-inventory.cleanup", self.cleanup)
         self.rhook("headmenu-admin-inventory.view", self.headmenu_inventory_view)
         self.rhook("ext-admin-inventory.view", self.admin_inventory_view, priv="inventory.track")
         self.rhook("headmenu-admin-item-types.withdraw", self.headmenu_item_types_withdraw)
@@ -61,6 +60,7 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("item-categories.list", self.item_categories_list)
         self.rhook("admin-item-types.params-form-render", self.params_form_render)
         self.rhook("admin-item-types.params-form-save", self.params_form_save)
+        self.rhook("admin-inventory.cleanup", self.cleanup)
         self.rhook("admin-inventory.stats", self.stats)
 
     def schedule(self, sched):

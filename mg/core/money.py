@@ -54,6 +54,58 @@ class MoneyAdmin(Module):
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("constructor.project-params", self.project_params)
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-money.cleanup", self.cleanup)
+        self.rhook("admin-money.stats", self.stats)
+
+    def cleanup(self):
+        self.objlist(AccountOperationList, query_index="performed", query_finish=self.now(-86400 * 365 / 2)).remove()
+
+    def stats(self):
+        today = self.nowdate()
+        yesterday = prev_date(today)
+        lst = self.objlist(AccountOperationList, query_index="performed", query_start=yesterday, query_finish=today)
+        lst.load(silent=True)
+        total = {}
+        descriptions = {}
+        for ent in lst:
+            currency = ent.get("currency")
+            amount = ent.get("amount")
+            # total amount
+            try:
+                total[currency] += amount
+            except KeyError:
+                total[currency] = amount
+            # descriptions
+            description = ent.get("description")
+            try:
+                hsh = descriptions[description]
+            except KeyError:
+                hsh = {}
+                descriptions[description] = hsh
+            try:
+                hsh[currency] += amount
+            except KeyError:
+                hsh[currency] = amount
+        kwargs = {}
+        # this condition may be modified if we need to make remains recalculation more rare
+        if True:
+            remains = {}
+            lst = self.objlist(AccountList, query_index="all")
+            lst.load(silent=True)
+            for ent in lst:
+                currency = ent.get("balance")
+                balance = ent.get("balance")
+                try:
+                    remains[currency] += balance
+                except KeyError:
+                    remains[currency] = balance
+            kwargs["remains"] = remains
+        self.call("dbexport.add", "money_stats", total=total, descriptions=descriptions, date=yesterday, **kwargs)
+
+    def schedule(self, sched):
+        sched.add("admin-money.cleanup", "20 1 1 * *", priority=5)
+        sched.add("admin-money.stats", "7 0 * * *", priority=10)
 
     def objclasses_list(self, objclasses):
         objclasses["Account"] = (Account, AccountList)

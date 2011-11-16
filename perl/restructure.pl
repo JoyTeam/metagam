@@ -101,6 +101,31 @@ sql_table('item_descriptions',
 		'index' => 'app,item_type,description,period',
 	]
 );
+sql_table('money_remains',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'currency' => [ -type=>'varchar(10)', -null=>0 ],
+		'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,currency,period',
+	]
+);
+sql_table('money_descriptions',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'currency' => [ -type=>'varchar(10)', -null=>0 ],
+		'description' => [ -type=>'varchar(32)', -null=>0 ],
+		'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,currency,period',
+		'index' => 'app,description,period',
+		'index' => 'app,currency,description,period',
+	]
+);
 sql_done();
 
 sub sql_field

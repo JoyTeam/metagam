@@ -135,3 +135,42 @@ sub inventory_stats
 	}
 }
 
+sub money_stats
+{
+	my $inst = shift;
+	my $ent = shift;
+	my $db = $inst->sql->{dbh};
+	$db->do('delete from money_remains where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	$db->do('delete from money_descriptions where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	if ($ent->{remains}) {
+		# storing remains
+		while (my ($currency, $amount) = each %{$ent->{remains}}) {
+			$db->do('insert into money_remains(app, period, currency, amount) values (?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $currency, $amount);
+		}
+	} else {
+		# loading old remains incrementally
+		my %remains;
+		if (my ($prev_date) = $db->selectrow_array('select max(period) from money_remains where app=?', undef, $ent->{app})) {
+			for my $row (@{$db->selectall_arrayref('select currency, amount from money_remains where app=? and period=?', undef, $ent->{app}, $prev_date)}) {
+				$remains{$row->{currency}} = $row->{amount};
+			}
+		}
+		# updating remains
+		while (my ($currency, $amount) = each %{$ent->{total}}) {
+			$remains{$currency} += $amount;
+		}
+		# storing remains
+		while (my ($currency, $amount) = each %remains) {
+			next if $amount <= 0;
+			$db->do('insert into money_remains(app, period, currency, amount) values (?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $currency, $amount);
+		}
+	}
+	# storing descriptions
+	while (my ($description, $hsh) = each %{$ent->{descriptions}}) {
+		while (my ($currency, $amount) = each %$hsh) {
+			next unless $amount;
+			$db->do('insert into money_descriptions(app, period, currency, description, amount) values (?, ?, ?, ?, ?)', undef, $ent->{app}, $ent->{date}, $currency, $description, $amount);
+		}
+	}
+}
+
