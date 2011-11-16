@@ -385,6 +385,7 @@ class InventoryAdmin(ConstructorModule):
                 obj.set("name_lower", name.lower())
                 obj.set("description", req.param("description").strip())
                 obj.set("order", floatz(req.param("order")))
+                obj.set("library", True if req.param("library") else False)
                 obj.store()
                 # deleting old images
                 for uri in delete_images:
@@ -399,6 +400,7 @@ class InventoryAdmin(ConstructorModule):
             # prices
             fields.append({"name": "price", "label": self._("Balance price for the item"), "value": obj.get("balance-price")})
             fields.append({"name": "currency", "label": self._("Currency of the balance price"), "type": "combo", "value": obj.get("balance-currency"), "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True})
+            fields.append({"name": "library", "label": self._("Publish item information in the library"), "type": "checkbox", "checked": obj.get("library", True)})
             # description
             fields.append({"name": "description", "label": self._("Item description"), "type": "textarea", "value": obj.get("description")})
             # categories
@@ -2066,19 +2068,20 @@ class InventoryLibrary(ConstructorModule):
                     cat = misc
                 if cat == category["id"]:
                     item_type = self.item_type(ent.uuid, db_item_type=ent)
-                    ritem = {
-                        "type": ent.uuid,
-                        "name": htmlescape(item_type.name),
-                        "image": item_type.image("library"),
-                        "description": item_type.get("description"),
-                        "order": item_type.get("order", 0),
-                    }
-                    params = []
-                    self.call("item-types.params-owner-all", item_type, params, context="library")
-                    if params:
-                        params[-1]["lst"] = True
-                        ritem["params"] = params
-                    ritems.append(ritem)
+                    if item_type.get("library", True):
+                        ritem = {
+                            "type": ent.uuid,
+                            "name": htmlescape(item_type.name),
+                            "image": item_type.image("library"),
+                            "description": item_type.get("description"),
+                            "order": item_type.get("order", 0),
+                        }
+                        params = []
+                        self.call("item-types.params-owner-all", item_type, params, context="library")
+                        if params:
+                            params[-1]["lst"] = True
+                            ritem["params"] = params
+                        ritems.append(ritem)
             ritems.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
             vars = {
                 "items": ritems,
