@@ -81,13 +81,14 @@ class ParamsAdmin(ConstructorModule):
                 # visibility
                 if req.param("owner_visible"):
                     new_param["owner_visible"] = True
-                    new_param["description"] = req.param("description").strip()
                     if req.param("important"):
                         new_param["important"] = True
                     if req.param("public"):
                         new_param["public"] = True
                     if req.param("condition").strip():
                         new_param["condition"] = self.call("script.admin-expression", "condition", errors, globs=self.call("%s.script-globs" % self.kind))
+                # description
+                new_param["description"] = req.param("description").strip()
                 # grouping
                 new_param["grp"] = req.param("grp").strip()
                 new_param["order"] = floatz(req.param("order"))
@@ -188,9 +189,9 @@ class ParamsAdmin(ConstructorModule):
             fields = [
                 {"name": "code", "label": self._("Parameter code (used in scripting)"), "value": param.get("code")},
                 {"name": "name", "label": self._("Parameter name"), "value": param.get("name")},
+                {"name": "description", "label": self._("Parameter description (for players)"), "value": param.get("description")},
                 {"name": "owner_visible", "label": self._("Parameter is visible to the owner"), "checked": param.get("owner_visible"), "type": "checkbox"},
                 {"name": "condition", "value": self.call("script.unparse-expression", param.get("condition")) if param.get("condition") else None, "label": "%s%s" % (self._("Visibility condition (empty field means 'always visible')"), self.call("script.help-icon-expressions")), "condition": "[owner_visible]"},
-                {"name": "description", "label": self._("Parameter description (for players)"), "value": param.get("description"), "condition": "[owner_visible]"},
                 {"name": "important", "label": self._("Important parameter (show on the overview page)"), "checked": param.get("important"), "type": "checkbox", "condition": "[owner_visible]"},
                 {"name": "public", "label": self._("Visible in public (show on the public information page)"), "checked": param.get("public"), "type": "checkbox", "condition": "[owner_visible]"},
                 {"type": "header", "html": self._("Parameter grouping")},
