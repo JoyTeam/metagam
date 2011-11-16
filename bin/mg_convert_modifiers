@@ -1,0 +1,44 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+from mg.core.projects import ProjectList
+from mg.core.modifiers import *
+import os
+import logging
+import sys
+
+def main():
+    try:
+        inst = Instance("users")
+        inst.download_config()
+        int_app = WebApplication(inst, "int", "int")
+        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
+        inst.int_app = int_app
+        appfactory = ApplicationFactory(inst)
+        appfactory.add(int_app)
+        lst = int_app.objlist(ProjectList, query_index="created")
+        lst.load(silent=True)
+        for ent in lst:
+            name = ent.get("title_short")
+            if name:
+                name = u"%s: %s" % (ent.uuid, name)
+                name = name.encode("utf-8")
+                app = appfactory.get_by_tag(ent.uuid)
+                if app:
+                    modlst = app.objlist(DBModifierList, query_index="till")
+                    modlst.load(silent=True)
+                    for mod in modlst:
+                        print mod.data
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+

@@ -1,0 +1,34 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+from mg.core.projects import ProjectList
+import os
+import logging
+import sys
+
+def main():
+    try:
+        inst = Instance("users")
+        inst.download_config()
+        int_app = WebApplication(inst, "int", "int")
+        lst = int_app.objlist(ProjectList, query_index="created")
+        lst.load(silent=True)
+        for ent in lst:
+            name = ent.get("title_short")
+            if name:
+                name = u"%s: %s" % (ent.uuid, name)
+                name = name.encode("utf-8")
+                print name
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
