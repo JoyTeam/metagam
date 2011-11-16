@@ -1323,22 +1323,22 @@ class Interface(Module):
         req = self.req()
         m = re_track_user.match(req.args)
         if m:
-            index = "user-performed"
+            index = "user_performed"
             equal = m.group(1)
         else:
             m = re_track_player.match(req.args)
             if m:
-                index = "player-performed"
+                index = "player_performed"
                 equal = m.group(1)
             else:
                 m = re_track_cookie.match(req.args)
                 if m:
-                    index = "session-performed"
+                    index = "session_performed"
                     equal = m.group(1)
                 else:
                     m = re_track_ip.match(req.args)
                     if m:
-                        index = "ip-performed"
+                        index = "ip_performed"
                         equal = m.group(1)
                     else:
                         self.call("web.not_found")
