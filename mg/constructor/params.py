@@ -81,6 +81,8 @@ class ParamsAdmin(ConstructorModule):
                 # visibility
                 if req.param("owner_visible"):
                     new_param["owner_visible"] = True
+                    if req.param("zero_visible"):
+                        new_param["zero_visible"] = True
                     if req.param("important"):
                         new_param["important"] = True
                     if req.param("public"):
@@ -191,6 +193,7 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "name", "label": self._("Parameter name"), "value": param.get("name")},
                 {"name": "description", "label": self._("Parameter description (for players)"), "value": param.get("description")},
                 {"name": "owner_visible", "label": self._("Parameter is visible to the owner"), "checked": param.get("owner_visible"), "type": "checkbox"},
+                {"name": "zero_visible", "label": self._("Parameter is visible even if its value is zero"), "checked": param.get("zero_visible"), "type": "checkbox", "condition": "[owner_visible]"},
                 {"name": "condition", "value": self.call("script.unparse-expression", param.get("condition")) if param.get("condition") else None, "label": "%s%s" % (self._("Visibility condition (empty field means 'always visible')"), self.call("script.help-icon-expressions")), "condition": "[owner_visible]"},
                 {"name": "important", "label": self._("Important parameter (show on the overview page)"), "checked": param.get("important"), "type": "checkbox", "condition": "[owner_visible]"},
                 {"name": "public", "label": self._("Visible in public (show on the public information page)"), "checked": param.get("public"), "type": "checkbox", "condition": "[owner_visible]"},
@@ -435,7 +438,7 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                if value:
+                if value or param.get("zero_visible"):
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
@@ -453,7 +456,7 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                if value:
+                if value or param.get("zero_visible"):
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
@@ -471,7 +474,7 @@ class Params(ConstructorModule):
                     params.append({"header": htmlescape(param["grp"])})
                     grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
-                if value:
+                if value or param.get("zero_visible"):
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
