@@ -10,9 +10,27 @@ import os
 import logging
 import sys
 
+def convert(app):
+    modlst = app.objlist(DBModifierList, query_index="till")
+    modlst.load(silent=True)
+    for mod in modlst:
+        print u"%s: %s" % (app.tag, mod.data)
+        mods = MemberModifiers(app, mod.get("target_type"), mod.get("target"))
+        kind = mod.get("kind")
+        value = mod.get("value")
+        till = mod.get("till")
+        del mod.data["target_type"]
+        del mod.data["target"]
+        del mod.data["kind"]
+        del mod.data["value"]
+        del mod.data["till"]
+        mods.add(kind, value, till, **mod.data)
+        mod.remove()
+
 def main():
     try:
         inst = Instance("users")
+        inst.cls = "metagam"
         inst.download_config()
         int_app = WebApplication(inst, "int", "int")
         int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
@@ -29,22 +47,11 @@ def main():
                 name = name.encode("utf-8")
                 app = appfactory.get_by_tag(ent.uuid)
                 if app:
-                    modlst = app.objlist(DBModifierList, query_index="till")
-                    modlst.load(silent=True)
-                    for mod in modlst:
-                        print u"%s: %s" % (name, mod.data)
-                        mods = MemberModifiers(app, mod.get("target_type"), mod.get("target"))
-                        kind = mod.get("kind")
-                        value = mod.get("value")
-                        till = mod.get("till")
-                        del mod.data["target_type"]
-                        del mod.data["target"]
-                        del mod.data["value"]
-                        del mod.data["till"]
-                        mods.add(kind, value, till, **mod.data)
-                        mod.remove()
+                    convert(app)
                 else:
                     print "Couldn't load application %s" % ent.uuid
+        app = appfactory.get_by_tag("main")
+        convert(app)
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:
