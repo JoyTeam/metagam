@@ -94,7 +94,7 @@ class MoneyAdmin(Module):
             lst = self.objlist(AccountList, query_index="all")
             lst.load(silent=True)
             for ent in lst:
-                currency = ent.get("balance")
+                currency = ent.get("currency")
                 balance = ent.get("balance")
                 try:
                     remains[currency] += balance
