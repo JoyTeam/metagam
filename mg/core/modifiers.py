@@ -22,20 +22,6 @@ class DBModifiers(CassandraObject):
 class DBModifiersList(CassandraObjectList):
     objcls = DBModifiers
 
-class DBModifier(CassandraObject):
-    """
-    DBModifiers are stored in the project databases
-    """
-    clsname = "Modifier"
-    indexes = {
-        "target": [["target"]],
-        "target_kind": [["target", "kind"]],
-        "till": [[], "till"],
-    }
-
-class DBModifierList(CassandraObjectList):
-    objcls = DBModifier
-
 class MemberModifiers(Module):
     def __init__(self, app, target_type, uuid):
         Module.__init__(self, app, "mg.core.modifiers.MemberModifiers")
