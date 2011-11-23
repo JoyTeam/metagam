@@ -62,6 +62,14 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("admin-item-types.params-form-save", self.params_form_save)
         self.rhook("admin-inventory.cleanup", self.cleanup)
         self.rhook("admin-inventory.stats", self.stats)
+        self.rhook("admin-inventory.sample-item", self.sample_item)
+
+    def sample_item(self):
+        lst = self.objlist(DBItemTypeList, query_index="all", query_limit=1)
+        if not len(lst):
+            return self.item_type("unexistent")
+        else:
+            return self.item_type(lst[0].uuid)
 
     def schedule(self, sched):
         sched.add("admin-inventory.cleanup", "15 1 1 * *", priority=5)
@@ -1860,7 +1868,9 @@ class Inventory(ConstructorModule):
                 ritem["params"] = params
             menu = []
             if self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
-                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard")})
+                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard"), "order": 100})
+            self.call("items.menu", character, item_type, menu)
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("html"), y.get("html")))
             if menu:
                 menu[-1]["lst"] = True
                 ritem["menu"] = menu
@@ -1921,7 +1931,7 @@ class Inventory(ConstructorModule):
             self.call("web.redirect", "/inventory")
         cat = item_type.cat("inventory")
         if not self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
-            self.call("web.redirect", "/inventory?cat=%s" % cat)
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
         form = self.call("web.form")
         quantity = req.param("quantity")
         if req.ok():
@@ -1937,12 +1947,12 @@ class Inventory(ConstructorModule):
                 if not character.inventory.take_dna(req.args, quant, "discard"):
                     form.error("quantity", self._("Not enough items of this type"))
                 if not form.errors:
-                    self.call("web.redirect", "/inventory?cat=%s" % cat)
+                    self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
         form.quantity(self._("Quantity to discard"), "quantity", quantity, 0, max_quantity)
         form.submit(None, None, self._("Discard"))
         vars = {
             "menu_left": [
-                {"href": "/inventory?cat=%s" % cat, "html": self._("Return to the inventory"), "lst": True},
+                {"href": "/inventory?cat=%s#%s" % (cat, item_type.dna), "html": self._("Return to the inventory"), "lst": True},
             ]
         }
         self.call("game.internal_form", form, vars)

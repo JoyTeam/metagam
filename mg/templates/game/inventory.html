@@ -7,6 +7,7 @@
 	<tr>
 		<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image" />[%end%]</td>
 		<td class="item-info-td">
+			<a name="[%item.dna%]"></a>
 			<div class="item-info-name">[%item.name%][%if item.quantity%]&nbsp;&mdash; <span class="value quantity">[%item.quantity%]</span> [%+ pcs%][%end%]</div>
 			[%if item.params%]<div class="item-params">
 				[%foreach ent in item.params%][%unless ent.header%]

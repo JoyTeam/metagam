@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-23 11:19+0300\n"
+"PO-Revision-Date: 2011-11-23 14:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -273,8 +273,17 @@ msgstr "Активация аккаунта"
 msgid "Action"
 msgstr "Действие"
 
+msgid "Action code must be a string"
+msgstr "Код действия должен быть строкой"
+
+msgid "Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Код действия должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
 msgid "Actions"
 msgstr "Действия"
+
+msgid "Actions for items"
+msgstr "Действия для предметов"
 
 msgid "Activate"
 msgstr "Активировать"
@@ -649,6 +658,12 @@ msgstr "Действие для кнопки"
 msgid "Button block: %s"
 msgstr "Блок кнопок: %s"
 
+msgid "Button code (used in quest scripts)"
+msgstr "Код кнопки (используется в квестовых скриптах)"
+
+msgid "Button code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Код кнопки должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
 msgid "Button editor"
 msgstr "Редактор кнопки"
 
@@ -660,6 +675,9 @@ msgstr "Ссылка"
 
 msgid "Button image"
 msgstr "Изображение для кнопки"
+
+msgid "Button text"
+msgstr "Текст кнопки"
 
 msgid "Buttons"
 msgstr "Кнопки"
@@ -2759,11 +2777,18 @@ msgstr "Количество приглашений"
 msgid "Invitations for the registration"
 msgstr "Приглашения на регистрацию"
 
+msgid "Is the button available for the character (you may use 'char' and 'item' objects)"
+msgstr "Доступна ли кнопка персонажу (вы можете использовать объекты \"char\" и \"item\")"
+
 msgid "Italic"
 msgstr "Курсив"
 
 msgid "Item / DNA"
 msgstr "Предмет / ДНК"
+
+#, python-format
+msgid "Item action: %s"
+msgstr "Действие на предмете: %s"
 
 msgid "Item description"
 msgstr "Описание предмета"
@@ -3349,6 +3374,12 @@ msgstr "Отказ в модерации: %s"
 msgid "Moderation required"
 msgstr "Требуется модерация"
 
+msgid "Modifier id must be a string"
+msgstr "Идентификатор модификатора должен быть строкой"
+
+msgid "Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор модификатора должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
 msgid "Module"
 msgstr "Модуль"
 
@@ -3439,6 +3470,12 @@ msgstr "Шаблон имени (допустимые теги приведен�
 
 msgid "Names check"
 msgstr "Проверка имён"
+
+msgid "New action"
+msgstr "Новое действие"
+
+msgid "New action button"
+msgstr "Новая кнопка действия"
 
 msgid "New block"
 msgstr "Новый блок"
@@ -3608,6 +3645,9 @@ msgstr "Нет данных"
 
 msgid "No expiration"
 msgstr "Без срока годности"
+
+msgid "No items of such type"
+msgstr "Нет предметов данного типа"
 
 msgid "No location"
 msgstr "Нет локации"
@@ -4136,6 +4176,12 @@ msgstr "Квест \"{quest}\", событие \"{event}\""
 
 msgid "Quest ID"
 msgstr "ID квеста"
+
+msgid "Quest actions for items"
+msgstr "Квестовые действия над предметами"
+
+msgid "Quest engine: actions for items"
+msgstr "Квестовый движок: действия над предметами"
 
 msgid "Quest engine: editor"
 msgstr "Квестовый движок: редактор"
@@ -5249,6 +5295,9 @@ msgstr "Группа страниц с таким кодом уже сущест
 msgid "There is a page with the same code already"
 msgstr "Страница с таким кодом уже существует"
 
+msgid "There is already a button with this code"
+msgstr "Уже есть кнопка с таким кодом"
+
 msgid "There is another user with this email"
 msgstr "Уже есть пользователь с этим e-mail"
 
@@ -5375,6 +5424,9 @@ msgstr "Это не ZIP-архив"
 msgid "This is the public offer"
 msgstr "Это публичная оферта"
 
+msgid "This item action is currently unavailable"
+msgstr "Это действие над предметом в данный момент недоступно"
+
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
@@ -5424,6 +5476,12 @@ msgstr "Таймаут при скачивании %s. Ограничение п
 
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
+
+msgid "Timer id must be a string"
+msgstr "Идентификатор таймера должен быть строкой"
+
+msgid "Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор таймера должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
 msgid "Tips"
 msgstr "Советы"
@@ -6995,6 +7053,9 @@ msgstr "включена"
 
 msgid "service///inactive"
 msgstr "неактивна"
+
+msgid "setting timer '{timer}' for {sec} sec"
+msgstr "установка таймера \"{timer}\" на {sec} сек"
 
 msgid "setting {obj}.{attr} = {val}"
 msgstr "устанавливаем {obj}.{attr} = {val}"

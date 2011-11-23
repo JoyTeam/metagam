@@ -5,6 +5,8 @@ import re
 re_info = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_state = re.compile(r'^state/(.+)$', re.IGNORECASE)
 re_param = re.compile(r'^p_(.+)$')
+re_del = re.compile(r'del/(.+)$')
+re_item_action = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -152,9 +154,14 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("advice-admin-quests.index", self.advice_quests)
         self.rhook("quest-admin.script-field", self.quest_admin_script_field)
         self.rhook("quest-admin.unparse-script", self.quest_admin_unparse_script)
+        if self.conf("module.inventory"):
+            self.rhook("ext-admin-inventory.actions", self.admin_inventory_actions, priv="quests.inventory")
+            self.rhook("headmenu-admin-inventory.actions", self.headmenu_inventory_actions)
 
     def permissions_list(self, perms):
         perms.append({"id": "quests.editor", "name": self._("Quest engine: editor")})
+        if self.conf("module.inventory"):
+            perms.append({"id": "quests.inventory", "name": self._("Quest engine: actions for items")})
 
     def menu_root_index(self, menu):
         menu.append({"id": "quests.index", "text": self._("Quests and triggers"), "order": 25})
@@ -163,6 +170,9 @@ class QuestsAdmin(ConstructorModule):
         req = self.req()
         if req.has_access("quests.editor"):
             menu.append({"id": "quests/editor", "text": self._("Quests editor"), "order": 20, "leaf": True})
+        if self.conf("module.inventory"):
+            if req.has_access("quests.inventory"):
+                menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True}) 
 
     def advice_quests(self, hook, args, advice):
         advice.append({"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.app().inst.config["main_host"]})
@@ -515,6 +525,8 @@ class QuestsAdmin(ConstructorModule):
                     return "expired %s" % self.call("script.unparse-expression", val[2])
                 elif val[1] == "timer":
                     return "timeout %s" % self.call("script.unparse-expression", val[2])
+            elif val[0] == "item":
+                return "itemused %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -563,11 +575,118 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
+    def headmenu_inventory_actions(self, args):
+        if args == "new":
+            return [self._("New action"), "inventory/actions"]
+        elif args:
+            actions = self.conf("quest-item-actions.list", [])
+            for a in actions:
+                if a["code"] == args:
+                    return [htmlescape(a["text"]), "inventory/actions"]
+        return self._("Quest actions for items")
+
+    def admin_inventory_actions(self):
+        req = self.req()
+        actions = self.conf("quest-item-actions.list", [])
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                code = m.group(1)
+                config = self.app().config_updater()
+                actions = [ent for ent in actions if ent["code"] != code]
+                config.set("quest-item-actions.list", actions)
+                config.store()
+                self.call("admin.redirect", "inventory/actions")
+            if req.args == "new":
+                order = None
+                for a in actions:
+                    if order is None or a["order"] > order:
+                        order = a["order"]
+                if order is None:
+                    order = 0.0
+                else:
+                    order += 10.0
+                action = {
+                    "order": order
+                }
+                actions.append(action)
+            else:
+                action = None
+                for a in actions:
+                    if a["code"] == req.args:
+                        action = a
+                        break
+                if not action:
+                    self.call("admin.redirect", "inventory/actions")
+            if req.ok():
+                errors = {}
+                # code
+                code = req.param("code")
+                if not code:
+                    errors["code"] = self._("This field is mandatory")
+                elif not re_valid_identifier.match(code):
+                    errors["code"] = self._("Button code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+                else:
+                    for a in actions:
+                        if a.get("code") == code and code != req.args:
+                            errors["code"] = self._("There is already a button with this code")
+                            break
+                    action["code"] = code
+                # order
+                action["order"] = floatz(req.param("order"))
+                # text
+                text = req.param("text").strip()
+                if not text:
+                    errors["text"] = self._("This field is mandatory")
+                else:
+                    action["text"] = text
+                # available
+                char = self.character(req.user())
+                item = self.call("admin-inventory.sample-item")
+                action["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char, "item": item})
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                config = self.app().config_updater()
+                actions.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["text"], y["text"]))
+                config.set("quest-item-actions.list", actions)
+                config.store()
+                self.call("admin.redirect", "inventory/actions")
+            fields = [
+                {"name": "code", "label": self._("Button code (used in quest scripts)"), "value": action.get("code")},
+                {"name": "order", "label": self._("Sorting order"), "value": action.get("order"), "inline": True},
+                {"name": "text", "label": self._("Button text"), "value": action.get("text"), "inline": True},
+                {"name": "available", "label": self._("Is the button available for the character (you may use 'char' and 'item' objects)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", action.get("available")) if action.get("available") is not None else None},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for ent in actions:
+            rows.append([
+                ent["code"],
+                htmlescape(ent["text"]),
+                ent["order"],
+                u'<hook:admin.link href="inventory/actions/%s" title="%s" />' % (ent["code"], self._("edit")),
+                u'<hook:admin.link href="inventory/actions/del/%s" title="%s" confirm="%s" />' % (ent["code"], self._("delete"), self._("Are you sure want to delete this button?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {"hook": "inventory/actions/new", "text": self._("New action button"), "lst": True}
+                    ],
+                    "header": [self._("Code"), self._("Button text"), self._("Order"), self._("Editing"), self._("Deletion")],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
 class Quests(ConstructorModule):
     def register(self):
         self.rhook("quests.parse-script", self.parse_script)
         self.rhook("quests.event", self.quest_event)
         self.rhook("quests.char", self.get_char)
+        self.rhook("items.menu", self.items_menu)
+        self.rhook("ext-item.action", self.action, priv="logged")
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -839,3 +958,44 @@ class Quests(ConstructorModule):
 
     def get_char(self, uuid):
         return CharQuests(self.app(), uuid)
+
+    def items_menu(self, character, item_type, menu):
+        globs = None
+        for action in self.conf("quest-item-actions.list", []):
+            if globs is None:
+                globs = {"char": character, "item": item_type}
+            available = self.call("script.evaluate-expression", action["available"], globs=globs, description=lambda: self._("Item action: %s") % action["code"])
+            if available:
+                menu.append({"href": "/item/action/%s/%s" % (action["code"], item_type.dna), "html": htmlescape(action["text"]), "order": action["order"]})
+
+    def action(self):
+        req = self.req()
+        character = self.character(req.user())
+        # validating args
+        m = re_item_action.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        code, dna = m.group(1, 2)
+        # validating item type
+        item_type, quantity = character.inventory.find_dna(dna)
+        if not item_type:
+            character.error(self._("No items of such type"))
+            self.call("web.redirect", "/inventory")
+        cat = item_type.cat("inventory")
+        # validating action
+        action = None
+        for a in self.conf("quest-item-actions.list", []):
+            if a["code"] == code:
+                action = a
+                break
+        if action is None:
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
+        # checking availability
+        globs = {"char": character, "item": item_type}
+        available = self.call("script.evaluate-expression", action["available"], globs=globs, description=lambda: self._("Item action: %s") % action["code"])
+        if not available:
+            character.error(self._("This item action is currently unavailable"))
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
+        self.qevent("item-%s" % action["code"], char=character, item=item_type)
+        self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
+

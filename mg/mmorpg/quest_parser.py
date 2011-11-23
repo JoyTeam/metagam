@@ -59,6 +59,9 @@ class TokenTimer(Parsing.Token):
 class TokenTimeout(Parsing.Token):
     "%token timeout"
 
+class TokenItemUsed(Parsing.Token):
+    "%token itemused"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -117,9 +120,9 @@ def validate_attrs(any_obj, obj_name, attrs, valid_attrs):
         if k not in valid_attrs:
             raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj=obj_name, attr=k))
 
-# !!!!!!!!!!!!!!!!!!!!!!!!
+# ============================
 #          EVENTS
-# !!!!!!!!!!!!!!!!!!!!!!!!
+# ============================
 class EventType(Parsing.Nonterm):
     "%nonterm"
     def reduceEvent(self, ev, eventid):
@@ -151,9 +154,17 @@ class EventType(Parsing.Nonterm):
             raise Parsing.SyntaxError(any_obj.script_parser._("Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["expired", "timer", timerid.val], None]
 
-# !!!!!!!!!!!!!!!!!!!!!!!!
+    def reduceItemUsed(self, ev, action):
+        "%reduce itemused scalar"
+        if type(action.val) != str and type(action.val) != unicode:
+            raise Parsing.SyntaxError(any_obj.script_parser._("Action code must be a string"))
+        elif not re_valid_identifier.match(action.val):
+            raise Parsing.SyntaxError(any_obj.script_parser._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        self.val = [["item", action.val], None]
+
+# ============================
 #          ACTIONS
-# !!!!!!!!!!!!!!!!!!!!!!!!
+# ============================
 class QuestAction(Parsing.Nonterm):
     "%nonterm"
     def reduceMessage(self, msg, expr):
@@ -305,6 +316,7 @@ class QuestScriptParser(ScriptParser):
     syms["expired"] = TokenExpired
     syms["timer"] = TokenTimer
     syms["timeout"] = TokenTimeout
+    syms["itemused"] = TokenItemUsed
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

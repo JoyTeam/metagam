@@ -191,7 +191,7 @@ class ItemType(Module):
                 raise AttributeError(attr)
 
     def __str__(self):
-        return "[item %s]" % self.dna
+        return "[item %s]" % self.name
     
     __repr__ = __str__
 
