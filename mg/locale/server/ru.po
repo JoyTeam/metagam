@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-23 10:14+0300\n"
+"PO-Revision-Date: 2011-11-23 11:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5618,6 +5618,10 @@ msgstr "Неизвестный формат изображения"
 msgid "Unknown problem"
 msgstr "Неизвестная проблема"
 
+#, python-format
+msgid "Unknown quest action: %s"
+msgstr "Неизвестное действие в квесте: %s"
+
 msgid "Unknown script engine function: {fname}"
 msgstr "Неизвестная функция скриптового движка: {fname}"
 
@@ -5940,6 +5944,9 @@ msgstr "История мира"
 
 msgid "Write a message to the dossier"
 msgstr "Сделать запись в досье"
+
+msgid "Write debugging information to the debug channel"
+msgstr "Выводить отладочную информацию в отладочный канал"
 
 msgid "XML declarations are not allowed here"
 msgstr "XML-объявления здесь недопустимы"
@@ -6597,6 +6604,13 @@ msgstr "Сообщения"
 
 msgid "location///You are now at the"
 msgstr "Вы сейчас"
+
+#, python-format
+msgid "locking quest for %s sec"
+msgstr "блокируем квест на %s сек"
+
+msgid "locking quest infinitely"
+msgstr "блокируем квест навсегда"
 
 msgid "log in"
 msgstr "вход"

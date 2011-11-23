@@ -231,6 +231,10 @@ class QuestsAdmin(ConstructorModule):
                         self.call("web.response_json", {"success": False, "errors": errors})
                     # storing
                     config = self.app().config_updater()
+                    if req.param("debug"):
+                        config.set("quests.debug_%s" % qid, True)
+                    else:
+                        config.delete("quests.debug_%s" % qid)
                     if req.args == "new":
                         quest_list[qid] = quest
                     else:
@@ -249,6 +253,7 @@ class QuestsAdmin(ConstructorModule):
                     {"name": "id", "value": "" if req.args == "new" else req.args, "label": self._("Quest identifier")},
                     {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
                     {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled for everybody (if this checkbox is disabled the quest is available for administrators only)"), "type": "checkbox"},
+                    {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
         rows = []
@@ -634,10 +639,12 @@ class Quests(ConstructorModule):
                 return self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
             for quest in quests:
                 try:
+                    debug = self.conf("quests.debug_%s" % quest)
                     states = self.conf("quest-%s.states" % quest, {})
                     state_id = char.quests.get(quest, "state", "init")
                     state = states.get(state_id)
-                    self.call("debug-channel.character", char, lambda: self._("quest={quest}, state={state}").format(quest=quest, state=state_id), cls="quest-handler", indent=indent+1)
+                    if debug:
+                        self.call("debug-channel.character", char, lambda: self._("quest={quest}, state={state}").format(quest=quest, state=state_id), cls="quest-handler", indent=indent+1)
                     if not state:
                         continue
                     script = state.get("script")
@@ -683,19 +690,22 @@ class Quests(ConstructorModule):
                                     cmd_code = cmd[0]
                                     if cmd_code == "message" or cmd_code == "error":
                                         message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
-                                        self.call("debug-channel.character", char, lambda: u'%s "%s"' % (cmd_code, quotestr(message)), cls="quest-action", indent=indent+2)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: u'%s "%s"' % (cmd_code, quotestr(message)), cls="quest-action", indent=indent+2)
                                         getattr(char, cmd_code)(message)
                                     elif cmd_code == "require":
                                         res = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         if not res:
-                                            self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
                                             break
                                     elif cmd_code == "call":
                                         if len(cmd) == 2:
                                             ev = "event-%s-%s" % (quest, cmd[1])
                                         else:
                                             ev = "event-%s-%s" % (cmd[1], cmd[2])
-                                        self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
                                         self.qevent(ev, char=char)
                                     elif cmd_code == "giveitem":
                                         item_type_uuid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
@@ -715,7 +725,8 @@ class Quests(ConstructorModule):
                                                         mods_list.sort(cmp=lambda x, y: cmp(x[0], y[0]))
                                                         res += ", %s" % ", ".join([u"p_%s=%s" % (k, v) for k, v in mods_list])
                                                     return res
-                                                self.call("debug-channel.character", char, message, cls="quest-action", indent=indent+2)
+                                                if debug:
+                                                    self.call("debug-channel.character", char, message, cls="quest-action", indent=indent+2)
                                                 char.inventory.give(item_type_uuid, quantity, "quest.give", quest=quest, mod=mods)
                                                 # information message: 'You have got ...'
                                                 item_name = item_type.name
@@ -728,7 +739,8 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "if":
                                         expr = cmd[1]
                                         val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
-                                        self.call("debug-channel.character", char, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="quest-condition", indent=indent+2)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="quest-condition", indent=indent+2)
                                         if val:
                                             execute_actions(cmd[2], indent+1)
                                         else:
@@ -738,7 +750,8 @@ class Quests(ConstructorModule):
                                         obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         attr = cmd[2]
                                         val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
-                                        self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
                                         set_attr = getattr(obj, "script_set_attr", None)
                                         if not set_attr:
                                             if getattr(obj, "script_attr", None):
@@ -755,18 +768,22 @@ class Quests(ConstructorModule):
                                                 raise
                                     elif cmd_code == "destroy":
                                         if cmd[1]:
-                                            self.call("debug-channel.character", char, lambda: self._("quest finished"), cls="quest-action", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("quest finished"), cls="quest-action", indent=indent+2)
                                         else:
-                                            self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
                                             char.error(self._("Quest failed"))
                                         char.quests.destroy(quest)
                                     elif cmd_code == "lock":
                                         if cmd[1] is None:
-                                            self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
                                             char.quests.lock(quest)
                                         else:
                                             timeout = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                            self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
                                             char.quests.lock(quest, timeout)
                                     else:
                                         raise RuntimeError(self._("Unknown quest action: %s") % cmd_code)
