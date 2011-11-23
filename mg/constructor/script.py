@@ -460,7 +460,7 @@ class ScriptEngine(ConstructorModule):
         return expression
 
     def exception_report(self, exception):
-        if not issubclass(type(exception), ScriptError):
+        if not issubclass(type(exception), ScriptError) and not issubclass(type(exception), TemplateException):
             return
         try:
             req = self.req()
@@ -488,17 +488,25 @@ class ScriptEngine(ConstructorModule):
             session = req.session()
             if session:
                 vars["session"] = session.data_copy()
-            vars["text"] = htmlescape(exception.val)
-            if callable(exception.env.description):
-                exception.env.description = exception.env.description()
-            vars["context"] = htmlescape(exception.env.description)
             try:
-                if exception.env.text:
-                    vars["expression"] = htmlescape(self.call("script.unparse-text", exception.env.val))
-                else:
-                    vars["expression"] = htmlescape(self.call("script.unparse-expression", exception.env.val))
+                vars["text"] = htmlescape(exception.val)
+            except AttributeError:
+                vars["text"] = htmlescape(str(exception))
+            try:
+                env = exception.env
             except AttributeError:
                 pass
+            else:
+                if callable(exception.env.description):
+                    exception.env.description = exception.env.description()
+                vars["context"] = htmlescape(exception.env.description)
+                try:
+                    if env.text:
+                        vars["expression"] = htmlescape(self.call("script.unparse-text", exception.env.val))
+                    else:
+                        vars["expression"] = htmlescape(self.call("script.unparse-expression", exception.env.val))
+                except AttributeError:
+                    pass
             subj = utf2str(repr(exception))
             content = self.call("web.parse_template", "constructor/script-exception.html", vars)
             self.call("email.send", email, name, subj, content, immediately=True, subtype="html")

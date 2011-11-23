@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.quest_parser import *
+from uuid import uuid4
 import re
 
 re_info = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
@@ -13,6 +14,13 @@ class DBCharQuests(CassandraObject):
 
 class DBCharQuestsList(CassandraObjectList):
     objcls = DBCharQuests
+
+class QuestSystemError(Exception):
+    def __init__(self, val):
+        self.val = val
+
+    def __str__(self):
+        return self.val
 
 class QuestError(Exception):
     def __init__(self, val):
@@ -41,8 +49,10 @@ class CharQuests(ConstructorModule):
         except ObjectNotFoundException:
             self._quests = self.obj(DBCharQuests, self.uuid, data={})
 
+    def touch(self):
+        self._quests.touch()
+
     def store(self):
-        # storing database object
         self._quests.store()
 
     def get(self, qid, param, default=None):
@@ -92,6 +102,32 @@ class CharQuests(ConstructorModule):
                 return
             till = self.now(timeout)
         self.char.modifiers.add("q_%s_locked" % qid, 1, till)
+
+    @property
+    def dialogs(self):
+        if not getattr(self, "_quests", None):
+            self.load()
+        dialogs = self._quests.get(":dialogs")
+        if dialogs is None:
+            dialogs = []
+            self._quests.set(":dialogs", dialogs)
+        return dialogs
+
+    def dialog(self, dialog, quest=None):
+        dialog["uuid"] = uuid4().hex
+        if quest:
+            dialog["quest"] = quest
+        if not dialog.get("buttons"):
+            dialog["buttons"] = [
+                {
+                    "text": self._("Close")
+                }
+            ]
+        # removing other dialogs from the same quest
+        dialogs = self.dialogs
+        dialogs = [ent for ent in dialogs if ent.get("quest") != quest]
+        dialogs.insert(0, dialog)
+        self._quests.set(":dialogs", dialogs)
 
 class CharQuest(object):
     def __init__(self, quests, qid):
@@ -264,7 +300,7 @@ class QuestsAdmin(ConstructorModule):
                 fields = [
                     {"name": "id", "value": "" if req.args == "new" else req.args, "label": self._("Quest identifier")},
                     {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
-                    {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled for everybody (if this checkbox is disabled the quest is available for administrators only)"), "type": "checkbox"},
+                    {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled"), "type": "checkbox"},
                     {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
@@ -305,6 +341,8 @@ class QuestsAdmin(ConstructorModule):
         events = set(config.get("quests.events", []))
         handlers = {}
         for qid, quest in config.get("quests.list", {}).iteritems():
+            if not quest.get("enabled"):
+                continue
             for sid, state in config.get("quest-%s.states" % qid, {}).iteritems():
                 script = state.get("script")
                 if script:
@@ -443,8 +481,8 @@ class QuestsAdmin(ConstructorModule):
                 fields = [
                     {"name": "id", "value": show_sid, "label": self._("State identifier")},
                     {"name": "order", "value": state.get("order"), "label": self._("Sorting order"), "inline": True},
-                    {"name": "description", "value": self.call("script.unparse-text", state.get("description")), "type": "textarea", "label": self._("Quest state description for the quest log (for instance, task for player)") + self.call("script.help-icon-expressions")},
                     {"name": "script", "value": self.call("quest-admin.unparse-script", state.get("script")), "type": "textarea", "label": self._("Quest script") + self.call("script.help-icon-expressions", "quests"), "height": 300},
+                    {"name": "description", "value": self.call("script.unparse-text", state.get("description")), "type": "textarea", "label": self._("Quest state description for the quest log (for instance, task for player)") + self.call("script.help-icon-expressions")},
                 ]
                 self.call("admin.form", fields=fields)
         self.call("admin.redirect", "quests/editor/%s/info" % qid)
@@ -535,13 +573,7 @@ class QuestsAdmin(ConstructorModule):
                 else:
                     return "  " * indent + u"call quest=%s event=%s\n" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
             elif val[0] == "message" or val[0] == "error":
-                s = self.call("script.unparse-text", val[1])
-                if not re_dblquote.search(s):
-                    return "  " * indent + u'%s "%s"\n' % (val[0], s)
-                elif not re_sglquote.search(s):
-                    return "  " * indent + u"%s '%s'\n" % (val[0], s)
-                else:
-                    return "  " * indent + u'%s "%s"\n' % (val[0], quotestr(s))
+                return "  " * indent + u"%s %s\n" % (val[0], self.call("script.unparse-expression", self.call("script.unparse-text", val[1])))
             elif val[0] == "giveitem":
                 attrs = [("p_%s" % k, v) for k, v in val[2].iteritems()]
                 attrs.sort(cmp=lambda x, y: cmp(x[0], y[0]))
@@ -573,6 +605,25 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + "lock%s\n" % attrs
             elif val[0] == "timer":
                 return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
+            elif val[0] == "dialog":
+                options = val[1]
+                result = "  " * indent + "dialog {\n"
+                if "title" in options:
+                    result += "  " * (indent + 1) + "title %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "text" in options:
+                    result += "  " * (indent + 1) + "text %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["text"]))
+                if "template" in options:
+                    result += "  " * (indent + 1) + "template %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["template"]))
+                if "buttons" in options:
+                    for btn in options["buttons"]:
+                        result += "  " * (indent + 1) + "button {";
+                        if "text" in btn:
+                            result += " text %s" % self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"]))
+                        if "event" in btn:
+                            result += ' event "%s"' % btn["event"]
+                        result += " }\n"
+                result += "  " * indent + "}\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -687,6 +738,10 @@ class Quests(ConstructorModule):
         self.rhook("quests.char", self.get_char)
         self.rhook("items.menu", self.items_menu)
         self.rhook("ext-item.action", self.action, priv="logged")
+        self.rhook("ext-quest.dialog", self.dialog, priv="logged")
+        self.rhook("quest.check-dialogs", self.check_dialogs)
+        self.rhook("quest.check-redirects", self.check_redirects)
+        self.rhook("web.request_processed", self.request_processed)
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -818,7 +873,7 @@ class Quests(ConstructorModule):
                                     if cmd_code == "message" or cmd_code == "error":
                                         message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
                                         if debug:
-                                            self.call("debug-channel.character", char, lambda: u'%s "%s"' % (cmd_code, quotestr(message)), cls="quest-action", indent=indent+2)
+                                            self.call("debug-channel.character", char, lambda: u'%s %s' % (cmd_code, self.call("script.unparse-expression", message)), cls="quest-action", indent=indent+2)
                                         getattr(char, cmd_code)(message)
                                     elif cmd_code == "require":
                                         res = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
@@ -919,8 +974,24 @@ class Quests(ConstructorModule):
                                             self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
                                         if timeout > 0:
                                             char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
+                                    elif cmd_code == "dialog":
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)
+                                        dialog = cmd[1].copy()
+                                        if dialog.get("title"):
+                                            dialog["title"] = self.call("script.evaluate-text", dialog["title"], globs=kwargs, description=eval_description)
+                                        if dialog.get("text"):
+                                            dialog["text"] = self.call("script.evaluate-text", dialog["text"], globs=kwargs, description=eval_description)
+                                        if dialog.get("buttons"):
+                                            buttons = [btn.copy() for btn in dialog["buttons"]]
+                                            dialog["buttons"] = buttons
+                                            for btn in buttons:
+                                                if btn.get("text"):
+                                                    btn["text"] = self.call("script.evaluate-text", btn["text"], globs=kwargs, description=eval_description)
+                                        char.quests.dialog(dialog, quest)
+                                        modified_objects.add(char.quests)
                                     else:
-                                        raise RuntimeError(self._("Unknown quest action: %s") % cmd_code)
+                                        raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
                                     e = ScriptError(e.val, env())
                                     self.call("exception.report", e)
@@ -955,6 +1026,17 @@ class Quests(ConstructorModule):
                         tokens.append(name)
                     tokens.sort()
                     char.message(u"<br />".join(tokens), title=self._("You have got:"))
+        # processing character redirects after processing quest operation
+        if old_indent is None:
+            if char.quests.dialogs:
+                req = self.req()
+                if req.user() == char.uuid:
+                    try:
+                        req.quest_redirects[char.uuid] = "/quest/dialog"
+                    except AttributeError:
+                        req.quest_redirects = {char.uuid: "/quest/dialog"}
+                else:
+                    self.call("stream.character", char, "game", "main_open", uri="/quest/dialog")
 
     def get_char(self, uuid):
         return CharQuests(self.app(), uuid)
@@ -997,5 +1079,75 @@ class Quests(ConstructorModule):
             character.error(self._("This item action is currently unavailable"))
             self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
         self.qevent("item-%s" % action["code"], char=character, item=item_type)
+        self.call("quest.check-redirects")
         self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
 
+    def request_processed(self):
+        req = self.req()
+        redirs = getattr(req, "quest_redirects", None)
+        if redirs:
+            for char_uuid, uri in redirs.iteritems():
+                char = self.character(char_uuid)
+                if char.tech_online:
+                    self.call("stream.character", char, "game", "main_open", uri=uri)
+
+    def check_dialogs(self):
+        req = self.req()
+        character = self.character(req.user())
+        if character.quests.dialogs:
+            self.call("web.redirect", "/quest/dialog")
+
+    def check_redirects(self):
+        req = self.req()
+        redirs = getattr(req, "quest_redirects", None)
+        if redirs:
+            user = req.user()
+            for char_uuid, uri in redirs.iteritems():
+                if user == char_uuid:
+                    del redirs[char_uuid]
+                    self.call("web.redirect", uri)
+
+    def dialog(self):
+        req = self.req()
+        character = self.character(req.user())
+        dialogs = character.quests.dialogs
+        if not dialogs:
+            self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+        dialog = dialogs[0]
+        if req.ok():
+            if utf2str(dialog.get("uuid", "")) != utf2str(req.args):
+                self.call("web.redirect", "/quest/dialog")
+            event = req.param("event")
+            found = False
+            for btn in dialog["buttons"]:
+                if btn.get("event", "") == event:
+                    found = True
+                    break
+            if found:
+                # closing dialog
+                del dialogs[0]
+                character.quests.touch()
+                character.quests.store()
+                # sending event
+                if event:
+                    self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character)
+                self.call("quest.check-redirects")
+                self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+            else:
+                character.error(self._("This button is unavailable"))
+        buttons = []
+        for btn in dialog["buttons"]:
+            buttons.append({
+                "text": htmlescape(btn.get("text")),
+                "href": "/quest/dialog/%s" % dialog.get("uuid", ""),
+                "event": btn.get("event"),
+            })
+        vars = {
+            "title": htmlescape(dialog.get("title")),
+            "buttons": buttons,
+        }
+        try:
+            self.call("game.response_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
+        except TemplateException as e:
+            self.exception(e)
+            self.call("game.response_internal", "dialog.html", vars, dialog.get("text"))

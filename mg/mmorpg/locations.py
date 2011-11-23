@@ -563,6 +563,7 @@ class Locations(ConstructorModule):
         self.call("chat.channel-join", character, self.call("chat.channel-info", "loc"))
 
     def ext_location(self):
+        self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         location = character.location
@@ -603,6 +604,7 @@ class Locations(ConstructorModule):
             vars["js_init"].append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
 
     def ext_move(self):
+        self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         with self.lock([character.lock, "session.%s" % req.session().uuid]):

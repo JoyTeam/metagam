@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-23 14:51+0300\n"
+"PO-Revision-Date: 2011-11-23 19:15+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -658,6 +658,12 @@ msgstr "Действие для кнопки"
 msgid "Button block: %s"
 msgstr "Блок кнопок: %s"
 
+msgid "Button can't contain multiple 'event' entries"
+msgstr "У кнопки не может быть несколько записей \"event\""
+
+msgid "Button can't contain multiple 'text' entries"
+msgstr "У кнопки не может быть несколько записей \"text\""
+
 msgid "Button code (used in quest scripts)"
 msgstr "Код кнопки (используется в квестовых скриптах)"
 
@@ -666,6 +672,12 @@ msgstr "Код кнопки должен начинаться латинской
 
 msgid "Button editor"
 msgstr "Редактор кнопки"
+
+msgid "Button event identifier must be a string"
+msgstr "Идентификатор события на кнопке должен быть строкой"
+
+msgid "Button event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор события на кнопке должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
 msgid "Button hint"
 msgstr "Подсказка для кнопки"
@@ -678,6 +690,9 @@ msgstr "Изображение для кнопки"
 
 msgid "Button text"
 msgstr "Текст кнопки"
+
+msgid "Button text must be a string"
+msgstr "Текст кнопки должен быть строкой"
 
 msgid "Buttons"
 msgstr "Кнопки"
@@ -1475,6 +1490,33 @@ msgstr "Подробное описание настройки валют вы �
 
 msgid "Developers club"
 msgstr "Клуб разработчиков"
+
+msgid "Dialog can't contain multiple 'template' entries"
+msgstr "У диалога не может быть несколько записей \"template\""
+
+msgid "Dialog can't contain multiple 'text' entries"
+msgstr "У диалога не может быть несколько записей \"text\""
+
+msgid "Dialog can't contain multiple 'title' entries"
+msgstr "У диалога не может быть несколько записей \"title\""
+
+msgid "Dialog template name must be a string"
+msgstr "Имя шаблона диалога должно быть строкой"
+
+msgid "Dialog template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html"
+msgstr "Имя шаблона диалога должно начинаться латинской буквы. Остальные символы могут быть латинскими буквами, цифрами или \"-\". Расширение имени файла должно быть .html"
+
+msgid "Dialog text"
+msgstr "Текст диалога"
+
+msgid "Dialog text must be a string"
+msgstr "Текст диалога должен быть строкой"
+
+msgid "Dialog title"
+msgstr "Заголовок диалога"
+
+msgid "Dialog title must be a string"
+msgstr "Заголовок диалога должен быть строкой"
 
 msgid "Diplomacy"
 msgstr "Дипломатия"
@@ -4195,8 +4237,8 @@ msgstr "Идентификатор квеста"
 msgid "Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор квеста должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
-msgid "Quest is enabled for everybody (if this checkbox is disabled the quest is available for administrators only)"
-msgstr "Квест включен для всех (если эта галочка снята, то квест доступен только администраторам)"
+msgid "Quest is enabled"
+msgstr "Квест включен"
 
 msgid "Quest name"
 msgstr "Название квеста"
@@ -5310,6 +5352,9 @@ msgstr "Этот WMID уже назначен пользователю <strong>%
 
 msgid "This block is shown on the every library page"
 msgstr "Этот блок показывается на каждой странице библиотеки"
+
+msgid "This button is unavailable"
+msgstr "Эта кнопка недоступна"
 
 msgid "This category is for all items not fitting to other categories"
 msgstr "Это - категория для всех предметов, не подходящих в другие категории"
@@ -6823,6 +6868,9 @@ msgstr "открыть некорректное выпадающие меню"
 msgid "open popup menu <strong><hook:admin.link href=\"gameinterface/popups/{0}\" title=\"{1}\" /></strong>"
 msgstr "открыть выпадающее меню <strong><hook:admin.link href=\"gameinterface/popups/{0}\" title=\"{1}\" /></strong>"
 
+msgid "opening dialog"
+msgstr "открываем диалог"
+
 msgid "paidservice///{name} for {{period}}"
 msgstr "{name} на {{period_a}}"
 
@@ -7224,6 +7272,12 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid ""
+#~ "Quest is enabled for everybody (if this checkbox is disabled the quest is "
+#~ "available for administrators only)"
+#~ msgstr ""
+#~ "Квест включен для всех (если эта галочка снята, то квест доступен только "
+#~ "администраторам)"
 #~ msgid "Error in quest '{quest}': {error}"
 #~ msgstr "Ошибка в квесте \"{quest}\": \"{error}\""
 #~ msgid "Error: %s"

@@ -1843,6 +1843,7 @@ class Inventory(ConstructorModule):
         return uri
 
     def inventory_index(self):
+        self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         inv = character.inventory
@@ -1924,6 +1925,7 @@ class Inventory(ConstructorModule):
         self.call("game.response_internal", "inventory.html", vars)
 
     def inventory_discard(self):
+        self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         item_type, max_quantity = character.inventory.find_dna(req.args)

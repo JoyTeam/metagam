@@ -3,6 +3,7 @@ from mg.constructor.script_classes import *
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_param = re.compile(r'^p_([a-z_][a-z0-9_]*)$', re.IGNORECASE)
+re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
 
 # To add a new event, condition or action:
 #   1. create TokenXXX class
@@ -61,6 +62,21 @@ class TokenTimeout(Parsing.Token):
 
 class TokenItemUsed(Parsing.Token):
     "%token itemused"
+
+class TokenDialog(Parsing.Token):
+    "%token dialog"
+
+class TokenText(Parsing.Token):
+    "%token text"
+
+class TokenButton(Parsing.Token):
+    "%token button"
+
+class TokenTemplate(Parsing.Token):
+    "%token template"
+
+class TokenTitle(Parsing.Token):
+    "%token title"
 
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
@@ -256,6 +272,79 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(cmd, "timer", attrs, ["id", "timeout"])
         self.val = ["timer", tid, timeout]
 
+    def reduceDialog(self, cmd, curlyleft, content, curlyright):
+        "%reduce dialog curlyleft DialogContent curlyright"
+        self.val = ["dialog", content.val]
+
+class DialogContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceText(self, content, cmd, text):
+        "%reduce DialogContent text scalar"
+        self.val = content.val.copy()
+        if "text" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple 'text' entries"))
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog text must be a string"))
+        self.val["text"] = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Dialog text"))
+
+    def reduceTitle(self, content, cmd, title):
+        "%reduce DialogContent title scalar"
+        self.val = content.val.copy()
+        if "title" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple 'title' entries"))
+        if type(title.val) != str and type(title.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog title must be a string"))
+        self.val["title"] = cmd.script_parser.parse_text(title.val, cmd.script_parser._("Dialog title"))
+
+    def reduceButton(self, content, cmd, curlyleft, button, curlyright):
+        "%reduce DialogContent button curlyleft ButtonContent curlyright"
+        self.val = content.val.copy()
+        try:
+            self.val["buttons"].append(button.val)
+        except KeyError:
+            self.val["buttons"] = [button.val]
+
+    def reduceTemplate(self, content, cmd, tpl):
+        "%reduce DialogContent template scalar"
+        self.val = content.val.copy()
+        if "template" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple 'template' entries"))
+        if type(tpl.val) != str and type(tpl.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog template name must be a string"))
+        elif not re_valid_template.match(tpl.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html"))
+        self.val["template"] = tpl.val
+
+class ButtonContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceText(self, content, cmd, text):
+        "%reduce ButtonContent text scalar"
+        self.val = content.val.copy()
+        if "text" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple 'text' entries"))
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Button text must be a string"))
+        self.val["text"] = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Button text"))
+
+    def reduceEvent(self, content, cmd, eventid):
+        "%reduce ButtonContent event scalar"
+        self.val = content.val.copy()
+        if "event" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple 'event' entries"))
+        if type(eventid.val) != str and type(eventid.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Button event identifier must be a string"))
+        elif not re_valid_identifier.match(eventid.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Button event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        self.val["event"] = eventid.val
+
 class QuestActions(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -317,6 +406,11 @@ class QuestScriptParser(ScriptParser):
     syms["timer"] = TokenTimer
     syms["timeout"] = TokenTimeout
     syms["itemused"] = TokenItemUsed
+    syms["dialog"] = TokenDialog
+    syms["text"] = TokenText
+    syms["title"] = TokenTitle
+    syms["button"] = TokenButton
+    syms["template"] = TokenTemplate
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

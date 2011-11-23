@@ -1,0 +1,16 @@
+<div class="dialog">
+	[%if title%]<div class="dialog-title">[%title%]</div>[%end%]
+	[%if content%]<div class="dialog-content">[%content%]</div>[%end%]
+	[%if buttons%]<table class="dialog-buttons"><tr>
+		[%foreach btn in buttons%]
+		<td class="dialog-button-td">
+			<form method="post" action="[%btn.href%]">
+				<input type="hidden" name="ok" value="1" />
+				<input type="hidden" name="event" value="[%btn.event%]" />
+				<input type="submit" value="[%btn.text%]" class="dialog-button" />
+			</form>
+		</td>
+		[%end%]
+	</tr></table>[%end%]
+</div>
+

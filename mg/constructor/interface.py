@@ -329,7 +329,7 @@ class Interface(ConstructorModule):
         vars["js_init"] = ["Game.setup_game_layout();"]
         vars["send"] = self._("send")
         if project.get("published") or project.get("moderation"):
-            vars["main_init"] = "/location"
+            vars["main_init"] = self.call("game-interface.default-location") or "/location"
         else:
             vars["main_init"] = "/project/status"
         if self.conf("debug.ext"):
