@@ -73,6 +73,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.charimages.CharImagesAdmin", "mg.constructor.charimages.CharImages"])
             if self.conf("module.inventory"):
                 lst.extend(["mg.mmorpg.inventory.Inventory"])
+            if self.conf("module.quests"):
+                lst.extend(["mg.mmorpg.quests.Quests"])
         return lst
 
     def modules_list(self, modules):
@@ -95,6 +97,11 @@ class ConstructorProject(Module):
             "id": "inventory",
             "name": self._("Inventory system"),
             "description": self._("Items and inventory"),
+        })
+        modules.append({
+            "id": "quests",
+            "name": self._("Quests engine"),
+            "description": self._("Quests and triggers"),
         })
 
     def project_title(self):

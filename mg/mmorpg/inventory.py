@@ -457,7 +457,7 @@ class InventoryAdmin(ConstructorModule):
         lst.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         for ent in lst:
             name = htmlescape(ent.get("name"))
-            row = ['<strong>%s</strong>' % name]
+            row = ['<strong>%s</strong><br />%s' % (name, ent.uuid)]
             for dim in dimensions:
                 row.append('<img src="/st-mg/img/%s.gif" alt="" />' % ("done" if ent.get("image-%dx%d" % (dim["width"], dim["height"])) else "no"))
             row.append(u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit")))
@@ -1616,6 +1616,11 @@ class MemberInventory(ConstructorModule):
             aggregate, param = m.group(1, 2)
             return self.aggregate(aggregate, param, handle_exceptions)
         raise AttributeError(attr)
+
+    def __str__(self):
+        return "[inv %s.%s]" % (self.owtype, self.uuid)
+    
+    __repr__ = __str__
 
     def aggregate(self, aggregate, param, handle_exceptions=True):
         key = "%s-%s" % (aggregate, param)

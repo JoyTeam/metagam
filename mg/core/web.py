@@ -361,7 +361,8 @@ class WebDaemon(object):
                 try:
                     self.logger.exception(e)
                 except Exception as e2:
-                    print "Unhandled exception: %s" % e2
+                    print "Unhandled exception during logging: %s" % e2
+                    print traceback.format_exc()
                 try:
                     if getattr(request, "upload_handler", None):
                         return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))

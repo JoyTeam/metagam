@@ -353,6 +353,7 @@ class Params(ConstructorModule):
         self.rhook("%s.param" % self.kind, self.param)
         self.rhook("%s.param-value" % self.kind, self.value)
         self.rhook("%s.param-value-rec" % self.kind, self.value_rec)
+        self.rhook("%s.set-param" % self.kind, self.set_param)
         self.rhook("%s.param-html" % self.kind, self.html)
         self.rhook("%s.params-public" % self.kind, self.params_public)
         self.rhook("%s.params-owner-important" % self.kind, self.params_owner_important)
@@ -367,13 +368,22 @@ class Params(ConstructorModule):
                 return p
         return None
 
+    def set_param(self, obj, param_code, value):
+        param = self.param(param_code)
+        if not param or param["type"] != 0:
+            raise AttributeError(param_code)
+        old_value = obj.db_params.get(param["code"], param.get("default", 0))
+        obj.db_params.set(param["code"], value)
+        obj._param_cache = {}
+        return old_value
+
     def value(self, obj, param_code, handle_exceptions=True):
         param = self.param(param_code)
         if not param:
             if handle_exceptions:
                 return None
             else:
-                raise AttributeError(param)
+                raise AttributeError(param_code)
         return self.call("%s.param-value-rec" % self.kind, obj, param, handle_exceptions)
 
     def _evaluate(self, obj, param):

@@ -95,7 +95,7 @@ class AuthAdmin(ConstructorModule):
                                     session.store()
                                     appsession.store()
                                     # character offline on timeout
-                                    with app.lock(["character.%s" % character_uuid]):
+                                    with app.lock(["Character.%s" % character_uuid]):
                                         try:
                                             obj = app.obj(DBCharacterOnline, character_uuid)
                                         except ObjectNotFoundException:
@@ -829,7 +829,7 @@ class Auth(ConstructorModule):
             self.logout_others(session_uuid, character_uuid)
 
     def stream_character_online(self, character_uuid):
-        with self.lock(["character.%s" % character_uuid]):
+        with self.lock(["Character.%s" % character_uuid]):
             try:
                 self.obj(DBCharacterOnline, character_uuid)
             except ObjectNotFoundException:
@@ -839,7 +839,7 @@ class Auth(ConstructorModule):
                 self.call("session.character-online", self.character(character_uuid))
 
     def stream_character_offline(self, character_uuid):
-        with self.lock(["character.%s" % character_uuid]):
+        with self.lock(["Character.%s" % character_uuid]):
             try:
                 obj = self.obj(DBCharacterOnline, character_uuid)
             except ObjectNotFoundException:

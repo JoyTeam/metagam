@@ -247,6 +247,11 @@ class MemberModifiers(Module):
     def script_attr(self, attr, handle_exceptions=True):
         return 1 if self.get(attr) else 0
 
+    def __str__(self):
+        return "[mod %s.%s]" % (self.target_type, self.uuid)
+
+    __repr__ = __str__
+
 class ModifiersManager(Module):
     "This module is loaded in the 'main' project"
     def register(self):

@@ -190,6 +190,11 @@ class ItemType(Module):
             else:
                 raise AttributeError(attr)
 
+    def __str__(self):
+        return "[item %s]" % self.dna
+    
+    __repr__ = __str__
+
     @property
     def db_params(self):
         try:

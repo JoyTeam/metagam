@@ -45,6 +45,14 @@ Game.error = function(title, str) {
 	this.msg(title, str, 'msg-error');
 };
 
+Game.msg_info = function(pkt) {
+	this.info(pkt.title, pkt.content);
+};
+
+Game.msg_error = function(pkt) {
+	this.error(pkt.title, pkt.content);
+};
+
 Game.main_open = function(uri) {
 	try {
 		if (uri.uri)

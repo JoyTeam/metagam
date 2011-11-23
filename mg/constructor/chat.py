@@ -3,6 +3,7 @@ from mg.constructor import *
 from uuid import uuid4
 import datetime
 import re
+import logging
 
 old_messages_limit = 10
 old_private_messages_limit = 100
@@ -22,6 +23,8 @@ re_valid_cls = re.compile(r'^[a-z][a-z\-]*$')
 re_sharp = re.compile(r'#')
 re_q = re.compile(r'q')
 re_del = re.compile(r'^del/(.+)$')
+
+logging.getLogger("mg.constructor.chat.Chat").setLevel(logging.INFO)
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"
@@ -78,6 +81,7 @@ class Chat(ConstructorModule):
         if self.conf("chat.debug-channel"):
             self.rhook("headmenu-admin-chat.debug", self.headmenu_chat_debug)
             self.rhook("ext-admin-chat.debug", self.chat_debug, priv="chat.config")
+            self.rhook("debug-channel.character", self.debug_character)
         self.rhook("chat.character-channels", self.character_channels)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("locations.character_before_set", self.location_before_set)
@@ -959,7 +963,7 @@ class Chat(ConstructorModule):
                                     self.call("stream.packet", ch, "chat", "roster_add", character=self.roster_info(char), channel=roster_channel_id)
                         else:
                             # dropping obsolete database record
-                            self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
+                            self.debug("Unjoining offline character %s from channel %s", char_uuid, channel_id)
                             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel_id), silent=True)
                             obj.remove()
             else:
@@ -993,11 +997,11 @@ class Chat(ConstructorModule):
                     # dropping obsolete database records
                     for char_uuid in character_uuids:
                         if char_uuid not in characters_online:
-                            self.info("Unjoining offline character %s from channel %s", char_uuid, channel_id)
+                            self.debug("Unjoining offline character %s from channel %s", char_uuid, channel_id)
                             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (char_uuid, channel_id), silent=True)
                             obj.remove()
             # dropping database record
-            self.info("Unjoining character %s from channel %s", character.uuid, channel_id)
+            self.debug("Unjoining character %s from channel %s", character.uuid, channel_id)
             obj = self.obj(DBChatChannelCharacter, "%s-%s" % (character.uuid, channel_id), silent=True)
             obj.remove()
 
@@ -1296,3 +1300,13 @@ class Chat(ConstructorModule):
             for char_uuid, sess_uuid in lst.index_values(2):
                 channels.add('id_%s' % sess_uuid)
             self.call("stream.packet", [ch for ch in channels], "chat", "character_update", character=self.roster_info(character))
+
+    def debug_character(self, character, msg, **kwargs):
+        if self.debug_access(character):
+            if callable(msg):
+                msg = msg()
+            if "indent" in kwargs:
+                indent = kwargs["indent"]
+                del kwargs["indent"]
+                kwargs["div_attr"] = 'style="padding-left: %dpx"' % (indent * 5)
+            self.call("chat.message", html=msg, channel="dbg", **kwargs)

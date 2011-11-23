@@ -605,7 +605,7 @@ class Locations(ConstructorModule):
     def ext_move(self):
         req = self.req()
         character = self.character(req.user())
-        with self.lock(["CharacterLocation-%s" % character.uuid, "session.%s" % req.session().uuid]):
+        with self.lock([character.lock, "session.%s" % req.session().uuid]):
             if not character.tech_online:
                 self.call("web.response_json", {"ok": False, "error": self._("Character offline")})
             if character.location_delay and character.location_delay[1] > self.now():

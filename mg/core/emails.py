@@ -103,7 +103,7 @@ class Email(Module):
         if from_email is None or from_name is None:
             from_email = params["email"]
             from_name = params["name"]
-        self.info("To %s <%s>: %s", to_name, to_email, subject)
+        self.info("To %s <%s>: %s", utf2str(to_name), utf2str(to_email), utf2str(subject))
         s = SMTP(self.app().inst.config["smtp_server"])
         try:
             if type(content) == unicode:

@@ -4,6 +4,7 @@ import re
 
 re_param_attr = re.compile(r'^p_(.+)')
 re_perm_attr = re.compile(r'^perm_(.+)')
+re_quest_attr = re.compile(r'^q_(.+)')
 
 # Database objects
 
@@ -222,7 +223,7 @@ class Character(Module):
 
     @property
     def lock(self):
-        return self.lock(["Character.%s" % self.uuid])
+        return "Character.%s" % self.uuid
 
     @property
     def location(self):
@@ -255,6 +256,7 @@ class Character(Module):
         self.call("locations.character_set", self, location, instance, delay)
         self._location = [location, instance, delay]
         self.call("locations.character_after_set", self, old_location, old_instance)
+        self.qevent("teleported", char=self, old_loc=old_location, new_loc=location, old_inst=old_instance, new_inst=instance)
 
     @property
     def db_settings(self):
@@ -336,7 +338,30 @@ class Character(Module):
             if perms.get(perm) or perms.get("project.admin") or perms.get("global.admin"):
                 return 1
             return 0
+        # quests
+        m = re_quest_attr.match(attr)
+        if m:
+            qid = m.group(1)
+            return self.quests.quest(qid)
         raise AttributeError(attr)
+
+    def script_set_attr(self, attr, val):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.set_param(param, val)
+        raise AttributeError(attr)
+
+    def store(self):
+        if self.db_params.dirty:
+            self.db_params.store()
+            self.name_invalidate()
+
+    def __str__(self):
+        return "[char %s]" % utf2str(self.name)
+
+    __repr__ = __str__
 
     @property
     def restraints(self):
@@ -377,6 +402,9 @@ class Character(Module):
     def script_params(self):
         return {"char": self}
 
+    def set_param(self, key, val):
+        return self.call("characters.set-param", self, key, val)
+
     @property
     def inventory(self):
         try:
@@ -384,6 +412,20 @@ class Character(Module):
         except AttributeError:
             self._inventory = self.call("inventory.get", "char", self.uuid)
             return self._inventory
+
+    @property
+    def quests(self):
+        try:
+            return self._quests
+        except AttributeError:
+            self._quests = self.call("quests.char", self.uuid)
+            return self._quests
+
+    def message(self, content, title=None):
+        self.call("stream.character", self, "game", "msg_info", title=title, content=content)
+
+    def error(self, content, title=None):
+        self.call("stream.character", self, "game", "msg_error", title=title, content=content)
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
@@ -430,6 +472,11 @@ class Player(Module):
             return self.call("modifiers.obj", self.uuid)
         else:
             raise AttributeError(attr)
+
+    def __str__(self):
+        return "[player %s]" % self.uuid
+    
+    __repr__ = __str__
 
     @property
     def characters(self):

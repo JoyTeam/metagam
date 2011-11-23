@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-16 23:30+0300\n"
+"PO-Revision-Date: 2011-11-23 10:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -32,6 +32,10 @@ msgstr "%.1f Кб"
 #, python-format
 msgid "%.1f Mb"
 msgstr "%.1f Мб"
+
+#, python-format
+msgid "%d pcs"
+msgstr "%d шт"
 
 #, python-format
 msgid "%s Resource not found"
@@ -59,6 +63,20 @@ msgstr "%s: Внутренняя ошибка сервера"
 
 msgid "&lt;&lt;&lt; Older period"
 msgstr "&lt;&lt;&lt; Раньше"
+
+#, python-format
+msgid "'%s' has no settable attributes"
+msgstr "У \"%s\" нет изменяемых атрибутов"
+
+#, python-format
+msgid "'%s' is not an object"
+msgstr "\"%s\" - не объект"
+
+msgid "'{obj}' has no attribute '{attr}'"
+msgstr "У \"{obj}\" нет атрибута \"{attr}\""
+
+msgid "'{obj}.{attr}' is not settable"
+msgstr "Атрибут \"{obj}.{attr}\" неизменяемый"
 
 #, python-format
 msgid ", at line %d"
@@ -433,8 +451,14 @@ msgstr "Вы уверены, что хотите удалить этот пар�
 msgid "Are you sure want to delete this popup menu?"
 msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
 
+msgid "Are you sure want to delete this quest?"
+msgstr "Вы уверены, что хотите удалить этот квест?"
+
 msgid "Are you sure want to delete this smile?"
 msgstr "Вы уверены, что хотите удалить этот смайлик?"
+
+msgid "Are you sure want to delete this state?"
+msgstr "Вы уверены, что хотите удалить это состояние?"
 
 msgid "Are you sure want to unpublish the project?"
 msgstr "Вы уверены, что хотите снять проект с публикации?"
@@ -447,6 +471,16 @@ msgstr "Творчество"
 
 msgid "Assign a domain name"
 msgstr "Назначить доменное имя"
+
+#, python-format
+msgid "Attribute '%s' was specified twice"
+msgstr "Атрибут \"%s\" был указан дважды"
+
+msgid "Attribute '{attr}' in the '{obj}' must be a string"
+msgstr "Атрибут \"{attr}\" у \"{obj}\" обязательно должен быть строкой"
+
+msgid "Attribute '{attr}' is required in the '{obj}'"
+msgstr "Атрибут \"{attr}\" у \"{obj}\" является обязательным"
 
 msgid "Auction"
 msgstr "Аукцион"
@@ -1564,6 +1598,9 @@ msgstr "Редактировать привилегии пользователя
 msgid "Edit post"
 msgstr "Редактирование ответа"
 
+msgid "Edit quest parameters"
+msgstr "Редактировать параметры квеста"
+
 msgid "Edit settings"
 msgstr "Редактировать настройки"
 
@@ -1816,6 +1853,9 @@ msgstr "Ошибка рядом с '%s'"
 msgid "Error on match"
 msgstr "Ошибка при срабатывании"
 
+msgid "Error parsing '{expression}': {error}"
+msgstr "Ошибка при разборе \"{expression}\": \"{error}\""
+
 msgid "Error parsing template {0}: {1}"
 msgstr "Ошибка парсинга шаблона {0}: {1}"
 
@@ -1849,6 +1889,12 @@ msgstr "На сайте госкорпорации \"Роснано\" появи
 
 msgid "Event"
 msgstr "Событие"
+
+msgid "Event id must be a string"
+msgstr "Идентификатор события должен быть строкой"
+
+msgid "Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор события должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
@@ -1889,6 +1935,9 @@ msgstr "Выражение \"%s\" внезапно оборвалось"
 
 msgid "Expression + table"
 msgstr "Выражение + таблица"
+
+msgid "Expression unexpectedly ended"
+msgstr "Выражение внезапно закончилось"
 
 msgid "External error message (inside the external interface)"
 msgstr "Внешнее сообщение об ошибке (помещается в external.html)"
@@ -2250,6 +2299,10 @@ msgstr "HTML-содержимое"
 msgid "HTML message about registration on invitations"
 msgstr "HTML-сообщение о регистрации по приглашениям"
 
+#, python-format
+msgid "Handler expected in the handlers list. Received: %s"
+msgstr "В списке обработчиков ожидался обработчик. Получено: %s"
+
 msgid "Header"
 msgstr "Заголовок"
 
@@ -2351,6 +2404,9 @@ msgstr "Редактор иконок"
 
 msgid "Id"
 msgstr "Id"
+
+msgid "Identifer 'new' is reserved"
+msgstr "Идентификатор \"new\" зарезервирован"
 
 msgid "Identifier must start with 'u_'"
 msgstr "Идентификатор должен начинаться с 'u_'"
@@ -2621,8 +2677,14 @@ msgstr "Неверный формат телефона. Посмотрите н�
 msgid "Invalid price format"
 msgstr "Неверный формат цены"
 
+msgid "Invalid quest states object. Expected {expected}. Found: {found}"
+msgstr "Неверный объект состояний квеста. Ожидалось: {expected}. Найдено: {found}"
+
 msgid "Invalid response from the registrar. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually."
 msgstr "Неверный ответ от регистратора. Мы точно не знаем, удалось ли обработать ваш запрос, поэтому мы оставляем деньги за домен в заблокированном состоянии. Результат операции будет перепроверен вручную техническими специалистами."
+
+msgid "Invalid script parse tree"
+msgstr "Неверное синтаксическое дерево скрипта"
 
 msgid "Invalid selection"
 msgstr "Неверный выбор"
@@ -2639,6 +2701,9 @@ msgstr "Неверный URI при сохранении"
 #, python-format
 msgid "Invalid symbol: '%s'"
 msgstr "Неверный символ: '%s'"
+
+msgid "Invalid usage of assignment operator"
+msgstr "Неверное использование оператора присвоения"
 
 msgid "Invalid value"
 msgstr "Неверное значение"
@@ -2745,6 +2810,10 @@ msgstr "Каталог предметов"
 
 msgid "Items giving"
 msgstr "Выдача предметов"
+
+#, python-format
+msgid "Items has no parameter %s"
+msgstr "У предметов нет параметра %s"
 
 msgid "Items parameters"
 msgstr "Параметры предметов"
@@ -3468,12 +3537,21 @@ msgstr ""
 "Зарегистрирован новый проект: {0}\n"
 "Пожалуйста, произведите необходимые действия по модерации: http://www.{1}/admin#constructor/project-dashboard/{2}"
 
+msgid "New quest"
+msgstr "Новый квест"
+
+msgid "New quest state"
+msgstr "Новое состояние квеста"
+
 #, python-format
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
 msgid "New smile"
 msgstr "Новый смайлик"
+
+msgid "New state"
+msgstr "Новое состояние"
 
 msgid "New topic"
 msgstr "Новая тема"
@@ -3755,6 +3833,10 @@ msgstr "Редактор платных услуг"
 msgid "Panels"
 msgstr "Панели"
 
+#, python-format
+msgid "Parameter %s is not stored in the database"
+msgstr "Параметр %s не сохраняется в базе данных"
+
 msgid "Parameter code (used in scripting)"
 msgstr "Код параметра (для использования в скриптах)"
 
@@ -3808,9 +3890,6 @@ msgstr "Параметры"
 
 msgid "Parameters documentation"
 msgstr "Документация на систему параметров"
-
-msgid "Parse error near '{input}'"
-msgstr "Ошибка парсинга рядом с \"{input}\""
 
 msgid "Passport number"
 msgstr "Номер паспорта"
@@ -4049,8 +4128,56 @@ msgstr "Количество на выброс"
 msgid "Query successful. Server response: %s"
 msgstr "Запрос успешный. Ответ сервера: %s"
 
+msgid "Quest '{quest}' is not taken yet when trying to set attribute {attr}"
+msgstr "Квест \"{quest}\" ещё не был взят при попытке установить атрибут {attr}"
+
+msgid "Quest '{quest}', event '{event}'"
+msgstr "Квест \"{quest}\", событие \"{event}\""
+
+msgid "Quest ID"
+msgstr "ID квеста"
+
+msgid "Quest engine: editor"
+msgstr "Квестовый движок: редактор"
+
+msgid "Quest failed"
+msgstr "Квест не пройден"
+
+msgid "Quest identifier"
+msgstr "Идентификатор квеста"
+
+msgid "Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор квеста должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Quest is enabled for everybody (if this checkbox is disabled the quest is available for administrators only)"
+msgstr "Квест включен для всех (если эта галочка снята, то квест доступен только администраторам)"
+
+msgid "Quest name"
+msgstr "Название квеста"
+
+msgid "Quest script"
+msgstr "Скрипт квеста"
+
+msgid "Quest state description for the quest log (for instance, task for player)"
+msgstr "Описание состояния квеста для квестлога (например, задание для игрока)"
+
+msgid "Quest with the same identifier already exists"
+msgstr "Квест с таким идентификатором уже существует"
+
 msgid "Quests"
 msgstr "Квесты"
+
+msgid "Quests and triggers"
+msgstr "Квесты и триггеры"
+
+msgid "Quests documentation"
+msgstr "Документация на квесты"
+
+msgid "Quests editor"
+msgstr "Редактор квестов"
+
+msgid "Quests engine"
+msgstr "Квестовый движок"
 
 msgid "Quote"
 msgstr "Цитата"
@@ -4420,6 +4547,14 @@ msgstr "Схема '%s' не поддерживается"
 
 msgid "Screenshots"
 msgstr "Скриншоты"
+
+#, python-format
+msgid "Script unparse error. Expected list, received %s"
+msgstr "Ошибка при восстановлении скрипта. Ожидался список, получено: %s"
+
+#, python-format
+msgid "Script validation error. Expected list, received %s"
+msgstr "Ошибка при валидации скрипта. Ожидался список, получено: %s"
 
 msgid "Scripting language reference"
 msgstr "Описание скриптового языка"
@@ -4926,6 +5061,19 @@ msgstr "Стартовая локация не настроена"
 msgid "State"
 msgstr "Состояние"
 
+#, python-format
+msgid "State %s"
+msgstr "Состояние %s"
+
+msgid "State identifier"
+msgstr "Идентификатор состояния"
+
+msgid "State identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор состояния должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "State with the same identifier already exists"
+msgstr "Состояние с таким идентификатором уже существует"
+
 msgid "Static image"
 msgstr "Статическая картинка"
 
@@ -4999,6 +5147,10 @@ msgstr "Переключиться в режим редактора локаци
 
 msgid "System"
 msgstr "Система"
+
+#, python-format
+msgid "System exception: %s"
+msgstr "Системная ошибка: %s"
 
 msgid "System messages in the chat"
 msgstr "Системные сообщения в чате"
@@ -5476,9 +5628,6 @@ msgstr "Неизвестная операция скриптового движ�
 msgid "Unknown service %s"
 msgstr "Неизвестная услуга %s"
 
-msgid "Unknown token near '{input}'"
-msgstr "Неизвестный элемент рядом с \"{input}\""
-
 #, python-format
 msgid "Unknown token {%s}"
 msgstr "Неизвестный элемент {%s}"
@@ -5891,6 +6040,10 @@ msgid "You can find detailed information on the parameters system in the <a href
 msgstr "Подробную информацию о системе параметров вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/parameters\" target=\"_blank\">Система параметров</a>."
 
 #, python-format
+msgid "You can find detailed information on the quests engine in the <a href=\"//www.%s/doc/quests\" target=\"_blank\">quests engine page</a> in the reference manual."
+msgstr "Подробную информацию о квестовом движке вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/quests\" target=\"_blank\">Квестовый движок</a>."
+
+#, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
 msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
 
@@ -5942,6 +6095,9 @@ msgstr "Вы перешли в локацию"
 
 msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"//{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
 msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"//{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
+
+msgid "You have got:"
+msgstr "Вы получили:"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -6124,6 +6280,12 @@ msgstr "минуту/минуты/минут"
 msgid "accusative///second/seconds"
 msgstr "секунду/секунды/секунд"
 
+msgid "action///Quest error"
+msgstr "error в квесте"
+
+msgid "action///Quest message"
+msgstr "message в квесте"
+
 msgid "at the {day:d}{th} {month}, {year}"
 msgstr "{day:d} {month} {year}"
 
@@ -6144,6 +6306,10 @@ msgstr "от"
 
 msgid "cabinet"
 msgstr "кабинет"
+
+#, python-format
+msgid "calling event %s"
+msgstr "вызываем событие %s"
 
 msgid "cancel"
 msgstr "отменить"
@@ -6310,8 +6476,15 @@ msgstr "включить"
 msgid "enter"
 msgstr "войти"
 
+#, python-format
+msgid "event=%s"
+msgstr "событие=%s"
+
 msgid "external"
 msgstr "внешняя"
+
+msgid "false"
+msgstr "ложь"
 
 msgid "female///F"
 msgstr "Ж"
@@ -6362,6 +6535,9 @@ msgstr "Отправить её на модерацию"
 msgid "give"
 msgstr "выдать"
 
+msgid "giving {item_name}, quantity={quantity}"
+msgstr "выдаём {item_name}, количество={quantity}"
+
 msgid "gone///to"
 msgstr " "
 
@@ -6376,6 +6552,9 @@ msgstr "<strong>{0}</strong>"
 
 msgid "href///<strong>{0}</strong> to {1}"
 msgstr "<strong>{0}</strong> в {1}"
+
+msgid "if {condition}: {result}"
+msgstr "если {condition}: {result}"
 
 msgid "ignore"
 msgstr "игнорировать"
@@ -6617,6 +6796,15 @@ msgstr "опубликован"
 msgid "public offer, terms and conditions"
 msgstr "публичная оферта, условия использования"
 
+msgid "quest failed"
+msgstr "квест не пройден"
+
+msgid "quest finished"
+msgstr "квест выполнен"
+
+msgid "quest={quest}, state={state}"
+msgstr "квест={quest}, состояние={state}"
+
 msgid "recheck"
 msgstr "перепроверить"
 
@@ -6794,6 +6982,9 @@ msgstr "включена"
 msgid "service///inactive"
 msgstr "неактивна"
 
+msgid "setting {obj}.{attr} = {val}"
+msgstr "устанавливаем {obj}.{attr} = {val}"
+
 msgid "sex///Who is your character"
 msgstr "Кто ваш персонаж?"
 
@@ -6845,6 +7036,16 @@ msgstr "отследить"
 
 msgid "transfer"
 msgstr "передать"
+
+msgid "true"
+msgstr "истина"
+
+msgid "unexpected end"
+msgstr "неожиданный конец"
+
+#, python-format
+msgid "unexpected symbols: %s"
+msgstr "неожиданные символы: %s"
 
 msgid "unjoin"
 msgstr "исключить"
@@ -6948,6 +7149,29 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Error in quest '{quest}': {error}"
+#~ msgstr "Ошибка в квесте \"{quest}\": \"{error}\""
+#~ msgid "Error: %s"
+#~ msgstr "Ошибка: %s"
+#~ msgid "Quest event '%s'"
+#~ msgstr "Квестовое событие \"%s\""
+#~ msgid "setting %s.%s = %s"
+#~ msgstr "устанавливаем %s.%s = %s"
+#~ msgid "Parse error near '{input}'"
+#~ msgstr "Ошибка парсинга рядом с \"{input}\""
+#~ msgid "Unknown token near '{input}'"
+#~ msgstr "Неизвестный элемент рядом с \"{input}\""
+#~ msgid ""
+#~ "Event identifier must start with latin letter and end with latin letter "
+#~ "or digit. Inner symbols may be latin letters, digits or '-'"
+#~ msgstr ""
+#~ "Идентификатор события должен начинаться латинской буквы и заканчиваться "
+#~ "латинской буквой или цифрой. Внутренние символы могут быть латинскими "
+#~ "буквами, цифрами или \"-\""
+#~ msgid "Invalid script parse tree. Unknown object: %s"
+#~ msgstr "Неверное синтаксическое дерево скрипта. Неизвестный объект: %s"
+#~ msgid "Quests system"
+#~ msgstr "Система квестов"
 #~ msgid "Unknown DNA value type"
 #~ msgstr "Неизвестный тип значения при формировании ДНК"
 #~ msgid "DNA"
@@ -7082,8 +7306,6 @@ msgstr "{price} на {period_a}"
 #~ "\"><strong>Важная информация по сертификации WebMoney</strong></a>.</"
 #~ "p><p>На привязанный аккаунт WebMoney вы также будете получать и деньги, "
 #~ "заработанные в Конструкторе.</p>"
-#~ msgid "Value 'none' has no attributes"
-#~ msgstr "У значения \"none\" нет атрибутов"
 #~ msgid "Related player"
 #~ msgstr "Связанный игрок"
 #~ msgid "Related character %s"

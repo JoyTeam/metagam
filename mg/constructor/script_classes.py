@@ -2,6 +2,8 @@ from mg import *
 from mg.core import Parsing
 import re
 
+re_newline = re.compile(r'\n')
+
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
         self.val = val
@@ -27,10 +29,10 @@ class ScriptError(Exception):
         self.env = env
 
     def __str__(self):
-        return self.val
+        return utf2str(self.val)
 
     def __repr__(self):
-        return self.val
+        return utf2str(self.val)
 
 class ScriptUnknownVariableError(ScriptError):
     pass
@@ -127,6 +129,14 @@ class TokenParLeft(Parsing.Token):
     "%token parleft"
 class TokenParRight(Parsing.Token):
     "%token parright"
+
+class TokenCurlyLeft(Parsing.Token):
+    "%token curlyleft"
+class TokenCurlyRight(Parsing.Token):
+    "%token curlyright"
+
+class TokenAssign(Parsing.Token):
+    "%token assign"
 
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
@@ -246,7 +256,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Lr, Module):
-    re_token = re.compile(r'\s*(?:(-?\d+\.\d+)|(-?\d+)|(==|>=|<=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:)|"([^"]*)"|\'([^\']*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -254,11 +264,14 @@ class ScriptParser(Parsing.Lr, Module):
         "/": TokenSlash,
         "(": TokenParLeft,
         ")": TokenParRight,
+        "{": TokenCurlyLeft,
+        "}": TokenCurlyRight,
         "?": TokenQuestion,
         ":": TokenColon,
         ".": TokenDot,
         ",": TokenComma,
         "==": TokenEquals,
+        "=": TokenAssign,
         ">": TokenGreaterThan,
         "<": TokenLessThan,
         ">=": TokenGreaterEqual,
@@ -277,44 +290,52 @@ class ScriptParser(Parsing.Lr, Module):
     def scan(self, input):
         input = input.strip()
         pos = 0
+        tokens = []
         while True:
-            token_match = ScriptParser.re_token.match(input, pos)
+            token_match = type(self).re_token.match(input, pos)
             if not token_match:
                 if pos < len(input):
-                    raise ScriptParserError(self._("Parse error near '{input}'"), input=input[pos:])
+                    raise ScriptParserError(self._("Error parsing '{expression}': {error}"), expression=u"".join(tokens).strip(), error=self._("unexpected end"))
                 else:
                     break
             res = token_match.groups()
+            if res[0]:
+                tokens.append(" ")
+            tokens.append(res[1])
             token = None
-            if res[0] is not None:
-                token = TokenScalar(self, float(res[0]))
-            elif res[1] is not None:
-                token = TokenScalar(self,int(res[1]))
-            elif res[2] is not None:
-                cls = ScriptParser.syms.get(res[2])
+            if res[2] is not None:
+                token = TokenScalar(self, float(res[2]))
+            elif res[3] is not None:
+                token = TokenScalar(self,int(res[3]))
+            elif res[4] is not None:
+                cls = type(self).syms.get(res[4])
                 if cls:
                     token = cls(self)
-            elif res[3] is not None:
-                token = TokenScalar(self, res[3])
-            elif res[4] is not None:
-                token = TokenScalar(self, res[4])
             elif res[5] is not None:
-                cls = ScriptParser.syms.get(res[5])
+                token = TokenScalar(self, unquotestr(res[5]))
+            elif res[6] is not None:
+                token = TokenScalar(self, unquotestr(res[6]))
+            elif res[7] is not None:
+                cls = type(self).syms.get(res[7])
                 if cls:
                     token = cls(self)
                 else:
-                    if res[5] in ScriptParser.funcs:
+                    if res[7] in type(self).funcs:
                         token = TokenFunc(self)
-                        token.fname = res[5]
+                        token.fname = res[7]
                     else:
-                        token = TokenIdentifier(self, res[5])
+                        token = TokenIdentifier(self, res[7])
             if token is None:
-                raise ScriptParserError(self._("Unknown token near '{input}'"), input=input[pos:])
+                data = input[pos:pos+10]
+                raise ScriptParserError(self._("Error parsing '{expression}': {error}"), expression=u"".join(tokens).strip(), error=self._("unexpected symbols: %s") % data)
+            token.script_parser = self
             try:
                 self.token(token)
             except Parsing.SyntaxError as exc:
-                raise ScriptParserError(self._("Parse error near '{input}'"), input=input[pos:], exc=exc)
+                raise ScriptParserError(self._("Error parsing '{expression}': {error}"), expression=u"".join(tokens).strip(), error=exc)
             pos = token_match.end()
+            if re_newline.search(res[0]):
+                tokens = tokens[len(tokens)-1:]
 
 class ScriptTextParser(Module):
     re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)

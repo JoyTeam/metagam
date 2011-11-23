@@ -572,6 +572,9 @@ class Module(object):
         else:
             return (None, None)
 
+    def qevent(self, event, **kwargs):
+        self.call("quests.event", event, **kwargs)
+
 class ModuleException(Exception):
     "Error during module loading"
     pass
@@ -684,13 +687,12 @@ class Modules(object):
 
 class Formatter(logging.Formatter):
     def format(self, record):
-        if type(record.msg) != type("") and type(record.msg) != unicode:
-            record.msg = unicode(record.msg)
-        if type(self._fmt) == unicode:
-            self._fmt = self._fmt.encode("utf-8")
+        self._fmt = utf2str(self._fmt)
+        record.msg = utf2str(record.msg)
         for key, value in record.__dict__.items():
             if type(value) == unicode:
                 record.__dict__[key] = value.encode("utf-8")
+        record.args = tuple([utf2str(arg) for arg in record.args])
         if not record.__dict__.get("mg_formatted"):
             if record.__dict__.get("user"):
                 record.msg = "user=%s %s" % (record.user, record.msg)
@@ -701,10 +703,10 @@ class Formatter(logging.Formatter):
             if record.__dict__.get("host"):
                 record.msg = "host=%s %s" % (record.host, record.msg)
             record.mg_formatted = True
-        str = logging.Formatter.format(self, record)
-        if type(str) == unicode:
-            str = str.encode("utf-8")
-        return str
+        s = logging.Formatter.format(self, record)
+        if type(s) == unicode:
+            s = s.encode("utf-8")
+        return s
 
 class Filter(logging.Filter):
     def filter(self, record):
@@ -849,7 +851,7 @@ class ApplicationConfigUpdater(object):
     def get(self, param, default=None):
         if param in self.del_params:
             return None
-        return self.params.get(self.app.config.get(param, default))
+        return self.params.get(param, self.app.config.get(param, default))
 
     def store(self, update_hooks=True, notify=True):
         if self.params or self.del_params:

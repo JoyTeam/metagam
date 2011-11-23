@@ -17,6 +17,10 @@ re_frac_part = re.compile(r'\..*?[1-9]')
 re_exp_format = re.compile(r'^-?(\d+|\d+\.\d+)e([+-]\d+)$')
 re_remove_frac = re.compile(r'\..*')
 re_month = re.compile(r'^(\d\d\d\d)-(\d\d)')
+re_sglquote = re.compile(r"'")
+re_dblquote = re.compile(r'"')
+re_backslash = re.compile(r'\\')
+re_backslashed = re.compile(r'\\(.)')
 
 def utf2str(s):
     if s is None:
@@ -239,3 +243,9 @@ class curry:
             kw = kwargs or self.kwargs
 
         return self.fun(*(self.pending + args), **kw)
+
+def quotestr(s):
+    return re_dblquote.sub('\\"', re_backslash.sub('\\\\', s))
+
+def unquotestr(s):
+    return re_backslashed.sub(r'\1', s)

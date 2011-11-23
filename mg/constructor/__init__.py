@@ -2,7 +2,7 @@ from mg import *
 from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmorpg.locations_classes import Location
 from mg.constructor.script_classes import ScriptError, ScriptParserError
-from mg.mmorpg.inventory_classes import ItemType, dna_join
+from mg.mmorpg.inventory_classes import ItemType, dna_join, dna_make
 
 class ConstructorModule(Module):
     def find_character(self, name):
@@ -121,6 +121,8 @@ class ConstructorModule(Module):
         return self.item_type(uuid)
 
     def item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
+        if dna_suffix is None:
+            dna_suffix = dna_make(mods)
         dna = dna_join(uuid, dna_suffix)
         try:
             req = self.req()

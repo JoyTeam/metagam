@@ -169,3 +169,7 @@ class Location(Module):
     def script_params(self):
         return {"loc": self}
 
+    def __str__(self):
+        return "[loc %s]" % self.name
+    
+    __repr__ = __str__

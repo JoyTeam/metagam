@@ -21,8 +21,10 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.evaluate-text", self.evaluate_text)
         self.rhook("script.admin-text", self.admin_text)
 
-    def help_icon_expressions(self):
-        return ' <a href="//www.%s/doc/script" target="_blank"><img class="inline-icon" src="/st/icons/script.gif" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Scripting language reference"))
+    def help_icon_expressions(self, tag=None):
+        icon = "%s-script.gif" % tag if tag else "script.gif"
+        doc = tag or "script"
+        return ' <a href="//www.%s/doc/%s" target="_blank"><img class="inline-icon" src="/st/icons/%s" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], doc, icon, self._("Scripting language reference"))
 
     @property
     def parser_spec(self):
@@ -30,7 +32,7 @@ class ScriptEngine(ConstructorModule):
         try:
             return inst._parser_spec
         except AttributeError:
-            inst._parser_spec = Parsing.Spec(sys.modules[__name__], skinny=False)
+            inst._parser_spec = Parsing.Spec(sys.modules["mg.constructor.script_classes"], skinny=False)
             return inst._parser_spec
 
     def parse_expression(self, text):
@@ -110,12 +112,14 @@ class ScriptEngine(ConstructorModule):
             elif cmd == "call":
                 return "%s(%s)" % (val[1], ", ".join([self.unparse_expression(arg) for arg in val[2:]]))
             else:
-                raise ScriptParserError("Invalid cmd: '%s'" % cmd)
+                return "<<<%s: %s>>>" % (self._("Invalid script parse tree"), cmd)
         elif tp is str or tp is unicode:
-            if '"' in val:
+            if not re_dblquote.search(val):
+                return '"%s"' % val
+            elif not re_sglquote.search(val):
                 return "'%s'" % val
             else:
-                return '"%s"' % val
+                return '"%s"' % quotestr(val)
         elif val is None:
             return "none"
         else:
@@ -135,6 +139,8 @@ class ScriptEngine(ConstructorModule):
             return e.val
 
     def unparse_text(self, val):
+        if val is None:
+            return ""
         if type(val) != list:
             return unicode(val)
         res = ""
@@ -158,16 +164,32 @@ class ScriptEngine(ConstructorModule):
                 res += u'%s' % arg
         return res
 
-    def evaluate_text(self, tokens, globs={}, used_globs=None, description=None, env=None):
+    def evaluate_text(self, tokens, globs=None, used_globs=None, description=None, env=None):
         if type(tokens) != list:
             return unicode(tokens)
         if env is None:
             env = ScriptEnvironment()
-        env.globs = globs
-        env.used_globs = used_globs
-        env.description = description
+        # globs
+        if globs is not None:
+            env.globs = globs
+        elif not hasattr(env, "globs"):
+            env.globs = {}
+        # used_globs
+        if used_globs is not None:
+            env.used_globs = used_globs
+        elif not hasattr(env, "used_globs"):
+            env.used_globs = None
+        # description
+        if description is not None:
+            env.description = description
+        elif not hasattr(env, "description"):
+            env.description = None
+        # other fields
+        save_val = getattr(env, "val", None)
+        save_text = getattr(env, "text", None)
         env.val = tokens
         env.text = True
+        # evaluating
         res = u""
         for token in tokens:
             if type(token) is list:
@@ -181,17 +203,40 @@ class ScriptEngine(ConstructorModule):
                     raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string").format(token=self.unparse_expression(token), type=type(val).__name__), env)
             else:
                 res += u"%s" % token
+        # restoring
+        env.val = save_val
+        env.text = save_text
         return res
 
-    def evaluate_expression(self, val, globs={}, used_globs=None, description=None, env=None):
+    def evaluate_expression(self, val, globs=None, used_globs=None, description=None, env=None):
         if env is None:
             env = ScriptEnvironment()
-        env.globs = globs
-        env.used_globs = used_globs
-        env.description = description
+        # globs
+        if globs is not None:
+            env.globs = globs
+        elif not hasattr(env, "globs"):
+            env.globs = {}
+        # used_globs
+        if used_globs is not None:
+            env.used_globs = used_globs
+        elif not hasattr(env, "used_globs"):
+            env.used_globs = None
+        # description
+        if description is not None:
+            env.description = description
+        elif not hasattr(env, "description"):
+            env.description = None
+        # other fields
+        save_val = getattr(env, "val", None)
+        save_text = getattr(env, "text", None)
         env.val = val
         env.text = False
-        return self._evaluate(val, env)
+        # evaluating
+        res = self._evaluate(val, env)
+        # restoring
+        env.val = save_val
+        env.text = save_text
+        return res
 
     def _evaluate(self, val, env):
         if type(val) is not list:
@@ -386,11 +431,11 @@ class ScriptEngine(ConstructorModule):
         kwargs["text"] = True
         return self.admin_field(*args, **kwargs)
 
-    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None, expression=None):
+    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None, expression=None, mandatory=True):
         req = self.req()
         if expression is None:
             expression = req.param(name).strip()
-        if expression == "":
+        if mandatory and expression == "":
             errors[name] = self._("This field is mandatory")
             return
         # Parsing
@@ -444,12 +489,17 @@ class ScriptEngine(ConstructorModule):
             if session:
                 vars["session"] = session.data_copy()
             vars["text"] = htmlescape(exception.val)
+            if callable(exception.env.description):
+                exception.env.description = exception.env.description()
             vars["context"] = htmlescape(exception.env.description)
-            if exception.env.text:
-                vars["expression"] = htmlescape(self.call("script.unparse-text", exception.env.val))
-            else:
-                vars["expression"] = htmlescape(self.call("script.unparse-expression", exception.env.val))
-            subj = u"%s" % exception
+            try:
+                if exception.env.text:
+                    vars["expression"] = htmlescape(self.call("script.unparse-text", exception.env.val))
+                else:
+                    vars["expression"] = htmlescape(self.call("script.unparse-expression", exception.env.val))
+            except AttributeError:
+                pass
+            subj = utf2str(repr(exception))
             content = self.call("web.parse_template", "constructor/script-exception.html", vars)
             self.call("email.send", email, name, subj, content, immediately=True, subtype="html")
             raise Hooks.Return()

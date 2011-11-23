@@ -319,3 +319,8 @@ class MemberMoney(object):
             elif field == "available":
                 return self.available(currency)
         raise AttributeError(attr)
+
+    def __repr__(self):
+        return "[money %s.%s]" % (self.member_type, self.member)
+
+    __str__ = __repr__
