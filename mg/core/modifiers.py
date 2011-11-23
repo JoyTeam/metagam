@@ -148,10 +148,11 @@ class MemberModifiers(Module):
                     res["maxval"] = val
                 if val < res["minval"]:
                     res["minval"] = val
-                if till > res["maxtill"]:
-                    res["maxtill"] = till
-                if till < res["mintill"]:
-                    res["mintill"] = till
+                if till:
+                    if till > res["maxtill"]:
+                        res["maxtill"] = till
+                    if till < res["mintill"]:
+                        res["mintill"] = till
                 res["mods"].append(ent)
             else:
                 res = {
@@ -164,7 +165,7 @@ class MemberModifiers(Module):
                 }
                 modifiers[kind] = res
         for mod in modifiers.values():
-            mod["mods"].sort(cmp=lambda x, y: cmp(x.get("till"), y.get("till")))
+            mod["mods"].sort(cmp=lambda x, y: cmp(x.get("till", "9999-99-99"), y.get("till", "9999-99-99")))
         self._lst = modifiers
         return modifiers
 
@@ -187,13 +188,14 @@ class MemberModifiers(Module):
         self._mods.get("mods").append(ent)
         self._mods.touch()
         self.created[ent["uuid"]] = ent
-        mobj = self.main_app().obj(DBAlienModifier, ent["uuid"], data={})
-        mobj.set("target_type", self.target_type)
-        mobj.set("target", self.uuid)
-        mobj.set("till", till)
-        mobj.set("app", self.app().tag)
-        mobj.set("cls", self.app().inst.cls)
-        self.mobjs.append(mobj)
+        if till:
+            mobj = self.main_app().obj(DBAlienModifier, ent["uuid"], data={})
+            mobj.set("target_type", self.target_type)
+            mobj.set("target", self.uuid)
+            mobj.set("till", till)
+            mobj.set("app", self.app().tag)
+            mobj.set("cls", self.app().inst.cls)
+            self.mobjs.append(mobj)
         return ent
 
     def destroy(self, *args, **kwargs):

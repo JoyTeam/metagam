@@ -439,7 +439,19 @@ class WebApplication(Application):
         request.args = re_remove_ver.sub("", args)
         try:
             self.hooks.call("web.security_check")
-            res = self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
+            res = lambda: self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
+            # POST requests with authenticated user are automatically locked
+            # to avoid multiple concurrent requests from the single user
+            if request.environ.get("REQUEST_METHOD") == "POST":
+                user = request.user()
+                if user:
+                    with self.lock(["UserRequest.%s" % user]):
+                        res = res()
+                else:
+                    with self.lock(["UserRequest.%s" % request.remote_addr()]):
+                        res = res()
+            else:
+                res = res()
         except WebResponse as res:
             res = res.content
         if getattr(request, "cache", None):

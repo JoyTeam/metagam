@@ -27,7 +27,11 @@ class CharQuests(ConstructorModule):
 
     @property
     def char(self):
-        return self.character(self.uuid)
+        try:
+            return self._char
+        except AttributeError:
+            self._char = self.character(self.uuid)
+            return self._char
 
     def load(self):
         try:
@@ -74,6 +78,19 @@ class CharQuests(ConstructorModule):
     def quest(self, qid):
         return CharQuest(self, qid)
 
+    def locked(self, qid):
+        return self.char.modifiers.get("q_%s_locked" % qid)
+
+    def lock(self, qid, timeout=None):
+        if timeout is None:
+            till = None
+        else:
+            timeout = intz(timeout)
+            if timeout <= 0:
+                return
+            till = self.now(timeout)
+        self.char.modifiers.add("q_%s_locked" % qid, 1, till)
+
 class CharQuest(object):
     def __init__(self, quests, qid):
         self.quests = quests
@@ -81,14 +98,21 @@ class CharQuest(object):
 
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "state":
-            return self.quests.get(self.qid, attr, default)
+            return self.quests.get(self.qid, attr, "init")
+        elif attr == "locked":
+            return 1 if self.locked else 0
+        elif attr == "notlocked":
+            return 0 if self.locked else 1
         else:
             m = re_param.match(attr)
             if m:
                 param = m.group(1)
                 return self.quests.get(self.qid, param)
             else:
-                raise AttributeError(attr)
+                if handle_exceptions:
+                    return None
+                else:
+                    raise AttributeError(attr)
 
     def script_set_attr(self, attr, val):
         m = re_param.match(attr)
@@ -105,6 +129,10 @@ class CharQuest(object):
         return "%s.[quest %s]" % (htmlescape(self.quests.char), self.qid)
 
     __repr__ = __str__
+
+    @property
+    def locked(self):
+        return self.quests.locked(self.qid)
 
 def parse_quest_tp(qid, tp):
     if tp[0] == "event":
@@ -514,8 +542,13 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + ("set %s.%s = %s\n" % (self.call("script.unparse-expression", val[1]), val[2], self.call("script.unparse-expression", val[3])))
             elif val[0] == "destroy":
                 return "  " * indent + "%s\n" % ("finish" if val[1] else "fail")
+            elif val[0] == "lock":
+                attrs = ""
+                if val[1] is not None:
+                    attrs += ' timeout=%s' % self.call("script.unparse-expression", val[1])
+                return "  " * indent + "lock%s\n" % attrs
             else:
-                return "<<<%s: %s>>>" % (self._("Invalid script parse tree"), objtype)
+                return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), objtype)
 
 class Quests(ConstructorModule):
     def register(self):
@@ -727,8 +760,16 @@ class Quests(ConstructorModule):
                                             self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
                                             char.error(self._("Quest failed"))
                                         char.quests.destroy(quest)
+                                    elif cmd_code == "lock":
+                                        if cmd[1] is None:
+                                            self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
+                                            char.quests.lock(quest)
+                                        else:
+                                            timeout = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
+                                            char.quests.lock(quest, timeout)
                                     else:
-                                        self.warning("Unknown quest action: %s", cmd_code)
+                                        raise RuntimeError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
                                     e = ScriptError(e.val, env())
                                     self.call("exception.report", e)

@@ -47,6 +47,9 @@ class TokenFinish(Parsing.Token):
 class TokenFail(Parsing.Token):
     "%token fail"
 
+class TokenLock(Parsing.Token):
+    "%token lock"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -139,7 +142,7 @@ class QuestAction(Parsing.Nonterm):
     def reduceCall(self, call, attrs):
         "%reduce call Attrs"
         event = get_str_attr(call, "call", attrs, "event", require=True)
-        quest = get_str_attr(call, "call", attrs, "quest", require=False)
+        quest = get_str_attr(call, "call", attrs, "quest")
         validate_attrs(call, "call", attrs, ["quest", "event"])
         if not re_valid_identifier.match(event):
             raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
@@ -190,13 +193,19 @@ class QuestAction(Parsing.Nonterm):
             raise Parsing.SyntaxError(assign.script_parser._("Invalid usage of assignment operator"))
         self.val = ["set", lvalue.val[1], lvalue.val[2], rvalue.val]
 
-    def reduceFinish(self, dest):
+    def reduceFinish(self, cmd):
         "%reduce finish"
         self.val = ["destroy", True]
 
-    def reduceFail(self, dest):
+    def reduceFail(self, cmd):
         "%reduce fail"
         self.val = ["destroy", False]
+
+    def reduceLock(self, cmd, attrs):
+        "%reduce lock ExprAttrs"
+        timeout = get_attr(cmd, "lock", attrs, "timeout")
+        validate_attrs(cmd, "lock", attrs, ["timeout"])
+        self.val = ["lock", timeout]
 
 class QuestActions(Parsing.Nonterm):
     "%nonterm"
@@ -254,6 +263,7 @@ class QuestScriptParser(ScriptParser):
     syms["set"] = TokenSet
     syms["finish"] = TokenFinish
     syms["fail"] = TokenFail
+    syms["lock"] = TokenLock
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)
