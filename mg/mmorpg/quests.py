@@ -137,8 +137,10 @@ class CharQuest(object):
 def parse_quest_tp(qid, tp):
     if tp[0] == "event":
         return "event-%s-%s" % (qid, tp[1])
-    else:
-        return "-".join(tp)
+    elif tp[0] == "expired":
+        if tp[1] == "timer":
+            return "expired-timer-%s-%s" % (qid, tp[2])
+    return "-".join(tp)
 
 class QuestsAdmin(ConstructorModule):
     def register(self):
@@ -508,6 +510,11 @@ class QuestsAdmin(ConstructorModule):
                 return u"event %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleported":
                 return "teleported"
+            elif val[0] == "expired":
+                if val[1] == "mod":
+                    return "expired %s" % self.call("script.unparse-expression", val[2])
+                elif val[1] == "timer":
+                    return "timeout %s" % self.call("script.unparse-expression", val[2])
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -552,8 +559,9 @@ class QuestsAdmin(ConstructorModule):
                 if val[1] is not None:
                     attrs += ' timeout=%s' % self.call("script.unparse-expression", val[1])
                 return "  " * indent + "lock%s\n" % attrs
-            else:
-                return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), objtype)
+            elif val[0] == "timer":
+                return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
+            return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
 class Quests(ConstructorModule):
     def register(self):
@@ -604,7 +612,7 @@ class Quests(ConstructorModule):
         if old_indent is None:
             indent = 0
         else:
-            indent = old_indent + 3
+            indent = old_indent + 4
         tasklet.quest_indent = indent
         try:
             def event_str():
@@ -785,6 +793,13 @@ class Quests(ConstructorModule):
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
                                             char.quests.lock(quest, timeout)
+                                    elif cmd_code == "timer":
+                                        tid = cmd[1]
+                                        timeout = intz(self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
+                                        if timeout > 0:
+                                            char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
                                     else:
                                         raise RuntimeError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

@@ -672,3 +672,9 @@ class CharactersMod(ConstructorModule):
         character = self.character(mods.uuid)
         if character.valid:
             character.name_invalidate()
+            kind = mod["kind"]
+            if not character.modifiers.get(kind):
+                if kind.startswith("timer-"):
+                    self.qevent("expired-%s" % kind, char=character)
+                else:
+                    self.qevent("expired-mod-%s" % kind, char=character)

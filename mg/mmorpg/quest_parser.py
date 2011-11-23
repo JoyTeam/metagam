@@ -50,6 +50,15 @@ class TokenFail(Parsing.Token):
 class TokenLock(Parsing.Token):
     "%token lock"
 
+class TokenExpired(Parsing.Token):
+    "%token expired"
+
+class TokenTimer(Parsing.Token):
+    "%token timer"
+
+class TokenTimeout(Parsing.Token):
+    "%token timeout"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -59,6 +68,10 @@ class AttrKey(Parsing.Nonterm):
     def reduceEvent(self, event):
         "%reduce event"
         self.val = "event"
+
+    def reduceTimeout(self, event):
+        "%reduce timeout"
+        self.val = "timeout"
 
 class Attrs(Parsing.Nonterm):
     "%nonterm"
@@ -122,6 +135,22 @@ class EventType(Parsing.Nonterm):
         validate_attrs(ev, "teleported", attrs, ["from", "to"])
         self.val = [["teleported"], attrs.val]
 
+    def reduceExpired(self, ev, modid):
+        "%reduce expired scalar"
+        if type(modid.val) != str and type(modid.val) != unicode:
+            raise Parsing.SyntaxError(any_obj.script_parser._("Modifier id must be a string"))
+        elif not re_valid_identifier.match(modid.val):
+            raise Parsing.SyntaxError(any_obj.script_parser._("Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        self.val = [["expired", "mod", modid.val], None]
+
+    def reduceTimeout(self, ev, timerid):
+        "%reduce timeout scalar"
+        if type(timerid.val) != str and type(timerid.val) != unicode:
+            raise Parsing.SyntaxError(any_obj.script_parser._("Timer id must be a string"))
+        elif not re_valid_identifier.match(timerid.val):
+            raise Parsing.SyntaxError(any_obj.script_parser._("Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        self.val = [["expired", "timer", timerid.val], None]
+
 # !!!!!!!!!!!!!!!!!!!!!!!!
 #          ACTIONS
 # !!!!!!!!!!!!!!!!!!!!!!!!
@@ -146,9 +175,9 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(call, "call", attrs, ["quest", "event"])
         if not re_valid_identifier.match(event):
             raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
-        if not re_valid_identifier.match(quest):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         if quest:
+            if not re_valid_identifier.match(quest):
+                raise Parsing.SyntaxError(any_obj.script_parser._("Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
             self.val = ["call", quest, event]
         else:
             self.val = ["call", event]
@@ -207,6 +236,15 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(cmd, "lock", attrs, ["timeout"])
         self.val = ["lock", timeout]
 
+    def reduceTimer(self, cmd, attrs):
+        "%reduce timer ExprAttrs"
+        tid = get_str_attr(cmd, "timer", attrs, "id", require=True)
+        if not re_valid_identifier.match(tid):
+            raise Parsing.SyntaxError(cmd.script_parser._("Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        timeout = get_attr(cmd, "timer", attrs, "timeout", require=True)
+        validate_attrs(cmd, "timer", attrs, ["id", "timeout"])
+        self.val = ["timer", tid, timeout]
+
 class QuestActions(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -264,6 +302,9 @@ class QuestScriptParser(ScriptParser):
     syms["finish"] = TokenFinish
     syms["fail"] = TokenFail
     syms["lock"] = TokenLock
+    syms["expired"] = TokenExpired
+    syms["timer"] = TokenTimer
+    syms["timeout"] = TokenTimeout
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

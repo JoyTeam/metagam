@@ -92,7 +92,12 @@ class MemberModifiers(Module):
         for mod in destroyed.values():
             self.call("%s-modifier.destroyed" % self.target_type, self, mod)
             self.call("modifier.destroyed", self, mod)
+        kinds = set()
         for mod in expired.values():
+            kind = mod["kind"]
+            if kind in kinds:
+                continue
+            kinds.add(kind)
             self.call("%s-modifier.expired" % self.target_type, self, mod)
             self.call("modifier.expired", self, mod)
         for mod in prolong.values():
