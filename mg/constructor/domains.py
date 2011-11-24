@@ -459,16 +459,20 @@ class DomainsAdmin(Module):
         main = self.main_app()
         ns1 = req.param("ns1")
         ns2 = req.param("ns2")
+        nocheck = req.param("nocheck")
         if req.param("ok"):
             config = main.config_updater()
             config.set("dns.ns1", ns1)
             config.set("dns.ns2", ns2)
+            config.set("dns.nocheck", nocheck)
             config.store()
             self.call("admin.response", self._("DNS settings stored"), {})
         else:
             ns1 = main.config.get("dns.ns1")
             ns2 = main.config.get("dns.ns2")
+            nocheck = main.config.get("dns.nocheck")
         fields = [
+            {"name": "nocheck", "label": self._("Don't check DNS servers"), "checked": nocheck, "type": "checkbox"},
             {"name": "ns1", "label": self._("DNS server 1"), "value": ns1},
             {"name": "ns2", "label": self._("DNS server 2"), "value": ns2},
         ]
@@ -722,7 +726,7 @@ class DomainWizard(Wizard):
                     errors["domain"] = self._("Domain name can't contain double dash ('--'). International domain names are not supported")
                 elif len(domain) > 63:
                     errors["domain"] = self._("Domain name is too long")
-                if not len(errors):
+                if not len(errors) and not self.main_app().config.get("dns.nocheck"):
                     self.call("domains.validate_new", domain, errors)
                 if len(errors):
                     self.call("web.response_json", {"success": False, "errors": errors})
