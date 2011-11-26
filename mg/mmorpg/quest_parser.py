@@ -33,6 +33,9 @@ class TokenCall(Parsing.Token):
 class TokenGive(Parsing.Token):
     "%token give"
 
+class TokenTake(Parsing.Token):
+    "%token take"
+
 class TokenIf(Parsing.Token):
     "%token if"
 
@@ -101,7 +104,7 @@ class Attrs(Parsing.Nonterm):
     def reduceAttr(self, attrs, key, a, value):
         "%reduce Attrs AttrKey assign scalar"
         if key.val in attrs.val:
-            raise Parsing.SyntaxError(attrs.script_parser._("Attribute '%s' was specified twice") % key.val)
+            raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
         self.val = attrs.val.copy()
         self.val[key.val] = value.val
 
@@ -112,9 +115,9 @@ class ExprAttrs(Parsing.Nonterm):
         self.val = {}
     
     def reduceAttr(self, attrs, key, a, expr):
-        "%reduce Attrs AttrKey assign Expr"
+        "%reduce ExprAttrs AttrKey assign Expr"
         if key.val in attrs.val:
-            raise Parsing.SyntaxError(attrs.script_parser._("Attribute '%s' was specified twice") % key.val)
+            raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
         self.val = attrs.val.copy()
         self.val[key.val] = expr.val
 
@@ -234,6 +237,18 @@ class QuestAction(Parsing.Nonterm):
         if quantity is None:
             quantity = 1
         self.val = ["giveitem", item, mods, quantity]
+
+    def reduceTake(self, cmd, attrs):
+        "%reduce take ExprAttrs"
+        tp = attrs.val.get("type")
+        dna = attrs.val.get("dna")
+        if tp is None and dna is None:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' or '{attr2}' are required in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
+        if tp is not None and dna is not None:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
+        quantity = attrs.val.get("quantity")
+        validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity"])
+        self.val = ["takeitem", tp, dna, quantity]
 
     def reduceIf(self, cmd, expr, curlyleft, actions, curlyright):
         "%reduce if Expr curlyleft QuestActions curlyright"
@@ -411,6 +426,7 @@ class QuestScriptParser(ScriptParser):
     syms["title"] = TokenTitle
     syms["button"] = TokenButton
     syms["template"] = TokenTemplate
+    syms["take"] = TokenTake
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

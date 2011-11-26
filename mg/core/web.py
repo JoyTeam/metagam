@@ -442,13 +442,13 @@ class WebApplication(Application):
             res = lambda: self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
             # POST requests with authenticated user are automatically locked
             # to avoid multiple concurrent requests from the single user
-            if request.environ.get("REQUEST_METHOD") == "POST":
+            if request.environ.get("REQUEST_METHOD") == "POST" and self.tag != "int":
                 user = request.user()
                 if user:
-                    with self.lock(["UserRequest.%s" % user]):
+                    with self.lock(["UserRequest.%s.%s" % (self.tag, user)]):
                         res = res()
                 else:
-                    with self.lock(["UserRequest.%s" % request.remote_addr()]):
+                    with self.lock(["UserRequest.%s.%s" % (self.tag, request.remote_addr())]):
                         res = res()
             else:
                 res = res()

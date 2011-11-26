@@ -1573,10 +1573,15 @@ class MemberInventory(ConstructorModule):
         item_type, dna_suffix = dna_parse(dna)
         if not item_type:
             return None
+        if "any_dna" in kwargs:
+            any_dna = kwargs["any_dna"]
+            del kwargs["any_dna"]
+        else:
+            any_dna = False
         items = self._items()
         for i in xrange(0, len(items)):
             item = items[i]
-            if item.get("type") == item_type and item.get("dna") == dna_suffix:
+            if item.get("type") == item_type and any_dna or item.get("dna") == dna_suffix:
                 success = False
                 if quantity is None:
                     quantity = item["quantity"]

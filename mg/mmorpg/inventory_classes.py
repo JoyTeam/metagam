@@ -174,6 +174,10 @@ class ItemType(Module):
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
+        elif attr == "type":
+            return self.uuid
+        elif attr == "dna":
+            return self.dna
         elif attr == "name":
             return self.name
         elif attr == "name_g":

@@ -587,6 +587,16 @@ class QuestsAdmin(ConstructorModule):
                     result += " quantity=%s" % self.call("script.unparse-expression", quantity)
                 result += attrs + "\n"
                 return result
+            elif val[0] == "takeitem":
+                result = "  " * indent + "take"
+                if val[1] is not None:
+                    result += " type=%s" % self.call("script.unparse-expression", val[1])
+                if val[2] is not None:
+                    result += " dna=%s" % self.call("script.unparse-expression", val[2])
+                if val[3] is not None:
+                    result += " quantity=%s" % self.call("script.unparse-expression", val[3])
+                result += "\n"
+                return result
             elif val[0] == "if":
                 result = "  " * indent + ("if %s {" % self.call("script.unparse-expression", val[1]))
                 result += "\n%s%s}" % (self.quest_admin_unparse_script(val[2], indent + 1), "  " * indent)
@@ -918,6 +928,32 @@ class Quests(ConstructorModule):
                                                     char.quest_given = {item_name: quantity}
                                                 except KeyError:
                                                     char.quest_given[item_name] = quantity
+                                    elif cmd_code == "takeitem":
+                                        quantity = cmd[3]
+                                        if quantity is not None:
+                                            quantity = self.call("script.evaluate-expression", quantity, globs=kwargs, description=eval_description)
+                                            quantity = intz(quantity)
+                                        if cmd[1]:
+                                            item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            if quantity is None or quantity >= 1:
+                                                char.inventory.take_dna(item_type, quantity, "quest.take", quest=quest, any_dna=True)
+                                            if debug:
+                                                it_obj = self.item_type(item_type)
+                                                if quantity is None:
+                                                    self.call("debug-channel.character", char, self._("taking all items with type '%s' and any DNA") % it_obj.name, cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA").format(quantity=quantity, type=it_obj.name), cls="quest-action", indent=indent+2)
+                                        elif cmd[2]:
+                                            dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                            char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                            if debug:
+                                                it_obj = self.item_type(dna)
+                                                if quantity is None:
+                                                    self.call("debug-channel.character", char, self._("taking all items with exact DNA '%s'") % it_obj.name, cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}'").format(quantity=quantity, dna=it_obj.name), cls="quest-action", indent=indent+2)
+                                        else:
+                                            raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env())
                                     elif cmd_code == "if":
                                         expr = cmd[1]
                                         val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
