@@ -349,9 +349,9 @@ class QuestsAdmin(ConstructorModule):
                     config.store()
                     self.call("admin.redirect", "quests/editor/%s/info" % qid)
                 fields = [
-                    {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
-                    {"name": "order", "value": quest.get("order", 0), "label": self._("Sorting order"), "inline": True},
                     {"name": "id", "value": "" if req.args == "new" else req.args, "label": self._("Quest identifier")},
+                    {"name": "order", "value": quest.get("order", 0), "label": self._("Sorting order"), "inline": True},
+                    {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
                     {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled"), "type": "checkbox"},
                     {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
