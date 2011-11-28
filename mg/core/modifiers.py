@@ -1,4 +1,7 @@
 from mg import *
+import re
+
+re_aggr = re.compile(r'^(max|min|sum|cnt)_(.+)$')
 
 class DBAlienModifier(CassandraObject):
     """
@@ -149,6 +152,7 @@ class MemberModifiers(Module):
                         continue
             res = modifiers.get(kind)
             if res:
+                res["sumval"] += val
                 if val > res["maxval"]:
                     res["maxval"] = val
                 if val < res["minval"]:
@@ -164,6 +168,7 @@ class MemberModifiers(Module):
                     "cnt": 1,
                     "minval": val,
                     "maxval": val,
+                    "sumval": val,
                     "mintill": till,
                     "maxtill": till,
                     "mods": [ent],
@@ -252,7 +257,21 @@ class MemberModifiers(Module):
             ent = self._add(kind, value, till, period=period, **kwargs)
 
     def script_attr(self, attr, handle_exceptions=True):
-        return 1 if self.get(attr) else 0
+        if self.get(attr):
+            return 1
+        m = re_aggr.match(attr)
+        if m:
+            aggr, kind = m.group(1, 2)
+            mod = self.get(kind)
+            if aggr == "max":
+                return mod["maxval"] if mod else 0
+            elif aggr == "min":
+                return mod["minval"] if mod else 0
+            elif aggr == "cnt":
+                return mod["cnt"] if mod else 0
+            elif aggr == "sum":
+                return mod["sumval"] if mod else 0
+        return 0
 
     def __str__(self):
         return "[mod %s.%s]" % (self.target_type, self.uuid)
@@ -334,8 +353,7 @@ class ModifiersAdmin(Module):
                 self._("Code"),
                 self._("Description"),
                 self._("Cnt"),
-                self._("Min"),
-                self._("Max"),
+                self._("Min/max/sum"),
                 self._("Till"),
             ]
             rows = []
@@ -356,8 +374,7 @@ class ModifiersAdmin(Module):
                     htmlescape(m),
                     htmlescape(mod.get("description")),
                     mod.get("cnt"),
-                    htmlescape(mod.get("minval")),
-                    htmlescape(mod.get("maxval")),
+                    "%s/%s/%s" % (htmlescape(mod.get("minval")), htmlescape(mod.get("maxval")), htmlescape(mod.get("sumval"))),
                     till,
                 ]
                 rows.append(rmod)
