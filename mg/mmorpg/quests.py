@@ -912,7 +912,7 @@ class Quests(ConstructorModule):
                                         quantity = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
                                         if quantity > 0:
                                             item_type = self.item_type(item_type_uuid, mods=mods)
-                                            if item_type.valid:
+                                            if item_type.valid():
                                                 def message():
                                                     res = self._("giving {item_name}, quantity={quantity}").format(item_name=item_type.name, quantity=quantity)
                                                     if mods_list:
@@ -943,10 +943,14 @@ class Quests(ConstructorModule):
                                                 deleted = 0
                                             if debug:
                                                 it_obj = self.item_type(item_type)
-                                                if quantity is None:
-                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=it_obj.name, quantity=deleted), cls="quest-action", indent=indent+2)
+                                                if it_obj.valid():
+                                                    name = it_obj.name
                                                 else:
-                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=it_obj.name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                                    name = "??? (%s)" % item_type
+                                                if quantity is None:
+                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=name, quantity=deleted), cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if quantity is not None and not deleted:
                                                 if len(cmd) >= 5 and cmd[4] is not None:
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), **kwargs)
@@ -956,10 +960,14 @@ class Quests(ConstructorModule):
                                             it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
                                             if debug:
                                                 it_obj = self.item_type(dna)
-                                                if quantity is None:
-                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with exact DNA '{dna}'").format(dna=it_obj.name, quantity=deleted or 0), cls="quest-action", indent=indent+2)
+                                                if it_obj.valid():
+                                                    name = it_obj.name
                                                 else:
-                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}' ({result})").format(quantity=quantity, dna=it_obj.name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                                    name = "??? (%s)" % item_type
+                                                if quantity is None:
+                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with exact DNA '{dna}'").format(dna=name, quantity=deleted or 0), cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}' ({result})").format(quantity=quantity, dna=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if quantity is not None and not deleted:
                                                 if len(cmd) >= 5 and cmd[4] is not None:
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), **kwargs)

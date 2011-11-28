@@ -1605,7 +1605,6 @@ class MemberInventory(ConstructorModule):
                 if quantity is not None and quantity <= 0:
                     break
             i += 1
-        print "deleted=%s, logmessages=%s, remaining_quantity=%s" % (deleted, logmessages, quantity)
         if quantity is not None and quantity != 0:
             return 0
         if deleted > 0:
