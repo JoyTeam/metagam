@@ -3,6 +3,13 @@ import re
 
 re_money_script_field = re.compile(r'^(balance|available)_(\S+)$')
 
+class MoneyError(Exception):
+    def __init__(self, val):
+        self.val = val
+
+    def __str__(self):
+        return self.val
+
 class Account(CassandraObject):
     clsname = "Account"
     indexes = {
@@ -87,9 +94,9 @@ class PaymentXsolla(CassandraObject):
 class PaymentXsollaList(CassandraObjectList):
     objcls = PaymentXsolla
 
-class MemberMoney(object):
-    def __init__(self, app, member_type, member):
-        self.app = app
+class MemberMoney(Module):
+    def __init__(self, app, member_type, member, fqn="mg.core.money.MemberMoney"):
+        Module.__init__(self, app, fqn)
         self.member_type = member_type
         self.member = member
 
@@ -99,7 +106,7 @@ class MemberMoney(object):
             return self._accounts
         except AttributeError:
             pass
-        lst = self.app.objlist(AccountList, query_index="member", query_equal=self.member)
+        lst = self.objlist(AccountList, query_index="member", query_equal=self.member)
         lst.load(silent=True)
         self._accounts = lst
         return lst
@@ -110,7 +117,7 @@ class MemberMoney(object):
             return self._locks
         except AttributeError:
             pass
-        lst = self.app.objlist(AccountLockList, query_index="member", query_equal=self.member)
+        lst = self.objlist(AccountLockList, query_index="member", query_equal=self.member)
         lst.load(silent=True)
         self._locks = lst
         return lst
@@ -121,7 +128,7 @@ class MemberMoney(object):
                 return acc
         if not create:
             return None
-        account = self.app.obj(Account)
+        account = self.obj(Account)
         account.set("member", self.member)
         account.set("balance", 0)
         account.set("currency", currency)
@@ -131,37 +138,41 @@ class MemberMoney(object):
 
     def description(self, description):
         "Looks for description info"
-        info = self.app.hooks.call("money-description.%s" % description)
+        info = self.call("money-description.%s" % description)
         if info is None:
-            raise RuntimeError("Invalid money transfer description")
+            raise MoneyError(self._("Invalid money transfer description"))
         return info
 
     def description_validate(self, description, kwargs):
         info = self.description(description)
         for arg in info["args"]:
             if not kwargs.has_key(arg):
-                raise RuntimeError("Missing argument %s for description %s" % (arg, description))
+                raise MoneyError(self._("Missing argument {arg} for description {desc}").format(arg=arg, desc=description))
 
     @property
     def lock_key(self):
         return "%s-Money.%s" % (self.member_type, self.member)
 
     def credit(self, amount, currency, description, **kwargs):
+        if amount < 0:
+            raise MoneyError(self._("Negative money amount"))
+        if amount == 0:
+            return
         self.description_validate(description, kwargs)
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
+        self.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock([self.lock_key]):
+            raise MoneyError(self._("Invalid currency: %s") % currency)
+        with Module.lock(self, [self.lock_key]):
             account = self.account(currency, True)
             account.credit(amount, currency_info)
-            op = self.app.obj(AccountOperation)
+            op = self.obj(AccountOperation)
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
             op.set("currency", currency)
-            op.set("performed", self.app.now())
+            op.set("performed", self.now())
             op.set("amount", currency_info["format"] % amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
@@ -169,23 +180,27 @@ class MemberMoney(object):
             op.store()
 
     def debit(self, amount, currency, description, **kwargs):
+        if amount < 0:
+            raise MoneyError(self._("Negative money amount"))
+        if amount == 0:
+            return True
         self.description_validate(description, kwargs)
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
+        self.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock([self.lock_key]):
+            raise MoneyError(self._("Invalid currency: %s") % currency)
+        with Module.lock(self, [self.lock_key]):
             account = self.account(currency, False)
             if account is None:
                 return False
             if not account.debit(amount, currency_info):
                 return False
-            op = self.app.obj(AccountOperation)
+            op = self.obj(AccountOperation)
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
-            op.set("performed", self.app.now())
+            op.set("performed", self.now())
             op.set("amount", currency_info["format"] % -amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
@@ -196,18 +211,18 @@ class MemberMoney(object):
     def force_debit(self, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
+        self.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock([self.lock_key]):
+            raise MoneyError(self._("Invalid currency: %s") % currency)
+        with Module.lock(self, [self.lock_key]):
             account = self.account(currency, True)
             account.force_debit(amount, currency_info)
-            op = self.app.obj(AccountOperation)
+            op = self.obj(AccountOperation)
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
-            op.set("performed", self.app.now())
+            op.set("performed", self.now())
             op.set("amount", currency_info["format"] % -amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
@@ -217,11 +232,11 @@ class MemberMoney(object):
     def transfer(self, target, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
+        self.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock([self.lock_key, target.lock_key]):
+            raise MoneyError(self._("Invalid currency: %s") % currency)
+        with Module.lock(self, [self.lock_key, target.lock_key]):
             account_from = self.account(currency, False)
             if account_from is None:
                 return False
@@ -229,8 +244,8 @@ class MemberMoney(object):
             if not account_from.debit(amount, currency_info):
                 return False
             account_to.credit(amount, currency_info)
-            performed = self.app.now()
-            op1 = self.app.obj(AccountOperation)
+            performed = self.now()
+            op1 = self.obj(AccountOperation)
             for key, val in kwargs.iteritems():
                 op1.set(key, val)
             op1.set("account", account_from.uuid)
@@ -238,7 +253,7 @@ class MemberMoney(object):
             op1.set("amount", currency_info["format"] % -amount)
             op1.set("balance", currency_info["format"] % account_from.balance())
             op1.set("description", description)
-            op2 = self.app.obj(AccountOperation)
+            op2 = self.obj(AccountOperation)
             for key, val in kwargs.iteritems():
                 op2.set(key, val)
             op2.set("account", account_to.uuid)
@@ -257,21 +272,21 @@ class MemberMoney(object):
     def lock(self, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
+        self.call("currencies.list", currencies)
         currency_info = currencies.get(currency)
         if currency_info is None:
-            raise RuntimeError("Invalid currency")
-        with self.app.lock([self.lock_key]):
+            raise MoneyError(self._("Invalid currency: %s") % currency)
+        with Module.lock(self, [self.lock_key]):
             account = self.account(currency, False)
             if not account:
                 return None
-            lock = self.app.obj(AccountLock)
+            lock = self.obj(AccountLock)
             lock.set("member", self.member)
             lock.set("account", account.uuid)
             lock.set("amount", currency_info["format"] % amount)
             lock.set("currency", currency)
             lock.set("description", description)
-            lock.set("created", self.app.now())
+            lock.set("created", self.now())
             for key, val in kwargs.iteritems():
                 lock.set(key, val)
             if not account.lock(amount, currency_info):
@@ -282,14 +297,14 @@ class MemberMoney(object):
 
     def unlock(self, lock_uuid):
         currencies = {}
-        self.app.hooks.call("currencies.list", currencies)
-        with self.app.lock([self.lock_key]):
+        self.call("currencies.list", currencies)
+        with Module.lock(self, [self.lock_key]):
             try:
-                lock = self.app.obj(AccountLock, lock_uuid)
+                lock = self.obj(AccountLock, lock_uuid)
             except ObjectNotFoundException:
                 return None
             else:
-                account = self.app.obj(Account, lock.get("account"))
+                account = self.obj(Account, lock.get("account"))
                 currency_info = currencies.get(account.get("currency"))
                 if currency_info is None:
                     return None

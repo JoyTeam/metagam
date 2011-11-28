@@ -527,17 +527,20 @@ class MoneyAdmin(Module):
             rdescription = op.get("description")
             description = self.call("money-description.%s" % rdescription)
             if description:
-                watchdog = 0
-                while True:
-                    watchdog += 1
-                    if watchdog >= 100:
-                        break
-                    try:
-                        rdescription = description["text"].format(**op.data)
-                    except KeyError as e:
-                        op.data[e.args[0]] = "{%s}" % e.args[0]
-                    else:
-                        break
+                if callable(description["text"]):
+                    rdescription = description["text"](op.data)
+                else:
+                    watchdog = 0
+                    while True:
+                        watchdog += 1
+                        if watchdog >= 100:
+                            break
+                        try:
+                            rdescription = description["text"].format(**op.data)
+                        except KeyError as e:
+                            op.data[e.args[0]] = "{%s}" % e.args[0]
+                        else:
+                            break
             if op.get("comment"):
                 rdescription = "%s: %s" % (rdescription, htmlescape(op.get("comment")))
             operations.append({

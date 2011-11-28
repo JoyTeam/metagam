@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.quest_parser import *
+from mg.core.money_classes import MoneyError
 from uuid import uuid4
 import re
 
@@ -587,6 +588,10 @@ class QuestsAdmin(ConstructorModule):
                     result += " quantity=%s" % self.call("script.unparse-expression", quantity)
                 result += attrs + "\n"
                 return result
+            elif val[0] == "givemoney":
+                result = "  " * indent + "give amount=%s currency=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
+                result += "\n"
+                return result
             elif val[0] == "takeitem":
                 result = "  " * indent + "take"
                 if val[1] is not None:
@@ -597,6 +602,12 @@ class QuestsAdmin(ConstructorModule):
                     result += " quantity=%s" % self.call("script.unparse-expression", val[3])
                 if len(val) >= 5 and val[4] is not None:
                     result += " onfail=%s" % self.call("script.unparse-expression", val[4])
+                result += "\n"
+                return result
+            elif val[0] == "takemoney":
+                result = "  " * indent + "take amount=%s currency=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
+                if val[3] is not None:
+                    result += " onfail=%s" % self.call("script.unparse-expression", val[3])
                 result += "\n"
                 return result
             elif val[0] == "if":
@@ -754,6 +765,9 @@ class Quests(ConstructorModule):
         self.rhook("quest.check-dialogs", self.check_dialogs)
         self.rhook("quest.check-redirects", self.check_redirects)
         self.rhook("web.request_processed", self.request_processed)
+        self.rhook("money-description.quest-give", self.money_description_quest)
+        self.rhook("money-description.quest-take", self.money_description_quest)
+        self.rhook("gameinterface.buttons", self.gameinterface_buttons)
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -874,12 +888,12 @@ class Quests(ConstructorModule):
                             else:
                                 # this is a real error
                                 raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env())
-                            def env():
-                                env = ScriptEnvironment()
-                                env.globs = kwargs
-                                env.description = self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
-                                return env
                             for cmd in actions:
+                                def env():
+                                    env = ScriptEnvironment()
+                                    env.globs = kwargs
+                                    env.description = self._("Quest '{quest}', event '{event}', command '{command}'").format(quest=quest, event=event, command=self.call("quest-admin.unparse-script", cmd).strip())
+                                    return env
                                 try:
                                     cmd_code = cmd[0]
                                     if cmd_code == "message" or cmd_code == "error":
@@ -952,8 +966,8 @@ class Quests(ConstructorModule):
                                                 else:
                                                     self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if quantity is not None and not deleted:
-                                                if len(cmd) >= 5 and cmd[4] is not None:
-                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), **kwargs)
+                                                if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
+                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
                                                 break
                                         elif cmd[2]:
                                             dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
@@ -969,11 +983,36 @@ class Quests(ConstructorModule):
                                                 else:
                                                     self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}' ({result})").format(quantity=quantity, dna=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if quantity is not None and not deleted:
-                                                if len(cmd) >= 5 and cmd[4] is not None:
-                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), **kwargs)
+                                                if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
+                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
                                                 break
                                         else:
                                             raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env())
+                                    elif cmd_code == "givemoney":
+                                        amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                        currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("giving money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
+                                        try:
+                                            char.money.credit(amount, currency, "quest-give", quest=quest)
+                                        except MoneyError as e:
+                                            raise QuestError(e.val)
+                                    elif cmd_code == "takemoney":
+                                        amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                        currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        try:
+                                            res = char.money.debit(amount, currency, "quest-take", quest=quest)
+                                        except MoneyError as e:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
+                                            raise QuestError(e.val)
+                                        else:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency} ({result})").format(amount=amount, currency=currency, result=self._("successfully") if res else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                            if not res:
+                                                if cmd[3] is not None:
+                                                    self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
+                                                break
                                     elif cmd_code == "if":
                                         expr = cmd[1]
                                         val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
@@ -1207,3 +1246,27 @@ class Quests(ConstructorModule):
         except TemplateException as e:
             self.exception(e)
             self.call("game.response_internal", "dialog.html", vars, dialog.get("text"))
+
+    def money_description_quest(self):
+        return {
+            "args": ["quest"],
+            "text": lambda op: self._("Quest: %s") % self.quest_name(op.get("quest")),
+        }
+
+    def quest_name(self, qid):
+        quest = self.conf("quests.list", {}).get(qid)
+        if quest is None:
+            return self._("quest///deleted")
+        return quest.get("name")
+
+    def gameinterface_buttons(self, buttons):
+        buttons.append({
+            "id": "quests",
+            "href": "/quests",
+            "target": "main",
+            "icon": "quests.png",
+            "title": self._("Quests"),
+            "block": "left-menu",
+            "order": 15,
+        })
+

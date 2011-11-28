@@ -215,43 +215,58 @@ class QuestAction(Parsing.Nonterm):
     def reduceGive(self, cmd, attrs):
         "%reduce give ExprAttrs"
         item = attrs.val.get("item")
-        if not item:
-            raise Parsing.SyntaxError(cmd.script_parser._("Attribute '{attr}' is required in the '{obj}'").format(attr="item", obj="give"))
-        mods = {}
-        for key, val in attrs.val.iteritems():
-            if key == "item" or key == "quantity":
-                continue
-            m = re_param.match(key)
-            if m:
-                param = m.group(1)
-                pinfo = cmd.script_parser.call("item-types.param", param)
-                if not pinfo:
-                    raise Parsing.SyntaxError(cmd.script_parser._("Items has no parameter %s") % param)
-                elif pinfo.get("type", 0) != 0:
-                    raise Parsing.SyntaxError(cmd.script_parser._("Parameter %s is not stored in the database") % param)
-                mods[param] = val
-            else:
-                raise Parsing.SyntaxError(cmd.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="give", attr=key))
-        item = get_str_attr(cmd, "give", attrs, "item", require=True)
-        quantity = get_attr(cmd, "give", attrs, "quantity")
-        if quantity is None:
-            quantity = 1
-        self.val = ["giveitem", item, mods, quantity]
+        currency = attrs.val.get("currency")
+        if item is None and currency is None:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' or '{attr2}' are required in the '{obj}'").format(attr1="item", attr2="currency", obj="give"))
+        if item is not None and currency is not None:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'").format(attr1="item", attr2="currency", obj="give"))
+        if item:
+            mods = {}
+            for key, val in attrs.val.iteritems():
+                if key == "item" or key == "quantity":
+                    continue
+                m = re_param.match(key)
+                if m:
+                    param = m.group(1)
+                    pinfo = cmd.script_parser.call("item-types.param", param)
+                    if not pinfo:
+                        raise Parsing.SyntaxError(cmd.script_parser._("Items has no parameter %s") % param)
+                    elif pinfo.get("type", 0) != 0:
+                        raise Parsing.SyntaxError(cmd.script_parser._("Parameter %s is not stored in the database") % param)
+                    mods[param] = val
+                else:
+                    raise Parsing.SyntaxError(cmd.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="give", attr=key))
+            item = get_str_attr(cmd, "give", attrs, "item", require=True)
+            quantity = get_attr(cmd, "give", attrs, "quantity")
+            if quantity is None:
+                quantity = 1
+            self.val = ["giveitem", item, mods, quantity]
+        elif currency:
+            amount = get_attr(cmd, "take", attrs, "amount", require=True)
+            currency = get_attr(cmd, "take", attrs, "currency", require=True)
+            self.val = ["givemoney", amount, currency]
 
     def reduceTake(self, cmd, attrs):
         "%reduce take ExprAttrs"
         tp = attrs.val.get("type")
         dna = attrs.val.get("dna")
-        if tp is None and dna is None:
-            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' or '{attr2}' are required in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
-        if tp is not None and dna is not None:
-            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
+        currency = attrs.val.get("currency")
+        cnt = (1 if tp else 0) + (1 if dna else 0) + (1 if currency else 0)
+        if cnt == 0:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}', '{attr2}' or '{attr3}' are required in the '{obj}'").format(attr1="type", attr2="dna", attr="currency", obj="take"))
+        elif cnt > 1:
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}', '{attr2}' and '{attr3}' can't be used simultaneously in the '{obj}'").format(attr1="type", attr2="dna", attr3="currency", obj="take"))
         onfail = get_str_attr(cmd, "take", attrs, "onfail")
         if onfail and not re_valid_identifier.match(onfail):
             raise Parsing.SyntaxError(cmd.script_parser._("Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
-        quantity = attrs.val.get("quantity")
-        validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail"])
-        self.val = ["takeitem", tp, dna, quantity, onfail]
+        if tp or dna:
+            quantity = attrs.val.get("quantity")
+            validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail"])
+            self.val = ["takeitem", tp, dna, quantity, onfail]
+        elif currency:
+            amount = attrs.val.get("amount")
+            validate_attrs(cmd, "take", attrs, ["amount", "currency", "onfail"])
+            self.val = ["takemoney", amount, currency, onfail]
 
     def reduceIf(self, cmd, expr, curlyleft, actions, curlyright):
         "%reduce if Expr curlyleft QuestActions curlyright"

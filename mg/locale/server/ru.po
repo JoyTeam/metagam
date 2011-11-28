@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 11:47+0300\n"
+"PO-Revision-Date: 2011-11-28 13:21+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -492,10 +492,16 @@ msgid "Attribute '{attr}' is required in the '{obj}'"
 msgstr "Атрибут \"{attr}\" у \"{obj}\" является обязательным"
 
 msgid "Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'"
-msgstr "Атрибуты \"{attr1}\" и {attr2} не могут быть одновременно использованы в \"{obj}\""
+msgstr "Атрибуты \"{attr1}\" и \"{attr2}\" не могут быть одновременно использованы в \"{obj}\""
 
 msgid "Attributes '{attr1}' or '{attr2}' are required in the '{obj}'"
 msgstr "В объекте \"{obj}\" обязательно должен быть атрибут \"{attr1}\" или \"{attr2}\" "
+
+msgid "Attributes '{attr1}', '{attr2}' and '{attr3}' can't be used simultaneously in the '{obj}'"
+msgstr "Атрибуты \"{attr1}\",\"{attr2}\" и \"{attr3}\" не могут быть одновременно использованы в \"{obj}\""
+
+msgid "Attributes '{attr1}', '{attr2}' or '{attr3}' are required in the '{obj}'"
+msgstr "В объекте \"{obj}\" обязательно должен быть атрибут \"{attr1}\", \"{attr2}\" или \"{attr3}\""
 
 msgid "Auction"
 msgstr "Аукцион"
@@ -2683,6 +2689,10 @@ msgstr "Неверный формат цвета"
 msgid "Invalid currency"
 msgstr "Неверная валюта"
 
+#, python-format
+msgid "Invalid currency: %s"
+msgstr "Неверная валюта: %s"
+
 msgid "Invalid date format"
 msgstr "Неверный формат даты"
 
@@ -2730,6 +2740,9 @@ msgstr "Выбрана неверная локация"
 
 msgid "Invalid location specified"
 msgstr "Указана неверная локация"
+
+msgid "Invalid money transfer description"
+msgstr "Неверное описание денежного перевода"
 
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
@@ -3401,6 +3414,9 @@ msgstr "Минимальное значение - 2"
 msgid "Miscellaneous"
 msgstr "Разное"
 
+msgid "Missing argument {arg} for description {desc}"
+msgstr "Отсутствует аргумент {arg} для описания {desc}"
+
 msgid "Missing image"
 msgstr "Изображение отсутствует"
 
@@ -3524,6 +3540,9 @@ msgstr "Шаблон имени (допустимые теги приведен�
 
 msgid "Names check"
 msgstr "Проверка имён"
+
+msgid "Negative money amount"
+msgstr "Отрицательная сумма денег"
 
 msgid "Neither item type nor DNA specified in 'take'"
 msgstr "В \"take\" не указан не тип предмета, ни ДНК"
@@ -4231,6 +4250,9 @@ msgstr "Квест \"{quest}\" ещё не был взят при попытке
 msgid "Quest '{quest}', event '{event}'"
 msgstr "Квест \"{quest}\", событие \"{event}\""
 
+msgid "Quest '{quest}', event '{event}', command '{command}'"
+msgstr "Квест \"{quest}\", событие \"{event}\", команда \"{command}\""
+
 msgid "Quest ID"
 msgstr "ID квеста"
 
@@ -4266,6 +4288,10 @@ msgstr "Описание состояния квеста для квестлог
 
 msgid "Quest with the same identifier already exists"
 msgstr "Квест с таким идентификатором уже существует"
+
+#, python-format
+msgid "Quest: %s"
+msgstr "Квест: %s"
 
 msgid "Quests"
 msgstr "Квесты"
@@ -6660,6 +6686,9 @@ msgstr "Отправить её на модерацию"
 msgid "give"
 msgstr "выдать"
 
+msgid "giving money, amount={amount}, currency={currency}"
+msgstr "выдаём деньги, количество={amount}, валюта={currency}"
+
 msgid "giving {item_name}, quantity={quantity}"
 msgstr "выдаём {item_name}, количество={quantity}"
 
@@ -6937,6 +6966,9 @@ msgstr "квест не пройден"
 msgid "quest finished"
 msgstr "квест выполнен"
 
+msgid "quest///deleted"
+msgstr "удалённый"
+
 msgid "quest={quest}, state={state}"
 msgstr "квест={quest}, состояние={state}"
 
@@ -7149,6 +7181,12 @@ msgstr "забираем все ({quantity}) предметы с точным Д
 
 msgid "taking all ({quantity}) items with type '{type}' and any DNA"
 msgstr "забираем все ({quantity}) предметы с типом \"{type}\" и любым ДНК"
+
+msgid "taking money, amount={amount}, currency={currency}"
+msgstr "забираем деньги, количество={amount}, валюта={currency}"
+
+msgid "taking money, amount={amount}, currency={currency} ({result})"
+msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"
 
 msgid "taking {quantity} items with exact DNA '{dna}' ({result})"
 msgstr "забираем {quantity} предметов с точным ДНК \"{dna}\" ({result})"
