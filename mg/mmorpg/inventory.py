@@ -983,7 +983,8 @@ class InventoryAdmin(ConstructorModule):
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # removing items
-            if inv.take_dna(dna, quantity, "admin.withdraw", admin=req.user()):
+            item_type_obj, deleted = inv.take_dna(dna, quantity, "admin.withdraw", admin=req.user())
+            if deleted:
                 if owtype == "char":
                     self.call("security.suspicion", admin=req.user(), action="items.withdraw", member=char.uuid, amount=quantity, dna=dna, comment=admin_comment)
                     self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Withdrawn {quantity} x {name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment))
@@ -1060,8 +1061,8 @@ class InventoryAdmin(ConstructorModule):
             with self.lock([inv.lock_key, target_inv.lock_key]):
                 inv.load()
                 target_inv.load()
-                item_type_obj = inv._take_dna(dna, quantity, "admin.transfer", admin=req.user(), performed=now, reftype=target_inv.owtype, ref=target_inv.uuid)
-                if item_type_obj:
+                item_type_obj, deleted = inv._take_dna(dna, quantity, "admin.transfer", admin=req.user(), performed=now, reftype=target_inv.owtype, ref=target_inv.uuid)
+                if item_type_obj and deleted:
                     target_inv._give(item_type_obj.uuid, quantity, "items.transfer", admin=req.user(), mod=item_type_obj.mods, performed=now, reftype=inv.owtype, ref=inv.uuid)
                     inv.store()
                     target_inv.store()
@@ -1561,27 +1562,88 @@ class MemberInventory(ConstructorModule):
                 not_expired.append((item_type, quantity))
         return not_expired
 
+    def take_type(self, *args, **kwargs):
+        with self.lock([self.lock_key]):
+            self.load()
+            deleted = self._take_type(*args, **kwargs)
+            if deleted:
+                self.store()
+            else:
+                del self.inv
+            return deleted
+
+    def _take_type(self, item_type, quantity, description, **kwargs):
+        if not item_type:
+            return 0
+        items = self._items()
+        deleted = 0
+        i = 0
+        logmessages = {}
+        while i < len(items):
+            item = items[i]
+            if item.get("type") == item_type:
+                if quantity is None:
+                    del items[i:i+1]
+                    i -= 1
+                    q = item["quantity"]
+                elif item["quantity"] <= quantity:
+                    del items[i:i+1]
+                    i -= 1
+                    q = item["quantity"]
+                    quantity -= item["quantity"]
+                elif item["quantity"] > quantity:
+                    item["quantity"] -= quantity
+                    q = quantity
+                    quantity = 0
+                if q > 0:
+                    deleted += q
+                    key = (item.get("type"), item.get("dna"))
+                    try:
+                        logmessages[key] += q
+                    except KeyError:
+                        logmessages[key] = q
+                if quantity is not None and quantity <= 0:
+                    break
+            i += 1
+        print "deleted=%s, logmessages=%s, remaining_quantity=%s" % (deleted, logmessages, quantity)
+        if quantity is not None and quantity != 0:
+            return 0
+        if deleted > 0:
+            self.inv.touch()
+            for key, quantity in logmessages.iteritems():
+                item_type = key[0]
+                dna_suffix = key[1]
+                trans = self.obj(DBItemTransfer)
+                trans.set("owner", self.uuid)
+                if self.owtype != "char":
+                    trans.set("owtype", self.owtype)
+                trans.set("type", item_type)
+                if dna_suffix:
+                    trans.set("dna", dna_suffix)
+                trans.set("quantity", -quantity)
+                trans.set("description", description)
+                for k, v in kwargs.iteritems():
+                    trans.set(k, v)
+                trans.set("performed", kwargs.get("performed") or self.now())
+                self.trans.append(trans)
+        return deleted
+
     def take_dna(self, *args, **kwargs):
         with self.lock([self.lock_key]):
             self.load()
-            if not self._take_dna(*args, **kwargs):
-                return False
-            self.store()
-            return True
+            res = self._take_dna(*args, **kwargs)
+            if res:
+                self.store()
+            return res
 
     def _take_dna(self, dna, quantity, description, **kwargs):
         item_type, dna_suffix = dna_parse(dna)
         if not item_type:
-            return None
-        if "any_dna" in kwargs:
-            any_dna = kwargs["any_dna"]
-            del kwargs["any_dna"]
-        else:
-            any_dna = False
+            return None, None
         items = self._items()
         for i in xrange(0, len(items)):
             item = items[i]
-            if item.get("type") == item_type and any_dna or item.get("dna") == dna_suffix:
+            if item.get("type") == item_type and item.get("dna") == dna_suffix:
                 success = False
                 if quantity is None:
                     quantity = item["quantity"]
@@ -1610,8 +1672,9 @@ class MemberInventory(ConstructorModule):
                         trans.set(k, v)
                     trans.set("performed", kwargs.get("performed") or self.now())
                     self.trans.append(trans)
-                return self.item_type(item_type, dna_suffix, item.get("mod"))
-        return None
+                    return self.item_type(item_type, dna_suffix, item.get("mod")), quantity
+                return None, None
+        return None, None
 
     def find_dna(self, dna):
         item_type, dna_suffix = dna_parse(dna)
@@ -1951,7 +2014,8 @@ class Inventory(ConstructorModule):
                 elif quant > max_quantity:
                     form.error("quantity", self._("Maximal quantity is %d") % max_quantity)
             if not form.errors:
-                if not character.inventory.take_dna(req.args, quant, "discard"):
+                item_type_obj, deleted = character.inventory.take_dna(req.args, quant, "discard")
+                if not deleted:
                     form.error("quantity", self._("Not enough items of this type"))
                 if not form.errors:
                     self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))

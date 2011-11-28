@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-26 15:05+0300\n"
+"PO-Revision-Date: 2011-11-28 11:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1961,6 +1961,9 @@ msgstr "Событие"
 
 msgid "Event id must be a string"
 msgstr "Идентификатор события должен быть строкой"
+
+msgid "Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор события \"onfail\" должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
 msgid "Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор события должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
@@ -7138,19 +7141,20 @@ msgstr "неизвестен"
 msgid "subscribe"
 msgstr "подписаться"
 
-#, python-format
-msgid "taking all items with exact DNA '%s'"
-msgstr "забираем все предметы с точным ДНК \"%s\""
+msgid "successfully"
+msgstr "успешно"
 
-#, python-format
-msgid "taking all items with type '%s' and any DNA"
-msgstr "изымаем все предметы с типом \"%s\" и любым ДНК"
+msgid "taking all ({quantity}) items with exact DNA '{dna}'"
+msgstr "забираем все ({quantity}) предметы с точным ДНК \"{dna}\""
 
-msgid "taking {quantity} items with exact DNA '{dna}'"
-msgstr "забираем {quantity} предметов с точным ДНК \"{dna}\""
+msgid "taking all ({quantity}) items with type '{type}' and any DNA"
+msgstr "забираем все ({quantity}) предметы с типом \"{type}\" и любым ДНК"
 
-msgid "taking {quantity} items with type '{type}' and any DNA"
-msgstr "изымаем {quantity} предметов с типом \"{type}\" и любым ДНК"
+msgid "taking {quantity} items with exact DNA '{dna}' ({result})"
+msgstr "забираем {quantity} предметов с точным ДНК \"{dna}\" ({result})"
+
+msgid "taking {quantity} items with type '{type}' and any DNA ({result})"
+msgstr "забираем {quantity} предметов с типом \"{type}\" и любым ДНК ({result})"
 
 msgid "telegrams menu///Post"
 msgstr "Почта"
@@ -7207,6 +7211,9 @@ msgstr "открепить"
 
 msgid "unsubscribe"
 msgstr "отписаться"
+
+msgid "unsuccessfully"
+msgstr "неудачно"
 
 msgid "user///Registered"
 msgstr "Регистрация"
@@ -7298,6 +7305,10 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "taking all items with exact DNA '%s'"
+#~ msgstr "забираем все предметы с точным ДНК \"%s\""
+#~ msgid "taking all items with type '%s' and any DNA"
+#~ msgstr "изымаем все предметы с типом \"%s\" и любым ДНК"
 #~ msgid "taking %s items with exact DNA '%s'"
 #~ msgstr "забираем %s предметов с точным ДНК \"%s\""
 #~ msgid "taking %s items with type '%s' and any DNA"

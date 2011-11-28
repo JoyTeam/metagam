@@ -246,9 +246,12 @@ class QuestAction(Parsing.Nonterm):
             raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' or '{attr2}' are required in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
         if tp is not None and dna is not None:
             raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'").format(attr1="type", attr2="dna", obj="take"))
+        onfail = get_str_attr(cmd, "take", attrs, "onfail")
+        if onfail and not re_valid_identifier.match(onfail):
+            raise Parsing.SyntaxError(cmd.script_parser._("Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         quantity = attrs.val.get("quantity")
-        validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity"])
-        self.val = ["takeitem", tp, dna, quantity]
+        validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail"])
+        self.val = ["takeitem", tp, dna, quantity, onfail]
 
     def reduceIf(self, cmd, expr, curlyleft, actions, curlyright):
         "%reduce if Expr curlyleft QuestActions curlyright"
