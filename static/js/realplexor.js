@@ -53,9 +53,13 @@ Dklab_Realplexor._iframeLoaded = function(id)
 	// use setTimeout to let IFRAME JavaScript code some time to execute.
 	setTimeout(function() {
 		var iframe = document.getElementById(id);
-		th._realplexor = iframe.contentWindow.Dklab_Realplexor_Loader;
-		if (th.needExecute) {
-			th.execute();
+		try {
+			th._realplexor = iframe.contentWindow.Dklab_Realplexor_Loader;
+			if (th.needExecute) {
+				th.execute();
+			}
+		} catch (e) {
+			Dklab_Realplexor._iframeLoaded(id);
 		}
 	}, 50);
 }
