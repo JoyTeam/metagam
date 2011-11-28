@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 16:09+0300\n"
+"PO-Revision-Date: 2011-11-28 16:46+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1062,6 +1062,9 @@ msgstr "Мониторинг кластера"
 
 msgid "Cluster settings"
 msgstr "Настройки кластера"
+
+msgid "Cnt"
+msgstr "Кол-во"
 
 msgid "Code"
 msgstr "Код"
@@ -3255,6 +3258,9 @@ msgstr "Массовый пользователь %s"
 msgid "Massive invitations"
 msgstr "Массовые приглашения"
 
+msgid "Max"
+msgstr "Макс"
+
 msgid "Max cargo expression"
 msgstr "Выражение для максимального груза"
 
@@ -3387,6 +3393,9 @@ msgstr "Имя метода"
 msgid "Mike"
 msgstr "Mike"
 
+msgid "Min"
+msgstr "Мин"
+
 #, python-format
 msgid "Minimal item lifetime is %d seconds"
 msgstr "Минимальное время жизни предмета - %d сек"
@@ -3464,6 +3473,9 @@ msgstr "Идентификатор модификатора должен быт�
 
 msgid "Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор модификатора должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Modifiers"
+msgstr "Модификаторы"
 
 msgid "Module"
 msgstr "Модуль"
@@ -4271,6 +4283,9 @@ msgstr "Квест"
 #, python-format
 msgid "Quest %s description"
 msgstr "Описание квеста %s"
+
+msgid "Quest '{quest}' is locked"
+msgstr "Квест \"{quest}\" заблокирован"
 
 msgid "Quest '{quest}' is not taken yet when trying to set attribute {attr}"
 msgstr "Квест \"{quest}\" ещё не был взят при попытке установить атрибут {attr}"
@@ -5581,6 +5596,9 @@ msgstr "Этот пользователь не может иметь имени"
 msgid "This user can't have a password"
 msgstr "Этот пользователь не может иметь пароль"
 
+msgid "Till"
+msgstr "До"
+
 msgid "Time"
 msgstr "Время"
 
@@ -5599,6 +5617,9 @@ msgstr "Таймаут при скачивании %s. Ограничение п
 
 msgid "Timeout on downloading image. Time limit - 30 sec"
 msgstr "Таймаут при скачивании картинки. Ограничение по времени - 30 сек"
+
+msgid "Timer '{timer}' in quest '{quest}'"
+msgstr "Таймер \"{timer}\" в квесте \"{quest}\""
 
 msgid "Timer id must be a string"
 msgstr "Идентификатор таймера должен быть строкой"
@@ -5998,6 +6019,9 @@ msgstr "Просмотр списка авторизованных пользо�
 
 msgid "Viewing users dossiers"
 msgstr "Просмотр досье пользователей"
+
+msgid "Viewing users' modifiers"
+msgstr "Просмотр модификаторов пользователей"
 
 msgid "Visibility condition (empty field means 'always visible')"
 msgstr "Условие видимости (пустое поле означает \"всегда видим\")"

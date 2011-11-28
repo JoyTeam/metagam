@@ -302,6 +302,13 @@ class PaidServicesAdmin(ConstructorModule):
         self.rhook("ext-admin-paidservices.editor", self.admin_paidservices_editor, priv="paidservices.editor")
         self.rhook("headmenu-admin-paidservices.editor", self.headmenu_paidservices_editor)
         self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
+        self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
+
+    def mod_descriptions(self, mods):
+        for key, mod in mods.iteritems():
+            srv = self.call("paidservices.%s" % key)
+            if srv:
+                mod["description"] = srv.get("name")
 
     def advice_game_dashboard(self, args, advice):
         if args == "" and self.app().project.get("published"):

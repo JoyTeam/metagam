@@ -305,6 +305,9 @@ class Modifiers(Module):
         self.rhook("modifiers.stop", self.mod_stop)
         self.rhook("modifiers.obj", self.mod_obj)
 
+    def child_modules(self):
+        return ["mg.core.modifiers.ModifiersAdmin"]
+
     def mod_obj(self, target_type, target):
         return MemberModifiers(self.app(), target_type, target)
 
@@ -315,3 +318,54 @@ class Modifiers(Module):
     def objclasses_list(self, objclasses):
         objclasses["Modifiers"] = (DBModifiers, DBModifiersList)
 
+class ModifiersAdmin(Module):
+    def register(self):
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("auth.user-tables", self.user_tables)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "modifiers.view", "name": self._("Viewing users' modifiers")})
+
+    def user_tables(self, user, tables):
+        req = self.req()
+        if req.has_access("modifiers.view"):
+            modifiers = MemberModifiers(self.app(), "user", user.uuid)
+            header = [
+                self._("Code"),
+                self._("Description"),
+                self._("Cnt"),
+                self._("Min"),
+                self._("Max"),
+                self._("Till"),
+            ]
+            rows = []
+            mods = modifiers.mods()
+            self.call("admin-modifiers.descriptions", mods)
+            mods = mods.items()
+            mods.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+            for m, mod in mods:
+                # till
+                mintill = self.call("l10n.time_local", mod.get("mintill"))
+                maxtill = self.call("l10n.time_local", mod.get("maxtill"))
+                if mintill == maxtill:
+                    till = mintill
+                else:
+                    till = "%s -<br />%s" % (mintill, maxtill)
+                # rendering
+                rmod = [
+                    htmlescape(m),
+                    htmlescape(mod.get("description")),
+                    mod.get("cnt"),
+                    htmlescape(mod.get("minval")),
+                    htmlescape(mod.get("maxval")),
+                    till,
+                ]
+                rows.append(rmod)
+            table = {
+                "type": "modifiers",
+                "title": self._("Modifiers"),
+                "order": 38,
+                "header": header,
+                "rows": rows,
+            }
+            tables.append(table)

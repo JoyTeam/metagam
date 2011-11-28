@@ -9,6 +9,8 @@ re_state = re.compile(r'^state/(.+)$', re.IGNORECASE)
 re_param = re.compile(r'^p_(.+)$')
 re_del = re.compile(r'del/(.+)$')
 re_item_action = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
+re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
+re_mod_lock = re.compile(r'^q_(.+)_locked$')
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -222,6 +224,23 @@ class QuestsAdmin(ConstructorModule):
             self.rhook("ext-admin-inventory.actions", self.admin_inventory_actions, priv="quests.inventory")
             self.rhook("headmenu-admin-inventory.actions", self.headmenu_inventory_actions)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
+
+    def mod_descriptions(self, mods):
+        for key, mod in mods.iteritems():
+            m = re_mod_timer.match(key)
+            if m:
+                qid, tid = m.group(1, 2)
+                quest = self.conf("quests.list", {}).get(qid)
+                if quest:
+                    mod["description"] = self._("Timer '{timer}' in quest '{quest}'").format(timer=tid, quest=quest.get("name"))
+            else:
+                m = re_mod_lock.match(key)
+                if m:
+                    qid = m.group(1)
+                    quest = self.conf("quests.list", {}).get(qid)
+                    if quest:
+                        mod["description"] = self._("Quest '{quest}' is locked").format(quest=quest.get("name"))
 
     def permissions_list(self, perms):
         perms.append({"id": "quests.view", "name": self._("Quest engine: viewing players' quest information")})
@@ -858,6 +877,7 @@ class QuestsAdmin(ConstructorModule):
                     "before": self.call("web.parse_template", "admin/common/tables.html", vars),
                 }
                 tables.append(table)
+
 class Quests(ConstructorModule):
     def register(self):
         self.rhook("quests.parse-script", self.parse_script)
