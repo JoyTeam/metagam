@@ -3,6 +3,7 @@ from mg.mmorpg.quest_parser import *
 from mg.core.money_classes import MoneyError
 from uuid import uuid4
 import re
+import random
 
 re_info = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_state = re.compile(r'^state/(.+)$', re.IGNORECASE)
@@ -711,6 +712,15 @@ class QuestsAdmin(ConstructorModule):
                         result += " }\n"
                 result += "  " * indent + "}\n"
                 return result
+            elif val[0] == "random":
+                result = "  " * indent + "random {\n"
+                for ent in val[1]:
+                    weight = ent[0]
+                    actions = ent[1]
+                    result += "  " * (indent + 1) + "weight %s:\n" % self.call("script.unparse-expression", weight)
+                    result += self.quest_admin_unparse_script(actions, indent + 2)
+                result += "  " * indent + "}\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -1006,9 +1016,9 @@ class Quests(ConstructorModule):
                             continue
                         attrs = handler.get("attrs")
                         if event == "teleported":
-                            if attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
+                            if attrs and attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
                                 continue
-                            if attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
+                            if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
                                 continue
                         act = handler.get("act")
                         if not act:
@@ -1223,6 +1233,32 @@ class Quests(ConstructorModule):
                                                     btn["text"] = self.call("script.evaluate-text", btn["text"], globs=kwargs, description=eval_description)
                                         char.quests.dialog(dialog, quest)
                                         modified_objects.add(char.quests)
+                                    elif cmd_code == "random":
+                                        sum_weight = 0
+                                        actions = []
+                                        for act in cmd[1]:
+                                            weight = act[0]
+                                            if weight > 0:
+                                                sum_weight += weight
+                                                actions.append(act)
+                                        if sum_weight > 0:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("selecting random execution branch"), cls="quest-action", indent=indent+2)
+                                            rnd = random.random() * sum_weight
+                                            sum_weight = 0
+                                            selected = None
+                                            for act in actions:
+                                                sum_weight += act[0]
+                                                if sum_weight >= rnd:
+                                                    selected = act
+                                                    break
+                                            # floating point rounding
+                                            if selected is None:
+                                                selected = actions[-1]
+                                            execute_actions(selected[1], indent+1)
+                                        else:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

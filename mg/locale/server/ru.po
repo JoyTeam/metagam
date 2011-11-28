@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 16:46+0300\n"
+"PO-Revision-Date: 2011-11-28 17:26+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -6909,6 +6909,9 @@ msgstr "н/д"
 msgid "no"
 msgstr "нет"
 
+msgid "no cases in random with positive weights"
+msgstr "в random нет случаев с положительным весом"
+
 msgid "none"
 msgstr "нет"
 
@@ -7193,6 +7196,9 @@ msgstr "скрипт"
 
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"
+
+msgid "selecting random execution branch"
+msgstr "выбираем случайную ветвь исполнения"
 
 msgid "send"
 msgstr "отправить"

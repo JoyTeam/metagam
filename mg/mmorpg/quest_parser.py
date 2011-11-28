@@ -81,6 +81,12 @@ class TokenTemplate(Parsing.Token):
 class TokenTitle(Parsing.Token):
     "%token title"
 
+class TokenRandom(Parsing.Token):
+    "%token random"
+
+class TokenWeight(Parsing.Token):
+    "%token weight"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -323,6 +329,21 @@ class QuestAction(Parsing.Nonterm):
         "%reduce dialog curlyleft DialogContent curlyright"
         self.val = ["dialog", content.val]
 
+    def reduceRandom(self, cmd, curlyleft, content, curlyright):
+        "%reduce random curlyleft RandomContent curlyright"
+        self.val = ["random", content.val]
+
+class RandomContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = []
+
+    def reduceVariant(self, content, w, weight, c, actions):
+        "%reduce RandomContent weight Expr colon QuestActions"
+        self.val = [ent for ent in content.val]
+        self.val.append([weight.val, actions.val])
+
 class DialogContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -459,6 +480,8 @@ class QuestScriptParser(ScriptParser):
     syms["button"] = TokenButton
     syms["template"] = TokenTemplate
     syms["take"] = TokenTake
+    syms["random"] = TokenRandom
+    syms["weight"] = TokenWeight
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)
