@@ -24,7 +24,7 @@ re_sharp = re.compile(r'#')
 re_q = re.compile(r'q')
 re_del = re.compile(r'^del/(.+)$')
 
-logging.getLogger("mg.constructor.chat.Chat").setLevel(logging.INFO)
+#logging.getLogger("mg.constructor.chat.Chat").setLevel(logging.INFO)
 
 class DBChatMessage(CassandraObject):
     "This object is created when the character is online and joined corresponding channel"

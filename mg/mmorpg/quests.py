@@ -114,6 +114,22 @@ class CharQuests(ConstructorModule):
             self._quests.set(":dialogs", dialogs)
         return dialogs
 
+    @property
+    def finished(self):
+        if not getattr(self, "_quests", None):
+            self.load()
+        finished = self._quests.get(":finished")
+        if finished is None:
+            finished = {}
+            self._quests.set(":finished", finished)
+        return finished
+
+    def add_finished(self, qid):
+        self.finished[qid] = {
+            "performed": self.now(),
+        }
+        self.touch()
+
     def dialog(self, dialog, quest=None):
         dialog["uuid"] = uuid4().hex
         if quest:
@@ -179,6 +195,8 @@ def parse_quest_tp(qid, tp):
     elif tp[0] == "expired":
         if tp[1] == "timer":
             return "expired-timer-%s-%s" % (qid, tp[2])
+    elif tp[0] == "button":
+        return "button-%s-%s" % (qid, tp[1])
     return "-".join(tp)
 
 class QuestsAdmin(ConstructorModule):
@@ -194,8 +212,10 @@ class QuestsAdmin(ConstructorModule):
         if self.conf("module.inventory"):
             self.rhook("ext-admin-inventory.actions", self.admin_inventory_actions, priv="quests.inventory")
             self.rhook("headmenu-admin-inventory.actions", self.headmenu_inventory_actions)
+        self.rhook("auth.user-tables", self.user_tables)
 
     def permissions_list(self, perms):
+        perms.append({"id": "quests.view", "name": self._("Quest engine: viewing players' quest information")})
         perms.append({"id": "quests.editor", "name": self._("Quest engine: editor")})
         if self.conf("module.inventory"):
             perms.append({"id": "quests.inventory", "name": self._("Quest engine: actions for items")})
@@ -274,6 +294,8 @@ class QuestsAdmin(ConstructorModule):
                         errors["name"] = self._("This field is mandatory")
                     else:
                         quest["name"] = name
+                    # order
+                    quest["order"] = floatz(req.param("order"))
                     # flags
                     quest["enabled"] = True if req.param("enabled") else False
                     if errors:
@@ -299,15 +321,16 @@ class QuestsAdmin(ConstructorModule):
                     config.store()
                     self.call("admin.redirect", "quests/editor/%s/info" % qid)
                 fields = [
-                    {"name": "id", "value": "" if req.args == "new" else req.args, "label": self._("Quest identifier")},
                     {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
+                    {"name": "order", "value": quest.get("order", 0), "label": self._("Sorting order"), "inline": True},
+                    {"name": "id", "value": "" if req.args == "new" else req.args, "label": self._("Quest identifier")},
                     {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled"), "type": "checkbox"},
                     {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
         rows = []
         quest_list = [(qid, quest) for qid, quest in self.conf("quests.list", {}).iteritems()]
-        quest_list.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+        quest_list.sort(cmp=lambda x, y: cmp(x[1].get("order", 0), y[1].get("order", 0)) or cmp(x[1].get("name"), y[1].get("name")) or cmp(x[0], y[0]))
         for qid, quest in quest_list:
             qid_html = qid
             name_html = htmlescape(quest["name"])
@@ -317,7 +340,8 @@ class QuestsAdmin(ConstructorModule):
             rows.append([
                 qid_html,
                 name_html,
-                u'<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, self._("edit")),
+                quest.get("order", 0.0),
+                u'<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, self._("open")),
                 u'<hook:admin.link href="quests/editor/%s/del" title="%s" confirm="%s" />' % (qid, self._("delete"), self._("Are you sure want to delete this quest?")),
             ])
         vars = {
@@ -329,7 +353,8 @@ class QuestsAdmin(ConstructorModule):
                     "header": [
                         self._("Quest ID"),
                         self._("Quest name"),
-                        self._("Editing"),
+                        self._("Order"),
+                        self._("Opening"),
                         self._("Deletion"),
                     ],
                     "rows": rows
@@ -462,7 +487,11 @@ class QuestsAdmin(ConstructorModule):
                     state["order"] = floatz(req.param("order"))
                     # description
                     char = self.character(req.user())
-                    state["description"] = self.call("script.admin-text", "description", errors, globs={"char": char}, mandatory=False)
+                    if sid == "init":
+                        if "description" in state:
+                            del state["description"]
+                    else:
+                        state["description"] = self.call("script.admin-text", "description", errors, globs={"char": char, "quest": char.quests.quest(qid)}, mandatory=False)
                     # script
                     state["script"] = self.call("quest-admin.script-field", "script", errors, globs={"char": char}, mandatory=False)
                     if errors:
@@ -483,7 +512,7 @@ class QuestsAdmin(ConstructorModule):
                     {"name": "id", "value": show_sid, "label": self._("State identifier")},
                     {"name": "order", "value": state.get("order"), "label": self._("Sorting order"), "inline": True},
                     {"name": "script", "value": self.call("quest-admin.unparse-script", state.get("script")), "type": "textarea", "label": self._("Quest script") + self.call("script.help-icon-expressions", "quests"), "height": 300},
-                    {"name": "description", "value": self.call("script.unparse-text", state.get("description")), "type": "textarea", "label": self._("Quest state description for the quest log (for instance, task for player)") + self.call("script.help-icon-expressions")},
+                    {"name": "description", "value": self.call("script.unparse-text", state.get("description")), "type": "textarea", "label": self._("Quest state description for the quest log (for instance, task for player)") + self.call("script.help-icon-expressions"), "condition": "[id]!='init'"},
                 ]
                 self.call("admin.form", fields=fields)
         self.call("admin.redirect", "quests/editor/%s/info" % qid)
@@ -566,6 +595,8 @@ class QuestsAdmin(ConstructorModule):
                     return "timeout %s" % self.call("script.unparse-expression", val[2])
             elif val[0] == "item":
                 return "itemused %s" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "button":
+                return "button id=%s text=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", self.call("script.unparse-text", val[2])))
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -754,6 +785,21 @@ class QuestsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def user_tables(self, user, tables):
+        req = self.req()
+        if req.has_access("quests.view"):
+            character = self.character(user)
+            if character.valid:
+                vars = {
+                    "CurrentQuests": self._("Current quests"),
+                }
+                table = {
+                    "type": "quests",
+                    "title": self._("Quests"),
+                    "order": 40,
+                    "before": self.call("web.parse_template", "admin/common/tables.html", vars),
+                }
+                tables.append(table)
 class Quests(ConstructorModule):
     def register(self):
         self.rhook("quests.parse-script", self.parse_script)
@@ -768,6 +814,7 @@ class Quests(ConstructorModule):
         self.rhook("money-description.quest-give", self.money_description_quest)
         self.rhook("money-description.quest-take", self.money_description_quest)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
+        self.rhook("ext-quests.index", self.quests, priv="logged")
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -1047,11 +1094,13 @@ class Quests(ConstructorModule):
                                         if cmd[1]:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("quest finished"), cls="quest-action", indent=indent+2)
+                                            char.quests.add_finished(quest)
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
                                             char.error(self._("Quest failed"))
                                         char.quests.destroy(quest)
+                                        modified_objects.add(char.quests)
                                     elif cmd_code == "lock":
                                         if cmd[1] is None:
                                             if debug:
@@ -1270,3 +1319,88 @@ class Quests(ConstructorModule):
             "order": 15,
         })
 
+    def quests(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        quest_list = [(qid, quest) for qid, quest in self.conf("quests.list", {}).iteritems() if quest.get("enabled")]
+        quest_list.sort(cmp=lambda x, y: cmp(x[1].get("order", 0), y[1].get("order", 0)) or cmp(x[1].get("name"), y[1].get("name")) or cmp(x[0], y[0]))
+        # list of current quests
+        cur_quests = []
+        # list of finished quests
+        finished_quests = []
+        # button pressed
+        button_pressed = req.ok() and req.environ.get("REQUEST_METHOD") == "POST"
+        selected_quest = req.param("quest")
+        selected_button = req.param("button")
+        for qid, quest in quest_list:
+            # current quest
+            sid = character.quests.get(qid, "state", "init")
+            if sid != "init":
+                rquest = {
+                    "id": qid,
+                    "name": htmlescape(quest.get("name")),
+                    "state": sid,
+                }
+                state = self.conf("quest-%s.states" % qid, {}).get(sid)
+                if state:
+                    # description
+                    if state.get("description"):
+                        rquest["description"] = self.call("script.evaluate-text", state.get("description"), globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Quest %s description") % qid)
+                    cur_quests.append(rquest)
+                    # buttons
+                    rbuttons = []
+                    script = state.get("script")
+                    if script:
+                        if script[0] != "state":
+                            raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="state", found=script[0]))
+                        if "hdls" in script[1]:
+                            for handler in script[1]["hdls"]:
+                                if handler[0] != "hdl":
+                                    raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="hdl", found=script[0]))
+                                tp = handler[1]["type"]
+                                if tp[0] == "button":
+                                    rbuttons.append({
+                                        "id": tp[1],
+                                        "text": self.call("script.evaluate-text", tp[2], globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Button '{button}' text in the quest '{quest}'").format(quest=qid, button=tp[1])),
+                                        "href": "/quests#%s" % qid,
+                                    })
+                                    # handling button press
+                                    if button_pressed and selected_quest == qid and selected_button == tp[1]:
+                                        self.qevent("button-%s-%s" % (qid, tp[1]), char=character)
+                                        self.call("quest.check-redirects")
+                                        self.call("web.redirect", "/quests")
+                    if rbuttons:
+                        rbuttons[-1]["lst"] = True
+                        rquest["buttons"] = rbuttons
+            # finished quest
+            finished = character.quests.finished.get(qid)
+            if finished:
+                performed = finished.get("performed")
+                rquest = {
+                    "performed": self.call("l10n.time_local", performed),
+                    "performed_raw": performed,
+                    "quest": {
+                        "id": qid,
+                        "name": htmlescape(quest.get("name")),
+                    },
+                }
+                finished_quests.append(rquest)
+        # button press was not handled (invalid params?)
+        if button_pressed:
+            character.error(self._("This button is no more valid"))
+        # rendering output
+        vars = {
+            "Current": self._("questlist///Current"),
+            "Finished": self._("questlist///Finished"),
+            "NoQuestsUndergo": self._("No quests currently undergo"),
+            "NoQuestsFinished": self._("No quests finished yet"),
+        }
+        if cur_quests:
+            cur_quests[-1]["lst"] = True
+            vars["cur_quests"] = cur_quests
+        if finished_quests:
+            finished_quests.sort(cmp=lambda x, y: cmp(y.get("performed_raw"), x.get("performed_raw")))
+            finished_quests[-1]["lst"] = True
+            vars["finished_quests"] = finished_quests
+        self.call("game.response_internal", "quests.html", vars)

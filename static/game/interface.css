@@ -183,6 +183,9 @@ area { border: none }
 /* PAGER */
 .pager-list { padding: 0 0 10px 0 }
 
+/* BUTTONS */
+.button { padding: 5px 20px 5px 20px }
+
 /* QUESTS */
 .chat-msg-quest-first-event { color: #4040c0; padding-top: 3px; border-top: solid 1px #808080; margin-top: 3px }
 .chat-msg-quest-event { color: #4040c0 }
@@ -190,6 +193,10 @@ area { border: none }
 .chat-msg-quest-condition { color: #d7d721 }
 .chat-msg-quest-action { color: #008000 }
 .chat-msg-quest-error { color: #c00000 }
+.quest-button-td { padding: 20px 40px 20px 0 }
+.quests-noquests { font-size: 18px }
+.quest-performed { margin-right: 30px }
+.quest-finished-name { font-weight: bold }
 
 /* DIALOGS */
 .dialog { text-align: center; padding: 40px; border: solid 1px #808080; margin: 30px 0 30px 0 }
@@ -197,4 +204,3 @@ area { border: none }
 .dialog-content { font-size: 16px }
 .dialog-buttons { margin: 20px auto 0 auto }
 .dialog-button-td { padding: 20px }
-.dialog-button { padding: 5px 20px 5px 20px }

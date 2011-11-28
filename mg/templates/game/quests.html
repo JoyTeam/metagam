@@ -1,0 +1,42 @@
+<div id="pages" class="pager-list"></div>
+<div id="page-current" style="display: block" class="pager-page">
+	[%if cur_quests%]
+	[%foreach quest in cur_quests%]
+	<a name="quest-[%quest.id%]"></a>
+	<h1 class="quest-name">[%quest.name%]</h1>
+	[%if quest.description%]<div class="quest-description">[%quest.description%]</div>[%end%]
+	[%if quest.buttons%]<table class="buttons quest-buttons"><tr>
+		[%foreach btn in quest.buttons%]
+		<td class="button-td quest-button-td">
+			<form method="post" action="[%btn.href%]">
+				<input type="hidden" name="ok" value="1" />
+				<input type="hidden" name="quest" value="[%quest.id%]" />
+				<input type="hidden" name="button" value="[%btn.id%]" />
+				<input type="submit" value="[%btn.text%]" class="button quest-button" />
+			</form>
+		</td>
+		[%end%]
+	</tr></table>[%end%]
+	[%end%]
+	[%else%]
+	<div class="quests-noquests">[%NoQuestsUndergo%]</div>
+	[%end%]
+</div>
+<div id="page-finished" style="display: none" class="pager-page">
+	[%if finished_quests%]
+	[%foreach ent in finished_quests%]
+	<div class="quest-finished"><span class="date quest-performed">[%ent.performed%]</span> <span class="quest-finished-name">[%ent.quest.name%]</span></div>
+	[%end%]
+	[%else%]
+	<div class="quests-noquests">[%NoQuestsFinished%]</div>
+	[%end%]
+</div>
+<script type="text/javascript">
+wait(['pager'], function() {
+	var pager = new Pager('pages', 'page-');
+	pager.add('current', '[%Current%]', true);
+	pager.add('finished', '[%Finished%]', false);
+	pager.update();
+});
+</script>
+

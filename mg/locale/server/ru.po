@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 13:21+0300\n"
+"PO-Revision-Date: 2011-11-28 15:50+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -663,6 +663,9 @@ msgstr "Массовые рассылки"
 msgid "Button"
 msgstr "Кнопка"
 
+msgid "Button '{button}' text in the quest '{quest}'"
+msgstr "Текст кнопки \"{button}\" в квесте \"{quest}\""
+
 msgid "Button action"
 msgstr "Действие для кнопки"
 
@@ -696,6 +699,9 @@ msgstr "Подсказка для кнопки"
 
 msgid "Button href"
 msgstr "Ссылка"
+
+msgid "Button identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор кнопки должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
 msgid "Button image"
 msgstr "Изображение для кнопки"
@@ -3731,6 +3737,12 @@ msgstr "Нет локации"
 msgid "No locations defined."
 msgstr "Локации отсутствуют."
 
+msgid "No quests currently undergo"
+msgstr "В данный момент вы не проходите ни одного квеста"
+
+msgid "No quests finished yet"
+msgstr "Вы ещё не прошли ни одного квеста"
+
 msgid "No rounding"
 msgstr "Нет округления"
 
@@ -4243,6 +4255,10 @@ msgstr "Количество на выброс"
 #, python-format
 msgid "Query successful. Server response: %s"
 msgstr "Запрос успешный. Ответ сервера: %s"
+
+#, python-format
+msgid "Quest %s description"
+msgstr "Описание квеста %s"
 
 msgid "Quest '{quest}' is not taken yet when trying to set attribute {attr}"
 msgstr "Квест \"{quest}\" ещё не был взят при попытке установить атрибут {attr}"
@@ -5393,6 +5409,9 @@ msgstr "Этот WMID уже назначен пользователю <strong>%
 
 msgid "This block is shown on the every library page"
 msgstr "Этот блок показывается на каждой странице библиотеки"
+
+msgid "This button is no more valid"
+msgstr "Эта кнопка более недоступна"
 
 msgid "This button is unavailable"
 msgstr "Эта кнопка недоступна"
@@ -6971,6 +6990,12 @@ msgstr "удалённый"
 
 msgid "quest={quest}, state={state}"
 msgstr "квест={quest}, состояние={state}"
+
+msgid "questlist///Current"
+msgstr "Текущие"
+
+msgid "questlist///Finished"
+msgstr "Завершённые"
 
 msgid "recheck"
 msgstr "перепроверить"

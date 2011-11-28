@@ -40,6 +40,7 @@ re_valid_color = re.compile('^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$')
 re_newlines = re.compile(r'\r?\n\r?')
 re_st_mg = re.compile(r'/st-mg(?:/\[%ver%\])?(/.*)')
 re_dyn_mg = re.compile(r'/dyn-mg(/.*)')
+re_not_found = re.compile(r'file error - .*: not found$')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -1134,9 +1135,11 @@ class DesignMod(Module):
             try:
                 return self.call("web.parse_layout", "%s/%s/%s" % (design_type, self.call("l10n.lang"), template), vars)
             except TemplateException as e:
+                if not re_not_found.search(str(e)):
+                    raise e
                 try:
                     return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
-                except TemplateException:
+                except TemplateException as e:
                     raise e
 
     def response(self, design, template, content, vars, design_type="game"):

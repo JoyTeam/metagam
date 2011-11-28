@@ -95,6 +95,10 @@ class AttrKey(Parsing.Nonterm):
         "%reduce timeout"
         self.val = "timeout"
 
+    def reduceText(self, event):
+        "%reduce text"
+        self.val = "text"
+
 class Attrs(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -180,6 +184,16 @@ class EventType(Parsing.Nonterm):
         elif not re_valid_identifier.match(action.val):
             raise Parsing.SyntaxError(any_obj.script_parser._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["item", action.val], None]
+
+    def reduceButton(self, ev, attrs):
+        "%reduce button Attrs"
+        ident = get_str_attr(ev, "button", attrs, "id", require=True)
+        if not re_valid_identifier.match(ident):
+            raise Parsing.SyntaxError(ev.script_parser._("Button identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        text = get_str_attr(ev, "button", attrs, "text", require=True)
+        text = ev.script_parser.parse_text(text, ev.script_parser._("Button text"))
+        validate_attrs(ev, "button", attrs, ["id", "text"])
+        self.val = [["button", ident, text], None]
 
 # ============================
 #          ACTIONS
