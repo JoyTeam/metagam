@@ -87,6 +87,15 @@ class TokenRandom(Parsing.Token):
 class TokenWeight(Parsing.Token):
     "%token weight"
 
+class TokenRegistered(Parsing.Token):
+    "%token registered"
+
+class TokenOnline(Parsing.Token):
+    "%token online"
+
+class TokenOffline(Parsing.Token):
+    "%token offline"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -200,6 +209,18 @@ class EventType(Parsing.Nonterm):
         text = ev.script_parser.parse_text(text, ev.script_parser._("Button text"))
         validate_attrs(ev, "button", attrs, ["id", "text"])
         self.val = [["button", ident, text], None]
+
+    def reduceRegistered(self, ev):
+        "%reduce registered"
+        self.val = [["registered"], None]
+
+    def reduceOnline(self, ev):
+        "%reduce online"
+        self.val = [["online"], None]
+
+    def reduceOffline(self, ev):
+        "%reduce offline"
+        self.val = [["offline"], None]
 
 # ============================
 #          ACTIONS
@@ -482,6 +503,9 @@ class QuestScriptParser(ScriptParser):
     syms["take"] = TokenTake
     syms["random"] = TokenRandom
     syms["weight"] = TokenWeight
+    syms["registered"] = TokenRegistered
+    syms["online"] = TokenOnline
+    syms["offline"] = TokenOffline
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

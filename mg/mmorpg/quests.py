@@ -642,6 +642,12 @@ class QuestsAdmin(ConstructorModule):
                 return "itemused %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "button":
                 return "button id=%s text=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", self.call("script.unparse-text", val[2])))
+            elif val[0] == "registered":
+                return "registered"
+            elif val[0] == "online":
+                return "online"
+            elif val[0] == "offline":
+                return "offline"
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -969,6 +975,8 @@ class Quests(ConstructorModule):
         self.rhook("money-description.quest-take", self.money_description_quest)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("ext-quests.index", self.quests, priv="logged")
+        self.rhook("session.character-online", self.character_online, priority=-100)
+        self.rhook("session.character-offline", self.character_offline)
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -1590,3 +1598,9 @@ class Quests(ConstructorModule):
             finished_quests[-1]["lst"] = True
             vars["finished_quests"] = finished_quests
         self.call("game.response_internal", "quests.html", vars)
+
+    def character_online(self, character):
+        self.qevent("online", char=character)
+
+    def character_offline(self, character):
+        self.qevent("offline", char=character)

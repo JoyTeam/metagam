@@ -657,6 +657,7 @@ class Auth(ConstructorModule):
         character.store()
         character_user.store()
         character_form.store()
+        self.qevent("registered", char=self.character(character.uuid))
         # Sending activation e-mail
         if activation_code:
             params = {
@@ -1168,6 +1169,7 @@ class Auth(ConstructorModule):
                 character.store()
                 character_user.store()
                 character_form.store()
+                self.qevent("registered", char=self.character(character.uuid))
                 # Entering game
                 self.call("web.post_redirect", "/", {"session": session.uuid})
         vars = {
