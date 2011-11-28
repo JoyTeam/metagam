@@ -298,7 +298,12 @@ class QuestsAdmin(ConstructorModule):
                     return self.admin_quest_editor(m.group(1), m.group(2))
                 quest_list = self.conf("quests.list", {})
                 if req.args == "new":
+                    order = None
+                    for quest in quest_list.values():
+                        if order is None or quest.get("order", 0) > order:
+                            order = quest.get("order", 0)
                     quest = {
+                        "order": 0 if order is None else order + 10.0
                     }
                 else:
                     quest = quest_list.get(req.args)
