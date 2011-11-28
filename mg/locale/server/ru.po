@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 17:26+0300\n"
+"PO-Revision-Date: 2011-11-28 17:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1360,6 +1360,9 @@ msgstr "Текущие квесты"
 
 msgid "Current window"
 msgstr "Текущее окно"
+
+msgid "Currently opened dialogs"
+msgstr "Текущие открытые диалоги"
 
 msgid "Custom field"
 msgstr "Пользовательское поле"
@@ -4305,6 +4308,9 @@ msgstr "Квестовые действия над предметами"
 msgid "Quest engine: actions for items"
 msgstr "Квестовый движок: действия над предметами"
 
+msgid "Quest engine: clearing users' dialogs"
+msgstr "Квестовый движок: сброс диалогов пользователей"
+
 msgid "Quest engine: editor"
 msgstr "Квестовый движок: редактор"
 
@@ -5387,6 +5393,9 @@ msgstr "Телеграммы"
 
 msgid "Telegrams with {0}"
 msgstr "Телеграммы с {0}"
+
+msgid "Template"
+msgstr "Шаблон"
 
 msgid "Terms and conditions (public offer)"
 msgstr "Условия пользовательского соглашения (публичная оферта)"
@@ -7539,8 +7548,6 @@ msgstr "{price} на {period_a}"
 #~ msgid ""
 #~ "Socio interface design package must not contain more than one HTML file"
 #~ msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
-#~ msgid "Template error"
-#~ msgstr "Ошибка шаблона"
 #~ msgid "global.html must exist in the socio interface design package"
 #~ msgstr ""
 #~ "В пакете оформления интерфейса социалки должен быть файл global.html"

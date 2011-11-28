@@ -12,6 +12,7 @@ re_del = re.compile(r'del/(.+)$')
 re_item_action = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
 re_mod_lock = re.compile(r'^q_(.+)_locked$')
+re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -234,6 +235,7 @@ class QuestsAdmin(ConstructorModule):
             self.rhook("headmenu-admin-inventory.actions", self.headmenu_inventory_actions)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
+        self.rhook("ext-admin-quests.removedialog", self.remove_dialog, priv="quest.dialogs")
 
     def mod_descriptions(self, mods):
         for key, mod in mods.iteritems():
@@ -254,6 +256,7 @@ class QuestsAdmin(ConstructorModule):
     def permissions_list(self, perms):
         perms.append({"id": "quests.view", "name": self._("Quest engine: viewing players' quest information")})
         perms.append({"id": "quests.editor", "name": self._("Quest engine: editor")})
+        perms.append({"id": "quests.dialogs", "name": self._("Quest engine: clearing users' dialogs")})
         if self.conf("module.inventory"):
             perms.append({"id": "quests.inventory", "name": self._("Quest engine: actions for items")})
 
@@ -873,8 +876,35 @@ class QuestsAdmin(ConstructorModule):
                             '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, qid),
                             self.call("l10n.time_local", performed),
                         ])
+                # dialogs
+                may_dialogs = req.has_access("quest.dialogs")
+                dialogs = []
+                for dialog in character.quests.dialogs:
+                    quest = dialog.get("quest")
+                    if req.has_access("quests.editor"):
+                        quest = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (quest, quest)
+                    rdialog = [
+                        htmlescape(dialog.get("title")),
+                        quest,
+                        htmlescape(dialog.get("template", "dialog.html")),
+                    ]
+                    if may_dialogs:
+                        rdialog.append(u'<hook:admin.link href="quests/removedialog/%s/%s" title="%s" />' % (character.uuid, dialog.get("uuid"), self._("remove")))
+                    dialogs.append(rdialog)
+                dialogs_header = [
+                    self._("Title"),
+                    self._("Quest"),
+                    self._("Template"),
+                ]
+                if may_dialogs:
+                    dialogs_header.append(self._("Removal"))
                 vars = {
                     "tables": [
+                        {
+                            "title": self._("Currently opened dialogs"),
+                            "header": dialogs_header,
+                            "rows": dialogs,
+                        },
                         {
                             "title": self._("Current quests"),
                             "header": [
@@ -900,6 +930,25 @@ class QuestsAdmin(ConstructorModule):
                     "before": self.call("web.parse_template", "admin/common/tables.html", vars),
                 }
                 tables.append(table)
+
+    def remove_dialog(self):
+        req = self.req()
+        m = re_remove_dialog.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        char_uuid, dialog_uuid = m.group(1, 2)
+        character = self.character(char_uuid)
+        if not character.valid:
+            self.call("web.not_found")
+        dialogs = character.quests.dialogs
+        for i in xrange(0, len(dialogs)):
+            if dialogs[i]["uuid"] == dialog_uuid:
+                del dialogs[i]
+                character.quests.touch()
+                character.quests.store()
+                self.call("stream.character", character, "game", "main_open", uri="/quest/dialog")
+                break
+        self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=quests" % char_uuid)
 
 class Quests(ConstructorModule):
     def register(self):
