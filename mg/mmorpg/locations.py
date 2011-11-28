@@ -189,7 +189,7 @@ class LocationsAdmin(ConstructorModule):
         lst.load()
         for db_loc in lst:
             row = [
-                db_loc.get("name"),
+                u'<strong>%s</strong><br />%s' % (htmlescape(db_loc.get("name")), db_loc.uuid),
                 None,
                 '<hook:admin.link href="locations/editor/%s" title="%s" />' % (db_loc.uuid, self._("edit")),
             ]

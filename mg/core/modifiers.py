@@ -371,7 +371,7 @@ class ModifiersAdmin(Module):
                     till = "%s -<br />%s" % (mintill, maxtill)
                 # rendering
                 rmod = [
-                    htmlescape(m),
+                    "char.mod.%s" % m,
                     htmlescape(mod.get("description")),
                     mod.get("cnt"),
                     "%s/%s/%s" % (htmlescape(mod.get("minval")), htmlescape(mod.get("maxval")), htmlescape(mod.get("sumval"))),

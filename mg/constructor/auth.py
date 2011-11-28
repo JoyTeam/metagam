@@ -1260,9 +1260,11 @@ class Auth(ConstructorModule):
             # character
             character = self.character(user.uuid)
             player = character.player
+            table["rows"].append(["char.id", user.uuid])
             table["rows"].append([self._("Player account"), '<hook:admin.link href="auth/user-dashboard/{0}?active_tab=auth" title="{0}" />'.format(player.uuid)])
         else:
             #player
+            table["rows"].append(["char.player.id", user.uuid])
             dbchars = self.objlist(DBCharacterList, query_index="player", query_equal=user.uuid)
             chars = [self.character(char.uuid) for char in dbchars]
             table["rows"].extend([[self._("Character %s") % char.uuid, char.html("admin")] for char in chars])

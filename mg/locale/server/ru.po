@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 17:54+0300\n"
+"PO-Revision-Date: 2011-11-28 18:08+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3849,6 +3849,9 @@ msgstr "Количество персонажей на игрока, разре�
 msgid "OK"
 msgstr "OK"
 
+msgid "Object"
+msgstr "Объект"
+
 msgid "Object '{val}' has no attribute '{att}'"
 msgstr "У объекта \"{val}\" нет атрибута \"{att}\""
 
@@ -7422,6 +7425,13 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#, fuzzy
+#~ msgid "Character ID"
+#~ msgstr "Персонаж"
+
+#, fuzzy
+#~ msgid "Player ID"
+#~ msgstr "Игрок"
 #~ msgid "Max"
 #~ msgstr "Макс"
 #~ msgid "Min"

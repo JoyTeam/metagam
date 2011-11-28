@@ -855,17 +855,18 @@ class QuestsAdmin(ConstructorModule):
                         if req.has_access("quests.editor"):
                             state = self.conf("quest-%s.states" % qid, {}).get(sid)
                             if state:
-                                quest = '<hook:admin.link href="quests/editor/%s/state/%s" title="%s" />' % (qid, sid, qid)
+                                quest_name = '<hook:admin.link href="quests/editor/%s/state/%s" title="%s" />' % (qid, sid, htmlescape(quest.get("name")))
                             else:
-                                quest = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, qid)
+                                quest_name = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, htmlescape(quest.get("name")))
                         else:
-                            quest = qid
+                            quest_name = htmlescape(quest.get("name"))
                         state = []
                         for key, val in character.quests.state(qid).iteritems():
                             state.append(u'%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
                         state.sort()
                         cur_quests.append([
-                            quest,
+                            "char.q_%s" % qid,
+                            quest_name,
                             '<br />'.join(state),
                         ])
                     # finished quest
@@ -873,7 +874,8 @@ class QuestsAdmin(ConstructorModule):
                     if finished:
                         performed = finished.get("performed")
                         finished_quests.append([
-                            '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, qid),
+                            "char.q_%s.finished" % qid,
+                            '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, htmlescape(quest.get("name"))),
                             self.call("l10n.time_local", performed),
                         ])
                 # dialogs
@@ -908,7 +910,8 @@ class QuestsAdmin(ConstructorModule):
                         {
                             "title": self._("Current quests"),
                             "header": [
-                                self._("Quest"),
+                                self._("Object"),
+                                self._("Quest name"),
                                 self._("Quest state"),
                             ],
                             "rows": cur_quests,
@@ -916,7 +919,8 @@ class QuestsAdmin(ConstructorModule):
                         {
                             "title": self._("Finished quests"),
                             "header": [
-                                self._("Quest"),
+                                self._("Object"),
+                                self._("Quest name"),
                                 self._("Finish date"),
                             ],
                             "rows": finished_quests,
