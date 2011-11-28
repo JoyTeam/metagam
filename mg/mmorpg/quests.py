@@ -1004,6 +1004,12 @@ class Quests(ConstructorModule):
                         tp = parse_quest_tp(quest, tp)
                         if event != tp:
                             continue
+                        attrs = handler.get("attrs")
+                        if event == "teleported":
+                            if attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
+                                continue
+                            if attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
+                                continue
                         act = handler.get("act")
                         if not act:
                             continue
