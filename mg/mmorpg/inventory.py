@@ -253,13 +253,26 @@ class InventoryAdmin(ConstructorModule):
             # list of currencies
             currencies = {}
             self.call("currencies.list", currencies)
+            lang = self.call("l10n.lang")
             # request processing
             if req.ok():
                 self.call("web.upload_handler")
                 errors = {}
+                # name
                 name = req.param("name").strip()
                 if not name:
                     errors["name"] = self._("This field is mandatory")
+                if lang == "ru":
+                    name_gp = req.param("name_gp").strip()
+                    if name_gp:
+                        obj.set("name_gp", name_gp)
+                    else:
+                        obj.delkey("name_gp")
+                    name_a = req.param("name_a").strip()
+                    if name_a:
+                        obj.set("name_a", name_a)
+                    else:
+                        obj.delkey("name_a")
                 # images
                 image_data = req.param_raw("image")
                 replace = intz(req.param("v_replace"))
@@ -405,6 +418,11 @@ class InventoryAdmin(ConstructorModule):
                 {"name": "order", "label": self._("Sort order"), "value": obj.get("order"), "inline": True},
                 {"name": "discardable", "label": '%s%s' % (self._("Item is discardable"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", obj.get("discardable", 1)), "inline": True},
             ]
+            if lang == "ru":
+                fields.extend([
+                    {"name": "name_gp", "label": self._("Item name in genitive plural"), "value": obj.get("name_gp")},
+                    {"name": "name_a", "label": self._("Item name in accusative"), "value": obj.get("name_a"), "inline": True},
+                ])
             # prices
             fields.append({"name": "price", "label": self._("Balance price for the item"), "value": obj.get("balance-price")})
             fields.append({"name": "currency", "label": self._("Currency of the balance price"), "type": "combo", "value": obj.get("balance-currency"), "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True})
