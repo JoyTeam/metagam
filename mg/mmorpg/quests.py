@@ -170,6 +170,10 @@ class CharQuest(object):
             return 1 if self.locked else 0
         elif attr == "notlocked":
             return 0 if self.locked else 1
+        elif attr == "finished":
+            return 1 if self.finished else 0
+        elif attr == "notfinished":
+            return 0 if self.finished else 1
         else:
             m = re_param.match(attr)
             if m:
@@ -200,6 +204,10 @@ class CharQuest(object):
     @property
     def locked(self):
         return self.quests.locked(self.qid)
+
+    @property
+    def finished(self):
+        return self.quests.finished.get(self.qid)
 
 def parse_quest_tp(qid, tp):
     if tp[0] == "event":
