@@ -18,6 +18,7 @@ new Ext.TabPanel({
 	id: 'char-panel',
 	renderTo: 'char-form',
 	activeTab: [%active_tab%],
+	enableTabScroll: true,
 	items: [[%foreach table in tables%]{
 		title: '[%table.title%]',
 		contentEl: 'tbl-[%table.type%]',
