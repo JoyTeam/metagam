@@ -56,6 +56,15 @@ class CharQuests(ConstructorModule):
     def store(self):
         self._quests.store()
 
+    def state(self, qid):
+        if not getattr(self, "_quests", None):
+            self.load()
+        quest = self._quests.get(qid)
+        if quest is None:
+            return {"state": "init"}
+        else:
+            return quest
+
     def get(self, qid, param, default=None):
         if not getattr(self, "_quests", None):
             self.load()
@@ -788,10 +797,59 @@ class QuestsAdmin(ConstructorModule):
     def user_tables(self, user, tables):
         req = self.req()
         if req.has_access("quests.view"):
-            character = self.character(user)
+            character = self.character(user.uuid)
             if character.valid:
+                cur_quests = []
+                finished_quests = []
+                quest_list = [(qid, quest) for qid, quest in self.conf("quests.list", {}).iteritems() if quest.get("enabled")]
+                quest_list.sort(cmp=lambda x, y: cmp(x[1].get("order", 0), y[1].get("order", 0)) or cmp(x[1].get("name"), y[1].get("name")) or cmp(x[0], y[0]))
+                for qid, quest in quest_list:
+                    # current quest
+                    sid = character.quests.get(qid, "state", "init")
+                    if sid != "init":
+                        if req.has_access("quests.editor"):
+                            state = self.conf("quest-%s.states" % qid, {}).get(sid)
+                            if state:
+                                quest = '<hook:admin.link href="quests/editor/%s/state/%s" title="%s" />' % (qid, sid, qid)
+                            else:
+                                quest = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, qid)
+                        else:
+                            quest = qid
+                        state = []
+                        for key, val in character.quests.state(qid).iteritems():
+                            state.append(u'%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
+                        state.sort()
+                        cur_quests.append([
+                            quest,
+                            '<br />'.join(state),
+                        ])
+                    # finished quest
+                    finished = character.quests.finished.get(qid)
+                    if finished:
+                        performed = finished.get("performed")
+                        finished_quests.append([
+                            '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, qid),
+                            self.call("l10n.time_local", performed),
+                        ])
                 vars = {
-                    "CurrentQuests": self._("Current quests"),
+                    "tables": [
+                        {
+                            "title": self._("Current quests"),
+                            "header": [
+                                self._("Quest"),
+                                self._("Quest state"),
+                            ],
+                            "rows": cur_quests,
+                        },
+                        {
+                            "title": self._("Finished quests"),
+                            "header": [
+                                self._("Quest"),
+                                self._("Finish date"),
+                            ],
+                            "rows": finished_quests,
+                        },
+                    ]
                 }
                 table = {
                     "type": "quests",

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 15:50+0300\n"
+"PO-Revision-Date: 2011-11-28 16:09+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1352,6 +1352,9 @@ msgstr "Текущий логотип"
 msgid "Current period"
 msgstr "Текущий период"
 
+msgid "Current quests"
+msgstr "Текущие квесты"
+
 msgid "Current window"
 msgstr "Текущее окно"
 
@@ -2068,6 +2071,12 @@ msgstr "Найти наиболее популярные браузеры"
 
 msgid "Find user"
 msgstr "Найти пользователя"
+
+msgid "Finish date"
+msgstr "Дата завершения"
+
+msgid "Finished quests"
+msgstr "Пройденные квесты"
 
 msgid "First image selection after registration is free"
 msgstr "После регистрации персонажа выбор первого образа предоставляется бесплатно"
@@ -4256,6 +4265,9 @@ msgstr "Количество на выброс"
 msgid "Query successful. Server response: %s"
 msgstr "Запрос успешный. Ответ сервера: %s"
 
+msgid "Quest"
+msgstr "Квест"
+
 #, python-format
 msgid "Quest %s description"
 msgstr "Описание квеста %s"
@@ -4281,6 +4293,9 @@ msgstr "Квестовый движок: действия над предмет�
 msgid "Quest engine: editor"
 msgstr "Квестовый движок: редактор"
 
+msgid "Quest engine: viewing players' quest information"
+msgstr "Квестовый движок: просмотр информации о квестах персонажей"
+
 msgid "Quest failed"
 msgstr "Квест не пройден"
 
@@ -4298,6 +4313,9 @@ msgstr "Название квеста"
 
 msgid "Quest script"
 msgstr "Скрипт квеста"
+
+msgid "Quest state"
+msgstr "Состояние квеста"
 
 msgid "Quest state description for the quest log (for instance, task for player)"
 msgstr "Описание состояния квеста для квестлога (например, задание для игрока)"
