@@ -1236,11 +1236,11 @@ class Quests(ConstructorModule):
                                                 # information message: 'You have got ...'
                                                 item_name = item_type.name
                                                 try:
-                                                    char.quest_given[item_name] += quantity
+                                                    char.quest_given_items[item_name] += quantity
                                                 except AttributeError:
-                                                    char.quest_given = {item_name: quantity}
+                                                    char.quest_given_items = {item_name: quantity}
                                                 except KeyError:
-                                                    char.quest_given[item_name] = quantity
+                                                    char.quest_given_items[item_name] = quantity
                                     elif cmd_code == "takeitem":
                                         quantity = cmd[3]
                                         if quantity is not None:
@@ -1297,6 +1297,13 @@ class Quests(ConstructorModule):
                                             char.money.credit(amount, currency, "quest-give", quest=quest, **money_opts)
                                         except MoneyError as e:
                                             raise QuestError(e.val)
+                                        # information message: 'You have got ...'
+                                        try:
+                                            char.quest_given_money[currency] += amount
+                                        except AttributeError:
+                                            char.quest_given_money = {currency: amount}
+                                        except KeyError:
+                                            char.quest_given_money[currency] = amount
                                     elif cmd_code == "takemoney":
                                         amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
                                         currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
@@ -1465,15 +1472,17 @@ class Quests(ConstructorModule):
         finally:
             tasklet.quest_indent = old_indent
             if old_indent is None:
-                quest_given = getattr(char, "quest_given", None)
-                if quest_given:
-                    tokens = []
-                    for key, val in quest_given.iteritems():
-                        name = key
-                        if val > 1:
-                            name += " &mdash; %s" % (self._("%d pcs") % val)
+                tokens = []
+                quest_given_items = getattr(char, "quest_given_items", None)
+                if quest_given_items:
+                    for key, val in quest_given_items.iteritems():
+                        name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
                         tokens.append(name)
-                    tokens.sort()
+                quest_given_money = getattr(char, "quest_given_money", None)
+                if quest_given_money:
+                    for currency, amount in quest_given_money.iteritems():
+                        tokens.append(self.call("money.price-html", amount, currency))
+                if tokens:
                     char.message(u"<br />".join(tokens), title=self._("You have got:"))
         # processing character redirects after processing quest operation
         if old_indent is None:
