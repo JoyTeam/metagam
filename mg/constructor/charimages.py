@@ -101,7 +101,9 @@ class CharImages(ConstructorModule):
 
     def charpage_actions(self, character, actions):
         images = self.call("charimages.for-sex", character.sex)
-        images = [img for img in images if img["info"].get("available")]
+        def eval_desc():
+            return self._("Character image availability")
+        images = [img for img in images if self.call("script.evaluate-expression", img["info"].get("available"), globs={"char": character}, description=eval_desc)]
         if images:
             actions.append({"href": "/charimage/select", "text": self._("charimage///Select character image"), "order": 10})
         if self.conf("charimages.layers"):
@@ -144,7 +146,9 @@ class CharImages(ConstructorModule):
                 img["price_html"] = self.call("money.price-html", price, currency)
             else:
                 img["price_html"] = self._("money///free")
-        images = [img for img in images if (img.get("price") or not img["info"].get("deny_free")) and img["info"].get("available")]
+        def eval_desc():
+            return self._("Character image availability")
+        images = [img for img in images if (img.get("price") or not img["info"].get("deny_free")) and self.call("script.evaluate-expression", img["info"].get("available"), globs={"char": character}, description=eval_desc)]
         if req.ok():
             image = req.param("image")
             for ent in images:
@@ -633,11 +637,11 @@ class CharImagesAdmin(ConstructorModule):
                 obj["sex0"] = sex0
                 obj["sex1"] = sex1
                 obj["description"] = req.param("description").strip()
-                if req.param("available"):
+                char = self.character(req.user())
+                obj["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
+                if obj["available"]:
                     obj["deny_free"] = True if req.param("deny_free") else False
-                    obj["available"] = True
                 else:
-                    obj["available"] = False
                     obj["deny_free"] = False
                     price = None
                     currency = None
@@ -674,7 +678,7 @@ class CharImagesAdmin(ConstructorModule):
                 {"name": "description", "label": self._("Character image description"), "type": "textarea", "value": obj.get("description")},
                 {"name": "sex0", "label": self._("Male"), "type": "checkbox", "checked": obj.get("sex0")},
                 {"name": "sex1", "label": self._("Female"), "type": "checkbox", "checked": obj.get("sex1"), "inline": True},
-                {"name": "available", "label": self._("Available to players"), "type": "checkbox", "checked": obj.get("available")},
+                {"name": "available", "label": self._("Available to players") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", obj.get("available"))},
                 {"name": "override_price", "label": self._("Specific price"), "checked": True if obj.get("price") is not None else False, "type": "checkbox", "condition": "[available]"},
                 {"name": "deny_free", "label": self._("Deny selection for free"), "checked": obj.get("deny_free"), "type": "checkbox", "inline": True, "condition": "[available]"},
                 {"name": "price", "label": self._("charimage///Price for this image"), "value": obj.get("price"), "condition": "[override_price] && [available]"},

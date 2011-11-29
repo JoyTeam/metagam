@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 11:04+0300\n"
+"PO-Revision-Date: 2011-11-29 11:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -852,6 +852,9 @@ msgstr "Анкета персонажа"
 
 msgid "Character forms documentation"
 msgstr "Документация на анкету персонажа"
+
+msgid "Character image availability"
+msgstr "Доступность образа персонажа"
 
 msgid "Character image constructor is unavailable. No layers defined"
 msgstr "Конструктор образов персонажей недоступен. Не заданы слои"

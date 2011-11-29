@@ -122,6 +122,10 @@ class ScriptEngine(ConstructorModule):
                 return '"%s"' % quotestr(val)
         elif val is None:
             return "none"
+        elif val is True:
+            return 1
+        elif val is False:
+            return 0
         else:
             return str(val)
 
