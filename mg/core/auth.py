@@ -168,7 +168,7 @@ class Sessions(Module):
                 if cache:
                     req._session = session
                 return session
-        elif not create:
+        if not create:
             return None
         sid = uuid4().hex
         session = self.obj(Session, sid, {})
@@ -740,10 +740,7 @@ class Interface(Module):
                     form.error("password", msg["password_incorrect"])
             if not form.errors:
                 with self.lock(["session.%s" % session.uuid]):
-                    try:
-                        session.load()
-                    except ObjectNotFoundException:
-                        pass
+                    session.load()
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
                     session.set("ip", req.remote_addr())

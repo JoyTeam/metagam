@@ -947,7 +947,6 @@ class Auth(ConstructorModule):
             try:
                 session = self.obj(Session, session_uuid)
             except ObjectNotFoundException as e:
-                self.exception(e)
                 return
             # updating appsession
             appsession = self.appsession(session_uuid)
@@ -975,10 +974,7 @@ class Auth(ConstructorModule):
     def stream_login(self, session_uuid, character_uuid):
         logout_others = False
         with self.lock(["session.%s" % session_uuid]):
-            try:
-                session = self.obj(Session, session_uuid)
-            except ObjectNotFoundException as e:
-                pass
+            session = self.obj(Session, session_uuid, silent=True)
             appsession = self.appsession(session_uuid)
             old_state = appsession.get("state")
             old_character = appsession.get("character")
