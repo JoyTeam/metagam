@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 09:02+0300\n"
+"PO-Revision-Date: 2011-11-29 09:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4303,6 +4303,10 @@ msgid "Quest"
 msgstr "Квест"
 
 #, python-format
+msgid "Quest %s availability"
+msgstr "Доступность квеста %s"
+
+#, python-format
 msgid "Quest %s description"
 msgstr "Описание квеста %s"
 
@@ -4344,6 +4348,9 @@ msgstr "Идентификатор квеста"
 
 msgid "Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор квеста должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Quest is available for the character"
+msgstr "Квест доступен персонажу"
 
 msgid "Quest is enabled"
 msgstr "Квест включен"
@@ -7281,6 +7288,9 @@ msgstr "Кто ваш персонаж?"
 
 msgid "show"
 msgstr "показать"
+
+msgid "skipping unavailable quest {quest}"
+msgstr "пропускаем недоступный квест {quest}"
 
 msgid "smile/smiles"
 msgstr "смайлик/смайлика/смайликов"

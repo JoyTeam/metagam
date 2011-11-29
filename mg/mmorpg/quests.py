@@ -343,6 +343,9 @@ class QuestsAdmin(ConstructorModule):
                     quest["order"] = floatz(req.param("order"))
                     # flags
                     quest["enabled"] = True if req.param("enabled") else False
+                    # availability
+                    char = self.character(req.user())
+                    quest["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
                     if errors:
                         self.call("web.response_json", {"success": False, "errors": errors})
                     # storing
@@ -370,6 +373,7 @@ class QuestsAdmin(ConstructorModule):
                     {"name": "order", "value": quest.get("order", 0), "label": self._("Sorting order"), "inline": True},
                     {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
                     {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled"), "type": "checkbox"},
+                    {"name": "available", "value": self.call("script.unparse-expression", quest.get("available", 1)), "label": self._("Quest is available for the character") + self.call("script.help-icon-expressions")},
                     {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
@@ -858,29 +862,38 @@ class QuestsAdmin(ConstructorModule):
             if character.valid:
                 cur_quests = []
                 finished_quests = []
-                quest_list = [(qid, quest) for qid, quest in self.conf("quests.list", {}).iteritems() if quest.get("enabled")]
+                quest_list = []
+                for qid, quest in self.conf("quests.list", {}).iteritems():
+                    if quest.get("enabled"):
+                        quest_list.append((qid, quest))
                 quest_list.sort(cmp=lambda x, y: cmp(x[1].get("order", 0), y[1].get("order", 0)) or cmp(x[1].get("name"), y[1].get("name")) or cmp(x[0], y[0]))
                 for qid, quest in quest_list:
                     # current quest
                     sid = character.quests.get(qid, "state", "init")
                     if sid != "init":
-                        if req.has_access("quests.editor"):
-                            state = self.conf("quest-%s.states" % qid, {}).get(sid)
-                            if state:
-                                quest_name = '<hook:admin.link href="quests/editor/%s/state/%s" title="%s" />' % (qid, sid, htmlescape(quest.get("name")))
+                        try:
+                            available = self.call("script.evaluate-expression", quest.get("available", 1), globs={"char": character}, description=self._("Quest %s availability") % qid)
+                        except ScriptError as e:
+                            self.exception(e)
+                            available = False
+                        if available:
+                            if req.has_access("quests.editor"):
+                                state = self.conf("quest-%s.states" % qid, {}).get(sid)
+                                if state:
+                                    quest_name = '<hook:admin.link href="quests/editor/%s/state/%s" title="%s" />' % (qid, sid, htmlescape(quest.get("name")))
+                                else:
+                                    quest_name = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, htmlescape(quest.get("name")))
                             else:
-                                quest_name = '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, htmlescape(quest.get("name")))
-                        else:
-                            quest_name = htmlescape(quest.get("name"))
-                        state = []
-                        for key, val in character.quests.state(qid).iteritems():
-                            state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
-                        state.sort()
-                        cur_quests.append([
-                            "char.q_%s" % qid,
-                            quest_name,
-                            '<br />'.join(state),
-                        ])
+                                quest_name = htmlescape(quest.get("name"))
+                            state = []
+                            for key, val in character.quests.state(qid).iteritems():
+                                state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
+                            state.sort()
+                            cur_quests.append([
+                                "char.q_%s" % qid,
+                                quest_name,
+                                '<br />'.join(state),
+                            ])
                     # finished quest
                     finished = character.quests.finished.get(qid)
                     if finished:
@@ -1063,6 +1076,16 @@ class Quests(ConstructorModule):
             for quest in quests:
                 try:
                     debug = self.conf("quests.debug_%s" % quest)
+                    # quest availability
+                    qinfo = self.conf("quests.list", {}).get(quest)
+                    if not qinfo:
+                        continue
+                    available = self.call("script.evaluate-expression", qinfo.get("available", 1), globs={"char": char}, description=self._("Quest %s availability") % quest)
+                    if not available:
+                        if debug:
+                            self.call("debug-channel.character", char, lambda: self._("skipping unavailable quest {quest}").format(quest=quest), cls="quest-handler", indent=indent+1)
+                        continue
+                    # state availability
                     states = self.conf("quest-%s.states" % quest, {})
                     state_id = char.quests.get(quest, "state", "init")
                     state = states.get(state_id)
