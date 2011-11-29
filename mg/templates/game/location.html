@@ -6,5 +6,8 @@ Ext.onReady(function() {
 	[%foreach tr in transitions%]
 	transition_hint('[%tr.loc%]', '[%tr.hint%]');
 	[%end%]
+	var Game = parent.Game;
+	var Locations = parent.Locations;
+	[%update_script%]
 });
 </script>

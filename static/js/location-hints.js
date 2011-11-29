@@ -15,3 +15,4 @@ function transition_hint(loc_id, hint)
 		});
 	}
 }
+

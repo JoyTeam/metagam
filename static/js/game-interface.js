@@ -489,4 +489,8 @@ Game.refresh_layout = function() {
 	Ext.getCmp('game-viewport').doLayout(false, true);
 };
 
+Game.javascript = function(pkt) {
+	eval(pkt.script);
+};
+
 loaded('game-interface');

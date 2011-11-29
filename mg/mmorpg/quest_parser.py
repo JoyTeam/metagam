@@ -96,6 +96,15 @@ class TokenOnline(Parsing.Token):
 class TokenOffline(Parsing.Token):
     "%token offline"
 
+class TokenTeleport(Parsing.Token):
+    "%token teleport"
+
+class TokenChat(Parsing.Token):
+    "%token chat"
+
+class TokenJavaScript(Parsing.Token):
+    "%token javascript"
+
 class AttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceIdentifier(self, identifier):
@@ -354,6 +363,27 @@ class QuestAction(Parsing.Nonterm):
         "%reduce random curlyleft RandomContent curlyright"
         self.val = ["random", content.val]
 
+    def reduceTeleport(self, cmd, loc):
+        "%reduce teleport scalar"
+        if type(loc.val) != str and type(loc.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
+        if not cmd.script_parser.call("location.info", loc.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Invalid location identifier"))
+        self.val = ["teleport", loc.val]
+
+    def reduceChat(self, cmd, attrs):
+        "%reduce chat ExprAttrs"
+        text = get_str_attr(cmd, "chat", attrs, "text", require=True)
+        text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
+        validate_attrs(cmd, "chat", attrs, ["text"])
+        self.val = ["chat", text, {}]
+
+    def reduceJavaScript(self, cmd, javascript):
+        "%reduce javascript scalar"
+        if type(javascript.val) != str and type(javascript.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
+        self.val = ["javascript", javascript.val]
+
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -506,6 +536,9 @@ class QuestScriptParser(ScriptParser):
     syms["registered"] = TokenRegistered
     syms["online"] = TokenOnline
     syms["offline"] = TokenOffline
+    syms["teleport"] = TokenTeleport
+    syms["chat"] = TokenChat
+    syms["javascript"] = TokenJavaScript
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

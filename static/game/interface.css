@@ -187,6 +187,7 @@ area { border: none }
 .button { padding: 5px 20px 5px 20px }
 
 /* QUESTS */
+.chat-msg-quest { color: #000080 }
 .chat-msg-quest-first-event { color: #4040c0; padding-top: 3px; border-top: solid 1px #808080; margin-top: 3px }
 .chat-msg-quest-event { color: #4040c0 }
 .chat-msg-quest-handler { color: #c95200 }

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-28 18:08+0300\n"
+"PO-Revision-Date: 2011-11-29 08:43+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1005,6 +1005,9 @@ msgstr "Конфигурация чата сохранена"
 
 msgid "Chat debug channel"
 msgstr "Отладочный канал чата"
+
+msgid "Chat message"
+msgstr "Сообщение в чат"
 
 msgid "Chat messages colour"
 msgstr "Цвет сообщений в чате"
@@ -2756,6 +2759,9 @@ msgstr "Неверный пригласительный код"
 msgid "Invalid line format: '%s'"
 msgstr "Неверный формат строки: \"%s\""
 
+msgid "Invalid location identifier"
+msgstr "Неверный идентификатор локации"
+
 msgid "Invalid location selected"
 msgstr "Выбрана неверная локация"
 
@@ -2901,6 +2907,12 @@ msgstr "Предмет можно выбросить"
 
 msgid "Item name"
 msgstr "Название предмета"
+
+msgid "Item name in accusative"
+msgstr "Название предмета в винительном падеже"
+
+msgid "Item name in genitive plural"
+msgstr "Название предмета в множественном числе и родительном падеже"
 
 msgid "Item type"
 msgstr "Тип предмета"
@@ -3084,6 +3096,9 @@ msgstr "Канал локации"
 
 msgid "Location chat is separated from the main channel"
 msgstr "Чат локации отделён от главного канала"
+
+msgid "Location id must be a string"
+msgstr "Идентификатор локации должен быть строкой"
 
 msgid "Location movement delay"
 msgstr "Задержка при перемещении по локациям"
@@ -3443,6 +3458,10 @@ msgstr "Отсутствует аргумент {arg} для описания {d
 
 msgid "Missing image"
 msgstr "Изображение отсутствует"
+
+#, python-format
+msgid "Missing location %s"
+msgstr "Локация %s отсутствует"
 
 msgid "Moderation"
 msgstr "Модерация"
@@ -7215,6 +7234,14 @@ msgstr "отправить"
 msgid "send to moderation"
 msgstr "отправить на модерацию"
 
+#, python-format
+msgid "sending chat message: %s"
+msgstr "отправляем сообщение в чат: %s"
+
+#, python-format
+msgid "sending javascript %s"
+msgstr "отправляем javascript %s"
+
 msgid "service///active"
 msgstr "активна"
 
@@ -7278,6 +7305,10 @@ msgstr "забираем {quantity} предметов с типом \"{type}\" 
 
 msgid "telegrams menu///Post"
 msgstr "Почта"
+
+#, python-format
+msgid "teleporting %s"
+msgstr "телепортируем %s"
 
 msgid "text area"
 msgstr "большое текстовое поле"
@@ -7544,8 +7575,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr ""
 #~ "Чтобы использовать статическое хранилище, к аккаунту владельца игры "
 #~ "должен быть присоединён WMID"
-#~ msgid "Send a message"
-#~ msgstr "Отправить сообщение"
 #~ msgid "reqauction///Request: %s"
 #~ msgstr "Заявка: %s"
 #~ msgid "Demo advice"

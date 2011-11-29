@@ -427,6 +427,15 @@ class Character(Module):
     def error(self, content, title=None):
         self.call("stream.character", self, "game", "msg_error", title=title, content=content)
 
+    def javascript(self, script):
+        self.call("stream.character", self, "game", "javascript", script=script)
+
+    def teleport(self, *args, **kwargs):
+        self.call("teleport.character", self, *args, **kwargs)
+
+    def main_open(self, uri):
+        self.call("stream.character", self, "game", "main_open", uri=uri)
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)

@@ -738,6 +738,12 @@ class QuestsAdmin(ConstructorModule):
                     result += self.quest_admin_unparse_script(actions, indent + 2)
                 result += "  " * indent + "}\n"
                 return result
+            elif val[0] == "chat":
+                return "  " * indent + "chat text=%s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+            elif val[0] == "javascript":
+                return "  " * indent + "javascript %s\n" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "teleport":
+                return "  " * indent + "teleport %s\n" % self.call("script.unparse-expression", val[1])
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -868,7 +874,7 @@ class QuestsAdmin(ConstructorModule):
                             quest_name = htmlescape(quest.get("name"))
                         state = []
                         for key, val in character.quests.state(qid).iteritems():
-                            state.append(u'%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
+                            state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
                         state.sort()
                         cur_quests.append([
                             "char.q_%s" % qid,
@@ -956,7 +962,7 @@ class QuestsAdmin(ConstructorModule):
                 del dialogs[i]
                 character.quests.touch()
                 character.quests.store()
-                self.call("stream.character", character, "game", "main_open", uri="/quest/dialog")
+                character.main_open("/quest/dialog")
                 break
         self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=quests" % char_uuid)
 
@@ -1328,6 +1334,29 @@ class Quests(ConstructorModule):
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
+                                    elif cmd_code == "javascript":
+                                        script = cmd[1]
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("sending javascript %s") % self.call("script.unparse-expression", script), cls="quest-action", indent=indent+2)
+                                        char.javascript(script)
+                                    elif cmd_code == "chat":
+                                        html = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("sending chat message: %s") % htmlescape(html), cls="quest-action", indent=indent+2)
+                                        self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True)
+                                    elif cmd_code == "teleport":
+                                        loc = self.call("location.info", cmd[1])
+                                        if loc:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("teleporting %s") % htmlescape(loc.name_t), cls="quest-action", indent=indent+2)
+                                            char.teleport(loc, char.instance, [self.now(), self.now()])
+                                            try:
+                                                tasklet.quest_teleported.add(char.uuid)
+                                            except AttributeError:
+                                                tasklet.quest_teleported = set()
+                                                tasklet.quest_teleported.add(char.uuid)
+                                        else:
+                                            raise QuestError(self._("Missing location %s") % cmd[1])
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1366,16 +1395,31 @@ class Quests(ConstructorModule):
                     char.message(u"<br />".join(tokens), title=self._("You have got:"))
         # processing character redirects after processing quest operation
         if old_indent is None:
-            if char.quests.dialogs:
+            try:
                 req = self.req()
-                if req.user() == char.uuid:
+            except AttributeError:
+                req = None
+            quest_teleported = getattr(tasklet, "quest_teleported", None)
+            if quest_teleported:
+                for char_uuid in quest_teleported:
+                    if req and req.user() == char_uuid:
+                        try:
+                            req.quest_redirects[char.uuid] = "/location"
+                        except AttributeError:
+                            req.quest_redirects = {char.uuid: "/location"}
+                    else:
+                        char.main_open("/location")
+                del tasklet.quest_teleported
+            if char.quests.dialogs:
+                if req and req.user() == char.uuid:
                     try:
                         req.quest_redirects[char.uuid] = "/quest/dialog"
                     except AttributeError:
                         req.quest_redirects = {char.uuid: "/quest/dialog"}
                 else:
-                    self.call("stream.character", char, "game", "main_open", uri="/quest/dialog")
-
+                    char.main_open("/quest/dialog")
+                
+                
     def get_char(self, uuid):
         return CharQuests(self.app(), uuid)
 
@@ -1427,7 +1471,7 @@ class Quests(ConstructorModule):
             for char_uuid, uri in redirs.iteritems():
                 char = self.character(char_uuid)
                 if char.tech_online:
-                    self.call("stream.character", char, "game", "main_open", uri=uri)
+                    char.main_open(uri)
 
     def check_dialogs(self):
         req = self.req()

@@ -519,6 +519,15 @@ class Locations(ConstructorModule):
         self.rhook("paidservices.fastmove", self.srv_fastmove)
         self.rhook("money-description.fastmove", self.money_description_fastmove)
         self.rhook("locations.movement_delay", self.movement_delay)
+        self.rhook("location.info", self.location_info)
+        self.rhook("teleport.character", self.teleport_character)
+
+    def location_info(self, loc_id):
+        location = self.location(loc_id)
+        if location.valid():
+            return location
+        else:
+            return None
 
     def get(self, character):
         try:
@@ -575,8 +584,9 @@ class Locations(ConstructorModule):
                 self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
         vars = {
             "location": {
-                "id": location.uuid
+                "id": location.uuid,
             },
+            "update_script": self.update_js(character),
             "debug_ext": self.conf("debug.ext"),
         }
         transitions = []
@@ -590,18 +600,29 @@ class Locations(ConstructorModule):
         html = self.call("design.parse", design, "location-layout.html", None, vars)
         self.call("game.response_internal", "location.html", vars, html)
 
-    def gameinterface_render(self, character, vars, design):
-        vars["js_modules"].add("locations")
+    def update_js(self, character):
         now = self.now()
+        commands = []
+        # updating location movement progress bar
         if character.location_delay is None or now >= character.location_delay[1]:
-            vars["js_init"].append("Game.progress_set('location-movement', 1);")
+            commands.append("Game.progress_set('location-movement', 1);")
         else:
             now = unix_timestamp(now)
             start = unix_timestamp(character.location_delay[0])
             end = unix_timestamp(character.location_delay[1])
             current_ratio = (now - start) * 1.0 / (end - start)
             time_till_end = (end - now) * 1000
-            vars["js_init"].append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
+            commands.append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
+        # updating location names
+        commands.append(u"Locations.update('{name}', '{name_w}');".format(
+            name=jsencode(character.location.name),
+            name_w=jsencode(character.location.name_w)
+        ))
+        return ''.join(commands)
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("locations")
+        vars["js_init"].append(self.update_js(character))
 
     def ext_move(self):
         self.call("quest.check-dialogs")
@@ -629,11 +650,13 @@ class Locations(ConstructorModule):
             character.set_location(new_location, character.instance, [self.now(), self.now(delay)])
             self.call("web.response_json", {
                 "ok": True,
-                "id": new_location.uuid,
-                "name": new_location.name,
-                "name_w": new_location.name_w,
-                "delay": delay,
+                "id": character.location.uuid,
+                "update_script": self.update_js(character),
             })
+
+    def teleport_character(self, character, location, instance=None, delay=None):
+        character.set_location(location=location, instance=instance, delay=delay)
+        character.javascript(self.update_js(character))
 
     def gameinterface_buttons(self, buttons):
         buttons.append({
