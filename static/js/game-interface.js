@@ -429,7 +429,10 @@ Game.render_button = function(btn) {
 	var att = '';
 	var btn_id = this.get_btn_id();
 	var classes = new Array();
-	if (btn.onclick) {
+	if (btn.qevent) {
+		att += ' onclick="Game.qevent(\'' + btn.qevent + '\')"';
+		classes.push('clickable');
+	} else if (btn.onclick) {
 		att += ' onclick="' + btn.onclick + '"';
 		classes.push('clickable');
 	} else if (btn.popup) {
@@ -471,6 +474,8 @@ Game.popup = function(btn_id, popup_id, parent_menu) {
 						eval(btn.onclick);
 					} else if (btn.popup) {
 						this.popup(btn_id, btn.popup, menu);
+					} else if (btn.qevent) {
+						Game.qevent(btn.qevent);
 					}
 				}).createDelegate(this, [btn, menu, btn_id], true)
 			}

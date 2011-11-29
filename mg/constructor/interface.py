@@ -471,6 +471,8 @@ class Interface(ConstructorModule):
             else:
                 rbtn["href"] = jsencode(htmlescape(btn.get("href")))
                 rbtn["target"] = jsencode(htmlescape(btn.get("target")))
+        # Other handlers
+        self.call("interface.render-button", btn, rbtn)
         return rbtn
 
     def game_interface(self, character):
@@ -1176,7 +1178,7 @@ class Interface(ConstructorModule):
                     errors["v_popup"] = self._("Select a popup menu")
                 else:
                     btn["popup"] = popup
-            else:
+            elif not self.call("admin-interface.button-action-%s" % action, btn, errors):
                 errors["v_action"] = self._("Select an action")
             # Button block
             if not block:
@@ -1263,15 +1265,19 @@ class Interface(ConstructorModule):
                 onclick = button.get("onclick")
                 popup = button.get("popup")
                 condition = button.get("condition")
-                if onclick:
-                    action = "javascript"
-                    target = "_blank"
-                elif popup:
-                    action = "popup"
-                    target = "_blank"
+                action = self.call("admin-interface.button-action", button)
+                if action is None:
+                    if onclick:
+                        action = "javascript"
+                        target = "_blank"
+                    elif popup:
+                        action = "popup"
+                        target = "_blank"
+                    else:
+                        action = "href"
+                        target = button.get("target")
                 else:
-                    action = "href"
-                    target = button.get("target")
+                    target = None
                 # Valid blocks
                 if block:
                     valid_block = False
@@ -1309,18 +1315,20 @@ class Interface(ConstructorModule):
         for p in lst:
             blocks.append((p.uuid, self._("Popup menu: %s") % p.get("title")))
             popups.append((p.uuid, p.get("title")))
+        actions = [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]
         fields = [
             {"name": "block", "type": "combo", "label": self._("Buttons block"), "values": blocks, "value": block},
             {"name": "order", "label": self._("Sort order"), "value": order, "inline": True},
             {"type": "fileuploadfield", "name": "image", "label": self._("Button image")},
             {"name": "condition", "label": self._("Condition (when to show the button)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", condition) if condition else None},
             {"name": "title", "label": self._("Button hint") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", title)},
-            {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": [("href", self._("Open hyperlink")), ("javascript", self._("Execute JavaScript")), ("popup", self._("Open popup menu"))]},
+            {"type": "combo", "name": "action", "label": self._("Button action"), "value": action, "values": actions},
             {"name": "href", "label": self._("Button href"), "value": href, "condition": "[[action]]=='href'"},
             {"type": "combo", "name": "target", "label": self._("Target frame"), "value": target, "values": [("main", self._("Main game frame")), ("_blank", self._("New window"))], "condition": "[[action]]=='href'", "inline": True},
             {"type": "combo", "name": "popup", "label": self._("Popup menu"), "value": popup, "values": popups, "condition": "[[action]]=='popup'"},
             {"name": "onclick", "label": self._("Javascript onclick"), "value": onclick, "condition": "[[action]]=='javascript'"},
         ]
+        self.call("admin-interface.button-actions", button, actions, fields)
         self.call("admin.form", fields=fields, modules=["FileUploadField"])
 
     def project_status(self):

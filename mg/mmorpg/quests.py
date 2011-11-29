@@ -239,6 +239,29 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
         self.rhook("admin-locations.map-zone-action-event", self.location_map_zone_action_event)
         self.rhook("admin-locations.map-zone-event-render", self.location_map_zone_event_render)
+        self.rhook("admin-interface.button-actions", self.interface_button_actions)
+        self.rhook("admin-interface.button-action-qevent", self.interface_button_action_qevent)
+        self.rhook("admin-interface.button-action", self.interface_button_action)
+
+    def interface_button_action(self, btn):
+        if btn.get("qevent"):
+            raise Hooks.Return("qevent")
+
+    def interface_button_actions(self, button, actions, fields):
+        actions.append(("qevent", self._("Call 'clicked' quest event")))
+        fields.append({"name": "qevent", "label": self._("Event identifier"), "value": button.get("qevent") if button else None, "condition": "[[action]]=='qevent'"})
+
+    def interface_button_action_qevent(self, btn, errors):
+        req = self.req()
+        key = "qevent"
+        ev = req.param(key).strip()
+        if not ev:
+            errors[key] = self._("Event identifier not specified")
+        elif not re_valid_identifier.match(ev):
+            errors[key] = self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+        else:
+            btn["qevent"] = ev
+        return True
 
     def location_map_zone_actions(self, location, actions):
         actions.append(("event", jsencode(self._("Call 'clicked' quest event"))))
@@ -1021,6 +1044,7 @@ class Quests(ConstructorModule):
         self.rhook("session.character-offline", self.character_offline)
         self.rhook("ext-quest.event", self.ext_quest_event, priv="logged")
         self.rhook("locations.map-zone-event-render", self.location_map_zone_event_render)
+        self.rhook("interface.render-button", self.interface_render_button)
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -1712,3 +1736,6 @@ class Quests(ConstructorModule):
 
     def location_map_zone_event_render(self, zone, rzone):
         rzone["ev"] = jsencode(zone.get("ev"))
+
+    def interface_render_button(self, btn, rbtn):
+        rbtn["qevent"] = jsencode(btn.get("qevent"))

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 10:15+0300\n"
+"PO-Revision-Date: 2011-11-29 10:49+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1988,6 +1988,9 @@ msgstr "Событие"
 
 msgid "Event id must be a string"
 msgstr "Идентификатор события должен быть строкой"
+
+msgid "Event identifier"
+msgstr "Идентификатор события"
 
 msgid "Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор события \"onfail\" должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
