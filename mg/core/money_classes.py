@@ -134,6 +134,8 @@ class MemberMoney(Module):
         account.set("currency", currency)
         account.set("locked", 0)
         account.set("low_limit", 0)
+        account.store()
+        del self._accounts
         return account
 
     def description(self, description):
