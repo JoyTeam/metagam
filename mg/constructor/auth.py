@@ -72,7 +72,6 @@ class AuthAdmin(ConstructorModule):
                             try:
                                 session = app.obj(Session, session_uuid)
                             except ObjectNotFoundException as e:
-                                self.exception(e)
                                 appsession.remove()
                             else:
                                 old_state = appsession.get("state")
@@ -327,7 +326,7 @@ class Auth(ConstructorModule):
                             try:
                                 session = self.obj(Session, session_uuid)
                             except ObjectNotFoundException as e:
-                                self.exception(e)
+                                pass
                             else:
                                 # updating session
                                 user = session.get("user")
@@ -801,11 +800,7 @@ class Auth(ConstructorModule):
     def stream_connected(self, session_uuid):
         logout_others = False
         with self.lock(["session.%s" % session_uuid]):
-            try:
-                session = self.obj(Session, session_uuid)
-            except ObjectNotFoundException as e:
-                self.exception(e)
-                return
+            session = self.obj(Session, session_uuid, silent=True)
             # updating appsession
             appsession = self.appsession(session_uuid)
             old_state = appsession.get("state")
@@ -881,7 +876,7 @@ class Auth(ConstructorModule):
                         try:
                             session = self.obj(Session, session_uuid)
                         except ObjectNotFoundException as e:
-                            self.exception(e)
+                            pass
                         else:
                             # updating session
                             user = session.get("user")

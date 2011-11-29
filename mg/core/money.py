@@ -1283,7 +1283,7 @@ class WebMoney(Module):
 
     def check_ticket(self):
         req = self.req()
-        self.debug("WMLogin auth: %s", req.param_dict())
+        self.debug("WMLogin auth: %s", [req.param_dict()])
         ticket = req.param("WmLogin_Ticket")
         authtype = req.param("WmLogin_AuthType")
         remote_addr = req.param("WmLogin_UserAddress")
