@@ -728,7 +728,7 @@ class Xsolla(Module):
         id = None
         id_shop = None
         sum = None
-        self.debug("Xsolla Request: %s", req.param_dict())
+        self.debug("Xsolla Request: %s", [req.param_dict()])
         try:
             secret = self.conf("xsolla.secret")
             if type(secret) == unicode:
