@@ -110,19 +110,25 @@ class Money(ConstructorModule):
                     "balance": op.get("balance"),
                     "cls": "money-plus" if op.get("balance") >= 0 else "money-minus",
                 }
-                rop["description"] = op.get("description")
-                if description:
-                    watchdog = 0
-                    while True:
-                        watchdog += 1
-                        if watchdog >= 100:
-                            break
-                        try:
-                            rop["description"] = description["text"].format(**op.data)
-                        except KeyError as e:
-                            op.data[e.args[0]] = "{%s}" % e.args[0]
+                if op.get("override"):
+                    rop["description"] = op.get("override")
+                else:
+                    rop["description"] = op.get("description")
+                    if description:
+                        if callable(description["text"]):
+                            rop["description"] = description["text"](op.data)
                         else:
-                            break
+                            watchdog = 0
+                            while True:
+                                watchdog += 1
+                                if watchdog >= 100:
+                                    break
+                                try:
+                                    rop["description"] = description["text"].format(**op.data)
+                                except KeyError as e:
+                                    op.data[e.args[0]] = "{%s}" % e.args[0]
+                                else:
+                                    break
                 if op.get("comment"):
                     rop["description"] = "%s: %s" % (rop["description"], htmlescape(op.get("comment")))
                 operations.append(rop)

@@ -978,8 +978,7 @@ class Auth(ConstructorModule):
             try:
                 session = self.obj(Session, session_uuid)
             except ObjectNotFoundException as e:
-                self.exception(e)
-                return
+                pass
             appsession = self.appsession(session_uuid)
             old_state = appsession.get("state")
             old_character = appsession.get("character")

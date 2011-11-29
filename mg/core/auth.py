@@ -740,7 +740,10 @@ class Interface(Module):
                     form.error("password", msg["password_incorrect"])
             if not form.errors:
                 with self.lock(["session.%s" % session.uuid]):
-                    session.load()
+                    try:
+                        session.load()
+                    except ObjectNotFoundException:
+                        pass
                     session.set("user", user.uuid)
                     session.delkey("semi_user")
                     session.set("ip", req.remote_addr())
