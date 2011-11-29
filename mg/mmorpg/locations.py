@@ -193,10 +193,13 @@ class LocationsAdmin(ConstructorModule):
                 self.call("admin-locations.editor-form-store", db_loc, flags)
                 self.call("admin-locations.update-transitions", db_loc)
                 transitions = db_loc.get("transitions", {})
+                char = self.character(req.user())
                 for loc_id, info in transitions.iteritems():
                     info["hint"] = req.param("tr-%s-hint" % loc_id).strip()
                     val = req.param("tr-%s-delay" % loc_id).strip()
                     info["delay"] = intz(val) if val != "" else None
+                    info["available"] = self.call("script.admin-expression", "tr-%s-available" % loc_id, errors, globs={"char": char})
+                    info["error"] = self.call("script.admin-text", "tr-%s-error" % loc_id, errors, globs={"char": char})
                 db_loc.store()
                 self.call("admin-locations.editor-form-cleanup", db_loc, flags)
                 self.call("web.response_json_html", {"success": True, "redirect": "locations/editor/%s" % db_loc.uuid, "parameters": {"saved": 1}})
@@ -245,6 +248,8 @@ class LocationsAdmin(ConstructorModule):
                     continue
                 fields.append({"type": "header", "html": '%s: %s' % (self._("Transition"), loc.name_t)})
                 fields.append({"name": "tr-%s-hint" % loc_id, "label": self._("Hint when mouse over the link"), "value": info.get("hint")})
+                fields.append({"name": "tr-%s-available" % loc_id, "label": self._("Transition is available for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))})
+                fields.append({"name": "tr-%s-error" % loc_id, "label": self._("Error message when transition is unavailable") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", info.get("error", "")), "inline": True})
                 fields.append({"name": "tr-%s-delay" % loc_id, "label": self._("Delay when moving to this location (if not specified delay will be calculated as sum of delays on both locations)"), "value": info.get("delay")})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         rows = []
@@ -654,7 +659,7 @@ class Locations(ConstructorModule):
             "location": {
                 "id": location.uuid,
             },
-            "update_script": self.update_js(character),
+            "update_script": None if req.param("noupdate") else self.update_js(character),
             "debug_ext": self.conf("debug.ext"),
         }
         transitions = []
@@ -713,6 +718,11 @@ class Locations(ConstructorModule):
             delay = trans.get("delay")
             if delay is None:
                 delay = old_location.delay + new_location.delay
+            # evaluating availability
+            available = self.call("script.evaluate-expression", trans.get("available", 1), globs={"char": character}, description=self._("Availability of transition between locations"))
+            if not available:
+                error = self.call("script.evaluate-text", trans.get("error", ""), globs={"char": character}, description=self._("Transition error message"))
+                self.call("web.response_json", {"ok": False, "error": error, "hide_title": True})
             # evaluating delay
             delay = self.call("script.evaluate-expression", self.movement_delay(), {"char": character, "base_delay": delay}, description=self._("Location movement delay"))
             character.set_location(new_location, character.instance, [self.now(), self.now(delay)])

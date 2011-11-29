@@ -17,7 +17,7 @@ Locations.move = function(loc_id) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
 					eval(res.update_script);
-					Game.main_open('/location');
+					Game.main_open('/location?noupdate=1');
 				} else if (res.error) {
 					Game.error(res.hide_title ? '' : gt.gettext('Error'), res.error);
 				}
