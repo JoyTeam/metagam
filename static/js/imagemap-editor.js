@@ -87,6 +87,21 @@ ImageMapZone.prototype.render = function(form) {
 							change: enforce_conditions
 						}
 					}
+				},
+				{
+					id: 'elem_event-' + this.id,
+					items: {
+						id: 'form-field-event-' + this.id,
+						fieldLabel: gt.gettext('Event identifier'),
+						name: 'event-' + this.id,
+						value: this.action,
+						xtype: 'textfield',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						value: this.ev
+					}
 				}
 			]
 		}
@@ -94,6 +109,10 @@ ImageMapZone.prototype.render = function(form) {
 	this.form.conditions.push({
 		id: 'elem_location-' + this.id,
 		condition: "form_value('action-" + this.id + "')=='move'"
+	});
+	this.form.conditions.push({
+		id: 'elem_event-' + this.id,
+		condition: "form_value('action-" + this.id + "')=='event'"
 	});
 };
 
@@ -110,9 +129,9 @@ ImageMapZone.prototype.deactivate = function() {
 ImageMapZone.prototype.cleanup = function() {
 	this.form.form_cmp.remove(this.cmp);
 	for (var ci = this.form.conditions.length - 1; ci >= 0; ci--) {
-		if (this.form.conditions[ci].id == 'elem_location-' + this.id) {
+		var id = this.form.conditions[ci].id;
+		if (id == 'elem_location-' + this.id || id == 'elem_event-' + this.id) {
 			this.form.conditions.splice(ci, 1);
-			break;
 		}
 	}
 };

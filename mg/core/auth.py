@@ -169,7 +169,6 @@ class Sessions(Module):
                     req._session = session
                 return session
         elif not create:
-            req._session = None
             return None
         sid = uuid4().hex
         session = self.obj(Session, sid, {})

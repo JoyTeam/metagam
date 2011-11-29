@@ -345,11 +345,13 @@ class LocationsStaticImages(ConstructorModule):
             zones = []
             if location.db_location.get("static_zones"):
                 for zone in location.db_location.get("static_zones"):
-                    zones.append({
+                    rzone = {
                         "polygon": zone.get("polygon"),
-                        "action": zone.get("action"),
+                        "action": zone.get("action", "none"),
                         "loc": zone.get("loc"),
-                    })
+                    }
+                    self.call("locations.map-zone-%s-render" % rzone["action"], zone, rzone)
+                    zones.append(rzone)
             vars["loc"] = {
                 "id": location.uuid,
                 "image": location.db_location.get("image_static"),
@@ -475,10 +477,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                                 break
                     # action
                     action = req.param("v_action-%d" % zone_id)
-                    zone["action"] = action;
-                    if action == "none":
-                        del zone["action"]
-                    elif action == "move":
+                    zone["action"] = action
+                    if action == "move":
                         loc = req.param("v_location-%d" % zone_id)
                         if not loc:
                             errors["v_location-%d" % zone_id] = self._("Location not specified")
@@ -490,8 +490,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                                 errors["v_location-%d" % zone_id] = self._("Link to the same location")
                             else:
                                 zone["loc"] = loc
-                    else:
-                        errors["v_action-%d" % zone_id] = self._("No action specified")
+                    elif not self.call("admin-locations.map-zone-action-%s" % action, zone_id, zone, errors):
+                        del zone["action"]
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
@@ -502,11 +502,13 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         zones = []
         if location.db_location.get("static_zones"):
             for zone in location.db_location.get("static_zones"):
-                zones.append({
+                rzone = {
                     "polygon": zone.get("polygon"),
                     "action": zone.get("action", "none"),
                     "loc": zone.get("loc")
-                })
+                }
+                self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
+                zones.append(rzone)
         # Loading locations
         locations = []
         lst = self.objlist(DBLocationList, query_index="all")
@@ -517,6 +519,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                     "id": db_loc.uuid,
                     "name": jsencode(db_loc.get("name"))
                 })
+        actions = [("none", self._("No action")), ("move", self._("Move to another location"))]
+        self.call("admin-locations.map-zone-actions", location, actions)
         vars = {
             "image": location.db_location.get("image_static"),
             "width": location.db_location.get("image_static_w"),
@@ -524,7 +528,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
             "submit_url": "/admin-locations/image-map/%s" % location.uuid,
             "zones": zones,
-            "actions": [("none", self._("No action")), ("move", self._("Move to another location"))],
+            "actions": actions,
             "locations": locations,
             "LocationEditor": self._("Switch to the location editor"),
             "loc": {

@@ -17,7 +17,8 @@ wait(['imagemap-editor'], function() {
 	var zone = ImageMapEditor.new_zone();
 	zone.setPolygonStr('[%zone.polygon%]');
 	zone.action = '[%zone.action%]';
-	zone.loc = '[%zone.loc%]';
+	[%if zone.loc%]zone.loc = '[%zone.loc%]';[%end%]
+	[%if zone.ev%]zone.ev = '[%zone.ev%]';[%end%]
 	zone.render(ImageMapEditor.form);
 	[%end%]
 	ImageMapEditor.run();

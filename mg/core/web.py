@@ -231,17 +231,10 @@ class Request(object):
 
     def session(self, create=False):
         try:
-            if self._session:
-                return self._session
-            if not create:
-                return None
+            return self._session
         except AttributeError:
             pass
-        try:
-            self._session = self.app.hooks.call("session.get", create)
-        except AttributeError:
-            self._session = None
-        return self._session
+        return self.app.hooks.call("session.get", create)
 
     def user(self):
         try:

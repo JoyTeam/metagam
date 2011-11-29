@@ -473,7 +473,6 @@ class EmailSender(Module):
         # converting data
         if type(content) == unicode:
             content = content.encode("utf-8")
-        print content
         # making MIME message
         multipart = MIMEMultipart("related");
         multipart["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))

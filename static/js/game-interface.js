@@ -493,4 +493,14 @@ Game.javascript = function(pkt) {
 	eval(pkt.script);
 };
 
+Game.qevent = function(ev) {
+	Ext.Ajax.request({
+		url: '/quest/event',
+		method: 'POST',
+		params: {
+			'ev': ev
+		}
+	});
+};
+
 loaded('game-interface');

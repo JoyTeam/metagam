@@ -236,6 +236,27 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
         self.rhook("ext-admin-quests.removedialog", self.remove_dialog, priv="quest.dialogs")
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-action-event", self.location_map_zone_action_event)
+        self.rhook("admin-locations.map-zone-event-render", self.location_map_zone_event_render)
+
+    def location_map_zone_actions(self, location, actions):
+        actions.append(("event", jsencode(self._("Call 'clicked' quest event"))))
+
+    def location_map_zone_action_event(self, zone_id, zone, errors):
+        req = self.req()
+        key = "event-%d" % zone_id
+        ev = req.param(key).strip()
+        if not ev:
+            errors[key] = self._("Event identifier not specified")
+        elif not re_valid_identifier.match(ev):
+            errors[key] = self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+        else:
+            zone["ev"] = ev
+        return True
+
+    def location_map_zone_event_render(self, zone, rzone):
+        rzone["ev"] = jsencode(zone.get("ev"))
 
     def mod_descriptions(self, mods):
         for key, mod in mods.iteritems():
@@ -629,9 +650,9 @@ class QuestsAdmin(ConstructorModule):
                     result += u"".join([" %s=%s" % (k, self.call("script.unparse-expression", v)) for k, v in attrs])
                 actions = val[1].get("act")
                 if actions:
-                    result += " {\n" + self.quest_admin_unparse_script(actions, indent + 1) + "}\n"
+                    result += " {\n" + self.quest_admin_unparse_script(actions, indent + 1) + "  " * indent + "}\n\n"
                 else:
-                    result += " {}\n"
+                    result += " {\n" + "  " * indent + "}\n\n"
                 return result
             elif val[0] == "event":
                 return u"event %s" % self.call("script.unparse-expression", val[1])
@@ -652,6 +673,8 @@ class QuestsAdmin(ConstructorModule):
                 return "online"
             elif val[0] == "offline":
                 return "offline"
+            elif val[0] == "clicked":
+                return "clicked %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -996,6 +1019,8 @@ class Quests(ConstructorModule):
         self.rhook("ext-quests.index", self.quests, priv="logged")
         self.rhook("session.character-online", self.character_online, priority=-100)
         self.rhook("session.character-offline", self.character_offline)
+        self.rhook("ext-quest.event", self.ext_quest_event, priv="logged")
+        self.rhook("locations.map-zone-event-render", self.location_map_zone_event_render)
 
     def child_modules(self):
         return ["mg.mmorpg.quests.QuestsAdmin"]
@@ -1671,3 +1696,19 @@ class Quests(ConstructorModule):
 
     def character_offline(self, character):
         self.qevent("offline", char=character)
+
+    def ext_quest_event(self):
+        req = self.req()
+        character = self.character(req.user())
+        ev = req.param("ev")
+        if not ev:
+            character.error(self._("Event identifier not specified"))
+        elif not re_valid_identifier.match(ev):
+            character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        else:
+            self.qevent("clicked-%s" % ev, char=character)
+            self.call("web.response_json", {"ok": True})
+        self.call("web.response_json", {"error": True})
+
+    def location_map_zone_event_render(self, zone, rzone):
+        rzone["ev"] = jsencode(zone.get("ev"))

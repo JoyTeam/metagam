@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2011-08-08 18:28+0300\n"
+"PO-Revision-Date: 2011-11-29 09:50+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -53,6 +53,9 @@ msgstr "Ошибка связи с сервером"
 
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
+
+msgid "Event identifier"
+msgstr "Идентификатор события"
 
 msgid "Exception"
 msgstr "Исключение"

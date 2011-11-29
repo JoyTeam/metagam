@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 09:34+0300\n"
+"PO-Revision-Date: 2011-11-29 10:15+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -744,6 +744,9 @@ msgstr "Вычисляется при помощи выражения и таб�
 
 msgid "Calculated using scripting expression"
 msgstr "Вычисляется при помощи скриптового выражения"
+
+msgid "Call 'clicked' quest event"
+msgstr "Вызвать квестовое событие \"clicked\""
 
 msgid "Call daemon method"
 msgstr "Вызов метода демона"
@@ -1989,8 +1992,14 @@ msgstr "Идентификатор события должен быть стро
 msgid "Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор события \"onfail\" должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
+msgid "Event identifier must be a string"
+msgstr "Идентификатор события должен быть строкой"
+
 msgid "Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор события должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Event identifier not specified"
+msgstr "Идентификатор события не указан"
 
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
@@ -3755,9 +3764,6 @@ msgstr "Нет доступа к каналу чата '%s'"
 
 msgid "No action"
 msgstr "Нет действия"
-
-msgid "No action specified"
-msgstr "Действие не выбрано"
 
 msgid "No characters assigned to this player"
 msgstr "Этому игроку не назначено ни одного персонажа"
@@ -7481,6 +7487,9 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "No action specified"
+#~ msgstr "Действие не выбрано"
+
 #, fuzzy
 #~ msgid "Character ID"
 #~ msgstr "Персонаж"
@@ -7510,8 +7519,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "Ошибка в квесте \"{quest}\": \"{error}\""
 #~ msgid "Error: %s"
 #~ msgstr "Ошибка: %s"
-#~ msgid "Quest event '%s'"
-#~ msgstr "Квестовое событие \"%s\""
 #~ msgid "setting %s.%s = %s"
 #~ msgstr "устанавливаем %s.%s = %s"
 #~ msgid "Parse error near '{input}'"

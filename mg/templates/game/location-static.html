@@ -1,9 +1,15 @@
 <div class="location-static">
 <map name="locmap-[%loc.id%]">
 [%foreach zone in zones%]
+
 [%if zone.action=='move'%]
 <area class="loc-tr-[%zone.loc%]" href="javascript:void(0)" onclick="parent.Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
 [%end%]
+
+[%if zone.action=='event'%]
+<area class="loc-ev-[%zone.ev%]" href="javascript:void(0)" onclick="parent.Game.qevent('[%zone.ev%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%end%]
+
 [%end%]
 </map>
 <img src="[%loc.image%]" alt="" usemap="#locmap-[%loc.id%]" />
