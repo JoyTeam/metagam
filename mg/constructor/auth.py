@@ -755,7 +755,10 @@ class Auth(ConstructorModule):
         # Entering cabinet
         self.call("stream.logout", session.uuid)
         with self.lock(["session.%s" % session.uuid]):
-            session.load()
+            try:
+                session.load()
+            except ObjectNotFoundException:
+                pass
             if not session.get("user"):
                 session.set("user", user.uuid)
                 session.set("updated", self.now())
@@ -1015,7 +1018,6 @@ class Auth(ConstructorModule):
             try:
                 session = self.obj(Session, session_uuid)
             except ObjectNotFoundException as e:
-                self.exception(e)
                 return
             # updating appsession
             appsession = self.appsession(session_uuid)

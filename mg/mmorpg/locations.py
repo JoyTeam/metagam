@@ -198,7 +198,7 @@ class LocationsAdmin(ConstructorModule):
                     info["hint"] = req.param("tr-%s-hint" % loc_id).strip()
                     val = req.param("tr-%s-delay" % loc_id).strip()
                     info["delay"] = intz(val) if val != "" else None
-                    info["available"] = self.call("script.admin-expression", "tr-%s-available" % loc_id, errors, globs={"char": char})
+                    info["available"] = self.call("script.admin-expression", "tr-%s-available" % loc_id, errors, globs={"char": char}) if req.param("tr-%s-available" % loc_id) != "" else 1
                     info["error"] = self.call("script.admin-text", "tr-%s-error" % loc_id, errors, globs={"char": char})
                 db_loc.store()
                 self.call("admin-locations.editor-form-cleanup", db_loc, flags)
@@ -687,10 +687,11 @@ class Locations(ConstructorModule):
             time_till_end = (end - now) * 1000
             commands.append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
         # updating location names
-        commands.append(u"Locations.update('{name}', '{name_w}');".format(
-            name=jsencode(character.location.name),
-            name_w=jsencode(character.location.name_w)
-        ))
+        if character.location:
+            commands.append(u"Locations.update('{name}', '{name_w}');".format(
+                name=jsencode(character.location.name),
+                name_w=jsencode(character.location.name_w)
+            ))
         return ''.join(commands)
 
     def gameinterface_render(self, character, vars, design):
