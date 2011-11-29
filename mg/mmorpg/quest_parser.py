@@ -303,9 +303,11 @@ class QuestAction(Parsing.Nonterm):
                 quantity = 1
             self.val = ["giveitem", item, mods, quantity]
         elif currency:
-            amount = get_attr(cmd, "take", attrs, "amount", require=True)
-            currency = get_attr(cmd, "take", attrs, "currency", require=True)
-            self.val = ["givemoney", amount, currency]
+            amount = get_attr(cmd, "give", attrs, "amount", require=True)
+            currency = get_attr(cmd, "give", attrs, "currency", require=True)
+            comment = get_str_attr(cmd, "give", attrs, "comment")
+            validate_attrs(cmd, "give", attrs, ["amount", "currency", "comment"])
+            self.val = ["givemoney", amount, currency, comment]
 
     def reduceTake(self, cmd, attrs):
         "%reduce take ExprAttrs"
@@ -326,8 +328,9 @@ class QuestAction(Parsing.Nonterm):
             self.val = ["takeitem", tp, dna, quantity, onfail]
         elif currency:
             amount = attrs.val.get("amount")
-            validate_attrs(cmd, "take", attrs, ["amount", "currency", "onfail"])
-            self.val = ["takemoney", amount, currency, onfail]
+            comment = get_str_attr(cmd, "take", attrs, "comment")
+            validate_attrs(cmd, "take", attrs, ["amount", "currency", "onfail", "comment"])
+            self.val = ["takemoney", amount, currency, onfail, comment]
 
     def reduceIf(self, cmd, expr, curlyleft, actions, curlyright):
         "%reduce if Expr curlyleft QuestActions curlyright"

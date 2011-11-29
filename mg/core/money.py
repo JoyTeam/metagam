@@ -524,23 +524,26 @@ class MoneyAdmin(Module):
         lst = self.objlist(AccountOperationList, query_index="account", query_equal=account.uuid, query_reversed=True)
         lst.load(silent=True)
         for op in lst:
-            rdescription = op.get("description")
-            description = self.call("money-description.%s" % rdescription)
-            if description:
-                if callable(description["text"]):
-                    rdescription = description["text"](op.data)
-                else:
-                    watchdog = 0
-                    while True:
-                        watchdog += 1
-                        if watchdog >= 100:
-                            break
-                        try:
-                            rdescription = description["text"].format(**op.data)
-                        except KeyError as e:
-                            op.data[e.args[0]] = "{%s}" % e.args[0]
-                        else:
-                            break
+            if op.get("override"):
+                rdescription = op.get("override")
+            else:
+                rdescription = op.get("description")
+                description = self.call("money-description.%s" % rdescription)
+                if description:
+                    if callable(description["text"]):
+                        rdescription = description["text"](op.data)
+                    else:
+                        watchdog = 0
+                        while True:
+                            watchdog += 1
+                            if watchdog >= 100:
+                                break
+                            try:
+                                rdescription = description["text"].format(**op.data)
+                            except KeyError as e:
+                                op.data[e.args[0]] = "{%s}" % e.args[0]
+                            else:
+                                break
             if op.get("comment"):
                 rdescription = "%s: %s" % (rdescription, htmlescape(op.get("comment")))
             operations.append({

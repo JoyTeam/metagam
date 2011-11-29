@@ -417,8 +417,8 @@ class QuestsAdmin(ConstructorModule):
                     {"name": "order", "value": quest.get("order", 0), "label": self._("Sorting order"), "inline": True},
                     {"name": "name", "value": quest.get("name"), "label": self._("Quest name")},
                     {"name": "enabled", "checked": quest.get("enabled"), "label": self._("Quest is enabled"), "type": "checkbox"},
+                    {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox", "inline": True},
                     {"name": "available", "value": self.call("script.unparse-expression", quest.get("available", 1)), "label": self._("Quest is available for the character") + self.call("script.help-icon-expressions")},
-                    {"name": "debug", "checked": True if req.args == "new" else self.conf("quests.debug_%s" % req.args), "label": self._("Write debugging information to the debug channel"), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
         rows = []
@@ -722,6 +722,8 @@ class QuestsAdmin(ConstructorModule):
                 return result
             elif val[0] == "givemoney":
                 result = "  " * indent + "give amount=%s currency=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
+                if len(val) >= 4 and val[3]:
+                    result += " comment=%s" % self.call("script.unparse-expression", val[3])
                 result += "\n"
                 return result
             elif val[0] == "takeitem":
@@ -740,6 +742,8 @@ class QuestsAdmin(ConstructorModule):
                 result = "  " * indent + "take amount=%s currency=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
                 if val[3] is not None:
                     result += " onfail=%s" % self.call("script.unparse-expression", val[3])
+                if len(val) >= 5 and val[4]:
+                    result += " comment=%s" % self.call("script.unparse-expression", val[4])
                 result += "\n"
                 return result
             elif val[0] == "if":
@@ -1286,15 +1290,21 @@ class Quests(ConstructorModule):
                                         currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("giving money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
+                                        money_opts = {}
+                                        if len(cmd) >= 4 and cmd[3]:
+                                            money_opts["override"] = cmd[3]
                                         try:
-                                            char.money.credit(amount, currency, "quest-give", quest=quest)
+                                            char.money.credit(amount, currency, "quest-give", quest=quest, **money_opts)
                                         except MoneyError as e:
                                             raise QuestError(e.val)
                                     elif cmd_code == "takemoney":
                                         amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
                                         currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        money_opts = {}
+                                        if len(cmd) >= 5 and cmd[4]:
+                                            money_opts["override"] = cmd[4]
                                         try:
-                                            res = char.money.debit(amount, currency, "quest-take", quest=quest)
+                                            res = char.money.debit(amount, currency, "quest-take", quest=quest, **money_opts)
                                         except MoneyError as e:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
