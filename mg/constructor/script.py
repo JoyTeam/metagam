@@ -107,8 +107,10 @@ class ScriptEngine(ConstructorModule):
                 return '%s ? %s : %s' % (self.wrap(val[1], val, False), self.wrap(val[2], val, False), self.wrap(val[3], val, False))
             elif cmd == '.':
                 return '%s.%s' % (self.wrap(val[1], val), val[2])
-            elif cmd == 'glob':
+            elif cmd == "glob":
                 return val[1]
+            elif cmd == "random":
+                return "random"
             elif cmd == "call":
                 return "%s(%s)" % (val[1], ", ".join([self.unparse_expression(arg) for arg in val[2:]]))
             else:
@@ -368,6 +370,8 @@ class ScriptEngine(ConstructorModule):
                 return res
             else:
                 raise ScriptRuntimeError(self._("Unknown script engine function: {fname}").format(fname=fname), env)
+        elif cmd == "random":
+            return random.random()
         elif cmd == "glob":
             name = val[1]
             if name not in env.globs:

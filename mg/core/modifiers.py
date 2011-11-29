@@ -1,6 +1,7 @@
 from mg import *
 import re
 
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_aggr = re.compile(r'^(max|min|sum|cnt)_(.+)$')
 
 class DBAlienModifier(CassandraObject):
@@ -371,7 +372,7 @@ class ModifiersAdmin(Module):
                     till = "%s -<br />%s" % (mintill, maxtill)
                 # rendering
                 rmod = [
-                    "char.mod.%s" % m,
+                    "char.mod.%s" % m if re_valid_identifier.match(m) else m,
                     htmlescape(mod.get("description")),
                     mod.get("cnt"),
                     "%s/%s/%s" % (htmlescape(mod.get("minval")), htmlescape(mod.get("maxval")), htmlescape(mod.get("sumval"))),

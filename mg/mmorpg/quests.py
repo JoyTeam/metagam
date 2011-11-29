@@ -31,6 +31,9 @@ class QuestError(Exception):
     def __init__(self, val):
         self.val = val
 
+class AbortHandler(Exception):
+    pass
+
 class CharQuests(ConstructorModule):
     def __init__(self, app, uuid):
         Module.__init__(self, app, "mg.mmorpg.quests.CharQuests")
@@ -187,6 +190,8 @@ class CharQuest(object):
                     raise AttributeError(attr)
 
     def script_set_attr(self, attr, val):
+        if attr == "state":
+            attr = "p_state"
         m = re_param.match(attr)
         if m:
             param = m.group(1)
@@ -1203,7 +1208,7 @@ class Quests(ConstructorModule):
                                         if not res:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
-                                            break
+                                            raise AbortHandler()
                                     elif cmd_code == "call":
                                         if len(cmd) == 2:
                                             ev = "event-%s-%s" % (quest, cmd[1])
@@ -1222,6 +1227,8 @@ class Quests(ConstructorModule):
                                             mods_list.append((param, val))
                                         quantity = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
                                         if quantity > 0:
+                                            if quantity > 1e9:
+                                                quantity = 1e9
                                             item_type = self.item_type(item_type_uuid, mods=mods)
                                             if item_type.valid():
                                                 def message():
@@ -1265,7 +1272,7 @@ class Quests(ConstructorModule):
                                             if quantity is not None and not deleted:
                                                 if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
-                                                break
+                                                raise AbortHandler()
                                         elif cmd[2]:
                                             dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
                                             it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
@@ -1282,12 +1289,14 @@ class Quests(ConstructorModule):
                                             if quantity is not None and not deleted:
                                                 if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
-                                                break
+                                                raise AbortHandler()
                                         else:
                                             raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env())
                                     elif cmd_code == "givemoney":
                                         amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
                                         currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        if amount > 1e9:
+                                            amount = 1e9
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("giving money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
                                         money_opts = {}
@@ -1322,7 +1331,7 @@ class Quests(ConstructorModule):
                                             if not res:
                                                 if cmd[3] is not None:
                                                     self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
-                                                break
+                                                raise AbortHandler()
                                     elif cmd_code == "if":
                                         expr = cmd[1]
                                         val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
@@ -1455,10 +1464,15 @@ class Quests(ConstructorModule):
                                 except ScriptError as e:
                                     self.call("exception.report", e)
                                     self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                except AbortHandler:
+                                    raise
                                 except Exception as e:
                                     self.exception(e)
                                     self.call("debug-channel.character", char, self._("System exception: %s") % e.__class__.__name__, cls="quest-error", indent=indent+2)
-                        execute_actions(act, indent)
+                        try:
+                            execute_actions(act, indent)
+                        except AbortHandler:
+                            pass
                         for obj in modified_objects:
                             obj.store()
                 except QuestError as e:
@@ -1743,14 +1757,17 @@ class Quests(ConstructorModule):
     def ext_quest_event(self):
         req = self.req()
         character = self.character(req.user())
-        ev = req.param("ev")
-        if not ev:
-            character.error(self._("Event identifier not specified"))
-        elif not re_valid_identifier.match(ev):
-            character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        if character.quests.dialogs:
+            character.error(self._("You have opened dialogs"))
         else:
-            self.qevent("clicked-%s" % ev, char=character)
-            self.call("web.response_json", {"ok": True})
+            ev = req.param("ev")
+            if not ev:
+                character.error(self._("Event identifier not specified"))
+            elif not re_valid_identifier.match(ev):
+                character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            else:
+                self.qevent("clicked-%s" % ev, char=character)
+                self.call("web.response_json", {"ok": True})
         self.call("web.response_json", {"error": True})
 
     def location_map_zone_event_render(self, zone, rzone):

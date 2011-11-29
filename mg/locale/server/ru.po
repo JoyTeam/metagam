@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 11:19+0300\n"
+"PO-Revision-Date: 2011-11-29 15:09+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -386,6 +386,9 @@ msgstr "Вариант 2. Запустить конструктор логоти
 
 msgid "Amount"
 msgstr "Сумма"
+
+msgid "Amount is too big"
+msgstr "Сумма слишком велика"
 
 msgid "Amount must be greater than 0"
 msgstr "Количество должно быть больше 0"
@@ -4310,6 +4313,9 @@ msgstr "Назначение"
 msgid "Quantity"
 msgstr "Количество"
 
+msgid "Quantity is too big"
+msgstr "Количество слишком велико"
+
 msgid "Quantity to discard"
 msgstr "Количество на выброс"
 
@@ -6390,6 +6396,9 @@ msgstr "У вас недостаточно средств"
 
 msgid "You have not subscribed to any topic"
 msgstr "Вы не подписаны ни на одну тему"
+
+msgid "You have opened dialogs"
+msgstr "У вас есть открытые диалоги"
 
 msgid "You have powerful abilities to look for and punish players violating your multicharing rules. Before you begin enforcing the law <hook:admin.link href=\"players/auth\" title=\"setup rules related to the multicharing\" />."
 msgstr "У вас есть мощные возможности для поиска и наказания игроков, нарушающих ваши правила мультоводства. Перед тем, как использовать карательные меры, <hook:admin.link href=\"players/auth\" title=\"настройте правила\" />, относящиеся к мультоводству."

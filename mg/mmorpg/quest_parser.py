@@ -81,9 +81,6 @@ class TokenTemplate(Parsing.Token):
 class TokenTitle(Parsing.Token):
     "%token title"
 
-class TokenRandom(Parsing.Token):
-    "%token random"
-
 class TokenWeight(Parsing.Token):
     "%token weight"
 
@@ -545,7 +542,6 @@ class QuestScriptParser(ScriptParser):
     syms["button"] = TokenButton
     syms["template"] = TokenTemplate
     syms["take"] = TokenTake
-    syms["random"] = TokenRandom
     syms["weight"] = TokenWeight
     syms["registered"] = TokenRegistered
     syms["online"] = TokenOnline

@@ -3,6 +3,7 @@ from mg.constructor.interface_classes import *
 import re
 
 re_param_attr = re.compile(r'^p_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 re_perm_attr = re.compile(r'^perm_(.+)')
 re_quest_attr = re.compile(r'^q_(.+)')
 
@@ -330,6 +331,10 @@ class Character(Module):
         if m:
             param = m.group(1)
             return self.param(param, handle_exceptions)
+        m = re_html_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.param_html(param, handle_exceptions)
         # permissions
         m = re_perm_attr.match(attr)
         if m:
@@ -398,6 +403,13 @@ class Character(Module):
         except KeyError:
             # 'param-value' handles cache storing automatically
             return self.call("characters.param-value", self, key, handle_exceptions)
+
+    def param_html(self, key, handle_exceptions=True):
+        param = self.call("characters.param", key)
+        if not param:
+            return None
+        value = self.param(key, handle_exceptions)
+        return self.call("characters.param-html", param, value)
 
     def script_params(self):
         return {"char": self}

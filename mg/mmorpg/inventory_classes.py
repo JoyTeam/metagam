@@ -180,8 +180,6 @@ class ItemType(Module):
             return self.dna
         elif attr == "name":
             return self.name
-        elif attr == "name_g":
-            return self.name_g
         elif attr == "name_gp":
             return self.name_gp
         elif attr == "name_a":

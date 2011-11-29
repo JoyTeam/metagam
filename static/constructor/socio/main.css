@@ -4,6 +4,7 @@ table { border-spacing: 0; border-collapse: collapse; }
 td { font-size: 14px; padding: 0; }
 img { border: none }
 h1 { color: #0078ac; font-size: 21px; font-weight: bold }
+h2 { font-size: 18px }
 a:link, a:visited { color: #dd6419 }
 a:hover, a:active { color: #ed8439 }
 

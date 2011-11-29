@@ -138,6 +138,9 @@ class TokenCurlyRight(Parsing.Token):
 class TokenAssign(Parsing.Token):
     "%token assign"
 
+class TokenRandom(Parsing.Token):
+    "%token random"
+
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
 # productions would look something like:
@@ -177,6 +180,10 @@ class Expr(Parsing.Nonterm):
     def reduceScalar(self, s):
 	"%reduce scalar"
 	self.val = s.val
+
+    def reduceRandom(self, r):
+        "%reduce random"
+        self.val = ["random"]
 
     def reduceNone(self, n):
         "%reduce nonetoken"
@@ -280,6 +287,7 @@ class ScriptParser(Parsing.Lr, Module):
         "and": TokenAnd,
         "or": TokenOr,
         "not": TokenNot,
+        "random": TokenRandom,
     }
     funcs = set(["min", "max"])
 

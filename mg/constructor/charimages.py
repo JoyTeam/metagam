@@ -678,7 +678,7 @@ class CharImagesAdmin(ConstructorModule):
                 {"name": "description", "label": self._("Character image description"), "type": "textarea", "value": obj.get("description")},
                 {"name": "sex0", "label": self._("Male"), "type": "checkbox", "checked": obj.get("sex0")},
                 {"name": "sex1", "label": self._("Female"), "type": "checkbox", "checked": obj.get("sex1"), "inline": True},
-                {"name": "available", "label": self._("Available to players") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", obj.get("available"))},
+                {"name": "available", "label": self._("Available to players") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", obj.get("available", 1))},
                 {"name": "override_price", "label": self._("Specific price"), "checked": True if obj.get("price") is not None else False, "type": "checkbox", "condition": "[available]"},
                 {"name": "deny_free", "label": self._("Deny selection for free"), "checked": obj.get("deny_free"), "type": "checkbox", "inline": True, "condition": "[available]"},
                 {"name": "price", "label": self._("charimage///Price for this image"), "value": obj.get("price"), "condition": "[override_price] && [available]"},
