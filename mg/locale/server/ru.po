@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-11-29 08:43+0300\n"
+"PO-Revision-Date: 2011-11-29 09:02+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4798,6 +4798,9 @@ msgstr "Выберите верный раздел"
 msgid "Select a valid colour"
 msgstr "Выберите корректный цвет"
 
+msgid "Select a valid location"
+msgstr "Выберите верную локацию"
+
 msgid "Select a valid payer"
 msgstr "Выберите корректного плательщика"
 
@@ -4899,6 +4902,9 @@ msgstr "Отправлено"
 
 msgid "Server storage of static objects"
 msgstr "Серверное хранилище статических объектов"
+
+msgid "Service teleport"
+msgstr "Служебный телепорт"
 
 msgid "Services"
 msgstr "Услуги"
@@ -5397,6 +5403,9 @@ msgstr "Имя целевого персонажа"
 
 msgid "Target frame"
 msgstr "В каком фрейме открыть"
+
+msgid "Target location"
+msgstr "Целевая локация"
 
 msgid "Technical reference"
 msgstr "Техническое руководство"
@@ -6041,6 +6050,9 @@ msgstr "Открыть параметры локации"
 
 msgid "Viewing"
 msgstr "Просмотр"
+
+msgid "Viewing characters locations"
+msgstr "Просмотр локаций персонажей"
 
 msgid "Viewing list of authorized users"
 msgstr "Просмотр списка авторизованных пользователей"
@@ -7305,6 +7317,9 @@ msgstr "забираем {quantity} предметов с типом \"{type}\" 
 
 msgid "telegrams menu///Post"
 msgstr "Почта"
+
+msgid "teleport the character"
+msgstr "телепортировать персонажа"
 
 #, python-format
 msgid "teleporting %s"

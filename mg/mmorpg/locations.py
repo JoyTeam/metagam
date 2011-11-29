@@ -21,6 +21,44 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("admin-locations.valid-transitions", self.valid_transitions)
         self.rhook("admin-locations.update-transitions", self.update_transitions)
         self.rhook("advice-admin-locations.index", self.advice_locations)
+        self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("ext-admin-locations.teleport", self.admin_locations_teleport, priv="locations.teleport")
+        self.rhook("headmenu-admin-locations.teleport", self.headmenu_locations_teleport)
+
+    def headmenu_locations_teleport(self, args):
+        return [self._("Service teleport"), "auth/user-dashboard/%s?active_tab=location" % htmlescape(args)]
+
+    def admin_locations_teleport(self):
+        req = self.req()
+        character = self.character(req.args)
+        if not character.valid:
+            self.call("web.not_found")
+        # list of locations
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        locations = [(loc.uuid, loc.get("name")) for loc in lst]
+        valid_locations = set([loc.uuid for loc in lst])
+        # processing request
+        if req.ok():
+            errors = {}
+            # loc
+            loc = req.param("v_loc")
+            if not loc:
+                errors["v_loc"] = self._("This field is mandatory")
+            elif not loc in valid_locations:
+                errors["v_loc"] = self._("Select a valid location")
+            # errors
+            if errors:
+                self.call("web.response_json_html", {"success": False, "errors": errors})
+            # teleporting
+            self.call("teleport.character", character, self.location(loc))
+            character.main_open("/location")
+            self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=location" % character.uuid)
+        # rendering form
+        fields = [
+            {"name": "loc", "label": self._("Target location"), "type": "combo", "values": locations, "value": character.location.uuid if character.location else None},
+        ]
+        self.call("admin.form", fields=fields)
 
     def advice_locations(self, hook, args, advice):
         advice.append({"title": self._("Locations documentation"), "content": self._('You can find detailed information on the location system in the <a href="//www.%s/doc/locations" target="_blank">locations page</a> in the reference manual.') % self.app().inst.config["main_host"]})
@@ -46,6 +84,32 @@ class LocationsAdmin(ConstructorModule):
     def permissions_list(self, perms):
         perms.append({"id": "locations.editor", "name": self._("Locations editor")})
         perms.append({"id": "locations.config", "name": self._("Locations configuration")})
+        perms.append({"id": "locations.users", "name": self._("Viewing characters locations")})
+        perms.append({"id": "locations.teleport", "name": self._("Service teleport")})
+
+    def user_tables(self, user, tables):
+        req = self.req()
+        if req.has_access("locations.users"):
+            character = self.character(user.uuid)
+            if character.valid:
+                if character.location:
+                    location = htmlescape(character.location.name)
+                    if req.has_access("locations.editor"):
+                        location = u'<hook:admin.link href="locations/editor/%s" title="%s" />' % (character.location.uuid, location)
+                else:
+                    location = self._("none")
+                loc_row = [self._("Location"), location]
+                if req.has_access("locations.teleport"):
+                    loc_row.append(u'<hook:admin.link href="locations/teleport/%s" title="%s" />' % (character.uuid, self._("teleport the character")))
+                table = {
+                    "type": "location",
+                    "title": self._("Location"),
+                    "order": 30,
+                    "rows": [
+                        loc_row,
+                    ]
+                }
+                tables.append(table)
 
     def headmenu_locations_editor(self, args):
         if args == "new":
