@@ -313,7 +313,7 @@ class QuestAction(Parsing.Nonterm):
         currency = attrs.val.get("currency")
         cnt = (1 if tp else 0) + (1 if dna else 0) + (1 if currency else 0)
         if cnt == 0:
-            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}', '{attr2}' or '{attr3}' are required in the '{obj}'").format(attr1="type", attr2="dna", attr="currency", obj="take"))
+            raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}', '{attr2}' or '{attr3}' are required in the '{obj}'").format(attr1="type", attr2="dna", attr3="currency", obj="take"))
         elif cnt > 1:
             raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}', '{attr2}' and '{attr3}' can't be used simultaneously in the '{obj}'").format(attr1="type", attr2="dna", attr3="currency", obj="take"))
         onfail = get_str_attr(cmd, "take", attrs, "onfail")
