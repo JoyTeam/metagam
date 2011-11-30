@@ -658,7 +658,7 @@ class MoneyAdmin(Module):
                             nominal = float(re_decimal_comma.sub('.', getText(param.childNodes)))
                 if code and rate and nominal and code in default_rates:
                     rates[code] = rate / nominal
-        self.debug("Loaded CBR stock rates: %s", rates)
+        self.debug("Loaded CBR stock rates: %s", [rates])
         self.main_app().mc.set("cbr-stock-rates", rates)
         return rates
 
