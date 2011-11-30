@@ -175,9 +175,9 @@ class EventType(Parsing.Nonterm):
     def reduceEvent(self, ev, eventid):
         "%reduce event scalar"
         if type(eventid.val) != str and type(eventid.val) != unicode:
-            raise Parsing.SyntaxError(any_obj.script_parser._("Event id must be a string"))
+            raise Parsing.SyntaxError(ev.script_parser._("Event id must be a string"))
         elif not re_valid_identifier.match(eventid.val):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            raise Parsing.SyntaxError(ev.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["event", eventid.val], None]
 
     def reduceTeleported(self, ev, attrs):
@@ -188,25 +188,25 @@ class EventType(Parsing.Nonterm):
     def reduceExpired(self, ev, modid):
         "%reduce expired scalar"
         if type(modid.val) != str and type(modid.val) != unicode:
-            raise Parsing.SyntaxError(any_obj.script_parser._("Modifier id must be a string"))
+            raise Parsing.SyntaxError(ev.script_parser._("Modifier id must be a string"))
         elif not re_valid_identifier.match(modid.val):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            raise Parsing.SyntaxError(ev.script_parser._("Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["expired", "mod", modid.val], None]
 
     def reduceTimeout(self, ev, timerid):
         "%reduce timeout scalar"
         if type(timerid.val) != str and type(timerid.val) != unicode:
-            raise Parsing.SyntaxError(any_obj.script_parser._("Timer id must be a string"))
+            raise Parsing.SyntaxError(ev.script_parser._("Timer id must be a string"))
         elif not re_valid_identifier.match(timerid.val):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            raise Parsing.SyntaxError(ev.script_parser._("Timer identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["expired", "timer", timerid.val], None]
 
     def reduceItemUsed(self, ev, action):
         "%reduce itemused scalar"
         if type(action.val) != str and type(action.val) != unicode:
-            raise Parsing.SyntaxError(any_obj.script_parser._("Action code must be a string"))
+            raise Parsing.SyntaxError(ev.script_parser._("Action code must be a string"))
         elif not re_valid_identifier.match(action.val):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            raise Parsing.SyntaxError(ev.script_parser._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["item", action.val], None]
 
     def reduceButton(self, ev, attrs):
