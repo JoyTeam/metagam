@@ -159,9 +159,9 @@ class MemberModifiers(Module):
                 if val < res["minval"]:
                     res["minval"] = val
                 if till:
-                    if till > res["maxtill"]:
+                    if res["maxtill"] and till > res["maxtill"]:
                         res["maxtill"] = till
-                    if till < res["mintill"]:
+                    if res["mintill"] and till < res["mintill"]:
                         res["mintill"] = till
                 res["mods"].append(ent)
             else:

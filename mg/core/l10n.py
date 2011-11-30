@@ -239,6 +239,8 @@ class L10n(Module):
             return self._tzinfo
 
     def time_local(self, time):
+        if time is None:
+            return None, None
         m = re_datetime.match(time)
         if not m:
             return None, None
