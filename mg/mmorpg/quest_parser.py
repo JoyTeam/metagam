@@ -234,9 +234,9 @@ class EventType(Parsing.Nonterm):
     def reduceClicked(self, ev, ident):
         "%reduce clicked scalar"
         if type(ident.val) != str and type(ident.val) != unicode:
-            raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must be a string"))
+            raise Parsing.SyntaxError(ev.script_parser._("Event identifier must be a string"))
         elif not re_valid_identifier.match(ident.val):
-            raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+            raise Parsing.SyntaxError(ev.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["clicked", ident.val], None]
 
 # ============================
