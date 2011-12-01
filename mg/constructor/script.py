@@ -75,6 +75,8 @@ class ScriptEngine(ConstructorModule):
                 prio = 2
             elif cmd == '?':
                 prio = 1
+            elif cmd == 'random':
+                prio = 1
             else:
                 raise ScriptParserError("Invalid cmd: '%s'" % cmd)
         return prio
