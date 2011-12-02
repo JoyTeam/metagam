@@ -1189,7 +1189,10 @@ class Quests(ConstructorModule):
                                 pass
                             else:
                                 # this is a real error
-                                raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env())
+                                env = ScriptEnvironment()
+                                env.globs = kwargs
+                                env.description = self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
+                                raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
                             for cmd in actions:
                                 def env():
                                     env = ScriptEnvironment()
@@ -1358,10 +1361,7 @@ class Quests(ConstructorModule):
                                             set_attr(attr, val)
                                             modified_objects.add(obj)
                                         except AttributeError as e:
-                                            if str(e) == attr:
-                                                raise ScriptRuntimeError(self._("'{obj}.{attr}' is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2]), env())
-                                            else:
-                                                raise
+                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2]), env())
                                     elif cmd_code == "destroy":
                                         if cmd[1]:
                                             if debug:

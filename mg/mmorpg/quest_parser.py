@@ -278,7 +278,7 @@ class QuestAction(Parsing.Nonterm):
             raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' or '{attr2}' are required in the '{obj}'").format(attr1="item", attr2="currency", obj="give"))
         if item is not None and currency is not None:
             raise Parsing.SyntaxError(cmd.script_parser._("Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'").format(attr1="item", attr2="currency", obj="give"))
-        if item:
+        if item is not None:
             mods = {}
             for key, val in attrs.val.iteritems():
                 if key == "item" or key == "quantity":
@@ -299,7 +299,7 @@ class QuestAction(Parsing.Nonterm):
             if quantity is None:
                 quantity = 1
             self.val = ["giveitem", item, mods, quantity]
-        elif currency:
+        elif currency is not None:
             amount = get_attr(cmd, "give", attrs, "amount", require=True)
             currency = get_attr(cmd, "give", attrs, "currency", require=True)
             comment = get_str_attr(cmd, "give", attrs, "comment")
