@@ -1145,7 +1145,7 @@ class InventoryAdmin(ConstructorModule):
             catgroup = catgroups.get(catgroup)
             if not catgroup:
                 self.call("web.not_found")
-            categories = self.call("item-types.categories", catgroup["id"])
+            categories = [ent.copy() for ent in self.call("item-types.categories", catgroup["id"])]
             if args:
                 m = re_del.match(args)
                 if m:
