@@ -12,15 +12,16 @@ import json
 def main():
     try:
         if len(sys.argv) != 4:
-            print "usage: mg_conf_get <app> <config.key> <json.value>"
+            print "usage: mg_conf_set <app> <config.key> <json.value>"
             os._exit(1)
-        inst = Instance("conf_get")
+        inst = Instance("conf_set")
         inst.download_config()
         int_app = WebApplication(inst, "int", "int")
         int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
         inst.int_app = int_app
         app_tag = sys.argv[1]
         appfactory = ApplicationFactory(inst)
+        inst.appfactory = appfactory
         appfactory.add(int_app)
         app = appfactory.get_by_tag(app_tag)
         val = json.loads(sys.argv[3])
