@@ -59,6 +59,9 @@ Game.main_open = function(uri) {
 			uri = uri.uri;
 	} catch (e) {
 	}
+	if (uri.charAt(0) == '/') {
+		uri = 'http://' + Game.domain + uri;
+	}
 	try {
 		var iframe = Ext.getCmp('main-iframe');
 		var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];

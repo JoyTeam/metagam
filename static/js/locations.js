@@ -2,9 +2,6 @@ var Locations = {
 };
 
 Locations.move = function(loc_id) {
-	if (this.submit_locked)
-		return;
-	this.submit_locked = false;
 	Ext.Ajax.request({
 		url: '/location/move',
 		method: 'POST',
@@ -12,7 +9,6 @@ Locations.move = function(loc_id) {
 			'location': loc_id
 		},
 		success: (function (response, opts) {
-			this.submit_locked = false;
 			if (response && response.getResponseHeader) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
@@ -24,7 +20,6 @@ Locations.move = function(loc_id) {
 			}
 		}).createDelegate(this),
 		failure: (function (response, opts) {
-			this.submit_locked = false;
 			Game.error(undefined, gt.gettext('Error connecting to the server'));
 		}).createDelegate(this)
 	});

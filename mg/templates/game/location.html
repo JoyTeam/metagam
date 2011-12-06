@@ -1,13 +1,13 @@
 [%content%]
 <script type="text/javascript" src="/st/[%ver%]/js/location-hints.js"></script>
 <script type="text/javascript">
+var Game = parent.Game;
+var Locations = parent.Locations;
 Ext.onReady(function() {
 	Ext.QuickTips.init();
 	[%foreach tr in transitions%]
 	transition_hint('[%tr.loc%]', '[%tr.hint%]');
 	[%end%]
-	var Game = parent.Game;
-	var Locations = parent.Locations;
 	[%update_script%]
 });
 </script>
