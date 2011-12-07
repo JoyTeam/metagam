@@ -386,8 +386,15 @@ class QuestAction(Parsing.Nonterm):
         "%reduce chat ExprAttrs"
         text = get_str_attr(cmd, "chat", attrs, "text", require=True)
         text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
-        validate_attrs(cmd, "chat", attrs, ["text"])
-        self.val = ["chat", text, {}]
+        channel = get_attr(cmd, "chat", attrs, "channel")
+        public = get_attr(cmd, "chat", attrs, "public")
+        validate_attrs(cmd, "chat", attrs, ["text", "channel", "public"])
+        args = {}
+        if channel is not None:
+            args["channel"] = channel
+        if public is not None:
+            args["public"] = public
+        self.val = ["chat", text, args]
 
     def reduceJavaScript(self, cmd, javascript):
         "%reduce javascript scalar"

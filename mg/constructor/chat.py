@@ -1310,4 +1310,8 @@ class Chat(ConstructorModule):
                 del kwargs["indent"]
                 kwargs["div_attr"] = 'style="padding-left: %dpx"' % (indent * 5)
             kwargs["hl"] = True
-            self.call("chat.message", html=msg, channel="dbg", **kwargs)
+            kwargs["private"] = True
+            kwargs["html"] = msg
+            kwargs["channel"] = "dbg"
+            kwargs["recipients"] = [character]
+            self.call("chat.message", **kwargs)

@@ -138,6 +138,8 @@ class Location(Module):
             return self.name_t
         elif attr == "name_w":
             return self.name_w
+        elif attr == "channel":
+            return "loc-%s" % self.uuid
         else:
             m = re_param_attr.match(attr)
             if m:
