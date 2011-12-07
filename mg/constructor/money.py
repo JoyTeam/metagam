@@ -37,7 +37,7 @@ class Money(ConstructorModule):
         currencies = {}
         self.call("currencies.list", currencies)
         accounts = []
-        for currency, currency_info in currencies.iteritems():
+        for currency, currency_info in sorted(currencies.iteritems(), cmp=lambda x, y: cmp(x[1].get("order", 0.0), y[1].get("order", 0.0)) or cmp(x[0], y[0])):
             account = money.account(currency)
             if account:
                 balance = nn(account.get("balance"))

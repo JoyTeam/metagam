@@ -171,6 +171,7 @@ class MoneyAdmin(Module):
                     real = True if req.param("real") else False
                     real_price = req.param("real_price")
                     real_currency = req.param("v_real_currency")
+                    order = floatz(req.param("order"))
                     # validating
                     errors = {}
                     errormsg = None
@@ -328,6 +329,7 @@ class MoneyAdmin(Module):
                         info["real_price"] = floatz(real_price)
                         info["real_currency"] = real_currency
                         info["real_roubles"] = real_roubles
+                    info["order"] = order
                     # storing images
                     old_images = []
                     if image_obj:
@@ -352,6 +354,15 @@ class MoneyAdmin(Module):
                     precision = 2
                     real_price = 30
                     real_currency = "RUB"
+                    order = None
+                    for c, v in currencies.iteritems():
+                        o = v.get("order", 0.0)
+                        if order is None or o > order:
+                            order = o
+                    if order is None:
+                        order = 0.0
+                    else:
+                        order += 10.0
                 else:
                     info = currencies.get(req.args)
                     if not info:
@@ -364,9 +375,11 @@ class MoneyAdmin(Module):
                     real = info.get("real")
                     real_price = info.get("real_price")
                     real_currency = info.get("real_currency")
+                    order = info.get("order", 0.0)
                 fields = []
                 if req.args == "new":
                     fields.append({"name": "code", "label": self._('Currency code (for example, GLD for gold, SLVR for silver, DMND for diamonds and so on).<br /><span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>')})
+                fields.append({"name": "order", "label": self._("Sorting order"), "value": order, "inline": True})
                 fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_local})
                 fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars"'), "value": name_plural})
                 if lang != "en":
@@ -381,8 +394,7 @@ class MoneyAdmin(Module):
                 self.call("admin.form", fields=fields, modules=["FileUploadField"])
             else:
                 rows = []
-                for code in sorted(currencies.keys()):
-                    info = currencies.get(code)
+                for code, info in sorted(currencies.iteritems(), cmp=lambda x, y: cmp(x[1].get("order", 0.0), y[1].get("order", 0.0)) or cmp(x[0], y[0])):
                     real = '<center>%s</center>' % ('<img src="/st/img/coins-16x16.png" alt="" /><br />%s %s' % (info.get("real_price"), info.get("real_currency")) if info.get("real") else '-')
                     declensions = []
                     for i in (0, 1, 2, 5, 10, 21):
