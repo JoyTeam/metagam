@@ -710,6 +710,16 @@ class QuestsAdmin(ConstructorModule):
                     return "  " * indent + u"call event=%s\n" % self.call("script.unparse-expression", val[1])
                 else:
                     return "  " * indent + u"call quest=%s event=%s\n" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
+            elif val[0] == "call2":
+                if val[1] is None:
+                    result = "  " * indent + u"call event=%s" % self.call("script.unparse-expression", val[2])
+                else:
+                    result = "  " * indent + u"call quest=%s event=%s" % (self.call("script.unparse-expression", val[1]), self.call("script.unparse-expression", val[2]))
+                args = val[3]
+                if "char" in args:
+                    result += " char=%s" % self.call("script.unparse-expression", args["char"])
+                result += "\n"
+                return result
             elif val[0] == "message" or val[0] == "error":
                 return "  " * indent + u"%s %s\n" % (val[0], self.call("script.unparse-expression", self.call("script.unparse-text", val[1])))
             elif val[0] == "giveitem":
@@ -1227,6 +1237,26 @@ class Quests(ConstructorModule):
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
                                         self.qevent(ev, char=char)
+                                    elif cmd_code == "call2":
+                                        target_quest = cmd[1]
+                                        target_event = cmd[2]
+                                        if target_quest is None:
+                                            target_quest = quest
+                                        ev = "event-%s-%s" % (target_quest, target_event)
+                                        args = cmd[3]
+                                        if "char" in args:
+                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"])))
+                                            target_char = self.character(char_id)
+                                            if target_char.valid:
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("calling event {event} for character {character}").format(event=ev, character=target_char), cls="quest-action", indent=indent+2)
+                                                self.qevent(ev, char=target_char)
+                                            else:
+                                                raise ScriptRuntimeError(self._("Character with id '%s' doesn't exist") % htmlescape(char_id), env)
+                                        else:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
+                                            self.qevent(ev, char=char)
                                     elif cmd_code == "giveitem":
                                         item_type_uuid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         mods = {}

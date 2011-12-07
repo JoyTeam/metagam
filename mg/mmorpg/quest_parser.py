@@ -257,18 +257,22 @@ class QuestAction(Parsing.Nonterm):
         self.val = ["require", expr.val]
 
     def reduceCall(self, call, attrs):
-        "%reduce call Attrs"
+        "%reduce call ExprAttrs"
         event = get_str_attr(call, "call", attrs, "event", require=True)
         quest = get_str_attr(call, "call", attrs, "quest")
-        validate_attrs(call, "call", attrs, ["quest", "event"])
+        char = get_attr(call, "call", attrs, "char")
+        validate_attrs(call, "call", attrs, ["quest", "event", "char"])
         if not re_valid_identifier.match(event):
             raise Parsing.SyntaxError(any_obj.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        args = {}
+        if char is not None:
+            args["char"] = char
         if quest:
             if not re_valid_identifier.match(quest):
                 raise Parsing.SyntaxError(any_obj.script_parser._("Quest identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
-            self.val = ["call", quest, event]
+            self.val = ["call2", quest, event, args]
         else:
-            self.val = ["call", event]
+            self.val = ["call2", None, event, args]
 
     def reduceGive(self, cmd, attrs):
         "%reduce give ExprAttrs"

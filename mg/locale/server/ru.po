@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-07 17:29+0300\n"
+"PO-Revision-Date: 2011-12-07 18:21+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -930,6 +930,10 @@ msgstr "Персонаж вошёл в игру"
 
 msgid "Character went online/offline"
 msgstr "Персонаж онлайн/оффлайн"
+
+#, python-format
+msgid "Character with id '%s' doesn't exist"
+msgstr "Персонаж с идентификатором '%s' не существует"
 
 msgid "Character's legend"
 msgstr "Легенда персонажа"
@@ -6596,6 +6600,9 @@ msgstr "кабинет"
 #, python-format
 msgid "calling event %s"
 msgstr "вызываем событие %s"
+
+msgid "calling event {event} for character {character}"
+msgstr "вызываем событие {event} для персонажа {character}"
 
 msgid "cancel"
 msgstr "отменить"
