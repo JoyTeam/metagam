@@ -57,6 +57,7 @@ class Constructor(Module):
             "mg.core.dbexport.Export",
             "mg.core.money.WebMoney", "mg.core.money.WebMoneyAdmin",
             "mg.constructor.reqauction.ReqAuction",
+            "mg.core.sites.Favicon", "mg.core.sites.FaviconAdmin",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")

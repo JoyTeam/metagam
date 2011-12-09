@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-07 18:21+0300\n"
+"PO-Revision-Date: 2011-12-09 14:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -438,6 +438,9 @@ msgstr "Вы уверены, что хотите удалить этот цве�
 
 msgid "Are you sure want to delete this constraint?"
 msgstr "Вы уверены, что хотите удалить это ограничение?"
+
+msgid "Are you sure want to delete this icon?"
+msgstr "Вы уверены, что хотите удалить эту иконку?"
 
 msgid "Are you sure want to delete this image?"
 msgstr "Вы уверены, что хотите удалить это изображение?"
@@ -1365,6 +1368,9 @@ msgstr "Название валюты: формы в числе 1, 2 и 5, ра�
 msgid "Currency of the balance price"
 msgstr "Валюта балансировочной цены"
 
+msgid "Current icon"
+msgstr "Текущая иконка"
+
 msgid "Current logo"
 msgstr "Текущий логотип"
 
@@ -2075,6 +2081,18 @@ msgstr "Быстрое перемещение по локациям"
 msgid "Fast movement across the locations for {period}"
 msgstr "Ускоренное перемещение по локациям на {period_a}"
 
+msgid "Favicon"
+msgstr "Favicon"
+
+msgid "Favicon documentation"
+msgstr "Документация на favicon"
+
+msgid "Favicon settings"
+msgstr "Настройки favicon"
+
+msgid "Favicons"
+msgstr "Иконки favicon"
+
 msgid "Female"
 msgstr "Женский"
 
@@ -2525,6 +2543,9 @@ msgstr "IP-адрес"
 
 msgid "Icon image"
 msgstr "Изображение иконки"
+
+msgid "Icon size must be at least 16x16"
+msgstr "Размер иконки должен быть, как минимум, 16x16"
 
 msgid "Icons editor"
 msgstr "Редактор иконок"
@@ -4650,6 +4671,9 @@ msgstr "Ничего не заменять"
 msgid "Replace specific images"
 msgstr "Заменить отдельные изображения"
 
+msgid "Replacing"
+msgstr "Замена"
+
 msgid "Replies"
 msgstr "Ответов"
 
@@ -5072,6 +5096,9 @@ msgstr "Размер"
 
 msgid "Sky #1"
 msgstr "Небо №1"
+
+msgid "Small icon near the browser address line"
+msgstr "Небольшая иконка рядом с адресной строкой браузера"
 
 msgid "Smile code (this text will be replaced with image below)"
 msgstr "Код смайлика (этот текст будет заменяться на нижеприведённую картинку)"
@@ -5947,6 +5974,12 @@ msgstr "Обновление баланса..."
 msgid "Upload"
 msgstr "Загрузить"
 
+msgid "Upload an icon"
+msgstr "Загрузите иконку"
+
+msgid "Upload an icon (16x16)"
+msgstr "Загрузите иконку (16x16)"
+
 msgid "Upload an image"
 msgstr "Загрузите изображение"
 
@@ -6305,6 +6338,10 @@ msgstr "Подробную информацию о системе имён пе�
 #, python-format
 msgid "You can find detailed information on the characters images system in the <a href=\"//www.%s/doc/character-images\" target=\"_blank\">characters images page</a> in the reference manual."
 msgstr "Подробную информацию о системе образов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-images\" target=\"_blank\">Система образов персонажей</a>."
+
+#, python-format
+msgid "You can find detailed information on the favicon icons in the <a href=\"//www.%s/doc/favicon\" target=\"_blank\">favicons page</a> in the reference manual."
+msgstr "Подробную информацию о системе иконок favicon вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/favicon\" target=\"_blank\">Иконки favicon</a>."
 
 #, python-format
 msgid "You can find detailed information on the game interface rendering in the <a href=\"//www.%s/doc/design/gameinterface-structure\" target=\"_blank\">game interface structure documentation</a>."
@@ -7147,6 +7184,9 @@ msgstr "удалить зависимость"
 msgid "rename///ren"
 msgstr "переим"
 
+msgid "replace"
+msgstr "заменить"
+
 msgid "reply"
 msgstr "ответить"
 
@@ -7427,6 +7467,9 @@ msgstr "отписаться"
 msgid "unsuccessfully"
 msgstr "неудачно"
 
+msgid "upload"
+msgstr "загрузить"
+
 msgid "user///Registered"
 msgstr "Регистрация"
 
@@ -7516,6 +7559,13 @@ msgstr ""
 
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
+
+#~ msgid "Image format must be GIF"
+#~ msgstr "Формат изображения должен быть GIF"
+#~ msgid "Entire site"
+#~ msgstr "Весь сайт"
+#~ msgid "Icon"
+#~ msgstr "Иконка"
 
 #, fuzzy
 #~ msgid "Invalid channel name"
@@ -7936,8 +7986,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "Фон"
 #~ msgid "Padding"
 #~ msgstr "Подложка"
-#~ msgid "Icon"
-#~ msgstr "Иконка"
 #~ msgid "Effects"
 #~ msgstr "Эффекты"
 #~ msgid "Load from file"

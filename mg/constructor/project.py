@@ -75,6 +75,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.mmorpg.inventory.Inventory"])
             if self.conf("module.quests"):
                 lst.extend(["mg.mmorpg.quests.Quests"])
+            if self.conf("module.favicon"):
+                lst.extend(["mg.core.sites.Favicon"])
         return lst
 
     def modules_list(self, modules):
@@ -102,6 +104,11 @@ class ConstructorProject(Module):
             "id": "quests",
             "name": self._("Quests engine"),
             "description": self._("Quests and triggers"),
+        })
+        modules.append({
+            "id": "favicon",
+            "name": self._("Favicons"),
+            "description": self._("Small icon near the browser address line"),
         })
 
     def project_title(self):
