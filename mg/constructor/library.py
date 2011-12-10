@@ -114,7 +114,7 @@ class Library(ConstructorModule):
                 "order": ent.get("block_order"),
             }
         lst = self.objlist(DBLibraryPageGroupList, query_index="page", query_equal=code)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             if ent.get("grp") not in blocks:
                 grplst = self.objlist(DBLibraryGroupList, query_index="code", query_equal=ent.get("grp"))
