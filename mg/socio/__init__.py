@@ -1187,7 +1187,7 @@ class Forum(Module):
             page = pages
         del topics[page * tpp:]
         del topics[0:(page - 1) * tpp]
-        topics.load()
+        topics.load(silent=True)
         return topics, page, pages
 
     def ext_category(self):
