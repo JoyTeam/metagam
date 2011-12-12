@@ -956,7 +956,7 @@ class Forum(Module):
                     upd, cat = m.group(1, 2)
                     top_updated[top[1]] = (upd, cat)
             lastread_list = self.objlist(ForumLastReadList, query_index="topic_user", query_equal=["%s-%s" % (topic, semi_user_uuid) for topic in top_updated.iterkeys()])
-            lastread_list.load()
+            lastread_list.load(silent=True)
             lastread = dict([(lr.get("topic"), lr) for lr in lastread_list])
             for top, info in top_updated.iteritems():
                 upd, cat = info
