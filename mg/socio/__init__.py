@@ -632,10 +632,10 @@ class Socio(Module):
         if m:
             before, tag, arg, inner, after = m.group(1, 2, 3, 4, 5)
             if tag == "color":
-                if re_color.match(arg) and not options.get("no_colours"):
+                if arg is not None and re_color.match(arg) and not options.get("no_colours"):
                     return self.format_text(before, options) + ('<span style="color: %s">' % arg) + self.format_text(inner, options) + '</span>' + self.format_text(after, options)
             elif tag == "url":
-                if re_url.match(arg):
+                if arg is not None and re_url.match(arg):
                     arg = htmlescape(arg)
                     return self.format_text(before, options) + ('<a href="%s" target="_blank">' % arg) + self.format_text(inner, options) + '</a>' + self.format_text(after, options)
             elif tag == "code":
