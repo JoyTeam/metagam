@@ -2503,8 +2503,14 @@ class Forum(Module):
             stat = self.catstat(cat["id"])
             stat.set("topics", len(topics))
             stat.set("replies", len(posts))
-            last_topic = self.obj(ForumTopic, topics[0].uuid) if len(topics) else None
-            last_post = self.obj(ForumPost, posts[0].uuid) if len(posts) else None
+            try:
+                last_topic = self.obj(ForumTopic, topics[0].uuid) if len(topics) else None
+            except ObjectNotFoundException:
+                last_topic = None
+            try:
+                last_post = self.obj(ForumPost, posts[0].uuid) if len(posts) else None
+            except ObjectNotFoundException:
+                last_post = None
             if last_topic is None:
                 stat.delkey("last")
             elif last_post is not None and last_post.get("created") > last_topic.get("created"):
