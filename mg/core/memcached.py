@@ -96,7 +96,7 @@ class Memcached(object):
             return {}
         try:
             got = connection.get_multi(map(lambda key: str(self.prefix + key), keys))
-            if got[0] == MemcacheResult.ERROR:
+            if got[0] == MemcacheResult.ERROR or got[0] == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return {}
             res = {}
@@ -121,7 +121,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.set(str(self.prefix + key), data, expiration, flags)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
@@ -142,7 +142,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.add(str(self.prefix + key), data, expiration, flags)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
@@ -163,7 +163,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.replace(str(self.prefix + key), data, expiration, flags)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
@@ -184,7 +184,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.incr(str(self.prefix + key), increment)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
@@ -205,7 +205,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.decr(str(self.prefix + key), decrement)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
@@ -226,7 +226,7 @@ class Memcached(object):
             return MemcacheResult.ERROR
         try:
             res = connection.delete(str(self.prefix + key), expiration)
-            if res == MemcacheResult.ERROR:
+            if res == MemcacheResult.ERROR or res == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return res
         except IOError:
