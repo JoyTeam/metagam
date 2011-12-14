@@ -29,12 +29,9 @@ class MemcachedPool(object):
 
     def new_connection(self):
         "Create a new MemcacheConnection and connect it"
-        try:
-            connection = MemcacheConnection(self.host)
-            connection.connect()
-            return connection
-        except IOError:
-            return None
+        connection = MemcacheConnection(self.host)
+        connection.connect()
+        return connection
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be bleocked"
