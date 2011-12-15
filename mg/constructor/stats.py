@@ -216,6 +216,7 @@ class GameReporter(ConstructorModule):
             lst = self.objlist(DBPlayerList, uuids=[uuid for uuid in active_players])
             lst.load(silent=True)
             for ent in lst:
+                ent.set("last_visit", till)
                 if ent.get("active") != 2:
                     ent.set("active", 2)
                     returned += 1
