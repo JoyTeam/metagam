@@ -188,7 +188,7 @@ class Library(ConstructorModule):
 
     def hook_catalog(self, vars, grp, delim="<br />"):
         lst = self.objlist(DBLibraryPageGroupList, query_index="grp", query_equal=grp)
-        lst.load()
+        lst.load(silent=True)
         pages = []
         for ent in lst:
             pages.append({"page": ent.get("page"), "order": ent.get("order")})
