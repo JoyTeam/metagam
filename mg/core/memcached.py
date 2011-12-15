@@ -34,7 +34,7 @@ class MemcachedPool(object):
         return connection
 
     def get(self):
-        "Get a connection from the pool. If the pool is empty, current tasklet will be bleocked"
+        "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
         # The Pool contains at least one connection
         if len(self.connections) > 0:
             return self.connections.pop(0)
