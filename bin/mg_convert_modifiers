@@ -10,22 +10,18 @@ import os
 import logging
 import sys
 
-def convert(app):
-    modlst = app.objlist(DBModifierList, query_index="till")
-    modlst.load(silent=True)
-    for mod in modlst:
-        print u"%s: %s" % (app.tag, mod.data)
-        mods = MemberModifiers(app, mod.get("target_type"), mod.get("target"))
-        kind = mod.get("kind")
-        value = mod.get("value")
-        till = mod.get("till")
-        del mod.data["target_type"]
-        del mod.data["target"]
-        del mod.data["kind"]
-        del mod.data["value"]
-        del mod.data["till"]
-        mods.add(kind, value, till, **mod.data)
-        mod.remove()
+class DBAlienModifier(CassandraObject):
+    """
+    DBAlienModifiers are stored in the main database. Special checker process regularly
+    looks for expired modifiers in the single index
+    """
+    clsname = "AlienModifier"
+    indexes = {
+        "till": [[], "till"],
+    }
+
+class DBAlienModifierList(CassandraObjectList):
+    objcls = DBAlienModifier
 
 def main():
     try:
@@ -38,20 +34,11 @@ def main():
         appfactory = ApplicationFactory(inst)
         appfactory.add(int_app)
         inst.appfactory = appfactory
-        lst = int_app.objlist(ProjectList, query_index="created")
+        lst = int_app.objlist(DBAlienModifierList, query_index="till")
         lst.load(silent=True)
         for ent in lst:
-            name = ent.get("title_short")
-            if name:
-                name = u"%s: %s" % (ent.uuid, name)
-                name = name.encode("utf-8")
-                app = appfactory.get_by_tag(ent.uuid)
-                if app:
-                    convert(app)
-                else:
-                    print "Couldn't load application %s" % ent.uuid
-        app = appfactory.get_by_tag("main")
-        convert(app)
+            print ent.data
+            int_app.sql_write.do("insert into modifiers(till, cls, app, target_type, target) values (?, ?, ?, ?, ?)", ent.get("till"), ent.get("cls"), ent.get("app"), ent.get("target_type"), ent.get("target"))
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:
