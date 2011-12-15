@@ -14,25 +14,7 @@ my ($last_period, %players, %known_players, %registered, %returned);
 for my $row (@{$db->selectall_arrayref('select * from active_players order by period', {Slice=>{}})}) {
 
 	if ($row->{period} ne $last_period) {
-		if ($last_period) {
-			# flushing $last_period
-			my $till = $db->selectrow_array('select date_sub(?, interval 14 day)', undef, $last_period);
-			my (%abandoned, %active);
-			while (my ($app, $pls) = each %players) {
-				while (my ($player, $last_visit) = each %$pls) {
-					if ($last_visit lt $till) {
-						$abandoned{$app}++;
-						delete $pls->{$player};
-					} else {
-						$active{$app}++;
-					}
-				}
-				print "$last_period $app reg=$registered{$app}, aban=$abandoned{$app}, ret=$returned{$app}, act=$active{$app}\n";
-				$db->do('update visits set registered=?, returned=?, abandoned=?, active=? where app=? and period=?', undef, int($registered{$app}), int($returned{$app}), int($abandoned{$app}), int($active{$app}), $app, $last_period);
-			}
-			%registered = ();
-			%returned = ();
-		}
+		flush();
 		$last_period = $row->{period};
 	}
 
@@ -44,4 +26,29 @@ for my $row (@{$db->selectall_arrayref('select * from active_players order by pe
 		}
 	}
 	$players{$row->{app}}->{$row->{player}} = $row->{period};
+}
+
+flush();
+
+sub flush
+{
+	if ($last_period) {
+		# flushing $last_period
+		my $till = $db->selectrow_array('select date_sub(?, interval 14 day)', undef, $last_period);
+		my (%abandoned, %active);
+		while (my ($app, $pls) = each %players) {
+			while (my ($player, $last_visit) = each %$pls) {
+				if ($last_visit lt $till) {
+					$abandoned{$app}++;
+					delete $pls->{$player};
+				} else {
+					$active{$app}++;
+				}
+			}
+			print "$last_period $app reg=$registered{$app}, aban=$abandoned{$app}, ret=$returned{$app}, act=$active{$app}\n";
+			$db->do('update visits set registered=?, returned=?, abandoned=?, active=? where app=? and period=?', undef, int($registered{$app}), int($returned{$app}), int($abandoned{$app}), int($active{$app}), $app, $last_period);
+		}
+		%registered = ();
+		%returned = ();
+	}
 }
