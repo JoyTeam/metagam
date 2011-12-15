@@ -280,6 +280,8 @@ class DesignZip(Module):
             if not m:
                 try:
                     zip_filename = zip_filename.decode("utf-8")
+                except UnicodeEncodeError:
+                    zip_filename = zip_filename.decode("cp1251")
                 except UnicodeDecodeError:
                     zip_filename = zip_filename.decode("cp1251")
                 list_errors.append(self._("Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)") % htmlescape(zip_filename))
