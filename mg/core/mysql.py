@@ -1,6 +1,7 @@
 from concurrence.database.mysql import dbapi, client
 from concurrence.database.mysql.client import ClientError
-from concurrence import *
+from mg.core.tools import *
+import concurrence
 import logging
 import re
 
@@ -39,7 +40,7 @@ class MySQL(object):
                 # method is ready here
                 try:
                     res = method(*args, **kwargs)
-                except TimeoutError as e:
+                except concurrence.TimeoutError as e:
                     self.pool.error(e)
                     raise
                 except dbapi.IntegrityError:
@@ -77,10 +78,13 @@ class MySQLPool(object):
         self.passwd = passwd
         self.db = db
 
-    def set_hosts(self, hosts):
+    def set_servers(self, hosts, user, passwd, db, primary_host_id=0):
         self.hosts = [tuple(host) for host in hosts]
         self.primary_host = self.hosts.pop(primary_host_id)
         self.hosts.insert(0, self.primary_host)
+        self.user = user
+        self.passwd = passwd
+        self.db = db
         self.close_all()
 
     def close_all(self):
@@ -134,7 +138,7 @@ class MySQLPool(object):
                 self.success_counter = 0
                 try:
                     primary_conn = self.new_primary_connection()
-                except TimeoutError:
+                except concurrence.TimeoutError:
                     self.cput(conn)
                     raise
                 except Exception as e:
@@ -206,7 +210,7 @@ class MySQLConnection(object):
 
     def connect(self):
         "Establish connection to the cluster"
-        self.dbh = dbapi.Connection(host=self.host[0], port=self.host[1], user=self.user, passwd=self.passwd, db=self.db, charset="utf-8")
+        self.dbh = dbapi.Connection(host=str(self.host[0]), port=intz(self.host[1], 3306), user=str(self.user), passwd=str(self.passwd), db=str(self.db), autocommit=True, charset="utf-8")
 
     def disconnect(self):
         "Disconnect from the cluster"
@@ -248,6 +252,7 @@ class MySQLConnection(object):
         qry = re_placeholder.sub(placeholder, qry)
         if type(qry) == unicode:
             qry = qry.encode("utf-8")
+        print qry
         result = self.dbh.client.query(qry)
         self.result = result
         self.result_iter = iter(result)

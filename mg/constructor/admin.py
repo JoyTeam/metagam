@@ -1,6 +1,6 @@
 from mg import *
 from mg.core.auth import UserPermissions, UserPermissionsList
-from mg.core.queue import QueueTask, QueueTaskList, Schedule
+from mg.core.queue import Schedule
 from mg.core.cluster import TempFileList
 from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterForm, DBCharacterList
 import mg.constructor.common
@@ -539,8 +539,7 @@ class Constructor(Module):
         inst = self.app().inst
         int_app = inst.int_app
         app = inst.appfactory.get_by_tag(tag)
-        tasks = int_app.objlist(QueueTaskList, query_index="app_at", query_equal=tag)
-        tasks.remove()
+        int_app.sql_write.do("delete from queue_tasks where app=?", tag)
         sched = int_app.obj(Schedule, tag, silent=True)
         sched.remove()
         project = int_app.obj(Project, tag, silent=True)

@@ -126,6 +126,33 @@ sql_table('money_descriptions',
 		'index' => 'app,currency,description,period',
 	]
 );
+sql_table('queue_tasks',
+	[
+		'id' => [ -type=>'varchar(32)', -null=>0 ],
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'at' => [ -type=>'datetime', -null=>0 ],
+		'priority' => [ -type=>'integer', -null=>0 ],
+		'unique' => [ -type=>'varchar(84)', -null=>1 ],
+		'data' => [ -type=>'longblob' ],
+	], [
+		'index' => 'id',
+		'index' => 'app,at',
+		'index' => 'at',
+		'index' => 'app,unique',
+	]
+);
+sql_table('modifiers',
+	[
+		'till' => [ -type=>'datetime', -null=>0 ],
+		'cls' => [ -type=>'varchar(16)' ],
+		'app' => [ -type=>'varchar(32)' ],
+		'target_type' => [ -type=>'varchar(16)' ],
+		'target' => [ -type=>'varchar(32)' ],
+	], [
+		'index' => 'app,target',
+		'index' => 'till',
+	]
+);
 sql_done();
 
 sub sql_field

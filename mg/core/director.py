@@ -367,6 +367,8 @@ class Director(Module):
         inst = self.app().inst
         inst.dbpool.set_host(inst.config["cassandra"], primary_host_id=0)
         inst.mcpool.set_host(inst.config["memcached"][0])
+        inst.sql_read.set_servers(((inst.config["mysql_server"], 3306),), inst.config["mysql_user"], inst.config["mysql_password"], inst.config["mysql_database"], primary_host_id=0)
+        inst.sql_write.set_servers(((inst.config["mysql_server"], 3306),), inst.config["mysql_user"], inst.config["mysql_password"], inst.config["mysql_database"], primary_host_id=0)
 
     def director_config(self):
         self.call("web.response_json", self.config())

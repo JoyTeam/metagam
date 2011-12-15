@@ -1,5 +1,6 @@
 from mg.core import Module
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
+from mg.core.tools import *
 from concurrence import Tasklet
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from stackless import channel
@@ -12,17 +13,6 @@ import re
 import weakref
 import datetime
 import calendar
-
-class QueueTask(CassandraObject):
-    clsname = "QueueTask"
-    indexes = {
-        "app_at": [["app"], "at"],
-        "at": [[], "at"],
-        "app_unique": [["app", "unique"]],
-    }
-
-class QueueTaskList(CassandraObjectList):
-    objcls = QueueTask
 
 class Schedule(CassandraObject):
     clsname = "Schedule"
@@ -66,7 +56,6 @@ class Queue(Module):
         self.rhook("queue.generate", self.queue_generate)
 
     def objclasses_list(self, objclasses):
-        objclasses["QueueTask"] = (QueueTask, QueueTaskList)
         objclasses["Schedule"] = (Schedule, ScheduleList)
 
     def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False, app_tag=None, app_cls=None):
@@ -77,32 +66,26 @@ class Queue(Module):
             if app_cls is None:
                 app_cls = self.app().inst.cls
             if at is None:
-                at = time.time()
-            elif type(at) != int:
+                at = self.now()
+            elif not re_datetime.match(at):
                 ct = CronTime(at)
                 if ct.valid:
                     next = ct.next()
                     if next is None:
                         raise CronError("Invalid cron time")
-                    at = calendar.timegm(next.utctimetuple())
+                    at = next.strftime("%Y-%m-%d %H:%M:%S")
                 else:
                     raise CronError("Invalid cron time")
             data = {
-                "app": app_tag,
                 "cls": app_cls,
-                "at": "%020d" % at,
-                "priority": int(priority),
                 "hook": hook,
                 "args": args,
             }
-            if unique is not None:
-                existing = int_app.objlist(QueueTaskList, query_index="app_unique", query_equal="%s-%s" % (app_tag, unique))
-                existing.remove()
-                data["unique"] = unique
             if retry_on_fail:
                 data["retry_on_fail"] = True
-            task = int_app.obj(QueueTask, data=data)
-            task.store()
+            if unique is not None:
+                int_app.sql_write.do("delete from queue_tasks where app=? and `unique`=?", app_tag, unique)
+            int_app.sql_write.do("insert into queue_tasks(id, app, at, priority, `unique`, data) values (?, ?, ?, ?, ?, ?)", uuid4().hex, app_tag, at, int(priority), unique, json.dumps(data))
 
     def queue_run(self):
         req = self.req()
@@ -168,7 +151,7 @@ class QueueRunner(Module):
         apps = []
         self.call("applications.list", apps)
         for app in apps:
-            self.call("queue.add", "app.check", priority=0, app_tag=app["tag"], unique="app-check-%s" % app, app_cls=app["cls"])
+            self.call("queue.add", "app.check", priority=0, app_tag=app["tag"], unique="app-check-%s" % app["cls"], app_cls=app["cls"])
 
     def queue_process(self):
         self.wait_free = channel()
@@ -180,55 +163,52 @@ class QueueRunner(Module):
                     Tasklet.new(self.check)()
                 while self.workers <= 0:
                     self.wait_free.receive()
-                tasks = self.objlist(QueueTaskList, query_index="at", query_finish="%020d" % time.time(), query_limit=10)
-                tasks.load(silent=True)
+                # it is important to read queue tasks from the same database they are deleted from (i.e. sql_write)
+                tasks = self.sql_write.selectall_dict("select * from queue_tasks where at<=? order by priority desc limit ?", self.now(), self.workers)
                 anything_processed = False
                 no_workers_shown = set()
                 if len(tasks):
-                    tasks.sort(cmp=lambda x, y: cmp(x.get("priority"), y.get("priority")), reverse=True)
-                    if len(tasks) > self.workers:
-                        del tasks[self.workers:]
                     queue_workers = self.call("director.queue_workers")
                     for task in tasks:
-                        if task.get("cls"):
-                            workers = queue_workers.get(task.get("cls"), None)
-                            if workers and len(workers):
-                                task.remove()
+                        data = json.loads(task["data"])
+                        if data.get("cls"):
+                            workers = queue_workers.get(data.get("cls"), None)
+                            if workers:
+                                self.sql_write.do("delete from queue_tasks where id=?", task["id"])
                                 worker = workers.pop(0)
                                 workers.append(worker)
                                 self.workers = self.workers - 1
-                                Tasklet.new(self.queue_run)(task, worker)
+                                Tasklet.new(self.queue_run)(task, data, worker)
                                 anything_processed = True
                             else:
-                                if not task.get("cls") in no_workers_shown:
-                                    self.warning("No workers for class %s. Delaying job" % task.get("cls"))
-                                    no_workers_shown.add(task.get("cls"))
-                                task.set("priority", task.get("priority") - 1)
-                                task.store()
+                                if data.get("cls") not in no_workers_shown:
+                                    self.warning("No workers for class %s. Delaying job" % data.get("cls"))
+                                    no_workers_shown.add(data.get("cls"))
+                                self.sql_write.do("update queue_tasks set priority=priority-1 where id=?", task["id"])
                         else:
-                            self.error("Missing cls: %s" % task.data)
-                            task.remove()
+                            self.error("Missing cls: %s" % data)
+                            self.sql_write.do("delete from queue_tasks where id=?", task["id"])
                 if not anything_processed:
                     Tasklet.sleep(3)
             except Exception as e:
                 logging.getLogger("mg.core.queue.Queue").exception(e)
 
-    def queue_run(self, task, worker):
-        self.processing.add(task.uuid)
-        unique = task.get("unique")
+    def queue_run(self, task, data, worker):
+        self.processing.add(task["id"])
+        unique = task["unique"]
         if unique is not None:
             self.processing_uniques.add(unique)
         success = False
-        tag = str(task.get("app"))
+        tag = str(task["app"])
         try:
-            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (tag, str(task.get("hook"))), {
-                "args": json.dumps(task.get("args")),
+            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (tag, str(data.get("hook"))), {
+                "args": json.dumps(data.get("args")),
             }, timeout=3600)
             if res.get("error"):
-                self.warning("%s.%s(%s) - %s", tag, task.get("hook"), task.get("args"), res)
+                self.warning("%s.%s(%s) - %s", tag, data.get("hook"), data.get("args"), res)
             success = True
         except HTTPError as e:
-            self.error("Error executing task %s: %s" % (task.get("hook"), e))
+            self.error("Error executing task %s: %s" % (data.get("hook"), e))
             main_app = self.main_app()
             if main_app:
                 if main_app.hooks.call("project.missing", tag):
@@ -237,25 +217,23 @@ class QueueRunner(Module):
         except Exception as e:
             self.exception(e)
         self.workers = self.workers + 1
-        self.processing.discard(task.uuid)
+        self.processing.discard(task["id"])
         if unique is not None:
             self.processing_uniques.discard(unique)
         if self.wait_free.balance < 0:
             self.wait_free.send(None)
-        if not success and task.get("retry_on_fail"):
-            task.set("at", "%020d" % (time.time() + 5))
-            task.set("priority", task.get_int("priority") - 10)
-            task = self.obj(QueueTask, data=task.data)
-            task.store()
-        elif task.get("args").get("schedule"):
+        if not success:
+            if data.get("retry_on_fail"):
+                self.sql_write.do("insert into queue_tasks(id, app, at, priority, `unique`, data) values (?, ?, ?, ?, ?, ?)", uuid4().hex, tag, self.now(5), task["priority"] - 10, task["unique"], json.dumps(data))
+        elif data.get("args").get("schedule"):
             try:
-                sched = self.obj(Schedule, task.get("app"))
+                sched = self.obj(Schedule, tag)
                 entries = sched.get("entries")
             except ObjectNotFoundException:
                 entries = {}
-            params = entries.get(task.get("hook"))
+            params = entries.get(data.get("hook"))
             if params is not None:
-                self.schedule_task(task.get("cls"), task.get("app"), task.get("hook"), params)
+                self.schedule_task(data.get("cls"), tag, data.get("hook"), params)
 
     def queue_processing(self):
         return (self.processing, self.processing_uniques, self.workers)
@@ -268,9 +246,10 @@ class QueueRunner(Module):
             entries = sched.get("entries")
         except ObjectNotFoundException:
             entries = {}
-        existing = self.objlist(QueueTaskList, query_index="app_at", query_equal=app_tag)
-        existing.load(silent=True)
-        existing = dict([(task.get("unique"), task) for task in existing if task.get("args").get("schedule")])
+        existing = self.sql_read.selectall_dict("select * from queue_tasks where app=?", app_tag)
+        for task in existing:
+            task["data"] = json.loads(task["data"])
+        existing = dict([(task.get("unique"), task) for task in existing if task["data"].get("args").get("schedule")])
         for hook, params in entries.iteritems():
             existing_params = existing.get(hook)
             if not existing_params:
@@ -279,7 +258,7 @@ class QueueRunner(Module):
                 self.schedule_task(sched.get("cls"), app_tag, hook, params)
         for hook, task in existing.iteritems():
             if not entries.get(hook):
-                task.remove()
+                self.sql_write.do("delete from queue_tasks where id=?", task["id"])
         self.call("web.response_json", {"ok": 1})
 
     def schedule_task(self, cls, app, hook, params):

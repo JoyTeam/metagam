@@ -4,19 +4,6 @@ import re
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_aggr = re.compile(r'^(max|min|sum|cnt)_(.+)$')
 
-class DBAlienModifier(CassandraObject):
-    """
-    DBAlienModifiers are stored in the main database. Special checker process regularly
-    looks for expired modifiers in the single index
-    """
-    clsname = "AlienModifier"
-    indexes = {
-        "till": [[], "till"],
-    }
-
-class DBAlienModifierList(CassandraObjectList):
-    objcls = DBAlienModifier
-
 class DBModifiers(CassandraObject):
     """
     DBModifiers are stored in the project databases
@@ -77,7 +64,7 @@ class MemberModifiers(Module):
         # storing mobjs
         if self.mobjs:
             for mobj in self.mobjs:
-                mobj.store()
+                self.sql_write.do("insert into modifiers(till, cls, app, target_type, target) values (?, ?, ?, ?, ?)", *mobj)
             self.mobjs = []
 
     def notify(self):
@@ -200,12 +187,7 @@ class MemberModifiers(Module):
         self._mods.touch()
         self.created[ent["uuid"]] = ent
         if till:
-            mobj = self.main_app().obj(DBAlienModifier, ent["uuid"], data={})
-            mobj.set("target_type", self.target_type)
-            mobj.set("target", self.uuid)
-            mobj.set("till", till)
-            mobj.set("app", self.app().tag)
-            mobj.set("cls", self.app().inst.cls)
+            mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid]
             self.mobjs.append(mobj)
         return ent
 
@@ -282,12 +264,8 @@ class MemberModifiers(Module):
 class ModifiersManager(Module):
     "This module is loaded in the 'main' project"
     def register(self):
-        self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("daemons.persistent", self.daemons_persistent)
         self.rhook("int-modifiers.daemon", self.daemon, priv="public")
-
-    def objclasses_list(self, objclasses):
-        objclasses["AlienModifier"] = (DBAlienModifier, DBAlienModifierList)
 
     def daemons_persistent(self, daemons):
         daemons.append({"cls": "metagam", "app": "main", "daemon": "modifiers", "url": "/modifiers/daemon"})
@@ -307,14 +285,9 @@ class ModifiersDaemon(Daemon):
     def main(self):
         while not self.terminate:
             try:
-                modifiers = self.objlist(DBAlienModifierList, query_index="till", query_finish=self.now())
-                modifiers.load(silent=True)
-                for mod in modifiers:
-                    target_type = mod.get("target_type")
-                    target = mod.get("target")
-                    if target and target_type:
-                        self.call("queue.add", "modifiers.stop", {"target_type": target_type, "target": target}, retry_on_fail=True, app_tag=mod.get("app"), app_cls=mod.get("cls", "metagam"), unique="mod-%s" % target)
-                modifiers.remove()
+                for mod in self.sql_write.selectall_dict("select * from modifiers where ?>=till", self.now()):
+                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, retry_on_fail=True, app_tag=mod["app"], app_cls=mod["cls"], unique="mod-%s-%s" % (mod["app"], mod["target"]))
+                    self.sql_write.do("delete from modifiers where app=? and target=?", mod["app"], mod["target"])
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(3)

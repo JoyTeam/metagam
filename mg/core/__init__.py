@@ -5,6 +5,7 @@ from cassandra.ttypes import *
 from operator import itemgetter
 from mg.core.memcached import MemcachedLock, Memcached, MemcachedPool
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException, CassandraPool
+from mg.core.mysql import MySQLPool
 from mg.core.classes import *
 from mg.core.tools import *
 from uuid import uuid4
@@ -342,6 +343,14 @@ class Module(object):
 
     def db(self):
         return self.app().db
+
+    @property
+    def sql_read(self):
+        return self.app().sql_read
+
+    @property
+    def sql_write(self):
+        return self.app().sql_write
 
     def rhook(self, *args, **kwargs):
         "Registers handler for the current module. Arguments: all for Hooks.register() without module name"
@@ -820,6 +829,8 @@ class Instance(object):
             self.setup_logger()
             self.dbpool = CassandraPool(config["cassandra"], primary_host_id=0)
             self.mcpool = MemcachedPool(config["memcached"][0])
+            self.sql_read = MySQLPool(((config["mysql_server"], 3306),), config["mysql_user"], config["mysql_password"], config["mysql_database"], primary_host_id=0)
+            self.sql_write = MySQLPool(((config["mysql_server"], 3306),), config["mysql_user"], config["mysql_password"], config["mysql_database"], primary_host_id=0)
             return config
         finally:
             cnn.close()
@@ -899,6 +910,8 @@ class Application(object):
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.dynamic = False
+        self.sql_read = inst.sql_read.dbget(self)
+        self.sql_write = inst.sql_write.dbget(self)
 
     def reload(self):
         "Reload all loaded modules"
