@@ -208,7 +208,9 @@ class Realplexor(Module):
     def register(self):
         self.rhook("stream.send", self.send)
         self.rhook("stream.packet", self.packet)
-        self.rhook("web.request_processed", self.request_processed)
+        # It is important that Realplexor's request_processed called after all other handlers
+        # that can send something via Realplexor
+        self.rhook("web.request_processed", self.request_processed, priority=-10)
 
     def send(self, ids, data):
         rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")

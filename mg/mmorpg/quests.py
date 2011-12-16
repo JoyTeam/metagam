@@ -1625,11 +1625,9 @@ class Quests(ConstructorModule):
         req = self.req()
         redirs = getattr(req, "quest_redirects", None)
         if redirs:
-            self.debug("Quest redirects: %s", redirs)
             for char_uuid, uri in redirs.iteritems():
                 char = self.character(char_uuid)
                 if char.tech_online:
-                    self.debug("Sending to character %s main_open(%s)", char.uuid, uri)
                     char.main_open(uri)
 
     def check_dialogs(self):
