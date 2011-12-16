@@ -252,7 +252,6 @@ class MySQLConnection(object):
         qry = re_placeholder.sub(placeholder, qry)
         if type(qry) == unicode:
             qry = qry.encode("utf-8")
-        print qry
         result = self.dbh.client.query(qry)
         self.result = result
         self.result_iter = iter(result)
