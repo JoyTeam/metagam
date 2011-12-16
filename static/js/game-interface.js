@@ -102,13 +102,12 @@ Game.progress_show = function(id, ratio) {
 				el.content_width = el.parent().getWidth(true);
 			}
 			el.dom.style.width = Math.floor(ratio * el.content_width) + 'px';
-		} else if (el.hasClass('progress-indicator-vertical')) {
+		}
+		if (el.hasClass('progress-indicator-vertical')) {
 			if (el.content_height == undefined) {
 				el.content_height = el.parent().getHeight(true);
 			}
 			el.dom.style.height = Math.floor(ratio * el.content_height) + 'px';
-		} else {
-			continue;
 		}
 		if (!el.hasClass(id + '-notfull')) {
 			if (ratio < 1) {

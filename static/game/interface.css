@@ -205,3 +205,7 @@ area { border: none }
 .dialog-content { font-size: 16px }
 .dialog-buttons { margin: 20px auto 0 auto }
 .dialog-button-td { padding: 20px }
+
+.progress-test1 { background-color: red }
+.test2-notfull { background-color: yellow }
+.test2-full { background-color: green }
