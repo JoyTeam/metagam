@@ -13,7 +13,7 @@ Locations.move = function(loc_id) {
 				var res = Ext.util.JSON.decode(response.responseText);
 				if (res.ok) {
 					eval(res.update_script);
-					Game.main_open('/location?noupdate=1');
+					window.setTimeout(Locations.open_location, 10);
 				} else if (res.error) {
 					Game.error(res.hide_title ? '' : gt.gettext('Error'), res.error);
 				}
@@ -34,6 +34,10 @@ Locations.update = function(name, name_w) {
 	for (var i = 0; i < els.length; i++) {
 		els[i].innerHTML = name_w;
 	}
+};
+
+Locations.open_location = function() {
+	Game.main_open('/location?noupdate=1&rnd=' + Math.random());
 };
 
 loaded('locations');
