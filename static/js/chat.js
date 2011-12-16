@@ -314,7 +314,7 @@ Chat.msg_list = function(pkt) {
 		if (msg.cls)
 			div.className = div.className + ' chat-div-' + msg.cls;
 		div.appendChild(ctdiv);
-		if (msg.priv) {
+		if (msg.priv && msg.manual) {
 			div.className = div.className + ' chat-private';
 		} else if (ch) {
 			div.className = div.className + ' cmc-' + ch.id;
@@ -328,10 +328,10 @@ Chat.msg_list = function(pkt) {
 				ch.btn.el.dom.src = ch.button_image + '-new.png';
 			}
 		} else if (this.mode == 2) {
-			div.style.display = (msg.priv || ch.visible) ? 'block' : 'none';
+			div.style.display = (msg.priv && msg.manual || ch.visible) ? 'block' : 'none';
 			if (ch.visible) {
 				scroll = true;
-			} else if (ch.btn && msg.hl && !msg.priv) {
+			} else if (ch.btn && msg.hl && !(msg.priv && msg.manual)) {
 				ch.btn.el.dom.src = ch.button_image + '-new.png';
 			}
 		} else if (this.mode == 0) {

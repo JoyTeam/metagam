@@ -707,6 +707,7 @@ class Chat(ConstructorModule):
         message = kwargs
         message["channel"] = self.channel2tab(channel)
         message["priv"] = private
+        message["manual"] = manual
         html_head = u''
         html_tail = u''
         if div_attr:
