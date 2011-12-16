@@ -113,6 +113,9 @@ class MemberModifiers(Module):
         self.expired = {}
         self.prolong = {}
         now = None
+        # Workaround
+        if self._mods.get("mods") is None:
+            self._mods.set("mods", [])
         # calculating list of currently alive objects
         # (without respect to their 'till')
         alive = set()
