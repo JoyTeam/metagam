@@ -13,7 +13,7 @@ class MemcachedPool(object):
     Handles pool of MemcacheConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=256):
+    def __init__(self, host=("127.0.0.1", 11211), size=2):
         """
         size - max amount of active memcached connections (None if no limit)
         """
@@ -29,14 +29,22 @@ class MemcachedPool(object):
 
     def new_connection(self):
         "Create a new MemcacheConnection and connect it"
-        connection = MemcacheConnection(self.host)
-        connection.connect()
-        return connection
+        while True:
+            try:
+                logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: connecting...")
+                connection = MemcacheConnection(self.host)
+                connection.connect()
+                logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: connected")
+                return connection
+            except Exception as e:
+                logging.getLogger("mg.core.memcached.MemcachedPool").error("Error connecting to memcached: %s", e)
+            Tasklet.sleep(0.3)
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
         # The Pool contains at least one connection
         if len(self.connections) > 0:
+            logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: taking idle")
             return self.connections.pop(0)
 
         # There are no connections in the pool, but we may allocate more
@@ -47,18 +55,23 @@ class MemcachedPool(object):
         # We may not allocate more connections. Locking on the channel
         if self.channel is None:
             self.channel = concurrence.Channel()
-        return self.channel.receive()
+        logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: waiting...")
+        conn = self.channel.receive()
+        logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: waiting finished")
+        return conn
 
     def put(self, connection):
         "Return a connection to the pool"
         # If memcached host changed
         if connection._address != self.host:
             self.put(self.new_connection())
-        # If somebody waits on the channel
-        if self.channel is not None and self.channel.balance < 0:
-            self.channel.send(connection)
         else:
-            self.connections.append(connection)
+            logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: returning")
+            # If somebody waits on the channel
+            if self.channel is not None and self.channel.balance < 0:
+                self.channel.send(connection)
+            else:
+                self.connections.append(connection)
 
     def new(self):
         "Put a new connection to the pool"
