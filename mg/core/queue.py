@@ -167,11 +167,11 @@ class QueueRunner(Module):
                 tasks = self.sql_write.selectall_dict("select * from queue_tasks where at<=? order by priority desc limit ?", self.now(), self.workers)
                 anything_processed = False
                 no_workers_shown = set()
-                if len(tasks):
-                    queue_workers = self.call("director.queue_workers")
+                queue_workers = self.call("director.queue_workers")
+                if len(tasks) and queue_workers:
                     for task in tasks:
                         data = json.loads(task["data"])
-                        if data.get("cls"):
+                        if data and data.get("cls"):
                             workers = queue_workers.get(data.get("cls"), None)
                             if workers:
                                 self.sql_write.do("delete from queue_tasks where id=?", task["id"])
