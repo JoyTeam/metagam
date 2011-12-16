@@ -1,0 +1,40 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import dispatch, quit
+from mg.constructor.common import ApplicationFactory
+import os
+import logging
+import sys
+import json
+
+def main():
+    try:
+        if len(sys.argv) != 3:
+            print "usage: mg_conf_del <app> <config.key>"
+            os._exit(1)
+        inst = Instance("conf_set")
+        inst.download_config()
+        int_app = WebApplication(inst, "int", "int")
+        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
+        inst.int_app = int_app
+        app_tag = sys.argv[1]
+        appfactory = ApplicationFactory(inst)
+        inst.appfactory = appfactory
+        appfactory.add(int_app)
+        app = appfactory.get_by_tag(app_tag)
+        conf = app.config_updater()
+        conf.delete(sys.argv[2])
+        conf.store()
+        sys.stdout.flush()
+        os._exit(0)
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+
+dispatch(main)
+
