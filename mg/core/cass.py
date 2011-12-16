@@ -284,6 +284,7 @@ class CassandraPool(object):
         self.primary_host = self.hosts.pop(primary_host_id)
         self.hosts.insert(0, self.primary_host)
         del self.connections[:]
+        self.allocated = 0
 
     def exception(self, *args, **kwargs):
         logging.getLogger("mg.core.cass.CassandraPool").exception(*args, **kwargs)
@@ -320,6 +321,7 @@ class CassandraPool(object):
             bad_host = self.hosts.pop(0)
             self.hosts.append(bad_host)
             del self.connections[:]
+            self.allocated = 0
             self.debug("Cassandra server %s failed: %s. Trying %s", bad_host, exc, self.hosts[0])
             Tasklet.sleep(1)
             try:
@@ -352,6 +354,7 @@ class CassandraPool(object):
                             host = self.hosts.pop(i)
                             self.hosts.insert(0, host)
                     del self.connections[:]
+                    self.allocated = 0
                     self.cput(primary_conn)
             else:
                 self.cput(conn)

@@ -8,9 +8,12 @@ import traceback
 import concurrence
 import random
 
+class MemcachedConnection(MemcacheConnection):
+    pass
+
 class MemcachedPool(object):
     """
-    Handles pool of MemcacheConnection objects, allowing get and put operations.
+    Handles pool of MemcachedConnection objects, allowing get and put operations.
     Connections are created on demand
     """
     def __init__(self, host=("127.0.0.1", 11211), size=256):
@@ -22,42 +25,45 @@ class MemcachedPool(object):
         self.size = size
         self.allocated = 0
         self.channel = None
+        self.last_debug = 0
 
     def set_host(self, host):
         self.host = tuple(host)
         del self.connections[:]
+        self.allocated = 0
 
     def new_connection(self):
-        "Create a new MemcacheConnection and connect it"
+        "Create a new MemcachedConnection and connect it"
         while True:
             try:
-                logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: connecting...")
-                connection = MemcacheConnection(self.host)
+                connection = MemcachedConnection(self.host)
                 connection.connect()
-                logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: connected")
                 return connection
-            except Exception as e:
+            except IOError as e:
                 logging.getLogger("mg.core.memcached.MemcachedPool").error("Error connecting to memcached: %s", e)
             Tasklet.sleep(0.3)
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
+        now = time.time()
+        if now > self.last_debug + 300:
+            logging.getLogger("memcached").debug("idle %s, allocated %s/%s", len(self.connections), self.allocated, self.size)
+            self.last_debug = now
         # The Pool contains at least one connection
         if len(self.connections) > 0:
-            logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: taking idle")
-            return self.connections.pop(0)
+            conn = self.connections.pop(0)
+            return conn
 
         # There are no connections in the pool, but we may allocate more
         if self.size is None or self.allocated < self.size:
             self.allocated += 1
-            return self.new_connection()
+            conn = self.new_connection()
+            return conn
 
         # We may not allocate more connections. Locking on the channel
         if self.channel is None:
             self.channel = concurrence.Channel()
-        logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: waiting...")
         conn = self.channel.receive()
-        logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: waiting finished")
         return conn
 
     def put(self, connection):
@@ -66,7 +72,6 @@ class MemcachedPool(object):
         if connection._address != self.host:
             self.put(self.new_connection())
         else:
-            logging.getLogger("mg.core.memcached.MemcachedPool").debug("memcached: returning")
             # If somebody waits on the channel
             if self.channel is not None and self.channel.balance < 0:
                 self.channel.send(connection)
@@ -119,7 +124,7 @@ class Memcached(object):
         except EOFError:
             self.pool.new()
             return {}
-        except Exception:
+        except Exception as e:
             self.pool.new()
             raise
         self.pool.put(connection)

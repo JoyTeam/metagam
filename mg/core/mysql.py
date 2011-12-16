@@ -89,6 +89,7 @@ class MySQLPool(object):
 
     def close_all(self):
         del self.connections[:]
+        self.allocated = 0
 
     def exception(self, *args, **kwargs):
         logging.getLogger("mg.core.mysql.MySQLPool").exception(*args, **kwargs)
