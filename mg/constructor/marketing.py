@@ -7,6 +7,10 @@ class MarketingStat(ConstructorModule):
         self.rhook("menu-admin-marketing.index", self.menu_marketing)
         self.rhook("ext-admin-marketing.users", self.admin_marketing_users, priv="marketing.users")
         self.rhook("headmenu-admin-marketing.users", self.headmenu_marketing_users)
+        self.rhook("advice-admin-marketing.index", self.advice_marketing)
+
+    def advice_marketing(self, hook, args, advice):
+        advice.append({"title": self._("Marketing documentation"), "content": self._('You can find detailed information on the marketing of online games in the <a href="//www.%s/doc/marketing" target="_blank">Marketing page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def permissions_list(self, perms):
         perms.append({"id": "marketing.users", "name": self._("Marketing: statistics on users")})
