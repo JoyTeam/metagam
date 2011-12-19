@@ -910,8 +910,18 @@ class Application(object):
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.dynamic = False
-        self.sql_read = inst.sql_read.dbget(self)
-        self.sql_write = inst.sql_write.dbget(self)
+        try:
+            sql_read_pool = inst.sql_read
+        except AttributeError:
+            pass
+        else:
+            self.sql_read = sql_read_pool.dbget(self)
+        try:
+            sql_write_pool = inst.sql_write
+        except AttributeError:
+            pass
+        else:
+            self.sql_write = sql_write_pool.dbget(self)
 
     def reload(self):
         "Reload all loaded modules"
