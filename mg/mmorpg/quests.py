@@ -834,7 +834,7 @@ class QuestsAdmin(ConstructorModule):
 
     def admin_inventory_actions(self):
         req = self.req()
-        actions = self.conf("quest-item-actions.list", [])
+        actions = [act.copy() for act in self.conf("quest-item-actions.list", [])]
         if req.args:
             m = re_del.match(req.args)
             if m:
