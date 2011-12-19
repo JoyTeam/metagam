@@ -8,8 +8,18 @@ import traceback
 import concurrence
 import random
 
-class MemcachedConnection(MemcacheConnection):
+class MemcachedEmptyKeyError(Exception):
     pass
+
+class MemcachedConnection(MemcacheConnection):
+    def __init__(self, *args, **kwargs):
+        MemcacheConnection.__init__(self, *args, **kwargs)
+        #print "init %s" % self
+
+    def __del__(self):
+        #print "del %s" % self
+        #self.close()
+        pass
 
 class MemcachedPool(object):
     """
@@ -102,6 +112,8 @@ class Memcached(object):
         self.prefix_re = re.compile("^" + prefix)
     
     def get(self, key, default=None):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         values = self.get_multi([key])
         return values.get(key, default)
 
@@ -110,7 +122,13 @@ class Memcached(object):
         if not connection:
             return {}
         try:
-            got = connection.get_multi(map(lambda key: str(self.prefix + key), keys))
+            query_keys = []
+            for key in keys:
+                qk = str(self.prefix + key)
+                if qk == "":
+                    raise MemcachedEmptyKeyError()
+                query_keys.append(qk)
+            got = connection.get_multi(query_keys)
             if got[0] == MemcacheResult.ERROR or got[0] == MemcacheResult.TIMEOUT:
                 self.pool.new()
                 return {}
@@ -131,6 +149,8 @@ class Memcached(object):
         return res
 
     def set(self, key, data, expiration=0, flags=0):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -152,6 +172,8 @@ class Memcached(object):
         return res
 
     def add(self, key, data, expiration=0, flags=0):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -173,6 +195,8 @@ class Memcached(object):
         return res
 
     def replace(self, key, data, expiration=0, flags=0):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -194,6 +218,8 @@ class Memcached(object):
         return res
 
     def incr(self, key, increment=1):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -215,6 +241,8 @@ class Memcached(object):
         return res
 
     def decr(self, key, decrement=1):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -236,6 +264,8 @@ class Memcached(object):
         return res
 
     def delete(self, key, expiration=0):
+        if key == "":
+            raise MemcachedEmptyKeyError()
         connection = self.pool.get()
         if not connection:
             return MemcacheResult.ERROR
@@ -257,6 +287,8 @@ class Memcached(object):
         return res
 
     def get_ver(self, group):
+        if group == "":
+            raise MemcachedEmptyKeyError()
         ver = self.get("GRP-%s" % group)
         if ver is None:
             ver = random.randrange(0, 1000000000)
@@ -264,6 +296,8 @@ class Memcached(object):
         return ver
 
     def incr_ver(self, group):
+        if group == "":
+            raise MemcachedEmptyKeyError()
         res = self.incr("GRP-%s" % group)
         if res[0] != MemcacheResult.OK:
             ver = random.randrange(0, 1000000000)
