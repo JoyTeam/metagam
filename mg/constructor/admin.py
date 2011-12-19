@@ -98,10 +98,19 @@ class Constructor(Module):
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
         self.rhook("ext-favicon.ico.index", self.favicon, priv="public")
-        self.rhook("forum.reply-form", self.socio_form_reply)
+        self.rhook("forum.reply-form", self.forum_reply_form)
+        self.rhook("forum.topic-form", self.forum_topic_form)
 
-    def socio_form_reply(self, form, mode):
+    def forum_topic_form(self, topic, form, mode):
+        if mode == "validate":
+            self.forum_reply_form(form, "validate")
+        elif mode == "form":
+            self.forum_reply_form(form, "render")
+
+    def forum_reply_form(self, form, mode):
         req = self.req()
+        if not req.param("save") and not req.param("publish"):
+            return
         content = req.param("content")
         if re_code.search(content):
             return
@@ -119,11 +128,10 @@ class Constructor(Module):
         if not has_script:
             return
         if mode == "validate":
-            if req.param("save") and not req.param("ignore_code"):
+            if not req.param("ignore_code"):
                 form.error("ignore_code", self._("It seems that your post contains script code without [code]...[/code] tags. Please select your script and press the 'CODE' button. It will make you code looking better. If you think this message is erroneous set the checkbox"), overwrite=False)
         elif mode == "render":
-            if req.param("save"):
-                form.checkbox(self._("Post as is, without [code][/code] tags"), "ignore_code", req.param("ignore_code"))
+            form.checkbox(self._("Post as is, without [code][/code] tags"), "ignore_code", req.param("ignore_code"))
 
     def favicon(self):
         f = open("%s/data/logo/favicon.ico" % mg.__path__[0], "rb")
