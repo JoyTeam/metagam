@@ -7,6 +7,13 @@ from mg.core import *
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
 from cassandra.ttypes import *
+import logging
+
+modlogger = logging.getLogger("")
+modlogger.setLevel(logging.ERROR)
+stderr_channel = logging.StreamHandler()
+stderr_channel.setLevel(logging.ERROR)
+modlogger.addHandler(stderr_channel)
 
 class Test1(Module):
     def register(self):

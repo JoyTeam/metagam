@@ -10,9 +10,9 @@ from cassandra.ttypes import *
 import logging
 
 modlogger = logging.getLogger("")
-modlogger.setLevel(logging.DEBUG)
+modlogger.setLevel(logging.ERROR)
 stderr_channel = logging.StreamHandler()
-stderr_channel.setLevel(logging.DEBUG)
+stderr_channel.setLevel(logging.ERROR)
 modlogger.addHandler(stderr_channel)
 
 class TestDatabase(unittest.TestCase):

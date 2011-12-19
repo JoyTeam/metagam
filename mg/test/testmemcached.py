@@ -1,7 +1,7 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg.core.memcached import Memcached, MemcachedPool
+from mg.core.memcached import Memcached, MemcachedPool, MemcachedEmptyKeyError
 import unittest
 from concurrence import dispatch, Tasklet
 
@@ -36,18 +36,40 @@ class TestMemcached(unittest.TestCase):
         self.assertEqual(res["key2"], u"проверка2")
 
     def testthreading(self):
-        task = {}
-        for i in range(1, 100):
-            task[i] = Tasklet.new(self.thread)(i)
-        for i in range(1, 100):
-            Tasklet.join(task[i])
+        tasks = []
+        for i in xrange(0, 100):
+            tasks.append(Tasklet.new(self.thread)(i))
+        Tasklet.join_all(tasks)
 
     def thread(self, n):
-        for i in range(1, 50):
+        for i in xrange(0, 50):
             self.mc.set("key%d" % n, "value%d" % n)
             self.assertEqual(self.mc.get("key%d" % n), "value%d" % n)
             self.mc.delete("key%d" % n)
             self.assertEqual(self.mc.get("key%d" % n), None)
+
+    def testerrors(self):
+        mc = Memcached(pool=MemcachedPool(size=4))
+        tasks = []
+        for i in xrange(0, 100):
+            tasks.append(Tasklet.new(self.error_thread)(mc))
+        for i in xrange(0, 100):
+            tasks.append(Tasklet.new(self.handled_thread)(mc))
+        Tasklet.join_all(tasks)
+
+    def handled_thread(self, mc):
+        for i in xrange(0, 50):
+            try:
+                # must not happen
+                self.assertEqual(mc.get(""), 1)
+            except MemcachedEmptyKeyError:
+                pass
+            except Exception:
+                self.assertFalse("must not happen")
+
+    def error_thread(self, mc):
+        for i in xrange(0, 50):
+            self.assertEqual(mc.get(" "), None)
 
 if __name__ == "__main__":
     dispatch(unittest.main)

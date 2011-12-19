@@ -11,9 +11,9 @@ from math import floor
 import logging
 
 modlogger = logging.getLogger("")
-modlogger.setLevel(logging.DEBUG)
+modlogger.setLevel(logging.ERROR)
 stderr_channel = logging.StreamHandler()
-stderr_channel.setLevel(logging.DEBUG)
+stderr_channel.setLevel(logging.ERROR)
 modlogger.addHandler(stderr_channel)
 
 class SimpleObject(CassandraObject):
@@ -300,23 +300,6 @@ class TestORM(unittest.TestCase):
         self.assertEqual(len(lst), 2)
         lst.load(True)
         self.assertEqual(len(lst), 1)
-
-class TestORM_Storage1(TestORM):
-    def setUp(self):
-        TestORM.setUp(self)
-        self.db.storage = 1
-
-class TestORM_Storage2(TestORM):
-    def setUp(self):
-        TestORM.setUp(self)
-        self.db.storage = 2
-        self.db.app = "testapp"
-
-class TestORM_Memcached(TestORM):
-    def setUp(self):
-        TestORM.setUp(self)
-        self.mc = Memcached(prefix="mgtest-")
-        self.db = CassandraPool().dbget("mgtest", mc=self.mc)
 
 def main():
     cleanup()
