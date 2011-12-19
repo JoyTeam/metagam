@@ -97,7 +97,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-signature { font-size: 12px; color: #81878a; line-height: 110%; padding-top: 10px }
 .quote { background-color: #eaeaea; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
 .quote .author { color: #dd6419; font-size: 11px; padding-bottom: 5px; }
-.code { background-color: #eaeaff; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; }
+.code { background-color: #eaeaff; border: solid 1px #c0c0c0; padding: 5px 3px 5px 3px; margin: 10px 0px 10px 0px; overflow: auto; width: 800px }
 #socio-topic-bottom { width: 100%; border-top: solid 1px #dd6419; margin-top: 30px }
 #socio-topic-bottom .socio-topic-pages { padding-top: 6px }
 .socio-preview { color: #000000 }

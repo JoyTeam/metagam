@@ -1685,6 +1685,7 @@ class Forum(Module):
                 form.error("content", self._("Enter post content"))
             elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
                 form.error("content", errors.get("may_write", self._("Access denied")))
+            self.call("forum.reply-form", form, "validate")
             if not form.errors:
                 if req.param("save"):
                     user = self.obj(User, self.call("socio.user"))
@@ -1708,6 +1709,7 @@ class Forum(Module):
             form.texteditor(None, "content", content)
             form.submit(None, "preview", self._("Preview"))
             form.submit(None, "save", self._("Post reply"), inline=True)
+            self.call("forum.reply-form", form, "render")
             if req.ok():
                 self.call("socio.response", form.html(), vars)
             vars["new_post_form"] = form.html()

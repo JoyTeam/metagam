@@ -936,6 +936,7 @@ class WebForm(object):
             "underline": self.module._("Underline"),
             "strike": self.module._("Strike"),
             "quote": self.module._("Quote"),
+            "code": self.module._("Code"),
             "red": self.module._("Red"),
             "green": self.module._("Green"),
             "blue": self.module._("Blue"),
@@ -960,11 +961,13 @@ class WebForm(object):
             vars["form_quantities"] = True
         return self.module.call("web.parse_template", self.template, vars)
 
-    def error(self, name, text):
+    def error(self, name, text, overwrite=True):
         """
         Mark field 'name' containing error 'text'
         """
         self.errors = True
+        if not overwrite and name in self._error:
+            return
         self._error[name] = text
 
     def hidden(self, name, value):

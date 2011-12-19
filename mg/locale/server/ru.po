@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-16 13:05+0300\n"
+"PO-Revision-Date: 2011-12-19 13:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2929,6 +2929,9 @@ msgstr "Приглашения на регистрацию"
 msgid "Is the button available for the character (you may use 'char' and 'item' objects)"
 msgstr "Доступна ли кнопка персонажу (вы можете использовать объекты \"char\" и \"item\")"
 
+msgid "It seems that your post contains script code without [code]...[/code] tags. Please select your script and press the 'CODE' button. It will make you code looking better. If you think this message is erroneous set the checkbox"
+msgstr "Похоже, что в вашем посте есть код скрипта без тегов [code]...[/code]. Пожалуйста, выделите ваш скрипт и нажмите кнопку \"CODE\". Ваш код будет выглядеть лучше. Если вы считаете, что это сообщение ошибочное, установите галочку"
+
 msgid "Italic"
 msgstr "Курсив"
 
@@ -4228,6 +4231,9 @@ msgstr "Выпадающие меню"
 
 msgid "Possible options. Format: 0:first value|1:second value|2:third value"
 msgstr "Возможные варианты. Формат: 0:первое значение|1:второе значение|3:третье значение"
+
+msgid "Post as is, without [code][/code] tags"
+msgstr "Отправить как есть, без тегов [code][/code]"
 
 msgid "Post reply"
 msgstr "Опубликовать ответ"

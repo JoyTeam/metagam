@@ -12,6 +12,9 @@ import datetime
 import re
 
 re_wmauth_remove = re.compile(r'^([0-9a-f]+)/([0-9a-f]+)$')
+re_code = re.compile(r'\[code\].*?\[\/code\]', re.DOTALL)
+re_script_line = re.compile(r'^(  )+[a-z]+')
+re_script_curly = re.compile(r'^(  )*}')
 
 class DBUserWMID(CassandraObject):
     clsname = "UserWMID"
@@ -95,6 +98,32 @@ class Constructor(Module):
         self.rhook("security.list-roles", self.list_roles)
         self.rhook("security.users-roles", self.users_roles)
         self.rhook("ext-favicon.ico.index", self.favicon, priv="public")
+        self.rhook("forum.reply-form", self.socio_form_reply)
+
+    def socio_form_reply(self, form, mode):
+        req = self.req()
+        content = req.param("content")
+        if re_code.search(content):
+            return
+        script_lines = 0
+        curly_lines = 0
+        has_script = False
+        for line in content.split("\n"):
+            if re_script_line.match(line):
+                script_lines += 1
+            if re_script_curly.match(line):
+                curly_lines += 1
+            if script_lines >= 1 and curly_lines >= 1:
+                has_script = True
+                break
+        if not has_script:
+            return
+        if mode == "validate":
+            if req.param("save") and not req.param("ignore_code"):
+                form.error("ignore_code", self._("It seems that your post contains script code without [code]...[/code] tags. Please select your script and press the 'CODE' button. It will make you code looking better. If you think this message is erroneous set the checkbox"), overwrite=False)
+        elif mode == "render":
+            if req.param("save"):
+                form.checkbox(self._("Post as is, without [code][/code] tags"), "ignore_code", req.param("ignore_code"))
 
     def favicon(self):
         f = open("%s/data/logo/favicon.ico" % mg.__path__[0], "rb")
