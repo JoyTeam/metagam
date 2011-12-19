@@ -1083,10 +1083,16 @@ class Chat(ConstructorModule):
         if not character:
             return True
         try:
+            return character._debug_access
+        except AttributeError:
+            pass
+        try:
             self.obj(DBChatDebug, character.uuid)
         except ObjectNotFoundException:
+            character._debug_access = False
             return False
         else:
+            character._debug_access = True
             return True
 
     def channel_info(self, channel_id):
