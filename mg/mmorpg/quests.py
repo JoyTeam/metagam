@@ -1447,18 +1447,18 @@ class Quests(ConstructorModule):
                                         sum_weight = 0
                                         actions = []
                                         for act in cmd[1]:
-                                            weight = act[0]
+                                            weight = self.call("script.evaluate-expression", act[0], globs=kwargs, description=eval_description)
                                             if weight > 0:
                                                 sum_weight += weight
-                                                actions.append(act)
+                                                actions.append((act, weight))
                                         if sum_weight > 0:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("selecting random execution branch"), cls="quest-action", indent=indent+2)
                                             rnd = random.random() * sum_weight
                                             sum_weight = 0
                                             selected = None
-                                            for act in actions:
-                                                sum_weight += act[0]
+                                            for act, weight in actions:
+                                                sum_weight += weight
                                                 if sum_weight >= rnd:
                                                     selected = act
                                                     break
