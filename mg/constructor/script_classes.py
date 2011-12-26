@@ -113,6 +113,9 @@ class TokenComma(Parsing.Token):
 class TokenFunc(Parsing.Token):
     "%token func"
 
+class TokenOnline(Parsing.Token):
+    "%token online"
+
 class TokenScalar(Parsing.Token):
     "%token scalar"
     def __init__(self, parser, val):
@@ -175,6 +178,16 @@ class List(Parsing.Nonterm):
         "%reduce List comma Expr"
         self.val = lst.val + [expr.val]
 
+class AttrKey(Parsing.Nonterm):
+    "%nonterm"
+    def reduceIdentifier(self, identifier):
+        "%reduce identifier"
+        self.val = identifier.val
+
+    def reduceOnline(self, online):
+        "%reduce online"
+        self.val = "online"
+
 class Expr(Parsing.Nonterm):
     "%nonterm"
     def reduceScalar(self, s):
@@ -194,7 +207,7 @@ class Expr(Parsing.Nonterm):
 	self.val = ["glob", i.val]
 
     def recuceDot(self, exprA, d, ident):
-        "%reduce Expr dot identifier"
+        "%reduce Expr dot AttrKey"
         self.val = [".", exprA.val, ident.val]
 
     def reducePar(self, ParLeft, ex, ParRight):
@@ -288,6 +301,7 @@ class ScriptParser(Parsing.Lr, Module):
         "or": TokenOr,
         "not": TokenNot,
         "random": TokenRandom,
+        "online": TokenOnline,
     }
     funcs = set(["min", "max"])
 

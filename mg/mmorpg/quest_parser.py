@@ -87,9 +87,6 @@ class TokenWeight(Parsing.Token):
 class TokenRegistered(Parsing.Token):
     "%token registered"
 
-class TokenOnline(Parsing.Token):
-    "%token online"
-
 class TokenOffline(Parsing.Token):
     "%token offline"
 
@@ -105,11 +102,11 @@ class TokenJavaScript(Parsing.Token):
 class TokenClicked(Parsing.Token):
     "%token clicked"
 
-class AttrKey(Parsing.Nonterm):
+class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
-    def reduceIdentifier(self, identifier):
-        "%reduce identifier"
-        self.val = identifier.val
+    def reduceAttrKey(self, attrkey):
+        "%reduce AttrKey"
+        self.val = attrkey.val
 
     def reduceEvent(self, event):
         "%reduce event"
@@ -130,7 +127,7 @@ class Attrs(Parsing.Nonterm):
         self.val = {}
     
     def reduceAttr(self, attrs, key, a, value):
-        "%reduce Attrs AttrKey assign scalar"
+        "%reduce Attrs QuestAttrKey assign scalar"
         if key.val in attrs.val:
             raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
         self.val = attrs.val.copy()
@@ -143,7 +140,7 @@ class ExprAttrs(Parsing.Nonterm):
         self.val = {}
     
     def reduceAttr(self, attrs, key, a, expr):
-        "%reduce ExprAttrs AttrKey assign Expr"
+        "%reduce ExprAttrs QuestAttrKey assign Expr"
         if key.val in attrs.val:
             raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
         self.val = attrs.val.copy()
@@ -555,7 +552,6 @@ class QuestScriptParser(ScriptParser):
     syms["take"] = TokenTake
     syms["weight"] = TokenWeight
     syms["registered"] = TokenRegistered
-    syms["online"] = TokenOnline
     syms["offline"] = TokenOffline
     syms["teleport"] = TokenTeleport
     syms["chat"] = TokenChat

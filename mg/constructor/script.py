@@ -203,7 +203,7 @@ class ScriptEngine(ConstructorModule):
             if type(token) is list:
                 val = self._evaluate(token, env)
                 tv = type(val)
-                if tv is None:
+                if val is None:
                     pass
                 elif tv is str or tv is unicode or tv is int or tv is float:
                     res += u"%s" % val
