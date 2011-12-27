@@ -1417,12 +1417,16 @@ class Quests(ConstructorModule):
                                             char.quests.lock(quest)
                                         else:
                                             timeout = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            if timeout > 100e6:
+                                                timeout = 100e6
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
                                             char.quests.lock(quest, timeout)
                                     elif cmd_code == "timer":
                                         tid = cmd[1]
                                         timeout = intz(self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description))
+                                        if timeout > 100e6:
+                                            timeout = 100e6
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
                                         if timeout > 0:
