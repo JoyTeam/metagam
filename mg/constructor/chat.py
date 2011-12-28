@@ -1310,8 +1310,10 @@ class Chat(ConstructorModule):
 
     def debug_character(self, character, msg, **kwargs):
         if self.debug_access(character):
+            # TODO: prepend 'character.tech_online and '
             if callable(msg):
                 msg = msg()
+            self.debug(msg)
             if "indent" in kwargs:
                 indent = kwargs["indent"]
                 del kwargs["indent"]
