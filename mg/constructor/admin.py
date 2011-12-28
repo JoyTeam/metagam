@@ -15,6 +15,7 @@ re_wmauth_remove = re.compile(r'^([0-9a-f]+)/([0-9a-f]+)$')
 re_code = re.compile(r'\[code\].*?\[\/code\]', re.DOTALL)
 re_script_line = re.compile(r'^(  )+[a-z]+')
 re_script_curly = re.compile(r'^(  )*}')
+re_cassmaint_uri = re.compile(r'^([a-z0-9]{1,32})(?:|/(.+))$')
 
 class DBUserWMID(CassandraObject):
     clsname = "UserWMID"
@@ -67,7 +68,6 @@ class Constructor(Module):
         self.rhook("ext-cabinet.index", self.cabinet_index, priv="logged")
         self.rhook("auth.redirects", self.redirects)
         self.rhook("ext-cabinet.settings", self.cabinet_settings, priv="logged")
-        self.rhook("ext-debug.validate", self.debug_validate, priv="public")
         self.rhook("ext-constructor.newgame", self.constructor_newgame, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("queue-gen.schedule", self.schedule)
@@ -100,12 +100,74 @@ class Constructor(Module):
         self.rhook("ext-favicon.ico.index", self.favicon, priv="public")
         self.rhook("forum.reply-form", self.forum_reply_form)
         self.rhook("forum.topic-form", self.forum_topic_form)
+        self.rhook("constructor.project-options-main", self.project_options)
+        self.rhook("ext-admin-cassmaint.validate", self.admin_validate, priv="cassmaint.validate")
+        self.rhook("headmenu-admin-cassmaint.validate", self.headmenu_validate)
+
+    def project_options(self, project, options):
+        if self.req().has_access("cassmaint.validate"):
+            options.append({"title": self._("Cassandra DB validation"), "value": '<hook:admin.link href="cassmaint/validate/%s" title="%s" />' % (project.uuid, self._("open"))})
 
     def forum_topic_form(self, topic, form, mode):
         if mode == "validate":
             self.forum_reply_form(form, "validate")
         elif mode == "form":
             self.forum_reply_form(form, "render")
+
+    def headmenu_validate(self, args):
+        m = re_cassmaint_uri.match(args)
+        if m:
+            app_tag, cmd = m.group(1, 2)
+            if cmd is None:
+                return ["Cassandra", "constructor/project-dashboard/%s" % app_tag]
+            else:
+                return [htmlescape(cmd), "cassmaint/validate/%s" % app_tag]
+
+    def admin_validate(self):
+        req = self.req()
+        m = re_cassmaint_uri.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        app_tag, cmd = m.group(1, 2)
+        app = self.app().inst.appfactory.get_by_tag(app_tag)
+        if not app:
+            self.call("web.not_found")
+        objclasses = {}
+        self.call("objclasses.list", objclasses)
+        if cmd is not None:
+            if cmd not in objclasses:
+                self.call("admin.redirect", "cassmaint/validate/%s" % app_tag)
+            cnt = self.call("cassmaint.validate", app, cls=cmd)
+            if cnt is None:
+                self.call("admin.response", self._("Validation failed"), {})
+            else:
+                config = app.config_updater()
+                config.set("cassmaint.%s" % cmd, {"cnt": cnt, "performed": self.now()})
+                config.store()
+                self.call("admin.response", self._("Validated %d objects") % cnt, {})
+        rows = []
+        for cls in sorted(objclasses.keys()):
+            perf = app.config.get("cassmaint.%s" % cls)
+            if perf:
+                perf = self._("{cnt} objects at {performed}").format(cnt=perf["cnt"], performed=self.call("l10n.time_local", perf["performed"]))
+            rows.append([
+                cls,
+                perf,
+                u'<hook:admin.link href="cassmaint/validate/%s/%s" title="%s" />' % (app_tag, cls, self._("validate")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Table name"),
+                        self._("Last validation"),
+                        self._("Validation"),
+                    ],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def forum_reply_form(self, form, mode):
         req = self.req()
@@ -141,6 +203,7 @@ class Constructor(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "auth.wmid", "name": self._("Managing authorized WMIDs")})
+        perms.append({"id": "cassmaint.validate", "name": self._("Validating and repairing cassandra database")})
 
     def payment_args(self, args, options):
         req = self.req()
@@ -459,43 +522,6 @@ class Constructor(Module):
             return self._("wmcert///formal")
         else:
             return self._("wmcert///pseudonymous")
-
-    def debug_validate(self):
-        return
-        req = self.req()
-        slices_list = self.call("cassmaint.load_database")
-        inst = self.app().inst
-        valid_keys = inst.int_app.hooks.call("cassmaint.validate", slices_list)
-        slices_list = [row for row in slices_list if row.key not in valid_keys]
-        apps = []
-        self.call("applications.list", apps)
-        for ent in apps:
-            tag = ent["tag"]
-            if ent["cls"] != inst.cls:
-                self.debug("Skipping application %s", tag)
-                re_skip = re.compile('^%s-' % tag)
-                slices_list = [row for row in slices_list if not re_skip.match(row.key)]
-            else:
-                self.debug("Validating application %s", tag)
-                app = inst.appfactory.get_by_tag(tag)
-                if app is not None:
-                    valid_keys = app.hooks.call("cassmaint.validate", slices_list)
-                    slices_list = [row for row in slices_list if row.key not in valid_keys]
-                else:
-                    self.debug("Skipping application %s (no application handler)", tag)
-                    re_skip = re.compile('^%s-' % tag)
-                    slices_list = [row for row in slices_list if not re_skip.match(row.key)]
-        timestamp = time.time() * 1000
-        mutations = {}
-        for row in slices_list:
-            if len(row.columns):
-                for ent in apps:
-                    if row.key.startswith("%s-" % ent["tag"]):
-                        self.warning("Unknown database key %s", row.key)
-                        mutations[row.key] = {"Objects": [Mutation(deletion=Deletion(timestamp=timestamp))]}
-        if len(mutations) and req.args == "delete":
-            self.db().batch_mutate(mutations, ConsistencyLevel.QUORUM)
-        self.call("web.response_json", {"ok": 1})
 
     def constructor_newgame(self):
         req = self.req()

@@ -522,6 +522,7 @@ class Web(Module):
         raise WebResponse(req.send_response("200 OK", req.headers, "User-agent: *\n%s" % "".join(["Disallow: %s\n" % line for line in disallow])))
 
     def objclasses_list(self, objclasses):
+        objclasses["ConfigGroup"] = (ConfigGroup, ConfigGroupList)
         objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
 
     def core_reload(self):

@@ -263,6 +263,19 @@ class Cassandra(object):
             replication_factor = 3
         return replication_factor
 
+    def dump_objects(self, cls):
+        if self.storage == 0:
+            family = "Data"
+            prefix = "%s_Object_" % cls
+        elif self.storage == 1:
+            family = "%s_Objects" % cls
+            prefix = ""
+        elif self.storage == 2:
+            family = "%s_Objects" % cls
+            prefix = "%s_" % self.app
+        dumper = CassandraDump(self)
+        return dumper.dump(family, prefix).keys()
+
 class CassandraPool(object):
     """
     Handles pool of CassandraConnection objects, allowing get and put operations.
@@ -1138,3 +1151,25 @@ class CassandraObjectList(object):
 
     def uuids(self):
         return [obj.uuid for obj in self.lst]
+
+class CassandraDump(object):
+    def __init__(self, db):
+        self.db = db
+
+    def dump(self, family, prefix, parts=1):
+        rows = {}
+        token_ring = 2 ** 127
+        token_part = token_ring / parts
+        prefix_len = len(prefix)
+        for part in xrange(0, parts):
+            start_token = '%d' % (part * token_part)
+            end_token = '%d' % (((part + 1) * token_part) % token_ring)
+            lst = self.db.get_range_slices(ColumnParent(family), SlicePredicate(slice_range=SliceRange("", "", False, 1000000000)), KeyRange(count=10000000, start_token=start_token, end_token=end_token), ConsistencyLevel.ONE)
+            for ent in lst:
+                if ent.key.startswith(prefix):
+                    if len(ent.columns):
+                        columns = {}
+                        for col in ent.columns:
+                            columns[col.column.name] = col.column.value
+                        rows[ent.key[prefix_len:]] = columns
+        return rows

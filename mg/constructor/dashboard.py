@@ -213,6 +213,7 @@ class ProjectDashboard(Module):
             }
         options = []
         app.hooks.call("constructor.project-options", options)
+        self.call("constructor.project-options-main", project, options)
         if len(options):
             vars["options"] = options
         params = []

@@ -55,10 +55,10 @@ class MemcachedPool(object):
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
-        now = time.time()
-        if now > self.last_debug + 300:
-            logging.getLogger("memcached").debug("idle %s, allocated %s/%s", len(self.connections), self.allocated, self.size)
-            self.last_debug = now
+#        now = time.time()
+#        if now > self.last_debug + 300:
+#            logging.getLogger("memcached").debug("idle %s, allocated %s/%s", len(self.connections), self.allocated, self.size)
+#            self.last_debug = now
         # The Pool contains at least one connection
         if len(self.connections) > 0:
             conn = self.connections.pop(0)

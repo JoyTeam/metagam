@@ -21,7 +21,6 @@ class ConstructorProject(Module):
             "mg.core.cluster.Cluster",
             "mg.core.emails.Email",
             "mg.core.queue.Queue",
-            "mg.core.cass_maintenance.CassandraMaintenance",
             "mg.admin.wizards.Wizards",
             "mg.constructor.project.ConstructorProjectAdmin",
             "mg.constructor.admin.ConstructorUtils",

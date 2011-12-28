@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-19 13:34+0300\n"
+"PO-Revision-Date: 2011-12-28 14:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -771,6 +771,9 @@ msgstr "Выражение для величины груза"
 
 msgid "Cargo constraints"
 msgstr "Ограничения грузоподъёмности"
+
+msgid "Cassandra DB validation"
+msgstr "Валидация БД Cassandra"
 
 msgid "Category"
 msgstr "Категория"
@@ -3039,6 +3042,9 @@ msgstr "Последний ответ"
 
 msgid "Last telegram"
 msgstr "Последняя телеграмма"
+
+msgid "Last validation"
+msgstr "Последняя валидация"
 
 msgid "Launch domain registration wizard"
 msgstr "Запустить мастер регистрации доменов"
@@ -5453,6 +5459,9 @@ msgstr "Системная ошибка: %s"
 msgid "System messages in the chat"
 msgstr "Системные сообщения в чате"
 
+msgid "Table name"
+msgstr "Название таблицы"
+
 msgid "Table of values (HTML allowed). Syntax:<br />1: recruit<br />2: sergeant<br />3: lieutenant<br />4: major"
 msgstr "Таблица значений (разрешён HTML). Синтаксис:<br />1: новобранец<br />2: сержант<br />3: лейтенант<br />4: майор"
 
@@ -6106,6 +6115,19 @@ msgstr "Допустимые форматы: PNG, GIF, JPEG"
 
 msgid "Valid formats are: PNG, JPEG, GIF"
 msgstr "Допустимые форматы: PNG, GIF, JPEG"
+
+#, python-format
+msgid "Validated %d objects"
+msgstr "Проверено %d объектов"
+
+msgid "Validating and repairing cassandra database"
+msgstr "Валидация и восстановление БД Cassandra"
+
+msgid "Validation"
+msgstr "Валидация"
+
+msgid "Validation failed"
+msgstr "Валидация не удалась"
 
 msgid "Value"
 msgstr "Значение"
@@ -7528,6 +7550,9 @@ msgstr "загрузить"
 msgid "user///Registered"
 msgstr "Регистрация"
 
+msgid "validate"
+msgstr "проверить"
+
 msgid "view"
 msgstr "просмотреть"
 
@@ -7601,6 +7626,9 @@ msgstr ""
 "{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
 "\n"
 "http://www.{domain}/forum/topic/{topic_uuid}"
+
+msgid "{cnt} objects at {performed}"
+msgstr "объектов: {cnt}, дата: {performed}"
 
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
