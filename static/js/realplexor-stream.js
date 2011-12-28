@@ -59,6 +59,7 @@ Stream.stream_command = function(cmd, id) {
 };
 
 Stream.ping = function() {
+	var th = this;
 	Ext.Ajax.request({
 		url: '/stream/ready',
 		method: 'POST',
@@ -74,7 +75,7 @@ Stream.ping = function() {
 			 * We must not do Game.close in this case.
 			 * If last successful request to the /rpl was before 3 minutes ago, we must ignore the error. */
 			try {
-				if (this.rpl_int._lastSuccessTime > Game.now() - 3 * 60 * 1000) {
+				if (th.rpl_int._lastSuccessTime > Game.now() - 3 * 60 * 1000) {
 					Game.close();
 				}
 			} catch (e) {
