@@ -123,11 +123,12 @@ class Domains(Module):
                     for rr_a in rr[2]:
                         ips.append(rr_a[1])
                 elif rr[0]:
-                    engine = QueryEngine()
-                    result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
+                    eng = QueryEngine()
+                    result = eng.asynchronous(rr[0] + ".", adns.rr.ADDR)
                     self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
                     for rr in result[3]:
                         ips.append(rr[1])
+            self.debug("NS query complete. ips=%s", ips)
             if not len(ips):
                 result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
                 if len(result[3]):
@@ -140,6 +141,7 @@ class Domains(Module):
             dnsservers = names
             if ns1 in names or ns2 in names:
                 raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
+        self.debug("Querying servers '%s' for NSraw %s", configtext, checkdomain)
         checkdomain = game_domain + "." + checkdomain
         engine = QueryEngine(configtext=configtext)
         result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
