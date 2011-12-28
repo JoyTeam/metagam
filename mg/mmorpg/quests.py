@@ -13,6 +13,7 @@ re_item_action = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
 re_mod_lock = re.compile(r'^q_(.+)_locked$')
 re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
+re_remove_lock = re.compile(r'^user/([a-f0-9]{32})/(.+)$')
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -240,13 +241,14 @@ class QuestsAdmin(ConstructorModule):
             self.rhook("headmenu-admin-inventory.actions", self.headmenu_inventory_actions)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
-        self.rhook("ext-admin-quests.removedialog", self.remove_dialog, priv="quest.dialogs")
+        self.rhook("ext-admin-quests.removedialog", self.remove_dialog, priv="quests.dialogs")
         self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
         self.rhook("admin-locations.map-zone-action-event", self.location_map_zone_action_event)
         self.rhook("admin-locations.map-zone-event-render", self.location_map_zone_event_render)
         self.rhook("admin-interface.button-actions", self.interface_button_actions)
         self.rhook("admin-interface.button-action-qevent", self.interface_button_action_qevent)
         self.rhook("admin-interface.button-action", self.interface_button_action)
+        self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
 
     def interface_button_action(self, btn):
         if btn.get("qevent"):
@@ -286,26 +288,42 @@ class QuestsAdmin(ConstructorModule):
     def location_map_zone_event_render(self, zone, rzone):
         rzone["ev"] = jsencode(zone.get("ev"))
 
-    def mod_descriptions(self, mods):
+    def admin_remove_lock(self):
+        req = self.req()
+        m = re_remove_lock.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        target_uuid, mod_kind = m.group(1, 2)
+        character = self.character(target_uuid)
+        if not character.valid:
+            self.call("web.not_found")
+        character.modifiers.destroy(mod_kind)
+        self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=modifiers" % target_uuid)
+
+    def mod_descriptions(self, modifiers, mods):
+        req = self.req()
         for key, mod in mods.iteritems():
             m = re_mod_timer.match(key)
             if m:
                 qid, tid = m.group(1, 2)
                 quest = self.conf("quests.list", {}).get(qid)
                 if quest:
-                    mod["description"] = self._("Timer '{timer}' in quest '{quest}'").format(timer=tid, quest=quest.get("name"))
+                    mod["description"] = self._("Timer '{timer}' in quest '{quest}'").format(timer=tid, quest=htmlescape(quest.get("name")))
             else:
                 m = re_mod_lock.match(key)
                 if m:
                     qid = m.group(1)
                     quest = self.conf("quests.list", {}).get(qid)
                     if quest:
-                        mod["description"] = self._("Quest '{quest}' is locked").format(quest=quest.get("name"))
+                        mod["description"] = utf2str(self._("Quest '{quest}' is locked").format(quest=htmlescape(quest.get("name"))))
+                        if req.has_access("quests.remove-locks"):
+                            mod["description"] += utf2str(self.call("web.parse_inline_layout", u' (<hook:admin.link href="quests/remove-lock/%s/%s/%s" title="%s" confirm="%s" />)' % (modifiers.target_type, modifiers.uuid, key, self._("remove lock"), self._("Are you sure want to remove this lock?")), {}))
 
     def permissions_list(self, perms):
         perms.append({"id": "quests.view", "name": self._("Quest engine: viewing players' quest information")})
         perms.append({"id": "quests.editor", "name": self._("Quest engine: editor")})
         perms.append({"id": "quests.dialogs", "name": self._("Quest engine: clearing users' dialogs")})
+        perms.append({"id": "quests.remove-locks", "name": self._("Quest engine: removing quest locks")})
         if self.conf("module.inventory"):
             perms.append({"id": "quests.inventory", "name": self._("Quest engine: actions for items")})
 
@@ -976,7 +994,7 @@ class QuestsAdmin(ConstructorModule):
                             self.call("l10n.time_local", performed),
                         ])
                 # dialogs
-                may_dialogs = req.has_access("quest.dialogs")
+                may_dialogs = req.has_access("quests.dialogs")
                 dialogs = []
                 for dialog in character.quests.dialogs:
                     quest = dialog.get("quest")

@@ -338,7 +338,7 @@ class ModifiersAdmin(Module):
             ]
             rows = []
             mods = modifiers.mods()
-            self.call("admin-modifiers.descriptions", mods)
+            self.call("admin-modifiers.descriptions", modifiers, mods)
             mods = mods.items()
             mods.sort(cmp=lambda x, y: cmp(x[0], y[0]))
             for m, mod in mods:
@@ -352,7 +352,7 @@ class ModifiersAdmin(Module):
                 # rendering
                 rmod = [
                     "char.mod.%s" % m if re_valid_identifier.match(m) else m,
-                    htmlescape(mod.get("description")),
+                    mod.get("description"),
                     mod.get("cnt"),
                     "%s/%s/%s" % (htmlescape(mod.get("minval")), htmlescape(mod.get("maxval")), htmlescape(mod.get("sumval"))),
                     till,

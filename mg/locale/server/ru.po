@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-28 14:13+0300\n"
+"PO-Revision-Date: 2011-12-28 16:10+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -474,6 +474,9 @@ msgstr "Вы уверены, что хотите удалить этот сма�
 
 msgid "Are you sure want to delete this state?"
 msgstr "Вы уверены, что хотите удалить это состояние?"
+
+msgid "Are you sure want to remove this lock?"
+msgstr "Вы уверены, что хотите снять эту блокировку?"
 
 msgid "Are you sure want to unpublish the project?"
 msgstr "Вы уверены, что хотите снять проект с публикации?"
@@ -4416,6 +4419,9 @@ msgstr "Квестовый движок: сброс диалогов польз�
 msgid "Quest engine: editor"
 msgstr "Квестовый движок: редактор"
 
+msgid "Quest engine: removing quest locks"
+msgstr "Квестовый движок: снятие блокировок квестов"
+
 msgid "Quest engine: viewing players' quest information"
 msgstr "Квестовый движок: просмотр информации о квестах персонажей"
 
@@ -7257,6 +7263,9 @@ msgstr "удалить"
 
 msgid "remove dependency"
 msgstr "удалить зависимость"
+
+msgid "remove lock"
+msgstr "снять блокировку"
 
 msgid "rename///ren"
 msgstr "переим"

@@ -247,7 +247,7 @@ class AdminInterface(Module):
         onclick = "adm('%s');" % jsencode(href)
         if confirm is not None:
             onclick = "if (confirm('%s')) {%s}" % (jsencode(confirm), onclick)
-        return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(htmlescape(href), title, random.randrange(0, 1000000000), onclick)
+        return '<a href="/admin?_nd={2}#{0}" onclick="{3}return false;">{1}</a>'.format(utf2str(htmlescape(href)), utf2str(title), random.randrange(0, 1000000000), utf2str(onclick))
 
     def area(self, vars, href=None, confirm=None, polygon=None):
         if type(href) == unicode:
