@@ -89,6 +89,7 @@ class MemberModifiers(Module):
             if kind in kinds:
                 continue
             kinds.add(kind)
+            self.debug("Expired modifier (target_type=%s, target=%s): %s", self.target_type, self.uuid, mod)
             self.call("%s-modifier.expired" % self.target_type, self, mod)
             self.call("modifier.expired", self, mod)
         for mod in prolong.values():
@@ -140,6 +141,7 @@ class MemberModifiers(Module):
                         self.prolong[ent["uuid"]] = ent
                     else:
                         self.expired[ent["uuid"]] = ent
+                        self.debug("Found expired modifier (target_type=%s, target=%s): %s", self.target_type, self.uuid, ent)
                         continue
             res = modifiers.get(kind)
             if res:
@@ -308,6 +310,7 @@ class Modifiers(Module):
         return MemberModifiers(self.app(), target_type, target)
 
     def mod_stop(self, target_type, target):
+        self.debug("Called modifiers.stop for app=%s, target_type=%s, target=%s", self.app().tag, target_type, target)
         mods = MemberModifiers(self.app(), target_type, target)
         mods.update()
 
