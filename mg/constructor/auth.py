@@ -665,7 +665,8 @@ class Auth(ConstructorModule):
             }
             self.call("auth.activation_email", params)
             self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
-
+        self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=player.uuid)
+        self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=character_user.uuid)
         if activation_code and (not self.conf("auth.activate_email_days", 7)):
             # Require activation immediately after registration
             self.call("stream.logout", session.uuid)
@@ -675,9 +676,14 @@ class Auth(ConstructorModule):
                 session.delkey("character")
                 session.delkey("authorized")
                 session.set("semi_user", player.uuid)
+                session.set("ip", req.remote_addr())
                 session.store()
             self.call("web.response_json", {"ok": 1, "redirect": "/auth/activate/%s" % player.uuid})
         else:
+            with self.lock(["session.%s" % session.uuid]):
+                session.load()
+                session.set("ip", req.remote_addr())
+                session.store()
             # First login without activation
             self.call("stream.login", session.uuid, character_user.uuid)
             self.call("web.response_json", {"ok": 1, "session": session.uuid})
@@ -1162,6 +1168,7 @@ class Auth(ConstructorModule):
                 character_user.store()
                 character_form.store()
                 self.qevent("registered", char=self.character(character.uuid))
+                self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=character.uuid)
                 # Entering game
                 self.call("web.post_redirect", "/", {"session": session.uuid})
         vars = {
