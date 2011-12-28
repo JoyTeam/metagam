@@ -226,8 +226,9 @@ class GameReporter(ConstructorModule):
         lst.load(silent=True)
         left = 0
         for ent in lst:
-            ent.set("active", 0)
-            left += 1
+            if ent.get("active") == 2:
+                ent.set("active", 0)
+                left += 1
         lst.store()
         # loading currently active playerbase
         lst = self.objlist(DBPlayerList, query_index="active", query_equal="2")
