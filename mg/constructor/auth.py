@@ -354,7 +354,7 @@ class Auth(ConstructorModule):
             if not session or not session.get("user") or not session.get("authorized"):
                 if req.group.startswith("admin-"):
                     req.headers.append(('Content-type', req.content_type))
-                    raise WebResponse(req.send_response("403 Admin Offline", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Admin Offline"), self._("To access this page enter the game first"))))
+                    raise WebResponse(req.send_response("403 Admin Offline", req.headers, "<html><body><h1>403 %s</h1>%s</body></html>" % (self._("Admin Offline"), self._("To access this page you must enter the game from another browser window. Character with administrative rights must be online when using administrative interface."))))
                 else:
                     self.call("game.error", self._("To access this page enter the game first"))
         raise Hooks.Return(None)

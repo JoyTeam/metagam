@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-28 16:10+0300\n"
+"PO-Revision-Date: 2011-12-29 10:05+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5791,6 +5791,9 @@ msgstr "Названия должны быть короткими и ясным�
 
 msgid "To access this page enter the game first"
 msgstr "Чтобы получить доступ к этой странице, войдите в игру"
+
+msgid "To access this page you must enter the game from another browser window. Character with administrative rights must be online when using administrative interface."
+msgstr "Чтобы получить доступ к этой странице, вы должны зайти в игру из другого окна браузера. Чтобы использовать административный интерфейс, персонаж с административными правами должен быть онлайн."
 
 msgid "To customize your letter you may use the following commands in the subject and message content"
 msgstr "Чтобы настроить вид ваших писем, вы можете использовать в теме и содержании письма следующие команды:"
