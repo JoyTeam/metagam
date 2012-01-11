@@ -106,7 +106,10 @@ class Constructor(Module):
 
     def project_options(self, project, options):
         if self.req().has_access("cassmaint.validate"):
-            options.append({"title": self._("Cassandra DB validation"), "value": '<hook:admin.link href="cassmaint/validate/%s" title="%s" />' % (project.uuid, self._("open"))})
+            if project:
+                options.append({"title": self._("Cassandra DB validation"), "value": '<hook:admin.link href="cassmaint/validate/%s" title="%s" />' % (project.uuid, self._("open"))})
+            else:
+                options.append({"title": self._("Cassandra DB validation"), "value": '<hook:admin.link href="cassmaint/validate/%s" title="%s" />' % (self.app().tag, self._("open"))})
 
     def forum_topic_form(self, topic, form, mode):
         if mode == "validate":
