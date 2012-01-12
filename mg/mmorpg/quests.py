@@ -1434,7 +1434,7 @@ class Quests(ConstructorModule):
                                                 self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
                                             char.quests.lock(quest)
                                         else:
-                                            timeout = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            timeout = intz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
                                             if timeout > 100e6:
                                                 timeout = 100e6
                                             if debug:
