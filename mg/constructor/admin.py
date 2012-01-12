@@ -136,7 +136,7 @@ class Constructor(Module):
         if not app:
             self.call("web.not_found")
         objclasses = {}
-        self.call("objclasses.list", objclasses)
+        app.hooks.call("objclasses.list", objclasses)
         if cmd is not None:
             if cmd not in objclasses:
                 self.call("admin.redirect", "cassmaint/validate/%s" % app_tag)

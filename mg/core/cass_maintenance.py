@@ -11,7 +11,7 @@ class CassandraMaintenance(Module):
 
     def validate(self, app, cls):
         objclasses = {}
-        self.call("objclasses.list", objclasses)
+        app.hooks.call("objclasses.list", objclasses)
         cinfo = objclasses[cls]
         uuids = app.db.dump_objects(cls)
         for uuid in uuids:
