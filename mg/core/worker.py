@@ -97,6 +97,8 @@ class Worker(Module):
         params["params"] = json.dumps(params["params"])
         res = self.call("cluster.query_director", "/director/ready", params)
         # background tasks
+        inst.sql_read.run_ping_tasklet()
+        inst.sql_write.run_ping_tasklet()
         inst.set_server_id(res["server_id"], re.sub(r'^\d+\.\d+\.\d+\.\d+-server-\d+-', '', res["server_id"]))
         inst.int_host = res["host"]
         while True:

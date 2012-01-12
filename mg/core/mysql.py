@@ -1,9 +1,11 @@
 from concurrence.database.mysql import dbapi, client
 from concurrence.database.mysql.client import ClientError
 from mg.core.tools import *
+from concurrence import Tasklet
 import concurrence
 import logging
 import re
+import random
 
 re_placeholder = re.compile(r'\?')
 re_escape = re.compile(r'(\0|\n|\r|\\|\')')
@@ -65,7 +67,7 @@ class MySQLPool(object):
     Handles pool of MySQLConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, hosts=(("127.0.0.1", 3306),), user="", passwd="", db="", size=8, primary_host_id=0):
+    def __init__(self, hosts=(("127.0.0.1", 3306),), user="", passwd="", db="", size=4, primary_host_id=0):
         self.hosts = [tuple(host) for host in hosts]
         self.primary_host = self.hosts.pop(primary_host_id)
         self.hosts.insert(0, self.primary_host)
@@ -192,6 +194,28 @@ class MySQLPool(object):
     def dbget(self, app=None):
         "The same as cget, but returns MySQL wrapper"
         return MySQL(self, app)
+
+    def ping(self):
+        conns = []
+        while len(self.connections) > 0:
+            conns.append(self.cget())
+        for conn in conns:
+            try:
+                conn.do("select 1")
+            except EOFError:
+                pass
+            except Exception as e:
+                logging.getLogger("mg.core.mysql.MySQLPool").exception(e)
+            else:
+                self.cput(conn)
+
+    def run_ping_tasklet(self):
+        Tasklet.new(self.ping_tasklet)()
+
+    def ping_tasklet(self):
+        while True:
+            Tasklet.sleep(random.randrange(10, 15))
+            self.ping()
 
 class MySQLConnection(object):
     "MySQLConnection - interface to MySQL database engine"

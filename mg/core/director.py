@@ -45,6 +45,8 @@ class Director(Module):
         Tasklet.new(self.monitor)()
         Tasklet.new(self.call)("queue.process")
         Tasklet.new(self.call)("daemon.monitor")
+        inst.sql_read.run_ping_tasklet()
+        inst.sql_write.run_ping_tasklet()
         while True:
             try:
                 self.call("core.fastidle")
