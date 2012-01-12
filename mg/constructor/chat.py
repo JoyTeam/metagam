@@ -205,6 +205,7 @@ class Chat(ConstructorModule):
     def objclasses_list(self, objclasses):
         objclasses["ChatChannelCharacter"] = (DBChatChannelCharacter, DBChatChannelCharacterList)
         objclasses["ChatDebug"] = (DBChatDebug, DBChatDebugList)
+        objclasses["ChatMessage"] = (DBChatMessage, DBChatMessageList)
 
     def menu_socio_index(self, menu):
         menu.append({"id": "chat.index", "text": self._("Chat"), "order": 5})
