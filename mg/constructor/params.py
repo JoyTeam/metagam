@@ -411,7 +411,7 @@ class Params(ConstructorModule):
         # cache miss. evaluating
         if param["type"] == 0:
             value = obj.db_params.get(param["code"], param.get("default", 0))
-        else:
+        elif param["type"] == 1 or param["type"] == 2:
             if handle_exceptions:
                 try:
                     value = self._evaluate(obj, param)
@@ -425,7 +425,10 @@ class Params(ConstructorModule):
         return value
 
     def html(self, param, value):
-        if param["visual_mode"] == 1 or param["visual_mode"] == 2:
+        print "html for %s (value=%s)" % (param, value)
+        if param["visual_mode"] == 0:
+            return value
+        elif param["visual_mode"] == 1 or param["visual_mode"] == 2:
             text = None
             for ent in param["visual_table"]:
                 if ent[0] == value:
@@ -438,17 +441,17 @@ class Params(ConstructorModule):
             else:
                 return param["visual_template"].format(val=value, text=text)
         else:
-            return value
+            return htmlescape(unicode(value))
 
     def params_public(self, obj, params, **kwargs):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("public") and self.visibility_condition(param, obj):
-                if param["grp"] != "" and param["grp"] != grp:
-                    params.append({"header": htmlescape(param["grp"])})
-                    grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 if value or param.get("zero_visible"):
+                    if param["grp"] != "" and param["grp"] != grp:
+                        params.append({"header": htmlescape(param["grp"])})
+                        grp = param["grp"]
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
@@ -462,11 +465,11 @@ class Params(ConstructorModule):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("important") and self.visibility_condition(param, obj):
-                if param["grp"] != "" and param["grp"] != grp:
-                    params.append({"header": htmlescape(param["grp"])})
-                    grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 if value or param.get("zero_visible"):
+                    if param["grp"] != "" and param["grp"] != grp:
+                        params.append({"header": htmlescape(param["grp"])})
+                        grp = param["grp"]
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
@@ -480,11 +483,11 @@ class Params(ConstructorModule):
         grp = None
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and self.visibility_condition(param, obj):
-                if param["grp"] != "" and param["grp"] != grp:
-                    params.append({"header": htmlescape(param["grp"])})
-                    grp = param["grp"]
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
                 if value or param.get("zero_visible"):
+                    if param["grp"] != "" and param["grp"] != grp:
+                        params.append({"header": htmlescape(param["grp"])})
+                        grp = param["grp"]
                     value_html = self.call("%s.param-html" % self.kind, param, value)
                     params.append({
                         "param": param,
