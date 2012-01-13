@@ -214,7 +214,7 @@ class MySQLPool(object):
 
     def ping_tasklet(self):
         while True:
-            Tasklet.sleep(random.randrange(10, 15))
+            Tasklet.sleep(random.randrange(250, 300))
             self.ping()
 
 class MySQLConnection(object):
