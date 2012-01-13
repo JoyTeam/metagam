@@ -102,6 +102,12 @@ class TokenJavaScript(Parsing.Token):
 class TokenClicked(Parsing.Token):
     "%token clicked"
 
+class TokenClass(Parsing.Token):
+    "%token class"
+
+class TokenSelected(Parsing.Token):
+    "%token selected"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -235,6 +241,10 @@ class EventType(Parsing.Nonterm):
         elif not re_valid_identifier.match(ident.val):
             raise Parsing.SyntaxError(ev.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["clicked", ident.val], None]
+
+    def reduceClassSelected(self, ev, ev2):
+        "%reduce class selected"
+        self.val = [["charclass-selected"], None]
 
 # ============================
 #          ACTIONS
@@ -557,6 +567,8 @@ class QuestScriptParser(ScriptParser):
     syms["chat"] = TokenChat
     syms["javascript"] = TokenJavaScript
     syms["clicked"] = TokenClicked
+    syms["class"] = TokenClass
+    syms["selected"] = TokenSelected
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

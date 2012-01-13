@@ -86,7 +86,10 @@ class CharacterParams(Params):
         self.rhook("characters.param-library", self.param_library)
 
     def param_library(self, param):
-        return "/library/charparams#%s" % param["code"]
+        if param.get("library_table"):
+            return "/library/charparam/%s" % param["code"]
+        else:
+            return "/library/charparams#%s" % param["code"]
 
     def charpage_actions(self, character, actions):
         if self.notimportant_params_exist():
@@ -150,7 +153,7 @@ class CharacterParamsLibrary(ParamsLibrary):
                         "name": htmlescape(param["name"]),
                         "description": htmlescape(description),
                     }
-                    if param.get("library_table"):
+                    if param.get("library_table") or param.get("charclass"):
                         rparam["tables"] = {
                             "uri": "/library/charparam/%s" % param["code"],
                         }

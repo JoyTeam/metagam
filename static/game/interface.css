@@ -209,3 +209,14 @@ area { border: none }
 .progress-test1 { background-color: red }
 .test2-notfull { background-color: yellow }
 .test2-full { background-color: green }
+
+/* CLASS SELECTOR */
+.charclssel-layout-info { padding: 20px 20px 20px 40px; vertical-align: top }
+.charclssel-left { width: 20px; text-align: left; font-size: 16px }
+.charclssel-name { font-size: 18px; width: 300px; border: solid 1px #404040; text-align: center; padding: 5px 0 5px 0 }
+.charclssel-right { width: 20px; text-align: right; font-size: 16px }
+#charclssel-description { width: 340px; text-align: center; padding-top: 10px }
+#charclssel-error { padding-top: 10px; text-align: center }
+#charclssel-form { padding-top: 10px; text-align: center }
+.charclssel-layer { margin-bottom: 10px }
+

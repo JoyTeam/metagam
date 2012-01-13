@@ -1,0 +1,27 @@
+<!-- doc.title Оформление селектора классов персонажей онлайн-игры -->
+<!-- doc.parent character-classes -->
+<!-- doc.keywords класс персонажа, выбор класса персонажа, оформление -->
+<!-- doc.description Как правильно оформлять шаблон страниц с выбором классов персонажей в онлайн-играх, созданных на конструкторе игр -->
+
+<p>Страница с выбором класса персонажа генерируется из двух файлов: <a href="/doc/game-template/charclass-select.html">charclass-select.html</a> и <a href="/doc/game-template/charclass-select-layout.html">charclass-select-layout.html</a>. В них можно использовать следующие переменные шаблонизатора:<ul>
+	<li>classes &mdash; список классов. Каждый элемент списка &mdash; запись с полями:<ul>
+		<li>id &mdash; идентификатор класса;</li>
+		<li>name &mdash; название;</li>
+		<li>description &mdash; описание;</li>
+	</ul></li>
+	<li>error &mdash; текст сообщения об ошибке (может отсутствовать);</li>
+	<li>layout &mdash; присутствует только в шаблоне charclass-select.html. В это место подставляется содержимое шаблона charclass-select-layout.html.</li>
+</ul></p>
+
+<p>Чтобы программное обеспечение конструктора могло правильно отображать ход выбора класса, необходимо создать на странице элементы со следующими id:<ul>
+	<li>charclssel-input &mdash; hidden-поле, в которое будет записываться id выбранного класса;</li>
+	<li>charclssel-name &mdash; название текущего выбранного класса;</li>
+	<li>charclssel-description &mdash; описание текущего выбранного класса;</li>
+	<li>charclssel-error &mdash; сообщение об ошибке;</li>
+</ul></p>
+
+<h1>Дополнительно</h1>
+<ul>
+	<li><a href="/doc/character-classes">Управление системой классов</a></li>
+	<li><a href="/doc/design/templates">Общая информация о шаблонизаторе</a></li>
+</ul>

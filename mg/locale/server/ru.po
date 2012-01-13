@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2011-12-29 10:05+0300\n"
+"PO-Revision-Date: 2012-01-13 14:37+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -235,6 +235,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Ability to create special parameters of characters 'classes' and require player to select a class on character creation"
+msgstr "Возможность создавать специальные параметры персонажей - \"классы\" - и требовать от игрока выбирать класс при создании персонажа"
 
 msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
 msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
@@ -538,6 +541,9 @@ msgstr "Автопродление: выключено"
 
 msgid "Auto prolong: enabled"
 msgstr "Автопродление: включено"
+
+msgid "Availability of class variant '{variant}' in class '{cls}'"
+msgstr "Доступность варианта \"{variant}\" класса \"{cls}\""
 
 msgid "Availability of transition between locations"
 msgstr "Доступность перехода между локациями"
@@ -859,6 +865,12 @@ msgstr "Персонаж %s"
 msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
+msgid "Character class must be stored in DB"
+msgstr "Класс персонажа должен сохраняться в БД"
+
+msgid "Character classes documentation"
+msgstr "Документация на классы персонажей"
+
 msgid "Character for the game administrator"
 msgstr "Персонаж для администратора игры"
 
@@ -1069,6 +1081,12 @@ msgstr "Класс"
 
 msgid "Class name must begin with a symbol a-z, continue with symbols a-z, 0-9 and '-' and end with a symbol a-z or a digit"
 msgstr "Имя класса должно начинаться с символа a-z, продолжаться символами a-z, 0-9 и '-' и заканчиваться символами a-z или 0-9"
+
+msgid "Class variant description for players (HTML allowed)"
+msgstr "Описание варианта класса для игроков (HTML разрешён)"
+
+msgid "Class variant name"
+msgstr "Название варианта класса"
 
 msgid "Clear chat"
 msgstr "Очистить чат"
@@ -3140,6 +3158,9 @@ msgstr "Список пуст"
 msgid "List of characters online"
 msgstr "Список пользователей онлайн"
 
+msgid "List of classes"
+msgstr "Список классов"
+
 msgid "List of items to give. Format:<br />item name - quantity<br />item-name - quantity<br />..."
 msgstr "Список предметов, которые необходимо выдать. Формат:<br />название предмета - количество<br />название предмета - количество<br />..."
 
@@ -3804,6 +3825,12 @@ msgstr "Новые темы в '{topcat} / {cat}'"
 msgid "New updates related to the abandoned dungeon"
 msgstr "Новые обновления, связанные с заброшенным подземельем"
 
+msgid "New variant"
+msgstr "Новый вариант"
+
+msgid "New variant for this class"
+msgstr "Новый вариант для этого класса"
+
 msgid "New window"
 msgstr "Новое окно"
 
@@ -4368,6 +4395,9 @@ msgstr "Опубликовать на титульной странице биб
 msgid "Publish parameter description in the library"
 msgstr "Публиковать описание параметра в библиотеке"
 
+msgid "Publish this class variant in the library"
+msgstr "Публиковать информацию об этом варианте класса в библиотеке"
+
 msgid "Purpose"
 msgstr "Назначение"
 
@@ -4480,6 +4510,9 @@ msgstr "Цитата"
 #, python-format
 msgid "RID for URL '%s'"
 msgstr "RID для URL '%s'"
+
+msgid "Races and classes"
+msgstr "Расы и классы"
 
 msgid "Rating"
 msgstr "Рейтинг"
@@ -5596,6 +5629,9 @@ msgstr "Это - категория для всех предметов, не п�
 msgid "This category is opened by default"
 msgstr "Эта категория открывается по умолчанию"
 
+msgid "This class variant is visible in the API"
+msgstr "Публиковать информацию об этом варианте класса в API"
+
 msgid "This code in inappropriate for this action"
 msgstr "Этот код не подходит для этого действия"
 
@@ -5716,6 +5752,10 @@ msgid "This page describes character images setting rules"
 msgstr "Эта страница описывает правила настройки образов персонажей"
 
 #, python-format
+msgid "This page describes class %s"
+msgstr "Эта страница описывает класс %s"
+
+#, python-format
 msgid "This page describes parameter %s"
 msgstr "Эта страница описывает параметр %s"
 
@@ -5727,6 +5767,9 @@ msgstr "Эта страница описывает параметры предм
 
 msgid "This page is about game chat"
 msgstr "Это страница об игровом чате"
+
+msgid "This parameter is a character class (race, profession, etc)"
+msgstr "Этот параметр является классом персонажа (раса, профессия и т.п.)"
 
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
@@ -5794,6 +5837,9 @@ msgstr "Чтобы получить доступ к этой странице, �
 
 msgid "To access this page you must enter the game from another browser window. Character with administrative rights must be online when using administrative interface."
 msgstr "Чтобы получить доступ к этой странице, вы должны зайти в игру из другого окна браузера. Чтобы использовать административный интерфейс, персонаж с административными правами должен быть онлайн."
+
+msgid "To create races and classes system go to the '{href}' page first and create one or more parameters with 'character class' option"
+msgstr "Чтобы создать систему рас и классов, сначала зайдите на страницу \"{href}\" и создайте один или несколько параметров с опцией \"класс персонажа\""
 
 msgid "To customize your letter you may use the following commands in the subject and message content"
 msgstr "Чтобы настроить вид ваших писем, вы можете использовать в теме и содержании письма следующие команды:"
@@ -6267,6 +6313,16 @@ msgstr "Что вы думаете об этом?"
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
 
+#, python-format
+msgid "Whether class '%s' is required"
+msgstr "Требуется ли выбор класса \"%s\""
+
+msgid "Whether selection of this class is required for the character (0 - never require, 1 - require for everybody)"
+msgstr "В каком случае требовать от игрока выбор этого класса (0 - никогда не требовать, 1 - требовать для всех)"
+
+msgid "Whether this class variant is available for player"
+msgstr "Доступен ли этот вариант класса игроку"
+
 msgid "Which groups this page belongs to. If you want any page to show in the group specify an integer value here. This value will be the sorting order of the page in the group"
 msgstr "К каким группам принадлежит эта страница. Если вы хотите, чтобы какая-то страница показалась в группе, укажите здесь целое число. Это число будет порядком сортировки страницы в группе"
 
@@ -6399,6 +6455,10 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
+msgid "You can find detailed information on the character classes system in the <a href=\"//www.%s/doc/character-classes\" target=\"_blank\">character classes page</a> in the reference manual."
+msgstr "Подробную информацию о системе классов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-classes\" target=\"_blank\">Система классов персонажей</a>."
+
+#, python-format
 msgid "You can find detailed information on the character names system in the <a href=\"//www.%s/doc/character-names\" target=\"_blank\">characer names page</a> in the reference manual."
 msgstr "Подробную информацию о системе имён персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-names\" target=\"_blank\">Система имён персонажей</a>."
 
@@ -6493,6 +6553,10 @@ msgstr "Вы успешно назначили вашей игре доменн�
 
 msgid "You have got:"
 msgstr "Вы получили:"
+
+#, python-format
+msgid "You have no available variants of '%s' to select from"
+msgstr "У вас нет доступных вариантов \"%s\", из которых можно выбрать"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -6742,6 +6806,9 @@ msgstr "образы персонажей"
 msgid "character parameters"
 msgstr "параметры персонажа"
 
+msgid "charclass///Select"
+msgstr "Выбрать"
+
 msgid "charimage///Construct character image"
 msgstr "Создать образ персонажа"
 
@@ -6795,6 +6862,9 @@ msgstr "Новый образ"
 
 msgid "chat"
 msgstr "чат"
+
+msgid "class"
+msgstr "класс"
 
 msgid "combo box"
 msgstr "выпадающий список"
@@ -7803,8 +7873,6 @@ msgstr "{price} на {period_a}"
 #~ msgid "global.html must exist in the socio interface design package"
 #~ msgstr ""
 #~ "В пакете оформления интерфейса социалки должен быть файл global.html"
-#~ msgid "Character name or e-mail"
-#~ msgstr "Имя персонажа или e-mail"
 #~ msgid "Income statistics"
 #~ msgstr "Статистика по доходам"
 #~ msgid "module///disabled"

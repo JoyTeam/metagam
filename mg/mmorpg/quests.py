@@ -721,6 +721,8 @@ class QuestsAdmin(ConstructorModule):
                 return "offline"
             elif val[0] == "clicked":
                 return "clicked %s" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "charclass-selected":
+                return "class selected"
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":

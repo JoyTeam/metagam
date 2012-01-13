@@ -77,6 +77,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.mmorpg.quests.Quests"])
             if self.conf("module.favicon"):
                 lst.extend(["mg.core.sites.Favicon"])
+            if self.conf("module.charclasses"):
+                lst.extend(["mg.mmorpg.charclasses.CharClasses"])
         return lst
 
     def modules_list(self, modules):
@@ -109,6 +111,11 @@ class ConstructorProject(Module):
             "id": "favicon",
             "name": self._("Favicons"),
             "description": self._("Small icon near the browser address line"),
+        })
+        modules.append({
+            "id": "charclasses",
+            "name": self._("Races and classes"),
+            "description": self._("Ability to create special parameters of characters 'classes' and require player to select a class on character creation"),
         })
 
     def project_title(self):
