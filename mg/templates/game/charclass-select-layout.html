@@ -1,0 +1,18 @@
+<table class="charclssel-layout">
+	<tr>
+		<td class="charclssel-layout-info">
+			<table><tr>
+				<td class="charclssel-left"><span class="clickable" onclick="CharClasses.prev()">&lt;</a></td>
+				<td class="charclssel-name" id="charclssel-name"></td>
+				<td class="charclssel-right"><span class="clickable" onclick="CharClasses.next()">&gt;</a></td>
+			</tr></table>
+			[%if error%]<div id="charclssel-error" class="game-error">[%error%]</div>[%end%]
+			<form id="charclssel-form" method="post" action="/charclass/select">
+				<input type="hidden" name="ok" value="1" />
+				<input type="hidden" id="charclssel-input" name="class" value="" />
+				<input type="submit" value="[%Select%]" />
+			</form>
+			<div id="charclssel-description"></div>
+		</td>
+	</tr>
+</table>

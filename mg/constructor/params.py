@@ -186,6 +186,7 @@ class ParamsAdmin(ConstructorModule):
                 params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["code"], y["code"]))
                 config = self.app().config_updater()
                 config.set("%s.params" % self.kind, params)
+                self.call("admin-%s.params-stored" % self.kind, params, config)
                 config.store()
                 self.call("admin.redirect", "%s/params" % self.kind)
             fields = [
@@ -425,10 +426,10 @@ class Params(ConstructorModule):
         return value
 
     def html(self, param, value):
-        print "html for %s (value=%s)" % (param, value)
-        if param["visual_mode"] == 0:
-            return value
-        elif param["visual_mode"] == 1 or param["visual_mode"] == 2:
+        visual_mode = param.get("visual_mode")
+        if visual_mode == 0:
+            return htmlescape(unicode(value))
+        elif visual_mode == 1 or visual_mode == 2:
             text = None
             for ent in param["visual_table"]:
                 if ent[0] == value:
@@ -436,7 +437,7 @@ class Params(ConstructorModule):
                     break
             if text is None:
                 return value
-            if param["visual_mode"] == 1:
+            if visual_mode == 1:
                 return text
             else:
                 return param["visual_template"].format(val=value, text=text)

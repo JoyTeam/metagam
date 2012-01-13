@@ -96,6 +96,7 @@ class Interface(ConstructorModule):
         self.rhook("game.parse_internal", self.game_parse_internal)
         self.rhook("game.info", self.game_info)
         self.rhook("game.error", self.game_error)
+        self.rhook("game.internal-error", self.game_internal_error)
         self.rhook("game.internal_form", self.game_internal_form)
         self.rhook("game.external_form", self.game_external_form)
         self.rhook("auth.form", self.game_external_form)
@@ -241,6 +242,10 @@ class Interface(ConstructorModule):
             "title": self._("Error"),
         }
         self.call("game.response_external", "error.html", vars, msg)
+
+    def game_internal_error(self, msg):
+        vars = {}
+        self.call("game.response_internal", "error.html", vars, msg)
 
     def game_internal_form(self, form, vars):
         self.call("game.response_internal", "form.html", vars, form.html(vars))

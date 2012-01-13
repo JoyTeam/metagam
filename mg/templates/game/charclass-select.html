@@ -1,0 +1,9 @@
+[%layout%]
+<script type="text/javascript">
+wait(['charclasses'], function() {
+	[%foreach cls in classes%]
+	CharClasses.lst.push({id: '[%cls.id%]', name: '[%cls.name%]', description: '[%cls.description%]'});
+	[%end%]
+	[%if sel_class%]CharClasses.find('[%sel_class%]');[%else%]CharClasses.select(0);[%end%]
+});
+</script>
