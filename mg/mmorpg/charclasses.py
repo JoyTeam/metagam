@@ -119,8 +119,8 @@ class CharClassesAdmin(ConstructorModule):
                     max_id = None
                     max_order = None
                     for c_id, c in classes.iteritems():
-                        if max_id is None or c_id > max_id:
-                            max_id = c_id
+                        if max_id is None or intz(c_id) > max_id:
+                            max_id = intz(c_id)
                         if max_order is None or c["order"] > max_order:
                             max_order = c["order"]
                     cls_id = max_id + 1 if max_id is not None else 1
@@ -249,6 +249,7 @@ class CharClasses(ConstructorModule):
                     classes = self.conf("charclasses.%s" % param["code"], {}).items()
                     classes = [(intz(cls_id), cls) for cls_id, cls in classes if self.call("script.evaluate-expression", cls["available"], globs={"char": character}, description=self._("Availability of class variant '{variant}' in class '{cls}'").format(variant=cls_id, cls=param["code"]))]
                     if not classes:
+                        param_info = self.call("characters.param", param["code"])
                         self.call("game.internal-error", self._("You have no available variants of '%s' to select from") % htmlescape(param_info["name"]))
                     classes.sort(cmp=lambda x, y: cmp(x[1].get("order"), y[1].get("order")) or cmp(x[0], y[0]))
                     if req.ok():
