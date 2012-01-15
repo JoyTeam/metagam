@@ -69,7 +69,7 @@ class CharClassesAdmin(ConstructorModule):
                     return [htmlescape(param.get("name")), "characters/classes"]
             else:
                 classes = self.conf("charclasses.%s" % param_id, {})
-                cls = classes.get(intz(cmd)) or classes.get(cmd)
+                cls = classes.get(cmd) or classes.get(intz(cmd))
                 if cls:
                     return [htmlescape(cls.get("name")), "characters/classes/%s" % param_id]
         return self._("Races and classes")
@@ -114,6 +114,12 @@ class CharClassesAdmin(ConstructorModule):
             else:
                 # class editor
                 classes = classes.copy()
+                # Converting integer hash keys (old format) to strings (new format)
+                for cls_id, cls in classes.items():
+                    if type(cls_id) == int:
+                        del classes[cls_id]
+                        if str(cls_id) not in classes:
+                            classes[str(cls_id)] = cls
                 if cmd == "new":
                     cls = {}
                     max_id = None
@@ -123,12 +129,12 @@ class CharClassesAdmin(ConstructorModule):
                             max_id = intz(c_id)
                         if max_order is None or c["order"] > max_order:
                             max_order = c["order"]
-                    cls_id = max_id + 1 if max_id is not None else 1
+                    cls_id = str(max_id + 1 if max_id is not None else 1)
                     cls["order"] = max_order + 10 if max_order is not None else 0.0
                     classes[cls_id] = cls
                 else:
                     cls_id = cmd
-                    cls = classes.get(cls_id) or classes.get(intz(cls_id))
+                    cls = classes.get(cls_id)
                     if not cls:
                         self.call("admin.redirect", "characters/classes/%s" % param_id)
                     cls = cls.copy()
@@ -160,7 +166,7 @@ class CharClassesAdmin(ConstructorModule):
                     {"type": "header", "html": self._("Library settings")},
                     {"name": "library_visible", "label": self._("Publish this class variant in the library"), "checked": cls.get("library_visible", True), "type": "checkbox"},
                     {"type": "header", "html": self._("API settings (API is not implemented yet)")},
-                    {"name": "api_values", "label": self._("This class variant is visible in the API"), "checked": cls.get("api_visible", True), "type": "checkbox"},
+                    {"name": "api_visible", "label": self._("This class variant is visible in the API"), "checked": cls.get("api_visible", True), "type": "checkbox"},
                 ]
                 self.call("admin.form", fields=fields)
             self.call("admin.response_template", "admin/common/tables.html", vars)
@@ -208,7 +214,7 @@ class CharClasses(ConstructorModule):
             value_i = intz(value)
             if value_i > 0:
                 variants = self.conf("charclasses.%s" % param["code"], {})
-                cls = variants.get(value_i) or variants.get(unicode(value_i))
+                cls = variants.get(str(value)) or variants.get(value_i)
                 if cls:
                     raise Hooks.Return(htmlescape(cls["name"]))
                 raise Hooks.Return(htmlescape(unicode(value)))
@@ -247,13 +253,13 @@ class CharClasses(ConstructorModule):
                 if self.call("script.evaluate-expression", param["require"], globs={"char": character}, description=self._("Whether class '%s' is required") % param["code"]):
                     # Found required parameter. Loading list of classes
                     classes = self.conf("charclasses.%s" % param["code"], {}).items()
-                    classes = [(intz(cls_id), cls) for cls_id, cls in classes if self.call("script.evaluate-expression", cls["available"], globs={"char": character}, description=self._("Availability of class variant '{variant}' in class '{cls}'").format(variant=cls_id, cls=param["code"]))]
+                    classes = [(str(cls_id), cls) for cls_id, cls in classes if self.call("script.evaluate-expression", cls["available"], globs={"char": character}, description=self._("Availability of class variant '{variant}' in class '{cls}'").format(variant=cls_id, cls=param["code"]))]
                     if not classes:
                         param_info = self.call("characters.param", param["code"])
                         self.call("game.internal-error", self._("You have no available variants of '%s' to select from") % htmlescape(param_info["name"]))
                     classes.sort(cmp=lambda x, y: cmp(x[1].get("order"), y[1].get("order")) or cmp(x[0], y[0]))
                     if req.ok():
-                        cls_selected = intz(req.param("class"))
+                        cls_selected = req.param("class")
                         for cls_id, cls in classes:
                             if cls_id == cls_selected:
                                 # Storing new character class
