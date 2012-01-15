@@ -4,6 +4,7 @@ from mg.core.money_classes import MoneyError
 from uuid import uuid4
 import re
 import random
+import stackless
 
 re_info = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_state = re.compile(r'^state/(.+)$', re.IGNORECASE)
@@ -1545,6 +1546,7 @@ class Quests(ConstructorModule):
                                 except Exception as e:
                                     self.exception(e)
                                     self.call("debug-channel.character", char, self._("System exception: %s") % e.__class__.__name__, cls="quest-error", indent=indent+2)
+                                stackless.schedule()
                         try:
                             execute_actions(act, indent)
                         except AbortHandler:
