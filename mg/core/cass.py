@@ -274,7 +274,20 @@ class Cassandra(object):
             family = "%s_Objects" % cls
             prefix = "%s_" % self.app
         dumper = CassandraDump(self)
-        return dumper.dump(family, prefix).keys()
+        return dumper.dump(str(family), str(prefix)).keys()
+
+    def dump_index(self, cls, index_name):
+        if self.storage == 0:
+            family = "Data"
+            prefix = "%s_%s_Index_" % (cls, index_name)
+        elif self.storage == 1:
+            family = "%s_Index_%s" % (cls, index_name)
+            prefix = ""
+        elif self.storage == 2:
+            family = "%s_Indexes" % cls
+            prefix = "%s_%s_Index_" % (self.app, index_name)
+        dumper = CassandraDump(self)
+        return dumper.dump(str(family), str(prefix))
 
 class CassandraPool(object):
     """
@@ -1171,5 +1184,5 @@ class CassandraDump(object):
                         columns = {}
                         for col in ent.columns:
                             columns[col.column.name] = col.column.value
-                        rows[ent.key[prefix_len:]] = columns
+                        rows[ent.key[prefix_len:]] = (family, ent.key, columns)
         return rows

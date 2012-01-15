@@ -145,9 +145,9 @@ class Constructor(Module):
                 self.call("admin.response", self._("Validation failed"), {})
             else:
                 config = app.config_updater()
-                config.set("cassmaint.%s" % cmd, {"cnt": cnt, "performed": self.now()})
+                config.set("cassmaint.%s" % cmd, {"cnt": cnt["obj"], "performed": self.now()})
                 config.store()
-                self.call("admin.response", self._("Validated %d objects") % cnt, {})
+                self.call("admin.response", self._("Validated objects: {obj}, indexes: {index}<br />Missing index keys restored: {missing}<br />Orphaned index keys deleted: {orphaned}").format(**cnt), {})
         rows = []
         for cls in sorted(objclasses.keys()):
             perf = app.config.get("cassmaint.%s" % cls)
