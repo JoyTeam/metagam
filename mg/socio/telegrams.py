@@ -34,6 +34,12 @@ class Telegrams(Module):
         self.rhook("ext-telegrams.send", self.telegrams_send, priv="logged")
         self.rhook("ext-telegrams.user", self.telegrams_user, priv="logged")
         self.rhook("socio.author_menu", self.socio_author_menu)
+        self.rhook("objclasses.list", self.objclasses_list)
+
+    def objclasses_list(self, objclasses):
+        objclasses["Telegram"] = (Telegram, TelegramList)
+        objclasses["TelegramUser"] = (TelegramUser, TelegramUserList)
+        objclasses["TelegramContragent"] = (TelegramContragent, TelegramContragentList)
 
     def menu(self, menu_lst):
         req = self.req()
