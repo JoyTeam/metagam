@@ -149,7 +149,7 @@ sql_table('modifiers',
 		'target_type' => [ -type=>'varchar(16)' ],
 		'target' => [ -type=>'varchar(32)' ],
 	], [
-		'index' => 'app,target',
+		'index' => 'app,target,till',
 		'index' => 'till',
 	]
 );

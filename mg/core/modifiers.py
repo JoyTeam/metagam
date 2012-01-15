@@ -290,9 +290,10 @@ class ModifiersDaemon(Daemon):
     def main(self):
         while not self.terminate:
             try:
-                for mod in self.sql_write.selectall_dict("select * from modifiers where ?>=till", self.now()):
+                now = self.now()
+                for mod in self.sql_write.selectall_dict("select target_type, target, app, cls from modifiers where ?>=till group by target_type, target, app, cls", now):
                     self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, retry_on_fail=True, app_tag=mod["app"], app_cls=mod["cls"], unique="mod-%s-%s" % (mod["app"], mod["target"]))
-                    self.sql_write.do("delete from modifiers where app=? and target=?", mod["app"], mod["target"])
+                    self.sql_write.do("delete from modifiers where app=? and target=? and ?>=till", mod["app"], mod["target"], now)
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(3)
