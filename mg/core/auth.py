@@ -185,7 +185,9 @@ class Sessions(Module):
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
             session.set("valid_till", "%020d" % (time.time() + 86400))
-            session.set("updated", self.now())
+            session.set("ip", req.remote_addr())
+            # Time in the past. This guarantees that get_session will properly update valid_till on the next get
+            session.set("updated", self.now(-3601))
             session.store()
         if cache:
             req._session = session
