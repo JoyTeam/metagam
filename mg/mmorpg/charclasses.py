@@ -264,9 +264,13 @@ class CharClasses(ConstructorModule):
                             if cls_id == cls_selected:
                                 # Storing new character class
                                 old_val = character.param(param["code"])
-                                character.set_param(param["code"], intz(cls_id))
-                                character.store()
-                                self.qevent("charclass-selected", char=character, cls=param["code"], oldval=old_val, newval=cls_id)
+                                try:
+                                    character.set_param(param["code"], intz(cls_id))
+                                except AttributeError:
+                                    pass
+                                else:
+                                    character.store()
+                                    self.qevent("charclass-selected", char=character, cls=param["code"], oldval=old_val, newval=cls_id)
                                 self.call("quest.check-redirects")
                                 self.call("web.redirect", "/charclass/select")
                     vars = {
