@@ -280,7 +280,7 @@ class ParamsAdmin(ConstructorModule):
                 param["code"],
                 htmlescape(param["name"]),
                 htmlescape(value),
-                self.call("%s.param-html" % self.kind, param, value),
+                htmlescape(self.call("%s.param-html" % self.kind, param, value)),
             ]
             if may_edit and param["type"] == 0:
                 rparam.append('<hook:admin.link href="%s/paramedit/%s/%s" title="%s" />' % (self.kind, obj.uuid, param["code"], self._("change")))
