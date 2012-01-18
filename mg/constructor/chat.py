@@ -8,6 +8,7 @@ import logging
 old_messages_limit = 10
 old_private_messages_limit = 100
 max_chat_message = 1000
+debug_chat_to_syslog = False
 
 re_chat_characters = re.compile(r'\[(chf|cht|ch):([a-f0-9]{32})\]')
 re_chat_command = re.compile(r'^\s*/(\S+)\s*(.*)')
@@ -1310,11 +1311,11 @@ class Chat(ConstructorModule):
             self.call("stream.packet", [ch for ch in channels], "chat", "character_update", character=self.roster_info(character))
 
     def debug_character(self, character, msg, **kwargs):
-        if self.debug_access(character):
-            # TODO: prepend 'character.tech_online and '
+        if (debug_chat_to_syslog or character.tech_online) and self.debug_access(character):
             if callable(msg):
                 msg = msg()
-            self.debug(msg)
+            if debug_chat_to_syslog:
+                self.debug(msg)
             if "indent" in kwargs:
                 indent = kwargs["indent"]
                 del kwargs["indent"]
