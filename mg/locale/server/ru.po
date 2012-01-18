@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-01-18 11:21+0300\n"
+"PO-Revision-Date: 2012-01-18 12:03+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -529,6 +529,9 @@ msgstr "Аутентификация"
 
 msgid "Authentication configuration"
 msgstr "Настройка аутентификации"
+
+msgid "Authentication documentation"
+msgstr "Документация на аутентификацию"
 
 msgid "Author"
 msgstr "Автор"
@@ -2444,6 +2447,9 @@ msgstr "Выдача и взятие денег"
 msgid "Giving items"
 msgstr "Выдача предметов"
 
+msgid "Giving permissions to users"
+msgstr "Выдача привилегий пользователям"
+
 msgid "Global settings"
 msgstr "Глобальные настройки"
 
@@ -4239,6 +4245,9 @@ msgstr "Привилегия с таким идентификатором уже
 
 msgid "Permissions"
 msgstr "Привилегии"
+
+msgid "Permissions documentation"
+msgstr "Документация на привилегии"
 
 msgid "Person"
 msgstr "Персона"
@@ -6183,9 +6192,6 @@ msgstr "Пользователь не найден"
 msgid "User permissions"
 msgstr "Привилегии пользователей"
 
-msgid "User permissions editor"
-msgstr "Редактор привилегий пользователей"
-
 msgid "User profiles"
 msgstr "Профили пользователей"
 
@@ -6484,6 +6490,10 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
+msgid "You can find detailed information on the authentication system in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication page</a> in the reference manual."
+msgstr "Подробную информацию о системе аутентификации вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/auth\" target=\"_blank\">Система аутентификации</a>."
+
+#, python-format
 msgid "You can find detailed information on the character classes system in the <a href=\"//www.%s/doc/character-classes\" target=\"_blank\">character classes page</a> in the reference manual."
 msgstr "Подробную информацию о системе классов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-classes\" target=\"_blank\">Расы и классы персонажей</a>."
 
@@ -6522,6 +6532,10 @@ msgstr "Подробную информацию о маркетинге в он�
 #, python-format
 msgid "You can find detailed information on the parameters system in the <a href=\"//www.%s/doc/parameters\" target=\"_blank\">parameters page</a> in the reference manual."
 msgstr "Подробную информацию о системе параметров вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/parameters\" target=\"_blank\">Система параметров</a>."
+
+#, python-format
+msgid "You can find detailed information on the permissions system in the <a href=\"//www.%s/doc/permissions\" target=\"_blank\">permissions page</a> in the reference manual."
+msgstr "Подробную информацию о системе привилегий вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/permissions\" target=\"_blank\">Система привилегий</a>."
 
 #, python-format
 msgid "You can find detailed information on the quests engine in the <a href=\"//www.%s/doc/quests\" target=\"_blank\">quests engine page</a> in the reference manual."
@@ -7757,6 +7771,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "User permissions editor"
+#~ msgstr "Редактор привилегий пользователей"
 #~ msgid "Validated %d objects"
 #~ msgstr "Проверено %d объектов"
 #~ msgid "Image format must be GIF"

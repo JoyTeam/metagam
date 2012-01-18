@@ -174,6 +174,11 @@ class Auth(ConstructorModule):
         self.rhook("library-page-multicharing.content", self.library_page_multicharing)
         self.rhook("auth.name-changed", self.name_changed)
         self.rhook("user.email", self.user_email, priority=10)
+        self.rhook("advice-admin-auth.index", self.advice_auth)
+
+    def advice_auth(self, hook, args, advice):
+        advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Permissions documentation"), "content": self._('You can find detailed information on the permissions system in the <a href="//www.%s/doc/permissions" target="_blank">permissions page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def user_email(self, user_obj):
         email = user_obj.get("email")

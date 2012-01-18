@@ -26,7 +26,7 @@ class PermissionsAdmin(Module):
     def menu_auth_index(self, menu):
         req = self.req()
         if req.has_access("permissions.editor"):
-            menu.append({"id": "auth/permissions-editor", "text": self._("User defined permissions"), "leaf": True, "order": 20})
+            menu.append({"id": "auth/permissions-editor", "text": self._("User defined permissions"), "leaf": True, "order": 13})
 
     def headmenu_permissions_editor(self, args):
         if args == "new":

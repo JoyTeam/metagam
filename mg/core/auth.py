@@ -940,7 +940,7 @@ class Interface(Module):
         self.call("web.response_global", form.html(vars), vars)
 
     def permissions_list(self, perms):
-        perms.append({"id": "permissions", "name": self._("User permissions editor")})
+        perms.append({"id": "permissions", "name": self._("Giving permissions to users")})
         perms.append({"id": "users", "name": self._("User profiles")})
         perms.append({"id": "change.passwords", "name": self._("Change passwords for other users")})
         perms.append({"id": "change.usernames", "name": self._("Change names for other users")})
