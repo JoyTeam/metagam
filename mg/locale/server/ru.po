@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-01-15 08:03+0300\n"
+"PO-Revision-Date: 2012-01-18 11:21+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -235,6 +235,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Ability to create administrator defined permissions for characters"
+msgstr "Возможность вручную создавать новые привилегии для персонажей"
 
 msgid "Ability to create special parameters of characters 'classes' and require player to select a class on character creation"
 msgstr "Возможность создавать специальные параметры персонажей - \"классы\" - и требовать от игрока выбирать класс при создании персонажа"
@@ -465,6 +468,9 @@ msgstr "Вы уверены, что хотите удалить эту стра�
 
 msgid "Are you sure want to delete this parameter?"
 msgstr "Вы уверены, что хотите удалить этот параметр?"
+
+msgid "Are you sure want to delete this permission?"
+msgstr "Вы уверены, что хотите удалить эту привилегию?"
 
 msgid "Are you sure want to delete this popup menu?"
 msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
@@ -1758,6 +1764,9 @@ msgstr "Редактирование"
 msgid "Editor"
 msgstr "Редактор"
 
+msgid "Editor of user defined permissions"
+msgstr "Редактор привилегий, определяемых пользователем"
+
 msgid "Email bulk sending"
 msgstr "Отправка e-mail-рассылок"
 
@@ -2588,6 +2597,9 @@ msgstr "Id"
 
 msgid "Identifer 'new' is reserved"
 msgstr "Идентификатор \"new\" зарезервирован"
+
+msgid "Identifier"
+msgstr "Идентификатор"
 
 msgid "Identifier must start with 'u_'"
 msgstr "Идентификатор должен начинаться с 'u_'"
@@ -3786,6 +3798,9 @@ msgstr "Новый параметр"
 msgid "New password"
 msgstr "Новый пароль"
 
+msgid "New permission"
+msgstr "Новая привилегия"
+
 msgid "New popup menu"
 msgstr "Новое выпадающее меню"
 
@@ -4209,6 +4224,18 @@ msgstr "Период (в секундах)"
 
 msgid "Permission"
 msgstr "Разрешение"
+
+msgid "Permission identifier (u_...)"
+msgstr "Идентификатор привилегии (u_...)"
+
+msgid "Permission identifier must start with 'u_' prefix. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор привилегии должен начинаться с \"u_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Permission name"
+msgstr "Название привилегии"
+
+msgid "Permission with the same identifier already exists"
+msgstr "Привилегия с таким идентификатором уже существует"
 
 msgid "Permissions"
 msgstr "Привилегии"
@@ -6135,6 +6162,9 @@ msgstr "Пользователь '{user}' имеет пароль '{password}'\n
 msgid "User activation"
 msgstr "Активация пользователя"
 
+msgid "User defined permissions"
+msgstr "Привилегии, определяемые пользователем"
+
 msgid "User has not password"
 msgstr "У пользователя нет пароля"
 
@@ -7258,6 +7288,9 @@ msgstr "в процессе"
 msgid "people"
 msgstr "люди"
 
+msgid "permission///Name"
+msgstr "Название"
+
 msgid "pin"
 msgstr "закрепить"
 
@@ -8158,8 +8191,6 @@ msgstr "{price} на {period_a}"
 #~ msgstr "Изображение должно быть 100x100"
 #~ msgid "Exit"
 #~ msgstr "Выход"
-#~ msgid "permissions"
-#~ msgstr "привилегии"
 #~ msgid "Enter your email address"
 #~ msgstr "Введите ваш адрес e-mail"
 #~ msgid "Online games constructor"

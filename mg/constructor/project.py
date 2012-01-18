@@ -79,6 +79,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.core.sites.Favicon"])
             if self.conf("module.charclasses"):
                 lst.extend(["mg.mmorpg.charclasses.CharClasses"])
+            if self.conf("module.permissions-editor"):
+                lst.extend(["mg.core.permissions_editor.Permissions"])
         return lst
 
     def modules_list(self, modules):
@@ -116,6 +118,11 @@ class ConstructorProject(Module):
             "id": "charclasses",
             "name": self._("Races and classes"),
             "description": self._("Ability to create special parameters of characters 'classes' and require player to select a class on character creation"),
+        })
+        modules.append({
+            "id": "permissions-editor",
+            "name": self._("User defined permissions"),
+            "description": self._("Ability to create administrator defined permissions for characters"),
         })
 
     def project_title(self):
