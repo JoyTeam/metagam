@@ -62,7 +62,7 @@ class Constructor(Module):
             "mg.core.money.WebMoney", "mg.core.money.WebMoneyAdmin",
             "mg.constructor.reqauction.ReqAuction",
             "mg.core.sites.Favicon", "mg.core.sites.FaviconAdmin",
-            "mg.core.permissions_editor.Permissions",
+            "mg.core.permissions_editor.Permissions", "mg.core.permissions_editor.PermissionsAdmin",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
