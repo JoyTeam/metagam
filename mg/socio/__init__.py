@@ -1411,7 +1411,7 @@ class Forum(Module):
         }
         if author is not None:
             author_name = author.get("name")
-            author_html = htmlescape(author_name.encode("utf-8"))
+            author_html = htmlescape(author_name.encode("utf-8")) if author_name else author.uuid
             topic.set("author", author.uuid)
             topic.set("author_name", author_name)
             topic.set("author_html", author_html)
@@ -1565,7 +1565,7 @@ class Forum(Module):
             }
             if author is not None:
                 author_name = author.get("name")
-                author_html = htmlescape(author_name.encode("utf-8"))
+                author_html = htmlescape(author_name.encode("utf-8")) if author_name else author.uuid
                 post.set("author", author.uuid)
                 post.set("author_name", author_name)
                 post.set("author_html", author_html)
