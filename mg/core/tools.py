@@ -4,6 +4,7 @@ import re
 import cgi
 import datetime
 import calendar
+import logging
 
 re_color = re.compile(r'^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$', re.IGNORECASE)
 re_human_time = re.compile(r'^(\d\d)\.(\d\d)\.(\d\d\d\d)(?:| (\d\d:\d\d:\d\d))$')
@@ -101,6 +102,7 @@ def htmlescape(val):
     if val is None:
         return ""
     if type(val) != type("") and type(val) != unicode:
+        logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
         val = str(val)
     val = string.replace(val, "&", "&amp;")
     val = string.replace(val, '"', "&quot;")
@@ -112,6 +114,7 @@ def htmldecode(val):
     if val is None:
         return ""
     if type(val) != type("") and type(val) != unicode:
+        logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
         val = str(val)
     val = string.replace(val, "&quot;", '"')
     val = string.replace(val, "&lt;", "<")
