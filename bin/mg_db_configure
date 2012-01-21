@@ -14,7 +14,7 @@ key_cache_size = 50000
 key_cache_save_period_in_seconds = 3600
 memtable_throughput_in_mb = 10
 memtable_operations_in_millions = 100000 / 1e6
-gc_grace_seconds = 86400 * 2
+gc_grace_seconds = 86400 * 10
 min_compaction_threshold = 2
 max_compaction_threshold = 4
 
