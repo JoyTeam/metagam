@@ -205,7 +205,7 @@ class CharQuest(object):
         self.quests.store()
 
     def __str__(self):
-        return "%s.[quest %s]" % (htmlescape(self.quests.char), self.qid)
+        return u"%s.[quest %s]" % (htmlescape(self.quests.char), self.qid)
 
     __repr__ = __str__
 

@@ -172,6 +172,6 @@ class Location(Module):
         return {"loc": self}
 
     def __str__(self):
-        return "[loc %s]" % self.name
+        return u"[loc %s]" % self.name
     
     __repr__ = __str__
