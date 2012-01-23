@@ -51,7 +51,7 @@ class ScriptUnusedError(ScriptError):
 # significance of left-associative precedence.
 
 class PQuestionOp(Parsing.Precedence):
-    "%left pQuestionOp"
+    "%right pQuestionOp"
 class TokenQuestion(Parsing.Token):
     "%token question [pQuestionOp]"
 class TokenColon(Parsing.Token):
