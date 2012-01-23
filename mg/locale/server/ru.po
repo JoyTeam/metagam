@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-01-18 12:03+0300\n"
+"PO-Revision-Date: 2012-01-23 16:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -481,6 +481,9 @@ msgstr "Вы уверены, что хотите удалить этот кве�
 msgid "Are you sure want to delete this smile?"
 msgstr "Вы уверены, что хотите удалить этот смайлик?"
 
+msgid "Are you sure want to delete this special function?"
+msgstr "Вы уверены, что хотите удалить эту спецфункцию?"
+
 msgid "Are you sure want to delete this state?"
 msgstr "Вы уверены, что хотите удалить это состояние?"
 
@@ -553,6 +556,13 @@ msgstr "Автопродление: включено"
 
 msgid "Availability of class variant '{variant}' in class '{cls}'"
 msgstr "Доступность варианта \"{variant}\" класса \"{cls}\""
+
+#, python-format
+msgid "Availability of location special function '%s'"
+msgstr "Доступность спецфункции \"%s\""
+
+msgid "Availability of the function for the character"
+msgstr "Доступность функции для персонажа"
 
 msgid "Availability of transition between locations"
 msgstr "Доступность перехода между локациями"
@@ -927,6 +937,9 @@ msgstr "Иконка инфы персонажа"
 
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
+
+msgid "Character is outside of any locations"
+msgstr "Персонаж находится вне локаций"
 
 msgid "Character name"
 msgstr "Имя персонажа"
@@ -1491,6 +1504,9 @@ msgstr "Склонения"
 
 msgid "Default"
 msgstr "По умолчанию"
+
+msgid "Default special function"
+msgstr "Спецфункция по умолчанию"
 
 msgid "Default value"
 msgstr "Значение по умолчанию"
@@ -2258,6 +2274,13 @@ msgstr "Полное название"
 
 msgid "Full title of your game (ex: Eternal Forces: call of daemons)"
 msgstr "Полное название вашей игры (напр: Вечные Силы: зов демонов)"
+
+#, python-format
+msgid "Function %s implementation"
+msgstr "Реализация функции %s"
+
+msgid "Function {func} is not implemented in location {loc}"
+msgstr "Функция {func} не реализована в локации {loc}"
 
 msgid "Functions"
 msgstr "Функции"
@@ -3263,6 +3286,9 @@ msgstr "Редактор локаций"
 msgid "Locations parameters"
 msgstr "Параметры локаций"
 
+msgid "Locations special functions"
+msgstr "Спецфункции локаций"
+
 msgid "Lock ID"
 msgstr "ID блокировки"
 
@@ -3471,6 +3497,9 @@ msgstr "Меню"
 
 msgid "Menu item"
 msgstr "Пункт меню"
+
+msgid "Menu title"
+msgstr "Заголовок в меню"
 
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
@@ -3750,6 +3779,9 @@ msgstr "Новый адрес e-mail"
 msgid "New field"
 msgstr "Новое поле"
 
+msgid "New function"
+msgstr "Новая функция"
+
 msgid "New image"
 msgstr "Новое изображение"
 
@@ -3891,6 +3923,9 @@ msgstr "Нет данных"
 
 msgid "No expiration"
 msgstr "Без срока годности"
+
+msgid "No functions in the location"
+msgstr "У локации нет функций"
 
 msgid "No items of such type"
 msgstr "Нет предметов данного типа"
@@ -5383,6 +5418,12 @@ msgstr "Баварские фермеры отказались уступать 
 msgid "Space"
 msgstr "Космос"
 
+msgid "Special function identifier must start with 'u_' and contain latin letters, digits and underscores only"
+msgstr "Идентификатор спецфункции должен начинаться с \"u_\" и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Special functions"
+msgstr "Спецфункции"
+
 msgid "Specific price"
 msgstr "Особенная цена"
 
@@ -6260,6 +6301,9 @@ msgstr "Просмотр инвентаря"
 
 msgid "View location parameters"
 msgstr "Открыть параметры локации"
+
+msgid "View location special functions"
+msgstr "Открыть спецфункции локации"
 
 msgid "Viewing"
 msgstr "Просмотр"
