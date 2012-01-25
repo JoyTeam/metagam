@@ -22,9 +22,10 @@ new Ext.TabPanel({
 	items: [[%foreach table in tables%]{
 		title: '[%table.title%]',
 		contentEl: 'tbl-[%table.type%]',
+		autoScroll: true,
+		bodyStyle: 'padding: 10px',
 		tabId: '[%table.type%]'
 	}[%unless table.lst%],[%end%][%end%]],
-	bodyStyle: 'padding: 10px',
 	listeners: {
 		tabchange: function(panel, tab) {
 			document.location.replace(base_url + '#auth/user-dashboard/[%user.uuid%]?active_tab=' + tab.tabId);
