@@ -103,7 +103,7 @@ def htmlescape(val):
         return ""
     if type(val) != type("") and type(val) != unicode:
         logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
-        val = str(val)
+        val = unicode(val)
     val = string.replace(val, "&", "&amp;")
     val = string.replace(val, '"', "&quot;")
     val = string.replace(val, "<", "&lt;")
@@ -115,7 +115,7 @@ def htmldecode(val):
         return ""
     if type(val) != type("") and type(val) != unicode:
         logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
-        val = str(val)
+        val = unicode(val)
     val = string.replace(val, "&quot;", '"')
     val = string.replace(val, "&lt;", "<")
     val = string.replace(val, "&gt;", ">")
