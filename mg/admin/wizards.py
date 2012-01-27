@@ -125,7 +125,7 @@ class Wizards(Module):
     def wizards_list(self):
         app = self.app()
         list = self.objlist(WizardConfigList, query_index="all")
-        list.load()
+        list.load(silent=True)
         wizs = []
         for config in list:
             mod = config.get("mod")
@@ -138,7 +138,7 @@ class Wizards(Module):
     def wizards_find(self, tag):
         app = self.app()
         list = self.objlist(WizardConfigList, query_index="tag", query_equal=tag)
-        list.load()
+        list.load(silent=True)
         wizs = []
         for config in list:
             mod = config.get("mod")
