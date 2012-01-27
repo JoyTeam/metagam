@@ -69,7 +69,8 @@ class LocationsAdmin(ConstructorModule):
         objclasses["LocParams"] = (DBLocParams, DBLocParamsList)
 
     def child_modules(self):
-        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams"]
+        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams",
+            "mg.mmorpg.locfunctions.LocationFunctions"]
         return lst
 
     def menu_root_index(self, menu):
@@ -237,6 +238,7 @@ class LocationsAdmin(ConstructorModule):
                         "loc": db_loc.uuid,
                         "LocationParams": self._("View location parameters"),
                     })})
+                self.call("admin-locations.render-links", location, fields)
                 # location preview
                 html = self.call("admin-locations.render", location)
                 if html:
@@ -581,7 +583,8 @@ class Locations(ConstructorModule):
         self.rhook("locations.character_before_set", self.before_set)
         self.rhook("locations.character_set", self.lset)
         self.rhook("locations.character_after_set", self.after_set)
-        self.rhook("ext-location.index", self.ext_location, priv="logged")
+        self.rhook("locfunctions.list", self.locfunctions_list)
+        self.rhook("ext-location.show", self.ext_location_show, priv="logged")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("ext-location.move", self.ext_move, priv="logged")
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -644,17 +647,21 @@ class Locations(ConstructorModule):
     def after_set(self, character, old_location, instance):
         self.call("chat.channel-join", character, self.call("chat.channel-info", "loc"))
 
-    def ext_location(self):
+    def locfunctions_list(self, location, funcs):
+        funcs.append({
+            "id": "show",
+            "order": -10,
+            "title": self._("Location"),
+            "available": 1,
+        })
+
+    def ext_location_show(self):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         location = character.location
         if location is None:
-            lst = self.objlist(DBLocationList, query_index="all")
-            if len(lst):
-                self.call("main-frame.error", '%s <a href="/admin#locations/config" target="_blank">%s</a>' % (self._("Starting location not configured."), self._("Open locations configuration")))
-            else:
-                self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
+            self.call("game.internal-error", self._("Character is outside of any locations"))
         vars = {
             "location": {
                 "id": location.uuid,
@@ -670,6 +677,7 @@ class Locations(ConstructorModule):
             })
         vars["transitions"] = transitions
         design = self.design("gameinterface")
+        self.call("locfunctions.menu", character, vars)
         html = self.call("design.parse", design, "location-layout.html", None, vars)
         self.call("game.response_internal", "location.html", vars, html)
 
