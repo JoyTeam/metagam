@@ -428,7 +428,7 @@ class Interface(ConstructorModule):
             return None
         # Primary image
         image = btn.get("image")
-        if not (image.startswith("http://") or image.startswith("//")):
+        if image and (not (image.startswith("http://") or image.startswith("//"))):
             # If some module is disabled we should hide
             # all its buttons
             if btn["id"] not in generated:
