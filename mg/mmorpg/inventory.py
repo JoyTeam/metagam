@@ -1806,6 +1806,16 @@ class Inventory(ConstructorModule):
         self.rhook("item-types.params-owner-important", self.params_generation, priority=-10)
         self.rhook("item-types.params-owner-all", self.params_generation, priority=-10)
         self.rhook("item-types.params-public", self.params_generation, priority=-10)
+        self.rhook("modules.list", self.modules_list)
+        self.rhook("item-types.all", self.item_types_all)
+
+    def modules_list(self, modules):
+        modules.append({
+            "id": "shops",
+            "name": self._("Shops"),
+            "description": self._("Game interface for buying and selling ingame goods"),
+            "parent": "inventory",
+        })
 
     def max_cells(self):
         val = self.conf("inventory.max-cells")
@@ -1825,7 +1835,10 @@ class Inventory(ConstructorModule):
             raise Hooks.Return(val)
 
     def child_modules(self):
-        return ["mg.mmorpg.invparams.ItemTypeParams", "mg.mmorpg.inventory.InventoryAdmin", "mg.mmorpg.inventory.InventoryLibrary"]
+        modules = ["mg.mmorpg.invparams.ItemTypeParams", "mg.mmorpg.inventory.InventoryAdmin", "mg.mmorpg.inventory.InventoryLibrary"]
+        if self.conf("module.shops"):
+            modules.append("mg.mmorpg.shops.Shops")
+        return modules
 
     def inventory_get(self, owtype, uuid):
         return MemberInventory(self.app(), owtype, uuid)
@@ -2116,6 +2129,28 @@ class Inventory(ConstructorModule):
                 "name": '<span class="item-types-page-price-name">%s</span>' % self._("Price"),
                 "value": '<span class="item-types-page-price-value">%s</span>' % value,
             })
+
+    def item_types_all(self, load_item_types=True, load_params=True):
+        lst = self.objlist(DBItemTypeList, query_index="all")
+        return self.item_types_load(lst.uuids())
+
+    def item_types_load(self, uuids, load_item_types=True, load_params=True):
+        lst = self.objlist(DBItemTypeList, uuids)
+        lst.load(silent=True)
+        if load_params:
+            lst_params = self.objlist(DBItemTypeParamsList, uuids)
+            lst_params.load(silent=True)
+            lst_params = dict([(ent.uuid, ent) for ent in lst_params])
+        result = []
+        for db_item_type in lst:
+            if load_params:
+                db_params = lst_params.get(db_item_type.uuid)
+                if db_params is None:
+                    db_params = self.obj(DBItemTypeParams, db_item_type.uuid, data={})
+            else:
+                db_params = None
+            result.append(self.item_type(db_item_type.uuid, db_item_type=db_item_type, db_params=db_params))
+        return result
 
 class InventoryLibrary(ConstructorModule):
     def register(self):

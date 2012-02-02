@@ -5,6 +5,7 @@ import re
 re_valid_identifier = re.compile(r'^u_[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_specfunc_arg = re.compile(r'^([0-9a-f]+)(?:|/(.+))$')
 re_del = re.compile(r'del/(.+)')
+re_action = re.compile(r'^(u_[a-z_][a-z0-9_]*)/action/([a-z0-9_]+)(?:|/(.+))$', re.IGNORECASE)
 
 class LocationFunctions(ConstructorModule):
     def register(self):
@@ -32,7 +33,7 @@ class LocationFunctions(ConstructorModule):
         funcs = []
         for fn_id in self.conf("locfunc-%s.list" % loc.uuid, []):
             funcs.append({
-                "id": fn_id
+                "id": fn_id,
             })
         self.call("locfunctions.list", loc, funcs)
         for func in funcs:
@@ -114,20 +115,17 @@ class LocationFunctions(ConstructorModule):
 class LocationFunctionsAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("admin-locations.render-links", self.render_links)
         self.rhook("ext-admin-locations.specfunc", self.admin_specfunc, priv="locations.specfunc")
         self.rhook("headmenu-admin-locations.specfunc", self.headmenu_specfunc)
+        self.rhook("admin-locations.links", self.links)
+
+    def links(self, location, links):
+        req = self.req()
+        if req.has_access("locations.specfunc"):
+            links.append({"hook": "locations/specfunc/%s" % location.uuid, "text": self._("Special functions"), "order": 20})
         
     def permissions_list(self, perms):
         perms.append({"id": "locations.specfunc", "name": self._("Locations special functions")})
-
-    def render_links(self, loc, fields):
-        req = self.req()
-        if req.has_access("locations.specfunc"):
-            fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/specfunc.html", {
-                "loc": loc.uuid,
-                "LocationSpecFuncs": self._("View location special functions"),
-            })})
 
     def headmenu_specfunc(self, args):
         m = re_specfunc_arg.match(args)
@@ -136,10 +134,28 @@ class LocationFunctionsAdmin(ConstructorModule):
             if cmd == "new":
                 return [self._("New function"), "locations/specfunc/%s" % loc_id]
             elif cmd:
-                loc = self.location(loc_id)
-                for func in self.call("locfunctions.functions", None, loc):
-                    if func["id"] == cmd:
-                        return [htmlescape(func["title"]), "locations/specfunc/%s" % loc_id]
+                m = re_action.match(cmd)
+                if m:
+                    fn_id, action, args = m.group(1, 2, 3)
+                    loc = self.location(loc_id)
+                    for func in self.call("locfunctions.functions", None, loc):
+                        if func["id"] == fn_id:
+                            actions = []
+                            self.call("locfunctype-%s.actions" % func["tp"], func, actions)
+                            for act in actions:
+                                if action == act["id"]:
+                                    headmenu = self.call("locfunctype-%s.headmenu-%s" % (func["tp"], action), func, args)
+                                    if headmenu is None:
+                                        return [self._("specfunc///{action_name} of {func_title}").format(action_name=action, func_title=htmlescape(func["title"])), "locations/specfunc/%s" % loc_id]
+                                    elif type(headmenu) == list:
+                                        return [headmenu[0], "locations/specfunc/%s/%s/action/%s" % (loc_id, fn_id, headmenu[1])]
+                                    else:
+                                        return [headmenu, "locations/specfunc/%s" % loc_id]
+                else:
+                    loc = self.location(loc_id)
+                    for func in self.call("locfunctions.functions", None, loc):
+                        if func["id"] == cmd:
+                            return [htmlescape(func["title"]), "locations/specfunc/%s" % loc_id]
         return [self._("Special functions"), "locations/editor/%s" % htmlescape(args)]
 
     def admin_specfunc(self):
@@ -169,9 +185,17 @@ class LocationFunctionsAdmin(ConstructorModule):
                 config.set("locfunc-%s.list" % loc.uuid, lst)
                 config.store()
                 self.call("admin.redirect", "locations/specfunc/%s" % loc.uuid)
+            m = re_action.match(cmd)
+            if m:
+                fn_id, action, args = m.group(1, 2, 3)
+                for fn in funcs:
+                    if fn["id"] == fn_id:
+                        return self.call("locfunctype-%s.action-%s" % (fn["tp"], action), "%s-%s" % (loc.uuid, fn_id), "locations/specfunc/%s/%s/action" % (loc.uuid, fn_id), fn, args, check_priv=True)
+                self.call("admin.redirect", "locations/specfunc/%s" % loc.uuid)
             if cmd == "new":
                 func = {
                     "id": "u_",
+                    "custom": True,
                 }
                 max_order = None
                 for fn in funcs:
@@ -184,6 +208,12 @@ class LocationFunctionsAdmin(ConstructorModule):
                     if fn["id"] == fn_id:
                         func = fn.copy()
                         break
+            # Available special function types
+            if func.get("custom"):
+                function_types = []
+                self.call("locfunctypes.list", function_types)
+                valid_function_types = set([code for code, desc in function_types])
+            # Processing POST
             if req.ok():
                 errors = {}
                 # id
@@ -209,10 +239,20 @@ class LocationFunctionsAdmin(ConstructorModule):
                 func["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
                 # default
                 func["default"] = True if req.param("default") else False
+                # tp
+                if func.get("custom"):
+                    tp = req.param("v_tp")
+                    if tp not in valid_function_types:
+                        errors["v_tp"] = self._("This field is mandatory")
+                    else:
+                        func["tp"] = tp
+                        self.call("locfunctype-%s.validate" % tp, func, errors)
                 # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 config = self.app().config_updater()
+                if func.get("custom"):
+                    self.call("locfunctype-%s.store" % tp, func, errors)
                 if cmd == "new":
                     lst = self.conf("locfunc-%s.list" % loc.uuid, [])
                     lst.append(fn_id)
@@ -229,21 +269,41 @@ class LocationFunctionsAdmin(ConstructorModule):
             if cmd == "new":
                 fields.append({"name": "ident", "label": self._("Identifier"), "value": func.get("id")})
             fields.append({"name": "order", "label": self._("Sorting order"), "value": func.get("order")})
+            fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
             fields.append({"name": "title", "label": self._("Menu title"), "value": func.get("title")})
             fields.append({"name": "available", "label": self._("Availability of the function for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", fn.get("available"))})
-            fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
+            if func.get("custom"):
+                fields.append({"type": "header", "html": self._("Special function settings")})
+                function_types.insert(0, ("", ""))
+                fields.append({"name": "tp", "label": self._("Function"), "type": "combo", "values": function_types, "value": func.get("tp")})
+                self.call("locfunctypes.form", fields, func)
             self.call("admin.form", fields=fields)
         rows = []
         for func in funcs:
+            actions = []
+            if func.get("custom"):
+                self.call("locfunctype-%s.actions" % func["tp"], func, actions)
+                for act in actions:
+                    act["hook"] = "locations/specfunc/%s/%s/action/%s" % (loc.uuid, func["id"], act["id"])
+            actions.insert(0, {
+                "hook": "locations/specfunc/%s/%s" % (loc.uuid, func["id"]),
+                "text": self._("edit"),
+            })
+            actions = [u'<hook:admin.link href="%s" title="%s" />' % (act["hook"], act["text"]) for act in actions]
             rows.append([
                 func["id"],
                 htmlescape(func["title"]) + (u" (%s)" % self._("default") if func.get("default") else u""),
                 func.get("order", 0),
-                u'<hook:admin.link href="locations/specfunc/%s/%s" title="%s" />' % (loc.uuid, func["id"], self._("edit")),
-                u'<hook:admin.link href="locations/specfunc/%s/del/%s" title="%s" confirm="%s" />' % (loc.uuid, func["id"], self._("delete"), self._("Are you sure want to delete this special function?")) if func.get("deletable") else None,
+                '<br />'.join(actions),
+                u'<hook:admin.link href="locations/specfunc/%s/del/%s" title="%s" confirm="%s" />' % (loc.uuid, func["id"], self._("delete"), self._("Are you sure want to delete this special function?")) if func.get("custom") else None,
             ])
+        links = []
+        self.call("admin-locations.render-links", loc, links)
         vars = {
             "tables": [
+                {
+                    "links": links,
+                },
                 {
                     "links": [
                         {"hook": "locations/specfunc/%s/new" % loc.uuid, "text": self._("New function"), "lst": True},
@@ -252,7 +312,7 @@ class LocationFunctionsAdmin(ConstructorModule):
                         self._("Code"),
                         self._("Title"),
                         self._("Order"),
-                        self._("Editing"),
+                        self._("Actions"),
                         self._("Deletion"),
                     ],
                     "rows": rows,
