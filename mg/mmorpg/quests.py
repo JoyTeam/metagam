@@ -1342,7 +1342,7 @@ class Quests(ConstructorModule):
                                                 if it_obj.valid():
                                                     name = it_obj.name
                                                 else:
-                                                    name = "??? (%s)" % item_type
+                                                    name = "??? (%s)" % dna
                                                 if quantity is None:
                                                     self.call("debug-channel.character", char, self._("taking all ({quantity}) items with exact DNA '{dna}'").format(dna=name, quantity=deleted or 0), cls="quest-action", indent=indent+2)
                                                 else:
