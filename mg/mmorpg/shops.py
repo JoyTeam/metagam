@@ -1,5 +1,8 @@
 from mg.constructor import *
 
+default_sell_price = ["glob", "price"]
+default_buy_price = ["*", ["glob", "price"], 0.1]
+
 class Shops(ConstructorModule):
     def register(self):
         self.rhook("locfunctypes.list", self.locfunctypes_list)
@@ -14,8 +17,8 @@ class ShopsAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("item-categories.list", self.item_categories_list)
-#        self.rhook("locfunctypes.form", self.form_render)
-#        self.rhook("locfunctype-shop.store", self.form_store)
+        self.rhook("locfunctypes.form", self.form_render)
+        self.rhook("locfunctype-shop.store", self.form_store)
         self.rhook("locfunctype-shop.actions", self.actions)
         self.rhook("locfunctype-shop.action-assortment", self.assortment, priv="shops.config")
         self.rhook("locfunctype-shop.headmenu-assortment", self.headmenu_assortment)
@@ -26,16 +29,21 @@ class ShopsAdmin(ConstructorModule):
     def item_categories_list(self, catgroups):
         catgroups.append({"id": "shops", "name": self._("Shops"), "order": 15, "description": self._("For goods being sold in shops")})
 
-#    def form_render(self, fields, func):
-#        fields.append({"name": "shop_sell", "type": "checkbox", "label": self._("This shop can sell goods"), "checked": func.get("shop_sell"), "condition": "[tp]=='shop'"})
-#        fields.append({"name": "shop_buy", "type": "checkbox", "label": self._("This shop can buy goods"), "checked": func.get("shop_buy"), "condition": "[tp]=='shop'", "inline": True})
-#        fields.append({"name": "shop_closed", "type": "checkbox", "label": self._("Closed commodity circulation (shop has its own store and it sells goods bought from users only)"), "checked": func.get("shop_closed"), "condition": "[tp]=='shop'"})
+    def form_render(self, fields, func):
+        fields.append({"name": "shop_sell_price", "label": self._("Sell price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_sell_price", default_sell_price)), "condition": "[tp]=='shop'"})
+        fields.append({"name": "shop_buy_price", "label": self._("Buy price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_buy_price", default_buy_price)), "condition": "[tp]=='shop'"})
 
-#    def form_store(self, func, errors):
-#        req = self.req()
-#        func["shop_sell"] = True if req.param("shop_sell") else False
-#        func["shop_buy"] = True if req.param("shop_buy") else False
-#        func["shop_closed"] = True if req.param("shop_closed") else False
+    def form_store(self, func, errors):
+        req = self.req()
+        char = self.character(req.user())
+        currencies = {}
+        self.call("currencies.list", currencies)
+        if currencies:
+            currency = currencies.keys()[0]
+        else:
+            currency = "GOLD"
+        func["shop_sell_price"] = self.call("script.admin-expression", "shop_sell_price", errors, globs={"char": char, "price": 1, "currency": currency})
+        func["shop_buy_price"] = self.call("script.admin-expression", "shop_buy_price", errors, globs={"char": char, "price": 1, "currency": currency})
 
     def actions(self, func, actions):
         req = self.req()
@@ -58,7 +66,7 @@ class ShopsAdmin(ConstructorModule):
             currencies = {}
             self.call("currencies.list", currencies)
             currencies_list = [(code, info["name_plural"]) for code, info in currencies.iteritems()]
-            currencies_list.insert(0, (None, self._("currency///Not specified")))
+            currencies_list.insert(0, (None, self._("currency///Auto")))
             item_types = []
             for item_type in self.item_types_all():
                 cat = item_type.get("cat-shops")
