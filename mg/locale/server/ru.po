@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-02 17:13+0300\n"
+"PO-Revision-Date: 2012-02-06 12:15+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1403,6 +1403,15 @@ msgstr "Описание валюты"
 msgid "Currency editor"
 msgstr "Редактор валют"
 
+msgid "Currency exchange"
+msgstr "Обмен валюты"
+
+msgid "Currency exchange rates"
+msgstr "Курсы обмена валют"
+
+msgid "Currency exchange rates configuration"
+msgstr "Настройка курсов обмена валют"
+
 msgid "Currency icon (approx 16x16)"
 msgstr "Иконка для валюты (примерно 16x16)"
 
@@ -2109,6 +2118,9 @@ msgstr "Всё, что не относится к игре: юмор, форум
 msgid "Exchange rate"
 msgstr "Курс обмена"
 
+msgid "Exchange rates stored"
+msgstr "Курсы обмена сохранены"
+
 msgid "Exchange to roubles"
 msgstr "Цена в рублях"
 
@@ -2655,6 +2667,9 @@ msgstr "Идентификатор должен начинаться с 'u_'"
 msgid "Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор должен начинаться с \"u_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
+msgid "If a price is not specified balance price will be used. If currency is specified but price not then the balance price will be converted to the currency given"
+msgstr "Если цена не указана, то будет использована балансировочная цена. Если валюта указана, а цена нет, то балансировочная цена будет сконвертирована в заданную валюту"
+
 msgid "If parameter is modified in the item instance show 'base value + modifier' instead of 'modified value'"
 msgstr "Если параметр модифицирован у экземпляра предмета, то показывать \"базовое значение + модификатор\" вместо \"модифицированного значения\""
 
@@ -2815,6 +2830,9 @@ msgstr "Сообщения интерфейса"
 
 msgid "Interface panels"
 msgstr "Панели интерфейса"
+
+msgid "Interfaces for defining currency exchange rates"
+msgstr "Интерфейсы для задания курсов обмена валют"
 
 msgid "Interval"
 msgstr "Интервал"
@@ -3505,6 +3523,10 @@ msgstr "Максимальный размер - 460x880"
 msgid "Maximal supported precision is 4"
 msgstr "Максимальная поддерживаемая точность - 4"
 
+#, python-format
+msgid "Maximal value is %f"
+msgstr "Минимальное значение - %f"
+
 msgid "May enter even closed game"
 msgstr "Может входить даже в закрытую игру"
 
@@ -3609,6 +3631,10 @@ msgstr "Минимальное значение - 1"
 #, python-format
 msgid "Minimal value is %d"
 msgstr "Минимальное значение - %d"
+
+#, python-format
+msgid "Minimal value is %f"
+msgstr "Минимальное значение - %f"
 
 msgid "Minimal value is 1"
 msgstr "Минимальное значение - 1"
@@ -4779,6 +4805,9 @@ msgstr "Причина отказа"
 msgid "Relative height"
 msgstr "Относительная высота"
 
+msgid "Relative value of {code} ({name})"
+msgstr "Относительная ценность {code} ({name})"
+
 msgid "Relative width"
 msgstr "Относительная ширина"
 
@@ -5181,6 +5210,9 @@ msgstr "Магазин"
 
 msgid "Shop buys these items"
 msgstr "Магазин скупает эти предметы"
+
+msgid "Shop prices"
+msgstr "Цены магазина"
 
 msgid "Shop sells these items"
 msgstr "Магазин продаёт эти предметы"
@@ -5855,6 +5887,9 @@ msgstr "Это очень длинный текст, в котором вас п
 
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
+
+msgid "This is not a number"
+msgstr "Это не число"
 
 msgid "This is the public offer"
 msgstr "Это публичная оферта"
@@ -7010,6 +7045,9 @@ msgstr "конструктор"
 
 msgid "created///by"
 msgstr "Создано"
+
+msgid "currency///Not specified"
+msgstr "Не задана"
 
 msgid "database///DB"
 msgstr "БД"
