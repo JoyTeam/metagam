@@ -58,6 +58,7 @@ class ShopsAdmin(ConstructorModule):
             currencies = {}
             self.call("currencies.list", currencies)
             currencies_list = [(code, info["name_plural"]) for code, info in currencies.iteritems()]
+            currencies_list.insert(0, (None, self._("currency///Not specified")))
             item_types = []
             for item_type in self.item_types_all():
                 cat = item_type.get("cat-shops")
@@ -80,12 +81,13 @@ class ShopsAdmin(ConstructorModule):
                 fields.append({"type": "header", "html": htmlescape(item_type.name)})
                 fields.append({"type": "checkbox", "name": "sell-%s" % uuid, "checked": settings.get("sell-%s" % uuid), "label": self._("Shop sells these items")})
                 fields.append({"type": "checkbox", "name": "buy-%s" % uuid, "checked": settings.get("buy-%s" % uuid), "label": self._("Shop buys these items"), "inline": True})
+                fields.append({"name": "sell-store-%s" % uuid, "type": "checkbox", "checked": settings.get("sell-store-%s" % uuid), "label": self._("Sell from the store only"), "condition": "[sell-%s]" % uuid})
                 fields.append({"name": "sell-price-%s" % uuid, "value": settings.get("sell-price-%s" % uuid), "label": self._("Sell price"), "condition": "[sell-%s]" % uuid})
                 fields.append({"name": "sell-currency-%s" % uuid, "value": settings.get("sell-currency-%s" % uuid), "label": self._("Sell currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[sell-%s]" % uuid})
-                fields.append({"name": "sell-store-%s" % uuid, "type": "checkbox", "checked": settings.get("sell-store-%s" % uuid), "label": self._("Sell from the store only"), "condition": "[sell-%s]" % uuid})
+                fields.append({"name": "buy-store-%s" % uuid, "type": "checkbox", "checked": settings.get("buy-store-%s" % uuid), "label": self._("Put bought items to the store"), "condition": "[buy-%s]" % uuid})
                 fields.append({"name": "buy-price-%s" % uuid, "value": settings.get("buy-price-%s" % uuid), "label": self._("Buy price"), "condition": "[buy-%s]" % uuid})
                 fields.append({"name": "buy-currency-%s" % uuid, "value": settings.get("buy-currency-%s" % uuid), "label": self._("Buy currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[buy-%s]" % uuid})
-                fields.append({"name": "buy-store-%s" % uuid, "type": "checkbox", "checked": settings.get("buy-store-%s" % uuid), "label": self._("Put bought items to the store"), "condition": "[buy-%s]" % uuid})
+            self.call("admin.advice", {"title": self._("Shop prices"), "content": self._("If a price is not specified balance price will be used. If currency is specified but price not then the balance price will be converted to the currency given")})
             self.call("admin.form", fields=fields)
         rows = []
         for cat in categories:
