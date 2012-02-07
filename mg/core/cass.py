@@ -139,10 +139,10 @@ class Cassandra(object):
                             cfdef = CfDef()
                             cfdef.keyspace = self.keyspace
                             cfdef.name = family
-                            cfdef.key_cache_size = 50000
+                            cfdef.key_cache_size = 5000
                             cfdef.key_cache_save_period_in_seconds = 3600
-                            cfdef.memtable_throughput_in_mb = 10
-                            cfdef.memtable_operations_in_millions = 100000 / 1e6
+                            cfdef.memtable_throughput_in_mb = 1
+                            cfdef.memtable_operations_in_millions = 10000 / 1e6
                             cfdef.gc_grace_seconds = 86400 * 10
                             cfdef.min_compaction_threshold = 2
                             cfdef.max_compaction_threshold = 4
