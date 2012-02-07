@@ -58,11 +58,11 @@ def main():
                     versions = db.cass.describe_schema_versions()
                     ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
                     if len(ver_list) < 2:
-                        #print "Cluster schema agree: %s" % versions
+                        print "Cluster schema agree: %s" % versions
                         break
                     else:
-                        #print "Cluster schema not yet agree: %s" % versions
-                        Tasklet.sleep(0.1)
+                        print "Cluster schema not yet agree: %s" % versions
+                        Tasklet.sleep(3)
         sys.stdout.flush()
         os._exit(0)
     except RuntimeError as e:
