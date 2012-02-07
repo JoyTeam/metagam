@@ -14,9 +14,10 @@ key_cache_size = 5000
 key_cache_save_period_in_seconds = 3600
 memtable_throughput_in_mb = 1
 memtable_operations_in_millions = 10000 / 1e6
+memtable_flush_after_mins = 10
 gc_grace_seconds = 86400 * 10
-min_compaction_threshold = 2
-max_compaction_threshold = 4
+min_compaction_threshold = 1
+max_compaction_threshold = 2
 
 def main():
     try:
@@ -35,6 +36,9 @@ def main():
                 changed = True
             if cfdef.key_cache_save_period_in_seconds != key_cache_save_period_in_seconds:
                 cfdef.key_cache_save_period_in_seconds = key_cache_save_period_in_seconds
+                changed = True
+            if cfdef.memtable_flush_after_mins != memtable_flush_after_mins:
+                cfdef.memtable_flush_after_mins = memtable_flush_after_mins
                 changed = True
             if cfdef.memtable_throughput_in_mb != memtable_throughput_in_mb:
                 cfdef.memtable_throughput_in_mb = memtable_throughput_in_mb
