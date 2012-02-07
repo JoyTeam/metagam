@@ -12,12 +12,10 @@ import time
 
 key_cache_size = 5000
 key_cache_save_period_in_seconds = 3600
-memtable_throughput_in_mb = 1
-memtable_operations_in_millions = 10000 / 1e6
-memtable_flush_after_mins = 10
 gc_grace_seconds = 86400 * 10
 min_compaction_threshold = 2
 max_compaction_threshold = 2
+replicate_on_write = True
 
 def main():
     try:
@@ -32,7 +30,7 @@ def main():
             versions = db.cass.describe_schema_versions()
             ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
             if len(ver_list) < 2:
-                print "Cluster schema agree: %s" % versions
+                #print "Cluster schema agree: %s" % versions
                 break
             else:
                 print "Cluster schema not yet agree: %s" % versions
@@ -46,17 +44,11 @@ def main():
             if cfdef.key_cache_save_period_in_seconds != key_cache_save_period_in_seconds:
                 cfdef.key_cache_save_period_in_seconds = key_cache_save_period_in_seconds
                 changed = True
-            if cfdef.memtable_flush_after_mins != memtable_flush_after_mins:
-                cfdef.memtable_flush_after_mins = memtable_flush_after_mins
-                changed = True
-            if cfdef.memtable_throughput_in_mb != memtable_throughput_in_mb:
-                cfdef.memtable_throughput_in_mb = memtable_throughput_in_mb
-                changed = True
-            if cfdef.memtable_operations_in_millions != memtable_operations_in_millions:
-                cfdef.memtable_operations_in_millions = memtable_operations_in_millions
-                changed = True
             if cfdef.gc_grace_seconds != gc_grace_seconds:
                 cfdef.gc_grace_seconds = gc_grace_seconds
+                changed = True
+            if cfdef.replicate_on_write != replicate_on_write:
+                cfdef.replicate_on_write = replicate_on_write
                 changed = True
             if cfdef.min_compaction_threshold != min_compaction_threshold:
                 cfdef.min_compaction_threshold = min_compaction_threshold
@@ -70,6 +62,7 @@ def main():
                 while retry:
                     retry = False
                     try:
+                        db.cass.set_keyspace(cfdef.keyspace)
                         db.cass.system_update_column_family(cfdef)
                     except InvalidRequestException as e:
                         if e.why == "Cluster schema does not yet agree":
@@ -80,7 +73,7 @@ def main():
                     versions = db.cass.describe_schema_versions()
                     ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
                     if len(ver_list) < 2:
-                        print "Cluster schema agree: %s" % versions
+                        #print "Cluster schema agree: %s" % versions
                         break
                     else:
                         print "Cluster schema not yet agree: %s" % versions

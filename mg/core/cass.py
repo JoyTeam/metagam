@@ -141,15 +141,14 @@ class Cassandra(object):
                             cfdef.name = family
                             cfdef.key_cache_size = 5000
                             cfdef.key_cache_save_period_in_seconds = 3600
-                            cfdef.memtable_throughput_in_mb = 1
-                            cfdef.memtable_operations_in_millions = 10000 / 1e6
-                            cfdef.memtable_flush_after_mins = 10
                             cfdef.gc_grace_seconds = 86400 * 10
                             cfdef.min_compaction_threshold = 2
                             cfdef.max_compaction_threshold = 2
+                            cfdef.replicate_on_write = True
                             sys_conn = self.pool.sys_connection()
-                            sys_conn.cass.set_keyspace("system")
+                            sys_conn.cass.set_keyspace(self.keyspace)
                             logger.debug("Created column family %s.%s: %s", self.keyspace, cfdef.name, sys_conn.cass.system_add_column_family(cfdef))
+                            sys_conn.cass.set_keyspace("system")
                             # Setting flag that CF is created already
                             if self.mc:
                                 self.mc.set("Cassandra-CF-%s-%s" % (self.keyspace, family), 1, 600)
