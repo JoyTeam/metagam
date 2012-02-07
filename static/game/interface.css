@@ -92,7 +92,7 @@ area { border: none }
 .form-list-messages-bottom { padding-top: 20px }
 .input-quantity-minus { padding-right: 3px }
 .input-quantity-plus { padding-left: 3px }
-.input-quantity-input { width: 60px }
+.input-quantity-input { width: 60px; text-align: center }
 
 /* INTERNAL */
 #page-internal-html { height: 100%; padding: 0; margin: 0 }
@@ -220,3 +220,9 @@ area { border: none }
 #charclssel-form { padding-top: 10px; text-align: center }
 .charclssel-layer { margin-bottom: 10px }
 
+/* SHOPS */
+.shop-menu { padding-bottom: 15px }
+.shop-interface-catalog-td { vertical-align: top }
+.shop-interface-basket-td { vertical-align: top; padding-left: 40px }
+.shop-basket-header { margin: 0; padding: 0 0 10px 0 }
+#shop-basket-cost { padding-bottom: 10px }

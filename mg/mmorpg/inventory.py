@@ -1808,6 +1808,7 @@ class Inventory(ConstructorModule):
         self.rhook("item-types.params-public", self.params_generation, priority=-10)
         self.rhook("modules.list", self.modules_list)
         self.rhook("item-types.all", self.item_types_all)
+        self.rhook("item-types.load", self.item_types_load)
 
     def modules_list(self, modules):
         modules.append({
@@ -2128,6 +2129,7 @@ class Inventory(ConstructorModule):
                 "value_raw": u"%s %s" % (obj.get("balance-price"), obj.get("balance-currency")),
                 "name": '<span class="item-types-page-price-name">%s</span>' % self._("Price"),
                 "value": '<span class="item-types-page-price-value">%s</span>' % value,
+                "price": True,
             })
 
     def item_types_all(self, load_item_types=True, load_params=True):

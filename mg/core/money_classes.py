@@ -166,7 +166,15 @@ class MemberMoney(Module):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise MoneyError(self._("Invalid currency: %s") % currency)
-        with Module.lock(self, [self.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+        with Module.lock(self, lock_objects):
             account = self.account(currency, True)
             account.credit(amount, currency_info)
             op = self.obj(AccountOperation)
@@ -192,7 +200,15 @@ class MemberMoney(Module):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise MoneyError(self._("Invalid currency: %s") % currency)
-        with Module.lock(self, [self.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+        with Module.lock(self, lock_objects):
             account = self.account(currency, False)
             if account is None:
                 return False
@@ -217,7 +233,15 @@ class MemberMoney(Module):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise MoneyError(self._("Invalid currency: %s") % currency)
-        with Module.lock(self, [self.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+        with Module.lock(self, lock_objects):
             account = self.account(currency, True)
             account.force_debit(amount, currency_info)
             op = self.obj(AccountOperation)
@@ -238,7 +262,16 @@ class MemberMoney(Module):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise MoneyError(self._("Invalid currency: %s") % currency)
-        with Module.lock(self, [self.lock_key, target.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+            lock_objects.append(target.lock_key)
+        with Module.lock(self, lock_objects):
             account_from = self.account(currency, False)
             if account_from is None:
                 return False
@@ -278,7 +311,15 @@ class MemberMoney(Module):
         currency_info = currencies.get(currency)
         if currency_info is None:
             raise MoneyError(self._("Invalid currency: %s") % currency)
-        with Module.lock(self, [self.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+        with Module.lock(self, lock_objects):
             account = self.account(currency, False)
             if not account:
                 return None
@@ -300,7 +341,15 @@ class MemberMoney(Module):
     def unlock(self, lock_uuid):
         currencies = {}
         self.call("currencies.list", currencies)
-        with Module.lock(self, [self.lock_key]):
+        if "nolock" in kwargs:
+            nolock = kwargs["nolock"]
+            del kwargs["nolock"]
+        else:
+            nolock = False
+        lock_objects = []
+        if not nolock:
+            lock_objects.append(self.lock_key)
+        with Module.lock(self, lock_objects):
             try:
                 lock = self.obj(AccountLock, lock_uuid)
             except ObjectNotFoundException:

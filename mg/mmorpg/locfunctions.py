@@ -90,7 +90,7 @@ class LocationFunctions(ConstructorModule):
             for func in funcs:
                 menu_left.append({
                     "html": func["title"],
-                    "href": None if selected == func["id"] else "/location/%s" % func["id"],
+                    "href": None if selected == func["id"] else "/location/%s/action/%s" % (func["id"], func.get("default_action")),
                     "selected": selected == func["id"],
                 })
             menu_left[-1]["lst"] = True
@@ -103,13 +103,22 @@ class LocationFunctions(ConstructorModule):
         if location is None:
             self.call("web.redirect", "/location")
         funcs = self.functions(char, location)
+        m = re_action.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        fn_id, action, args = m.group(1, 2, 3)
         for func in funcs:
-            if func["id"] == req.args:
-                req.hook = func["id"]
-                req.args = ""
+            if func["id"] == fn_id:
+                globs = {"char": char}
+                description = self._("Availability of location special function '%s'") % fn_id
+                if not self.call("script.evaluate-expression", func.get("available"), globs=globs, description=description):
+                    self.call("web.redirect", "/location")
+                req.hook = fn_id
+                req.args = args
                 vars = {}
                 self.call("locfunctions.menu", char, vars)
-                self.call("main-frame.info", self._("Function %s implementation") % func["id"], vars)
+                self.call("locfunctype-%s.action-%s" % (func["tp"], action), "%s-%s" % (location.uuid, fn_id), "/location/%s/action" % fn_id, func, args, vars, check_priv=True)
+                self.call("main-frame.info", self._("Implementation of action {type}.{action} ({id}) is missing").format(type=func["tp"], action=htmlescape(action), id=func["id"]), vars)
         self.call("game.error", self._("Function {func} is not implemented in location {loc}").format(func=func["id"], loc=htmlescape(location.name)))
 
 class LocationFunctionsAdmin(ConstructorModule):
@@ -141,10 +150,10 @@ class LocationFunctionsAdmin(ConstructorModule):
                     for func in self.call("locfunctions.functions", None, loc):
                         if func["id"] == fn_id:
                             actions = []
-                            self.call("locfunctype-%s.actions" % func["tp"], func, actions)
+                            self.call("admin-locfunctype-%s.actions" % func["tp"], func, actions)
                             for act in actions:
                                 if action == act["id"]:
-                                    headmenu = self.call("locfunctype-%s.headmenu-%s" % (func["tp"], action), func, args)
+                                    headmenu = self.call("admin-locfunctype-%s.headmenu-%s" % (func["tp"], action), func, args)
                                     if headmenu is None:
                                         return [self._("specfunc///{action_name} of {func_title}").format(action_name=action, func_title=htmlescape(func["title"])), "locations/specfunc/%s" % loc_id]
                                     elif type(headmenu) == list:
@@ -190,7 +199,7 @@ class LocationFunctionsAdmin(ConstructorModule):
                 fn_id, action, args = m.group(1, 2, 3)
                 for fn in funcs:
                     if fn["id"] == fn_id:
-                        return self.call("locfunctype-%s.action-%s" % (fn["tp"], action), "%s-%s" % (loc.uuid, fn_id), "locations/specfunc/%s/%s/action" % (loc.uuid, fn_id), fn, args, check_priv=True)
+                        return self.call("admin-locfunctype-%s.action-%s" % (fn["tp"], action), "%s-%s" % (loc.uuid, fn_id), "locations/specfunc/%s/%s/action" % (loc.uuid, fn_id), fn, args, check_priv=True)
                 self.call("admin.redirect", "locations/specfunc/%s" % loc.uuid)
             if cmd == "new":
                 func = {
@@ -246,13 +255,15 @@ class LocationFunctionsAdmin(ConstructorModule):
                         errors["v_tp"] = self._("This field is mandatory")
                     else:
                         func["tp"] = tp
-                        self.call("locfunctype-%s.validate" % tp, func, errors)
+                        self.call("admin-locfunctype-%s.validate" % tp, func, errors)
                 # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 config = self.app().config_updater()
                 if func.get("custom"):
-                    self.call("locfunctype-%s.store" % tp, func, errors)
+                    self.call("admin-locfunctype-%s.store" % tp, func, errors)
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
                 if cmd == "new":
                     lst = self.conf("locfunc-%s.list" % loc.uuid, [])
                     lst.append(fn_id)
@@ -276,13 +287,13 @@ class LocationFunctionsAdmin(ConstructorModule):
                 fields.append({"type": "header", "html": self._("Special function settings")})
                 function_types.insert(0, ("", ""))
                 fields.append({"name": "tp", "label": self._("Function"), "type": "combo", "values": function_types, "value": func.get("tp")})
-                self.call("locfunctypes.form", fields, func)
+                self.call("admin-locfunctypes.form", fields, func)
             self.call("admin.form", fields=fields)
         rows = []
         for func in funcs:
             actions = []
             if func.get("custom"):
-                self.call("locfunctype-%s.actions" % func["tp"], func, actions)
+                self.call("admin-locfunctype-%s.actions" % func["tp"], func, actions)
                 for act in actions:
                     act["hook"] = "locations/specfunc/%s/%s/action/%s" % (loc.uuid, func["id"], act["id"])
             actions.insert(0, {
