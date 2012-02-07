@@ -145,7 +145,7 @@ class Cassandra(object):
                             cfdef.memtable_operations_in_millions = 10000 / 1e6
                             cfdef.memtable_flush_after_mins = 10
                             cfdef.gc_grace_seconds = 86400 * 10
-                            cfdef.min_compaction_threshold = 1
+                            cfdef.min_compaction_threshold = 2
                             cfdef.max_compaction_threshold = 2
                             sys_conn = self.pool.sys_connection()
                             sys_conn.cass.set_keyspace("system")
