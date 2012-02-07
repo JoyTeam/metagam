@@ -57,7 +57,7 @@ def dna_make(mods):
     tokens.sort(cmp=lambda x, y: cmp(x[0], y[0]))
     new_tokens = []
     for k, v in tokens:
-        if type(v) == int or type(v) == float:
+        if type(v) == int or type(v) == float or type(v) == long:
             new_tokens.append((k, str(v)))
         elif type(v) == str or type(v) == unicode:
             new_tokens.append((k, urlencode(v)))
