@@ -252,6 +252,12 @@ class Cassandra(object):
         if "ringtest" not in keyspaces:
             logger = logging.getLogger("mg.core.cass.Cassandra")
             logger.debug("Created keyspace ringtest: %s", cass.system_add_keyspace(KsDef(name="ringtest", strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
+            cfdef = CfDef()
+            cfdef.keyspace = "ringtest"
+            cfdef.name = "ringtest"
+            cass.set_keyspace("ringtest")
+            logger.debug("Created column family %s.%s: %s", "ringtest", "ringtest", cass.system_add_column_family(cfdef))
+            cass.set_keyspace("system")
             logger.debug("Waiting 10 sec")
             Tasklet.sleep(10)
         ring = set()
