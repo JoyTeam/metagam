@@ -300,7 +300,7 @@ class CassandraPool(object):
     Handles pool of CassandraConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, hosts=(("127.0.0.1", 9160),), size=256, primary_host_id=0):
+    def __init__(self, hosts=(("127.0.0.1", 9160),), size=2, primary_host_id=0):
         self.sys_host = tuple(hosts[0])
         self.hosts = [tuple(host) for host in hosts]
         self.primary_host = self.hosts.pop(primary_host_id)
