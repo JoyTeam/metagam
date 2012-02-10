@@ -23,6 +23,12 @@ class LocationParamsAdmin(ParamsAdmin):
         self.rhook("locations.script-globs", self.script_globs)
         self.rhook("headmenu-admin-locations.paramview", self.headmenu_paramview)
         self.rhook("ext-admin-locations.paramview", self.admin_paramview, priv="locations.params-view")
+        self.rhook("admin-locations.links", self.links)
+
+    def links(self, location, links):
+        req = self.req()
+        if req.has_access("locations.params-view"):
+            links.append({"hook": "locations/paramview/%s" % location.uuid, "text": self._("Parameters"), "order": 10})
 
     def script_globs(self):
         req = self.req()
@@ -56,9 +62,12 @@ class LocationParamsAdmin(ParamsAdmin):
             header.append(self._("Changing"))
         params = []
         self.admin_view_params(loc, params, may_edit)
+        links = []
+        self.call("admin-locations.render-links", loc, links)
         vars = {
             "tables": [
                 {
+                    "links": links,
                     "header": header,
                     "rows": params,
                 }

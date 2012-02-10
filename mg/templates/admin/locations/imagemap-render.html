@@ -1,4 +1,5 @@
-<div class="admin-actions">[%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]<hook:admin.link href="locations/image-map/[%loc.id%]" title="[%MapEditor%]" /></div>
+[%if links%]<div class="links">[%foreach link in links%][%if link.href%]<a href="[%link.href%]">[%link.text%]</a>[%elsif link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%else%][%link.text%][%end%][%unless link.lst +%] / [%+ end%][%end%]</div>[%end%]
+[%if saved%]<div class="admin-actions"><span class="admin-saved">[%saved.text%]</span></div>[%end%]
 <div class="admin-location-render">
 <map name="locmap-[%loc.id%]">
 [%foreach zone in zones%]

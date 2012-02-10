@@ -1,4 +1,10 @@
-<div class="admin-actions">[%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]<hook:admin.link href="locations/editor/[%loc.id%]" title="[%LocationEditor%]" /></div>
+<div class="admin-actions">
+	[%if saved%]<span class="admin-saved">[%saved.text%]</span> / [%+ end%]
+	[%foreach link in links%]
+		[%if link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%else%][%link.text%][%end%]
+		[%unless link.lst +%] / [%+ end%]
+	[%end%]
+</div>
 <div class="admin-location-render">
 <div id="imagemap-ie-warning" class="admin-alert" style="display: none">[%ie_warning%]</div>
 <div id="imagemap-div" style="width: [%width%]px; height: [%height%]px; background-image: url([%image%]); background-position: 0% 0%; background-repeat: no-repeat; cursor: default"></div>

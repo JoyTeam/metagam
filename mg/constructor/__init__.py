@@ -140,3 +140,9 @@ class ConstructorModule(Module):
                 obj = ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
                 item_types[dna] = obj
                 return obj
+
+    def item_types_all(self, load_item_types=True, load_params=True):
+        return self.call("item-types.all", load_item_types, load_params)
+
+    def item_types_load(self, uuids, load_item_types=True, load_params=True):
+        return self.call("item-types.load", uuids, load_item_types, load_params)

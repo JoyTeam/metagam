@@ -220,9 +220,9 @@ class Interface(ConstructorModule):
             vars["links"] = links
         self.call("design.response", design, "index.html", "", vars)
 
-    def main_frame_info(self, msg):
-        vars = {
-        }
+    def main_frame_info(self, msg, vars=None):
+        if vars is None:
+            vars = {}
         self.call("game.response_internal", "info.html", vars, msg)
 
     def main_frame_error(self, msg):
