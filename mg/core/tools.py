@@ -30,7 +30,10 @@ def utf2str(s):
     if ts == unicode:
         s = s.encode("utf-8")
     elif ts != str and ts != int and ts != long:
-        s = unicode(s)
+        try:
+            s = unicode(s)
+        except UnicodeDecodeError:
+            s = str(s)
         if type(s) == unicode:
             s = s.encode("utf-8")
     return s
