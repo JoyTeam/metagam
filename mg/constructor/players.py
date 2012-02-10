@@ -670,12 +670,12 @@ class CharactersMod(ConstructorModule):
 
     def modifier_expired(self, mods, mod):
         character = self.character(mods.uuid)
-        self.debug("Expired modifier of character %s", character.uuid)
+        #self.debug("Expired modifier of character %s", character.uuid)
         if character.valid:
             character.name_invalidate()
             kind = mod["kind"]
-            self.debug("Expired modifier of kind %s", kind)
-            self.debug("Active modifiers: %s", character.modifiers.mods().keys())
+            #self.debug("Expired modifier of kind %s", kind)
+            #self.debug("Active modifiers: %s", character.modifiers.mods().keys())
             if not character.modifiers.get(kind):
                 if kind.startswith("timer-"):
                     self.qevent("expired-%s" % kind, char=character)
