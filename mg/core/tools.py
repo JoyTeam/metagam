@@ -26,8 +26,13 @@ re_backslashed = re.compile(r'\\(.)')
 def utf2str(s):
     if s is None:
         return ""
-    if type(s) == unicode:
+    ts = type(s)
+    if ts == unicode:
         s = s.encode("utf-8")
+    elif ts != str and ts != int and ts != long:
+        s = unicode(s)
+        if type(s) == unicode:
+            s = s.encode("utf-8")
     return s
 
 def urldecode(str):
