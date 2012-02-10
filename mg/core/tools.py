@@ -107,7 +107,6 @@ def htmlescape(val):
     if val is None:
         return ""
     if type(val) != type("") and type(val) != unicode:
-        logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
         val = unicode(val)
     val = string.replace(val, "&", "&amp;")
     val = string.replace(val, '"', "&quot;")
@@ -119,7 +118,6 @@ def htmldecode(val):
     if val is None:
         return ""
     if type(val) != type("") and type(val) != unicode:
-        logging.getLogger("mg.core.tools").exception("Warning: type(val)=%s", type(val))
         val = unicode(val)
     val = string.replace(val, "&quot;", '"')
     val = string.replace(val, "&lt;", "<")
