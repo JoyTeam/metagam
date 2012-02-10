@@ -1,0 +1,43 @@
+[%if error%]<div class="error-message shop-error-message">[%error%]</div>[%end%]
+<div id="pages" class="shop-menu pager-list"></div>
+<table class="shop-interface"><tr><td class="shop-interface-catalog-td">
+	[%foreach cat in categories%]
+	<div id="page-[%cat.id%]" style="display: [%if cat.visible%]block[%else%]none[%end%]" class="pager-page">
+		<table class="items-table">
+		[%foreach item in cat.items%]
+		<tr>
+			<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image" />[%end%]</td>
+			<td class="item-info-td">
+				<a name="[%item.dna%]"></a>
+				<div class="item-info-name">[%item.name%]</div>
+				[%if item.params%]<div class="item-params">
+					[%foreach ent in item.params%][%unless ent.header%]
+					<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span>[%ent.library_icon%]</div>
+					[%end%][%end%]
+				</div>[%end%]
+				[%if item.description%]<div class="item-description">[%item.description%]</div>[%end%]
+			</td>
+			<td class="item-quantity-td">
+				<table class="input-quantity"><tr>
+				<td class="input-quantity-minus"><img src="/st-mg/form/minusmaxd.gif" id="mm_[%item.qparam%]" alt="" onclick="q_add('[%item.qparam%]', [%item.min_quantity - item.max_quantity%], [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]'); return false;" class="clickable" /></td>
+				<td class="input-quantity-minus"><img src="/st-mg/form/minusd.gif" id="m_[%item.qparam%]" alt="" onclick="q_add('[%item.qparam%]', -1, [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]'); return false;" class="clickable" /></td>
+				<td class="input-quantity-td"><input id="[%item.qparam%]" name="[%item.qparam%]" value="[%item.quantity%]" size="5" class="form-bg input-quantity-input" onkeyup="q_update('[%item.qparam%]', [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]')" onclick="q_update('[%item.qparam%]', [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]')" /></td>
+				<td class="input-quantity-plus"><img src="/st-mg/form/plusd.gif" id="p_[%item.qparam%]" alt="" onclick="q_add('[%item.qparam%]', 1, [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]'); return false;" class="clickable" /></td>
+				[%if item.show_max%]<td class="input-quantity-plus"><img src="/st-mg/form/plusmaxd.gif" id="pm_[%item.qparam%]" alt="" onclick="q_add('[%item.qparam%]', [%item.max_quantity - item.min_quantity%], [%item.min_quantity%], [%item.max_quantity%]); basket.update('[%item.dna%]'); return false;" class="clickable" /></td>[%end%]
+				</tr></table>
+			</td>
+		</tr>
+		[%end%]
+		</table>
+	</div>
+	[%end%]
+</td><td class="shop-interface-basket-td">
+	<form action="[%action%]" method="post" id="shop-basket-form" style="display: none">
+		<h2 class="shop-basket-header">[%Total%]</h2>
+		<div id="shop-basket-cost"></div>
+		<input type="hidden" name="ok" value="1" />
+		<input type="hidden" name="cat" value="" id="form-page" />
+		<input type="hidden" id="shop-basket-items" name="items" value="" />
+		<input type="submit" value="[%Submit%]" class="shop-basket-submit" />
+	</form>
+</td></tr></table>

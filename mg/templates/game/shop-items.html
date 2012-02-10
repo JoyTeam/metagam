@@ -1,0 +1,18 @@
+[%content%]
+<script type="text/javascript">
+var basket = new (function() { this.update = function() {}; });
+wait(['pager', 'quantity', 'basket'], function() {
+	var pager = new Pager('pages', 'page-');
+	basket = new Basket();
+	[%foreach cat in categories +%]
+	pager.add('[%cat.id%]', '[%cat.name_html_js%]', [%if cat.visible%]true[%else%]false[%end%]);
+	[%foreach item in cat.items +%]
+	q_update('[%item.qparam%]', [%item.min_quantity%], [%item.max_quantity%]);
+	basket.register('[%item.dna%]', [%item.price%], '[%item.currency%]', '[%item.cicon%]');
+	[%end%]
+	[%end +%]
+	pager.update();
+	basket.render();
+});
+</script>
+

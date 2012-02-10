@@ -104,7 +104,7 @@ class Cluster(Module):
             request.add_header("Content-length", len(request.body))
             request.add_header("Connection", "close")
             response = cnn.perform(request)
-            if response.status_code != 201:
+            if response.status_code != 201 and response.status_code != 204:
                 raise StaticUploadError(self._("Error storing object {0}: {1}").format(uri, response.status))
         finally:
             cnn.close()
@@ -150,7 +150,7 @@ class Cluster(Module):
             request.add_header("Content-length", len(request.body))
             request.add_header("Connection", "close")
             response = cnn.perform(request)
-            if response.status_code != 201:
+            if response.status_code != 201 and response.status_code != 204:
                 raise StaticUploadError(self._("Error storing object {0}: {1}").format(uri, response.status))
         finally:
             cnn.close()
@@ -181,7 +181,7 @@ class Cluster(Module):
                 request.add_header("Content-length", len(data))
                 request.add_header("Connection", "close")
                 response = cnn.perform(request)
-                if response.status_code != 201:
+                if response.status_code != 201 and response.status_code != 204:
                     raise StaticUploadError(self._("Error storing object {name}: {err}").format(name=ent["filename"], err=response.status))
             finally:
                 cnn.close()

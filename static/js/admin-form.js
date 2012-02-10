@@ -13,6 +13,21 @@ Form = Ext.extend(AdminResponse, {
 				html: '<div class="text"><h1>' + data.title + '</h1></div>'
 			});
 		}
+		if (data.menu && data.menu.length) {
+			var menu_entries = new Array();
+			for (var i = 0; i < data.menu.length; i++) {
+				var ent = data.menu[i];
+				var html = ent.text;
+				if (ent.hook) {
+					html = '<a href="/admin?_nd=' + Math.random() + '#' + ent.hook + '" onclick="adm(\'' + ent.hook + '\'); return false">' + html + '</a>';
+				}
+				menu_entries.push(html);
+			}
+			rows.push({
+				border: false,
+				html: '<div class="admin-actions">' + menu_entries.join(' / ') + '</div>'
+			});
+		}
 		var row = undefined;
 		var flex_total = 0;
 		for (var i = 0; i < data.fields.length; i++) {

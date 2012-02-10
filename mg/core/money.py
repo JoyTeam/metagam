@@ -1228,6 +1228,8 @@ class Money(Module):
 
     def format_price(self, price, currency):
         cinfo = self.currency_info(currency)
+        if cinfo is None:
+            return None
         min_val = 0.1 ** cinfo["precision"]
         price = math.ceil(price / min_val) * min_val
         if price < min_val:

@@ -41,3 +41,5 @@ function q_update(id, min, max)
 		q_find('pm_' + id).src = '/st-mg/form/plusmaxd.gif';
 	}
 }
+
+loaded('quantity');

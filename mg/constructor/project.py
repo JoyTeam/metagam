@@ -81,6 +81,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.mmorpg.charclasses.CharClasses"])
             if self.conf("module.permissions-editor"):
                 lst.extend(["mg.core.permissions_editor.Permissions"])
+            if self.conf("module.exchange"):
+                lst.extend(["mg.constructor.exchange.Exchange"])
         return lst
 
     def modules_list(self, modules):
@@ -123,6 +125,11 @@ class ConstructorProject(Module):
             "id": "permissions-editor",
             "name": self._("User defined permissions"),
             "description": self._("Ability to create administrator defined permissions for characters"),
+        })
+        modules.append({
+            "id": "exchange",
+            "name": self._("Currency exchange"),
+            "description": self._("Interfaces for defining currency exchange rates"),
         })
 
     def project_title(self):
