@@ -208,7 +208,10 @@ class ScriptEngine(ConstructorModule):
                 elif tv is str or tv is unicode or tv is int or tv is float:
                     res += u"%s" % val
                 else:
-                    raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string").format(token=self.unparse_expression(token), type=type(val).__name__), env)
+                    try:
+                        res += unicode(val)
+                    except Exception:
+                        raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string").format(token=self.unparse_expression(token), type=type(val).__name__), env)
             else:
                 res += u"%s" % token
         # restoring
