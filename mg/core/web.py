@@ -352,7 +352,7 @@ class WebDaemon(object):
                 return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
             except Exception as e:
                 try:
-                    self.logger.exception(unicode(e))
+                    self.logger.exception(utf2str(e))
                 except Exception as e2:
                     print "Unhandled exception during logging: %s" % e2
                     print traceback.format_exc()
