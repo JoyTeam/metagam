@@ -222,7 +222,6 @@ class ShopsAdmin(ConstructorModule):
                         ops_list[item_type][1] += quantity
                     except KeyError:
                         ops_list[item_type] = [amount, quantity]
-        print "operations for yesterday (%s): %s" % (yesterday, operations)
         if operations:
             self.call("dbexport.add", "shops_stats", date=yesterday, operations=operations)
         lst.remove()
