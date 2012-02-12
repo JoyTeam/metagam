@@ -20,6 +20,8 @@ Basket.prototype.get = function(dna) {
 	if (value == NaN || value < 0) {
 		value = 0;
 	}
+	if (value > 999999)
+		value = 999999;
 	return value;
 };
 

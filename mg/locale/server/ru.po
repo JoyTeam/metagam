@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-07 14:32+0300\n"
+"PO-Revision-Date: 2012-02-12 17:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -773,6 +773,9 @@ msgstr "Цена скупки"
 
 msgid "Buy price correction"
 msgstr "Коррекция цены скупки"
+
+msgid "Buy price evaluation"
+msgstr "Вычисление цены скупки"
 
 msgid "Buy selected items"
 msgstr "Купить выбранные предметы"
@@ -4042,6 +4045,9 @@ msgstr "Недостаточно %s."
 msgid "Not enough items of this type"
 msgstr "Недостаточно предметов данного типа"
 
+msgid "Not enough {item_name_gp}  ({available} pcs available)"
+msgstr "Недостаточно {item_name_gp} (доступно {available} шт)"
+
 msgid "Not logged in"
 msgstr "Не вошедший в систему"
 
@@ -4430,15 +4436,14 @@ msgstr "Предварительный просмотр"
 msgid "Price"
 msgstr "Цена"
 
-#, python-format
-msgid "Price for '%s' was changed"
-msgstr "Цена на \"%s\" изменилась"
-
 msgid "Price for one extra character over free limit"
 msgstr "Цена за персонажа сверх бесплатного лимита"
 
 msgid "Price is too low"
 msgstr "Цена слишком низкая"
+
+msgid "Price of {item_name_gp} was changed (from {old_price} {old_currency} to {new_price} {new_currency})"
+msgstr "Цена {item_name_gp} изменилась (с {old_price} {old_currency} до {new_price} {new_currency})"
 
 msgid "Prices"
 msgstr "Цены"
@@ -5158,6 +5163,9 @@ msgstr "Коррекция цены продажи"
 msgid "Sell price evaluation"
 msgstr "Вычисление цены продажи"
 
+msgid "Sell selected items"
+msgstr "Продать выбранные предметы"
+
 msgid "Send"
 msgstr "Отправить"
 
@@ -5248,6 +5256,9 @@ msgstr "Магазин должен или продавать, или покуп
 
 msgid "Shop prices"
 msgstr "Цены магазина"
+
+msgid "Shop sell"
+msgstr "Продажа в магазин"
 
 msgid "Shop sells these items"
 msgstr "Магазин продаёт эти предметы"
@@ -5781,6 +5792,9 @@ msgstr "Это поле является обязательным, начина�
 
 msgid "The richest"
 msgstr "Самые богатые"
+
+msgid "There are no items for sell at the moment"
+msgstr "В данный момент товар на продажу отсутствует"
 
 msgid "There are some very important points in the contract. At least read information in the red panel."
 msgstr "В договоре есть некоторые очень важные пункты. Как минимум, прочтите информацию в красной панели."
@@ -6763,6 +6777,9 @@ msgstr "Вы получили:"
 #, python-format
 msgid "You have no available variants of '%s' to select from"
 msgstr "У вас нет доступных вариантов \"%s\", из которых можно выбрать"
+
+msgid "You have no items for sell to this shop"
+msgstr "У вас нет предметов, которые можно продать в этот магазин"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -7939,6 +7956,9 @@ msgstr ""
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
+msgid "{currency} history"
+msgstr "История {currency}"
+
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
 
@@ -7952,6 +7972,10 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Your inventory"
+#~ msgstr "Ваш инвентарь"
+#~ msgid "Price for '%s' was changed"
+#~ msgstr "Цена на \"%s\" изменилась"
 #~ msgid "Function %s implementation"
 #~ msgstr "Реализация функции %s"
 #~ msgid ""

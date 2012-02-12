@@ -1234,7 +1234,7 @@ class Money(Module):
         price = math.ceil(price / min_val) * min_val
         if price < min_val:
             price = min_val
-        return price
+        return round(price, cinfo["precision"])
 
     def price_text(self, price, currency):
         cinfo = self.currency_info(currency)

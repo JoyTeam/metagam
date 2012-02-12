@@ -24,9 +24,9 @@ class ShopsAdmin(ConstructorModule):
         catgroups.append({"id": "shops", "name": self._("Shops"), "order": 15, "description": self._("For goods being sold in shops")})
 
     def form_render(self, fields, func):
-        fields.append({"name": "shop_sell", "label": self._("This shop sells goods"), "type": "checkbox", "checked": func.get("shop_sell")})
+        fields.append({"name": "shop_sell", "label": self._("This shop sells goods"), "type": "checkbox", "checked": func.get("shop_sell"), "condition": "[tp] == 'shop'"})
         fields.append({"name": "shop_sell_price", "label": self._("Sell price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_sell_price", default_sell_price)), "condition": "[tp]=='shop' && [shop_sell]"})
-        fields.append({"name": "shop_buy", "label": self._("This shop buys goods"), "type": "checkbox", "checked": func.get("shop_buy")})
+        fields.append({"name": "shop_buy", "label": self._("This shop buys goods"), "type": "checkbox", "checked": func.get("shop_buy"), "condition": "[tp] == 'shop'"})
         fields.append({"name": "shop_buy_price", "label": self._("Buy price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_buy_price", default_buy_price)), "condition": "[tp]=='shop' && [shop_buy]"})
 
     def form_store(self, func, errors):
@@ -176,11 +176,18 @@ class Shops(ConstructorModule):
         self.rhook("locfunctype-shop.action-sell", self.sell, priv="logged")
         self.rhook("locfunctype-shop.action-buy", self.buy, priv="logged")
         self.rhook("money-description.shop-buy", self.money_description_shop_buy)
+        self.rhook("money-description.shop-sell", self.money_description_shop_sell)
 
     def money_description_shop_buy(self):
         return {
             "args": [],
             "text": self._("Shop buy"),
+        }
+
+    def money_description_shop_sell(self):
+        return {
+            "args": [],
+            "text": self._("Shop sell"),
         }
 
     def child_modules(self):
@@ -208,8 +215,9 @@ class Shops(ConstructorModule):
             entries[-1]["lst"] = True
             vars["shop_func_menu"] = entries
 
-    def sell(self, func_id, base_url, func, args, vars):
-        self.shop_tp_menu(func, base_url, "sell", vars)
+    def transaction(self, mode, func_id, base_url, func, args, vars):
+        self.shop_tp_menu(func, base_url, mode, vars)
+        vars["title"] = func.get("title")
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
@@ -219,27 +227,39 @@ class Shops(ConstructorModule):
             lock_objects.append("ShopLock.%s" % func_id)
             lock_objects.append(character.lock)
             lock_objects.append(character.money.lock_key)
+            lock_objects.append(character.inventory.lock_key)
         with self.lock(lock_objects):
+            character.inventory.load()
             # loading list of categories
             categories = self.call("item-types.categories", "shops")
-            # loading list of items to sell
             assortment = self.conf("shop-%s.assortment" % func_id, {})
-            item_type_uuids = []
-            for key in assortment.keys():
-                m = re_sell_item.match(key)
-                if not m:
-                    continue
-                uuid = m.group(1)
-                item_type_uuids.append(uuid)
-            # loading item types data
-            item_types = self.item_types_load(item_type_uuids)
+            if mode == "sell":
+                # loading list of items to sell
+                item_type_uuids = []
+                for key in assortment.keys():
+                    m = re_sell_item.match(key)
+                    if not m:
+                        continue
+                    uuid = m.group(1)
+                    item_type_uuids.append(uuid)
+                # loading item types data
+                item_types = self.item_types_load(item_type_uuids)
+                max_quantity = {}
+            else:
+                # loading character's inventory
+                item_types = []
+                max_quantity = {}
+                for item_type, quantity in character.inventory.items():
+                    item_types.append(item_type)
+                    max_quantity[item_type.dna] = quantity
             # user action
             if req.ok():
                 errors = []
                 user_requests = {}
                 create_items = []
+                discard_items = []
                 transfer_items = []
-                money_debit = {}
+                money = {}
                 item_names = {}
                 for ent in req.param("items").split(";"):
                     m = re_request_item.match(ent)
@@ -250,8 +270,8 @@ class Shops(ConstructorModule):
                     price = floatz(price)
                     quantity = intz(quantity)
                     if price > 0 and quantity > 0:
-                        if quantity >= 1000000:
-                            quantity = 1000000
+                        if quantity >= 999999:
+                            quantity = 999999
                         user_requests[dna] = {
                             "price": price,
                             "currency": currency,
@@ -273,8 +293,8 @@ class Shops(ConstructorModule):
                     "quantity": ureq["quantity"] if ureq else 0,
                     "qparam": "q_%s" % item_type.dna,
                     "min_quantity": 0,
-                    "max_quantity": 10,
-                    "show_max": True,
+                    "max_quantity": max_quantity[item_type.dna] if item_type.dna in max_quantity else 999999,
+                    "show_max": item_type.dna in max_quantity,
                     "order": item_type.get("order", 0),
                 }
                 # item parameters
@@ -295,14 +315,14 @@ class Shops(ConstructorModule):
                 if cat is None:
                     continue
                 # item price
-                price = assortment.get("sell-price-%s" % item_type.uuid)
+                price = assortment.get("%s-price-%s" % (mode, item_type.uuid))
                 if price is None:
                     price = item_type.get("balance-price")
                     balance_currency = item_type.get("balance-currency")
                     # items without balance price and without shop price are ignores
                     if price is None:
                         continue
-                    currency = assortment.get("sell-currency-%s" % item_type.uuid, balance_currency)
+                    currency = assortment.get("%s-currency-%s" % (mode, item_type.uuid), balance_currency)
                     if currency != balance_currency:
                         # exchange rate conversion
                         rates = self.call("exchange.rates")
@@ -312,11 +332,15 @@ class Shops(ConstructorModule):
                             if from_rate > 0 and to_rate > 0:
                                 price *= from_rate / to_rate;
                 else:
-                    currency = assortment.get("sell-currency-%s" % item_type.uuid)
+                    currency = assortment.get("%s-currency-%s" % (mode, item_type.uuid))
                 if price is None:
                     price = 0
                 # price correction
-                price = self.call("script.evaluate-expression", func.get("shop_sell_price"), globs={"char": character, "price": price, "currency": currency, "item": item_type}, description=self._("Sell price evaluation"))
+                if mode == "sell":
+                    description = self._("Sell price evaluation")
+                else:
+                    description = self._("Buy price evaluation")
+                price = self.call("script.evaluate-expression", func.get("shop_%s_price" % mode), globs={"char": character, "price": price, "currency": currency, "item": item_type}, description=description)
                 price = floatz(price)
                 # rendering price
                 price = self.call("money.format-price", price, currency)
@@ -341,13 +365,15 @@ class Shops(ConstructorModule):
                 if req.ok():
                     if ureq:
                         if ureq["price"] != price or ureq["currency"] != currency:
-                            errors.append(self._("Price for '%s' was changed") % htmlescape(item_type.name))
+                            errors.append(self._("Price of {item_name_gp} was changed (from {old_price} {old_currency} to {new_price} {new_currency})").format(item_name_gp=htmlescape(item_type.name_gp), old_price=ureq["price"], old_currency=ureq["currency"], new_price=price, new_currency=currency))
+                        elif item_type.dna in max_quantity and ureq["quantity"] > max_quantity[item_type.dna]:
+                            errors.append(self._("Not enough {item_name_gp}  ({available} pcs available)").format(item_name_gp=htmlescape(item_type.name_gp), available=max_quantity[item_type.dna]))
                         else:
                             # recording money amount
                             try:
-                                money_debit[currency] += price * ureq["quantity"]
+                                money[currency] += price * ureq["quantity"]
                             except KeyError:
-                                money_debit[currency] = price * ureq["quantity"]
+                                money[currency] = price * ureq["quantity"]
                             # recording money transaction comment
                             try:
                                 comments = item_names[currency]
@@ -359,10 +385,16 @@ class Shops(ConstructorModule):
                             except KeyError:
                                 comments[item_type.name] = ureq["quantity"]
                             # recording operation
-                            create_items.append({
-                                "item_type": item_type,
-                                "quantity": ureq["quantity"],
-                            })
+                            if mode == "sell":
+                                create_items.append({
+                                    "item_type": item_type,
+                                    "quantity": ureq["quantity"],
+                                })
+                            else:
+                                discard_items.append({
+                                    "item_type": item_type,
+                                    "quantity": ureq["quantity"],
+                                })
                         del user_requests[item_type.dna]
             rcategories = []
             active_cat = req.param("cat")
@@ -388,14 +420,25 @@ class Shops(ConstructorModule):
             if req.ok():
                 if user_requests:
                     errors.append(self._("Shop assortment changed"))
-                # checking available money
+                if mode == "sell":
+                    # checking available money
+                    if not errors:
+                        for currency, amount in money.iteritems():
+                            if character.money.available(currency) < amount:
+                                errors.append(self.call("money.not-enough-funds", currency))
+                redirect = None
+                if mode == "buy":
+                    # taking items
+                    if not errors:
+                        for ent in discard_items:
+                            item_type = ent["item_type"]
+                            quantity = ent["quantity"]
+                            item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell")
+                            if quantity_taken is None:
+                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity, item_type.dna, character.uuid))
+
                 if not errors:
-                    for currency, amount in money_debit.iteritems():
-                        if character.money.available(currency) < amount:
-                            errors.append(self.call("money.not-enough-funds", currency))
-                # debiting money
-                if not errors:
-                    for currency, amount in money_debit.iteritems():
+                    for currency, amount in money.iteritems():
                         curr_comments = []
                         for item_name, quantity in item_names[currency].iteritems():
                             curr_comments.append({
@@ -405,43 +448,61 @@ class Shops(ConstructorModule):
                         curr_comments.sort(cmp=lambda x, y: cmp(x["name"], y["name"]))
                         curr_comments = [ent["name"] if ent["quantity"] == 1 else "%s - %d %s" % (ent["name"], ent["quantity"], self._("pcs")) for ent in curr_comments]
                         comment = ", ".join(curr_comments)
-                        if not character.money.debit(amount, currency, "shop-buy", comment=comment, nolock=True):
-                            errors.append(self._("Technical error during debiting {amount} {currency} (available={available})").format(amount=amount, currency=currency, available=character.money.available(currency)))
-                            break
-                # giving items
-                if not errors:
-                    redirect = None
-                    for ent in create_items:
-                        item_type = ent["item_type"]
-                        quantity = ent["quantity"]
-                        character.inventory.give(item_type.uuid, quantity, "shop-buy")
-                        # obtaining inventory class
-                        if not redirect:
-                            # item inventory category
-                            cat = item_type.get("cat-inventory")
-                            misc = None
-                            found = False
-                            for c in self.call("item-types.categories", "inventory"):
-                                if c["id"] == cat:
-                                    found = True
-                                if c.get("misc"):
-                                    misc = c["id"]
-                            if not found:
-                                cat = misc
-                            if cat is not None:
-                                redirect = "/inventory?cat=%s#%s" % (cat, item_type.dna)
+                        if mode == "sell":
+                            # debiting character's account
+                            if not character.money.debit(amount, currency, "shop-buy", comment=comment, nolock=True):
+                                errors.append(self._("Technical error during debiting {amount} {currency} (available={available})").format(amount=amount, currency=currency, available=character.money.available(currency)))
+                                break
+                        else:
+                            # crediting character's account
+                            character.money.credit(amount, currency, "shop-sell", comment=comment, nolock=True)
+                            if redirect is None:
+                                redirect = "/money/operations/%s" % currency
+                if mode == "sell":
+                    # giving items
+                    if not errors:
+                        for ent in create_items:
+                            item_type = ent["item_type"]
+                            quantity = ent["quantity"]
+                            character.inventory._give(item_type.uuid, quantity, "shop-buy")
+                            # obtaining inventory class
+                            if not redirect:
+                                # item inventory category
+                                cat = item_type.get("cat-inventory")
+                                misc = None
+                                found = False
+                                for c in self.call("item-types.categories", "inventory"):
+                                    if c["id"] == cat:
+                                        found = True
+                                    if c.get("misc"):
+                                        misc = c["id"]
+                                if not found:
+                                    cat = misc
+                                if cat is not None:
+                                    redirect = "/inventory?cat=%s#%s" % (cat, item_type.dna)
                 if errors:
                     vars["error"] = u"<br />".join(errors)
                 else:
+                    character.inventory.store()
                     self.call("web.redirect", redirect or "/inventory")
-        vars["categories"] = rcategories
-        vars["Total"] = self._("Total")
-        vars["Submit"] = self._("Buy selected items")
-        content = self.call("game.parse_internal", "shop-items-layout.html", vars)
-        content = self.call("game.parse_internal", "shop-items.html", vars, content)
+        if rcategories:
+            vars["categories"] = rcategories
+            vars["Total"] = self._("Total")
+            if mode == "sell":
+                vars["Submit"] = self._("Buy selected items")
+            else:
+                vars["Submit"] = self._("Sell selected items")
+            content = self.call("game.parse_internal", "shop-items-layout.html", vars)
+            content = self.call("game.parse_internal", "shop-items.html", vars, content)
+        elif mode == "sell":
+            content = self._("There are no items for sell at the moment")
+        else:
+            content = self._("You have no items for sell to this shop")
         self.call("game.response_internal", "shop-global.html", vars, content)
 
+    def sell(self, func_id, base_url, func, args, vars):
+        return self.transaction("sell", func_id, base_url, func, args, vars)
+
     def buy(self, func_id, base_url, func, args, vars):
-        self.shop_tp_menu(func, base_url, "buy", vars)
-        self.call("game.response_internal", "shop-global.html", vars)
+        return self.transaction("buy", func_id, base_url, func, args, vars)
 

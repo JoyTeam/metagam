@@ -63,6 +63,7 @@ class Money(ConstructorModule):
         vars = {
             "accounts": accounts,
             "Money": self._("Money"),
+            "title": self._("Money"),
         }
         self.call("game.response_internal", "money-accounts.html", vars)
 
@@ -80,7 +81,8 @@ class Money(ConstructorModule):
             "ret": {
                 "href": "/money",
                 "html": self._("Return"),
-            }
+            },
+            "title": self._("{currency} history").format(currency=htmlescape(req.args)),
         }
         account = money.account(currency)
         self.render_operations(account, vars)

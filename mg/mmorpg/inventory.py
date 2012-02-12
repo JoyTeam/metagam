@@ -2021,6 +2021,7 @@ class Inventory(ConstructorModule):
         # storing expiration information
         if inv.expired:
             inv.update()
+        vars["title"] = self._("Inventory")
         self.call("game.response_internal", "inventory.html", vars)
 
     def inventory_discard(self):
