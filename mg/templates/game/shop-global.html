@@ -1,0 +1,4 @@
+[%if title%]<h1 class="shop-title">[%title%]</h1>[%end%]
+[%if shop_func_menu%]<div class="shop-menu shop-func-menu">[%for ent in shop_func_menu%][%if ent.href%]<a href="[%ent.href%]">[%end%][%ent.html%][%if ent.href%]</a>[%end%][%unless ent.lst +%] / [%+ end%][%end%]</div>[%end%]
+
+[%content%]

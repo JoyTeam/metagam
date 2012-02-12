@@ -1,3 +1,4 @@
+[%if title%]<h1 class="money-operations-title">[%title%]</h1>[%end%]
 [%if ret%]<div class="main-return"><a href="[%ret.href%]">[%ret.html%]</a></div>[%end%]
 [%if pages%]<div class="main-pages main-pages-top">[%foreach page in pages%][%if page.href%]<a href="[%page.href%]">[%else%]<span>[%end%][%page.html%][%if page.href%]</a>[%else%]</span>[%end%][%unless page.lst +%] &middot; [%+ end%][%end%]</div>[%end%]
 <table class="log-table">

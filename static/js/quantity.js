@@ -3,6 +3,13 @@ function q_find(id)
 	return document.getElementById(id);
 }
 
+function q_img(id, src)
+{
+	 var el = q_find(id);
+	 if (el)
+		 el.src = src;
+}
+
 function q_add(id, delta, min, max)
 {
 	var input = q_find(id);
@@ -27,17 +34,19 @@ function q_update(id, min, max)
 	var input = q_find(id);
 	var val = parseInt(input.value);
 	if (val > min) {
-		q_find('m_' + id).src = '/st-mg/form/minus.gif';
-		q_find('mm_' + id).src = '/st-mg/form/minusmax.gif';
+		q_img('m_' + id, '/st-mg/form/minus.gif');
+		q_img('mm_' + id, '/st-mg/form/minusmax.gif');
 	} else {
-		q_find('m_' + id).src = '/st-mg/form/minusd.gif';
-		q_find('mm_' + id).src = '/st-mg/form/minusmaxd.gif';
+		q_img('m_' + id, '/st-mg/form/minusd.gif');
+		q_img('mm_' + id, '/st-mg/form/minusmaxd.gif');
 	}
 	if (val < max) {
-		q_find('p_' + id).src = '/st-mg/form/plus.gif';
-		q_find('pm_' + id).src = '/st-mg/form/plusmax.gif';
+		q_img('p_' + id, '/st-mg/form/plus.gif');
+		q_img('pm_' + id, '/st-mg/form/plusmax.gif');
 	} else {
-		q_find('p_' + id).src = '/st-mg/form/plusd.gif';
-		q_find('pm_' + id).src = '/st-mg/form/plusmaxd.gif';
+		q_img('p_' + id, '/st-mg/form/plusd.gif');
+		q_img('pm_' + id, '/st-mg/form/plusmaxd.gif');
 	}
 }
+
+loaded('quantity');

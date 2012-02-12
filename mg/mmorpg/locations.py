@@ -24,6 +24,28 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-locations.teleport", self.admin_locations_teleport, priv="locations.teleport")
         self.rhook("headmenu-admin-locations.teleport", self.headmenu_locations_teleport)
+        self.rhook("admin-locations.links", self.links)
+        self.rhook("admin-locations.render-links", self.render_links)
+
+    def links(self, location, links):
+        req = self.req()
+        if req.has_access("locations.editor"):
+            links.append({"hook": "locations/editor/%s" % location.uuid, "text": self._("Location"), "order": -10})
+
+    def render_links(self, location, links):
+        self.call("admin-locations.links", location, links)
+        if links:
+            req = self.req()
+            uri = req.group
+            if req.hook != "index":
+                uri = "%s/%s" % (uri, req.hook)
+            if req.args:
+                uri = "%s/%s" % (uri, req.args)
+            for l in links:
+                if "admin-%s" % l.get("hook") == uri:
+                    del l["hook"]
+            links.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("text"), y.get("text")))
+            links[-1]["lst"] = True
 
     def headmenu_locations_teleport(self, args):
         return [self._("Service teleport"), "auth/user-dashboard/%s?active_tab=location" % htmlescape(args)]
@@ -69,7 +91,8 @@ class LocationsAdmin(ConstructorModule):
         objclasses["LocParams"] = (DBLocParams, DBLocParamsList)
 
     def child_modules(self):
-        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams"]
+        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams",
+            "mg.mmorpg.locfunctions.LocationFunctions"]
         return lst
 
     def menu_root_index(self, menu):
@@ -229,14 +252,11 @@ class LocationsAdmin(ConstructorModule):
             self.call("admin-locations.editor-form-render", db_loc, fields)
             if not db_loc.get("image_type") and image_type["values"] and not image_type["value"]:
                 image_type["value"] = image_type["values"][0][0]
+            menu = None
             # rendering location preview
             if req.args != "new":
-                # parameters
-                if req.has_access("locations.params-view"):
-                    fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/params.html", {
-                        "loc": db_loc.uuid,
-                        "LocationParams": self._("View location parameters"),
-                    })})
+                menu = []
+                self.call("admin-locations.render-links", location, menu)
                 # location preview
                 html = self.call("admin-locations.render", location)
                 if html:
@@ -251,7 +271,7 @@ class LocationsAdmin(ConstructorModule):
                 fields.append({"name": "tr-%s-available" % loc_id, "label": self._("Transition is available for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))})
                 fields.append({"name": "tr-%s-error" % loc_id, "label": self._("Error message when transition is unavailable") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", info.get("error", "")), "inline": True})
                 fields.append({"name": "tr-%s-delay" % loc_id, "label": self._("Delay when moving to this location (if not specified delay will be calculated as sum of delays on both locations)"), "value": info.get("delay")})
-            self.call("admin.form", fields=fields, modules=["FileUploadField"])
+            self.call("admin.form", fields=fields, modules=["FileUploadField"], menu=menu)
         rows = []
         locations = []
         lst = self.objlist(DBLocationList, query_index="all")
@@ -386,6 +406,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
         self.rhook("admin-locations.render", self.render)
         self.rhook("admin-locations.valid-transitions", self.valid_transitions)
+        self.rhook("admin-locations.links", self.links)
 
     def form_render(self, db_loc, fields):
         for fld in fields:
@@ -526,6 +547,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 })
         actions = [("none", self._("No action")), ("move", self._("Move to another location"))]
         self.call("admin-locations.map-zone-actions", location, actions)
+        links = []
+        self.call("admin-locations.render-links", location, links)
         vars = {
             "image": location.db_location.get("image_static"),
             "width": location.db_location.get("image_static_w"),
@@ -535,15 +558,18 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             "zones": zones,
             "actions": actions,
             "locations": locations,
-            "LocationEditor": self._("Switch to the location editor"),
-            "loc": {
-                "id": location.uuid,
-            },
+            "links": links,
         }
         req = self.req()
         if req.param("saved"):
             vars["saved"] = {"text": self._("Location saved successfully")}
         self.call("admin.response_template", "admin/locations/imagemap.html", vars)
+
+    def links(self, location, links):
+        req = self.req()
+        if req.has_access("locations.editor"):
+            if location.image_type == "static":
+                links.append({"hook": "locations/image-map/%s" % location.uuid, "text": self._("imagemap///Map")})
 
     def render(self, location):
         if location.image_type == "static":
@@ -561,7 +587,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                     "image": location.db_location.get("image_static"),
                 },
                 "zones": zones,
-                "MapEditor": self._("Switch to the image map editor"),
             }
             req = self.req()
             if req.param("saved"):
@@ -581,7 +606,8 @@ class Locations(ConstructorModule):
         self.rhook("locations.character_before_set", self.before_set)
         self.rhook("locations.character_set", self.lset)
         self.rhook("locations.character_after_set", self.after_set)
-        self.rhook("ext-location.index", self.ext_location, priv="logged")
+        self.rhook("locfunctions.list", self.locfunctions_list)
+        self.rhook("ext-location.show", self.ext_location_show, priv="logged")
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("ext-location.move", self.ext_move, priv="logged")
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -644,17 +670,21 @@ class Locations(ConstructorModule):
     def after_set(self, character, old_location, instance):
         self.call("chat.channel-join", character, self.call("chat.channel-info", "loc"))
 
-    def ext_location(self):
+    def locfunctions_list(self, location, funcs):
+        funcs.append({
+            "id": "show",
+            "order": -10,
+            "title": self._("Location"),
+            "available": 1,
+        })
+
+    def ext_location_show(self):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
         location = character.location
         if location is None:
-            lst = self.objlist(DBLocationList, query_index="all")
-            if len(lst):
-                self.call("main-frame.error", '%s <a href="/admin#locations/config" target="_blank">%s</a>' % (self._("Starting location not configured."), self._("Open locations configuration")))
-            else:
-                self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
+            self.call("game.internal-error", self._("Character is outside of any locations"))
         vars = {
             "location": {
                 "id": location.uuid,
@@ -670,6 +700,7 @@ class Locations(ConstructorModule):
             })
         vars["transitions"] = transitions
         design = self.design("gameinterface")
+        self.call("locfunctions.menu", character, vars)
         html = self.call("design.parse", design, "location-layout.html", None, vars)
         self.call("game.response_internal", "location.html", vars, html)
 

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-01-18 12:03+0300\n"
+"PO-Revision-Date: 2012-02-12 17:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -481,6 +481,9 @@ msgstr "Вы уверены, что хотите удалить этот кве�
 msgid "Are you sure want to delete this smile?"
 msgstr "Вы уверены, что хотите удалить этот смайлик?"
 
+msgid "Are you sure want to delete this special function?"
+msgstr "Вы уверены, что хотите удалить эту спецфункцию?"
+
 msgid "Are you sure want to delete this state?"
 msgstr "Вы уверены, что хотите удалить это состояние?"
 
@@ -498,6 +501,10 @@ msgstr "Творчество"
 
 msgid "Assign a domain name"
 msgstr "Назначить доменное имя"
+
+#, python-format
+msgid "Assortment of '%s'"
+msgstr "Ассортимент \"%s\""
 
 #, python-format
 msgid "Attribute '%s' was specified twice"
@@ -553,6 +560,13 @@ msgstr "Автопродление: включено"
 
 msgid "Availability of class variant '{variant}' in class '{cls}'"
 msgstr "Доступность варианта \"{variant}\" класса \"{cls}\""
+
+#, python-format
+msgid "Availability of location special function '%s'"
+msgstr "Доступность спецфункции \"%s\""
+
+msgid "Availability of the function for the character"
+msgstr "Доступность функции для персонажа"
 
 msgid "Availability of transition between locations"
 msgstr "Доступность перехода между локациями"
@@ -751,6 +765,21 @@ msgstr "Редактор кнопок"
 msgid "Buy"
 msgstr "Купить"
 
+msgid "Buy currency"
+msgstr "Валюта скупки"
+
+msgid "Buy price"
+msgstr "Цена скупки"
+
+msgid "Buy price correction"
+msgstr "Коррекция цены скупки"
+
+msgid "Buy price evaluation"
+msgstr "Вычисление цены скупки"
+
+msgid "Buy selected items"
+msgstr "Купить выбранные предметы"
+
 msgid "CCU"
 msgstr "CCU"
 
@@ -927,6 +956,9 @@ msgstr "Иконка инфы персонажа"
 
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
+
+msgid "Character is outside of any locations"
+msgstr "Персонаж находится вне локаций"
 
 msgid "Character name"
 msgstr "Имя персонажа"
@@ -1380,11 +1412,23 @@ msgstr "Описание валюты"
 msgid "Currency editor"
 msgstr "Редактор валют"
 
+msgid "Currency exchange"
+msgstr "Обмен валюты"
+
+msgid "Currency exchange rates"
+msgstr "Курсы обмена валют"
+
+msgid "Currency exchange rates configuration"
+msgstr "Настройка курсов обмена валют"
+
 msgid "Currency icon (approx 16x16)"
 msgstr "Иконка для валюты (примерно 16x16)"
 
 msgid "Currency image (approx 60x60)"
 msgstr "Картинка для валюты (примерно 60x60)"
+
+msgid "Currency is not specified"
+msgstr "Валюта не указана"
 
 msgid "Currency name"
 msgstr "Название валюты"
@@ -1491,6 +1535,9 @@ msgstr "Склонения"
 
 msgid "Default"
 msgstr "По умолчанию"
+
+msgid "Default special function"
+msgstr "Спецфункция по умолчанию"
 
 msgid "Default value"
 msgstr "Значение по умолчанию"
@@ -2083,6 +2130,9 @@ msgstr "Всё, что не относится к игре: юмор, форум
 msgid "Exchange rate"
 msgstr "Курс обмена"
 
+msgid "Exchange rates stored"
+msgstr "Курсы обмена сохранены"
+
 msgid "Exchange to roubles"
 msgstr "Цена в рублях"
 
@@ -2181,6 +2231,9 @@ msgstr "После регистрации персонажа выбор перв
 msgid "Float '{val}' has no attributes"
 msgstr "У числа \"{val}\" нет атрибутов"
 
+msgid "For goods being sold in shops"
+msgstr "Для товаров, которые продаются в магазинах"
+
 msgid "For items in the administrative interfaces"
 msgstr "Для административных интерфейсов"
 
@@ -2259,6 +2312,12 @@ msgstr "Полное название"
 msgid "Full title of your game (ex: Eternal Forces: call of daemons)"
 msgstr "Полное название вашей игры (напр: Вечные Силы: зов демонов)"
 
+msgid "Function"
+msgstr "Функция"
+
+msgid "Function {func} is not implemented in location {loc}"
+msgstr "Функция {func} не реализована в локации {loc}"
+
 msgid "Functions"
 msgstr "Функции"
 
@@ -2325,6 +2384,9 @@ msgstr "Оформление игрового интерфейса вашей и
 #, python-format
 msgid "Game interface design package must contain %s file"
 msgstr "Пакет с оформлением игры должен содержать файл %s"
+
+msgid "Game interface for buying and selling ingame goods"
+msgstr "Игровой интерфейс для покупки и продажи внутриигровых товаров"
 
 msgid "Game interface menu"
 msgstr "Меню игрового интерфейса"
@@ -2613,6 +2675,9 @@ msgstr "Идентификатор должен начинаться с 'u_'"
 msgid "Identifier must start with 'u_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Идентификатор должен начинаться с \"u_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
+msgid "If a price is not specified balance price will be used. If currency is specified but price not then the balance price will be converted to the currency given"
+msgstr "Если цена не указана, то будет использована балансировочная цена. Если валюта указана, а цена нет, то балансировочная цена будет сконвертирована в заданную валюту"
+
 msgid "If parameter is modified in the item instance show 'base value + modifier' instead of 'modified value'"
 msgstr "Если параметр модифицирован у экземпляра предмета, то показывать \"базовое значение + модификатор\" вместо \"модифицированного значения\""
 
@@ -2691,6 +2756,9 @@ msgstr "Изображения в подписи на {period_a}"
 #, python-format
 msgid "Images: %s"
 msgstr "Изображения: %s"
+
+msgid "Implementation of action {type}.{action} ({id}) is missing"
+msgstr "Реализация действия {type}.{action} ({id}) отсутствует"
 
 msgid "Implemented"
 msgstr "Реализовано"
@@ -2773,6 +2841,9 @@ msgstr "Сообщения интерфейса"
 
 msgid "Interface panels"
 msgstr "Панели интерфейса"
+
+msgid "Interfaces for defining currency exchange rates"
+msgstr "Интерфейсы для задания курсов обмена валют"
 
 msgid "Interval"
 msgstr "Интервал"
@@ -2888,6 +2959,10 @@ msgstr "Неверный формат цены"
 
 msgid "Invalid quest states object. Expected {expected}. Found: {found}"
 msgstr "Неверный объект состояний квеста. Ожидалось: {expected}. Найдено: {found}"
+
+#, python-format
+msgid "Invalid request parameter: %s"
+msgstr "Неверный параметр запроса: %s"
 
 msgid "Invalid response from the registrar. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually."
 msgstr "Неверный ответ от регистратора. Мы точно не знаем, удалось ли обработать ваш запрос, поэтому мы оставляем деньги за домен в заблокированном состоянии. Результат операции будет перепроверен вручную техническими специалистами."
@@ -3263,6 +3338,9 @@ msgstr "Редактор локаций"
 msgid "Locations parameters"
 msgstr "Параметры локаций"
 
+msgid "Locations special functions"
+msgstr "Спецфункции локаций"
+
 msgid "Lock ID"
 msgstr "ID блокировки"
 
@@ -3460,6 +3538,14 @@ msgstr "Максимальный размер - 460x880"
 msgid "Maximal supported precision is 4"
 msgstr "Максимальная поддерживаемая точность - 4"
 
+#, python-format
+msgid "Maximal value is %d"
+msgstr "Максимальное значение - %d"
+
+#, python-format
+msgid "Maximal value is %f"
+msgstr "Минимальное значение - %f"
+
 msgid "May enter even closed game"
 msgstr "Может входить даже в закрытую игру"
 
@@ -3471,6 +3557,9 @@ msgstr "Меню"
 
 msgid "Menu item"
 msgstr "Пункт меню"
+
+msgid "Menu title"
+msgstr "Заголовок в меню"
 
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
@@ -3561,6 +3650,10 @@ msgstr "Минимальное значение - 1"
 #, python-format
 msgid "Minimal value is %d"
 msgstr "Минимальное значение - %d"
+
+#, python-format
+msgid "Minimal value is %f"
+msgstr "Минимальное значение - %f"
 
 msgid "Minimal value is 1"
 msgstr "Минимальное значение - 1"
@@ -3750,6 +3843,9 @@ msgstr "Новый адрес e-mail"
 msgid "New field"
 msgstr "Новое поле"
 
+msgid "New function"
+msgstr "Новая функция"
+
 msgid "New image"
 msgstr "Новое изображение"
 
@@ -3892,6 +3988,9 @@ msgstr "Нет данных"
 msgid "No expiration"
 msgstr "Без срока годности"
 
+msgid "No functions in the location"
+msgstr "У локации нет функций"
+
 msgid "No items of such type"
 msgstr "Нет предметов данного типа"
 
@@ -3945,6 +4044,9 @@ msgstr "Недостаточно %s."
 
 msgid "Not enough items of this type"
 msgstr "Недостаточно предметов данного типа"
+
+msgid "Not enough {item_name_gp}  ({available} pcs available)"
+msgstr "Недостаточно {item_name_gp} (доступно {available} шт)"
 
 msgid "Not logged in"
 msgstr "Не вошедший в систему"
@@ -4340,6 +4442,9 @@ msgstr "Цена за персонажа сверх бесплатного ли�
 msgid "Price is too low"
 msgstr "Цена слишком низкая"
 
+msgid "Price of {item_name_gp} was changed (from {old_price} {old_currency} to {new_price} {new_currency})"
+msgstr "Цена {item_name_gp} изменилась (с {old_price} {old_currency} до {new_price} {new_currency})"
+
 msgid "Prices"
 msgstr "Цены"
 
@@ -4436,6 +4541,9 @@ msgstr "Публиковать информацию об этом вариант
 
 msgid "Purpose"
 msgstr "Назначение"
+
+msgid "Put bought items to the store"
+msgstr "Помещать купленные товары на склад"
 
 msgid "Quantity"
 msgstr "Количество"
@@ -4721,6 +4829,9 @@ msgstr "Причина отказа"
 
 msgid "Relative height"
 msgstr "Относительная высота"
+
+msgid "Relative value of {code} ({name})"
+msgstr "Относительная ценность {code} ({name})"
 
 msgid "Relative width"
 msgstr "Относительная ширина"
@@ -5037,6 +5148,24 @@ msgstr "Выберите вашего персонажа"
 msgid "Select your sex"
 msgstr "Укажите ваш пол"
 
+msgid "Sell currency"
+msgstr "Валюта продажи"
+
+msgid "Sell from the store only"
+msgstr "Продавать только со склада"
+
+msgid "Sell price"
+msgstr "Цена продажи"
+
+msgid "Sell price correction"
+msgstr "Коррекция цены продажи"
+
+msgid "Sell price evaluation"
+msgstr "Вычисление цены продажи"
+
+msgid "Sell selected items"
+msgstr "Продать выбранные предметы"
+
 msgid "Send"
 msgstr "Отправить"
 
@@ -5109,6 +5238,36 @@ msgstr "Найдено несколько файлов с одинаковым �
 
 msgid "Sex"
 msgstr "Пол"
+
+msgid "Shop"
+msgstr "Магазин"
+
+msgid "Shop assortment changed"
+msgstr "Ассортимент магазина изменился"
+
+msgid "Shop buy"
+msgstr "Покупка в магазине"
+
+msgid "Shop buys these items"
+msgstr "Магазин скупает эти предметы"
+
+msgid "Shop must either sell or buy goods (or both)"
+msgstr "Магазин должен или продавать, или покупать товары (или и то, и другое)"
+
+msgid "Shop prices"
+msgstr "Цены магазина"
+
+msgid "Shop sell"
+msgstr "Продажа в магазин"
+
+msgid "Shop sells these items"
+msgstr "Магазин продаёт эти предметы"
+
+msgid "Shops"
+msgstr "Магазины"
+
+msgid "Shops configuration"
+msgstr "Конфигурация магазинов"
 
 msgid "Short abbreviated code of the game (ex: EF)"
 msgstr "Короткое сокращённое название игры (напр: EF)"
@@ -5383,6 +5542,15 @@ msgstr "Баварские фермеры отказались уступать 
 msgid "Space"
 msgstr "Космос"
 
+msgid "Special function identifier must start with 'u_' and contain latin letters, digits and underscores only"
+msgstr "Идентификатор спецфункции должен начинаться с \"u_\" и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Special function settings"
+msgstr "Настройки специальной функции"
+
+msgid "Special functions"
+msgstr "Спецфункции"
+
 msgid "Specific price"
 msgstr "Особенная цена"
 
@@ -5518,12 +5686,6 @@ msgstr "Подписка успешна."
 msgid "Support"
 msgstr "Техническая поддержка"
 
-msgid "Switch to the image map editor"
-msgstr "Переключиться в режим редактора карты изображения"
-
-msgid "Switch to the location editor"
-msgstr "Переключиться в режим редактора локации"
-
 msgid "System"
 msgstr "Система"
 
@@ -5580,6 +5742,9 @@ msgstr "В каком фрейме открыть"
 msgid "Target location"
 msgstr "Целевая локация"
 
+msgid "Technical error during debiting {amount} {currency} (available={available})"
+msgstr "Техническая ошибка во время списания {amount} {currency} (доступно={available})"
+
 msgid "Technical reference"
 msgstr "Техническое руководство"
 
@@ -5627,6 +5792,9 @@ msgstr "Это поле является обязательным, начина�
 
 msgid "The richest"
 msgstr "Самые богатые"
+
+msgid "There are no items for sell at the moment"
+msgstr "В данный момент товар на продажу отсутствует"
 
 msgid "There are some very important points in the contract. At least read information in the red panel."
 msgstr "В договоре есть некоторые очень важные пункты. Как минимум, прочтите информацию в красной панели."
@@ -5772,6 +5940,9 @@ msgstr "Это очень длинный текст, в котором вас п
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
 
+msgid "This is not a number"
+msgstr "Это не число"
+
 msgid "This is the public offer"
 msgstr "Это публичная оферта"
 
@@ -5809,6 +5980,12 @@ msgstr "Этот параметр является классом персона
 
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
+
+msgid "This shop buys goods"
+msgstr "Этот магазин скупает товары"
+
+msgid "This shop sells goods"
+msgstr "Этот магазин продаёт товары"
 
 msgid "This user can't have a name"
 msgstr "Этот пользователь не может иметь имени"
@@ -5936,6 +6113,9 @@ msgstr "Дата темы (дд.мм.гггг или дд.мм.гггг чч:м�
 
 msgid "Topics"
 msgstr "Тем"
+
+msgid "Total"
+msgstr "Итого"
 
 msgid "Total dimensions of images in your signature are {img_w}x{img_h}. Max permitted are {max_w}x{max_h}. Resize your images to meet this condition"
 msgstr "Суммарные размеры изображений в вашей подписи {img_w}x{img_h}. Максимально допустимые - {max_w}x{max_h}. Уменьшите ваши изображения, чтобы удовлетворить данным требованиям"
@@ -6257,9 +6437,6 @@ msgstr "Очень странная подпись"
 
 msgid "View inventory"
 msgstr "Просмотр инвентаря"
-
-msgid "View location parameters"
-msgstr "Открыть параметры локации"
 
 msgid "Viewing"
 msgstr "Просмотр"
@@ -6601,6 +6778,9 @@ msgstr "Вы получили:"
 msgid "You have no available variants of '%s' to select from"
 msgstr "У вас нет доступных вариантов \"%s\", из которых можно выбрать"
 
+msgid "You have no items for sell to this shop"
+msgstr "У вас нет предметов, которые можно продать в этот магазин"
+
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
 
@@ -6930,6 +7110,9 @@ msgstr "конструктор"
 msgid "created///by"
 msgstr "Создано"
 
+msgid "currency///Auto"
+msgstr "Авто"
+
 msgid "database///DB"
 msgstr "БД"
 
@@ -7076,6 +7259,9 @@ msgstr "если {condition}: {result}"
 msgid "ignore"
 msgstr "игнорировать"
 
+msgid "imagemap///Map"
+msgstr "Карта"
+
 msgid "images"
 msgstr "изображения"
 
@@ -7142,6 +7328,12 @@ msgstr "вышел"
 
 msgid "maleonline///went"
 msgstr "вошёл"
+
+msgid "menu///Buy"
+msgstr "Купить"
+
+msgid "menu///Sell"
+msgstr "Продать"
 
 msgid "message was queued for delivery/messages were queued for delivery"
 msgstr "сообщение было поставлено в очередь на доставку/сообщения было поставлено в очередь на доставку/сообщений было поставлено в очередь на доставку"
@@ -7567,6 +7759,9 @@ msgstr "устанавливаем {obj}.{attr} = {val}"
 msgid "sex///Who is your character"
 msgstr "Кто ваш персонаж?"
 
+msgid "shop assortment"
+msgstr "ассортимент магазина"
+
 msgid "show"
 msgstr "показать"
 
@@ -7578,6 +7773,9 @@ msgstr "смайлик/смайлика/смайликов"
 
 msgid "socio-top///Search"
 msgstr "Поиск"
+
+msgid "specfunc///{action_name} of {func_title}"
+msgstr "{action_name} \"{func_title}\""
 
 msgid "status///unknown"
 msgstr "неизвестен"
@@ -7758,6 +7956,9 @@ msgstr ""
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
+msgid "{currency} history"
+msgstr "История {currency}"
+
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
 
@@ -7771,6 +7972,26 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Your inventory"
+#~ msgstr "Ваш инвентарь"
+#~ msgid "Price for '%s' was changed"
+#~ msgstr "Цена на \"%s\" изменилась"
+#~ msgid "Function %s implementation"
+#~ msgstr "Реализация функции %s"
+#~ msgid ""
+#~ "Closed commodity circulation (shop has its own store and it sells goods "
+#~ "bought from users only)"
+#~ msgstr ""
+#~ "Замкнутый товарный цикл (у магазина есть собственный склад, и он продаёт "
+#~ "товары, только купленные от пользователей)"
+#~ msgid "Switch to the image map editor"
+#~ msgstr "Переключиться в режим редактора карты изображения"
+#~ msgid "Switch to the location editor"
+#~ msgstr "Переключиться в режим редактора локации"
+#~ msgid "View location parameters"
+#~ msgstr "Открыть параметры локации"
+#~ msgid "View location special functions"
+#~ msgstr "Открыть спецфункции локации"
 #~ msgid "User permissions editor"
 #~ msgstr "Редактор привилегий пользователей"
 #~ msgid "Validated %d objects"

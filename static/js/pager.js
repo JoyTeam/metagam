@@ -36,6 +36,10 @@ Pager.prototype.update = function() {
 		tokens.push(title);
 	}
 	document.getElementById(this.pager_list).innerHTML = tokens.join('&nbsp;| ');
+	var el = document.getElementById('form-page');
+	if (el) {
+		el.value = this.active_page;
+	}
 };
 
 Pager.prototype.hide_active = function() {
