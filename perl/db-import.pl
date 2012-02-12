@@ -174,3 +174,20 @@ sub money_stats
 	}
 }
 
+sub shops_stats
+{
+	my $inst = shift;
+	my $ent = shift;
+	my $db = $inst->sql->{dbh};
+	$db->do('delete from shops_sell where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	$db->do('delete from shops_buy where app=? and period>=?', undef, $ent->{app}, $ent->{date});
+	while (my ($key, $hash) = each %{$ent->{operations}}) {
+		if (my ($shop, $mode, $currency) = $key =~ /^(.+)-(sell|buy)-([A-Z]+)$/) {
+			while (my ($item_type, $lst) = each %$hash) {
+				my ($amount, $quantity) = @$lst;
+				$db->do("insert into shops_$mode(app, shop, item_type, period, currency, amount, quantity) values (?, ?, ?, ?, ?, ?, ?)", undef, $ent->{app}, $shop, $item_type, $ent->{date}, $currency, $amount, $quantity);
+			}
+		}
+	}
+}
+

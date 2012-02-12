@@ -1,4 +1,5 @@
 from mg.constructor import *
+from mg.mmorpg.inventory_classes import dna_parse
 import re
 
 default_sell_price = ["glob", "price"]
@@ -6,6 +7,15 @@ default_buy_price = ["*", ["glob", "price"], 0.1]
 
 re_sell_item = re.compile(r'^sell-([a-f0-9]{32})$')
 re_request_item = re.compile(r'^([a-f0-9_]+)/(\d+\.\d+|\d+)/([A-Z0-9]+)/(\d+)$')
+
+class DBShopOperation(CassandraObject):
+    clsname = "ShopOperation"
+    indexes = {
+        "performed": [[], "performed"],
+    }
+
+class DBShopOperationList(CassandraObjectList):
+    objcls = DBShopOperation
 
 class ShopsAdmin(ConstructorModule):
     def register(self):
@@ -16,6 +26,15 @@ class ShopsAdmin(ConstructorModule):
         self.rhook("admin-locfunctype-shop.actions", self.actions)
         self.rhook("admin-locfunctype-shop.action-assortment", self.assortment, priv="shops.config")
         self.rhook("admin-locfunctype-shop.headmenu-assortment", self.headmenu_assortment)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-shops.stats", self.stats)
+
+    def schedule(self, sched):
+        sched.add("admin-shops.stats", "8 0 * * *", priority=10)
+
+    def objclasses_list(self, objclasses):
+        objclasses["ShopOperation"] = (DBShopOperation, DBShopOperationList)
 
     def permissions_list(self, perms):
         perms.append({"id": "shops.config", "name": self._("Shops configuration")})
@@ -175,6 +194,39 @@ class ShopsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def stats(self):
+        today = self.nowdate()
+        yesterday = prev_date(today)
+        lst = self.objlist(DBShopOperationList, query_index="performed", query_finish=today)
+        lst.load(silent=True)
+        operations = {}
+        for ent in lst:
+            shop = ent.get("shop")
+            mode = ent.get("mode")
+            ops = ent.get("operations")
+            for dna, info in ops.iteritems():
+                item_type, mods = dna_parse(dna)
+                price = info.get("price")
+                currency = info.get("currency")
+                quantity = info.get("quantity")
+                if item_type and price and quantity and currency:
+                    key = "%s-%s-%s" % (shop, mode, currency)
+                    try:
+                        ops_list = operations[key]
+                    except KeyError:
+                        ops_list = {}
+                        operations[key] = ops_list
+                    amount = price * quantity
+                    try:
+                        ops_list[item_type][0] += amount
+                        ops_list[item_type][1] += quantity
+                    except KeyError:
+                        ops_list[item_type] = [amount, quantity]
+        print "operations for yesterday (%s): %s" % (yesterday, operations)
+        if operations:
+            self.call("dbexport.add", "shops_stats", date=yesterday, operations=operations)
+        lst.remove()
+
 class Shops(ConstructorModule):
     def register(self):
         self.rhook("locfunctypes.list", self.locfunctypes_list)
@@ -307,6 +359,13 @@ class Shops(ConstructorModule):
                             "currency": currency,
                             "quantity": quantity,
                         }
+                now = self.now()
+                oplog = self.obj(DBShopOperation)
+                oplog.set("performed", now)
+                oplog.set("shop", func_id)
+                oplog.set("character", character.uuid)
+                oplog.set("mode", mode)
+                oplog.set("operations", user_requests.copy())
             # processing catalog
             ritems = {}
             for item_type in item_types:
@@ -460,7 +519,6 @@ class Shops(ConstructorModule):
             if not any_visible and rcategories:
                 rcategories[0]["visible"] = True
             if req.ok():
-                now = self.now()
                 if user_requests:
                     errors.append(self._("Shop assortment changed"))
                 if mode == "sell":
@@ -542,6 +600,7 @@ class Shops(ConstructorModule):
                 if errors:
                     vars["error"] = u"<br />".join(errors)
                 else:
+                    oplog.store()
                     character.inventory.store()
                     shop_inventory.store()
                     self.call("web.redirect", redirect or "/inventory")

@@ -93,7 +93,7 @@ class Queue(Module):
         if not m:
             self.call("web.not_found")
         app_tag, hook = m.group(1, 2)
-        args = json.loads(req.param("args"))
+        args = json.loads(req.param("args")) if req.param("args") != "" else {}
         app = self.app().inst.appfactory.get_by_tag(app_tag)
         if app is None:
             self.call("web.not_found")

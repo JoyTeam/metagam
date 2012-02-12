@@ -153,6 +153,38 @@ sql_table('modifiers',
 		'index' => 'till',
 	]
 );
+sql_table('shops_sell',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'shop' => [ -type=>'varchar(80)', -null=>0 ],
+		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'currency' => [ -type=>'varchar(10)', -null=>0 ],
+		'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+		'quantity' => [ -type=>'integer', -null=>0 ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,shop,period',
+		'index' => 'app,item_type,period',
+		'index' => 'app,shop,item_type,period',
+	]
+);
+sql_table('shops_buy',
+	[
+		'app' => [ -type=>'varchar(32)', -null=>0 ],
+		'shop' => [ -type=>'varchar(80)', -null=>0 ],
+		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+		'period' => [ -type=>'date', -null=>0 ],
+		'currency' => [ -type=>'varchar(10)', -null=>0 ],
+		'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+		'quantity' => [ -type=>'integer', -null=>0 ],
+	], [
+		'index' => 'app,period',
+		'index' => 'app,shop,period',
+		'index' => 'app,item_type,period',
+		'index' => 'app,shop,item_type,period',
+	]
+);
 sql_done();
 
 sub sql_field

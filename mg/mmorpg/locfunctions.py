@@ -232,6 +232,8 @@ class LocationFunctionsAdmin(ConstructorModule):
                         errors["ident"] = self._("This field is mandatory")
                     elif not re_valid_identifier.match(ident):
                         errors["ident"] = self._("Special function identifier must start with 'u_' and contain latin letters, digits and underscores only")
+                    elif len(ident) > 32:
+                        errors["ident"] = self._("Maximal identifier length is %d") % 32
                     else:
                         fn_id = ident
                         func["id"] = fn_id
