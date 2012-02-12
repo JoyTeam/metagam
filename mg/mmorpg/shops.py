@@ -61,12 +61,17 @@ class ShopsAdmin(ConstructorModule):
         else:
             func["default_action"] = "sell"
 
-    def actions(self, func, actions):
+    def actions(self, func_id, func, actions):
         req = self.req()
         actions.append({
             "id": "assortment",
             "text": self._("shop assortment"),
         })
+        if req.has_access("inventory.track"):
+            actions.append({
+                "hook": "inventory/view/shop/{shop}".format(shop=func_id),
+                "text": self._("shop store"),
+            })
 
     def headmenu_assortment(self, func, args):
         if args:
@@ -177,6 +182,8 @@ class Shops(ConstructorModule):
         self.rhook("locfunctype-shop.action-buy", self.buy, priv="logged")
         self.rhook("money-description.shop-buy", self.money_description_shop_buy)
         self.rhook("money-description.shop-sell", self.money_description_shop_sell)
+        self.rhook("money-description.shop-bought", self.money_description_shop_bought)
+        self.rhook("money-description.shop-sold", self.money_description_shop_sold)
 
     def money_description_shop_buy(self):
         return {
@@ -188,6 +195,18 @@ class Shops(ConstructorModule):
         return {
             "args": [],
             "text": self._("Shop sell"),
+        }
+
+    def money_description_shop_bought(self):
+        return {
+            "args": [],
+            "text": self._("Bought by the shop"),
+        }
+
+    def money_description_shop_sold(self):
+        return {
+            "args": [],
+            "text": self._("Sold by the shop"),
         }
 
     def child_modules(self):
@@ -221,6 +240,7 @@ class Shops(ConstructorModule):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
+        shop_inventory = self.call("inventory.get", "shop", func_id)
         # locking
         lock_objects = []
         if req.ok():
@@ -228,8 +248,10 @@ class Shops(ConstructorModule):
             lock_objects.append(character.lock)
             lock_objects.append(character.money.lock_key)
             lock_objects.append(character.inventory.lock_key)
+            lock_objects.append(shop_inventory.lock_key)
         with self.lock(lock_objects):
             character.inventory.load()
+            shop_inventory.load()
             # loading list of categories
             categories = self.call("item-types.categories", "shops")
             assortment = self.conf("shop-%s.assortment" % func_id, {})
@@ -250,8 +272,9 @@ class Shops(ConstructorModule):
                 item_types = []
                 max_quantity = {}
                 for item_type, quantity in character.inventory.items():
-                    item_types.append(item_type)
-                    max_quantity[item_type.dna] = quantity
+                    if assortment.get("buy-%s" % item_type.uuid):
+                        item_types.append(item_type)
+                        max_quantity[item_type.dna] = quantity
             # user action
             if req.ok():
                 errors = []
@@ -391,10 +414,16 @@ class Shops(ConstructorModule):
                                     "quantity": ureq["quantity"],
                                 })
                             else:
-                                discard_items.append({
-                                    "item_type": item_type,
-                                    "quantity": ureq["quantity"],
-                                })
+                                if assortment.get("buy-store-%s" % item_type.uuid):
+                                    transfer_items.append({
+                                        "item_type": item_type,
+                                        "quantity": ureq["quantity"],
+                                    })
+                                else:
+                                    discard_items.append({
+                                        "item_type": item_type,
+                                        "quantity": ureq["quantity"],
+                                    })
                         del user_requests[item_type.dna]
             rcategories = []
             active_cat = req.param("cat")
@@ -418,6 +447,7 @@ class Shops(ConstructorModule):
             if not any_visible and rcategories:
                 rcategories[0]["visible"] = True
             if req.ok():
+                now = self.now()
                 if user_requests:
                     errors.append(self._("Shop assortment changed"))
                 if mode == "sell":
@@ -430,10 +460,17 @@ class Shops(ConstructorModule):
                 if mode == "buy":
                     # taking items
                     if not errors:
+                        for ent in transfer_items:
+                            item_type = ent["item_type"]
+                            quantity = ent["quantity"]
+                            item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell", performed=now, reftype=shop_inventory.owtype, ref=shop_inventory.uuid)
+                            if quantity_taken is None:
+                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity, item_type.dna, character.uuid))
+                            shop_inventory._give(item_type.uuid, quantity, "shop-bought", mod=item_type.mods, performed=now, reftype=character.inventory.owtype, ref=character.inventory.uuid)
                         for ent in discard_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
-                            item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell")
+                            item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell", performed=now)
                             if quantity_taken is None:
                                 raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity, item_type.dna, character.uuid))
 
@@ -484,6 +521,7 @@ class Shops(ConstructorModule):
                     vars["error"] = u"<br />".join(errors)
                 else:
                     character.inventory.store()
+                    shop_inventory.store()
                     self.call("web.redirect", redirect or "/inventory")
         if rcategories:
             vars["categories"] = rcategories

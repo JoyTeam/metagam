@@ -82,7 +82,7 @@ class Money(ConstructorModule):
                 "href": "/money",
                 "html": self._("Return"),
             },
-            "title": self._("{currency} history").format(currency=htmlescape(req.args)),
+            "title": htmlescape(currency_info.get("name_plural")),
         }
         account = money.account(currency)
         self.render_operations(account, vars)

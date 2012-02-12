@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-12 17:13+0300\n"
+"PO-Revision-Date: 2012-02-12 18:43+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -665,6 +665,9 @@ msgstr "Полужирный"
 
 msgid "Bottom"
 msgstr "Низ"
+
+msgid "Bought by the shop"
+msgstr "Куплено магазином"
 
 msgid "Breaking news"
 msgstr "Срочно в номер"
@@ -2615,6 +2618,10 @@ msgstr "История"
 #, python-format
 msgid "History of '%s'"
 msgstr "История '%s'"
+
+#, python-format
+msgid "History of shop '%s'"
+msgstr "История магазина '%s'"
 
 msgid "Host"
 msgstr "Хост"
@@ -4748,8 +4755,8 @@ msgstr "Причина, по которой вы выдаёте деньги п�
 msgid "Reason why do you transfer items between users. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
 msgstr "Причина, по которой вы передаёте предметы между пользователями. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
-msgid "Reason why do you withdraw items from the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы изымаете предметы у пользователя. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgid "Reason why do you withdraw items. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
+msgstr "Причина, по которой вы изымаете предметы. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
 
 msgid "Received"
 msgstr "Получено"
@@ -5242,6 +5249,10 @@ msgstr "Пол"
 msgid "Shop"
 msgstr "Магазин"
 
+#, python-format
+msgid "Shop %s"
+msgstr "Магазин %s"
+
 msgid "Shop assortment changed"
 msgstr "Ассортимент магазина изменился"
 
@@ -5262,6 +5273,9 @@ msgstr "Продажа в магазин"
 
 msgid "Shop sells these items"
 msgstr "Магазин продаёт эти предметы"
+
+msgid "Shop store"
+msgstr "Склад магазина"
 
 msgid "Shops"
 msgstr "Магазины"
@@ -5445,6 +5459,9 @@ msgstr "Верхнее меню социальных интерфейсов"
 
 msgid "Software engineer"
 msgstr "Разработчики ПО"
+
+msgid "Sold by the shop"
+msgstr "Продано магазином"
 
 msgid "Solid"
 msgstr "Сплошной"
@@ -5655,6 +5672,9 @@ msgstr "Сохранять образы персонажей в этих раз�
 
 msgid "Store images for all items in these dimensions (comma separated). Specific item type may require other dimensions (for example, character equip items may have other dimensions - they shouldn't be listed here)"
 msgstr "Сохранять изображения для всех предметов в этих размерах (разделённых запятыми). Отдельные типы предметов могут требовать других размеров (например, предметы экипировки персонажей могут иметь другие разрешения - их не нужно здесь перечислять)"
+
+msgid "Store of {shop}"
+msgstr "Склад {shop}"
 
 msgid "Stored in the database"
 msgstr "Сохраняется в базе данных"
@@ -7762,6 +7782,9 @@ msgstr "Кто ваш персонаж?"
 msgid "shop assortment"
 msgstr "ассортимент магазина"
 
+msgid "shop store"
+msgstr "склад магазина"
+
 msgid "show"
 msgstr "показать"
 
@@ -7956,9 +7979,6 @@ msgstr ""
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
-msgid "{currency} history"
-msgstr "История {currency}"
-
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
 
@@ -7972,6 +7992,11 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#, fuzzy
+#~ msgid "Shop %s store"
+#~ msgstr "ассортимент магазина"
+#~ msgid "{currency} history"
+#~ msgstr "История {currency}"
 #~ msgid "Your inventory"
 #~ msgstr "Ваш инвентарь"
 #~ msgid "Price for '%s' was changed"

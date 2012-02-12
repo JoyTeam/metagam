@@ -12,14 +12,14 @@ re_dimensions = re.compile(r'\s*,\s*')
 re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
 re_since_till = re.compile(r'^(.+)/(\d\d\d\d\-\d\d-\d\d)/(\d\d:\d\d:\d\d)/(\d\d\d\d\-\d\d-\d\d)/(\d\d:\d\d:\d\d)$')
 re_track_type = re.compile(r'^item-type/([a-f0-9]+)$')
-re_track_type_owner = re.compile(r'^type-owner/([a-f0-9]+)/([a-z]+)/([a-f0-9]+)$')
-re_track_owner = re.compile(r'^owner/([a-z]+)/([a-f0-9]+)$')
+re_track_type_owner = re.compile(r'^type-owner/([a-f0-9]+)/([a-z]+)/([a-zA-Z0-9_\-]+)$')
+re_track_owner = re.compile(r'^owner/([a-z]+)/([a-zA-Z0-9_\-]+)$')
 re_month = re.compile(r'^(\d\d\d\d-\d\d)')
 re_date = re.compile(r'^(\d\d\d\d-\d\d-\d\d)')
 re_give_command = re.compile(r'^\s*(.+?)\s*-\s*(\d+)\s*$')
-re_inventory_view = re.compile(r'^(char)/([0-9a-f]+)$')
-re_inventory_withdraw = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
-re_inventory_transfer = re.compile(r'^(char)/([0-9a-f]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
+re_inventory_view = re.compile(r'^(char|shop)/([0-9a-zA-Z_\-]+)$')
+re_inventory_withdraw = re.compile(r'^(char|shop)/([0-9a-zA-Z_\-]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
+re_inventory_transfer = re.compile(r'^(char|shop)/([0-9a-zA-Z_\-]+)/([a-f0-9]+(?:|_[0-9a-f]+))$')
 re_dim = re.compile(r'^(\d+)x(\d+)$')
 re_categories_args = re.compile(r'^([a-z]+)(?:|/(.+))$')
 re_del = re.compile(r'^del/(.+)$')
@@ -713,12 +713,16 @@ class InventoryAdmin(ConstructorModule):
                     item_type = self.item_type(item_type)
                     if owtype == "char":
                         return [self._("History of '%s'") % htmlescape(item_type.name), "inventory/view/char/%s" % owner]
+                    elif owtype == "shop":
+                        return [self._("History of shop '%s'") % htmlescape(owner), "inventory/view/shop/%s" % owner]
                 else:
                     m = re_track_owner.match(cmd)
                     if m:
                         owtype, owner = m.group(1, 2)
                         if owtype == "char":
                             return [self._("History"), "inventory/view/char/%s" % owner]
+                        elif owtype == "shop":
+                            return [self._("History"), "inventory/view/shop/%s" % owner]
         except ObjectNotFoundException:
             pass
 
@@ -768,6 +772,8 @@ class InventoryAdmin(ConstructorModule):
                     append = u''
                     if req.has_access("inventory.give"):
                         menu.append(u'<hook:admin.link href="item-types/give/{type}?char={char}{append}" title="{title}" />'.format(type=item_type, char=owner, title=self._("Give {char} more items of this type").format(char=htmlescape(char.name)), append=append))
+                elif owtype == "shop":
+                    owner_name = htmlescape(self._("Shop %s") % htmlescape(owner))
                 else:
                     owner_name = '?'
                 item_type_obj = self.item_type(item_type)
@@ -786,6 +792,8 @@ class InventoryAdmin(ConstructorModule):
                     if owtype == "char":
                         char = self.character(owner)
                         owner_name = htmlescape(char.name)
+                    elif owtype == "shop":
+                        owner_name = htmlescape(self._("Shop %s") % htmlescape(owner))
                     else:
                         owner_name = '?'
                     filters = self._("Movements of all items owned by '%s'") % owner_name
@@ -838,6 +846,8 @@ class InventoryAdmin(ConstructorModule):
             if owtype == "char":
                 char = self.character(ent.get("owner"))
                 owner_name = htmlescape(char.name)
+            elif owtype == "shop":
+                owner_name = htmlescape(self._("Shop %s") % ent.get("owner"))
             else:
                 owner_name = "?"
             if col_owner:
@@ -861,6 +871,8 @@ class InventoryAdmin(ConstructorModule):
                 if reftype == "char":
                     refchar = self.character(ref)
                     refname = htmlescape(refchar.name)
+                elif reftype == "shop":
+                    refname = self._("Shop %s") % htmlescape(ref)
                 else:
                     refname = ref
                 since = re.sub(' ', '/', ent.get("performed"))
@@ -897,6 +909,14 @@ class InventoryAdmin(ConstructorModule):
             owtype, owner = m.group(1, 2)
             if owtype == "char":
                 return [self._("Inventory"), "auth/user-dashboard/%s?active_tab=items" % owner]
+            elif owtype == "shop":
+                re_loc_shop = re.compile(r'^loc-([a-f0-9]+)-([a-zA-Z0-9_\-]+)$')
+                m = re_loc_shop.match(owner)
+                if m:
+                    loc_id, func_id = m.group(1, 2)
+                    return [self._("Store of {shop}").format(shop=htmlescape(func_id)), "locations/specfunc/%s" % loc_id]
+                else:
+                    return self._("Shop store")
 
     def admin_inventory_view(self):
         req = self.req()
@@ -938,11 +958,13 @@ class InventoryAdmin(ConstructorModule):
         if may_withdraw:
             header.append(self._("Withdrawal"))
         links = []
+        date = self.nowdate()
         if owtype == "char":
-            date = self.nowdate()
             links.append({"hook": "inventory/track/owner/char/{char}/{date}/00:00:00/{next_date}/00:00:00".format(char=owner, date=date, next_date=next_date(date)), "text": self._("Track items")})
             if req.has_access("inventory.give"):
                 links.append({"hook": "item-types/char-give/%s" % owner, "text": self._("Give items")})
+        elif owtype == "shop":
+            links.append({"hook": "inventory/track/owner/shop/{shop}/{date}/00:00:00/{next_date}/00:00:00".format(shop=owner, date=date, next_date=next_date(date)), "text": self._("Track items")})
         if links:
             links[-1]["lst"] = True
         vars = {
@@ -971,11 +993,7 @@ class InventoryAdmin(ConstructorModule):
         m = re_inventory_withdraw.match(req.args)
         if m:
             owtype, owner, dna = m.group(1, 2, 3)
-            if owtype == "char":
-                char = self.character(owner)
-                inv = char.inventory
-            else:
-                self.call("web.not_found")
+            inv = self.call("inventory.get", owtype,owner)
         else:
             self.call("web.not_found")
         item_type, dna_suffix = dna_parse(dna)
@@ -1006,13 +1024,15 @@ class InventoryAdmin(ConstructorModule):
                 if owtype == "char":
                     self.call("security.suspicion", admin=req.user(), action="items.withdraw", member=char.uuid, amount=quantity, dna=dna, comment=admin_comment)
                     self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Withdrawn {quantity} x {name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment))
+                elif owtype == "shop":
+                    self.call("security.suspicion", admin=req.user(), action="items.withdraw", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
                 self.call("admin.redirect", "inventory/view/%s/%s" % (owtype, owner))
             else:
                 errors["quantity"] = self._("Not enough items of this type")
                 self.call("web.response_json", {"success": False, "errors": errors})
         fields = [
             {"name": "quantity", "label": self._("Quantity")},
-            {"name": "admin_comment", "label": '%s%s' % (self._("Reason why do you withdraw items from the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")},
+            {"name": "admin_comment", "label": '%s%s' % (self._("Reason why do you withdraw items. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")},
         ]
         buttons = [
             {"text": self._("Withdraw")},
@@ -1035,11 +1055,7 @@ class InventoryAdmin(ConstructorModule):
         m = re_inventory_transfer.match(req.args)
         if m:
             owtype, owner, dna = m.group(1, 2, 3)
-            if owtype == "char":
-                char = self.character(owner)
-                inv = char.inventory
-            else:
-                self.call("web.not_found")
+            inv = self.call("inventory.get", owtype, owner)
         else:
             self.call("web.not_found")
         item_type, dna_suffix = dna_parse(dna)
@@ -1081,14 +1097,20 @@ class InventoryAdmin(ConstructorModule):
                 target_inv.load()
                 item_type_obj, deleted = inv._take_dna(dna, quantity, "admin.transfer", admin=req.user(), performed=now, reftype=target_inv.owtype, ref=target_inv.uuid)
                 if item_type_obj and deleted:
-                    target_inv._give(item_type_obj.uuid, quantity, "items.transfer", admin=req.user(), mod=item_type_obj.mods, performed=now, reftype=inv.owtype, ref=inv.uuid)
+                    target_inv._give(item_type_obj.uuid, quantity, "admin.transfer", admin=req.user(), mod=item_type_obj.mods, performed=now, reftype=inv.owtype, ref=inv.uuid)
                     inv.store()
                     target_inv.store()
                     if owtype == "char":
                         self.call("security.suspicion", admin=req.user(), action="items.transfer.from", member=char.uuid, amount=quantity, dna=dna, comment=admin_comment)
                         self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Transferred {quantity} x {name} to {target_name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment, target_name=target_char.name))
+                        source_name = char.name
+                    elif owtype == "shop":
+                        self.call("security.suspicion", admin=req.user(), action="items.transfer.from", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
+                        source_name = owner
+                    else:
+                        source_name = None
                     self.call("security.suspicion", admin=req.user(), action="items.transfer.to", member=target_char.uuid, amount=quantity, dna=dna, comment=admin_comment)
-                    self.call("dossier.write", user=target_char.uuid, admin=req.user(), content=self._("Transferred {quantity} x {name} from {source_name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment, source_name=char.name))
+                    self.call("dossier.write", user=target_char.uuid, admin=req.user(), content=self._("Transferred {quantity} x {name} from {source_name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment, source_name=source_name))
                     self.call("admin.redirect", "inventory/view/%s/%s" % (owtype, owner))
                 else:
                     errors["quantity"] = self._("Not enough items of this type")
