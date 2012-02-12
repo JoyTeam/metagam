@@ -256,17 +256,24 @@ class Shops(ConstructorModule):
             categories = self.call("item-types.categories", "shops")
             assortment = self.conf("shop-%s.assortment" % func_id, {})
             if mode == "sell":
-                # loading list of items to sell
+                # loading shop store
+                item_types = []
+                max_quantity = {}
+                for item_type, quantity in shop_inventory.items():
+                    if assortment.get("sell-%s" % item_type.uuid) and assortment.get("sell-store-%s" % item_type.uuid):
+                        item_types.append(item_type)
+                        max_quantity[item_type.dna] = quantity
+                # loading list of unlimited items to sell
                 item_type_uuids = []
                 for key in assortment.keys():
                     m = re_sell_item.match(key)
                     if not m:
                         continue
                     uuid = m.group(1)
-                    item_type_uuids.append(uuid)
-                # loading item types data
-                item_types = self.item_types_load(item_type_uuids)
-                max_quantity = {}
+                    if not assortment.get("sell-store-%s" % uuid):
+                        item_type_uuids.append(uuid)
+                # loading unlimited item types data
+                item_types.extend(self.item_types_load(item_type_uuids))
             else:
                 # loading character's inventory
                 item_types = []
@@ -409,10 +416,16 @@ class Shops(ConstructorModule):
                                 comments[item_type.name] = ureq["quantity"]
                             # recording operation
                             if mode == "sell":
-                                create_items.append({
-                                    "item_type": item_type,
-                                    "quantity": ureq["quantity"],
-                                })
+                                if assortment.get("sell-store-%s" % item_type.uuid):
+                                    transfer_items.append({
+                                        "item_type": item_type,
+                                        "quantity": ureq["quantity"],
+                                    })
+                                else:
+                                    create_items.append({
+                                        "item_type": item_type,
+                                        "quantity": ureq["quantity"],
+                                    })
                             else:
                                 if assortment.get("buy-store-%s" % item_type.uuid):
                                     transfer_items.append({
@@ -465,15 +478,24 @@ class Shops(ConstructorModule):
                             quantity = ent["quantity"]
                             item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell", performed=now, reftype=shop_inventory.owtype, ref=shop_inventory.uuid)
                             if quantity_taken is None:
-                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity, item_type.dna, character.uuid))
+                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity=quantity, dna=item_type.dna, character=character.uuid))
                             shop_inventory._give(item_type.uuid, quantity, "shop-bought", mod=item_type.mods, performed=now, reftype=character.inventory.owtype, ref=character.inventory.uuid)
                         for ent in discard_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
                             item_type_taken, quantity_taken = character.inventory._take_dna(item_type.dna, quantity, "shop-sell", performed=now)
                             if quantity_taken is None:
-                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity, item_type.dna, character.uuid))
-
+                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity=quantity, dna=item_type.dna, character=character.uuid))
+                else:
+                    # transferring items
+                    if not errors:
+                        for ent in transfer_items:
+                            item_type = ent["item_type"]
+                            quantity = ent["quantity"]
+                            item_type_taken, quantity_taken = shop_inventory._take_dna(item_type.dna, quantity, "shop-sold", performed=now, reftype=character.inventory.owtype, ref=character.inventory.uuid)
+                            if quantity_taken is None:
+                                raise RuntimeError("Could not take quantity={quantity}, dna={dna} from shop store (shop={shop})".format(quantity=quantity, dna=item_type.dna, shop=shop_inventory.uuid))
+                            character.inventory._give(item_type.uuid, quantity, "shop-buy", mod=item_type.mods, performed=now, reftype=shop_inventory.owtype, ref=shop_inventory.uuid)
                 if not errors:
                     for currency, amount in money.iteritems():
                         curr_comments = []
@@ -501,7 +523,7 @@ class Shops(ConstructorModule):
                         for ent in create_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
-                            character.inventory._give(item_type.uuid, quantity, "shop-buy")
+                            character.inventory._give(item_type.uuid, quantity, "shop-buy", performed=now)
                             # obtaining inventory class
                             if not redirect:
                                 # item inventory category

@@ -773,7 +773,7 @@ class InventoryAdmin(ConstructorModule):
                     if req.has_access("inventory.give"):
                         menu.append(u'<hook:admin.link href="item-types/give/{type}?char={char}{append}" title="{title}" />'.format(type=item_type, char=owner, title=self._("Give {char} more items of this type").format(char=htmlescape(char.name)), append=append))
                 elif owtype == "shop":
-                    owner_name = htmlescape(self._("Shop %s") % htmlescape(owner))
+                    owner_name = self._("Shop")
                 else:
                     owner_name = '?'
                 item_type_obj = self.item_type(item_type)
@@ -793,7 +793,7 @@ class InventoryAdmin(ConstructorModule):
                         char = self.character(owner)
                         owner_name = htmlescape(char.name)
                     elif owtype == "shop":
-                        owner_name = htmlescape(self._("Shop %s") % htmlescape(owner))
+                        owner_name = self._("Shop")
                     else:
                         owner_name = '?'
                     filters = self._("Movements of all items owned by '%s'") % owner_name
@@ -847,7 +847,7 @@ class InventoryAdmin(ConstructorModule):
                 char = self.character(ent.get("owner"))
                 owner_name = htmlescape(char.name)
             elif owtype == "shop":
-                owner_name = htmlescape(self._("Shop %s") % ent.get("owner"))
+                owner_name = self._("Shop")
             else:
                 owner_name = "?"
             if col_owner:
@@ -872,7 +872,7 @@ class InventoryAdmin(ConstructorModule):
                     refchar = self.character(ref)
                     refname = htmlescape(refchar.name)
                 elif reftype == "shop":
-                    refname = self._("Shop %s") % htmlescape(ref)
+                    refname = self._("Shop")
                 else:
                     refname = ref
                 since = re.sub(' ', '/', ent.get("performed"))
