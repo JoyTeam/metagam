@@ -509,12 +509,12 @@ class Shops(ConstructorModule):
                         comment = ", ".join(curr_comments)
                         if mode == "sell":
                             # debiting character's account
-                            if not character.money.debit(amount, currency, "shop-buy", comment=comment, nolock=True):
+                            if not character.money.debit(amount, currency, "shop-buy", comment=comment, nolock=True, performed=now):
                                 errors.append(self._("Technical error during debiting {amount} {currency} (available={available})").format(amount=amount, currency=currency, available=character.money.available(currency)))
                                 break
                         else:
                             # crediting character's account
-                            character.money.credit(amount, currency, "shop-sell", comment=comment, nolock=True)
+                            character.money.credit(amount, currency, "shop-sell", comment=comment, nolock=True, performed=now)
                             if redirect is None:
                                 redirect = "/money/operations/%s" % currency
                 if mode == "sell":

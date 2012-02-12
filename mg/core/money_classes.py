@@ -182,7 +182,8 @@ class MemberMoney(Module):
                 op.set(key, val)
             op.set("account", account.uuid)
             op.set("currency", currency)
-            op.set("performed", self.now())
+            if not kwargs.get("performed"):
+                op.set("performed", self.now())
             op.set("amount", currency_info["format"] % amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
@@ -218,7 +219,8 @@ class MemberMoney(Module):
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
-            op.set("performed", self.now())
+            if not kwargs.get("performed"):
+                op.set("performed", self.now())
             op.set("amount", currency_info["format"] % -amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
@@ -248,7 +250,8 @@ class MemberMoney(Module):
             for key, val in kwargs.iteritems():
                 op.set(key, val)
             op.set("account", account.uuid)
-            op.set("performed", self.now())
+            if not kwargs.get("performed"):
+                op.set("performed", self.now())
             op.set("amount", currency_info["format"] % -amount)
             op.set("balance", currency_info["format"] % account.balance())
             op.set("description", description)
