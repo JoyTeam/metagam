@@ -2,7 +2,7 @@ from mg.constructor import *
 import re
 
 re_double_slash = re.compile(r'//')
-re_valid_code = re.compile(r'^[a-z0-9][a-z0-9\-]*(\/[a-z0-9\-]*[a-z0-9])*$')
+re_valid_code = re.compile(r'^[a-z0-9][a-z0-9\-_]*(\/[a-z0-9\-_]*[a-z0-9_])*$')
 re_del = re.compile(r'^del\/(.+)$')
 re_valid_pgcode = re.compile(r'u_[a-z0-9_]+$')
 
