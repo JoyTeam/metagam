@@ -401,7 +401,7 @@ class Shops(ConstructorModule):
                 # item parameters
                 params = []
                 self.call("item-types.params-owner-important", item_type, params)
-                #params = [par for par in params if par.get("value_raw") and not par.get("price")]
+                params = [par for par in params if par.get("value_raw") and not par.get("price")]
                 # item category
                 cat = item_type.get("cat-shops")
                 misc = None
@@ -619,6 +619,10 @@ class Shops(ConstructorModule):
                     oplog.store()
                     character.inventory.store()
                     shop_inventory.store()
+                    if mode == "sell":
+                        self.qevent("shop-bought", char=character)
+                    else:
+                        self.qevent("shop-sold", char=character)
                     self.call("web.redirect", redirect or "/inventory")
         if rcategories:
             vars["categories"] = rcategories

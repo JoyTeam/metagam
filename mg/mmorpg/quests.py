@@ -724,6 +724,10 @@ class QuestsAdmin(ConstructorModule):
                 return "clicked %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "charclass-selected":
                 return "class selected"
+            elif val[0] == "shop-bought":
+                return "shop bought"
+            elif val[0] == "shop-sold":
+                return "shop sold"
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
