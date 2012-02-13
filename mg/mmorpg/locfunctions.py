@@ -289,10 +289,10 @@ class LocationFunctionsAdmin(ConstructorModule):
             fields = []
             if cmd == "new":
                 fields.append({"name": "ident", "label": self._("Identifier"), "value": func.get("id")})
-            fields.append({"name": "order", "label": self._("Sorting order"), "value": func.get("order")})
+            fields.append({"name": "order", "label": self._("Sorting order"), "value": func.get("order"), "inline": True})
             fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
             fields.append({"name": "title", "label": self._("Menu title"), "value": func.get("title")})
-            fields.append({"name": "available", "label": self._("Availability of the function for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", fn.get("available"))})
+            fields.append({"name": "available", "label": self._("Availability of the function for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("available", 1))})
             if func.get("custom"):
                 fields.append({"type": "header", "html": self._("Special function settings")})
                 function_types.insert(0, ("", ""))

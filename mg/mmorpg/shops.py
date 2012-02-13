@@ -29,6 +29,15 @@ class ShopsAdmin(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-shops.stats", self.stats)
+        self.rhook("admin-item-types.dim-list", self.dim_list)
+
+    def dim_list(self, dimensions):
+        dimensions.append({
+            "id": "shops",
+            "title": self._("Dimensions in shops"),
+            "default": "60x60",
+            "order": 30,
+        })
 
     def schedule(self, sched):
         sched.add("admin-shops.stats", "8 0 * * *", priority=10)
@@ -235,6 +244,10 @@ class Shops(ConstructorModule):
         self.rhook("money-description.shop-sell", self.money_description_shop_sell)
         self.rhook("money-description.shop-bought", self.money_description_shop_bought)
         self.rhook("money-description.shop-sold", self.money_description_shop_sold)
+        self.rhook("item-types.dim-shops", self.dim_shops)
+
+    def dim_shops(self):
+        return self.conf("item-types.dim_shops", "60x60")
 
     def money_description_shop_buy(self):
         return {
@@ -376,7 +389,7 @@ class Shops(ConstructorModule):
                     "type": item_type.uuid,
                     "dna": item_type.dna,
                     "name": htmlescape(item_type.name),
-                    "image": item_type.image("inventory"),
+                    "image": item_type.image("shops"),
                     "description": item_type.get("description"),
                     "quantity": ureq["quantity"] if ureq else 0,
                     "qparam": "q_%s" % item_type.dna,

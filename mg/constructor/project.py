@@ -83,6 +83,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.core.permissions_editor.Permissions"])
             if self.conf("module.exchange"):
                 lst.extend(["mg.constructor.exchange.Exchange"])
+            if self.conf("module.globfunc"):
+                lst.extend(["mg.constructor.globfunc.GlobalFunctions"])
         return lst
 
     def modules_list(self, modules):
@@ -130,6 +132,11 @@ class ConstructorProject(Module):
             "id": "exchange",
             "name": self._("Currency exchange"),
             "description": self._("Interfaces for defining currency exchange rates"),
+        })
+        modules.append({
+            "id": "globfunc",
+            "name": self._("Global interfaces"),
+            "description": self._("Game interfaces to enable special functions globally"),
         })
 
     def project_title(self):

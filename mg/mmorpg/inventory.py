@@ -63,6 +63,7 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("admin-inventory.cleanup", self.cleanup)
         self.rhook("admin-inventory.stats", self.stats)
         self.rhook("admin-inventory.sample-item", self.sample_item)
+        self.rhook("admin-item-types.dim-list", self.dim_list)
 
     def sample_item(self):
         lst = self.objlist(DBItemTypeList, query_index="all", query_limit=1)
@@ -132,9 +133,24 @@ class InventoryAdmin(ConstructorModule):
         perms.append({"id": "inventory.give", "name": self._("Inventory: giving items")})
         perms.append({"id": "inventory.withdraw", "name": self._("Inventory: items withdrawal")})
 
+    def dim_list(self, dimensions):
+        dimensions.append({
+            "id": "inventory",
+            "title": self._("Dimensions in the inventory"),
+            "order": 10,
+        })
+        dimensions.append({
+            "id": "library",
+            "title": self._("Dimensions in the library"),
+            "order": 20,
+        })
+
     def admin_inventory_config(self):
         req = self.req()
-        if req.param("ok"):
+        dimlist = []
+        self.call("admin-item-types.dim-list", dimlist)
+        dimlist.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("id"), y.get("id")))
+        if req.ok():
             dimensions = re_dimensions.split(req.param("dimensions"))
             config = self.app().config_updater()
             errors = {}
@@ -170,20 +186,14 @@ class InventoryAdmin(ConstructorModule):
                 result_dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
                 config.set("item-types.dimensions", result_dimensions)
             # selected dimensions
-            dim_inventory = req.param("dim_inventory")
-            if not dim_inventory:
-                errors["dim_inventory"] = self._("This field is mandatory")
-            elif dim_inventory not in valid_dimensions:
-                errors["dim_inventory"] = self._("This dimension must be listed in the list of available dimensions above")
-            else:
-                config.set("item-types.dim_inventory", dim_inventory)
-            dim_library = req.param("dim_library")
-            if not dim_library:
-                errors["dim_library"] = self._("This field is mandatory")
-            elif dim_library not in valid_dimensions:
-                errors["dim_library"] = self._("This dimension must be listed in the list of available dimensions above")
-            else:
-                config.set("item-types.dim_library", dim_library)
+            for dim in dimlist:
+                val = req.param("dim_%s" % dim["id"])
+                if not val:
+                    errors["dim_%s" % dim["id"]] = self._("This field is mandatory")
+                elif val not in valid_dimensions:
+                    errors["dim_%s" % dim["id"]] = self._("This dimension must be listed in the list of available dimensions above")
+                else:
+                    config.set("item-types.dim_%s" % dim["id"], val)
             # max cells
             char = self.character(req.user())
             config.set("inventory.max-cells", self.call("script.admin-expression", "max_cells", errors, globs={"char": char}))
@@ -194,10 +204,17 @@ class InventoryAdmin(ConstructorModule):
         dimensions = self.call("item-types.dimensions")
         fields = [
             {"name": "dimensions", "label": self._("Store images for all items in these dimensions (comma separated). Specific item type may require other dimensions (for example, character equip items may have other dimensions - they shouldn't be listed here)"), "value": ", ".join(["%dx%d" % (d["width"], d["height"]) for d in dimensions])},
-            {"name": "dim_inventory", "label": self._("Item image dimensions in the inventory interface"), "value": self.call("item-types.dim-inventory")},
-            {"name": "dim_library", "label": self._("Item image dimensions in the library"), "value": self.call("item-types.dim-library"), "inline": True},
-            {"name": "max_cells", "label": '%s%s' % (self._("Maximal amount of cells in the inventory (script expression, 'char' may be referenced, technical limit - %d cells)") % max_cells, self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("inventory.max-cells"))},
         ]
+        col = 0
+        cols = 3
+        while col < len(dimlist):
+            dim = dimlist[col]
+            fields.append({"name": "dim_%s" % dim["id"], "label": dim["title"], "value": self.call("item-types.dim-%s" % dim["id"]), "inline": col % cols})
+            col += 1
+        while col % cols:
+            fields.append({"type": "empty", "inline": True})
+            col += 1
+        fields.append({"name": "max_cells", "label": '%s%s' % (self._("Maximal amount of cells in the inventory (script expression, 'char' may be referenced, technical limit - %d cells)") % max_cells, self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("inventory.max-cells"))})
         self.call("admin.form", fields=fields)
 
     def headmenu_inventory_config(self, args):
@@ -910,13 +927,20 @@ class InventoryAdmin(ConstructorModule):
             if owtype == "char":
                 return [self._("Inventory"), "auth/user-dashboard/%s?active_tab=items" % owner]
             elif owtype == "shop":
+                # location shop
                 re_loc_shop = re.compile(r'^loc-([a-f0-9]+)-([a-zA-Z0-9_\-]+)$')
                 m = re_loc_shop.match(owner)
                 if m:
                     loc_id, func_id = m.group(1, 2)
                     return [self._("Store of {shop}").format(shop=htmlescape(func_id)), "locations/specfunc/%s" % loc_id]
-                else:
-                    return self._("Shop store")
+                # global shop
+                re_glob_shop = re.compile(r'^glob-([a-zA-Z0-9_\-]+)$')
+                m = re_glob_shop.match(owner)
+                if m:
+                    func_id = m.group(1)
+                    return [self._("Store of {shop}").format(shop=htmlescape(func_id)), "globfunc/editor"]
+                # unknown shop
+                return self._("Shop store")
 
     def admin_inventory_view(self):
         req = self.req()
