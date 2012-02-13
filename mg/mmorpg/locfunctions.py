@@ -94,7 +94,9 @@ class LocationFunctions(ConstructorModule):
             if func.get("default"):
                 func_execute(func)
         # If no default function show the first
-        func_execute(funcs[0])
+        for func in funcs:
+            if not func.get("onclick"):
+                func_execute(func)
 
     def menu(self, char, vars, selected=None):
         if selected is None:
@@ -104,11 +106,20 @@ class LocationFunctions(ConstructorModule):
         if len(funcs) >= 2:
             menu_left = []
             for func in funcs:
-                menu_left.append({
+                rfunc = {
                     "html": func["title"],
-                    "href": None if selected == func["id"] else ("/location/%s/action/%s" % (func["id"], func.get("default_action")) if func.get("default_action") else "/location/%s" % func["id"]),
-                    "selected": selected == func["id"],
-                })
+                }
+                if selected == func["id"]:
+                    rfunc["selected"] = True
+                else:
+                    if func.get("onclick"):
+                        rfunc["onclick"] = "%s; return false" % func["onclick"]
+                        rfunc["href"] = "javascript:void(0)"
+                    elif func.get("default_action"):
+                        rfunc["href"] = "/location/%s/action/%s" % (func["id"], func.get("default_action"))
+                    else:
+                        rfunc["href"] = "/location/%s" % func["id"]
+                menu_left.append(rfunc)
             menu_left[-1]["lst"] = True
             vars["menu_left"] = menu_left
 
@@ -318,7 +329,8 @@ class LocationFunctionsAdmin(ConstructorModule):
             if cmd == "new":
                 fields.append({"name": "ident", "label": self._("Identifier"), "value": func.get("id")})
             fields.append({"name": "order", "label": self._("Sorting order"), "value": func.get("order"), "inline": True})
-            fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
+            if not func.get("onclick"):
+                fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
             fields.append({"name": "title", "label": self._("Menu title"), "value": func.get("title")})
             fields.append({"name": "available", "label": self._("Availability of the function for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("available", 1))})
             if func.get("custom"):

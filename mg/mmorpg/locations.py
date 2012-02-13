@@ -193,7 +193,7 @@ class LocationsAdmin(ConstructorModule):
                     errors["delay"] = self._("Delay must be a non-negative integer value")
                 else:
                     db_loc.set("delay", intz(val))
-                for dest in ["up", "left", "right", "down"]:
+                for dest in ["up", "left", "right", "down", "exit"]:
                     loc = req.param("v_loc_%s" % dest)
                     if loc:
                         loc = self.location(loc)
@@ -250,6 +250,7 @@ class LocationsAdmin(ConstructorModule):
             fields.append({"name": "loc_left", "label": self._("Location to the left"), "type": "combo", "values": locations, "value": db_loc.get("loc_left", "")})
             fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "value": db_loc.get("loc_right", ""), "inline": True})
             fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "value": db_loc.get("loc_down", "")})
+            fields.append({"name": "loc_exit", "label": self._("This location has 'Exit' direction pointing to this location"), "type": "combo", "values": locations, "value": db_loc.get("loc_exit", "")})
             # image type
             image_types = []
             image_types.append(("none", self._("No image")))
@@ -701,6 +702,15 @@ class Locations(ConstructorModule):
         self.call("chat.channel-join", character, self.call("chat.channel-info", "loc"))
 
     def locfunctions_list(self, location, funcs):
+        loc_exit = location.db_location.get("loc_exit")
+        if loc_exit:
+            funcs.append({
+                "id": "exit",
+                "order": -20,
+                "title": self._("Exit"),
+                "available": 1,
+                "onclick": "parent.Locations.move('%s')" % loc_exit,
+            })
         funcs.append({
             "id": "show",
             "order": -10,
