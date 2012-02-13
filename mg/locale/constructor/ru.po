@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-13 17:42+0300\n"
+"PO-Revision-Date: 2012-02-13 18:36+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -69,6 +69,9 @@ msgstr "Глобальный интерфейс"
 msgid "Guru advice"
 msgstr "Советы гуру"
 
+msgid "Hint on mouseover"
+msgstr "Подсказка при наведении мыши"
+
 msgid "Insert Image"
 msgstr "Вставка изображения"
 
@@ -113,6 +116,9 @@ msgstr "Назад"
 
 msgid "Register"
 msgstr "Регистрация"
+
+msgid "Relative URL (starting with '/')"
+msgstr "Относительный URL (начинается с \"/\")"
 
 msgid "Save"
 msgstr "Сохранить"

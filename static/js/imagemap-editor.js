@@ -87,6 +87,20 @@ ImageMapZone.prototype.render = function(form) {
 					}
 				},
 				{
+					id: 'elem_url-' + this.id,
+					items: {
+						id: 'form-field-url-' + this.id,
+						fieldLabel: gt.gettext('Relative URL (starting with \'/\')'),
+						name: 'url-' + this.id,
+						xtype: 'textfield',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						value: this.url
+					}
+				},
+				{
 					id: 'elem_event-' + this.id,
 					items: {
 						id: 'form-field-event-' + this.id,
@@ -139,6 +153,20 @@ ImageMapZone.prototype.render = function(form) {
 						triggerAction: 'all',
 						forceSelection: true
 					}
+				},
+				{
+					id: 'elem_hint-' + this.id,
+					items: {
+						id: 'form-field-hint-' + this.id,
+						fieldLabel: gt.gettext('Hint on mouseover'),
+						name: 'hint-' + this.id,
+						xtype: 'textfield',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						value: this.hint
+					}
 				}
 			]
 		}
@@ -150,6 +178,10 @@ ImageMapZone.prototype.render = function(form) {
 	this.form.conditions.push({
 		id: 'elem_event-' + this.id,
 		condition: "form_value('action-" + this.id + "')=='event'"
+	});
+	this.form.conditions.push({
+		id: 'elem_url-' + this.id,
+		condition: "form_value('action-" + this.id + "')=='open'"
 	});
 	this.form.conditions.push({
 		id: 'elem_globfunc-' + this.id,
@@ -175,7 +207,11 @@ ImageMapZone.prototype.cleanup = function() {
 	this.form.form_cmp.remove(this.cmp);
 	for (var ci = this.form.conditions.length - 1; ci >= 0; ci--) {
 		var id = this.form.conditions[ci].id;
-		if (id == 'elem_location-' + this.id || id == 'elem_event-' + this.id) {
+		if (id == 'elem_location-' + this.id ||
+			id == 'elem_event-' + this.id ||
+			id == 'elem_url-' + this.id ||
+			id == 'elem_globfunc-' + this.id ||
+			id == 'elem_specfunc-' + this.id) {
 			this.form.conditions.splice(ci, 1);
 		}
 	}

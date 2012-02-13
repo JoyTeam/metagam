@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-13 17:42+0300\n"
+"PO-Revision-Date: 2012-02-13 18:35+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4167,6 +4167,9 @@ msgstr "Старый пароль"
 msgid "Open"
 msgstr "Открыть"
 
+msgid "Open URL"
+msgstr "Открыть URL"
+
 msgid "Open currency settings"
 msgstr "Открыть настройки валюты"
 
@@ -6288,6 +6291,9 @@ msgstr "URL"
 #, python-format
 msgid "URL %s is not an image"
 msgstr "URL %s - это не изображение"
+
+msgid "URL must start with '/'"
+msgstr "URL должен начинаться с \"/\""
 
 msgid "Underline"
 msgstr "Подчёркивание"

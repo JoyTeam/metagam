@@ -4,6 +4,7 @@ from mg.mmorpg.locations_classes import *
 import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import re
+import hashlib
 
 re_polygon_param = re.compile(r'^polygon-(\d+)$')
 
@@ -374,12 +375,21 @@ class LocationsStaticImages(ConstructorModule):
         if location.image_type == "static":
             zones = []
             if location.db_location.get("static_zones"):
+                zone_id = 0
                 for zone in location.db_location.get("static_zones"):
+                    zone_id += 1
                     rzone = {
                         "polygon": zone.get("polygon"),
                         "action": zone.get("action", "none"),
                         "loc": zone.get("loc"),
+                        "class": "loc-tr-%s" % zone.get("loc") if zone.get("action") == "move" else "loc-zone-%d" % zone_id,
+                        "hint": htmlescape(jsencode(zone.get("hint"))),
                     }
+                    if zone.get("url"):
+                        rzone["url"] = htmlescape(jsencode(zone.get("url")))
+                        m = hashlib.md5()
+                        m.update(utf2str(zone.get("url")))
+                        rzone["urlhash"] = m.hexdigest()
                     self.call("locations.map-zone-%s-render" % rzone["action"], zone, rzone)
                     zones.append(rzone)
             vars["loc"] = {
@@ -521,8 +531,20 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                                 errors["v_location-%d" % zone_id] = self._("Link to the same location")
                             else:
                                 zone["loc"] = loc
+                    elif action == "open":
+                        url = req.param("url-%d" % zone_id)
+                        if not url:
+                            errors["url-%d" % zone_id] = self._("This field is mandatory")
+                        elif not url.startswith("/"):
+                            errors["url-%d" % zone_id] = self._("URL must start with '/'")
+                        else:
+                            zone["url"] = url
                     elif not self.call("admin-locations.map-zone-action-%s" % action, zone_id, zone, errors):
-                        del zone["action"]
+                        if "action" in zone:
+                            del zone["action"]
+                    # hint
+                    hint = req.param("hint-%d" % zone_id)
+                    zone["hint"] = hint
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
@@ -536,7 +558,9 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 rzone = {
                     "polygon": zone.get("polygon"),
                     "action": zone.get("action", "none"),
-                    "loc": zone.get("loc")
+                    "loc": zone.get("loc"),
+                    "url": jsencode(zone.get("url")),
+                    "hint": jsencode(zone.get("hint")),
                 }
                 self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
                 zones.append(rzone)
@@ -550,7 +574,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                     "id": db_loc.uuid,
                     "name": jsencode(db_loc.get("name"))
                 })
-        actions = [("none", self._("No action")), ("move", self._("Move to another location"))]
+        actions = [("none", self._("No action")), ("move", self._("Move to another location")), ("open", self._("Open URL"))]
         self.call("admin-locations.map-zone-actions", location, actions)
         links = []
         self.call("admin-locations.render-links", location, links)

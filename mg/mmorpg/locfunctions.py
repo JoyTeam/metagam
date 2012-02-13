@@ -114,7 +114,6 @@ class LocationFunctions(ConstructorModule):
 
     def ext_location_handler(self):
         req = self.req()
-        print "request: %s - %s - %s" % (req.group, req.hook, req.args)
         char = self.character(req.user())
         location = char.location
         if location is None:

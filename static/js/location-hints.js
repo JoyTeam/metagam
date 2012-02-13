@@ -1,8 +1,8 @@
-function transition_hint(loc_id, hint)
+function location_hint(cls, hint)
 {
 	if (!hint)
 		return;
-	var els = Ext.query('.loc-tr-' + loc_id);
+	var els = Ext.query('.' + cls);
 	for (var i = 0; i < els.length; i++) {
 		new Ext.ToolTip({
 			target: els[i],
@@ -14,5 +14,10 @@ function transition_hint(loc_id, hint)
 			dismissDelay: 10000
 		});
 	}
+}
+
+function transition_hint(loc_id, hint)
+{
+	location_hint('loc-tr-' + loc_id, hint);
 }
 

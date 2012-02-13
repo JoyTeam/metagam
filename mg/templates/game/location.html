@@ -8,6 +8,11 @@ Ext.onReady(function() {
 	[%foreach tr in transitions%]
 	transition_hint('[%tr.loc%]', '[%tr.hint%]');
 	[%end%]
+	[%foreach zone in zones%]
+	[%if zone.action != 'move' && zone.hint %]
+	location_hint('[%zone.class%]', '[%zone.hint%]');
+	[%end%]
+	[%end%]
 	[%update_script%]
 });
 </script>

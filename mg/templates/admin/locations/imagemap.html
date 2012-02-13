@@ -33,6 +33,8 @@ wait(['imagemap-editor'], function() {
 	[%if zone.ev%]zone.ev = '[%zone.ev%]';[%end%]
 	[%if zone.globfunc%]zone.globfunc = '[%zone.globfunc%]';[%end%]
 	[%if zone.specfunc%]zone.specfunc = '[%zone.specfunc%]';[%end%]
+	[%if zone.url%]zone.url = '[%zone.url%]';[%end%]
+	[%if zone.hint%]zone.hint = '[%zone.hint%]';[%end%]
 	zone.render(ImageMapEditor.form);
 	[%end%]
 	ImageMapEditor.run();

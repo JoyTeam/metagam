@@ -4,18 +4,16 @@
 
 [%if zone.action=='move'%]
 <area class="loc-tr-[%zone.loc%]" href="javascript:void(0)" onclick="Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
-[%end%]
-
-[%if zone.action=='event'%]
-<area class="loc-ev-[%zone.ev%]" href="javascript:void(0)" onclick="Game.qevent('[%zone.ev%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
-[%end%]
-
-[%if zone.action=='globfunc'%]
-<area class="loc-gf-[%zone.globfunc%]" href="javascript:void(0)" onclick="Game.main_open('/globfunc/[%zone.globfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
-[%end%]
-
-[%if zone.action=='specfunc'%]
-<area class="loc-gf-[%zone.specfunc%]" href="javascript:void(0)" onclick="Game.main_open('/location/[%zone.specfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%elsif zone.action=='event'%]
+<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.qevent('[%zone.ev%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%elsif zone.action=='globfunc'%]
+<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('/globfunc/[%zone.globfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%elsif zone.action=='specfunc'%]
+<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('/location/[%zone.specfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%elsif zone.action=='open'%]
+<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('[%zone.url%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%else%]
+<area class="[%zone.class%]" href="javascript:void(0)" onclick="return false" shape="polygon" coords="[%zone.polygon%]" />
 [%end%]
 
 [%end%]
