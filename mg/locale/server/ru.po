@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-13 17:25+0300\n"
+"PO-Revision-Date: 2012-02-13 17:42+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2331,8 +2331,8 @@ msgstr "Полное название вашей игры (напр: Вечны�
 msgid "Function"
 msgstr "Функция"
 
-msgid "Function {func} is not implemented in location {loc}"
-msgstr "Функция {func} не реализована в локации {loc}"
+msgid "Function {func} is not defined in location {loc}"
+msgstr "Функция {func} не определена в локации {loc}"
 
 msgid "Functions"
 msgstr "Функции"
@@ -3016,6 +3016,9 @@ msgstr "Неверный выбор"
 
 msgid "Invalid sex specified"
 msgstr "Указан неверный пол"
+
+msgid "Invalid special function request"
+msgstr "Неверный запрос к спецфункции"
 
 msgid "Invalid starting location"
 msgstr "Неверная стартовая локация"
@@ -4193,6 +4196,9 @@ msgstr "Открытая регистрация"
 
 msgid "Open registration of new games is unavailable at the moment"
 msgstr "В данный момент свободная регистрация игр невозможна"
+
+msgid "Open special function"
+msgstr "Открыть спецфункцию локации"
 
 msgid "Open table"
 msgstr "Открыть таблицу"
@@ -5601,6 +5607,9 @@ msgstr "Космос"
 
 msgid "Special function identifier must start with 'u_' and contain latin letters, digits and underscores only"
 msgstr "Идентификатор спецфункции должен начинаться с \"u_\" и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Special function not specified"
+msgstr "Спецфункция не указана"
 
 msgid "Special function settings"
 msgstr "Настройки специальной функции"

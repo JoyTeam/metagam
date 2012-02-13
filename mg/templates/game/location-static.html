@@ -14,6 +14,10 @@
 <area class="loc-gf-[%zone.globfunc%]" href="javascript:void(0)" onclick="Game.main_open('/globfunc/[%zone.globfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
 [%end%]
 
+[%if zone.action=='specfunc'%]
+<area class="loc-gf-[%zone.specfunc%]" href="javascript:void(0)" onclick="Game.main_open('/location/[%zone.specfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%end%]
+
 [%end%]
 </map>
 <img src="[%loc.image%]" alt="" usemap="#locmap-[%loc.id%]" />

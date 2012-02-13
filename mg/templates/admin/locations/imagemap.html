@@ -22,6 +22,9 @@ wait(['imagemap-editor'], function() {
 	[%foreach gf in globfunc%]
 	ImageMapEditor.globfuncs.push(['[%gf.id%]', '[%gf.title%]']);
 	[%end%]
+	[%foreach sf in specfunc%]
+	ImageMapEditor.specfuncs.push(['[%sf.id%]', '[%sf.title%]']);
+	[%end%]
 	[%foreach zone in zones%]
 	var zone = ImageMapEditor.new_zone();
 	zone.setPolygonStr('[%zone.polygon%]');
@@ -29,6 +32,7 @@ wait(['imagemap-editor'], function() {
 	[%if zone.loc%]zone.loc = '[%zone.loc%]';[%end%]
 	[%if zone.ev%]zone.ev = '[%zone.ev%]';[%end%]
 	[%if zone.globfunc%]zone.globfunc = '[%zone.globfunc%]';[%end%]
+	[%if zone.specfunc%]zone.specfunc = '[%zone.specfunc%]';[%end%]
 	zone.render(ImageMapEditor.form);
 	[%end%]
 	ImageMapEditor.run();

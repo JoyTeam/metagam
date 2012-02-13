@@ -13,21 +13,24 @@ class LocationFunctions(ConstructorModule):
         self.rhook("locfunctions.menu", self.menu)
         self.rhook("locfunctions.functions", self.functions)
         self.rhook("ext-location.handler", self.ext_location_handler, priv="logged", priority=-10)
+        self.rhook("locations.map-zone-specfunc-render", self.location_map_zone_specfunc_render)
 
     def child_modules(self):
         return ["mg.mmorpg.locfunctions.LocationFunctionsAdmin"]
 
-    def functions(self, char, loc):
+    def functions(self, loc, char=None):
         # Cache read
         if char:
             try:
-                cache = char._locfunctions
+                return char._specfunctions[loc.uuid]
             except AttributeError:
-                cache = {}
-                char._locfunctions = cache
-            try:
-                return cache[loc.uuid]
+                pass
             except KeyError:
+                pass
+        else:
+            try:
+                return loc._specfunctions
+            except AttributeError:
                 pass
         # Cache miss
         funcs = []
@@ -48,7 +51,12 @@ class LocationFunctions(ConstructorModule):
         funcs.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x["title"], y["title"]))
         # Cache store
         if char:
-            cache[loc.uuid] = funcs
+            try:
+                char._specfunctions[loc.uuid] = funcs
+            except AttributeError:
+                char._specfunctions = {loc.uuid: funcs}
+        else:
+            loc._specfunctions = funcs
         return funcs
 
     def ext_location_index(self):
@@ -62,7 +70,7 @@ class LocationFunctions(ConstructorModule):
             else:
                 self.call("main-frame.error", '%s <a href="/admin#locations/editor" target="_blank">%s</a>' % (self._("No locations defined."), self._("Open locations editor")))
         # Extracting available functions
-        funcs = self.functions(char, location)
+        funcs = self.functions(location, char)
         if not funcs:
             self.call("game.internal-error", self._("No functions in the location"))
         # Selecting default function
@@ -92,13 +100,13 @@ class LocationFunctions(ConstructorModule):
         if selected is None:
             req = self.req()
             selected = req.hook
-        funcs = self.functions(char, char.location)
+        funcs = self.functions(char.location, char)
         if len(funcs) >= 2:
             menu_left = []
             for func in funcs:
                 menu_left.append({
                     "html": func["title"],
-                    "href": None if selected == func["id"] else "/location/%s/action/%s" % (func["id"], func.get("default_action")),
+                    "href": None if selected == func["id"] else ("/location/%s/action/%s" % (func["id"], func.get("default_action")) if func.get("default_action") else "/location/%s" % func["id"]),
                     "selected": selected == func["id"],
                 })
             menu_left[-1]["lst"] = True
@@ -106,28 +114,45 @@ class LocationFunctions(ConstructorModule):
 
     def ext_location_handler(self):
         req = self.req()
+        print "request: %s - %s - %s" % (req.group, req.hook, req.args)
         char = self.character(req.user())
         location = char.location
         if location is None:
             self.call("web.redirect", "/location")
-        funcs = self.functions(char, location)
+        funcs = self.functions(location)
+        # Parsing request
         m = re_action.match(req.args)
-        if not m:
-            self.call("web.not_found")
-        fn_id, action, args = m.group(1, 2, 3)
+        if m:
+            fn_id, action, args = m.group(1, 2, 3)
+        else:
+            m = re_valid_identifier.match(req.args)
+            if m:
+                fn_id = req.args
+                action = None
+                args = None
+            else:
+                char.error(self._("Invalid special function request"))
+                self.call("web.redirect", "/location")
+        # Looking for the function
         for func in funcs:
             if func["id"] == fn_id:
                 globs = {"char": char}
                 description = self._("Availability of location special function '%s'") % fn_id
                 if not self.call("script.evaluate-expression", func.get("available"), globs=globs, description=description):
+                    char.error(self._("This function is not available at the moment"))
                     self.call("web.redirect", "/location")
                 req.hook = fn_id
                 req.args = args
+                if action is None:
+                    action = func["default_action"]
                 vars = {}
                 self.call("locfunctions.menu", char, vars)
                 self.call("interface-%s.action-%s" % (func["tp"], action), "loc-%s-%s" % (location.uuid, fn_id), "/location/%s/action" % fn_id, func, args, vars, check_priv=True)
                 self.call("main-frame.info", self._("Implementation of action {type}.{action} ({id}) is missing").format(type=func["tp"], action=htmlescape(action), id=func["id"]), vars)
-        self.call("game.error", self._("Function {func} is not implemented in location {loc}").format(func=htmlescape(fn_id), loc=htmlescape(location.name)))
+        self.call("game.error", self._("Function {func} is not defined in location {loc}").format(func=htmlescape(fn_id), loc=htmlescape(location.name)))
+
+    def location_map_zone_specfunc_render(self, zone, rzone):
+        rzone["specfunc"] = jsencode(zone.get("specfunc"))
 
 class LocationFunctionsAdmin(ConstructorModule):
     def register(self):
@@ -135,6 +160,10 @@ class LocationFunctionsAdmin(ConstructorModule):
         self.rhook("ext-admin-locations.specfunc", self.admin_specfunc, priv="locations.specfunc")
         self.rhook("headmenu-admin-locations.specfunc", self.headmenu_specfunc)
         self.rhook("admin-locations.links", self.links)
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-action-specfunc", self.location_map_zone_action_specfunc)
+        self.rhook("admin-locations.map-zone-specfunc-render", self.location_map_zone_specfunc_render)
+        self.rhook("admin-locations.render-imagemap-editor", self.render_imagemap_editor)
 
     def links(self, location, links):
         req = self.req()
@@ -155,7 +184,7 @@ class LocationFunctionsAdmin(ConstructorModule):
                 if m:
                     fn_id, action, args = m.group(1, 2, 3)
                     loc = self.location(loc_id)
-                    for func in self.call("locfunctions.functions", None, loc):
+                    for func in self.call("locfunctions.functions", loc):
                         if func["id"] == fn_id:
                             actions = []
                             self.call("admin-interface-%s.actions" % func["tp"], "loc-%s-%s" % (loc_id, func["id"]), func, actions)
@@ -170,7 +199,7 @@ class LocationFunctionsAdmin(ConstructorModule):
                                         return [headmenu, "locations/specfunc/%s" % loc_id]
                 else:
                     loc = self.location(loc_id)
-                    for func in self.call("locfunctions.functions", None, loc):
+                    for func in self.call("locfunctions.functions", loc):
                         if func["id"] == cmd:
                             return [htmlescape(func["title"]), "locations/specfunc/%s" % loc_id]
         return [self._("Special functions"), "locations/editor/%s" % htmlescape(args)]
@@ -185,7 +214,7 @@ class LocationFunctionsAdmin(ConstructorModule):
         if not loc.valid:
             self.call("web.not_found")
         # Loading special functions
-        funcs = self.call("locfunctions.functions", None, loc)
+        funcs = self.call("locfunctions.functions", loc)
         default = funcs[0]["id"] if funcs else None
         for func in funcs:
             if func.get("default"):
@@ -342,3 +371,27 @@ class LocationFunctionsAdmin(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def location_map_zone_actions(self, location, actions):
+        actions.append(("specfunc", jsencode(self._("Open special function"))))
+
+    def location_map_zone_action_specfunc(self, zone_id, zone, errors):
+        req = self.req()
+        key = "v_specfunc-%d" % zone_id
+        specfunc = req.param(key).strip()
+        if not specfunc:
+            errors[key] = self._("Special function not specified")
+        else:
+            zone["specfunc"] = specfunc
+        return True
+
+    def location_map_zone_specfunc_render(self, zone, rzone):
+        rzone["specfunc"] = jsencode(zone.get("specfunc"))
+
+    def render_imagemap_editor(self, location, vars):
+        lst = []
+        funcs = self.call("locfunctions.functions", location)
+        for func in funcs:
+            actions = []
+            lst.append({"id": func["id"], "title": jsencode(func["title"])})
+        vars["specfunc"] = lst

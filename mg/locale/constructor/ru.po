@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-13 17:23+0300\n"
+"PO-Revision-Date: 2012-02-13 17:42+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -141,6 +141,9 @@ msgstr "Сглаженные края"
 
 msgid "Solid color"
 msgstr "Сплошной цвет"
+
+msgid "Special function"
+msgstr "Спецфункция"
 
 msgid "Target location"
 msgstr "Целевая локация"

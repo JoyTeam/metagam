@@ -540,7 +540,6 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 }
                 self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
                 zones.append(rzone)
-                print rzone
         # Loading locations
         locations = []
         lst = self.objlist(DBLocationList, query_index="all")

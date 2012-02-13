@@ -119,6 +119,26 @@ ImageMapZone.prototype.render = function(form) {
 						triggerAction: 'all',
 						forceSelection: true
 					}
+				},
+				{
+					id: 'elem_specfunc-' + this.id,
+					items: {
+						id: 'form-field-specfunc-' + this.id,
+						fieldLabel: gt.gettext('Special function'),
+						name: 'specfunc-' + this.id,
+						value: this.specfunc,
+						xtype: 'combo',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						hiddenName: 'v_specfunc-' + this.id,
+						hiddenValue: this.specfunc,
+						store: ImageMapEditor.specfuncs,
+						listWidth: 600,
+						triggerAction: 'all',
+						forceSelection: true
+					}
 				}
 			]
 		}
@@ -134,6 +154,10 @@ ImageMapZone.prototype.render = function(form) {
 	this.form.conditions.push({
 		id: 'elem_globfunc-' + this.id,
 		condition: "form_value('action-" + this.id + "')=='globfunc'"
+	});
+	this.form.conditions.push({
+		id: 'elem_specfunc-' + this.id,
+		condition: "form_value('action-" + this.id + "')=='specfunc'"
 	});
 };
 
@@ -222,6 +246,7 @@ ImageMapEditor.cleanup = function() {
 	this.actions = new Array();
 	this.locations = new Array();
 	this.globfuncs = new Array();
+	this.specfuncs = new Array();
 };
 
 ImageMapEditor.init = function(submit_url, width, height) {
