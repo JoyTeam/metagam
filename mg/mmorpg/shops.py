@@ -401,7 +401,7 @@ class Shops(ConstructorModule):
                 # item parameters
                 params = []
                 self.call("item-types.params-owner-important", item_type, params)
-                params = [par for par in params if par.get("value_raw") and not par.get("price")]
+                #params = [par for par in params if par.get("value_raw") and not par.get("price")]
                 # item category
                 cat = item_type.get("cat-shops")
                 misc = None
@@ -448,7 +448,7 @@ class Shops(ConstructorModule):
                 value = self.call("money.price-html", price, currency)
                 cinfo = self.call("money.currency-info", currency)
                 params.insert(0, {
-                    "name": '<span class="item-types-page-price-name">%s</span>' % self._("Price"),
+                    "name": '<span class="item-types-page-price-name">%s</span>' % (self._("Sell price") if mode == "sell" else self._("Buy price")),
                     "value": '<span class="item-types-page-price-value">%s</span>' % value,
                 })
                 ritem["price"] = price
@@ -541,8 +541,8 @@ class Shops(ConstructorModule):
                                 errors.append(self.call("money.not-enough-funds", currency))
                 redirect = None
                 if mode == "buy":
-                    # taking items
                     if not errors:
+                        # transferring items
                         for ent in transfer_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
@@ -550,6 +550,7 @@ class Shops(ConstructorModule):
                             if quantity_taken is None:
                                 raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity=quantity, dna=item_type.dna, character=character.uuid))
                             shop_inventory._give(item_type.uuid, quantity, "shop-bought", mod=item_type.mods, performed=now, reftype=character.inventory.owtype, ref=character.inventory.uuid)
+                        # discarding items
                         for ent in discard_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
@@ -557,8 +558,8 @@ class Shops(ConstructorModule):
                             if quantity_taken is None:
                                 raise RuntimeError("Could not take quantity={quantity}, dna={dna} from character's inventory (character={character})".format(quantity=quantity, dna=item_type.dna, character=character.uuid))
                 else:
-                    # transferring items
                     if not errors:
+                        # transferring items
                         for ent in transfer_items:
                             item_type = ent["item_type"]
                             quantity = ent["quantity"]
@@ -566,6 +567,31 @@ class Shops(ConstructorModule):
                             if quantity_taken is None:
                                 raise RuntimeError("Could not take quantity={quantity}, dna={dna} from shop store (shop={shop})".format(quantity=quantity, dna=item_type.dna, shop=shop_inventory.uuid))
                             character.inventory._give(item_type.uuid, quantity, "shop-buy", mod=item_type.mods, performed=now, reftype=shop_inventory.owtype, ref=shop_inventory.uuid)
+                        # giving items
+                        for ent in create_items:
+                            item_type = ent["item_type"]
+                            quantity = ent["quantity"]
+                            character.inventory._give(item_type.uuid, quantity, "shop-buy", performed=now)
+                            # obtaining inventory class
+                            if not redirect:
+                                # item inventory category
+                                cat = item_type.get("cat-inventory")
+                                misc = None
+                                found = False
+                                for c in self.call("item-types.categories", "inventory"):
+                                    if c["id"] == cat:
+                                        found = True
+                                    if c.get("misc"):
+                                        misc = c["id"]
+                                if not found:
+                                    cat = misc
+                                if cat is not None:
+                                    redirect = "/inventory?cat=%s#%s" % (cat, item_type.dna)
+                # checking overweight conditions
+                if mode == "sell":
+                    if not errors:
+                        errors = character.inventory.constraints_failed()
+                # taking of giving money
                 if not errors:
                     for currency, amount in money.iteritems():
                         curr_comments = []
@@ -587,28 +613,6 @@ class Shops(ConstructorModule):
                             character.money.credit(amount, currency, "shop-sell", comment=comment, nolock=True, performed=now)
                             if redirect is None:
                                 redirect = "/money/operations/%s" % currency
-                if mode == "sell":
-                    # giving items
-                    if not errors:
-                        for ent in create_items:
-                            item_type = ent["item_type"]
-                            quantity = ent["quantity"]
-                            character.inventory._give(item_type.uuid, quantity, "shop-buy", performed=now)
-                            # obtaining inventory class
-                            if not redirect:
-                                # item inventory category
-                                cat = item_type.get("cat-inventory")
-                                misc = None
-                                found = False
-                                for c in self.call("item-types.categories", "inventory"):
-                                    if c["id"] == cat:
-                                        found = True
-                                    if c.get("misc"):
-                                        misc = c["id"]
-                                if not found:
-                                    cat = misc
-                                if cat is not None:
-                                    redirect = "/inventory?cat=%s#%s" % (cat, item_type.dna)
                 if errors:
                     vars["error"] = u"<br />".join(errors)
                 else:

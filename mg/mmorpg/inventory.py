@@ -1557,6 +1557,7 @@ class MemberInventory(ConstructorModule):
             trans.set(k, v)
         trans.set("performed", kwargs.get("performed") or self.now())
         self.trans.append(trans)
+        self.reset_caches()
 
     def _items(self):
         if not getattr(self, "inv", None):
@@ -1689,6 +1690,7 @@ class MemberInventory(ConstructorModule):
                     trans.set(k, v)
                 trans.set("performed", kwargs.get("performed") or self.now())
                 self.trans.append(trans)
+                self.reset_caches()
         return deleted
 
     def take_dna(self, *args, **kwargs):
@@ -1735,6 +1737,7 @@ class MemberInventory(ConstructorModule):
                         trans.set(k, v)
                     trans.set("performed", kwargs.get("performed") or self.now())
                     self.trans.append(trans)
+                    self.reset_caches()
                     return self.item_type(item_type, dna_suffix, item.get("mod")), quantity
                 return None, None
         return None, None
@@ -1760,6 +1763,12 @@ class MemberInventory(ConstructorModule):
         return "[inv %s.%s]" % (self.owtype, self.uuid)
     
     __repr__ = __str__
+
+    def reset_caches(self):
+        try:
+            del self._item_aggregate_cache
+        except AttributeError:
+            pass
 
     def aggregate(self, aggregate, param, handle_exceptions=True):
         key = "%s-%s" % (aggregate, param)
@@ -1831,7 +1840,7 @@ class MemberInventory(ConstructorModule):
                 amount = self.call("script.evaluate-expression", con["amount"], {"char": character}, description=self._("Constraint amount"))
                 max_value = self.call("script.evaluate-expression", con["max"], {"char": character}, description=self._("Constraint maximal value"))
                 if amount > max_value:
-                    errors.append(self.call("script.evaluate-text", con["error"], {"char": character}, description=self._("Constraint error text")) if con.get("error") else self._("Constraint exceeded"))
+                    errors.append(self.call("script.evaluate-text", con["error"], {"char": character}, description=self._("Constraint error text")) if con.get("error") else self._("Max cargo exceeded"))
         return errors
 
 class Inventory(ConstructorModule):

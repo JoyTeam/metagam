@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-13 15:51+0300\n"
+"PO-Revision-Date: 2012-02-13 16:25+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1267,9 +1267,6 @@ msgstr "Редактор ограничения"
 
 msgid "Constraint error text"
 msgstr "Текст сообщения о применении ограничения"
-
-msgid "Constraint exceeded"
-msgstr "Превышено ограничение"
 
 msgid "Constraint maximal value"
 msgstr "Максимальное значение ограничения"
@@ -3503,6 +3500,9 @@ msgstr "Массовый пользователь %s"
 
 msgid "Massive invitations"
 msgstr "Массовые приглашения"
+
+msgid "Max cargo exceeded"
+msgstr "Превышена максимальная грузоподъёмность"
 
 msgid "Max cargo expression"
 msgstr "Выражение для максимального груза"
@@ -8026,6 +8026,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Constraint exceeded"
+#~ msgstr "Превышено ограничение"
 #~ msgid "Global interface"
 #~ msgstr "Глобальный интерфейс"
 #~ msgid "Shop %s"
