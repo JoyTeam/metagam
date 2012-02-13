@@ -103,14 +103,14 @@ class ShopsAdmin(ConstructorModule):
 
     def headmenu_assortment(self, func, args):
         if args:
-            categories = self.call("item-types.categories", "shops")
+            categories = self.call("item-types.categories", "admin")
             for cat in categories:
                 if cat["id"] == args:
                     return [htmlescape(cat["name"]), "assortment"]
         return self._("Assortment of '%s'") % htmlescape(func["title"])
 
     def assortment(self, func_id, base_url, func, args):
-        categories = self.call("item-types.categories", "shops")
+        categories = self.call("item-types.categories", "admin")
         req = self.req()
         if args:
             currencies = {}
