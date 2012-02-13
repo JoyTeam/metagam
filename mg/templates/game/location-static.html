@@ -10,6 +10,10 @@
 <area class="loc-ev-[%zone.ev%]" href="javascript:void(0)" onclick="Game.qevent('[%zone.ev%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
 [%end%]
 
+[%if zone.action=='globfunc'%]
+<area class="loc-gf-[%zone.globfunc%]" href="javascript:void(0)" onclick="Game.main_open('/globfunc/[%zone.globfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+[%end%]
+
 [%end%]
 </map>
 <img src="[%loc.image%]" alt="" usemap="#locmap-[%loc.id%]" />

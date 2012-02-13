@@ -540,6 +540,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
                 }
                 self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
                 zones.append(rzone)
+                print rzone
         # Loading locations
         locations = []
         lst = self.objlist(DBLocationList, query_index="all")
@@ -568,6 +569,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         req = self.req()
         if req.param("saved"):
             vars["saved"] = {"text": self._("Location saved successfully")}
+        self.call("admin-locations.render-imagemap-editor", location, vars)
         self.call("admin.response_template", "admin/locations/imagemap.html", vars)
 
     def links(self, location, links):

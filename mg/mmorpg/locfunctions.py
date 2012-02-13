@@ -127,7 +127,7 @@ class LocationFunctions(ConstructorModule):
                 self.call("locfunctions.menu", char, vars)
                 self.call("interface-%s.action-%s" % (func["tp"], action), "loc-%s-%s" % (location.uuid, fn_id), "/location/%s/action" % fn_id, func, args, vars, check_priv=True)
                 self.call("main-frame.info", self._("Implementation of action {type}.{action} ({id}) is missing").format(type=func["tp"], action=htmlescape(action), id=func["id"]), vars)
-        self.call("game.error", self._("Function {func} is not implemented in location {loc}").format(func=func["id"], loc=htmlescape(location.name)))
+        self.call("game.error", self._("Function {func} is not implemented in location {loc}").format(func=htmlescape(fn_id), loc=htmlescape(location.name)))
 
 class LocationFunctionsAdmin(ConstructorModule):
     def register(self):

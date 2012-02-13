@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-13 16:25+0300\n"
+"PO-Revision-Date: 2012-02-13 17:25+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2531,11 +2531,14 @@ msgstr "Выдача предметов"
 msgid "Giving permissions to users"
 msgstr "Выдача привилегий пользователям"
 
-msgid "Global interface function {func} is not implemented"
-msgstr "Функция глобального интерфейса {func} не реализована"
+msgid "Global interface function {func} is not defined"
+msgstr "Функция глобального интерфейса {func} не определена"
 
 msgid "Global interface identifier must start with 'u_' and contain latin letters, digits and underscores only"
 msgstr "Идентификатор глобального интерфейса должен начинаться с \"u_\" и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Global interface not specified"
+msgstr "Не указан глобальный интерфейс"
 
 msgid "Global interface settings"
 msgstr "Настройки глобального интерфейса"
@@ -2947,6 +2950,9 @@ msgstr "Неверный формат"
 
 msgid "Invalid format of the template"
 msgstr "Неверный формат шаблона"
+
+msgid "Invalid global interface request"
+msgstr "Неверный запрос к глобальному интерфейсу"
 
 msgid "Invalid image format. Supported are: gif, jpg, png"
 msgstr "Неверный формат изображения. Поддерживаются GIF, JPEG и PNG"
@@ -4160,6 +4166,9 @@ msgstr "Открыть"
 
 msgid "Open currency settings"
 msgstr "Открыть настройки валюты"
+
+msgid "Open global interface"
+msgstr "Открыть глобальный интерфейс"
 
 msgid "Open hyperlink"
 msgstr "Открыть гиперссылку"
@@ -5938,6 +5947,9 @@ msgstr "Это обязательное поле"
 
 msgid "This field must be greater than zero"
 msgstr "Это поле должно быть больше 0"
+
+msgid "This function is not available at the moment"
+msgstr "В данный момент эта функция недоступна"
 
 msgid "This game has a very short description. It was written in hurry by a young game designer."
 msgstr "У этой игры очень короткое описание. Оно было написано в спешке молодым гейм-дизайнером."
@@ -8028,8 +8040,6 @@ msgstr "{price} на {period_a}"
 
 #~ msgid "Constraint exceeded"
 #~ msgstr "Превышено ограничение"
-#~ msgid "Global interface"
-#~ msgstr "Глобальный интерфейс"
 #~ msgid "Shop %s"
 #~ msgstr "Магазин %s"
 

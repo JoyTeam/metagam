@@ -10,6 +10,7 @@ class GlobalFunctions(ConstructorModule):
     def register(self):
         self.rhook("globfunc.functions", self.functions)
         self.rhook("ext-globfunc.handler", self.globfunc_handler, priv="logged")
+        self.rhook("locations.map-zone-globfunc-render", self.location_map_zone_globfunc_render)
 
     def child_modules(self):
         return ["mg.constructor.globfunc.GlobalFunctionsAdmin"]
@@ -40,22 +41,40 @@ class GlobalFunctions(ConstructorModule):
         req = self.req()
         char = self.character(req.user())
         funcs = self.functions()
+        # Parsing request
         m = re_action.match(req.args)
-        if not m:
-            self.call("web.redirect", "/location")
-        fn_id, action, args = m.group(1, 2, 3)
+        if m:
+            fn_id, action, args = m.group(1, 2, 3)
+        else:
+            m = re_valid_identifier.match(req.args)
+            if m:
+                fn_id = req.args
+                action = None
+                args = None
+            else:
+                char.error(self._("Invalid global interface request"))
+                self.call("web.redirect", "/location")
+        # Looking for the function requested
         for func in funcs:
             if func["id"] == fn_id:
                 globs = {"char": char}
                 description = self._("Availability of global interface '%s'") % fn_id
                 if not self.call("script.evaluate-expression", func.get("available"), globs=globs, description=description):
+                    char.error(self._("This function is not available at the moment"))
                     self.call("web.redirect", "/location")
+                # Function is available
+                if action is None:
+                    action = func["default_action"]
+                    args = ""
                 req.hook = fn_id
                 req.args = args
                 vars = {}
                 self.call("interface-%s.action-%s" % (func["tp"], action), "glob-%s" % fn_id, "/globfunc/%s/action" % fn_id, func, args, vars, check_priv=True)
                 self.call("main-frame.info", self._("Implementation of action {type}.{action} ({id}) is missing").format(type=func["tp"], action=htmlescape(action), id=func["id"]), vars)
-        self.call("game.error", self._("Global interface function {func} is not implemented").format(func=func["id"]))
+        self.call("game.error", self._("Global interface function {func} is not defined").format(func=htmlescape(fn_id)))
+
+    def location_map_zone_globfunc_render(self, zone, rzone):
+        rzone["globfunc"] = jsencode(zone.get("globfunc"))
 
 class GlobalFunctionsAdmin(ConstructorModule):
     def register(self):
@@ -63,6 +82,10 @@ class GlobalFunctionsAdmin(ConstructorModule):
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-globfunc.editor", self.admin_globfunc_editor, priv="interface.globfunc")
         self.rhook("headmenu-admin-globfunc.editor", self.headmenu_globfunc_editor)
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-action-globfunc", self.location_map_zone_action_globfunc)
+        self.rhook("admin-locations.map-zone-globfunc-render", self.location_map_zone_globfunc_render)
+        self.rhook("admin-locations.render-imagemap-editor", self.render_imagemap_editor)
 
     def permissions_list(self, perms):
         perms.append({"id": "interface.globfunc", "name": self._("Global interfaces")})
@@ -242,3 +265,27 @@ class GlobalFunctionsAdmin(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def location_map_zone_actions(self, location, actions):
+        actions.append(("globfunc", jsencode(self._("Open global interface"))))
+
+    def location_map_zone_action_globfunc(self, zone_id, zone, errors):
+        req = self.req()
+        key = "v_globfunc-%d" % zone_id
+        globfunc = req.param(key).strip()
+        if not globfunc:
+            errors[key] = self._("Global interface not specified")
+        else:
+            zone["globfunc"] = globfunc
+        return True
+
+    def location_map_zone_globfunc_render(self, zone, rzone):
+        rzone["globfunc"] = jsencode(zone.get("globfunc"))
+
+    def render_imagemap_editor(self, location, vars):
+        lst = []
+        funcs = self.call("globfunc.functions")
+        for func in funcs:
+            actions = []
+            lst.append({"id": func["id"], "title": jsencode(func["title"])})
+        vars["globfunc"] = lst

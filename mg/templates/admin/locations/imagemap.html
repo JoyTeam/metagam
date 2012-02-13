@@ -1,5 +1,5 @@
 <div class="admin-actions">
-	[%if saved%]<span class="admin-saved">[%saved.text%]</span> / [%+ end%]
+	[%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]
 	[%foreach link in links%]
 		[%if link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%else%][%link.text%][%end%]
 		[%unless link.lst +%] / [%+ end%]
@@ -19,12 +19,16 @@ wait(['imagemap-editor'], function() {
 	[%foreach loc in locations%]
 	ImageMapEditor.locations.push(['[%loc.id%]', '[%loc.name%]']);
 	[%end%]
+	[%foreach gf in globfunc%]
+	ImageMapEditor.globfuncs.push(['[%gf.id%]', '[%gf.title%]']);
+	[%end%]
 	[%foreach zone in zones%]
 	var zone = ImageMapEditor.new_zone();
 	zone.setPolygonStr('[%zone.polygon%]');
 	zone.action = '[%zone.action%]';
 	[%if zone.loc%]zone.loc = '[%zone.loc%]';[%end%]
 	[%if zone.ev%]zone.ev = '[%zone.ev%]';[%end%]
+	[%if zone.globfunc%]zone.globfunc = '[%zone.globfunc%]';[%end%]
 	zone.render(ImageMapEditor.form);
 	[%end%]
 	ImageMapEditor.run();

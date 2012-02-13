@@ -44,7 +44,6 @@ ImageMapZone.prototype.render = function(form) {
 						id: 'form-field-action-' + this.id,
 						fieldLabel: gt.gettext('Click action'),
 						name: 'action-' + this.id,
-						value: this.action,
 						xtype: 'combo',
 						allowBlank: true,
 						msgTarget: 'side',
@@ -69,7 +68,6 @@ ImageMapZone.prototype.render = function(form) {
 						id: 'form-field-location-' + this.id,
 						fieldLabel: gt.gettext('Target location'),
 						name: 'location-' + this.id,
-						value: this.action,
 						xtype: 'combo',
 						allowBlank: true,
 						msgTarget: 'side',
@@ -94,13 +92,32 @@ ImageMapZone.prototype.render = function(form) {
 						id: 'form-field-event-' + this.id,
 						fieldLabel: gt.gettext('Event identifier'),
 						name: 'event-' + this.id,
-						value: this.action,
 						xtype: 'textfield',
 						allowBlank: true,
 						msgTarget: 'side',
 						anchor: '-30',
 						autoHeight: true,
 						value: this.ev
+					}
+				},
+				{
+					id: 'elem_globfunc-' + this.id,
+					items: {
+						id: 'form-field-globfunc-' + this.id,
+						fieldLabel: gt.gettext('Global interface'),
+						name: 'globfunc-' + this.id,
+						value: this.globfunc,
+						xtype: 'combo',
+						allowBlank: true,
+						msgTarget: 'side',
+						anchor: '-30',
+						autoHeight: true,
+						hiddenName: 'v_globfunc-' + this.id,
+						hiddenValue: this.globfunc,
+						store: ImageMapEditor.globfuncs,
+						listWidth: 600,
+						triggerAction: 'all',
+						forceSelection: true
 					}
 				}
 			]
@@ -113,6 +130,10 @@ ImageMapZone.prototype.render = function(form) {
 	this.form.conditions.push({
 		id: 'elem_event-' + this.id,
 		condition: "form_value('action-" + this.id + "')=='event'"
+	});
+	this.form.conditions.push({
+		id: 'elem_globfunc-' + this.id,
+		condition: "form_value('action-" + this.id + "')=='globfunc'"
 	});
 };
 
@@ -200,6 +221,7 @@ ImageMapEditor.cleanup = function() {
 	this.zone_id = 0;
 	this.actions = new Array();
 	this.locations = new Array();
+	this.globfuncs = new Array();
 };
 
 ImageMapEditor.init = function(submit_url, width, height) {
