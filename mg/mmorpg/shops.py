@@ -21,11 +21,11 @@ class ShopsAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("item-categories.list", self.item_categories_list)
-        self.rhook("admin-locfunctypes.form", self.form_render)
-        self.rhook("admin-locfunctype-shop.store", self.form_store)
-        self.rhook("admin-locfunctype-shop.actions", self.actions)
-        self.rhook("admin-locfunctype-shop.action-assortment", self.assortment, priv="shops.config")
-        self.rhook("admin-locfunctype-shop.headmenu-assortment", self.headmenu_assortment)
+        self.rhook("admin-interfaces.form", self.form_render)
+        self.rhook("admin-interface-shop.store", self.form_store)
+        self.rhook("admin-interface-shop.actions", self.actions)
+        self.rhook("admin-interface-shop.action-assortment", self.assortment, priv="shops.config")
+        self.rhook("admin-interface-shop.headmenu-assortment", self.headmenu_assortment)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-shops.stats", self.stats)
@@ -228,9 +228,9 @@ class ShopsAdmin(ConstructorModule):
 
 class Shops(ConstructorModule):
     def register(self):
-        self.rhook("locfunctypes.list", self.locfunctypes_list)
-        self.rhook("locfunctype-shop.action-sell", self.sell, priv="logged")
-        self.rhook("locfunctype-shop.action-buy", self.buy, priv="logged")
+        self.rhook("interfaces.list", self.interfaces_list)
+        self.rhook("interface-shop.action-sell", self.sell, priv="logged")
+        self.rhook("interface-shop.action-buy", self.buy, priv="logged")
         self.rhook("money-description.shop-buy", self.money_description_shop_buy)
         self.rhook("money-description.shop-sell", self.money_description_shop_sell)
         self.rhook("money-description.shop-bought", self.money_description_shop_bought)
@@ -263,7 +263,7 @@ class Shops(ConstructorModule):
     def child_modules(self):
         return ["mg.mmorpg.shops.ShopsAdmin"]
 
-    def locfunctypes_list(self, types):
+    def interfaces_list(self, types):
         types.append(("shop", self._("Shop")))
 
     def shop_tp_menu(self, func, base_url, args, vars):

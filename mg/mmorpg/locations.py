@@ -204,8 +204,11 @@ class LocationsAdmin(ConstructorModule):
                             db_loc.set("loc_%s" % dest, loc.uuid)
                     else:
                         db_loc.delkey("loc_%s" % dest)
-                db_loc.set("image_type", req.param("v_image_type"))
+                image_type = req.param("v_image_type")
+                db_loc.set("image_type", image_type)
                 flags = {}
+                if image_type == "none":
+                    flags["image_type_valid"] = True
                 self.call("admin-locations.editor-form-validate", db_loc, flags, errors)
                 if not flags.get("image_type_valid"):
                     errors["v_image_type"] = self._("Select valid image type")
@@ -247,7 +250,9 @@ class LocationsAdmin(ConstructorModule):
             fields.append({"name": "loc_right", "label": self._("Location to the right"), "type": "combo", "values": locations, "value": db_loc.get("loc_right", ""), "inline": True})
             fields.append({"name": "loc_down", "label": self._("Location to the down"), "type": "combo", "values": locations, "value": db_loc.get("loc_down", "")})
             # image type
-            image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type"), "label": self._("Image type"), "values": []}
+            image_types = []
+            image_types.append(("none", self._("No image")))
+            image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type", "none"), "label": self._("Image type"), "values": image_types}
             fields.append(image_type)
             self.call("admin-locations.editor-form-render", db_loc, fields)
             if not db_loc.get("image_type") and image_type["values"] and not image_type["value"]:
