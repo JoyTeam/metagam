@@ -565,7 +565,7 @@ class Shops(ConstructorModule):
                 })
                 ritem["price"] = price
                 ritem["currency"] = currency
-                ritem["cicon"] = cinfo["icon"]
+                ritem["cicon"] = cinfo.get("icon")
                 # storing item
                 if params:
                     params[-1]["lst"] = True
