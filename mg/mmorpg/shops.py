@@ -119,11 +119,14 @@ class ShopsAdmin(ConstructorModule):
             currencies_list.insert(0, (None, self._("currency///Auto")))
             item_types = []
             for item_type in self.item_types_all():
-                cat = item_type.get("cat-shops")
+                cat = item_type.get("cat-admin")
                 misc = None
                 found = False
                 for c in categories:
                     if c["id"] == cat:
+                        found = True
+                    elif cat is None and c.get("default"):
+                        cat = c["id"]
                         found = True
                     if c.get("misc"):
                         misc = c["id"]
@@ -409,6 +412,9 @@ class Shops(ConstructorModule):
                 for c in categories:
                     if c["id"] == cat:
                         found = True
+                    elif cat is None and c.get("default"):
+                        cat = c["id"]
+                        found = True
                     if c.get("misc"):
                         misc = c["id"]
                 if not found:
@@ -580,6 +586,9 @@ class Shops(ConstructorModule):
                                 found = False
                                 for c in self.call("item-types.categories", "inventory"):
                                     if c["id"] == cat:
+                                        found = True
+                                    elif cat is None and c.get("default"):
+                                        cat = c["id"]
                                         found = True
                                     if c.get("misc"):
                                         misc = c["id"]

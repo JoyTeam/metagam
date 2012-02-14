@@ -82,7 +82,7 @@ class GlobalFunctionsAdmin(ConstructorModule):
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("ext-admin-globfunc.editor", self.admin_globfunc_editor, priv="interface.globfunc")
         self.rhook("headmenu-admin-globfunc.editor", self.headmenu_globfunc_editor)
-        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions, priority=19)
         self.rhook("admin-locations.map-zone-action-globfunc", self.location_map_zone_action_globfunc)
         self.rhook("admin-locations.map-zone-globfunc-render", self.location_map_zone_globfunc_render)
         self.rhook("admin-locations.render-imagemap-editor", self.render_imagemap_editor)

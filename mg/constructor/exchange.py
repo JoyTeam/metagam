@@ -1,6 +1,6 @@
 from mg.constructor import *
 
-class Exchange(ConstructorModule):
+class ExchangeRates(ConstructorModule):
     def register(self):
         self.rhook("exchange.rates", self.rates)
 
@@ -8,9 +8,9 @@ class Exchange(ConstructorModule):
         return self.conf("exchange.rates", {})
 
     def child_modules(self):
-        return ["mg.constructor.exchange.ExchangeAdmin"]
+        return ["mg.constructor.exchange.ExchangeRatesAdmin"]
 
-class ExchangeAdmin(ConstructorModule):
+class ExchangeRatesAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-economy.index", self.menu_economy_index)

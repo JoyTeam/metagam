@@ -191,6 +191,10 @@ ImageMapZone.prototype.render = function(form) {
 		id: 'elem_specfunc-' + this.id,
 		condition: "form_value('action-" + this.id + "')=='specfunc'"
 	});
+	this.form.conditions.push({
+		id: 'elem_hint-' + this.id,
+		condition: "form_value('action-" + this.id + "')!='move'"
+	});
 };
 
 ImageMapZone.prototype.activate = function() {
@@ -211,6 +215,7 @@ ImageMapZone.prototype.cleanup = function() {
 			id == 'elem_event-' + this.id ||
 			id == 'elem_url-' + this.id ||
 			id == 'elem_globfunc-' + this.id ||
+			id == 'elem_hint-' + this.id ||
 			id == 'elem_specfunc-' + this.id) {
 			this.form.conditions.splice(ci, 1);
 		}

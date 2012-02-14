@@ -349,7 +349,7 @@ class LocationsAdmin(ConstructorModule):
         bars.append({"code": "location-movement", "description": self._("Delay when moving between locations")})
 
     def valid_transitions(self, db_loc, valid_transitions):
-        for dest in ["up", "left", "right", "down"]:
+        for dest in ["up", "left", "right", "down", "exit"]:
             loc = db_loc.get("loc_%s" % dest)
             if loc:
                 valid_transitions.add(loc)
@@ -825,7 +825,7 @@ class Locations(ConstructorModule):
         location = character.location
         design = self.design("gameinterface")
         arrows = {}
-        for dest in ["up", "down", "left", "right"]:
+        for dest in ["up", "down", "left", "right", "exit"]:
             loc_id = location.db_location.get("loc_%s" % dest)
             if loc_id:
                 arrows["img_%s" % dest] = "%s/location-%s.png" % (design.get("uri"), dest) if design and design.get("files").get("location-%s.png" % dest) else "/st/game/default-interface/%s.png" % dest

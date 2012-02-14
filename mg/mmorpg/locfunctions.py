@@ -170,7 +170,7 @@ class LocationFunctionsAdmin(ConstructorModule):
         self.rhook("ext-admin-locations.specfunc", self.admin_specfunc, priv="locations.specfunc")
         self.rhook("headmenu-admin-locations.specfunc", self.headmenu_specfunc)
         self.rhook("admin-locations.links", self.links)
-        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions, priority=18)
         self.rhook("admin-locations.map-zone-action-specfunc", self.location_map_zone_action_specfunc)
         self.rhook("admin-locations.map-zone-specfunc-render", self.location_map_zone_specfunc_render)
         self.rhook("admin-locations.render-imagemap-editor", self.render_imagemap_editor)

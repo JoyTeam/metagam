@@ -243,7 +243,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
         self.rhook("ext-admin-quests.removedialog", self.remove_dialog, priv="quests.dialogs")
-        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions)
+        self.rhook("admin-locations.map-zone-actions", self.location_map_zone_actions, priority=20)
         self.rhook("admin-locations.map-zone-action-event", self.location_map_zone_action_event)
         self.rhook("admin-locations.map-zone-event-render", self.location_map_zone_event_render)
         self.rhook("admin-interface.button-actions", self.interface_button_actions)

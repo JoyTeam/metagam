@@ -515,6 +515,9 @@ class InventoryAdmin(ConstructorModule):
             for c in categories:
                 if c["id"] == cat:
                     found = True
+                elif cat is None and c.get("default"):
+                    cat = c["id"]
+                    found = True
                 if c.get("misc"):
                     misc = c["id"]
             if not found:
@@ -1937,6 +1940,9 @@ class Inventory(ConstructorModule):
         for c in categories:
             if c["id"] == cat:
                 return cat
+            elif cat is None and c.get("default"):
+                cat = c["id"]
+                found = True
             if c.get("misc"):
                 misc = c["id"]
         return misc
@@ -2034,6 +2040,9 @@ class Inventory(ConstructorModule):
             found = False
             for c in categories:
                 if c["id"] == cat:
+                    found = True
+                elif cat is None and c.get("default"):
+                    cat = c["id"]
                     found = True
                 if c.get("misc"):
                     misc = c["id"]
@@ -2257,6 +2266,9 @@ class InventoryLibrary(ConstructorModule):
                 found = False
                 for c in categories:
                     if c["id"] == cat:
+                        found = True
+                    elif cat is None and c.get("default"):
+                        cat = c["id"]
                         found = True
                     if c.get("misc"):
                         misc = c["id"]

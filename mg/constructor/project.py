@@ -81,8 +81,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.mmorpg.charclasses.CharClasses"])
             if self.conf("module.permissions-editor"):
                 lst.extend(["mg.core.permissions_editor.Permissions"])
-            if self.conf("module.exchange"):
-                lst.extend(["mg.constructor.exchange.Exchange"])
+            if self.conf("module.exchange-rates"):
+                lst.extend(["mg.constructor.exchange.ExchangeRates"])
             if self.conf("module.globfunc"):
                 lst.extend(["mg.constructor.globfunc.GlobalFunctions"])
         return lst
@@ -129,8 +129,8 @@ class ConstructorProject(Module):
             "description": self._("Ability to create administrator defined permissions for characters"),
         })
         modules.append({
-            "id": "exchange",
-            "name": self._("Currency exchange"),
+            "id": "exchange-rates",
+            "name": self._("Currency exchange rates"),
             "description": self._("Interfaces for defining currency exchange rates"),
         })
         modules.append({
