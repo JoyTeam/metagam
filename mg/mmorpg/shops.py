@@ -8,6 +8,8 @@ default_buy_price = ["*", ["glob", "price"], 0.1]
 re_sell_item = re.compile(r'^sell-([a-f0-9]{32})$')
 re_request_item = re.compile(r'^([a-f0-9_]+)/(\d+\.\d+|\d+)/([A-Z0-9]+)/(\d+)$')
 
+re_stats_arg = re.compile(r'^(sell|buy)/([A-Z0-9a-z]+)/(\d\d\d\d-\d\d-\d\d)$')
+
 class DBShopOperation(CassandraObject):
     clsname = "ShopOperation"
     indexes = {
@@ -30,6 +32,9 @@ class ShopsAdmin(ConstructorModule):
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-shops.stats", self.stats)
         self.rhook("admin-item-types.dim-list", self.dim_list)
+        self.rhook("menu-admin-economy.index", self.menu_economy_index)
+        self.rhook("ext-admin-shops.stats", self.admin_stats, priv="shops.stat")
+        self.rhook("headmenu-admin-shops.stats", self.headmenu_stats)
 
     def dim_list(self, dimensions):
         dimensions.append({
@@ -47,6 +52,7 @@ class ShopsAdmin(ConstructorModule):
 
     def permissions_list(self, perms):
         perms.append({"id": "shops.config", "name": self._("Shops configuration")})
+        perms.append({"id": "shops.stat", "name": self._("Shops statistics")})
 
     def item_categories_list(self, catgroups):
         catgroups.append({"id": "shops", "name": self._("Shops"), "order": 15, "description": self._("For goods being sold in shops")})
@@ -237,6 +243,98 @@ class ShopsAdmin(ConstructorModule):
         if operations:
             self.call("dbexport.add", "shops_stats", date=yesterday, operations=operations)
         lst.remove()
+
+    def menu_economy_index(self, menu):
+        req = self.req()
+        if req.has_access("shops.stat"):
+            menu.append({"id": "shops/stats", "text": self._("Shops statistics"), "leaf": True, "order": 30})
+
+    def headmenu_stats(self, args):
+        m = re_stats_arg.match(args)
+        if m:
+            mode, currency, date = m.group(1, 2, 3)
+            if mode == "sell":
+                return [self._("Sales for {currency} at {date}").format(currency=currency, date=self.call("l10n.date_local", date)), "shops/stats"]
+            elif mode == "buy":
+                return [self._("Buyings for {currency} at {date}").format(currency=currency, date=self.call("l10n.date_local", date)), "shops/stats"]
+        return self._("Shops statistics")
+
+    def admin_stats(self):
+        req = self.req()
+        m = re_stats_arg.match(req.args)
+        if m:
+            mode, currency, date = m.group(1, 2, 3)
+            data = {}
+            for row in self.sql_read.selectall_dict("select item_type, sum(amount) as amount, sum(quantity) as quantity from shops_{mode} where app=? and period=? and currency=? group by item_type".format(mode=mode), self.app().tag, date, currency):
+                data[row["item_type"]] = [nn(row["amount"]), nn(row["quantity"])]
+            item_types = self.item_types_load(data.keys(), load_params=False)
+            item_types.sort(cmp=lambda x, y: cmp(x.name, y.name))
+            rows = []
+            for item_type in item_types:
+                info = data.get(item_type.uuid)
+                if info:
+                    rows.append([
+                        htmlescape(item_type.name),
+                        self.call("money.price-html", info[0], currency),
+                        info[1],
+                    ])
+            vars = {
+                "tables": [
+                    {
+                        "header": [
+                            self._("Item type"),
+                            self._("Volume of transactions"),
+                            self._("Number of items"),
+                        ],
+                        "rows": rows
+                    }
+                ]
+            }
+            self.call("admin.response_template", "admin/common/tables.html", vars)
+        dates = set()
+        currencies = set()
+        cols = set()
+        operations = set()
+        for mode in ["sell", "buy"]:
+            for row in self.sql_read.selectall_dict("select date_format(period, '%Y-%m-%d') as d, currency from shops_{mode} where app=? group by d, currency".format(mode=mode), self.app().tag):
+                dates.add(row["d"])
+                currencies.add(row["currency"])
+                cols.add("{currency}-{mode}".format(currency=row["currency"], mode=mode))
+                operations.add("{d}-{currency}-{mode}".format(d=row["d"], currency=row["currency"], mode=mode))
+        dates = sorted(list(dates))
+        currencies = sorted(list(currencies))
+        # Formatting header
+        header = [self._("Date")]
+        for cur in currencies:
+            if "{currency}-sell".format(currency=cur) in cols:
+                header.append(self._("Sales for %s") % cur)
+            if "{currency}-buy".format(currency=cur) in cols:
+                header.append(self._("Buyings for %s") % cur)
+        # Formatting rows
+        rows = []
+        for date in dates:
+            row = [self.call("l10n.date_local", date)]
+            for cur in currencies:
+                if "{currency}-sell".format(currency=cur) in cols:
+                    if "{d}-{currency}-sell".format(d=date, currency=cur) in operations:
+                        row.append(u'<hook:admin.link href="shops/stats/sell/%s/%s" title="%s" />' % (cur, date, self._("open")))
+                    else:
+                        row.append('')
+                if "{currency}-buy".format(currency=cur) in cols:
+                    if "{d}-{currency}-buy".format(d=date, currency=cur) in operations:
+                        row.append(u'<hook:admin.link href="shops/stats/buy/%s/%s" title="%s" />' % (cur, date, self._("open")))
+                    else:
+                        row.append('')
+            rows.append(row)
+        vars = {
+            "tables": [
+                {
+                    "header": header,
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
 class Shops(ConstructorModule):
     def register(self):

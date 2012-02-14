@@ -242,9 +242,17 @@ class L10n(Module):
         if time is None:
             return None, None
         m = re_datetime.match(time)
-        if not m:
-            return None, None
-        year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+        if m:
+            year, month, day, h, m, s = m.group(1, 2, 3, 4, 5, 6)
+        else:
+            m = re_date.match(time)
+            if m:
+                year, month, day = m.group(1, 2, 3)
+                h = 0
+                m = 0
+                s = 0
+            else:
+                return None, None
         try:
             dt = datetime.datetime(int(year), int(month), int(day), int(h), int(m), int(s), tzinfo=utc).astimezone(self.tzinfo)
         except ValueError:
