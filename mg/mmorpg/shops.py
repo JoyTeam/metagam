@@ -35,6 +35,13 @@ class ShopsAdmin(ConstructorModule):
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("ext-admin-shops.stats", self.admin_stats, priv="shops.stat")
         self.rhook("headmenu-admin-shops.stats", self.headmenu_stats)
+        self.rhook("advice-admin-shops.index", self.advice_shops)
+
+    def advice(self):
+        return {"title": self._("Shops documentation"), "content": self._('You can find detailed information on the shops system in the <a href="//www.%s/doc/shops" target="_blank">shops page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 50}
+
+    def advice_shops(self, hook, args, advice):
+        advice.append(self.advice())
 
     def dim_list(self, dimensions):
         dimensions.append({
@@ -118,6 +125,7 @@ class ShopsAdmin(ConstructorModule):
     def assortment(self, func_id, base_url, func, args):
         categories = self.call("item-types.categories", "admin")
         req = self.req()
+        self.call("admin.advice", self.advice())
         if args:
             currencies = {}
             self.call("currencies.list", currencies)

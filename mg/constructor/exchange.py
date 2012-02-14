@@ -16,6 +16,10 @@ class ExchangeRatesAdmin(ConstructorModule):
         self.rhook("menu-admin-economy.index", self.menu_economy_index)
         self.rhook("headmenu-admin-exchange.rates", self.headmenu_exchange_rates)
         self.rhook("ext-admin-exchange.rates", self.admin_exchange_rates, priv="exchange.rates")
+        self.rhook("advice-admin-exchange.index", self.advice_exchange)
+
+    def advice_exchange(self, hook, args, advice):
+        advice.append({"title": self._("Exchange rates documentation"), "content": self._('You can find detailed information on the exchange rates system in the <a href="//www.%s/doc/currency-rates" target="_blank">exchange rates page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def permissions_list(self, perms):
         perms.append({"id": "exchange.rates", "name": self._("Currency exchange rates configuration")})

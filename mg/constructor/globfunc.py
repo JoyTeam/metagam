@@ -86,6 +86,10 @@ class GlobalFunctionsAdmin(ConstructorModule):
         self.rhook("admin-locations.map-zone-action-globfunc", self.location_map_zone_action_globfunc)
         self.rhook("admin-locations.map-zone-globfunc-render", self.location_map_zone_globfunc_render)
         self.rhook("admin-locations.render-imagemap-editor", self.render_imagemap_editor)
+        self.rhook("advice-admin-globfunc.index", self.advice_globfunc)
+
+    def advice_globfunc(self, hook, args, advice):
+        advice.append({"title": self._("Global interfaces documentation"), "content": self._('You can find detailed information on the global interfaces system in the <a href="//www.%s/doc/globfunc" target="_blank">global interfaces page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def permissions_list(self, perms):
         perms.append({"id": "interface.globfunc", "name": self._("Global interfaces")})
