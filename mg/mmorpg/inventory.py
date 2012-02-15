@@ -1020,7 +1020,7 @@ class InventoryAdmin(ConstructorModule):
         m = re_inventory_withdraw.match(req.args)
         if m:
             owtype, owner, dna = m.group(1, 2, 3)
-            inv = self.call("inventory.get", owtype,owner)
+            inv = self.call("inventory.get", owtype, owner)
         else:
             self.call("web.not_found")
         item_type, dna_suffix = dna_parse(dna)
@@ -1049,8 +1049,8 @@ class InventoryAdmin(ConstructorModule):
             item_type_obj, deleted = inv.take_dna(dna, quantity, "admin.withdraw", admin=req.user())
             if deleted:
                 if owtype == "char":
-                    self.call("security.suspicion", admin=req.user(), action="items.withdraw", member=char.uuid, amount=quantity, dna=dna, comment=admin_comment)
-                    self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Withdrawn {quantity} x {name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment))
+                    self.call("security.suspicion", admin=req.user(), action="items.withdraw", member=owner, amount=quantity, dna=dna, comment=admin_comment)
+                    self.call("dossier.write", user=owner, admin=req.user(), content=self._("Withdrawn {quantity} x {name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment))
                 elif owtype == "shop":
                     self.call("security.suspicion", admin=req.user(), action="items.withdraw", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
                 self.call("admin.redirect", "inventory/view/%s/%s" % (owtype, owner))
