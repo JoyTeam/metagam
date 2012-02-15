@@ -599,6 +599,13 @@ class Constructor(Module):
         if not len(admins):
             self.call("web.redirect", "http://%s" % domain)
         admin = admins[0]
+        # restoring admin rights
+        perms = app.hooks.call("auth.permissions", admin.uuid)
+        print "perms=%s" % perms
+        if not perms.get("project.admin"):
+            self.info("Restoring admin permissions for user %s", admin.uuid)
+            app.hooks.call("auth.grant-permission", admin.uuid, "project.admin")
+        # logging in
         autologin = app.hooks.call("auth.autologin", admin.uuid)
         self.call("web.redirect", "http://%s/auth/autologin/%s" % (domain, autologin))
 

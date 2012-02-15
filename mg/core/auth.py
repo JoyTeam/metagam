@@ -226,6 +226,7 @@ class Interface(Module):
     "Functions used in special interfaces (user and admin)"
     def register(self):
         self.rhook("auth.permissions", self.auth_permissions)
+        self.rhook("auth.grant-permission", self.auth_grant_permission)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-auth.index", self.menu_auth_index)
         self.rhook("ext-admin-auth.permissions", self.admin_permissions, priv="permissions")
@@ -961,6 +962,17 @@ class Interface(Module):
             except ObjectNotFoundException:
                 pass
         return perms
+
+    def auth_grant_permission(self, user_id, perm):
+        try:
+            p = self.obj(UserPermissions, user_id)
+        except ObjectNotFoundException:
+            p = self.obj(UserPermissions, user_id, data={})
+            p.set("perms", {})
+        perms = p.get("perms")
+        perms[perm] = True
+        p.touch()
+        p.store()
 
     def menu_root_index(self, menu):
         menu.append({"id": "auth.index", "text": self._("Authentication"), "order": 500})
