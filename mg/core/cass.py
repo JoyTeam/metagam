@@ -20,6 +20,8 @@ import re
 
 cache_interval = 3600
 max_index_length = 10000000
+max_memcached_list_store = 1000
+max_chunk_size = 1000
 
 re_unconfigured_ks = re.compile(r'^Keyspace (.+) does not exist$')
 re_unconfigured_cf = re.compile(r'^unconfigured columnfamily (.+)$')
@@ -941,45 +943,90 @@ class CassandraObjectList(object):
         return res
 
     def load(self, silent=False):
-        if len(self.lst) > 0:
-            clsname = self.__class__.objcls.clsname
-            row_mcids = ["%s-%s" % (clsname, obj.uuid) for obj in self.lst]
-            mc_d = self.db.mc.get_multi(row_mcids) if self.db.mc else {}
-            if self.db.storage == 0:
-                col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
-                row_ids = ["%s_Object_%s" % (clsname, uuid) for uuid in col_ids]
-                if row_ids:
-                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="Data"), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
-                else:
-                    db_d = {}
-            elif self.db.storage == 1:
-                col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
-                row_ids = col_ids
-                if row_ids:
-                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
-                else:
-                    db_d = {}
-            elif self.db.storage == 2:
-                col_ids = [obj.uuid for obj in self.lst if "%s-%s" % (clsname, obj.uuid) not in mc_d]
-                row_ids = ["%s_%s" % (self.db.app, uuid) for uuid in col_ids]
-                if row_ids:
-                    db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
-                else:
-                    db_d = {}
-            recovered = False
-            for obj in self.lst:
-                obj.valid = True
-                row_mcid = "%s-%s" % (clsname, obj.uuid)
-                data = mc_d.get(row_mcid)
-                if data is not None:
-                    #print "LOAD(MC) %s %s" % (obj.uuid, data)
-                    if data == "tomb":
-                        if silent:
+        if self.lst:
+            def load_chunk(index_from, index_to):
+                clsname = self.__class__.objcls.clsname
+                row_mcids = ["%s-%s" % (clsname, self.lst[i].uuid) for i in xrange(index_from, index_to)]
+                mc_d = self.db.mc.get_multi(row_mcids) if self.db.mc else {}
+                if self.db.storage == 0:
+                    col_ids = [self.lst[i].uuid for i in xrange(index_from, index_to) if "%s-%s" % (clsname, self.lst[i].uuid) not in mc_d]
+                    row_ids = ["%s_Object_%s" % (clsname, uuid) for uuid in col_ids]
+                    if row_ids:
+                        db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="Data"), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
+                    else:
+                        db_d = {}
+                elif self.db.storage == 1:
+                    col_ids = [self.lst[i].uuid for i in xrange(index_from, index_to) if "%s-%s" % (clsname, self.lst[i].uuid) not in mc_d]
+                    row_ids = col_ids
+                    if row_ids:
+                        db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
+                    else:
+                        db_d = {}
+                elif self.db.storage == 2:
+                    col_ids = [self.lst[i].uuid for i in xrange(index_from, index_to) if "%s-%s" % (clsname, self.lst[i].uuid) not in mc_d]
+                    row_ids = ["%s_%s" % (self.db.app, uuid) for uuid in col_ids]
+                    if row_ids:
+                        db_d = self.db.multiget_slice(row_ids, ColumnParent(column_family="%s_Objects" % clsname), SlicePredicate(column_names=["data-%s" % uuid for uuid in col_ids]), ConsistencyLevel.QUORUM)
+                    else:
+                        db_d = {}
+                recovered = False
+                for i in xrange(index_from, index_to):
+                    obj = self.lst[i]
+                    obj.valid = True
+                    row_mcid = "%s-%s" % (clsname, obj.uuid)
+                    data = mc_d.get(row_mcid)
+                    if data is not None:
+                        #print "LOAD(MC) %s %s" % (obj.uuid, data)
+                        if data == "tomb":
+                            if silent:
+                                obj.valid = False
+                                recovered = True
+                                if len(self.index_rows):
+                                    mutations = []
+                                    mcgroups = set()
+                                    timestamp = None
+                                    for col in self.index_data:
+                                        if col[1] == obj.uuid:
+                                            #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
+                                            if timestamp is None:
+                                                timestamp = self.db.get_time()
+                                            mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
+                                            if self.db.mc:
+                                                self.db.mc.incr_ver("%s-%s/VER" % (clsname, self.query_index))
+                                            break
+                                    if len(mutations):
+                                        if self.db.storage == 0:
+                                            cf = "Data"
+                                        elif self.db.storage == 1:
+                                            cf = "%s_Index_%s" % (clsname, self.query_index)
+                                        elif self.db.storage == 2:
+                                            cf = "%s_Indexes" % clsname
+                                        self.db.batch_mutate(dict([(index_row, {cf: mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
+                            else:
+                                raise ObjectNotFoundException("UUID %s (keyspace %s, cls %s) not found" % (obj.uuid, obj.db.keyspace, clsname))
+                        else:
+                            obj.data = data
+                            obj.dirty = False
+                    else:
+                        if self.db.storage == 0:
+                            row_id = "%s_Object_%s" % (clsname, obj.uuid)
+                        elif self.db.storage == 1:
+                            row_id = obj.uuid
+                        elif self.db.storage == 2:
+                            row_id = "%s_%s" % (self.db.app, obj.uuid)
+                        cols = db_d.get(row_id)
+                        if cols:
+                            obj.data = json.loads(cols[0].column.value)
+                            obj.dirty = False
+                            # Don't save too long lists to the memcached. It's useless
+                            if self.db.mc and len(self.lst) <= max_memcached_list_store:
+                                self.db.mc.add(row_mcid, obj.data, cache_interval)
+                            #print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
+                        elif silent:
                             obj.valid = False
                             recovered = True
                             if len(self.index_rows):
                                 mutations = []
-                                mcgroups = set()
                                 timestamp = None
                                 for col in self.index_data:
                                     if col[1] == obj.uuid:
@@ -1000,48 +1047,18 @@ class CassandraObjectList(object):
                                     self.db.batch_mutate(dict([(index_row, {cf: mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
                         else:
                             raise ObjectNotFoundException("UUID %s (keyspace %s, cls %s) not found" % (obj.uuid, obj.db.keyspace, clsname))
-                    else:
-                        obj.data = data
-                        obj.dirty = False
-                else:
-                    if self.db.storage == 0:
-                        row_id = "%s_Object_%s" % (clsname, obj.uuid)
-                    elif self.db.storage == 1:
-                        row_id = obj.uuid
-                    elif self.db.storage == 2:
-                        row_id = "%s_%s" % (self.db.app, obj.uuid)
-                    cols = db_d.get(row_id)
-                    if cols:
-                        obj.data = json.loads(cols[0].column.value)
-                        obj.dirty = False
-                        if self.db.mc:
-                            self.db.mc.add(row_mcid, obj.data, cache_interval)
-                        #print "LOAD(DB) %s %s" % (obj.uuid, obj.data)
-                    elif silent:
-                        obj.valid = False
-                        recovered = True
-                        if len(self.index_rows):
-                            mutations = []
-                            timestamp = None
-                            for col in self.index_data:
-                                if col[1] == obj.uuid:
-                                    #print "read recovery. removing column %s from index row %s" % (col.column.name, self.index_row)
-                                    if timestamp is None:
-                                        timestamp = self.db.get_time()
-                                    mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([col[0]]), timestamp=timestamp)))
-                                    if self.db.mc:
-                                        self.db.mc.incr_ver("%s-%s/VER" % (clsname, self.query_index))
-                                    break
-                            if len(mutations):
-                                if self.db.storage == 0:
-                                    cf = "Data"
-                                elif self.db.storage == 1:
-                                    cf = "%s_Index_%s" % (clsname, self.query_index)
-                                elif self.db.storage == 2:
-                                    cf = "%s_Indexes" % clsname
-                                self.db.batch_mutate(dict([(index_row, {cf: mutations}) for index_row, values in self.index_rows.iteritems()]), ConsistencyLevel.QUORUM)
-                    else:
-                        raise ObjectNotFoundException("UUID %s (keyspace %s, cls %s) not found" % (obj.uuid, obj.db.keyspace, clsname))
+                return recovered
+            # trying to load long lists chunk by chunk
+            recovered = False
+            index = 0
+            len_lst = len(self.lst)
+            while index < len_lst:
+                chunk_size = len_lst - index
+                if chunk_size > max_chunk_size:
+                    chunk_size = max_chunk_size
+                if load_chunk(index, index + chunk_size):
+                    recovered = True
+                index += chunk_size
             if recovered:
                 self.lst = [obj for obj in self.lst if obj.valid]
         self._loaded = True

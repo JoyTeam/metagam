@@ -26,7 +26,7 @@ class MemcachedPool(object):
     Handles pool of MemcachedConnection objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=256):
+    def __init__(self, host=("127.0.0.1", 11211), size=8):
         """
         size - max amount of active memcached connections (None if no limit)
         """
