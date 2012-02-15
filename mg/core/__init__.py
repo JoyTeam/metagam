@@ -319,13 +319,13 @@ class Config(object):
     def store(self):
         if len(self._modified):
             with self.app().config_lock:
-                list = self.app().objlist(ConfigGroupList, [])
-                list.load()
+                lst = self.app().objlist(ConfigGroupList, [])
+                lst.load()
                 for g in self._modified:
                     obj = self.app().obj(ConfigGroup, g, data=self._config[g])
                     obj.dirty = True
-                    list.append(obj)
-                list.store()
+                    lst.append(obj)
+                lst.store()
                 self._modified.clear()
 
 class Module(object):

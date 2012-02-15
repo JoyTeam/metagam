@@ -214,15 +214,18 @@ class Cluster(Module):
         except AttributeError:
             pass
         if tag is not None:
-            servers_online = self.servers_online()
-            for server, info in servers_online.items():
+            def reload_server(info):
+                try:
+                    self.int_app().hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
+                except HTTPError as e:
+                    self.error(e)
+                except Exception as e:
+                    self.exception(e)
+            tasklets = []
+            for server, info in self.servers_online().items():
                 if info["type"] == "worker":
-                    try:
-                        self.int_app().hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
-                    except HTTPError as e:
-                        self.error(e)
-                    except Exception as e:
-                        self.exception(e)
+                    tasklets.append(Tasklet.new(reload_server)(info))
+            Tasklet.join_all(tasklets)
     
     def objclasses_list(self, objclasses):
         objclasses["TempFile"] = (TempFile, TempFileList)
