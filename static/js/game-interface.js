@@ -358,7 +358,9 @@ Game.panel = function(id, options) {
 				}
 				for (var j = 0; j < block.buttons.length; j++) {
 					var btn = block.buttons[j];
-					block_el.html += this.render_button(btn);
+					block_el.html += this.render_button(btn, {
+						menu_align: options.vertical ? (options.right ? 'tr-tl' : 'tl-tr') : 'tl-bl'
+					});
 				}
 				if (this.design_root) {
 					if (options.vertical) {
@@ -427,7 +429,8 @@ Game.get_btn_id = function() {
 	return 1;
 };
 
-Game.render_button = function(btn) {
+Game.render_button = function(btn, options) {
+	options = options || {};
 	var att = '';
 	var btn_id = this.get_btn_id();
 	var classes = new Array();
@@ -438,7 +441,7 @@ Game.render_button = function(btn) {
 		att += ' onclick="' + btn.onclick + '"';
 		classes.push('clickable');
 	} else if (btn.popup) {
-		att += ' onclick="Game.popup(\'panel-btn-' + btn_id + '\', \'' + btn.popup + '\');"';
+		att += ' onclick="Game.popup(\'panel-btn-' + btn_id + '\', \'' + btn.popup + '\', undefined, \'' + (options.menu_align || 'tl-bl') + '\');"';
 		classes.push('clickable');
 	}
 	classes.push('btn-' + btn.id);
@@ -451,7 +454,7 @@ Game.render_button = function(btn) {
 	return img;
 };
 
-Game.popup = function(btn_id, popup_id, parent_menu) {
+Game.popup = function(btn_id, popup_id, parent_menu, align) {
 	var btn_el = Ext.get(btn_id);
 	if (!btn_el)
 		return;
@@ -460,6 +463,8 @@ Game.popup = function(btn_id, popup_id, parent_menu) {
 		return;
 	var menu = new Ext.menu.Menu({
 	});
+	if (!align)
+		align = 'tl-bl';
 	for (var i = 0; i < popup.buttons.length; i++) {
 		var btn = popup.buttons[i];
 		var btn_id = 'panel-btn-' + this.get_btn_id();
@@ -475,7 +480,7 @@ Game.popup = function(btn_id, popup_id, parent_menu) {
 					if (btn.onclick) {
 						eval(btn.onclick);
 					} else if (btn.popup) {
-						this.popup(btn_id, btn.popup, menu);
+						this.popup(btn_id, btn.popup, menu, 'tl-tr');
 					} else if (btn.qevent) {
 						Game.qevent(btn.qevent);
 					}
@@ -483,7 +488,7 @@ Game.popup = function(btn_id, popup_id, parent_menu) {
 			}
 		});
 	}
-	menu.show(btn_el, 'tl-bl', parent_menu);
+	menu.show(btn_el, align, parent_menu);
 	if (!parent_menu) {
 		Ext.ux.ManagedIFrame.Manager.showShims();
 		menu.addListener('hide', function() {

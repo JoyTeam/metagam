@@ -161,7 +161,7 @@ Game.setup_game_layout = function() {
 			items: [
 				[%if layout.panel_main_left%]this.panel('main-left', {region: 'west', vertical: true}),[%end%]
 				main
-				[%if layout.panel_main_right%], this.panel('main-right', {region: 'east', vertical: true})[%end%]
+				[%if layout.panel_main_right%], this.panel('main-right', {region: 'east', vertical: true, right: true})[%end%]
 			]
 		};
 	[%end%]
