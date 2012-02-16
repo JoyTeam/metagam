@@ -3,6 +3,7 @@ import re
 
 max_slot_id = 100
 re_del = re.compile(r'^del/(\d+)$')
+re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
 
 class Equip(ConstructorModule):
     def register(self):
@@ -53,6 +54,7 @@ class EquipAdmin(ConstructorModule):
     def admin_slots(self):
         req = self.req()
         slots = self.call("equip.slots")
+        interfaces = self.call("equip.interfaces")
         # deletion
         m = re_del.match(req.args)
         if m:
@@ -113,6 +115,34 @@ class EquipAdmin(ConstructorModule):
                     errors["name"] = self._("This field is mandatory")
                 else:
                     slot["name"] = name
+                # description
+                description = req.param("description").strip()
+                if not description:
+                    errors["description"] = self._("This field is mandatory")
+                else:
+                    slot["description"] = description
+                # interfaces
+                for iface in interfaces:
+                    key = "iface-%s" % iface["id"]
+                    if req.param(key):
+                        slot[key] = True
+                        key_size = "ifsize-%s" % iface["id"]
+                        dim = req.param(key_size).strip()
+                        m = re_parse_dimensions.match(dim)
+                        if not m:
+                            errors[key_size] = self._("Invalid dimensions format")
+                        else:
+                            width, height = m.group(1, 2)
+                            width = int(width)
+                            height = int(height)
+                            if width < 16 or height < 16:
+                                errors[key_size] = self._("Minimal size is 16x16")
+                            elif width > 128 or height > 128:
+                                errors[key_size] = self._("Maximal size is 128x128")
+                            else:
+                                slot[key_size] = [width, height]
+                    else:
+                        slot[key] = False
                 # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -131,7 +161,15 @@ class EquipAdmin(ConstructorModule):
                 {"label": self._("Slot ID (integer number)"), "name": "id", "value": slot.get("id")},
                 {"label": self._("Sorting order"), "name": "order", "value": slot.get("order"), "inline": True},
                 {"label": self._("Slot name"), "name": "name", "value": slot.get("name")},
+                {"label": self._("Description (ex: Slot for summoning scrolls)"), "name": "description", "value": slot.get("description")},
+                {"type": "header", "html": self._("slot///Visibility in the interfaces")},
             ]
+            for iface in interfaces:
+                key = "iface-%s" % iface["id"]
+                fields.append({"name": key, "label": iface["title"], "type": "checkbox", "checked": slot.get(key)})
+                key_size = "ifsize-%s" % iface["id"]
+                size = slot.get(key_size, [60, 60])
+                fields.append({"name": key_size, "label": self._("Slot dimensions (ex: 60x60)"), "value": "%dx%d" % (size[0], size[1]), "condition": "[%s]" % key, "inline": True})
             self.call("admin.form", fields=fields)
         rows = []
         for slot in slots:

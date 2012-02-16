@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-16 09:21+0300\n"
+"PO-Revision-Date: 2012-02-16 09:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1618,6 +1618,9 @@ msgstr "Производный (вычисляемый) параметр"
 msgid "Description"
 msgstr "Описание"
 
+msgid "Description (ex: Slot for summoning scrolls)"
+msgstr "Описание (например: Слот для свитков призыва)"
+
 msgid "Description for players"
 msgstr "Описание для игроков"
 
@@ -2962,6 +2965,9 @@ msgstr "Неверный формат даты и времени"
 
 msgid "Invalid delete URI"
 msgstr "Неверный URI для удаления"
+
+msgid "Invalid dimensions format"
+msgstr "Неверный формат размера"
 
 #, python-format
 msgid "Invalid dimensions format: %s"
@@ -5497,6 +5503,9 @@ msgstr "ID слота (целое число)"
 msgid "Slot ID must be a nonnegative integer in range 1-%d"
 msgstr "ID слота должен быть целым числом в диапазоне 1-%d"
 
+msgid "Slot dimensions (ex: 60x60)"
+msgstr "Размеры слота (например: 60x60)"
+
 msgid "Slot name"
 msgstr "Название слота"
 
@@ -7949,6 +7958,9 @@ msgstr "показать"
 
 msgid "skipping unavailable quest {quest}"
 msgstr "пропускаем недоступный квест {quest}"
+
+msgid "slot///Visibility in the interfaces"
+msgstr "Видимость в интерфейсах"
 
 msgid "smile/smiles"
 msgstr "смайлик/смайлика/смайликов"
