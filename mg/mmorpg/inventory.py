@@ -501,14 +501,19 @@ class InventoryAdmin(ConstructorModule):
         for ent in lst:
             name = htmlescape(ent.get("name"))
             row = ['<strong>%s</strong><br />%s' % (name, ent.uuid)]
+            rdims = []
             for dim in dimensions:
-                row.append('<img src="/st-mg/img/%s.gif" alt="" />' % ("done" if ent.get("image-%dx%d" % (dim["width"], dim["height"])) else "no"))
-            row.append(u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit")))
+                key = "%dx%d" % (dim["width"], dim["height"])
+                ok = ent.get("image-%s" % key)
+                rdims.append(u'<span class="%s">%s - %s</span>' % ("yes" if ok else "no", key, self._("dimpresent///ok") if ok else self._("dimension///missing")))
+            row.append(u'<br />'.join(rdims))
+            actions = [u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit"))]
             if req.has_access("inventory.give"):
-                row.append(u'<hook:admin.link href="item-types/give/%s" title="%s" />' % (ent.uuid, self._("give")))
+                actions.append(u'<hook:admin.link href="item-types/give/%s" title="%s" />' % (ent.uuid, self._("give")))
             if req.has_access("inventory.track"):
                 date = self.nowdate()
-                row.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(type=ent.uuid, date=date, next_date=next_date(date), title=self._("track")))
+                actions.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(type=ent.uuid, date=date, next_date=next_date(date), title=self._("track")))
+            row.append(u'<br />'.join(actions))
             cat = ent.get("cat-admin")
             misc = None
             found = False
@@ -529,13 +534,8 @@ class InventoryAdmin(ConstructorModule):
             except KeyError:
                 rows[cat] = [row]
         header = [self._("Item name")]
-        for dim in dimensions:
-            header.append("%dx%d" % (dim["width"], dim["height"]))
-        header.append(self._("Editing"))
-        if req.has_access("inventory.give"):
-            header.append(self._("Giving"))
-        if req.has_access("inventory.track"):
-            header.append(self._("Tracking"))
+        header.append(self._("Image dimensions"))
+        header.append(self._("Actions"))
         tables = []
         tables.append({
             "links": [
