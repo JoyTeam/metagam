@@ -31,7 +31,6 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
-        self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("headmenu-admin-item-types.editor", self.headmenu_item_types_editor)
         self.rhook("ext-admin-item-types.editor", self.admin_item_types_editor, priv="inventory.editor")
         self.rhook("headmenu-admin-item-types.give", self.headmenu_item_types_give)
@@ -117,14 +116,10 @@ class InventoryAdmin(ConstructorModule):
         req = self.req()
         if req.has_access("inventory.config"):
             menu.append({"id": "inventory/config", "text": self._("Inventory configuration"), "order": 0, "leaf": True})
+            menu.append({"id": "inventory/char-cargo", "text": self._("Cargo constraints"), "order": 40, "leaf": True})
         if req.has_access("inventory.editor"):
             menu.append({"id": "item-categories/editor", "text": self._("Rubricators"), "order": 10, "leaf": True})
             menu.append({"id": "item-types/editor", "text": self._("Item types"), "order": 20, "leaf": True})
-
-    def menu_characters_index(self, menu):
-        req = self.req()
-        if req.has_access("inventory.config"):
-            menu.append({"id": "inventory/char-cargo", "text": self._("Cargo constraints"), "order": 40, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "inventory.config", "name": self._("Inventory: configuration")})

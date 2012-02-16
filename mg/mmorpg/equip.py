@@ -32,7 +32,7 @@ class Equip(ConstructorModule):
 class EquipAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
-        self.rhook("menu-admin-characters.index", self.menu_characters_index)
+        self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
         self.rhook("headmenu-admin-equip.slots", self.headmenu_slots)
         self.rhook("ext-admin-equip.slots", self.admin_slots, priv="equip.config")
         self.rhook("admin-item-types.form-render", self.item_type_form_render)
@@ -42,7 +42,7 @@ class EquipAdmin(ConstructorModule):
     def permissions_list(self, perms):
         perms.append({"id": "equip.config", "name": self._("Characters equipment configuration")})
 
-    def menu_characters_index(self, menu):
+    def menu_inventory_index(self, menu):
         req = self.req()
         if req.has_access("equip.config"):
             menu.append({"id": "equip/slots", "text": self._("Equipment slots"), "order": 50, "leaf": True})
