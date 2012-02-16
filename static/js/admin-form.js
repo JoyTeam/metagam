@@ -1,6 +1,6 @@
 var form_id = 0;
 
-Form = Ext.extend(AdminResponse, {
+Form = Ext.extend(AdminResponsePanel, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
 		});

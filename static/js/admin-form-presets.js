@@ -1,6 +1,6 @@
 var form_presets;
 
-FormPresets = Ext.extend(AdminResponse, {
+FormPresets = Ext.extend(AdminResponsePanel, {
 	constructor: function(data) {
 		FormPresets.superclass.constructor.call(this, {
 		});

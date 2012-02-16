@@ -1,4 +1,10 @@
-var AdminResponse = Ext.extend(Ext.Panel, {
+var AdminResponse = Ext.extend(Ext.BoxComponent, {
+	border: false,
+	autoWidth: true,
+	region: 'center'
+});
+
+var AdminResponsePanel = Ext.extend(Ext.Panel, {
 	border: false,
 	region: 'center'
 });
@@ -39,7 +45,8 @@ function adm_response(res)
 		adminmain.removeAll();
 		admincontent = new Ext.Container({
 			hidden: true,
-			cls: 'admin-content'
+			cls: 'admin-content',
+			autoScroll: true
 		});
 		if (res.headmenu) {
 			headmenu = res.headmenu;
