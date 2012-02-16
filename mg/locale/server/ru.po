@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-14 17:29+0300\n"
+"PO-Revision-Date: 2012-02-16 09:21+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -235,6 +235,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Ability of characters to equip items"
+msgstr "Способность персонажа надевать предметы"
 
 msgid "Ability to create administrator defined permissions for characters"
 msgstr "Возможность вручную создавать новые привилегии для персонажей"
@@ -480,6 +483,9 @@ msgstr "Вы уверены, что хотите удалить это выпа�
 
 msgid "Are you sure want to delete this quest?"
 msgstr "Вы уверены, что хотите удалить этот квест?"
+
+msgid "Are you sure want to delete this slot?"
+msgstr "Вы уверены, что хотите удалить этот слот?"
 
 msgid "Are you sure want to delete this smile?"
 msgstr "Вы уверены, что хотите удалить этот смайлик?"
@@ -1037,6 +1043,12 @@ msgstr "Персонажи, которые могут пользоваться �
 
 msgid "Characters cargo constraints"
 msgstr "Ограничения грузоподъёмности персонажей"
+
+msgid "Characters equipment"
+msgstr "Экипировка персонажа"
+
+msgid "Characters equipment configuration"
+msgstr "Настройка экипировки персонажей"
 
 msgid "Characters images documentation"
 msgstr "Документация на образы персонажей"
@@ -2029,6 +2041,9 @@ msgstr "Эпическое событие: война"
 msgid "Equipment"
 msgstr "Экипировка"
 
+msgid "Equipment slots"
+msgstr "Слоты экипировки"
+
 msgid "Error"
 msgstr "Ошибка"
 
@@ -2895,6 +2910,9 @@ msgstr "Панели интерфейса"
 
 msgid "Interfaces for defining currency exchange rates"
 msgstr "Интерфейсы для задания курсов обмена валют"
+
+msgid "Internal game interface for character owner"
+msgstr "Внутриигровой интерфейс для владельца персонажа"
 
 msgid "Interval"
 msgstr "Интервал"
@@ -3984,6 +4002,9 @@ msgstr "Новое состояние квеста"
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
+msgid "New slot"
+msgstr "Новый слот"
+
 msgid "New smile"
 msgstr "Новый смайлик"
 
@@ -4599,6 +4620,9 @@ msgstr "Загрузите ZIP-архив"
 
 msgid "Provide an image for the smile"
 msgstr "Загрузите картинку для смайлика"
+
+msgid "Public character info"
+msgstr "Публичная страница информации о персонаже"
 
 msgid "Publish"
 msgstr "Опубликовать"
@@ -5458,6 +5482,26 @@ msgstr "Размер"
 
 msgid "Sky #1"
 msgstr "Небо №1"
+
+#, python-format
+msgid "Slot %s"
+msgstr "Слот %s"
+
+msgid "Slot ID"
+msgstr "ID слота"
+
+msgid "Slot ID (integer number)"
+msgstr "ID слота (целое число)"
+
+#, python-format
+msgid "Slot ID must be a nonnegative integer in range 1-%d"
+msgstr "ID слота должен быть целым числом в диапазоне 1-%d"
+
+msgid "Slot name"
+msgstr "Название слота"
+
+msgid "Slot with this ID already exists"
+msgstr "Слот с таким идентификатором уже существует"
 
 msgid "Small icon near the browser address line"
 msgstr "Небольшая иконка рядом с адресной строкой браузера"

@@ -1875,6 +1875,12 @@ class Inventory(ConstructorModule):
             "description": self._("Game interface for buying and selling ingame goods"),
             "parent": "inventory",
         })
+        modules.append({
+            "id": "equip",
+            "name": self._("Characters equipment"),
+            "description": self._("Ability of characters to equip items"),
+            "parent": "inventory",
+        })
 
     def max_cells(self):
         val = self.conf("inventory.max-cells")
@@ -1897,6 +1903,8 @@ class Inventory(ConstructorModule):
         modules = ["mg.mmorpg.invparams.ItemTypeParams", "mg.mmorpg.inventory.InventoryAdmin", "mg.mmorpg.inventory.InventoryLibrary"]
         if self.conf("module.shops"):
             modules.append("mg.mmorpg.shops.Shops")
+        if self.conf("module.equip"):
+            modules.append("mg.mmorpg.equip.Equip")
         return modules
 
     def inventory_get(self, owtype, uuid):
