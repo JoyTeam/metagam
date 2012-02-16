@@ -76,9 +76,9 @@ class CharImages(ConstructorModule):
     def get(self, character, dim):
         uri = None
         if dim == "charinfo":
-            dim = self.conf("charimages.dim_charinfo", "230x440")
+            dim = self.conf("charimages.dim_charinfo", "240x440")
         elif dim == "charpage":
-            dim = self.conf("charimages.dim_charpage", "115x220")
+            dim = self.conf("charimages.dim_charpage", "120x220")
         try:
             image = character.db_charimage
         except ObjectNotFoundException:
@@ -372,16 +372,16 @@ class CharImagesAdmin(ConstructorModule):
         if val:
             return val
         return [
-            {"width": 46, "height": 88},
-            {"width": 115, "height": 220},
-            {"width": 230, "height": 440}
+            {"width": 48, "height": 88},
+            {"width": 120, "height": 220},
+            {"width": 240, "height": 440}
         ]
 
     def dim_charpage(self):
-        return self.conf("charimages.dim_charpage", "115x220")
+        return self.conf("charimages.dim_charpage", "120x220")
 
     def dim_charinfo(self):
-        return self.conf("charimages.dim_charinfo", "230x440")
+        return self.conf("charimages.dim_charinfo", "240x440")
 
     def images_for_sex(self, sex):
         lst = []

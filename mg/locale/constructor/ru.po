@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-13 18:36+0300\n"
+"PO-Revision-Date: 2012-02-16 20:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -30,6 +30,9 @@ msgstr "Обзор..."
 msgid "Buy MM$"
 msgstr "Купить MM$"
 
+msgid "Character image"
+msgstr "Образ персонажа"
+
 msgid "Check availability"
 msgstr "Проверить доступность"
 
@@ -44,6 +47,9 @@ msgstr "Не удалось отправить сообщение на серв�
 
 msgid "Effects"
 msgstr "Эффекты"
+
+msgid "Enable grid"
+msgstr "Включить сетку"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -65,6 +71,9 @@ msgstr "Заливка"
 
 msgid "Global interface"
 msgstr "Глобальный интерфейс"
+
+msgid "Grid size"
+msgstr "Размер сетки"
 
 msgid "Guru advice"
 msgstr "Советы гуру"

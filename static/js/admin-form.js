@@ -206,7 +206,18 @@ Form = Ext.extend(AdminResponsePanel, {
 				elt.listeners.select = elt.listeners.change = elt.listeners.check = function(field, newval, oldval) {
 					var form = Ext.getCmp('admin-form-' + form_id);
 					form.ownerCt.enforce_conditions();
+					if (form.changeHandler)
+						form.changeHandler();
 				};
+				if (elt.xtype == 'textarea' || elt.xtype == 'textfield') {
+					elt.enableKeyEvents = true;
+					elt.listeners.change = elt.listeners.keyup = function() {
+						var form = Ext.getCmp('admin-form-' + form_id);
+						form.ownerCt.enforce_conditions();
+						if (form.changeHandler)
+							form.changeHandler();
+					};
+				}
 				elem = {
 					border: false,
 					autoHeight: true,
@@ -288,7 +299,8 @@ Form = Ext.extend(AdminResponsePanel, {
 			layout: 'auto',
 			fileUpload: upload,
 			url: data.url,
-			method: 'POST'
+			method: 'POST',
+			changeHandler: data.changeHandler
 		});
 		this.add(form);
 		this.enforce_conditions(true);
@@ -334,8 +346,9 @@ Form = Ext.extend(AdminResponsePanel, {
 			},
 			failure: function(f, action) {
 				if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-					if (action.result.errormsg) {
-						Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+					var txt = action.result.errormsg || action.result.errmsg || action.result.error;
+					if (txt) {
+						Ext.Msg.alert(gt.gettext('Error'), txt);
 					}
 				} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 					Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + url));

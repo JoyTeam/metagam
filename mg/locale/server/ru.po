@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-16 10:42+0300\n"
+"PO-Revision-Date: 2012-02-16 20:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2044,6 +2044,9 @@ msgstr "Эпическое событие: война"
 msgid "Equipment"
 msgstr "Экипировка"
 
+msgid "Equipment layouts"
+msgstr "Разметка экипировки"
+
 msgid "Equipment slots"
 msgstr "Слоты экипировки"
 
@@ -3945,6 +3948,9 @@ msgstr "Новый тип предмета"
 
 msgid "New layer"
 msgstr "Новый слой"
+
+msgid "New layout stored"
+msgstr "Новая разметка сохранена"
 
 msgid "New library page"
 msgstr "Новая страница библиотеки"
@@ -6422,6 +6428,10 @@ msgstr "Неизвестная услуга %s"
 msgid "Unknown token {%s}"
 msgstr "Неизвестный элемент {%s}"
 
+#, python-format
+msgid "Unknown token: %s"
+msgstr "Неизвестный элемент: %s"
+
 msgid "Unpin"
 msgstr "Открепить"
 
@@ -6666,6 +6676,9 @@ msgstr "Ожидает модерации"
 
 msgid "Warning! Category for miscellaneous items is missing. Some items may become invisible in the game interfaces."
 msgstr "Внимание! Отсутствует раздел \"разное\". Некоторые предметы могут оказаться невидимыми в игровых интерфейсах."
+
+msgid "Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"
+msgstr "Внимание! Internet Explorer не поддерживается. Редактор разметки экипировки может работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, Google Chrome и Opera."
 
 msgid "Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"
 msgstr "Внимание! Internet Explorer не поддерживается. Редактор локаций может работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, Google Chrome и Opera."

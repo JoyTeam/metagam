@@ -4,6 +4,8 @@ import re
 max_slot_id = 100
 re_del = re.compile(r'^del/(\d+)$')
 re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
+re_slot_token = re.compile(r'^slot-(\d+):(\d+),(\d+)$')
+re_charimage_token = re.compile(r'^charimage:(\d+),(\d+)$')
 
 class Equip(ConstructorModule):
     def register(self):
@@ -21,10 +23,14 @@ class Equip(ConstructorModule):
             {
                 "id": "char-owner",
                 "title": self._("Internal game interface for character owner"),
+                "dim_hook": "charimages.dim-charpage",
+                "grid": 5,
             },
             {
                 "id": "char-public",
                 "title": self._("Public character info"),
+                "dim_hook": "charimages.dim-charinfo",
+                "grid": 10,
             },
         ]
         return interfaces
@@ -33,19 +39,26 @@ class EquipAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
+        self.rhook("menu-admin-equip.index", self.menu_equip_index)
         self.rhook("headmenu-admin-equip.slots", self.headmenu_slots)
         self.rhook("ext-admin-equip.slots", self.admin_slots, priv="equip.config")
         self.rhook("admin-item-types.form-render", self.item_type_form_render)
         self.rhook("admin-item-types.form-validate", self.item_type_form_validate)
         self.rhook("admin-item-types.dimensions", self.item_type_dimensions)
+        self.rhook("headmenu-admin-equip.layout", self.headmenu_layout)
+        self.rhook("ext-admin-equip.layout", self.admin_layout, priv="equip.config")
 
     def permissions_list(self, perms):
         perms.append({"id": "equip.config", "name": self._("Characters equipment configuration")})
 
     def menu_inventory_index(self, menu):
+        menu.append({"id": "equip.index", "text": self._("Equipment"), "order": 50})
+
+    def menu_equip_index(self, menu):
         req = self.req()
         if req.has_access("equip.config"):
-            menu.append({"id": "equip/slots", "text": self._("Equipment slots"), "order": 50, "leaf": True})
+            menu.append({"id": "equip/slots", "text": self._("Equipment slots"), "order": 0, "leaf": True})
+            menu.append({"id": "equip/layout", "text": self._("Equipment layouts"), "order": 10, "leaf": True})
 
     def headmenu_slots(self, args):
         if args == "new":
@@ -251,4 +264,112 @@ class EquipAdmin(ConstructorModule):
                         if not key_size in existing:
                             existing.add(key_size)
                             dimensions.append({"width": dim[0], "height": dim[1]})
+
+    def headmenu_layout(self, args):
+        if args:
+            for iface in self.call("equip.interfaces"):
+                if iface["id"] == args:
+                    return [iface["title"], "equip/layout"]
+        return self._("Equipment layouts")
+
+    def admin_layout(self):
+        req = self.req()
+        if req.args:
+            iface = None
+            for i in self.call("equip.interfaces"):
+                if i["id"] == req.args:
+                    iface = i
+                    break
+            if not iface:
+                self.call("admin.redirect", "equip/layout")
+            slots = self.call("equip.slots")
+            if req.ok():
+                layout = {}
+                errors = {}
+                error = None
+                # grid
+                if req.param("grid"):
+                    grid_size = req.param("grid_size")
+                    if valid_nonnegative_int(grid_size):
+                        grid_size = int(grid_size)
+                        if grid_size <= 1:
+                            layout["grid"] = 1
+                        elif grid_size > 50:
+                            layout["grid"] = 50
+                        else:
+                            layout["grid"] = grid_size
+                else:
+                    layout["grid"] = 0
+                # coords
+                for token in req.param("coords").split(";"):
+                    m = re_slot_token.match(token)
+                    if m:
+                        slot_id, x, y = m.group(1, 2, 3)
+                        layout["slot-%s-x" % slot_id] = int(x)
+                        layout["slot-%s-y" % slot_id] = int(y)
+                        continue
+                    m = re_charimage_token.match(token)
+                    if m:
+                        x, y = m.group(1, 2)
+                        layout["char-x"] = int(x)
+                        layout["char-y"] = int(y)
+                        continue
+                    error = self._("Unknown token: %s" % htmlescape(token))
+                if error:
+                    self.call("web.response_json", {"success": False, "error": error})
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # storing
+                config = self.app().config_updater()
+                config.set("equip.layout-%s" % iface["id"], layout)
+                config.store()
+                self.call("admin.response", self._("New layout stored"), {})
+            layout = self.conf("equip.layout-%s" % iface["id"], {})
+            vars = {
+                "ie_warning": self._("Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
+                "submit_url": "/admin-equip/layout/%s" % iface["id"],
+                "grid_size": layout.get("grid", iface["grid"]),
+            }
+            # slots
+            rslots = []
+            for slot in slots:
+                if slot.get("iface-%s" % iface["id"]):
+                    dim = slot.get("ifsize-%s" % iface["id"]) or [60, 60]
+                    rslots.append({
+                        "id": slot["id"],
+                        "name": jsencode(slot["name"]),
+                        "x": layout.get("slot-%d-x" % slot["id"], 0),
+                        "y": layout.get("slot-%d-y" % slot["id"], 0),
+                        "width": dim[0],
+                        "height": dim[1],
+                    })
+            vars["slots"] = rslots;
+            # character image
+            dim = self.call(iface["dim_hook"])
+            if dim:
+                m = re_parse_dimensions.match(dim)
+                if m:
+                    width, height = m.group(1, 2)
+                    width = int(width)
+                    height = int(height)
+                    vars["charimage"] = {
+                        "x": layout.get("char-x", 0),
+                        "y": layout.get("char-y", 0),
+                        "width": width,
+                        "height": height,
+                    }
+            # rendering
+            self.call("admin.response_template", "admin/equip/layout.html", vars)
+        rows = []
+        interfaces = self.call("equip.interfaces")
+        for iface in interfaces:
+            rows.append([u'<hook:admin.link href="equip/layout/%s" title="%s" />' % (iface["id"], iface["title"])])
+        vars = {
+            "tables": [
+                {
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 

@@ -45,8 +45,7 @@ function adm_response(res)
 		adminmain.removeAll();
 		admincontent = new Ext.Container({
 			hidden: true,
-			cls: 'admin-content',
-			autoScroll: true
+			cls: 'admin-content'
 		});
 		if (res.headmenu) {
 			headmenu = res.headmenu;
@@ -368,8 +367,8 @@ Ext.onReady(function() {
 			{
 				region: 'center',
 				border: false,
-				autoScroll: true,
 				id: 'admin-main',
+				autoScroll: true,
 				bodyCfg: {
 					cls: 'x-panel-body admin-main'
 				},
