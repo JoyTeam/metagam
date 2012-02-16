@@ -505,7 +505,7 @@ class InventoryAdmin(ConstructorModule):
             for dim in dimensions:
                 key = "%dx%d" % (dim["width"], dim["height"])
                 ok = ent.get("image-%s" % key)
-                rdims.append(u'<span class="%s">%s - %s</span>' % ("yes" if ok else "no", key, self._("dimpresent///ok") if ok else self._("dimension///missing")))
+                rdims.append(u'<span class="%s">%s%s</span>' % ("yes" if ok else "no", key, "" if ok else u" - " + self._("dimension///missing")))
             row.append(u'<br />'.join(rdims))
             actions = [u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit"))]
             if req.has_access("inventory.give"):
