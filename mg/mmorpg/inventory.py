@@ -232,7 +232,7 @@ class InventoryAdmin(ConstructorModule):
         return self._("Item types")
 
     def admin_item_types_editor(self):
-        dimensions = self.call("item-types.dimensions")
+        base_dimensions = self.call("item-types.dimensions")
         req = self.req()
         if req.args:
             m = re_delimage.match(req.args)
@@ -290,7 +290,12 @@ class InventoryAdmin(ConstructorModule):
                         obj.set("name_a", name_a)
                     else:
                         obj.delkey("name_a")
+                # extensions
+                self.call("admin-item-types.form-validate", obj, errors)
                 # images
+                dimensions = [d for d in base_dimensions]
+                self.call("admin-item-types.dimensions", obj, dimensions)
+                dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
                 image_data = req.param_raw("image")
                 replace = intz(req.param("v_replace"))
                 dim_images = {}
@@ -388,6 +393,7 @@ class InventoryAdmin(ConstructorModule):
                     price = float(price)
                     obj.set("balance-price", price)
                     obj.set("balance-currency", currency)
+                # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing images
@@ -430,6 +436,9 @@ class InventoryAdmin(ConstructorModule):
                     if uri:
                         self.call("cluster.static_delete", uri)
                 self.call("admin.redirect", "item-types/editor")
+            dimensions = [d for d in base_dimensions]
+            self.call("admin-item-types.dimensions", obj, dimensions)
+            dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
             fields = [
                 {"name": "name", "label": self._("Item name"), "value": obj.get("name")},
                 {"name": "order", "label": self._("Sort order"), "value": obj.get("order"), "inline": True},
@@ -447,7 +456,7 @@ class InventoryAdmin(ConstructorModule):
             # description
             fields.append({"name": "description", "label": self._("Item description"), "type": "textarea", "value": obj.get("description")})
             # categories
-            fields.append({"type": "header", "html": self._("Rubricators")})
+            fields.append({"mark": "categories", "type": "header", "html": self._("Rubricators")})
             cols = 3
             col = 0
             for catgroup in catgroups:
@@ -489,6 +498,8 @@ class InventoryAdmin(ConstructorModule):
                         fields.append({"type": "html", "html": u'<h1>%s</h1><img src="%s" alt="" /> <a href="javascript:void(0)" onclick="adm(\'item-types/editor/%s/delimage/%s\'); return false;">%s</a>' % (size, uri, obj.uuid, size, self._("Delete %s image") % size)})
                 date = self.nowdate()
                 fields.insert(0, {"type": "html", "html": u'<div class="admin-actions"><a href="javascript:void(0)" onclick="adm(\'item-types/paramview/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'item-types/give/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'inventory/track/item-type/%s/%s/00:00:00/%s/00:00:00\'); return false">%s</a></div>' % (obj.uuid, self._("Edit item type parameters"), obj.uuid, self._("Give"), obj.uuid, date, next_date(date), self._("Track"))})
+            # extensions
+            self.call("admin-item-types.form-render", obj, fields)
             self.call("admin.advice", {"title": self._("Balance prices"), "content": self._("General recommendation is to set balance price in proportion to the difficulty of obtaining the item. This helps to keep the game well balanced."), "order": 30})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         # list of admin categories
@@ -501,6 +512,9 @@ class InventoryAdmin(ConstructorModule):
         for ent in lst:
             name = htmlescape(ent.get("name"))
             row = ['<strong>%s</strong><br />%s' % (name, ent.uuid)]
+            dimensions = [d for d in base_dimensions]
+            self.call("admin-item-types.dimensions", ent, dimensions)
+            dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
             rdims = []
             for dim in dimensions:
                 key = "%dx%d" % (dim["width"], dim["height"])

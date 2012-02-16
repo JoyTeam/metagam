@@ -35,6 +35,9 @@ class EquipAdmin(ConstructorModule):
         self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("headmenu-admin-equip.slots", self.headmenu_slots)
         self.rhook("ext-admin-equip.slots", self.admin_slots, priv="equip.config")
+        self.rhook("admin-item-types.form-render", self.item_type_form_render)
+        self.rhook("admin-item-types.form-validate", self.item_type_form_validate)
+        self.rhook("admin-item-types.dimensions", self.item_type_dimensions)
 
     def permissions_list(self, perms):
         perms.append({"id": "equip.config", "name": self._("Characters equipment configuration")})
@@ -196,3 +199,56 @@ class EquipAdmin(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def item_type_form_render(self, obj, fields):
+        pos = len(fields)
+        for i in xrange(0, len(fields)):
+            if fields[i].get("mark") == "categories":
+                pos = i
+                break
+        fields.insert(pos, {"type": "header", "html": self._("Equipment")})
+        pos += 1
+        fields.insert(pos, {"type": "checkbox", "label": self._("This item is wearable"), "name": "equip", "checked": obj.get("equip")})
+        pos += 1
+        # checkboxes
+        slots = self.call("equip.slots")
+        col = 0
+        cols = 3
+        while col < len(slots):
+            slot = slots[col]
+            key = "equip-%s" % slot["id"]
+            fields.insert(pos, {"name": key, "type": "checkbox", "label": slot["name"], "checked": obj.get(key), "inline": col % cols, "condition": "[equip]"})
+            pos += 1
+            col += 1
+        while col % cols:
+            fields.insert(pos, {"type": "empty", "inline": True})
+            pos += 1
+            col += 1
+
+    def item_type_form_validate(self, obj, errors):
+        req = self.req()
+        if req.param("equip"):
+            obj.set("equip", True)
+            for slot in self.call("equip.slots"):
+                key = "equip-%s" % slot["id"]
+                if req.param(key):
+                    obj.set(key, True)
+                else:
+                    obj.delkey(key)
+        else:
+            obj.delkey("equip")
+
+    def item_type_dimensions(self, obj, dimensions):
+        if obj.get("equip"):
+            existing = set(["%dx%d" % (d["width"], d["height"]) for d in dimensions])
+            for slot in self.call("equip.slots"):
+                key = "equip-%s" % slot["id"]
+                if obj.get(key):
+                    for iface in self.call("equip.interfaces"):
+                        key_size = "ifsize-%s" % iface["id"]
+                        dim = slot.get(key_size) or [60, 60]
+                        key_size = "%dx%d" % (dim[0], dim[1])
+                        if not key_size in existing:
+                            existing.add(key_size)
+                            dimensions.append({"width": dim[0], "height": dim[1]})
+

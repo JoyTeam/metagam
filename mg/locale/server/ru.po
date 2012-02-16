@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-16 10:04+0300\n"
+"PO-Revision-Date: 2012-02-16 10:42+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -6111,6 +6111,9 @@ msgstr "Это публичная оферта"
 
 msgid "This item action is currently unavailable"
 msgstr "Это действие над предметом в данный момент недоступно"
+
+msgid "This item is wearable"
+msgstr "Предмет надеваемый"
 
 msgid "This location has 'Exit' direction pointing to this location"
 msgstr "У этой локации есть направление \"Выход\", и оно ведёт в локацию"
