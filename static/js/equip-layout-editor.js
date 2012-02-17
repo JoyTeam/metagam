@@ -1,4 +1,5 @@
 EquipLayoutItem = function(x, y, width, height) {
+	this.order = 0;
 	this.x = x;
 	this.y = y;
 	this.width = width;
@@ -12,15 +13,16 @@ EquipLayoutItem.prototype.has = function(pt) {
 EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 	constructor: function(id, name, x, y, width, height) {
 		EquipLayoutSlot.superclass.constructor.call(this, x, y, width, height);
+		this.order = 20;
 		this.id = id;
 		this.name = name;
 	},
 	paint: function(ctx) {
 		// rect
 		ctx.beginPath();
-		ctx.rect(this.x + 0.5, this.y + 0.5, this.width, this.height);
-		ctx.strokeStyle = '#000000';
-		ctx.fillStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ffffff' : '#f8f8f8';
+		ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
+		ctx.strokeStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ff0000' : '#000000';
+		ctx.fillStyle = '#ffffff';
 		ctx.lineWidth = 1;
 		ctx.fill();
 		ctx.stroke();
@@ -34,6 +36,7 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 		ctx.fillText(this.name, this.x + 3, this.y + 3);
 		ctx.fillText(this.id, this.x + 3, this.y + 15);
 		ctx.restore();
+		return true;
 	},
 	coords: function() {
 		return 'slot-' + this.id + ':' + this.x + ',' + this.y;
@@ -41,11 +44,16 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 });
 
 EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
+	constructor: function(x, y, width, height) {
+		EquipLayoutCharImage.superclass.constructor.call(this, x, y, width, height);
+		this.order = 10;
+	},
 	paint: function(ctx) {
 		// rect
 		ctx.beginPath();
-		ctx.rect(this.x + 0.5, this.y + 0.5, this.width, this.height);
-		ctx.fillStyle = (this == EquipLayoutEditor.highlighted_item) ? '#f8f8ff' : '#f0f0ff';
+		ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
+		ctx.fillStyle = '#80ff80';
+		ctx.strokeStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ff0000' : '#000000';
 		ctx.lineWidth = 1;
 		ctx.fill();
 		ctx.stroke();
@@ -58,9 +66,58 @@ EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
 		ctx.fillStyle = '#000000';
 		ctx.fillText(gt.gettext('Character image'), this.x + 3, this.y + 3);
 		ctx.restore();
+		return true;
 	},
 	coords: function() {
 		return 'charimage:' + this.x + ',' + this.y;
+	}
+});
+
+EquipLayoutStaticImage = Ext.extend(EquipLayoutItem, {
+	constructor: function(uuid, uri, x, y, width, height) {
+		EquipLayoutStaticImage.superclass.constructor.call(this, x, y, width, height);
+		this.order = 0;
+		this.uuid = uuid;
+		this.uri = uri;
+		var img = document.createElement('IMG');
+		img.src = uri;
+		this.img = img;
+		this.deletable = true;
+	},
+	paint: function(ctx) {
+		var img_ok = this.img.width && this.img.height;
+		if (img_ok) {
+			// image
+			ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+		} else {
+			// rect
+			ctx.beginPath();
+			ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
+			ctx.strokeStyle = '#000000';
+			ctx.lineWidth = 1;
+			ctx.stroke();
+			// text
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(this.x + 1, this.y + 1, this.width - 3, this.height - 3);
+			ctx.clip();
+			ctx.textBaseline = 'top';
+			ctx.fillStyle = '#000000';
+			ctx.fillText(this.uri, this.x + 3, this.y + 3);
+			ctx.restore();
+		}
+		// highlight
+		if (this == EquipLayoutEditor.highlighted_item) {
+			ctx.beginPath();
+			ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
+			ctx.strokeStyle = '#ff0000';
+			ctx.lineWidth = 1;
+			ctx.stroke();
+		}
+		return img_ok;
+	},
+	coords: function() {
+		return 'staticimage-' + this.uuid + '(' + this.uri + '):' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
 	}
 });
 
@@ -87,6 +144,7 @@ EquipLayoutEditor.cleanup = function() {
 	this.items = new Array();
 	this.highlighted_item = undefined;
 	this.drag_item = undefined;
+	this.last_item_id = 0;
 };
 
 EquipLayoutEditor.uninstall_global_events = function() {
@@ -124,7 +182,19 @@ EquipLayoutEditor.init = function(submit_url, grid_size) {
 			{type: 'checkbox', name: 'grid', checked: (this.grid_size > 0), 'label': gt.gettext('Enable grid')},
 			{name: 'grid_size', value: this.grid_size || 10, 'label': gt.gettext('Grid size'), inline: true, condition: "form_value('grid')"}
 		],
-		buttons: [{text: gt.gettext('Save')}],
+		buttons: [
+			{text: gt.gettext('Save')},
+			{
+				text: gt.gettext('Add arbitrary image'),
+				xtype: 'button',
+				icon: '/st-mg/icons/image.gif',
+				listeners: {
+					click: function() {
+						th.add_arbitrary_image();
+					}
+				}
+			}
+		],
 		changeHandler: function() {
 			th.form_changed();
 		}
@@ -141,8 +211,9 @@ EquipLayoutEditor.mouse_out = function(ev, target) {
 	if (this.update_highlighted()) {
 		repaint = true;
 	}
-	if (repaint)
+	if (repaint) {
 		this.paint();
+	}
 };
 
 EquipLayoutEditor.form_changed = function() {
@@ -238,8 +309,9 @@ EquipLayoutEditor.mouse_move = function(ev, target) {
 		this.touch_highlighted_item();
 		repaint = true;
 	}
-	if (repaint)
+	if (repaint) {
 		this.paint();
+	}
 };
 
 EquipLayoutEditor.mouse_up = function(ev, target) {
@@ -261,8 +333,9 @@ EquipLayoutEditor.mouse_up = function(ev, target) {
 		repaint = true;
 		this.store_data();
 	}
-	if (repaint)
+	if (repaint) {
 		this.paint();
+	}
 };
 
 EquipLayoutEditor.context_menu = function(ev, target) {
@@ -281,6 +354,58 @@ EquipLayoutEditor.key_down = function(ev, target) {
 		ev.stopEvent();
 		this.cancel();
 		this.paint();
+	} else if (key == ev.DOWN) {
+		if (this.highlighted_item) {
+			ev.stopEvent();
+			this.touch_highlighted_item();
+			this.highlighted_item.y++;
+			this.touch_highlighted_item();
+			this.store_data();
+			this.paint();
+		}
+	} else if (key == ev.UP) {
+		if (this.highlighted_item) {
+			ev.stopEvent();
+			this.touch_highlighted_item();
+			this.highlighted_item.y--;
+			this.touch_highlighted_item();
+			this.store_data();
+			this.paint();
+		}
+	} else if (key == ev.LEFT) {
+		if (this.highlighted_item) {
+			ev.stopEvent();
+			this.touch_highlighted_item();
+			this.highlighted_item.x--;
+			this.touch_highlighted_item();
+			this.store_data();
+			this.paint();
+		}
+	} else if (key == ev.RIGHT) {
+		if (this.highlighted_item) {
+			ev.stopEvent();
+			this.touch_highlighted_item();
+			this.highlighted_item.x++;
+			this.touch_highlighted_item();
+			this.store_data();
+			this.paint();
+		}
+	} else if (key == ev.DELETE) {
+		if (this.highlighted_item) {
+			ev.stopEvent();
+			if (this.highlighted_item.deletable) {
+				this.touch_highlighted_item();
+				for (var i = 0; i < this.items.length; i++) {
+					if (this.items[i] == this.highlighted_item) {
+						this.items.splice(i, 1);
+						this.highlighted_item = undefined;
+						break;
+					}
+				}
+			}
+			this.store_data();
+			this.paint();
+		}
 	}
 };
 
@@ -292,7 +417,24 @@ EquipLayoutEditor.store_data = function() {
 	Ext.getCmp('form-field-coords').setValue(coords);
 };
 
+EquipLayoutEditor.cmp_items = function(a, b) {
+	if (a.order < b.order)
+		return -1;
+	if (a.order > b.order)
+		return 1;
+	if (a.item_id < b.item_id)
+		return -1;
+	if (a.item_id > b.item_id)
+		return 1;
+	return 0;
+};
+
+EquipLayoutEditor.sort_items = function() {
+	this.items.sort(this.cmp_items);
+};
+
 EquipLayoutEditor.run = function() {
+	this.sort_items();
 	this.paint(true);
 	this.form.enforce_conditions(true);
 	this.store_data();
@@ -342,17 +484,36 @@ EquipLayoutEditor.paint = function(force) {
 		this.ctx.stroke();
 	}
 	// items
-	for (var i = 0; i < this.items.length; i++)
-		this.items[i].paint(this.ctx);
+	var failed = false;
+	for (var i = 0; i < this.items.length; i++) {
+		if (!this.items[i].paint(this.ctx))
+			failed = true;
+	}
 	// commit
 	this.ctx.restore();
 	this.clip_x1 = undefined;
 	this.clip_y1 = undefined;
 	this.clip_x2 = undefined;
 	this.clip_y2 = undefined;
+	// handling failures
+	if (failed) {
+		if (this.fail_timer) {
+			this.fail_timer *= 2;
+			if (this.fail_timer > 10000) {
+				this.fail_timer = 0;
+			}
+		} else {
+			this.fail_timer = 100;
+		}
+	} else {
+		this.fail_timer = 0;
+	}
+	if (this.fail_timer)
+		window.setTimeout((function() { this.paint(true) }).createDelegate(this), this.fail_timer);
 };
 
 EquipLayoutEditor.add = function(item) {
+	item.item_id = ++this.last_item_id;
 	this.items.push(item);
 };
 
@@ -385,11 +546,11 @@ EquipLayoutEditor.update_highlighted = function() {
 	if (this.drag_item)
 		return false;
 	var old_highlighted_item = this.highlighted_item;
-	if (this.highlighted_item) {
+/*	if (this.highlighted_item) {
 		if (this.highlighted_item.has(this.mouse)) {
 			return false;
 		}
-	}
+	}*/
 	this.highlighted_item = undefined;
 	for (var i = 0; i < this.items.length; i++) {
 		var item = this.items[i];
@@ -406,6 +567,44 @@ EquipLayoutEditor.update_highlighted = function() {
 	return modified;
 };
 
-wait(['admin-form'], function() {
+EquipLayoutEditor.add_arbitrary_image = function() {
+	if (this.storage_unavailable)
+		return Ext.Msg.alert(gt.gettext('Error'), this.storage_unavailable);
+	var th = this;
+	var win = new Ext.Window({
+		id: 'upload-window',
+		modal: true,
+		title: 'Add arbitrary image',
+		width: 500,
+		autoHeight: true,
+		padding: '20px 0 20px 20px',
+		items: [
+			new Form({
+				url: '/admin-storage/static/new',
+				fields: [
+					{type: 'hidden', name: 'image', 'value': '1'},
+					{type: 'hidden', name: 'group', 'value': 'equip-layout'},
+					{type: 'fileuploadfield', name: 'ob', 'label': gt.gettext('Image file')}
+				],
+				buttons: [
+					{text: gt.gettext('Upload')}
+				],
+				successHandler: function(f, action) {
+					var cmp = Ext.getCmp('upload-window');
+					if (cmp)
+						cmp.close();
+					var res = Ext.util.JSON.decode(action.response.responseText);
+					th.add(new EquipLayoutStaticImage(res.uuid, res.uri, 0, 0, res.width, res.height));
+					th.sort_items();
+					th.store_data();
+					th.paint(true);
+				}
+			})
+		]
+	});
+	win.show();
+};
+
+wait(['admin-form', 'FileUploadField'], function() {
 	loaded('equip-layout-editor');
 });

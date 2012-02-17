@@ -1,6 +1,8 @@
 from mg.constructor import *
 import re
 import mimetypes
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
+import cStringIO
 
 re_non_alphanumeric = re.compile(r'[^\w\-\.\(\)]')
 re_find_extension = re.compile(r'^(.*)(\..*)$')
@@ -73,6 +75,8 @@ class StorageAdmin(Module):
                     filename = re_non_alphanumeric.sub('_', filename)
                     # guessing extension
                     ext = mimetypes.guess_extension(ob.type, strict=True)
+                    if ext == ".jpe":
+                        ext = ".jpeg"
                     if ext:
                         m = re_find_extension.match(filename)
                         if m:
@@ -103,6 +107,19 @@ class StorageAdmin(Module):
                                     lvl = cert
                             if lvl < 120:
                                 errors["ob"] = self._('To store static objects larger than 30 kb game owner\'s WMID must have the Initial certificate')
+                    # constraints
+                    if req.param("image"):
+                        try:
+                            image_obj = Image.open(cStringIO.StringIO(ob.value))
+                            if image_obj.load() is None:
+                                raise IOError
+                        except IOError:
+                            errors["ob"] = self._("Image format not recognized")
+                        except OverflowError:
+                            errors["ob"] = self._("Image format not recognized")
+                        else:
+                            if image_obj.format != "GIF" and image_obj.format != "JPEG" and image_obj.format != "PNG":
+                                errors["ob"] = self._("This image format is not supported. Allowed are: GIF, JPEG, PNG")
                 if errors:
                     self.call("web.response_json_html", {"success": False, "errors": errors})
                 uri = self.call("cluster.static_upload", "userstore", None, ob.type, ob.value, filename)
@@ -113,16 +130,28 @@ class StorageAdmin(Module):
                 obj.set("content_type", ob.type)
                 obj.set("size", len(ob.value))
                 obj.set("uri", uri)
+                if req.param("group"):
+                    obj.set("group", req.param("group"))
                 obj.store()
+                if req.param("image"):
+                    width, height = image_obj.size
+                    self.call("web.response_json_html", {"success": True, "uri": uri, "width": width, "height": height, "uuid": obj.uuid})
                 self.call("admin.redirect", "storage/static")
             fields = [
                 {"name": "ob", "type": "fileuploadfield", "label": self._("Upload an object")}
             ]
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
-        rows = []
+        tables = {}
+        group_names = {
+            "_default": None,
+        }
+        self.call("admin-storage.group-names", group_names)
+        nondeletable = set()
+        self.call("admin-storage.nondeletable", nondeletable)
         lst = self.objlist(DBStaticObjectList, query_index="all")
         lst.load()
         for ent in lst:
+            group = ent.get("group", "_default")
             if ent.get("size"):
                 if ent.get("size") >= 1024 * 1024 * 0.1:
                     size = self._("%.1f Mb") % (ent.get("size") / (1024.0 * 1024.0))
@@ -132,28 +161,41 @@ class StorageAdmin(Module):
                     size = ent.get("size")
             else:
                 size = None
-            rows.append([
-                '<a href="{0}" target="_blank">{0}</a>'.format(ent.get("uri")),
-                htmlescape(ent.get("filename")),
-                size,
-                ent.get("content_type"),
-                '<hook:admin.link href="storage/static/del/%s" title="%s" confirm="%s" />' % (ent.uuid, self._("delete"), self._("Are you sure want to delete this object?")),
-            ])
-        vars = {
-            "tables": [
-                {
-                    "links": [
-                        {"hook": "storage/static/new", "text": self._("Upload new object"), "lst": True},
-                    ],
+            deletable = ent.uuid not in nondeletable
+            try:
+                table = tables[group]
+            except KeyError:
+                table = {
+                    "title": group_names.get(group, htmlescape(group)),
                     "header": [
-                        self._("URL"),
-                        self._("Filename"),
+                        self._("File"),
+                        self._("URI"),
                         self._("Size"),
                         self._("Content type"),
                         self._("Deletion"),
                     ],
-                    "rows": rows
+                    "rows": []
                 }
-            ]
+                tables[group] = table
+            table["rows"].append([
+                '<a href="{0}" target="_blank">{1}</a>'.format(ent.get("uri"), htmlescape(ent.get("filename"))),
+                '<input class="admin-hscrolled" value="{0}" />'.format(ent.get("uri")),
+                size,
+                ent.get("content_type"),
+                '<hook:admin.link href="storage/static/del/%s" title="%s" confirm="%s" />' % (ent.uuid, self._("delete"), self._("Are you sure want to delete this object?")) if deletable else self._("deletion///object is busy"),
+            ])
+        tables_list = [
+            {
+                "links": [
+                    {"hook": "storage/static/new", "text": self._("Upload new object"), "lst": True},
+                ],
+            },
+        ]
+        tables = tables.items()
+        tables.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+        for table in tables:
+            tables_list.append(table[1])
+        vars = {
+            "tables": tables_list
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)

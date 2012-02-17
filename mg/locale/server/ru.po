@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-16 20:12+0300\n"
+"PO-Revision-Date: 2012-02-17 14:31+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2044,6 +2044,9 @@ msgstr "Эпическое событие: война"
 msgid "Equipment"
 msgstr "Экипировка"
 
+msgid "Equipment layout"
+msgstr "Разметка экипировки"
+
 msgid "Equipment layouts"
 msgstr "Разметка экипировки"
 
@@ -2247,8 +2250,8 @@ msgstr "Код поля (для использования в скриптах)"
 msgid "Field type"
 msgstr "Тип поля"
 
-msgid "Filename"
-msgstr "Имя файла"
+msgid "File"
+msgstr "Файл"
 
 #, python-format
 msgid "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)"
@@ -3948,9 +3951,6 @@ msgstr "Новый тип предмета"
 
 msgid "New layer"
 msgstr "Новый слой"
-
-msgid "New layout stored"
-msgstr "Новая разметка сохранена"
 
 msgid "New library page"
 msgstr "Новая страница библиотеки"
@@ -6078,6 +6078,9 @@ msgstr "Эта игра ожидает модерации"
 msgid "This group is a block (HTML portion that will be shown on every page in the group)"
 msgstr "Эта группа является блоком (HTML-куском, который будет показываться на каждой странице из этой группы)"
 
+msgid "This image format is not supported. Allowed are: GIF, JPEG, PNG"
+msgstr "Этот формат изображения не поддерживается. Допустимы: GIF, JPEG, PNG"
+
 msgid "This is a list of items available"
 msgstr "Это - список доступных предметов"
 
@@ -6219,6 +6222,9 @@ msgstr "Название игры"
 
 msgid "Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems"
 msgstr "Названия должны быть короткими и ясными. Постарайтесь избегать длинных слов, особенно в коротком названии. В противном случае, могут возникнуть проблемы с переносом строк"
+
+msgid "To access this function you need to enable 'Static Storage' system module"
+msgstr "Чтобы воспользоваться этой функцией, необходимо включить системный модуль \"Статическое хранилище\""
 
 msgid "To access this page enter the game first"
 msgstr "Чтобы получить доступ к этой странице, войдите в игру"
@@ -6381,6 +6387,9 @@ msgstr "Попытайтесь описать свой выбор"
 
 msgid "Type"
 msgstr "Тип"
+
+msgid "URI"
+msgstr "URI"
 
 msgid "URI with the description of the parameter"
 msgstr "URI с описанием параметра"
@@ -6969,6 +6978,9 @@ msgstr "Вы не можете удалить реальную валюту по
 msgid "You can't send messages to the system"
 msgstr "Вы не можете отправлять сообщения системе"
 
+msgid "You don't have permission to upload objects to the static storage"
+msgstr "У вас нет доступа, чтобы загружать объекты в статическое хранилище"
+
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
 
@@ -7328,6 +7340,9 @@ msgstr "умолчание"
 
 msgid "delete"
 msgstr "удалить"
+
+msgid "deletion///object is busy"
+msgstr "объект занят"
 
 msgid "delivery options"
 msgstr "опции доставки"
@@ -8185,6 +8200,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "New layout stored"
+#~ msgstr "Новая разметка сохранена"
 #~ msgid "dimpresent///ok"
 #~ msgstr "ok"
 #~ msgid "Currency exchange"

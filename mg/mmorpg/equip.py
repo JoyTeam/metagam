@@ -4,8 +4,9 @@ import re
 max_slot_id = 100
 re_del = re.compile(r'^del/(\d+)$')
 re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
-re_slot_token = re.compile(r'^slot-(\d+):(\d+),(\d+)$')
-re_charimage_token = re.compile(r'^charimage:(\d+),(\d+)$')
+re_slot_token = re.compile(r'^slot-(\d+):(-?\d+),(-?\d+)$')
+re_charimage_token = re.compile(r'^charimage:(-?\d+),(-?\d+)$')
+re_staticimage_token = re.compile(r'^staticimage-([a-f0-9]{32})\((//.+)\):(-?\d+),(-?\d+),(\d+),(\d+)$')
 
 class Equip(ConstructorModule):
     def register(self):
@@ -47,6 +48,21 @@ class EquipAdmin(ConstructorModule):
         self.rhook("admin-item-types.dimensions", self.item_type_dimensions)
         self.rhook("headmenu-admin-equip.layout", self.headmenu_layout)
         self.rhook("ext-admin-equip.layout", self.admin_layout, priv="equip.config")
+        self.rhook("admin-storage.group-names", self.group_names)
+        self.rhook("admin-storage.nondeletable", self.nondeletable)
+
+    def nondeletable(self, uuids):
+        interfaces = self.call("equip.interfaces")
+        for iface in interfaces:
+            layout = self.conf("equip.layout-%s" % iface["id"])
+            if layout:
+                images = layout.get("images")
+                if images:
+                    for img in images:
+                        uuids.add(img["uuid"])
+
+    def group_names(self, group_names):
+        group_names["equip-layout"] = self._("Equipment layout")
 
     def permissions_list(self, perms):
         perms.append({"id": "equip.config", "name": self._("Characters equipment configuration")})
@@ -301,6 +317,7 @@ class EquipAdmin(ConstructorModule):
                 else:
                     layout["grid"] = 0
                 # coords
+                images = []
                 for token in req.param("coords").split(";"):
                     m = re_slot_token.match(token)
                     if m:
@@ -314,22 +331,40 @@ class EquipAdmin(ConstructorModule):
                         layout["char-x"] = int(x)
                         layout["char-y"] = int(y)
                         continue
+                    m = re_staticimage_token.match(token)
+                    if m:
+                        uuid, uri, x, y, width, height = m.group(1, 2, 3, 4, 5, 6)
+                        images.append({
+                            "uuid": uuid,
+                            "uri": uri,
+                            "x": int(x),
+                            "y": int(y),
+                            "width": int(width),
+                            "height": int(height),
+                        })
+                        continue
                     error = self._("Unknown token: %s" % htmlescape(token))
                 if error:
                     self.call("web.response_json", {"success": False, "error": error})
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing
+                if images:
+                    layout["images"] = images
                 config = self.app().config_updater()
                 config.set("equip.layout-%s" % iface["id"], layout)
                 config.store()
-                self.call("admin.response", self._("New layout stored"), {})
+                self.call("admin.redirect", "equip/layout")
             layout = self.conf("equip.layout-%s" % iface["id"], {})
             vars = {
                 "ie_warning": self._("Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
                 "submit_url": "/admin-equip/layout/%s" % iface["id"],
                 "grid_size": layout.get("grid", iface["grid"]),
             }
+            if not self.conf("module.storage"):
+                vars["storage_unavailable"] = jsencode(self._("To access this function you need to enable 'Static Storage' system module"))
+            elif not req.has_access("storage.static"):
+                vars["storage_unavailable"] = jsencode(self._("You don't have permission to upload objects to the static storage"))
             # slots
             rslots = []
             for slot in slots:
@@ -358,6 +393,20 @@ class EquipAdmin(ConstructorModule):
                         "width": width,
                         "height": height,
                     }
+            # static images
+            images = layout.get("images")
+            if images:
+                rimages = []
+                for img in images:
+                    rimages.append({
+                        "uuid": img["uuid"],
+                        "uri": jsencode(img["uri"]),
+                        "x": img["x"],
+                        "y": img["y"],
+                        "width": img["width"],
+                        "height": img["height"],
+                    })
+                vars["staticimages"] = rimages
             # rendering
             self.call("admin.response_template", "admin/equip/layout.html", vars)
         rows = []

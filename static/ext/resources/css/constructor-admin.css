@@ -1491,6 +1491,10 @@ a.x-menu-item {
     border-color: #dfe8f6 #a3bae9 #a3bae9 #dfe8f6;
 }
 
+.x-window-body {
+    background-color: #ffffff;
+}
+
 body.x-body-masked .x-window-plain .x-window-mc {
     background-color: #ccd9e8;
 }.x-html-editor-wrap {

@@ -5,6 +5,7 @@ Form = Ext.extend(AdminResponsePanel, {
 		Form.superclass.constructor.call(this, {
 		});
 		this.conditions = new Array();
+		form_id++;
 		var upload = data.upload;
 		var rows = new Array();
 		if (data.title) {
@@ -198,13 +199,13 @@ Form = Ext.extend(AdminResponsePanel, {
 				if (elt.xtype != 'textarea' && elt.xtype != 'combo' && elt.xtype != 'htmleditor') {
 					elt.listeners.specialkey = function(field, e) {
 						if (e.getKey() == e.ENTER) {
-							var form = Ext.getCmp('admin-form-' + form_id);
+							var form = Ext.getCmp('admin-form-' + this.form_id);
 							form.ownerCt.custom_submit(form.url);
 						}
 					};
 				}
 				elt.listeners.select = elt.listeners.change = elt.listeners.check = function(field, newval, oldval) {
-					var form = Ext.getCmp('admin-form-' + form_id);
+					var form = Ext.getCmp('admin-form-' + this.form_id);
 					form.ownerCt.enforce_conditions();
 					if (form.changeHandler)
 						form.changeHandler();
@@ -212,7 +213,7 @@ Form = Ext.extend(AdminResponsePanel, {
 				if (elt.xtype == 'textarea' || elt.xtype == 'textfield') {
 					elt.enableKeyEvents = true;
 					elt.listeners.change = elt.listeners.keyup = function() {
-						var form = Ext.getCmp('admin-form-' + form_id);
+						var form = Ext.getCmp('admin-form-' + this.form_id);
 						form.ownerCt.enforce_conditions();
 						if (form.changeHandler)
 							form.changeHandler();
@@ -269,20 +270,23 @@ Form = Ext.extend(AdminResponsePanel, {
 			value: '1'
 		});
 		var buttons = new Array();
-		form_id++;
 		for (var i = 0; i < data.buttons.length; i++) {
 			var btn_config = data.buttons[i];
-			var btn = new Ext.Button({
-				text: btn_config.text,
-				url: btn_config.url ? btn_config.url : data.url,
-				form_id: form_id,
-				autoHeight: true
-			});
-			btn.on('click', function(btn, e) {
-				var form = Ext.getCmp('admin-form-' + form_id);
-				form.ownerCt.custom_submit(btn.url);
-			}, btn);
-			buttons.push(btn);
+			if (btn_config.xtype) {
+				buttons.push(btn_config);
+			} else {
+				var btn = new Ext.Button({
+					text: btn_config.text,
+					url: btn_config.url ? btn_config.url : data.url,
+					form_id: form_id,
+					autoHeight: true
+				});
+				btn.on('click', function(btn, e) {
+					var form = Ext.getCmp('admin-form-' + btn.form_id);
+					form.ownerCt.custom_submit(btn.url);
+				}, btn);
+				buttons.push(btn);
+			}
 		}
 		var form = new Ext.FormPanel({
 			id: 'admin-form-' + form_id,
@@ -300,11 +304,14 @@ Form = Ext.extend(AdminResponsePanel, {
 			fileUpload: upload,
 			url: data.url,
 			method: 'POST',
-			changeHandler: data.changeHandler
+			form_id: form_id,
+			changeHandler: data.changeHandler,
+			successHandler: data.successHandler
 		});
 		this.add(form);
 		this.enforce_conditions(true);
 		this.form_cmp = form;
+		this.form_id = form_id;
 	},
 	enforce_conditions: function(force) {
 		var changed = false;
@@ -329,19 +336,23 @@ Form = Ext.extend(AdminResponsePanel, {
 		for (var i = 0; i < saved.length; i++) {
 			saved[i].style.display = 'none';
 		}
-		var form = Ext.getCmp('admin-form-' + form_id);
+		var form = Ext.getCmp('admin-form-' + this.form_id);
 		form.getForm().submit({
 			url: url,
 			waitMsg: gt.gettext('Sending data...'),
 			success: function(f, action) {
-				if (form.fileUpload) {
-					adm_success_json(action.response, {
-						func: url.replace(/(^\/admin-|\/$)/g, '')
-					});
+				if (f.successHandler) {
+					f.successHandler(f, action);
 				} else {
-					adm_success(action.response, {
-						func: url.replace(/(^\/admin-|\/$)/g, '')
-					});
+					if (form.fileUpload) {
+						adm_success_json(action.response, {
+							func: url.replace(/(^\/admin-|\/$)/g, '')
+						});
+					} else {
+						adm_success(action.response, {
+							func: url.replace(/(^\/admin-|\/$)/g, '')
+						});
+					}
 				}
 			},
 			failure: function(f, action) {

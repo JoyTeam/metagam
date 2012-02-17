@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-16 20:12+0300\n"
+"PO-Revision-Date: 2012-02-17 14:31+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -20,6 +20,9 @@ msgstr ""
 
 msgid "Abort wizard"
 msgstr "Прервать мастер"
+
+msgid "Add arbitrary image"
+msgstr "Добавить произвольное изображение"
 
 msgid "Apply"
 msgstr "Применить"
@@ -80,6 +83,9 @@ msgstr "Советы гуру"
 
 msgid "Hint on mouseover"
 msgstr "Подсказка при наведении мыши"
+
+msgid "Image file"
+msgstr "Файл с изображением"
 
 msgid "Insert Image"
 msgstr "Вставка изображения"
