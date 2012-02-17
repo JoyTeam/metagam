@@ -197,27 +197,27 @@ Form = Ext.extend(AdminResponsePanel, {
 				if (elt.fieldLabel == '&nbsp;' || it.remove_label_separator)
 					elt.labelSeparator = '';
 				if (elt.xtype != 'textarea' && elt.xtype != 'combo' && elt.xtype != 'htmleditor') {
-					elt.listeners.specialkey = function(field, e) {
+					elt.listeners.specialkey = (function(field, e) {
 						if (e.getKey() == e.ENTER) {
 							var form = Ext.getCmp('admin-form-' + this.form_id);
 							form.ownerCt.custom_submit(form.url);
 						}
-					};
+					}).createDelegate(this);
 				}
-				elt.listeners.select = elt.listeners.change = elt.listeners.check = function(field, newval, oldval) {
+				elt.listeners.select = elt.listeners.change = elt.listeners.check = (function(field, newval, oldval) {
 					var form = Ext.getCmp('admin-form-' + this.form_id);
 					form.ownerCt.enforce_conditions();
 					if (form.changeHandler)
 						form.changeHandler();
-				};
+				}).createDelegate(this);
 				if (elt.xtype == 'textarea' || elt.xtype == 'textfield') {
 					elt.enableKeyEvents = true;
-					elt.listeners.change = elt.listeners.keyup = function() {
+					elt.listeners.change = elt.listeners.keyup = (function() {
 						var form = Ext.getCmp('admin-form-' + this.form_id);
 						form.ownerCt.enforce_conditions();
 						if (form.changeHandler)
 							form.changeHandler();
-					};
+					}).createDelegate(this);
 				}
 				elem = {
 					border: false,

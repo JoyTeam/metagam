@@ -4,37 +4,9 @@ import re
 max_slot_id = 100
 re_del = re.compile(r'^del/(\d+)$')
 re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
-re_slot_token = re.compile(r'^slot-(\d+):(-?\d+),(-?\d+)$')
-re_charimage_token = re.compile(r'^charimage:(-?\d+),(-?\d+)$')
+re_slot_token = re.compile(r'^slot-(\d+):(-?\d+),(-?\d+),(\d+),(\d+)$')
+re_charimage_token = re.compile(r'^charimage:(-?\d+),(-?\d+),(\d+),(\d+)$')
 re_staticimage_token = re.compile(r'^staticimage-([a-f0-9]{32})\((//.+)\):(-?\d+),(-?\d+),(\d+),(\d+)$')
-
-class Equip(ConstructorModule):
-    def register(self):
-        self.rhook("equip.slots", self.slots)
-        self.rhook("equip.interfaces", self.interfaces)
-
-    def child_modules(self):
-        return ["mg.mmorpg.equip.EquipAdmin"]
-
-    def slots(self):
-        return self.conf("equip.slots", [])
-
-    def interfaces(self):
-        interfaces = [
-            {
-                "id": "char-owner",
-                "title": self._("Internal game interface for character owner"),
-                "dim_hook": "charimages.dim-charpage",
-                "grid": 5,
-            },
-            {
-                "id": "char-public",
-                "title": self._("Public character info"),
-                "dim_hook": "charimages.dim-charinfo",
-                "grid": 10,
-            },
-        ]
-        return interfaces
 
 class EquipAdmin(ConstructorModule):
     def register(self):
@@ -301,6 +273,10 @@ class EquipAdmin(ConstructorModule):
             slots = self.call("equip.slots")
             if req.ok():
                 layout = {}
+                min_x = None
+                min_y = None
+                max_x = None
+                max_y = None
                 errors = {}
                 error = None
                 # grid
@@ -316,32 +292,70 @@ class EquipAdmin(ConstructorModule):
                             layout["grid"] = grid_size
                 else:
                     layout["grid"] = 0
+                # slot_border
+                slot_border = intz(req.param("slot_border"))
+                if slot_border < 0:
+                    slot_border = 0
+                elif slot_border > 50:
+                    slot_border = 50
+                layout["slot-border"] = slot_border
+                # charimage_border
+                charimage_border = intz(req.param("charimage_border"))
+                if charimage_border < 0:
+                    charimage_border = 0
+                elif charimage_border > 50:
+                    charimage_border = 50
+                layout["charimage-border"] = charimage_border
                 # coords
                 images = []
                 for token in req.param("coords").split(";"):
                     m = re_slot_token.match(token)
                     if m:
-                        slot_id, x, y = m.group(1, 2, 3)
-                        layout["slot-%s-x" % slot_id] = int(x)
-                        layout["slot-%s-y" % slot_id] = int(y)
+                        slot_id, x, y, width, height = m.group(1, 2, 3, 4, 5)
+                        x = int(x)
+                        y = int(y)
+                        width = int(width)
+                        height = int(height)
+                        layout["slot-%s-x" % slot_id] = x
+                        layout["slot-%s-y" % slot_id] = y
+                        min_x = min2(x, min_x)
+                        min_y = min2(y, min_y)
+                        max_x = max2(x + width, max_x)
+                        max_y = max2(y + height, max_y)
                         continue
                     m = re_charimage_token.match(token)
                     if m:
-                        x, y = m.group(1, 2)
-                        layout["char-x"] = int(x)
-                        layout["char-y"] = int(y)
+                        x, y, width, height = m.group(1, 2, 3, 4)
+                        x = int(x)
+                        y = int(y)
+                        width = int(width)
+                        height = int(height)
+                        layout["char-x"] = x
+                        layout["char-y"] = y
+                        min_x = min2(x, min_x)
+                        min_y = min2(y, min_y)
+                        max_x = max2(x + width, max_x)
+                        max_y = max2(y + height, max_y)
                         continue
                     m = re_staticimage_token.match(token)
                     if m:
                         uuid, uri, x, y, width, height = m.group(1, 2, 3, 4, 5, 6)
+                        x = int(x)
+                        y = int(y)
+                        width = int(width)
+                        height = int(height)
                         images.append({
                             "uuid": uuid,
                             "uri": uri,
-                            "x": int(x),
-                            "y": int(y),
-                            "width": int(width),
-                            "height": int(height),
+                            "x": x,
+                            "y": y,
+                            "width": width,
+                            "height": height,
                         })
+                        min_x = min2(x, min_x)
+                        min_y = min2(y, min_y)
+                        max_x = max2(x + width, max_x)
+                        max_y = max2(y + height, max_y)
                         continue
                     error = self._("Unknown token: %s" % htmlescape(token))
                 if error:
@@ -351,6 +365,11 @@ class EquipAdmin(ConstructorModule):
                 # storing
                 if images:
                     layout["images"] = images
+                if min_x is not None:
+                    layout["min_x"] = min_x
+                    layout["min_y"] = min_y
+                    layout["width"] = max_x - min_x
+                    layout["height"] = max_y - min_y
                 config = self.app().config_updater()
                 config.set("equip.layout-%s" % iface["id"], layout)
                 config.store()
@@ -360,6 +379,8 @@ class EquipAdmin(ConstructorModule):
                 "ie_warning": self._("Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
                 "submit_url": "/admin-equip/layout/%s" % iface["id"],
                 "grid_size": layout.get("grid", iface["grid"]),
+                "slot_border": layout.get("slot-border", 1),
+                "charimage_border": layout.get("charimage-border", 0),
             }
             if not self.conf("module.storage"):
                 vars["storage_unavailable"] = jsencode(self._("To access this function you need to enable 'Static Storage' system module"))
@@ -421,4 +442,125 @@ class EquipAdmin(ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+def min2(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    if a < b:
+        return a
+    else:
+        return b
+
+def max2(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    if a > b:
+        return a
+    else:
+        return b
+
+class Equip(ConstructorModule):
+    def register(self):
+        self.rhook("equip.slots", self.slots)
+        self.rhook("equip.interfaces", self.interfaces)
+        self.rhook("character-page.render", self.character_page_render)
+
+    def child_modules(self):
+        return ["mg.mmorpg.equip.EquipAdmin"]
+
+    def slots(self):
+        return self.conf("equip.slots", [])
+
+    def interfaces(self):
+        interfaces = [
+            {
+                "id": "char-owner",
+                "title": self._("Internal game interface for character owner"),
+                "dim_hook": "charimages.dim-charpage",
+                "grid": 5,
+            },
+            {
+                "id": "char-public",
+                "title": self._("Public character info"),
+                "dim_hook": "charimages.dim-charinfo",
+                "grid": 10,
+            },
+        ]
+        return interfaces
+
+    def character_page_render(self, character, vars):
+        self.render_layout("char-owner", character, vars)
+
+    def render_layout(self, iface_id, character, vars):
+        for iface in self.interfaces():
+            if iface["id"] == iface_id:
+                layout = self.conf("equip.layout-%s" % iface_id)
+                if layout:
+                    slot_border = layout.get("slot-border", 1)
+                    charimage_border = layout.get("charimage-border", 0)
+                    border = max(slot_border, charimage_border)
+                    offset_x = border
+                    offset_y = border
+                    items = []
+                    # static images
+                    images = layout.get("images")
+                    if images:
+                        for image in images:
+                            items.append({
+                                "x": image["x"] + offset_x,
+                                "y": image["y"] + offset_y,
+                                "width": image["width"],
+                                "height": image["height"],
+                                "cls": "equip-static-image",
+                                "border": 0,
+                                "image": {
+                                    "src": image["uri"],
+                                },
+                            })
+                    # characer image
+                    dim = self.call(iface["dim_hook"])
+                    if dim:
+                        m = re_parse_dimensions.match(dim)
+                        if m:
+                            width, height = m.group(1, 2)
+                            width = int(width)
+                            height = int(height)
+                            items.append({
+                                "x": layout.get("char-x", 0) + offset_x,
+                                "y": layout.get("char-y", 0) + offset_y,
+                                "width": width,
+                                "height": height,
+                                "cls": "equip-char-image",
+                                "border": charimage_border,
+                                "image": {
+                                    "src": vars["avatar_image"],
+                                },
+                            })
+                    # slots
+                    for slot in self.slots():
+                        if slot.get("iface-%s" % iface_id):
+                            size = slot.get("ifsize-%s" % iface_id)
+                            items.append({
+                                "x": layout.get("slot-%s-x" % slot["id"], 0) + offset_x,
+                                "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
+                                "width": size[0],
+                                "height": size[1],
+                                "cls": "equip-slot",
+                                "border": slot_border,
+                            })
+                    cur_y = 0
+                    for item in items:
+                        item["x"] = item["x"] - layout["min_x"] - item["border"]
+                        item["y"] = item["y"] - layout["min_y"] - cur_y - item["border"]
+                        cur_y += item["height"] + item["border"] * 2
+                    rlayout = {
+                        "width": layout["width"] + border * 2,
+                        "height": layout["height"] + border * 2,
+                        "items": items,
+                    }
+                    vars["equip_layout"] = rlayout
 

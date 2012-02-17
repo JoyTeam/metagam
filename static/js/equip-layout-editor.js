@@ -20,12 +20,20 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 	paint: function(ctx) {
 		// rect
 		ctx.beginPath();
-		ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
-		ctx.strokeStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ff0000' : '#000000';
-		ctx.fillStyle = '#ffffff';
-		ctx.lineWidth = 1;
+		ctx.rect(this.x, this.y, this.width, this.height);
+		ctx.fillStyle = (this == EquipLayoutEditor.highlighted_item) ? '#9dd9f7' : '#e5f1f7';
 		ctx.fill();
-		ctx.stroke();
+		// border
+		var border = EquipLayoutEditor.slot_border;
+		if (border) {
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(this.x - border / 2.0, this.y - border / 2.0, this.width + border, this.height + border);
+			ctx.lineWidth = border;
+			ctx.strokeStyle = '#000000';
+			ctx.stroke();
+			ctx.restore()
+		}
 		// text
 		ctx.save();
 		ctx.beginPath();
@@ -39,7 +47,7 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 		return true;
 	},
 	coords: function() {
-		return 'slot-' + this.id + ':' + this.x + ',' + this.y;
+		return 'slot-' + this.id + ':' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
 	}
 });
 
@@ -51,12 +59,20 @@ EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
 	paint: function(ctx) {
 		// rect
 		ctx.beginPath();
-		ctx.rect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1);
-		ctx.fillStyle = '#80ff80';
-		ctx.strokeStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ff0000' : '#000000';
-		ctx.lineWidth = 1;
+		ctx.rect(this.x, this.y, this.width, this.height);
+		ctx.fillStyle = (this == EquipLayoutEditor.highlighted_item) ? '#ea9e70' : '#f8decd';
 		ctx.fill();
-		ctx.stroke();
+		// border
+		var border = EquipLayoutEditor.charimage_border;
+		if (border) {
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(this.x - border / 2.0, this.y - border / 2.0, this.width + border, this.height + border);
+			ctx.lineWidth = border;
+			ctx.strokeStyle = '#000000';
+			ctx.stroke();
+			ctx.restore()
+		}
 		// text
 		ctx.save();
 		ctx.beginPath();
@@ -69,7 +85,7 @@ EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
 		return true;
 	},
 	coords: function() {
-		return 'charimage:' + this.x + ',' + this.y;
+		return 'charimage:' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
 	}
 });
 
@@ -141,6 +157,8 @@ EquipLayoutEditor.cleanup = function() {
 	this.clip_y1 = undefined;
 	this.clip_y2 = undefined;
 	this.grid_size = 10;
+	this.slot_border = 1;
+	this.charimage_border = 1;
 	this.items = new Array();
 	this.highlighted_item = undefined;
 	this.drag_item = undefined;
@@ -158,9 +176,11 @@ EquipLayoutEditor.uninstall_global_events = function() {
 	}
 };
 
-EquipLayoutEditor.init = function(submit_url, grid_size) {
+EquipLayoutEditor.init = function(submit_url, grid_size, slot_border, charimage_border) {
 	this.cleanup();
 	this.grid_size = grid_size;
+	this.slot_border = slot_border;
+	this.charimage_border = charimage_border;
 	/* creating canvas */
 	var canvas = document.createElement('canvas');
 	canvas.id = 'equip-layout-canvas';
@@ -180,7 +200,9 @@ EquipLayoutEditor.init = function(submit_url, grid_size) {
 		fields: [
 			{type: 'hidden', name: 'coords', value: ''},
 			{type: 'checkbox', name: 'grid', checked: (this.grid_size > 0), 'label': gt.gettext('Enable grid')},
-			{name: 'grid_size', value: this.grid_size || 10, 'label': gt.gettext('Grid size'), inline: true, condition: "form_value('grid')"}
+			{name: 'grid_size', value: this.grid_size || 10, 'label': gt.gettext('Grid size'), inline: true, condition: "form_value('grid')"},
+			{name: 'slot_border', value: this.slot_border, 'label': gt.gettext('Slot border'), inline: true},
+			{name: 'charimage_border', value: this.charimage_border, 'label': gt.gettext('Character image border'), inline: true}
 		],
 		buttons: [
 			{text: gt.gettext('Save')},
@@ -216,21 +238,30 @@ EquipLayoutEditor.mouse_out = function(ev, target) {
 	}
 };
 
-EquipLayoutEditor.form_changed = function() {
-	var new_grid_size = 0;
-	if (form_value('grid')) {
+EquipLayoutEditor.parseInt = function(name, min, max) {
+	var new_val = 0;
+	if (form_value(name)) {
 		try {
-			new_grid_size = parseInt(form_value('grid_size'));
+			new_val = parseInt(form_value(name));
 		} catch (e) {
 		}
 	}
-	if (!new_grid_size || new_grid_size < 0) {
-		new_grid_size = 0;
-	} else if (new_grid_size > 50) {
-		new_grid_size = 50;
+	if (!new_val || new_val < min) {
+		new_val = min;
+	} else if (new_val > max) {
+		new_val = max;
 	}
-	if (new_grid_size != this.grid_size) {
+	return new_val;
+};
+
+EquipLayoutEditor.form_changed = function() {
+	var new_grid_size = form_value('grid') ? this.parseInt('grid_size', 0, 50) : 0;
+	var new_slot_border = this.parseInt('slot_border', 0, 50);
+	var new_charimage_border = this.parseInt('charimage_border', 0, 50);
+	if (new_grid_size != this.grid_size || new_slot_border != this.slot_border || new_charimage_border != this.charimage_border) {
 		this.grid_size = new_grid_size;
+		this.slot_border = new_slot_border;
+		this.charimage_border = new_charimage_border;
 		this.paint(true);
 	}
 };

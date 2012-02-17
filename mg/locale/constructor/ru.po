@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-17 14:31+0300\n"
+"PO-Revision-Date: 2012-02-17 17:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -35,6 +35,9 @@ msgstr "Купить MM$"
 
 msgid "Character image"
 msgstr "Образ персонажа"
+
+msgid "Character image border"
+msgstr "Рамка образа персонажа"
 
 msgid "Check availability"
 msgstr "Проверить доступность"
@@ -156,6 +159,9 @@ msgstr "Сервер временно недоступен"
 
 msgid "Shape"
 msgstr "Форма"
+
+msgid "Slot border"
+msgstr "Рамка слотов"
 
 msgid "Smooth contour"
 msgstr "Сглаженные края"

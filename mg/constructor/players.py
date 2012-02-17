@@ -507,10 +507,11 @@ class CharactersMod(ConstructorModule):
         design = self.design("gameinterface")
         charimage = self.call("charimages.get", character, "charinfo")
         if charimage is None:
-            charimage = "/st-mg/constructor/avatars/%s-230x440.jpg" % ("female" if character.sex else "male")
+            charimage = "/st-mg/constructor/avatars/%s-240x440.jpg" % ("female" if character.sex else "male")
         vars = {
             "avatar_image": charimage,
         }
+        self.call("character-info.render", character, vars)
         return self.call("design.parse", design, "character-info-avatar.html", None, vars)
 
     def character_info(self):
@@ -554,10 +555,11 @@ class CharactersMod(ConstructorModule):
         design = self.design("gameinterface")
         charimage = self.call("charimages.get", character, "charpage")
         if charimage is None:
-            charimage = "/st-mg/constructor/avatars/%s-115x220.jpg" % ("female" if character.sex else "male")
+            charimage = "/st-mg/constructor/avatars/%s-120x220.jpg" % ("female" if character.sex else "male")
         vars = {
             "avatar_image": charimage,
         }
+        self.call("character-page.render", character, vars)
         return self.call("design.parse", design, "character-page-avatar.html", None, vars)
 
     def interface_character(self):
