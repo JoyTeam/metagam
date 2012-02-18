@@ -48,6 +48,9 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 	},
 	coords: function() {
 		return 'slot-' + this.id + ':' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
+	},
+	border: function() {
+		return EquipLayoutEditor.slot_border;
 	}
 });
 
@@ -86,6 +89,9 @@ EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
 	},
 	coords: function() {
 		return 'charimage:' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
+	},
+	border: function() {
+		return EquipLayoutEditor.charimage_border;
 	}
 });
 
@@ -134,6 +140,9 @@ EquipLayoutStaticImage = Ext.extend(EquipLayoutItem, {
 	},
 	coords: function() {
 		return 'staticimage-' + this.uuid + '(' + this.uri + '):' + this.x + ',' + this.y + ',' + this.width + ',' + this.height;
+	},
+	border: function() {
+		return 0;
 	}
 });
 
@@ -550,8 +559,9 @@ EquipLayoutEditor.add = function(item) {
 
 EquipLayoutEditor.touch_item = function(item) {
 	if (item) {
-		this.touch({x: item.x, y: item.y});
-		this.touch({x: item.x + item.width, y: item.y + item.height});
+		var border = item.border();
+		this.touch({x: item.x - border, y: item.y - border});
+		this.touch({x: item.x + item.width + border, y: item.y + item.height + border});
 	}
 };
 
