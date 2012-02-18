@@ -544,14 +544,21 @@ class Equip(ConstructorModule):
                     for slot in self.slots():
                         if slot.get("iface-%s" % iface_id):
                             size = slot.get("ifsize-%s" % iface_id)
-                            items.append({
+                            ritem = {
                                 "x": layout.get("slot-%s-x" % slot["id"], 0) + offset_x,
                                 "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
                                 "width": size[0],
                                 "height": size[1],
-                                "cls": "equip-slot",
+                                "cls": "equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
                                 "border": slot_border,
-                            })
+                            }
+                            description = slot.get("description")
+                            if description:
+                                ritem["hint"] = {
+                                    "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
+                                    "html": jsencode(description),
+                                }
+                            items.append(ritem)
                     cur_y = 0
                     for item in items:
                         item["x"] = item["x"] - layout["min_x"] - item["border"]
@@ -563,4 +570,6 @@ class Equip(ConstructorModule):
                         "items": items,
                     }
                     vars["equip_layout"] = rlayout
-
+                    if not vars.get("load_extjs"):
+                        vars["load_extjs"] = {}
+                    vars["load_extjs"]["qtips"] = True

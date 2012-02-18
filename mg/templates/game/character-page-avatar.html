@@ -6,6 +6,11 @@
 	</div>
 	[%end%]
 </div>
+<script type="text/javascript">
+	wait(['hints'], function() {
+		[%for it in equip_layout.items%][%if it.hint%]Hints.html('[%it.hint.cls%]', '[%it.hint.html%]');[%end%][%end%]
+	});
+</script>
 [%else%]
 <img src="[%avatar_image%]" alt="" />
 [%end%]

@@ -228,7 +228,7 @@ area { border: none }
 #shop-basket-cost { padding-bottom: 10px }
 
 /* EQUIP */
-.equip-layout { overflow: hidden; border: solid 1px red; position: relative; left: 0px; top: 0px; text-align: left }
-.equip-slot { background: red; position: relative; border: solid #000000 }
-.equip-char-image { background: blue; position: relative; border: solid #000000 }
+.equip-layout { overflow: hidden; position: relative; left: 0px; top: 0px; text-align: left }
+.equip-slot { background-color: #ffffff; position: relative; border: solid #000000 }
+.equip-char-image { position: relative; border: solid #000000 }
 .equip-static-image { position: relative; border: solid #000000 }
