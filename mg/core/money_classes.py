@@ -341,7 +341,7 @@ class MemberMoney(Module):
             lock.store()
             return lock
 
-    def unlock(self, lock_uuid):
+    def unlock(self, lock_uuid, **kwargs):
         currencies = {}
         self.call("currencies.list", currencies)
         if "nolock" in kwargs:
