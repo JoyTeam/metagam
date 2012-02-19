@@ -788,7 +788,7 @@ class Instance(object):
         if self.stderr_channel:
             modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
-        self.stderr_channel.setLevel(logging.DEBUG)
+        self.stderr_channel.setLevel(logging.ERROR)
         filter = StderrFilter()
         self.stderr_channel.addFilter(filter)
         formatter = Formatter(unicode("%(asctime)s " + self.logger_id + " cls=%(name)s %(message)s"))
