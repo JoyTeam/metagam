@@ -1876,6 +1876,7 @@ class Inventory(ConstructorModule):
         self.rhook("modules.list", self.modules_list)
         self.rhook("item-types.all", self.item_types_all)
         self.rhook("item-types.load", self.item_types_load)
+        self.rhook("inventory.render", self.inventory_render)
 
     def modules_list(self, modules):
         modules.append({
@@ -2019,16 +2020,15 @@ class Inventory(ConstructorModule):
         cache[kind] = uri
         return uri
 
-    def inventory_index(self):
-        self.call("quest.check-dialogs")
+    def inventory_render(self, inv, vars, grep=None, render=None):
         req = self.req()
-        character = self.character(req.user())
-        inv = character.inventory
         # loading list of categories
         categories = self.call("item-types.categories", "inventory")
         # loading all items
         ritems = {}
         for item_type, quantity in inv.items():
+            if grep and not grep(item_type):
+                continue
             ritem = {
                 "type": item_type.uuid,
                 "dna": item_type.dna,
@@ -2044,14 +2044,6 @@ class Inventory(ConstructorModule):
             if params:
                 params[-1]["lst"] = True
                 ritem["params"] = params
-            menu = []
-            if self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
-                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard"), "order": 100})
-            self.call("items.menu", character, item_type, menu)
-            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("html"), y.get("html")))
-            if menu:
-                menu[-1]["lst"] = True
-                ritem["menu"] = menu
             cat = item_type.get("cat-inventory")
             misc = None
             found = False
@@ -2067,6 +2059,8 @@ class Inventory(ConstructorModule):
                 cat = misc
             if cat is None:
                 continue
+            if render:
+                render(item_type, ritem)
             try:
                 ritems[cat].append(ritem)
             except KeyError:
@@ -2092,16 +2086,30 @@ class Inventory(ConstructorModule):
                     any_visible = True
         if not any_visible and rcategories:
             rcategories[0]["visible"] = True
-        vars = {
-            "categories": rcategories,
-            "pcs": self._("pcs"),
-        }
-        errors = character.inventory.constraints_failed()
-        if errors:
-            vars["error"] = u"%s" % (u"".join([u"<div>%s</div>" % htmlescape(err) for err in errors]))
+        vars["categories"] = rcategories
+        vars["pcs"] = self._("pcs")
         # storing expiration information
         if inv.expired:
             inv.update()
+
+    def inventory_index(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        vars = {}
+        def render(item_type, ritem):
+            menu = []
+            if self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
+                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard"), "order": 100})
+            self.call("items.menu", character, item_type, menu)
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("html"), y.get("html")))
+            if menu:
+                menu[-1]["lst"] = True
+                ritem["menu"] = menu
+        self.call("inventory.render", character.inventory, vars, render=render)
+        errors = character.inventory.constraints_failed()
+        if errors:
+            vars["error"] = u"%s" % (u"".join([u"<div>%s</div>" % htmlescape(err) for err in errors]))
         vars["title"] = self._("Inventory")
         self.call("game.response_internal", "inventory.html", vars)
 

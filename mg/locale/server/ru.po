@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-17 14:31+0300\n"
+"PO-Revision-Date: 2012-02-19 11:32+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4112,6 +4112,9 @@ msgstr "Нет округления"
 msgid "No such category"
 msgstr "Нет такого раздела"
 
+msgid "No such item"
+msgstr "Нет такого предмета"
+
 msgid "No such location"
 msgstr "Нет такой локации"
 
@@ -6978,6 +6981,9 @@ msgstr "Вы не можете удалить реальную валюту по
 msgid "You can't send messages to the system"
 msgstr "Вы не можете отправлять сообщения системе"
 
+msgid "You don't have items to fit into this slot"
+msgstr "У вас нет предметов, которые можно поместить в этот слот"
+
 msgid "You don't have permission to upload objects to the static storage"
 msgstr "У вас нет доступа, чтобы загружать объекты в статическое хранилище"
 
@@ -7501,6 +7507,9 @@ msgstr "установить"
 
 msgid "installed"
 msgstr "установлено"
+
+msgid "item///wear"
+msgstr "надеть"
 
 msgid "itemlog///Reference"
 msgstr "Референс"

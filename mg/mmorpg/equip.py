@@ -1,4 +1,5 @@
 from mg.constructor import *
+from mg.mmorpg.inventory import MemberInventory
 import re
 
 max_slot_id = 100
@@ -7,6 +8,70 @@ re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
 re_slot_token = re.compile(r'^slot-(\d+):(-?\d+),(-?\d+),(\d+),(\d+)$')
 re_charimage_token = re.compile(r'^charimage:(-?\d+),(-?\d+),(\d+),(\d+)$')
 re_staticimage_token = re.compile(r'^staticimage-([a-f0-9]{32})\((//.+)\):(-?\d+),(-?\d+),(\d+),(\d+)$')
+
+re_equip_slot = re.compile(r'^(\d+)$')
+re_equip_slot_item = re.compile(r'^(\d+)/([a-f0-9]{32}|[a-f0-9]{32}_[a-f0-9]{32})$')
+
+class MemberEquipInventory(MemberInventory):
+    def __init__(self, app, owtype, uuid):
+        ConstructorModule.__init__(self, app, "mg.mmorpg.equip.MemberEquipInventory")
+        self.owtype = owtype
+        self.uuid = uuid
+
+    def _equip_data(self):
+        if not getattr(self, "inv", None):
+            self.load()
+        eqp = self.inv.get("equip")
+        if eqp is None:
+            eqp = {
+                "slots": {},
+                "dna": {},
+            }
+            self.inv.set("equip", eqp)
+        return eqp
+
+    def _equipped(self):
+        try:
+            return self._equipped_cache
+        except AttributeError:
+            pass
+        equip_data = self._equip_data()
+        eqp = {}
+        for item in self._items():
+            dna = dna_join(item.get("type"), item.get("dna"))
+            quantity = item.get("quantity")
+            slots = equip_data["dna"].get(dna)
+            if slots:
+                item_type = self.item_type(item.get("type"), item.get("dna"), item.get("mod"))
+                for slot_id in slots:
+                    if quantity > 0:
+                        quantity -= 1
+                        eqp[slot_id] = item_type
+        self._equipped_cache = eqp
+        return eqp
+
+    def equipped(self, slot_id):
+        return self._equipped().get(slot_id)
+
+    def equip(self, slot_id, dna):
+        equip_data = self._equip_data()
+        equip_data["slots"][slot_id] = dna
+        self.update_equip_data()
+
+    def update_equip_data(self):
+        equip_data = self._equip_data()
+        dna_cnt = {}
+        for slot_id, dna in equip_data["slots"].iteritems():
+            try:
+                dna_cnt[dna].append(slot_id)
+            except KeyError:
+                dna_cnt[dna] = [slot_id]
+        equip_data["dna"] = dna_cnt
+        try:
+            delattr(self, "_equipped_cache")
+        except AttributeError:
+            pass
+        self.inv.touch()
 
 class EquipAdmin(ConstructorModule):
     def register(self):
@@ -468,6 +533,9 @@ class Equip(ConstructorModule):
         self.rhook("equip.slots", self.slots)
         self.rhook("equip.interfaces", self.interfaces)
         self.rhook("character-page.render", self.character_page_render)
+        self.rhook("ext-equip.slot", self.equip_slot, priv="logged")
+        self.rhook("ext-unequip.slot", self.unequip_slot, priv="logged")
+        self.rhook("inventory.get", self.inventory_get, priority=10)
 
     def child_modules(self):
         return ["mg.mmorpg.equip.EquipAdmin"]
@@ -541,6 +609,7 @@ class Equip(ConstructorModule):
                                 },
                             })
                     # slots
+                    inv = character.inventory
                     for slot in self.slots():
                         if slot.get("iface-%s" % iface_id):
                             size = slot.get("ifsize-%s" % iface_id)
@@ -549,15 +618,23 @@ class Equip(ConstructorModule):
                                 "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
                                 "width": size[0],
                                 "height": size[1],
-                                "cls": "equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
+                                "cls": "clickable equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
                                 "border": slot_border,
                             }
-                            description = slot.get("description")
-                            if description:
-                                ritem["hint"] = {
-                                    "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
-                                    "html": jsencode(description),
+                            item_type = inv.equipped(slot["id"])
+                            if item_type:
+                                ritem["image"] = {
+                                    "src": item_type.image("inventory"),
                                 }
+                                ritem["onclick"] = "return Game.main_open('/unequip/slot/%s');" % slot["id"]
+                            else:
+                                description = slot.get("description")
+                                if description:
+                                    ritem["hint"] = {
+                                        "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
+                                        "html": jsencode(description),
+                                    }
+                                ritem["onclick"] = "return Game.main_open('/equip/slot/%s');" % slot["id"]
                             items.append(ritem)
                     cur_y = 0
                     for item in items:
@@ -573,3 +650,82 @@ class Equip(ConstructorModule):
                     if not vars.get("load_extjs"):
                         vars["load_extjs"] = {}
                     vars["load_extjs"]["qtips"] = True
+
+    def inventory_get(self, owtype, uuid):
+        if owtype == "char":
+            raise Hooks.Return(MemberEquipInventory(self.app(), owtype, uuid))
+
+    def equip_slot(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        m = re_equip_slot.match(req.args)
+        if m:
+            slot_id = m.group(1)
+            slot_id = int(slot_id)
+            for slot in self.call("equip.slots"):
+                if slot["id"] == slot_id:
+                    # looking for items to dress
+                    vars = {}
+                    def grep(item_type):
+                        return item_type.get("equip") and item_type.get("equip-%s" % slot_id)
+                    def render(item_type, ritem):
+                        menu = []
+                        menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": self._("item///wear"), "order": 10})
+                        if menu:
+                            menu[-1]["lst"] = True
+                            ritem["menu"] = menu
+                        ritem["onclick"] = "return parent.Game.main_open('/equip/slot/%s/%s')" % (slot["id"], item_type.dna)
+                    self.call("inventory.render", character.inventory, vars, grep=grep, render=render)
+                    vars["title"] = slot.get("description") or slot["name"]
+                    vars["menu_left"] = [
+                        {
+                            "href": "/interface/character",
+                            "html": self._("Character"),
+                        }, {
+                            "html": slot["name"],
+                            "lst": True
+                        }
+                    ]
+                    if not vars["categories"]:
+                        character.error(self._("You don't have items to fit into this slot"))
+                        self.call("web.redirect", "/interface/character")
+                    self.call("game.response_internal", "inventory.html", vars)
+        else:
+            m = re_equip_slot_item.match(req.args)
+            if m:
+                slot_id, dna = m.group(1, 2)
+                slot_id = int(slot_id)
+                for slot in self.call("equip.slots"):
+                    if slot["id"] == slot_id:
+                        character = self.character(req.user())
+                        inv = character.inventory
+                        with self.lock([inv.lock_key]):
+                            if inv.equipped(slot_id):
+                                self.call("web.redirect", "/interface/character")
+                            item_type, quantity = inv.find_dna(dna)
+                            if not quantity:
+                                character.error(self._("No such item"))
+                                self.call("web.redirect", "/interface/character")
+                            else:
+                                inv.equip(slot_id, item_type.dna)
+                                inv.store()
+                                self.call("web.redirect", "/interface/character")
+
+        self.call("web.redirect", "/interface/character")
+
+    def unequip_slot(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        m = re_equip_slot.match(req.args)
+        if m:
+            slot_id = m.group(1)
+            slot_id = int(slot_id)
+        character = self.character(req.user())
+        inv = character.inventory
+        with self.lock([inv.lock_key]):
+            if inv.equipped(slot_id):
+                inv.equip(slot_id, None)
+                inv.store()
+        self.call("web.redirect", "/interface/character")

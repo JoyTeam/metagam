@@ -69,6 +69,7 @@ Game.main_open = function(uri) {
 	} catch (e) {
 		this.error(gt.gettext('Exception'), e);
 	}
+	return false;
 };
 
 Game.progress_stop = function(id) {

@@ -6,7 +6,7 @@
 	<table class="items-table">
 	[%foreach item in cat.items%]
 	<tr>
-		<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image" />[%end%]</td>
+		<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image[%if item.onclick +%] clickable[%end%]"[%if item.onclick +%] onclick="[%item.onclick%]"[%end +%] />[%end%]</td>
 		<td class="item-info-td">
 			<a name="[%item.dna%]"></a>
 			<div class="item-info-name">[%item.name%][%if item.quantity%]&nbsp;&mdash; <span class="value quantity">[%item.quantity%]</span> [%+ pcs%][%end%]</div>

@@ -1,10 +1,8 @@
 [%content%]
 <script type="text/javascript">
-var Game = parent.Game;
-var Locations = parent.Locations;
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	wait(['hints'], function() {
+	wait(['parent', 'hints'], function() {
 		[%foreach tr in transitions%]Hints.transition('[%tr.loc%]', '[%tr.hint%]');[%end%]
 		[%foreach zone in zones%][%if zone.action != 'move' && zone.hint %]Hints.html('[%zone.class%]', '[%zone.hint%]');[%end%][%end%]
 		[%update_script%]
