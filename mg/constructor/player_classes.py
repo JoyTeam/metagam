@@ -378,20 +378,6 @@ class Character(Module):
             self._restraints = restraints
             return restraints
 
-    def info_avatar(self):
-        try:
-            return self._info_avatar
-        except AttributeError:
-            self._info_avatar = self.call("character.info-avatar", self)
-            return self._info_avatar
-
-    def page_avatar(self):
-        try:
-            return self._page_avatar
-        except AttributeError:
-            self._page_avatar = self.call("character.page-avatar", self)
-            return self._page_avatar
-
     def param(self, key, handle_exceptions=True):
         try:
             cache = self._param_cache

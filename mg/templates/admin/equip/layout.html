@@ -1,0 +1,16 @@
+<div class="admin-equip-layout-render">
+<div id="equip-layout-ie-warning" class="admin-alert" style="display: none">[%ie_warning%]</div>
+<div id="equip-layout-form"></div>
+<div id="equip-layout-div"></div>
+</div>
+<script type="text/javascript">
+wait(['equip-layout-editor'], function() {
+	EquipLayoutEditor.init('[%submit_url%]', [%grid_size%], [%slot_border%], [%charimage_border%]);
+	[%if charimage%]EquipLayoutEditor.add(new EquipLayoutCharImage([%charimage.x%], [%charimage.y%], [%charimage.width%], [%charimage.height%]));[%end%]
+	[%foreach slot in slots%]EquipLayoutEditor.add(new EquipLayoutSlot([%slot.id%], '[%slot.name%]', [%slot.x%], [%slot.y%], [%slot.width%], [%slot.height%]));[%end%]
+	[%foreach img in staticimages%]EquipLayoutEditor.add(new EquipLayoutStaticImage('[%img.uuid%]', '[%img.uri%]', [%img.x%], [%img.y%], [%img.width%], [%img.height%]));[%end%]
+	[%if storage_unavailable%]EquipLayoutEditor.storage_unavailable = '[%storage_unavailable%]';[%end%]
+	EquipLayoutEditor.run();
+});
+</script>
+

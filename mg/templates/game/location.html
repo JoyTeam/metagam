@@ -1,18 +1,11 @@
 [%content%]
-<script type="text/javascript" src="/st/[%ver%]/js/location-hints.js"></script>
 <script type="text/javascript">
-var Game = parent.Game;
-var Locations = parent.Locations;
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	[%foreach tr in transitions%]
-	transition_hint('[%tr.loc%]', '[%tr.hint%]');
-	[%end%]
-	[%foreach zone in zones%]
-	[%if zone.action != 'move' && zone.hint %]
-	location_hint('[%zone.class%]', '[%zone.hint%]');
-	[%end%]
-	[%end%]
-	[%update_script%]
+	wait(['parent', 'hints'], function() {
+		[%foreach tr in transitions%]Hints.transition('[%tr.loc%]', '[%tr.hint%]');[%end%]
+		[%foreach zone in zones%][%if zone.action != 'move' && zone.hint %]Hints.html('[%zone.class%]', '[%zone.hint%]');[%end%][%end%]
+		[%update_script%]
+	});
 });
 </script>

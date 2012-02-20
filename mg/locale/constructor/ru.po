@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-13 18:36+0300\n"
+"PO-Revision-Date: 2012-02-17 17:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -21,6 +21,9 @@ msgstr ""
 msgid "Abort wizard"
 msgstr "Прервать мастер"
 
+msgid "Add arbitrary image"
+msgstr "Добавить произвольное изображение"
+
 msgid "Apply"
 msgstr "Применить"
 
@@ -29,6 +32,12 @@ msgstr "Обзор..."
 
 msgid "Buy MM$"
 msgstr "Купить MM$"
+
+msgid "Character image"
+msgstr "Образ персонажа"
+
+msgid "Character image border"
+msgstr "Рамка образа персонажа"
 
 msgid "Check availability"
 msgstr "Проверить доступность"
@@ -44,6 +53,9 @@ msgstr "Не удалось отправить сообщение на серв�
 
 msgid "Effects"
 msgstr "Эффекты"
+
+msgid "Enable grid"
+msgstr "Включить сетку"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -66,11 +78,17 @@ msgstr "Заливка"
 msgid "Global interface"
 msgstr "Глобальный интерфейс"
 
+msgid "Grid size"
+msgstr "Размер сетки"
+
 msgid "Guru advice"
 msgstr "Советы гуру"
 
 msgid "Hint on mouseover"
 msgstr "Подсказка при наведении мыши"
+
+msgid "Image file"
+msgstr "Файл с изображением"
 
 msgid "Insert Image"
 msgstr "Вставка изображения"
@@ -141,6 +159,9 @@ msgstr "Сервер временно недоступен"
 
 msgid "Shape"
 msgstr "Форма"
+
+msgid "Slot border"
+msgstr "Рамка слотов"
 
 msgid "Smooth contour"
 msgstr "Сглаженные края"

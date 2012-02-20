@@ -243,8 +243,9 @@ class Interface(ConstructorModule):
         }
         self.call("game.response_external", "error.html", vars, msg)
 
-    def game_internal_error(self, msg):
-        vars = {}
+    def game_internal_error(self, msg, vars):
+        if vars is None:
+            vars = {}
         self.call("game.response_internal", "error.html", vars, msg)
 
     def game_internal_form(self, form, vars):

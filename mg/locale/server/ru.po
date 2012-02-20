@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-14 17:29+0300\n"
+"PO-Revision-Date: 2012-02-19 11:32+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -235,6 +235,9 @@ msgstr "Настройки API (API ещё не реализовано)"
 
 msgid "Ability for players to choose images for the characters"
 msgstr "Доступ игроков к выбору образов для персонажей"
+
+msgid "Ability of characters to equip items"
+msgstr "Способность персонажа надевать предметы"
 
 msgid "Ability to create administrator defined permissions for characters"
 msgstr "Возможность вручную создавать новые привилегии для персонажей"
@@ -480,6 +483,9 @@ msgstr "Вы уверены, что хотите удалить это выпа�
 
 msgid "Are you sure want to delete this quest?"
 msgstr "Вы уверены, что хотите удалить этот квест?"
+
+msgid "Are you sure want to delete this slot?"
+msgstr "Вы уверены, что хотите удалить этот слот?"
 
 msgid "Are you sure want to delete this smile?"
 msgstr "Вы уверены, что хотите удалить этот смайлик?"
@@ -1037,6 +1043,12 @@ msgstr "Персонажи, которые могут пользоваться �
 
 msgid "Characters cargo constraints"
 msgstr "Ограничения грузоподъёмности персонажей"
+
+msgid "Characters equipment"
+msgstr "Экипировка персонажа"
+
+msgid "Characters equipment configuration"
+msgstr "Настройка экипировки персонажей"
 
 msgid "Characters images documentation"
 msgstr "Документация на образы персонажей"
@@ -1606,6 +1618,9 @@ msgstr "Производный (вычисляемый) параметр"
 msgid "Description"
 msgstr "Описание"
 
+msgid "Description (ex: Slot for summoning scrolls)"
+msgstr "Описание (например: Слот для свитков призыва)"
+
 msgid "Description for players"
 msgstr "Описание для игроков"
 
@@ -2029,6 +2044,15 @@ msgstr "Эпическое событие: война"
 msgid "Equipment"
 msgstr "Экипировка"
 
+msgid "Equipment layout"
+msgstr "Разметка экипировки"
+
+msgid "Equipment layouts"
+msgstr "Разметка экипировки"
+
+msgid "Equipment slots"
+msgstr "Слоты экипировки"
+
 msgid "Error"
 msgstr "Ошибка"
 
@@ -2226,8 +2250,8 @@ msgstr "Код поля (для использования в скриптах)"
 msgid "Field type"
 msgstr "Тип поля"
 
-msgid "Filename"
-msgstr "Имя файла"
+msgid "File"
+msgstr "Файл"
 
 #, python-format
 msgid "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)"
@@ -2774,6 +2798,9 @@ msgstr "Ошибка формата изображения [img:%s]"
 msgid "Image [img:%s] overflow error"
 msgstr "Ошибка переполнения в изображении [img:%s]"
 
+msgid "Image dimensions"
+msgstr "Размеры изображений"
+
 msgid "Image editor"
 msgstr "Редактор изображения"
 
@@ -2896,6 +2923,9 @@ msgstr "Панели интерфейса"
 msgid "Interfaces for defining currency exchange rates"
 msgstr "Интерфейсы для задания курсов обмена валют"
 
+msgid "Internal game interface for character owner"
+msgstr "Внутриигровой интерфейс для владельца персонажа"
+
 msgid "Interval"
 msgstr "Интервал"
 
@@ -2944,6 +2974,9 @@ msgstr "Неверный формат даты и времени"
 
 msgid "Invalid delete URI"
 msgstr "Неверный URI для удаления"
+
+msgid "Invalid dimensions format"
+msgstr "Неверный формат размера"
 
 #, python-format
 msgid "Invalid dimensions format: %s"
@@ -3984,6 +4017,9 @@ msgstr "Новое состояние квеста"
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
+msgid "New slot"
+msgstr "Новый слот"
+
 msgid "New smile"
 msgstr "Новый смайлик"
 
@@ -4075,6 +4111,9 @@ msgstr "Нет округления"
 
 msgid "No such category"
 msgstr "Нет такого раздела"
+
+msgid "No such item"
+msgstr "Нет такого предмета"
 
 msgid "No such location"
 msgstr "Нет такой локации"
@@ -4599,6 +4638,9 @@ msgstr "Загрузите ZIP-архив"
 
 msgid "Provide an image for the smile"
 msgstr "Загрузите картинку для смайлика"
+
+msgid "Public character info"
+msgstr "Публичная страница информации о персонаже"
 
 msgid "Publish"
 msgstr "Опубликовать"
@@ -5459,6 +5501,29 @@ msgstr "Размер"
 msgid "Sky #1"
 msgstr "Небо №1"
 
+#, python-format
+msgid "Slot %s"
+msgstr "Слот %s"
+
+msgid "Slot ID"
+msgstr "ID слота"
+
+msgid "Slot ID (integer number)"
+msgstr "ID слота (целое число)"
+
+#, python-format
+msgid "Slot ID must be a nonnegative integer in range 1-%d"
+msgstr "ID слота должен быть целым числом в диапазоне 1-%d"
+
+msgid "Slot dimensions (ex: 60x60)"
+msgstr "Размеры слота (например: 60x60)"
+
+msgid "Slot name"
+msgstr "Название слота"
+
+msgid "Slot with this ID already exists"
+msgstr "Слот с таким идентификатором уже существует"
+
 msgid "Small icon near the browser address line"
 msgstr "Небольшая иконка рядом с адресной строкой браузера"
 
@@ -6016,6 +6081,9 @@ msgstr "Эта игра ожидает модерации"
 msgid "This group is a block (HTML portion that will be shown on every page in the group)"
 msgstr "Эта группа является блоком (HTML-куском, который будет показываться на каждой странице из этой группы)"
 
+msgid "This image format is not supported. Allowed are: GIF, JPEG, PNG"
+msgstr "Этот формат изображения не поддерживается. Допустимы: GIF, JPEG, PNG"
+
 msgid "This is a list of items available"
 msgstr "Это - список доступных предметов"
 
@@ -6055,6 +6123,9 @@ msgstr "Это публичная оферта"
 
 msgid "This item action is currently unavailable"
 msgstr "Это действие над предметом в данный момент недоступно"
+
+msgid "This item is wearable"
+msgstr "Предмет надеваемый"
 
 msgid "This location has 'Exit' direction pointing to this location"
 msgstr "У этой локации есть направление \"Выход\", и оно ведёт в локацию"
@@ -6154,6 +6225,9 @@ msgstr "Название игры"
 
 msgid "Titles should be short and descriptive. Try to avoid long words, especially in short title. Otherwize you can introduce lines wrapping problems"
 msgstr "Названия должны быть короткими и ясными. Постарайтесь избегать длинных слов, особенно в коротком названии. В противном случае, могут возникнуть проблемы с переносом строк"
+
+msgid "To access this function you need to enable 'Static Storage' system module"
+msgstr "Чтобы воспользоваться этой функцией, необходимо включить системный модуль \"Статическое хранилище\""
 
 msgid "To access this page enter the game first"
 msgstr "Чтобы получить доступ к этой странице, войдите в игру"
@@ -6317,6 +6391,9 @@ msgstr "Попытайтесь описать свой выбор"
 msgid "Type"
 msgstr "Тип"
 
+msgid "URI"
+msgstr "URI"
+
 msgid "URI with the description of the parameter"
 msgstr "URI с описанием параметра"
 
@@ -6362,6 +6439,10 @@ msgstr "Неизвестная услуга %s"
 #, python-format
 msgid "Unknown token {%s}"
 msgstr "Неизвестный элемент {%s}"
+
+#, python-format
+msgid "Unknown token: %s"
+msgstr "Неизвестный элемент: %s"
 
 msgid "Unpin"
 msgstr "Открепить"
@@ -6607,6 +6688,9 @@ msgstr "Ожидает модерации"
 
 msgid "Warning! Category for miscellaneous items is missing. Some items may become invisible in the game interfaces."
 msgstr "Внимание! Отсутствует раздел \"разное\". Некоторые предметы могут оказаться невидимыми в игровых интерфейсах."
+
+msgid "Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"
+msgstr "Внимание! Internet Explorer не поддерживается. Редактор разметки экипировки может работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, Google Chrome и Opera."
 
 msgid "Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"
 msgstr "Внимание! Internet Explorer не поддерживается. Редактор локаций может работать медленно или нестабильно. Полностью поддерживаются Mozilla Firefox, Google Chrome и Opera."
@@ -6896,6 +6980,12 @@ msgstr "Вы не можете удалить реальную валюту по
 
 msgid "You can't send messages to the system"
 msgstr "Вы не можете отправлять сообщения системе"
+
+msgid "You don't have items to fit into this slot"
+msgstr "У вас нет предметов, которые можно поместить в этот слот"
+
+msgid "You don't have permission to upload objects to the static storage"
+msgstr "У вас нет доступа, чтобы загружать объекты в статическое хранилище"
 
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
@@ -7257,8 +7347,14 @@ msgstr "умолчание"
 msgid "delete"
 msgstr "удалить"
 
+msgid "deletion///object is busy"
+msgstr "объект занят"
+
 msgid "delivery options"
 msgstr "опции доставки"
+
+msgid "dimension///missing"
+msgstr "отсутствует"
 
 msgid "disable"
 msgstr "отключить"
@@ -7411,6 +7507,9 @@ msgstr "установить"
 
 msgid "installed"
 msgstr "установлено"
+
+msgid "item///wear"
+msgstr "надеть"
 
 msgid "itemlog///Reference"
 msgstr "Референс"
@@ -7906,6 +8005,9 @@ msgstr "показать"
 msgid "skipping unavailable quest {quest}"
 msgstr "пропускаем недоступный квест {quest}"
 
+msgid "slot///Visibility in the interfaces"
+msgstr "Видимость в интерфейсах"
+
 msgid "smile/smiles"
 msgstr "смайлик/смайлика/смайликов"
 
@@ -8107,6 +8209,10 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "New layout stored"
+#~ msgstr "Новая разметка сохранена"
+#~ msgid "dimpresent///ok"
+#~ msgstr "ok"
 #~ msgid "Currency exchange"
 #~ msgstr "Обмен валюты"
 #~ msgid "Constraint exceeded"

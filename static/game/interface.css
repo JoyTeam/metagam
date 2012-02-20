@@ -226,3 +226,9 @@ area { border: none }
 .shop-interface-basket-td { vertical-align: top; padding-left: 40px }
 .shop-basket-header { margin: 0; padding: 0 0 10px 0 }
 #shop-basket-cost { padding-bottom: 10px }
+
+/* EQUIP */
+.equip-layout { overflow: hidden; position: relative; left: 0px; top: 0px; text-align: left }
+.equip-slot { background-color: #ffffff; position: relative; border: solid #000000 }
+.equip-char-image { position: relative; border: solid #000000 }
+.equip-static-image { position: relative; border: solid #000000 }

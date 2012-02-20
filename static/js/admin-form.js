@@ -1,10 +1,11 @@
 var form_id = 0;
 
-Form = Ext.extend(AdminResponse, {
+Form = Ext.extend(AdminResponsePanel, {
 	constructor: function(data) {
 		Form.superclass.constructor.call(this, {
 		});
 		this.conditions = new Array();
+		form_id++;
 		var upload = data.upload;
 		var rows = new Array();
 		if (data.title) {
@@ -196,17 +197,28 @@ Form = Ext.extend(AdminResponse, {
 				if (elt.fieldLabel == '&nbsp;' || it.remove_label_separator)
 					elt.labelSeparator = '';
 				if (elt.xtype != 'textarea' && elt.xtype != 'combo' && elt.xtype != 'htmleditor') {
-					elt.listeners.specialkey = function(field, e) {
+					elt.listeners.specialkey = (function(field, e) {
 						if (e.getKey() == e.ENTER) {
-							var form = Ext.getCmp('admin-form-' + form_id);
+							var form = Ext.getCmp('admin-form-' + this.form_id);
 							form.ownerCt.custom_submit(form.url);
 						}
-					};
+					}).createDelegate(this);
 				}
-				elt.listeners.select = elt.listeners.change = elt.listeners.check = function(field, newval, oldval) {
-					var form = Ext.getCmp('admin-form-' + form_id);
+				elt.listeners.select = elt.listeners.change = elt.listeners.check = (function(field, newval, oldval) {
+					var form = Ext.getCmp('admin-form-' + this.form_id);
 					form.ownerCt.enforce_conditions();
-				};
+					if (form.changeHandler)
+						form.changeHandler();
+				}).createDelegate(this);
+				if (elt.xtype == 'textarea' || elt.xtype == 'textfield') {
+					elt.enableKeyEvents = true;
+					elt.listeners.change = elt.listeners.keyup = (function() {
+						var form = Ext.getCmp('admin-form-' + this.form_id);
+						form.ownerCt.enforce_conditions();
+						if (form.changeHandler)
+							form.changeHandler();
+					}).createDelegate(this);
+				}
 				elem = {
 					border: false,
 					autoHeight: true,
@@ -258,20 +270,23 @@ Form = Ext.extend(AdminResponse, {
 			value: '1'
 		});
 		var buttons = new Array();
-		form_id++;
 		for (var i = 0; i < data.buttons.length; i++) {
 			var btn_config = data.buttons[i];
-			var btn = new Ext.Button({
-				text: btn_config.text,
-				url: btn_config.url ? btn_config.url : data.url,
-				form_id: form_id,
-				autoHeight: true
-			});
-			btn.on('click', function(btn, e) {
-				var form = Ext.getCmp('admin-form-' + form_id);
-				form.ownerCt.custom_submit(btn.url);
-			}, btn);
-			buttons.push(btn);
+			if (btn_config.xtype) {
+				buttons.push(btn_config);
+			} else {
+				var btn = new Ext.Button({
+					text: btn_config.text,
+					url: btn_config.url ? btn_config.url : data.url,
+					form_id: form_id,
+					autoHeight: true
+				});
+				btn.on('click', function(btn, e) {
+					var form = Ext.getCmp('admin-form-' + btn.form_id);
+					form.ownerCt.custom_submit(btn.url);
+				}, btn);
+				buttons.push(btn);
+			}
 		}
 		var form = new Ext.FormPanel({
 			id: 'admin-form-' + form_id,
@@ -288,11 +303,15 @@ Form = Ext.extend(AdminResponse, {
 			layout: 'auto',
 			fileUpload: upload,
 			url: data.url,
-			method: 'POST'
+			method: 'POST',
+			form_id: form_id,
+			changeHandler: data.changeHandler,
+			successHandler: data.successHandler
 		});
 		this.add(form);
 		this.enforce_conditions(true);
 		this.form_cmp = form;
+		this.form_id = form_id;
 	},
 	enforce_conditions: function(force) {
 		var changed = false;
@@ -317,25 +336,30 @@ Form = Ext.extend(AdminResponse, {
 		for (var i = 0; i < saved.length; i++) {
 			saved[i].style.display = 'none';
 		}
-		var form = Ext.getCmp('admin-form-' + form_id);
+		var form = Ext.getCmp('admin-form-' + this.form_id);
 		form.getForm().submit({
 			url: url,
 			waitMsg: gt.gettext('Sending data...'),
 			success: function(f, action) {
-				if (form.fileUpload) {
-					adm_success_json(action.response, {
-						func: url.replace(/(^\/admin-|\/$)/g, '')
-					});
+				if (f.successHandler) {
+					f.successHandler(f, action);
 				} else {
-					adm_success(action.response, {
-						func: url.replace(/(^\/admin-|\/$)/g, '')
-					});
+					if (form.fileUpload) {
+						adm_success_json(action.response, {
+							func: url.replace(/(^\/admin-|\/$)/g, '')
+						});
+					} else {
+						adm_success(action.response, {
+							func: url.replace(/(^\/admin-|\/$)/g, '')
+						});
+					}
 				}
 			},
 			failure: function(f, action) {
 				if (action.failureType === Ext.form.Action.SERVER_INVALID) {
-					if (action.result.errormsg) {
-						Ext.Msg.alert(gt.gettext('Error'), action.result.errormsg);
+					var txt = action.result.errormsg || action.result.errmsg || action.result.error;
+					if (txt) {
+						Ext.Msg.alert(gt.gettext('Error'), txt);
 					}
 				} else if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
 					Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Server error: %s'), action.response.status + ' ' + action.response.statusText + '<br />' + url));

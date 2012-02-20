@@ -503,14 +503,13 @@ class CharactersMod(ConstructorModule):
             fields.append({"name": "name-%s" % ent.uuid, "label": self._("Change"), "inline": True, "condition": "![ok-%s]" % ent.uuid})
         self.call("admin.form", fields=fields)
 
-    def character_info_avatar(self, character):
+    def character_info_avatar(self, character, vars):
         design = self.design("gameinterface")
         charimage = self.call("charimages.get", character, "charinfo")
         if charimage is None:
-            charimage = "/st-mg/constructor/avatars/%s-230x440.jpg" % ("female" if character.sex else "male")
-        vars = {
-            "avatar_image": charimage,
-        }
+            charimage = "/st-mg/constructor/avatars/%s-240x440.jpg" % ("female" if character.sex else "male")
+        vars["avatar_image"] = charimage
+        self.call("character-info.render", character, vars)
         return self.call("design.parse", design, "character-info-avatar.html", None, vars)
 
     def character_info(self):
@@ -523,11 +522,11 @@ class CharactersMod(ConstructorModule):
             "title": htmlescape(character.name),
             "character": {
                 "html": character.html(),
-                "avatar": character.info_avatar(),
                 "name": character.name,
                 "sex": character.sex,
             }
         }
+        vars["character"]["avatar"] = self.call("character.info-avatar", character, vars)
         if not character.restraints.get("hide-info"):
             character_form = self.call("character.form")
             for fld in character_form:
@@ -550,14 +549,13 @@ class CharactersMod(ConstructorModule):
             vars["character"]["params"] = params
         self.call("game.response_external", "character-info.html", vars)
 
-    def character_page_avatar(self, character):
+    def character_page_avatar(self, character, vars):
         design = self.design("gameinterface")
         charimage = self.call("charimages.get", character, "charpage")
         if charimage is None:
-            charimage = "/st-mg/constructor/avatars/%s-115x220.jpg" % ("female" if character.sex else "male")
-        vars = {
-            "avatar_image": charimage,
-        }
+            charimage = "/st-mg/constructor/avatars/%s-120x220.jpg" % ("female" if character.sex else "male")
+        vars["avatar_image"] = charimage
+        self.call("character-page.render", character, vars)
         return self.call("design.parse", design, "character-page-avatar.html", None, vars)
 
     def interface_character(self):
@@ -569,12 +567,12 @@ class CharactersMod(ConstructorModule):
         vars = {
             "character": {
                 "html": character.html(),
-                "avatar": character.page_avatar(),
                 "name": character.name,
                 "sex": character.sex,
                 "actions": actions or None,
             }
         }
+        vars["character"]["avatar"] = self.call("character.page-avatar", character, vars)
         params = []
         self.call("characters.params-owner-important", character, params)
         if params:

@@ -31,7 +31,6 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
-        self.rhook("menu-admin-characters.index", self.menu_characters_index)
         self.rhook("headmenu-admin-item-types.editor", self.headmenu_item_types_editor)
         self.rhook("ext-admin-item-types.editor", self.admin_item_types_editor, priv="inventory.editor")
         self.rhook("headmenu-admin-item-types.give", self.headmenu_item_types_give)
@@ -117,14 +116,10 @@ class InventoryAdmin(ConstructorModule):
         req = self.req()
         if req.has_access("inventory.config"):
             menu.append({"id": "inventory/config", "text": self._("Inventory configuration"), "order": 0, "leaf": True})
+            menu.append({"id": "inventory/char-cargo", "text": self._("Cargo constraints"), "order": 40, "leaf": True})
         if req.has_access("inventory.editor"):
             menu.append({"id": "item-categories/editor", "text": self._("Rubricators"), "order": 10, "leaf": True})
             menu.append({"id": "item-types/editor", "text": self._("Item types"), "order": 20, "leaf": True})
-
-    def menu_characters_index(self, menu):
-        req = self.req()
-        if req.has_access("inventory.config"):
-            menu.append({"id": "inventory/char-cargo", "text": self._("Cargo constraints"), "order": 40, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "inventory.config", "name": self._("Inventory: configuration")})
@@ -232,7 +227,7 @@ class InventoryAdmin(ConstructorModule):
         return self._("Item types")
 
     def admin_item_types_editor(self):
-        dimensions = self.call("item-types.dimensions")
+        base_dimensions = self.call("item-types.dimensions")
         req = self.req()
         if req.args:
             m = re_delimage.match(req.args)
@@ -290,7 +285,12 @@ class InventoryAdmin(ConstructorModule):
                         obj.set("name_a", name_a)
                     else:
                         obj.delkey("name_a")
+                # extensions
+                self.call("admin-item-types.form-validate", obj, errors)
                 # images
+                dimensions = [d for d in base_dimensions]
+                self.call("admin-item-types.dimensions", obj, dimensions)
+                dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
                 image_data = req.param_raw("image")
                 replace = intz(req.param("v_replace"))
                 dim_images = {}
@@ -388,6 +388,7 @@ class InventoryAdmin(ConstructorModule):
                     price = float(price)
                     obj.set("balance-price", price)
                     obj.set("balance-currency", currency)
+                # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing images
@@ -430,6 +431,9 @@ class InventoryAdmin(ConstructorModule):
                     if uri:
                         self.call("cluster.static_delete", uri)
                 self.call("admin.redirect", "item-types/editor")
+            dimensions = [d for d in base_dimensions]
+            self.call("admin-item-types.dimensions", obj, dimensions)
+            dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
             fields = [
                 {"name": "name", "label": self._("Item name"), "value": obj.get("name")},
                 {"name": "order", "label": self._("Sort order"), "value": obj.get("order"), "inline": True},
@@ -447,7 +451,7 @@ class InventoryAdmin(ConstructorModule):
             # description
             fields.append({"name": "description", "label": self._("Item description"), "type": "textarea", "value": obj.get("description")})
             # categories
-            fields.append({"type": "header", "html": self._("Rubricators")})
+            fields.append({"mark": "categories", "type": "header", "html": self._("Rubricators")})
             cols = 3
             col = 0
             for catgroup in catgroups:
@@ -489,6 +493,8 @@ class InventoryAdmin(ConstructorModule):
                         fields.append({"type": "html", "html": u'<h1>%s</h1><img src="%s" alt="" /> <a href="javascript:void(0)" onclick="adm(\'item-types/editor/%s/delimage/%s\'); return false;">%s</a>' % (size, uri, obj.uuid, size, self._("Delete %s image") % size)})
                 date = self.nowdate()
                 fields.insert(0, {"type": "html", "html": u'<div class="admin-actions"><a href="javascript:void(0)" onclick="adm(\'item-types/paramview/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'item-types/give/%s\'); return false">%s</a> / <a href="javascript:void(0)" onclick="adm(\'inventory/track/item-type/%s/%s/00:00:00/%s/00:00:00\'); return false">%s</a></div>' % (obj.uuid, self._("Edit item type parameters"), obj.uuid, self._("Give"), obj.uuid, date, next_date(date), self._("Track"))})
+            # extensions
+            self.call("admin-item-types.form-render", obj, fields)
             self.call("admin.advice", {"title": self._("Balance prices"), "content": self._("General recommendation is to set balance price in proportion to the difficulty of obtaining the item. This helps to keep the game well balanced."), "order": 30})
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         # list of admin categories
@@ -501,14 +507,22 @@ class InventoryAdmin(ConstructorModule):
         for ent in lst:
             name = htmlescape(ent.get("name"))
             row = ['<strong>%s</strong><br />%s' % (name, ent.uuid)]
+            dimensions = [d for d in base_dimensions]
+            self.call("admin-item-types.dimensions", ent, dimensions)
+            dimensions.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
+            rdims = []
             for dim in dimensions:
-                row.append('<img src="/st-mg/img/%s.gif" alt="" />' % ("done" if ent.get("image-%dx%d" % (dim["width"], dim["height"])) else "no"))
-            row.append(u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit")))
+                key = "%dx%d" % (dim["width"], dim["height"])
+                ok = ent.get("image-%s" % key)
+                rdims.append(u'<span class="%s">%s%s</span>' % ("yes" if ok else "no", key, "" if ok else u" - " + self._("dimension///missing")))
+            row.append(u'<br />'.join(rdims))
+            actions = [u'<hook:admin.link href="item-types/editor/%s" title="%s" />' % (ent.uuid, self._("edit"))]
             if req.has_access("inventory.give"):
-                row.append(u'<hook:admin.link href="item-types/give/%s" title="%s" />' % (ent.uuid, self._("give")))
+                actions.append(u'<hook:admin.link href="item-types/give/%s" title="%s" />' % (ent.uuid, self._("give")))
             if req.has_access("inventory.track"):
                 date = self.nowdate()
-                row.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(type=ent.uuid, date=date, next_date=next_date(date), title=self._("track")))
+                actions.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(type=ent.uuid, date=date, next_date=next_date(date), title=self._("track")))
+            row.append(u'<br />'.join(actions))
             cat = ent.get("cat-admin")
             misc = None
             found = False
@@ -529,13 +543,8 @@ class InventoryAdmin(ConstructorModule):
             except KeyError:
                 rows[cat] = [row]
         header = [self._("Item name")]
-        for dim in dimensions:
-            header.append("%dx%d" % (dim["width"], dim["height"]))
-        header.append(self._("Editing"))
-        if req.has_access("inventory.give"):
-            header.append(self._("Giving"))
-        if req.has_access("inventory.track"):
-            header.append(self._("Tracking"))
+        header.append(self._("Image dimensions"))
+        header.append(self._("Actions"))
         tables = []
         tables.append({
             "links": [
@@ -1867,12 +1876,19 @@ class Inventory(ConstructorModule):
         self.rhook("modules.list", self.modules_list)
         self.rhook("item-types.all", self.item_types_all)
         self.rhook("item-types.load", self.item_types_load)
+        self.rhook("inventory.render", self.inventory_render)
 
     def modules_list(self, modules):
         modules.append({
             "id": "shops",
             "name": self._("Shops"),
             "description": self._("Game interface for buying and selling ingame goods"),
+            "parent": "inventory",
+        })
+        modules.append({
+            "id": "equip",
+            "name": self._("Characters equipment"),
+            "description": self._("Ability of characters to equip items"),
             "parent": "inventory",
         })
 
@@ -1897,6 +1913,8 @@ class Inventory(ConstructorModule):
         modules = ["mg.mmorpg.invparams.ItemTypeParams", "mg.mmorpg.inventory.InventoryAdmin", "mg.mmorpg.inventory.InventoryLibrary"]
         if self.conf("module.shops"):
             modules.append("mg.mmorpg.shops.Shops")
+        if self.conf("module.equip"):
+            modules.append("mg.mmorpg.equip.Equip")
         return modules
 
     def inventory_get(self, owtype, uuid):
@@ -2002,16 +2020,15 @@ class Inventory(ConstructorModule):
         cache[kind] = uri
         return uri
 
-    def inventory_index(self):
-        self.call("quest.check-dialogs")
+    def inventory_render(self, inv, vars, grep=None, render=None):
         req = self.req()
-        character = self.character(req.user())
-        inv = character.inventory
         # loading list of categories
         categories = self.call("item-types.categories", "inventory")
         # loading all items
         ritems = {}
         for item_type, quantity in inv.items():
+            if grep and not grep(item_type):
+                continue
             ritem = {
                 "type": item_type.uuid,
                 "dna": item_type.dna,
@@ -2027,14 +2044,6 @@ class Inventory(ConstructorModule):
             if params:
                 params[-1]["lst"] = True
                 ritem["params"] = params
-            menu = []
-            if self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
-                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard"), "order": 100})
-            self.call("items.menu", character, item_type, menu)
-            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("html"), y.get("html")))
-            if menu:
-                menu[-1]["lst"] = True
-                ritem["menu"] = menu
             cat = item_type.get("cat-inventory")
             misc = None
             found = False
@@ -2050,6 +2059,8 @@ class Inventory(ConstructorModule):
                 cat = misc
             if cat is None:
                 continue
+            if render:
+                render(item_type, ritem)
             try:
                 ritems[cat].append(ritem)
             except KeyError:
@@ -2075,16 +2086,30 @@ class Inventory(ConstructorModule):
                     any_visible = True
         if not any_visible and rcategories:
             rcategories[0]["visible"] = True
-        vars = {
-            "categories": rcategories,
-            "pcs": self._("pcs"),
-        }
-        errors = character.inventory.constraints_failed()
-        if errors:
-            vars["error"] = u"%s" % (u"".join([u"<div>%s</div>" % htmlescape(err) for err in errors]))
+        vars["categories"] = rcategories
+        vars["pcs"] = self._("pcs")
         # storing expiration information
         if inv.expired:
             inv.update()
+
+    def inventory_index(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        vars = {}
+        def render(item_type, ritem):
+            menu = []
+            if self.call("script.evaluate-expression", item_type.discardable, {"char": character}, description=self._("Item discardable")):
+                menu.append({"href": "/inventory/discard/%s" % item_type.dna, "html": self._("discard"), "order": 100})
+            self.call("items.menu", character, item_type, menu)
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("html"), y.get("html")))
+            if menu:
+                menu[-1]["lst"] = True
+                ritem["menu"] = menu
+        self.call("inventory.render", character.inventory, vars, render=render)
+        errors = character.inventory.constraints_failed()
+        if errors:
+            vars["error"] = u"%s" % (u"".join([u"<div>%s</div>" % htmlescape(err) for err in errors]))
         vars["title"] = self._("Inventory")
         self.call("game.response_internal", "inventory.html", vars)
 

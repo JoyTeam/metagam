@@ -1,4 +1,10 @@
-var AdminResponse = Ext.extend(Ext.Panel, {
+var AdminResponse = Ext.extend(Ext.BoxComponent, {
+	border: false,
+	autoWidth: true,
+	region: 'center'
+});
+
+var AdminResponsePanel = Ext.extend(Ext.Panel, {
 	border: false,
 	region: 'center'
 });
@@ -361,8 +367,8 @@ Ext.onReady(function() {
 			{
 				region: 'center',
 				border: false,
-				autoScroll: true,
 				id: 'admin-main',
+				autoScroll: true,
 				bodyCfg: {
 					cls: 'x-panel-body admin-main'
 				},
