@@ -1,0 +1,24 @@
+{
+   PyObject_Free-uninit
+   Memcheck:Addr4
+   fun:PyObject_Free
+   ...
+}
+{
+   PyObject_Free-cond
+   Memcheck:Cond
+   fun:PyObject_Free
+   ...
+}
+{
+   PyObject_Realloc-uninit
+   Memcheck:Addr4
+   fun:PyObject_Realloc
+   ...
+}
+{
+   PyObject_Realloc-cond
+   Memcheck:Cond
+   fun:PyObject_Realloc
+   ...
+}
