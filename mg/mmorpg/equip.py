@@ -197,16 +197,15 @@ class CharacterEquip(ConstructorModule):
             for item_type in self.equipped_items():
                 if item_type.uuid == param:
                     if not item_type.expiration or now <= item_type.expiration:
-                        value += item.get("quantity")
+                        value += 1
         elif aggregate == "cnt_dna":
             # looking for item dna quantity
-            item_type, dna_suffix = dna_parse(param)
             value = 0
             now = self.now()
             for item_type in self.equipped_items():
                 if item_type.dna == param:
                     if not item_type.expiration or now <= item_type.expiration:
-                        value += item.get("quantity")
+                        value += 1
         else:
             # looking for items parameters
             if aggregate == "sum":
@@ -798,6 +797,7 @@ class Equip(ConstructorModule):
             with self.lock([inv.lock_key]):
                 equip.validate()
                 inv.store()
+            character.name_invalidate()
         # rendering layout
         for iface in self.interfaces():
             if iface["id"] == iface_id:
@@ -995,7 +995,8 @@ class Equip(ConstructorModule):
                         equip.equip(slot_id, item_type.dna)
                         equip.validate()
                         inv.store()
-                        self.call("web.redirect", "/interface/character")
+                    character.name_invalidate()
+                    self.call("web.redirect", "/interface/character")
         character.error(self._("This slot is currently unavailable"))
         self.call("web.redirect", "/interface/character")
 
@@ -1015,6 +1016,7 @@ class Equip(ConstructorModule):
                 equip.equip(slot_id, None)
                 equip.validate()
                 inv.store()
+            character.name_invalidate()
         self.call("web.redirect", "/interface/character")
 
     def params_generation(self, cls, obj, params, viewer=None, **kwargs):
