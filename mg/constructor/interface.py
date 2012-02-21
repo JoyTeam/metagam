@@ -1035,7 +1035,7 @@ class Interface(ConstructorModule):
             show_block = valid_blocks.get(block_id)
             if show_block:
                 for btn in btn_list:
-                    if (btn.get("image") and btn["image"].startswith("http://") or btn["image"].startswith("//")) or btn["id"] in generated:
+                    if btn.get("image") and (btn["image"].startswith("http://") or btn["image"].startswith("//")) or btn["id"] in generated:
                         show_btn = btn.copy()
                         assigned_buttons[btn["id"]] = show_btn
                         show_block["buttons"].append(show_btn)
