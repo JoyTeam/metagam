@@ -33,7 +33,7 @@ a:hover, a:active { color: #5d7d00 }
 .chat-roster-charcters { color: #615f5b }
 
 /* INTERNAL */
-#page-internal-body { background: #f6c8ae; color: #4a4845 }
+#page-internal-body, .main-iframe { background: #f6c8ae; color: #4a4845 }
 .game-error { color: #d5351c; font-weight: bold }
 
 /* PROGRESS BARS */

@@ -145,6 +145,7 @@ Game.setup_game_layout = function() {
 			xtype: 'mif',
 			border: false,
 			defaultSrc: '[%main_init%]',
+			cls: 'main-iframe',
 			margins: this.loadMargins('main-content'),
 			flex: 1,
 			frameConfig: {

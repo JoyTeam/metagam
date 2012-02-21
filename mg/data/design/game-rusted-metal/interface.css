@@ -43,7 +43,7 @@ a:hover, a:active { color: #3b7730 }
 .chat-roster-characters { color: #291c0e }
 
 /* INTERNAL */
-#page-internal-body { background: #9e9e86; color: #291c0e }
+#page-internal-body, .main-iframe { background: #9e9e86; color: #291c0e }
 .game-error { color: #c00000; font-weight: bold }
 
 /* PROGRESS BARS */
