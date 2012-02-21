@@ -451,7 +451,7 @@ class Shops(ConstructorModule):
                 # loading character's inventory
                 item_types = []
                 max_quantity = {}
-                for item_type, quantity in character.inventory.items():
+                for item_type, quantity in character.inventory.items(available_only=True):
                     if assortment.get("buy-%s" % item_type.uuid):
                         item_types.append(item_type)
                         max_quantity[item_type.dna] = quantity
@@ -746,6 +746,7 @@ class Shops(ConstructorModule):
                 vars["Submit"] = self._("Buy selected items")
             else:
                 vars["Submit"] = self._("Sell selected items")
+            vars["pcs"] = self._("pcs")
             content = self.call("game.parse_internal", "shop-items-layout.html", vars)
             content = self.call("game.parse_internal", "shop-items.html", vars, content)
         elif mode == "sell":

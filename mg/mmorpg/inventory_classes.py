@@ -193,7 +193,7 @@ class ItemType(Module):
                 raise AttributeError(attr)
 
     def __str__(self):
-        return u"[item %s]" % self.name
+        return "[item %s]" % utf2str(self.name)
     
     __repr__ = __str__
 

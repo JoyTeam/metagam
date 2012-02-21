@@ -18,6 +18,17 @@ class MemberEquipInventory(MemberInventory):
         self.owtype = owtype
         self.uuid = uuid
 
+    def load(self):
+        MemberInventory.load(self)
+        try:
+            delattr(self, "_equipped_cache")
+        except AttributeError:
+            pass
+
+    def _inv_update(self):
+        MemberInventory._inv_update(self)
+        self._equipped(use_cache=False)
+
     def _equip_data(self):
         if not getattr(self, "inv", None):
             self.load()
@@ -30,13 +41,15 @@ class MemberEquipInventory(MemberInventory):
             self.inv.set("equip", eqp)
         return eqp
 
-    def _equipped(self):
-        try:
-            return self._equipped_cache
-        except AttributeError:
-            pass
+    def _equipped(self, use_cache=True):
+        if use_cache:
+            try:
+                return self._equipped_cache
+            except AttributeError:
+                pass
         equip_data = self._equip_data()
         eqp = {}
+        update_equip = False
         for item in self._items():
             dna = dna_join(item.get("type"), item.get("dna"))
             quantity = item.get("quantity")
@@ -47,31 +60,79 @@ class MemberEquipInventory(MemberInventory):
                     if quantity > 0:
                         quantity -= 1
                         eqp[slot_id] = item_type
+                    else:
+                        # if equipped items count is greater than inventory count
+                        # clear some slots
+                        try:
+                            del equip_data["slots"][slot_id]
+                        except KeyError:
+                            pass
+                        update_equip = True
+        if update_equip:
+            self.update_equip_data()
         self._equipped_cache = eqp
         return eqp
 
     def equipped(self, slot_id):
-        return self._equipped().get(slot_id)
+        return self._equipped().get(str(slot_id))
 
     def equip(self, slot_id, dna):
         equip_data = self._equip_data()
-        equip_data["slots"][slot_id] = dna
+        if dna:
+            equip_data["slots"][str(slot_id)] = dna
+        else:
+            try:
+                del equip_data["slots"][str(slot_id)]
+            except KeyError:
+                pass
         self.update_equip_data()
 
     def update_equip_data(self):
         equip_data = self._equip_data()
         dna_cnt = {}
-        for slot_id, dna in equip_data["slots"].iteritems():
-            try:
-                dna_cnt[dna].append(slot_id)
-            except KeyError:
-                dna_cnt[dna] = [slot_id]
+        slots_copy = equip_data["slots"].copy()
+        # looking for items in the slots
+        for slot in self.call("equip.slots"):
+            slot_id = str(slot["id"])
+            dna = slots_copy.get(slot_id)
+            if dna:
+                try:
+                    dna_cnt[dna].append(slot_id)
+                except KeyError:
+                    dna_cnt[dna] = [slot_id]
+                del slots_copy[slot_id]
+        # removing unclaimed slots from equip data
+        for missing_slot_id in slots_copy.keys():
+            del equip_data["slots"][missing_slot_id]
         equip_data["dna"] = dna_cnt
         try:
             delattr(self, "_equipped_cache")
         except AttributeError:
             pass
         self.inv.touch()
+
+    def items(self, available_only=False):
+        items = MemberInventory.items(self, available_only)
+        if available_only:
+            equip_data = self._equip_data()["dna"]
+            new_items = []
+            for item_type, quantity in items:
+                equipped = equip_data.get(item_type.dna)
+                if equipped:
+                    quantity -= len(equipped)
+                if quantity > 0:
+                    new_items.append((item_type, quantity))
+            items = new_items
+        return items
+
+    def find_dna(self, dna):
+        item_type, quantity = MemberInventory.find_dna(self, dna)
+        if not item_type:
+            return None, None
+        quantity -= len(self._equip_data()["dna"].get(dna, []))
+        if quantity <= 0:
+            return None, None
+        return item_type, quantity
 
 class EquipAdmin(ConstructorModule):
     def register(self):
@@ -609,6 +670,7 @@ class Equip(ConstructorModule):
                                 },
                             })
                     # slots
+                    design = None
                     inv = character.inventory
                     for slot in self.slots():
                         if slot.get("iface-%s" % iface_id):
@@ -623,10 +685,29 @@ class Equip(ConstructorModule):
                             }
                             item_type = inv.equipped(slot["id"])
                             if item_type:
+                                if not design:
+                                    design = self.design("gameinterface")
                                 ritem["image"] = {
                                     "src": item_type.image("inventory"),
                                 }
                                 ritem["onclick"] = "return Game.main_open('/unequip/slot/%s');" % slot["id"]
+                                # rendering hint with item parameters
+                                hint_vars = {
+                                    "item": {
+                                        "name": htmlescape(item_type.name),
+                                        "description": item_type.get("description"),
+                                    },
+                                    "hint": self._("Click to unequip"),
+                                }
+                                params = []
+                                self.call("item-types.params-owner-important", item_type, params)
+                                if params:
+                                    params[-1]["lst"] = True
+                                    hint_vars["item"]["params"] = params
+                                ritem["hint"] = {
+                                    "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
+                                    "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
+                                }
                             else:
                                 description = slot.get("description")
                                 if description:
@@ -710,6 +791,7 @@ class Equip(ConstructorModule):
                             else:
                                 inv.equip(slot_id, item_type.dna)
                                 inv.store()
+                                print inv.inv.data
                                 self.call("web.redirect", "/interface/character")
 
         self.call("web.redirect", "/interface/character")
@@ -728,4 +810,5 @@ class Equip(ConstructorModule):
             if inv.equipped(slot_id):
                 inv.equip(slot_id, None)
                 inv.store()
+                print inv.inv.data
         self.call("web.redirect", "/interface/character")

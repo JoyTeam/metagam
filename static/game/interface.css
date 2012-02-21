@@ -200,6 +200,7 @@ area { border: none }
 .quest-finished-name { font-weight: bold }
 
 /* DIALOGS */
+.dialog-container { text-align: center }
 .dialog { text-align: center; padding: 40px; border: solid 1px #808080; margin: 30px 0 30px 0; display: inline-block }
 .dialog-title { font-size: 20px; padding-bottom: 40px }
 .dialog-content { font-size: 16px }
@@ -232,3 +233,10 @@ area { border: none }
 .equip-slot { background-color: #ffffff; position: relative; border: solid #000000 }
 .equip-char-image { position: relative; border: solid #000000 }
 .equip-static-image { position: relative; border: solid #000000 }
+
+/* ITEM HINTS */
+.quantity { color: #008000 }
+.item-hint-table .item-info-name { font-size: 13px }
+.item-hint-table .quantity { color: #80ff80 }
+.item-hint-table .money-amount { color: #80ff80 }
+.item-hint-text { padding: 5px 0 5px 0 }

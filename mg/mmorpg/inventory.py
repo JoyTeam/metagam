@@ -1493,6 +1493,9 @@ class MemberInventory(ConstructorModule):
         self.trans = []
         self.expired = {}
 
+    def _inv_update(self):
+        pass
+
     def store(self):
         # removing expired items
         if self.expired:
@@ -1500,6 +1503,7 @@ class MemberInventory(ConstructorModule):
                 #self._take_dna(dna, None, "expired", performed=expired)
                 self._take_dna(dna, None, "expired")
             self.expired = {}
+        self._inv_update()
         self.inv.store()
         for trans in self.trans:
             trans.store()
@@ -1576,7 +1580,7 @@ class MemberInventory(ConstructorModule):
             self.load()
         return self.inv.get("items")
 
-    def items(self):
+    def items(self, available_only=False):
         lst = self._items()
         item_types = set()
         item_type_params = set()
@@ -2026,7 +2030,7 @@ class Inventory(ConstructorModule):
         categories = self.call("item-types.categories", "inventory")
         # loading all items
         ritems = {}
-        for item_type, quantity in inv.items():
+        for item_type, quantity in inv.items(available_only=True):
             if grep and not grep(item_type):
                 continue
             ritem = {
@@ -2089,7 +2093,7 @@ class Inventory(ConstructorModule):
         vars["categories"] = rcategories
         vars["pcs"] = self._("pcs")
         # storing expiration information
-        if inv.expired:
+        if inv.expired or inv.inv.dirty:
             inv.update()
 
     def inventory_index(self):
