@@ -509,8 +509,8 @@ class Shops(ConstructorModule):
                 }
                 # item parameters
                 params = []
-                self.call("item-types.params-owner-important", item_type, params)
-                params = [par for par in params if par.get("value_raw") and not par.get("price")]
+                self.call("item-types.params-owner-important", item_type, params, viewer=character)
+                params = [par for par in params if par.get("value_raw") and not par.get("price") or par.get("important")]
                 # item category
                 cat = item_type.get("cat-shops")
                 misc = None

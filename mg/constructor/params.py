@@ -59,6 +59,7 @@ class ParamsAdmin(ConstructorModule):
                 param = self.call("%s.param" % self.kind, req.args)
                 if not param:
                     self.call("admin.redirect", "%s/params" % self.kind)
+            lang = self.call("l10n.lang")
             if req.ok():
                 new_param = {}
                 errors = {}
@@ -78,6 +79,11 @@ class ParamsAdmin(ConstructorModule):
                     errors["name"] = self._("This field is mandatory")
                 else:
                     new_param["name"] = name
+                if lang == "ru":
+                    # name_g
+                    name_g = req.param("name_g").strip()
+                    if name_g:
+                        new_param["name_g"] = name_g
                 # visibility
                 if req.param("owner_visible"):
                     new_param["owner_visible"] = True
@@ -159,6 +165,8 @@ class ParamsAdmin(ConstructorModule):
                                 errors["visual_table"] = self._("This field is mandatory")
                             else:
                                 new_param["visual_table"] = visual_table
+                    if mode == 0 or mode == 2:
+                        new_param["visual_plus"] = True if req.param("visual_plus") else False
                 # library
                 if req.param("library_visible"):
                     new_param["library_visible"] = True
@@ -192,6 +200,10 @@ class ParamsAdmin(ConstructorModule):
             fields = [
                 {"name": "code", "label": self._("Parameter code (used in scripting)"), "value": param.get("code")},
                 {"name": "name", "label": self._("Parameter name"), "value": param.get("name")},
+            ]
+            if lang == "ru":
+                fields.append({"name": "name_g", "label": self._("Parameter name in genitive"), "value": param.get("name_g"), "inline": True})
+            fields.extend([
                 {"name": "description", "label": self._("Parameter description (for players)"), "value": param.get("description")},
                 {"name": "owner_visible", "label": self._("Parameter is visible to the owner"), "checked": param.get("owner_visible"), "type": "checkbox"},
                 {"name": "zero_visible", "label": self._("Parameter is visible even if its value is zero"), "checked": param.get("zero_visible"), "type": "checkbox", "condition": "[owner_visible]"},
@@ -210,12 +222,13 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "default", "value": param.get("default", 0), "label": self._("Default value"), "condition": "[type]==0"},
                 {"name": "expression", "value": self.call("script.unparse-expression", param.get("expression")) if param.get("expression") else None, "label": "%s%s" % (self._("Expression"), self.call("script.help-icon-expressions")), "condition": "[type]>0"},
                 {"name": "values_table", "value": "\n".join([u"%s: %s" % (ent[0], ent[1]) for ent in param.get("values_table", [])]), "label": self._("Conversion table (format: min_value - resulting_level). Sample 'experience to level' conversion:<br />0: 1<br />100: 2<br />500: 3<br />3000: 4"), "condition": "[type]==2", "type": "textarea", "remove_label_separator": True},
-                {"type": "header", "html": self._("Parameter visualization")},
+                {"type": "header", "html": self._("Parameter visualization"), "tag": "visualization"},
                 {"type": "combo", "name": "visual_mode", "value": param.get("visual_mode", 0), "values": [
                     (0, self._("Simply show a number")),
                     (1, self._("Show abitrary HTML from the table of values")),
                     (2, self._("Complex template (with number and HTML from the table of values)")),
                 ]},
+                {"name": "visual_plus", "type": "checkbox", "checked": param.get("visual_plus"), "label": self._("Show '+' sign before positive values"), "condition": "[visual_mode] == 0 || [visual_mode] == 2"},
                 {"name": "visual_template", "value": param.get("visual_template"), "label": self._("Value template ({val} &mdash; number, {text} &mdash; text from the table)"), "condition": "[visual_mode]==2"},
                 {"name": "visual_table", "value": "\n".join([u"%s: %s" % (ent[0], ent[1]) for ent in param.get("visual_table", [])]), "label": self._("Table of values (HTML allowed). Syntax:<br />1: recruit<br />2: sergeant<br />3: lieutenant<br />4: major"), "condition": "[visual_mode]>0", "type": "textarea", "remove_label_separator": True},
                 {"type": "header", "html": self._("Library settings")},
@@ -227,7 +240,7 @@ class ParamsAdmin(ConstructorModule):
                 {"name": "api_values", "label": self._("Parameter values are visible in the API"), "checked": param.get("api_values"), "type": "checkbox"},
                 {"name": "api_expression", "label": self._("Parameter expression is visible in the API"), "checked": param.get("api_expression"), "type": "checkbox", "condition": "[type]>0"},
                 {"name": "api_table", "label": self._("Parameter tables are visible in the API"), "checked": param.get("api_table"), "type": "checkbox", "condition": "[type]==2 || [visual_mode]>0"},
-            ]
+            ])
             self.call("admin-%s.params-form-render" % self.kind, param, fields)
             self.call("admin.form", fields=fields)
         rows = []
@@ -359,6 +372,7 @@ class Params(ConstructorModule):
         self.rhook("%s.params-public" % self.kind, self.params_public)
         self.rhook("%s.params-owner-important" % self.kind, self.params_owner_important)
         self.rhook("%s.params-owner-all" % self.kind, self.params_owner_all)
+        self.rhook("%s.library-icon" % self.kind, self.library_icon)
 
     def params(self):
         return self.conf("%s.params" % self.kind, [])
@@ -428,13 +442,18 @@ class Params(ConstructorModule):
     def html(self, param, value):
         visual_mode = param.get("visual_mode")
         if visual_mode == 0:
-            return htmlescape(unicode(value))
+            value = htmlescape(unicode(value))
+            if param.get("visual_plus") and value > 0:
+                value = u"+%s" % value
+            return value
         elif visual_mode == 1 or visual_mode == 2:
             text = None
             for ent in param["visual_table"]:
                 if ent[0] == value:
                     text = ent[1]
                     break
+            if param.get("visual_plus") and value > 0:
+                value = u"+%s" % value
             if text is None:
                 return value
             if visual_mode == 1:

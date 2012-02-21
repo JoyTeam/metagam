@@ -8,7 +8,7 @@ re_parse_dimensions = re.compile(r'^(\d+)x(\d+)$')
 re_slot_token = re.compile(r'^slot-(\d+):(-?\d+),(-?\d+),(\d+),(\d+)$')
 re_charimage_token = re.compile(r'^charimage:(-?\d+),(-?\d+),(\d+),(\d+)$')
 re_staticimage_token = re.compile(r'^staticimage-([a-f0-9]{32})\((//.+)\):(-?\d+),(-?\d+),(\d+),(\d+)$')
-
+re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_equip_slot = re.compile(r'^(\d+)$')
 re_equip_slot_item = re.compile(r'^(\d+)/([a-f0-9]{32}|[a-f0-9]{32}_[a-f0-9]{32})$')
 
@@ -69,25 +69,11 @@ class MemberEquipInventory(MemberInventory):
                             pass
                         update_equip = True
         if update_equip:
-            self.update_equip_data()
+            self._update_equip_data()
         self._equipped_cache = eqp
         return eqp
 
-    def equipped(self, slot_id):
-        return self._equipped().get(str(slot_id))
-
-    def equip(self, slot_id, dna):
-        equip_data = self._equip_data()
-        if dna:
-            equip_data["slots"][str(slot_id)] = dna
-        else:
-            try:
-                del equip_data["slots"][str(slot_id)]
-            except KeyError:
-                pass
-        self.update_equip_data()
-
-    def update_equip_data(self):
+    def _update_equip_data(self):
         equip_data = self._equip_data()
         dna_cnt = {}
         slots_copy = equip_data["slots"].copy()
@@ -133,6 +119,146 @@ class MemberEquipInventory(MemberInventory):
         if quantity <= 0:
             return None, None
         return item_type, quantity
+
+class CharacterEquip(ConstructorModule):
+    def __init__(self, character):
+        ConstructorModule.__init__(self, character.app(), "mg.mmorpg.equip.CharacterEquip")
+        self.character = character
+        self.inv = character.inventory
+
+    def equipped_items(self):
+        return self.inv._equipped().values()
+
+    def equipped(self, slot_id):
+        return self.inv._equipped().get(str(slot_id))
+
+    def equip(self, slot_id, dna):
+        equip_data = self.inv._equip_data()
+        if dna:
+            equip_data["slots"][str(slot_id)] = dna
+        else:
+            try:
+                del equip_data["slots"][str(slot_id)]
+            except KeyError:
+                pass
+        self.inv._update_equip_data()
+        self._invalidate()
+        self.inv._invalidate()
+        self.character._invalidate()
+
+    @property
+    def char_params(self):
+        try:
+            return self._char_params
+        except AttributeError:
+            pass
+        params = self.call("characters.params")
+        self._char_params = params
+        return params
+
+    def can_equip(self, item_type):
+        char = self.character
+        for param in self.char_params:
+            key = "min-%s" % param["code"]
+            min_val = item_type.get(key)
+            if min_val is not None:
+                val = char.param(param["code"])
+                if val is None:
+                    return False
+                if val < min_val:
+                    return False
+        return True
+
+    def script_attr(self, attr, handle_exceptions=True):
+        # aggregates
+        m = re_aggregate.match(attr)
+        if m:
+            aggregate, param = m.group(1, 2)
+            return self.aggregate(aggregate, param, handle_exceptions)
+        raise AttributeError(attr)
+
+    def aggregate(self, aggregate, param, handle_exceptions=True):
+        key = "%s-%s" % (aggregate, param)
+        # trying to return cached value
+        try:
+            cache = self._item_aggregate_cache
+        except AttributeError:
+            cache = {}
+            self._item_aggregate_cache = cache
+        try:
+            return cache[key]
+        except KeyError:
+            pass
+        # cache miss. evaluating
+        if aggregate == "cnt":
+            # looking for item types quantity
+            value = 0
+            now = self.now()
+            for item_type in self.equipped_items():
+                if item_type.uuid == param:
+                    if not item_type.expiration or now <= item_type.expiration:
+                        value += item.get("quantity")
+        elif aggregate == "cnt_dna":
+            # looking for item dna quantity
+            item_type, dna_suffix = dna_parse(param)
+            value = 0
+            now = self.now()
+            for item_type in self.equipped_items():
+                if item_type.dna == param:
+                    if not item_type.expiration or now <= item_type.expiration:
+                        value += item.get("quantity")
+        else:
+            # looking for items parameters
+            if aggregate == "sum":
+                value = 0
+            else:
+                value = None
+            for item_type in self.equipped_items():
+                v = nn(item_type.param(param, handle_exceptions))
+                if v is not None:
+                    if value is None:
+                        value = v
+                    elif aggregate == "min":
+                        if v < value:
+                            value = v
+                    elif aggregate == "max":
+                        if v > value:
+                            value = v
+                    elif aggregate == "sum":
+                        value += v
+        # storing in the cache
+        cache[key] = value
+        return value
+
+    def _invalidate(self):
+        try:
+            delattr(self, "_item_aggregate_cache")
+        except AttributeError:
+            pass
+
+    def has_invalid_items(self):
+        for slot in self.call("equip.slots"):
+            item_type = self.equipped(slot["id"])
+            if item_type and not self.can_equip(item_type):
+                return True
+        return False
+
+    def validate(self):
+        "Validate character equip"
+        retry = True
+        changed = False
+        while retry:
+            retry = False
+            for slot in self.call("equip.slots"):
+                item_type = self.equipped(slot["id"])
+                if item_type and not self.can_equip(item_type):
+                    self.equip(slot["id"], None)
+                    self._invalidate()
+                    self.inv._invalidate()
+                    self.character._invalidate()
+                    retry = True
+                    changed = True
+        return changed
 
 class EquipAdmin(ConstructorModule):
     def register(self):
@@ -273,6 +399,11 @@ class EquipAdmin(ConstructorModule):
                                 slot[key_size] = [width, height]
                     else:
                         slot[key] = False
+                # visible
+                char = self.character(req.user())
+                slot["visible"] = self.call("script.admin-expression", "visible", errors, globs={"char": char})
+                # enabled
+                slot["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
                 # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -292,6 +423,8 @@ class EquipAdmin(ConstructorModule):
                 {"label": self._("Sorting order"), "name": "order", "value": slot.get("order"), "inline": True},
                 {"label": self._("Slot name"), "name": "name", "value": slot.get("name")},
                 {"label": self._("Description (ex: Slot for summoning scrolls)"), "name": "description", "value": slot.get("description")},
+                {"label": self._("Visibility condition") + self.call("script.help-icon-expressions"), "name": "visible", "value": self.call("script.unparse-expression", slot.get("visible", 1))},
+                {"label": self._("Availability condition") + self.call("script.help-icon-expressions"), "name": "available", "value": self.call("script.unparse-expression", slot.get("available", 1))},
                 {"type": "header", "html": self._("slot///Visibility in the interfaces")},
             ]
             for iface in interfaces:
@@ -344,13 +477,32 @@ class EquipAdmin(ConstructorModule):
         while col < len(slots):
             slot = slots[col]
             key = "equip-%s" % slot["id"]
-            fields.insert(pos, {"name": key, "type": "checkbox", "label": slot["name"], "checked": obj.get(key), "inline": col % cols, "condition": "[equip]"})
+            fields.insert(pos, {"name": key, "type": "checkbox", "label": "%s (%s)" % (slot["name"], slot["id"]), "checked": obj.get(key), "inline": col % cols, "condition": "[equip]"})
             pos += 1
             col += 1
         while col % cols:
             fields.insert(pos, {"type": "empty", "inline": True})
             pos += 1
             col += 1
+        # requirements
+        fields.insert(pos, {"type": "header", "html": self._("Minimal requirements to wear this item")})
+        pos += 1
+        params = self.call("characters.params")
+        if params:
+            col = 0
+            cols = 3
+            for param in params:
+                key = "min-%s" % param["code"]
+                fields.insert(pos, {"name": key, "label": htmlescape(param["name"]), "value": obj.get(key), "inline": col % cols, "condition": "[equip]"})
+                pos += 1
+                col += 1
+            while col % cols:
+                fields.insert(pos, {"type": "empty", "inline": True})
+                pos += 1
+                col += 1
+        else:
+            fields.insert(pos, {"type": "html", "html": self._("Characters parameters are not defined")})
+            pos += 1
 
     def item_type_form_validate(self, obj, errors):
         req = self.req()
@@ -360,6 +512,16 @@ class EquipAdmin(ConstructorModule):
                 key = "equip-%s" % slot["id"]
                 if req.param(key):
                     obj.set(key, True)
+                else:
+                    obj.delkey(key)
+            for param in self.call("characters.params"):
+                key = "min-%s" % param["code"]
+                val = req.param(key).strip()
+                if val != "":
+                    if not valid_number(val):
+                        errors[key] = self._("This is not a valid number")
+                    else:
+                        obj.set(key, nn(val))
                 else:
                     obj.delkey(key)
         else:
@@ -597,6 +759,10 @@ class Equip(ConstructorModule):
         self.rhook("ext-equip.slot", self.equip_slot, priv="logged")
         self.rhook("ext-unequip.slot", self.unequip_slot, priv="logged")
         self.rhook("inventory.get", self.inventory_get, priority=10)
+        self.rhook("item-types.params-owner-important", curry(self.params_generation, "page"), priority=-20)
+        self.rhook("item-types.params-owner-all", curry(self.params_generation, "page"), priority=-20)
+        self.rhook("item-types.params-public", curry(self.params_generation, "info"), priority=-20)
+        self.rhook("equip.get", self.equip_get)
 
     def child_modules(self):
         return ["mg.mmorpg.equip.EquipAdmin"]
@@ -625,6 +791,14 @@ class Equip(ConstructorModule):
         self.render_layout("char-owner", character, vars)
 
     def render_layout(self, iface_id, character, vars):
+        # validating character equip
+        equip = character.equip
+        inv = character.inventory
+        if character.equip.has_invalid_items():
+            with self.lock([inv.lock_key]):
+                equip.validate()
+                inv.store()
+        # rendering layout
         for iface in self.interfaces():
             if iface["id"] == iface_id:
                 layout = self.conf("equip.layout-%s" % iface_id)
@@ -671,52 +845,68 @@ class Equip(ConstructorModule):
                             })
                     # slots
                     design = None
-                    inv = character.inventory
+                    equip = character.equip
                     for slot in self.slots():
-                        if slot.get("iface-%s" % iface_id):
-                            size = slot.get("ifsize-%s" % iface_id)
-                            ritem = {
-                                "x": layout.get("slot-%s-x" % slot["id"], 0) + offset_x,
-                                "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
-                                "width": size[0],
-                                "height": size[1],
-                                "cls": "clickable equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
-                                "border": slot_border,
+                        # visibility of the slot in this interface
+                        if not slot.get("iface-%s" % iface_id):
+                            continue
+                        item_type = equip.equipped(slot["id"])
+                        # global visibility of the slot
+                        if not item_type and not self.call("script.evaluate-expression", slot.get("visible", 1), {"char": character}, description=self._("Visibility of slot '%s'") % slot["name"]):
+                            continue
+                        # rendering
+                        size = slot.get("ifsize-%s" % iface_id)
+                        ritem = {
+                            "x": layout.get("slot-%s-x" % slot["id"], 0) + offset_x,
+                            "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
+                            "width": size[0],
+                            "height": size[1],
+                            "cls": "clickable equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
+                            "border": slot_border,
+                        }
+                        if item_type:
+                            if not design:
+                                design = self.design("gameinterface")
+                            ritem["image"] = {
+                                "src": item_type.image("inventory"),
                             }
-                            item_type = inv.equipped(slot["id"])
-                            if item_type:
-                                if not design:
-                                    design = self.design("gameinterface")
-                                ritem["image"] = {
-                                    "src": item_type.image("inventory"),
-                                }
-                                ritem["onclick"] = "return Game.main_open('/unequip/slot/%s');" % slot["id"]
-                                # rendering hint with item parameters
-                                hint_vars = {
-                                    "item": {
-                                        "name": htmlescape(item_type.name),
-                                        "description": item_type.get("description"),
-                                    },
-                                    "hint": self._("Click to unequip"),
-                                }
-                                params = []
-                                self.call("item-types.params-owner-important", item_type, params)
-                                if params:
-                                    params[-1]["lst"] = True
-                                    hint_vars["item"]["params"] = params
-                                ritem["hint"] = {
-                                    "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
-                                    "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
-                                }
-                            else:
-                                description = slot.get("description")
-                                if description:
-                                    ritem["hint"] = {
-                                        "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
-                                        "html": jsencode(description),
-                                    }
+                            ritem["onclick"] = "return Game.main_open('/unequip/slot/%s');" % slot["id"]
+                            # rendering hint with item parameters
+                            hint_vars = {
+                                "item": {
+                                    "name": htmlescape(item_type.name),
+                                    "description": item_type.get("description"),
+                                },
+                                "hint": self._("Click to unequip"),
+                            }
+                            params = []
+                            self.call("item-types.params-owner-important", item_type, params)
+                            if params:
+                                for param in params:
+                                    if param.get("library_icon"):
+                                        del param["library_icon"]
+                                params[-1]["lst"] = True
+                                hint_vars["item"]["params"] = params
+                            ritem["hint"] = {
+                                "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
+                                "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
+                            }
+                        else:
+                            description = slot.get("description")
+                            ritem["hint"] = {
+                                "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
+                            }
+                            if description:
+                                ritem["hint"]["html"] = jsencode(description)
+                            if self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
                                 ritem["onclick"] = "return Game.main_open('/equip/slot/%s');" % slot["id"]
-                            items.append(ritem)
+                            else:
+                                ritem["cls"] += " equip-slot-disabled"
+                                if description:
+                                    ritem["hint"]["html"] = u"%s<br />%s" % (jsencode(description), self._("Slot is currently unavailable"))
+                                else:
+                                    ritem["hint"]["html"] = self._("Slot is currently unavailable")
+                        items.append(ritem)
                     cur_y = 0
                     for item in items:
                         item["x"] = item["x"] - layout["min_x"] - item["border"]
@@ -740,16 +930,35 @@ class Equip(ConstructorModule):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
+        inv = character.inventory 
+        equip = character.equip
+        # parsing request
         m = re_equip_slot.match(req.args)
         if m:
             slot_id = m.group(1)
             slot_id = int(slot_id)
-            for slot in self.call("equip.slots"):
-                if slot["id"] == slot_id:
+            dna = None
+        else:
+            m = re_equip_slot_item.match(req.args)
+            if m:
+                slot_id, dna = m.group(1, 2)
+                slot_id = int(slot_id)
+            else:
+                self.call("web.redirect", "/interface/character")
+        # loading slot data
+        for slot in self.call("equip.slots"):
+            if slot["id"] == slot_id:
+                # visibility and availability of the slot
+                if not self.call("script.evaluate-expression", slot.get("visible", 1), {"char": character}, description=self._("Visibility of slot '%s'") % slot["name"]):
+                    break
+                if not self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
+                    break
+                def grep(item_type):
+                    return item_type.get("equip") and item_type.get("equip-%s" % slot_id) and equip.can_equip(item_type)
+                # actions
+                if dna is None:
                     # looking for items to dress
                     vars = {}
-                    def grep(item_type):
-                        return item_type.get("equip") and item_type.get("equip-%s" % slot_id)
                     def render(item_type, ritem):
                         menu = []
                         menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": self._("item///wear"), "order": 10})
@@ -757,7 +966,7 @@ class Equip(ConstructorModule):
                             menu[-1]["lst"] = True
                             ritem["menu"] = menu
                         ritem["onclick"] = "return parent.Game.main_open('/equip/slot/%s/%s')" % (slot["id"], item_type.dna)
-                    self.call("inventory.render", character.inventory, vars, grep=grep, render=render)
+                    self.call("inventory.render", inv, vars, grep=grep, render=render, viewer=character)
                     vars["title"] = slot.get("description") or slot["name"]
                     vars["menu_left"] = [
                         {
@@ -772,28 +981,22 @@ class Equip(ConstructorModule):
                         character.error(self._("You don't have items to fit into this slot"))
                         self.call("web.redirect", "/interface/character")
                     self.call("game.response_internal", "inventory.html", vars)
-        else:
-            m = re_equip_slot_item.match(req.args)
-            if m:
-                slot_id, dna = m.group(1, 2)
-                slot_id = int(slot_id)
-                for slot in self.call("equip.slots"):
-                    if slot["id"] == slot_id:
-                        character = self.character(req.user())
-                        inv = character.inventory
-                        with self.lock([inv.lock_key]):
-                            if inv.equipped(slot_id):
-                                self.call("web.redirect", "/interface/character")
-                            item_type, quantity = inv.find_dna(dna)
-                            if not quantity:
-                                character.error(self._("No such item"))
-                                self.call("web.redirect", "/interface/character")
-                            else:
-                                inv.equip(slot_id, item_type.dna)
-                                inv.store()
-                                print inv.inv.data
-                                self.call("web.redirect", "/interface/character")
-
+                else:
+                    with self.lock([inv.lock_key]):
+                        if equip.equipped(slot_id):
+                            self.call("web.redirect", "/interface/character")
+                        item_type, quantity = inv.find_dna(dna)
+                        if not quantity:
+                            character.error(self._("No such item"))
+                            self.call("web.redirect", "/interface/character")
+                        if not grep(item_type):
+                            character.error(self._("You can't equip this item"))
+                            self.call("web.redirect", "/interface/character")
+                        equip.equip(slot_id, item_type.dna)
+                        equip.validate()
+                        inv.store()
+                        self.call("web.redirect", "/interface/character")
+        character.error(self._("This slot is currently unavailable"))
         self.call("web.redirect", "/interface/character")
 
     def unequip_slot(self):
@@ -806,9 +1009,37 @@ class Equip(ConstructorModule):
             slot_id = int(slot_id)
         character = self.character(req.user())
         inv = character.inventory
+        equip = character.equip
         with self.lock([inv.lock_key]):
-            if inv.equipped(slot_id):
-                inv.equip(slot_id, None)
+            if equip.equipped(slot_id):
+                equip.equip(slot_id, None)
+                equip.validate()
                 inv.store()
-                print inv.inv.data
         self.call("web.redirect", "/interface/character")
+
+    def params_generation(self, cls, obj, params, viewer=None, **kwargs):
+        if obj.get("equip"):
+            # requirements
+            need_header = True
+            for param in self.call("characters.params"):
+                key = "min-%s" % param["code"]
+                min_val = obj.get(key)
+                if min_val is not None:
+                    if need_header:
+                        params.append({
+                            "header": self._("Requirements"),
+                            "important": True,
+                        })
+                        need_header = False
+                    value_html = self.call("characters.param-html", param, min_val)
+                    if viewer and viewer.param(param["code"]) < min_val:
+                        value_html = u'<span class="not-enough">%s</span>' % value_html
+                    params.append({
+                        "value_raw": min_val,
+                        "name": '<span class="item-types-%s-name">%s</span>' % (cls, htmlescape(param["name"])),
+                        "value": '<span class="item-types-%s-value">%s</span>' % (cls, value_html),
+                        "library_icon": self.call("characters.library-icon", param),
+                    })
+
+    def equip_get(self, character):
+        return CharacterEquip(character)

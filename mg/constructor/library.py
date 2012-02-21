@@ -59,7 +59,7 @@ class Library(ConstructorModule):
 
     def icon(self, uri):
         img = self.call("icon.get", "library-icon", default_icon="/st-mg/icons/library-icon.png")
-        return ' <a href="%s" target="_blank"><img src="%s" alt="?" /></a>' % (uri, img)
+        return ' <a href="%s" target="_blank"><img src="%s" alt="?" class="library-icon" /></a>' % (uri, img)
 
     def button_blocks(self, blocks):
         blocks.append({"id": "library", "title": self._("Library"), "class": "library"})

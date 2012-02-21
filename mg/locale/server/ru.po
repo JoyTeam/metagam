@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-21 15:13+0300\n"
+"PO-Revision-Date: 2012-02-21 18:36+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -567,6 +567,9 @@ msgstr "Автопродление: выключено"
 msgid "Auto prolong: enabled"
 msgstr "Автопродление: включено"
 
+msgid "Availability condition"
+msgstr "Условие доступности"
+
 msgid "Availability of class variant '{variant}' in class '{cls}'"
 msgstr "Доступность варианта \"{variant}\" класса \"{cls}\""
 
@@ -577,6 +580,10 @@ msgstr "Доступность глобального интерфейса \"%s\
 #, python-format
 msgid "Availability of location special function '%s'"
 msgstr "Доступность спецфункции \"%s\""
+
+#, python-format
+msgid "Availability of slot '%s'"
+msgstr "Доступность слота \"%s\""
 
 msgid "Availability of the function for the character"
 msgstr "Доступность функции для персонажа"
@@ -1055,6 +1062,9 @@ msgstr "Документация на образы персонажей"
 
 msgid "Characters parameters"
 msgstr "Параметры персонажей"
+
+msgid "Characters parameters are not defined"
+msgstr "Параметры персонажей не определены"
 
 msgid "Chargeback"
 msgstr "Возврат платежа"
@@ -3729,6 +3739,9 @@ msgstr "Минимальная длина пароля - 6 символов"
 msgid "Minimal quantity is %d"
 msgstr "Минимальное количество - %d"
 
+msgid "Minimal requirements to wear this item"
+msgstr "Минимальные требования, чтобы надеть этот предмет"
+
 msgid "Minimal size is 16x16"
 msgstr "Минимальный размер - 16x16"
 
@@ -4378,6 +4391,9 @@ msgstr "Параметр видим владельцу"
 
 msgid "Parameter name"
 msgstr "Название параметра"
+
+msgid "Parameter name in genitive"
+msgstr "Название параметра в родительном падеже"
 
 msgid "Parameter stored in the database"
 msgstr "Параметр сохраняется в базе данных"
@@ -5062,6 +5078,9 @@ msgstr "Требовать активацию e-mail"
 msgid "Required design files"
 msgstr "Файлы, требуемые для оформления"
 
+msgid "Requirements"
+msgstr "Требования"
+
 msgid "Restraint setting mode"
 msgstr "Режим выдачи наказаний"
 
@@ -5427,6 +5446,9 @@ msgstr "Короткое название вашей игры (напр: Веч�
 msgid "Should online/offline messages be visible worldwide"
 msgstr "Должны ли сообщения о входах/выходах из игры быть видимыми на весь мир"
 
+msgid "Show '+' sign before positive values"
+msgstr "Показывать знак \"+\" перед положительными значениями"
+
 msgid "Show abitrary HTML from the table of values"
 msgstr "Показать произвольный HTML из таблицы значений"
 
@@ -5520,6 +5542,9 @@ msgstr "ID слота должен быть целым числом в диап�
 
 msgid "Slot dimensions (ex: 60x60)"
 msgstr "Размеры слота (например: 60x60)"
+
+msgid "Slot is currently unavailable"
+msgstr "В данный момент слот недоступен"
 
 msgid "Slot name"
 msgstr "Название слота"
@@ -6121,6 +6146,9 @@ msgstr "Это не ZIP-архив"
 msgid "This is not a number"
 msgstr "Это не число"
 
+msgid "This is not a valid number"
+msgstr "Это не число"
+
 msgid "This is the public offer"
 msgstr "Это публичная оферта"
 
@@ -6170,6 +6198,9 @@ msgstr "Этот магазин скупает товары"
 
 msgid "This shop sells goods"
 msgstr "Этот магазин продаёт товары"
+
+msgid "This slot is currently unavailable"
+msgstr "Этот слот в данный момент недоступен"
 
 msgid "This user can't have a name"
 msgstr "Этот пользователь не может иметь имени"
@@ -6650,8 +6681,15 @@ msgstr "Просмотр досье пользователей"
 msgid "Viewing users' modifiers"
 msgstr "Просмотр модификаторов пользователей"
 
+msgid "Visibility condition"
+msgstr "Условие видимости"
+
 msgid "Visibility condition (empty field means 'always visible')"
 msgstr "Условие видимости (пустое поле означает \"всегда видим\")"
+
+#, python-format
+msgid "Visibility of slot '%s'"
+msgstr "Видимость слота \"%s\""
 
 msgid "Visible in public (show on the public information page)"
 msgstr "Публично видимый (показывается на общедоступной странице информации)"
@@ -6977,6 +7015,9 @@ msgstr "Вы не можете изменять курс обмена реаль
 
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
+
+msgid "You can't equip this item"
+msgstr "Вы не можете надеть этот предмет"
 
 msgid "You can't remove real money currency after game publication"
 msgstr "Вы не можете удалить реальную валюту после публикации игры"

@@ -1573,7 +1573,7 @@ class MemberInventory(ConstructorModule):
             trans.set(k, v)
         trans.set("performed", kwargs.get("performed") or self.now())
         self.trans.append(trans)
-        self.reset_caches()
+        self._invalidate()
 
     def _items(self):
         if not getattr(self, "inv", None):
@@ -1706,7 +1706,7 @@ class MemberInventory(ConstructorModule):
                     trans.set(k, v)
                 trans.set("performed", kwargs.get("performed") or self.now())
                 self.trans.append(trans)
-                self.reset_caches()
+                self._invalidate()
         return deleted
 
     def take_dna(self, *args, **kwargs):
@@ -1753,7 +1753,7 @@ class MemberInventory(ConstructorModule):
                         trans.set(k, v)
                     trans.set("performed", kwargs.get("performed") or self.now())
                     self.trans.append(trans)
-                    self.reset_caches()
+                    self._invalidate()
                     return self.item_type(item_type, dna_suffix, item.get("mod")), quantity
                 return None, None
         return None, None
@@ -1780,7 +1780,7 @@ class MemberInventory(ConstructorModule):
     
     __repr__ = __str__
 
-    def reset_caches(self):
+    def _invalidate(self):
         try:
             del self._item_aggregate_cache
         except AttributeError:
@@ -2024,7 +2024,7 @@ class Inventory(ConstructorModule):
         cache[kind] = uri
         return uri
 
-    def inventory_render(self, inv, vars, grep=None, render=None):
+    def inventory_render(self, inv, vars, grep=None, render=None, viewer=None):
         req = self.req()
         # loading list of categories
         categories = self.call("item-types.categories", "inventory")
@@ -2043,8 +2043,8 @@ class Inventory(ConstructorModule):
                 "order": item_type.get("order", 0),
             }
             params = []
-            self.call("item-types.params-owner-important", item_type, params)
-            params = [par for par in params if par.get("value_raw")]
+            self.call("item-types.params-owner-important", item_type, params, viewer=viewer)
+            params = [par for par in params if par.get("value_raw") or par.get("important")]
             if params:
                 params[-1]["lst"] = True
                 ritem["params"] = params
@@ -2110,7 +2110,7 @@ class Inventory(ConstructorModule):
             if menu:
                 menu[-1]["lst"] = True
                 ritem["menu"] = menu
-        self.call("inventory.render", character.inventory, vars, render=render)
+        self.call("inventory.render", character.inventory, vars, render=render, viewer=character)
         errors = character.inventory.constraints_failed()
         if errors:
             vars["error"] = u"%s" % (u"".join([u"<div>%s</div>" % htmlescape(err) for err in errors]))

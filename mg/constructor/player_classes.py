@@ -326,6 +326,8 @@ class Character(Module):
             return 1 if perms and len(perms) else 0
         elif attr == "inv":
             return self.inventory
+        elif attr == "equip":
+            return self.equip
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -378,6 +380,12 @@ class Character(Module):
             self._restraints = restraints
             return restraints
 
+    def _invalidate(self):
+        try:
+            delattr(self, "_param_cache")
+        except AttributeError:
+            pass
+
     def param(self, key, handle_exceptions=True):
         try:
             cache = self._param_cache
@@ -410,6 +418,14 @@ class Character(Module):
         except AttributeError:
             self._inventory = self.call("inventory.get", "char", self.uuid)
             return self._inventory
+
+    @property
+    def equip(self):
+        try:
+            return self._equip
+        except AttributeError:
+            self._equip = self.call("equip.get", self)
+            return self._equip
 
     @property
     def quests(self):

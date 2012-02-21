@@ -11,7 +11,7 @@
 			<a name="[%item.dna%]"></a>
 			<div class="item-info-name">[%item.name%][%if item.quantity%]&nbsp;&mdash; <span class="value quantity">[%item.quantity%]</span> [%+ pcs%][%end%]</div>
 			[%if item.params%]<div class="item-params">
-				[%foreach ent in item.params%][%unless ent.header%]
+				[%foreach ent in item.params%][%if ent.header%]<div class="item-param-header">[%ent.header%]</div>[%else%]
 				<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span>[%ent.library_icon%]</div>
 				[%end%][%end%]
 			</div>[%end%]

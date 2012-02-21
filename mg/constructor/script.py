@@ -400,7 +400,7 @@ class ScriptEngine(ConstructorModule):
                 raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             try:
                 attval = getter(val[2], handle_exceptions=False)
-            except AttributeError:
+            except AttributeError as e:
                 raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=val[2]), env)
             return attval
         elif cmd == "index":
