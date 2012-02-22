@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-21 18:36+0300\n"
+"PO-Revision-Date: 2012-02-22 11:09+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3155,6 +3155,9 @@ msgstr "Похоже, что в вашем посте есть код скрип
 msgid "Italic"
 msgstr "Курсив"
 
+msgid "Item '{item_name}' unequipped. {error}"
+msgstr "{item_name} снимается. {error}"
+
 msgid "Item / DNA"
 msgstr "Предмет / ДНК"
 
@@ -3740,7 +3743,7 @@ msgid "Minimal quantity is %d"
 msgstr "Минимальное количество - %d"
 
 msgid "Minimal requirements to wear this item"
-msgstr "Минимальные требования, чтобы надеть этот предмет"
+msgstr "Минимальные требования, чтобы носить этот предмет"
 
 msgid "Minimal size is 16x16"
 msgstr "Минимальный размер - 16x16"
@@ -5173,6 +5176,9 @@ msgstr "Схема '%s' не поддерживается"
 msgid "Screenshots"
 msgstr "Скриншоты"
 
+msgid "Script condition whether this item has 'wear' button"
+msgstr "Скриптовое условие, есть ли у этого предмета кнопка \"надеть\""
+
 #, python-format
 msgid "Script unparse error. Expected list, received %s"
 msgstr "Ошибка при восстановлении скрипта. Ожидался список, получено: %s"
@@ -6155,6 +6161,15 @@ msgstr "Это публичная оферта"
 msgid "This item action is currently unavailable"
 msgstr "Это действие над предметом в данный момент недоступно"
 
+msgid "This item has no 'wear' button"
+msgstr "У этого предмета нет кнопки \"надеть\""
+
+msgid "This item is not wearable"
+msgstr "Этот предмет нельзя надеть"
+
+msgid "This item is not wearable in this slot"
+msgstr "Этот предмет нельзя надеть в этот слот"
+
 msgid "This item is wearable"
 msgstr "Предмет надеваемый"
 
@@ -6770,6 +6785,9 @@ msgstr "Каков ваш пол?"
 msgid "Whether class '%s' is required"
 msgstr "Требуется ли выбор класса \"%s\""
 
+msgid "Whether item {item} ({name}) is wearable"
+msgstr "Является ли предмет {item} ({name}) надеваемым"
+
 msgid "Whether selection of this class is required for the character (0 - never require, 1 - require for everybody)"
 msgstr "В каком случае требовать от игрока выбор этого класса (0 - никогда не требовать, 1 - требовать для всех)"
 
@@ -7016,9 +7034,6 @@ msgstr "Вы не можете изменять курс обмена реаль
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
 
-msgid "You can't equip this item"
-msgstr "Вы не можете надеть этот предмет"
-
 msgid "You can't remove real money currency after game publication"
 msgstr "Вы не можете удалить реальную валюту после публикации игры"
 
@@ -7046,6 +7061,12 @@ msgstr "У вас нет доступных вариантов \"%s\", из ко
 
 msgid "You have no items for sell to this shop"
 msgstr "У вас нет предметов, которые можно продать в этот магазин"
+
+msgid "You have no slots to wear this item"
+msgstr "У вас нет слотов, в которые можно поместить этот предмет"
+
+msgid "You have no such items"
+msgstr "У вас нет таких предметов"
 
 msgid "You have not configured real money currency yet. Before launching your game you must configure its real money system&nbsp;&mdash; set up a currency and set it the 'real money' attribute."
 msgstr "Вы ещё не настроили валюту, продаваемую за реальные деньги. Перед запуском игры вы должны настроить её систему реальных денег&nbsp;&mdash; настройте валюту и поставьте ей галочку \"реальные деньги\"."
@@ -7754,6 +7775,9 @@ msgstr "открываем диалог"
 msgid "paidservice///{name} for {{period}}"
 msgstr "{name} на {{period_a}}"
 
+msgid "param///{name} is not enough to wear {item_name}"
+msgstr "Недостаточно {name_g}, чтобы носить {item_name_a}"
+
 msgid "parameter"
 msgstr "параметр"
 
@@ -8169,6 +8193,9 @@ msgstr "просмотреть"
 msgid "viewing"
 msgstr "просмотр"
 
+msgid "wear"
+msgstr "надеть"
+
 msgid "went///offline"
 msgstr "из игры"
 
@@ -8253,6 +8280,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "You can't equip this item"
+#~ msgstr "Вы не можете надеть этот предмет"
 #~ msgid "New layout stored"
 #~ msgstr "Новая разметка сохранена"
 #~ msgid "dimpresent///ok"

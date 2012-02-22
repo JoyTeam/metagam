@@ -11,6 +11,7 @@ re_staticimage_token = re.compile(r'^staticimage-([a-f0-9]{32})\((//.+)\):(-?\d+
 re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_equip_slot = re.compile(r'^(\d+)$')
 re_equip_slot_item = re.compile(r'^(\d+)/([a-f0-9]{32}|[a-f0-9]{32}_[a-f0-9]{32})$')
+re_equip_item = re.compile(r'^([a-z0-9\-]+)/([a-f0-9_]+)$')
 
 class MemberEquipInventory(MemberInventory):
     def __init__(self, app, owtype, uuid):
@@ -156,18 +157,18 @@ class CharacterEquip(ConstructorModule):
         self._char_params = params
         return params
 
-    def can_equip(self, item_type):
+    def cannot_equip(self, item_type):
         char = self.character
         for param in self.char_params:
             key = "min-%s" % param["code"]
             min_val = item_type.get(key)
             if min_val is not None:
                 val = char.param(param["code"])
-                if val is None:
-                    return False
-                if val < min_val:
-                    return False
-        return True
+                if val is None or val < min_val:
+                    name = param.get("name")
+                    name_g = param.get("name_g", name)
+                    return self._("param///{name} is not enough to wear {item_name}").format(name=name, name_g=name_g, item_name=item_type.name, item_name_a=item_type.name_a)
+        return None
 
     def script_attr(self, attr, handle_exceptions=True):
         # aggregates
@@ -238,7 +239,7 @@ class CharacterEquip(ConstructorModule):
     def has_invalid_items(self):
         for slot in self.call("equip.slots"):
             item_type = self.equipped(slot["id"])
-            if item_type and not self.can_equip(item_type):
+            if item_type and self.cannot_equip(item_type):
                 return True
         return False
 
@@ -250,13 +251,16 @@ class CharacterEquip(ConstructorModule):
             retry = False
             for slot in self.call("equip.slots"):
                 item_type = self.equipped(slot["id"])
-                if item_type and not self.can_equip(item_type):
-                    self.equip(slot["id"], None)
-                    self._invalidate()
-                    self.inv._invalidate()
-                    self.character._invalidate()
-                    retry = True
-                    changed = True
+                if item_type:
+                    error = self.cannot_equip(item_type)
+                    if error:
+                        self.character.error(error)
+                        self.equip(slot["id"], None)
+                        self._invalidate()
+                        self.inv._invalidate()
+                        self.character._invalidate()
+                        retry = True
+                        changed = True
         return changed
 
 class EquipAdmin(ConstructorModule):
@@ -467,7 +471,9 @@ class EquipAdmin(ConstructorModule):
                 break
         fields.insert(pos, {"type": "header", "html": self._("Equipment")})
         pos += 1
-        fields.insert(pos, {"type": "checkbox", "label": self._("This item is wearable"), "name": "equip", "checked": obj.get("equip")})
+        fields.insert(pos, {"type": "checkbox", "label": self._("This item is wearable"), "name": "equip", "checked": obj.get("equip"), "flex": 1})
+        pos += 1
+        fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "inline": True, "flex": 2, "condition": "[equip]"})
         pos += 1
         # checkboxes
         slots = self.call("equip.slots")
@@ -523,6 +529,9 @@ class EquipAdmin(ConstructorModule):
                         obj.set(key, nn(val))
                 else:
                     obj.delkey(key)
+            req = self.req()
+            char = self.character(req.user())
+            obj.set("equip_wear", self.call("script.admin-expression", "equip_wear", errors, globs={"char": char}))
         else:
             obj.delkey("equip")
 
@@ -762,6 +771,8 @@ class Equip(ConstructorModule):
         self.rhook("item-types.params-owner-all", curry(self.params_generation, "page"), priority=-20)
         self.rhook("item-types.params-public", curry(self.params_generation, "info"), priority=-20)
         self.rhook("equip.get", self.equip_get)
+        self.rhook("items.menu", self.items_menu)
+        self.rhook("ext-equip.item", self.equip_item, priv="logged")
 
     def child_modules(self):
         return ["mg.mmorpg.equip.EquipAdmin"]
@@ -953,12 +964,12 @@ class Equip(ConstructorModule):
                     break
                 if not self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
                     break
-                def grep(item_type):
-                    return item_type.get("equip") and item_type.get("equip-%s" % slot_id) and equip.can_equip(item_type)
                 # actions
                 if dna is None:
                     # looking for items to dress
                     vars = {}
+                    def grep(item_type):
+                        return item_type.get("equip") and item_type.get("equip-%s" % slot_id) and not equip.cannot_equip(item_type)
                     def render(item_type, ritem):
                         menu = []
                         menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": self._("item///wear"), "order": 10})
@@ -989,8 +1000,15 @@ class Equip(ConstructorModule):
                         if not quantity:
                             character.error(self._("No such item"))
                             self.call("web.redirect", "/interface/character")
-                        if not grep(item_type):
-                            character.error(self._("You can't equip this item"))
+                        if not item_type.get("equip"):
+                            character.error(self._("This item is not wearable"))
+                            self.call("web.redirect", "/interface/character")
+                        if not item_type.get("equip-%s" % slot_id):
+                            character.error(self._("This item is not wearable in this slot"))
+                            self.call("web.redirect", "/interface/character")
+                        error = equip.cannot_equip(item_type)
+                        if error:
+                            character.error(error)
                             self.call("web.redirect", "/interface/character")
                         equip.equip(slot_id, item_type.dna)
                         equip.validate()
@@ -1045,3 +1063,73 @@ class Equip(ConstructorModule):
 
     def equip_get(self, character):
         return CharacterEquip(character)
+
+    def items_menu(self, character, item_type, menu):
+        if item_type.get("equip"):
+            if self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character}, description=lambda: self._("Whether item {item} ({name}) is wearable").format(item=item_type.uuid, name=item_type.name)):
+                menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(self._("wear")), "order": 80})
+
+    def equip_item(self):
+        self.call("quest.check-dialogs")
+        req = self.req()
+        character = self.character(req.user())
+        inv = character.inventory 
+        equip = character.equip
+        # parsing request
+        m = re_equip_item.match(req.args)
+        if not m:
+            self.call("web.redirect", "/inventory")
+        cat, dna = m.group(1, 2)
+        def ret(error=None):
+            if error:
+                character.error(error)
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, dna))
+        # looking for matching items
+        item_type, quantity = inv.find_dna(dna)
+        if not quantity:
+            ret(self._("You have no such items"))
+        if not item_type.get("equip"):
+            ret(self._("This item is not wearable"))
+        if not self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character}, description=lambda: self._("Whether item {item} ({name}) is wearable").format(item=item_type.uuid, name=item_type.name)):
+            ret(self._("This item has no 'wear' button"))
+        error = equip.cannot_equip(item_type)
+        if error:
+            ret(error)
+        # looking for the best slot
+        best_slot = None
+        best_price = None
+        rates = self.call("exchange.rates") or {}
+        for slot in self.call("equip.slots"):
+            slot_id = slot["id"]
+            if item_type.get("equip-%s" % slot_id):
+                equipped_item_type = equip.equipped(slot_id)
+                if equipped_item_type:
+                    # if this slot is occupied. Trying to find the slot with minimal balance price
+                    price = equipped_item_type.get("balance-price")
+                    if price:
+                        currency = equipped_item_type.get("balance-currency")
+                        price *= rates.get(currency, 1)
+                    else:
+                        price = 0
+                    # recording best price
+                    if best_slot is None or price < best_price:
+                        best_slot = slot_id
+                        best_price = price
+                else:
+                    # visibility and availability of the slot
+                    if self.call("script.evaluate-expression", slot.get("visible", 1), {"char": character}, description=self._("Visibility of slot '%s'") % slot["name"]):
+                        if self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
+                            # If an empty available slot found, consider it the best match
+                            best_slot = slot_id
+                            break
+        # checking for existence of slots
+        if not best_slot:
+            ret(self._("You have no slots to wear this item"))
+        # equipping item
+        with self.lock([inv.lock_key]):
+            equip.equip(best_slot, item_type.dna)
+            equip.validate()
+            inv.store()
+        character.name_invalidate()
+        ret()
+
