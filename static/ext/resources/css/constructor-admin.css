@@ -1670,4 +1670,4 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .x-form-checkbox { vertical-align: middle; margin-bottom: 2px }
 .x-form-field-wrap .x-form-trigger { border-bottom: solid 1px #e5e5e5; height: 26px }
 .x-btn-noicon .x-btn-small .x-btn-text { height: 23px; margin-left: 10px; margin-right: 10px; }
-
+.ext-gecko .x-window-body .x-form-item { overflow: visible }
