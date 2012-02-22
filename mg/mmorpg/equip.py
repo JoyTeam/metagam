@@ -1113,6 +1113,9 @@ class Equip(ConstructorModule):
             if item_type.get("equip-%s" % slot_id):
                 equipped_item_type = equip.equipped(slot_id)
                 if equipped_item_type:
+                    # don't replace items with the same type
+                    if equipped_item_type.uuid == item_type.uuid:
+                        continue
                     # if this slot is occupied. Trying to find the slot with minimal balance price
                     price = equipped_item_type.get("balance-price")
                     if price:
@@ -1133,7 +1136,7 @@ class Equip(ConstructorModule):
                             break
         # checking for existence of slots
         if not best_slot:
-            ret(self._("You have no slots to wear this item"))
+            ret(self._("You have no more slots to wear this item type"))
         # equipping item
         with self.lock([inv.lock_key]):
             equip.equip(best_slot, item_type.dna)
