@@ -601,7 +601,6 @@ class Constructor(Module):
         admin = admins[0]
         # restoring admin rights
         perms = app.hooks.call("auth.permissions", admin.uuid)
-        print "perms=%s" % perms
         if not perms.get("project.admin"):
             self.info("Restoring admin permissions for user %s", admin.uuid)
             app.hooks.call("auth.grant-permission", admin.uuid, "project.admin")
