@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-22 12:12+0300\n"
+"PO-Revision-Date: 2012-02-22 12:25+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1368,6 +1368,13 @@ msgstr "Публиковать таблицу преобразований в б
 
 msgid "Cookie"
 msgstr "Кука"
+
+#, python-format
+msgid "Copy of %s"
+msgstr "Копия %s"
+
+msgid "Copying"
+msgstr "Копирование"
 
 #, python-format
 msgid "Copyright &copy; Joy Team, 2009-%s"
@@ -7390,6 +7397,9 @@ msgstr "подтвердить"
 
 msgid "constructor"
 msgstr "конструктор"
+
+msgid "copy"
+msgstr "копировать"
 
 msgid "created///by"
 msgstr "Создано"

@@ -4,6 +4,7 @@ import re
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_values_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(-?(?:\d+|\d+\.\d+))$')
 re_visual_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(.+)$')
+re_copy = re.compile(r'^copy/(.+)$')
 re_del = re.compile(r'^del/(.+)$')
 re_paramedit_args = re.compile(r'^([0-9a-f]+)/([a-zA-Z_][a-zA-Z0-9_]*)$')
 
@@ -28,9 +29,16 @@ class ParamsAdmin(ConstructorModule):
         if args == "new":
             return [self._("New parameter"), "%s/params" % self.kind]
         elif args:
-            param = self.call("%s.param" % self.kind, args)
-            if param:
-                return [htmlescape(param["name"]), "%s/params" % self.kind]
+            m = re_copy.match(args)
+            if m:
+                uuid = m.group(1)
+                param = self.call("%s.param" % self.kind, uuid)
+                if param:
+                    return [self._("Copy of %s") % htmlescape(param["name"]), "%s/params" % self.kind]
+            else:
+                param = self.call("%s.param" % self.kind, args)
+                if param:
+                    return [htmlescape(param["name"]), "%s/params" % self.kind]
         return self.title
 
     def admin_params(self):
@@ -47,8 +55,8 @@ class ParamsAdmin(ConstructorModule):
                     config.set("%s.params" % self.kind, new_params)
                     config.store()
                 self.call("admin.redirect", "%s/params" % self.kind)
-
             if req.args == "new":
+                # new parameter
                 param = {}
                 params = self.call("%s.params" % self.kind)
                 if params:
@@ -56,9 +64,25 @@ class ParamsAdmin(ConstructorModule):
                 else:
                     param["order"] = 0.0
             else:
-                param = self.call("%s.param" % self.kind, req.args)
-                if not param:
-                    self.call("admin.redirect", "%s/params" % self.kind)
+                m = re_copy.match(req.args)
+                if m:
+                    # copy parameter
+                    uuid = m.group(1) 
+                    param = self.call("%s.param" % self.kind, uuid)
+                    if not param:
+                        self.call("admin.redirect", "%s/params" % self.kind)
+                    param = param.copy()
+                    del param["code"]
+                    params = self.call("%s.params" % self.kind)
+                    if params:
+                        param["order"] = params[-1]["order"] + 10.0
+                    else:
+                        param["order"] = 0.0
+                else:
+                    # edit parameter
+                    param = self.call("%s.param" % self.kind, req.args)
+                    if not param:
+                        self.call("admin.redirect", "%s/params" % self.kind)
             lang = self.call("l10n.lang")
             if req.ok():
                 new_param = {}
@@ -261,6 +285,7 @@ class ParamsAdmin(ConstructorModule):
                 name,
                 tp,
                 '<hook:admin.link href="%s/params/%s" title="%s" />' % (self.kind, param["code"], self._("edit")),
+                '<hook:admin.link href="%s/params/copy/%s" title="%s" />' % (self.kind, param["code"], self._("copy")),
                 '<hook:admin.link href="%s/params/del/%s" title="%s" confirm="%s" />' % (self.kind, param["code"], self._("delete"), self._("Are you sure want to delete this parameter?")),
             ])
         vars = {
@@ -274,6 +299,7 @@ class ParamsAdmin(ConstructorModule):
                         self._("Parameter name"),
                         self._("Type"),
                         self._("Editing"),
+                        self._("Copying"),
                         self._("Deletion"),
                     ],
                     "rows": rows,
