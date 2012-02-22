@@ -41,8 +41,10 @@ EquipLayoutSlot = Ext.extend(EquipLayoutItem, {
 		ctx.clip();
 		ctx.textBaseline = 'top';
 		ctx.fillStyle = '#000000';
-		ctx.fillText(this.name, this.x + 3, this.y + 3);
-		ctx.fillText(this.id, this.x + 3, this.y + 15);
+		if (ctx.fillText) {
+			ctx.fillText(this.name, this.x + 3, this.y + 3);
+			ctx.fillText(this.id, this.x + 3, this.y + 15);
+		}
 		ctx.restore();
 		return true;
 	},
@@ -83,7 +85,8 @@ EquipLayoutCharImage = Ext.extend(EquipLayoutItem, {
 		ctx.clip();
 		ctx.textBaseline = 'top';
 		ctx.fillStyle = '#000000';
-		ctx.fillText(gt.gettext('Character image'), this.x + 3, this.y + 3);
+		if (ctx.fillText)
+			ctx.fillText(gt.gettext('Character image'), this.x + 3, this.y + 3);
 		ctx.restore();
 		return true;
 	},
@@ -125,7 +128,8 @@ EquipLayoutStaticImage = Ext.extend(EquipLayoutItem, {
 			ctx.clip();
 			ctx.textBaseline = 'top';
 			ctx.fillStyle = '#000000';
-			ctx.fillText(this.uri, this.x + 3, this.y + 3);
+			if (ctx.fillText)
+				ctx.fillText(this.uri, this.x + 3, this.y + 3);
 			ctx.restore();
 		}
 		// highlight
@@ -510,16 +514,12 @@ EquipLayoutEditor.paint = function(force) {
 		this.ctx.strokeStyle = '#d0d0d0';
 		this.ctx.lineWidth = 1;
 		for (var x = 0; x < this.width; x += this.grid_size) {
-			if (this.clip_x1 == undefined || x >= this.clip_x1 && x <= this.clip_x2) {
-				this.ctx.moveTo(x + 0.5, 0);
-				this.ctx.lineTo(x + 0.5, this.height);
-			}
+			this.ctx.moveTo(x + 0.5, 0);
+			this.ctx.lineTo(x + 0.5, this.height);
 		}
 		for (var y = 0; y < this.height; y += this.grid_size) {
-			if (this.clip_y1 == undefined || y >= this.clip_y1 && y <= this.clip_y2) {
-				this.ctx.moveTo(0, y + 0.5);
-				this.ctx.lineTo(this.width, y + 0.5);
-			}
+			this.ctx.moveTo(0, y + 0.5);
+			this.ctx.lineTo(this.width, y + 0.5);
 		}
 		this.ctx.stroke();
 	}

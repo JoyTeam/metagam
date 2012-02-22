@@ -736,7 +736,7 @@ class EquipAdmin(ConstructorModule):
                 self.call("admin.redirect", "equip/layout")
             layout = self.conf("equip.layout-%s" % iface["id"], {})
             vars = {
-                "ie_warning": self._("Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
+                "ie_warning": self._("Warning! Internet Explorer browser is not supported. Equipment layout editor may work slowly and unstable. Text rendering is not supported in IE. Mozilla Firefox, Google Chrome and Opera are fully supported."),
                 "submit_url": "/admin-equip/layout/%s" % iface["id"],
                 "grid_size": layout.get("grid", iface["grid"]),
                 "slot_border": layout.get("slot-border", 1),
