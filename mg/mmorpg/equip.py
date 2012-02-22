@@ -764,6 +764,7 @@ class Equip(ConstructorModule):
         self.rhook("equip.slots", self.slots)
         self.rhook("equip.interfaces", self.interfaces)
         self.rhook("character-page.render", self.character_page_render)
+        self.rhook("character-info.render", self.character_info_render)
         self.rhook("ext-equip.slot", self.equip_slot, priv="logged")
         self.rhook("ext-unequip.slot", self.unequip_slot, priv="logged")
         self.rhook("inventory.get", self.inventory_get, priority=10)
@@ -787,6 +788,7 @@ class Equip(ConstructorModule):
                 "title": self._("Internal game interface for character owner"),
                 "dim_hook": "charimages.dim-charpage",
                 "grid": 5,
+                "show_actions": True,
             },
             {
                 "id": "char-public",
@@ -799,6 +801,9 @@ class Equip(ConstructorModule):
 
     def character_page_render(self, character, vars):
         self.render_layout("char-owner", character, vars)
+
+    def character_info_render(self, character, vars):
+        self.render_layout("char-public", character, vars)
 
     def render_layout(self, iface_id, character, vars):
         # validating character equip
@@ -872,14 +877,16 @@ class Equip(ConstructorModule):
                             "y": layout.get("slot-%s-y" % slot["id"], 0) + offset_y,
                             "width": size[0],
                             "height": size[1],
-                            "cls": "clickable equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
+                            "cls": "equip-slot equip-%s-%s" % (character.uuid, slot["id"]),
                             "border": slot_border,
                         }
+                        if iface.get("show_actions"):
+                            ritem["cls"] += " clickable"
                         if item_type:
                             if not design:
                                 design = self.design("gameinterface")
                             ritem["image"] = {
-                                "src": item_type.image("inventory"),
+                                "src": item_type.image("%dx%d" % (size[0], size[1])),
                             }
                             ritem["onclick"] = "return Game.main_open('/unequip/slot/%s');" % slot["id"]
                             # rendering hint with item parameters
@@ -888,7 +895,6 @@ class Equip(ConstructorModule):
                                     "name": htmlescape(item_type.name),
                                     "description": item_type.get("description"),
                                 },
-                                "hint": self._("Click to unequip"),
                             }
                             params = []
                             self.call("item-types.params-owner-important", item_type, params)
@@ -898,6 +904,8 @@ class Equip(ConstructorModule):
                                         del param["library_icon"]
                                 params[-1]["lst"] = True
                                 hint_vars["item"]["params"] = params
+                            if iface.get("show_actions"):
+                                hint_vars["hint"] = self._("Click to unequip")
                             ritem["hint"] = {
                                 "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
                                 "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
@@ -910,7 +918,8 @@ class Equip(ConstructorModule):
                             if description:
                                 ritem["hint"]["html"] = jsencode(description)
                             if self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
-                                ritem["onclick"] = "return Game.main_open('/equip/slot/%s');" % slot["id"]
+                                if iface.get("show_actions"):
+                                    ritem["onclick"] = "return Game.main_open('/equip/slot/%s');" % slot["id"]
                             else:
                                 ritem["cls"] += " equip-slot-disabled"
                                 if description:

@@ -1,1 +1,16 @@
+[%if equip_layout%]
+<div class="equip-layout" style="width: [%equip_layout.width%]px; height: [%equip_layout.height%]px">
+	[%for it in equip_layout.items%]
+	<div class="[%it.cls%]" style="width: [%it.width%]px; height: [%it.height%]px; left: [%it.x%]px; top: [%it.y%]px; border-width: [%it.border%]px">
+		[%if it.image%]<img src="[%it.image.src%]" alt="[%it.image.alt%]" title="[%it.image.title%]" style="width: [%it.width%]px; height: [%it.height%]px" />[%end%]
+	</div>
+	[%end%]
+</div>
+<script type="text/javascript">
+	wait(['hints'], function() {
+		[%for it in equip_layout.items%][%if it.hint%]Hints.html('[%it.hint.cls%]', '[%it.hint.html%]');[%end%][%end%]
+	});
+</script>
+[%else%]
 <img src="[%avatar_image%]" alt="" />
+[%end%]

@@ -25,6 +25,7 @@ re_categories_args = re.compile(r'^([a-z]+)(?:|/(.+))$')
 re_del = re.compile(r'^del/(.+)$')
 re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_delimage = re.compile(r'^([a-z0-9]+)/delimage/(\d+x\d+)$')
+re_image_key = re.compile(r'^image-([0-9]+)x([0-9]+)$')
 
 class InventoryAdmin(ConstructorModule):
     def register(self):
@@ -393,8 +394,10 @@ class InventoryAdmin(ConstructorModule):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing images
                 delete_images = []
+                valid_dimensions = set()
                 for dim in dimensions:
                     size = "%dx%d" % (dim["width"], dim["height"])
+                    valid_dimensions.add(size)
                     try:
                         image, ext, content_type, form = dim_images[size]
                     except KeyError:
@@ -419,6 +422,15 @@ class InventoryAdmin(ConstructorModule):
                         key = "image-%s" % size
                         delete_images.append(obj.get(key))
                         obj.set(key, uri)
+                for key, uri in obj.data.items():
+                    m = re_image_key.match(key)
+                    if not m:
+                        continue
+                    width, height = m.group(1, 2)
+                    size = "%sx%s" % (width, height)
+                    if size not in valid_dimensions:
+                        obj.delkey(key)
+                        delete_images.append(uri)
                 # storing info
                 obj.set("name", name)
                 obj.set("name_lower", name.lower())
@@ -1969,6 +1981,35 @@ class Inventory(ConstructorModule):
                 misc = c["id"]
         return misc
 
+    def image_wh(self, item_type, width, height):
+        width = int(width)
+        height = int(height)
+        # looking for the best matching dimension
+        less = []
+        greater = []
+        for key, uri in item_type.db_item_type.data.iteritems():
+            m = re_image_key.match(key)
+            if not m:
+                continue
+            w, h = m.group(1, 2)
+            w = int(w)
+            h = int(h)
+            if w == width and h == height:
+                return uri
+            elif w <= width and h <= height:
+                less.append({"width": w, "height": h, "uri": uri})
+            else:
+                greater.append({"width": w, "height": h, "uri": uri})
+        # maximal image from the images less then target
+        less.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
+        if less:
+            return less[-1]["uri"]
+        # minimal image from the images greater then target
+        greater.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
+        if greater:
+            return greater[0]["uri"]
+        return None
+
     def image(self, item_type, kind):
         # trying to return cached image URI
         try:
@@ -1982,44 +2023,21 @@ class Inventory(ConstructorModule):
             pass
         # cache miss. evaluating
         uri = None
-        # get 'kind' dimension
-        dim = self.call("item-types.dim-%s" % kind)
-        if dim:
-            m = re_dim.match(dim)
-            if m:
-                width, height = m.group(1, 2)
-                width = int(width)
-                height = int(height)
-                # load available dimensions
-                dimensions = self.dimensions()
-                # look for the best matching dimension
-                less = []
-                greater = []
-                for dim in dimensions:
-                    if dim["width"] == width and dim["height"] == height:
-                        uri = item_type.get("image-%dx%d" % (width, height))
-                        if uri:
-                            break
-                    elif dim["width"] <= width and dim["height"] <= height:
-                        less.append(dim)
-                    else:
-                        greater.append(dim)
-                if not uri:
-                    less.sort(cmp=lambda x, y: cmp(y["width"] + y["height"], x["width"] + x["height"]))
-                    for dim in less:
-                        width = dim["width"]
-                        height = dim["height"]
-                        uri = item_type.get("image-%dx%d" % (width, height))
-                        if uri:
-                            break
-                if not uri:
-                    greater.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
-                    for dim in greater:
-                        width = dim["width"]
-                        height = dim["height"]
-                        uri = item_type.get("image-%dx%d" % (width, height))
-                        if uri:
-                            break
+        # fixed size WxH
+        m = re_parse_dimensions.match(kind)
+        if m:
+            width, height = m.group(1, 2)
+            uri = self.image_wh(item_type, width, height)
+        else:
+            # get 'kind' dimension
+            dim = self.call("item-types.dim-%s" % kind)
+            if dim:
+                m = re_dim.match(dim)
+                if m:
+                    width, height = m.group(1, 2)
+                    width = int(width)
+                    height = int(height)
+                    uri = self.image_wh(item_type, width, height)
         # storing in the cache
         cache[kind] = uri
         return uri
