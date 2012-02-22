@@ -12,6 +12,7 @@ re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_equip_slot = re.compile(r'^(\d+)$')
 re_equip_slot_item = re.compile(r'^(\d+)/([a-f0-9]{32}|[a-f0-9]{32}_[a-f0-9]{32})$')
 re_equip_item = re.compile(r'^([a-z0-9\-]+)/([a-f0-9_]+)$')
+re_slot_id = re.compile(r'^slot([1-9][0-9]*)$')
 
 class MemberEquipInventory(MemberInventory):
     def __init__(self, app, owtype, uuid):
@@ -191,6 +192,10 @@ class CharacterEquip(ConstructorModule):
         if m:
             aggregate, param = m.group(1, 2)
             return self.aggregate(aggregate, param, handle_exceptions)
+        m = re_slot_id.match(attr)
+        if m:
+            slot_id = m.group(1)
+            return self.equipped(slot_id)
         raise AttributeError(attr)
 
     def aggregate(self, aggregate, param, handle_exceptions=True):
@@ -308,6 +313,10 @@ class EquipAdmin(ConstructorModule):
         self.rhook("ext-admin-equip.layout", self.admin_layout, priv="equip.config")
         self.rhook("admin-storage.group-names", self.group_names)
         self.rhook("admin-storage.nondeletable", self.nondeletable)
+        self.rhook("advice-admin-equip.index", self.advice_equip)
+
+    def advice_equip(self, hook, args, advice):
+        advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.app().inst.config["main_host"]})
 
     def nondeletable(self, uuids):
         interfaces = self.call("equip.interfaces")

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-22 12:25+0300\n"
+"PO-Revision-Date: 2012-02-22 17:55+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1052,7 +1052,7 @@ msgid "Characters cargo constraints"
 msgstr "Ограничения грузоподъёмности персонажей"
 
 msgid "Characters equipment"
-msgstr "Экипировка персонажа"
+msgstr "Экипировка персонажей"
 
 msgid "Characters equipment configuration"
 msgstr "Настройка экипировки персонажей"
@@ -2063,6 +2063,9 @@ msgstr "Эпическое событие: война"
 
 msgid "Equipment"
 msgstr "Экипировка"
+
+msgid "Equipment documentation"
+msgstr "Документация на экипировку"
 
 msgid "Equipment layout"
 msgstr "Разметка экипировки"
@@ -6940,6 +6943,10 @@ msgstr "Подробную информацию о системе классов
 #, python-format
 msgid "You can find detailed information on the character names system in the <a href=\"//www.%s/doc/character-names\" target=\"_blank\">characer names page</a> in the reference manual."
 msgstr "Подробную информацию о системе имён персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-names\" target=\"_blank\">Система имён персонажей</a>."
+
+#, python-format
+msgid "You can find detailed information on the characters equipment system in the <a href=\"//www.%s/doc/equip\" target=\"_blank\">equipment page</a> in the reference manual."
+msgstr "Подробную информацию о системе экипировки персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/equip\" target=\"_blank\">Экипировка персонажей</a>."
 
 #, python-format
 msgid "You can find detailed information on the characters images system in the <a href=\"//www.%s/doc/character-images\" target=\"_blank\">characters images page</a> in the reference manual."

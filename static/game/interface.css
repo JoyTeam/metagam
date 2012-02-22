@@ -242,3 +242,4 @@ area { border: none }
 .item-hint-table .quantity { color: #80ff80 }
 .item-hint-table .money-amount { color: #80ff80 }
 .item-hint-text { padding: 5px 0 5px 0 }
+.item-hint-table .item-description { color: #c0c0c0 }

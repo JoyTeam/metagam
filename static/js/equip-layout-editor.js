@@ -615,7 +615,7 @@ EquipLayoutEditor.add_arbitrary_image = function() {
 	var win = new Ext.Window({
 		id: 'upload-window',
 		modal: true,
-		title: 'Add arbitrary image',
+		title: gt.gettext('Add arbitrary image'),
 		width: 500,
 		autoHeight: true,
 		padding: '20px 0 20px 20px',
