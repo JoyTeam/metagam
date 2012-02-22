@@ -184,6 +184,8 @@ class ItemType(Module):
             return self.name_gp
         elif attr == "name_a":
             return self.name_a
+        elif attr == "equip":
+            return 1 if self.get("equip") else 0
         else:
             m = re_param_attr.match(attr)
             if m:
