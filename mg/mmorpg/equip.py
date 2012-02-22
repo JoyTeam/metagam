@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.inventory import MemberInventory
+from mg.mmorpg.inventory_classes import dna_parse
 import re
 
 max_slot_id = 100
@@ -121,6 +122,29 @@ class MemberEquipInventory(MemberInventory):
         if quantity <= 0:
             return None, None
         return item_type, quantity
+
+    def _aggregate(self, aggregate, param, handle_exceptions=True):
+        value = MemberInventory._aggregate(self, aggregate, param, handle_exceptions)
+        if aggregate == "cnt":
+            # looking for item types quantity
+            equipped_cnt = 0
+            for dna, slots in self._equip_data()["dna"].iteritems():
+                tp = dna_parse(dna)[0]
+                if tp == param:
+                    equipped_cnt += len(slots)
+            value -= equipped_cnt
+            if value < 0:
+                value = 0
+        elif aggregate == "cnt_dna":
+            # looking for item dna quantity
+            equipped_cnt = 0
+            for dna, slots in self._equip_data()["dna"].iteritems():
+                if dna == param:
+                    equipped_cnt += len(slots)
+            value -= equipped_cnt
+            if value < 0:
+                value = 0
+        return value
 
 class CharacterEquip(ConstructorModule):
     def __init__(self, character):

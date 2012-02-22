@@ -1798,19 +1798,7 @@ class MemberInventory(ConstructorModule):
         except AttributeError:
             pass
 
-    def aggregate(self, aggregate, param, handle_exceptions=True):
-        key = "%s-%s" % (aggregate, param)
-        # trying to return cached value
-        try:
-            cache = self._item_aggregate_cache
-        except AttributeError:
-            cache = {}
-            self._item_aggregate_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            pass
-        # cache miss. evaluating
+    def _aggregate(self, aggregate, param, handle_exceptions=True):
         if aggregate == "cnt":
             # looking for item types quantity
             value = 0
@@ -1836,7 +1824,7 @@ class MemberInventory(ConstructorModule):
                 value = 0
             else:
                 value = None
-            for item_type, quantity in self.items():
+            for item_type, quantity in self.items(available_only=True):
                 v = nn(item_type.param(param, handle_exceptions))
                 if v is not None:
                     if value is None:
@@ -1849,6 +1837,22 @@ class MemberInventory(ConstructorModule):
                             value = v
                     elif aggregate == "sum":
                         value += v * quantity
+        return value
+
+    def aggregate(self, aggregate, param, handle_exceptions=True):
+        key = "%s-%s" % (aggregate, param)
+        # trying to return cached value
+        try:
+            cache = self._item_aggregate_cache
+        except AttributeError:
+            cache = {}
+            self._item_aggregate_cache = cache
+        try:
+            return cache[key]
+        except KeyError:
+            pass
+        # cache miss. evaluating
+        value = self._aggregate(aggregate, param, handle_exceptions)
         # storing in the cache
         cache[key] = value
         return value
