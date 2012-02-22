@@ -729,7 +729,7 @@ class Chat(ConstructorModule):
                     universal.extend(sessions)
             if manual or universal:
                 # generating universal HTML
-                html = u'%s%s%s' % (html_head, u''.join([self.render_token(token, None, private) for token in tokens]), html_tail)
+                html = '%s%s%s' % (utf2str(html_head), ''.join([utf2str(self.render_token(token, None, private)) for token in tokens]), utf2str(html_tail))
                 # store chat message
                 if manual:
                     if private:
@@ -755,11 +755,11 @@ class Chat(ConstructorModule):
 #            self.debug("Delivering chat messages: %s", [msg[0] for msg in messages])
             for msg in messages:
                 # sending message
-                message["html"] = html_head + msg[1] + html_tail
+                message["html"] = utf2str(html_head) + utf2str(msg[1]) + utf2str(html_tail)
                 self.call("stream.packet", msg[0], "chat", "msg", **message)
         else:
             # system message
-            message["html"] = html_head + u''.join([self.render_token(token, None) for token in tokens]) + html_tail
+            message["html"] = utf2str(html_head) + ''.join([utf2str(self.render_token(token, None)) for token in tokens]) + utf2str(html_tail)
             self.call("stream.packet", "global", "chat", "msg", **message)
 
     def render_token(self, token, viewer_uuid, private=False):

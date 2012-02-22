@@ -117,6 +117,18 @@ class TokenBought(Parsing.Token):
 class TokenSold(Parsing.Token):
     "%token sold"
 
+class TokenEquip(Parsing.Token):
+    "%token equip"
+
+class TokenWear(Parsing.Token):
+    "%token wear"
+
+class TokenUnwear(Parsing.Token):
+    "%token unwear"
+
+class TokenDrop(Parsing.Token):
+    "%token drop"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -262,6 +274,18 @@ class EventType(Parsing.Nonterm):
     def reduceShopSold(self, ev, ev2):
         "%reduce shop sold"
         self.val = [["shop-sold"], None]
+
+    def reduceEquipWear(self, ev, ev2):
+        "%reduce equip wear"
+        self.val = [["equip-wear"], None]
+
+    def reduceEquipUnwear(self, ev, ev2):
+        "%reduce equip unwear"
+        self.val = [["equip-unwear"], None]
+
+    def reduceEquipDrop(self, ev, ev2):
+        "%reduce equip drop"
+        self.val = [["equip-drop"], None]
 
 # ============================
 #          ACTIONS
@@ -589,6 +613,10 @@ class QuestScriptParser(ScriptParser):
     syms["shop"] = TokenShop
     syms["sold"] = TokenSold
     syms["bought"] = TokenBought
+    syms["equip"] = TokenEquip
+    syms["wear"] = TokenWear
+    syms["unwear"] = TokenUnwear
+    syms["drop"] = TokenDrop
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

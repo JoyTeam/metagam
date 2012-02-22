@@ -728,6 +728,12 @@ class QuestsAdmin(ConstructorModule):
                 return "shop bought"
             elif val[0] == "shop-sold":
                 return "shop sold"
+            elif val[0] == "equip-wear":
+                return "equip wear"
+            elif val[0] == "equip-unwear":
+                return "equip unwear"
+            elif val[0] == "equip-drop":
+                return "equip drop"
             elif val[0] == "require":
                 return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "call":
@@ -1144,12 +1150,12 @@ class Quests(ConstructorModule):
         tasklet.quest_indent = indent
         try:
             def event_str():
-                event_str = self._(u"event=%s") % event
+                event_str = utf2str(self._("event=%s") % event)
                 for key in sorted(kwargs.keys()):
                     if key != "char":
                         val = kwargs[key]
                         if val:
-                            event_str += u', %s=%s' % (key, val)
+                            event_str += ', %s=%s' % (utf2str(key), utf2str(val))
                 return event_str
             if indent == 0:
                 self.call("debug-channel.character", char, event_str, cls="quest-first-event", indent=indent)

@@ -133,15 +133,30 @@ class CharacterEquip(ConstructorModule):
     def equipped(self, slot_id):
         return self.inv._equipped().get(str(slot_id))
 
-    def equip(self, slot_id, dna):
+    def equip(self, slot_id, item_type, drop_event="equip-unwear"):
         equip_data = self.inv._equip_data()
-        if dna:
-            equip_data["slots"][str(slot_id)] = dna
+        slot_id = str(slot_id)
+        equipped = equip_data["slots"].get(slot_id)
+        if equipped:
+            equipped_item_type, quantity = MemberInventory.find_dna(self.inv, equipped)
+            if not equipped_item_type:
+                equipped = None
+        if item_type:
+            if equipped:
+                if equipped_item_type.dna != item_type.dna:
+                    self.event(drop_event, slot=int(slot_id), item=equipped_item_type)
+                    equip_data["slots"][slot_id] = item_type.dna
+                    self.event("equip-wear", slot=int(slot_id), item=item_type)
+            else:
+                equip_data["slots"][slot_id] = item_type.dna
+                self.event("equip-wear", slot=int(slot_id), item=item_type)
         else:
             try:
-                del equip_data["slots"][str(slot_id)]
+                del equip_data["slots"][slot_id]
             except KeyError:
                 pass
+            if equipped:
+                self.event(drop_event, slot=int(slot_id), item=equipped_item_type)
         self.inv._update_equip_data()
         self._invalidate()
         self.inv._invalidate()
@@ -255,13 +270,29 @@ class CharacterEquip(ConstructorModule):
                     error = self.cannot_equip(item_type)
                     if error:
                         self.character.error(error)
-                        self.equip(slot["id"], None)
+                        self.equip(slot["id"], None, drop_event="equip-drop")
                         self._invalidate()
                         self.inv._invalidate()
                         self.character._invalidate()
                         retry = True
                         changed = True
         return changed
+
+    def event(self, ident, **kwargs):
+        if not getattr(self, "events", None):
+            self.events = []
+        kwargs["char"] = self.character
+        self.events.append({
+            "id": ident,
+            "args": kwargs,
+        })
+
+    def fire_events(self):
+        if not getattr(self, "events", None):
+            return
+        for event in self.events:
+            self.qevent(event["id"], **event["args"])
+        self.events = []
 
 class EquipAdmin(ConstructorModule):
     def register(self):
@@ -813,7 +844,9 @@ class Equip(ConstructorModule):
             with self.lock([inv.lock_key]):
                 equip.validate()
                 inv.store()
+            quest.fire_events()
             character.name_invalidate()
+            self.call("quest.check-redirects")
         # rendering layout
         for iface in self.interfaces():
             if iface["id"] == iface_id:
@@ -1019,10 +1052,12 @@ class Equip(ConstructorModule):
                         if error:
                             character.error(error)
                             self.call("web.redirect", "/interface/character")
-                        equip.equip(slot_id, item_type.dna)
+                        equip.equip(slot_id, item_type)
                         equip.validate()
                         inv.store()
+                    equip.fire_events()
                     character.name_invalidate()
+                    self.call("quest.check-redirects")
                     self.call("web.redirect", "/interface/character")
         character.error(self._("This slot is currently unavailable"))
         self.call("web.redirect", "/interface/character")
@@ -1043,7 +1078,9 @@ class Equip(ConstructorModule):
                 equip.equip(slot_id, None)
                 equip.validate()
                 inv.store()
+            equip.fire_events()
             character.name_invalidate()
+            self.call("quest.check-redirects")
         self.call("web.redirect", "/interface/character")
 
     def params_generation(self, cls, obj, params, viewer=None, **kwargs):
@@ -1139,9 +1176,11 @@ class Equip(ConstructorModule):
             ret(self._("You have no more slots to wear this item type"))
         # equipping item
         with self.lock([inv.lock_key]):
-            equip.equip(best_slot, item_type.dna)
+            equip.equip(best_slot, item_type)
             equip.validate()
             inv.store()
+        equip.fire_events()
         character.name_invalidate()
+        self.call("quest.check-redirects")
         ret()
 
