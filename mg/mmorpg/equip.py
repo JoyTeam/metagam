@@ -877,7 +877,7 @@ class Equip(ConstructorModule):
             with self.lock([inv.lock_key]):
                 equip.validate()
                 inv.store()
-            quest.fire_events()
+            equip.fire_events()
             character.name_invalidate()
             self.call("quest.check-redirects")
         # rendering layout
