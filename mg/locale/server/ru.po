@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-23 13:04+0300\n"
+"PO-Revision-Date: 2012-02-23 17:29+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1126,6 +1126,9 @@ msgstr "Конфигурация чата сохранена"
 msgid "Chat debug channel"
 msgstr "Отладочный канал чата"
 
+msgid "Chat height"
+msgstr "Высота чата"
+
 msgid "Chat message"
 msgstr "Сообщение в чат"
 
@@ -1134,6 +1137,9 @@ msgstr "Цвет сообщений в чате"
 
 msgid "Chat silence"
 msgstr "Молчанка в чате"
+
+msgid "Chat width"
+msgstr "Ширина чата"
 
 msgid "Check domain and assign it to the game"
 msgstr "Проверить домен и назначить его вашей игре"
@@ -2243,6 +2249,9 @@ msgstr "Внешняя форма (помещается в external.html)"
 msgid "External interface"
 msgstr "Внешний интерфейс"
 
+msgid "Extra settings"
+msgstr "Дополнительные настройки"
+
 msgid "Fast movement across the locations"
 msgstr "Быстрое перемещение по локациям"
 
@@ -2369,6 +2378,9 @@ msgstr "Теги форума"
 
 msgid "Forum topic"
 msgstr "Тема на форуме"
+
+msgid "Frame sizes"
+msgstr "Размеры фреймов"
 
 msgid "Free characters can't be greater than max characters"
 msgstr "Количество бесплатных персонажей не может быть больше максимального количества персонажей"
@@ -3521,6 +3533,12 @@ msgstr "Владельцем домена будет MMO Constructor"
 msgid "Magenta"
 msgstr "Фиолетовый"
 
+msgid "Main frame height"
+msgstr "Высота главного фрейма"
+
+msgid "Main frame width"
+msgstr "Ширина главного фрейма"
+
 msgid "Main game frame"
 msgstr "Главный игровой фрейм"
 
@@ -4245,6 +4263,12 @@ msgstr "Предложение %s"
 msgid "Old password"
 msgstr "Старый пароль"
 
+msgid "One of fields '{field1}' or '{field2}' must be empty (auto-sized)"
+msgstr "Одно из полей \"{field1}\" или \"{field2}\" должно быть пустым (автоматический размер)"
+
+msgid "One of fields '{field1}' or '{field2}' must be filled"
+msgstr "Одно из полей \"{field1}\" или \"{field2}\" должно быть заполнено"
+
 msgid "Open"
 msgstr "Открыть"
 
@@ -4350,8 +4374,11 @@ msgstr "Название группы страниц"
 msgid "Page keywords (visible to search engines). Comma delimited"
 msgstr "Ключевые слова (видны только поисковым системам). Разделитель - запятая"
 
-msgid "Page margins (0 - margin is disabled):"
-msgstr "Поля страницы (0 - поле отключено)"
+msgid "Page margins"
+msgstr "Поля страницы"
+
+msgid "Page margins layout"
+msgstr "Разметка полей страницы"
 
 msgid "Page title"
 msgstr "Название страницы"
@@ -5145,6 +5172,12 @@ msgstr "Кнопки ростера"
 msgid "Roster buttons panel"
 msgstr "Панель кнопок ростера"
 
+msgid "Roster height"
+msgstr "Высота списка персонажей (ростера)"
+
+msgid "Roster width"
+msgstr "Ширина списка персонажей (ростера)"
+
 msgid "Rubricator"
 msgstr "Рубрикатор"
 
@@ -5483,6 +5516,9 @@ msgstr "Показывать это сообщение всем неавтори
 #, python-format
 msgid "Shown: %s"
 msgstr "Показано: %s"
+
+msgid "Side panels"
+msgstr "Боковые панели"
 
 msgid "Signature"
 msgstr "Подпись"
@@ -8297,6 +8333,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Page margins (0 - margin is disabled):"
+#~ msgstr "Поля страницы (0 - поле отключено)"
 #~ msgid "Menu title"
 #~ msgstr "Заголовок в меню"
 #~ msgid "Item '{item_name}' unequipped. {error}"

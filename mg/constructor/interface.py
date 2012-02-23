@@ -327,6 +327,12 @@ class Interface(ConstructorModule):
             "panel_top": self.conf("gameinterface.panel-top", True),
             "panel_main_left": self.conf("gameinterface.panel-main-left", True),
             "panel_main_right": self.conf("gameinterface.panel-main-right", False),
+            "main_frame_width": self.conf("gameinterface.main-frame-width"),
+            "main_frame_height": self.conf("gameinterface.main-frame-height"),
+            "chat_width": self.conf("gameinterface.chat-width"),
+            "chat_height": self.conf("gameinterface.chat-height", 250),
+            "roster_width": self.conf("gameinterface.roster-width", 300),
+            "roster_height": self.conf("gameinterface.roster-height"),
         }
         vars["domain"] = req.host()
         vars["base_domain"] = re_remove_www.sub('', req.host())
@@ -544,36 +550,85 @@ class Interface(ConstructorModule):
             config.set("gameinterface.panel-top", True if req.param("panel_top") else False)
             config.set("gameinterface.panel-main-left", True if req.param("panel_main_left") else False)
             config.set("gameinterface.panel-main-right", True if req.param("panel_main_right") else False)
+            # frame sizes
+            main_frame_width = req.param("main-frame-width").strip()
+            main_frame_height = req.param("main-frame-height").strip()
+            chat_width = req.param("chat-width").strip()
+            chat_height = req.param("chat-height").strip()
+            roster_width = req.param("roster-width").strip()
+            roster_height = req.param("roster-height").strip()
+            def exclusive(f1_code, f1_name, f1_min, f2_code, f2_name, f2_min):
+                v1 = req.param(f1_code).strip()
+                v2 = req.param(f2_code).strip()
+                if v1 == "" and v2 == "":
+                    err = self._("One of fields '{field1}' or '{field2}' must be filled").format(field1=f1_name, field2=f2_name)
+                    errors[f1_code] = err
+                    errors[f2_code] = err
+                elif v1 != "" and v2 != "":
+                    err = self._("One of fields '{field1}' or '{field2}' must be empty (auto-sized)").format(field1=f1_name, field2=f2_name)
+                    errors[f1_code] = err
+                    errors[f2_code] = err
+                elif v1 != "":
+                    if not valid_nonnegative_int(v1):
+                        errors[f1_code] = self._("This is not a number")
+                    else:
+                        v1 = int(v1)
+                        if v1 < f1_min:
+                            errors[f1_code] = self._("Minimal value is %d") % f1_min
+                        else:
+                            config.set("gameinterface.%s" % f1_code, v1)
+                            config.set("gameinterface.%s" % f2_code, None)
+                else:
+                    if not valid_nonnegative_int(v2):
+                        errors[f2_code] = self._("This is not a number")
+                    else:
+                        v2 = int(v2)
+                        if v2 < f2_min:
+                            errors[f2_code] = self._("Minimal value is %d") % f2_min
+                        else:
+                            config.set("gameinterface.%s" % f2_code, v2)
+                            config.set("gameinterface.%s" % f1_code, None)
+            if scheme == 1:
+                exclusive("main-frame-height", self._("Main frame height"), 200, "chat-height", self._("Chat height"), 100)
+                exclusive("chat-width", self._("Chat width"), 200, "roster-width", self._("Roster width"), 300)
+            elif scheme == 2:
+                exclusive("main-frame-width", self._("Main frame width"), 300, "roster-width", self._("Roster width"), 300)
+                exclusive("main-frame-height", self._("Main frame height"), 200, "chat-height", self._("Chat height"), 100)
+            elif scheme == 3:
+                exclusive("main-frame-width", self._("Main frame width"), 300, "roster-width", self._("Roster width"), 300)
+                exclusive("chat-height", self._("Chat height"), 100, "roster-height", self._("Roster height"), 300)
             # analysing errors
-            if len(errors):
+            if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
-            self.call("admin.response", self._("Settings stored"), {})
-        else:
-            scheme = self.conf("gameinterface.layout-scheme", 1)
-            marginleft = self.conf("gameinterface.margin-left", 0)
-            marginright = self.conf("gameinterface.margin-right", 0)
-            margintop = self.conf("gameinterface.margin-top", 0)
-            marginbottom = self.conf("gameinterface.margin-bottom", 0)
-            debug_ext = self.conf("debug.ext")
-            panel_top = self.conf("gameinterface.panel-top", True)
-            panel_main_left = self.conf("gameinterface.panel-main-left", True)
-            panel_main_right = self.conf("gameinterface.panel-main-right", False)
+            self.call("admin.response", self._("Settings stored"), {}) 
+        # rendering form
+        scheme = self.conf("gameinterface.layout-scheme", 1)
         fields = [
-            {"id": "scheme0", "name": "scheme", "type": "radio", "label": self._("General layout scheme"), "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
-            {"id": "scheme1", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "checked": scheme == 2, "boxLabel": '<img src="/st/constructor/gameinterface/layout1.png" alt="" />', "inline": True},
-            {"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "checked": scheme == 3, "boxLabel": '<img src="/st/constructor/gameinterface/layout2.png" alt="" />', "inline": True},
-            {"type": "label", "label": self._("Page margins (0 - margin is disabled):")},
-            {"type": "html", "html": '<img src="/st/constructor/gameinterface/margins.png" style="margin: 3px 0 5px 0" />'},
-            {"name": "marginleft", "label": self._("Left"), "value": marginleft},
-            {"name": "marginright", "label": self._("Right"), "value": marginright, "inline": True},
-            {"name": "margintop", "label": self._("Top"), "value": margintop, "inline": True},
-            {"name": "marginbottom", "label": self._("Bottom"), "value": marginbottom, "inline": True},
-            {"name": "debug_ext", "type": "checkbox", "label": self._("Debugging version of ExtJS (for advanced JavaScript programming)"), "checked": debug_ext},
-            {"name": "panel_top", "type": "checkbox", "label": self._("Enable panel on the top of the screen (code 'top')"), "checked": panel_top},
-            {"name": "panel_main_left", "type": "checkbox", "label": self._("Enable panel to the left of the main frame (code 'main-left')"), "checked": panel_main_left},
-            {"name": "panel_main_right", "type": "checkbox", "label": self._("Enable panel to the right of the main frame (code 'main-right')"), "checked": panel_main_right},
+            {"type": "header", "html": self._("General layout scheme")},
+            {"id": "scheme1", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 1, "checked": scheme == 1, "boxLabel": '<img src="/st/constructor/gameinterface/layout0.png" alt="" />' },
+            {"id": "scheme2", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 2, "checked": scheme == 2, "boxLabel": '<img src="/st/constructor/gameinterface/layout1.png" alt="" />', "inline": True},
+            {"id": "scheme3", "name": "scheme", "type": "radio", "label": "&nbsp;", "value": 3, "checked": scheme == 3, "boxLabel": '<img src="/st/constructor/gameinterface/layout2.png" alt="" />', "inline": True},
+            {"type": "header", "html": self._("Frame sizes")},
+            {"name": "main-frame-width", "label": self._("Main frame width"), "value": self.conf("gameinterface.main-frame-width"), "condition": "[scheme2] || [scheme3]"},
+            {"name": "main-frame-height", "label": self._("Main frame height"), "value": self.conf("gameinterface.main-frame-height"), "condition": "[scheme1] || [scheme2]"},
+            {"name": "chat-width", "label": self._("Chat width"), "value": self.conf("gameinterface.chat-width"), "condition": "[scheme1]"},
+            {"name": "chat-height", "label": self._("Chat height"), "value": self.conf("gameinterface.chat-height", 250), "condition": "[scheme1] || [scheme2] || [scheme3]"},
+            {"name": "roster-width", "label": self._("Roster width"), "value": self.conf("gameinterface.roster-width", 300), "condition": "[scheme1] || [scheme2] || [scheme3]"},
+            {"name": "roster-height", "label": self._("Roster height"), "value": self.conf("gameinterface.roster-height"), "condition": "[scheme3]"},
+            {"type": "header", "html": self._("Page margins")},
+            {"name": "marginleft", "label": self._("Left"), "value": self.conf("gameinterface.margin-left", 0)},
+            {"name": "marginright", "label": self._("Right"), "value": self.conf("gameinterface.margin-right", 0), "inline": True},
+            {"name": "margintop", "label": self._("Top"), "value": self.conf("gameinterface.margin-top", 0), "inline": True},
+            {"name": "marginbottom", "label": self._("Bottom"), "value": self.conf("gameinterface.margin-bottom", 0), "inline": True},
+            {"type": "header", "html": self._("Side panels")},
+            {"name": "panel_top", "type": "checkbox", "label": self._("Enable panel on the top of the screen (code 'top')"), "checked": self.conf("gameinterface.panel-top", True)},
+            {"name": "panel_main_left", "type": "checkbox", "label": self._("Enable panel to the left of the main frame (code 'main-left')"), "checked": self.conf("gameinterface.panel-main-left", True)},
+            {"name": "panel_main_right", "type": "checkbox", "label": self._("Enable panel to the right of the main frame (code 'main-right')"), "checked": self.conf("gameinterface.panel-main-right", False)},
+            {"type": "header", "html": self._("Extra settings")},
+            {"name": "debug_ext", "type": "checkbox", "label": self._("Debugging version of ExtJS (for advanced JavaScript programming)"), "checked": self.conf("debug.ext")},
         ]
+        self.call("admin.advice", {"title": self._("Page margins layout"), "content": '<img src="/st/constructor/gameinterface/margins.png" style="margin: 3px 0 5px 0" />', "order": 30})
         self.call("admin.form", fields=fields)
 
     def blocks(self, character, vars, design):

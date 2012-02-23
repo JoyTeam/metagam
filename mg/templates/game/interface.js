@@ -167,25 +167,26 @@ Game.setup_game_layout = function() {
 		};
 	[%end%]
 	[%if layout.scheme == 1%]
-	panel_top.region = 'north';
-	chat.region = 'center';
+	chat.region = [%if layout.chat_width%]'west'[%else%]'center'[%end%];
 	chat.minWidth = 200;
-	roster.region = 'east';
-	roster.split = true;
-	roster.width = 300;
-	roster.minSize = 300;
-	main.region = 'center';
+	[%if layout.chat_width%]chat.width = [%layout.chat_width%];[%end%]
+	roster.region = [%if layout.chat_width%]'center'[%else%]'east'[%end%];
+	[%if layout.chat_width%]chat[%else%]roster[%end%].split = true;
+	[%if layout.roster_width%]roster.width = [%layout.roster_width%];[%end%]
+	roster.minWidth = 300;
+	main.region = [%if layout.main_frame_height%]'north'[%else%]'center'[%end%];
 	main.minHeight = 200;
+	main.split = true;
+	[%if layout.main_frame_height%]main.height = [%layout.main_frame_height%];[%end%]
 	var content = new Ext.Container({
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			panel_top,
 			{
 				id: 'chat-and-roster',
 				xtype: 'container',
-				region: 'south',
-				height: 250,
+				region: [%if layout.chat_height%]'south'[%else%]'center'[%end%],
+				[%if layout.chat_height%]height: [%layout.chat_height%],[%end%]
 				minHeight: 100,
 				layout: 'border',
 				split: true,
@@ -195,54 +196,58 @@ Game.setup_game_layout = function() {
 		]
 	});
 	[%elsif layout.scheme == 2%]
-	panel_top.region = 'north';
-	roster.region = 'east';
-	roster.width = 300;
-	roster.minSize = 300;
+	roster.region = [%if layout.roster_width%]'east'[%else%]'center'[%end%];
+	[%if layout.roster_width%]roster.width = [%layout.roster_width%];[%end%]
+	roster.minWidth = 300;
 	roster.split = true;
-	chat.region = 'south';
+	chat.region = [%if layout.chat_height%]'south'[%else%]'center'[%end%];
 	chat.split = true;
 	chat.height = 250;
 	chat.minHeight = 100;
-	main.region = 'center';
+	main.region = [%if layout.main_frame_height%]'north'[%else%]'center'[%end%];
+	[%if layout.main_frame_height%]main.height = [%layout.main_frame_height%];[%end%]
 	main.minHeight = 200;
+	main.split = true;
 	var content = new Ext.Container({
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			panel_top,
 			roster,
 			{
 				id: 'main-and-chat',
 				xtype: 'container',
-				region: 'center',
+				region: [%if layout.main_frame_width%]'west'[%else%]'center'[%end%],
+				[%if layout.main_frame_width%]width: [%layout.main_frame_width%],[%end%]
 				minWidth: 300,
+				split: true,
 				layout: 'border',
 				items: [main, chat]
 			}
 		]
 	});
 	[%elsif layout.scheme == 3%]
-	panel_top.region = 'north';
-	main.region = 'center';
+	main.region = [%if layout.main_frame_width%]'west'[%else%]'center'[%end%];
+	[%if layout.main_frame_width%]main.width = [%layout.main_frame_width%];[%end%]
+	main.split = true;
 	main.minWidth = 300;
-	roster.region = 'center';
+	roster.region = [%if layout.roster_height%]'south'[%else%]'center'[%end%];
+	[%if layout.roster_height%]roster.height = [%layout.roster_height%];[%end%]
 	roster.minHeight = 100;
-	chat.region = 'south';
+	roster.split = true;
+	chat.region = [%if layout.chat_height%]'north'[%else%]'center'[%end%];
 	chat.minHeight = 100;
-	chat.height = 300;
+	[%if layout.chat_height%]chat.height = [%layout.chat_height%];[%end%]
 	chat.split = true;
 	var content = new Ext.Container({
 		id: 'page-content',
 		layout: 'border',
 		items: [
-			panel_top,
 			main,
 			{
 				id: 'roster-and-chat',
 				xtype: 'container',
-				region: 'east',
-				width: 300,
+				region: [%if layout.roster_width%]'east'[%else%]'center'[%end%],
+				[%if layout.roster_width%]width: [%layout.roster_width%],[%end%]
 				minWidth: 300,
 				layout: 'border',
 				split: true,
@@ -289,6 +294,17 @@ Game.setup_game_layout = function() {
 		contentEl: 'margin-bottom'
 	}));
 	[%end%]
+	panel_top.region = 'north';
+	content.region = 'center';
+	content = {
+		id: 'page-content-2',
+		xtype: 'container',
+		layout: 'border',
+		items: [
+			panel_top,
+			content
+		]
+	};
 	if (margins.length) {
 		content.region = 'center';
 		margins.push(content);

@@ -9,7 +9,7 @@ area { border: none }
 .public-offer { text-align: justify }
 
 /* LAYOUT */
-#page-content { background: none }
+#page-content, #page-content-2{ background: none }
 #main-and-chat, #roster-and-chat, #chat-and-roster, #main-panel-group { background: none }
 .x-layout-split { background: #808080 }
 #margin-left, #margin-right, #margin-top, #margin-bottom { text-align: center }
