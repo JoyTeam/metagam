@@ -8,7 +8,17 @@
 <link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/socio/main.css" />
 <link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/constructor/socio/main.css" />
 <script type="text/javascript" src="/st-mg/[%ver%]/js/socio.js"></script>
-[%head%]</head><body>
+[%head%]
+<link href="https://plus.google.com/101095560669894640620" rel="publisher" />
+<script type="text/javascript">
+window.___gcfg = {lang: 'ru'};
+(function() 
+{var po = document.createElement("script");
+po.type = "text/javascript"; po.async = true;po.src = "https://apis.google.com/js/plusone.js";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(po, s);
+})();</script>
+</head><body>
 <table id="page-layout">
 	<tr> 
 		<td id="page-left"><div></div></td>
@@ -35,6 +45,9 @@
 				[%end%]
 				[%if socio_message_top%]<div class="socio-message-top">[%socio_message_top%]</div>[%end%]
 				[%content%]
+				<div id="socio-socialnets">
+					<div id="socio-googleplus"><g:plus href="https://plus.google.com/101095560669894640620" width="170" height="69" theme="light"></g:plus></div>
+				</div>
 				<div id="socio-counters">[%counters%]</div>
 			</div>
 		</td>

@@ -84,3 +84,7 @@ input.form-file { font-size: 13px }
 .req-info-value { font-weight: bold; font-size: 28px; color: #dd6419; padding: 0 0 0 10px; width: 50px }
 .req-error { padding-top: 50px; color: #dd1919 }
 .req-dependencies { padding-top: 20px }
+
+/* SOCIAL NETWORKS */
+#socio-socialnets { margin-top: 30px }
+#socio-googleplus { width: 170px; float: right }
