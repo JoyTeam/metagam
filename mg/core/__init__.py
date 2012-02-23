@@ -365,10 +365,7 @@ class Module(object):
         conf = self.app().config
         if reset_cache:
             conf.clear()
-        val = conf.get(key)
-        if val is None:
-            val = default
-        return val
+        return conf.get(key, default)
 
     def call(self, *args, **kwargs):
         "Syntactic sugar for app.hooks.call(...)"
