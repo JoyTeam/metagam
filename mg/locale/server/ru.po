@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-22 19:16+0300\n"
+"PO-Revision-Date: 2012-02-23 13:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2388,6 +2388,9 @@ msgstr "Полное название вашей игры (напр: Вечны�
 msgid "Function"
 msgstr "Функция"
 
+msgid "Function title"
+msgstr "Название функции"
+
 msgid "Function {func} is not defined in location {loc}"
 msgstr "Функция {func} не определена в локации {loc}"
 
@@ -3671,9 +3674,6 @@ msgstr "Меню"
 
 msgid "Menu item"
 msgstr "Пункт меню"
-
-msgid "Menu title"
-msgstr "Заголовок в меню"
 
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
@@ -6716,6 +6716,9 @@ msgstr "Видимость слота \"%s\""
 msgid "Visible in public (show on the public information page)"
 msgstr "Публично видимый (показывается на общедоступной странице информации)"
 
+msgid "Visible in the menu"
+msgstr "Показывать в меню"
+
 msgid "Volume of transactions"
 msgstr "Объём сделок"
 
@@ -8294,6 +8297,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Menu title"
+#~ msgstr "Заголовок в меню"
 #~ msgid "Item '{item_name}' unequipped. {error}"
 #~ msgstr "{item_name} снимается. {error}"
 #~ msgid "You can't equip this item"

@@ -103,23 +103,27 @@ class LocationFunctions(ConstructorModule):
             req = self.req()
             selected = req.hook
         funcs = self.functions(char.location, char)
-        if len(funcs) >= 2:
-            menu_left = []
-            for func in funcs:
-                rfunc = {
-                    "html": func["title"],
-                }
-                if selected == func["id"]:
-                    rfunc["selected"] = True
+        trivial = True
+        menu_left = []
+        for func in funcs:
+            if not func.get("menu_visible", 1):
+                continue
+            rfunc = {
+                "html": func["title"],
+            }
+            if selected == func["id"]:
+                rfunc["selected"] = True
+            else:
+                trivial = False
+                if func.get("onclick"):
+                    rfunc["onclick"] = "%s; return false" % func["onclick"]
+                    rfunc["href"] = "javascript:void(0)"
+                elif func.get("default_action"):
+                    rfunc["href"] = "/location/%s/action/%s" % (func["id"], func.get("default_action"))
                 else:
-                    if func.get("onclick"):
-                        rfunc["onclick"] = "%s; return false" % func["onclick"]
-                        rfunc["href"] = "javascript:void(0)"
-                    elif func.get("default_action"):
-                        rfunc["href"] = "/location/%s/action/%s" % (func["id"], func.get("default_action"))
-                    else:
-                        rfunc["href"] = "/location/%s" % func["id"]
-                menu_left.append(rfunc)
+                    rfunc["href"] = "/location/%s" % func["id"]
+            menu_left.append(rfunc)
+        if not trivial:
             menu_left[-1]["lst"] = True
             vars["menu_left"] = menu_left
 
@@ -292,6 +296,8 @@ class LocationFunctionsAdmin(ConstructorModule):
                     errors["title"] = self._("This field is mandatory")
                 else:
                     func["title"] = title
+                # menu_visible
+                func["menu_visible"] = 1 if req.param("menu_visible") else 0
                 # order
                 func["order"] = floatz(req.param("order"))
                 # available
@@ -333,7 +339,8 @@ class LocationFunctionsAdmin(ConstructorModule):
             fields.append({"name": "order", "label": self._("Sorting order"), "value": func.get("order"), "inline": True})
             if not func.get("onclick"):
                 fields.append({"name": "default", "label": self._("Default special function"), "type": "checkbox", "checked": func.get("default")})
-            fields.append({"name": "title", "label": self._("Menu title"), "value": func.get("title")})
+            fields.append({"name": "title", "label": self._("Function title"), "value": func.get("title")})
+            fields.append({"name": "menu_visible", "label": self._("Visible in the menu"), "type": "checkbox", "checked": func.get("menu_visible", 1)})
             fields.append({"name": "available", "label": self._("Availability of the function for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("available", 1))})
             if func.get("custom"):
                 fields.append({"type": "header", "html": self._("Special function settings")})
