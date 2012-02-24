@@ -454,7 +454,7 @@ class Constructor(Module):
         }
         if req.user():
             vars["logged"] = True
-        self.call("socialnets.render", vars)
+        self.call("socialnets.render", vars, counters=False)
         self.call("web.response_template", "constructor/index.html", vars)
 
     def cabinet_index(self):
