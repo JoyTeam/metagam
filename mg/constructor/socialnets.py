@@ -19,8 +19,8 @@ class SocialNets(ConstructorModule):
             # open graph
             vars["opengraph_image"] = self.call("project.logo")
             vars["opengraph_site_name"] = htmlescape(self.call("project.title"))
+            vars["opengraph_type"] = "website"
             if "opengraph_url" not in vars:
-                vars["opengraph_type"] = "website"
                 vars["opengraph_url"] = "http://%s/" % getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain)
                 vars["opengraph_title"] = vars["opengraph_site_name"]
                 description = self.call("project.description")
