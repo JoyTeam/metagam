@@ -10,6 +10,7 @@ class ConstructorProject(Module):
         self.rdep(["mg.core.web.Web"])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("project.title", self.project_title)
+        self.rhook("project.logo", self.project_logo)
         self.rhook("email.sender", self.email_sender)
         self.rhook("modules.list", self.modules_list)
 
@@ -141,6 +142,9 @@ class ConstructorProject(Module):
 
     def project_title(self):
         return self.app().project.get("title_short", "New Game")
+
+    def project_logo(self):
+        return self.app().project.get("logo")
 
     def web_setup_design(self, vars):
         req = self.req()

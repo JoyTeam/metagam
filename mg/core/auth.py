@@ -424,6 +424,9 @@ class Interface(Module):
         code = req.param("code").strip()
         if not user.get("inactive"):
             self.call("web.redirect", redirects.get("register", "/"))
+        vars = {
+            "title": self._("User activation"),
+        }
         form = self.call("web.form")
         if req.param("ok") or req.param("okget"):
             if not code:
@@ -447,16 +450,18 @@ class Interface(Module):
                     session.set("ip", req.remote_addr())
                     session.store()
                     self.call("session.log", act="login", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
-                    if redirect:
-                        self.call("web.redirect", redirect)
-                    self.call("web.redirect", redirects.get("register", "/"))
+                if not redirect:
+                    redirect = redirects.get("register", "/")
+                form = self.call("web.form", action=redirect)
+                form.method = "get"
+                form.add_message_top(self._("Your account was registered successfully"))
+                form.submit(None, None, self._("Continue"))
+                self.call("auth.render-activated-form", user, form)
+                self.call("web.response_global", form.html(), vars)
         form.input(self._("Activation code"), "code", code)
         form.submit(None, None, self._("Activate"))
         form.add_message_top(self._("A message was sent to your mailbox. Enter the activation code from this message."))
         form.add_message_bottom(self._('If you have not received activation letter you can <a href="/auth/reactivate/%s">send another one or change your e-mail</a>') % user.uuid)
-        vars = {
-            "title": self._("User activation"),
-        }
         self.call("auth.form", form, vars)
         self.call("web.response_global", form.html(), vars)
 

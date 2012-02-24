@@ -400,6 +400,7 @@ class Socio(Module):
         self.rhook("socio.button-blocks", self.button_blocks)
         self.rhook("sociointerface.buttons", self.buttons)
         self.rhook("modules.list", self.modules_list)
+        self.rhook("socio.setup-interface", self.setup_interface, priority=100000)
 
     def child_modules(self):
         lst = ["mg.socio.SocioAdmin"]
@@ -409,6 +410,8 @@ class Socio(Module):
             lst.extend(["mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin"])
         if self.conf("module.library"):
             lst.extend(["mg.constructor.library.Library"])
+        if self.conf("module.socialnets"):
+            lst.extend(["mg.constructor.socialnets.SocialNets"])
         return lst
 
     def modules_list(self, modules):
@@ -427,6 +430,11 @@ class Socio(Module):
                 "id": "library",
                 "name": self._("Library"),
                 "description": self._("Game-related documentation for players"),
+                "parent": "socio",
+            }, {
+                "id": "socialnets",
+                "name": self._("Social networks interconnection"),
+                "description": self._("Ability to put Google +1 and Facebook Like buttons"),
                 "parent": "socio",
             }
         ])
@@ -599,6 +607,11 @@ class Socio(Module):
             render_objects = [(v, k) for k, v in render_objects.iteritems()]
             render_objects.sort(reverse=True)
         return render_objects
+
+    def setup_interface(self, vars):
+        if vars.get("socio_interface_setup_done"):
+            raise Hooks.Return()
+        vars["socio_interface_setup_done"] = True
 
     def response(self, content, vars):
         vars["global_html"] = "constructor/socio_global.html"

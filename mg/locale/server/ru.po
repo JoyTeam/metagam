@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-23 17:29+0300\n"
+"PO-Revision-Date: 2012-02-24 15:57+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -244,6 +244,9 @@ msgstr "Возможность вручную создавать новые пр
 
 msgid "Ability to create special parameters of characters 'classes' and require player to select a class on character creation"
 msgstr "Возможность создавать специальные параметры персонажей - \"классы\" - и требовать от игрока выбирать класс при создании персонажа"
+
+msgid "Ability to put Google +1 and Facebook Like buttons"
+msgstr "Возможность помещать кнопки Google +1 и Facebook Like"
 
 msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
 msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
@@ -1276,6 +1279,9 @@ msgstr "Условие (при котором показывать ссылку)
 msgid "Configuration"
 msgstr "Конфигурация"
 
+msgid "Configuration of Google Analytics"
+msgstr "Конфигурация Google Analytics"
+
 msgid "Confirm"
 msgstr "Подтверждение"
 
@@ -1359,6 +1365,9 @@ msgstr "Content-type не указан. Добавьте <meta http-equiv=\"Cont
 
 msgid "Context"
 msgstr "Контекст"
+
+msgid "Continue"
+msgstr "Продолжить"
 
 msgid "Contragent ID"
 msgstr "ID контрагента"
@@ -2252,6 +2261,9 @@ msgstr "Внешний интерфейс"
 msgid "Extra settings"
 msgstr "Дополнительные настройки"
 
+msgid "Facebook application identifier"
+msgstr "Идентификатор приложения Facebook"
+
 msgid "Fast movement across the locations"
 msgstr "Быстрое перемещение по локациям"
 
@@ -2639,6 +2651,18 @@ msgstr "Перейдите к проверке домена"
 msgid "Good name"
 msgstr "Хорошее имя"
 
+msgid "Google Analytics"
+msgstr "Google Analytics"
+
+msgid "Google Analytics code for tracking registrations"
+msgstr "Код Google Analytics для отслеживания регистраций"
+
+msgid "Google Analytics configuration"
+msgstr "Конфигурация Google Analytics"
+
+msgid "Google+ circle identifier"
+msgstr "Идентификатор круга Google+"
+
 msgid "Grass #1"
 msgstr "Трава №1"
 
@@ -2963,6 +2987,9 @@ msgstr "Интерфейсы для задания курсов обмена в�
 
 msgid "Internal game interface for character owner"
 msgstr "Внутриигровой интерфейс для владельца персонажа"
+
+msgid "Interoperation with social networks"
+msgstr "Взаимодействие с социальными сетями"
 
 msgid "Interval"
 msgstr "Интервал"
@@ -4384,7 +4411,7 @@ msgid "Page title"
 msgstr "Название страницы"
 
 msgid "Pages"
-msgstr "На страницу"
+msgstr "На&nbsp;страницу"
 
 msgid "Paid service"
 msgstr "Платная услуга"
@@ -5640,6 +5667,15 @@ msgstr "Курилка"
 
 msgid "Social modules"
 msgstr "Социальные модули"
+
+msgid "Social networks"
+msgstr "Социальные сети"
+
+msgid "Social networks documentation"
+msgstr "Документация на социальные сети"
+
+msgid "Social networks interconnection"
+msgstr "Взаимодействие с социальными сетями"
 
 msgid "Socio"
 msgstr "Социалка"
@@ -7044,6 +7080,10 @@ msgid "You can find detailed information on the shops system in the <a href=\"//
 msgstr "Подробную информацию о системе магазинов вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/shops\" target=\"_blank\">Магазины</a>."
 
 #, python-format
+msgid "You can find detailed information on the social networks interconnection in the <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Social networks page</a> in the reference manual."
+msgstr "Подробную информацию о системе взаимодействия с социальными сетями вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Взаимодействие с социальными сетями</a>."
+
+#, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
 msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
 
@@ -7177,6 +7217,9 @@ msgstr "У вас не будет возможности изменить лог
 
 msgid "Your access to the forum is temporarily blocked till {till}"
 msgstr "Ваш доступ к форуму заблокирован до {till}"
+
+msgid "Your account was registered successfully"
+msgstr "Ваш аккаунт успешно зарегистрирован"
 
 msgid "Your avatar"
 msgstr "Ваш аватар"

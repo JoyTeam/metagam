@@ -1126,6 +1126,9 @@ class DesignMod(Module):
         ]
 
     def parse(self, design, template, content, vars, design_type="game"):
+        if content is not None and "before_content" in vars:
+            content = vars["before_content"] + content
+            del vars["before_content"]
         vars["design_root"] = design.get("uri") if design else None
         vars["content"] = content
         if design and template in design.get("files"):
@@ -1702,6 +1705,7 @@ class SocioInterface(ConstructorModule):
         vars["title"] = self._("Forum tags")
 
     def parse(self, template, vars):
+        self.call("socio.setup-interface", vars)
         design = self.design("sociointerface")
         return self.call("design.parse", design, template, None, vars, "socio")
 

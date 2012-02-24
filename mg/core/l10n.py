@@ -79,6 +79,7 @@ class L10n(Module):
     def register(self):
         self.rhook("l10n.domain", self.l10n_domain)
         self.rhook("l10n.lang", self.l10n_lang)
+        self.rhook("l10n.locale", self.l10n_locale)
         self.rhook("l10n.translation", self.l10n_translation)
         self.rhook("l10n.gettext", self.l10n_gettext)
         self.rhook("l10n.ngettext", self.l10n_ngettext)
@@ -127,6 +128,13 @@ class L10n(Module):
         except KeyError:
             pass
         return None
+
+    def l10n_locale(self):
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            return "ru_RU"
+        else:
+            return "en_US"
 
     def l10n_translation(self, domain, lang):
         if lang == "en":
@@ -229,6 +237,7 @@ class L10n(Module):
 
     def universal_variables(self, struct):
         struct["lang"] = self.call("l10n.lang")
+        struct["locale"] = self.call("l10n.locale")
 
     @property
     def tzinfo(self):

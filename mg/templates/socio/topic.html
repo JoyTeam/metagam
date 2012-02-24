@@ -1,9 +1,9 @@
-<table id="socio-topic-head"><tr><td id="socio-topic-title">
-<div>[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>
-</td>
+<table id="socio-topic-head"><tr>
+<td id="socio-topic-title"><div>[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%][%if googleplus_plusone%]&nbsp;&nbsp;[%googleplus_plusone%][%end%]</div></td>
 [%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
+[%if facebook_like%]<div id="socio-topic-facebook-like">[%facebook_like%]</div>[%end%]
 
 <table id="socio-categories">
 
@@ -22,9 +22,11 @@
 <td class="socio-post-content" colspan="2">
 [%topic.content_html%]
 
+[%if yandex_share%]
 <table id="socio-like-buttons"><tr>
 	<td id="socio-topic-yandex"><div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="button" data-yashareQuickServices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,friendfeed,moikrug"></div></td>
 </tr></table>
+[%end%]
 
 </td>
 
@@ -70,4 +72,6 @@
 <a name="post-form"></a>
 [%new_post_form%]
 
+[%if yandex_share_js%]
 <script type="text/javascript" src="//yandex.st/share/share.js" charset="utf-8"></script>
+[%end%]

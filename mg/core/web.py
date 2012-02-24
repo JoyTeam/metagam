@@ -479,6 +479,7 @@ class Web(Module):
         self.rhook("int-core.reload", self.core_reload, priv="public")
         self.rhook("int-core.reload-hard", self.core_reload_hard, priv="public")
         self.rhook("int-core.appconfig", self.core_appconfig, priv="public")
+        self.rhook("web.before_content", self.before_content)
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.cache", self.web_cache)
         self.rhook("web.cache_invalidate", self.web_cache_invalidate)
@@ -719,7 +720,16 @@ class Web(Module):
             self.req().content_type = content_type
         raise WebResponse(self.req().response(content))
 
+    def before_content(self, content, vars):
+        try:
+            vars["before_content"] += content
+        except KeyError:
+            vars["before_content"] = content
+
     def web_response_global(self, content, vars):
+        if "before_content" in vars:
+            content = vars["before_content"] + content
+            del vars["before_content"]
         vars["content"] = content
         self.call("web.setup_design", vars)
         if vars.get("global_html"):
@@ -863,7 +873,7 @@ class WebForm(object):
         self._hidden = []
         self.rows = []
         self._error = {}
-        self.hidden("ok", 1)
+        self.ok_created = False
         self.submit_created = False
         self.messages_top = None
         self.messages_bottom = None
@@ -871,6 +881,7 @@ class WebForm(object):
         self.quantities = False
         self.errors = False
         self.errors_on_top = False
+        self.method = "post"
 
     def control(self, desc, name, **kwargs):
         """
@@ -907,6 +918,9 @@ class WebForm(object):
         """
         Return cooked HTML form
         """
+        if not self.ok_created and self.method == "post":
+            self.hidden("ok", 1)
+            self.ok_created = True
         if not self.submit_created:
             self.submit(None, None, self.module._("Save"))
         if self.rows:
@@ -924,6 +938,7 @@ class WebForm(object):
                     row["padding_top"] = True
                         
         vars = {
+            "form_method": self.method,
             "form_action": self.action,
             "form_hidden": self._hidden,
             "form_top": self.messages_top,

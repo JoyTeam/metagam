@@ -5,7 +5,7 @@
 <div style="width: 350px"></div>
 [%if form_texteditors%]<script type="text/javascript" src="/st-mg/[%ver%]/js/texteditor.js"></script>[%end%]
 [%if form_quantities%]<script type="text/javascript" src="/st-mg/[%ver%]/js/quantity.js"></script>[%end%]
-<form action="[%form_action%]" method="post" enctype="multipart/form-data" class="form-std" name="stdform">
+<form action="[%form_action%]" method="[%form_method%]" [%if form_method == "post"%]enctype="multipart/form-data" [%+ end%]class="form-std" name="stdform">
 [%if ret%]<div class="form-ret"><a href="[%ret.href%]">[%ret.title%]</a></div>[%end%]
 [%if form_top%]<div class="form-list-messages-top">[%for html in form_top%]<div class="form-list-message-top">[%html%]</div>[%end%]</div>[%end%]
 [%if errors_on_top%]

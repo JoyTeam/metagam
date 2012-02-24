@@ -59,7 +59,8 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 /* TOPIC */
 .socio-mark { vertical-align: middle }
 #socio-topic-head { width: 100% }
-#socio-topic-title { color: #0078ac; font-size: 16px; font-weight: 900; padding-top: 10px; vertical-align: bottom; }
+#socio-topic-title { color: #0078ac; font-size: 16px; font-weight: 900; padding: 10px 10px 0 0; vertical-align: bottom; }
+#socio-topic-facebook-like { padding: 10px 0 10px 0 }
 #socio-like-buttons { height: 50px }
 #socio-topic-tweet { padding-top: 0px }
 #socio-topic-tweet a { color: #ffffff }

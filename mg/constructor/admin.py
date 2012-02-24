@@ -63,6 +63,9 @@ class Constructor(Module):
             "mg.constructor.reqauction.ReqAuction",
             "mg.core.sites.Favicon", "mg.core.sites.FaviconAdmin",
             "mg.core.permissions_editor.Permissions", "mg.core.permissions_editor.PermissionsAdmin",
+            "mg.constructor.marketing.MarketingAdmin",
+            "mg.constructor.marketing.GoogleAnalytics", "mg.constructor.marketing.GoogleAnalyticsAdmin",
+            "mg.constructor.socialnets.SocialNets", "mg.constructor.socialnets.SocialNetsAdmin",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
@@ -104,6 +107,10 @@ class Constructor(Module):
         self.rhook("constructor.project-options-main", self.project_options)
         self.rhook("ext-admin-cassmaint.validate", self.admin_validate, priv="cassmaint.validate")
         self.rhook("headmenu-admin-cassmaint.validate", self.headmenu_validate)
+        self.rhook("project.logo", self.project_logo)
+
+    def project_logo(self):
+        return "http://www.%s/st/constructor/logo/rounded.jpg" % self.app().inst.config["main_host"]
 
     def project_options(self, project, options):
         if self.req().has_access("cassmaint.validate"):
