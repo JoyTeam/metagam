@@ -20,6 +20,7 @@ class SocialNets(ConstructorModule):
             vars["opengraph_image"] = self.call("project.logo")
             vars["opengraph_site_name"] = htmlescape(self.call("project.title"))
             if "opengraph_url" not in vars:
+                vars["opengraph_type"] = "website"
                 vars["opengraph_url"] = "http://%s/" % getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain)
                 vars["opengraph_title"] = vars["opengraph_site_name"]
                 description = self.call("project.description")
@@ -47,6 +48,7 @@ class SocialNets(ConstructorModule):
     def vars_topic(self, vars):
         vars["opengraph_url"] = "http://%s/forum/topic/%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), vars["topic"]["uuid"])
         vars["opengraph_title"] = vars["topic"]["subject_html"]
+        vars["opengraph_type"] = "article"
         description = vars["topic"]["content"]
         if description:
             description = re_tag.sub('', description)
