@@ -2,6 +2,7 @@ from mg.constructor import *
 import re
 
 re_tag = re.compile(r'\[(?:\/?[a-zA-Z]+|[A-Za-z]+|[A-Za-z]+=[^\[\]\r\n]+)\]')
+max_description_length = 200
 
 class SocialNets(ConstructorModule):
     def register(self):
@@ -21,7 +22,10 @@ class SocialNets(ConstructorModule):
             if "opengraph_url" not in vars:
                 vars["opengraph_url"] = "http://%s/" % getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain)
                 vars["opengraph_title"] = vars["opengraph_site_name"]
-                vars["opengraph_description"] = htmlescape(self.call("project.description"))
+                description = self.call("project.description")
+                if len(description) > max_description_length:
+                    description = description[0:max_description_length] + "..."
+                vars["opengraph_description"] = htmlescape(description)
             self.call("web.parse_template", "socialnets/opengraph-head.html", vars)
             # google plus
             google_plus = self.conf("socialnets.google-plus")
@@ -47,6 +51,8 @@ class SocialNets(ConstructorModule):
         if description:
             description = re_tag.sub('', description)
             description = htmlescape(description)
+            if len(description) > max_description_length:
+                description = description[0:max_description_length] + "..."
             vars["opengraph_description"] = description
         # google plus
         if self.conf("socialnets.google-plus"):
