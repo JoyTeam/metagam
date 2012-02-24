@@ -24,9 +24,10 @@ class SocialNets(ConstructorModule):
                 vars["opengraph_url"] = "http://%s/" % getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain)
                 vars["opengraph_title"] = vars["opengraph_site_name"]
                 description = self.call("project.description")
-                if len(description) > max_description_length:
-                    description = description[0:max_description_length] + "..."
-                vars["opengraph_description"] = htmlescape(description)
+                if description:
+                    if len(description) > max_description_length:
+                        description = description[0:max_description_length] + "..."
+                    vars["opengraph_description"] = htmlescape(description)
             if not vars.get("htmlmeta"):
                 vars["htmlmeta"] = {"description": vars.get("opengraph_description")}
             elif not vars["htmlmeta"].get("description"):
