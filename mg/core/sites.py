@@ -41,8 +41,10 @@ class Counters(Module):
         self.rhook("web.setup_design", self.web_setup_design)
 
     def web_setup_design(self, vars):
-        vars["counters"] = self.conf("counters.html")
-        vars["head"] = utf2str(vars.get("head", "")) + utf2str(self.conf("counters.head", ""))
+        if not vars.get("counters_processed"):
+            vars["counters_processed"] = True
+            vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.conf("counters.html", ""))
+            vars["head"] = utf2str(vars.get("head", "")) + utf2str(self.conf("counters.head", ""))
 
 class CountersAdmin(Module):
     def register(self):

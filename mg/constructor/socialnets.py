@@ -5,70 +5,64 @@ re_tag = re.compile(r'\[(?:\/?[a-zA-Z]+|[A-Za-z]+|[A-Za-z]+=[^\[\]\r\n]+)\]')
 
 class SocialNets(ConstructorModule):
     def register(self):
-        self.rhook("web.setup_design", self.web_setup_design)
-        self.rhook("socio.setup-interface", self.socio_setup_interface)
+        self.rhook("socialnets.render", self.render)
         self.rhook("forum.vars-topic", self.vars_topic)
+        self.rhook("socio.setup-interface", self.setup_interface)
 
     def child_modules(self):
         return ["mg.constructor.socialnets.SocialNetsAdmin"]
 
-    def web_setup_design(self, vars):
-        google_plus = self.conf("socialnets.google-plus")
-        if google_plus:
-            vars["googleplus_id"] = google_plus
-            self.call("web.parse_template", "socialnets/googleplus-publisher.html", vars)
-
-    def socio_setup_interface(self, vars):
-        # google plus
-        if self.conf("socialnets.google-plus"):
-            self.call("web.parse_template", "socialnets/googleplus-script.html", vars)
-        # facebook
-        fb_app_id = self.conf("socialnets.facebook-app")
-        if fb_app_id:
-            html_attrs = ' xmlns:fb="http://ogp.me/ns/fb#" xmlns:og="http://ogp.me/ns#"'
-            vars["facebook_app_id"] = fb_app_id
-            try:
-                vars["html_attrs"] += html_attrs
-            except KeyError:
-                vars["html_attrs"] = html_attrs
-            self.call("web.before_content", self.call("web.parse_template", "socialnets/facebook-api.html", vars), vars)
+    def render(self, vars):
+        if not vars.get("socialnets_processed"):
+            vars["socialnets_processed"] = True
+            # open graph
+            vars["opengraph_image"] = self.call("project.logo")
+            vars["opengraph_site_name"] = htmlescape(self.call("project.title"))
+            if "opengraph_url" not in vars:
+                vars["opengraph_url"] = "http://%s/" % getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain)
+                vars["opengraph_title"] = vars["opengraph_site_name"]
+                vars["opengraph_description"] = htmlescape(self.call("project.description"))
+            self.call("web.parse_template", "socialnets/opengraph-head.html", vars)
+            # google plus
+            google_plus = self.conf("socialnets.google-plus")
+            if google_plus:
+                vars["googleplus_id"] = google_plus
+                if "googleplus_rendered" not in vars:
+                    vars["googleplus_size"] = "standard"
+                    vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/googleplus-plusone.html", vars))
+                self.call("web.parse_template", "socialnets/googleplus-head.html", vars)
+            # facebook
+            fb_app_id = self.conf("socialnets.facebook-app")
+            if fb_app_id:
+                vars["facebook_app_id"] = fb_app_id
+                vars["html_attrs"] = utf2str(vars.get("html_attrs", "")) + ' xmlns:fb="http://ogp.me/ns/fb#" xmlns:og="http://ogp.me/ns#"'
+                if "facebook_rendered" not in vars:
+                    vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-like.html", vars))
+                vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-api.html", vars))
 
     def vars_topic(self, vars):
-        url = "http://%s/forum/topic/%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), vars["topic"]["uuid"])
-        title = vars["topic"]["subject_html"]
-        image = self.call("project.logo")
-        if image and image.startswith("//"):
-            image = "http:" + image
+        vars["opengraph_url"] = "http://%s/forum/topic/%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), vars["topic"]["uuid"])
+        vars["opengraph_title"] = vars["topic"]["subject_html"]
         description = vars["topic"]["content"]
         if description:
             description = re_tag.sub('', description)
             description = htmlescape(description)
+            vars["opengraph_description"] = description
         # google plus
         if self.conf("socialnets.google-plus"):
-            vars["googleplus"] = {
-                "url": url,
-                "title": title,
-                "image": image,
-                "description": description,
-            }
+            vars["googleplus_size"] = "small"
             vars["googleplus_plusone"] = self.call("web.parse_template", "socialnets/googleplus-plusone.html", vars)
-            html_attrs = ' itemscope itemtype="http://schema.org/Article"'
-            try:
-                vars["html_attrs"] += html_attrs
-            except KeyError:
-                vars["html_attrs"] = html_attrs
+            vars["googleplus_rendered"] = True
         # facebook
         fb_app_id = self.conf("socialnets.facebook-app")
         if fb_app_id:
-            vars["facebook"] = {
-                "url": url,
-                "title": title,
-                "image": image,
-                "site_name": htmlescape(self.call("project.title")),
-                "description": description,
-            }
-            vars["facebook"]["app_id"] = fb_app_id
             vars["facebook_like"] = self.call("web.parse_template", "socialnets/facebook-like.html", vars)
+            vars["facebook_rendered"] = True
+
+    def setup_interface(self, vars):
+        req = self.req()
+        if req.group == "forum":
+            self.call("socialnets.render", vars)
 
 class SocialNetsAdmin(ConstructorModule):
     def register(self):

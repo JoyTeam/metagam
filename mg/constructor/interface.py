@@ -218,6 +218,7 @@ class Interface(ConstructorModule):
             links.sort(cmp=lambda x, y: cmp(x.get("order"), y.get("order")))
             links[-1]["lst"] = True
             vars["links"] = links
+        self.call("socialnets.render", vars)
         self.call("design.response", design, "index.html", "", vars)
 
     def main_frame_info(self, msg, vars=None):

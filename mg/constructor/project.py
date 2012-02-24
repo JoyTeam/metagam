@@ -13,6 +13,7 @@ class ConstructorProject(Module):
         self.rhook("project.logo", self.project_logo)
         self.rhook("email.sender", self.email_sender)
         self.rhook("modules.list", self.modules_list)
+        self.rhook("project.description", self.project_description)
 
     def child_modules(self):
         lst = [
@@ -143,8 +144,14 @@ class ConstructorProject(Module):
     def project_title(self):
         return self.app().project.get("title_short", "New Game")
 
+    def project_description(self):
+        return self.conf("gameprofile.description")
+
     def project_logo(self):
-        return self.app().project.get("logo")
+        image = self.app().project.get("logo")
+        if image and image.startswith("//"):
+            image = "http:" + image
+        return image
 
     def web_setup_design(self, vars):
         req = self.req()
