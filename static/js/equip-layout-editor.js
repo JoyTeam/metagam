@@ -350,6 +350,7 @@ EquipLayoutEditor.mouse_move = function(ev, target) {
 		var delta_y = pt.y - this.drag_item.mouse_start_y;
 		this.highlighted_item.x = this.grid_size ? Math.floor((this.drag_item.start_x + delta_x) * 1.0 / this.grid_size + 0.5) * this.grid_size : this.drag_item.start_x + delta_x;
 		this.highlighted_item.y = this.grid_size ? Math.floor((this.drag_item.start_y + delta_y) * 1.0 / this.grid_size + 0.5) * this.grid_size : this.drag_item.start_y + delta_y;
+		this.fix_item(this.highlighted_item);
 		this.touch_highlighted_item();
 		repaint = true;
 	}
@@ -552,8 +553,20 @@ EquipLayoutEditor.paint = function(force) {
 		window.setTimeout((function() { this.paint(true) }).createDelegate(this), this.fail_timer);
 };
 
+EquipLayoutEditor.fix_item = function(item) {
+	if (item.x < 0)
+		item.x = 0;
+	if (item.y < 0)
+		item.y = 0;
+	if (item.x + item.width > this.width)
+		item.x = this.width - item.width;
+	if (item.y + item.height > this.height)
+		item.y = this.height - item.height;
+};
+
 EquipLayoutEditor.add = function(item) {
 	item.item_id = ++this.last_item_id;
+	this.fix_item(item);
 	this.items.push(item);
 };
 
