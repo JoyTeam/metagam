@@ -13,7 +13,7 @@ class SocialNets(ConstructorModule):
     def child_modules(self):
         return ["mg.constructor.socialnets.SocialNetsAdmin"]
 
-    def render(self, vars, counters=True):
+    def render(self, vars, simple=False):
         if not vars.get("socialnets_processed"):
             vars["socialnets_processed"] = True
             # open graph
@@ -36,18 +36,22 @@ class SocialNets(ConstructorModule):
             google_plus = self.conf("socialnets.google-plus")
             if google_plus:
                 vars["googleplus_id"] = google_plus
-                if "googleplus_rendered" not in vars and counters:
-                    vars["googleplus_size"] = "standard"
-                    vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/googleplus-plusone.html", vars))
+                if "googleplus_rendered" not in vars:
+                    if simple:
+                        vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/googleplus-plusone-simple.html", vars))
+                    else:
+                        vars["googleplus_size"] = "standard"
+                        vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/googleplus-plusone.html", vars))
                 self.call("web.parse_template", "socialnets/googleplus-head.html", vars)
             # facebook
             fb_app_id = self.conf("socialnets.facebook-app")
             if fb_app_id:
                 vars["facebook_app_id"] = fb_app_id
                 vars["html_attrs"] = utf2str(vars.get("html_attrs", "")) + ' xmlns:fb="http://ogp.me/ns/fb#" xmlns:og="http://ogp.me/ns#"'
-                vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-api.html", vars))
-                if "facebook_rendered" not in vars and counters:
-                    vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-like.html", vars))
+                if not simple:
+                    vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-api.html", vars))
+                    if "facebook_rendered" not in vars:
+                        vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-like.html", vars))
 
     def vars_topic(self, vars):
         vars["opengraph_url"] = "http://%s/forum/topic/%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), vars["topic"]["uuid"])
