@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-24 15:57+0300\n"
+"PO-Revision-Date: 2012-02-24 19:07+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3553,6 +3553,9 @@ msgstr "Аукцион заявок MMO Constructor"
 
 msgid "MMO Constructor Settings"
 msgstr "Настройки конструктора"
+
+msgid "MMO Constructor is a service allowing users to create their own online games"
+msgstr "MMO Constructor — сервис, позволяющий вам создать собственную онлайн-игру через онлайн-конфигуратор. Созданная игра размещается на наших серверах. Мы не берём денег ни за создание игры, ни за её хостинг. Доход от игры мы будем делить с вами в соотношении 50:50."
 
 msgid "MMO Constructor will be the owner of the domain"
 msgstr "Владельцем домена будет MMO Constructor"

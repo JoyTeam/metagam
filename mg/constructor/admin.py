@@ -108,9 +108,13 @@ class Constructor(Module):
         self.rhook("ext-admin-cassmaint.validate", self.admin_validate, priv="cassmaint.validate")
         self.rhook("headmenu-admin-cassmaint.validate", self.headmenu_validate)
         self.rhook("project.logo", self.project_logo)
+        self.rhook("project.description", self.project_description)
 
     def project_logo(self):
         return "http://www.%s/st/constructor/logo/rounded.jpg" % self.app().inst.config["main_host"]
+
+    def project_description(self):
+        return self._("MMO Constructor is a service allowing users to create their own online games")
 
     def project_options(self, project, options):
         if self.req().has_access("cassmaint.validate"):
