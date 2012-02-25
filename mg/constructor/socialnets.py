@@ -55,6 +55,8 @@ class SocialNets(ConstructorModule):
                         vars["counters"] = utf2str(vars.get("counters", "")) + utf2str(self.call("web.parse_template", "socialnets/facebook-like.html", vars))
 
     def vars_topic(self, vars):
+        if not vars.get("topic"):
+            return
         vars["opengraph_url"] = "http://%s/forum/topic/%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), vars["topic"]["uuid"])
         vars["opengraph_title"] = vars["topic"]["subject_html"]
         description = vars["topic"]["content"]
