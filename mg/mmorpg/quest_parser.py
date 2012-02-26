@@ -117,9 +117,6 @@ class TokenBought(Parsing.Token):
 class TokenSold(Parsing.Token):
     "%token sold"
 
-class TokenEquip(Parsing.Token):
-    "%token equip"
-
 class TokenWear(Parsing.Token):
     "%token wear"
 
@@ -613,7 +610,6 @@ class QuestScriptParser(ScriptParser):
     syms["shop"] = TokenShop
     syms["sold"] = TokenSold
     syms["bought"] = TokenBought
-    syms["equip"] = TokenEquip
     syms["wear"] = TokenWear
     syms["unwear"] = TokenUnwear
     syms["drop"] = TokenDrop

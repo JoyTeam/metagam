@@ -144,6 +144,9 @@ class TokenAssign(Parsing.Token):
 class TokenRandom(Parsing.Token):
     "%token random"
 
+class TokenEquip(Parsing.Token):
+    "%token equip"
+
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
 # productions would look something like:
@@ -187,6 +190,10 @@ class AttrKey(Parsing.Nonterm):
     def reduceOnline(self, online):
         "%reduce online"
         self.val = "online"
+
+    def reduceEquip(self, equip):
+        "%reduce equip"
+        self.val = "equip"
 
 class Expr(Parsing.Nonterm):
     "%nonterm"
@@ -302,6 +309,7 @@ class ScriptParser(Parsing.Lr, Module):
         "not": TokenNot,
         "random": TokenRandom,
         "online": TokenOnline,
+        "equip": TokenEquip,
     }
     funcs = set(["min", "max"])
 
