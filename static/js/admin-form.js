@@ -7,6 +7,7 @@ Form = Ext.extend(AdminResponsePanel, {
 		this.conditions = new Array();
 		form_id++;
 		var upload = data.upload;
+		var next_elem_id = 0;
 		var rows = new Array();
 		if (data.title) {
 			rows.push({
@@ -230,8 +231,16 @@ Form = Ext.extend(AdminResponsePanel, {
 				it.flex = 1;
 			if (it.flex)
 				flex_total += it.flex;
+			var elem_id;
+			if (it.id || it.name) {
+				elem_id = 'elem_' + (it.id || it.name);
+			} else {
+				next_elem_id++;
+				it.id = 'auto_' + next_elem_id;
+				elem_id = 'elem_' + it.id;
+			}
 			row.push({
-				id: (id.id || it.name) ? ('elem_' + (it.id || it.name)) : undefined,
+				id: elem_id,
 				autoHeight: true,
 				flex: it.flex,
 				width: it.width,
@@ -323,6 +332,10 @@ Form = Ext.extend(AdminResponsePanel, {
 			} catch (e) {
 			}
 			var cmp = Ext.getCmp(cond.id);
+			if (!cmp) {
+				Ext.Msg.alert(gt.gettext('Error'), 'Missing component ' + cond.id);
+				continue;
+			}
 			if (cmp.isVisible() != visible || force) {
 				cmp.setVisible(visible);
 				changed = true;

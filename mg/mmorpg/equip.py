@@ -554,7 +554,7 @@ class EquipAdmin(ConstructorModule):
             pos += 1
             col += 1
         # requirements
-        fields.insert(pos, {"type": "header", "html": self._("Minimal requirements to wear this item")})
+        fields.insert(pos, {"type": "header", "html": self._("Minimal requirements to wear this item"), "condition": "[equip]"})
         pos += 1
         params = self.call("characters.params")
         if params:
