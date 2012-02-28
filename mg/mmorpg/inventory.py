@@ -389,6 +389,45 @@ class InventoryAdmin(ConstructorModule):
                     price = float(price)
                     obj.set("balance-price", price)
                     obj.set("balance-currency", currency)
+                # fractions
+                if not req.param("fractions"):
+                    obj.delkey("fractions")
+                    obj.delkey("frac_param_full")
+                    obj.delkey("frac_param_part")
+                    obj.delkey("frac_remain")
+                    obj.delkey("frac_unit")
+                else:
+                    fractions = req.param("max_fractions").strip()
+                    if not fractions:
+                        errors["max_fractions"] = self._("This field is mandatory")
+                    elif not valid_nonnegative_int(fractions):
+                        errors["max_fractions"] = self._("This field must be a positive integer number")
+                    else:
+                        fractions = int(fractions)
+                        if fractions < 2:
+                            errors["max_fractions"] = self._("Minimal value is %d") % fractions
+                        elif fractions > 1000000:
+                            errors["max_fractions"] = self._("Maximal value is %d") % 1000000
+                        else:
+                            obj.set("fractions", fractions)
+                    frac_param_full = req.param("frac_param_full").strip()
+                    if not frac_param_full:
+                        errors["frac_param_full"] = self._("This field is mandatory")
+                    else:
+                        obj.set("frac_param_full", frac_param_full)
+                    frac_param_part = req.param("frac_param_part").strip()
+                    if not frac_param_part:
+                        errors["frac_param_part"] = self._("This field is mandatory")
+                    else:
+                        obj.set("frac_param_part", frac_param_part)
+                    obj.set("frac_remain", True if req.param("frac_remain") else False)
+                    frac_unit = req.param("frac_unit").strip()
+                    if not frac_unit:
+                        obj.delkey("frac_unit")
+                    elif not self.call("l10n.literal_values_valid", frac_unit):
+                        errors["frac_unit"] = self._("Invalid field format")
+                    else:
+                        obj.set("frac_unit", frac_unit)
                 # handling errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -459,9 +498,18 @@ class InventoryAdmin(ConstructorModule):
             # prices
             fields.append({"name": "price", "label": self._("Balance price for the item"), "value": obj.get("balance-price")})
             fields.append({"name": "currency", "label": self._("Currency of the balance price"), "type": "combo", "value": obj.get("balance-currency"), "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True})
+            # library
             fields.append({"name": "library", "label": self._("Publish item information in the library"), "type": "checkbox", "checked": obj.get("library", True)})
             # description
             fields.append({"name": "description", "label": self._("Item description"), "type": "textarea", "value": obj.get("description")})
+            # fractions
+            fields.append({"type": "header", "html": self._("Fractions")})
+            fields.append({"name": "fractions", "label": self._("This item is split into fractions"), "type": "checkbox", "checked": obj.get("fractions")})
+            fields.append({"name": "max_fractions", "label": self._("Quantity of fractions in the whole item"), "value": obj.get("fractions"), "condition": "[fractions]"})
+            fields.append({"name": "frac_param_full", "label": self._("Parameter name for shops (ex: Length)"), "value": obj.get("frac_param_full"), "condition": "[fractions]"})
+            fields.append({"name": "frac_param_part", "label": self._("Parameter name for inventory (ex: Remainder)"), "value": obj.get("frac_param_part"), "condition": "[fractions]", "inline": True})
+            fields.append({"name": "frac_remain", "label": self._("Show reverted value in the inventory (0 means whole item)"), "type": "checkbox", "checked": obj.get("frac_remain"), "condition": "[fractions]", "inline": True})
+            fields.append({"name": "frac_unit", "label": self._("Unit name: singular and plural forms delimited by '/' (may be empty). For example: 'inch/inches'"), "value": obj.get("frac_unit"), "condition": "[fractions]"})
             # categories
             fields.append({"mark": "categories", "type": "header", "html": self._("Rubricators")})
             cols = 3
@@ -2066,7 +2114,7 @@ class Inventory(ConstructorModule):
             }
             params = []
             self.call("item-types.params-owner-important", item_type, params, viewer=viewer)
-            params = [par for par in params if par.get("value_raw") or par.get("important")]
+            params = [par for par in params if par.get("value_raw") is not None or par.get("important")]
             if params:
                 params[-1]["lst"] = True
                 ritem["params"] = params
@@ -2213,10 +2261,31 @@ class Inventory(ConstructorModule):
         if value is not None:
             value_html = htmlescape(value)
             params.append({
-                "value_raw": value,
                 "name": '<span class="item-types-page-expiration-name">%s</span>' % self._("itemparam///Expiration"),
+                "value_raw": value,
                 "value": '<span class="item-types-page-expiration-value">%s</span>' % value_html,
             })
+        # fractions
+        if obj.get("fractions"):
+            max_fractions = obj.get("fractions")
+            frac_unit = obj.get("frac_unit")
+            if context == "library":
+                params.append({
+                    "name": '<span class="item-types-page-fraction-name">%s</span>' % obj.get("frac_param_full"),
+                    "value_raw": max_fractions,
+                    "value": '<span class="item-types-page-fraction-value">%s</span>' % max_fractions,
+                    "unit": self.call("l10n.literal_value", max_fractions, frac_unit) if frac_unit else None,
+                })
+            else:
+                val = obj.get("used", 0)
+                if not obj.get("frac_remain"):
+                    val = max_fractions - val
+                params.append({
+                    "name": '<span class="item-types-page-fraction-name">%s</span>' % obj.get("frac_param_part"),
+                    "value_raw": val,
+                    "value": self._(u'itemfractions///{used} <span class="item-types-page-fraction-text">of</span> {max}').format(used='<span class="item-types-page-fraction-value">%s</span>' % val, max='<span class="item-types-page-fraction-value">%s</span>' % max_fractions),
+                    "unit": self.call("l10n.literal_value", max_fractions, frac_unit) if frac_unit else None,
+                })
         # highlighting modified parameters
         for p in params:
             param = p.get("param")

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-24 19:07+0300\n"
+"PO-Revision-Date: 2012-02-27 15:33+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2391,6 +2391,9 @@ msgstr "Теги форума"
 msgid "Forum topic"
 msgstr "Тема на форуме"
 
+msgid "Fractions"
+msgstr "Части"
+
 msgid "Frame sizes"
 msgstr "Размеры фреймов"
 
@@ -4459,6 +4462,12 @@ msgstr "Параметр видим владельцу"
 msgid "Parameter name"
 msgstr "Название параметра"
 
+msgid "Parameter name for inventory (ex: Remainder)"
+msgstr "Название параметра для инвентаря (напр: Остаток)"
+
+msgid "Parameter name for shops (ex: Length)"
+msgstr "Название параметра для магазинов (напр: Длина)"
+
 msgid "Parameter name in genitive"
 msgstr "Название параметра в родительном падеже"
 
@@ -4751,6 +4760,9 @@ msgstr "Помещать купленные товары на склад"
 
 msgid "Quantity"
 msgstr "Количество"
+
+msgid "Quantity of fractions in the whole item"
+msgstr "Количество частей в целом предмете"
 
 msgid "Quantity to discard"
 msgstr "Количество на выброс"
@@ -5537,6 +5549,9 @@ msgstr "Показать с левой стороны"
 msgid "Show parameters of the character"
 msgstr "Показать параметры персонажа"
 
+msgid "Show reverted value in the inventory (0 means whole item)"
+msgstr "В инвентаре показывать обратное значение (\"0\" обозначает нулевой износ)"
+
 msgid "Show smiles"
 msgstr "Показать смайлики"
 
@@ -6170,6 +6185,9 @@ msgstr "Этот домен был зарегистрирован не вами.
 msgid "This field is mandatory"
 msgstr "Это обязательное поле"
 
+msgid "This field must be a positive integer number"
+msgstr "Это значение должно быть целым положительным числом"
+
 msgid "This field must be greater than zero"
 msgstr "Это поле должно быть больше 0"
 
@@ -6251,6 +6269,9 @@ msgstr "Этот предмет нельзя надеть"
 
 msgid "This item is not wearable in this slot"
 msgstr "Этот предмет нельзя надеть в этот слот"
+
+msgid "This item is split into fractions"
+msgstr "Этот предмет делится на части"
 
 msgid "This item is wearable"
 msgstr "Предмет надеваемый"
@@ -6540,6 +6561,9 @@ msgstr "URL должен начинаться с \"/\""
 
 msgid "Underline"
 msgstr "Подчёркивание"
+
+msgid "Unit name: singular and plural forms delimited by '/' (may be empty). For example: 'inch/inches'"
+msgstr "Единица измерения: формы в числе 1, 2 и 5, разделённые \"/\" (может быть пустой). Например: \"дюйм/дюйма/дюймов\""
 
 msgid "Unjoining"
 msgstr "Исключение"
@@ -7674,6 +7698,9 @@ msgstr "установлено"
 
 msgid "item///wear"
 msgstr "надеть"
+
+msgid "itemfractions///{used} <span class=\"item-types-page-fraction-text\">of</span> {max}"
+msgstr "{used} <span class=\"item-types-page-fraction-text\">из</span> {max}"
 
 msgid "itemlog///Reference"
 msgstr "Референс"
