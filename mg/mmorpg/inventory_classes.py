@@ -68,6 +68,8 @@ def dna_make(mods):
     return dna
 
 def dna_parse(dna):
+    if type(dna) != str and type(dna) != unicode:
+        return None, None
     m = re_dna_parse.match(dna)
     if not m:
         return None, None
