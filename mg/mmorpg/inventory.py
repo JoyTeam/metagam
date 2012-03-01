@@ -27,6 +27,58 @@ re_aggregate = re.compile(r'^(sum|min|max|cnt_dna|cnt)_(.+)')
 re_delimage = re.compile(r'^([a-z0-9]+)/delimage/(\d+x\d+)$')
 re_image_key = re.compile(r'^image-([0-9]+)x([0-9]+)$')
 
+class InventoryError(ScriptRuntimeError):
+    pass
+
+class Item(ConstructorModule):
+    def __init__(self, app, item_type, inv, fqn="mg.mmorpg.inventory.Item"):
+        Module.__init__(self, app, fqn)
+        self.item_type = item_type
+        self.inv = inv
+
+    def __getattr__(self, name):
+        "Translating ItemType's interface"
+        return getattr(self.item_type, name)
+
+    def script_attr(self, attr, handle_exceptions=True):
+        return self.item_type.script_attr(attr, handle_exceptions)
+
+    def script_set_attr(self, attr, val, env):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.set_param(param, val, env)
+        raise AttributeError(attr)
+
+    def _set_param(self, key, val, env=None, description=None, **kwargs):
+        if self.param(key) != val:
+            # creating new ItemType
+            new_item_type = self.item_type.copy()
+            if not new_item_type.mods:
+                new_item_type.mods = {}
+            new_item_type.mods[key] = val
+            new_item_type.update_dna()
+            # updating inventory
+            if not self.inv._take_dna(self.item_type.dna, 1):
+                if env:
+                    raise InventoryError(self._("Item type %s missing in the inventory") % self.item_type.dna, env)
+                else:
+                    return 0
+            else:
+                self.item_type = new_item_type
+                self.inv._give(self.item_type.uuid, 1, mod=self.item_type.mods)
+        return 1
+
+    def set_param(self, *args, **kwargs):
+        with self.lock([self.inv.lock_key]):
+            self.inv.load()
+            self._set_param(*args, **kwargs)
+            self.inv.store()
+
+    def store(self):
+        self.inv.store()
+
 class InventoryAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
@@ -1583,7 +1635,7 @@ class MemberInventory(ConstructorModule):
             self._give(*args, **kwargs)
             self.store()
 
-    def _give(self, item_type, quantity, description, **kwargs):
+    def _give(self, item_type, quantity, description=None, **kwargs):
         items = self._items()
         found = False
         mod = kwargs.get("mod")
@@ -1620,19 +1672,20 @@ class MemberInventory(ConstructorModule):
                 item["dna"] = dna
             items.append(item)
         self.inv.touch()
-        trans = self.obj(DBItemTransfer)
-        trans.set("owner", self.uuid)
-        if self.owtype != "char":
-            trans.set("owtype", self.owtype)
-        trans.set("type", item_type)
-        if dna:
-            trans.set("dna", dna)
-        trans.set("quantity", quantity)
-        trans.set("description", description)
-        for k, v in kwargs.iteritems():
-            trans.set(k, v)
-        trans.set("performed", kwargs.get("performed") or self.now())
-        self.trans.append(trans)
+        if description:
+            trans = self.obj(DBItemTransfer)
+            trans.set("owner", self.uuid)
+            if self.owtype != "char":
+                trans.set("owtype", self.owtype)
+            trans.set("type", item_type)
+            if dna:
+                trans.set("dna", dna)
+            trans.set("quantity", quantity)
+            trans.set("description", description)
+            for k, v in kwargs.iteritems():
+                trans.set(k, v)
+            trans.set("performed", kwargs.get("performed") or self.now())
+            self.trans.append(trans)
         self._invalidate()
 
     def _items(self):
@@ -1713,7 +1766,7 @@ class MemberInventory(ConstructorModule):
                 del self.inv
             return deleted
 
-    def _take_type(self, item_type, quantity, description, **kwargs):
+    def _take_type(self, item_type, quantity, description=None, **kwargs):
         if not item_type:
             return 0
         items = self._items()
@@ -1753,19 +1806,20 @@ class MemberInventory(ConstructorModule):
             for key, quantity in logmessages.iteritems():
                 item_type = key[0]
                 dna_suffix = key[1]
-                trans = self.obj(DBItemTransfer)
-                trans.set("owner", self.uuid)
-                if self.owtype != "char":
-                    trans.set("owtype", self.owtype)
-                trans.set("type", item_type)
-                if dna_suffix:
-                    trans.set("dna", dna_suffix)
-                trans.set("quantity", -quantity)
-                trans.set("description", description)
-                for k, v in kwargs.iteritems():
-                    trans.set(k, v)
-                trans.set("performed", kwargs.get("performed") or self.now())
-                self.trans.append(trans)
+                if description:
+                    trans = self.obj(DBItemTransfer)
+                    trans.set("owner", self.uuid)
+                    if self.owtype != "char":
+                        trans.set("owtype", self.owtype)
+                    trans.set("type", item_type)
+                    if dna_suffix:
+                        trans.set("dna", dna_suffix)
+                    trans.set("quantity", -quantity)
+                    trans.set("description", description)
+                    for k, v in kwargs.iteritems():
+                        trans.set(k, v)
+                    trans.set("performed", kwargs.get("performed") or self.now())
+                    self.trans.append(trans)
                 self._invalidate()
         return deleted
 
@@ -1777,7 +1831,7 @@ class MemberInventory(ConstructorModule):
                 self.store()
             return res
 
-    def _take_dna(self, dna, quantity, description, **kwargs):
+    def _take_dna(self, dna, quantity, description=None, **kwargs):
         item_type, dna_suffix = dna_parse(dna)
         if not item_type:
             return None, None
@@ -1800,19 +1854,20 @@ class MemberInventory(ConstructorModule):
                     self.inv.touch()
                     success = True
                 if success:
-                    trans = self.obj(DBItemTransfer)
-                    trans.set("owner", self.uuid)
-                    if self.owtype != "char":
-                        trans.set("owtype", self.owtype)
-                    trans.set("type", item_type)
-                    if dna_suffix:
-                        trans.set("dna", dna_suffix)
-                    trans.set("quantity", -quantity)
-                    trans.set("description", description)
-                    for k, v in kwargs.iteritems():
-                        trans.set(k, v)
-                    trans.set("performed", kwargs.get("performed") or self.now())
-                    self.trans.append(trans)
+                    if description:
+                        trans = self.obj(DBItemTransfer)
+                        trans.set("owner", self.uuid)
+                        if self.owtype != "char":
+                            trans.set("owtype", self.owtype)
+                        trans.set("type", item_type)
+                        if dna_suffix:
+                            trans.set("dna", dna_suffix)
+                        trans.set("quantity", -quantity)
+                        trans.set("description", description)
+                        for k, v in kwargs.iteritems():
+                            trans.set(k, v)
+                        trans.set("performed", kwargs.get("performed") or self.now())
+                        self.trans.append(trans)
                     self._invalidate()
                     return self.item_type(item_type, dna_suffix, item.get("mod")), quantity
                 return None, None
@@ -1945,6 +2000,32 @@ class Inventory(ConstructorModule):
         self.rhook("item-types.all", self.item_types_all)
         self.rhook("item-types.load", self.item_types_load)
         self.rhook("inventory.render", self.inventory_render)
+        self.rhook("item-types.item-type", self.item_types_item_type)
+        self.rhook("item-types.item", self.item_types_item)
+
+    def item_types_item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
+        if dna_suffix is None:
+            dna_suffix = dna_make(mods)
+        dna = dna_join(uuid, dna_suffix)
+        try:
+            req = self.req()
+        except AttributeError:
+            return ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
+        else:
+            try:
+                item_types = req.item_types
+            except AttributeError:
+                item_types = {}
+                req.item_types = item_types
+            try:
+                return item_types[dna]
+            except KeyError:
+                obj = ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
+                item_types[dna] = obj
+                return obj
+
+    def item_types_item(self, inv, *args, **kwargs):
+        return Item(self.app(), self.item_types_item_type(*args, **kwargs), inv)
 
     def modules_list(self, modules):
         modules.append({

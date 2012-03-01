@@ -352,7 +352,7 @@ class Character(Module):
             return self.quests.quest(qid)
         raise AttributeError(attr)
 
-    def script_set_attr(self, attr, val):
+    def script_set_attr(self, attr, val, env):
         # parameters
         m = re_param_attr.match(attr)
         if m:

@@ -43,7 +43,7 @@ Pager.prototype.update = function() {
 		if (trivial_menu && !this.show_trivial_menu) {
 			el.style.display = 'none';
 		} else {
-			el.innerHTML = tokens.join('&nbsp;| ');
+			el.innerHTML = tokens.join('&nbsp;/ ');
 			el.style.display = '';
 		}
 	}

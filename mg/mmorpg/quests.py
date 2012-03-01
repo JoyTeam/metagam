@@ -191,7 +191,7 @@ class CharQuest(object):
                 else:
                     raise AttributeError(attr)
 
-    def script_set_attr(self, attr, val):
+    def script_set_attr(self, attr, val, env):
         if attr == "state":
             attr = "p_state"
         m = re_param.match(attr)
@@ -1362,7 +1362,7 @@ class Quests(ConstructorModule):
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
                                                 raise AbortHandler()
                                         else:
-                                            raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env())
+                                            raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env)
                                     elif cmd_code == "givemoney":
                                         amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
                                         currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
@@ -1422,14 +1422,14 @@ class Quests(ConstructorModule):
                                         set_attr = getattr(obj, "script_set_attr", None)
                                         if not set_attr:
                                             if getattr(obj, "script_attr", None):
-                                                raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env())
+                                                raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env)
                                             else:
-                                                raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env())
+                                                raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
                                         try:
-                                            set_attr(attr, val)
+                                            set_attr(attr, val, env)
                                             modified_objects.add(obj)
                                         except AttributeError as e:
-                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2]), env())
+                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2]), env)
                                     elif cmd_code == "destroy":
                                         if cmd[1]:
                                             if debug:
@@ -1545,7 +1545,7 @@ class Quests(ConstructorModule):
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
-                                    e = ScriptError(e.val, env())
+                                    e = ScriptError(e.val, env)
                                     self.call("exception.report", e)
                                     self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
                                 except ScriptError as e:
@@ -1564,7 +1564,7 @@ class Quests(ConstructorModule):
                         for obj in modified_objects:
                             obj.store()
                 except QuestError as e:
-                    raise ScriptError(e.val, env())
+                    raise ScriptError(e.val, env)
         except ScriptError as e:
             self.call("exception.report", e)
             self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent)

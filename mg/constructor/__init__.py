@@ -1,8 +1,7 @@
 from mg import *
 from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmorpg.locations_classes import Location
-from mg.constructor.script_classes import ScriptError, ScriptParserError
-from mg.mmorpg.inventory_classes import ItemType, dna_join, dna_make
+from mg.constructor.script_classes import ScriptError, ScriptParserError, ScriptRuntimeError
 
 class ConstructorModule(Module):
     def find_character(self, name):
@@ -120,26 +119,11 @@ class ConstructorModule(Module):
             return None
         return self.item_type(uuid)
 
-    def item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
-        if dna_suffix is None:
-            dna_suffix = dna_make(mods)
-        dna = dna_join(uuid, dna_suffix)
-        try:
-            req = self.req()
-        except AttributeError:
-            return ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
-        else:
-            try:
-                item_types = req.item_types
-            except AttributeError:
-                item_types = {}
-                req.item_types = item_types
-            try:
-                return item_types[dna]
-            except KeyError:
-                obj = ItemType(self.app(), uuid, dna_suffix, mods, db_item_type=db_item_type, db_params=db_params)
-                item_types[dna] = obj
-                return obj
+    def item_type(self, *args, **kwargs):
+        return self.call("item-types.item-type", *args, **kwargs)
+
+    def item(self, *args, **kwargs):
+        return self.call("item-types.item", *args, **kwargs)
 
     def item_types_all(self, load_item_types=True, load_params=True):
         return self.call("item-types.all", load_item_types, load_params)

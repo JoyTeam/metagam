@@ -510,14 +510,16 @@ class ScriptEngine(ConstructorModule):
             except AttributeError:
                 pass
             else:
-                if callable(exception.env.description):
-                    exception.env.description = exception.env.description()
-                vars["context"] = htmlescape(exception.env.description)
+                if callable(env):
+                    env = env()
+                if callable(env.description):
+                    env.description = env.description()
+                vars["context"] = htmlescape(env.description)
                 try:
                     if env.text:
-                        vars["expression"] = htmlescape(self.call("script.unparse-text", exception.env.val))
+                        vars["expression"] = htmlescape(self.call("script.unparse-text", env.val))
                     else:
-                        vars["expression"] = htmlescape(self.call("script.unparse-expression", exception.env.val))
+                        vars["expression"] = htmlescape(self.call("script.unparse-expression", env.val))
                 except AttributeError:
                     pass
             subj = utf2str(repr(exception))

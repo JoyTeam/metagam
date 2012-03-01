@@ -97,6 +97,13 @@ class ItemType(Module):
             self._dna = dna_join(self.uuid, self._dna_suffix)
             return self._dna
 
+    def update_dna(self):
+        try:
+            delattr(self, "_dna")
+        except AttributeError:
+            pass
+        self._dna_suffix = dna_make(self.mods)
+
     @property
     def db_item_type(self):
         try:
@@ -186,6 +193,17 @@ class ItemType(Module):
             return self.name_a
         elif attr == "equip":
             return 1 if self.get("equip") else 0
+        elif attr == "fractions":
+            return self.get("fractions", 0)
+        elif attr == "used":
+            return self.get("used", 0) if self.get("fractions") else 0
+        elif attr == "frac_ratio":
+            fractions = self.get("fractions")
+            if fractions:
+                used = self.get("used", 0)
+                return (fractions - used) * 1.0 / fractions
+            else:
+                return 1.0
         else:
             m = re_param_attr.match(attr)
             if m:
@@ -270,3 +288,11 @@ class ItemType(Module):
         except AttributeError:
             self._expiration = self.get("exp-till")
             return self._expiration
+
+    def copy(self):
+        new_item_type = ItemType(self.app(), self.uuid, db_item_type=self.db_item_type, db_params=self.db_params, dna_suffix=self._dna_suffix)
+        if self.mods:
+            new_item_type.mods = self.mods.copy()
+        else:
+            new_item_type.mods = None
+        return new_item_type
