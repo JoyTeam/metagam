@@ -64,6 +64,7 @@ class ConstructorProject(Module):
                 lst.extend([
                     "mg.core.money.Xsolla",
                     "mg.constructor.stats.GameReporter",
+                    "mg.constructor.marketing.MarketingAdmin",
                     "mg.constructor.marketing.MarketingStat",
                 ])
             if self.conf("module.socio"):
