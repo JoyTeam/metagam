@@ -215,6 +215,9 @@ class ItemType(Module):
     def __str__(self):
         return "[item %s]" % utf2str(self.name)
     
+    def __unicode__(self):
+        return u"[item %s]" % self.name
+    
     __repr__ = __str__
 
     @property

@@ -41,9 +41,13 @@ class Item(ConstructorModule):
         return getattr(self.item_type, name)
 
     def script_attr(self, attr, handle_exceptions=True):
+        if attr == "used":
+            return self.mods.get(":used", 0) if self.mods else 0
         return self.item_type.script_attr(attr, handle_exceptions)
 
     def script_set_attr(self, attr, val, env):
+        if attr == "used":
+            return self.set_param(":used", val, env)
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -1604,17 +1608,23 @@ class MemberInventory(ConstructorModule):
             self.inv.set("items", [])
         self.trans = []
         self.expired = {}
+        self.worn = set()
 
     def _inv_update(self):
         pass
 
     def store(self):
+        self.items()
         # removing expired items
         if self.expired:
             for dna, expired in self.expired.iteritems():
                 #self._take_dna(dna, None, "expired", performed=expired)
                 self._take_dna(dna, None, "expired")
             self.expired = {}
+        if self.worn:
+            for dna in self.worn:
+                self._take_dna(dna, None, "worn")
+            self.worn = set()
         self._inv_update()
         self.inv.store()
         for trans in self.trans:
@@ -1748,13 +1758,16 @@ class MemberInventory(ConstructorModule):
         ), item.get("quantity")) for item in lst]
         # removing expired items
         now = self.now()
-        not_expired = []
+        retval = []
         for item_type, quantity in result:
             if item_type.expiration and now > item_type.expiration:
                 self.expired[item_type.dna] = item_type.expiration
+            elif item_type.get("fractions") and item_type.mods and item_type.mods.get(":used", 0) >= item_type.get("fractions"):
+                print "worn: %s > %s" % (item_type.mods.get(":used", 0), item_type.get("fractions"))
+                self.worn.add(item_type.dna)
             else:
-                not_expired.append((item_type, quantity))
-        return not_expired
+                retval.append((item_type, quantity))
+        return retval
 
     def take_type(self, *args, **kwargs):
         with self.lock([self.lock_key]):
@@ -2358,7 +2371,7 @@ class Inventory(ConstructorModule):
                     "unit": self.call("l10n.literal_value", max_fractions, frac_unit) if frac_unit else None,
                 })
             else:
-                val = obj.get("used", 0)
+                val = obj.mods.get(":used", 0) if obj.mods else 0
                 if not obj.get("frac_remain"):
                     val = max_fractions - val
                 params.append({
