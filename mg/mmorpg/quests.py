@@ -1429,7 +1429,7 @@ class Quests(ConstructorModule):
                                             set_attr(attr, val, env)
                                             modified_objects.add(obj)
                                         except AttributeError as e:
-                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2]), env)
+                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' of the {cls} object is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], cls=type(obj).__name__), env)
                                     elif cmd_code == "destroy":
                                         if cmd[1]:
                                             if debug:
@@ -1634,11 +1634,11 @@ class Quests(ConstructorModule):
             self.call("web.not_found")
         code, dna = m.group(1, 2)
         # validating item type
-        item_type, quantity = character.inventory.find_dna(dna)
-        if not item_type:
+        item, quantity = character.inventory.find_dna(dna)
+        if not item:
             character.error(self._("No items of such type"))
             self.call("web.redirect", "/inventory")
-        cat = item_type.cat("inventory")
+        cat = item.cat("inventory")
         # validating action
         action = None
         for a in self.conf("quest-item-actions.list", []):
@@ -1646,16 +1646,16 @@ class Quests(ConstructorModule):
                 action = a
                 break
         if action is None:
-            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item.dna))
         # checking availability
-        globs = {"char": character, "item": item_type}
+        globs = {"char": character, "item": item}
         available = self.call("script.evaluate-expression", action["available"], globs=globs, description=lambda: self._("Item action: %s") % action["code"])
         if not available:
             character.error(self._("This item action is currently unavailable"))
-            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
-        self.qevent("item-%s" % action["code"], char=character, item=item_type)
+            self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item.dna))
+        self.qevent("item-%s" % action["code"], char=character, item=item)
         self.call("quest.check-redirects")
-        self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item_type.dna))
+        self.call("web.redirect", "/inventory?cat=%s#%s" % (cat, item.dna))
 
     def request_processed(self):
         req = self.req()

@@ -468,10 +468,10 @@ class Params(ConstructorModule):
     def html(self, param, value):
         visual_mode = param.get("visual_mode")
         if visual_mode == 0:
-            value = htmlescape(unicode(value))
+            html = htmlescape(unicode(value))
             if param.get("visual_plus") and value > 0:
-                value = u"+%s" % value
-            return value
+                html = u"+%s" % html
+            return html
         elif visual_mode == 1 or visual_mode == 2:
             text = None
             for ent in param["visual_table"]:

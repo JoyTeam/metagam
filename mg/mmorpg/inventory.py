@@ -1869,7 +1869,7 @@ class MemberInventory(ConstructorModule):
                         trans.set("performed", kwargs.get("performed") or self.now())
                         self.trans.append(trans)
                     self._invalidate()
-                    return self.item_type(item_type, dna_suffix, item.get("mod")), quantity
+                    return self.item(self, item_type, dna_suffix, item.get("mod")), quantity
                 return None, None
         return None, None
 
@@ -1879,7 +1879,7 @@ class MemberInventory(ConstructorModule):
             return None, None
         for item in self._items():
             if item.get("type") == item_type and item.get("dna") == dna_suffix:
-                return self.item_type(item_type, dna_suffix, item.get("mod")), item.get("quantity")
+                return self.item(self, item_type, dna_suffix, item.get("mod")), item.get("quantity")
         return None, None
 
     def script_attr(self, attr, handle_exceptions=True):

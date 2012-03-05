@@ -64,7 +64,6 @@ class PermissionsAdmin(Module):
                 errors = {}
                 # id
                 ident = req.param("id").strip()
-                print "ident=%s" % ident
                 if not ident:
                     errors["id"] = self._("This field is mandatory")
                 elif not re_valid_identifier.match(ident):
@@ -87,7 +86,6 @@ class PermissionsAdmin(Module):
                     new_perm["name"] = name
                 # errors handling
                 if errors:
-                    print errors
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # storing
                 perms = [p for p in perms if p["id"] != perm.get("id")]

@@ -1,7 +1,10 @@
 from mg.constructor import *
-from mg.mmorpg.inventory import MemberInventory
-from mg.mmorpg.inventory_classes import dna_parse
+from mg.mmorpg.inventory import MemberInventory, Item
+from mg.mmorpg.inventory_classes import dna_parse, dna_join
 import re
+
+class EquipError(ScriptRuntimeError):
+    pass
 
 max_slot_id = 100
 re_del = re.compile(r'^del/(\d+)$')
@@ -14,6 +17,22 @@ re_equip_slot = re.compile(r'^(\d+)$')
 re_equip_slot_item = re.compile(r'^(\d+)/([a-f0-9]{32}|[a-f0-9]{32}_[a-f0-9]{32})$')
 re_equip_item = re.compile(r'^([a-z0-9\-]+)/([a-f0-9_]+)$')
 re_slot_id = re.compile(r'^slot([1-9][0-9]*)$')
+
+class EquipItem(Item):
+    def __init__(self, app, equip, slot, fqn="mg.mmorpg.equip.EquipItem"):
+        item_type = equip.equipped(slot)
+        if not item_type:
+            raise EquipError(self._("Slot %s is not equipped") % slot, None)
+        Item.__init__(self, app, item_type, equip.inv, fqn)
+        self.equip = equip
+        self.slot = slot
+
+    def _set_param(self, *args, **kwargs):
+        item_type = self.equip.equipped(self.slot)
+        if not item_type or item_type.dna != self.dna:
+            raise EquipError(self._("EquipItem is invalid at this point"), None)
+        Item._set_param(self, *args, **kwargs)
+        self.equip.equip(self.slot, self.item_type, call_events=False)
 
 class MemberEquipInventory(MemberInventory):
     def __init__(self, app, owtype, uuid):
@@ -158,31 +177,37 @@ class CharacterEquip(ConstructorModule):
     def equipped(self, slot_id):
         return self.inv._equipped().get(str(slot_id))
 
-    def equip(self, slot_id, item_type, drop_event="equip-unwear"):
+    def equip(self, slot_id, item_type, drop_event="equip-unwear", call_events=True):
         equip_data = self.inv._equip_data()
         slot_id = str(slot_id)
         equipped = equip_data["slots"].get(slot_id)
         if equipped:
-            equipped_item_type, quantity = MemberInventory.find_dna(self.inv, equipped)
-            if not equipped_item_type:
+            equipped_item, quantity = MemberInventory.find_dna(self.inv, equipped)
+            if not equipped_item:
                 equipped = None
         if item_type:
             if equipped:
-                if equipped_item_type.dna != item_type.dna:
-                    self.event(drop_event, slot=int(slot_id), item=equipped_item_type)
+                if equipped_item.dna != item_type.dna:
+                    if call_events:
+                        self.event(drop_event, slot=int(slot_id), item=EquipItem(self.app(), self, slot_id))
                     equip_data["slots"][slot_id] = item_type.dna
-                    self.event("equip-wear", slot=int(slot_id), item=item_type)
+                    self.inv._update_equip_data()
+                    if call_events:
+                        self.event("equip-wear", slot=int(slot_id), item=EquipItem(self.app(), self, slot_id))
             else:
                 equip_data["slots"][slot_id] = item_type.dna
-                self.event("equip-wear", slot=int(slot_id), item=item_type)
+                self.inv._update_equip_data()
+                if call_events:
+                    self.event("equip-wear", slot=int(slot_id), item=EquipItem(self.app(), self, slot_id))
         else:
             try:
                 del equip_data["slots"][slot_id]
             except KeyError:
                 pass
-            if equipped:
-                self.event(drop_event, slot=int(slot_id), item=equipped_item_type)
-        self.inv._update_equip_data()
+            else:
+                self.inv._update_equip_data()
+                if equipped and call_events:
+                    self.event(drop_event, slot=int(slot_id), item=equipped_item)
         self._invalidate()
         self.inv._invalidate()
         self.character._invalidate()
@@ -219,7 +244,11 @@ class CharacterEquip(ConstructorModule):
         m = re_slot_id.match(attr)
         if m:
             slot_id = m.group(1)
-            return self.equipped(slot_id)
+            slot_id = int(slot_id)
+            item_type = self.equipped(slot_id)
+            if item_type:
+                item_type = EquipItem(self.app(), self, slot_id)
+            return item_type
         raise AttributeError(attr)
 
     def aggregate(self, aggregate, param, handle_exceptions=True):
@@ -1111,9 +1140,9 @@ class Equip(ConstructorModule):
                 equip.equip(slot_id, None)
                 equip.validate()
                 inv.store()
-            equip.fire_events()
-            character.name_invalidate()
-            self.call("quest.check-redirects")
+        equip.fire_events()
+        character.name_invalidate()
+        self.call("quest.check-redirects")
         self.call("web.redirect", "/interface/character")
 
     def params_generation(self, cls, obj, params, viewer=None, **kwargs):
@@ -1181,15 +1210,15 @@ class Equip(ConstructorModule):
         for slot in self.call("equip.slots"):
             slot_id = slot["id"]
             if item_type.get("equip-%s" % slot_id):
-                equipped_item_type = equip.equipped(slot_id)
-                if equipped_item_type:
+                equipped_item = equip.equipped(slot_id)
+                if equipped_item:
                     # don't replace items with the same type
-                    if equipped_item_type.uuid == item_type.uuid:
+                    if equipped_item.uuid == item_type.uuid:
                         continue
                     # if this slot is occupied. Trying to find the slot with minimal balance price
-                    price = equipped_item_type.get("balance-price")
+                    price = equipped_item.get("balance-price")
                     if price:
-                        currency = equipped_item_type.get("balance-currency")
+                        currency = equipped_item.get("balance-currency")
                         price *= rates.get(currency, 1)
                     else:
                         price = 0

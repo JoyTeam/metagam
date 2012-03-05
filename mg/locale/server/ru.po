@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-02-27 15:33+0300\n"
+"PO-Revision-Date: 2012-03-05 22:00+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -75,8 +75,8 @@ msgstr "\"%s\" - не объект"
 msgid "'{obj}' has no attribute '{attr}'"
 msgstr "У \"{obj}\" нет атрибута \"{attr}\""
 
-msgid "'{obj}.{attr}' is not settable"
-msgstr "Атрибут \"{obj}.{attr}\" неизменяемый"
+msgid "'{obj}.{attr}' of the {cls} object is not settable"
+msgstr "Атрибут \"{obj}.{attr}\" объекта {cls} неизменяемый"
 
 #, python-format
 msgid ", at line %d"
@@ -2076,6 +2076,9 @@ msgstr "Общемировой канал"
 msgid "Epic war event"
 msgstr "Эпическое событие: война"
 
+msgid "EquipItem is invalid at this point"
+msgstr "EquipItem в данный момент неверный"
+
 msgid "Equipment"
 msgstr "Экипировка"
 
@@ -3243,6 +3246,10 @@ msgstr "Название предмета в множественном числ
 
 msgid "Item type"
 msgstr "Тип предмета"
+
+#, python-format
+msgid "Item type %s missing in the inventory"
+msgstr "Тим предмета %s отсутствует в инвентаре"
 
 #, python-format
 msgid "Item type '%s' not found"
@@ -5623,6 +5630,10 @@ msgstr "Небо №1"
 #, python-format
 msgid "Slot %s"
 msgstr "Слот %s"
+
+#, python-format
+msgid "Slot %s is not equipped"
+msgstr "В слоте %s нет предмета"
 
 msgid "Slot ID"
 msgstr "ID слота"
