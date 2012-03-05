@@ -41,8 +41,6 @@ class Item(ConstructorModule):
         return getattr(self.item_type, name)
 
     def script_attr(self, attr, handle_exceptions=True):
-        if attr == "used":
-            return self.mods.get(":used", 0) if self.mods else 0
         return self.item_type.script_attr(attr, handle_exceptions)
 
     def script_set_attr(self, attr, val, env):
@@ -1763,7 +1761,6 @@ class MemberInventory(ConstructorModule):
             if item_type.expiration and now > item_type.expiration:
                 self.expired[item_type.dna] = item_type.expiration
             elif item_type.get("fractions") and item_type.mods and item_type.mods.get(":used", 0) >= item_type.get("fractions"):
-                print "worn: %s > %s" % (item_type.mods.get(":used", 0), item_type.get("fractions"))
                 self.worn.add(item_type.dna)
             else:
                 retval.append((item_type, quantity))
@@ -2363,7 +2360,7 @@ class Inventory(ConstructorModule):
         if obj.get("fractions"):
             max_fractions = obj.get("fractions")
             frac_unit = obj.get("frac_unit")
-            if context == "library":
+            if context == "library" or context == "shop-sell-new":
                 params.append({
                     "name": '<span class="item-types-page-fraction-name">%s</span>' % obj.get("frac_param_full"),
                     "value_raw": max_fractions,

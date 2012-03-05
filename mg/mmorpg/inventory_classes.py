@@ -196,11 +196,11 @@ class ItemType(Module):
         elif attr == "fractions":
             return self.get("fractions", 0)
         elif attr == "used":
-            return self.get("used", 0) if self.get("fractions") else 0
+            return self.mods.get(":used", 0) if self.mods else 0
         elif attr == "frac_ratio":
             fractions = self.get("fractions")
             if fractions:
-                used = self.get("used", 0)
+                used = self.mods.get(":used", 0) if self.mods else 0
                 return (fractions - used) * 1.0 / fractions
             else:
                 return 1.0

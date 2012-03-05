@@ -12,7 +12,7 @@
 				<div class="item-info-name">[%item.name%][%if item.show_max%]&nbsp;&mdash; <span class="value quantity">[%item.max_quantity%]</span> [%+ pcs%][%end%]</div>
 				[%if item.params%]<div class="item-params">
 					[%foreach ent in item.params%][%if ent.header%]<div class="item-param-header">[%ent.header%]</div>[%else%]
-					<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span>[%ent.library_icon%]</div>
+					<div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span> [%+ if ent.unit%]<span class="item-param-unit unit">[%ent.unit%]</span>[%end%] [%ent.library_icon%]</div>
 					[%end%][%end%]
 				</div>[%end%]
 				[%if item.description%]<div class="item-description">[%item.description%]</div>[%end%]

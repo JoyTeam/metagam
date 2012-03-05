@@ -3,7 +3,7 @@ from mg.mmorpg.inventory_classes import dna_parse
 import re
 
 default_sell_price = ["glob", "price"]
-default_buy_price = ["*", ["glob", "price"], 0.1]
+default_buy_price = ["*", ["*", ["glob", "price"], [".", ["glob", "item"], "frac_ratio"]], 0.1]
 
 re_sell_item = re.compile(r'^sell-([a-f0-9]{32})$')
 re_request_item = re.compile(r'^([a-f0-9_]+)/(\d+\.\d+|\d+)/([A-Z0-9]+)/(\d+)$')
@@ -509,7 +509,14 @@ class Shops(ConstructorModule):
                 }
                 # item parameters
                 params = []
-                self.call("item-types.params-owner-important", item_type, params, viewer=character)
+                if mode == "sell":
+                    if assortment.get("sell-store-%s" % item_type.uuid):
+                        context = "shop-sell"
+                    else:
+                        context = "shop-sell-new"
+                else:
+                    context = "shop-buy"
+                self.call("item-types.params-owner-important", item_type, params, viewer=character, context=context)
                 params = [par for par in params if par.get("value_raw") is not None and not par.get("price") or par.get("important")]
                 # item category
                 cat = item_type.get("cat-shops")
