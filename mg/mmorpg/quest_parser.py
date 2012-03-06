@@ -370,8 +370,11 @@ class QuestAction(Parsing.Nonterm):
             raise Parsing.SyntaxError(cmd.script_parser._("Event identifier 'onfail' must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         if tp or dna:
             quantity = attrs.val.get("quantity")
-            validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail"])
-            self.val = ["takeitem", tp, dna, quantity, onfail]
+            fractions = attrs.val.get("fractions")
+            validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail", "fractions"])
+            if quantity is not None and fractions is not None:
+                raise Parsing.SyntaxError(cmd.script_parser._("Quantity and fractions can't be specified at the same time"))
+            self.val = ["takeitem", tp, dna, quantity, onfail, fractions]
         elif currency:
             amount = attrs.val.get("amount")
             comment = get_str_attr(cmd, "take", attrs, "comment")

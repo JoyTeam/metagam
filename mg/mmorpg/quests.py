@@ -780,6 +780,8 @@ class QuestsAdmin(ConstructorModule):
                     result += " dna=%s" % self.call("script.unparse-expression", val[2])
                 if val[3] is not None:
                     result += " quantity=%s" % self.call("script.unparse-expression", val[3])
+                if len(val) >= 6 and val[5] is not None:
+                    result += " fractions=%s" % self.call("script.unparse-expression", val[5])
                 if len(val) >= 5 and val[4] is not None:
                     result += " onfail=%s" % self.call("script.unparse-expression", val[4])
                 result += "\n"
@@ -1321,12 +1323,24 @@ class Quests(ConstructorModule):
                                                     char.quest_given_items[item_name] = quantity
                                     elif cmd_code == "takeitem":
                                         quantity = cmd[3]
+                                        if len(cmd) >= 6:
+                                            fractions = cmd[5]
+                                        else:
+                                            fractions = None
                                         if quantity is not None:
                                             quantity = self.call("script.evaluate-expression", quantity, globs=kwargs, description=eval_description)
                                             quantity = intz(quantity)
+                                        if fractions is not None:
+                                            fractions = self.call("script.evaluate-expression", fractions, globs=kwargs, description=eval_description)
+                                            fractions = intz(fractions)
                                         if cmd[1]:
                                             item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                            if quantity is None or quantity >= 1:
+                                            if fractions is not None:
+                                                if fractions >= 1:
+                                                    deleted = char.inventory.take_type(item_type, fractions, "quest.take", quest=quest, any_dna=True, fractions=True)
+                                                else:
+                                                    deleted = 0
+                                            elif quantity is None or quantity >= 1:
                                                 deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                             else:
                                                 deleted = 0
@@ -1340,7 +1354,7 @@ class Quests(ConstructorModule):
                                                     self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=name, quantity=deleted), cls="quest-action", indent=indent+2)
                                                 else:
                                                     self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
-                                            if quantity is not None and not deleted:
+                                            if (quantity is not None or fractions is not None) and not deleted:
                                                 if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
                                                     self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
                                                 raise AbortHandler()
