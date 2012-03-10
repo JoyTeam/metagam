@@ -114,10 +114,10 @@ class Director(Module):
                                 break
                     else:
                         if not info:
-                            self.warning("WorkerStatus %s doesn't match any registered server. Killing %s:%d", st.uuid, st.get("host"), st.get("port"))
+                            self.warning("WorkerStatus %s doesn't match any registered server. Killing %s:%s", st.uuid, st.get("host"), st.get("port"))
                             abort = True
                         elif info["params"]["class"] != st.get("cls"):
-                            self.warning("WorkerStatus %s class is %s, although registered one is %s. Killing %s:%d", st.uuid, st.get("cls"), info["params"]["class"], st.get("host"), st.get("port"))
+                            self.warning("WorkerStatus %s class is %s, although registered one is %s. Killing %s:%s", st.uuid, st.get("cls"), info["params"]["class"], st.get("host"), st.get("port"))
                             abort = True
                     if abort:
                         with Timeout.push(30):
@@ -284,9 +284,9 @@ class Director(Module):
         result = {}
         errors = self.app().inst.reload()
         if errors:
-            result["director"] = "ERRORS: %d" % errors
+            result["director"] = "ERRORS: %s" % errors
         else:
-            result["director"] = "ok: application.version=%d" % self.conf("application.version", 0)
+            result["director"] = "ok: application.version=%s" % self.conf("application.version", 0)
         return result
 
     def reload_servers(self, result={}):
@@ -302,10 +302,10 @@ class Director(Module):
                 else:
                     errors = err
             except Exception as e:
-                self.error("%s:%d - %s", info["host"], info["port"], e)
-            tag = "%s (%s:%d)" % (server_id, info["host"], info["port"])
+                self.error("%s:%s - %s", info["host"], info["port"], e)
+            tag = "%s (%s:%s)" % (server_id, info["host"], info["port"])
             if errors:
-                result[tag] = "ERRORS: %d" % errors
+                result[tag] = "ERRORS: %s" % errors
             else:
                 result[tag] = "ok"
 
@@ -533,7 +533,7 @@ class Director(Module):
                 self.call("cluster.query_server", host, port, "/server/nginx", {"workers": workers})
             return True
         except Exception as e:
-            self.error("%s:%d - %s", host, port, e)
+            self.error("%s:%s - %s", host, port, e)
             return False
 
     def director_ready(self):
