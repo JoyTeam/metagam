@@ -374,6 +374,8 @@ class QuestAction(Parsing.Nonterm):
             validate_attrs(cmd, "take", attrs, ["type", "dna", "quantity", "onfail", "fractions"])
             if quantity is not None and fractions is not None:
                 raise Parsing.SyntaxError(cmd.script_parser._("Quantity and fractions can't be specified at the same time"))
+            if fractions is not None and dna:
+                raise Parsing.SyntaxError(cmd.script_parser._("Fractions can't be specified for 'dna=...'. Use 'type=...' instead"))
             self.val = ["takeitem", tp, dna, quantity, onfail, fractions]
         elif currency:
             amount = attrs.val.get("amount")

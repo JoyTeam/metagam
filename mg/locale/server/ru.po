@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-05 22:00+0300\n"
+"PO-Revision-Date: 2012-03-11 12:44+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1537,6 +1537,9 @@ msgstr "Пользовательская картинка №%d"
 msgid "DAU"
 msgstr "DAU"
 
+msgid "DNA"
+msgstr "ДНК"
+
 msgid "DNS server 1"
 msgstr "DNS-сервер 1"
 
@@ -2396,6 +2399,9 @@ msgstr "Тема на форуме"
 
 msgid "Fractions"
 msgstr "Части"
+
+msgid "Fractions can't be specified for 'dna=...'. Use 'type=...' instead"
+msgstr "Доли не могут быть указаны для \"dna=...\". Вместо этого используйте \"type=...\""
 
 msgid "Frame sizes"
 msgstr "Размеры фреймов"
@@ -4767,6 +4773,9 @@ msgstr "Помещать купленные товары на склад"
 
 msgid "Quantity"
 msgstr "Количество"
+
+msgid "Quantity and fractions can't be specified at the same time"
+msgstr "Quantity и fractions не могут быть указаны одновременно"
 
 msgid "Quantity of fractions in the whole item"
 msgstr "Количество частей в целом предмете"
@@ -7716,6 +7725,12 @@ msgstr "{used} <span class=\"item-types-page-fraction-text\">из</span> {max}"
 msgid "itemlog///Reference"
 msgstr "Референс"
 
+msgid "itemlog///till"
+msgstr "до"
+
+msgid "itemlog///used"
+msgstr "использовано"
+
 msgid "itemparam///Expiration"
 msgstr "Срок годности"
 
@@ -8242,6 +8257,9 @@ msgstr "забираем деньги, количество={amount}, валют
 
 msgid "taking money, amount={amount}, currency={currency} ({result})"
 msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"
+
+msgid "taking {quantity} fractions of items with type '{type}' and any DNA ({result})"
+msgstr "забираем {quantity} долей предметов с типом \"{type}\" и любым ДНК ({result})"
 
 msgid "taking {quantity} items with exact DNA '{dna}' ({result})"
 msgstr "забираем {quantity} предметов с точным ДНК \"{dna}\" ({result})"

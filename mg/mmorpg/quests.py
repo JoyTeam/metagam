@@ -1335,22 +1335,27 @@ class Quests(ConstructorModule):
                                             fractions = intz(fractions)
                                         if cmd[1]:
                                             item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            it_obj = self.item_type(item_type)
                                             if fractions is not None:
                                                 if fractions >= 1:
-                                                    deleted = char.inventory.take_type(item_type, fractions, "quest.take", quest=quest, any_dna=True, fractions=True)
+                                                    max_fractions = it_obj.get("fractions", 0)
+                                                    if not max_fractions:
+                                                        max_fractions = 1
+                                                    deleted = char.inventory.take_type(item_type, fractions, "quest.take", quest=quest, any_dna=True, fractions=max_fractions)
                                                 else:
                                                     deleted = 0
                                             elif quantity is None or quantity >= 1:
                                                 deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                             else:
                                                 deleted = 0
-                                            it_obj = self.item_type(item_type)
                                             if debug:
                                                 if it_obj.valid():
                                                     name = it_obj.name
                                                 else:
                                                     name = "??? (%s)" % item_type
-                                                if quantity is None:
+                                                if fractions is not None:
+                                                    self.call("debug-channel.character", char, self._("taking {quantity} fractions of items with type '{type}' and any DNA ({result})").format(quantity=fractions, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                                elif quantity is None:
                                                     self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=name, quantity=deleted), cls="quest-action", indent=indent+2)
                                                 else:
                                                     self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)

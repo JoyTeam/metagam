@@ -876,6 +876,10 @@ class InventoryAdmin(ConstructorModule):
         col_description = True
         specific_owner = False
         specific_type = False
+        field_names = {
+            ":used": self._("itemlog///used"),
+            "exp-till": self._("itemlog///till"),
+        }
         m = re_since_till.match(req.args)
         if not m:
             self.call("web.not_found")
@@ -1005,6 +1009,19 @@ class InventoryAdmin(ConstructorModule):
                     row.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(title=item_name, type=item_type.uuid, date=date, next_date=next_date(date)))
                 else:
                     row.append(u'<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(owtype=owtype, owner=ent.get("owner"), title=item_name, type=item_type.uuid, month=month, next_month=next_month(month)))
+            if ent.get("dna"):
+                mod = ent.get("mod")
+                if mod:
+                    mod = mod.items()
+                    mod.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+                else:
+                    mod = []
+                mod = [u"<strong>%s</strong>:&nbsp;%s" % (field_names.get(k) or htmlescape(k), htmlescape(v)) for k, v in mod]
+                mod.insert(0, ent.get("dna"))
+                mod = u'<br />'.join(mod)
+            else:
+                mod = None
+            row.append(mod)
             row.append(ent.get("quantity"))
             if col_description:
                 row.append(ent.get("description"))
@@ -1028,6 +1045,7 @@ class InventoryAdmin(ConstructorModule):
             header.append(self._("Owner"))
         if col_type:
             header.append(self._("Item type"))
+        header.append(self._("Modifiers"))
         header.append(self._("Quantity"))
         if col_description:
             header.append(self._("Description"))
@@ -1648,7 +1666,7 @@ class MemberInventory(ConstructorModule):
         found = False
         mod = kwargs.get("mod")
         # expiration time
-        if mod is None or "exp-till" not in mod:
+        if (mod is None or "exp-till" not in mod) and not kwargs.get("no_exp"):
             item_type_obj = self.item_type(item_type)
             if item_type_obj.get("exp-mode") == 2:
                 if mod is None:
@@ -1695,6 +1713,7 @@ class MemberInventory(ConstructorModule):
             trans.set("performed", kwargs.get("performed") or self.now())
             self.trans.append(trans)
         self._invalidate()
+        return dna
 
     def _items(self):
         if not getattr(self, "inv", None):
@@ -1779,58 +1798,147 @@ class MemberInventory(ConstructorModule):
     def _take_type(self, item_type, quantity, description=None, **kwargs):
         if not item_type:
             return 0
+        if quantity == 0:
+            return 1
         items = self._items()
-        deleted = 0
+        performed = kwargs.get("performed") or self.now()
+        # preparing list of items with given type
+        old_items = []
         i = 0
-        logmessages = {}
+#        print "taking item_type=%s, quantity=%s, fractions=%s" % (item_type, quantity, kwargs.get("fractions"))
         while i < len(items):
             item = items[i]
             if item.get("type") == item_type:
-                if quantity is None:
-                    del items[i:i+1]
-                    i -= 1
-                    q = item["quantity"]
-                elif item["quantity"] <= quantity:
-                    del items[i:i+1]
-                    i -= 1
-                    q = item["quantity"]
-                    quantity -= item["quantity"]
-                elif item["quantity"] > quantity:
-                    item["quantity"] -= quantity
-                    q = quantity
-                    quantity = 0
-                if q > 0:
-                    deleted += q
-                    key = (item.get("type"), item.get("dna"))
-                    try:
-                        logmessages[key] += q
-                    except KeyError:
-                        logmessages[key] = q
-                if quantity is not None and quantity <= 0:
-                    break
+                old_item_type = self.item_type(item.get("type"), item.get("dna"), item.get("mod"))
+                used = old_item_type.mods.get(":used", 0) if old_item_type.mods else 0
+                old_items.append((i, old_item_type.expiration, used, item["quantity"], old_item_type))
+#                print "found old item: index=%s - exp=%s - used=%s - quantity=%s" % (i, old_item_type.expiration, used, item["quantity"])
             i += 1
+#        print "sorting list"
+        old_items.sort(cmp=lambda x, y: cmp(x[1] is None, y[1] is None) or cmp(x[1], y[1]) or cmp(y[2], x[2]))
+#        for idx, exp, used, qty, old_item_type in old_items:
+#            print "sorted item: dna=%s, index=%s - exp=%s - used=%s - quantity=%s" % (old_item_type.dna, idx, exp, used, qty)
+#        print "trying to take items"
+        max_fractions = kwargs.get("fractions")
+        deleted = 0
+        i = 0
+        new_items = []
+        logmessages = {}
+        while i < len(old_items):
+            idx, exp, used, qty, old_item_type = old_items[i]
+            if quantity is None:
+                old_items[i] = (idx, exp, used, 0, old_item_type)
+#                print "deleting %d full items %s" % (qty, old_item_type.dna)
+                deleted += qty
+                key = (old_item_type.uuid, old_item_type.dna_suffix)
+                try:
+                    logmessages[key] -= qty
+                except KeyError:
+                    logmessages[key] = -qty
+            elif max_fractions:
+                # removing "quantity" fractions
+                remain = max_fractions - used
+                if remain > 0:
+                    # there are some unused fractions of the item
+                    if quantity >= remain:
+                        # removing some items completely
+                        q = quantity / remain
+                        if q > qty:
+                            q = qty
+                        quantity -= q * remain
+                        qty -= q
+                        old_items[i] = (idx, exp, used, qty, old_item_type)
+#                        print "deleting %d items of type %s" % (q, old_item_type.dna)
+                        deleted += q * remain
+                        key = (old_item_type.uuid, old_item_type.dna_suffix)
+                        try:
+                            logmessages[key] -= q
+                        except KeyError:
+                            logmessages[key] = -q
+                    if quantity > 0 and qty > 0:
+                        # removing one item partially
+                        qty -= 1
+                        old_items[i] = (idx, exp, used, qty, old_item_type)
+                        used += quantity
+                        deleted += quantity
+                        quantity = 0
+                        # giving reduced item
+                        mod = old_item_type.get("mods", {})
+                        mod[":used"] = used
+                        new_items.append({
+                            "item_type": item_type,
+                            "quantity": 1,
+                            "mod": mod,
+                            "performed": performed,
+                            "no_exp": True,
+                            "description": description,
+                        })
+                        if exp:
+                            mod["exp-till"] = exp
+#                        print "deleting 1 item of type %s and giving another item instead: %s" % (old_item_type.dna, mod)
+                        key = (old_item_type.uuid, old_item_type.dna_suffix)
+                        try:
+                            logmessages[key] -= 1
+                        except KeyError:
+                            logmessages[key] = -1
+                else:
+                    # deleting over-used item
+                    old_items[i] = (idx, exp, used, 0, old_item_type)
+#                    print "deleting over-used item %s (quantity %d)" % (old_item_type.dna, qty)
+            else:
+                # removing "quantity" items
+                if quantity >= qty:
+                    q = qty
+                else:
+                    q = quantity
+                # 'q' now contains number of removed items
+                if q > 0:
+#                    print "deleting %d full items %s" % (q, old_item_type.dna)
+                    quantity -= q
+                    old_items[i] = (idx, exp, used, qty - q, old_item_type)
+                    deleted += q
+                    key = (old_item_type.uuid, old_item_type.dna_suffix)
+                    try:
+                        logmessages[key] -= q
+                    except KeyError:
+                        logmessages[key] = -q
+            # interrupting loop when done
+            if quantity is not None and quantity <= 0:
+                break
+            i += 1
+        # checking error conditions
         if quantity is not None and quantity != 0:
             return 0
-        if deleted > 0:
-            self.inv.touch()
-            for key, quantity in logmessages.iteritems():
-                item_type = key[0]
-                dna_suffix = key[1]
-                if description:
-                    trans = self.obj(DBItemTransfer)
-                    trans.set("owner", self.uuid)
-                    if self.owtype != "char":
-                        trans.set("owtype", self.owtype)
-                    trans.set("type", item_type)
-                    if dna_suffix:
-                        trans.set("dna", dna_suffix)
-                    trans.set("quantity", -quantity)
-                    trans.set("description", description)
-                    for k, v in kwargs.iteritems():
-                        trans.set(k, v)
-                    trans.set("performed", kwargs.get("performed") or self.now())
-                    self.trans.append(trans)
-                self._invalidate()
+        # updating quantity field for old items
+        for item in old_items:
+            items[item[0]]["quantity"] = item[3]
+        # deleting exhausted old items
+        items = [item for item in items if item["quantity"] > 0]
+        self.inv.set("items", items)
+        # storing log
+        for key, quantity in logmessages.iteritems():
+            item_type = key[0]
+            dna_suffix = key[1]
+            if description:
+                trans = self.obj(DBItemTransfer)
+                trans.set("owner", self.uuid)
+                if self.owtype != "char":
+                    trans.set("owtype", self.owtype)
+                trans.set("type", item_type)
+                if dna_suffix:
+                    trans.set("dna", dna_suffix)
+                trans.set("quantity", quantity)
+                trans.set("description", description)
+                for k, v in kwargs.iteritems():
+                    trans.set(k, v)
+                trans.set("performed", performed)
+                self.trans.append(trans)
+            self._invalidate()
+        # giving new items
+        for item in new_items:
+#            print "giving %s" % item
+            dna_suffix = self._give(**item)
+#        print "returning deleted=%d" % deleted
         return deleted
 
     def take_dna(self, *args, **kwargs):
