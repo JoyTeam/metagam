@@ -812,6 +812,18 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + "lock%s\n" % attrs
             elif val[0] == "timer":
                 return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
+            elif val[0] == "modremove":
+                return "  " * indent + 'modifier remove id="%s"\n' % val[1]
+            elif val[0] == "modifier":
+                op = val[2]
+                modval = " val=%s" % self.call("script.unparse-expression", val[4]) if len(val) >= 5 else ""
+                if op == "add":
+                    if val[3] is None:
+                        return "  " * indent + 'modifier id="%s"%s\n' % (val[1], modval)
+                    else:
+                        return "  " * indent + 'modifier id="%s" add=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
+                elif op == "prolong":
+                    return "  " * indent + 'modifier id="%s" prolong=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
             elif val[0] == "dialog":
                 options = val[1]
                 result = "  " * indent + "dialog {\n"
@@ -1481,6 +1493,31 @@ class Quests(ConstructorModule):
                                             self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
                                         if timeout > 0:
                                             char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
+                                    elif cmd_code == "modremove":
+                                        mid = cmd[1]
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("removing modifier '{modifier}'").format(modifier=mid), cls="quest-action", indent=indent+2)
+                                        char.modifiers.destroy(mid)
+                                    elif cmd_code == "modifier":
+                                        mid = cmd[1]
+                                        op = cmd[2]
+                                        modval = self.call("script.evaluate-expression", cmd[4]) if len(cmd) >= 5 else 1
+                                        timeout = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
+                                        if timeout is None:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}' infinitely").format(modifier=mid), cls="quest-action", indent=indent+2)
+                                            char.modifiers.add(mid, modval, None)
+                                        elif timeout > 0:
+                                            if timeout > 100e6:
+                                                timeout = 100e6
+                                            if op == "add":
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
+                                                char.modifiers.add(mid, modval, self.now(timeout))
+                                            elif op == "prolong":
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
+                                                char.modifiers.prolong(mid, modval, timeout)
                                     elif cmd_code == "dialog":
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)

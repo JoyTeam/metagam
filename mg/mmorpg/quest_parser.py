@@ -42,9 +42,6 @@ class TokenIf(Parsing.Token):
 class TokenElse(Parsing.Token):
     "%token else"
 
-class TokenSet(Parsing.Token):
-    "%token set"
-
 class TokenFinish(Parsing.Token):
     "%token finish" 
 
@@ -125,6 +122,15 @@ class TokenUnwear(Parsing.Token):
 
 class TokenDrop(Parsing.Token):
     "%token drop"
+
+class TokenModifier(Parsing.Token):
+    "%token modifier"
+
+class TokenRemove(Parsing.Token):
+    "%token remove"
+
+class TokenSet(Parsing.Token):
+    "%token set"
 
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
@@ -420,6 +426,34 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(cmd, "timer", attrs, ["id", "timeout"])
         self.val = ["timer", tid, timeout]
 
+    def reduceModifier(self, cmd, attrs):
+        "%reduce modifier ExprAttrs"
+        mid = get_str_attr(cmd, "modifier", attrs, "id", require=True)
+        if not re_valid_identifier.match(mid):
+            raise Parsing.SyntaxError(cmd.script_parser._("Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        add = get_attr(cmd, "modifier", attrs, "add")
+        prolong = get_attr(cmd, "modifier", attrs, "prolong")
+        val = get_attr(cmd, "modifier", attrs, "val")
+        validate_attrs(cmd, "modifier", attrs, ["id", "add", "prolong", "val"])
+        if add is not None and prolong is not None:
+            raise Parsing.SyntaxError(cmd.script_parser._("You must specify either 'add' or 'prolong' attribute"))
+        elif add is not None:
+            self.val = ["modifier", mid, "add", add]
+        elif prolong is not None:
+            self.val = ["modifier", mid, "prolong", prolong]
+        else:
+            self.val = ["modifier", mid, "add", None]
+        if val is not None:
+            self.val.append(val)
+
+    def reduceModifierRemove(self, cmd, cmd1, attrs):
+        "%reduce modifier remove ExprAttrs"
+        mid = get_str_attr(cmd, "modifier", attrs, "id", require=True)
+        if not re_valid_identifier.match(mid):
+            raise Parsing.SyntaxError(cmd.script_parser._("Modifier identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        validate_attrs(cmd, "modifier", attrs, ["id"])
+        self.val = ["modremove", mid]
+
     def reduceDialog(self, cmd, curlyleft, content, curlyright):
         "%reduce dialog curlyleft DialogContent curlyright"
         self.val = ["dialog", content.val]
@@ -589,7 +623,6 @@ class QuestScriptParser(ScriptParser):
     syms["give"] = TokenGive
     syms["if"] = TokenIf
     syms["else"] = TokenElse
-    syms["set"] = TokenSet
     syms["finish"] = TokenFinish
     syms["fail"] = TokenFail
     syms["lock"] = TokenLock
@@ -618,6 +651,9 @@ class QuestScriptParser(ScriptParser):
     syms["wear"] = TokenWear
     syms["unwear"] = TokenUnwear
     syms["drop"] = TokenDrop
+    syms["modifier"] = TokenModifier
+    syms["remove"] = TokenRemove
+    syms["set"] = TokenSet
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-11 12:44+0300\n"
+"PO-Revision-Date: 2012-03-11 14:37+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1536,9 +1536,6 @@ msgstr "Пользовательская картинка №%d"
 
 msgid "DAU"
 msgstr "DAU"
-
-msgid "DNA"
-msgstr "ДНК"
 
 msgid "DNS server 1"
 msgstr "DNS-сервер 1"
@@ -7247,6 +7244,9 @@ msgstr "Вы должны подтвердить, что являетесь со
 msgid "You must not have a space before a colon (:) and must have a space after a colon (:)"
 msgstr "Перед двоеточием (:) не должно быть пробела, а после двоеточия он должен быть"
 
+msgid "You must specify either 'add' or 'prolong' attribute"
+msgstr "Вы должны указать либо атрибут \"add\", либо \"prolong\""
+
 msgid "You must supply real money price for this currency"
 msgstr "Вы должны задать цену в реальных деньгах за эту валюту"
 
@@ -7397,6 +7397,9 @@ msgstr "error в квесте"
 
 msgid "action///Quest message"
 msgstr "message в квесте"
+
+msgid "adding modifier '{modifier}' for {sec} sec"
+msgstr "установка модификатора \"{modifier}\" на {sec} сек"
 
 msgid "at the {day:d}{th} {month}, {year}"
 msgstr "{day:d} {month} {year}"
@@ -7987,6 +7990,9 @@ msgstr "не опубликован"
 msgid "projstatus///published"
 msgstr "опубликован"
 
+msgid "prolonging modifier '{modifier}' for {sec} sec"
+msgstr "продление модификатора \"{modifier}\" на {sec} сек"
+
 msgid "public offer, terms and conditions"
 msgstr "публичная оферта, условия использования"
 
@@ -8031,6 +8037,9 @@ msgstr "удалить зависимость"
 
 msgid "remove lock"
 msgstr "снять блокировку"
+
+msgid "removing modifier '{modifier}'"
+msgstr "удаление модификатора \"{modifier}\""
 
 msgid "rename///ren"
 msgstr "переим"
@@ -8203,6 +8212,9 @@ msgstr "включена"
 
 msgid "service///inactive"
 msgstr "неактивна"
+
+msgid "setting modifier '{modifier}' infinitely"
+msgstr "установка модификатора \"{modifier}\" навсегда"
 
 msgid "setting timer '{timer}' for {sec} sec"
 msgstr "установка таймера \"{timer}\" на {sec} сек"
@@ -8435,6 +8447,8 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "DNA"
+#~ msgstr "ДНК"
 #~ msgid "Page margins (0 - margin is disabled):"
 #~ msgstr "Поля страницы (0 - поле отключено)"
 #~ msgid "Menu title"
