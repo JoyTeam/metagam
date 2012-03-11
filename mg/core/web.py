@@ -584,7 +584,7 @@ class Web(Module):
         if self.last_ping is None:
             self.last_ping = time.time()
         elif time.time() > self.last_ping + 86400:
-            self.error("Director missing since %d. Exiting", self.last_ping)
+            self.error("Director missing since %s. Exiting", self.last_ping)
             os._exit(2)
 
     def core_appconfig(self):

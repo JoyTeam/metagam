@@ -127,7 +127,10 @@ class ItemType(Module):
             return self._db_item_type
         except KeyError:
             pass
-        obj = self.obj(DBItemType, self.uuid)
+        try:
+            obj = self.obj(DBItemType, self.uuid)
+        except ObjectNotFoundException:
+            obj = self.obj(DBItemType, self.uuid, data={})
         cache[self.uuid] = obj
         self._db_item_type = obj
         return obj
