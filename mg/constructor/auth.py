@@ -704,9 +704,10 @@ class Auth(ConstructorModule):
     def player_login(self):
         req = self.req()
         # checking IP ban
-        till = self.call("restraints.ip-banned", req.remote_addr())
-        if till:
-            self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+        if False:
+            till = self.call("restraints.ip-banned", req.remote_addr())
+            if till:
+                self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
         # logging in
         name = req.param("name") or req.param("email")
         password = req.param("password")

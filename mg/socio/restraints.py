@@ -81,7 +81,7 @@ class Restraints(Module):
         elif kind == "ban":
             content = self._("Ban")
         elif kind == "ban-ip":
-            content = self._("Ban IP")
+            content = self._("Ban IP for registration")
         else:
             content = kind
         interval = self.call("l10n.literal_interval", interval)
@@ -137,7 +137,7 @@ class RestraintsAdmin(Module):
             "hide-info": self._("Hide info"),
             "forum-silence": self._("Forum silence"),
             "ban": self._("Ban"),
-            "ban-ip": self._("Ban IP"),
+            "ban-ip": self._("Ban IP for registration"),
         }
         for kind in sorted(kinds.keys()):
             if req.has_access("restraints.%s" % kind):
@@ -291,7 +291,7 @@ class RestraintsAdmin(Module):
             elif kind == "ban":
                 return [self._("Ban"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
             elif kind == "ban-ip":
-                return [self._("Ban IP"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
+                return [self._("Ban IP for registration"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
 
     def restraints_remove(self):
         req = self.req()
