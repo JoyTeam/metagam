@@ -165,6 +165,29 @@ class MemberEquipInventory(MemberInventory):
                 value = 0
         return value
 
+    def _item_changed(self, old_item_type, new_item_type):
+        equip_data = self._equip_data()
+        slots = equip_data["dna"].get(old_item_type)
+        if not slots:
+            return
+        item_type, quantity = MemberInventory.find_dna(self, old_item_type)
+        if not quantity:
+            quantity = 0
+        if quantity >= len(slots):
+            return
+        inv_slots = equip_data["slots"]
+        while quantity < len(slots):
+            slot = slots.pop()
+            if new_item_type:
+                inv_slots[slot] = new_item_type
+                new_item_type = None
+            else:
+                try:
+                    del inv_slots[slot]
+                except KeyError:
+                    pass
+        self._update_equip_data()
+
 class CharacterEquip(ConstructorModule):
     def __init__(self, character):
         ConstructorModule.__init__(self, character.app(), "mg.mmorpg.equip.CharacterEquip")

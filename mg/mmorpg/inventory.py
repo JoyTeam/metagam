@@ -1805,20 +1805,14 @@ class MemberInventory(ConstructorModule):
         # preparing list of items with given type
         old_items = []
         i = 0
-#        print "taking item_type=%s, quantity=%s, fractions=%s" % (item_type, quantity, kwargs.get("fractions"))
         while i < len(items):
             item = items[i]
             if item.get("type") == item_type:
                 old_item_type = self.item_type(item.get("type"), item.get("dna"), item.get("mod"))
                 used = old_item_type.mods.get(":used", 0) if old_item_type.mods else 0
                 old_items.append((i, old_item_type.expiration, used, item["quantity"], old_item_type))
-#                print "found old item: index=%s - exp=%s - used=%s - quantity=%s" % (i, old_item_type.expiration, used, item["quantity"])
             i += 1
-#        print "sorting list"
         old_items.sort(cmp=lambda x, y: cmp(x[1] is None, y[1] is None) or cmp(x[1], y[1]) or cmp(y[2], x[2]))
-#        for idx, exp, used, qty, old_item_type in old_items:
-#            print "sorted item: dna=%s, index=%s - exp=%s - used=%s - quantity=%s" % (old_item_type.dna, idx, exp, used, qty)
-#        print "trying to take items"
         max_fractions = kwargs.get("fractions")
         deleted = 0
         i = 0
@@ -1828,7 +1822,6 @@ class MemberInventory(ConstructorModule):
             idx, exp, used, qty, old_item_type = old_items[i]
             if quantity is None:
                 old_items[i] = (idx, exp, used, 0, old_item_type)
-#                print "deleting %d full items %s" % (qty, old_item_type.dna)
                 deleted += qty
                 key = (old_item_type.uuid, old_item_type.dna_suffix)
                 try:
@@ -1848,7 +1841,6 @@ class MemberInventory(ConstructorModule):
                         quantity -= q * remain
                         qty -= q
                         old_items[i] = (idx, exp, used, qty, old_item_type)
-#                        print "deleting %d items of type %s" % (q, old_item_type.dna)
                         deleted += q * remain
                         key = (old_item_type.uuid, old_item_type.dna_suffix)
                         try:
@@ -1872,10 +1864,10 @@ class MemberInventory(ConstructorModule):
                             "performed": performed,
                             "no_exp": True,
                             "description": description,
+                            "old_item_type": old_item_type,
                         })
                         if exp:
                             mod["exp-till"] = exp
-#                        print "deleting 1 item of type %s and giving another item instead: %s" % (old_item_type.dna, mod)
                         key = (old_item_type.uuid, old_item_type.dna_suffix)
                         try:
                             logmessages[key] -= 1
@@ -1884,7 +1876,6 @@ class MemberInventory(ConstructorModule):
                 else:
                     # deleting over-used item
                     old_items[i] = (idx, exp, used, 0, old_item_type)
-#                    print "deleting over-used item %s (quantity %d)" % (old_item_type.dna, qty)
             else:
                 # removing "quantity" items
                 if quantity >= qty:
@@ -1893,7 +1884,6 @@ class MemberInventory(ConstructorModule):
                     q = quantity
                 # 'q' now contains number of removed items
                 if q > 0:
-#                    print "deleting %d full items %s" % (q, old_item_type.dna)
                     quantity -= q
                     old_items[i] = (idx, exp, used, qty - q, old_item_type)
                     deleted += q
@@ -1936,10 +1926,14 @@ class MemberInventory(ConstructorModule):
             self._invalidate()
         # giving new items
         for item in new_items:
-#            print "giving %s" % item
+            old_item_type = item["old_item_type"]
+            del item["old_item_type"]
             dna_suffix = self._give(**item)
-#        print "returning deleted=%d" % deleted
+            self._item_changed(old_item_type.dna, "%s_%s" % (item_type, dna_suffix))
         return deleted
+
+    def _item_changed(self, old_item_type, new_item_type):
+        pass
 
     def take_dna(self, *args, **kwargs):
         with self.lock([self.lock_key]):
