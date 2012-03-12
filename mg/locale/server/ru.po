@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-12 11:18+0300\n"
+"PO-Revision-Date: 2012-03-12 13:36+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5928,6 +5928,9 @@ msgstr "Стартовые локации"
 msgid "Starting locations configuration"
 msgstr "Настройка стартовых локаций"
 
+msgid "Starting locations documentation"
+msgstr "Документация на стартовые локации"
+
 msgid "State"
 msgstr "Состояние"
 
@@ -7141,6 +7144,10 @@ msgstr "Подробную информацию о системе магазин
 #, python-format
 msgid "You can find detailed information on the social networks interconnection in the <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Social networks page</a> in the reference manual."
 msgstr "Подробную информацию о системе взаимодействия с социальными сетями вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Взаимодействие с социальными сетями</a>."
+
+#, python-format
+msgid "You can find detailed information on the starting locations system in the <a href=\"//www.%s/doc/startloc\" target=\"_blank\">starting locations page</a> in the reference manual."
+msgstr "Подробную информацию о настройке стартовых локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/startloc\" target=\"_blank\">Стартовые локации</a>."
 
 #, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
