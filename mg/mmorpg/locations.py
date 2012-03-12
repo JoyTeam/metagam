@@ -27,6 +27,7 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("headmenu-admin-locations.teleport", self.headmenu_locations_teleport)
         self.rhook("admin-locations.links", self.links)
         self.rhook("admin-locations.render-links", self.render_links)
+        self.rhook("admin-locations.all", self.locations_all)
 
     def links(self, location, links):
         req = self.req()
@@ -315,6 +316,11 @@ class LocationsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def locations_all(self):
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        return [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
+
     def headmenu_locations_config(self, args):
         return self._("Locations configuration")
 
@@ -336,9 +342,7 @@ class LocationsAdmin(ConstructorModule):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
-        lst = self.objlist(DBLocationList, query_index="all")
-        lst.load()
-        locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
+        locations = self.call("admin-locations.all")
         fields = [
             {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
             {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("locations.movement_delay"))},
