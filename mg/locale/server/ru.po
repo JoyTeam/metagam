@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-12 13:36+0300\n"
+"PO-Revision-Date: 2012-03-12 16:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -633,6 +633,15 @@ msgstr "Бамбук №1"
 
 msgid "Ban"
 msgstr "Бан"
+
+msgid "Ban IP"
+msgstr "Бан IP"
+
+msgid "Ban {ip_addresses}"
+msgstr "Бан на {ip_addresses}"
+
+msgid "Banning IP-addresses"
+msgstr "Бан IP-адресов"
 
 msgid "Banning users"
 msgstr "Бан пользователей"
@@ -4159,6 +4168,12 @@ msgstr "Ночь"
 msgid "No"
 msgstr "Нет"
 
+msgid "No IP addresses in the access log"
+msgstr "В логах нет IP-адресов"
+
+msgid "No IP addresses selected"
+msgstr "IP-адреса не выбраны"
+
 #, python-format
 msgid "No access to the '%s' chat channel"
 msgstr "Нет доступа к каналу чата '%s'"
@@ -5092,6 +5107,9 @@ msgstr "Удаление"
 msgid "Remove"
 msgstr "Удалить"
 
+msgid "Removed ban {ip_address}"
+msgstr "Снят бан с {ip_address}"
+
 msgid "Rename"
 msgstr "Переименовать"
 
@@ -5178,6 +5196,9 @@ msgstr "Требования"
 
 msgid "Restraint setting mode"
 msgstr "Режим выдачи наказаний"
+
+msgid "Restraint time"
+msgstr "Время наказания"
 
 msgid "Restraints"
 msgstr "Наказания"
@@ -5611,9 +5632,6 @@ msgstr "Наказание: молчание"
 #, python-format
 msgid "Silence till %s"
 msgstr "Молчанка до %s"
-
-msgid "Silence time"
-msgstr "Время молчанки"
 
 msgid "Simple colour"
 msgstr "Простой цвет"
@@ -8456,6 +8474,9 @@ msgstr ""
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
+msgid "{ip} till {till}"
+msgstr "{ip} до {till}"
+
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
 
@@ -8468,6 +8489,9 @@ msgstr ""
 
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
+
+#~ msgid "Silence time"
+#~ msgstr "Время молчанки"
 
 #~ msgid "DNA"
 #~ msgstr "ДНК"

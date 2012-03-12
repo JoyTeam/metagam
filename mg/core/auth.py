@@ -82,6 +82,16 @@ class Captcha(CassandraObject):
 class CaptchaList(CassandraObjectList):
     objcls = Captcha
 
+class DBBanIP(CassandraObject):
+    clsname = "BanIP"
+    indexes = {
+        "user": [["user"]],
+        "till": [[], "till"],
+    }
+
+class DBBanIPList(CassandraObjectList):
+    objcls = DBBanIP
+
 class AutoLogin(CassandraObject):
     clsname = "AutoLogin"
     indexes = {
@@ -286,6 +296,8 @@ class Interface(Module):
         autologins.remove()
         authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365 * 86400))
         authlog.remove()
+        banips = self.objlist(BanIPList, query_index="till", query_finish=self.now())
+        banips.remove()
 
     def cleanup_inactive_users(self):
         users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
@@ -299,6 +311,7 @@ class Interface(Module):
         objclasses["AutoLogin"] = (AutoLogin, AutoLoginList)
         objclasses["AuthLog"] = (AuthLog, AuthLogList)
         objclasses["DossierRecord"] = (DossierRecord, DossierRecordList)
+        objclasses["BanIP"] = (BanIP, BanIPList)
 
     def ext_register(self):
         req = self.req()

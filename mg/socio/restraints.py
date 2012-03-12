@@ -1,7 +1,9 @@
 from mg import *
+from mg.core.auth import AuthLogList, DBBanIP, DBBanIPList
 import re
 
-re_restraint_kind = re.compile(r'^(\S+)/(forum-silence|chat-silence|ban|hide-info)$')
+re_restraint_kind = re.compile(r'^(\S+)/(forum-silence|chat-silence|ban|hide-info|ban-ip)$')
+re_restraint_remove_ban_ip = re.compile(r'^(\S+)/([0-9\.\*]+)$')
 
 class UserRestraint(CassandraObject):
     clsname = "UserRestraint"
@@ -17,6 +19,22 @@ class Restraints(Module):
     def register(self):
         self.rhook("restraints.check", self.restraints_check)
         self.rhook("restraints.set", self.restraints_set)
+        self.rhook("restraints.ip-banned", self.ip_banned)
+
+    def ip_banned(self, ip):
+        tokens = ip.split(".")
+        lst = self.objlist(DBBanIPList, [
+            ip, 
+            "%s.%s.%s.*" % (tokens[0], tokens[1], tokens[2]),
+            "%s.%s.*.*" % (tokens[0], tokens[1])
+        ])
+        now = self.now()
+        lst.load(silent=True)
+        till = None
+        for obj in lst:
+            if (till is None or obj.get("till") > till) and now < obj.get("till"):
+                till = obj.get("till")
+        return till
 
     def restraints_check(self, user_uuid, restraints):
         user_restraints = self.objlist(UserRestraintList, query_index="user", query_equal=user_uuid)
@@ -62,6 +80,8 @@ class Restraints(Module):
             content = self._("Forum silence")
         elif kind == "ban":
             content = self._("Ban")
+        elif kind == "ban-ip":
+            content = self._("Ban IP")
         else:
             content = kind
         interval = self.call("l10n.literal_interval", interval)
@@ -84,6 +104,7 @@ class RestraintsAdmin(Module):
         self.rhook("ext-admin-restraints.add", self.restraints_add, priv="logged")
         self.rhook("headmenu-admin-restraints.add", self.headmenu_restraints_add)
         self.rhook("ext-admin-restraints.remove", self.restraints_remove, priv="logged")
+        self.rhook("ext-admin-restraints.remove-ban-ip", self.restraints_remove_ban_ip, priv="restraints.ban-ip")
 
     def objclasses_list(self, objclasses):
         objclasses["UserRestraint"] = (UserRestraint, UserRestraintList)
@@ -97,6 +118,7 @@ class RestraintsAdmin(Module):
 
     def permissions_list(self, perms):
         perms.append({"id": "restraints.ban", "name": self._("Banning users")})
+        perms.append({"id": "restraints.ban-ip", "name": self._("Banning IP-addresses")})
         perms.append({"id": "restraints.hide-info", "name": self._("Hiding user's info")})
 
     def permissions_chat(self, perms):
@@ -115,17 +137,34 @@ class RestraintsAdmin(Module):
             "hide-info": self._("Hide info"),
             "forum-silence": self._("Forum silence"),
             "ban": self._("Ban"),
+            "ban-ip": self._("Ban IP"),
         }
         for kind in sorted(kinds.keys()):
             if req.has_access("restraints.%s" % kind):
-                restraint = restraints.get(kind)
-                if restraint:
-                    status = '<span class="no">%s</span>' % (self._("till %s") % self.call("l10n.time_local", restraint["till"]))
-                    actions = '<hook:admin.link href="restraints/remove/%s/%s" title="%s" />, <hook:admin.link href="restraints/add/%s/%s" title="%s" />' % (user.uuid, kind, self._("remove"), user.uuid, kind, self._("change"))
+                status = None
+                header = kinds.get(kind, kind)
+                if kind == "ban-ip":
+                    lst = self.objlist(DBBanIPList, query_index="user", query_equal=user.uuid)
+                    lst.load(silent=True)
+                    now = self.now()
+                    bans = []
+                    for ent in lst:
+                        if now < ent.get("till"):
+                            params.append((
+                                header,
+                                '<span class="no">%s</span>' % (self._("{ip} till {till}").format(ip=ent.uuid, till=self.call("l10n.time_local", ent.get("till")))),
+                                '<hook:admin.link href="restraints/remove-ban-ip/%s/%s" title="%s" />' % (user.uuid, ent.uuid, self._("remove"))
+                            ))
+                            header = None
                 else:
-                    status = '<span class="yes">%s</span>' % self._("no")
+                    restraint = restraints.get(kind)
+                    if restraint:
+                        status = '<span class="no">%s</span>' % (self._("till %s") % self.call("l10n.time_local", restraint["till"]))
+                        actions = '<hook:admin.link href="restraints/remove/%s/%s" title="%s" />, <hook:admin.link href="restraints/add/%s/%s" title="%s" />' % (user.uuid, kind, self._("remove"), user.uuid, kind, self._("change"))
+                if not status:
+                    status = None
                     actions = '<hook:admin.link href="restraints/add/%s/%s" title="%s" />' % (user.uuid, kind, self._("restraint///give"))
-                params.append((kinds.get(kind, kind), status, actions))
+                params.append((header, status, actions))
         if params:
             tables.append({
                 "type": "restraints",
@@ -141,21 +180,72 @@ class RestraintsAdmin(Module):
             self.call("web.not_found")
         user_uuid, kind = m.group(1, 2)
         self.call("session.require_permission", "restraints.%s" % kind)
+        default_interval = 3600
+        default_mode = 1
+        # loading IP addresses
+        if kind == "ban-ip":
+            ip_addresses_ok = {}
+            ip_addresses_sel = {}
+            lst = self.objlist(AuthLogList, query_index="user_performed", query_equal=user_uuid, query_reversed=True, query_limit=100)
+            lst.load(silent=True)
+            for ent in lst:
+                ip = ent.get("ip")
+                if ip:
+                    ip_addresses_ok[ip] = 1
+                    ip_addresses_sel[ip] = True
+                    tokens = ip.split(".")
+                    ip_addresses_ok["%s.%s.%s.*" % (tokens[0], tokens[1], tokens[2])] = 2
+                    ip_addresses_ok["%s.%s.*.*" % (tokens[0], tokens[1])] = 3
+            if not ip_addresses_ok:
+                self.call("admin.response", self._("No IP addresses in the access log"), {})
+            ip_addresses = ip_addresses_ok.items()
+            ip_addresses.sort(cmp=lambda x, y: cmp(x[1], y[1]) or cmp(x[0], y[0]))
+            ip_addresses = [(mask, mask) for mask, order in ip_addresses]
+            default_interval = 86400 * 7
+        # processing request
         if req.ok():
             errors = {}
+            error = None
             interval = intz(req.param("v_interval"))
             if interval < 60 or interval > 86400 * 365:
                 errors["v_interval"] = self._("Select silence interval")
             reason = req.param("reason").strip()
             if not reason:
                 errors["reason"] = self._("Reason is mandatory")
-            mode = intz(req.param("v_mode"))
-            if mode < 1 or mode > 2:
-                errors["v_mode"] = self._("Select correct mode")
-            if len(errors):
-                self.call("web.response_json", {"success": False, "errors": errors})
-            self.call("restraints.set", user_uuid, kind=kind, prolong=(mode == 1), interval=interval, reason=reason, admin=req.user())
+            if kind == "ban-ip":
+                ips = set()
+                for mask, label in ip_addresses:
+                    if req.param("ip-%s" % mask):
+                        ips.add(mask)
+                if not ips:
+                    error = self._("No IP addresses selected")
+            else:
+                mode = intz(req.param("v_mode"))
+                if mode < 1 or mode > 2:
+                    errors["v_mode"] = self._("Select correct mode")
+            if len(errors) or error:
+                self.call("web.response_json", {"success": False, "errors": errors, "error": error})
+            if kind == "ban-ip":
+                till = self.now(interval)
+                for ip in ips:
+                    try:
+                        obj = self.obj(DBBanIP, ip)
+                    except ObjectNotFoundException:
+                        obj = self.obj(DBBanIP, ip, data={})
+                    obj.set("ip", ip)
+                    obj.set("till", till)
+                    obj.set("user", user_uuid)
+                    obj.store()
+                # writing to dossier
+                interval = self.call("l10n.literal_interval", interval)
+                content = '%s: %s' % (self._("Ban {ip_addresses}").format(ip_addresses=", ".join(ips)), interval)
+                if reason:
+                    content = '%s\n%s' % (content, reason)
+                self.call("dossier.write", user=user_uuid, admin=req.user(), content=content)
+            else:
+                self.call("restraints.set", user_uuid, kind=kind, prolong=(mode == 1), interval=interval, reason=reason, admin=req.user())
             self.call("admin.redirect", "auth/user-dashboard/%s" % user_uuid, {"active_tab": "restraints"})
+        # rendering form
         intervals = [
             (60, self._("1 minute")),
             (300, self._("5 minutes")),
@@ -178,10 +268,14 @@ class RestraintsAdmin(Module):
             (86400 * 365, self._("1 year")),
         ]
         fields = [
-            {"name": "interval", "value": 3600, "values": intervals, "type": "combo", "label": self._("Silence time")},
-            {"name": "mode", "label": self._("Restraint setting mode"), "type": "combo", "value": 1, "values": [(1, self._("Prolong")), (2, self._("Replace"))], "inline": True},
-            {"name": "reason", "label": self._("Reason"), "type": "textarea"}
+            {"name": "interval", "value": default_interval, "values": intervals, "type": "combo", "label": self._("Restraint time")}
         ]
+        if kind == "ban-ip":
+            for mask, label in ip_addresses:
+                fields.append({"name": "ip-%s" % mask, "type": "checkbox", "label": label, "checked": ip_addresses_sel.get(mask)})
+        else:
+            fields.append({"name": "mode", "label": self._("Restraint setting mode"), "type": "combo", "value": default_mode, "values": [(1, self._("Prolong")), (2, self._("Replace"))], "inline": True})
+        fields.append({"name": "reason", "label": self._("Reason"), "type": "textarea"})
         self.call("admin.form", fields=fields)
 
     def headmenu_restraints_add(self, args):
@@ -196,6 +290,8 @@ class RestraintsAdmin(Module):
                 return [self._("Forum silence"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
             elif kind == "ban":
                 return [self._("Ban"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
+            elif kind == "ban-ip":
+                return [self._("Ban IP"), "auth/user-dashboard/%s?active_tab=restraints" % user_uuid]
 
     def restraints_remove(self):
         req = self.req()
@@ -209,4 +305,20 @@ class RestraintsAdmin(Module):
         for ent in user_restraints:
             if ent.get("kind") == kind:
                 ent.remove()
+        self.call("admin.redirect", "auth/user-dashboard/%s" % user_uuid, {"active_tab": "restraints"})
+
+    def restraints_remove_ban_ip(self):
+        req = self.req()
+        m = re_restraint_remove_ban_ip.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        user_uuid, ip = m.group(1, 2)
+        try:
+            obj = self.obj(DBBanIP, ip)
+            obj.remove()
+            # writing to dossier
+            content = self._("Removed ban {ip_address}").format(ip_address=ip)
+            self.call("dossier.write", user=user_uuid, admin=req.user(), content=content)
+        except ObjectNotFoundException:
+            pass
         self.call("admin.redirect", "auth/user-dashboard/%s" % user_uuid, {"active_tab": "restraints"})
