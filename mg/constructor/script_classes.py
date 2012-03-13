@@ -424,22 +424,26 @@ class ScriptTextParser(Module):
         raise ScriptParserResult(self.tokens)
 
 class ScriptTemplateObject(object):
-    def __init__(self, app, obj):
+    def __init__(self, obj):
         object.__setattr__(self, "obj", obj)
 
     def __getattribute__(self, name):
-        print "getattribute %s" % name
         try:
-            method = object.__getattribute__(self, "script_attr")
+            obj = object.__getattribute__(self, "obj")
         except AttributeError:
             return None
-        print "method %s" % method
+        if name == "__class__":
+            return object.__getattribute__(self, name)
+        if name == "__dict__":
+            return {}
+        try:
+            method = obj.script_attr
+        except AttributeError:
+            return None
         val = method(name, handle_exceptions=True)
         tval = type(val)
         if tval == str or tval == unicode or tval == int or tval == float or tval == long or tval == None:
-            print "returning raw value %s" % val
             return val
-        print "returning wrapped value %s" % val
         return ScriptTemplateObject(val)
 
     def __setattr__(self, name, value):

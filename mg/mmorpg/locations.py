@@ -737,6 +737,7 @@ class Locations(ConstructorModule):
         if location is None:
             self.call("game.internal-error", self._("Character is outside of any locations"))
         vars = {
+            "loc": ScriptTemplateObject(location),
             "location": {
                 "id": location.uuid,
             },

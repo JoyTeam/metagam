@@ -528,6 +528,7 @@ class CharactersMod(ConstructorModule):
         params = []
         vars = {
             "title": htmlescape(character.name),
+            "char": ScriptTemplateObject(character),
             "character": {
                 "html": character.html(),
                 "name": character.name,

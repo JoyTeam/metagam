@@ -286,6 +286,7 @@ class Interface(ConstructorModule):
         self.call("design.response", design, "external.html", content, vars)
 
     def game_response_internal(self, template, vars, content=None):
+        self.add_common_vars(vars)
         design = self.design("gameinterface")
         content = self.game_parse_internal(template, vars, content)
         req = self.req()
@@ -293,8 +294,18 @@ class Interface(ConstructorModule):
         vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "internal.html", content, vars)
 
+    def add_common_vars(self, vars):
+        if "char" not in vars:
+            req = self.req()
+            user = req.user()
+            if user:
+                char = self.character(user)
+                if char.valid:
+                    vars["char"] = ScriptTemplateObject(char)
+
     def game_parse_internal(self, template, vars, content=None):
         design = self.design("gameinterface")
+        self.add_common_vars(vars)
         return self.call("design.parse", design, template, content, vars)
 
     def game_cabinet(self, player):
