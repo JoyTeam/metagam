@@ -36,6 +36,11 @@ class ShopsAdmin(ConstructorModule):
         self.rhook("ext-admin-shops.stats", self.admin_stats, priv="shops.stat")
         self.rhook("headmenu-admin-shops.stats", self.headmenu_stats)
         self.rhook("advice-admin-shops.index", self.advice_shops)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "shop-global.html", "description": self._("Shops interface template"), "doc": "/doc/shops"})
+        files.append({"filename": "shop-items-layout.html", "description": self._("Shop assortment template"), "doc": "/doc/shops"})
 
     def advice(self):
         return {"title": self._("Shops documentation"), "content": self._('You can find detailed information on the shops system in the <a href="//www.%s/doc/shops" target="_blank">shops page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 50}

@@ -50,6 +50,14 @@ class CharactersMod(ConstructorModule):
         self.rhook("user-modifier.destroyed", self.modifier_destroyed)
         self.rhook("user-modifier.expired", self.modifier_expired)
         self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "character-info.html", "description": self._("Character page (external information)"), "doc": "/doc/design/character-info"})
+        files.append({"filename": "character-info-avatar.html", "description": self._("Character avatar (external info)"), "doc": "/doc/design/character-info"})
+        files.append({"filename": "character-page.html", "description": self._("Character page (internal)"), "doc": "/doc/design/character-page"})
+        files.append({"filename": "character-page-avatar.html", "description": self._("Character avatar (internal page)"), "doc": "/doc/design/character-page"})
+        files.append({"filename": "character-params.html", "description": self._("Character parameters"), "doc": "/doc/design/character-params"})
 
     def gameinterface_buttons(self, buttons):
         buttons.append({

@@ -32,6 +32,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .text h1.admin-form-header { font-size: 18px; color: #0078ac; font-weight: normal }
 .admin-submenu { padding-bottom: 10px }
 .admin-description { padding-bottom: 20px }
+.admin-doc-link { padding-bottom: 20px }
 .admin-alert { border: solid 1px #ff0000; background-color: #ffc0c0; color: #000000; margin-bottom: 20px; padding: 10px }
 #imagemap-form { padding-top: 20px }
 .admin-location-render { padding-bottom: 20px }

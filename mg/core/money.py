@@ -57,6 +57,11 @@ class MoneyAdmin(Module):
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-money.cleanup", self.cleanup)
         self.rhook("admin-money.stats", self.stats)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "money-accounts.html", "description": self._("List of money accounts"), "doc": "/doc/design/money"})
+        files.append({"filename": "money-operations.html", "description": self._("History of money operations"), "doc": "/doc/design/money"})
 
     def cleanup(self):
         self.objlist(AccountOperationList, query_index="performed", query_finish=self.now(-86400 * 365 / 2)).remove()

@@ -390,6 +390,10 @@ class EquipAdmin(ConstructorModule):
         self.rhook("admin-storage.group-names", self.group_names)
         self.rhook("admin-storage.nondeletable", self.nondeletable)
         self.rhook("advice-admin-equip.index", self.advice_equip)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "item-hint.html", "description": self._("Item mouse over hint"), "doc": "/doc/equip"})
 
     def advice_equip(self, hook, args, advice):
         advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.app().inst.config["main_host"]})

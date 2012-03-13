@@ -1,7 +1,7 @@
 from mg import *
 from mg.constructor.player_classes import Character, Player, Characters
 from mg.mmorpg.locations_classes import Location
-from mg.constructor.script_classes import ScriptError, ScriptParserError, ScriptRuntimeError
+from mg.constructor.script_classes import ScriptError, ScriptParserError, ScriptRuntimeError, ScriptTemplateObject
 
 class ConstructorModule(Module):
     def find_character(self, name):

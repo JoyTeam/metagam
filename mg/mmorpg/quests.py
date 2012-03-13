@@ -250,6 +250,10 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-interface.button-action-qevent", self.interface_button_action_qevent)
         self.rhook("admin-interface.button-action", self.interface_button_action)
         self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
 
     def interface_button_action(self, btn):
         if btn.get("qevent"):

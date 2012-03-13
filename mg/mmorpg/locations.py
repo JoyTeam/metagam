@@ -28,6 +28,13 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("admin-locations.links", self.links)
         self.rhook("admin-locations.render-links", self.render_links)
         self.rhook("admin-locations.all", self.locations_all)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "location-layout.html", "description": self._("Location page layout"), "doc": "/doc/locations"})
+        files.append({"filename": "location-arrows.html", "description": self._("Left/right/up/down arrows for the location"), "doc": "/doc/locations"})
+        files.append({"filename": "location-static.html", "description": self._("Static image location interface"), "doc": "/doc/locations"})
+        files.append({"filename": "location-transitions.html", "description": self._("List of transitions in the location"), "doc": "/doc/locations"})
 
     def links(self, location, links):
         req = self.req()

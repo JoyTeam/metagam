@@ -16,6 +16,11 @@ class CharClassesAdmin(ConstructorModule):
         self.rhook("ext-admin-characters.classes", self.admin_characters_classes, priv="characters.params")
         self.rhook("headmenu-admin-characters.classes", self.headmenu_characters_classes)
         self.rhook("advice-admin-characters.classes", self.advice_charclasses)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "charclass-select.html", "description": self._("Character class selector"), "doc": "/doc/design/character-classes"})
+        files.append({"filename": "charclass-select-layout.html", "description": self._("Character class selector layout"), "doc": "/doc/design/character-classes"})
 
     def advice_charclasses(self, args, advice):
         advice.append({"title": self._("Character classes documentation"), "content": self._('You can find detailed information on the character classes system in the <a href="//www.%s/doc/character-classes" target="_blank">character classes page</a> in the reference manual.') % self.app().inst.config["main_host"]})

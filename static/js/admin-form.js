@@ -226,6 +226,11 @@ Form = Ext.extend(AdminResponsePanel, {
 					layout: 'form',
 					items: elt
 				};
+				if (it.nowrap && elt.id) {
+					elt.listeners.afterrender = function(cmp) {
+						cmp.el.dom.wrap = 'off';
+					};
+				}
 			}
 			if (!it.width && !it.flex)
 				it.flex = 1;

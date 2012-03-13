@@ -118,6 +118,17 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("admin-inventory.stats", self.stats)
         self.rhook("admin-inventory.sample-item", self.sample_item)
         self.rhook("admin-item-types.dim-list", self.dim_list)
+        self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
+        self.rhook("admin-sociointerface.design-files", self.sociointerface_design_files)
+
+    def gameinterface_design_files(self, files):
+        files.append({"filename": "inventory.html", "description": self._("Inventory interface"), "doc": "/doc/inventory"})
+
+    def sociointerface_design_files(self, files):
+        files.append({"filename": "library-itemcategories.html", "description": self._("List of item categories for the library"), "doc": "/doc/inventory"})
+        files.append({"filename": "library-itemparam.html", "description": self._("Description of item parameter in the library"), "doc": "/doc/inventory"})
+        files.append({"filename": "library-itemparams.html", "description": self._("List of item parameters in the library"), "doc": "/doc/inventory"})
+        files.append({"filename": "library-items.html", "description": self._("List of items in the library"), "doc": "/doc/inventory"})
 
     def sample_item(self):
         lst = self.objlist(DBItemTypeList, query_index="all", query_limit=1)
