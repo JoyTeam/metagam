@@ -333,11 +333,20 @@ class CharacterEquip(ConstructorModule):
             pass
 
     def has_invalid_items(self):
+        changed = False
+        equip_data = self.inv._equip_data()
+        slots = equip_data["slots"]
         for slot in self.call("equip.slots"):
             item_type = self.equipped(slot["id"])
             if item_type and self.cannot_equip(item_type):
-                return True
-        return False
+                changed = True
+                continue
+            if not item_type and slots.get(str(slot["id"])):
+                del slots[str(slot["id"])]
+                changed = True
+        if changed:
+            self.inv._update_equip_data()
+        return changed
 
     def validate(self):
         "Validate character equip"
