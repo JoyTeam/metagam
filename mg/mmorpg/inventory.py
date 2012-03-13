@@ -1905,6 +1905,7 @@ class MemberInventory(ConstructorModule):
         # deleting exhausted old items
         items = [item for item in items if item["quantity"] > 0]
         self.inv.set("items", items)
+        self.inv.touch()
         # storing log
         for key, quantity in logmessages.iteritems():
             item_type = key[0]
