@@ -296,7 +296,7 @@ class Interface(Module):
         autologins.remove()
         authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365 * 86400))
         authlog.remove()
-        banips = self.objlist(BanIPList, query_index="till", query_finish=self.now())
+        banips = self.objlist(DBBanIPList, query_index="till", query_finish=self.now())
         banips.remove()
 
     def cleanup_inactive_users(self):
