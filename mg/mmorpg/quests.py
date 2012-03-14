@@ -1793,6 +1793,8 @@ class Quests(ConstructorModule):
         default_event = None
         href = "/quest/dialog/%s" % dialog.get("uuid", "")
         btn_id = 0
+        if len(dialog["buttons"]) == 1:
+            dialog["buttons"][0]["default"] = True
         for btn in dialog["buttons"]:
             btn_id += 1
             buttons.append({
