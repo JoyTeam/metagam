@@ -65,7 +65,7 @@ class ScriptEngine(ConstructorModule):
                 prio = 7
             elif cmd == '+' or cmd == '-':
                 prio = 6
-            elif cmd == "==" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<":
+            elif cmd == "==" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<" or cmd == "in":
                 prio = 5
             elif cmd == "not":
                 prio = 4
@@ -102,7 +102,7 @@ class ScriptEngine(ConstructorModule):
             elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
-            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">":
+            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
                 # (a OP b) OP c != a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val, False))
             elif cmd == '?':
@@ -302,6 +302,10 @@ class ScriptEngine(ConstructorModule):
                 arg2 = floatz(arg2)
             # Evaluating
             return 1 if arg1 == arg2 else 0
+        elif cmd == "in":
+            arg1 = str2unicode(self._evaluate(val[1], env))
+            arg2 = str2unicode(self._evaluate(val[2], env))
+            return 1 if arg2.find(arg1) >= 0 else 0
         elif cmd == "<" or cmd == ">" or cmd == "<=" or cmd == ">=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
@@ -373,6 +377,14 @@ class ScriptEngine(ConstructorModule):
                         if res is None or v > res:
                             res = v
                 return res
+            elif fname == "lc" or fname == "uc":
+                if len(val) != 3:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
+                v = str2unicode(self._evaluate(val[2], env))
+                if fname == "lc":
+                    return v.lower()
+                elif fname == "uc":
+                    return v.upper()
             else:
                 raise ScriptRuntimeError(self._("Unknown script engine function: {fname}").format(fname=fname), env)
         elif cmd == "random":
