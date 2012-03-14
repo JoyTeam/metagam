@@ -36,6 +36,15 @@ class Item(ConstructorModule):
         self.item_type = item_type
         self.inv = inv
 
+    def __str__(self):
+        return self.item_type.__str__()
+    
+    def __unicode__(self):
+        return self.item_type.__unicode__()
+    
+    def __repr__(self):
+        return self.item_type.__repr__()
+    
     def __getattr__(self, name):
         "Translating ItemType's interface"
         return getattr(self.item_type, name)

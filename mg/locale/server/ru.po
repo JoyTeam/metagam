@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-14 14:35+0300\n"
+"PO-Revision-Date: 2012-03-14 15:00+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5439,6 +5439,9 @@ msgstr "Схема '%s' не поддерживается"
 msgid "Screenshots"
 msgstr "Скриншоты"
 
+msgid "Script condition whether this item can be worn"
+msgstr "Скриптовое условие, может ли этот предмет быть надет"
+
 msgid "Script condition whether this item has 'wear' button"
 msgstr "Скриптовое условие, есть ли у этого предмета кнопка \"надеть\""
 
@@ -7114,6 +7117,9 @@ msgstr "Что вы думаете об этом?"
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
 
+msgid "Whether 'wear' button is available on the item {item} ({name})"
+msgstr "Доступна ли кнопка \"надеть\" на предмете {item} ({name})"
+
 #, python-format
 msgid "Whether class '%s' is required"
 msgstr "Требуется ли выбор класса \"%s\""
@@ -7388,6 +7394,9 @@ msgstr "Вы не можете удалить реальную валюту по
 
 msgid "You can't send messages to the system"
 msgstr "Вы не можете отправлять сообщения системе"
+
+msgid "You can't wear {item_name} at the moment"
+msgstr "В данный момент вы не можете надеть {item_name_a}"
 
 msgid "You don't have items to fit into this slot"
 msgstr "У вас нет предметов, которые можно поместить в этот слот"
