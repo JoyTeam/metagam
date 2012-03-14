@@ -132,6 +132,12 @@ class TokenRemove(Parsing.Token):
 class TokenSet(Parsing.Token):
     "%token set"
 
+class TokenInput(Parsing.Token):
+    "%token input"
+
+class TokenDefault(Parsing.Token):
+    "%token default"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -525,13 +531,22 @@ class DialogContent(Parsing.Nonterm):
             raise Parsing.SyntaxError(cmd.script_parser._("Dialog title must be a string"))
         self.val["title"] = cmd.script_parser.parse_text(title.val, cmd.script_parser._("Dialog title"))
 
-    def reduceButton(self, content, cmd, curlyleft, button, curlyright):
-        "%reduce DialogContent button curlyleft ButtonContent curlyright"
+    def reduceButton(self, content, default, cmd, curlyleft, button, curlyright):
+        "%reduce DialogContent DefaultSelector button curlyleft ButtonContent curlyright"
         self.val = content.val.copy()
+        button_val = button.val.copy()
+        if default.val:
+            button_val["default"] = True
         try:
-            self.val["buttons"].append(button.val)
+            self.val["buttons"].append(button_val)
         except KeyError:
-            self.val["buttons"] = [button.val]
+            self.val["buttons"] = [button_val]
+        default = 0
+        for btn in self.val["buttons"]:
+            if btn.get("default"):
+                default += 1
+                if default >= 2:
+                    raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain more than 1 default button"))
 
     def reduceTemplate(self, content, cmd, tpl):
         "%reduce DialogContent template scalar"
@@ -543,6 +558,34 @@ class DialogContent(Parsing.Nonterm):
         elif not re_valid_template.match(tpl.val):
             raise Parsing.SyntaxError(cmd.script_parser._("Dialog template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html"))
         self.val["template"] = tpl.val
+
+    def reduceInput(self, content, cmd, inpid, curlyleft, inp, curlyright):
+        "%reduce DialogContent input scalar curlyleft InputContent curlyright"
+        self.val = content.val.copy()
+        inputs = self.val.get("inputs")
+        if not inputs:
+            inputs = []
+            self.val["inputs"] = inputs
+        if type(inpid.val) != str and type(inpid.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Input identifier name must be a string"))
+        elif not re_valid_identifier.match(inpid.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Input identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        for i in inputs:
+            if i["id"] == inpid.val:
+                raise Parsing.SyntaxError(cmd.script_parser._("Input identifiers must be unique"))
+        inpval = inp.val.copy()
+        inpval["id"] = inpid.val
+        inputs.append(inpval)
+
+class DefaultSelector(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = False
+
+    def reduceDefault(self, cmd):
+        "%reduce default"
+        self.val = True
 
 class ButtonContent(Parsing.Nonterm):
     "%nonterm"
@@ -569,6 +612,21 @@ class ButtonContent(Parsing.Nonterm):
         elif not re_valid_identifier.match(eventid.val):
             raise Parsing.SyntaxError(cmd.script_parser._("Button event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val["event"] = eventid.val
+
+class InputContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceText(self, content, cmd, text):
+        "%reduce InputContent text scalar"
+        self.val = content.val.copy()
+        if "text" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Input can't contain multiple 'text' entries"))
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Input text must be a string"))
+        self.val["text"] = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Input text"))
 
 class QuestActions(Parsing.Nonterm):
     "%nonterm"
@@ -654,6 +712,9 @@ class QuestScriptParser(ScriptParser):
     syms["modifier"] = TokenModifier
     syms["remove"] = TokenRemove
     syms["set"] = TokenSet
+    syms["input"] = TokenInput
+    syms["default"] = TokenDefault
+
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
         Parsing.Lr.__init__(self, spec)

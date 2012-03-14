@@ -207,6 +207,9 @@ area { border: none }
 .dialog-content { font-size: 16px }
 .dialog-buttons { margin: 20px auto 0 auto }
 .dialog-button-td { padding: 20px }
+.dialog-input-block { padding-top: 20px }
+.dialog-input-text { padding-bottom: 5px; font-size: 16px }
+.dialog-input { width: 100%; font-size: 16px }
 
 .progress-test1 { background-color: red }
 .test2-notfull { background-color: yellow }

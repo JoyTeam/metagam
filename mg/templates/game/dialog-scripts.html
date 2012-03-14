@@ -1,0 +1,13 @@
+[%content%]
+<script type="text/javascript">
+wait(['dialogs'], function() {
+	dialog_default_event = '[%default_event%]';
+	[%foreach inp in inputs%]var el = document.getElementById('input-[%inp.id%]'); if (el) { el.onkeypress = dialog_keypress }[%end%]
+	window.setTimeout(function() {
+		var focus;
+		[%if inputs%]focus = document.getElementById('input-[%inputs.0.id%]');[%end%]
+		[%if default_button%]if (!focus) { focus = document.getElementById('button-[%default_button%]'); }[%end%]
+		if (focus) focus.focus();
+	}, 100);
+});
+</script>

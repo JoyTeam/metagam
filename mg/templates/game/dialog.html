@@ -1,17 +1,25 @@
 <div class="dialog-container">
 	<span class="dialog">
-		[%if title%]<div class="dialog-title">[%title%]</div>[%end%]
-		[%if content%]<div class="dialog-content">[%content%]</div>[%end%]
-		[%if buttons%]<table class="buttons dialog-buttons"><tr>
-			[%foreach btn in buttons%]
-			<td class="button-td dialog-button-td">
-				<form method="post" action="[%btn.href%]">
-					<input type="hidden" name="ok" value="1" />
-					<input type="hidden" name="event" value="[%btn.event%]" />
-					<input type="submit" value="[%btn.text%]" class="button dialog-button" />
-				</form>
-			</td>
-			[%end%]
-		</tr></table>[%end%]
+		<form method="post" action="[%href%]" id="dialog-form"[%unless default_event +%] onsubmit="return false;"[%end%]>
+			<input type="hidden" name="ok" value="1" />
+			<input type="hidden" name="event" id="dialog-event" value="[%default_event%]" />
+			[%if title%]<div class="dialog-title">[%title%]</div>[%end%]
+			[%if content%]<div class="dialog-content">[%content%]</div>[%end%]
+			[%if inputs%]<div class="dialog-inputs">
+				[%foreach inp in inputs%]
+				<div class="dialog-input-block">
+					[%if inp.text%]<div class="dialog-input-text">[%inp.text%]</div>[%end%]
+					<input id="input-[%inp.id%]" name="input-[%inp.id%]" class="dialog-input" />
+				</div>
+				[%end%]
+			</div>[%end%]
+			[%if buttons%]<table class="buttons dialog-buttons"><tr>
+				[%foreach btn in buttons%]
+				<td class="button-td dialog-button-td">
+					<input id="button-[%btn.id%]" type="submit" value="[%btn.text%]" class="button dialog-button" onclick="return dialog_click('[%btn.event%]')" />
+				</td>
+				[%end%]
+			</tr></table>[%end%]
+		</form>
 	</span>
 </div>

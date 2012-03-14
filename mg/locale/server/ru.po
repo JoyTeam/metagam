@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-13 20:31+0300\n"
+"PO-Revision-Date: 2012-03-14 13:56+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1741,6 +1741,9 @@ msgstr "Подробное описание настройки валют вы �
 msgid "Developers club"
 msgstr "Клуб разработчиков"
 
+msgid "Dialog can't contain more than 1 default button"
+msgstr "В диалоге не может быть более одной кнопки по умолчанию"
+
 msgid "Dialog can't contain multiple 'template' entries"
 msgstr "У диалога не может быть несколько записей \"template\""
 
@@ -3045,8 +3048,26 @@ msgstr "Информационное сообщение"
 msgid "Ingame URL must be relative (start with '/' symbol)"
 msgstr "Внутриигровые URL должны быть относительными (начинаться с символа '/')"
 
+msgid "Input can't contain multiple 'text' entries"
+msgstr "У поля ввода не может быть более одной записи \"text\""
+
+msgid "Input identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор поля ввода должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Input identifier name must be a string"
+msgstr "Идентификатор поля ввода должен быть строкой"
+
+msgid "Input identifiers must be unique"
+msgstr "Идентификаторы полей ввода должны быть уникальными"
+
 msgid "Input prompt for players"
 msgstr "Текст рядом с полем ввода в анкете"
+
+msgid "Input text"
+msgstr "Текст поля ввода"
+
+msgid "Input text must be a string"
+msgstr "Текст поля ввода должен быть строкой"
 
 msgid "Insert image"
 msgstr "Вставить изображение"

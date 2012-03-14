@@ -837,9 +837,16 @@ class QuestsAdmin(ConstructorModule):
                     result += "  " * (indent + 1) + "text %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["text"]))
                 if "template" in options:
                     result += "  " * (indent + 1) + "template %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["template"]))
+                if "inputs" in options:
+                    for inp in options["inputs"]:
+                        result += "  " * (indent + 1) + 'input "%s" {' % inp["id"];
+                        if "text" in inp:
+                            result += " text %s" % self.call("script.unparse-expression", self.call("script.unparse-text", inp["text"]))
+                        result += " }\n"
                 if "buttons" in options:
                     for btn in options["buttons"]:
-                        result += "  " * (indent + 1) + "button {";
+                        default = "default " if btn.get("default") else ""
+                        result += "  " * (indent + 1) + "%sbutton {" % default;
                         if "text" in btn:
                             result += " text %s" % self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"]))
                         if "event" in btn:
@@ -1173,7 +1180,7 @@ class Quests(ConstructorModule):
                     if key != "char":
                         val = kwargs[key]
                         if val:
-                            event_str += ', %s=%s' % (utf2str(key), utf2str(val))
+                            event_str += ', %s=%s' % (utf2str(key), utf2str(htmlescape(val)))
                 return event_str
             if indent == 0:
                 self.call("debug-channel.character", char, event_str, cls="quest-first-event", indent=indent)
@@ -1530,6 +1537,12 @@ class Quests(ConstructorModule):
                                             dialog["title"] = self.call("script.evaluate-text", dialog["title"], globs=kwargs, description=eval_description)
                                         if dialog.get("text"):
                                             dialog["text"] = self.call("script.evaluate-text", dialog["text"], globs=kwargs, description=eval_description)
+                                        if dialog.get("inputs"):
+                                            inputs = [inp.copy() for inp in dialog["inputs"]]
+                                            dialog["inputs"] = inputs
+                                            for inp in inputs:
+                                                if inp.get("text"):
+                                                    inp["text"] = self.call("script.evaluate-text", inp["text"], globs=kwargs, description=eval_description)
                                         if dialog.get("buttons"):
                                             buttons = [btn.copy() for btn in dialog["buttons"]]
                                             dialog["buttons"] = buttons
@@ -1765,27 +1778,49 @@ class Quests(ConstructorModule):
                 character.quests.store()
                 # sending event
                 if event:
-                    self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character)
+                    params = {}
+                    if "inputs" in dialog:
+                        for inp in dialog["inputs"]:
+                            params["inp_%s" % inp["id"]] = req.param("input-%s" % inp["id"])
+                    self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character, **params)
                 self.call("quest.check-redirects")
                 self.call("web.redirect", self.call("game-interface.default-location") or "/location")
             else:
                 character.error(self._("This button is unavailable"))
         buttons = []
+        default_button = None
+        default_event = None
+        href = "/quest/dialog/%s" % dialog.get("uuid", "")
+        btn_id = 0
         for btn in dialog["buttons"]:
+            btn_id += 1
             buttons.append({
+                "id": btn_id,
                 "text": htmlescape(btn.get("text")),
-                "href": "/quest/dialog/%s" % dialog.get("uuid", ""),
                 "event": btn.get("event"),
+                "href": href,
             })
+            if btn.get("default"):
+                default_button = btn_id
+                default_event = btn.get("event")
         vars = {
             "title": htmlescape(dialog.get("title")),
             "buttons": buttons,
+            "href": href,
+            "default_button": default_button,
+            "default_event": default_event,
         }
+        if "inputs" in dialog:
+            inputs = []
+            vars["inputs"] = inputs
+            for inp in dialog["inputs"]:
+                inputs.append(inp)
         try:
-            self.call("game.response_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
+            content = self.call("game.parse_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
         except TemplateException as e:
             self.exception(e)
-            self.call("game.response_internal", "dialog.html", vars, dialog.get("text"))
+            content = self.call("game.parse_internal", "dialog.html", vars, dialog.get("text"))
+        self.call("game.response_internal", "dialog-scripts.html", vars, content)
 
     def money_description_quest(self):
         return {
