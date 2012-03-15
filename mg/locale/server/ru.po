@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-15 17:45+0300\n"
+"PO-Revision-Date: 2012-03-15 18:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5353,6 +5353,12 @@ msgstr "Требования"
 msgid "Resetting to default"
 msgstr "Сброс на умолчания"
 
+msgid "Resize image to fill entire frame"
+msgstr "Растянуть изображение на весь фрейм"
+
+msgid "Resizing"
+msgstr "Изменение размеров"
+
 msgid "Restraint setting mode"
 msgstr "Режим выдачи наказаний"
 
@@ -7212,6 +7218,9 @@ msgstr "Сделать запись в досье"
 msgid "Write debugging information to the debug channel"
 msgstr "Выводить отладочную информацию в отладочный канал"
 
+msgid "X frame margin"
+msgstr "Поле фрейма по X"
+
 msgid "XML declarations are not allowed here"
 msgstr "XML-объявления здесь недопустимы"
 
@@ -7241,6 +7250,9 @@ msgstr "Секретный код Xsolla для добавления игр"
 
 msgid "Xsolla time"
 msgstr "Время Xsolla"
+
+msgid "Y frame margin"
+msgstr "Поле фрейма по Y"
 
 msgid "Yellow"
 msgstr "Жёлтый"

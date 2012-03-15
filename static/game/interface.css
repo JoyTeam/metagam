@@ -251,3 +251,6 @@ area { border: none }
 
 /* FRACTIONS */
 .item-types-page-fraction-text { font-weight: normal }
+
+/* LOCATIONS */
+#location-static-image { visibility: hidden }

@@ -696,6 +696,16 @@ class LocationsStaticImages(ConstructorModule):
                 "image": location.db_location.get("image_static"),
             }
             vars["zones"] = zones
+            # stretching
+            loc_init = vars.get("loc_init", [])
+            vars["loc_init"] = loc_init
+            if location.db_location.get("image_static_stretch"):
+                margin_x = location.db_location.get("image_static_margin_x", 200)
+                margin_y = location.db_location.get("image_static_margin_y", 80)
+                loc_init.append("Loc.margins(%d, %d);" % (margin_x, margin_y))
+                width = location.db_location.get("image_static_w", 1)
+                height = location.db_location.get("image_static_h", 1)
+                loc_init.append("Loc.stretch(%d, %d);" % (width, height))
             design = self.design("gameinterface")
             raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
 
@@ -821,6 +831,10 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             if fld["name"] == "image_type":
                 fld["values"].append(("static", self._("Static image")))
         fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static'"})
+        fields.append({"type": "header", "html": self._("Resizing"), "condition": "[image_type]=='static'"})
+        fields.append({"name": "image_static_stretch", "type": "checkbox", "label": self._("Resize image to fill entire frame"), "checked": db_loc.get("image_static_stretch"), "condition": "[image_type]=='static'"})
+        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "[image_type]=='static' && [image_static_stretch]"})
+        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "[image_type]=='static' && [image_static_stretch]", "inline": True})
 
     def form_validate(self, db_loc, flags, errors):
         req = self.req()
@@ -868,11 +882,20 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             db_loc.delkey("image_static_h")
 
     def form_store(self, db_loc, flags):
+        req = self.req()
         if flags.get("image_static"):
             uri = self.call("cluster.static_upload", "locations", flags["image_static_ext"], flags["image_static_content_type"], flags["image_static"])
             db_loc.set("image_static", uri)
             db_loc.set("image_static_w", flags["image_static_w"])
             db_loc.set("image_static_h", flags["image_static_h"])
+        if db_loc.get("image_static") and req.param("image_static_stretch"):
+            db_loc.set("image_static_stretch", True)
+            db_loc.set("image_static_margin_x", intz(req.param("image_static_margin_x")))
+            db_loc.set("image_static_margin_y", intz(req.param("image_static_margin_y")))
+        else:
+            db_loc.delkey("image_static_stretch")
+            db_loc.delkey("image_static_margin_x")
+            db_loc.delkey("image_static_margin_y")
 
     def form_cleanup(self, db_loc, flags):
         if flags.get("old_image_static") and db_loc.get("image_static") != flags["old_image_static"]:
