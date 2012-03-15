@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-14 15:00+0300\n"
+"PO-Revision-Date: 2012-03-15 17:45+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -318,6 +318,9 @@ msgstr "Здесь публикуется актуальная справочн�
 msgid "Add"
 msgstr "Добавить"
 
+msgid "Add location image with different dimension"
+msgstr "Добавить картинку локации с другим размером"
+
 msgid "Adding template"
 msgstr "Добавление шаблона"
 
@@ -441,6 +444,9 @@ msgstr "Приложение %s недоступно"
 
 msgid "Are players allowed to play more than 1 character"
 msgstr "Разрешено ли игрокам играть более, чем 1 персонажем"
+
+msgid "Are you sure want do delete this image?"
+msgstr "Вы уверены, что хотите удалить это изображение?"
 
 msgid "Are you sure want to delete this WMID?"
 msgstr "Вы уверены, что хотите удалить этот WMID?"
@@ -1669,6 +1675,9 @@ msgstr "Удалить"
 #, python-format
 msgid "Delete %s image"
 msgstr "Удалить изображение %s"
+
+msgid "Delete this image"
+msgstr "Удалить это изображение"
 
 msgid "Deletion"
 msgstr "Удаление"
@@ -2962,9 +2971,6 @@ msgstr "Изображение должно быть в формате GIF, JPEG
 msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
-msgid "Image map saved successfully"
-msgstr "Карта изображения успешно сохранена"
-
 msgid "Image must be JPEG, PNG or GIF"
 msgstr "Изображение должно быть JPEG, PNG или GIF"
 
@@ -3581,6 +3587,9 @@ msgstr "Канал локации"
 msgid "Location chat is separated from the main channel"
 msgstr "Чат локации отделён от главного канала"
 
+msgid "Location data saved successfully"
+msgstr "Данные локации успешно сохранены"
+
 msgid "Location id must be a string"
 msgstr "Идентификатор локации должен быть строкой"
 
@@ -4086,6 +4095,12 @@ msgstr "Мультоловка"
 
 msgid "Multiple browsers"
 msgstr "Различные браузеры"
+
+msgid "Multiple static images location interface"
+msgstr "Интерфейс локации в виде нескольких статических изображений"
+
+msgid "Multiple static images with different dimensions"
+msgstr "Несколько статических изображений с различными размерами"
 
 msgid "My dossier"
 msgstr "Моё досье"
@@ -6875,6 +6890,9 @@ msgstr "Загрузить объект"
 msgid "Upload design package from your computer"
 msgstr "Загрузить пакет оформления с вашего компьютера"
 
+msgid "Upload first location image"
+msgstr "Загрузите первое изображение локации"
+
 msgid "Upload image"
 msgstr "Загрузка изображения"
 
@@ -7931,6 +7949,9 @@ msgstr "игнорировать"
 msgid "imagemap///Map"
 msgstr "Карта"
 
+msgid "imagemap///Map {width}x{height}"
+msgstr "Карта {width}x{height}"
+
 msgid "images"
 msgstr "изображения"
 
@@ -8685,6 +8706,9 @@ msgstr ""
 
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
+
+#~ msgid "Image map saved successfully"
+#~ msgstr "Карта изображения успешно сохранена"
 
 #~ msgid "Add template"
 #~ msgstr "Добавить шаблон"

@@ -1,0 +1,22 @@
+[%foreach img in images%]
+<div class="location-static" id="multiimage-[%img.id%]" style="display: none">
+<map name="locmap-[%loc.id%]-[%img.id%]">
+[%foreach zone in img.zones%]
+	[%if zone.action=='move'%]
+	<area class="loc-tr-[%zone.loc%]" href="javascript:void(0)" onclick="Locations.move('[%zone.loc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%elsif zone.action=='event'%]
+	<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.qevent('[%zone.ev%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%elsif zone.action=='globfunc'%]
+	<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('/globfunc/[%zone.globfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%elsif zone.action=='specfunc'%]
+	<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('/location/[%zone.specfunc%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%elsif zone.action=='open'%]
+	<area class="[%zone.class%]" href="javascript:void(0)" onclick="Game.main_open('[%zone.url%]'); return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%else%]
+	<area class="[%zone.class%]" href="javascript:void(0)" onclick="return false" shape="polygon" coords="[%zone.polygon%]" />
+	[%end%]
+[%end%]
+</map>
+<img src="[%img.image%]" alt="" usemap="#locmap-[%loc.id%]-[%img.id%]" />
+</div>
+[%end%]
