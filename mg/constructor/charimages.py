@@ -344,6 +344,13 @@ class CharImagesAdmin(ConstructorModule):
         self.rhook("charimages.layer-images", self.layer_images)
         self.rhook("charimages.dimensions", self.dimensions)
         self.rhook("advice-admin-charimages.index", self.advice_charimages)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "charimage-select.html", "description": self._("Character image selector"), "doc": "/doc/design/character-images"})
+        files.append({"filename": "charimage-select-layout.html", "description": self._("Character image selector layout"), "doc": "/doc/design/character-images"})
+        files.append({"filename": "charimage-construct.html", "description": self._("Character image constructor"), "doc": "/doc/design/character-images"})
+        files.append({"filename": "charimage-construct-layout.html", "description": self._("Character image constructor layout"), "doc": "/doc/design/character-images"})
 
     def advice_charimages(self, hook, args, advice):
         advice.append({"title": self._("Characters images documentation"), "content": self._('You can find detailed information on the characters images system in the <a href="//www.%s/doc/character-images" target="_blank">characters images page</a> in the reference manual.') % self.app().inst.config["main_host"]})

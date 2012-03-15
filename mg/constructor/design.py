@@ -41,6 +41,10 @@ re_newlines = re.compile(r'\r?\n\r?')
 re_st_mg = re.compile(r'/st-mg(?:/\[%ver%\])?(/.*)')
 re_dyn_mg = re.compile(r'/dyn-mg(/.*)')
 re_not_found = re.compile(r'file error - .*: not found$')
+re_templates_editor = re.compile(r'^templates/([a-f0-9]{32})(?:|/(.+))$')
+re_edit_template = re.compile(r'^(edit|reset)/([a-z0-9_\-]+\.html)$')
+re_del_template = re.compile(r'^del/([a-z0-9_\-]+\.html)$')
+re_valid_filename_html = re.compile(r'^[a-z0-9_\-]+\.html$')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -248,6 +252,46 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
                                 if attrs[i][0] == att:
                                     attrs[i] = (att, href)
 
+class DesignTemplateValidator(Module):
+    def __init__(self, app, group, errors, parsed_html, fqn="mg.constructor.design.DesignTemplateValidator"):
+        Module.__init__(self, app, fqn)
+        self.group = group
+        self.errors = errors
+        self.parsed_html = parsed_html
+
+    def validate(self, fn, data, file_obj=None):
+        if fn != "blocks.html" and fn != "index.html" and fn != "global.html":
+            return
+        try:
+            if fn == "blocks.html":
+                fragment = True
+            else:
+                fragment = False
+            parser = DesignHTMLParser(self.app(), fragment=fragment)
+            parser.feed(data)
+            parser.close()
+            vars = {}
+            self.call("admin-%s.preview-data" % self.group, vars)
+            try:
+                self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
+            except ImportError as e:
+                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str(e)))
+            except TemplateException as e:
+                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str(e)))
+            else:
+                if file_obj:
+                    file_obj["data"] = parser.output
+            self.parsed_html[fn] = parser
+        except UnicodeDecodeError:
+            self.errors.append(self._("Error parsing {0}: {1}").format(fn, self._("this document is not a valid UTF-8 text")))
+        except HTMLParser.HTMLParseError as e:
+            msg = e.msg
+            if e.lineno is not None:
+                msg += self._(", at line %d") % e.lineno
+            if e.offset is not None:
+                msg += self._(", column %d") % (e.offset + 1)
+            self.errors.append(self._("Error parsing {0}: {1}").format(fn, msg))
+
 class DesignZip(Module):
     "Uploaded ZIP file with a design package"
     def __init__(self, app, zipdata):
@@ -304,40 +348,12 @@ class DesignZip(Module):
             files[filename] = {"content-type": content_type}
         errors.extend(list_errors)
         parsed_html = {}
+        validator = DesignTemplateValidator(self.app(), group, errors, parsed_html)
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
-                    if file["filename"] != "blocks.html" and file["filename"] != "index.html" and file["filename"] != "global.html":
-                        continue
                     data = self.zip.read(file["zipname"])
-                    try:
-                        if file["filename"] == "blocks.html":
-                            fragment = True
-                        else:
-                            fragment = False
-                        parser = DesignHTMLParser(self.app(), fragment=fragment)
-                        parser.feed(data)
-                        parser.close()
-                        vars = {}
-                        self.call("admin-%s.preview-data" % group, vars)
-                        try:
-                            self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
-                        except ImportError as e:
-                            errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
-                        except TemplateException as e:
-                            errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
-                        else:
-                            file["data"] = parser.output
-                        parsed_html[file["filename"]] = parser
-                    except UnicodeDecodeError:
-                        errors.append(self._("Error parsing {0}: {1}").format(file["filename"], self._("this document is not a valid UTF-8 text")))
-                    except HTMLParser.HTMLParseError as e:
-                        msg = e.msg
-                        if e.lineno is not None:
-                            msg += self._(", at line %d") % e.lineno
-                        if e.offset is not None:
-                            msg += self._(", column %d") % (e.offset + 1)
-                        errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
+                    validator.validate(file["filename"], data, file_obj=file)
         design = self.obj(Design)
         design.set("group", group)
         design.set("uploaded", self.now())
@@ -1318,6 +1334,7 @@ class DesignAdmin(Module):
                     "rename": self._("rename///ren"),
                     "SelectDesignTemplate": self._("Select from the list of templates"),
                     "installed": self._("installed"),
+                    "templates": self._("templates"),
                 }
                 self.call("admin.response_template", "admin/design/list.html", vars)
             if req.args == "new":
@@ -1450,6 +1467,15 @@ class DesignAdmin(Module):
                         vars = {}
                         self.call("admin-%s.preview-data" % group, vars)
                         self.call("design.response", design, template, "", vars)
+            m = re_templates_editor.match(req.args)
+            if m:
+                uuid, cmd = m.group(1, 2)
+                try:
+                    design = self.obj(Design, uuid)
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    return self.templates_editor(group, design, cmd)
             m = re.match(r'^download/([a-f0-9]{32})/.+\.zip$', req.args)
             if m:
                 uuid = m.group(1)
@@ -1491,6 +1517,154 @@ class DesignAdmin(Module):
             return [self._("Renaming"), "%s/design" % group]
         elif re_generator.match(args):
             return [self._("Settings"), "%s/design/gen" % group]
+        m = re_templates_editor.match(args)
+        if m:
+            uuid, cmd = m.group(1, 2)
+            try:
+                design = self.obj(Design, uuid)
+            except ObjectNotFoundException:
+                pass
+            else:
+                if cmd:
+                    m = re_edit_template.match(cmd)
+                    if m:
+                        return [m.group(2), "%s/design/templates/%s" % (group, uuid)]
+                if cmd == "add":
+                    return [self._("Adding template"), "%s/design/templates/%s" % (group, uuid)]
+                return [self._("Templates of '{design}'").format(design=htmlescape(design.get("title"))), "%s/design" % group]
+
+    def templates_editor(self, group, design, cmd):
+        req = self.req()
+        files = design.get("files")
+        files_list = []
+        self.call("admin-%s.design-files" % group, files_list)
+        files_list.sort(cmp=lambda x, y: cmp(x["filename"], y["filename"]))
+        files_hash = dict([(fl.get("filename"), fl) for fl in files_list])
+        if cmd:
+            m = re_del_template.match(cmd)
+            if m:
+                fn = m.group(1)
+                file_info = files.get(fn)
+                if file_info:
+                    del files[fn]
+                    html = design.get("html") or []
+                    html = [f for f in html if f != fn]
+                    design.set("html", html)
+                    design.touch()
+                    # delete data
+                    template_uri = "%s/%s" % (design.get("uri"), fn)
+                    self.call("cluster.static_delete", template_uri)
+                    design.store()
+                self.call("admin.redirect", "%s/design/templates/%s" % (group, design.uuid))
+
+            m = re_edit_template.match(cmd)
+            if m:
+                mode, fn = m.group(1, 2)
+                template_uri = "%s/%s" % (design.get("uri"), fn)
+                # processing request
+                if req.ok():
+                    content = utf2str(req.param("content"))
+                    errors = []
+                    parsed_html = {}
+                    validator = DesignTemplateValidator(self.app(), group, errors, parsed_html)
+                    validator.validate(fn, content)
+                    self.call("admin-%s.validate" % group, design, parsed_html, errors)
+                    if errors:
+                        self.call("web.response_json", {"success": False, "errormsg": "\n".join(errors)})
+                    files[fn] = {"content-type": "text/html"}
+                    html = design.get("html") or []
+                    if not fn in html:
+                        html.append(fn)
+                        design.set("html", html)
+                    design.touch()
+                    # uploading data
+                    self.call("cluster.static_put", template_uri, "text/html", content)
+                    design.store()
+                    self.call("admin.redirect", "%s/design/templates/%s" % (group, design.uuid))
+                # loading file and rendering form
+                if mode == "edit" and fn in design.get("files"):
+                    try:
+                        content = self.download(template_uri)
+                    except DownloadError:
+                        self.call("admin.response", self._("Error downloading template"))
+                else:
+                    subdir = {
+                        "gameinterface": "game",
+                        "sociointerface": "socio",
+                    }.get(group)
+                    try:
+                        with open("%s/templates/%s/%s" % (mg.__path__[0], subdir, fn), "r") as f:
+                            content = f.read()
+                    except IOError:
+                        content = ""
+                fields = []
+                fl = files_hash.get(fn)
+                if fl:
+                    fields.append({"type": "html", "html": '<div class="admin-description">%s</div>' % fl["description"]})
+                    doc = fl.get("doc")
+                    if doc:
+                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.app().inst.config["main_host"], doc, self._("Open documentation page")), "inline": True})
+                fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
+                self.call("admin.form", fields=fields)            
+            if cmd == "add":
+                if req.ok():
+                    filename = req.param("filename")
+                    if filename:
+                        fl = files_hash.get(filename)
+                        if fl:
+                            self.call("admin.redirect", "%s/design/templates/%s/edit/%s" % (group, design.uuid, filename))
+                fields = []
+                for fl in files_list:
+                    if re_valid_filename_html.match(fl["filename"]):
+                        label = u"<strong>%s</strong> &mdash; %s" % (fl["filename"], fl["description"])
+                        doc = fl.get("doc")
+                        if doc:
+                            label = u'%s &mdash; <a href="http://www.%s%s" target="_blank">%s</a>' % (label, self.app().inst.config["main_host"], doc, self._("documentation"))
+                        fields.append({"id": "filename-%s" % fl["filename"], "type": "radio", "name": "filename", "value": fl["filename"], "boxLabel": label})
+                buttons = [
+                    {"text": self._("Edit")},
+                ]
+                self.call("admin.form", fields=fields, buttons=buttons)
+        # list of templates
+        rows = []
+        for fn in sorted(design.get("files").keys()):
+            if fn.endswith(".html"):
+                if fn == "blocks.html" or fn == "global.html" or fn == "index.html":
+                    reset = self._("reset///unavailable")
+                    delete = self._("delete///unavailable")
+                else:
+                    reset = u'<hook:admin.link href="%s/design/templates/%s/reset/%s" title="%s" />' % (group, design.uuid, urlencode(fn), self._("reset"))
+                    delete = u'<hook:admin.link href="%s/design/templates/%s/del/%s" title="%s" confirm="%s" />' % (group, design.uuid, urlencode(fn), self._("delete"), self._("Are you sure want to delete this template?"))
+                fl = files_hash.get(fn)
+                if fl:
+                    description = fl["description"]
+                else:
+                    description = None
+                rows.append([
+                    htmlescape(fn),
+                    u'<hook:admin.link href="%s/design/templates/%s/edit/%s" title="%s" />' % (group, design.uuid, urlencode(fn), self._("edit")),
+                    reset,
+                    delete,
+                    description,
+                ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {"hook": "%s/design/templates/%s/add" % (group, design.uuid), "text": self._("Select template"), "lst": True},
+                    ],
+                    "header": [
+                        self._("File name"),
+                        self._("Editing"),
+                        self._("Resetting to default"),
+                        self._("Deletion"),
+                        self._("Description"),
+                    ],
+                    "rows": rows,
+                },
+            ],
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
 class IndexPage(Module):
     pass
@@ -2012,6 +2186,7 @@ class GameInterfaceAdmin(ConstructorModule):
         self.rhook("admin-gameinterface.previews", self.previews)
         self.rhook("admin-gameinterface.preview", self.preview)
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
 
     def recommended_actions(self, actions):
         if not self.conf("gameinterface.design"):
@@ -2040,17 +2215,21 @@ class GameInterfaceAdmin(ConstructorModule):
     def preview_data(self, vars):
         pass
 
-    def gameinterface_advice(self, args, advice):
-        files = []
-        files.append({"filename": "blocks.html", "description": self._("Game interface blocks")})
+    def design_files(self, files):
         files.append({"filename": "interface.css", "description": self._("Game interface CSS")})
         files.append({"filename": "game.css", "description": self._("Common game CSS (styles for character icons, level [5] markers etc). This file is included in every game page - index page, game interface, socio interface")})
-        files.append({"filename": "external.html", "description": self._("External interface")})
-        files.append({"filename": "cabinet.html", "description": self._("Cabinet interface (inside the external interface)")})
-        files.append({"filename": "error.html", "description": self._("External error message (inside the external interface)")})
-        files.append({"filename": "form.html", "description": self._("External form (inside the external interface)")})
+
+    def gameinterface_advice(self, args, advice):
+        files = []
         self.call("admin-gameinterface.design-files", files)
-        files = "".join(["<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (f.get("filename"), f.get("description")) for f in files])
+        html = []
+        for f in files:
+            fn = f.get("filename")
+            doc = f.get("doc")
+            if doc:
+                fn = u'<a href="http://www.%s%s" target="_blank">%s</a>' % (self.app().inst.config["main_host"], doc, fn)
+            html.append("<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (fn, f.get("description")))
+        files = "".join(html)
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files, "order": 50})
 
     def generators(self, gens):

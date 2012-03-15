@@ -26,6 +26,14 @@ class TelegramContragent(CassandraObject):
 class TelegramContragentList(CassandraObjectList):
     objcls = TelegramContragent
 
+class TelegramsAdmin(Module):
+    def register(self):
+        self.rhook("admin-sociointerface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "telegrams-contragents.html", "description": self._("List of contragents in the telegrams interface")})
+        files.append({"filename": "telegrams-user.html", "description": self._("List of message with the specific user in the telegrams interface")})
+
 class Telegrams(Module):
     def register(self):
         self.rhook("telegrams.menu", self.menu)
@@ -40,6 +48,9 @@ class Telegrams(Module):
         objclasses["Telegram"] = (Telegram, TelegramList)
         objclasses["TelegramUser"] = (TelegramUser, TelegramUserList)
         objclasses["TelegramContragent"] = (TelegramContragent, TelegramContragentList)
+
+    def child_modules(self):
+        return ["mg.socio.telegrams.TelegramsAdmin"]
 
     def menu(self, menu_lst):
         req = self.req()

@@ -218,6 +218,10 @@ class LibraryAdmin(ConstructorModule):
         self.rhook("headmenu-admin-library.page-groups", self.headmenu_page_groups)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("advice-admin-library.index", self.advice_library)
+        self.rhook("admin-sociointerface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "library.html", "description": self._("Library page layout"), "doc": "/doc/design/library"})
 
     def advice_library(self, hook, args, advice):
         advice.append({"title": self._("Library documentation"), "content": self._('You can find detailed information on the library system in the <a href="//www.%s/doc/library" target="_blank">library page</a> in the reference manual.') % self.app().inst.config["main_host"]})

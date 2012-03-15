@@ -148,6 +148,13 @@ class ForumAdmin(Module):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("headmenu-admin-socio.user", self.headmenu_user)
         self.rhook("ext-admin-socio.user", self.user, priv="public")
+        self.rhook("admin-sociointerface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "index.html", "description": self._("Forum index page (list of categories)"), "doc": "/doc/design/forum"})
+        files.append({"filename": "category.html", "description": self._("Forum category (list of topics)"), "doc": "/doc/design/forum"})
+        files.append({"filename": "topic.html", "description": self._("Forum topic"), "doc": "/doc/design/forum"})
+        files.append({"filename": "tags.html", "description": self._("Forum tags page"), "doc": "/doc/design/forum"})
 
     def advice_forum_categories(self, args, advice):
         advice.append({"title": self._("Defining categories"), "content": self._("Think over forum categories carefully. Try to create minimal quantity of categories. Keep in mind that users will spend just few seconds to choose a category to write. Descriptions should be short and simple. Titles should be short and self explanatory. Don't create many categories for future reference. It's better to create several more common categories and split them later.")})
@@ -2832,6 +2839,13 @@ class SocioAdmin(Module):
         self.rhook("socio-admin.message-silence", self.message_silence)
         self.rhook("ext-admin-socio.config", self.admin_socio_config, priv="socio.config")
         self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("admin-sociointerface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "global.html", "description": self._("Global template for all socio pages"), "doc": "/doc/design/sociointerface"})
+        files.append({"filename": "global-simple.html", "description": self._("Simple global template")})
+        files.append({"filename": "list.html", "description": self._("List of miscellaneous items")})
+        files.append({"filename": "user.html", "description": self._("Socio user profile")})
 
     def menu_root_index(self, menu):
         menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})

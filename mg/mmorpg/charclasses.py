@@ -16,6 +16,11 @@ class CharClassesAdmin(ConstructorModule):
         self.rhook("ext-admin-characters.classes", self.admin_characters_classes, priv="characters.params")
         self.rhook("headmenu-admin-characters.classes", self.headmenu_characters_classes)
         self.rhook("advice-admin-characters.classes", self.advice_charclasses)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "charclass-select.html", "description": self._("Character class selector"), "doc": "/doc/design/character-classes"})
+        files.append({"filename": "charclass-select-layout.html", "description": self._("Character class selector layout"), "doc": "/doc/design/character-classes"})
 
     def advice_charclasses(self, args, advice):
         advice.append({"title": self._("Character classes documentation"), "content": self._('You can find detailed information on the character classes system in the <a href="//www.%s/doc/character-classes" target="_blank">character classes page</a> in the reference manual.') % self.app().inst.config["main_host"]})
@@ -208,6 +213,7 @@ class CharClasses(ConstructorModule):
         self.rhook("characters.param-html", self.html, priority=10)
         self.rhook("quest.check-dialogs", self.check_dialogs, priority=-10)
         self.rhook("ext-charclass.select", self.charclass_select, priv="logged")
+        self.rhook("modules.list", self.modules_list)
 
     def html(self, param, value):
         if param.get("charclass"):
@@ -221,7 +227,18 @@ class CharClasses(ConstructorModule):
             raise Hooks.Return("")
 
     def child_modules(self):
-        return ["mg.mmorpg.charclasses.CharClassesAdmin", "mg.mmorpg.charclasses.CharClassesLibrary"]
+        mods = ["mg.mmorpg.charclasses.CharClassesAdmin", "mg.mmorpg.charclasses.CharClassesLibrary"]
+        if self.conf("module.startloc"):
+            mods.append("mg.mmorpg.startloc.StartLoc")
+        return mods
+
+    def modules_list(self, modules):
+        modules.append({
+            "id": "startloc",
+            "name": self._("Starting location"),
+            "description": self._("Ability to select character starting location depending on his class"),
+            "parent": "charclasses",
+        })
 
     def check_dialogs(self):
         req = self.req()
@@ -270,6 +287,7 @@ class CharClasses(ConstructorModule):
                                     pass
                                 else:
                                     character.store()
+                                    self.call("charclass.selected", character, param, cls_id)
                                     self.qevent("charclass-selected", char=character, cls=param["code"], oldval=old_val, newval=cls_id)
                                 self.call("quest.check-redirects")
                                 self.call("web.redirect", "/charclass/select")

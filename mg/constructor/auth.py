@@ -537,11 +537,15 @@ class Auth(ConstructorModule):
         vars["register_fields"] = fields
 
     def player_register(self):
+        req = self.req()
         if not self.app().project.get("published"):
             self.call("web.response_json", {"success": False, "error": self._("Registration in this game is disabled yet. To allow new players to register the game must be sent to moderation first.")})
         if self.conf("auth.closed"):
             self.call("web.response_json", {"success": False, "error": htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))})
-        req = self.req()
+        # checking IP ban
+        till = self.call("restraints.ip-banned", req.remote_addr())
+        if till:
+            self.call("web.response_json", {"success": False, "error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
         session = req.session(True)
         # registragion form
         fields = self.character_form()
@@ -699,6 +703,12 @@ class Auth(ConstructorModule):
 
     def player_login(self):
         req = self.req()
+        # checking IP ban
+        if False:
+            till = self.call("restraints.ip-banned", req.remote_addr())
+            if till:
+                self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+        # logging in
         name = req.param("name") or req.param("email")
         password = req.param("password")
         msg = {}

@@ -303,6 +303,14 @@ class PaidServicesAdmin(ConstructorModule):
         self.rhook("headmenu-admin-paidservices.editor", self.headmenu_paidservices_editor)
         self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
         self.rhook("admin-modifiers.descriptions", self.mod_descriptions)
+        self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
+        self.rhook("admin-sociointerface.design-files", self.sociointerface_design_files)
+
+    def sociointerface_design_files(self, files):
+        files.append({"filename": "paid-services.html", "description": self._("Paid services interface"), "doc": "/doc/design/paid-services"})
+
+    def gameinterface_design_files(self, files):
+        files.append({"filename": "paid-services.html", "description": self._("Paid services interface"), "doc": "/doc/design/paid-services"})
 
     def mod_descriptions(self, modifiers, mods):
         for key, mod in mods.iteritems():

@@ -165,6 +165,29 @@ class MemberEquipInventory(MemberInventory):
                 value = 0
         return value
 
+    def _item_changed(self, old_item_type, new_item_type):
+        equip_data = self._equip_data()
+        slots = equip_data["dna"].get(old_item_type)
+        if not slots:
+            return
+        item_type, quantity = MemberInventory.find_dna(self, old_item_type)
+        if not quantity:
+            quantity = 0
+        if quantity >= len(slots):
+            return
+        inv_slots = equip_data["slots"]
+        while quantity < len(slots):
+            slot = slots.pop()
+            if new_item_type:
+                inv_slots[slot] = new_item_type
+                new_item_type = None
+            else:
+                try:
+                    del inv_slots[slot]
+                except KeyError:
+                    pass
+        self._update_equip_data()
+
 class CharacterEquip(ConstructorModule):
     def __init__(self, character):
         ConstructorModule.__init__(self, character.app(), "mg.mmorpg.equip.CharacterEquip")
@@ -233,6 +256,8 @@ class CharacterEquip(ConstructorModule):
                     name = param.get("name")
                     name_g = param.get("name_g", name)
                     return self._("param///{name} is not enough to wear {item_name}").format(name=name, name_g=name_g, item_name=item_type.name, item_name_a=item_type.name_a)
+        if not self.call("script.evaluate-expression", item_type.get("wear_cond", 1), globs={"char": char, "item": item_type}, description=lambda: self._("Whether item {item} ({name}) is wearable").format(item=item_type.uuid, name=item_type.name)):
+            return self._("You can't wear {item_name} at the moment").format(item_name=item_type.name, item_name_a=item_type.name_a)
         return None
 
     def script_attr(self, attr, handle_exceptions=True):
@@ -310,11 +335,20 @@ class CharacterEquip(ConstructorModule):
             pass
 
     def has_invalid_items(self):
+        changed = False
+        equip_data = self.inv._equip_data()
+        slots = equip_data["slots"]
         for slot in self.call("equip.slots"):
             item_type = self.equipped(slot["id"])
             if item_type and self.cannot_equip(item_type):
-                return True
-        return False
+                changed = True
+                continue
+            if not item_type and slots.get(str(slot["id"])):
+                del slots[str(slot["id"])]
+                changed = True
+        if changed:
+            self.inv._update_equip_data()
+        return changed
 
     def validate(self):
         "Validate character equip"
@@ -367,9 +401,14 @@ class EquipAdmin(ConstructorModule):
         self.rhook("admin-storage.group-names", self.group_names)
         self.rhook("admin-storage.nondeletable", self.nondeletable)
         self.rhook("advice-admin-equip.index", self.advice_equip)
+        self.rhook("advice-admin-item-types.index", self.advice_equip)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "item-hint.html", "description": self._("Item mouse over hint"), "doc": "/doc/equip"})
 
     def advice_equip(self, hook, args, advice):
-        advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 20})
 
     def nondeletable(self, uuids):
         interfaces = self.call("equip.interfaces")
@@ -564,9 +603,11 @@ class EquipAdmin(ConstructorModule):
                 break
         fields.insert(pos, {"type": "header", "html": self._("Equipment")})
         pos += 1
-        fields.insert(pos, {"type": "checkbox", "label": self._("This item is wearable"), "name": "equip", "checked": obj.get("equip"), "flex": 1})
+        fields.insert(pos, {"type": "checkbox", "label": self._("This item is wearable"), "name": "equip", "checked": obj.get("equip")})
         pos += 1
-        fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "inline": True, "flex": 2, "condition": "[equip]"})
+        fields.insert(pos, {"label": self._("Script condition whether this item can be worn") + self.call("script.help-icon-expressions"), "name": "wear_cond", "value": self.call("script.unparse-expression", obj.get("wear_cond", 1)), "condition": "[equip]"})
+        pos += 1
+        fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "condition": "[equip]", "inline": True})
         pos += 1
         # checkboxes
         slots = self.call("equip.slots")
@@ -625,6 +666,7 @@ class EquipAdmin(ConstructorModule):
             req = self.req()
             char = self.character(req.user())
             obj.set("equip_wear", self.call("script.admin-expression", "equip_wear", errors, globs={"char": char}))
+            obj.set("wear_cond", self.call("script.admin-expression", "wear_cond", errors, globs={"char": char}))
         else:
             obj.delkey("equip")
 
@@ -1174,7 +1216,7 @@ class Equip(ConstructorModule):
 
     def items_menu(self, character, item_type, menu):
         if item_type.get("equip"):
-            if self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character}, description=lambda: self._("Whether item {item} ({name}) is wearable").format(item=item_type.uuid, name=item_type.name)):
+            if self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character, "item": item_type}, description=lambda: self._("Whether 'wear' button is available on the item {item} ({name})").format(item=item_type.uuid, name=item_type.name)):
                 menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(self._("wear")), "order": 80})
 
     def equip_item(self):
@@ -1198,7 +1240,7 @@ class Equip(ConstructorModule):
             ret(self._("You have no such items"))
         if not item_type.get("equip"):
             ret(self._("This item is not wearable"))
-        if not self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character}, description=lambda: self._("Whether item {item} ({name}) is wearable").format(item=item_type.uuid, name=item_type.name)):
+        if not self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character, "item": item_type}, description=lambda: self._("Whether 'wear' button is available on the item {item} ({name})").format(item=item_type.uuid, name=item_type.name)):
             ret(self._("This item has no 'wear' button"))
         error = equip.cannot_equip(item_type)
         if error:

@@ -5,8 +5,11 @@ import cStringIO
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps, ImageFilter
 import re
 import hashlib
+from uuid import uuid4
 
 re_polygon_param = re.compile(r'^polygon-(\d+)$')
+re_multiimage_map = re.compile(r'^([a-f0-9]+)/([a-f0-9]+)$')
+re_multiimage_map_del = re.compile(r'^([a-f0-9]+)/del/([a-f0-9]+)$')
 
 class LocationsAdmin(ConstructorModule):
     def register(self):
@@ -27,6 +30,15 @@ class LocationsAdmin(ConstructorModule):
         self.rhook("headmenu-admin-locations.teleport", self.headmenu_locations_teleport)
         self.rhook("admin-locations.links", self.links)
         self.rhook("admin-locations.render-links", self.render_links)
+        self.rhook("admin-locations.all", self.locations_all)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "location-layout.html", "description": self._("Location page layout"), "doc": "/doc/locations"})
+        files.append({"filename": "location-arrows.html", "description": self._("Left/right/up/down arrows for the location"), "doc": "/doc/locations"})
+        files.append({"filename": "location-static.html", "description": self._("Static image location interface"), "doc": "/doc/locations"})
+        files.append({"filename": "location-multistatic.html", "description": self._("Multiple static images location interface"), "doc": "/doc/locations"})
+        files.append({"filename": "location-transitions.html", "description": self._("List of transitions in the location"), "doc": "/doc/locations"})
 
     def links(self, location, links):
         req = self.req()
@@ -92,8 +104,10 @@ class LocationsAdmin(ConstructorModule):
         objclasses["LocParams"] = (DBLocParams, DBLocParamsList)
 
     def child_modules(self):
-        lst = ["mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin", "mg.mmorpg.locparams.LocationParams",
-            "mg.mmorpg.locfunctions.LocationFunctions"]
+        lst = [
+            "mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin",
+            "mg.mmorpg.locations.LocationsMultiStaticImages", "mg.mmorpg.locations.LocationsMultiStaticImagesAdmin",
+            "mg.mmorpg.locparams.LocationParams", "mg.mmorpg.locfunctions.LocationFunctions"]
         return lst
 
     def menu_root_index(self, menu):
@@ -265,9 +279,7 @@ class LocationsAdmin(ConstructorModule):
                 menu = []
                 self.call("admin-locations.render-links", location, menu)
                 # location preview
-                html = self.call("admin-locations.render", location)
-                if html:
-                    fields.insert(0, {"type": "html", "html": html})
+                self.call("admin-locations.render", location, fields)
             # transitions
             for loc_id, info in db_loc.get("transitions", {}).iteritems():
                 loc = self.location(loc_id)
@@ -315,6 +327,11 @@ class LocationsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def locations_all(self):
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        return [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
+
     def headmenu_locations_config(self, args):
         return self._("Locations configuration")
 
@@ -336,9 +353,7 @@ class LocationsAdmin(ConstructorModule):
                 self.call("web.response_json", {"success": False, "errors": errors})
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
-        lst = self.objlist(DBLocationList, query_index="all")
-        lst.load()
-        locations = [(db_loc.uuid, db_loc.get("name")) for db_loc in lst]
+        locations = self.call("admin-locations.all")
         fields = [
             {"name": "start_location", "label": self._("Starting location for the new character"), "type": "combo", "value": self.conf("locations.startloc"), "values": locations},
             {"name": "movement_delay", "label": '%s%s' % (self._("Location movement delay expression"), self.call("script.help-icon-expressions")), "value": self.call("script.unparse-expression", self.call("locations.movement_delay"))},
@@ -367,270 +382,6 @@ class LocationsAdmin(ConstructorModule):
                 transitions[loc] = {}
         db_loc.touch()
 
-class LocationsStaticImages(ConstructorModule):
-    def register(self):
-        self.rhook("locations.render", self.render)
-        self.rhook("hook-location.image", self.hook_image)
-
-    def render(self, location, vars):
-        if location.image_type == "static":
-            zones = []
-            if location.db_location.get("static_zones"):
-                zone_id = 0
-                for zone in location.db_location.get("static_zones"):
-                    zone_id += 1
-                    rzone = {
-                        "polygon": zone.get("polygon"),
-                        "action": zone.get("action", "none"),
-                        "loc": zone.get("loc"),
-                        "class": "loc-tr-%s" % zone.get("loc") if zone.get("action") == "move" else "loc-zone-%d" % zone_id,
-                        "hint": htmlescape(jsencode(zone.get("hint"))),
-                    }
-                    if zone.get("url"):
-                        rzone["url"] = htmlescape(jsencode(zone.get("url")))
-                        m = hashlib.md5()
-                        m.update(utf2str(zone.get("url")))
-                        rzone["urlhash"] = m.hexdigest()
-                    self.call("locations.map-zone-%s-render" % rzone["action"], zone, rzone)
-                    zones.append(rzone)
-            vars["loc"] = {
-                "id": location.uuid,
-                "image": location.db_location.get("image_static"),
-            }
-            vars["zones"] = zones
-            design = self.design("gameinterface")
-            raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
-
-    def hook_image(self, vars):
-        if not vars.get("load_extjs"):
-            vars["load_extjs"] = {}
-        vars["load_extjs"]["qtips"] = True
-        try:
-            location = self.location(vars["location"]["id"])
-        except KeyError:
-            pass
-        else:
-            self.render(location, vars)
-
-class LocationsStaticImagesAdmin(ConstructorModule):
-    def register(self):
-        self.rhook("admin-locations.editor-form-render", self.form_render)
-        self.rhook("admin-locations.editor-form-validate", self.form_validate)
-        self.rhook("admin-locations.editor-form-store", self.form_store)
-        self.rhook("admin-locations.editor-form-cleanup", self.form_cleanup)
-        self.rhook("ext-admin-locations.image-map", self.admin_image_map, priv="locations.editor")
-        self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
-        self.rhook("admin-locations.render", self.render)
-        self.rhook("admin-locations.valid-transitions", self.valid_transitions)
-        self.rhook("admin-locations.links", self.links)
-
-    def form_render(self, db_loc, fields):
-        for fld in fields:
-            if fld["name"] == "image_type":
-                fld["values"].append(("static", self._("Static image")))
-        fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static'"})
-
-    def form_validate(self, db_loc, flags, errors):
-        req = self.req()
-        if db_loc.get("image_static"):
-            flags["old_image_static"] = db_loc.get("image_static")
-        if req.param("v_image_type") == "static":
-            flags["image_type_valid"] = True
-            image_data = req.param_raw("image_static")
-            if image_data:
-                try:
-                    image_obj = Image.open(cStringIO.StringIO(image_data))
-                    if image_obj.load() is None:
-                        raise IOError
-                except IOError:
-                    errors["image_static"] = self._("Image format not recognized")
-                except OverflowError:
-                    errors["image_static"] = self._("Image format not recognized")
-                else:
-                    width, height = image_obj.size
-                    flags["image_static"] = image_data
-                    flags["image_static_w"] = width
-                    flags["image_static_h"] = height
-                    if image_obj.format == "GIF":
-                        flags["image_static_ext"] = "gif"
-                        flags["image_static_content_type"] = "image/gif"
-                    elif image_obj.format == "PNG":
-                        flags["image_static_ext"] = "png"
-                        flags["image_static_content_type"] = "image/png"
-                    elif image_obj.format == "JPEG":
-                        flags["image_static_ext"] = "jpg"
-                        flags["image_static_content_type"] = "image/jpeg"
-                    else:
-                        del flags["image_static"]
-                        del flags["image_static_w"]
-                        del flags["image_static_h"]
-                        errors["image_static"] = self._("Image format must be GIF, JPEG or PNG")
-            else:
-                if db_loc.get("image_static"):
-                    flags["old_image_static"] = db_loc.get("image_static")
-                else:
-                    errors["image_static"] = self._("Upload an image")
-        else:
-            db_loc.delkey("image_static")
-            db_loc.delkey("image_static_w")
-            db_loc.delkey("image_static_h")
-
-    def form_store(self, db_loc, flags):
-        if flags.get("image_static"):
-            uri = self.call("cluster.static_upload", "locations", flags["image_static_ext"], flags["image_static_content_type"], flags["image_static"])
-            db_loc.set("image_static", uri)
-            db_loc.set("image_static_w", flags["image_static_w"])
-            db_loc.set("image_static_h", flags["image_static_h"])
-
-    def form_cleanup(self, db_loc, flags):
-        if flags.get("old_image_static") and db_loc.get("image_static") != flags["old_image_static"]:
-            self.call("cluster.static_delete", flags["old_image_static"])
-
-    def headmenu_image_map(self, args):
-        return [self._("Map"), "locations/editor/%s" % args]
-
-    def admin_image_map(self):
-        req = self.req()
-        location = self.location(req.args)
-        if not location.valid() or location.image_type != "static":
-            self.call("admin.redirect", "locations/editor")
-        if req.ok():
-            zones = {}
-            errors = {}
-            for key in req.param_dict().keys():
-                m = re_polygon_param.match(key)
-                if m:
-                    zone_id = int(m.group(1))
-                    zone = {}
-                    zones[zone_id] = zone
-                    # polygon data
-                    zone["polygon"] = req.param("polygon-%d" % zone_id)
-                    poly = zone["polygon"].split(",")
-                    if len(poly) == 0:
-                        errors["polygon-%d" % zone_id] = self._("Polygon may not be empty")
-                    elif len(poly) % 2:
-                        errors["polygon-%d" % zone_id] = self._("Odd number of coordinates")
-                    elif len(poly) < 6:
-                        errors["polygon-%d" % zone_id] = self._("Minimal number of points is 3")
-                    else:
-                        for coo in poly:
-                            if not valid_int(coo):
-                                errors["polygon-%d" % zone_id] = self._("Invalid non-integer coordinate encountered")
-                                break
-                    # action
-                    action = req.param("v_action-%d" % zone_id)
-                    zone["action"] = action
-                    if action == "move":
-                        loc = req.param("v_location-%d" % zone_id)
-                        if not loc:
-                            errors["v_location-%d" % zone_id] = self._("Location not specified")
-                        else:
-                            loc_obj = self.location(loc)
-                            if not loc_obj.valid():
-                                errors["v_location-%d" % zone_id] = self._("Invalid location specified")
-                            elif loc_obj.uuid == location.uuid:
-                                errors["v_location-%d" % zone_id] = self._("Link to the same location")
-                            else:
-                                zone["loc"] = loc
-                    elif action == "open":
-                        url = req.param("url-%d" % zone_id)
-                        if not url:
-                            errors["url-%d" % zone_id] = self._("This field is mandatory")
-                        elif not url.startswith("/"):
-                            errors["url-%d" % zone_id] = self._("URL must start with '/'")
-                        else:
-                            zone["url"] = url
-                    elif not self.call("admin-locations.map-zone-action-%s" % action, zone_id, zone, errors):
-                        if "action" in zone:
-                            del zone["action"]
-                    # hint
-                    hint = req.param("hint-%d" % zone_id)
-                    zone["hint"] = hint
-            if len(errors):
-                self.call("web.response_json", {"success": False, "errors": errors})
-            location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
-            self.call("admin-locations.update-transitions", location.db_location)
-            location.db_location.store()
-            self.call("web.response_json", {"success": True, "redirect": "locations/image-map/%s" % location.uuid, "parameters": {"saved": 1}})
-        # Loading zones
-        zones = []
-        if location.db_location.get("static_zones"):
-            for zone in location.db_location.get("static_zones"):
-                rzone = {
-                    "polygon": zone.get("polygon"),
-                    "action": zone.get("action", "none"),
-                    "loc": zone.get("loc"),
-                    "url": jsencode(zone.get("url")),
-                    "hint": jsencode(zone.get("hint")),
-                }
-                self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
-                zones.append(rzone)
-        # Loading locations
-        locations = []
-        lst = self.objlist(DBLocationList, query_index="all")
-        lst.load()
-        for db_loc in lst:
-            if db_loc.uuid != location.uuid:
-                locations.append({
-                    "id": db_loc.uuid,
-                    "name": jsencode(db_loc.get("name"))
-                })
-        actions = [("none", self._("No action")), ("move", self._("Move to another location")), ("open", self._("Open URL"))]
-        self.call("admin-locations.map-zone-actions", location, actions)
-        links = []
-        self.call("admin-locations.render-links", location, links)
-        vars = {
-            "image": location.db_location.get("image_static"),
-            "width": location.db_location.get("image_static_w"),
-            "height": location.db_location.get("image_static_h"),
-            "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
-            "submit_url": "/admin-locations/image-map/%s" % location.uuid,
-            "zones": zones,
-            "actions": actions,
-            "locations": locations,
-            "links": links,
-        }
-        req = self.req()
-        if req.param("saved"):
-            vars["saved"] = {"text": self._("Location saved successfully")}
-        self.call("admin-locations.render-imagemap-editor", location, vars)
-        self.call("admin.response_template", "admin/locations/imagemap.html", vars)
-
-    def links(self, location, links):
-        req = self.req()
-        if req.has_access("locations.editor"):
-            if location.image_type == "static":
-                links.append({"hook": "locations/image-map/%s" % location.uuid, "text": self._("imagemap///Map")})
-
-    def render(self, location):
-        if location.image_type == "static":
-            zones = []
-            if location.db_location.get("static_zones"):
-                for zone in location.db_location.get("static_zones"):
-                    zones.append({
-                        "polygon": zone.get("polygon"),
-                        "action": zone.get("action"),
-                        "loc": zone.get("loc"),
-                    })
-            vars = {
-                "loc": {
-                    "id": location.uuid,
-                    "image": location.db_location.get("image_static"),
-                },
-                "zones": zones,
-            }
-            req = self.req()
-            if req.param("saved"):
-                vars["saved"] = {"text": self._("Image map saved successfully")}
-            raise Hooks.Return(self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars))
-
-    def valid_transitions(self, db_loc, valid_transitions):
-        if db_loc.get("image_type") == "static":
-            if db_loc.get("static_zones"):
-                for zone in db_loc.get("static_zones"):
-                    if zone.get("action") == "move" and zone.get("loc"):
-                        valid_transitions.add(zone.get("loc"))
-
 class Locations(ConstructorModule):
     def register(self):
         self.rhook("locations.character_get", self.get)
@@ -651,6 +402,18 @@ class Locations(ConstructorModule):
         self.rhook("locations.movement_delay", self.movement_delay)
         self.rhook("location.info", self.location_info)
         self.rhook("teleport.character", self.teleport_character)
+        self.rhook("hook-location.image", self.hook_image)
+
+    def hook_image(self, vars):
+        if not vars.get("load_extjs"):
+            vars["load_extjs"] = {}
+        vars["load_extjs"]["qtips"] = True
+        try:
+            location = self.location(vars["location"]["id"])
+        except KeyError:
+            pass
+        else:
+            return self.call("locations.render", location, vars)
 
     def location_info(self, loc_id):
         location = self.location(loc_id)
@@ -726,6 +489,7 @@ class Locations(ConstructorModule):
         if location is None:
             self.call("game.internal-error", self._("Character is outside of any locations"))
         vars = {
+            "loc": ScriptTemplateObject(location),
             "location": {
                 "id": location.uuid,
             },
@@ -902,3 +666,555 @@ class Locations(ConstructorModule):
             delay = ['/', ['glob', 'base_delay'], ['+', 1, ['.', ['.', ['glob', 'char'], 'mod'], 'fastmove']]]
         return delay
 
+class LocationsStaticImages(ConstructorModule):
+    def register(self):
+        self.rhook("locations.render", self.render)
+
+    def render(self, location, vars):
+        if location.image_type == "static":
+            zones = []
+            if location.db_location.get("static_zones"):
+                zone_id = 0
+                for zone in location.db_location.get("static_zones"):
+                    zone_id += 1
+                    rzone = {
+                        "polygon": zone.get("polygon"),
+                        "action": zone.get("action", "none"),
+                        "loc": zone.get("loc"),
+                        "class": "loc-tr-%s" % zone.get("loc") if zone.get("action") == "move" else "loc-zone-%d" % zone_id,
+                        "hint": htmlescape(jsencode(zone.get("hint"))),
+                    }
+                    if zone.get("url"):
+                        rzone["url"] = htmlescape(jsencode(zone.get("url")))
+                        m = hashlib.md5()
+                        m.update(utf2str(zone.get("url")))
+                        rzone["urlhash"] = m.hexdigest()
+                    self.call("locations.map-zone-%s-render" % rzone["action"], zone, rzone)
+                    zones.append(rzone)
+            vars["loc"] = {
+                "id": location.uuid,
+                "image": location.db_location.get("image_static"),
+            }
+            vars["zones"] = zones
+            # stretching
+            loc_init = vars.get("loc_init", [])
+            vars["loc_init"] = loc_init
+            if location.db_location.get("image_static_stretch"):
+                margin_x = location.db_location.get("image_static_margin_x", 200)
+                margin_y = location.db_location.get("image_static_margin_y", 80)
+                loc_init.append("Loc.margins(%d, %d);" % (margin_x, margin_y))
+                width = location.db_location.get("image_static_w", 1)
+                height = location.db_location.get("image_static_h", 1)
+                loc_init.append("Loc.stretch(%d, %d);" % (width, height))
+            design = self.design("gameinterface")
+            raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
+
+class ImageMapEditor(ConstructorModule):
+    def __init__(self, app, location, fqn="mg.mmorpg.locations.ImageMapEditor"):
+        ConstructorModule.__init__(self, app, fqn)
+        self._location = location
+
+    def submit(self, zones):
+        req = self.req()
+        errors = {}
+        for key in req.param_dict().keys():
+            m = re_polygon_param.match(key)
+            if m:
+                zone_id = int(m.group(1))
+                zone = {}
+                zones[zone_id] = zone
+                # polygon data
+                zone["polygon"] = req.param("polygon-%d" % zone_id)
+                poly = zone["polygon"].split(",")
+                if len(poly) == 0:
+                    errors["polygon-%d" % zone_id] = self._("Polygon may not be empty")
+                elif len(poly) % 2:
+                    errors["polygon-%d" % zone_id] = self._("Odd number of coordinates")
+                elif len(poly) < 6:
+                    errors["polygon-%d" % zone_id] = self._("Minimal number of points is 3")
+                else:
+                    for coo in poly:
+                        if not valid_int(coo):
+                            errors["polygon-%d" % zone_id] = self._("Invalid non-integer coordinate encountered")
+                            break
+                # action
+                action = req.param("v_action-%d" % zone_id)
+                zone["action"] = action
+                if action == "move":
+                    loc = req.param("v_location-%d" % zone_id)
+                    if not loc:
+                        errors["v_location-%d" % zone_id] = self._("Location not specified")
+                    else:
+                        loc_obj = self.location(loc)
+                        if not loc_obj.valid():
+                            errors["v_location-%d" % zone_id] = self._("Invalid location specified")
+                        elif loc_obj.uuid == self._location.uuid:
+                            errors["v_location-%d" % zone_id] = self._("Link to the same location")
+                        else:
+                            zone["loc"] = loc
+                elif action == "open":
+                    url = req.param("url-%d" % zone_id)
+                    if not url:
+                        errors["url-%d" % zone_id] = self._("This field is mandatory")
+                    elif not url.startswith("/"):
+                        errors["url-%d" % zone_id] = self._("URL must start with '/'")
+                    else:
+                        zone["url"] = url
+                elif not self.call("admin-locations.map-zone-action-%s" % action, zone_id, zone, errors):
+                    if "action" in zone:
+                        del zone["action"]
+                # hint
+                hint = req.param("hint-%d" % zone_id)
+                zone["hint"] = hint
+        if len(errors):
+            self.call("web.response_json", {"success": False, "errors": errors})
+
+    def render_form(self, static_zones, image, width, height):
+        req = self.req()
+        # Loading zones
+        zones = []
+        if static_zones:
+            for zone in static_zones:
+                rzone = {
+                    "polygon": zone.get("polygon"),
+                    "action": zone.get("action", "none"),
+                    "loc": zone.get("loc"),
+                    "url": jsencode(zone.get("url")),
+                    "hint": jsencode(zone.get("hint")),
+                }
+                self.call("admin-locations.map-zone-%s-render" % rzone["action"], zone, rzone)
+                zones.append(rzone)
+        # Loading locations
+        locations = []
+        lst = self.objlist(DBLocationList, query_index="all")
+        lst.load()
+        for db_loc in lst:
+            if db_loc.uuid != self._location.uuid:
+                locations.append({
+                    "id": db_loc.uuid,
+                    "name": jsencode(db_loc.get("name"))
+                })
+        actions = [("none", self._("No action")), ("move", self._("Move to another location")), ("open", self._("Open URL"))]
+        self.call("admin-locations.map-zone-actions", self._location, actions)
+        links = []
+        self.call("admin-locations.render-links", self._location, links)
+        vars = {
+            "image": image,
+            "width": width,
+            "height": height,
+            "ie_warning": self._("Warning! Internet Explorer browser is not supported. Location editor may work slowly and unstable. Mozilla Firefox, Google Chrome and Opera are fully supported"),
+            "submit_url": "/%s/%s/%s" % (req.group, req.hook, req.args),
+            "zones": zones,
+            "actions": actions,
+            "locations": locations,
+            "links": links,
+        }
+        if req.param("saved"):
+            vars["saved"] = {"text": self._("Location saved successfully")}
+        self.call("admin-locations.render-imagemap-editor", self._location, vars)
+        self.call("admin.response_template", "admin/locations/imagemap.html", vars)
+
+class LocationsStaticImagesAdmin(ConstructorModule):
+    def register(self):
+        self.rhook("admin-locations.editor-form-render", self.form_render)
+        self.rhook("admin-locations.editor-form-validate", self.form_validate)
+        self.rhook("admin-locations.editor-form-store", self.form_store)
+        self.rhook("admin-locations.editor-form-cleanup", self.form_cleanup)
+        self.rhook("admin-locations.render", self.render)
+        self.rhook("admin-locations.valid-transitions", self.valid_transitions)
+        self.rhook("admin-locations.links", self.links)
+        self.rhook("ext-admin-locations.image-map", self.admin_image_map, priv="locations.editor")
+        self.rhook("headmenu-admin-locations.image-map", self.headmenu_image_map)
+
+    def form_render(self, db_loc, fields):
+        for fld in fields:
+            if fld["name"] == "image_type":
+                fld["values"].append(("static", self._("Static image")))
+        fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static'"})
+        fields.append({"type": "header", "html": self._("Resizing"), "condition": "[image_type]=='static'"})
+        fields.append({"name": "image_static_stretch", "type": "checkbox", "label": self._("Resize image to fill entire frame"), "checked": db_loc.get("image_static_stretch"), "condition": "[image_type]=='static'"})
+        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "[image_type]=='static' && [image_static_stretch]"})
+        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "[image_type]=='static' && [image_static_stretch]", "inline": True})
+
+    def form_validate(self, db_loc, flags, errors):
+        req = self.req()
+        if db_loc.get("image_static"):
+            flags["old_image_static"] = db_loc.get("image_static")
+        if req.param("v_image_type") == "static":
+            flags["image_type_valid"] = True
+            image_data = req.param_raw("image_static")
+            if image_data:
+                try:
+                    image_obj = Image.open(cStringIO.StringIO(image_data))
+                    if image_obj.load() is None:
+                        raise IOError
+                except IOError:
+                    errors["image_static"] = self._("Image format not recognized")
+                except OverflowError:
+                    errors["image_static"] = self._("Image format not recognized")
+                else:
+                    width, height = image_obj.size
+                    flags["image_static"] = image_data
+                    flags["image_static_w"] = width
+                    flags["image_static_h"] = height
+                    if image_obj.format == "GIF":
+                        flags["image_static_ext"] = "gif"
+                        flags["image_static_content_type"] = "image/gif"
+                    elif image_obj.format == "PNG":
+                        flags["image_static_ext"] = "png"
+                        flags["image_static_content_type"] = "image/png"
+                    elif image_obj.format == "JPEG":
+                        flags["image_static_ext"] = "jpg"
+                        flags["image_static_content_type"] = "image/jpeg"
+                    else:
+                        del flags["image_static"]
+                        del flags["image_static_w"]
+                        del flags["image_static_h"]
+                        errors["image_static"] = self._("Image format must be GIF, JPEG or PNG")
+            else:
+                if db_loc.get("image_static"):
+                    flags["old_image_static"] = db_loc.get("image_static")
+                else:
+                    errors["image_static"] = self._("Upload an image")
+        else:
+            db_loc.delkey("image_static")
+            db_loc.delkey("image_static_w")
+            db_loc.delkey("image_static_h")
+
+    def form_store(self, db_loc, flags):
+        req = self.req()
+        if flags.get("image_static"):
+            uri = self.call("cluster.static_upload", "locations", flags["image_static_ext"], flags["image_static_content_type"], flags["image_static"])
+            db_loc.set("image_static", uri)
+            db_loc.set("image_static_w", flags["image_static_w"])
+            db_loc.set("image_static_h", flags["image_static_h"])
+        if db_loc.get("image_static") and req.param("image_static_stretch"):
+            db_loc.set("image_static_stretch", True)
+            db_loc.set("image_static_margin_x", intz(req.param("image_static_margin_x")))
+            db_loc.set("image_static_margin_y", intz(req.param("image_static_margin_y")))
+        else:
+            db_loc.delkey("image_static_stretch")
+            db_loc.delkey("image_static_margin_x")
+            db_loc.delkey("image_static_margin_y")
+
+    def form_cleanup(self, db_loc, flags):
+        if flags.get("old_image_static") and db_loc.get("image_static") != flags["old_image_static"]:
+            self.call("cluster.static_delete", flags["old_image_static"])
+
+    def headmenu_image_map(self, args):
+        return [self._("Map"), "locations/editor/%s" % args]
+
+    def admin_image_map(self):
+        req = self.req()
+        location = self.location(req.args)
+        if not location.valid() or location.image_type != "static":
+            self.call("admin.redirect", "locations/editor")
+        imagemap_editor = ImageMapEditor(self.app(), location)
+        if req.ok():
+            zones = {}
+            imagemap_editor.submit(zones)
+            location.db_location.set("static_zones", [zones[zone_id] for zone_id in sorted(zones.keys())])
+            self.call("admin-locations.update-transitions", location.db_location)
+            location.db_location.store()
+            self.call("web.response_json", {"success": True, "redirect": "locations/image-map/%s" % location.uuid, "parameters": {"saved": 1}})
+        static_zones = location.db_location.get("static_zones")
+        image = location.db_location.get("image_static")
+        width = location.db_location.get("image_static_w")
+        height = location.db_location.get("image_static_h")
+        imagemap_editor.render_form(static_zones, image, width, height)
+
+    def links(self, location, links):
+        req = self.req()
+        if req.has_access("locations.editor"):
+            if location.image_type == "static":
+                links.append({"hook": "locations/image-map/%s" % location.uuid, "text": self._("imagemap///Map")})
+
+    def render(self, location, fields):
+        if location.image_type == "static":
+            zones = []
+            if location.db_location.get("static_zones"):
+                for zone in location.db_location.get("static_zones"):
+                    zones.append({
+                        "polygon": zone.get("polygon"),
+                        "action": zone.get("action"),
+                        "loc": zone.get("loc"),
+                    })
+            vars = {
+                "loc": {
+                    "id": location.uuid,
+                    "image": location.db_location.get("image_static"),
+                },
+                "zones": zones,
+            }
+            req = self.req()
+            if req.param("saved"):
+                vars["saved"] = {"text": self._("Location data saved successfully")}
+            fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars)})
+
+    def valid_transitions(self, db_loc, valid_transitions):
+        if db_loc.get("image_type") == "static":
+            if db_loc.get("static_zones"):
+                for zone in db_loc.get("static_zones"):
+                    if zone.get("action") == "move" and zone.get("loc"):
+                        valid_transitions.add(zone.get("loc"))
+
+# Multiple static images for different resolutions
+
+class LocationsMultiStaticImages(ConstructorModule):
+    def register(self):
+        self.rhook("locations.render", self.render)
+
+    def render(self, location, vars):
+        if location.image_type == "multistatic":
+            # initialization script
+            loc_init = vars.get("loc_init", [])
+            vars["loc_init"] = loc_init
+            # images
+            images = []
+            for img in location.db_location.get("images_multistatic", []):
+                zones = []
+                zone_id = 0
+                for zone in img.get("zones", []):
+                    zone_id += 1
+                    rzone = {
+                        "polygon": zone.get("polygon"),
+                        "action": zone.get("action", "none"),
+                        "loc": zone.get("loc"),
+                        "class": "loc-tr-%s" % zone.get("loc") if zone.get("action") == "move" else "loc-zone-%d" % zone_id,
+                        "hint": htmlescape(jsencode(zone.get("hint"))),
+                    }
+                    if zone.get("url"):
+                        rzone["url"] = htmlescape(jsencode(zone.get("url")))
+                        m = hashlib.md5()
+                        m.update(utf2str(zone.get("url")))
+                        rzone["urlhash"] = m.hexdigest()
+                    self.call("locations.map-zone-%s-render" % rzone["action"], zone, rzone)
+                    zones.append(rzone)
+                rimage = {
+                    "id": img["uuid"],
+                    "zones": zones,
+                    "image": img.get("uri"),
+                }
+                images.append(rimage)
+                loc_init.append("Loc.multiimage({width: %d, height: %s, id: '%s'});" % (img["width"], img["height"], img["uuid"]))
+            vars["loc"] = {
+                "id": location.uuid,
+                "image": location.db_location.get("image_static"),
+            }
+            vars["images"] = images
+            design = self.design("gameinterface")
+            raise Hooks.Return(self.call("design.parse", design, "location-multistatic.html", None, vars))
+
+class LocationsMultiStaticImagesAdmin(ConstructorModule):
+    def register(self):
+        self.rhook("admin-locations.editor-form-render", self.form_render)
+        self.rhook("admin-locations.editor-form-validate", self.form_validate)
+        self.rhook("admin-locations.editor-form-store", self.form_store)
+        self.rhook("admin-locations.editor-form-cleanup", self.form_cleanup)
+        self.rhook("admin-locations.render", self.render)
+        self.rhook("admin-locations.valid-transitions", self.valid_transitions)
+        self.rhook("admin-locations.links", self.links)
+        self.rhook("ext-admin-locations.multiimage-map", self.admin_multiimage_map, priv="locations.editor")
+        self.rhook("headmenu-admin-locations.multiimage-map", self.headmenu_multiimage_map)
+
+    def form_render(self, db_loc, fields):
+        for fld in fields:
+            if fld["name"] == "image_type":
+                fld["values"].append(("multistatic", self._("Multiple static images with different dimensions")))
+        fields.append({"name": "image_multistatic", "type": "fileuploadfield", "label": self._("Add location image with different dimension") if db_loc.get("images_multistatic") else self._("Upload first location image"), "condition": "[image_type]=='multistatic'"})
+
+    def form_validate(self, db_loc, flags, errors):
+        req = self.req()
+        if req.param("v_image_type") == "multistatic":
+            flags["image_type_valid"] = True
+            image_data = req.param_raw("image_multistatic")
+            if image_data:
+                try:
+                    image_obj = Image.open(cStringIO.StringIO(image_data))
+                    if image_obj.load() is None:
+                        raise IOError
+                except IOError:
+                    errors["image_multistatic"] = self._("Image format not recognized")
+                except OverflowError:
+                    errors["image_multistatic"] = self._("Image format not recognized")
+                else:
+                    width, height = image_obj.size
+                    flags["image_multistatic"] = image_data
+                    flags["image_multistatic_w"] = width
+                    flags["image_multistatic_h"] = height
+                    if image_obj.format == "GIF":
+                        flags["image_multistatic_ext"] = "gif"
+                        flags["image_multistatic_content_type"] = "image/gif"
+                    elif image_obj.format == "PNG":
+                        flags["image_multistatic_ext"] = "png"
+                        flags["image_multistatic_content_type"] = "image/png"
+                    elif image_obj.format == "JPEG":
+                        flags["image_multistatic_ext"] = "jpg"
+                        flags["image_multistatic_content_type"] = "image/jpeg"
+                    else:
+                        del flags["image_multistatic"]
+                        del flags["image_multistatic_w"]
+                        del flags["image_multistatic_h"]
+                        errors["image_multistatic"] = self._("Image format must be GIF, JPEG or PNG")
+            else:
+                if not db_loc.get("images_multistatic"):
+                    errors["image_multistatic"] = self._("Upload an image")
+        else:
+            images = db_loc.get("images_multistatic")
+            if images:
+                flags["old_images_multistatic"] = images
+                db_loc.delkey("images_multistatic")
+
+    def form_store(self, db_loc, flags):
+        if flags.get("image_multistatic"):
+            uri = self.call("cluster.static_upload", "locations", flags["image_multistatic_ext"], flags["image_multistatic_content_type"], flags["image_multistatic"])
+            images = db_loc.get("images_multistatic", [])
+            images.append({
+                "uuid": uuid4().hex,
+                "uri": uri,
+                "width": flags["image_multistatic_w"],
+                "height": flags["image_multistatic_h"],
+            })
+            images.sort(cmp=lambda x, y: cmp(x["width"] + x["height"], y["width"] + y["height"]))
+            db_loc.set("images_multistatic", images)
+            db_loc.touch()
+
+    def form_cleanup(self, db_loc, flags):
+        old_images = flags.get("old_images_multistatic")
+        if old_images:
+            for img in old_images:
+                self.call("cluster.static_delete", img["uri"])
+
+    def links(self, location, links):
+        req = self.req()
+        order = 0
+        if req.has_access("locations.editor"):
+            if location.image_type == "multistatic":
+                for img in location.db_location.get("images_multistatic", []):
+                    links.append({"hook": "locations/multiimage-map/%s/%s" % (location.uuid, img["uuid"]), "text": self._("imagemap///Map {width}x{height}").format(width=img["width"], height=img["height"]), "order": order})
+                    order += 0.001
+
+    def render(self, location, fields):
+        if location.image_type == "multistatic":
+            images = []
+            for img in location.db_location.get("images_multistatic", []):
+                zones = []
+                if img.get("zones"):
+                    for zone in img.get("zones"):
+                        zones.append({
+                            "polygon": zone.get("polygon"),
+                            "action": zone.get("action"),
+                            "loc": zone.get("loc"),
+                        })
+                images.append({
+                    "uuid": img["uuid"],
+                    "uri": img["uri"],
+                    "width": img["width"],
+                    "height": img["height"],
+                    "zones": zones
+                })
+            if images:
+                images[-1]["lst"] = True
+            vars = {
+                "loc": {
+                    "id": location.uuid,
+                    "images": images,
+                },
+            }
+            req = self.req()
+            if req.param("saved"):
+                vars["saved"] = {"text": self._("Location data saved successfully")}
+            fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/multiimagemap-render.html", vars)})
+            tabs = []
+            active_tab = None
+            for img in images:
+                tab_id = "locimg-%s" % img["uuid"]
+                if active_tab is None:
+                    active_tab = 0
+                delete = "locations/multiimage-map/%s/del/%s" % (location.uuid, img["uuid"])
+                tabs.append({
+                    "title": "%dx%d" % (img["width"], img["height"]),
+                    "bodyStyle": "padding: 10px",
+                    "tabId": tab_id,
+                    "autoScroll": True,
+                    "autoHeight": True,
+                    "items": [{
+                        "xtype": "box",
+                        "cls": "admin-submenu",
+                        "html": u'<a href="/admin#%s" onclick="if (confirm(\'%s\')) { adm(\'%s\'); } return false">%s</a>' % (delete, jsencode(self._("Are you sure want do delete this image?")), delete, self._("Delete this image")),
+                    }, {
+                        "xtype": "box",
+                        "html": u'<img src="%s" alt="" usemap="#locmap-%s-%s" style="width: %dpx; height: %dpx;" />' % (img["uri"], location.uuid, img["uuid"], img["width"], img["height"]),
+                    }]
+                })
+            fields.insert(1, {"type": "component", "component": {
+                "xtype": "tabpanel",
+                "id": "multiimages-panel",
+                "items": tabs,
+                "activeTab": active_tab,
+                "autoHeight": True,
+            }})
+
+    def valid_transitions(self, db_loc, valid_transitions):
+        if db_loc.get("image_type") == "multistatic":
+            for img in db_loc.get("images_multistatic", []):
+                for zone in img.get("zones", []):
+                    if zone.get("action") == "move" and zone.get("loc"):
+                        valid_transitions.add(zone.get("loc"))
+
+    def headmenu_multiimage_map(self, args):
+        m = re_multiimage_map.match(args)
+        if m:
+            loc_uuid, img_uuid = m.group(1, 2)
+            location = self.location(loc_uuid)
+            if location.valid and location.image_type == "multistatic":
+                for img in location.db_location.get("images_multistatic", []):
+                    if img["uuid"] == img_uuid:
+                        return [self._("imagemap///Map {width}x{height}").format(width=img["width"], height=img["height"]), "locations/editor/%s" % loc_uuid]
+
+    def admin_multiimage_map(self):
+        req = self.req()
+        m = re_multiimage_map_del.match(req.args)
+        if m:
+            loc_uuid, img_uuid = m.group(1, 2)
+            location = self.location(loc_uuid)
+            if not location.valid() or location.image_type != "multistatic":
+                self.call("admin.redirect", "locations/editor")
+            images = location.db_location.get("images_multistatic", [])
+            for img in images:
+                if img["uuid"] == img_uuid:
+                    images = [i for i in images if i["uuid"] != img_uuid]
+                    location.db_location.set("images_multistatic", images)
+                    self.call("admin-locations.update-transitions", location.db_location)
+                    location.db_location.store()
+                    self.call("cluster.static_delete", img["uri"])
+                    break
+            self.call("admin.redirect", "locations/editor/%s" % loc_uuid)
+        m = re_multiimage_map.match(req.args)
+        if not m:
+            self.call("admin.redirect", "locations/editor")
+        loc_uuid, img_uuid = m.group(1, 2)
+        location = self.location(loc_uuid)
+        if not location.valid() or location.image_type != "multistatic":
+            self.call("admin.redirect", "locations/editor")
+        img = None
+        for i in location.db_location.get("images_multistatic", []):
+            if i["uuid"] == img_uuid:
+                img = i
+                break
+        if not img:
+            self.call("admin.redirect", "locations/editor/%s" % loc_uuid)
+        imagemap_editor = ImageMapEditor(self.app(), location)
+        if req.ok():
+            zones = {}
+            imagemap_editor.submit(zones)
+            img["zones"] = [zones[zone_id] for zone_id in sorted(zones.keys())]
+            self.call("admin-locations.update-transitions", location.db_location)
+            location.db_location.touch()
+            location.db_location.store()
+            self.call("web.response_json", {"success": True, "redirect": "locations/multiimage-map/%s/%s" % (location.uuid, img_uuid), "parameters": {"saved": 1}})
+        static_zones = img.get("zones")
+        image = img.get("uri")
+        width = img.get("width")
+        height = img.get("height")
+        imagemap_editor.render_form(static_zones, image, width, height)

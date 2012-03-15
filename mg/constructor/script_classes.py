@@ -46,6 +46,9 @@ class ScriptRuntimeError(ScriptError):
 class ScriptUnusedError(ScriptError):
     pass
 
+class ScriptReadOnlyError(ScriptRuntimeError):
+    pass
+
 #===============================================================================
 # Tokens/precedences.  See Parsing documentation to learn about the
 # significance of left-associative precedence.
@@ -84,6 +87,8 @@ class TokenLessEqual(Parsing.Token):
     "%token le [pCompareOp]"
 class TokenGreaterEqual(Parsing.Token):
     "%token ge [pCompareOp]"
+class TokenIn(Parsing.Token):
+    "%token in [pCompareOp]"
 
 class PAddOp(Parsing.Precedence):
     "%left pAddOp >pCompareOp"
@@ -275,6 +280,10 @@ class Expr(Parsing.Nonterm):
         "%reduce func parleft List parright"
         self.val = ["call", func.fname] + lst.val
 
+    def reduceIn(self, exprA, op, exprB):
+        "%reduce Expr in Expr [pCompareOp]"
+        self.val = ["in", exprA.val, exprB.val]
+
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
     "%start"
@@ -310,8 +319,9 @@ class ScriptParser(Parsing.Lr, Module):
         "random": TokenRandom,
         "online": TokenOnline,
         "equip": TokenEquip,
+        "in": TokenIn,
     }
-    funcs = set(["min", "max"])
+    funcs = set(["min", "max", "uc", "lc"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")
@@ -321,6 +331,7 @@ class ScriptParser(Parsing.Lr, Module):
         input = input.strip()
         pos = 0
         tokens = []
+        last_dot = False
         while True:
             token_match = type(self).re_token.match(input, pos)
             if not token_match:
@@ -333,11 +344,14 @@ class ScriptParser(Parsing.Lr, Module):
                 tokens.append(" ")
             tokens.append(res[1])
             token = None
+            dot = False
             if res[2] is not None:
                 token = TokenScalar(self, float(res[2]))
             elif res[3] is not None:
                 token = TokenScalar(self,int(res[3]))
             elif res[4] is not None:
+                if res[4] == ".":
+                    dot = True
                 cls = type(self).syms.get(res[4])
                 if cls:
                     token = cls(self)
@@ -346,15 +360,18 @@ class ScriptParser(Parsing.Lr, Module):
             elif res[6] is not None:
                 token = TokenScalar(self, unquotestr(res[6]))
             elif res[7] is not None:
-                cls = type(self).syms.get(res[7])
-                if cls:
-                    token = cls(self)
+                if last_dot:
+                    token = TokenIdentifier(self, res[7])
                 else:
-                    if res[7] in type(self).funcs:
-                        token = TokenFunc(self)
-                        token.fname = res[7]
+                    cls = type(self).syms.get(res[7])
+                    if cls:
+                        token = cls(self)
                     else:
-                        token = TokenIdentifier(self, res[7])
+                        if res[7] in type(self).funcs:
+                            token = TokenFunc(self)
+                            token.fname = res[7]
+                        else:
+                            token = TokenIdentifier(self, res[7])
             if token is None:
                 data = input[pos:pos+10]
                 raise ScriptParserError(self._("Error parsing '{expression}': {error}"), expression=u"".join(tokens).strip(), error=self._("unexpected symbols: %s") % data)
@@ -366,6 +383,7 @@ class ScriptParser(Parsing.Lr, Module):
             pos = token_match.end()
             if re_newline.search(res[0]):
                 tokens = tokens[len(tokens)-1:]
+            last_dot = dot
 
 class ScriptTextParser(Module):
     re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)
@@ -419,3 +437,30 @@ class ScriptTextParser(Module):
 
     def eoi(self):
         raise ScriptParserResult(self.tokens)
+
+class ScriptTemplateObject(object):
+    def __init__(self, obj):
+        object.__setattr__(self, "obj", obj)
+
+    def __getattribute__(self, name):
+        try:
+            obj = object.__getattribute__(self, "obj")
+        except AttributeError:
+            return None
+        if name == "__class__":
+            return object.__getattribute__(self, name)
+        if name == "__dict__":
+            return {}
+        try:
+            method = obj.script_attr
+        except AttributeError:
+            return None
+        val = method(name, handle_exceptions=True)
+        tval = type(val)
+        if tval == str or tval == unicode or tval == int or tval == float or tval == long or tval == None:
+            return val
+        return ScriptTemplateObject(val)
+
+    def __setattr__(self, name, value):
+        raise ScriptReadOnlyError(name)
+

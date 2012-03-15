@@ -38,6 +38,21 @@ def utf2str(s):
             s = s.encode("utf-8")
     return s
 
+def str2unicode(s):
+    if s is None:
+        return u""
+    ts = type(s)
+    if ts == str:
+        s = s.decode("utf-8")
+    elif ts != unicode:
+        try:
+            s = unicode(s)
+        except UnicodeDecodeError:
+            s = str(s)
+        if type(s) == str:
+            s = s.decode("utf-8")
+    return s
+
 def urldecode(str):
     if str is None:
         return ""

@@ -1,0 +1,13 @@
+[%if links%]<div class="links">[%foreach link in links%][%if link.href%]<a href="[%link.href%]">[%link.text%]</a>[%elsif link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%else%][%link.text%][%end%][%unless link.lst +%] / [%+ end%][%end%]</div>[%end%]
+[%if saved%]<div class="admin-actions"><span class="admin-saved">[%saved.text%]</span></div>[%end%]
+[%for img in loc.images%]
+<map name="locmap-[%loc.id%]-[%img.uuid%]">
+[%foreach zone in img.zones%]
+	[%if zone.action=='move'%]
+		<hook:admin.area href="locations/editor/[%zone.loc%]" polygon="[%zone.polygon%]" />
+	[%elsif zone.polygon%]
+		<hook:admin.area href="locations/editor/[%loc.id%]" polygon="[%zone.polygon%]" />
+	[%end%]
+[%end%]
+</map>
+[%end%]

@@ -84,7 +84,9 @@ function adm_response(res)
 				});
 				admincontent.doLayout();
 				adminmain.doLayout();
-				admincontent.show()
+				admincontent.show();
+				if (obj.showHandler)
+					obj.showHandler()
 			});
 		} else if (res.content) {
 			var panel = new AdminResponse({

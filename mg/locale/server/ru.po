@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-11 14:37+0300\n"
+"PO-Revision-Date: 2012-03-15 18:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -248,6 +248,9 @@ msgstr "Возможность создавать специальные пар�
 msgid "Ability to put Google +1 and Facebook Like buttons"
 msgstr "Возможность помещать кнопки Google +1 и Facebook Like"
 
+msgid "Ability to select character starting location depending on his class"
+msgstr "Возможность выбирать стартовую локацию персонажа в зависимости от его класса"
+
 msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
 msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
 
@@ -314,6 +317,12 @@ msgstr "Здесь публикуется актуальная справочн�
 
 msgid "Add"
 msgstr "Добавить"
+
+msgid "Add location image with different dimension"
+msgstr "Добавить картинку локации с другим размером"
+
+msgid "Adding template"
+msgstr "Добавление шаблона"
 
 msgid "Additional categories"
 msgstr "Дополнительные разделы"
@@ -436,6 +445,9 @@ msgstr "Приложение %s недоступно"
 msgid "Are players allowed to play more than 1 character"
 msgstr "Разрешено ли игрокам играть более, чем 1 персонажем"
 
+msgid "Are you sure want do delete this image?"
+msgstr "Вы уверены, что хотите удалить это изображение?"
+
 msgid "Are you sure want to delete this WMID?"
 msgstr "Вы уверены, что хотите удалить этот WMID?"
 
@@ -498,6 +510,9 @@ msgstr "Вы уверены, что хотите удалить эту спец�
 
 msgid "Are you sure want to delete this state?"
 msgstr "Вы уверены, что хотите удалить это состояние?"
+
+msgid "Are you sure want to delete this template?"
+msgstr "Вы уверены, что хотите удалить этот шаблон?"
 
 msgid "Are you sure want to remove this lock?"
 msgstr "Вы уверены, что хотите снять эту блокировку?"
@@ -630,6 +645,15 @@ msgstr "Бамбук №1"
 
 msgid "Ban"
 msgstr "Бан"
+
+msgid "Ban IP for registration"
+msgstr "Бан IP для регистрации"
+
+msgid "Ban {ip_addresses}"
+msgstr "Бан на {ip_addresses}"
+
+msgid "Banning IP-addresses"
+msgstr "Бан IP-адресов"
 
 msgid "Banning users"
 msgstr "Бан пользователей"
@@ -936,8 +960,20 @@ msgstr "Персонаж %s"
 msgid "Character '%s' not found"
 msgstr "Персонаж '%s' не найден"
 
+msgid "Character avatar (external info)"
+msgstr "Аватар персонажа (внешнее инфо)"
+
+msgid "Character avatar (internal page)"
+msgstr "Аватар персонажа (внутренняя страница)"
+
 msgid "Character class must be stored in DB"
 msgstr "Класс персонажа должен сохраняться в БД"
+
+msgid "Character class selector"
+msgstr "Селектор класса персонажа"
+
+msgid "Character class selector layout"
+msgstr "Разметка селектора класса персонажа"
 
 msgid "Character classes documentation"
 msgstr "Документация на классы персонажей"
@@ -954,8 +990,14 @@ msgstr "Документация на анкету персонажа"
 msgid "Character image availability"
 msgstr "Доступность образа персонажа"
 
+msgid "Character image constructor"
+msgstr "Конструктор образа персонажа"
+
 msgid "Character image constructor is unavailable. No layers defined"
 msgstr "Конструктор образов персонажей недоступен. Не заданы слои"
+
+msgid "Character image constructor layout"
+msgstr "Разметка конструктора образа персонажа"
 
 msgid "Character image description"
 msgstr "Описание образа персонажа"
@@ -968,6 +1010,12 @@ msgstr "Размеры образа персонажа на внутриигро
 
 msgid "Character image layers"
 msgstr "Слои образов персонажей"
+
+msgid "Character image selector"
+msgstr "Селектор образа персонажа"
+
+msgid "Character image selector layout"
+msgstr "Разметка селектора образа персонажа"
 
 msgid "Character image: {name}"
 msgstr "Образ персонажа: {name}"
@@ -1016,6 +1064,12 @@ msgstr "Персонаж не найден"
 
 msgid "Character offline"
 msgstr "Персонаж в оффлайне"
+
+msgid "Character page (external information)"
+msgstr "Страница персонажа (внешняя информация)"
+
+msgid "Character page (internal)"
+msgstr "Страница персонажа (внутренняя)"
 
 msgid "Character parameters"
 msgstr "Параметры персонажа"
@@ -1622,6 +1676,9 @@ msgstr "Удалить"
 msgid "Delete %s image"
 msgstr "Удалить изображение %s"
 
+msgid "Delete this image"
+msgstr "Удалить это изображение"
+
 msgid "Deletion"
 msgstr "Удаление"
 
@@ -1662,6 +1719,9 @@ msgstr "Описание для игроков"
 msgid "Description may not be empty"
 msgstr "Описание не может быть пустым"
 
+msgid "Description of item parameter in the library"
+msgstr "Описание параметра предмета в библиотеке"
+
 msgid "Description of the templates engine"
 msgstr "Описание шаблонизатора"
 
@@ -1689,6 +1749,9 @@ msgstr "Подробное описание настройки валют вы �
 
 msgid "Developers club"
 msgstr "Клуб разработчиков"
+
+msgid "Dialog can't contain more than 1 default button"
+msgstr "В диалоге не может быть более одной кнопки по умолчанию"
 
 msgid "Dialog can't contain multiple 'template' entries"
 msgstr "У диалога не может быть несколько записей \"template\""
@@ -1859,6 +1922,9 @@ msgstr "Настройки e-mail"
 
 msgid "Economy"
 msgstr "Экономика"
+
+msgid "Edit"
+msgstr "Редактировать"
 
 msgid "Edit item type parameters"
 msgstr "Редактировать параметры типа предметов"
@@ -2107,6 +2173,9 @@ msgstr "Ошибка соединения с регистратором. Пож�
 msgid "Error downloading [img:%s]"
 msgstr "Ошибка при загрузке [img:%s]"
 
+msgid "Error downloading template"
+msgstr "Ошибка загрузки шаблона"
+
 #, python-format
 msgid "Error during query: %s"
 msgstr "Ошибка при выполнении запроса: %s"
@@ -2128,6 +2197,9 @@ msgstr "Ошибка при получении ответа от регистр�
 
 msgid "Error logging in"
 msgstr "Ошибка при входе"
+
+msgid "Error message"
+msgstr "Сообщение об ошибке"
 
 msgid "Error message when attempting to exceed the maximal amount"
 msgstr "Сообщение об ошибке при попытке превысить максимальное количество"
@@ -2252,14 +2324,8 @@ msgstr "Выражение + таблица"
 msgid "Expression unexpectedly ended"
 msgstr "Выражение внезапно закончилось"
 
-msgid "External error message (inside the external interface)"
-msgstr "Внешнее сообщение об ошибке (помещается в external.html)"
-
-msgid "External form (inside the external interface)"
-msgstr "Внешняя форма (помещается в external.html)"
-
-msgid "External interface"
-msgstr "Внешний интерфейс"
+msgid "External global template"
+msgstr "Внешний глобальный шаблон"
 
 msgid "Extra settings"
 msgstr "Дополнительные настройки"
@@ -2299,6 +2365,9 @@ msgstr "Тип поля"
 
 msgid "File"
 msgstr "Файл"
+
+msgid "File name"
+msgstr "Имя файла"
 
 #, python-format
 msgid "Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)"
@@ -2373,8 +2442,14 @@ msgstr "Редактор разделов форума"
 msgid "Forum category"
 msgstr "Раздел форума"
 
+msgid "Forum category (list of topics)"
+msgstr "Раздел форума (список топиков)"
+
 msgid "Forum discussion"
 msgstr "Обсуждение на форуме"
+
+msgid "Forum index page (list of categories)"
+msgstr "Титульная страница форума (список разделов)"
 
 msgid "Forum moderation"
 msgstr "Модерирование форума"
@@ -2390,6 +2465,9 @@ msgstr "Молчанка на форуме"
 
 msgid "Forum tags"
 msgstr "Теги форума"
+
+msgid "Forum tags page"
+msgstr "Страница тегов на форуме"
 
 msgid "Forum topic"
 msgstr "Тема на форуме"
@@ -2423,6 +2501,9 @@ msgstr "Функция"
 
 msgid "Function title"
 msgstr "Название функции"
+
+msgid "Function {fname} must be called with single argument"
+msgstr "Функция {fname} должна вызываться с одним аргументом"
 
 msgid "Function {func} is not defined in location {loc}"
 msgstr "Функция {func} не определена в локации {loc}"
@@ -2471,6 +2552,9 @@ msgstr "Форум игры"
 
 msgid "Game id"
 msgstr "ID игры"
+
+msgid "Game index page"
+msgstr "Титульная страница игры"
 
 msgid "Game interface"
 msgstr "Интерфейс игры"
@@ -2645,6 +2729,9 @@ msgstr "Документация на глобальные интерфейсы"
 msgid "Global settings"
 msgstr "Глобальные настройки"
 
+msgid "Global template for all socio pages"
+msgstr "Глобальный шаблон для всех страниц социалки"
+
 msgid "Global variable '{glob}' not found"
 msgstr "Глобальная переменная \"{glob}\" не найдена"
 
@@ -2757,6 +2844,9 @@ msgstr "История"
 #, python-format
 msgid "History of '%s'"
 msgstr "История '%s'"
+
+msgid "History of money operations"
+msgstr "История денежных операций"
 
 #, python-format
 msgid "History of shop '%s'"
@@ -2881,9 +2971,6 @@ msgstr "Изображение должно быть в формате GIF, JPEG
 msgid "Image format not recognized"
 msgstr "Формат изображения не распознан"
 
-msgid "Image map saved successfully"
-msgstr "Карта изображения успешно сохранена"
-
 msgid "Image must be JPEG, PNG or GIF"
 msgstr "Изображение должно быть JPEG, PNG или GIF"
 
@@ -2964,11 +3051,32 @@ msgstr "Инфо"
 msgid "Information stored"
 msgstr "Информация сохранена"
 
+msgid "Informational message"
+msgstr "Информационное сообщение"
+
 msgid "Ingame URL must be relative (start with '/' symbol)"
 msgstr "Внутриигровые URL должны быть относительными (начинаться с символа '/')"
 
+msgid "Input can't contain multiple 'text' entries"
+msgstr "У поля ввода не может быть более одной записи \"text\""
+
+msgid "Input identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
+msgstr "Идентификатор поля ввода должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Input identifier name must be a string"
+msgstr "Идентификатор поля ввода должен быть строкой"
+
+msgid "Input identifiers must be unique"
+msgstr "Идентификаторы полей ввода должны быть уникальными"
+
 msgid "Input prompt for players"
 msgstr "Текст рядом с полем ввода в анкете"
+
+msgid "Input text"
+msgstr "Текст поля ввода"
+
+msgid "Input text must be a string"
+msgstr "Текст поля ввода должен быть строкой"
 
 msgid "Insert image"
 msgstr "Вставить изображение"
@@ -2996,6 +3104,9 @@ msgstr "Интерфейсы для задания курсов обмена в�
 
 msgid "Internal game interface for character owner"
 msgstr "Внутриигровой интерфейс для владельца персонажа"
+
+msgid "Internal global template"
+msgstr "Внутренний глобальный шаблон"
 
 msgid "Interoperation with social networks"
 msgstr "Взаимодействие с социальными сетями"
@@ -3165,6 +3276,9 @@ msgstr "Конфигурация инвентаря"
 msgid "Inventory documentation"
 msgstr "Документация на инвентарь"
 
+msgid "Inventory interface"
+msgstr "Интерфейс инвентаря"
+
 msgid "Inventory system"
 msgstr "Система инвентаря"
 
@@ -3237,6 +3351,9 @@ msgstr "Изображения предмета"
 
 msgid "Item is discardable"
 msgstr "Предмет можно выбросить"
+
+msgid "Item mouse over hint"
+msgstr "Подсказка при наведении мыши на предмет"
 
 msgid "Item name"
 msgstr "Название предмета"
@@ -3355,6 +3472,9 @@ msgstr "Левое меню"
 msgid "Left of the main frame"
 msgstr "Слева от главного фрейма"
 
+msgid "Left/right/up/down arrows for the location"
+msgstr "Стрелки влево/вправо/вверх/вниз в локации"
+
 msgid "Legend"
 msgstr "Легенда"
 
@@ -3376,6 +3496,9 @@ msgstr "Иконка библиотеки"
 
 msgid "Library page groups"
 msgstr "Группы страниц библиотеки"
+
+msgid "Library page layout"
+msgstr "Разметка страницы библиотеки"
 
 msgid "Library pages"
 msgstr "Страницы библиотеки"
@@ -3416,14 +3539,38 @@ msgstr "Список пользователей онлайн"
 msgid "List of classes"
 msgstr "Список классов"
 
+msgid "List of contragents in the telegrams interface"
+msgstr "Список контрагентов в интерфейсе телеграмм"
+
+msgid "List of item categories for the library"
+msgstr "Список категорий предметов в библиотеке"
+
+msgid "List of item parameters in the library"
+msgstr "Список параметров предметов в библиотеке"
+
+msgid "List of items in the library"
+msgstr "Список предметов в библиотеке"
+
 msgid "List of items to give. Format:<br />item name - quantity<br />item-name - quantity<br />..."
 msgstr "Список предметов, которые необходимо выдать. Формат:<br />название предмета - количество<br />название предмета - количество<br />..."
+
+msgid "List of message with the specific user in the telegrams interface"
+msgstr "Переписка с конкретным пользователем в интерфейсе телеграмм"
+
+msgid "List of miscellaneous items"
+msgstr "Список общего назначения"
+
+msgid "List of money accounts"
+msgstr "Список денежных счетов"
 
 msgid "List of pending domains"
 msgstr "Список ожидающих доменов"
 
 msgid "List of servers online"
 msgstr "Список серверов онлайн"
+
+msgid "List of transitions in the location"
+msgstr "Список переходов в локации"
 
 msgid "Listeners"
 msgstr "Слушатели"
@@ -3439,6 +3586,9 @@ msgstr "Канал локации"
 
 msgid "Location chat is separated from the main channel"
 msgstr "Чат локации отделён от главного канала"
+
+msgid "Location data saved successfully"
+msgstr "Данные локации успешно сохранены"
 
 msgid "Location id must be a string"
 msgstr "Идентификатор локации должен быть строкой"
@@ -3469,6 +3619,9 @@ msgstr "Название локации в родительном падеже"
 
 msgid "Location not specified"
 msgstr "Локация не указана"
+
+msgid "Location page layout"
+msgstr "Разметка страницы локации"
 
 msgid "Location saved successfully"
 msgstr "Локация успешно сохранена"
@@ -3943,6 +4096,12 @@ msgstr "Мультоловка"
 msgid "Multiple browsers"
 msgstr "Различные браузеры"
 
+msgid "Multiple static images location interface"
+msgstr "Интерфейс локации в виде нескольких статических изображений"
+
+msgid "Multiple static images with different dimensions"
+msgstr "Несколько статических изображений с различными размерами"
+
 msgid "My dossier"
 msgstr "Моё досье"
 
@@ -4156,6 +4315,12 @@ msgstr "Ночь"
 msgid "No"
 msgstr "Нет"
 
+msgid "No IP addresses in the access log"
+msgstr "В логах нет IP-адресов"
+
+msgid "No IP addresses selected"
+msgstr "IP-адреса не выбраны"
+
 #, python-format
 msgid "No access to the '%s' chat channel"
 msgstr "Нет доступа к каналу чата '%s'"
@@ -4321,6 +4486,9 @@ msgstr "Открыть URL"
 msgid "Open currency settings"
 msgstr "Открыть настройки валюты"
 
+msgid "Open documentation page"
+msgstr "Открыть страницу документации"
+
 msgid "Open global interface"
 msgstr "Открыть глобальный интерфейс"
 
@@ -4437,6 +4605,9 @@ msgstr "Платные услуги"
 
 msgid "Paid services editor"
 msgstr "Редактор платных услуг"
+
+msgid "Paid services interface"
+msgstr "Интерфейс платных услуг"
 
 msgid "Panels"
 msgstr "Панели"
@@ -4813,6 +4984,9 @@ msgstr "ID квеста"
 msgid "Quest actions for items"
 msgstr "Квестовые действия над предметами"
 
+msgid "Quest dialog"
+msgstr "Квестовый диалог"
+
 msgid "Quest engine: actions for items"
 msgstr "Квестовый движок: действия над предметами"
 
@@ -5089,6 +5263,9 @@ msgstr "Удаление"
 msgid "Remove"
 msgstr "Удалить"
 
+msgid "Removed ban {ip_address}"
+msgstr "Снят бан с {ip_address}"
+
 msgid "Rename"
 msgstr "Переименовать"
 
@@ -5173,8 +5350,20 @@ msgstr "Файлы, требуемые для оформления"
 msgid "Requirements"
 msgstr "Требования"
 
+msgid "Resetting to default"
+msgstr "Сброс на умолчания"
+
+msgid "Resize image to fill entire frame"
+msgstr "Растянуть изображение на весь фрейм"
+
+msgid "Resizing"
+msgstr "Изменение размеров"
+
 msgid "Restraint setting mode"
 msgstr "Режим выдачи наказаний"
+
+msgid "Restraint time"
+msgstr "Время наказания"
 
 msgid "Restraints"
 msgstr "Наказания"
@@ -5271,6 +5460,9 @@ msgstr "Схема '%s' не поддерживается"
 msgid "Screenshots"
 msgstr "Скриншоты"
 
+msgid "Script condition whether this item can be worn"
+msgstr "Скриптовое условие, может ли этот предмет быть надет"
+
 msgid "Script condition whether this item has 'wear' button"
 msgstr "Скриптовое условие, есть ли у этого предмета кнопка \"надеть\""
 
@@ -5284,6 +5476,9 @@ msgstr "Ошибка при валидации скрипта. Ожидался 
 
 msgid "Scripting language reference"
 msgstr "Описание скриптового языка"
+
+msgid "Scripts documentation"
+msgstr "Документация на скрипты"
 
 msgid "Search"
 msgstr "Искать"
@@ -5368,6 +5563,9 @@ msgstr "Выберите интервал молчания"
 
 msgid "Select solid color..."
 msgstr "Выберите сплошной цвет"
+
+msgid "Select template"
+msgstr "Выбрать шаблон"
 
 msgid "Select top level domain"
 msgstr "Выберите домен верхнего уровня"
@@ -5493,6 +5691,9 @@ msgstr "Магазин"
 msgid "Shop assortment changed"
 msgstr "Ассортимент магазина изменился"
 
+msgid "Shop assortment template"
+msgstr "Шаблон ассортимента магазина"
+
 msgid "Shop buy"
 msgstr "Покупка в магазине"
 
@@ -5522,6 +5723,9 @@ msgstr "Конфигурация магазинов"
 
 msgid "Shops documentation"
 msgstr "Документация на магазины"
+
+msgid "Shops interface template"
+msgstr "Шаблон интерфейса магазинов"
 
 msgid "Shops statistics"
 msgstr "Статистика по магазинам"
@@ -5609,11 +5813,11 @@ msgstr "Наказание: молчание"
 msgid "Silence till %s"
 msgstr "Молчанка до %s"
 
-msgid "Silence time"
-msgstr "Время молчанки"
-
 msgid "Simple colour"
 msgstr "Простой цвет"
+
+msgid "Simple global template"
+msgstr "Простой глобальный шаблон"
 
 msgid "Simply show a number"
 msgstr "Просто показать число"
@@ -5747,6 +5951,9 @@ msgstr "Социальные настройки"
 
 msgid "Socio top menu"
 msgstr "Верхнее меню социальных интерфейсов"
+
+msgid "Socio user profile"
+msgstr "Профиль пользователя социалки"
 
 msgid "Software engineer"
 msgstr "Разработчики ПО"
@@ -5910,11 +6117,23 @@ msgstr "Укажите ваш вас"
 msgid "Square"
 msgstr "Квадрат"
 
+msgid "Starting location"
+msgstr "Стартовая локация"
+
 msgid "Starting location for the new character"
 msgstr "Стартовая локация для нового персонажа"
 
 msgid "Starting location not configured."
 msgstr "Стартовая локация не настроена"
+
+msgid "Starting locations"
+msgstr "Стартовые локации"
+
+msgid "Starting locations configuration"
+msgstr "Настройка стартовых локаций"
+
+msgid "Starting locations documentation"
+msgstr "Документация на стартовые локации"
 
 msgid "State"
 msgstr "Состояние"
@@ -5934,6 +6153,9 @@ msgstr "Состояние с таким идентификатором уже �
 
 msgid "Static image"
 msgstr "Статическая картинка"
+
+msgid "Static image location interface"
+msgstr "Интерфейс локации в виде статического изображения"
 
 msgid "Static objects"
 msgstr "Статические объекты"
@@ -6079,6 +6301,9 @@ msgstr "Телеграммы с {0}"
 
 msgid "Template"
 msgstr "Шаблон"
+
+msgid "Templates of '{design}'"
+msgstr "Шаблоны \"{design}\""
 
 msgid "Terms and conditions (public offer)"
 msgstr "Условия пользовательского соглашения (публичная оферта)"
@@ -6234,6 +6459,9 @@ msgstr "Эта группа является блоком (HTML-куском, к
 
 msgid "This image format is not supported. Allowed are: GIF, JPEG, PNG"
 msgstr "Этот формат изображения не поддерживается. Допустимы: GIF, JPEG, PNG"
+
+msgid "This interface allows you to configure starting location of a character depending of his race or class. To create races and classes system go to the '{href}' page first"
+msgstr "Этот интерфейс позволяет вам настроить стартовую локацию персонажа, в зависимости от его расы или класса. Чтобы создать систему рас и классов, перейдите на страницу \"{href}\""
 
 msgid "This is a list of items available"
 msgstr "Это - список доступных предметов"
@@ -6668,6 +6896,9 @@ msgstr "Загрузить объект"
 msgid "Upload design package from your computer"
 msgstr "Загрузить пакет оформления с вашего компьютера"
 
+msgid "Upload first location image"
+msgstr "Загрузите первое изображение локации"
+
 msgid "Upload image"
 msgstr "Загрузка изображения"
 
@@ -6892,6 +7123,9 @@ msgstr "Мы убедились, что ваш WMID &mdash; <strong>{wmid}</stro
 msgid "Web"
 msgstr "Web"
 
+msgid "Web form"
+msgstr "Веб-форма"
+
 msgid "WebMoney authentication"
 msgstr "Аутентификация WebMoney"
 
@@ -6906,6 +7140,9 @@ msgstr "Что вы думаете об этом?"
 
 msgid "What\\'s your sex"
 msgstr "Каков ваш пол?"
+
+msgid "Whether 'wear' button is available on the item {item} ({name})"
+msgstr "Доступна ли кнопка \"надеть\" на предмете {item} ({name})"
 
 #, python-format
 msgid "Whether class '%s' is required"
@@ -6981,6 +7218,9 @@ msgstr "Сделать запись в досье"
 msgid "Write debugging information to the debug channel"
 msgstr "Выводить отладочную информацию в отладочный канал"
 
+msgid "X frame margin"
+msgstr "Поле фрейма по X"
+
 msgid "XML declarations are not allowed here"
 msgstr "XML-объявления здесь недопустимы"
 
@@ -7010,6 +7250,9 @@ msgstr "Секретный код Xsolla для добавления игр"
 
 msgid "Xsolla time"
 msgstr "Время Xsolla"
+
+msgid "Y frame margin"
+msgstr "Поле фрейма по Y"
 
 msgid "Yellow"
 msgstr "Жёлтый"
@@ -7120,12 +7363,20 @@ msgid "You can find detailed information on the quests engine in the <a href=\"/
 msgstr "Подробную информацию о квестовом движке вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/quests\" target=\"_blank\">Квестовый движок</a>."
 
 #, python-format
+msgid "You can find detailed information on the scripting engine in the <a href=\"//www.%s/doc/script\" target=\"_blank\">scripting engine page</a> in the reference manual."
+msgstr "Подробную информацию о движке скриптов вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/script\" target=\"_blank\">Скриптовый движок</a>."
+
+#, python-format
 msgid "You can find detailed information on the shops system in the <a href=\"//www.%s/doc/shops\" target=\"_blank\">shops page</a> in the reference manual."
 msgstr "Подробную информацию о системе магазинов вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/shops\" target=\"_blank\">Магазины</a>."
 
 #, python-format
 msgid "You can find detailed information on the social networks interconnection in the <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Social networks page</a> in the reference manual."
 msgstr "Подробную информацию о системе взаимодействия с социальными сетями вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Взаимодействие с социальными сетями</a>."
+
+#, python-format
+msgid "You can find detailed information on the starting locations system in the <a href=\"//www.%s/doc/startloc\" target=\"_blank\">starting locations page</a> in the reference manual."
+msgstr "Подробную информацию о настройке стартовых локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/startloc\" target=\"_blank\">Стартовые локации</a>."
 
 #, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
@@ -7173,6 +7424,9 @@ msgstr "Вы не можете удалить реальную валюту по
 
 msgid "You can't send messages to the system"
 msgstr "Вы не можете отправлять сообщения системе"
+
+msgid "You can't wear {item_name} at the moment"
+msgstr "В данный момент вы не можете надеть {item_name_a}"
 
 msgid "You don't have items to fit into this slot"
 msgstr "У вас нет предметов, которые можно поместить в этот слот"
@@ -7558,6 +7812,9 @@ msgstr "умолчание"
 msgid "delete"
 msgstr "удалить"
 
+msgid "delete///unavailable"
+msgstr "недоступно"
+
 msgid "deletion///object is busy"
 msgstr "объект занят"
 
@@ -7703,6 +7960,9 @@ msgstr "игнорировать"
 
 msgid "imagemap///Map"
 msgstr "Карта"
+
+msgid "imagemap///Map {width}x{height}"
+msgstr "Карта {width}x{height}"
 
 msgid "images"
 msgstr "изображения"
@@ -8166,6 +8426,12 @@ msgstr ""
 msgid "request///Sent"
 msgstr "Отправлена"
 
+msgid "reset"
+msgstr "сброс"
+
+msgid "reset///unavailable"
+msgstr "недоступен"
+
 msgid "restraint///give"
 msgstr "выдать"
 
@@ -8288,6 +8554,9 @@ msgstr "телепортировать персонажа"
 #, python-format
 msgid "teleporting %s"
 msgstr "телепортируем %s"
+
+msgid "templates"
+msgstr "шаблоны"
 
 msgid "text area"
 msgstr "большое текстовое поле"
@@ -8434,6 +8703,9 @@ msgstr ""
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
+msgid "{ip} till {till}"
+msgstr "{ip} до {till}"
+
 msgid "{name} &mdash; balance {balance}{donate}"
 msgstr "{name} &mdash; баланс {balance}{donate}"
 
@@ -8447,70 +8719,117 @@ msgstr ""
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
 
+#~ msgid "Image map saved successfully"
+#~ msgstr "Карта изображения успешно сохранена"
+
+#~ msgid "Add template"
+#~ msgstr "Добавить шаблон"
+
+#~ msgid "External error message (inside the external interface)"
+#~ msgstr "Внешнее сообщение об ошибке (помещается в external.html)"
+
+#~ msgid "External form (inside the external interface)"
+#~ msgstr "Внешняя форма (помещается в external.html)"
+
+#~ msgid "External interface"
+#~ msgstr "Внешний интерфейс"
+
+#~ msgid "Ban IP"
+#~ msgstr "Бан IP"
+
+#~ msgid "Silence time"
+#~ msgstr "Время молчанки"
+
 #~ msgid "DNA"
 #~ msgstr "ДНК"
+
 #~ msgid "Page margins (0 - margin is disabled):"
 #~ msgstr "Поля страницы (0 - поле отключено)"
+
 #~ msgid "Menu title"
 #~ msgstr "Заголовок в меню"
+
 #~ msgid "Item '{item_name}' unequipped. {error}"
 #~ msgstr "{item_name} снимается. {error}"
+
 #~ msgid "You can't equip this item"
 #~ msgstr "Вы не можете надеть этот предмет"
+
 #~ msgid "New layout stored"
 #~ msgstr "Новая разметка сохранена"
+
 #~ msgid "dimpresent///ok"
 #~ msgstr "ok"
+
 #~ msgid "Currency exchange"
 #~ msgstr "Обмен валюты"
+
 #~ msgid "Constraint exceeded"
 #~ msgstr "Превышено ограничение"
+
 #~ msgid "Shop %s"
 #~ msgstr "Магазин %s"
 
 #, fuzzy
 #~ msgid "Shop %s store"
 #~ msgstr "ассортимент магазина"
+
 #~ msgid "{currency} history"
 #~ msgstr "История {currency}"
+
 #~ msgid "Your inventory"
 #~ msgstr "Ваш инвентарь"
+
 #~ msgid "Price for '%s' was changed"
 #~ msgstr "Цена на \"%s\" изменилась"
+
 #~ msgid "Function %s implementation"
 #~ msgstr "Реализация функции %s"
+
 #~ msgid ""
 #~ "Closed commodity circulation (shop has its own store and it sells goods "
 #~ "bought from users only)"
 #~ msgstr ""
 #~ "Замкнутый товарный цикл (у магазина есть собственный склад, и он продаёт "
 #~ "товары, только купленные от пользователей)"
+
 #~ msgid "Switch to the image map editor"
 #~ msgstr "Переключиться в режим редактора карты изображения"
+
 #~ msgid "Switch to the location editor"
 #~ msgstr "Переключиться в режим редактора локации"
+
 #~ msgid "View location parameters"
 #~ msgstr "Открыть параметры локации"
+
 #~ msgid "View location special functions"
 #~ msgstr "Открыть спецфункции локации"
+
 #~ msgid "User permissions editor"
 #~ msgstr "Редактор привилегий пользователей"
+
 #~ msgid "Validated %d objects"
 #~ msgstr "Проверено %d объектов"
+
 #~ msgid "Image format must be GIF"
 #~ msgstr "Формат изображения должен быть GIF"
+
 #~ msgid "Entire site"
 #~ msgstr "Весь сайт"
+
 #~ msgid "Icon"
 #~ msgstr "Иконка"
 
 #, fuzzy
 #~ msgid "Invalid channel name"
 #~ msgstr "Неверное имя домена"
+
 #~ msgid "Amount is too big"
 #~ msgstr "Сумма слишком велика"
+
 #~ msgid "Quantity is too big"
 #~ msgstr "Количество слишком велико"
+
 #~ msgid "No action specified"
 #~ msgstr "Действие не выбрано"
 
@@ -8521,34 +8840,47 @@ msgstr "{price} на {period_a}"
 #, fuzzy
 #~ msgid "Player ID"
 #~ msgstr "Игрок"
+
 #~ msgid "Max"
 #~ msgstr "Макс"
+
 #~ msgid "Min"
 #~ msgstr "Мин"
+
 #~ msgid "taking all items with exact DNA '%s'"
 #~ msgstr "забираем все предметы с точным ДНК \"%s\""
+
 #~ msgid "taking all items with type '%s' and any DNA"
 #~ msgstr "изымаем все предметы с типом \"%s\" и любым ДНК"
+
 #~ msgid "taking %s items with exact DNA '%s'"
 #~ msgstr "забираем %s предметов с точным ДНК \"%s\""
+
 #~ msgid "taking %s items with type '%s' and any DNA"
 #~ msgstr "ыв"
+
 #~ msgid ""
 #~ "Quest is enabled for everybody (if this checkbox is disabled the quest is "
 #~ "available for administrators only)"
 #~ msgstr ""
 #~ "Квест включен для всех (если эта галочка снята, то квест доступен только "
 #~ "администраторам)"
+
 #~ msgid "Error in quest '{quest}': {error}"
 #~ msgstr "Ошибка в квесте \"{quest}\": \"{error}\""
+
 #~ msgid "Error: %s"
 #~ msgstr "Ошибка: %s"
+
 #~ msgid "setting %s.%s = %s"
 #~ msgstr "устанавливаем %s.%s = %s"
+
 #~ msgid "Parse error near '{input}'"
 #~ msgstr "Ошибка парсинга рядом с \"{input}\""
+
 #~ msgid "Unknown token near '{input}'"
 #~ msgstr "Неизвестный элемент рядом с \"{input}\""
+
 #~ msgid ""
 #~ "Event identifier must start with latin letter and end with latin letter "
 #~ "or digit. Inner symbols may be latin letters, digits or '-'"
@@ -8556,71 +8888,98 @@ msgstr "{price} на {period_a}"
 #~ "Идентификатор события должен начинаться латинской буквы и заканчиваться "
 #~ "латинской буквой или цифрой. Внутренние символы могут быть латинскими "
 #~ "буквами, цифрами или \"-\""
+
 #~ msgid "Invalid script parse tree. Unknown object: %s"
 #~ msgstr "Неверное синтаксическое дерево скрипта. Неизвестный объект: %s"
+
 #~ msgid "Quests system"
 #~ msgstr "Система квестов"
+
 #~ msgid "Unknown DNA value type"
 #~ msgstr "Неизвестный тип значения при формировании ДНК"
+
 #~ msgid "Item"
 #~ msgstr "Предмет"
+
 #~ msgid "Item is discardable (script expression)"
 #~ msgstr "Предмет выбрасываемый (скриптовое выражение)"
+
 #~ msgid "Category group"
 #~ msgstr "Группа категорий"
+
 #~ msgid "Giving '%s'"
 #~ msgstr "Выдача \"%s\""
+
 #~ msgid "Throw"
 #~ msgstr "Выбросить"
+
 #~ msgid "throw"
 #~ msgstr "выбросить"
+
 #~ msgid "Filters: %s"
 #~ msgstr "Фильтры: %s"
+
 #~ msgid "Items history"
 #~ msgstr "История предметов"
+
 #~ msgid "Inventory: taking items"
 #~ msgstr "Инвентарь: изъятие предметов"
+
 #~ msgid "Inventory: viewing owners"
 #~ msgstr "Инвентарь: просмотр владельцев"
+
 #~ msgid "owners"
 #~ msgstr "владельцы"
+
 #~ msgid "Item types: editor"
 #~ msgstr "Типы предметов: редактирование"
+
 #~ msgid "Chat colours players are allowed to use (newline separated)"
 #~ msgstr ""
 #~ "Какие цвета игроки могут использовать в чате (каждый с новой строки)"
+
 #~ msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип "
 #~ "\"{type}\")"
+
 #~ msgid "Left operand of '{operator}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Левый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
+
 #~ msgid "Right operand of '{operator}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
+
 #~ msgid "Right operand of '{operator}' must be numeric ('{val}' is {type}'"
 #~ msgstr ""
 #~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
+
 #~ msgid "Your passport number"
 #~ msgstr "Ваши паспортные данные"
+
 #~ msgid "free"
 #~ msgstr "бесплатно"
+
 #~ msgid ""
 #~ "Every character must select an image after registration (prohibit "
 #~ "gameplay with default avatar)"
 #~ msgstr ""
 #~ "Каждый персонаж после регистрации должен выбрать образ (запретить игру с "
 #~ "образом по умолчанию)"
+
 #~ msgid "Select"
 #~ msgstr "Выбрать"
+
 #~ msgid "first time free"
 #~ msgstr "первый раз бесплатно"
+
 #~ msgid "Select at least one sex"
 #~ msgstr "Выберите, как минимум, один пол"
+
 #~ msgid "Error storing object: %s"
 #~ msgstr "Ошибка при сохранении объекта: %s"
 
@@ -8629,32 +8988,45 @@ msgstr "{price} на {period_a}"
 #~ msgstr ""
 #~ "Чтобы использовать статическое хранилище, к аккаунту владельца игры "
 #~ "должен быть присоединён WMID"
+
 #~ msgid "reqauction///Request: %s"
 #~ msgstr "Заявка: %s"
+
 #~ msgid "Demo advice"
 #~ msgstr "Демонстрационный совет"
+
 #~ msgid "Look to the right to read some recommendations"
 #~ msgstr "Смотрите направо, чтобы прочитать полезные рекомендации"
+
 #~ msgid "Security error"
 #~ msgstr "Ошибка безопасности"
+
 #~ msgid "Socio interface design package must contain an HTML file"
 #~ msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
+
 #~ msgid ""
 #~ "Socio interface design package must not contain more than one HTML file"
 #~ msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
+
 #~ msgid "global.html must exist in the socio interface design package"
 #~ msgstr ""
 #~ "В пакете оформления интерфейса социалки должен быть файл global.html"
+
 #~ msgid "module///disabled"
 #~ msgstr "отключен"
+
 #~ msgid "module///enabled"
 #~ msgstr "включен"
+
 #~ msgid "Authorize"
 #~ msgstr "Авторизовать"
+
 #~ msgid "Your verified WMID: %s"
 #~ msgstr "Ваш проверенный WMID: %s"
+
 #~ msgid "My votes"
 #~ msgstr "Мои голоса"
+
 #~ msgid ""
 #~ "<p>Dear users, we intend to make the best platform for massively-"
 #~ "multiplayer games development. Since the project is related to gaming "
@@ -8682,101 +9054,141 @@ msgstr "{price} на {period_a}"
 #~ "\"><strong>Важная информация по сертификации WebMoney</strong></a>.</"
 #~ "p><p>На привязанный аккаунт WebMoney вы также будете получать и деньги, "
 #~ "заработанные в Конструкторе.</p>"
+
 #~ msgid "Related player"
 #~ msgstr "Связанный игрок"
+
 #~ msgid "Related character %s"
 #~ msgstr "Связанный персонаж %s"
+
 #~ msgid "User limits"
 #~ msgstr "Ограничения пользователя"
-#~ msgid "Money operations"
-#~ msgstr "Денежные операции"
+
 #~ msgid "{NAME_CHAT} {GENDER:went,went} online"
 #~ msgstr "{NAME_CHAT} {GENDER:вошёл,вошла} в игру"
+
 #~ msgid "{NAME_CHAT} {GENDER:went,went} offline"
 #~ msgstr "{NAME_CHAT} {GENDER:вышел,вышла} из игры"
+
 #~ msgid "{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_T}"
+
 #~ msgid "You moved to the {LOCATION}"
 #~ msgstr "Вы перешли {LOCATION_T}"
+
 #~ msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_F}"
+
 #~ msgid "Coloured avatars on the forum"
 #~ msgstr "Цветные аватары на форуме"
+
 #~ msgid "Panel: %s"
 #~ msgstr "Панель: %s"
+
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
+
 #~ msgid "{2:d}{3} {1}, {0}"
 #~ msgstr "{2:02d} {1} {0}"
+
 #~ msgid "at the {2:d}{4} {1}, {0} {3}"
 #~ msgstr "{2:d} {1} {0} {3}"
+
 #~ msgid "Users"
 #~ msgstr "Пользователи"
+
 #~ msgid "Players authentication"
 #~ msgstr "Аутентификация игроков"
+
 #~ msgid "Design"
 #~ msgstr "Оформление"
+
 #~ msgid "Site indexing enabled"
 #~ msgstr "Индексация сайта включена"
+
 #~ msgid "My dashboard"
 #~ msgstr "Моя информация"
+
 #~ msgid "No visual image for location '%s'"
 #~ msgstr "Для локации '%s' отсутствует визуальное изображение"
+
 #~ msgid "{NAME_CHAT} {GENDER:entered,entered} {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:пришёл,пришла} {LOCATION_T}"
+
 #~ msgid "Locations list"
 #~ msgstr "Список локаций"
+
 #~ msgid "Image map"
 #~ msgstr "Карта изображения"
+
 #~ msgid "edit image map"
 #~ msgstr "редактировать карту изображения"
+
 #~ msgid "set chat silence"
 #~ msgstr "выдать молчанку в чате"
+
 #~ msgid "set forum silence"
 #~ msgstr "выдать молчанку на форуме"
+
 #~ msgid "show options"
 #~ msgstr "показать возможности"
+
 #~ msgid "Error storing object %s: %s"
 #~ msgstr "Ошибка при сохранении объекта %s: %s"
+
 #~ msgid "Gold"
 #~ msgstr "Золото"
+
 #~ msgid ""
 #~ "<p>We don't offer free domain names &mdash; you have to register it "
 #~ "manually.</p>"
 #~ msgstr ""
 #~ "<p>Мы не предоставляем бесплатные доменные имена &mdash; вам нужно "
 #~ "зарегистрировать имя самостоятельно.</p>"
+
 #~ msgid "Step 1. Alternative 1. Register domain yourself"
 #~ msgstr "Шаг 1. Вариант 1. Зарегистрируйте домен самостоятельно"
+
 #~ msgid "Register a new domain (or take any previously registered)"
 #~ msgstr ""
 #~ "Зарегистрируйте новый домен (или возьмите любой ранее зарегистрированный)"
+
 #~ msgid ""
 #~ "Specify the following DNS servers for your domain: <strong>{0}</strong> "
 #~ "and <strong>{1}</strong>"
 #~ msgstr ""
 #~ "Укажите следующие DNS-серверы для вашего домена: <strong>{0}</strong> и "
 #~ "<strong>{1}</strong>"
+
 #~ msgid "You may use any level domains"
 #~ msgstr "Вы можете использовать домены любого уровня"
+
 #~ msgid "Step 1. Alternative 2. Let us register a domain for you"
 #~ msgstr "Шаг 1. Вариант 2. Позвольте нам зарегистрировать домен для вас"
+
 #~ msgid "Step 2. Check your configured domain and link it with your game"
 #~ msgstr ""
 #~ "Шаг 2. Проверка вашего сконфигурированного домена и связь его с вашей "
 #~ "игрой"
+
 #~ msgid "channel///Main"
 #~ msgstr "Главный"
+
 #~ msgid "Debug"
 #~ msgstr "Отладка"
+
 #~ msgid "{NAME} has {GENDER:wrote,wrote} a message"
 #~ msgstr "{NAME} {GENDER:написал,написала} сообщение"
+
 #~ msgid "Online"
 #~ msgstr "Онлайн"
+
 #~ msgid "%s online"
 #~ msgstr "%s онлайн"
+
 #~ msgid "%s offline"
 #~ msgstr "%s оффлайн"
+
 #~ msgid ""
 #~ "Congratulations! Your game was registered successfully. Now you can enter "
 #~ "administration panel and configure your game. Don't worry if you can't "
@@ -8787,30 +9199,41 @@ msgstr "{price} на {period_a}"
 #~ "зайдите в административную панель. Если вы не можете попасть в игру прямо "
 #~ "сейчас, не беспокойтесь. Система DNS довольно медленная, и ей может "
 #~ "потребоваться несколько часов или даже дней, чтобы ваш домен заработал."
+
 #~ msgid "Index page design is not configured"
 #~ msgstr "Оформление титульной страницы не сконфигурировано"
+
 #~ msgid "Game interface design is not configured"
 #~ msgstr "Оформление игрового интерфейса не настроено"
+
 #~ msgid ""
 #~ "Activation is required after this character level ('0' if require on "
 #~ "registration)"
 #~ msgstr ""
 #~ "Требовать активацию после этого уровня персонажа ('0', если требовать "
 #~ "сразу при регистрации)"
+
 #~ msgid "Channel"
 #~ msgstr "Канал"
+
 #~ msgid "Game interface design package must not contain HTML files"
 #~ msgstr "Пакет с оформлением игры не может содержать HTML-файлов"
+
 #~ msgid "Missing player %s record in the database"
 #~ msgstr "В базе данных отсутствует запись об игроке %s"
+
 #~ msgid "Constructor: users"
 #~ msgstr "Конструктор: пользователи"
+
 #~ msgid "Twitter posting"
 #~ msgstr "Twitter: постинг"
+
 #~ msgid "Twitter credentials saved"
 #~ msgstr "Данные Twitter сохранены"
+
 #~ msgid "Registering application"
 #~ msgstr "Регистрация приложения"
+
 #~ msgid ""
 #~ "Go to the <a href=\"http://dev.twitter.com/apps\" target=\"_blank"
 #~ "\">Twitter Applications</a> page and follow instructions there to get "
@@ -8820,30 +9243,43 @@ msgstr "{price} на {period_a}"
 #~ "\"_blank\">Twitter Applications</a> и следуйте инструкциям, чтобы "
 #~ "получить ключи для аутентификации. Зарегистрируйтесь как \"Desktop "
 #~ "application\"."
+
 #~ msgid "tweet"
 #~ msgstr "tweet"
+
 #~ msgid "Created at"
 #~ msgstr "Создано"
+
 #~ msgid "Confirm e-mail change"
 #~ msgstr "Подтвердите изменение e-mail"
+
 #~ msgid "<strong>Preload modules</strong> (mod, mod, ...)"
 #~ msgstr "<strong>Загружаемые модули</strong> (mod, mod, ...)"
+
 #~ msgid "8th of December, 2010 at 11:54"
 #~ msgstr "8 декабря 2010 в 11:54"
+
 #~ msgid "Design package couldn't contain more than %d files"
 #~ msgstr "Пакет с оформлением не может содержать более %d файлов"
+
 #~ msgid "Design package contents couldn't be more than %d bytes"
 #~ msgstr "Содержимое пакета с оформлением не может быть более %d байт"
+
 #~ msgid "Design package must not contain more than 1 HTML file"
 #~ msgstr "Пакет с оформлением не может содержать более 1 HTML-файла"
+
 #~ msgid "Design package must not contain more than 1 CSS file"
 #~ msgstr "Пакет с оформлением не может содержать более 1 CSS-файла"
+
 #~ msgid "Mandatory attribute '{0}' missing in tag '{1}'"
 #~ msgstr "В теге '{1}' отсутствует обязательный атрибут '{0}'"
+
 #~ msgid "install to the project"
 #~ msgstr "установить в проект"
+
 #~ msgid "download zip"
 #~ msgstr "скачать zip"
+
 #~ msgid ""
 #~ "Here you have to create unique logo for your project. You can either "
 #~ "upload logo from your computer or create it using Constructor."
@@ -8851,36 +9287,50 @@ msgstr "{price} на {period_a}"
 #~ "Теперь вам необходимо создать уникальный логотип для вашего проекта. Вы "
 #~ "можете или загрузить логотип с вашего компьютера, или создать его при "
 #~ "помощи Конструктора."
+
 #~ msgid ""
 #~ "You have successfully completed registration of your game. And now get "
 #~ "ready to enter your new admin panel:"
 #~ msgstr ""
 #~ "Вы успешно завершили регистрацию вашей игры. А теперь приготовьтесь войти "
 #~ "в вашу новую административную панель:"
+
 #~ msgid "Admin panel address"
 #~ msgstr "Адрес административной панели"
+
 #~ msgid "Log out"
 #~ msgstr "Выход"
+
 #~ msgid "Add new rule"
 #~ msgstr "Добавить новое правило"
+
 #~ msgid "Registrar ID"
 #~ msgstr "ID запроса"
+
 #~ msgid "Registrar state"
 #~ msgstr "Состояние"
+
 #~ msgid "Registrar cause"
 #~ msgstr "Причина"
+
 #~ msgid "Tag"
 #~ msgstr "Тег"
+
 #~ msgid "Tag \"%s\""
 #~ msgstr "Тег \"%s\""
+
 #~ msgid "Search \"%s\""
 #~ msgstr "Поиск \"%s\""
+
 #~ msgid "Remind my password"
 #~ msgstr "Напомнить пароль"
+
 #~ msgid "Create the world of your dreams"
 #~ msgstr "Создай мир своей мечты"
+
 #~ msgid "DNS check completed successfully"
 #~ msgstr "Проверка DNS успешно пройдена"
+
 #~ msgid ""
 #~ "Domain {0} was not found by {1}. Check your configuration and try again "
 #~ "in several hours &mdash; there can be caching issues"
@@ -8888,8 +9338,10 @@ msgstr "{price} на {period_a}"
 #~ "Домен {0} не найден серверами {1}. Проверьте вашу конфигурацию и сделайте "
 #~ "следующую попытку через несколько часов &mdash; возможно, данные ещё не "
 #~ "успели обновиться"
+
 #~ msgid "Domain {0} was not found by {1}"
 #~ msgstr "Домен {0} не найден DNS-серверами {1}"
+
 #~ msgid ""
 #~ "<p>Now you have to assign a domain name to your game. Domain name is a "
 #~ "very important part of your game marketing. Eye-candy names are more "
@@ -8907,26 +9359,36 @@ msgstr "{price} на {period_a}"
 #~ "RU), установите доменные сервера ns1.mmoconstructor.com, ns2."
 #~ "mmoconstructor.com и введите имя домена без www сюда (напр: YOURDOMAIN.RU)"
 #~ "</strong></p>"
+
 #~ msgid "Upload background image"
 #~ msgstr "Загрузите фоновое изображение"
+
 #~ msgid "Animated backgrounds are not supported"
 #~ msgstr "Анимированные фоны не поддерживаются"
+
 #~ msgid "Abort"
 #~ msgstr "Прервать"
+
 #~ msgid "Background"
 #~ msgstr "Фон"
+
 #~ msgid "Padding"
 #~ msgstr "Подложка"
+
 #~ msgid "Effects"
 #~ msgstr "Эффекты"
+
 #~ msgid "Load from file"
 #~ msgstr "Загрузка из файла"
+
 #~ msgid "Set"
 #~ msgstr "Установить"
+
 #~ msgid "Image must be 100x100"
 #~ msgstr "Изображение должно быть 100x100"
+
 #~ msgid "Enter your email address"
 #~ msgstr "Введите ваш адрес e-mail"
+
 #~ msgid "Online games constructor"
 #~ msgstr "Конструктор онлайн-игр"
-

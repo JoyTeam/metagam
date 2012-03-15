@@ -9,6 +9,7 @@ Form = Ext.extend(AdminResponsePanel, {
 		var upload = data.upload;
 		var next_elem_id = 0;
 		var rows = new Array();
+		var javascripts = new Array();
 		if (data.title) {
 			rows.push({
 				border: false,
@@ -114,6 +115,8 @@ Form = Ext.extend(AdminResponsePanel, {
 				} else if (elt.xtype == 'password') {
 					elt.xtype = 'textfield';
 					elt.inputType = 'password';
+				} else if (it.type == 'component') {
+					elt = it.component;
 				} else if (elt.xtype == 'htmleditor') {
 					elt.plugins = Ext.form.HtmlEditor.plugins();
 					elt.selectImage = function(image) {
@@ -193,6 +196,8 @@ Form = Ext.extend(AdminResponsePanel, {
 						})).show();
 					};
 				}
+				if (!elt.listeners)
+					elt.listeners = {};
 				if (elt.fieldLabel == undefined)
 					elt.hideLabel = true;
 				if (elt.fieldLabel == '&nbsp;' || it.remove_label_separator)
@@ -226,6 +231,11 @@ Form = Ext.extend(AdminResponsePanel, {
 					layout: 'form',
 					items: elt
 				};
+				if (it.nowrap && elt.id) {
+					elt.listeners.afterrender = function(cmp) {
+						cmp.el.dom.wrap = 'off';
+					};
+				}
 			}
 			if (!it.width && !it.flex)
 				it.flex = 1;
@@ -272,6 +282,8 @@ Form = Ext.extend(AdminResponsePanel, {
 				}
 				row = undefined;
 			}
+			if (it.js)
+				javascripts.push(it.js);
 		}
 		rows.push({
 			xtype: 'hidden',
@@ -315,12 +327,21 @@ Form = Ext.extend(AdminResponsePanel, {
 			method: 'POST',
 			form_id: form_id,
 			changeHandler: data.changeHandler,
-			successHandler: data.successHandler
+			successHandler: data.successHandler,
+		    	javascripts: javascripts,
+		    	showHandler: function(form) {
+				for (var i = 0; i < form.javascripts.length; i++) {
+					eval(form.javascripts[i]);
+				}
+			}
 		});
 		this.add(form);
 		this.enforce_conditions(true);
 		this.form_cmp = form;
 		this.form_id = form_id;
+		this.showHandler = (function() {
+			this.form_cmp.showHandler(this.form_cmp);
+		}).createDelegate(this);
 	},
 	enforce_conditions: function(force) {
 		var changed = false;

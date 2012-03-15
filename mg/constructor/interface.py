@@ -126,6 +126,21 @@ class Interface(ConstructorModule):
         self.rhook("ext-empty.index", self.empty, priv="logged")
         self.rhook("sociointerface.buttons", self.buttons)
         self.rhook("advice-admin-gameinterface.index", self.advice_gameinterface)
+        self.rhook("admin-indexpage.design-files", self.indexpage_design_files)
+        self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
+
+    def indexpage_design_files(self, files):
+        files.append({"filename": "index.html", "description": self._("Game index page"), "doc": "/doc/design/indexpage"})
+
+    def gameinterface_design_files(self, files):
+        files.append({"filename": "blocks.html", "description": self._("Game interface blocks"), "doc": "/doc/design/gameinterface"})
+        files.append({"filename": "internal.html", "description": self._("Internal global template"), "doc": "/doc/design/internal"})
+        files.append({"filename": "external.html", "description": self._("External global template"), "doc": "/doc/design/external"})
+        files.append({"filename": "cabinet.html", "description": self._("Cabinet interface (inside the external interface)"), "doc": "/doc/design/cabinet"})
+        files.append({"filename": "error.html", "description": self._("Error message"), "doc": "/doc/design/info"})
+        files.append({"filename": "info.html", "description": self._("Informational message"), "doc": "/doc/design/info"})
+        files.append({"filename": "form.html", "description": self._("Web form")})
+        files.append({"filename": "tables.html", "description": self._("Web form"), "doc": "/doc/design/tables"})
 
     def advice_gameinterface(self, hook, args, advice):
         advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="//www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
@@ -271,6 +286,7 @@ class Interface(ConstructorModule):
         self.call("design.response", design, "external.html", content, vars)
 
     def game_response_internal(self, template, vars, content=None):
+        self.add_common_vars(vars)
         design = self.design("gameinterface")
         content = self.game_parse_internal(template, vars, content)
         req = self.req()
@@ -278,8 +294,18 @@ class Interface(ConstructorModule):
         vars["base_domain"] = re_remove_www.sub('', req.host())
         self.call("design.response", design, "internal.html", content, vars)
 
+    def add_common_vars(self, vars):
+        if "char" not in vars:
+            req = self.req()
+            user = req.user()
+            if user:
+                char = self.character(user)
+                if char.valid:
+                    vars["char"] = ScriptTemplateObject(char)
+
     def game_parse_internal(self, template, vars, content=None):
         design = self.design("gameinterface")
+        self.add_common_vars(vars)
         return self.call("design.parse", design, template, content, vars)
 
     def game_cabinet(self, player):

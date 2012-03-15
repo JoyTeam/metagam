@@ -2,10 +2,13 @@
 <script type="text/javascript">
 Ext.onReady(function() {
 	Ext.QuickTips.init();
-	wait(['parent', 'hints'], function() {
+	wait(['parent', 'hints', 'location'], function() {
 		[%foreach tr in transitions%]Hints.transition('[%tr.loc%]', '[%tr.hint%]');[%end%]
 		[%foreach zone in zones%][%if zone.action != 'move' && zone.hint %]Hints.html('[%zone.class%]', '[%zone.hint%]');[%end%][%end%]
 		[%update_script%]
+		Loc.init();
+		[%foreach op in loc_init%][%op%][%end%]
+		Loc.run();
 	});
 });
 </script>
