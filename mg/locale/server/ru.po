@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-15 18:34+0300\n"
+"PO-Revision-Date: 2012-03-16 11:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -474,6 +474,9 @@ msgstr "Вы уверены, что хотите удалить это изоб�
 
 msgid "Are you sure want to delete this interface?"
 msgstr "Вы уверены, что хотите удалить этот интерфейс?"
+
+msgid "Are you sure want to delete this modifier?"
+msgstr "Вы уверены, что хотите удалить этот модификатор?"
 
 msgid "Are you sure want to delete this object?"
 msgstr "Вы уверены, что хотите удалить этот объект?"
@@ -1679,6 +1682,9 @@ msgstr "Удалить изображение %s"
 msgid "Delete this image"
 msgstr "Удалить это изображение"
 
+msgid "Deleting users' modifiers"
+msgstr "Удаление модификаторов пользователей"
+
 msgid "Deletion"
 msgstr "Удаление"
 
@@ -2411,6 +2417,9 @@ msgstr "Для предметов в библиотеке"
 
 msgid "Forbidden"
 msgstr "Запрещено"
+
+msgid "Forever"
+msgstr "Навсегда"
 
 msgid "Forgotten your password?"
 msgstr "Забыли ваш пароль?"
@@ -4718,8 +4727,8 @@ msgstr "Произведено"
 msgid "Period"
 msgstr "Период"
 
-msgid "Period (in seconds)"
-msgstr "Период (в секундах)"
+msgid "Period (in seconds; empty field means forever)"
+msgstr "Период (в секундах; пустое поле означает \"навсегда\")"
 
 msgid "Permission"
 msgstr "Разрешение"
@@ -6550,6 +6559,9 @@ msgstr "Эта страница описывает параметры предм
 msgid "This page is about game chat"
 msgstr "Это страница об игровом чате"
 
+msgid "This paid service is bought already"
+msgstr "Эта платная услуга уже куплена"
+
 msgid "This parameter is a character class (race, profession, etc)"
 msgstr "Этот параметр является классом персонажа (раса, профессия и т.п.)"
 
@@ -7901,6 +7913,9 @@ msgstr "за %s"
 msgid "for the last month"
 msgstr "за последний месяц"
 
+msgid "forever"
+msgstr "навсегда"
+
 msgid "forgot your password?"
 msgstr "забыли ваш пароль?"
 
@@ -8718,6 +8733,12 @@ msgstr ""
 
 msgid "{price} for {period}"
 msgstr "{price} на {period_a}"
+
+msgid "{price} forever"
+msgstr "{price} навсегда"
+
+#~ msgid "Period (in seconds)"
+#~ msgstr "Период (в секундах)"
 
 #~ msgid "Image map saved successfully"
 #~ msgstr "Карта изображения успешно сохранена"

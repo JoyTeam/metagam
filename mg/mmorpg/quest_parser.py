@@ -138,6 +138,9 @@ class TokenInput(Parsing.Token):
 class TokenDefault(Parsing.Token):
     "%token default"
 
+class TokenPaidService(Parsing.Token):
+    "%token paidservice"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -295,6 +298,10 @@ class EventType(Parsing.Nonterm):
     def reduceEquipDrop(self, ev, ev2):
         "%reduce equip drop"
         self.val = [["equip-drop"], None]
+
+    def reducePaidService(self, ev):
+        "%reduce paidservice"
+        self.val = [["paidservice"], None]
 
 # ============================
 #          ACTIONS
@@ -714,6 +721,7 @@ class QuestScriptParser(ScriptParser):
     syms["set"] = TokenSet
     syms["input"] = TokenInput
     syms["default"] = TokenDefault
+    syms["paidservice"] = TokenPaidService
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

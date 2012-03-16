@@ -66,7 +66,9 @@ class PaidServices(ConstructorModule):
                     period_a=self.call("l10n.literal_interval_a", offer["period"], html=True)
                 )
             else:
-                roffer["html"] = self.call("money.price-html", offer["price"], offer["currency"])
+                roffer["html"] = self._('{price} forever').format(
+                    price=self.call("money.price-html", offer["price"], offer["currency"]),
+                )
             roffers.append(roffer)
         return roffers
  
@@ -160,11 +162,14 @@ class PaidServices(ConstructorModule):
     def prolong(self, mods, kind, period, price, currency, user=None, **kwargs):
         money = self.call("money.obj", mods.target_type, mods.uuid)
         with self.lock(["User.%s" % user]):
-            if not money.debit(price, currency, kind, period=self.call("l10n.literal_interval", period), period_a=self.call("l10n.literal_interval_a", period)):
+            if not money.debit(price, currency, kind, period=self.call("l10n.literal_interval", period) if period else None, period_a=self.call("l10n.literal_interval_a", period) if period else None):
                 return False
             with self.lock([mods.lock_key]):
                 mods.load()
-                mods._prolong(kind, 1, period, **kwargs)
+                if period:
+                    mods._prolong(kind, 1, period, **kwargs)
+                else:
+                    mods._add(kind, 1, None, **kwargs)
                 pack = kwargs.get("pack")
                 if pack:
                     kwargs["auto_prolong"] = False
@@ -179,9 +184,16 @@ class PaidServices(ConstructorModule):
                                     del m["auto_prolong"]
                                 m["dependent"] = kind
                         # prolonging given kind
-                        mods._prolong(kind, 1, period, **kwargs)
+                        if period:
+                            mods._prolong(kind, 1, period, **kwargs)
+                        else:
+                            mods._add(kind, 1, None, **kwargs)
                 mods.store(remove_expired=True)
         mods.notify()
+        if mods.target_type == "user":
+            char = self.character(mods.uuid)
+            if char.valid:
+                self.qevent("paidservice", char=char, mod=kind, period=period)
         return True
 
     def modifier_prolong(self, mods, mod):
@@ -274,6 +286,8 @@ class PaidServices(ConstructorModule):
         mod = mods.get(pinfo["id"])
         if mod:
             btn_title = self._("Prolong")
+            if mod["maxtill"] is None:
+                self.call("main-frame.info", self._("This paid service is bought already"), vars)
         else:
             btn_title = self._("Buy")
         form.add_message_top(pinfo["description"])
@@ -284,7 +298,9 @@ class PaidServices(ConstructorModule):
             if not form.errors:
                 o = offers[offer]
                 mods = self.call("modifiers.obj", "user", req.user())
-                auto_prolong = o["period"] >= min_auto_prolong
+                auto_prolong = o["period"] is not None and o["period"] >= min_auto_prolong
+                if o["period"] is None:
+                    btn_title = self._("Buy")
                 if self.call("paidservices.prolong", mods, pinfo["id"], o["period"], o["price"], o["currency"], auto_prolong=auto_prolong, pack=pinfo.get("pack")):
                     self.call("web.redirect", "/paidservices")
                 else:
@@ -565,7 +581,7 @@ class PaidServicesAdmin(ConstructorModule):
                 if not cinfo:
                     continue
                 rows.append([
-                    offer.get("period"),
+                    offer.get("period") or self._("Forever"),
                     '%s %s' % (cinfo["format"] % offer["price"], offer["currency"]),
                     offer["html"],
                     '<hook:admin.link href="paidservices/editor/%s/%d" title="%s" />' % (srv["id"], i, self._("edit")),
@@ -595,7 +611,7 @@ class PaidServicesAdmin(ConstructorModule):
         if req.ok():
             price = req.param("price")
             currency = req.param("v_currency")
-            period = req.param("period")
+            period = req.param("period").strip()
             errors = {}
             if not price:
                 errors["price"] = self._("This field is mandatory")
@@ -611,8 +627,8 @@ class PaidServicesAdmin(ConstructorModule):
                 price = cinfo["format"] % float(price)
                 if float(price) == 0:
                     errors["price"] = self._("Price is too low")
-            if not period:
-                errors["period"] = self._("This field is mandatory")
+            if period == "":
+                period = None
             elif not valid_nonnegative_int(period):
                 errors["period"] = self._("Invalid number format")
             else:
@@ -659,7 +675,7 @@ class PaidServicesAdmin(ConstructorModule):
             cinfo = self.call("money.currency-info", currency)
             price = cinfo["format"] % price
         fields = [
-            {"name": "period", "label": self._("Period (in seconds)"), "value": period},
+            {"name": "period", "label": self._("Period (in seconds; empty field means forever)"), "value": period},
             {"name": "price", "label": self._("Price"), "value": price},
             {"name": "currency", "label": self._("Currency"), "value": currency, "type": "combo", "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True},
         ]

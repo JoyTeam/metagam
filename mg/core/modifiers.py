@@ -3,6 +3,7 @@ import re
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_aggr = re.compile(r'^(max|min|sum|cnt)_(.+)$')
+re_delete_modifier = re.compile(r'^([a-f0-9]+)/(\S+)$')
 
 class DBModifiers(CassandraObject):
     """
@@ -322,9 +323,11 @@ class ModifiersAdmin(Module):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("auth.user-tables", self.user_tables)
+        self.rhook("ext-admin-modifier.delete", self.admin_delete, priv="modifiers.delete")
 
     def permissions_list(self, perms):
         perms.append({"id": "modifiers.view", "name": self._("Viewing users' modifiers")})
+        perms.append({"id": "modifiers.delete", "name": self._("Deleting users' modifiers")})
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -337,6 +340,8 @@ class ModifiersAdmin(Module):
                 self._("Min/max/sum"),
                 self._("Till"),
             ]
+            if req.has_access("modifiers.delete"):
+                header.append(self._("Deletion"))
             rows = []
             mods = modifiers.mods()
             self.call("admin-modifiers.descriptions", modifiers, mods)
@@ -356,8 +361,10 @@ class ModifiersAdmin(Module):
                     mod.get("description"),
                     mod.get("cnt"),
                     "%s/%s/%s" % (htmlescape(mod.get("minval")), htmlescape(mod.get("maxval")), htmlescape(mod.get("sumval"))),
-                    till,
+                    till or self._("forever"),
                 ]
+                if req.has_access("modifiers.delete"):
+                    rmod.append(u'<hook:admin.link href="modifier/delete/%s/%s" title="%s" confirm="%s" />' % (user.uuid, m, self._("delete"), self._("Are you sure want to delete this modifier?")))
                 rows.append(rmod)
             table = {
                 "type": "modifiers",
@@ -367,3 +374,13 @@ class ModifiersAdmin(Module):
                 "rows": rows,
             }
             tables.append(table)
+
+    def admin_delete(self):
+        req = self.req()
+        m = re_delete_modifier.match(req.args)
+        if not m:
+            self.call("web.not_found")
+        user_uuid, kind = m.group(1, 2)
+        modifiers = MemberModifiers(self.app(), "user", user_uuid)
+        modifiers.destroy(kind)
+        self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=modifiers" % user_uuid)
