@@ -236,6 +236,7 @@ class LocationsAdmin(ConstructorModule):
                 transitions = db_loc.get("transitions", {})
                 char = self.character(req.user())
                 for loc_id, info in transitions.iteritems():
+                    info["show-trans"] = True if req.param("tr-%s-show-trans" % loc_id) else False
                     info["hint"] = req.param("tr-%s-hint" % loc_id).strip()
                     val = req.param("tr-%s-delay" % loc_id).strip()
                     info["delay"] = intz(val) if val != "" else None
@@ -286,6 +287,7 @@ class LocationsAdmin(ConstructorModule):
                 if not loc.valid():
                     continue
                 fields.append({"type": "header", "html": '%s: %s' % (self._("Transition"), loc.name_t)})
+                fields.append({"name": "tr-%s-show-trans" % loc_id, "type": "checkbox", "label": self._("Show this location in the text list of transitions"), "checked": info.get("show-trans", True)})
                 fields.append({"name": "tr-%s-hint" % loc_id, "label": self._("Hint when mouse over the link"), "value": info.get("hint")})
                 fields.append({"name": "tr-%s-available" % loc_id, "label": self._("Transition is available for the character") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))})
                 fields.append({"name": "tr-%s-error" % loc_id, "label": self._("Error message when transition is unavailable") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", info.get("error", "")), "inline": True})
@@ -604,6 +606,8 @@ class Locations(ConstructorModule):
         design = self.design("gameinterface")
         transitions = []
         for loc_id, info in location.transitions.iteritems():
+            if not info.get("show-trans", True):
+                continue
             loc = self.location(loc_id)
             if not loc.valid():
                 continue
