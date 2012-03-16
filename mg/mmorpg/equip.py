@@ -607,7 +607,11 @@ class EquipAdmin(ConstructorModule):
         pos += 1
         fields.insert(pos, {"label": self._("Script condition whether this item can be worn") + self.call("script.help-icon-expressions"), "name": "wear_cond", "value": self.call("script.unparse-expression", obj.get("wear_cond", 1)), "condition": "[equip]"})
         pos += 1
-        fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "condition": "[equip]", "inline": True})
+        fields.insert(pos, {"label": self._("Script condition whether this item can be undressed") + self.call("script.help-icon-expressions"), "name": "unwear_cond", "value": self.call("script.unparse-expression", obj.get("unwear_cond", 1)), "condition": "[equip]", "inline": True})
+        pos += 1
+        fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "condition": "[equip]"})
+        pos += 1
+        fields.insert(pos, {"type": "empty", "inline": True})
         pos += 1
         # checkboxes
         slots = self.call("equip.slots")
@@ -667,6 +671,7 @@ class EquipAdmin(ConstructorModule):
             char = self.character(req.user())
             obj.set("equip_wear", self.call("script.admin-expression", "equip_wear", errors, globs={"char": char}))
             obj.set("wear_cond", self.call("script.admin-expression", "wear_cond", errors, globs={"char": char}))
+            obj.set("unwear_cond", self.call("script.admin-expression", "unwear_cond", errors, globs={"char": char}))
         else:
             obj.delkey("equip")
 
@@ -1178,7 +1183,11 @@ class Equip(ConstructorModule):
         inv = character.inventory
         equip = character.equip
         with self.lock([inv.lock_key]):
-            if equip.equipped(slot_id):
+            item = equip.equipped(slot_id)
+            if item:
+                if not self.call("script.evaluate-expression", item.get("unwear_cond", 1), globs={"char": character, "item": item}, description=lambda: self._("Whether an item {item} ({name}) can be undressed").format(item=item.uuid, name=item.name)):
+                    character.error(self._("This item can't be undressed"))
+                    self.call("web.redirect", "/interface/character")
                 equip.equip(slot_id, None)
                 equip.validate()
                 inv.store()
@@ -1256,6 +1265,9 @@ class Equip(ConstructorModule):
                 if equipped_item:
                     # don't replace items with the same type
                     if equipped_item.uuid == item_type.uuid:
+                        continue
+                    # don't replace items that can't be undressed
+                    if not self.call("script.evaluate-expression", equipped_item.get("unwear_cond", 1), globs={"char": character, "item": equipped_item}, description=lambda: self._("Whether an item {item} ({name}) can be undressed").format(item=equipped_item.uuid, name=equipped_item.name)):
                         continue
                     # if this slot is occupied. Trying to find the slot with minimal balance price
                     price = equipped_item.get("balance-price")

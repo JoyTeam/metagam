@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-16 16:55+0300\n"
+"PO-Revision-Date: 2012-03-16 17:09+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5509,6 +5509,9 @@ msgstr "Скриншоты"
 msgid "Script condition to evaluate whether a character must receive this letter"
 msgstr "Скриптовое условие для определения персонажей, которые должны получить это письмо"
 
+msgid "Script condition whether this item can be undressed"
+msgstr "Скриптовое условие, может ли этот предмет быть снят"
+
 msgid "Script condition whether this item can be worn"
 msgstr "Скриптовое условие, может ли этот предмет быть надет"
 
@@ -6567,6 +6570,9 @@ msgstr "Это публичная оферта"
 msgid "This item action is currently unavailable"
 msgstr "Это действие над предметом в данный момент недоступно"
 
+msgid "This item can't be undressed"
+msgstr "Этот предмет не может быть снят"
+
 msgid "This item has no 'wear' button"
 msgstr "У этого предмета нет кнопки \"надеть\""
 
@@ -7207,6 +7213,9 @@ msgstr "Каков ваш пол?"
 
 msgid "Whether 'wear' button is available on the item {item} ({name})"
 msgstr "Доступна ли кнопка \"надеть\" на предмете {item} ({name})"
+
+msgid "Whether an item {item} ({name}) can be undressed"
+msgstr "Может ли предмет {item} ({name}) быть снят"
 
 #, python-format
 msgid "Whether class '%s' is required"
