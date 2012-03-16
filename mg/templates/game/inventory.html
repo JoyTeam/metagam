@@ -5,7 +5,7 @@
 <div id="page-[%cat.id%]" style="display: [%if cat.visible%]block[%else%]none[%end%]" class="pager-page">
 	<table class="items-table">
 	[%foreach item in cat.items%]
-	<tr>
+	<tr[%if item.cssclass +%] class="[%item.cssclass%]"[%end%]>
 		<td class="item-image-td">[%if item.image%]<img src="[%item.image%]" alt="" class="item-image[%if item.onclick +%] clickable[%end%]"[%if item.onclick +%] onclick="[%item.onclick%]"[%end +%] />[%end%]</td>
 		<td class="item-info-td">
 			<a name="[%item.dna%]"></a>

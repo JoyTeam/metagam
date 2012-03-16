@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-16 17:09+0300\n"
+"PO-Revision-Date: 2012-03-16 17:21+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -324,6 +324,9 @@ msgstr "Добавить картинку локации с другим раз�
 msgid "Adding template"
 msgstr "Добавление шаблона"
 
+msgid "Additional CSS class for block containg this item"
+msgstr "Дополнительный CSS-класс для блока, содержащего этот предмет"
+
 msgid "Additional categories"
 msgstr "Дополнительные разделы"
 
@@ -437,6 +440,9 @@ msgstr "Общение на тему разработки игр"
 
 msgid "App"
 msgstr "Прилож"
+
+msgid "Appearance"
+msgstr "Оформление"
 
 msgid "Application"
 msgstr "Приложение"

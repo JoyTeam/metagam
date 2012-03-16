@@ -463,6 +463,12 @@ class InventoryAdmin(ConstructorModule):
                     price = float(price)
                     obj.set("balance-price", price)
                     obj.set("balance-currency", currency)
+                # styles
+                cssclass = req.param("cssclass").strip()
+                if cssclass:
+                    obj.set("cssclass", cssclass)
+                else:
+                    obj.delkey("cssclass")
                 # fractions
                 if not req.param("fractions"):
                     obj.delkey("fractions")
@@ -569,13 +575,17 @@ class InventoryAdmin(ConstructorModule):
                     {"name": "name_gp", "label": self._("Item name in genitive plural"), "value": obj.get("name_gp")},
                     {"name": "name_a", "label": self._("Item name in accusative"), "value": obj.get("name_a"), "inline": True},
                 ])
-            # prices
-            fields.append({"name": "price", "label": self._("Balance price for the item"), "value": obj.get("balance-price")})
-            fields.append({"name": "currency", "label": self._("Currency of the balance price"), "type": "combo", "value": obj.get("balance-currency"), "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True})
             # library
             fields.append({"name": "library", "label": self._("Publish item information in the library"), "type": "checkbox", "checked": obj.get("library", True)})
             # description
             fields.append({"name": "description", "label": self._("Item description"), "type": "textarea", "value": obj.get("description")})
+            # styles
+            fields.append({"type": "header", "html": self._("Appearance")})
+            fields.append({"name": "cssclass", "label": self._("Additional CSS class for block containg this item"), "value": obj.get("cssclass")})
+            # prices
+            fields.append({"type": "header", "html": self._("Prices")})
+            fields.append({"name": "price", "label": self._("Balance price for the item"), "value": obj.get("balance-price")})
+            fields.append({"name": "currency", "label": self._("Currency of the balance price"), "type": "combo", "value": obj.get("balance-currency"), "values": [(code, info["name_plural"]) for code, info in currencies.iteritems()], "inline": True})
             # fractions
             fields.append({"type": "header", "html": self._("Fractions")})
             fields.append({"name": "fractions", "label": self._("This item is split into fractions"), "type": "checkbox", "checked": obj.get("fractions")})
@@ -2325,6 +2335,7 @@ class Inventory(ConstructorModule):
                 "description": item_type.get("description"),
                 "quantity": quantity,
                 "order": item_type.get("order", 0),
+                "cssclass": item_type.get("cssclass"),
             }
             params = []
             self.call("item-types.params-owner-important", item_type, params, viewer=viewer)
