@@ -53,7 +53,7 @@ class Constructor(Module):
             "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
             "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin", "mg.core.auth.Dossiers",
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
-            "mg.core.emails.EmailSender",
+            "mg.core.emails.EmailSender", "mg.constructor.emails.EmailSenderAdmin",
             "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
             "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",

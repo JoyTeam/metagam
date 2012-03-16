@@ -88,6 +88,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.exchange.ExchangeRates"])
             if self.conf("module.globfunc"):
                 lst.extend(["mg.constructor.globfunc.GlobalFunctions"])
+            if self.conf("module.emailsender"):
+                lst.extend(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
         return lst
 
     def modules_list(self, modules):
@@ -140,6 +142,11 @@ class ConstructorProject(Module):
             "id": "globfunc",
             "name": self._("Global interfaces"),
             "description": self._("Game interfaces to enable special functions globally"),
+        })
+        modules.append({
+            "id": "emailsender",
+            "name": self._("Email sender"),
+            "description": self._("Administrator interface to have an ability of sending emails to all registered players"),
         })
 
     def project_title(self):

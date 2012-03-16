@@ -30,7 +30,6 @@ class BulkEmailMessageList(CassandraObjectList):
 
 class EmailAdmin(Module):
     def register(self):
-        self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-email.index", self.menu_email_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-email.settings", self.email_settings, priv="email.settings")
@@ -43,9 +42,6 @@ class EmailAdmin(Module):
     def permissions_list(self, perms):
         perms.append({"id": "email.settings", "name": self._("Email configuration")})
 
-    def menu_root_index(self, menu):
-        menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
-
     def menu_email_index(self, menu):
         req = self.req()
         if req.has_access("email.settings"):
@@ -53,21 +49,20 @@ class EmailAdmin(Module):
 
     def email_settings(self):
         req = self.req()
-        exceptions = req.param("exceptions")
         if req.param("ok"):
             config = self.app().config_updater()
             int_config = self.int_app().config_updater()
             # setting
-            int_config.set("email.exceptions", exceptions)
+            int_config.set("email.exceptions", req.param("exceptions"))
+            int_config.set("email.moderation", req.param("moderation"))
             # storing
             config.store()
             int_config.store()
             self.call("admin.response", self._("Settings stored"), {})
-        else:
-            int_config = self.int_app().config
-            exceptions = int_config.get("email.exceptions")
+        int_config = self.int_app().config
         fields = [
-            {"name": "exceptions", "label": self._("Send software exceptions to this e-mail"), "value": exceptions},
+            {"name": "exceptions", "label": self._("Send software exceptions to this e-mail"), "value": int_config.get("email.exceptions")},
+            {"name": "moderation", "label": self._("Send email moderation requests to this e-mail"), "value": int_config.get("email.moderation")},
         ]
         self.call("admin.form", fields=fields)
 
@@ -76,9 +71,13 @@ class EmailAdmin(Module):
 
 class Email(Module):
     def register(self):
+        self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("email.send", self.email_send)
         self.rhook("email.users", self.email_users)
         self.rhook("exception.report", self.exception_report)
+
+    def menu_root_index(self, menu):
+        menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
         if not immediately:
@@ -219,6 +218,10 @@ class EmailSender(Module):
         self.rhook("menu-admin-email.index", self.menu_email_index)
         self.rhook("ext-admin-email.sender", self.email_sender, priv="email.sender")
         self.rhook("headmenu-admin-email.sender", self.headmenu_email_sender, priv="email.sender")
+        self.rhook("admin-email-sender.format", self.format)
+        self.rhook("admin-email-sender.parse", self.parse)
+        self.rhook("admin-email-sender.deliver", self.deliver)
+        self.rhook("admin-email-sender.actual-deliver", self.deliver)
 
     def permissions_list(self, perms):
         perms.append({"id": "email.sender", "name": self._("Email bulk sending")})
@@ -269,18 +272,23 @@ class EmailSender(Module):
                 subject = req.param("subject").strip()
                 if not subject:
                     errors["subject"] = self._("Specify message subject")
+                else:
+                    subject = self.call("admin-email-sender.parse", "subject", subject, errors)
                 # content
                 content = req.param("content")
                 if not content:
                     errors["content"] = self._("Specify message content")
+                else:
+                    content = self.call("admin-email-sender.parse", "content", content, errors)
+                self.call("admin-email-sender.message-form-validate", message, errors)
                 # errors
                 if len(errors):
-                    self.call("web.response_json", {"success": False, "errors": errors})
+                    self.call("web.response_json", {"success": False, "errors": errors, "error": errors.get("error")})
                 # storing
                 message.set("subject", subject)
                 message.set("content", content)
                 message.store()
-                self.call("admin.redirect", "email/sender")
+                self.call("admin.redirect", "email/sender/options/%s" % message.uuid)
             else:
                 if req.args == "new":
                     subject = ""
@@ -288,27 +296,48 @@ class EmailSender(Module):
                 else:
                     subject = message.get("subject")
                     content = message.get("content")
+            commands = []
+            commands.append(self._("[name] will be replaced with recipient's name"))
+            commands.append(self._("[gender?FEMALE:MALE] will be replaced with FEMALE if recipient is female and MALE if recipient is male"))
+            self.call("admin-email-sender.command-hints", commands)
+            commands = ''.join([u'<li>%s</li>' % cmd for cmd in commands])
             fields = [
-                {"type": "html", "html": '%s<ul><li>%s</li><li>%s</li></ul>' % (self._("To customize your letter you may use the following commands in the subject and message content"), self._("[name] will be replaced with recipient's name"), self._("[gender?FEMALE:MALE] will be replaced with FEMALE if recipient is female and MALE if recipient is male"))},
+                {"type": "html", "html": '%s<ul>%s</ul>' % (self._("To customize your letter you may use the following commands in the subject and message content"), commands)},
                 {"name": "subject", "value": subject, "label": self._("Message subject")},
                 {"name": "content", "value": content, "type": "htmleditor", "label": self._("Message content")},
             ]
+            self.call("admin-email-sender.message-form-render", message, fields)
             self.call("admin.form", fields=fields, modules=["HtmlEditorPlugins"])
         rows = []
         lst = self.objlist(BulkEmailMessageList, query_index="created", query_reversed=True)
         lst.load()
         for ent in lst:
+            if ent.get("moderation"):
+                sent = self._("on moderation")
+            elif ent.get("sent"):
+                sent = u'<span class="yes">%s</span>' % (self.call("l10n.time_local", ent.get("sent")))
+                sent += u'<br />%s: %s' % (self._("letters sent"), ent.get("users_sent"))
+                if ent.get("users_skipped"):
+                    sent += u'<br />%s: %s' % (self._("users skipped"), ent.get("users_skipped"))
+            elif ent.get("reject_reason"):
+                sent = u'<span class="no">%s</span>' % (self._("Rejected by moderator: %s") % htmlescape(ent.get("reject_reason")))
+            else:
+                sent = None
             rows.append([
                 self.call("l10n.time_local", ent.get("created")),
-                self.call("l10n.time_local", ent.get("sent")) if ent.get("sent") else None,
+                sent,
                 htmlescape(ent.get("subject")),
-                '<hook:admin.link href="email/sender/%s" title="%s" />' % (ent.uuid, self._("open")),
+                '<hook:admin.link href="email/sender/%s" title="%s" />' % (ent.uuid, self._("edit")),
                 '<hook:admin.link href="email/sender/options/%s" title="%s" />' % (ent.uuid, self._("delivery options")),
             ])
         vars = {
             "tables": [
                 {
                     "links": [
+                        {
+                            "hook": "email/sender",
+                            "text": self._("Update"),
+                        },
                         {
                             "hook": "email/sender/new",
                             "text": self._("New message"),
@@ -319,14 +348,82 @@ class EmailSender(Module):
                         self._("Created"),
                         self._("Sent"),
                         self._("Subject"),
-                        self._("Opening"),
-                        self._("Send options"),
+                        self._("Editing"),
+                        self._("Delivery options"),
                     ],
                     "rows": rows
                 }
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def parts(self, params, errors):
+        tokens = re_image.split(params["content"])
+        image_num = 0
+        parts = []
+        if len(tokens) > 1:
+            content = u""
+            for token in tokens:
+                m = re_image_src.match(token)
+                if m:
+                    before, src, after = m.group(1, 2, 3)
+                    if type(src) == unicode:
+                        src = src.encode("utf-8")
+                    url_obj = urlparse.urlparse(src, "http", False)
+                    if url_obj.scheme != "http" or url_obj.hostname is None:
+                        errors["v_mode"] = self._("Image URL %s is incorrect") % src
+                    else:
+                        cnn = HTTPConnection()
+                        try:
+                            with Timeout.push(50):
+                                cnn.set_limit(20000000)
+                                port = url_obj.port
+                                if port is None:
+                                    port = 80
+                                cnn.connect((url_obj.hostname, port))
+                                request = cnn.get(url_obj.path + url_obj.query)
+                                request.add_header("Connection", "close")
+                                response = cnn.perform(request)
+                                if response.status_code != 200:
+                                    if response.status_code == 404:
+                                        errors["v_mode"] = self._("%s Resource not found") % src
+                                    elif response.status_code == 403:
+                                        errors["v_mode"] = self._("%s: Access denied") % src
+                                    elif response.status_code == 500:
+                                        errors["v_mode"] = self._("%s: Internal server error") % src
+                                    else:
+                                        errors["v_mode"] = "%s: %s" % (src, htmlescape(response.status))
+                                else:
+                                    content_type = ""
+                                    for header in response.headers:
+                                        if header[0].lower() == "content-type":
+                                            content_type = header[1]
+                                            break
+                                    m = re_image_type.match(content_type)
+                                    if m:
+                                        subtype = m.group(1)
+                                        image_num += 1
+                                        part = MIMEImage(response.body, subtype)
+                                        part.add_header("Content-ID", "<image%d>" % image_num)
+                                        filename = src.split("/")[-1]
+                                        part.add_header("Content-Disposition", "attachment; filename=%s" % filename)
+                                        parts.append(part)
+                                        content += u'%scid:image%d%s' % (before, image_num, after)
+                                    else:
+                                        errors["v_mode"] = self._("URL %s is not an image") % src
+                        except TimeoutError as e:
+                            errors["v_mode"] = self._("Timeout on downloading %s. Time limit - 30 sec") % src
+                        except Exception as e:
+                            errors["v_mode"] = "%s: %s" % (src, htmlescape(str(e)))
+                        finally:
+                            try:
+                                cnn.close()
+                            except Exception:
+                                pass
+                else:
+                    content += token
+            params["content"] = content
+        params["parts"] = parts
 
     def email_sender_options(self, uuid):
         try:
@@ -344,10 +441,6 @@ class EmailSender(Module):
             if mode == 1:
                 if not email:
                     errors["email"] = self._("Enter e-mail")
-                if not name:
-                    errors["name"] = self._("Enter name")
-                if sex != 0 and sex != 1:
-                    errors["v_sex"] = self._("Invalid sex specified")
             elif mode == 2:
                 pass
             else:
@@ -357,95 +450,30 @@ class EmailSender(Module):
                 self.call("web.response_json", {"success": False, "errors": errors})
             # extracting images
             content = '<font face="Tahoma">%s</font>' % message.get("content")
-            tokens = re_image.split(content)
-            image_num = 0
-            parts = []
-            if len(tokens) > 1:
-                content = u""
-                for token in tokens:
-                    m = re_image_src.match(token)
-                    if m:
-                        before, src, after = m.group(1, 2, 3)
-                        if type(src) == unicode:
-                            src = src.encode("utf-8")
-                        url_obj = urlparse.urlparse(src, "http", False)
-                        if url_obj.scheme != "http" or url_obj.hostname is None:
-                            errors["v_mode"] = self._("Image URL %s is incorrect") % src
-                        else:
-                            cnn = HTTPConnection()
-                            try:
-                                with Timeout.push(50):
-                                    cnn.set_limit(20000000)
-                                    port = url_obj.port
-                                    if port is None:
-                                        port = 80
-                                    cnn.connect((url_obj.hostname, port))
-                                    request = cnn.get(url_obj.path + url_obj.query)
-                                    request.add_header("Connection", "close")
-                                    response = cnn.perform(request)
-                                    if response.status_code != 200:
-                                        if response.status_code == 404:
-                                            errors["v_mode"] = self._("%s Resource not found") % src
-                                        elif response.status_code == 403:
-                                            errors["v_mode"] = self._("%s: Access denied") % src
-                                        elif response.status_code == 500:
-                                            errors["v_mode"] = self._("%s: Internal server error") % src
-                                        else:
-                                            errors["v_mode"] = "%s: %s" % (src, htmlescape(response.status))
-                                    else:
-                                        content_type = ""
-                                        for header in response.headers:
-                                            if header[0].lower() == "content-type":
-                                                content_type = header[1]
-                                                break
-                                        m = re_image_type.match(content_type)
-                                        if m:
-                                            subtype = m.group(1)
-                                            image_num += 1
-                                            part = MIMEImage(response.body, subtype)
-                                            part.add_header("Content-ID", "<image%d>" % image_num)
-                                            filename = src.split("/")[-1]
-                                            part.add_header("Content-Disposition", "attachment; filename=%s" % filename)
-                                            parts.append(part)
-                                            content += u'%scid:image%d%s' % (before, image_num, after)
-                                        else:
-                                            errors["v_mode"] = self._("URL %s is not an image") % src
-                            except TimeoutError as e:
-                                errors["v_mode"] = self._("Timeout on downloading %s. Time limit - 30 sec") % src
-                            except Exception as e:
-                                errors["v_mode"] = "%s: %s" % (src, htmlescape(str(e)))
-                            finally:
-                                try:
-                                    cnn.close()
-                                except Exception:
-                                    pass
-                    else:
-                        content += token
-            # errors
-            if len(errors):
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # delivery
             subject = message.get("subject")
             params = {
                 "email": "robot@%s" % self.app().inst.config["main_host"],
                 "name": "Metagam Robot",
                 "prefix": "[mg] ",
+                "content": content,
+                "subject": subject,
             }
+            # processing errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # delivery
             self.call("email.sender", params)
             # sending
             if mode == 1:
-                self.send(params, parts, email, name, sex, subject, content, immediately=True)
+                self.parts(params, errors)
+                params["recipient_name"] = name
+                params["recipient_sex"] = sex
+                self.call("admin-email-sender.sample-params", params)
+                self.send(params, email, immediately=True)
                 status = '<span class="yes">%s</span>' % self._("Message was sent successfully")
             elif mode == 2:
-                lst = self.objlist(UserList, query_index="created")
-                lst.load(silent=True)
-                n = 0
-                for ent in lst:
-                    email = self.call("user.email", ent)
-                    if email:
-                        self.send(params, parts, email, ent.get("name"), ent.get("sex"), subject, content, immediately=False)
-                        n += 1
-                status = '<span class="yes">%s</span>' % ("%d %s" % (n, self.call("l10n.literal_value", n, self._("message was queued for delivery/messages were queued for delivery"))))
+                info = self.call("admin-email-sender.deliver", message, params, errors)
+                status = info.get("status")
         else:
             user = self.obj(User, req.user())
             email = self.call("user.email", user)
@@ -458,6 +486,7 @@ class EmailSender(Module):
             {"name": "name", "value": name, "label": self._("Recipient's name"), "condition": "[mode]==1"},
             {"name": "sex", "value": sex, "label": self._("Recipient's sex"), "condition": "[mode]==1", "type": "combo", "values": [(0, self._("Male")), (1, self._("Female"))]},
         ]
+        self.call("admin-email-sender.delivery-form", fields)
         buttons = [
             {"text": self._("Send")},
         ]
@@ -465,11 +494,53 @@ class EmailSender(Module):
             fields.append({"type": "header", "html": status})
         self.call("admin.form", fields=fields, buttons=buttons)
 
-    def send(self, params, parts, email, name, sex, subject, content, immediately=False):
-        subject = format_gender(sex, subject)
-        subject = re_format_name.sub(name, subject)
-        content = format_gender(sex, content)
-        content = re_format_name.sub(name, content)
+    def deliver(self, message, params, errors, grep=None):
+        params = params.copy()
+        self.parts(params, errors)
+        lst = self.objlist(UserList, query_index="created")
+        lst.load(silent=True)
+        sent = 0
+        skipped = 0
+        for ent in lst:
+            email = self.call("user.email", ent)
+            if email:
+                name = ent.get("name")
+                if name:
+                    par = params.copy()
+                    par["recipient_name"] = name
+                    par["recipient_sex"] = ent.get("sex")
+                    self.call("admin-email-sender.user-params", ent, par)
+                    if grep and not grep(par):
+                        skipped += 1
+                        continue
+                    self.send(par, email, immediately=False)
+                    sent += 1
+        return {
+            "sent": sent,
+            "skipped": skipped,
+            "status": '<span class="yes">%s</span>' % ("%d %s" % (sent, self.call("l10n.literal_value", sent, self._("message was queued for delivery/messages were queued for delivery"))))
+        }
+
+    def parse(self, param, val, errors):
+        return val
+
+    def format(self, val, params):
+        val = format_gender(params["recipient_sex"], val)
+        val = re_format_name.sub(params["recipient_name"], val)
+        return val
+
+    def send(self, params, email, immediately=False):
+        content = params["content"]
+        subject = params["subject"]
+        parts = params["parts"]
+        params["description"] = self._("Email subject")
+        subject = self.call("admin-email-sender.format", subject, params)
+        if subject is None or not subject.strip():
+            return
+        params["description"] = self._("Email content")
+        content = self.call("admin-email-sender.format", content, params)
+        if content is None or not content.strip():
+            return
         # converting data
         if type(content) == unicode:
             content = content.encode("utf-8")
@@ -477,7 +548,7 @@ class EmailSender(Module):
         multipart = MIMEMultipart("related");
         multipart["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
         multipart["From"] = "%s <%s>" % (Header(params["name"], "utf-8"), params["email"])
-        multipart["To"] = "%s <%s>" % (Header(name, "utf-8"), email)
+        multipart["To"] = "%s <%s>" % (Header(params["recipient_name"], "utf-8"), email)
         multipart["type"] = "text/html"
         try:
             multipart["X-Metagam-Project"] = self.app().tag
@@ -493,4 +564,4 @@ class EmailSender(Module):
         for part in parts:
             multipart.attach(part)
         body = multipart.as_string()
-        self.call("email.send", email, name, subject, body, subtype="raw", immediately=immediately)
+        self.call("email.send", email, params["recipient_name"], subject, body, subtype="raw", immediately=immediately)

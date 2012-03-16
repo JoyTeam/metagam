@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-16 11:54+0300\n"
+"PO-Revision-Date: 2012-03-16 16:55+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -344,6 +344,9 @@ msgstr "Административный интерфейс"
 
 msgid "Administrator"
 msgstr "Администратор"
+
+msgid "Administrator interface to have an ability of sending emails to all registered players"
+msgstr "Интерфейс администратора для отправки e-mail всем зарегистрированным игрокам"
 
 msgid "Administrator's e-mail"
 msgstr "E-mail администратора"
@@ -1688,6 +1691,9 @@ msgstr "Удаление модификаторов пользователей"
 msgid "Deletion"
 msgstr "Удаление"
 
+msgid "Delivery options"
+msgstr "Опции доставки"
+
 msgid "Demo page"
 msgstr "Демонстрационная страница"
 
@@ -1920,6 +1926,9 @@ msgstr "Изменение e-mail"
 msgid "E-mail confirmation"
 msgstr "Подтверждение e-mail"
 
+msgid "E-mail moderation request"
+msgstr "Запрос на модерацию e-mail"
+
 msgid "E-mail notifications"
 msgstr "Уведомления на почту"
 
@@ -1965,11 +1974,29 @@ msgstr "Отправка e-mail-рассылок"
 msgid "Email configuration"
 msgstr "Конфигурация e-mail"
 
+msgid "Email content"
+msgstr "Содержимое e-mail"
+
 msgid "Email of projects moderator"
 msgstr "E-mail модератора проектов"
 
 msgid "Email of the request auction moderator"
 msgstr "E-mail модератора аукциона заявок"
+
+msgid "Email sender"
+msgstr "Массовые рассылки e-mail"
+
+msgid "Email sender documentation"
+msgstr "Документация на рассылку e-mail"
+
+msgid "Email subject"
+msgstr "Тема e-mail"
+
+msgid "Emails moderation"
+msgstr "Модерация e-mail"
+
+msgid "Emails moderator"
+msgstr "Модератор e-mail"
 
 msgid "Empty dimension encountered"
 msgstr "Пустые размеры"
@@ -2054,9 +2081,6 @@ msgstr "Введите пригласительный код"
 
 msgid "Enter message content"
 msgstr "Введите текст сообщения"
-
-msgid "Enter name"
-msgstr "Введите имя"
 
 msgid "Enter new e-mail address"
 msgstr "Введите новый адрес e-mail"
@@ -2228,6 +2252,10 @@ msgstr "Ошибка при разборе \"{expression}\": \"{error}\""
 
 msgid "Error parsing template {0}: {1}"
 msgstr "Ошибка парсинга шаблона {0}: {1}"
+
+#, python-format
+msgid "Error parsing template: %s"
+msgstr "Ошибка парсинга шаблона: %s"
 
 msgid "Error parsing {0}: {1}"
 msgstr "Ошибка парсера {0}: {1}"
@@ -3254,9 +3282,6 @@ msgstr "Неверное синтаксическое дерево скрипт�
 msgid "Invalid selection"
 msgstr "Неверный выбор"
 
-msgid "Invalid sex specified"
-msgstr "Указан неверный пол"
-
 msgid "Invalid special function request"
 msgstr "Неверный запрос к спецфункции"
 
@@ -4185,6 +4210,14 @@ msgstr "Новый e-mail"
 
 msgid "New e-mail address"
 msgstr "Новый адрес e-mail"
+
+#, python-format
+msgid ""
+"New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\n"
+"http://www.%s/admin#email/moderation"
+msgstr ""
+"Получен новый запрос на модерацию e-mail. Пожалуйста, зайдите в панель администрирования и произведите необходимые действия по модерации:\n"
+"http://www.%s/admin#email/moderation"
 
 msgid "New field"
 msgstr "Новое поле"
@@ -5234,10 +5267,14 @@ msgid "Registration prices"
 msgstr "Цены на регистрацию"
 
 msgid "Reject"
-msgstr "Отказать"
+msgstr "Отказ"
 
 msgid "Reject reason"
 msgstr "Причина отказа"
+
+#, python-format
+msgid "Rejected by moderator: %s"
+msgstr "Отклонено модератором: %s"
 
 msgid "Relative height"
 msgstr "Относительная высота"
@@ -5469,11 +5506,17 @@ msgstr "Схема '%s' не поддерживается"
 msgid "Screenshots"
 msgstr "Скриншоты"
 
+msgid "Script condition to evaluate whether a character must receive this letter"
+msgstr "Скриптовое условие для определения персонажей, которые должны получить это письмо"
+
 msgid "Script condition whether this item can be worn"
 msgstr "Скриптовое условие, может ли этот предмет быть надет"
 
 msgid "Script condition whether this item has 'wear' button"
 msgstr "Скриптовое условие, есть ли у этого предмета кнопка \"надеть\""
+
+msgid "Script condition whether to deliver an e-mail"
+msgstr "Скриптовое условие, определяющее необходимость доставки e-mail"
 
 #, python-format
 msgid "Script unparse error. Expected list, received %s"
@@ -5627,6 +5670,9 @@ msgstr "Отправить"
 msgid "Send a new message"
 msgstr "Отправить новое сообщение"
 
+msgid "Send email moderation requests to this e-mail"
+msgstr "Отправлять запросы на модерирование писем на этот e-mail"
+
 msgid "Send invitation code"
 msgstr "Отправить код приглашения"
 
@@ -5636,14 +5682,14 @@ msgstr "Отправить приглашения"
 msgid "Send new telegram"
 msgstr "Отправить новую телеграмму"
 
-msgid "Send options"
-msgstr "Опции отправки"
-
 msgid "Send software exceptions to this e-mail"
 msgstr "Отправлять исключения в программном обеспечении на этот e-mail"
 
 msgid "Sender options"
 msgstr "Возможности отправки"
+
+msgid "Sending"
+msgstr "Отправка"
 
 msgid "Sent"
 msgstr "Отправлено"
@@ -6316,6 +6362,9 @@ msgstr "Шаблон"
 
 msgid "Templates of '{design}'"
 msgstr "Шаблоны \"{design}\""
+
+msgid "Templating engine"
+msgstr "Движок шаблонизатора"
 
 msgid "Terms and conditions (public offer)"
 msgstr "Условия пользовательского соглашения (публичная оферта)"
@@ -7330,6 +7379,10 @@ msgid "You can find detailed information on the characters images system in the 
 msgstr "Подробную информацию о системе образов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-images\" target=\"_blank\">Система образов персонажей</a>."
 
 #, python-format
+msgid "You can find detailed information on the email sending system in the <a href=\"//www.%s/doc/emailsender\" target=\"_blank\">email sender page</a> in the reference manual."
+msgstr "Подробную информацию о системе рассылки e-mail вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/emailsender\" target=\"_blank\">Система массовой рассылки</a>."
+
+#, python-format
 msgid "You can find detailed information on the exchange rates system in the <a href=\"//www.%s/doc/currency-rates\" target=\"_blank\">exchange rates page</a> in the reference manual."
 msgstr "Подробную информацию о системе задания курсов валют вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/currency-rates\" target=\"_blank\">Настройка курсов валют</a>."
 
@@ -7394,6 +7447,10 @@ msgid "You can find detailed information on the starting locations system in the
 msgstr "Подробную информацию о настройке стартовых локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/startloc\" target=\"_blank\">Стартовые локации</a>."
 
 #, python-format
+msgid "You can find detailed information on the templating engine in the <a href=\"//www.%s/doc/design/templates\" target=\"_blank\">templating engine</a> in the reference manual."
+msgstr "Подробную информацию о движке шаблонизатора вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/design/templates\" target=\"_blank\">Движок шаблонизатора</a>."
+
+#, python-format
 msgid "You can find information on authentication setup in your game in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication manual</a>."
 msgstr "Информацию о настройке системы аутентификации вы можете прочитать на <a href=\"//www.%s/doc/auth\" target=\"_blank\">соответствующей странице</a> руководства."
 
@@ -7448,6 +7505,9 @@ msgstr "У вас нет предметов, которые можно поме�
 
 msgid "You don't have permission to upload objects to the static storage"
 msgstr "У вас нет доступа, чтобы загружать объекты в статическое хранилище"
+
+msgid "You email was enqueued to be checked by the moderator"
+msgstr "Ваше письмо поставлено в очередь на проверку модератором"
 
 msgid "You entered location"
 msgstr "Вы перешли в локацию"
@@ -7636,6 +7696,12 @@ msgstr "ZIP64 не поддерживается"
 
 msgid "Zipped design package"
 msgstr "Пакет с оформлением в формате ZIP"
+
+msgid "[% ... %] will be parsed by the templating engine"
+msgstr "[% ... %] будут обработаны движком шаблонизатора"
+
+msgid "[% char.name %] is a character's name"
+msgstr "[% char.name %] будет заменено на имя персонажа"
 
 msgid "[gender?FEMALE:MALE] will be replaced with FEMALE if recipient is female and MALE if recipient is male"
 msgstr "[gender?FEMALE:MALE] будет заменяться на FEMALE в случае, если получатель - женщина, и MALE, если получатель мужчина. Например: \"Ты давно не [gender?заходила:заходил] на сайт\""
@@ -8024,6 +8090,9 @@ msgstr "параметры предметов"
 msgid "items, list, catalog"
 msgstr "предметы, список, каталог"
 
+msgid "letters sent"
+msgstr "писем отправлено"
+
 msgid "linking"
 msgstr "связывание"
 
@@ -8176,6 +8245,9 @@ msgstr "октября"
 
 msgid "of September"
 msgstr "сентября"
+
+msgid "on moderation"
+msgstr "на модерации"
 
 #, python-format
 msgid "on moderation since %s"
@@ -8638,6 +8710,9 @@ msgstr "загрузить"
 msgid "user///Registered"
 msgstr "Регистрация"
 
+msgid "users skipped"
+msgstr "пользователей пропущено"
+
 msgid "validate"
 msgstr "проверить"
 
@@ -8739,6 +8814,15 @@ msgstr "{price} на {period_a}"
 
 msgid "{price} forever"
 msgstr "{price} навсегда"
+
+#~ msgid "Enter name"
+#~ msgstr "Введите имя"
+
+#~ msgid "Invalid sex specified"
+#~ msgstr "Указан неверный пол"
+
+#~ msgid "Send options"
+#~ msgstr "Опции отправки"
 
 #~ msgid "Period (in seconds)"
 #~ msgstr "Период (в секундах)"
@@ -8939,9 +9023,6 @@ msgstr "{price} навсегда"
 
 #~ msgid "throw"
 #~ msgstr "выбросить"
-
-#~ msgid "Filters: %s"
-#~ msgstr "Фильтры: %s"
 
 #~ msgid "Items history"
 #~ msgstr "История предметов"

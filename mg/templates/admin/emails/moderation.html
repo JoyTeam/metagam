@@ -1,0 +1,30 @@
+<div class="text">
+<table class="menu">
+<tr><td class="header header-nowrap">[%EmailSubject%]</td><td>[%email.subject%]</td></tr>
+<tr><td class="header header-nowrap">[%EmailContent%]</td><td>[%email.content%]</td></tr>
+</table>
+</div>
+
+<div id="navi"></div>
+
+<script type="text/javascript">
+	new Ext.Panel({
+		border: false,
+		layout: 'hbox',
+		renderTo: 'navi',
+		items: [{
+			border: false,
+			style: 'padding-right: 20px',
+			items: {
+				xtype: 'button',
+				text: '[%Confirm%]',
+				handler: function() { adm('email/moderation/[%email.id%]/confirm') }
+			}
+		}, {
+			xtype: 'button',
+			text: '[%Reject%]',
+			handler: function() { adm('email/moderation/[%email.id%]/reject') }
+		}]
+	});
+</script>
+
