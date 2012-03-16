@@ -42,9 +42,9 @@ re_st_mg = re.compile(r'/st-mg(?:/\[%ver%\])?(/.*)')
 re_dyn_mg = re.compile(r'/dyn-mg(/.*)')
 re_not_found = re.compile(r'file error - .*: not found$')
 re_templates_editor = re.compile(r'^templates/([a-f0-9]{32})(?:|/(.+))$')
-re_edit_template = re.compile(r'^(edit|reset)/([a-z0-9_\-]+\.html)$')
+re_edit_template = re.compile(r'^(edit|reset)/([a-z0-9_\-]+\.(html|css|js))$')
 re_del_template = re.compile(r'^del/([a-z0-9_\-]+\.html)$')
-re_valid_filename_html = re.compile(r'^[a-z0-9_\-]+\.html$')
+re_valid_filename_html = re.compile(r'^[a-z0-9_\-]+\.(?:html|css|js)$')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -1556,10 +1556,11 @@ class DesignAdmin(Module):
                     self.call("cluster.static_delete", template_uri)
                     design.store()
                 self.call("admin.redirect", "%s/design/templates/%s" % (group, design.uuid))
-
+            print cmd
             m = re_edit_template.match(cmd)
             if m:
-                mode, fn = m.group(1, 2)
+                mode, fn, ext = m.group(1, 2, 3)
+                print "%s/%s/%s" % (mode, fn, ext)
                 template_uri = "%s/%s" % (design.get("uri"), fn)
                 # processing request
                 if req.ok():
@@ -1572,10 +1573,16 @@ class DesignAdmin(Module):
                     if errors:
                         self.call("web.response_json", {"success": False, "errormsg": "\n".join(errors)})
                     files[fn] = {"content-type": "text/html"}
-                    html = design.get("html") or []
-                    if not fn in html:
-                        html.append(fn)
-                        design.set("html", html)
+                    if ext == "html":
+                        html = design.get("html") or []
+                        if not fn in html:
+                            html.append(fn)
+                            design.set("html", html)
+                    elif ext == "css":
+                        css = design.get("css") or []
+                        if not fn in css:
+                            css.append(fn)
+                            design.set("css", css)
                     design.touch()
                     # uploading data
                     self.call("cluster.static_put", template_uri, "text/html", content)
@@ -1646,6 +1653,14 @@ class DesignAdmin(Module):
                     reset,
                     delete,
                     description,
+                ])
+            elif fn.endswith(".css") or fn.endswith(".js"):
+                rows.append([
+                    htmlescape(fn),
+                    u'<hook:admin.link href="%s/design/templates/%s/edit/%s" title="%s" />' % (group, design.uuid, urlencode(fn), self._("edit")),
+                    None,
+                    None,
+                    None,
                 ])
         vars = {
             "tables": [
