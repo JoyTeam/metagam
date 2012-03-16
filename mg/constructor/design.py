@@ -1556,11 +1556,9 @@ class DesignAdmin(Module):
                     self.call("cluster.static_delete", template_uri)
                     design.store()
                 self.call("admin.redirect", "%s/design/templates/%s" % (group, design.uuid))
-            print cmd
             m = re_edit_template.match(cmd)
             if m:
                 mode, fn, ext = m.group(1, 2, 3)
-                print "%s/%s/%s" % (mode, fn, ext)
                 template_uri = "%s/%s" % (design.get("uri"), fn)
                 # processing request
                 if req.ok():
