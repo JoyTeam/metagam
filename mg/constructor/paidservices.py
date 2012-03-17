@@ -647,7 +647,7 @@ class PaidServicesAdmin(ConstructorModule):
             else:
                 offer_id = int(offer_id)
                 if offer_id < len(offers):
-                    offers[offer_id]["period"] = int(period)
+                    offers[offer_id]["period"] = int(period) if period is not None else None
                     offers[offer_id]["price"] = float(price)
                     offers[offer_id]["currency"] = currency
             offers.sort(cmp=lambda x, y: cmp(x.get("period"), y.get("period")))
