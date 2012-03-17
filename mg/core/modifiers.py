@@ -34,7 +34,7 @@ class MemberModifiers(Module):
         # mapping uuid => mod
         self.expired = {}
         self.destroyed = {}
-        self.prolong = {}
+        self.prolonged = {}
         self.created = {}
         self.mobjs = []
         try:
@@ -75,8 +75,8 @@ class MemberModifiers(Module):
         self.destroyed = {}
         created = self.created
         self.created = {}
-        prolong = self.prolong
-        self.prolong = {}
+        prolong = self.prolonged
+        self.prolonged = {}
         # sending events
         for mod in created.values():
             self.call("%s-modifier.created" % self.target_type, self, mod)
@@ -113,7 +113,7 @@ class MemberModifiers(Module):
             self.load()
         modifiers = {}
         self.expired = {}
-        self.prolong = {}
+        self.prolonged = {}
         now = None
         # Workaround
         if self._mods.get("mods") is None:
@@ -139,7 +139,7 @@ class MemberModifiers(Module):
                         # on the next pass
                         pass
                     elif ent.get("auto_prolong"):
-                        self.prolong[ent["uuid"]] = ent
+                        self.prolonged[ent["uuid"]] = ent
                     else:
                         self.expired[ent["uuid"]] = ent
                         #self.debug("Found expired modifier (target_type=%s, target=%s): %s", self.target_type, self.uuid, ent)
@@ -239,7 +239,7 @@ class MemberModifiers(Module):
             # considering this items neither created nor destroyed
             self.created = dict([(uuid, mod) for uuid, mod in self.created.iteritems() if mod["kind"] != kind])
             self.destroyed = dict([(uuid, mod) for uuid, mod in self.destroyed.iteritems() if mod["kind"] != kind])
-            self.prolong = dict([(uuid, mod) for uuid, mod in self.prolong.iteritems() if mod["kind"] != kind])
+            self.prolonged = dict([(uuid, mod) for uuid, mod in self.prolonged.iteritems() if mod["kind"] != kind])
         else:
             # Add new
             till = self.now(period)
