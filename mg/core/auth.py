@@ -1382,7 +1382,7 @@ class Interface(Module):
                 users[ent.get("user")] = None
         if len(users):
             lst2 = self.objlist(UserList, users.keys())
-            lst2.load()
+            lst2.load(silent=True)
             for ent in lst2:
                 users[ent.uuid] = ent
         for ent in lst:
