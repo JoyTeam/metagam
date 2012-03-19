@@ -276,7 +276,7 @@ class CharImages(ConstructorModule):
             image = {}
             for d in dimensions:
                 size = "%dx%d" % (d["width"], d["height"])
-                image[size] = Image.new("RGBA", (d["width"], d["height"]), (0, 0, 0, 255))
+                image[size] = Image.new("RGBA", (d["width"], d["height"]), (128, 128, 128, 0))
                 for uri in reversed(selected[size]):
                     data = self.download(uri)
                     layer = Image.open(cStringIO.StringIO(data))
@@ -314,8 +314,8 @@ class CharImages(ConstructorModule):
                     top = (h - d["height"]) / 2
                     # store
                     stream = cStringIO.StringIO()
-                    image[size].save(stream, "JPEG", quality=95)
-                    uri = self.call("cluster.static_upload", "charimage-usergen", "jpg", "image/jpeg", stream.getvalue())
+                    image[size].save(stream, "PNG")
+                    uri = self.call("cluster.static_upload", "charimage-usergen", "png", "image/png", stream.getvalue())
                     obj.set("image-%s" % size, uri)
                 obj.store()
                 for uri in delete_uri:
@@ -571,12 +571,14 @@ class CharImagesAdmin(ConstructorModule):
                             errors["image"] = self._("Image format not recognized")
                         else:
                             ext, content_type = self.image_format(image)
+                            form = image.format
+                            trans = image.info.get("transparency")
                             if ext is None:
                                 errors["image"] = self._("Valid formats are: PNG, GIF, JPEG")
                             else:
                                 for dim in dimensions:
                                     size = "%dx%d" % (dim["width"], dim["height"])
-                                    dim_images[size] = (image, ext, content_type, image.format)
+                                    dim_images[size] = (image, ext, content_type, form, trans)
                 elif replace == 2:
                     for dim in dimensions:
                         size = "%dx%d" % (dim["width"], dim["height"])
@@ -590,10 +592,12 @@ class CharImagesAdmin(ConstructorModule):
                                 errors["image_%s" % size] = self._("Image format not recognized")
                             else:
                                 ext, content_type = self.image_format(dim_image)
+                                form = dim_image.format
+                                trans = image.info.get("transparency")
                                 if ext is None:
                                     errors["image_%s" % size] = self._("Valid formats are: PNG, GIF, JPEG")
                                 else:
-                                    dim_images[size] = (dim_image, ext, content_type, dim_image.format)
+                                    dim_images[size] = (dim_image, ext, content_type, form, trans)
                 # sex
                 sex0 = True if req.param("sex0") else False
                 sex1 = True if req.param("sex1") else False
@@ -616,7 +620,7 @@ class CharImagesAdmin(ConstructorModule):
                 for dim in dimensions:
                     size = "%dx%d" % (dim["width"], dim["height"])
                     try:
-                        image, ext, content_type, form = dim_images[size]
+                        image, ext, content_type, form, trans = dim_images[size]
                     except KeyError:
                         pass
                     else:
@@ -633,6 +637,8 @@ class CharImagesAdmin(ConstructorModule):
                         data = cStringIO.StringIO()
                         if form == "JPEG":
                             image.save(data, form, quality=95)
+                        elif form == "GIF":
+                            image.save(data, form, transparency=trans)
                         else:
                             image.save(data, form)
                         uri = self.call("cluster.static_upload", "charimage", ext, content_type, data.getvalue())
@@ -927,6 +933,8 @@ class CharImagesAdmin(ConstructorModule):
                                 errors["image"] = self._("Image format not recognized")
                             else:
                                 ext, content_type = self.image_format(image)
+                                form = image.format
+                                trans = image.info.get("transparency")
                                 if ext is None:
                                     errors["image"] = self._("Valid formats are: PNG, JPEG, GIF")
                                 else:
@@ -936,7 +944,7 @@ class CharImagesAdmin(ConstructorModule):
                                     except EOFError:
                                         for dim in dimensions:
                                             size = "%dx%d" % (dim["width"], dim["height"])
-                                            dim_images[size] = (image, ext, content_type, image.format)
+                                            dim_images[size] = (image, ext, content_type, form, trans)
                     elif replace == 2:
                         for dim in dimensions:
                             size = "%dx%d" % (dim["width"], dim["height"])
@@ -950,6 +958,8 @@ class CharImagesAdmin(ConstructorModule):
                                     errors["image_%s" % size] = self._("Image format not recognized")
                                 else:
                                     ext, content_type = self.image_format(dim_image)
+                                    form = dim_image.format
+                                    trans = image.info.get("transparency")
                                     if ext is None:
                                         errors["image_%s" % size] = self._("Valid formats are: PNG, JPEG, GIF")
                                     else:
@@ -957,18 +967,23 @@ class CharImagesAdmin(ConstructorModule):
                                             dim_image.seek(1)
                                             errors["image_%s" % size] = self._("Animated images are not supported")
                                         except EOFError:
-                                            dim_images[size] = (dim_image, ext, content_type, dim_image.format)
-                    image_data = req.param_raw("image")
-                    if not image_data:
-                        if cmd == "new":
-                            errors["image"] = self._("Missing image")
-                    else:
-                        try:
-                            image = Image.open(cStringIO.StringIO(image_data))
-                            if image.load() is None:
-                                raise IOError
-                        except IOError:
-                            errors["image"] = self._("Image format not recognized")
+                                            dim_images[size] = (dim_image, ext, content_type, form, trans)
+                    # 
+                    # Copypaste is evil?
+                    # 
+                    #image_data = req.param_raw("image")
+                    #if not image_data:
+                    #    if cmd == "new":
+                    #        errors["image"] = self._("Missing image")
+                    #else:
+                    #    try:
+                    #        image = Image.open(cStringIO.StringIO(image_data))
+                    #        if image.load() is None:
+                    #            raise IOError
+                    #    except IOError:
+                    #        errors["image"] = self._("Image format not recognized")
+                    #    else:
+                    #        image = image.convert("RGBA")
                     image_info["order"] = floatz(req.param("order"))
                     image_info["sex0"] = True if req.param("sex0") else False
                     image_info["sex1"] = True if req.param("sex1") else False
@@ -979,7 +994,7 @@ class CharImagesAdmin(ConstructorModule):
                     for dim in dimensions:
                         size = "%dx%d" % (dim["width"], dim["height"])
                         try:
-                            image, ext, content_type, form = dim_images[size]
+                            image, ext, content_type, form, trans = dim_images[size]
                         except KeyError:
                             pass
                         else:
@@ -996,6 +1011,8 @@ class CharImagesAdmin(ConstructorModule):
                             data = cStringIO.StringIO()
                             if form == "JPEG":
                                 image.save(data, form, quality=95)
+                            elif form == "GIF":
+                                image.save(data, form, transparency=trans)
                             else:
                                 image.save(data, form)
                             uri = self.call("cluster.static_upload", "charimage", ext, content_type, data.getvalue())

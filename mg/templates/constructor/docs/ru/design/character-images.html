@@ -3,6 +3,8 @@
 <!-- doc.keywords образ персонажа, выбор образа персонажа, оформление -->
 <!-- doc.description Как правильно оформлять шаблон страниц с выбором образов персонажей в онлайн-играх, созданных на конструкторе игр -->
 
+<h1>Оформление селектора образов персонажей онлайн-игры</h1>
+
 <p>Страница с выбором статического образа генерируется из двух файлов: <a href="/doc/game-template/charimage-select.html">charimage-select.html</a> и <a href="/doc/game-template/charimage-select-layout.html">charimage-select-layout.html</a>. В них можно использовать следующие переменные шаблонизатора:<ul>
 	<li>images &mdash; список образов. Каждый элемент списка &mdash; запись с полями:<ul>
 		<li>id &mdash; идентификатор образа;</li>
@@ -49,6 +51,14 @@
 	<li>charimgsel-input-"кодслоя" &mdash; hidden-поле формы, в которое будет помещен id выбранного изображения для слоя;</li>
 	<li>charimgsel-error &mdash; сообщение об ошибке.</li>
 </ul></p>
+
+<a name="background"></a>
+<h1>Фон образа</h1>
+
+<p>Фон под образом можно изменять, задавая свойство background CSS-классу charimage-background. Например, чтобы сделать фон под образом прозрачным, напишите в game.css:</p>
+<pre class="doc-code-sample">.charimage-background { background: none }</pre>
+<p>Чтобы сделать его белым:</p>
+<pre class="doc-code-sample">.charimage-background { background: #ffffff }</pre>
 
 <h1>Дополнительно</h1>
 <ul>

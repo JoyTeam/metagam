@@ -995,7 +995,7 @@ class Equip(ConstructorModule):
                                 "y": layout.get("char-y", 0) + offset_y,
                                 "width": width,
                                 "height": height,
-                                "cls": "equip-char-image",
+                                "cls": "charimage-background equip-char-image",
                                 "border": charimage_border,
                                 "image": {
                                     "src": vars["avatar_image"],
