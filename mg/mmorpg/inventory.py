@@ -1552,8 +1552,8 @@ class InventoryAdmin(ConstructorModule):
         rows = []
         for con in constraints:
             rows.append([
-                self.call("script.unparse-expression", con["amount"]),
-                self.call("script.unparse-expression", con["max"]),
+                self.call("script.unparse-expression", con.get("amount")),
+                self.call("script.unparse-expression", con.get("max")),
                 u'<hook:admin.link href="inventory/char-cargo/%s" title="%s" />' % (con["id"], self._("edit")),
                 u'<hook:admin.link href="inventory/char-cargo/del/%s" title="%s" confirm="%s" />' % (con["id"], self._("delete"), self._("Are you sure want to delete this constraint?")),
             ])
