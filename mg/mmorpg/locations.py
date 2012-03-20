@@ -1023,7 +1023,7 @@ class LocationsMultiStaticImagesAdmin(ConstructorModule):
 
     def form_render(self, db_loc, fields):
         for fld in fields:
-            if fld["name"] == "image_type":
+            if fld.get("name") == "image_type":
                 fld["values"].append(("multistatic", self._("Multiple static images with different dimensions")))
         fields.append({"name": "image_multistatic", "type": "fileuploadfield", "label": self._("Add location image with different dimension") if db_loc.get("images_multistatic") else self._("Upload first location image"), "condition": "[image_type]=='multistatic'"})
 
