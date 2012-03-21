@@ -593,7 +593,7 @@ class CharImagesAdmin(ConstructorModule):
                             else:
                                 ext, content_type = self.image_format(dim_image)
                                 form = dim_image.format
-                                trans = image.info.get("transparency")
+                                trans = dim_image.info.get("transparency")
                                 if ext is None:
                                     errors["image_%s" % size] = self._("Valid formats are: PNG, GIF, JPEG")
                                 else:
@@ -959,7 +959,7 @@ class CharImagesAdmin(ConstructorModule):
                                 else:
                                     ext, content_type = self.image_format(dim_image)
                                     form = dim_image.format
-                                    trans = image.info.get("transparency")
+                                    trans = dim_image.info.get("transparency")
                                     if ext is None:
                                         errors["image_%s" % size] = self._("Valid formats are: PNG, JPEG, GIF")
                                     else:
