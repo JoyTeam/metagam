@@ -638,7 +638,10 @@ class CharImagesAdmin(ConstructorModule):
                         if form == "JPEG":
                             image.save(data, form, quality=95)
                         elif form == "GIF":
-                            image.save(data, form, transparency=trans)
+                            if trans:
+                                image.save(data, form, transparency=trans)
+                            else:
+                                image.save(data, form)
                         else:
                             image.save(data, form)
                         uri = self.call("cluster.static_upload", "charimage", ext, content_type, data.getvalue())
@@ -1012,7 +1015,10 @@ class CharImagesAdmin(ConstructorModule):
                             if form == "JPEG":
                                 image.save(data, form, quality=95)
                             elif form == "GIF":
-                                image.save(data, form, transparency=trans)
+                                if trans:
+                                    image.save(data, form, transparency=trans)
+                                else:
+                                    image.save(data, form)
                             else:
                                 image.save(data, form)
                             uri = self.call("cluster.static_upload", "charimage", ext, content_type, data.getvalue())
