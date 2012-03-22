@@ -86,5 +86,14 @@ class TestMySQL(unittest.TestCase):
         data = self.db.selectall("select c from mgtest")
         self.assertEqual(data, [("проверка", )])
 
+    def test05(self):
+        self.db.do("create table mgtest(verylong longblob)")
+        data = "0123456"
+        for x in xrange(0, 17):
+            data = data + data
+        self.db.do("insert into mgtest values(?)", data)
+        read_data = self.db.selectall("select verylong from mgtest")
+        self.assertEqual(read_data, [(data,)])
+
 if __name__ == "__main__":
     dispatch(unittest.main)
