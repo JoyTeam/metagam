@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-16 17:21+0300\n"
+"PO-Revision-Date: 2012-03-22 16:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1819,6 +1819,9 @@ msgstr "Включить дипломатический канал"
 msgid "Dirt #1"
 msgstr "Земля №1"
 
+msgid "Disable sending letters to {email}"
+msgstr "Отключить отправку писем на {email}"
+
 msgid "Discard"
 msgstr "Выбросить"
 
@@ -1997,6 +2000,9 @@ msgstr "Документация на рассылку e-mail"
 
 msgid "Email subject"
 msgstr "Тема e-mail"
+
+msgid "Email unsubscription"
+msgstr "Отписка e-mail"
 
 msgid "Emails moderation"
 msgstr "Модерация e-mail"
@@ -4400,6 +4406,9 @@ msgstr "Нет локации"
 msgid "No locations defined."
 msgstr "Локации отсутствуют."
 
+msgid "No more letters will be delivered to {email}, sorry for inconvinience."
+msgstr "Письма на {email} больше отправляться не будут. Приносим извинения за доставленные неудобства."
+
 msgid "No quests currently undergo"
 msgstr "В данный момент вы не проходите ни одного квеста"
 
@@ -5299,6 +5308,9 @@ msgstr "Перезагружается"
 
 msgid "Remind"
 msgstr "Напомнить"
+
+msgid "Remind password - {href}"
+msgstr "Напомнить пароль - {href}"
 
 msgid "Remote server response: Access denied"
 msgstr "Ответ удалённого сервера: Доступ запрещён"
@@ -6641,6 +6653,9 @@ msgstr "Этот магазин продаёт товары"
 msgid "This slot is currently unavailable"
 msgstr "Этот слот в данный момент недоступен"
 
+msgid "This unsubscription link has expired already"
+msgstr "Эта ссылка на отписку уже устарела"
+
 msgid "This user can't have a name"
 msgstr "Этот пользователь не может иметь имени"
 
@@ -6716,6 +6731,9 @@ msgstr "Чтобы настроить вид ваших писем, вы мож�
 
 msgid "To raise your income you can offer some subscription-based <hook:admin.link href=\"paidservices/editor\" title=\"paid services\" /> to your players"
 msgstr "Чтобы повысить ваш доход, вы можете предложить игрокам какие-либо <hook:admin.link href=\"paidservices/editor\" title=\"платные услуги\" /> по подписке."
+
+msgid "To stop receiving letters press <a href=\"{href}\" target=\"_blank\">here</a>"
+msgstr "Чтобы прекратить получение писем, нажмите <a href=\"{href}\" target=\"_blank\">сюда</a>"
 
 msgid "To store static objects larger than 30 kb game owner must have a WMID attached to his account"
 msgstr "Чтобы сохранять статические объекты объёмом более 30 килобайт, к аккаунту владельца игры должен быть присоединён WMID"
@@ -6932,6 +6950,9 @@ msgstr "Новые"
 #, python-format
 msgid "Unrecognized command: /%s"
 msgstr "Неизвестная команда: /%s"
+
+msgid "Unsubscribe - http://{domain}/email/unsubscribe/{code}"
+msgstr "Отписаться - http://{domain}/email/unsubscribe/{code}"
 
 msgid "Untitled"
 msgstr "Без имени"
@@ -7668,6 +7689,12 @@ msgstr "Ваше имя (на родном языке, как в паспорт�
 
 msgid "Your name has been changed"
 msgstr "Ваше имя было изменено"
+
+msgid "Your name is {user_name}"
+msgstr "Ваше имя - {user_name}"
+
+msgid "Your name is {user_name} &mdash; <a href=\"{href}\" target=\"_blank\">remind password</a>"
+msgstr "Ваше имя &mdash; {user_name}. <a href=\"{href}\" target=\"_blank\">Напомнить пароль</a>"
 
 msgid "Your official registration address (in your language)"
 msgstr "Ваш официальный адрес регистрации (на вашем языке)"
@@ -9441,9 +9468,6 @@ msgstr "{price} навсегда"
 
 #~ msgid "Search \"%s\""
 #~ msgstr "Поиск \"%s\""
-
-#~ msgid "Remind my password"
-#~ msgstr "Напомнить пароль"
 
 #~ msgid "Create the world of your dreams"
 #~ msgstr "Создай мир своей мечты"

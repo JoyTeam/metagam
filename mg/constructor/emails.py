@@ -217,11 +217,15 @@ class EmailSender(ConstructorModule):
         req = self.req()
         char = self.character(req.user())
         params["char"] = char
+        params["recipient_name"] = char.name
+        params["recipient_sex"] = char.sex
 
     def user_params(self, user, params):
         char = self.character(user.uuid)
         if char.valid:
             params["char"] = char
+            params["recipient_name"] = char.name
+            params["recipient_sex"] = char.sex
 
     def delivery_form(self, fields):
         i = 0

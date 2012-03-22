@@ -573,6 +573,7 @@ class Interface(Module):
                     "content": self._("Someone possibly you requested password recovery on the {host} site. Accounts registered with your e-mail are:\n\n{content}\nIf you still can't remember your password feel free to contact our support.")
                 }
                 self.call("auth.remind_email", params)
+                self.call("email.unblacklist", email)
                 self.call("email.send", email, name, params["subject"], params["content"].format(content=content, host=req.host()))
                 vars["ret"] = {
                     "href": redirect if redirect else "/auth/login",

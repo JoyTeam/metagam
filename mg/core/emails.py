@@ -28,16 +28,31 @@ class BulkEmailMessage(CassandraObject):
 class BulkEmailMessageList(CassandraObjectList):
     objcls = BulkEmailMessage
 
+class UnsubscribeCode(CassandraObject):
+    clsname = "UnsubscribeCode"
+    indexes = {
+        "created": [[], "created"],
+        "email": [["email"], "created"],
+    }
+
+class UnsubscribeCodeList(CassandraObjectList):
+    objcls = UnsubscribeCode
+
+class EmailBlackList(CassandraObject):
+    clsname = "EmailBlackList"
+    indexes = {
+        "created": [[], "created"],
+    }
+
+class EmailBlackListList(CassandraObjectList):
+    objcls = EmailBlackList
+
 class EmailAdmin(Module):
     def register(self):
         self.rhook("menu-admin-email.index", self.menu_email_index)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-email.settings", self.email_settings, priv="email.settings")
         self.rhook("headmenu-admin-email.settings", self.headmenu_email_settings)
-        self.rhook("objclasses.list", self.objclasses_list)
-        
-    def objclasses_list(self, objclasses):
-        objclasses["BulkEmailMessage"] = (BulkEmailMessage, BulkEmailMessageList)
 
     def permissions_list(self, perms):
         perms.append({"id": "email.settings", "name": self._("Email configuration")})
@@ -75,6 +90,24 @@ class Email(Module):
         self.rhook("email.send", self.email_send)
         self.rhook("email.users", self.email_users)
         self.rhook("exception.report", self.exception_report)
+        self.rhook("email.unsubscribe-code", self.unsubscribe_code)
+        self.rhook("email.unsubscribe-text", self.unsubscribe_text)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("email.cleanup", self.cleanup)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("ext-email.unsubscribe", self.unsubscribe, priv="public")
+        self.rhook("email.unblacklist", self.unblacklist)
+
+    def objclasses_list(self, objclasses):
+        objclasses["BulkEmailMessage"] = (BulkEmailMessage, BulkEmailMessageList)
+        objclasses["EmailBlackList"] = (EmailBlackList, EmailBlackListList)
+        objclasses["UnsubscribeCode"] = (UnsubscribeCode, UnsubscribeCodeList)
+        
+    def schedule(self, sched):
+        sched.add("email.cleanup", "5 1 * * *", priority=10)
+
+    def cleanup(self):
+        self.objlist(UnsubscribeCodeList, query_index="created", query_finish=self.now(-86400 * 7)).remove()
 
     def menu_root_index(self, menu):
         menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
@@ -111,11 +144,27 @@ class Email(Module):
                 from_email = from_email.encode("utf-8")
             if type(to_email) == unicode:
                 to_email = to_email.encode("utf-8")
-            if signature and subtype == "plain" and params.get("signature"):
-                sig = params.get("signature")
-                if type(sig) == unicode:
-                    sig = sig.encode("utf-8")
-                    content += "\n\n--\n%s" % sig
+            if signature and subtype == "plain":
+                sig = params.get("signature") or ""
+                sig = str2unicode(sig)
+                # unsubscribe
+                if sig:
+                    sig += "\n"
+                if to_name:
+                    sig += self._('Your name is {user_name}').format(
+                        user_name=to_name
+                    )
+                if getattr(self.app(), "canonical_domain", None):
+                    sig += "\n"
+                    sig += self._("Remind password - {href}").format(
+                        href="http://{domain}/auth/remind".format(
+                            domain=self.app().canonical_domain,
+                        ),
+                    )
+                    sig += "\n"
+                    sig += self.call("email.unsubscribe-text", to_email)
+                if sig:
+                    content += "\n\n--\n%s" % utf2str(sig)
             if subtype == "raw":
                 body = content
             else:
@@ -211,6 +260,48 @@ class Email(Module):
                 self.int_app().hooks.call("email.send", email, self._("Software engineer"), "%s: %s" % (tag, msg), content, immediately=True, subtype="html")
         except Exception as e:
             self.critical("Exception during exception reporting: %s", traceback.format_exc())
+
+    def unsubscribe_code(self, email):
+        obj = self.obj(UnsubscribeCode)
+        obj.set("email", email)
+        obj.set("created", self.now())
+        obj.store()
+        return obj.uuid
+
+    def unsubscribe_text(self, email):
+        code = self.call("email.unsubscribe-code", email)
+        return self._("Unsubscribe - http://{domain}/email/unsubscribe/{code}").format(domain=self.app().canonical_domain, code=code)
+
+    def unsubscribe(self):
+        vars = {
+            "title": self._("Email unsubscription"),
+            "ret": {
+                "href": "/",
+                "title": self._("Cancel"),
+            },
+        }
+        req = self.req()
+        code = req.args
+        if not code:
+            self.call("web.not_found")
+        try:
+            obj = self.obj(UnsubscribeCode, code)
+        except ObjectNotFoundException:
+            self.call("auth.message", self._("This unsubscription link has expired already"), vars)
+        if req.param("confirm"):
+            block = self.obj(EmailBlackList, obj.get("email"), silent=True)
+            block.set("created", self.now())
+            block.store()
+            self.call("auth.message", self._("No more letters will be delivered to {email}, sorry for inconvinience.").format(email=htmlescape(obj.get("email"))), vars)
+        self.call("auth.message", u'<a href="/email/unsubscribe/%s?confirm=1">%s</a>' % (code, self._("Disable sending letters to {email}").format(email=htmlescape(obj.get("email")))), vars)
+
+    def unblacklist(self, email):
+        if not email:
+            return
+        try:
+            self.obj(EmailBlackList, email).remove()
+        except ObjectNotFoundException:
+            pass
 
 class EmailSender(Module):
     def register(self):
@@ -530,6 +621,14 @@ class EmailSender(Module):
         return val
 
     def send(self, params, email, immediately=False):
+        # checking for blacklisting
+        try:
+            obj = self.obj(EmailBlackList, email)
+        except ObjectNotFoundException:
+            pass
+        else:
+            # blacklisted
+            return
         content = params["content"]
         subject = params["subject"]
         parts = params["parts"]
@@ -542,8 +641,26 @@ class EmailSender(Module):
         if content is None or not content.strip():
             return
         # converting data
-        if type(content) == unicode:
-            content = content.encode("utf-8")
+        content = str2unicode(content)
+        domain = self.app().canonical_domain
+        content += u'<br>--<br>{project_title} &mdash; <a href="http://{domain}/" target="_blank">http://{domain}</a><br>{your_name}<br>{unsubscribe}'.format(
+            domain=domain,
+            project_title=htmlescape(self.call("project.title")),
+            your_name=self._('Your name is {user_name} &mdash; <a href="{href}" target="_blank">remind password</a>').format(
+                user_name=htmlescape(params.get("recipient_name")),
+                href="http://{domain}/auth/remind?email={email}".format(
+                    domain=domain,
+                    email=urlencode(email),
+                ),
+            ),
+            unsubscribe=self._('To stop receiving letters press <a href="{href}" target="_blank">here</a>').format(
+                href="http://{domain}/email/unsubscribe/{code}".format(
+                    domain=domain,
+                    code=self.call("email.unsubscribe-code", email),
+                ),
+            ),
+        )
+        content = utf2str(content)
         # making MIME message
         multipart = MIMEMultipart("related");
         multipart["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))

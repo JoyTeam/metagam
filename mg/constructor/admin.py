@@ -311,7 +311,7 @@ class Constructor(Module):
             cabmenu.append({"title": self._("Return to the Cabinet"), "href": "/cabinet", "image": "/st/constructor/cabinet/constructor.gif"})
         elif req.group == "socio" and req.hook == "image":
             pass
-        elif req.group == "auth":
+        elif req.group == "auth" or req.group == "email":
             if req.hook == "change" or req.hook == "email":
                 vars["global_html"] = "constructor/cabinet_global.html"
                 vars["ToTheMainPage"] = self._("To the main page")
