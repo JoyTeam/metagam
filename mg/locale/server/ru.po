@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-22 16:59+0300\n"
+"PO-Revision-Date: 2012-03-22 17:17+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5485,6 +5485,9 @@ msgstr "Высота списка персонажей (ростера)"
 
 msgid "Roster width"
 msgstr "Ширина списка персонажей (ростера)"
+
+msgid "Round value to this number of digits after decimal point (empty value means 'don't round')"
+msgstr "Округлять значение до указанного количества разрядов после десятичной точки (пустое значение означает \"не округлять\")"
 
 msgid "Rubricator"
 msgstr "Рубрикатор"

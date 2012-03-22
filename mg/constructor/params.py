@@ -191,6 +191,16 @@ class ParamsAdmin(ConstructorModule):
                                 new_param["visual_table"] = visual_table
                     if mode == 0 or mode == 2:
                         new_param["visual_plus"] = True if req.param("visual_plus") else False
+                        vis_round = req.param("visual_round").strip()
+                        if vis_round != "":
+                            if not valid_nonnegative_int(vis_round):
+                                errors["visual_round"] = self._("This doesn't look like a number")
+                            else:
+                                vis_round = int(vis_round)
+                                if vis_round > 5:
+                                    errors["visual_round"] = self._("Maximal value is %d") % 5
+                                else:
+                                    new_param["visual_round"] = vis_round
                 # library
                 if req.param("library_visible"):
                     new_param["library_visible"] = True
@@ -252,6 +262,7 @@ class ParamsAdmin(ConstructorModule):
                     (1, self._("Show abitrary HTML from the table of values")),
                     (2, self._("Complex template (with number and HTML from the table of values)")),
                 ]},
+                {"name": "visual_round", "value": param.get("visual_round"), "label": self._("Round value to this number of digits after decimal point (empty value means 'don't round')"), "condition": "[visual_mode] == 0 || [visual_mode] == 2"},
                 {"name": "visual_plus", "type": "checkbox", "checked": param.get("visual_plus"), "label": self._("Show '+' sign before positive values"), "condition": "[visual_mode] == 0 || [visual_mode] == 2"},
                 {"name": "visual_template", "value": param.get("visual_template"), "label": self._("Value template ({val} &mdash; number, {text} &mdash; text from the table)"), "condition": "[visual_mode]==2"},
                 {"name": "visual_table", "value": "\n".join([u"%s: %s" % (ent[0], ent[1]) for ent in param.get("visual_table", [])]), "label": self._("Table of values (HTML allowed). Syntax:<br />1: recruit<br />2: sergeant<br />3: lieutenant<br />4: major"), "condition": "[visual_mode]>0", "type": "textarea", "remove_label_separator": True},
@@ -468,7 +479,11 @@ class Params(ConstructorModule):
     def html(self, param, value):
         visual_mode = param.get("visual_mode")
         if visual_mode == 0:
-            html = htmlescape(unicode(value))
+            visual_round = param.get("visual_round")
+            if visual_round is not None:
+                html = "%.{prec}f".format(prec=visual_round) % floatz(value)
+            else:
+                html = htmlescape(unicode(value))
             if param.get("visual_plus") and value > 0:
                 html = u"+%s" % html
             return html
