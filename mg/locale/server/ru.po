@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-03-22 17:17+0300\n"
+"PO-Revision-Date: 2012-03-24 20:54+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3372,6 +3372,9 @@ msgstr "Доступна ли кнопка персонажу (вы можете
 
 msgid "It seems that your post contains script code without [code]...[/code] tags. Please select your script and press the 'CODE' button. It will make you code looking better. If you think this message is erroneous set the checkbox"
 msgstr "Похоже, что в вашем посте есть код скрипта без тегов [code]...[/code]. Пожалуйста, выделите ваш скрипт и нажмите кнопку \"CODE\". Ваш код будет выглядеть лучше. Если вы считаете, что это сообщение ошибочное, установите галочку"
+
+msgid "It's impossible to edit this template because it is not a valid utf-8 file"
+msgstr "Отредактировать этот шаблон невозможно, поскольку его кодировка не является валидным utf-8"
 
 msgid "Italic"
 msgstr "Курсив"

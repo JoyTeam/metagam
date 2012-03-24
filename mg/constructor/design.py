@@ -1610,7 +1610,10 @@ class DesignAdmin(Module):
                     if doc:
                         fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.app().inst.config["main_host"], doc, self._("Open documentation page")), "inline": True})
                 fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
-                self.call("admin.form", fields=fields)            
+                try:
+                    self.call("admin.form", fields=fields)
+                except UnicodeDecodeError:
+                    self.call("admin.response", self._("It's impossible to edit this template because it is not a valid utf-8 file"), {})
             if cmd == "add":
                 if req.ok():
                     filename = req.param("filename")
