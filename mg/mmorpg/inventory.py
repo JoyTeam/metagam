@@ -1298,12 +1298,11 @@ class InventoryAdmin(ConstructorModule):
                     target_inv._give(item_type_obj.uuid, quantity, "admin.transfer", admin=req.user(), mod=item_type_obj.mods, performed=now, reftype=inv.owtype, ref=inv.uuid)
                     inv.store()
                     target_inv.store()
+                    self.call("security.suspicion", admin=req.user(), action="items.transfer.from", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
                     if owtype == "char":
-                        self.call("security.suspicion", admin=req.user(), action="items.transfer.from", member=char.uuid, amount=quantity, dna=dna, comment=admin_comment)
                         self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Transferred {quantity} x {name} to {target_name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment, target_name=target_char.name))
                         source_name = char.name
                     elif owtype == "shop":
-                        self.call("security.suspicion", admin=req.user(), action="items.transfer.from", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
                         source_name = owner
                     else:
                         source_name = None
