@@ -22,7 +22,7 @@ class ItemTypeParamsAdmin(ParamsAdmin):
         self.rhook("item-types.params-obj", self.params_obj)
         self.rhook("item-types.script-globs", self.script_globs)
         self.rhook("headmenu-admin-item-types.paramview", self.headmenu_paramview)
-        self.rhook("ext-admin-item-types.paramview", self.admin_paramview, priv="inventory.params-view")
+        self.rhook("ext-admin-item-types.paramview", self.admin_paramview, priv="item-types.params-view")
 
     def script_globs(self):
         req = self.req()
