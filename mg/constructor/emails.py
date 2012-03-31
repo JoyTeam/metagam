@@ -199,6 +199,13 @@ class EmailSender(ConstructorModule):
         message.set("cond", self.call("script.admin-expression", "cond", errors, globs={"char": char}))
 
     def format(self, val, params):
+        try:
+            req = self.req()
+        except AttributeError:
+            pass
+        else:
+            req.templates_parsed = 0
+            req.templates_len = 0
         if "description" in params:
             description = params["description"]
         try:
