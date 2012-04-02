@@ -1599,11 +1599,11 @@ class Quests(ConstructorModule):
                                             channel = "loc"
                                         if public:
                                             if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(channel), msg=htmlescape(html)), cls="quest-action", indent=indent+2)
+                                                self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
                                             self.call("chat.message", html=html, cls="quest", hide_time=True, hl=True, channel=channel)
                                         else:
                                             if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(channel), msg=htmlescape(html)), cls="quest-action", indent=indent+2)
+                                                self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
                                             self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
                                     elif cmd_code == "teleport":
                                         loc = self.call("location.info", cmd[1])
