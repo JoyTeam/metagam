@@ -1300,6 +1300,7 @@ class InventoryAdmin(ConstructorModule):
                     target_inv.store()
                     self.call("security.suspicion", admin=req.user(), action="items.transfer.from", mtype=owtype, member=owner, amount=quantity, dna=dna, comment=admin_comment)
                     if owtype == "char":
+                        char = self.character(owner)
                         self.call("dossier.write", user=char.uuid, admin=req.user(), content=self._("Transferred {quantity} x {name} to {target_name}: {comment}").format(quantity=quantity, name=item_type.name, comment=admin_comment, target_name=target_char.name))
                         source_name = char.name
                     elif owtype == "shop":
