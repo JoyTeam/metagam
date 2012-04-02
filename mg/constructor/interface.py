@@ -93,6 +93,7 @@ class Interface(ConstructorModule):
         self.rhook("game.response", self.game_response)
         self.rhook("game.response_external", self.game_response_external)
         self.rhook("game.response_internal", self.game_response_internal)
+        self.rhook("game.add_common_vars", self.add_common_vars)
         self.rhook("game.parse_internal", self.game_parse_internal)
         self.rhook("game.info", self.game_info)
         self.rhook("game.error", self.game_error)

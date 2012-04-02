@@ -498,6 +498,7 @@ class Locations(ConstructorModule):
             "update_script": None if req.param("noupdate") else self.update_js(character),
             "debug_ext": self.conf("debug.ext"),
         }
+        self.call("game.add_common_vars", vars)
         transitions = []
         for loc_id, info in location.transitions.iteritems():
             transitions.append({
