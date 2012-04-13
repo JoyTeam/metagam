@@ -1,16 +1,22 @@
+from mg.mmorpg.combats.core import CombatObject
 from concurrence import Tasklet
 
-class CombatDaemon(object):
-    def __init__(self, combat):
-        self.combat = combat
+class CombatDaemon(CombatObject):
+    def __init__(self, combat, fqn="mg.mmorpg.combats.daemon.CombatDaemon"):
+        CombatObject.__init__(self, combat, fqn)
 
     def run(self):
-        Tasklet.new(self._run)()
+        "Runs daemon loop in separate tasklet"
+        self.tasklet = Tasklet.new(self._run)
+        self.tasklet()
 
     def _run(self):
-        self.tasklet = tasklet
-        combat.run()
-        while combat.running:
-            combat.tick()
+        try:
+            self.loop()
+        finally:
+            del self.tasklet
+
+    def loop(self):
+        while not self.combat.stage_flag("done"):
+            self.combat.process()
             Tasklet.yield_()
-        del self.tasklet

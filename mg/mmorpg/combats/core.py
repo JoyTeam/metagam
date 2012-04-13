@@ -11,6 +11,12 @@ class CombatError(Exception):
     def __str__(self):
         return utf2str(self.val)
 
+class CombatAlreadyRunning(CombatError):
+    pass
+
+class CombatInvalidStage(CombatError):
+    pass
+
 class Combat(ConstructorModule):
     "Combat is the combat itself. It is created in the combat daemon process."
     def __init__(self, app, fqn="mg.mmorpg.combats.core.Combat"):
@@ -19,41 +25,130 @@ class Combat(ConstructorModule):
         self.stage = "init"
 
     def join(self, member):
+        "Join member to the combat"
         self.members.append(member)
 
-    def run(self):
-        if self.running != None:
-            raise CombatError(self._("Combat was started twice"))
-        self.running = True
+    def run(self, turn_order):
+        """
+        Run combat (switch to 'combat' stage).
+        turn_order - CombatTurnOrder object
+        """
+        if self.stage != "init":
+            raise CombatAlreadyRunning(self._("Combat was started twice"))
+        self._turn_order = turn_order
+        self.set_stage("combat")
 
+    def set_stage(self, stage):
+        "Switch combat stage"
+        if self.stages.get(stage) is None:
+            raise CombatInvalidStage(self._("Combat stage '%s' is not defined") % stage)
+        self.stage = stage
+        if self.stage_flag("actions"):
+            self._turn_order.start()
+
+    @property
     def stages(self):
-        val = self.config("combats.stages")
-        if val is not None:
-            return val
-        return {
-            "init": {
-            },
-            "combat": {
-                "actions": True,
-            },
-            "finish": {
-            },
-        }
+        "Dictionary of stages and their flags"
+        try:
+            return self._stages
+        except AttributeError:
+            pass
+        val = self.conf("combats.stages")
+        if val is None:
+            val = {
+                "init": {
+                },
+                "combat": {
+                    "actions": True,
+                },
+                "finish": {
+                },
+                "done": {
+                   "done": True
+                }
+            }
+        self._stages = val
+        return val
 
-    def tick(self):
-        if not self.running:
-            return
+    def stage_flag(self, flag):
+        "Returns flag value of the current stage. If no flag with such code defined return None"
+        return self.stages[self.stage].get(flag)
 
-class CombatCommand(object):
-    pass
+    def process(self):
+        "Process combat logic"
+        if self.stage_flag("actions"):
+            self.process_actions()
+        self._turn_order.idle()
+        for member in self.members:
+            member.idle()
 
-class CombatMember(object):
-    def __init__(self, combat):
+    def process_actions(self):
+        "Process actions logic"
+
+class CombatObject(ConstructorModule):
+    "Any object related to the combat. Link to combat is weakref"
+    def __init__(self, combat, fqn):
+        ConstructorModule.__init__(self, combat.app(), fqn)
         self._combat = weakref.ref(combat)
 
     @property
     def combat(self):
         return self._combat()
 
-    def command(self):
-        self.commands.??
+class CombatCommand(object):
+    pass
+
+class CombatMember(CombatObject):
+    def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
+        CombatObject.__init__(self, combat, fqn)
+        self.commands = []
+        self.may_turn = False
+        self.active = True
+
+    def set_team(self, team):
+        "Change team of the member"
+        self.team = team
+
+    def set_controller(self, controller):
+        "Attach CombatMemberController to the member"
+        self.controller = controller
+
+    def command(self, cmd):
+        "Enqueue command for the member"
+        self.commands.append(cmd)
+
+    def turn_give(self):
+        "Grant right of making turn to the member"
+        self.may_turn = True
+        self.controller.turn_got()
+
+    def turn_take(self):
+        "Revoke right of making turn from the member"
+        self.may_turn = False
+        self.controller.turn_lost()
+
+    def turn_timeout(self):
+        "Revoke right of making turn from the member due to timeout"
+        self.may_turn = False
+        self.controller.turn_timeout()
+
+    def idle(self):
+        "Called when member can do any background processing"
+        self.controller.idle()
+
+class CombatMemberController(CombatObject):
+    def __init__(self, member, fqn):
+        CombatObject.__init__(self, member.combat, fqn)
+        self.member = member
+
+    def turn_got(self):
+        "This command notifies controller that member got right to make a turn"
+
+    def turn_lost(self):
+        "This command notifies controller that member lost right to make a turn"
+
+    def turn_timeout(self):
+        "This command notifies controller that member hasn't made a turn"
+
+    def idle(self):
+        "Called when controller can do any background processing"
