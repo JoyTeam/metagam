@@ -37,6 +37,18 @@ class ManualDebugController(CombatMemberController):
             self.timeout_fired = False
             raise TurnTimeout()
 
+class TrivialAIController(CombatMemberController):
+    def __init__(self, member, fqn="TrivialAIController"):
+        CombatMemberController.__init__(self, member, fqn)
+
+    def idle(self):
+        self.app().mc.get("test")
+
+class DebugCombatLog(CombatLog):
+    def __init__(self, combat, fqn="DebugCombatLog"):
+        CombatLog.__init__(self, combat, fqn)
+        self.dump = []
+
 class TestCombats(unittest.TestCase):
     def setUp(self):
         self.inst = Instance()
@@ -66,13 +78,13 @@ class TestCombats(unittest.TestCase):
         # joining member 1
         member1 = CombatMember(combat)
         ai1 = ManualDebugController(member1)
-        member1.set_controller(ai1)
+        member1.add_controller(ai1)
         member1.set_team(1)
         combat.join(member1)
         # joining member 2
         member2 = CombatMember(combat)
         ai2 = ManualDebugController(member2)
-        member2.set_controller(ai2)
+        member2.add_controller(ai2)
         member2.set_team(2)
         combat.join(member2)
         # checking list of members and ensuring
@@ -100,6 +112,33 @@ class TestCombats(unittest.TestCase):
         # member1 must have right of turn
         self.assertTrue(member1.may_turn)
         self.assertFalse(member2.may_turn)
+
+    def test_02_log(self):
+        combat = SimulationCombat(self.app)
+        daemon = CombatDaemon(combat)
+        # joining member 1
+        member1 = CombatMember(combat)
+        ai1 = TrivialAIController(member1)
+        member1.add_controller(ai1)
+        member1.set_team(1)
+        combat.join(member1)
+        # joining member 2
+        member2 = CombatMember(combat)
+        ai2 = TrivialAIController(member2)
+        member2.add_controller(ai2)
+        member2.set_team(2)
+        combat.join(member2)
+        # attaching logger
+        log = DebugCombatLog(combat)
+        combat.set_log(log)
+        # running combat
+        turn_order = CombatRoundRobinTurnOrder(combat)
+        combat.run(turn_order)
+        # running combat
+        with Timeout.push(3):
+            daemon.loop()
+        # checking combat log
+        self.assertEqual(log.dump, [[1, 2], [2, 1], [1, 2], [2, 1]])
 
 def main():
     try:

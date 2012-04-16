@@ -23,6 +23,7 @@ class Combat(ConstructorModule):
         ConstructorModule.__init__(self, app, fqn)
         self.members = []
         self.stage = "init"
+        self.log = None
 
     def join(self, member):
         "Join member to the combat"
@@ -85,6 +86,9 @@ class Combat(ConstructorModule):
     def process_actions(self):
         "Process actions logic"
 
+    def set_log(self, log):
+        self.log = log
+
 class CombatObject(ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
     def __init__(self, combat, fqn):
@@ -99,19 +103,21 @@ class CombatCommand(object):
     pass
 
 class CombatMember(CombatObject):
+    "Members take part in combats. Every fighting entity is a member"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
         CombatObject.__init__(self, combat, fqn)
         self.commands = []
         self.may_turn = False
         self.active = True
+        self.controllers = []
 
     def set_team(self, team):
         "Change team of the member"
         self.team = team
 
-    def set_controller(self, controller):
+    def add_controller(self, controller):
         "Attach CombatMemberController to the member"
-        self.controller = controller
+        self.controllers.append(controller)
 
     def command(self, cmd):
         "Enqueue command for the member"
@@ -120,23 +126,31 @@ class CombatMember(CombatObject):
     def turn_give(self):
         "Grant right of making turn to the member"
         self.may_turn = True
-        self.controller.turn_got()
+        for controller in self.controllers:
+            controller.turn_got()
 
     def turn_take(self):
         "Revoke right of making turn from the member"
         self.may_turn = False
-        self.controller.turn_lost()
+        for controller in self.controllers:
+           controller.turn_lost()
 
     def turn_timeout(self):
         "Revoke right of making turn from the member due to timeout"
         self.may_turn = False
-        self.controller.turn_timeout()
+        for controller in self.controllers:
+            controller.turn_timeout()
 
     def idle(self):
         "Called when member can do any background processing"
-        self.controller.idle()
+        for controller in self.controllers:
+            controller.idle()
 
 class CombatMemberController(CombatObject):
+    """
+    Controller is an interface to CombatMember. Controller receives notifications about changes in the combat
+    state that this member may know. Any number of controllers can be attached to a single member.
+    """
     def __init__(self, member, fqn):
         CombatObject.__init__(self, member.combat, fqn)
         self.member = member
@@ -152,3 +166,6 @@ class CombatMemberController(CombatObject):
 
     def idle(self):
         "Called when controller can do any background processing"
+
+class CombatLog(CombatObject):
+    "CombatLog logs combat actions"
