@@ -12,6 +12,7 @@ class CombatScripts(ConstructorModule):
     def register(self):
         self.rhook("combats.parse-script", self.parse_script)
         self.rhook("combats.execute-script", self.execute_script)
+        self.rhook("combats.unparse-script", self.unparse_script)
 
     @property
     def general_parser_spec(self):
@@ -129,3 +130,6 @@ class CombatScripts(ConstructorModule):
             execute_block(code, 0)
         finally:
             tasklet.combat_indent = old_indent
+
+    def unparse_script(self, code):
+        pass

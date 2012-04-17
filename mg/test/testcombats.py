@@ -13,6 +13,7 @@ from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.simulation import *
 from mg.mmorpg.combats.daemon import *
+import re
 
 modlogger = logging.getLogger("")
 modlogger.setLevel(logging.ERROR)
@@ -122,7 +123,8 @@ class TestCombats(unittest.TestCase):
     def test_02_scripts(self):
         combat = SimulationCombat(self.app)
         # compiling script
-        code = self.app.hooks.call("combats.parse-script", 'damage target.hp 5\nset source.p_damage = source.p_damage + last_damage')
+        script_text = 'damage target.hp 5 set source.p_damage = source.p_damage + last_damage'
+        code = self.app.hooks.call("combats.parse-script", script_text)
         self.assertEqual(code, [
             ['damage', ['glob', 'target'], 'hp', 5],
             ['set', ['glob', 'source'], 'p_damage', ['+', ['.', ['glob', 'source'], 'p_damage'], ['glob', 'last_damage']]],
@@ -151,6 +153,10 @@ class TestCombats(unittest.TestCase):
         self.assertEqual(member1.param("damage"), 7)
         self.assertEqual(member2.param("hp"), 0)
         self.assertEqual(globs["last_damage"], 2)
+        # unparsing
+        script = self.app.hooks.call("combat.unparse-script", code)
+        script = re.sub(r'\s+', ' ', script).strip()
+        self.assertEqual(script, script_text)
 
     def test_03_log(self):
         return
