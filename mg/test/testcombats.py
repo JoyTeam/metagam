@@ -44,6 +44,12 @@ class TrivialAIController(CombatMemberController):
     def idle(self):
         self.app().mc.get("test")
 
+    def turn_got(self):
+        act = CombatAction(self.combat)
+        for m in self.member.enemies:
+            act.add_target(m)
+        self.member.action(act)
+
 class DebugCombatLog(CombatLog):
     def __init__(self, combat, fqn="DebugCombatLog"):
         CombatLog.__init__(self, combat, fqn)

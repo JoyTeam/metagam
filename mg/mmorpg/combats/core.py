@@ -24,9 +24,12 @@ class Combat(ConstructorModule):
         self.members = []
         self.stage = "init"
         self.log = None
+        self.member_id = 0
 
     def join(self, member):
         "Join member to the combat"
+        self.member_id += 1
+        member.id = self.member_id
         self.members.append(member)
 
     def run(self, turn_order):
@@ -87,7 +90,12 @@ class Combat(ConstructorModule):
         "Process actions logic"
 
     def set_log(self, log):
+        "Attach logging system to the combat"
         self.log = log
+
+    def stop(self):
+        "Terminate combat"
+        self.set_stage("done")
 
 class CombatObject(ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
@@ -99,14 +107,21 @@ class CombatObject(ConstructorModule):
     def combat(self):
         return self._combat()
 
-class CombatCommand(object):
-    pass
+class CombatAction(CombatObject):
+    "CombatMembers perform CombatActions according to the schedule"
+    def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatAction"):
+        CombatObject.__init__(self, combat, fqn)
+        self.targets = []
+
+    def add_target(self, member):
+        "This method adds another target to the action"
+        self.targets.append(member)
 
 class CombatMember(CombatObject):
     "Members take part in combats. Every fighting entity is a member"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
         CombatObject.__init__(self, combat, fqn)
-        self.commands = []
+        self.pending_actions = []
         self.may_turn = False
         self.active = True
         self.controllers = []
@@ -118,10 +133,6 @@ class CombatMember(CombatObject):
     def add_controller(self, controller):
         "Attach CombatMemberController to the member"
         self.controllers.append(controller)
-
-    def command(self, cmd):
-        "Enqueue command for the member"
-        self.commands.append(cmd)
 
     def turn_give(self):
         "Grant right of making turn to the member"
@@ -146,6 +157,21 @@ class CombatMember(CombatObject):
         for controller in self.controllers:
             controller.idle()
 
+    @property
+    def enemies(self):
+        "List of combat members in other teams"
+        return [m for m in self.combat.members if m.team != self.team]
+
+    @property
+    def allies(self):
+        "List of combat members in the same team except myself"
+        return [m for m in self.combat.members if m.team == self.team and m != self]
+
+    def enqueue_action(self, act):
+        "Enqueue action for the member"
+        act.source = self
+        self.pending_actions.append(act)
+
 class CombatMemberController(CombatObject):
     """
     Controller is an interface to CombatMember. Controller receives notifications about changes in the combat
@@ -156,10 +182,10 @@ class CombatMemberController(CombatObject):
         self.member = member
 
     def turn_got(self):
-        "This command notifies controller that member got right to make a turn"
+        "This command notifies controller that member has got a right to make a turn"
 
     def turn_lost(self):
-        "This command notifies controller that member lost right to make a turn"
+        "This command notifies controller that member has lost a right to make a turn"
 
     def turn_timeout(self):
         "This command notifies controller that member hasn't made a turn"
@@ -169,3 +195,8 @@ class CombatMemberController(CombatObject):
 
 class CombatLog(CombatObject):
     "CombatLog logs combat actions"
+
+class CombatSystemInfo(object):
+    "CombatInfo is an object describing rules of the combat system"
+    def params(self):
+        "Returns list of member parameters"

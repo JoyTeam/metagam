@@ -57,6 +57,14 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
 
     def idle(self):
         self.timeout_check()
+        for member in self.combat.members:
+            if member.may_turn and member.pending_actions:
+                act = member.pending_actions.pop(0)
+                act.execute()
+                next_member = self.next_turn()
+                if next_member:
+                    self.turn_give(next_member)
+                break
 
     def turn_timeout(self, member):
         next_member = self.next_turn()
