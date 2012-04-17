@@ -61,7 +61,7 @@ class TestCombats(unittest.TestCase):
         self.inst.dbpool = CassandraPool((("director-db", 9160),))
         self.inst.mcpool = MemcachedPool(("director-mc", 11211))
         self.app = Application(self.inst, "mgtest")
-        self.app.modules.load(["mg.core.l10n.L10n"])
+        self.app.modules.load(["mg.core.l10n.L10n", "mg.constructor.script.ScriptEngine", "mg.mmorpg.combats.scripts.CombatScripts"])
 
     def test_00_stages(self):
         # creating combat
@@ -119,7 +119,41 @@ class TestCombats(unittest.TestCase):
         self.assertTrue(member1.may_turn)
         self.assertFalse(member2.may_turn)
 
-    def test_02_log(self):
+    def test_02_scripts(self):
+        combat = SimulationCombat(self.app)
+        # compiling script
+        code = self.app.hooks.call("combats.parse-script", 'damage target.hp 5\nset source.p_damage = source.p_damage + last_damage')
+        self.assertEqual(code, [
+            ['damage', ['glob', 'target'], 'hp', 5],
+            ['set', ['glob', 'source'], 'p_damage', ['+', ['.', ['glob', 'source'], 'p_damage'], ['glob', 'last_damage']]],
+        ])
+        # joining members
+        member1 = CombatMember(combat)
+        member1.set_team(1)
+        combat.join(member1)
+        member2 = CombatMember(combat)
+        member2.set_team(2)
+        combat.join(member2)
+        globs = {"source": member1, "target": member2}
+        # executing script
+        self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
+        self.assertEqual(member1.param("damage"), 0)
+        self.assertEqual(member2.param("hp"), 0)
+        self.assertEqual(globs["last_damage"], 0)
+        # executing script again
+        member2.set_param("hp", 7)
+        self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
+        self.assertEqual(member1.param("damage"), 5)
+        self.assertEqual(member2.param("hp"), 2)
+        self.assertEqual(globs["last_damage"], 5)
+        # executing script one more time
+        self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
+        self.assertEqual(member1.param("damage"), 7)
+        self.assertEqual(member2.param("hp"), 0)
+        self.assertEqual(globs["last_damage"], 2)
+
+    def test_03_log(self):
+        return
         combat = SimulationCombat(self.app)
         daemon = CombatDaemon(combat)
         # joining member 1

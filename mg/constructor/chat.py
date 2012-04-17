@@ -100,6 +100,7 @@ class Chat(ConstructorModule):
         self.rhook("library-grp-index.pages", self.library_index_pages)
         self.rhook("library-page-chat.content", self.library_page_chat)
         self.rhook("character.name-invalidated", self.character_name_invalidated)
+        self.rhook("character.debug-access", self.debug_access)
 
     def library_index_pages(self, pages):
         pages.append({"page": "chat", "order": 20})

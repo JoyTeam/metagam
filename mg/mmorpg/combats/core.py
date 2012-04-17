@@ -1,5 +1,8 @@
 from mg.constructor import *
 import weakref
+import re
+
+re_param_attr = re.compile(r'^p_(.+)')
 
 class CombatError(Exception):
     def __init__(self, val):
@@ -125,6 +128,10 @@ class CombatMember(CombatObject):
         self.may_turn = False
         self.active = True
         self.controllers = []
+        self._params = {}
+
+    def is_a_combat_member(self):
+        return True
 
     def set_team(self, team):
         "Change team of the member"
@@ -171,6 +178,30 @@ class CombatMember(CombatObject):
         "Enqueue action for the member"
         act.source = self
         self.pending_actions.append(act)
+
+    def param(self, key, handle_exceptions=True):
+        return self._params.get(key)
+
+    def set_param(self, key, val):
+        self._params[key] = val
+
+    def script_attr(self, attr, handle_exceptions=True):
+        if attr == "id":
+            return self.id
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.param(param, handle_exceptions)
+        raise AttributeError(attr)
+
+    def script_set_attr(self, attr, val, env):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.set_param(param, val)
+        raise AttributeError(attr)
 
 class CombatMemberController(CombatObject):
     """

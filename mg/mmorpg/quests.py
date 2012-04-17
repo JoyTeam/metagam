@@ -1160,7 +1160,7 @@ class Quests(ConstructorModule):
             try:
                 parser.eoi()
             except Parsing.SyntaxError as e:
-                raise ScriptParserError(self._("Expression unexpectedly ended"), e)
+                raise ScriptParserError(self._("Script unexpectedly ended"), e)
         except ScriptParserResult as e:
             return e.val
 
@@ -1687,7 +1687,6 @@ class Quests(ConstructorModule):
                         req.quest_redirects = {char.uuid: "/quest/dialog"}
                 else:
                     char.main_open("/quest/dialog")
-                
                 
     def get_char(self, uuid):
         return CharQuests(self.app(), uuid)
