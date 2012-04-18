@@ -154,7 +154,7 @@ class TestCombats(unittest.TestCase):
         self.assertEqual(member2.param("hp"), 0)
         self.assertEqual(globs["last_damage"], 2)
         # unparsing
-        script = self.app.hooks.call("combat.unparse-script", code)
+        script = self.app.hooks.call("combats.unparse-script", code)
         script = re.sub(r'\s+', ' ', script).strip()
         self.assertEqual(script, script_text)
 

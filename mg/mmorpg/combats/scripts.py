@@ -76,7 +76,8 @@ class CombatScripts(ConstructorModule):
                 env.globs = globs
                 env.description = self._("Statement '{statement}'").format(statement=self.call("combats.unparse-script", st).strip())
                 return env
-            if st[0] == "damage":
+            st_cmd = st[0]
+            if st_cmd == "damage":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of damage target member"))
                 attr = st[2]
                 damage = nn(self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of damage value")))
@@ -96,7 +97,7 @@ class CombatScripts(ConstructorModule):
                 else:
                     obj.set_param(attr, old_val)
                     globs["last_damage"] = 0
-            elif st[0] == "set":
+            elif st_cmd == "set":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
                 attr = st[2]
                 val = self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of value"))
@@ -131,5 +132,14 @@ class CombatScripts(ConstructorModule):
         finally:
             tasklet.combat_indent = old_indent
 
-    def unparse_script(self, code):
-        pass
+    def unparse_script(self, code, indent=0):
+        lines = []
+        for st in code:
+            st_cmd = st[0]
+            if st_cmd == "damage":
+                lines.append(u"%sdamage %s %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+            elif st_cmd == "set":
+                lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+            else:
+                lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
+        return u"".join(lines)
