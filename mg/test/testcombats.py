@@ -13,6 +13,8 @@ from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.simulation import *
 from mg.mmorpg.combats.daemon import *
+from mg.mmorpg.combats.scripts import ScriptedCombatAction
+from mg.mmorpg.combats.logs import *
 import re
 
 modlogger = logging.getLogger("")
@@ -38,6 +40,26 @@ class ManualDebugController(CombatMemberController):
             self.timeout_fired = False
             raise TurnTimeout()
 
+class DebugCombatAction(ScriptedCombatAction):
+    def __init__(self, combat, fqn="DebugCombatAction"):
+        ScriptedCombatAction.__init__(self, combat, fqn)
+
+    def script_code(self, tag):
+        if tag == "end-target":
+            return [
+                ['damage', ['glob', 'target'], 'hp', 5],
+            ]
+        elif tag == "end":
+            return [
+                ['log', [
+                    ['.', ['glob', 'source'], 'name'],
+                    ' damaged ',
+                    ['glob', 'targets'],
+                ]]
+            ]
+        else:
+            return []
+
 class TrivialAIController(CombatMemberController):
     def __init__(self, member, fqn="TrivialAIController"):
         CombatMemberController.__init__(self, member, fqn)
@@ -46,15 +68,18 @@ class TrivialAIController(CombatMemberController):
         self.app().mc.get("test")
 
     def turn_got(self):
-        act = CombatAction(self.combat)
+        act = ScriptedCombatAction(self.combat)
         for m in self.member.enemies:
             act.add_target(m)
-        self.member.action(act)
+        self.member.enqueue_action(act)
 
 class DebugCombatLog(CombatLog):
     def __init__(self, combat, fqn="DebugCombatLog"):
         CombatLog.__init__(self, combat, fqn)
-        self.dump = []
+        self._syslog = []
+
+    def syslog(self, entry):
+        self._syslog.append(entry)
 
 class TestCombats(unittest.TestCase):
     def setUp(self):
@@ -159,9 +184,11 @@ class TestCombats(unittest.TestCase):
         self.assertEqual(script, script_text)
 
     def test_03_log(self):
-        return
         combat = SimulationCombat(self.app)
         daemon = CombatDaemon(combat)
+        # attaching logger
+        log = DebugCombatLog(combat)
+        combat.set_log(log)
         # joining member 1
         member1 = CombatMember(combat)
         ai1 = TrivialAIController(member1)
@@ -174,17 +201,17 @@ class TestCombats(unittest.TestCase):
         member2.add_controller(ai2)
         member2.set_team(2)
         combat.join(member2)
-        # attaching logger
-        log = DebugCombatLog(combat)
-        combat.set_log(log)
         # running combat
         turn_order = CombatRoundRobinTurnOrder(combat)
         combat.run(turn_order)
-        # running combat
-        with Timeout.push(3):
-            daemon.loop()
         # checking combat log
-        self.assertEqual(log.dump, [[1, 2], [2, 1], [1, 2], [2, 1]])
+        self.assertEqual(len(log._syslog), 3)
+        self.assertEqual(log._syslog[0]["type"], "join")
+        self.assertEqual(log._syslog[0]["member"], 1)
+        self.assertEqual(log._syslog[1]["type"], "join")
+        self.assertEqual(log._syslog[1]["member"], 2)
+        self.assertEqual(log._syslog[2]["type"], "stage")
+        self.assertEqual(log._syslog[2]["stage"], "combat")
 
 def main():
     try:

@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.combats.combat_parser import *
+from mg.mmorpg.combats.core import CombatAction
 
 class CombatSystemError(Exception):
     def __init__(self, val):
@@ -97,6 +98,21 @@ class CombatScripts(ConstructorModule):
                 else:
                     obj.set_param(attr, old_val)
                     globs["last_damage"] = 0
+                # logging damage
+                log = combat.log
+                if log:
+                    logent = {
+                        "type": "damage",
+                        "source": source_id,
+                        "target": obj.id,
+                        "param": attr,
+                        "damage": damage,
+                        "oldval": old_val,
+                        "newval": new_val,
+                    }
+                    if "source" in globs:
+                        logent["source"] = globs["source"].id
+                    log.syslog(logent)
             elif st_cmd == "set":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
                 attr = st[2]
@@ -143,3 +159,26 @@ class CombatScripts(ConstructorModule):
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
+
+class ScriptedCombatAction(CombatAction):
+    "Behaviour of this CombatAction is defined via combat script"
+    def __init__(self, combat, fqn="mg.mmorpg.combats.scripts.ScriptedCombatAction"):
+        CombatAction.__init__(self, combat, fqn)
+
+    def begin(self):
+        globs = {"source": self.source}
+        self.for_every_target(self.execute_script, self.script_code("begin-target"), globs)
+        self.call("combats.execute-script", self.combat, self.script_code("begin"), globs=globs)
+
+    def end(self):
+        globs = {"source": self.source}
+        self.for_every_target(self.execute_script, self.script_code("end-target"), globs)
+        self.call("combats.execute-script", self.combat, self.script_code("end"), globs=globs)
+
+    def script_code(self, tag):
+        "Get combat script code (syntax tree)"
+        return self.conf("combats-%s.action-%s" % (self.combat.rules, tag), [])
+        
+    def execute_script(self, target, code, globs):
+        globs["target"] = target
+        self.call("combats.execute-script", self.combat, code, globs=globs)

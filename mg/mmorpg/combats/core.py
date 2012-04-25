@@ -22,18 +22,25 @@ class CombatInvalidStage(CombatError):
 
 class Combat(ConstructorModule):
     "Combat is the combat itself. It is created in the combat daemon process."
-    def __init__(self, app, fqn="mg.mmorpg.combats.core.Combat"):
+    def __init__(self, app, rules, fqn="mg.mmorpg.combats.core.Combat"):
         ConstructorModule.__init__(self, app, fqn)
         self.members = []
         self.stage = "init"
         self.log = None
         self.member_id = 0
+        self.rules = rules
 
     def join(self, member):
         "Join member to the combat"
         self.member_id += 1
         member.id = self.member_id
         self.members.append(member)
+        # logging join
+        if self.log:
+            self.log.syslog({
+                "type": "join",
+                "member": member.id,
+            })
 
     def run(self, turn_order):
         """
@@ -50,6 +57,13 @@ class Combat(ConstructorModule):
         if self.stages.get(stage) is None:
             raise CombatInvalidStage(self._("Combat stage '%s' is not defined") % stage)
         self.stage = stage
+        # logging stage
+        if self.log:
+            self.log.syslog({
+                "type": "stage",
+                "stage": stage,
+            })
+        # notifying turn order manager
         if self.stage_flag("actions"):
             self._turn_order.start()
 
@@ -60,7 +74,7 @@ class Combat(ConstructorModule):
             return self._stages
         except AttributeError:
             pass
-        val = self.conf("combats.stages")
+        val = self.conf("combats-%s.stages" % self.rules)
         if val is None:
             val = {
                 "init": {
@@ -115,10 +129,26 @@ class CombatAction(CombatObject):
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatAction"):
         CombatObject.__init__(self, combat, fqn)
         self.targets = []
+        self.source = None
+
+    def set_source(self, source):
+        "Set combat action source"
+        self.source = source
 
     def add_target(self, member):
         "This method adds another target to the action"
         self.targets.append(member)
+
+    def for_every_target(self, callback, *args, **kwargs):
+        "Call callback for every action target. Target is passed as a first argument"
+        for target in self.targets:
+            callback(target, *args, **kwargs)
+
+    def begin(self):
+        "Do any processing in the beginning of the action"
+
+    def end(self):
+        "Do any processing in the end of the action"
 
 class CombatMember(CombatObject):
     "Members take part in combats. Every fighting entity is a member"
@@ -223,9 +253,6 @@ class CombatMemberController(CombatObject):
 
     def idle(self):
         "Called when controller can do any background processing"
-
-class CombatLog(CombatObject):
-    "CombatLog logs combat actions"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

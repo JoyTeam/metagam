@@ -60,7 +60,8 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
         for member in self.combat.members:
             if member.may_turn and member.pending_actions:
                 act = member.pending_actions.pop(0)
-                act.execute()
+                act.begin()
+                act.end()
                 next_member = self.next_turn()
                 if next_member:
                     self.turn_give(next_member)
