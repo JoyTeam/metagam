@@ -63,7 +63,7 @@ class AdminInterface(Module):
     def makemenu(self):
         leftmenu = self.leftmenunode("root.index", "Root")
         wizards = []
-        self.call("wizards.call", "menu", wizards)
+        self.call("wizards.call", "menu", wizards, check_permissions=True)
         if wizards:
             if not leftmenu:
                 leftmenu = {"text": "Root", "children": []}

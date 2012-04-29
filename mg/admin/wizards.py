@@ -87,7 +87,7 @@ class Wizards(Module):
         self.rhook("wizards.list", self.wizards_list)
         self.rhook("wizards.get", self.wizards_get)
         self.rhook("wizards.call", self.wizards_call)
-        self.rhook("ext-admin-wizard.call", self.wizard_call, priv="project.admin")
+        self.rhook("ext-admin-wizard.call", self.wizard_call, priv="logged")
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("wizards.find", self.wizards_find)
 
@@ -149,7 +149,15 @@ class Wizards(Module):
         return wizs
 
     def wizards_call(self, method, *args, **kwargs):
+        check_permissions = False
+        if "check_permissions" in kwargs:
+            if kwargs["check_permissions"]:
+                req = self.req()
+                check_permissions = True
+            del kwargs["check_permissions"]
         for wiz in self.wizards_list():
+            if check_permissions and not req.has_access(wiz.config.get("priv", "project.admin")):
+                continue
             f = getattr(wiz, method, None)
             if callable(f):
                 f(*args, **kwargs)
@@ -181,4 +189,5 @@ class Wizards(Module):
         wiz = self.call("wizards.get", uuid)
         if wiz is None:
             self.call("web.not_found")
+        self.call("session.require_permission", wiz.config.get("priv", "project.admin"))
         return wiz.request(cmd)
