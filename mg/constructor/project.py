@@ -90,6 +90,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.globfunc.GlobalFunctions"])
             if self.conf("module.emailsender"):
                 lst.extend(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
+            if self.conf("module.combats"):
+                lst.extend(["mg.mmorpg.combats.interfaces.Combats"])
         return lst
 
     def modules_list(self, modules):
@@ -147,6 +149,11 @@ class ConstructorProject(Module):
             "id": "emailsender",
             "name": self._("Email sender"),
             "description": self._("Administrator interface to have an ability of sending emails to all registered players"),
+        })
+        modules.append({
+            "id": "combats",
+            "name": self._("Combats engine"),
+            "description": self._("Creating highly customizable combats"),
         })
 
     def project_title(self):
