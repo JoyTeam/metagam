@@ -1,4 +1,7 @@
 from mg.constructor import *
+import re
+
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 
 class CombatRulesDialog(ConstructorModule):
     def register(self):
@@ -6,6 +9,7 @@ class CombatRulesDialog(ConstructorModule):
 
     def show(self):
         req = self.req()
+        rules = self.conf("combats.rules", {})
         if req.ok() and req.param("form"):
             errors = {}
             # code
@@ -14,19 +18,39 @@ class CombatRulesDialog(ConstructorModule):
                 errors["code"] = self._("This field is mandatory")
             elif not re_valid_identifier.match(code):
                 errors["code"] = self._("Combat rules code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+            elif code in rules:
+                errors["code"] = self._("Combat rules with the same code already exist")
             # name
             name = req.param("name")
             if not name:
                 errors["name"] = self._("This field is mandatory")
+            # order
+            order = floatz(req.param("order"))
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # storing data
-            self.call("web.response_json", {"success": False})
+            rules[code] = {
+                "name": name,
+                "order": order,
+            }
+            config = self.app().config_updater()
+            config.set("combats.rules", rules)
+            config.store()
+            self.call("admin.redirect", "combats/rules")
+        order = None
+        for code, info in rules.iteritems():
+            if order is None or info["order"] > order:
+                order = info["order"]
+        if order is None:
+            order = 0.0
+        else:
+            order += 10.0
         fields = [
             {"name": "form", "value": 1, "type": "hidden"},
             {"name": "v_tp", "value": self.rules_type, "type": "hidden"},
             {"name": "code", "label": self._("Combat rules code")},
+            {"name": "order", "label": self._("Sorting order"), "value": order, "inline": True},
             {"name": "name", "label": self._("Combat rules name")},
         ]
         self.call("admin.form", fields=fields)

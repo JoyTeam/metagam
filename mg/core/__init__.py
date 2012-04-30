@@ -223,6 +223,7 @@ class Config(object):
     def clear(self):
         self._config = {}
         self._modified = set()
+        self._deleted = set()
         #logging.getLogger("mg.core.Modules").debug("CLEARING CONFIG FOR APP %s", self.app().tag)
 
     def _load_groups(self, groups):
@@ -316,9 +317,29 @@ class Config(object):
             except KeyError:
                 pass
 
+    def delete_group(self, group):
+        """
+        Delete config group completely
+        group - group identifier
+        """
+        with self.app().config_lock:
+            self._deleted.add(group)
+            if group in self._modified:
+                del self._modified[group]
+            if group in self._config:
+                del self._config[group]
+            self._config[group] = {}
+
     def store(self):
         if len(self._modified):
             with self.app().config_lock:
+                for g in self._deleted:
+                    try:
+                        obj = self.app().obj(ConfigGroup, g)
+                    except ObjectNotFoundException:
+                        pass
+                    else:
+                        obj.remove()
                 lst = self.app().objlist(ConfigGroupList, [])
                 lst.load()
                 for g in self._modified:
@@ -327,6 +348,7 @@ class Config(object):
                     lst.append(obj)
                 lst.store()
                 self._modified.clear()
+                self._deleted.clear()
 
 class Module(object):
     """
