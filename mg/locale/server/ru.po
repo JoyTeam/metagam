@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-04-30 11:11+0300\n"
+"PO-Revision-Date: 2012-04-30 12:13+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -296,17 +296,30 @@ msgstr "Активация аккаунта"
 msgid "Action"
 msgstr "Действие"
 
+msgid "Action code"
+msgstr "Код действия"
+
 msgid "Action code must be a string"
 msgstr "Код действия должен быть строкой"
 
 msgid "Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Код действия должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
 
+msgid "Action name"
+msgstr "Название действия"
+
+msgid "Action with the same code already exists"
+msgstr "Действие с таким кодом уже существует"
+
 msgid "Actions"
 msgstr "Действия"
 
 msgid "Actions for items"
 msgstr "Действия для предметов"
+
+#, python-format
+msgid "Actions of '%s'"
+msgstr "%s: действия"
 
 msgid "Activate"
 msgstr "Активировать"
@@ -482,6 +495,9 @@ msgstr "Вы уверены, что хотите удалить эту кате�
 
 msgid "Are you sure want to delete this color?"
 msgstr "Вы уверены, что хотите удалить этот цвет?"
+
+msgid "Are you sure want to delete this combat action?"
+msgstr "Вы уверены, что хотите удалить это боевое действие?"
 
 msgid "Are you sure want to delete this constraint?"
 msgstr "Вы уверены, что хотите удалить это ограничение?"
@@ -4277,6 +4293,9 @@ msgstr "Новый персонаж: {name}"
 msgid "New color"
 msgstr "Новый цвет"
 
+msgid "New combat action"
+msgstr "Новое боевое действие"
+
 msgid "New combats rules"
 msgstr "Новые правила боёв"
 
@@ -4989,7 +5008,7 @@ msgstr "Профиль"
 
 #, python-format
 msgid "Profile of '%s'"
-msgstr "Профиль: %s"
+msgstr "%s: профиль"
 
 msgid "Progress bar"
 msgstr "Прогресс-бар"
@@ -7873,6 +7892,9 @@ msgstr "error в квесте"
 msgid "action///Quest message"
 msgstr "message в квесте"
 
+msgid "actions"
+msgstr "действия"
+
 msgid "adding modifier '{modifier}' for {sec} sec"
 msgstr "установка модификатора \"{modifier}\" на {sec} сек"
 
@@ -8676,6 +8698,9 @@ msgstr "Поиск"
 
 msgid "script"
 msgstr "скрипт"
+
+msgid "script handlers"
+msgstr "скриптовые обработчики"
 
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"

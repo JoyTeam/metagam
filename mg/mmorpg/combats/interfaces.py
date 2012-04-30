@@ -2,8 +2,10 @@ from mg.constructor import *
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile)$', re.IGNORECASE)
+re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script)$', re.IGNORECASE)
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
+re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
+re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 
 class Combats(ConstructorModule):
     def child_modules(self):
@@ -52,7 +54,23 @@ class CombatsAdmin(ConstructorModule):
                 info = rules.get(code)
                 if info:
                     if action == "profile":
-                        return [self._("Profile of '%s'") % htmlescape(info["name"]), "combats/rules"]
+                        return [htmlescape(info["name"]), "combats/rules"]
+                    elif action == "actions":
+                        return [htmlescape(info["name"]), "combats/rules"]
+                    else:
+                        m = re_action_cmd.match(action)
+                        if m:
+                            cmd = m.group(1)
+                            if cmd == "new":
+                                return [self._("New action"), "combats/rules/edit/%s/actions" % code]
+                            else:
+                                m = re_action_edit.match(cmd)
+                                if m:
+                                    action_code, cmd = m.group(1, 2)
+                                    for act in self.conf("combats-%s.actions" % code, []):
+                                        if act["code"] == action_code:
+                                            if cmd == "profile":
+                                                return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
         return self._("Combats rules")
 
     def admin_rules(self):
@@ -91,6 +109,8 @@ class CombatsAdmin(ConstructorModule):
                 info["order"],
                 u'<br />'.join([
                     u'<hook:admin.link href="combats/rules/edit/%s/profile" title="%s" />' % (code, self._("profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("actions")),
                 ]),
                 u'<hook:admin.link href="combats/rules/del/%s" title="%s" confirm="%s" />' % (code, self._("delete"), self._("Are you sure want to delete these rules?")),
             ])
@@ -153,30 +173,162 @@ class CombatsAdmin(ConstructorModule):
         self.call("admin.form", fields=fields, buttons=buttons)
 
     def rules_edit(self, rules, code, action):
+        if action == "profile":
+            return self.rules_edit_profile(rules, code)
+        elif action == "actions":
+            return self.rules_edit_actions(code)
+        else:
+            m = re_action_cmd.match(action)
+            if m:
+                cmd = m.group(1)
+                return self.rules_action(code, cmd)
+
+    def rules_edit_profile(self, rules, code):
         req = self.req()
         rules = rules.copy()
         info = rules[code].copy()
-        if action == "profile":
-            # processing request
-            if req.ok():
-                errors = {}
-                # name
-                name = req.param("name")
-                if not name:
-                    errors["name"] = self._("This field is mandatory")
-                # order
-                order = floatz(req.param("order"))
-                # saving changes
-                info["order"] = order
-                info["name"] = name
-                rules[code] = info
-                config = self.app().config_updater()
-                config.set("combats.rules", rules)
-                config.store()
-                self.call("admin.redirect", "combats/rules")
-            # rendering form
-            fields = [
-                {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
-                {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
+        # processing request
+        if req.ok():
+            errors = {}
+            # name
+            name = req.param("name")
+            if not name:
+                errors["name"] = self._("This field is mandatory")
+            # order
+            order = floatz(req.param("order"))
+            # processing errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # saving changes
+            info["order"] = order
+            info["name"] = name
+            rules[code] = info
+            config = self.app().config_updater()
+            config.set("combats.rules", rules)
+            config.store()
+            self.call("admin.redirect", "combats/rules")
+        # rendering form
+        fields = [
+            {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
+            {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def rules_edit_actions(self, code):
+        actions = self.conf("combats-%s.actions" % code, [])
+        rows = []
+        for act in actions:
+            rows.append([
+                act["code"],
+                htmlescape(act["name"]),
+                act["order"],
+                u'<br />'.join([
+                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/profile" title="%s" />' % (code, act["code"], self._("profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/scripts" title="%s" />' % (code, act["code"], self._("script handlers")),
+                ]),
+                u'<hook:admin.link href="combats/rules/edit/%s/action/del/%s" title="%s" confirm="%s" />' % (code, act["code"], self._("delete"), self._("Are you sure want to delete this combat action?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "combats/rules/edit/%s/action/new" % code,
+                            "text": self._("New combat action"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Code"),
+                        self._("Action name"),
+                        self._("Order"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": rows,
+                }
             ]
-            self.call("admin.form", fields=fields)
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def rules_action(self, code, cmd):
+        if cmd == "new":
+            return self.rules_action_edit(code, None)
+        else:
+            m = re_del.match(cmd)
+            if m:
+                action_code = m.group(1)
+                actions = [act for act in self.conf("combats-%s.actions" % code, []) if act["code"] != action_code]
+                config = self.app().config_updater()
+                config.set("combats-%s.actions" % code, actions)
+                config.store()
+                self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+            m = re_action_edit.match(cmd)
+            if m:
+                action_code, cmd = m.group(1, 2)
+                if cmd == "profile":
+                    return self.rules_action_edit(code, action_code)
+
+    def rules_action_edit(self, code, action_code):
+        req = self.req()
+        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
+        if action_code is None:
+            info = {}
+            order = None
+            for act in actions:
+                if order is None or act["order"] > order:
+                    order = act["order"]
+            if order is None:
+                info["order"] = 0.0
+            else:
+                info["order"] = order + 10.0
+        else:
+            info = None
+            for act in actions:
+                if act["code"] == action_code:
+                    info = act
+                    break
+            if info is None:
+                self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        existing_codes = set()
+        for act in actions:
+            existing_codes.add(act["code"])
+        # processing request
+        if req.ok():
+            errors = {}
+            # code
+            act_code = req.param("code")
+            if not act_code:
+                errors["code"] = self._("This field is mandatory")
+            elif not re_valid_identifier.match(act_code):
+                errors["code"] = self._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+            elif act_code in existing_codes and act_code != action_code:
+                errors["code"] = self._("Action with the same code already exists")
+            # name
+            name = req.param("name")
+            if not name:
+                errors["name"] = self._("This field is mandatory")
+            # order
+            order = floatz(req.param("order"))
+            # processing errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # saving changes
+            info["code"] = act_code
+            info["name"] = name
+            info["order"] = order
+            if action_code is None:
+                actions.append(info)
+            actions.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["code"], y["code"]))
+            config = self.app().config_updater()
+            config.set("combats-%s.actions" % code, actions)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        # rendering form
+        fields = [
+            {"name": "code", "label": self._("Action code"), "value": info.get("code")},
+            {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
+            {"name": "name", "label": self._("Action name"), "value": info.get("name")},
+        ]
+        self.call("admin.form", fields=fields)
+
