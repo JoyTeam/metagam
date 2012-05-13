@@ -520,9 +520,9 @@ class DesignGenerator(Module):
                     try:
                         self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
                     except ImportError as e:
-                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
+                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str2unicode(e)))
                     except TemplateException as e:
-                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str(e)))
+                        errors.append(self._("Error parsing template {0}: {1}").format(file["filename"], str2unicode(e)))
                     else:
                         file["data"] = parser.output
                 except HTMLParser.HTMLParseError as e:
