@@ -275,9 +275,9 @@ class DesignTemplateValidator(Module):
             try:
                 self.call("web.parse_template", cStringIO.StringIO(parser.output), {})
             except ImportError as e:
-                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str(e)))
+                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str2unicode(e)))
             except TemplateException as e:
-                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str(e)))
+                self.errors.append(self._("Error parsing template {0}: {1}").format(fn, str2unicode(e)))
             else:
                 if file_obj:
                     file_obj["data"] = parser.output

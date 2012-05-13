@@ -663,8 +663,7 @@ class Web(Module):
         try:
             content = tpl_engine.process(filename, vars)
         except ValueError as e:
-            raise
-            #raise TemplateException("security", unicode(e))
+            raise TemplateException("security", unicode(e))
         except ImportError as e:
             raise TemplateException("security", unicode(e))
         except MemoryError:
