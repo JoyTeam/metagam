@@ -669,7 +669,7 @@ class Web(Module):
         except MemoryError:
             raise TemplateException("security", self._("Memory overflow during template processing"))
         except TooManyLoops:
-            raise TemplateException("security", self._("Too many template loops"))
+            raise TemplateException("security", self._("Too many template loop iterations"))
         if req:
             req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)
