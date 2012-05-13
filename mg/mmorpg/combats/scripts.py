@@ -9,11 +9,11 @@ class CombatSystemError(Exception):
     def __str__(self):
         return self.val
 
-class CombatScripts(ConstructorModule):
+class CombatScriptsAdmin(ConstructorModule):
     def register(self):
-        self.rhook("combats.parse-script", self.parse_script)
-        self.rhook("combats.execute-script", self.execute_script)
-        self.rhook("combats.unparse-script", self.unparse_script)
+        self.rhook("combats-admin.parse-script", self.parse_script)
+        self.rhook("combats-admin.unparse-script", self.unparse_script)
+        self.rhook("combats-admin.script-field", self.script_field)
 
     @property
     def general_parser_spec(self):
@@ -45,6 +45,52 @@ class CombatScripts(ConstructorModule):
         except ScriptParserResult as e:
             return e.val
 
+    def unparse_script(self, code, indent=0):
+        if code is None:
+            return ""
+        lines = []
+        for st in code:
+            st_cmd = st[0]
+            if st_cmd == "damage":
+                lines.append(u"%sdamage %s %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+            elif st_cmd == "set":
+                lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+            else:
+                lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
+        return u"".join(lines)
+
+    def script_field(self, combat, name, errors, globs={}, expression=None, mandatory=True):
+        req = self.req()
+        if expression is None:
+            expression = req.param(name).strip()
+        if mandatory and expression == "":
+            errors[name] = self._("This field is mandatory")
+            return
+        # Parsing
+        try:
+            expression = self.call("combats-admin.parse-script", expression)
+        except ScriptParserError as e:
+            html = e.val.format(**e.kwargs)
+            if e.exc:
+                html += "\n%s" % e.exc
+            errors[name] = html
+            return
+        # Dry run
+        try:
+            self.call("combats.execute-script", combat, expression, globs, handle_exceptions=False, real_execute=False)
+        except ScriptError as e:
+            errors[name] = e.val
+            return
+        # Returning result
+        return expression
+
+class CombatScripts(ConstructorModule):
+    def register(self):
+        self.rhook("combats.execute-script", self.execute_script)
+
+    def child_modules(self):
+        return ["mg.mmorpg.combats.scripts.CombatScriptsAdmin"]
+
     def combat_debug(self, combat, msg, **kwargs):
         "Delivering debug message to all combat members having access to debugging info"
         for member in combat.members:
@@ -58,7 +104,7 @@ class CombatScripts(ConstructorModule):
                         msg = msg()
                     self.call("debug-channel.character", char, msg, **kwargs)
 
-    def execute_script(self, combat, code, globs={}, handle_exceptions=True):
+    def execute_script(self, combat, code, globs={}, handle_exceptions=True, real_execute=True):
         globs["combat"] = combat
         # indenting
         tasklet = Tasklet.current()
@@ -93,26 +139,29 @@ class CombatScripts(ConstructorModule):
                     new_val = old_val - damage
                     if new_val < 0:
                         new_val = 0
-                    obj.set_param(attr, new_val)
+                    if real_execute:
+                        obj.set_param(attr, new_val)
                     globs["last_damage"] = old_val - new_val
                 else:
-                    obj.set_param(attr, old_val)
+                    if real_execute:
+                        obj.set_param(attr, old_val)
                     globs["last_damage"] = 0
-                # logging damage
-                log = combat.log
-                if log:
-                    logent = {
-                        "type": "damage",
-                        "source": source_id,
-                        "target": obj.id,
-                        "param": attr,
-                        "damage": damage,
-                        "oldval": old_val,
-                        "newval": new_val,
-                    }
-                    if "source" in globs:
-                        logent["source"] = globs["source"].id
-                    log.syslog(logent)
+                if real_execute:
+                    # logging damage
+                    log = combat.log
+                    if log:
+                        logent = {
+                            "type": "damage",
+                            "source": source_id,
+                            "target": obj.id,
+                            "param": attr,
+                            "damage": damage,
+                            "oldval": old_val,
+                            "newval": new_val,
+                        }
+                        if "source" in globs:
+                            logent["source"] = globs["source"].id
+                        log.syslog(logent)
             elif st_cmd == "set":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
                 attr = st[2]
@@ -123,7 +172,8 @@ class CombatScripts(ConstructorModule):
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
-                obj.script_set_attr(attr, val, env)
+                if real_execute:
+                    obj.script_set_attr(attr, val, env)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):
@@ -147,18 +197,6 @@ class CombatScripts(ConstructorModule):
             execute_block(code, 0)
         finally:
             tasklet.combat_indent = old_indent
-
-    def unparse_script(self, code, indent=0):
-        lines = []
-        for st in code:
-            st_cmd = st[0]
-            if st_cmd == "damage":
-                lines.append(u"%sdamage %s %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
-            elif st_cmd == "set":
-                lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
-            else:
-                lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
-        return u"".join(lines)
 
 class ScriptedCombatAction(CombatAction):
     "Behaviour of this CombatAction is defined via combat script"

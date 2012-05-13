@@ -1,4 +1,5 @@
 from mg.constructor import *
+from mg.mmorpg.combats.core import Combat, CombatMember
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -12,6 +13,7 @@ class Combats(ConstructorModule):
         return [
             "mg.mmorpg.combats.interfaces.CombatsAdmin",
             "mg.mmorpg.combats.wizards.AttackBlock",
+            "mg.mmorpg.combats.scripts.CombatScripts",
         ]
 
 class CombatsAdmin(ConstructorModule):
@@ -56,7 +58,9 @@ class CombatsAdmin(ConstructorModule):
                     if action == "profile":
                         return [htmlescape(info["name"]), "combats/rules"]
                     elif action == "actions":
-                        return [htmlescape(info["name"]), "combats/rules"]
+                        return [self._("Actions of '%s'") % htmlescape(info["name"]), "combats/rules"]
+                    elif action == "script":
+                        return [self._("Scripts of '%s'") % htmlescape(info["name"]), "combats/rules"]
                     else:
                         m = re_action_cmd.match(action)
                         if m:
@@ -71,6 +75,8 @@ class CombatsAdmin(ConstructorModule):
                                         if act["code"] == action_code:
                                             if cmd == "profile":
                                                 return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
+                                            elif cmd == "script":
+                                                return [self._("Scripts of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
         return self._("Combats rules")
 
     def admin_rules(self):
@@ -108,9 +114,9 @@ class CombatsAdmin(ConstructorModule):
                 htmlescape(info["name"]),
                 info["order"],
                 u'<br />'.join([
-                    u'<hook:admin.link href="combats/rules/edit/%s/profile" title="%s" />' % (code, self._("profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/profile" title="%s" />' % (code, self._("combat system profile")),
                     u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("actions")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("combat actions")),
                 ]),
                 u'<hook:admin.link href="combats/rules/del/%s" title="%s" confirm="%s" />' % (code, self._("delete"), self._("Are you sure want to delete these rules?")),
             ])
@@ -177,6 +183,8 @@ class CombatsAdmin(ConstructorModule):
             return self.rules_edit_profile(rules, code)
         elif action == "actions":
             return self.rules_edit_actions(code)
+        elif action == "script":
+            return self.rules_edit_script(code)
         else:
             m = re_action_cmd.match(action)
             if m:
@@ -223,8 +231,8 @@ class CombatsAdmin(ConstructorModule):
                 htmlescape(act["name"]),
                 act["order"],
                 u'<br />'.join([
-                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/profile" title="%s" />' % (code, act["code"], self._("profile")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/scripts" title="%s" />' % (code, act["code"], self._("script handlers")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/profile" title="%s" />' % (code, act["code"], self._("combat action profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/script" title="%s" />' % (code, act["code"], self._("script handlers")),
                 ]),
                 u'<hook:admin.link href="combats/rules/edit/%s/action/del/%s" title="%s" confirm="%s" />' % (code, act["code"], self._("delete"), self._("Are you sure want to delete this combat action?")),
             ])
@@ -268,6 +276,8 @@ class CombatsAdmin(ConstructorModule):
                 action_code, cmd = m.group(1, 2)
                 if cmd == "profile":
                     return self.rules_action_edit(code, action_code)
+                elif cmd == "script":
+                    return self.rules_action_script(code, action_code)
 
     def rules_action_edit(self, code, action_code):
         req = self.req()
@@ -329,6 +339,62 @@ class CombatsAdmin(ConstructorModule):
             {"name": "code", "label": self._("Action code"), "value": info.get("code")},
             {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def rules_edit_script(self, code):
+        req = self.req()
+        if req.ok():
+            # test objects
+            combat = Combat(self.app(), code)
+            # parsing form
+            errors = {}
+            config = self.app().config_updater()
+            config.set("combats-%s.script-start" % code, self.call("combats-admin.script-field", combat, "start", errors, globs={"combat": combat}, mandatory=False))
+            # processing errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # storing
+            config.store()
+            self.call("admin.redirect", "combats/rules")
+        fields = [
+            {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 150},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def rules_action_script(self, code, action_code):
+        req = self.req()
+        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
+        info = None
+        for act in actions:
+            if act["code"] == action_code:
+                info = act
+                break
+        if info is None:
+            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        if req.ok():
+            # test objects
+            combat = Combat(self.app(), code)
+            member1 = CombatMember(combat)
+            member2 = CombatMember(combat)
+            # parsing form
+            errors = {}
+            info["script-before-execute"] = self.call("combats-admin.script-field", combat, "before-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
+            info["script-execute"] = self.call("combats-admin.script-field", combat, "execute", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
+            info["script-after-execute"] = self.call("combats-admin.script-field", combat, "after-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
+            # processing errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # storing
+            config = self.app().config_updater()
+            config.set("combats-%s.actions" % code, actions)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        # rendering form
+        fields = [
+            {"name": "before-execute", "label": self._("Before execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-before-execute")), "height": 150},
+            {"name": "execute", "label": self._("Execution itself (applying action effect to targets)") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-execute")), "height": 150},
+            {"name": "after-execute", "label": self._("After execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-after-execute")), "height": 150},
         ]
         self.call("admin.form", fields=fields)
 

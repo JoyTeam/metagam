@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-04-30 12:13+0300\n"
+"PO-Revision-Date: 2012-05-13 11:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -381,6 +381,9 @@ msgstr "Пароль администратора"
 msgid "Administrator's personal data"
 msgstr "Персональные данные администратора"
 
+msgid "After execution"
+msgstr "После исполнения"
+
 msgid "Aggregate amount (for instance, 'char.inv.sum_weight')"
 msgstr "Агрегированное количество (например, 'char.inv.sum_weight')"
 
@@ -720,6 +723,9 @@ msgstr "Изначально вы не можете вставлять карт�
 
 msgid "Basically your can not use smiles in your forum signature. If you want to use smiles you can use this option"
 msgstr "Изначально вы не можете вставлять смайлики в подпись на форуме. Если вы хотите иметь подпись со смайликами, воспользуйтесь этой опцией"
+
+msgid "Before execution"
+msgstr "Перед исполнением"
 
 msgid "Before launching your game perform the steps listed above"
 msgstr "Перед запуском игры выполните шаги, перечисленные выше"
@@ -1368,6 +1374,9 @@ msgstr "Название правил боёв"
 
 msgid "Combat rules with the same code already exist"
 msgstr "Правила боёв с таким кодом уже существуют"
+
+msgid "Combat script running when combat starts"
+msgstr "Боевой скрипт, выполняемый, когда бой начинается"
 
 #, python-format
 msgid "Combat stage '%s' is not defined"
@@ -2426,6 +2435,9 @@ msgstr "Цена в рублях"
 
 msgid "Execute JavaScript"
 msgstr "Выполнить JavaScript"
+
+msgid "Execution itself (applying action effect to targets)"
+msgstr "Собственно исполнение (применение эффекта действия на цели)"
 
 msgid "Exit"
 msgstr "Выход"
@@ -5006,10 +5018,6 @@ msgstr "Продолжить"
 msgid "Profile"
 msgstr "Профиль"
 
-#, python-format
-msgid "Profile of '%s'"
-msgstr "%s: профиль"
-
 msgid "Progress bar"
 msgstr "Прогресс-бар"
 
@@ -5659,6 +5667,10 @@ msgstr "Описание скриптового языка"
 
 msgid "Scripts documentation"
 msgstr "Документация на скрипты"
+
+#, python-format
+msgid "Scripts of '%s'"
+msgstr "%s: скрипты"
 
 msgid "Search"
 msgstr "Искать"
@@ -7892,9 +7904,6 @@ msgstr "error в квесте"
 msgid "action///Quest message"
 msgstr "message в квесте"
 
-msgid "actions"
-msgstr "действия"
-
 msgid "adding modifier '{modifier}' for {sec} sec"
 msgstr "установка модификатора \"{modifier}\" на {sec} сек"
 
@@ -8015,6 +8024,15 @@ msgstr "чат"
 
 msgid "class"
 msgstr "класс"
+
+msgid "combat action profile"
+msgstr "профиль боевого действия"
+
+msgid "combat actions"
+msgstr "боевые действия"
+
+msgid "combat system profile"
+msgstr "профиль боевой системы"
 
 msgid "combo box"
 msgstr "выпадающий список"
@@ -8492,9 +8510,6 @@ msgstr "плюс"
 
 msgid "preview"
 msgstr "просмотреть"
-
-msgid "profile"
-msgstr "профиль"
 
 msgid "projstatus///inactive"
 msgstr "неактивен"
@@ -8986,8 +9001,14 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
-#~ msgid "Combat system code"
-#~ msgstr "Код системы боя"
+#~ msgid "Profile of '%s'"
+#~ msgstr "%s: профиль"
+
+#~ msgid "actions"
+#~ msgstr "действия"
+
+#~ msgid "profile"
+#~ msgstr "профиль"
 
 #~ msgid "Combat system name"
 #~ msgstr "Название системы боя"

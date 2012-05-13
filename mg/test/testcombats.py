@@ -87,7 +87,7 @@ class TestCombats(unittest.TestCase):
         self.inst.dbpool = CassandraPool((("director-db", 9160),))
         self.inst.mcpool = MemcachedPool(("director-mc", 11211))
         self.app = Application(self.inst, "mgtest")
-        self.app.modules.load(["mg.core.l10n.L10n", "mg.constructor.script.ScriptEngine", "mg.mmorpg.combats.scripts.CombatScripts"])
+        self.app.modules.load(["mg.core.l10n.L10n", "mg.constructor.script.ScriptEngine", "mg.mmorpg.combats.scripts.CombatScripts", "mg.mmorpg.combats.scripts.CombatScriptsAdmin"])
 
     def test_00_stages(self):
         # creating combat
@@ -149,7 +149,7 @@ class TestCombats(unittest.TestCase):
         combat = SimulationCombat(self.app)
         # compiling script
         script_text = 'damage target.hp 5 set source.p_damage = source.p_damage + last_damage'
-        code = self.app.hooks.call("combats.parse-script", script_text)
+        code = self.app.hooks.call("combats-admin.parse-script", script_text)
         self.assertEqual(code, [
             ['damage', ['glob', 'target'], 'hp', 5],
             ['set', ['glob', 'source'], 'p_damage', ['+', ['.', ['glob', 'source'], 'p_damage'], ['glob', 'last_damage']]],
@@ -179,7 +179,7 @@ class TestCombats(unittest.TestCase):
         self.assertEqual(member2.param("hp"), 0)
         self.assertEqual(globs["last_damage"], 2)
         # unparsing
-        script = self.app.hooks.call("combats.unparse-script", code)
+        script = self.app.hooks.call("combats-admin.unparse-script", code)
         script = re.sub(r'\s+', ' ', script).strip()
         self.assertEqual(script, script_text)
 
