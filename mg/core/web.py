@@ -2,7 +2,7 @@ from concurrence import Tasklet, http
 from concurrence.http import server
 from mg import *
 from mg.core.tools import *
-from template import Template, TemplateException
+from template import Template, TemplateException, TooManyLoops
 from template.provider import Provider
 import urlparse
 import cgi
@@ -468,7 +468,6 @@ re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
 class Web(Module):
     def __init__(self, *args, **kwargs):
         Module.__init__(self, *args, **kwargs)
-        self.tpl = None
         self.last_ping = None
 
     def register(self):
@@ -609,50 +608,45 @@ class Web(Module):
             if req.templates_len >= 10000000:
                 return "<too-long-templates />"
             req.templates_parsed = req.templates_parsed + 1
-        if self.tpl and config is None:
-            tpl_engine = self.tpl
+        include_path = [ mg.__path__[0] + "/templates" ]
+        self.call("core.template_path", include_path)
+        conf = {
+            "INCLUDE_PATH": include_path,
+            "ANYCASE": True,
+            "PRE_CHOMP": 1,
+            "POST_CHOMP": 1,
+            "PLUGIN_BASE": ["Unexistent"],
+            "PLUGINS": {
+                "datafile": "Template::Plugin::Disabled::datafile",
+                "date": "Template::Plugin::Disabled::date",
+                "directory": "Template::Plugin::Disabled::directory",
+                "file": "Template::Plugin::Disabled::file",
+                "filter": "Template::Plugin::Disabled::filter",
+                "format": "Template::Plugin::Disabled::format",
+                "html": "Template::Plugin::Disabled::html",
+                "image": "Template::Plugin::Disabled::image",
+                "iterator": "Template::Plugin::Disabled::iterator",
+                "math_plugin": "Template::Plugin::Disabled::math_plugin",
+                "string": "Template::Plugin::Disabled::string",
+                "table": "Template::Plugin::Disabled::table",
+                "url": "Template::Plugin::Disabled::url",
+                "view": "Template::Plugin::Disabled::view",
+                "wrap": "Template::Plugin::Disabled::wrap",
+            },
+        }
+        if config is not None:
+            for key, val in config.iteritems():
+                conf[key] = val
+        if config is None:
+            try:
+                conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
+            except AttributeError, e:
+                provider = Provider(conf)
+                self.app().inst.tpl_provider = provider
+                conf["LOAD_TEMPLATES"] = provider
         else:
-            include_path = [ mg.__path__[0] + "/templates" ]
-            self.call("core.template_path", include_path)
-            conf = {
-                "INCLUDE_PATH": include_path,
-                "ANYCASE": True,
-                "PRE_CHOMP": 1,
-                "POST_CHOMP": 1,
-                "PLUGIN_BASE": ["Unexistent"],
-                "PLUGINS": {
-                    "datafile": "Template::Plugin::Disabled::datafile",
-                    "date": "Template::Plugin::Disabled::date",
-                    "directory": "Template::Plugin::Disabled::directory",
-                    "file": "Template::Plugin::Disabled::file",
-                    "filter": "Template::Plugin::Disabled::filter",
-                    "format": "Template::Plugin::Disabled::format",
-                    "html": "Template::Plugin::Disabled::html",
-                    "image": "Template::Plugin::Disabled::image",
-                    "iterator": "Template::Plugin::Disabled::iterator",
-                    "math_plugin": "Template::Plugin::Disabled::math_plugin",
-                    "string": "Template::Plugin::Disabled::string",
-                    "table": "Template::Plugin::Disabled::table",
-                    "url": "Template::Plugin::Disabled::url",
-                    "view": "Template::Plugin::Disabled::view",
-                    "wrap": "Template::Plugin::Disabled::wrap",
-                },
-            }
-            if config is not None:
-                for key, val in config.iteritems():
-                    conf[key] = val
-            if config is None:
-                try:
-                    conf["LOAD_TEMPLATES"] = self.app().inst.tpl_provider
-                except AttributeError, e:
-                    provider = Provider(conf)
-                    self.app().inst.tpl_provider = provider
-                    conf["LOAD_TEMPLATES"] = provider
-            else:
-                conf["LOAD_TEMPLATES"] = Provider(conf)
-            tpl_engine = Template(conf)
-            if config is None:
-                self.tpl = tpl_engine
+            conf["LOAD_TEMPLATES"] = Provider(conf)
+        tpl_engine = Template(conf)
         if vars.get("universal_variables") is None:
             vars["ver"] = self.int_app().config.get("application.version", 0)
             vars["universal_variables"] = True
@@ -672,6 +666,10 @@ class Web(Module):
             raise TemplateException("security", unicode(e))
         except ImportError as e:
             raise TemplateException("security", unicode(e))
+        except MemoryError:
+            raise TemplateException("security", self._("Memory overflow during template processing"))
+        except TooManyLoops:
+            raise TemplateException("security", self._("Too many template loop iterations"))
         if req:
             req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)

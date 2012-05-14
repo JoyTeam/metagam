@@ -1329,7 +1329,7 @@ class Quests(ConstructorModule):
                                             if quantity > 1e9:
                                                 quantity = 1e9
                                             item_type = self.item_type(item_type_uuid, mods=mods)
-                                            if item_type.valid():
+                                            if item_type and item_type.valid():
                                                 def message():
                                                     res = self._("giving {item_name}, quantity={quantity}").format(item_name=item_type.name, quantity=quantity)
                                                     if mods_list:
