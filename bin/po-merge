@@ -1,0 +1,15 @@
+#!/bin/bash
+
+LOCAL=$1
+OTHER=$2
+OUTPUT=$3
+
+POTLOCAL=`mktemp /tmp/potfile.XXXXXXXXX`
+POTOTHER=`mktemp /tmp/potfile.XXXXXXXXX`
+POTNEW=`mktemp /tmp/potfile.XXXXXXXXX`
+
+cat $LOCAL | msgfilter --keep-header sed -e d 2>/dev/null | sed -e '/^# /d' > $POTLOCAL
+cat $OTHER | msgfilter --keep-header sed -e d 2>/dev/null | sed -e '/^# /d' > $POTOTHER
+
+msgcat $POTLOCAL $POTOTHER > $POTNEW
+msgmerge $LOCAL --compendium $OTHER $POTNEW > $OUTPUT
