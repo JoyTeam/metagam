@@ -879,6 +879,29 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + "javascript %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleport":
                 return "  " * indent + "teleport %s\n" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "combat":
+                options = val[1]
+                result = "  " * indent + "combat {\n"
+                for member in options.get("members", []):
+                    mtype = member["type"]
+                    if mtype[0] == "virtual":
+                        mtype = "virtual"
+                    elif mtype[0] == "expr":
+                        mtype = self.call("script.unparse-expression", mtype[1])
+                    else:
+                        mtype = "??? (%s)" % mtype[0]
+                    result += "  " * indent + "  member %s" % mtype
+                    if "team" in member:
+                        result += " team=%s" % self.call("script.unparse-expression", member["team"])
+                    if "control" in member:
+                        result += " control=%s" % self.call("script.unparse-expression", member["control"])
+                    if "name" in member:
+                        result += " name=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", member["name"]))
+                    if "sex" in member:
+                        result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
+                    result += "\n"
+                result += "  " * indent + "}\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):

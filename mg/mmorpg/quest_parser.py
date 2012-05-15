@@ -141,6 +141,15 @@ class TokenDefault(Parsing.Token):
 class TokenPaidService(Parsing.Token):
     "%token paidservice"
 
+class TokenCombat(Parsing.Token):
+    "%token combat"
+
+class TokenVirtual(Parsing.Token):
+    "%token virtual"
+
+class TokenMember(Parsing.Token):
+    "%token member"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -503,6 +512,11 @@ class QuestAction(Parsing.Nonterm):
             raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
         self.val = ["javascript", javascript.val]
 
+    def reduceCombat(self, cmd, attrs, curlyleft, content, curlyright):
+        "%reduce combat ExprAttrs curlyleft CombatContent curlyright"
+        options = content.val.copy()
+        self.val = ["combat", options]
+
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -513,6 +527,46 @@ class RandomContent(Parsing.Nonterm):
         "%reduce RandomContent weight Expr colon QuestActions"
         self.val = [ent for ent in content.val]
         self.val.append([weight.val, actions.val])
+
+class CombatContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {
+            "members": []
+        }
+
+    def reduceMember(self, content, cmd, mtype, attrs):
+        "%reduce CombatContent member CombatMemberType ExprAttrs"
+        # validating attributes
+        team = get_attr(cmd, "member", attrs, "team", require=True)
+        control = get_attr(cmd, "member", attrs, "control")
+        name = get_str_attr(cmd, "member", attrs, "name")
+        sex = get_attr(cmd, "member", attrs, "sex")
+        validate_attrs(cmd, "member", attrs, ["team", "name", "sex", "control"])
+        # reducing
+        self.val = content.val.copy()
+        member = {
+            "type": mtype.val,
+            "team": team,
+        }
+        if name is not None:
+            member["name"] = cmd.script_parser.parse_text(name, cmd.script_parser._("Combat member name"))
+        if control is not None:
+            member["control"] = control
+        if sex is not None:
+            member["sex"] = sex
+        self.val["members"] = self.val["members"] + [member]
+
+class CombatMemberType(Parsing.Nonterm):
+    "%nonterm"
+    def reduceExpression(self, expr):
+        "%reduce Expr"
+        self.val = ["expr", expr.val]
+
+    def reduceVirtual(self, cmd):
+        "%reduce virtual"
+        self.val = ["virtual"]
 
 class DialogContent(Parsing.Nonterm):
     "%nonterm"
@@ -722,6 +776,9 @@ class QuestScriptParser(ScriptParser):
     syms["input"] = TokenInput
     syms["default"] = TokenDefault
     syms["paidservice"] = TokenPaidService
+    syms["combat"] = TokenCombat
+    syms["virtual"] = TokenVirtual
+    syms["member"] = TokenMember
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
