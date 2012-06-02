@@ -273,7 +273,7 @@ class CharClasses(ConstructorModule):
                     classes = [(str(cls_id), cls) for cls_id, cls in classes if self.call("script.evaluate-expression", cls["available"], globs={"char": character}, description=self._("Availability of class variant '{variant}' in class '{cls}'").format(variant=cls_id, cls=param["code"]))]
                     if not classes:
                         param_info = self.call("characters.param", param["code"])
-                        self.call("game.internal-error", self._("You have no available variants of '%s' to select from") % htmlescape(param_info["name"]) if param_info else param["code"])
+                        self.call("game.internal-error", self._("You have no available variants of '%s' to select from") % (htmlescape(param_info["name"]) if param_info else param["code"]))
                     classes.sort(cmp=lambda x, y: cmp(x[1].get("order"), y[1].get("order")) or cmp(x[0], y[0]))
                     if req.ok():
                         cls_selected = req.param("class")
