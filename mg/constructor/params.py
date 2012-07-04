@@ -53,6 +53,7 @@ class ParamsAdmin(ConstructorModule):
                 if len(params) != len(new_params):
                     config = self.app().config_updater()
                     config.set("%s.params" % self.kind, new_params)
+                    self.call("admin-%s.params-stored" % self.kind, new_params, config)
                     config.store()
                 self.call("admin.redirect", "%s/params" % self.kind)
             if req.args == "new":

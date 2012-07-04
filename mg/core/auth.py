@@ -311,7 +311,7 @@ class Interface(Module):
         objclasses["AutoLogin"] = (AutoLogin, AutoLoginList)
         objclasses["AuthLog"] = (AuthLog, AuthLogList)
         objclasses["DossierRecord"] = (DossierRecord, DossierRecordList)
-        objclasses["BanIP"] = (BanIP, BanIPList)
+        objclasses["BanIP"] = (DBBanIP, DBBanIPList)
 
     def ext_register(self):
         req = self.req()
