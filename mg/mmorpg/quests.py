@@ -1641,6 +1641,35 @@ class Quests(ConstructorModule):
                                                 tasklet.quest_teleported.add(char.uuid)
                                         else:
                                             raise QuestError(self._("Missing location %s") % cmd[1])
+                                    elif cmd_code == "combat":
+                                        options = val[1]
+                                        # prepare combat request
+                                        creq = CombatRequest()
+                                        for member in options["members"]:
+                                            mtype = member["type"]
+                                            if mtype[0] == "virtual":
+                                                mtype = "virtual"
+                                            elif mtype[0] == "expr":
+                                                mtype = self.call("script.unparse-expression", mtype[1])
+                                            else:
+                                                raise QuestError(self._("Unknown combat type %s") % mtype[0])
+                                            rmember = {
+                                                "type": mtype,
+                                            }
+                                            if "team" in member:
+                                                rmember["team"] = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                            if "control" in member:
+                                                rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
+                                            if "name" in member:
+                                                rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
+                                            if "sex" in member:
+                                                rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                            creq.add_member(rmember)
+                                        # launch combat
+                                        creq.run()
+                                        # lock characters
+                                        # launch combat daemon
+                                        # run combat
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

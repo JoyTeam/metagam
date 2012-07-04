@@ -63,6 +63,12 @@ class DBCharacterSettings(CassandraObject):
 class DBCharacterSettingsList(CassandraObjectList):
     objcls = DBCharacterSettings
 
+class DBCharacterBusy(CassandraObject):
+    clsname = "CharacterBusy"
+
+class DBCharacterBusyList(CassandraObjectList):
+    objcls = DBCharacterBusy
+
 # Business logic objects
 
 class Character(Module):
@@ -258,6 +264,27 @@ class Character(Module):
         self._location = [location, instance, delay]
         self.call("locations.character_after_set", self, old_location, old_instance)
         self.qevent("teleported", char=self, old_loc=old_location, new_loc=location, old_inst=old_instance, new_inst=instance)
+
+    @property
+    def busy(self):
+        try:
+            return self._busy
+        except AttributeError:
+            self._busy = self.db_busy.get("busy") or None
+            return self._busy
+
+    @property
+    def db_busy(self):
+        try:
+            return self._db_busy
+        except AttributeError:
+            self._db_busy = self.obj(DBCharacterBusy, self.uuid, silent=True)
+            return self._db_busy
+
+    def set_busy(self, busy):
+        self._db_busy.set("busy", busy)
+        self._db_busy.store()
+        self._busy = busy or None
 
     @property
     def db_settings(self):

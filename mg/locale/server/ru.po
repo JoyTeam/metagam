@@ -1570,6 +1570,10 @@ msgstr "Цвета в подписи"
 msgid "Colours in the signature for {period}"
 msgstr "Цвета в подписи на {period_a}"
 
+#, fuzzy
+msgid "Combat member name"
+msgstr "Название системы боя"
+
 msgid "Combat rules code"
 msgstr "Код правил боёв"
 
@@ -10197,9 +10201,6 @@ msgstr "{price} навсегда"
 
 #~ msgid "profile"
 #~ msgstr "профиль"
-
-#~ msgid "Combat system name"
-#~ msgstr "Название системы боя"
 
 #~ msgid "Enter name"
 #~ msgstr "Введите имя"
