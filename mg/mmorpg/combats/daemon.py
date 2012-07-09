@@ -1,3 +1,4 @@
+from mg.constructor import ConstructorModule
 from mg.mmorpg.combats.core import CombatObject
 from concurrence import Tasklet
 
@@ -20,3 +21,14 @@ class CombatDaemon(CombatObject):
         while not self.combat.stage_flag("done"):
             self.combat.process()
             Tasklet.yield_()
+
+class CombatRequest(ConstructorModule):
+    def __init__(self, app, fqn="mg.mmorpg.combats.requests.CombatRequest"):
+        ConstructorModule.__init__(self, app, fqn)
+        self.members = []
+
+    def add_member(self, member):
+        self.members.append(member)
+
+    def run(self):
+        +++

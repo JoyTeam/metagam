@@ -1644,7 +1644,7 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "combat":
                                         options = val[1]
                                         # prepare combat request
-                                        creq = CombatRequest()
+                                        creq = CombatRequest(self.app())
                                         for member in options["members"]:
                                             mtype = member["type"]
                                             if mtype[0] == "virtual":
