@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.combats.core import Combat, CombatMember
+from mg.mmorpg.combats.characters import CombatCharacterMember, CombatGUIController
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -9,12 +10,27 @@ re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 
 class Combats(ConstructorModule):
+    def register(self):
+        self.rhook("combats.character-member", self.character_member)
+        self.rhook("ext-combat.interface", self.combat_interface)
+
     def child_modules(self):
         return [
             "mg.mmorpg.combats.interfaces.CombatsAdmin",
             "mg.mmorpg.combats.wizards.AttackBlock",
             "mg.mmorpg.combats.scripts.CombatScripts",
         ]
+
+    def character_member(self, combat, character):
+        member = CombatCharacterMember(combat, character)
+        control = CombatGUIController(member)
+        member.add_controller(control)
+        return member
+
+    def combat_interface(self):
+        req = self.req()
+        combat_uuid = req.args
+        self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_uuid))
 
 class CombatsAdmin(ConstructorModule):
     def register(self):

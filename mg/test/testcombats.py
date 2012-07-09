@@ -134,13 +134,13 @@ class TestCombats(unittest.TestCase):
         self.assertFalse(member2.may_turn)
         # waiting for turn timeout
         with Timeout.push(3):
-            self.assertRaises(TurnTimeout, daemon.loop)
+            self.assertRaises(TurnTimeout, daemon.main)
         # member2 must have right of turn
         self.assertFalse(member1.may_turn)
         self.assertTrue(member2.may_turn)
         # waiting for turn timeout
         with Timeout.push(3):
-            self.assertRaises(TurnTimeout, daemon.loop)
+            self.assertRaises(TurnTimeout, daemon.main)
         # member1 must have right of turn
         self.assertTrue(member1.may_turn)
         self.assertFalse(member2.may_turn)

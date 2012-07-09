@@ -1,6 +1,8 @@
 from mg.constructor import *
 from mg.mmorpg.quest_parser import *
 from mg.core.money_classes import MoneyError
+from mg.mmorpg.combats.daemon import CombatRequest
+from mg.mmorpg.combats.core import CombatRunError, CombatMemberBusyError
 from uuid import uuid4
 import re
 import random
@@ -881,7 +883,10 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + "teleport %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "combat":
                 options = val[1]
-                result = "  " * indent + "combat {\n"
+                result = "  " * indent + "combat"
+                if "rules" in options:
+                    result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
+                result += " {\n"
                 for member in options.get("members", []):
                     mtype = member["type"]
                     if mtype[0] == "virtual":
@@ -1642,22 +1647,35 @@ class Quests(ConstructorModule):
                                         else:
                                             raise QuestError(self._("Missing location %s") % cmd[1])
                                     elif cmd_code == "combat":
-                                        options = val[1]
+                                        options = cmd[1]
                                         # prepare combat request
                                         creq = CombatRequest(self.app())
+                                        # combat system
+                                        rules = options.get("rules")
+                                        if rules is None:
+                                            raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
+                                        creq.rules = rules
+                                        # members
                                         for member in options["members"]:
                                             mtype = member["type"]
                                             if mtype[0] == "virtual":
                                                 mtype = "virtual"
                                             elif mtype[0] == "expr":
-                                                mtype = self.call("script.unparse-expression", mtype[1])
+                                                mtype = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
                                             else:
                                                 raise QuestError(self._("Unknown combat type %s") % mtype[0])
                                             rmember = {
                                                 "type": mtype,
                                             }
-                                            if "team" in member:
-                                                rmember["team"] = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                            team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                            if type(team) != int:
+                                                raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
+                                            else:
+                                                team = int(team)
+                                                if team < 1 or team > 1000:
+                                                    raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
+                                                else:
+                                                    rmember["team"] = team
                                             if "control" in member:
                                                 rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
                                             if "name" in member:
@@ -1666,10 +1684,14 @@ class Quests(ConstructorModule):
                                                 rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
                                             creq.add_member(rmember)
                                         # launch combat
-                                        creq.run()
-                                        # lock characters
-                                        # launch combat daemon
-                                        # run combat
+                                        try:
+                                            creq.run()
+                                        except CombatMemberBusyError as e:
+                                            self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                            char.error(e.val)
+                                            raise AbortHandler()
+                                        except CombatRunError as e:
+                                            raise QuestError(e.val)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1796,6 +1818,9 @@ class Quests(ConstructorModule):
     def check_dialogs(self):
         req = self.req()
         character = self.character(req.user())
+        busy = character.busy
+        if busy and busy.get("show_uri"):
+            self.call("web.redirect", busy.get("show_uri"))
         if character.quests.dialogs:
             self.call("web.redirect", "/quest/dialog")
 

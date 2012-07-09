@@ -1,6 +1,7 @@
 from mg.constructor import *
 import weakref
 import re
+from uuid import uuid4
 
 re_param_attr = re.compile(r'^p_(.+)')
 
@@ -20,6 +21,12 @@ class CombatAlreadyRunning(CombatError):
 class CombatInvalidStage(CombatError):
     pass
 
+class CombatRunError(CombatError):
+    pass
+
+class CombatMemberBusyError(CombatRunError):
+    pass
+
 class Combat(ConstructorModule):
     "Combat is the combat itself. It is created in the combat daemon process."
     def __init__(self, app, rules, fqn="mg.mmorpg.combats.core.Combat"):
@@ -29,6 +36,7 @@ class Combat(ConstructorModule):
         self.log = None
         self.member_id = 0
         self.rules = rules
+        self.uuid = uuid4().hex
 
     def join(self, member):
         "Join member to the combat"
@@ -50,6 +58,7 @@ class Combat(ConstructorModule):
         if self.stage != "init":
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self._turn_order = turn_order
+        self.set_busy()
         self.set_stage("combat")
 
     def set_stage(self, stage):
@@ -113,6 +122,43 @@ class Combat(ConstructorModule):
     def stop(self):
         "Terminate combat"
         self.set_stage("done")
+        self.unset_busy()
+
+    def set_busy(self):
+        "Mark all members as busy. If impossible raise CombatRunError"
+        lock_keys = set()
+        for member in self.members:
+            try:
+                key = member.busy_lock
+            except AttributeError:
+                pass
+            else:
+                lock_keys.add("BusyLock-%s" % key)
+        if lock_keys:
+            with self.lock([key for key in lock_keys]):
+                for member in self.members:
+                    fn = getattr(member, "set_busy", None)
+                    if fn and not fn(dry_run=True):
+                        raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % member.name))
+                for member in self.members:
+                    member.set_busy()
+
+    def unset_busy(self):
+        "Mark all members as not busy"
+        lock_keys = set()
+        for member in self.members:
+            try:
+                key = member.busy_lock
+            except AttributeError:
+                pass
+            else:
+                lock_keys.add("BusyLock-%s" % key)
+        if lock_keys:
+            with self.lock([key for key in lock_keys]):
+                for member in self.members:
+                    fn = getattr(member, "unset_busy", None)
+                    if fn:
+                        fn()
 
 class CombatObject(ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
@@ -159,6 +205,8 @@ class CombatMember(CombatObject):
         self.active = True
         self.controllers = []
         self._params = {}
+        self.name = "Anonymous"
+        self.sex = 0
 
     def is_a_combat_member(self):
         return True
@@ -232,6 +280,12 @@ class CombatMember(CombatObject):
             param = m.group(1)
             return self.set_param(param, val)
         raise AttributeError(attr)
+
+    def set_name(self, name):
+        self.name = name
+
+    def set_sex(self, sex):
+        self.sex = sex
 
 class CombatMemberController(CombatObject):
     """
