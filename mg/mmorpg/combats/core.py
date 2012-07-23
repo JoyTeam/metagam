@@ -141,7 +141,9 @@ class Combat(ConstructorModule):
                     if fn and not fn(dry_run=True):
                         raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % member.name))
                 for member in self.members:
-                    member.set_busy()
+                    fn = getattr(member, "set_busy", None)
+                    if fn:
+                        fn()
 
     def unset_busy(self):
         "Mark all members as not busy"
@@ -162,13 +164,20 @@ class Combat(ConstructorModule):
 
 class CombatObject(ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
-    def __init__(self, combat, fqn):
+    def __init__(self, combat, fqn, weak=True):
         ConstructorModule.__init__(self, combat.app(), fqn)
-        self._combat = weakref.ref(combat)
+        self._combat_weak = weak
+        if weak:
+            self._combat = weakref.ref(combat)
+        else:
+            self._combat = combat
 
     @property
     def combat(self):
-        return self._combat()
+        if self._combat_weak:
+            return self._combat()
+        else:
+            return self._combat
 
 class CombatAction(CombatObject):
     "CombatMembers perform CombatActions according to the schedule"

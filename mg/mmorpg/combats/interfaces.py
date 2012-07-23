@@ -1,6 +1,7 @@
 from mg.constructor import *
 from mg.mmorpg.combats.core import Combat, CombatMember
 from mg.mmorpg.combats.characters import CombatCharacterMember, CombatGUIController
+from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList, CombatUnavailable
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -11,8 +12,9 @@ re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECA
 
 class Combats(ConstructorModule):
     def register(self):
+        self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("combats.character-member", self.character_member)
-        self.rhook("ext-combat.interface", self.combat_interface)
+        self.rhook("ext-combat.interface", self.combat_interface, priv="logged")
 
     def child_modules(self):
         return [
@@ -20,6 +22,9 @@ class Combats(ConstructorModule):
             "mg.mmorpg.combats.wizards.AttackBlock",
             "mg.mmorpg.combats.scripts.CombatScripts",
         ]
+
+    def objclasses_list(self, objclasses):
+        objclasses["RunningCombat"] = (DBRunningCombat, DBRunningCombatList)
 
     def character_member(self, combat, character):
         member = CombatCharacterMember(combat, character)
@@ -29,8 +34,25 @@ class Combats(ConstructorModule):
 
     def combat_interface(self):
         req = self.req()
+        char = self.character(req.user())
         combat_uuid = req.args
-        self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_uuid))
+        try:
+            combat = CombatInterface(self.app(), combat_uuid)
+        except ObjectNotFoundException:
+            # combat terminated already
+            with self.lock([char.busy_lock]):
+                busy = char.busy
+                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_uuid:
+                    # character is a member of a missing combat. free him
+                    char.unset_busy()
+                    self.call("debug-channel.character", char, self._("Character is a member of missing combat. Freeing lock"))
+            self.call("main-frame.error", self._("Combat %s terminated") % combat_uuid)
+        try:
+            combat.ping()
+        except CombatUnavailable:
+            self.call("main-frame.error", self._("Combat %s server is unavailable") % combat_uuid)
+        else:
+            self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_uuid))
 
 class CombatsAdmin(ConstructorModule):
     def register(self):

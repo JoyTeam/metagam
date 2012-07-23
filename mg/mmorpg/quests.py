@@ -1684,6 +1684,8 @@ class Quests(ConstructorModule):
                                                 rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
                                             creq.add_member(rmember)
                                         # launch combat
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
                                         try:
                                             creq.run()
                                         except CombatMemberBusyError as e:

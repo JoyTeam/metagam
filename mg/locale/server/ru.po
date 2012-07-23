@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-07-09 17:47+0300\n"
+"PO-Revision-Date: 2012-07-23 11:07+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1090,6 +1090,9 @@ msgstr "Список образов персонажей"
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
 
+msgid "Character is a member of missing combat. Freeing lock"
+msgstr "Персонаж - участник завершённого боя. Снимаем блокировку"
+
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
 
@@ -1370,6 +1373,10 @@ msgstr "Цвета в подписи на {period_a}"
 #, python-format
 msgid "Combat %s interface"
 msgstr "Интерфейс боя %s"
+
+#, python-format
+msgid "Combat %s terminated"
+msgstr "Бой %s завершён"
 
 msgid "Combat member control"
 msgstr "Контроллер участника боя"
@@ -8327,6 +8334,9 @@ msgstr "параметры предметов"
 
 msgid "items, list, catalog"
 msgstr "предметы, список, каталог"
+
+msgid "launching combat"
+msgstr "запускаем бой"
 
 msgid "letters sent"
 msgstr "писем отправлено"
