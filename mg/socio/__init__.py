@@ -2700,6 +2700,7 @@ class Forum(Module):
             for obj in bucket:
                 data = obj.data_copy()
                 if type(obj) == ForumTopic:
+                    data["topic"] = obj.uuid
                     content = topics_content.get(obj.uuid)
                     if content is not None:
                         data["content_html"] = content.get("content_html")
@@ -2709,7 +2710,10 @@ class Forum(Module):
                         if content.get("tags"):
                             data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
                         posts.append(data)
+                    if "uuid" in data:
+                        del data["uuid"]
                 else:
+                    data["uuid"] = obj.uuid
                     self.posts_htmlencode([data])
                     topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
                     page = ""

@@ -40,7 +40,7 @@
 [%end%]
 
 [%foreach post in posts%]
-<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left"><a href="/forum/topic/[%topic.uuid%]?post=[%post.uuid%]">[%written_at +%] [%+ post.literal_created%]</a></td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" class="socio-up" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
+<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left"><a href="/forum/topic/[%post.topic%][%if post.uuid%]?post=[%post.uuid%][%end%]">[%written_at +%] [%+ post.literal_created%]</a></td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" class="socio-up" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
 
 <tr class="socio-category">
 
