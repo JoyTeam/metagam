@@ -370,6 +370,9 @@ class Character(Module):
 
     __repr__ = __str__
 
+    def __unicode__(self):
+        return u"[char %s]" % str2unicode(self.name)
+
     @property
     def restraints(self):
         try:
