@@ -778,7 +778,6 @@ class DomainsAdmin(Module):
             admin_name = admin.get("name")
             admin_email = admin.get("email")
             money = self.call("money.obj", "user", admin.uuid)
-            print "admin: %s <%s>" % (admin_name, admin_email)
             # update reg till
             if reg_till != actual_reg_till:
                 print "Storing reg-till for %s: %s" % (domain.uuid, actual_reg_till)
