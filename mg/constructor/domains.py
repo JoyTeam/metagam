@@ -785,9 +785,9 @@ class DomainsAdmin(Module):
                 domain.set("reg_till", actual_reg_till)
                 reg_till = actual_reg_till
                 # commit money
-                if domain.get("money_lock"):
-                    lock = money.unlock(domain.get("money_lock"))
-                    domain.delkey("money_lock")
+                if domain.get("prolong_lock"):
+                    lock = money.unlock(domain.get("prolong_lock"))
+                    domain.delkey("prolong_lock")
                     if lock:
                         money.force_debit(float(lock.get("amount")), lock.get("currency"), "domain-prolong", domain=domain.uuid)
                     self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolonged") % domain.uuid, self._("Domain {domain} is now prolonged.").format(domain=domain.uuid))
@@ -810,15 +810,15 @@ class DomainsAdmin(Module):
                 self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
                 continue
             # reserve money
-            if not domain.get("money_lock"):
-                lock = money.lock(price, "MM$", "domain-prolong", domain=domain.uuid)
+            if not domain.get("prolong_lock"):
+                lock = money.lock(float(price), "MM$", "domain-prolong", domain=domain.uuid)
                 if not lock:
                     url = self.call("money.donate-url", "MM$", v1=admin_name, email=admin_email, amount=price)
                     if url:
                         url = "http:%s" % url
                     self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: prolong your domain") % domain.uuid, self._("Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n\nPayment interface: {url}").format(domain=domain.uuid, price=price, reg_till=self.call("l10n.date_local", reg_till), url=url))
                     continue
-                domain.set("money_lock", lock.uuid)
+                domain.set("prolong_lock", lock.uuid)
                 domain.store()
             # send a request to prolong
             cnn = HTTPConnection()
