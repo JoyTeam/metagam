@@ -691,6 +691,7 @@ class Xsolla(Module):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
         self.rhook("money.donate-message", self.donate_message)
+        self.rhook("money.donate-url", self.donate_url)
         self.rhook("constructor.project-options", self.project_options)
 
     def project_options(self, options):
@@ -700,10 +701,15 @@ class Xsolla(Module):
     def append_args(self, options):
         args = {}
         self.call("xsolla.payment-args", args, options)
+        for key in ["v1", "email", "amount"]:
+            if key not in args and key in options:
+                args[key] = options[key]
         append = ""
         for key, val in args.iteritems():
             if type(val) == unicode:
                 val = val.encode("cp1251")
+            elif type(val) != str:
+                val = str(val)
             append += '&%s=%s' % (key, urlencode(val))
         return append
 
@@ -713,6 +719,13 @@ class Xsolla(Module):
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
                 return '<a href="//2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
+
+    def donate_url(self, currency, **kwargs):
+        project_id = intz(self.conf("xsolla.project-id"))
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                return '//2pay.ru/oplata/?id=%d%s' % (project_id, self.append_args(kwargs))
 
     def not_enough_funds(self, currency, **kwargs):
         project_id = intz(self.conf("xsolla.project-id"))

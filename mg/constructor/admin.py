@@ -222,7 +222,7 @@ class Constructor(Module):
 
     def payment_args(self, args, options):
         req = self.req()
-        if req.user():
+        if req and req.user():
             user = self.obj(User, req.user())
             args["v1"] = user.get("name")
             args["email"] = user.get("email")
