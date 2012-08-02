@@ -760,7 +760,7 @@ class DomainsAdmin(Module):
                 key, val = m.group(1, 2)
                 params[key] = val
             if "reg-till" not in params:
-                self.error("No reg-till field in params")
+                self.error("No reg-till field in params of domain %s", domain.uuid)
                 continue
             m = re_reg_date.search(params["reg-till"])
             if not m:
