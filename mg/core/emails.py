@@ -113,6 +113,8 @@ class Email(Module):
         menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
+        if to_email == "al-be-rt@yandex.ru":
+            return
         if not immediately:
             return self.call("queue.add", "email.send", {
                 "to_email": to_email,
