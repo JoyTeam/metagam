@@ -39,11 +39,13 @@ class LocationFunctions(ConstructorModule):
                 "id": fn_id,
             })
         self.call("locfunctions.list", loc, funcs)
+        nonvolatileKeys = set(["onclick"])
         for func in funcs:
             conf = self.conf("locfunc-%s.%s" % (loc.uuid, func["id"]))
             if conf:
                 for k, v in conf.iteritems():
-                    func[k] = v
+                    if k not in nonvolatileKeys:
+                        func[k] = v
         if char:
             globs = {"char": char}
             description = self._("Availability of location special function '%s'")
