@@ -232,6 +232,9 @@ class MemberModifiers(Module):
     def _prolong(self, kind, value, period, **kwargs):
         mod = self.get(kind)
         if mod:
+            # Prolonging infinite modifier
+            if mod["maxtill"] is None:
+                return
             # Prolong
             self._destroy(kind)
             till = from_unixtime(unix_timestamp(mod["maxtill"]) + period)
