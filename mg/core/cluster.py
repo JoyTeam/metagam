@@ -133,9 +133,9 @@ class Cluster(Module):
         tag = self.app().tag
         id = uuid4().hex
         if filename is None:
-            url = str("/%s/%s/%s%s/%s/%s.%s" % (subdir, tag[0], tag[0], tag[1], tag, id, ext))
+            url = str("/%s-%s/%s%s/%s/%s.%s" % (subdir, tag[0], tag[0], tag[1], tag, id, ext))
         else:
-            url = str("/%s/%s/%s%s/%s/%s-%s" % (subdir, tag[0], tag[0], tag[1], tag, id, filename))
+            url = str("/%s-%s/%s%s/%s/%s-%s" % (subdir, tag[0], tag[0], tag[1], tag, id, filename))
         uri = str("//" + host + url)
         cnn = HTTPConnection()
         cnn.connect((str(host), 80))
@@ -158,7 +158,7 @@ class Cluster(Module):
         host = str(random.choice(self.app().inst.config["storage"]))
         id = uuid4().hex
         tag = self.app().tag
-        url = str("/%s/%s/%s%s/%s/%s" % (subdir, tag[0], tag[0], tag[1], tag, id))
+        url = str("/%s-%s/%s%s/%s/%s" % (subdir, tag[0], tag[0], tag[1], tag, id))
         uri = str("//" + host + url)
         for ent in upload_list:
             cnn = HTTPConnection()
