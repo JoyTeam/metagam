@@ -101,7 +101,6 @@ class Cluster(Module):
             request.host = uri_obj.hostname
             request.body = data
             request.add_header("Content-type", content_type)
-            request.add_header("Content-length", len(request.body))
             request.add_header("Connection", "close")
             response = cnn.perform(request)
             if response.status_code != 201 and response.status_code != 204:
@@ -147,7 +146,6 @@ class Cluster(Module):
             request.host = host
             request.body = data
             request.add_header("Content-type", content_type)
-            request.add_header("Content-length", len(request.body))
             request.add_header("Connection", "close")
             response = cnn.perform(request)
             if response.status_code != 201 and response.status_code != 204:
@@ -178,7 +176,6 @@ class Cluster(Module):
                         data = f.read()
                 request.body = data
                 request.add_header("Content-type", str(ent["content-type"]))
-                request.add_header("Content-length", len(data))
                 request.add_header("Connection", "close")
                 response = cnn.perform(request)
                 if response.status_code != 201 and response.status_code != 204:
