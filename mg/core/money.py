@@ -1020,7 +1020,6 @@ class Xsolla(Module):
                     request.host = "2pay.ru"
                     request.body = query
                     request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
-                    request.add_header("Content-length", len(query))
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     self.debug(u"Xsolla response: %s %s", response.status_code, response.body)
@@ -1353,7 +1352,6 @@ class WebMoney(Module):
                     request = cnn.post(str(url), reqdata)
                     request.host = gate_host
                     request.add_header("Content-type", "application/xml")
-                    request.add_header("Content-length", len(reqdata))
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     if response.status_code != 200:
