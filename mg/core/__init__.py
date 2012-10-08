@@ -22,6 +22,7 @@ import logging.handlers
 import datetime
 import urlparse
 import cStringIO
+import traceback
 
 re_hook_path = re.compile(r'^(.+?)\.(.+)$')
 re_config_path = re.compile(r'^(.+?)\.(.+)$')
@@ -592,8 +593,10 @@ class Modules(object):
     """
     def __init__(self, app):
         self.app = weakref.ref(app)
+        self.modules_lock = Lock()
         self.loaded_modules = dict()
         self.not_auto_loaded = set()
+        self.modules_locked_by = None
 
     def load(self, modules, silent=False, auto_loaded=False):
         """
@@ -607,10 +610,18 @@ class Modules(object):
         if getattr(t, "modules_locked", False):
             return self._load(modules, silent, auto_loaded)
         else:
-            with self.app().inst.modules_lock:
+            wasLocked = False
+            if self.modules_lock.is_locked():
+                wasLocked = True
+                print "wait modules_lock load (app %s, locked by %s)" % (self.app().tag, self.modules_locked_by)
+            with self.modules_lock:
+                if wasLocked:
+                    print "modules_lock load acquired (app %s)" % self.app().tag
+                self.modules_locked_by = traceback.format_stack()
                 t.modules_locked = True
                 res = self._load(modules, silent, auto_loaded)
                 t.modules_locked = False
+                self.modules_locked_by = None
                 return res
 
     def _load(self, modules, silent=False, auto_loaded=False):
@@ -656,7 +667,8 @@ class Modules(object):
 
     def reload(self):
         "Reload all modules"
-        with self.app().inst.modules_lock:
+        with self.modules_lock:
+            self.modules_locked_by = traceback.format_stack()
             t = Tasklet.current()
             t.modules_locked = True
             modules = self.loaded_modules.keys()
@@ -664,11 +676,13 @@ class Modules(object):
             self.app().hooks.unregister_all()
             res = self._load(modules, auto_loaded=True)
             t.modules_locked = False
+            self.modules_locked_by = None
             return res
 
     def load_all(self):
         "Load all available modules"
-        with self.app().inst.modules_lock:
+        with self.modules_lock:
+            self.modules_locked_by = traceback.format_stack()
             t = Tasklet.current()
             t.modules_locked = True
             # removing automatically loaded modules
@@ -690,6 +704,7 @@ class Modules(object):
                         complete.add(name)
                         repeat = True
             t.modules_locked = False
+            self.modules_locked_by = None
 
 class Formatter(logging.Formatter):
     def format(self, record):
@@ -758,7 +773,6 @@ class Instance(object):
     This is an executable instance. It keeps references to all major objects
     """
     def __init__(self, server_id=None):
-        self.modules_lock = Lock()
         self.config = {}
         self.appfactory = None
         self.modules = set()
