@@ -148,6 +148,18 @@ class Location(Module):
             else:
                 raise AttributeError(attr)
 
+    def script_set_attr(self, attr, val, env):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.set_param(param, val)
+        raise AttributeError(attr)
+
+    def store(self):
+        if self.db_params.dirty:
+            self.db_params.store()
+
     @property
     def db_params(self):
         try:
@@ -167,6 +179,9 @@ class Location(Module):
         except KeyError:
             # 'param-value' handles cache storing automatically
             return self.call("locations.param-value", self, key, handle_exceptions)
+
+    def set_param(self, key, val):
+        return self.call("locations.set-param", self, key, val)
 
     def script_params(self):
         return {"loc": self}
