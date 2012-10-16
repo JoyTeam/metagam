@@ -1,5 +1,5 @@
 from mg import *
-from mg.core.cluster import TempFileList
+from mg.core.cluster import DBTempFileList
 import re
 import sys
 
@@ -52,7 +52,7 @@ class Wizard(Module):
         "Destroy wizard on destroy. Override to set your logic"
         self.config.remove()
         try:
-            temp_files = self.app().inst.int_app.objlist(TempFileList, query_index="wizard", query_equal=self.uuid)
+            temp_files = self.app().inst.int_app.objlist(DBTempFileList, query_index="wizard", query_equal=self.uuid)
         except AttributeError:
             pass
         else:

@@ -121,7 +121,7 @@ class FaviconAdmin(Module):
         return self._("Favicon")
 
     def advice_favicon(self, args, advice):
-        advice.append({"title": self._("Favicon documentation"), "content": self._('You can find detailed information on the favicon icons in the <a href="//www.%s/doc/favicon" target="_blank">favicons page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Favicon documentation"), "content": self._('You can find detailed information on the favicon icons in the <a href="//www.%s/doc/favicon" target="_blank">favicons page</a> in the reference manual.') % self.main_host})
 
     def admin_favicon(self):
         req = self.req()

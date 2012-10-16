@@ -230,7 +230,7 @@ class LocationFunctionsAdmin(ConstructorModule):
         if not loc.valid:
             self.call("web.not_found")
         # Advice
-        self.call("admin.advice", {"title": self._("Special functions documentation"), "content": self._('You can find detailed information on the location special functions system in the <a href="//www.%s/doc/locfunc" target="_blank">special functions page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Special functions documentation"), "content": self._('You can find detailed information on the location special functions system in the <a href="//www.%s/doc/locfunc" target="_blank">special functions page</a> in the reference manual.') % self.main_host, "order": 30})
         # Loading special functions
         funcs = self.call("locfunctions.functions", loc)
         default = funcs[0]["id"] if funcs else None

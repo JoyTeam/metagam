@@ -1,6 +1,6 @@
 from mg import *
 from mg.constructor import *
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 import re
 import zipfile
 import cStringIO
@@ -236,14 +236,14 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
                     href = m.group(1)
                     for i in range(0, len(attrs)):
                         if attrs[i][0] == att:
-                            attrs[i] = (att, "//www.%s/st-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                            attrs[i] = (att, "//www.%s/st-mg%s" % (str(self.main_host), href))
                 else:
                     m = re_dyn_mg.match(href)
                     if m:
                         href = m.group(1)
                         for i in range(0, len(attrs)):
                             if attrs[i][0] == att:
-                                attrs[i] = (att, "//www.%s/dyn-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                                attrs[i] = (att, "//www.%s/dyn-mg%s" % (str(self.main_host), href))
                     else:
                         m = re_design_root_prefix.match(href)
                         if m:
@@ -891,7 +891,7 @@ class DesignIndexCommonBlocks(DesignGenerator):
             "Description": self._("Description"),
             "Links": self._("Links"),
             "Ratings": self._("Ratings"),
-            "main_host": self.app().inst.config.get("main_host"),
+            "main_host": self.main_host,
             "EnterTheGame": self._("Enter the game"),
             "MMOConstructor": self._("Browser based online games constructor"),
         }
@@ -1608,7 +1608,7 @@ class DesignAdmin(Module):
                     fields.append({"type": "html", "html": '<div class="admin-description">%s</div>' % fl["description"]})
                     doc = fl.get("doc")
                     if doc:
-                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.app().inst.config["main_host"], doc, self._("Open documentation page")), "inline": True})
+                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.main_host, doc, self._("Open documentation page")), "inline": True})
                 fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
                 try:
                     self.call("admin.form", fields=fields)
@@ -1627,7 +1627,7 @@ class DesignAdmin(Module):
                         label = u"<strong>%s</strong> &mdash; %s" % (fl["filename"], fl["description"])
                         doc = fl.get("doc")
                         if doc:
-                            label = u'%s &mdash; <a href="http://www.%s%s" target="_blank">%s</a>' % (label, self.app().inst.config["main_host"], doc, self._("documentation"))
+                            label = u'%s &mdash; <a href="http://www.%s%s" target="_blank">%s</a>' % (label, self.main_host, doc, self._("documentation"))
                         fields.append({"id": "filename-%s" % fl["filename"], "type": "radio", "name": "filename", "value": fl["filename"], "boxLabel": label})
                 buttons = [
                     {"text": self._("Edit")},
@@ -1711,7 +1711,7 @@ class IndexPageAdmin(Module):
             menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "indexpage")
 
     def validate(self, design, parsed_html, errors):
@@ -1834,7 +1834,7 @@ class IndexPageAdmin(Module):
                     })
                     lst[-1]["lst"] = True
             vars["ratings"][-1]["lst"] = True
-        vars["main_host"] = self.app().inst.config["main_host"]
+        vars["main_host"] = self.main_host
 
     def generators(self, gens):
 #        gens.append(DesignIndexBrokenStones)
@@ -1952,7 +1952,7 @@ class SocioInterfaceAdmin(Module):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
@@ -2042,7 +2042,7 @@ class SocioInterfaceAdmin(Module):
                 "subject_html": random.choice(demo_subjects),
                 "subscribed": random.random() < 0.5,
                 "literal_created": random.choice(demo_dates),
-                "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                "avatar": "//%s/st/constructor/design/av%d.gif" % (self.main_host, random.randrange(0, 6)),
                 "author_html": random.choice(demo_authors),
                 "content_html": random.choice(demo_contents),
             }
@@ -2073,7 +2073,7 @@ class SocioInterfaceAdmin(Module):
                 for i in range(0, random.choice([1, 5, 20])):
                     post = {
                         "literal_created": random.choice(demo_dates),
-                        "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                        "avatar": "//%s/st/constructor/design/av%d.gif" % (self.main_host, random.randrange(0, 6)),
                         "author_html": random.choice(demo_authors),
                         "content_html": random.choice(demo_contents),
                     }
@@ -2154,7 +2154,7 @@ class SocioInterfaceAdmin(Module):
             lst.append({
                 "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
                 "href": "#" if random.random() < 0.8 else None,
-                "image": "//%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
+                "image": "//%s/st/constructor/cabinet/%s" % (self.main_host, random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
             })
         if random.random() < 0.8:
             lst.insert(0, {"search": True, "html": self._("Search")})
@@ -2220,7 +2220,7 @@ class GameInterfaceAdmin(ConstructorModule):
             menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "gameinterface")
 
     def validate(self, design, parsed_html, errors):
@@ -2243,7 +2243,7 @@ class GameInterfaceAdmin(ConstructorModule):
             fn = f.get("filename")
             doc = f.get("doc")
             if doc:
-                fn = u'<a href="http://www.%s%s" target="_blank">%s</a>' % (self.app().inst.config["main_host"], doc, fn)
+                fn = u'<a href="http://www.%s%s" target="_blank">%s</a>' % (self.main_host, doc, fn)
             html.append("<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (fn, f.get("description")))
         files = "".join(html)
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files, "order": 50})

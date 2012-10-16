@@ -344,8 +344,8 @@ class QuestsAdmin(ConstructorModule):
                 menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True}) 
 
     def advice_quests(self, hook, args, advice):
-        advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 10})
-        advice.append({"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 20})
+        advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.main_host, "order": 10})
+        advice.append({"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def headmenu_quests_editor(self, args):
         if args == "new":

@@ -5,7 +5,6 @@ import subprocess
 import sys
 import re
 import json
-import optparse
 
 re_class = re.compile('^upstream (\S+) {')
 
@@ -15,49 +14,7 @@ class Server(Module):
         self.rhook("int-server.spawn", self.spawn, priv="public")
         self.rhook("int-server.nginx", self.nginx, priv="public")
         self.rhook("core.fastidle", self.fastidle)
-        self.rhook("server.run", self.run)
         self.executable = re.sub(r'[^\/]+$', 'mg_worker', sys.argv[0])
-
-    def run(self):
-        inst = self.app().inst
-        # configuration
-        parser = optparse.OptionParser()
-        parser.add_option("-n", "--nginx", action="store_true", help="Manage nginx configuration")
-        parser.add_option("-q", "--queue", action="store_true", help="Take part in the global queue processing")
-        parser.add_option("-b", "--backends", type="int", help="Run the give quantity of backends")
-        (options, args) = parser.parse_args()
-        # daemon
-        daemon = WebDaemon(inst)
-        daemon.app = self.app()
-        port = daemon.serve_any_port("0.0.0.0")
-        self.app().server_id = port
-        # application_factory
-        inst.appfactory = ApplicationFactory(inst)
-        inst.appfactory.add(self.app())
-        # default option set
-        if not options.backends and not options.nginx and not options.queue:
-            options.backends = 4
-            options.nginx = True
-            options.queue = True
-        # registering
-        res = self.call("cluster.query_director", "/director/ready", {
-            "type": "server",
-            "port": port,
-            "id": self.app().server_id,
-            "params": json.dumps({
-                "backends": options.backends,
-                "nginx": options.nginx,
-                "queue": options.queue,
-            })
-        })
-        # run
-        inst.set_server_id(res["server_id"], "server")
-        while True:
-            try:
-                self.call("core.fastidle")
-            except Exception as e:
-                self.exception(e)
-            Tasklet.sleep(1)
 
     def running_workers(self):
         """
@@ -75,7 +32,7 @@ class Server(Module):
         workers = self.running_workers()
         new_count = int(request.param("workers"))
         old_count = workers["count"]
-        server_id = self.app().server_id
+        instid = self.app().instid
         if new_count < old_count: 
             # Killing
             workers["count"] = new_count
@@ -89,7 +46,7 @@ class Server(Module):
             for i in range(old_count, new_count):
                 self.debug("running child %d (process %s)", i, self.executable)
                 try:
-                    workers[i] = subprocess.Popen([self.executable, str(server_id), str(i)], close_fds=True)
+                    workers[i] = subprocess.Popen([self.executable, str(instid), str(i)], close_fds=True)
                 except OSError, e:
                     raise RuntimeError("Running %s: %s" % (self.executable, e))
             workers["count"] = new_count
@@ -97,12 +54,12 @@ class Server(Module):
 
     def fastidle(self):
         workers = self.running_workers()
-        server_id = self.app().server_id
+        instid = self.app().instid
         for i in range(0, workers["count"]):
             workers[i].poll()
             if workers[i].returncode is not None:
                 self.debug("respawning child %d (process %s)", i, self.executable)
-                workers[i] = subprocess.Popen([self.executable, str(server_id), str(i)], close_fds=True)
+                workers[i] = subprocess.Popen([self.executable, str(instid), str(i)], close_fds=True)
         self.call("core.check_last_ping")
 
     def nginx(self):

@@ -1334,7 +1334,7 @@ class WebMoney(Module):
             request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
             request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
             request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
-            response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
+            response = self.wm_query(self.clconf("wm_login_gate", "localhost:86"), "login.wmtransfer.com", "/ws/authorize.xiface", request)
             doc = response.documentElement
             if doc.tagName != "response":
                 raise RuntimeError("Unexpected response from WMLogin")
@@ -1348,10 +1348,10 @@ class WebMoney(Module):
         except HTTPError:
             self.call("web.response_global", self._("Error connecting to the WebMoney server. Try again later"), {})
 
-    def wm_query(self, gate_name, gate_host, url, request):
+    def wm_query(self, gate, real_host, url, request):
         reqdata = request.toxml("utf-8")
         self.debug("WM reqdata: %s", reqdata)
-        wm_gate = self.app().inst.config.get(gate_name, "unknown:0").split(":")
+        wm_gate = gate.split(":")
         host = str(wm_gate[0])
         port = int(wm_gate[1])
         try:
@@ -1363,7 +1363,7 @@ class WebMoney(Module):
                     raise HTTPError("Error connecting to %s:%d" % (host, port))
                 try:
                     request = cnn.post(str(url), reqdata)
-                    request.host = gate_host
+                    request.host = real_host
                     request.add_header("Content-type", "application/xml")
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
@@ -1389,7 +1389,7 @@ class WebMoney(Module):
         params.appendChild(doc.createElement("dict")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("info")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("mode")).appendChild(doc.createTextNode("0"))
-        response = self.wm_query("wm_passport_gate", "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
+        response = self.wm_query(self.clconf("wm_passport_gate", "localhost:87"), "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
         doc = response.documentElement
         if doc.tagName != "response":
             raise RuntimeError("Unexpected response from WMPassport")

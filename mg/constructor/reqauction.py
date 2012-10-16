@@ -342,7 +342,7 @@ class ReqAuction(ConstructorModule):
             # sending notification
             email = self.main_app().config.get("constructor.reqauction-email")
             if email:
-                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.app().inst.config["main_host"], request=request.uuid)
+                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.main_host, request=request.uuid)
                 self.main_app().hooks.call("email.send", email, self._("Request auction moderator"), self._("reqauction///Request moderation: %s") % request.get("title"), content)
             self.call("web.redirect", "/reqauction/mine")
 

@@ -68,7 +68,7 @@ clean:
 deploy: translations
 	rm -rf depl
 	find -name '*.pyc' -exec rm {} \;
-	bin/mg_compile .
+	devbin/mg_compile .
 	mkdir -p depl/bin
 	cp bin/* depl/bin/
 	cp -R mg static perl depl/

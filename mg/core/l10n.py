@@ -124,7 +124,7 @@ class L10n(Module):
         except AttributeError:
             pass
         try:
-            return str(self.app().inst.config["locale"])
+            return str(self.clconf("locale", "en"))
         except KeyError:
             pass
         return None

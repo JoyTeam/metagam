@@ -1,10 +1,12 @@
-from mg import *
+from concurrence.io import Socket
+from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
+from concurrence import Tasklet
+from uuid import uuid4
+import mg
 import json
 import re
 import socket
-from concurrence.io import Socket
-from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
-from uuid import uuid4
+import os
 
 max_packets_in_frame = 5
 
@@ -15,6 +17,9 @@ re_content_length = re.compile('^Content-Length:\s*(\d+)', re.IGNORECASE | re.MU
 re_valid_numeric = re.compile('^[\d\.]+$')
 re_watch_line = re.compile('^(\w+)\s+([^:]+):(\S+)\s*$')
 re_valid_channel = re.compile('^([a-zA-Z0-9]+)_id_([0-9a-f]{32})$')
+
+class RealplexorSocketError(Exception):
+    pass
 
 class RealplexorError(Exception):
     pass
@@ -196,24 +201,33 @@ class RealplexorConcurrence(object):
             finally:
                 conn.close()
         except socket.error as e:
-            raise RealplexorError("Socket error: %s" % e)
+            raise RealplexorSocketError("Socket error: %s" % e)
         except socket.gaierror as e:
             raise RealplexorError("DNS error: %s" % e)
         except socket.timeout as e:
             raise RealplexorError("Timeout error: %s" % e)
         except IOError as e:
-            raise RealplexorError("IOError: %s" % e)
+            raise RealplexorSocketError("IOError: %s" % e)
 
-class Realplexor(Module):
+class Realplexor(mg.Module):
     def register(self):
         self.rhook("stream.send", self.send)
         self.rhook("stream.packet", self.packet)
         # It is important that Realplexor's request_processed called after all other handlers
         # that can send something via Realplexor
         self.rhook("web.request_processed", self.request_processed, priority=-10)
+        self.rhook("realplexor.tasklet", self.tasklet)
+        self.rhook("realplexor.host", self.realplexor_host)
+
+    def realplexor_host(self):
+        config = self.call("cluster.services")
+        realplexor = config.get("realplexor")
+        if not realplexor:
+            raise RealplexorError("Realplexor is not running")
+        return realplexor[0]["addr"]
 
     def send(self, ids, data):
-        rpl = RealplexorConcurrence(self.main_app().config.get("cluster.realplexor", "127.0.0.1"), 10010, self.app().tag + "_")
+        rpl = RealplexorConcurrence(self.call("realplexor.host"), 10010, self.app().tag + "_")
         rpl.send(ids, data)
 
     def packet(self, ids, method_cls, method, **kwargs):
@@ -273,17 +287,23 @@ class Realplexor(Module):
     def request_processed(self):
         self.flush()
 
-class RealplexorDaemon(Daemon):
-    def __init__(self, app, id="stream"):
-        Daemon.__init__(self, app, "mg.core.realplexor.RealplexorDaemon", id)
-        self.persistent = True
+    def tasklet(self):
+        "This tasklet is being run from main application"
+        # Register service
+        inst = self.app().inst
+        int_app = inst.int_app
+        srv = mg.SingleApplicationWebService(self.app(), "realplexor", "realplexor", "rpl")
+        srv.serve_any_port()
+        int_app.call("cluster.register-service", srv)
+        Tasklet.new(self.loop)()
 
-    def main(self):
+    def loop(self):
+        # Main loop
         resync = True
         self.call("stream.init")
-        while not self.terminate:
+        while True:
             try:
-                rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+                rpl = RealplexorConcurrence("127.0.0.1", 10010)
                 # resynchronization
                 if resync:
                     resync = False
@@ -322,62 +342,34 @@ class RealplexorDaemon(Daemon):
                                     app.hooks.call("stream.connected", session_uuid)
                                 elif ev["event"] == "offline":
                                     app.hooks.call("stream.disconnected", session_uuid)
+                except RealplexorSocketError as e:
+                    self.error("Socket error when accessing realplexor: %s", e)
+                    resync = True
+                    env = os.environ.copy()
+                    env["PERL5LIB"] = "/usr/lib/realplexor"
+                    self.app().inst.int_app.call("procman.newproc", "realplexor",
+                        ["/usr/sbin/realplexorbin", "/etc/realplexor.conf"],
+                        env)
+                    # Let procman start. If it won't start in 3 seconds one more attempt will be made. Multiple
+                    # instances will be aborted automatically (bind() will return error to subsequent daemons)
+                    Tasklet.sleep(3)
                 except RealplexorError as e:
                     self.error("Error watching realplexor events: %s", e)
                     check_pos = True
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(1)
-        self.call("stream.done")
 
-class RealplexorAdmin(Module):
+class RealplexorAdmin(mg.Module):
     def register(self):
-        self.rhook("permissions.list", self.permissions_list)
-        self.rhook("menu-admin-constructor.cluster", self.menu_constructor_cluster)
-        self.rhook("ext-admin-realplexor.settings", self.realplexor_settings, priv="realplexor.config")
-        self.rhook("headmenu-admin-realplexor.settings", self.headmenu_realplexor_settings)
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
         self.rhook("ext-admin-realplexor.monitor", self.realplexor_monitor, priv="monitoring")
         self.rhook("headmenu-admin-realplexor.monitor", self.headmenu_realplexor_monitor)
-        self.rhook("int-realplexor.daemon", self.daemon, priv="public")
-        self.rhook("daemons.persistent", self.daemons_persistent)
-
-    def permissions_list(self, perms):
-        perms.append({"id": "realplexor.config", "name": self._("Realplexor configuration")})
-
-    def menu_constructor_cluster(self, menu):
-        req = self.req()
-        if req.has_access("realplexor.config"):
-            menu.append({"id": "realplexor/settings", "text": self._("Realplexor"), "leaf": True})
 
     def menu_cluster_monitoring(self, menu):
         req = self.req()
         if req.has_access("monitoring"):
             menu.append({"id": "realplexor/monitor", "text": self._("Realplexor"), "leaf": True})
-
-    def realplexor_settings(self):
-        req = self.req()
-        realplexor = req.param("realplexor")
-        if req.param("ok"):
-            config = self.app().config_updater()
-            config.set("cluster.realplexor", realplexor)
-            config.store()
-            self.call("admin.response", self._("Settings stored"), {})
-        else:
-            realplexor = self.conf("cluster.realplexor", "127.0.0.1")
-        fields = [
-            {"name": "realplexor", "label": self._("Realplexor host name"), "value": realplexor},
-        ]
-        self.call("admin.form", fields=fields)
-
-    def headmenu_realplexor_settings(self, args):
-        return self._("Realplexor settings")
-
-    def daemon(self):
-        self.debug("Running realplexor daemon")
-        daemon = RealplexorDaemon(self.main_app())
-        daemon.run()
-        self.call("web.response_json", {"ok": True})
 
     def realplexor_monitor(self):
         rows = []
@@ -389,7 +381,7 @@ class RealplexorAdmin(Module):
                 }
             ]
         }
-        rpl = RealplexorConcurrence(self.conf("cluster.realplexor", "127.0.0.1"), 10010)
+        rpl = RealplexorConcurrence(self.call("realplexor.host"), 10010)
         for channel, listeners in rpl.cmdOnlineWithCounters().iteritems():
             m = re_valid_channel.match(channel)
             if m:
@@ -399,7 +391,4 @@ class RealplexorAdmin(Module):
 
     def headmenu_realplexor_monitor(self, args):
         return self._("Realplexor monitor")
-
-    def daemons_persistent(self, daemons):
-        daemons.append({"cls": "metagam", "app": "main", "daemon": "stream", "url": "/realplexor/daemon"})
 

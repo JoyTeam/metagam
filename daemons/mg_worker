@@ -1,0 +1,49 @@
+#!/usr/bin/python2.6
+
+from concurrence import dispatch
+from concurrence.io.socket import Socket
+import mg
+import logging
+import os
+import sys
+from mg.constructor.processes import ConstructorInstance, ConstructorWebService
+
+def main():
+    try:
+        inst = ConstructorInstance("mmoconstructor")
+        # shared socket for public web requests
+        extport = inst.confint("constructor", "webport")
+        if type(extport) != int:
+            raise RuntimeError("webport not specified in [constructor] section of the config file")
+        extaddr = (inst.instaddr, extport)
+        extsock = Socket.server(extaddr)
+        # fork children
+        inst.close_all()
+        # TODO: fork
+        inst.reopen_all()
+        # internal application
+        # TODO: append dash and serial number (1, 2, 3, ...) to inst.instid
+        app = inst.int_app
+        app.load([
+            "mg.core.worker.Worker",
+            "mg.core.cluster.ClusterDaemon",
+            "mg.constructor.admin.Constructor"
+        ])
+        app.call("cluster.register-daemon")
+        app.call("cluster.run-int-service")
+        # run service handling public web requests
+        service_id = "%s-ext" % inst.instid
+        srv = ConstructorWebService(inst, service_id, inst.insttype, "ext")
+        srv.serve_socket(extaddr, extsock)
+        app.call("cluster.run-daemon-loop")
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+    except:
+        os._exit(1)
+
+dispatch(main)
+

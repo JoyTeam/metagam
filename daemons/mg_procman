@@ -1,0 +1,35 @@
+#!/usr/bin/python2.6
+
+from concurrence import dispatch
+import mg
+import logging
+import os
+import sys
+
+def main():
+    try:
+        inst = mg.Instance("procman")
+        if len(sys.argv) > 1:
+            inst.instid = sys.argv[1]
+        app = inst.int_app
+        app.load([
+            "mg.core.web.Web",
+            "mg.core.cluster.Cluster",
+            "mg.core.cluster.ClusterDaemon",
+            "mg.core.procman.ProcessManager",
+            "mg.constructor.procman.ProcessManager",
+        ])
+        app.call("cluster.register-daemon")
+        app.call("cluster.run-int-service")
+        app.call("cluster.run-daemon-loop")
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+    except:
+        os._exit(1)
+
+dispatch(main)
+

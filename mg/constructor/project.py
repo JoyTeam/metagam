@@ -170,7 +170,7 @@ class ConstructorProject(Module):
                 vars["global_html"] = "constructor/admin_global.html"
             else:
                 vars["global_html"] = "game/global.html"
-        vars["main_host"] = self.app().inst.config.get("main_host")
+        vars["main_host"] = self.main_host
 
     def email_sender(self, params):
         project = self.app().project
@@ -208,7 +208,7 @@ class ConstructorProjectAdmin(Module):
     def project_destroy(self):
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        redirect = "//www.%s/cabinet" % self.app().inst.config["main_host"]
+        redirect = "//www.%s/cabinet" % self.main_host
         req = self.req()
         if req.args == "admin":
             self.call("web.response_json", {"success": True, "redirect_top": redirect})
@@ -266,7 +266,7 @@ class ConstructorProjectAdmin(Module):
             vars["published"] = True
             self.call("game.dashboard", vars)
         else:
-            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.main_host})
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):
@@ -308,7 +308,7 @@ class ConstructorProjectAdmin(Module):
                     # message to the moderator
                     email = self.main_app().config.get("constructor.moderator-email")
                     if email:
-                        content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+                        content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.main_host, project.uuid)
                         self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
                     project.store()
                     self.app().store_config_hooks()

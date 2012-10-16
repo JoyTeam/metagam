@@ -1,21 +1,18 @@
 from mg import *
 from concurrence import Tasklet, JoinError, Timeout
 from concurrence.http import HTTPConnection
-from mg.core.classes import *
+from mg.core.common import *
 import re
 import json
 
 class Director(Module):
     def register(self):
         self.rdep(["mg.core.web.Web", "mg.core.cluster.Cluster", "mg.core.queue.Queue", "mg.core.queue.QueueRunner", "mg.core.projects.Projects",
-            "mg.core.daemons.DaemonsManager", "mg.core.realplexor.RealplexorAdmin", "mg.core.modifiers.ModifiersManager"])
-        self.config()
-        self.apply_config()
-        self.app().inst.setup_logger()
-        self.app().servers_online = self.conf("director.servers", {})
-        self.app().servers_online_modified = False
-        self.queue_workers = {}
-        self.workers_str = None
+            "mg.core.realplexor.RealplexorAdmin", "mg.core.modifiers.ModifiersManager"])
+        #self.app().servers_online = self.conf("director.servers", {})
+        #self.app().servers_online_modified = False
+        #self.queue_workers = {}
+        #self.workers_str = None
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("int-director.ready", self.director_ready, priv="public")
         self.rhook("int-director.reload", self.int_director_reload, priv="public")
@@ -27,38 +24,15 @@ class Director(Module):
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("director.queue_workers", self.director_queue_workers)
         self.rhook("cluster.servers_online", self.cluster_servers_online, priority=10)
-        self.rhook("director.run", self.run)
         self.rhook("core.appfactory", self.appfactory, priority=-10)
-        self.servers_online_updated()
-
-    def run(self):
-        # daemon
-        daemon = WebDaemon(self.app().inst)
-        daemon.app = self.app()
-        daemon.serve(("0.0.0.0", 3000))
-        # application factory
-        inst = self.app().inst
-        inst.appfactory = self.call("core.appfactory")
-        inst.appfactory.add(self.app())
-        inst.reloading_hard = 0
-        # background tasks
-        Tasklet.new(self.monitor)()
-        Tasklet.new(self.call)("queue.process")
-        Tasklet.new(self.call)("daemon.monitor")
-        inst.sql_read.run_ping_tasklet()
-        inst.sql_write.run_ping_tasklet()
-        while True:
-            try:
-                self.call("core.fastidle")
-            except Exception as e:
-                self.exception(e)
-            Tasklet.sleep(1)
+        self.rhook("director.monitor", self.monitor)
+        #self.servers_online_updated()
 
     def monitor(self):
         while True:
             try:
                 # pinging servers
-                for server_id, info in self.app().servers_online.items():
+                for instid, info in self.app().servers_online.items():
                     host = info.get("host")
                     port = info.get("port")
                     success = False
@@ -73,11 +47,11 @@ class Director(Module):
                                 response = cnn.perform(request)
                                 if response.status_code == 200 and response.get_header("Content-type") == "application/json":
                                     body = json.loads(response.body)
-                                    if body.get("ok") and body.get("server_id") == server_id:
+                                    if body.get("ok") and body.get("instid") == instid:
                                         success = True
                                         if info["type"] == "worker":
                                             try:
-                                                st = self.obj(WorkerStatus, server_id)
+                                                st = self.obj(WorkerStatus, instid)
                                             except ObjectNotFoundException:
                                                 success = False
                                                 request = cnn.get("/core/abort")
@@ -87,13 +61,13 @@ class Director(Module):
                             finally:
                                 cnn.close()
                     except Exception as e:
-                        self.info("%s - %s", server_id, e)
+                        self.info("%s - %s", instid, e)
                     if not success:
-                        fact_server = self.app().servers_online.get(server_id)
+                        fact_server = self.app().servers_online.get(instid)
                         if fact_server is not None:
                             fact_port = fact_server.get("port")
                             if fact_port is None or fact_port == port:
-                                self.server_offline(server_id)
+                                self.server_offline(instid)
                 # examining WorkerStatus records
                 lst = self.objlist(WorkerStatusList, query_index="all")
                 lst.load(silent=True)
@@ -106,10 +80,10 @@ class Director(Module):
                         st.remove()
                         # checking existing servers
                         abort = True
-                        for server_id, info in self.app().servers_online.items():
+                        for instid, info in self.app().servers_online.items():
                             host = info.get("host")
                             port = info.get("port")
-                            if host == st.get("host") and (port == st.get("port") or info["params"].get("ext_port") == st.get("ext_port")) and server_id != st.uuid:
+                            if host == st.get("host") and (port == st.get("port") or info["params"].get("ext_port") == st.get("ext_port")) and instid != st.uuid:
                                 abort = False
                                 break
                     else:
@@ -138,15 +112,15 @@ class Director(Module):
                 self.exception(e)
             Tasklet.sleep(10)
 
-    def server_offline(self, server_id):
-        del self.app().servers_online[server_id]
+    def server_offline(self, instid):
+        del self.app().servers_online[instid]
         self.store_servers_online()
         self.servers_online_updated()
         # removing status object
-        st = self.obj(WorkerStatus, server_id, silent=True)
+        st = self.obj(WorkerStatus, instid, silent=True)
         st.remove()
         # additional actions
-        self.call("director.unregistering_server", server_id)
+        self.call("director.unregistering_server", instid)
 
     def appfactory(self):
         raise Hooks.Return(ApplicationFactory(self.app().inst))
@@ -278,7 +252,7 @@ class Director(Module):
                 break
         self.store_servers_online()
         self.servers_online_updated()
-        self.app().inst.reloading_hard = 0
+        #self.app().inst.reloading_hard = 0
 
     def director_reload(self):
         result = {}
@@ -290,8 +264,9 @@ class Director(Module):
         return result
 
     def reload_servers(self, result={}):
+        return
         config = json.dumps(self.config())
-        for server_id, info in self.app().servers_online.items():
+        for instid, info in self.app().servers_online.items():
             errors = 1
             try:
                 with Timeout.push(20):
@@ -303,7 +278,7 @@ class Director(Module):
                     errors = err
             except Exception as e:
                 self.error("%s:%s - %s", info["host"], info["port"], e)
-            tag = "%s (%s:%s)" % (server_id, info["host"], info["port"])
+            tag = "%s (%s:%s)" % (instid, info["host"], info["port"])
             if errors:
                 result[tag] = "ERRORS: %s" % errors
             else:
@@ -317,22 +292,23 @@ class Director(Module):
             "title": self._("Welcome to the cluster control center"),
             "setup": self._("Change cluster settings")
         }
-        if len(self.app().servers_online):
-            hosts = self.app().servers_online.keys()
-            hosts.sort()
-            vars["servers_online"] = {
-                "title": self._("List of servers online"),
-                "list": [{
-                    "id": host_id,
-                    "type": info["type"],
-                    "host": info["host"],
-                    "port": info["port"],
-                    "params": json.dumps(info["params"]),
-                } for host_id, info in [(host, self.app().servers_online[host]) for host in hosts]]
-            }
+        #if len(self.app().servers_online):
+        #    hosts = self.app().servers_online.keys()
+        #    hosts.sort()
+        #    vars["servers_online"] = {
+        #        "title": self._("List of servers online"),
+        #        "list": [{
+        #            "id": host_id,
+        #            "type": info["type"],
+        #            "host": info["host"],
+        #            "port": info["port"],
+        #            "params": json.dumps(info["params"]),
+        #        } for host_id, info in [(host, self.app().servers_online[host]) for host in hosts]]
+        #    }
         return self.call("web.response_template", "director/index.html", vars)
 
     def config(self):
+        return
         conf = self.conf("director.config")
         if conf is None:
             conf = {}
@@ -367,10 +343,9 @@ class Director(Module):
 
     def apply_config(self):
         inst = self.app().inst
-        inst.dbpool.set_host(inst.config["cassandra"], primary_host_id=0)
-        inst.mcpool.set_host(inst.config["memcached"][0])
-        inst.sql_read.set_servers(((inst.config["mysql_server"], 3306),), inst.config["mysql_user"], inst.config["mysql_password"], inst.config["mysql_database"], primary_host_id=0)
-        inst.sql_write.set_servers(((inst.config["mysql_server"], 3306),), inst.config["mysql_user"], inst.config["mysql_password"], inst.config["mysql_database"], primary_host_id=0)
+        inst.init_cassandra()
+        inst.init_memcached()
+        inst.init_mysql()
 
     def director_config(self):
         self.call("web.response_json", self.config())
@@ -378,97 +353,84 @@ class Director(Module):
     def director_servers(self):
         self.call("web.response_json", self.app().servers_online)
 
-    def split_host_port(self, str, defport):
-        ent = re.split(':', str)
-        if len(ent) >= 2:
-            return (ent[0], int(ent[1]))
-        else:
-            return (str, defport)
-        
     def director_setup(self):
-        request = self.req()
-        memcached = request.param("memcached")
-        cassandra = request.param("cassandra")
-        storage = request.param("storage")
-        main_host = request.param("main_host")
-        admin_user = request.param("admin_user")
-        smtp_server = request.param("smtp_server")
-        mysql_server = request.param("mysql_server")
-        mysql_database = request.param("mysql_database")
-        mysql_user = request.param("mysql_user")
-        mysql_password = request.param("mysql_password")
-        wm_w3s_gate = request.param("wm_w3s_gate")
-        wm_passport_gate = request.param("wm_passport_gate")
-        wm_login_gate = request.param("wm_login_gate")
-        locale = request.param("locale")
-        config = self.config()
+        req = self.req()
+        params = ["memcached", "storage", "main_host", "admin_user", "smtp_server",
+                "mysql_read_server", "mysql_write_server", "mysql_database", "mysql_user",
+                "mysql_password", "wm_w3s_gate", "wm_passport_gate", "wm_login_gate",
+                "locale"]
+        listParams = set(["memcached", "storage", "mysql_read_server", "mysql_write_server"])
+        defaultValues = {
+            "memcached": ["127.0.0.1"],
+            "storage": ["storage"],
+            "main_host": "main",
+            "smtp_server": "127.0.0.1",
+            "mysql_read_server": ["127.0.0.1"],
+            "mysql_write_server": ["127.0.0.1"],
+            "mysql_database": "metagam",
+            "mysql_user": "metagam",
+            "wm_w3s_gate": "localhost:85",
+            "wm_login_gate": "localhost:86",
+            "wm_passport_gate": "localhost:87",
+            "locale": "en"
+        }
+        values = {}
+        config = self.app().inst.dbconfig
         if self.ok():
-            config["memcached"] = [self.split_host_port(srv, 11211) for srv in re.split('\s*,\s*', memcached)]
-            config["cassandra"] = [self.split_host_port(srv, 9160) for srv in re.split('\s*,\s*', cassandra)]
-            config["storage"] = re.split('\s*,\s*', storage)
-            config["main_host"] = main_host
-            config["admin_user"] = admin_user
-            config["smtp_server"] = smtp_server
-            config["mysql_server"] = mysql_server
-            config["mysql_database"] = mysql_database
-            config["mysql_user"] = mysql_user
-            config["mysql_password"] = mysql_password
-            config["wm_w3s_gate"] = wm_w3s_gate
-            config["wm_passport_gate"] = wm_passport_gate
-            config["wm_login_gate"] = wm_login_gate
-            config["locale"] = locale
-            self.app().config.set("director.config", config)
-            self.app().config.store()
+            for param in params:
+                val = req.param(param).strip()
+                values[param] = val
+                if val == "":
+                    config.delkey(param)
+                else:
+                    if param in listParams:
+                        val = re.split('\s*,\s*', val)
+                    config.set(param, val)
+            config.store()
             self.apply_config()
             self.director_reload()
             self.reload_servers()
             self.call("web.redirect", "/")
         else:
-            memcached = ", ".join("%s:%s" % (port, host) for port, host in config["memcached"])
-            cassandra = ", ".join("%s:%s" % (port, host) for port, host in config["cassandra"])
-            storage = ", ".join(config["storage"])
-            main_host = config["main_host"]
-            admin_user = config.get("admin_user")
-            smtp_server = config.get("smtp_server")
-            mysql_server = config.get("mysql_server")
-            mysql_database = config.get("mysql_database")
-            mysql_user = config.get("mysql_user")
-            mysql_password = config.get("mysql_password")
-            wm_w3s_gate = config.get("wm_w3s_gate")
-            wm_passport_gate = config.get("wm_passport_gate")
-            wm_login_gate = config.get("wm_login_gate")
-            locale = config.get("locale")
+            for param in params:
+                val = config.get(param, defaultValues.get(param))
+                if param in listParams:
+                    if val:
+                        val = ", ".join(val)
+                    else:
+                        val = ""
+                values[param] = val
         return self.call("web.response_template", "director/setup.html", {
             "title": self._("Cluster settings"),
             "form": {
                 "memcached_desc": self._("<strong>Memcached servers</strong> (host:port, host:port, ...)"),
-                "memcached": memcached,
-                "cassandra_desc": self._("<strong>Cassandra servers</strong> (host:port, host:post, ...)"),
-                "cassandra": cassandra,
+                "memcached": values["memcached"],
                 "storage_desc": self._("<strong>Storage servers</strong> (host, host, ...)"),
-                "storage": storage,
+                "storage": values["storage"],
                 "main_host_desc": self._("<strong>Main application host name</strong> (without www)"),
-                "main_host": main_host,
+                "main_host": values["main_host"],
                 "admin_user_desc": self._("<strong>Administrator</strong> (uuid)"),
-                "admin_user": admin_user,
+                "admin_user": values["admin_user"],
                 "smtp_server_desc": self._("<strong>SMTP server</strong>"),
-                "smtp_server": smtp_server,
-                "mysql_server_desc": self._("<strong>MySQL server</strong>"),
-                "mysql_server": mysql_server,
+                "smtp_server": values["smtp_server"],
+                "mysql_write_server_desc": self._("<strong>MySQL write server</strong>"),
+                "mysql_write_server": values["mysql_write_server"],
+                "mysql_read_server_desc": self._("<strong>MySQL read server</strong>"),
+                "mysql_read_server": values["mysql_read_server"],
                 "mysql_database_desc": self._("<strong>MySQL database</strong>"),
-                "mysql_database": mysql_database,
+                "mysql_database": values["mysql_database"],
                 "mysql_user_desc": self._("<strong>MySQL user</strong>"),
-                "mysql_user": mysql_user,
+                "mysql_user": values["mysql_user"],
                 "mysql_password_desc": self._("<strong>MySQL password</strong>"),
-                "mysql_password": mysql_password,
+                "mysql_password": values["mysql_password"],
                 "wm_w3s_gate_desc": self._("<strong>HTTP proxy to w3s.wmtransfer.com</strong> (host:port)"),
-                "wm_w3s_gate": wm_w3s_gate,
+                "wm_w3s_gate": values["wm_w3s_gate"],
                 "wm_login_gate_desc": self._("<strong>HTTP proxy to login.wmtransfer.com</strong> (host:port)"),
-                "wm_login_gate": wm_login_gate,
+                "wm_login_gate": values["wm_login_gate"],
                 "wm_passport_gate_desc": self._("<strong>HTTP proxy to passport.webmoney.ru</strong> (host:port)"),
-                "wm_passport_gate": wm_passport_gate,
+                "wm_passport_gate": values["wm_passport_gate"],
                 "locale_desc": self._("<strong>Global locale</strong> (en, ru)"),
-                "locale": locale,
+                "locale": values["locale"],
                 "submit_desc": self._("Save")
             }
         })
@@ -487,6 +449,7 @@ class Director(Module):
                     self.queue_workers[cls] = [srv]
 
     def fastidle(self):
+        return
         if self.app().servers_online_modified:
             self.app().servers_online_modified = False
             self.app().config.set("director.servers", self.app().servers_online)
@@ -500,9 +463,9 @@ class Director(Module):
     def configure_nginx(self):
         nginx = set()
         workers = {}
-        for server_id, info in self.app().servers_online.items():
+        for instid, info in self.app().servers_online.items():
             if self.app().inst.reloading_hard:
-                st = self.obj(WorkerStatus, server_id, silent=True)
+                st = self.obj(WorkerStatus, instid, silent=True)
                 if st.get("reloading"):
                     continue
             try:
@@ -552,7 +515,7 @@ class Director(Module):
             except Exception as e:
                 self.exception(e)
         # storing online list
-        server_id = str(host)
+        instid = str(host)
         conf = {
             "host": host,
             "port": port,
@@ -561,7 +524,7 @@ class Director(Module):
         }
         parent = request.param("parent")
         if parent and parent != "":
-            server_id = "%s-server-%s" % (server_id, parent)
+            instid = "%s-server-%s" % (instid, parent)
             params["parent"] = "%s-%s-%s" % (host, "server", parent)
             if request.param("queue") != "":
                 params["queue"] = request.param("queue")
@@ -570,19 +533,19 @@ class Director(Module):
                 if parent_info is not None:
                     if parent_info["params"].get("queue"):
                         params["queue"] = True
-        server_id = "%s-%s" % (server_id, type)
+        instid = "%s-%s" % (instid, type)
         id = request.param("id")
         if id and id != "":
-            server_id = "%s-%02d" % (server_id, int(id))
+            instid = "%s-%02d" % (instid, int(id))
             conf["id"] = id
-        self.app().servers_online[server_id] = conf
-        self.call("director.registering_server", server_id, conf)
+        self.app().servers_online[instid] = conf
+        self.call("director.registering_server", instid, conf)
         # clearing possibly "reloading" state
-        obj = self.obj(WorkerStatus, server_id, {}, silent=True)
+        obj = self.obj(WorkerStatus, instid, {}, silent=True)
         obj.remove()
         # updating nginx
         self.store_servers_online()
         self.servers_online_updated()
         if type == "server" and self.workers_str != None:
             Tasklet.new(self.configure_nginx_server)(host, port, self.workers_str)
-        self.call("web.response_json", {"ok": 1, "server_id": server_id, "host": host})
+        self.call("web.response_json", {"ok": 1, "instid": instid, "host": host})

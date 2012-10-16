@@ -1,10 +1,10 @@
 from mg import *
 from mg.core.auth import UserPermissions, UserPermissionsList
 from mg.core.queue import Schedule
-from mg.core.cluster import TempFileList
+from mg.core.cluster import DBTempFileList
 from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterForm, DBCharacterList
 import mg.constructor.common
-from mg.constructor.common import Project, ProjectList
+from mg.core.projects import Project, ProjectList
 from uuid import uuid4
 import mg
 import time
@@ -33,8 +33,8 @@ class ConstructorUtils(Module):
         self.rhook("menu-admin-top.list", self.menu_admin_top_list, priority=-500)
 
     def menu_admin_top_list(self, topmenu):
-        topmenu.append({"href": "//www.%s/forum" % self.app().inst.config["main_host"], "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
-        topmenu.append({"href": "//www.%s/cabinet" % self.app().inst.config["main_host"], "text": self._("Cabinet"), "tooltip": self._("Cabinet")})
+        topmenu.append({"href": "//www.%s/forum" % self.main_host, "text": self._("Forum"), "tooltip": self._("Go to the Constructor forum")})
+        topmenu.append({"href": "//www.%s/cabinet" % self.main_host, "text": self._("Cabinet"), "tooltip": self._("Cabinet")})
 
 class Constructor(Module):
     def register(self):
@@ -49,13 +49,13 @@ class Constructor(Module):
             "mg.constructor.design.SocioInterface",
             "mg.constructor.interface.Dynamic",
             "mg.constructor.doc.Documentation", "mg.core.sites.Counters", "mg.core.sites.CountersAdmin", "mg.core.sites.SiteAdmin",
-            "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
-            "mg.socio.telegrams.Telegrams", "mg.core.daemons.Daemons", "mg.core.daemons.DaemonsAdmin",
+            "mg.core.realplexor.Realplexor", "mg.core.realplexor.RealplexorAdmin", "mg.core.emails.EmailAdmin",
+            "mg.socio.telegrams.Telegrams",
             "mg.core.cluster.ClusterAdmin", "mg.constructor.auth.AuthAdmin", "mg.core.auth.Dossiers",
             "mg.socio.smiles.Smiles", "mg.socio.smiles.SmilesAdmin",
             "mg.core.emails.EmailSender", "mg.constructor.emails.EmailSenderAdmin",
             "mg.socio.restraints.Restraints", "mg.socio.restraints.RestraintsAdmin",
-            "mg.core.modifiers.Modifiers", "mg.core.modifiers.ModifiersManager",
+            "mg.core.modifiers.Modifiers",
             "mg.constructor.paidservices.PaidServices", "mg.constructor.paidservices.PaidServicesAdmin",
             "mg.socio.paidservices.PaidServices",
             "mg.core.dbexport.Export",
@@ -77,7 +77,7 @@ class Constructor(Module):
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("core.appfactory", self.appfactory)
-        self.rhook("core.webdaemon", self.webdaemon)
+        self.rhook("core.webservice", self.webservice)
         self.rhook("project.title", self.project_title)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("projects.list", self.projects_list)
@@ -111,7 +111,7 @@ class Constructor(Module):
         self.rhook("project.description", self.project_description)
 
     def project_logo(self):
-        return "http://www.%s/st/constructor/logo/rounded.jpg" % self.app().inst.config["main_host"]
+        return "http://www.%s/st/constructor/logo/rounded.jpg" % self.main_host
 
     def project_description(self):
         return self._("MMO Constructor is a service allowing users to create their own online games")
@@ -273,8 +273,8 @@ class Constructor(Module):
     def appfactory(self):
         raise Hooks.Return(mg.constructor.common.ApplicationFactory(self.app().inst))
 
-    def webdaemon(self):
-        raise Hooks.Return(mg.constructor.common.ConstructorWebDaemon(self.app().inst))
+    def webservice(self):
+        raise Hooks.Return(mg.constructor.common.ConstructorWebService(self.app().inst))
 
     def objclasses_list(self, objclasses):
         objclasses["Project"] = (Project, ProjectList)
@@ -434,7 +434,7 @@ class Constructor(Module):
     def universal_variables(self, vars):
         vars["ConstructorTitle"] = self._("Browser-based Games Constructor")
         vars["ConstructorCopyright"] = self._("Copyright &copy; Joy Team, 2009-%s") % datetime.datetime.utcnow().strftime("%Y")
-        vars["ConstructorSupport"] = '<a href="mailto:support@{0}">support@{0}</a>'.format(self.app().inst.config["main_host"])
+        vars["ConstructorSupport"] = '<a href="mailto:support@{0}">support@{0}</a>'.format(self.main_host)
 
     def redirects(self, tbl):
         tbl["login"] = "/cabinet"
@@ -491,7 +491,7 @@ class Constructor(Module):
                     title = self._("Untitled game")
                 href = None
                 if project.get("inactive"):
-                    domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
+                    domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.main_host))
                     href = "http://%s/admin" % domain
                 else:
                     href = "/constructor/game/%s" % project.uuid
@@ -604,7 +604,7 @@ class Constructor(Module):
         app = self.app().inst.appfactory.get_by_tag(project.uuid)
         domain = project.get("domain")
         if domain is None:
-            domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.app().inst.config["main_host"]))
+            domain = "%s.%s" % (project.uuid, self.conf("constructor.projects-domain", self.main_host))
         else:
             domain = "www.%s" % domain
         admins = app.objlist(DBCharacterList, query_index="admin", query_equal="1")
@@ -636,13 +636,13 @@ class Constructor(Module):
             users.remove()
             perms = app.objlist(UserPermissionsList, users.uuids())
             perms.remove()
-            config = app.objlist(ConfigGroupList, query_index="all")
+            config = app.objlist(DBConfigGroupList, query_index="all")
             config.remove()
-            hook_modules = app.objlist(HookGroupModulesList, query_index="all")
+            hook_modules = app.objlist(DBHookGroupModulesList, query_index="all")
             hook_modules.remove()
             wizards = app.objlist(WizardConfigList, query_index="all")
             wizards.remove()
-        temp_files = int_app.objlist(TempFileList, query_index="app", query_equal=tag)
+        temp_files = int_app.objlist(DBTempFileList, query_index="app", query_equal=tag)
         temp_files.load(silent=True)
         for file in temp_files:
             file.delete()

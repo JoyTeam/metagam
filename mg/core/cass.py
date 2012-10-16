@@ -327,7 +327,7 @@ class CassandraPool(object):
         logging.getLogger("mg.core.cass.CassandraPool").debug(*args, **kwargs)
 
     def sys_connection(self):
-        "Create a new CassandraConnection and connect to the system host (for schema changed)"
+        "Create a new CassandraConnection and connect to the system host (for schema changes)"
         connection = CassandraConnection(self.sys_host)
         connection.connect()
         return connection

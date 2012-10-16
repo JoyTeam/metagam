@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-08-02 11:13+0300\n"
+"PO-Revision-Date: 2012-09-07 10:29+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -188,9 +188,6 @@ msgstr "<p>Ваша игра в данный момент находится н�
 msgid "<strong>Administrator</strong> (uuid)"
 msgstr "<strong>Администратор</strong> (uuid)"
 
-msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
-msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
-
 msgid "<strong>Global locale</strong> (en, ru)"
 msgstr "<strong>Глобальная локаль</strong> (en, ru)"
 
@@ -215,11 +212,14 @@ msgstr "<strong>База данных MySQL</strong>"
 msgid "<strong>MySQL password</strong>"
 msgstr "<strong>Пароль MySQL</strong>"
 
-msgid "<strong>MySQL server</strong>"
-msgstr "<strong>Сервер MySQL</strong>"
+msgid "<strong>MySQL read server</strong>"
+msgstr "<strong>Сервер MySQL (чтение)</strong>"
 
 msgid "<strong>MySQL user</strong>"
 msgstr "<strong>Пользователь MySQL</strong>"
+
+msgid "<strong>MySQL write server</strong>"
+msgstr "<strong>Сервер MySQL (запись)</strong>"
 
 msgid "<strong>SMTP server</strong>"
 msgstr "<strong>Сервер SMTP</strong>"
@@ -1914,7 +1914,10 @@ msgid ""
 "Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n"
 "\n"
 "Payment interface: {url}"
-msgstr "Срок действия домена {domain} заканчивается {reg_till}, но у вас недостаточно средств, чтобы продлить его. Если вы хотите продлить {domain}, вам необходимо иметь {price} MM$ на вашем счету.\n\nПлатёжный интерфейс: {url}"
+msgstr ""
+"Срок действия домена {domain} заканчивается {reg_till}, но у вас недостаточно средств, чтобы продлить его. Если вы хотите продлить {domain}, вам необходимо иметь {price} MM$ на вашем счету.\n"
+"\n"
+"Платёжный интерфейс: {url}"
 
 msgid "Domains"
 msgstr "Домены"
@@ -3641,9 +3644,6 @@ msgstr "Список денежных счетов"
 
 msgid "List of pending domains"
 msgstr "Список ожидающих доменов"
-
-msgid "List of servers online"
-msgstr "Список серверов онлайн"
 
 msgid "List of transitions in the location"
 msgstr "Список переходов в локации"
@@ -8896,6 +8896,10 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
+#~ msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
+#~ msgid "List of servers online"
+#~ msgstr "Список серверов онлайн"
 #~ msgid "Enter name"
 #~ msgstr "Введите имя"
 #~ msgid "Invalid sex specified"

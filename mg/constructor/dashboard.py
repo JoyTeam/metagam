@@ -258,7 +258,7 @@ class ProjectDashboard(Module):
             invitations = config.get("constructor.invitations")
             moderator_email = config.get("constructor.moderator-email")
             reqauction_email = config.get("constructor.reqauction-email")
-            projects_domain = config.get("constructor.projects-domain", self.app().inst.config["main_host"])
+            projects_domain = config.get("constructor.projects-domain", self.main_host)
             invitations_text = config.get("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment"))
         fields = [
             {"type": "combo", "name": "invitations", "label": self._("Registration on invitations"), "value": invitations, "values": [(0, self._("Open registration")), (1, self._("Registration on invitations")), (2, self._("Registration closed"))]},

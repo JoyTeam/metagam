@@ -1,4 +1,4 @@
-from mg.core import Module
+from mg.core.applications import Module
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 from concurrence import Tasklet

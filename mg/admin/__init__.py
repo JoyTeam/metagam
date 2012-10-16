@@ -1,5 +1,5 @@
 from mg import *
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image
@@ -40,7 +40,7 @@ class AdminInterface(Module):
         vars = {
             "menu": json.dumps(menu),
             "title": self._("Administration interface"),
-            "main_host": self.app().inst.config["main_host"],
+            "main_host": self.main_host,
             "debug_ext": self.conf("debug.ext"),
         }
         if getattr(self.app(), "project", None):

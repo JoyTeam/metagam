@@ -129,7 +129,7 @@ class Email(Module):
                 "headers": headers,
             }, retry_on_fail=True)
         params = {
-            "email": "robot@%s" % self.app().inst.config["main_host"],
+            "email": "robot@%s" % self.main_host,
             "name": "Metagam Robot",
             "prefix": "[mg] ",
         }
@@ -138,7 +138,7 @@ class Email(Module):
             from_email = params["email"]
             from_name = params["name"]
         self.info("To %s <%s>: %s", utf2str(to_name), utf2str(to_email), utf2str(subject))
-        s = SMTP(self.app().inst.config["smtp_server"])
+        s = SMTP(self.clconf("smtp_server", "127.0.0.1"))
         try:
             if type(content) == unicode:
                 content = content.encode("utf-8")
@@ -545,7 +545,7 @@ class EmailSender(Module):
             content = '<font face="Tahoma">%s</font>' % message.get("content")
             subject = message.get("subject")
             params = {
-                "email": "robot@%s" % self.app().inst.config["main_host"],
+                "email": "robot@%s" % self.main_host,
                 "name": "Metagam Robot",
                 "prefix": "[mg] ",
                 "content": content,

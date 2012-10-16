@@ -24,6 +24,11 @@ re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
 re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
 re_group = re.compile(r'^[a-z0-9\-]+')
 re_protocol = re.compile(r'^[a-z]+://')
+re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
+re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
+re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*\])')
+re_hook_parse = re.compile(r'^(<|\[)hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*(/>|\])$')
+re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
 
 class Request(object):
     "HTTP request"
@@ -47,7 +52,7 @@ class Request(object):
         if self._params_loaded is None:
             self.load_params()
         if self.headers_sent:
-            raise DoubleResponseException()
+            raise DoubleResponseError()
         self.headers_sent = True
         self._start_response(*args)
 
@@ -277,33 +282,55 @@ class WSGIServer(http.WSGIServer):
     def handle_connection(self, socket):
         HTTPHandler(self).handle(socket, self._application)
 
-class WebDaemon(object):
-    "Abstract web application serving HTTP requests"
+class WebService(Loggable):
+    "Abstract web service serving HTTP requests"
 
-    def __init__(self, inst, app=None):
-        object.__init__(self)
+    def __init__(self, inst, service_id, service_type, fqn="mg.core.web.WebService"):
+        Loggable.__init__(self, fqn)
         self.server = WSGIServer(self.request)
+        self.socket_server = None
         self.inst = inst
-        self.app = app
-        self.logger = logging.getLogger("mg.core.web.WebDaemon")
-        self.active_requests = 0
+        self.addr = None
+        self.id = service_id
+        self.type = service_type
 
-    def serve(self, addr):
-        "Runs a WebDaemon instance listening given port"
+    def serve_socket(self, addr, socket):
+        "Runs a WebService instance accepting connections from given socket"
         try:
-            self.server.serve(addr)
-            self.logger.info("serving %s:%d", addr[0], addr[1])
+            from concurrence.io.socket import SocketServer
+            self.socket_server = SocketServer(socket, self.server.handle_connection)
+            self.socket_server.serve()
+            self.info("serving %s:%d on shared socket", addr[0], addr[1])
+            self.addr = (addr[0], addr[1])
         except Exception as err:
-            self.logger.error("Listen %s:%d: %s", addr[0], addr[1], err)
+            self.error("Listen %s:%d: %s", addr[0], addr[1], err)
             os._exit(1)
 
-    def serve_any_port(self, hostaddr):
-        "Runs a WebDaemon instance listening arbitrarily selected port"
-        for port in range(3000, 65536):
+    def stop(self):
+        if self.socket_server:
+            self.socket_server.close()
+            self.socket_server = None
+
+    def serve(self, addr):
+        "Runs a WebService instance listening given port"
+        try:
+            self.socket_server = self.server.serve(addr)
+            self.info("serving %s:%d", addr[0], addr[1])
+            self.addr = (addr[0], addr[1])
+        except Exception as err:
+            self.error("Listen %s:%d: %s", addr[0], addr[1], err)
+            os._exit(1)
+
+    def serve_any_port(self, hostaddr=None, port_min=3000, port_max=3999):
+        "Runs a WebService instance listening arbitrarily selected port"
+        if hostaddr is None:
+            hostaddr = self.inst.instaddr
+        for port in xrange(port_min, port_max + 1):
             try:
                 try:
-                    self.server.serve((hostaddr, port))
-                    self.logger.info("serving %s:%d", hostaddr, port)
+                    self.socket_server = self.server.serve((hostaddr, port))
+                    self.info("serving %s:%d", hostaddr, port)
+                    self.addr = (hostaddr, port)
                     return port
                 except socket.error as err:
                     if err.errno == 98:
@@ -311,9 +338,9 @@ class WebDaemon(object):
                     else:
                         raise
             except Exception as err:
-                self.logger.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
+                self.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
                 os._exit(1)
-        self.logger.error("Couldn't find any unused port")
+        self.error("Couldn't find any available port")
         os._exit(1)
 
     def req(self):
@@ -322,48 +349,42 @@ class WebDaemon(object):
         except AttributeError:
             raise RuntimeError("Module.req() called outside of a web handler")
 
-    def new_request_obj(self, environ, start_response):
-        return Request(environ, start_response)
-
     def request(self, environ, start_response):
         "Process single HTTP request"
+        request = Request(environ, start_response)
+        Tasklet.current().req = request
+        print "Received request: %s" % request.uri()
         try:
-            self.active_requests += 1
-            request = self.new_request_obj(environ, start_response)
-            Tasklet.current().req = request
+            # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             try:
-                # remove doubling, leading and trailing slashes, unquote and convert to utf-8
-                try:
-                    uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
-                except UnicodeDecodeError:
-                    return request.send_response("404 Not Found", request.headers, "<html><body><h1>404 Not Found</h1></body></html>")
-                else:
-                    return self.request_uri(request, uri)
-            except RuntimeError as e:
-                self.logger.error(e)
-                e = u"%s" % e
-                try:
-                    if getattr(request, "upload_handler", None):
-                        return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": e})))
-                except Exception as e2:
-                    self.logger.exception(e2)
-                if type(e) == unicode:
-                    e = e.encode("utf-8")
-                return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
-            except Exception as e:
-                try:
-                    self.logger.exception(utf2str(e))
-                except Exception as e2:
-                    print "Unhandled exception during logging: %s" % e2
-                    print traceback.format_exc()
-                try:
-                    if getattr(request, "upload_handler", None):
-                        return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))
-                except Exception as e2:
-                    self.logger.exception(e2)
-                return request.internal_server_error()
-        finally:
-            self.active_requests -= 1
+                uri = re.sub(r'^/*(.*?)/*$', r'\1', re.sub(r'/{2+}', '/', mg.core.tools.urldecode(request.uri())))
+            except UnicodeDecodeError:
+                return request.send_response("404 Not Found", request.headers, "<html><body><h1>404 Not Found</h1></body></html>")
+            else:
+                return self.request_uri(request, uri)
+        except RuntimeError as e:
+            self.error(e)
+            e = u"%s" % e
+            try:
+                if getattr(request, "upload_handler", None):
+                    return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": e})))
+            except Exception as e2:
+                self.exception(e2)
+            if type(e) == unicode:
+                e = e.encode("utf-8")
+            return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
+        except Exception as e:
+            try:
+                self.exception(utf2str(e))
+            except Exception as e2:
+                print "Unhandled exception during logging: %s" % e2
+                print traceback.format_exc()
+            try:
+                if getattr(request, "upload_handler", None):
+                    return request.uresponse(htmlescape(json.dumps({"success": False, "errormsg": "Internal Server Error"})))
+            except Exception as e2:
+                self.exception(e2)
+            return request.internal_server_error()
 
     def request_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
@@ -396,85 +417,76 @@ class WebDaemon(object):
                 return res
         return request.not_found()
 
-    def req_handler(self, request, group, hook, args):
-        "Process HTTP request with parsed URI"
-        if self.app is None:
-            raise RuntimeError("No applications configured. Load some payload modules")
+    def publish(self, svcinfo):
+        "Service may fill svcinfo dict with any additional properties that will be announced in service record"
+        pass
+
+class ApplicationWebService(WebService):
+    "WebService passing requests to applications"
+    def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.core.web.ApplicationWebService"):
+        WebService.__init__(self, inst, service_id, service_type, fqn)
+        self.hook_prefix = hook_prefix
+
+    def deliver_request(self, app, request, group, hook, args):
+        "Deliver HTTP request with parsed URI: /<group>/<hook>/<args> to the given application"
         try:
-            return self.app.http_request(request, group, hook, args)
+            request.app = app
+            request.group = group
+            request.hook = hook
+            request.args = re_remove_ver.sub("", args)
+            try:
+                app.hooks.call("web.security_check")
+                res = lambda: app.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
+                # POST requests with authenticated user are automatically locked
+                # to avoid multiple concurrent requests from a single user
+                if request.environ.get("REQUEST_METHOD") == "POST" and self.hook_prefix != "int":
+                    user = request.user()
+                    if user:
+                        with app.lock(["UserRequest.%s.%s" % (app.tag, user)]):
+                            res = res()
+                    else:
+                        with app.lock(["UserRequest.%s.%s" % (app.tag, request.remote_addr())]):
+                            res = res()
+                else:
+                    res = res()
+            except WebResponse as res:
+                res = res.content
+            if getattr(request, "cache", None):
+                res = ["".join([str(chunk) for chunk in res])]
+                app.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
+                mcid = getattr(request, "web_cache_mcid", None)
+                if mcid:
+                    app.mc.set("page%s" % mg.core.tools.urldecode(request.uri()).encode("utf-8"), res[0])
+                    app.mc.set(request.web_cache_mcid, res[0])
+                lock = getattr(request, "web_cache_lock", None)
+                if lock:
+                    lock.__exit__(None, None, None)
+            request.app.hooks.call("web.request_processed")
+            return res
+        except SystemExit:
+            os._exit(0)
         except Exception as e:
-            self.app.hooks.call("exception.report", e)
+            app.hooks.call("exception.report", e)
             raise
 
-re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
+class SingleApplicationWebService(ApplicationWebService):
+    "WebService passing all requests to the single application"
+    def __init__(self, app, service_id, service_type, hook_prefix, fqn="mg.core.web.SingleApplicationWebService"):
+        ApplicationWebService.__init__(self, app.inst, service_id, service_type, hook_prefix, fqn)
+        self.app = app
 
-class WebApplication(Application):
-    """
-    WebApplication is an Application that can handle http requests
-    """
-    def __init__(self, inst, tag, hook_prefix="ext", storage=None, keyspace=None):
-        """
-        inst - Instance object
-        tag - application tag
-        hook_prefix - prefix for hook names, i.e. prefix "web" means that
-           URL /group/hook will be mapped to hook name web-group.hook
-        """
-        Application.__init__(self, inst, tag, storage, keyspace)
-        self.hook_prefix = hook_prefix
-        if tag == "int":
-            inst.int_app = self
-
-    def http_request(self, request, group, hook, args):
-        "Process HTTP request with parsed URI: /<group>/<hook>/<args>"
-        request.app = self
-        request.group = group
-        request.hook = hook
-        request.args = re_remove_ver.sub("", args)
-        try:
-            self.hooks.call("web.security_check")
-            res = lambda: self.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
-            # POST requests with authenticated user are automatically locked
-            # to avoid multiple concurrent requests from the single user
-            if request.environ.get("REQUEST_METHOD") == "POST" and self.tag != "int":
-                user = request.user()
-                if user:
-                    with self.lock(["UserRequest.%s.%s" % (self.tag, user)]):
-                        res = res()
-                else:
-                    with self.lock(["UserRequest.%s.%s" % (self.tag, request.remote_addr())]):
-                        res = res()
-            else:
-                res = res()
-        except WebResponse as res:
-            res = res.content
-        if getattr(request, "cache", None):
-            res = ["".join([str(chunk) for chunk in res])]
-            self.mc.set("page%s" % urldecode(request.uri()).encode("utf-8"), res[0])
-            mcid = getattr(request, "web_cache_mcid", None)
-            if mcid:
-                self.mc.set("page%s" % mg.core.tools.urldecode(request.uri()).encode("utf-8"), res[0])
-                self.mc.set(request.web_cache_mcid, res[0])
-            lock = getattr(request, "web_cache_lock", None)
-            if lock:
-                lock.__exit__(None, None, None)
-        request.app.hooks.call("web.request_processed")
-        return res
-
-re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
-re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*\])')
-re_hook_parse = re.compile(r'^(<|\[)hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*(/>|\])$')
-re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
+    def req_handler(self, request, group, hook, args):
+        "Process HTTP request with parsed URI"
+        return self.deliver_request(self.app, request, group, hook, args)
 
 class Web(Module):
     def __init__(self, *args, **kwargs):
         Module.__init__(self, *args, **kwargs)
-        self.last_ping = None
 
     def register(self):
         self.rdep(["mg.core.l10n.L10n"])
         self.rhook("int-core.ping", self.core_ping, priv="public")
         self.rhook("int-core.abort", self.core_abort, priv="public")
-        self.rhook("core.check_last_ping", self.check_last_ping)
         self.rhook("int-core.reload", self.core_reload, priv="public")
         self.rhook("int-core.reload-hard", self.core_reload_hard, priv="public")
         self.rhook("int-core.appconfig", self.core_appconfig, priv="public")
@@ -522,17 +534,18 @@ class Web(Module):
         raise WebResponse(req.send_response("200 OK", req.headers, "User-agent: *\n%s" % "".join(["Disallow: %s\n" % line for line in disallow])))
 
     def objclasses_list(self, objclasses):
-        objclasses["ConfigGroup"] = (ConfigGroup, ConfigGroupList)
-        objclasses["HookGroupModules"] = (HookGroupModules, HookGroupModulesList)
+        objclasses["ConfigGroup"] = (DBConfigGroup, DBConfigGroupList)
+        objclasses["HookGroupModules"] = (DBHookGroupModules, DBHookGroupModulesList)
 
     def core_reload(self):
         request = self.req()
         config = request.param("config")
         if config:
             inst = self.app().inst
+            TODO(config_format_changed)
             inst.config = json.loads(config)
-            inst.dbpool.set_host(inst.config["cassandra"], primary_host_id=0)
-            inst.mcpool.set_host(inst.config["memcached"][0])
+            inst.dbpool.set_host(self.clconf("cassandra"), primary_host_id=0)
+            inst.mcpool.set_host(self.clconf("memcached")[0])
         errors = self.app().inst.reload()
         if errors:
             self.call("web.response_json", { "errors": errors })
@@ -541,50 +554,26 @@ class Web(Module):
             self.call("web.response_json", { "ok": 1 })
 
     def reload_hard(self):
-        self.call("core.reloading_hard")
-        Tasklet.sleep(2);
-        for i in range(0, 60):
-            active_requests = {}
-            self.call("web.active_requests", active_requests)
-            cnt = 0
-            for val in active_requests.values():
-                cnt += val
-            self.debug("active_requests: %s, cnt=%d" % (active_requests, cnt))
-            if cnt == 0:
-                break
-            Tasklet.sleep(1)
+        Tasklet.sleep(1)
         os._exit(0)
 
     def core_reload_hard(self):
-        try:
-            if self.app().inst.reloading:
-                self.call("web.response_json", { "ok": 1 })
-        except AttributeError:
-            pass
-        self.app().inst.reloading = True
         Tasklet.new(self.reload_hard)()
+        self.call("cluster.terminate-daemon")
         self.call("web.response_json", { "ok": 1 })
 
     def core_abort(self):
+        self.call("cluster.terminate-daemon")
         os._exit(3)
 
     def core_ping(self):
         request = self.req()
         response = {"ok": 1}
         try:
-            response["server_id"] = self.app().inst.server_id
+            response["instid"] = self.app().inst.instid
         except AttributeError:
             pass
-        self.last_ping = time.time()
-        self.call("web.ping_response", response)
         self.call("web.response_json", response)
-
-    def check_last_ping(self):
-        if self.last_ping is None:
-            self.last_ping = time.time()
-        elif time.time() > self.last_ping + 86400:
-            self.error("Director missing since %s. Exiting", self.last_ping)
-            os._exit(2)
 
     def core_appconfig(self):
         req = self.req()

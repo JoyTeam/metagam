@@ -176,7 +176,7 @@ class InventoryAdmin(ConstructorModule):
                 tables.append(tbl)
 
     def advice_inventory(self, hook, args, advice):
-        advice.append({"title": self._("Inventory documentation"), "content": self._('You can find detailed information on the inventory system in the <a href="//www.%s/doc/inventory" target="_blank">inventory page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Inventory documentation"), "content": self._('You can find detailed information on the inventory system in the <a href="//www.%s/doc/inventory" target="_blank">inventory page</a> in the reference manual.') % self.main_host})
 
     def objclasses_list(self, objclasses):
         objclasses["MemberInventory"] = (DBMemberInventory, DBMemberInventoryList)

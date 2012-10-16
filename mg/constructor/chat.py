@@ -230,7 +230,7 @@ class Chat(ConstructorModule):
 
     def chat_config(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="//www.%s/doc/chat" target="_blank">chat manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="//www.%s/doc/chat" target="_blank">chat manual</a>.') % self.main_host})
         if req.param("ok"):
             config = self.app().config_updater()
             errors = {}
@@ -354,7 +354,7 @@ class Chat(ConstructorModule):
 
     def admin_chat_colors(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat colors configuration in the <a href="//www.%s/doc/chat-colors" target="_blank">chat colors manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat colors configuration in the <a href="//www.%s/doc/chat-colors" target="_blank">chat colors manual</a>.') % self.main_host})
         colors = self.chat_colors()
         if req.args:
             m = re_del.match(req.args)

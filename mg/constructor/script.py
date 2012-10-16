@@ -24,7 +24,7 @@ class ScriptEngine(ConstructorModule):
     def help_icon_expressions(self, tag=None):
         icon = "%s-script.gif" % tag if tag else "script.gif"
         doc = tag or "script"
-        return ' <a href="//www.%s/doc/%s" target="_blank"><img class="inline-icon" src="/st/icons/%s" alt="" title="%s" /></a>' % (self.app().inst.config["main_host"], doc, icon, self._("Scripting language reference"))
+        return ' <a href="//www.%s/doc/%s" target="_blank"><img class="inline-icon" src="/st/icons/%s" alt="" title="%s" /></a>' % (self.main_host, doc, icon, self._("Scripting language reference"))
 
     @property
     def parser_spec(self):

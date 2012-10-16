@@ -3,7 +3,7 @@
 from mg import *
 from operator import itemgetter
 from uuid import uuid4
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image, ImageEnhance

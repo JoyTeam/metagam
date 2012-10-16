@@ -59,7 +59,7 @@ class StorageAdmin(Module):
             except ObjectNotFoundException:
                 pass
             self.call("admin.redirect", "storage/static")
-        self.call("admin.advice", {"title": self._("Storage documentation"), "content": self._('You can read detailed information on the static storage in <a href="//www.%s/doc/storage" target="_blank">the documentation</a>') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Storage documentation"), "content": self._('You can read detailed information on the static storage in <a href="//www.%s/doc/storage" target="_blank">the documentation</a>') % self.main_host})
         if req.args == "new":
             if req.ok():
                 self.call("web.upload_handler")

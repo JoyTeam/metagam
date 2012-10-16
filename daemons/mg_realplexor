@@ -1,0 +1,41 @@
+#!/usr/bin/python2.6
+
+from concurrence import dispatch, Tasklet
+import mg
+import logging
+import os
+import sys
+from mg.constructor.processes import ConstructorInstance, ConstructorWebService
+
+def main():
+    try:
+        if len(sys.argv) != 2:
+            logging.error("Usage: mg_realplexor <uuid>")
+            os._exit(1)
+        inst = ConstructorInstance("realplexor")
+        inst.instid = sys.argv[1]
+        # internal application
+        app = inst.int_app
+        app.load([
+            "mg.core.web.Web",
+            "mg.core.cluster.ClusterDaemon",
+            "mg.core.procman.ProcessManager",
+        ])
+        app.call("cluster.register-daemon")
+        app.call("cluster.run-int-service")
+        # constructor application
+        main_app = inst.appfactory.get_by_tag("main")
+        main_app.call("realplexor.tasklet")
+        # run background processing
+        app.call("cluster.run-daemon-loop")
+    except RuntimeError as e:
+        logging.error(e)
+        os._exit(1)
+    except Exception as e:
+        logging.exception(e)
+        os._exit(1)
+    except:
+        os._exit(1)
+
+dispatch(main)
+
