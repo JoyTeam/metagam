@@ -77,8 +77,6 @@ class Constructor(Module):
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
         self.rhook("projects.appcheck", self.appcheck)
-        self.rhook("core.appfactory", self.appfactory)
-        self.rhook("core.webservice", self.webservice)
         self.rhook("project.title", self.project_title)
         self.rhook("forum-admin.init-categories", self.forum_init_categories)
         self.rhook("projects.list", self.projects_list)

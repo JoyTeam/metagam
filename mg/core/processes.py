@@ -110,7 +110,8 @@ class Instance(Loggable):
 
     def init_config(self):
         self.config = ConfigParser.RawConfigParser()
-        self.config.read(self.cmdline_options.config or CONFIG_FILE)
+        self.config_filename = self.cmdline_options.config or CONFIG_FILE
+        self.config.read(self.config_filename)
         self.instaddr = self.conf("global", "addr")
         if not self.instaddr:
             raise RuntimeError("Config key global.addr not found")

@@ -6,15 +6,19 @@ import json
 class ProcessManager(ConstructorModule):
     def register(self):
         self.rhook("core.fastidle", self.fastidle)
-        self.rhook("cluster.run-daemon-loop", self.run, priority=10)
+        self.rhook("procman.run", self.run)
 
     def run(self):
         inst = self.app().inst
         # Run child processes
         if inst.conf("procman", "runConstructorWorker"):
             self.call("procman.newdaemon", "worker", "mg_worker")
+        if inst.conf("procman", "runNginxManager"):
+            self.call("procman.newdaemon", "worker", "mg_nginx")
 
     def fastidle(self):
+        inst = self.app().inst
+        cls = inst.cls
         with self.lock(["Cluster"]):
             # Check availability of all daemons and services
             hosts = []
@@ -28,6 +32,8 @@ class ProcessManager(ConstructorModule):
                     daemons.delkey(dmnid)
                     daemons.touch()
                     continue
+                if dmninfo.get("cls") != cls:
+                    continue
                 # Record services
                 for svcid, svcinfo in dmninfo.get("services", {}).iteritems():
                     tp = svcinfo.get("type")
@@ -36,6 +42,7 @@ class ProcessManager(ConstructorModule):
                         # Record a host
                         hosts.append({
                             "id": dmnid,
+                            "svcid": svcid,
                             "addr": svcinfo.get("addr"),
                             "port": svcinfo.get("port"),
                             "load": svcinfo.get("load", 0),
@@ -60,10 +67,10 @@ class ProcessManager(ConstructorModule):
                     self.debug('Querying %s "%s:%d" to launch daemon %s', host["id"], host["addr"], host["port"], svctype)
                     try:
                         inst = self.app().inst
-                        uuid = "%s-%s" % (svctype, uuid4().hex)
-                        val = self.call("cluster.query_server", host["addr"], host["port"], "/spawn", timeout=20, params={
+                        uuid = "%s-%s" % (svctype, inst.instaddr)
+                        val = self.call("cluster.query_server", host["addr"], host["port"], "/service/call/%s/spawn" % host["svcid"], timeout=20, params={
                             "procid": uuid,
-                            "args": json.dumps([svcinfo["exec"], uuid])
+                            "executable": svcinfo["executable"]
                         })
                         self.debug("Procman query result: %s", val)
                         if val and val.get("ok"):
@@ -74,7 +81,7 @@ class ProcessManager(ConstructorModule):
                                 "updated": self.now(),
                                 "addr": host["addr"],
                                 "services": {
-                                    svctype: {
+                                    "%s-%s" % (uuid, svctype): {
                                         "type": svctype
                                     }
                                 }

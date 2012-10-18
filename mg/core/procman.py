@@ -11,7 +11,7 @@ class ProcessManager(mg.Module):
         inst = self.app().inst
         if not hasattr(inst, "child_processes"):
             inst.child_processes = []
-        self.rhook("cluster.run-daemon-loop", self.run, priority=10)
+        self.rhook("procman.run", self.run)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("cluster.terminate-daemon", self.terminate_daemon)
         self.rhook("procman.newproc", self.newproc)
@@ -36,15 +36,14 @@ class ProcessManager(mg.Module):
         return Popen(args, close_fds=True, env=env)
 
     def newdaemon(self, procid, executable):
-        self.newproc(procid, "%s/%s" % (daemonsDir, executable))
+        inst = self.app().inst
+        self.newproc(procid, ["%s/%s" % (daemonsDir, executable), '-c', inst.config_filename])
 
     def spawn_index(self):
         req = self.req()
         procid = req.param("procid")
-        args = json.loads(req.param("args"))
-        env = req.param("env")
-        env = json.loads(env) if env else None
-        self.newproc(procid, args, env)
+        executable = req.param("executable")
+        self.newdaemon(procid, executable)
         self.call("web.response_json", {"ok": 1})
 
     def newproc(self, procid, args, env=None):

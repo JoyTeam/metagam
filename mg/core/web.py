@@ -20,6 +20,7 @@ import os
 import random
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
+re_service_call = re.compile(r'^service/call/([a-z0-9\-\.]+)/(.+)$')
 re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
 re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
 re_group = re.compile(r'^[a-z0-9\-]+')
@@ -293,6 +294,7 @@ class WebService(Loggable):
         self.addr = None
         self.id = service_id
         self.type = service_type
+        self.svcinfo = {}
 
     def serve_socket(self, addr, socket):
         "Runs a WebService instance accepting connections from given socket"
@@ -303,7 +305,7 @@ class WebService(Loggable):
             self.info("serving %s:%d on shared socket", addr[0], addr[1])
             self.addr = (addr[0], addr[1])
         except Exception as err:
-            self.error("Listen %s:%d: %s", addr[0], addr[1], err)
+            self.exception("Listen %s:%d: %s", addr[0], addr[1], err)
             os._exit(1)
 
     def stop(self):
@@ -318,7 +320,7 @@ class WebService(Loggable):
             self.info("serving %s:%d", addr[0], addr[1])
             self.addr = (addr[0], addr[1])
         except Exception as err:
-            self.error("Listen %s:%d: %s", addr[0], addr[1], err)
+            self.exception("Listen %s:%d: %s", addr[0], addr[1], err)
             os._exit(1)
 
     def serve_any_port(self, hostaddr=None, port_min=3000, port_max=3999):
@@ -338,7 +340,7 @@ class WebService(Loggable):
                     else:
                         raise
             except Exception as err:
-                self.error("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
+                self.exception("Listen %s:%d: %s (%s)", hostaddr, port, err, type(err))
                 os._exit(1)
         self.error("Couldn't find any available port")
         os._exit(1)
@@ -387,6 +389,13 @@ class WebService(Loggable):
 
     def request_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
+        # /service/call/<svcid>/method
+        m = re_service_call.match(uri)
+        if m:
+            (svcid, remainder) = m.group(1, 2)
+            if svcid != self.id:
+                return request.bad_request()
+            uri = remainder
         # /
         if uri == "":
             res = self.req_handler(request, "index", "index", "")
@@ -419,6 +428,12 @@ class WebService(Loggable):
     def publish(self, svcinfo):
         "Service may fill svcinfo dict with any additional properties that will be announced in service record"
         pass
+
+    def set(self, key, val):
+        self.svcinfo[key] = val
+
+    def svc_req_handler(self, request, hook):
+        return None
 
 class ApplicationWebService(WebService):
     "WebService passing requests to applications"

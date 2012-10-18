@@ -105,6 +105,7 @@ class ClusterDaemon(mg.Module):
             daemon["updated"] = now
             daemon["addr"] = inst.instaddr
             daemon["uuid"] = inst.uuid
+            daemon["cls"] = inst.cls
             obj.touch()
             obj.store()
 
@@ -133,6 +134,8 @@ class ClusterDaemon(mg.Module):
                     "addr": service.addr[0],
                     "port": service.addr[1]
                 }
+                for key, val in service.svcinfo.iteritems():
+                    svcinfo[key] = val
                 service.publish(svcinfo)
                 services[svcid] = svcinfo
             info["services"] = services
@@ -142,7 +145,7 @@ class ClusterDaemon(mg.Module):
     def register_service(self, service):
         inst = self.app().inst
         service_id = service.id
-        servier_type = service.type
+        service_type = service.type
         if service_id in inst.services:
             self.call("unregister-service", service_id)
         with self.cluster_lock:
@@ -151,6 +154,9 @@ class ClusterDaemon(mg.Module):
                 "service": service,
             }
             self.store_daemon()
+        # Reload nginx servers if web backend is registered
+        if service.svcinfo.get("webbackend"):
+            self.call("cluster.query-services", "nginx", "/nginx/reload")
 
     def unregister_service(self, service_id):
         inst = self.app().inst
@@ -198,6 +204,7 @@ class Cluster(mg.Module):
         self.rhook("cluster.static_delete", self.static_delete)
         self.rhook("cluster.query-service", self.query_service)
         self.rhook("cluster.services", self.services)
+        self.rhook("cluster.query-services", self.query_services)
 
     def query_director(self, uri, params={}):
         """
@@ -384,21 +391,48 @@ class Cluster(mg.Module):
         else:
             tempfile.remove()
 
-    def query_service(self, service_id, method_name, timeout=30, *args, **kwargs):
+    def query_services(self, service_type, url, timeout=10, *args, **kwargs):
         inst = self.app().inst
         daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
-        svc = none
+        tasklets = []
+        for dmnid, dmninfo in daemons.data.items():
+            for svcid, svcinfo in dmninfo.get("services", {}).items():
+                if svcinfo.get("type") != service_type:
+                    continue
+                if "addr" not in svcinfo:
+                    continue
+                if "port" not in svcinfo:
+                    continue
+                task = Tasklet.new(self.do_query_service_exc)
+                tasklets.append(task)
+                task(svcid, svcinfo, url, timeout, *args, **kwargs)
+        Tasklet.join_all(tasklets)
+
+    def query_service(self, service_id, url, timeout=30, *args, **kwargs):
+        inst = self.app().inst
+        daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
+        svc = None
         for dmnid, dmninfo in daemons.data.items():
             svcinfo = dmninfo.get("services", {}).get(service_id)
             if svcinfo:
-                svc = svcinfo
+                if ("addr" in svcinfo) and ("port" in svcinfo):
+                    svc = svcinfo
                 break
         if svc is None:
             raise ClusterError("Service %s not running" % service_id)
+        return self.do_query_service(service_id, svc, url, timeout, *args, **kwargs)
+
+    def do_query_service_exc(self, service_id, *args, **kwargs):
+        try:
+            self.do_query_service(service_id, *args, **kwargs)
+        except Exception as e:
+            self.error("Error calling service %s: %s", service_id, e)
+
+    def do_query_service(self, service_id, svc, url, timeout, *args, **kwargs):
         try:
             with Timeout.push(timeout):
                 cnn = HTTPConnection()
-                addr = (srv.get("addr").encode("utf-8"), srv.get("port"))
+                addr = (svc.get("addr").encode("utf-8"), svc.get("port"))
                 try:
                     cnn.connect(addr)
                 except IOError as e:
@@ -408,7 +442,7 @@ class Cluster(mg.Module):
                     "kwargs": json.dumps(kwargs)
                 }
                 try:
-                    uri = utf2str("/service/call/%s/%s" % (service_id, method_name))
+                    uri = utf2str("/service/call/%s%s" % (service_id, url))
                     request = cnn.post(uri, urlencode(params))
                     request.add_header("Content-type", "application/x-www-form-urlencoded")
                     request.add_header("Connection", "close")
@@ -422,7 +456,7 @@ class Cluster(mg.Module):
                 finally:
                     cnn.close()
         except TimeoutError:
-            raise ClusterError("Timeout querying method %s of service %s" % (method_name, service_id))
+            raise ClusterError("Timeout querying %s of service %s" % (url, service_id))
 
     def services(self):
         """

@@ -4,16 +4,12 @@ from concurrence import dispatch, Tasklet
 import mg
 import logging
 import os
-import sys
 from mg.constructor.processes import ConstructorInstance, ConstructorWebService
 
 def main():
     try:
-        if len(sys.argv) != 2:
-            logging.error("Usage: mg_realplexor <uuid>")
-            os._exit(1)
         inst = ConstructorInstance("realplexor", "metagam")
-        inst.instid = sys.argv[1]
+        inst.instid = "realplexor-%s" % inst.instaddr
         # internal application
         app = inst.int_app
         app.load([

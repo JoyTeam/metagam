@@ -10,7 +10,7 @@ from mg.constructor.processes import ConstructorInstance, ConstructorWebService
 
 def main():
     try:
-        inst = ConstructorInstance("mmoconstructor", "metagam")
+        inst = ConstructorInstance("metagam", "metagam")
         # shared socket for public web requests
         extport = inst.confint("constructor", "webport")
         if type(extport) != int:
@@ -37,7 +37,9 @@ def main():
         # run service handling public web requests
         service_id = "%s-ext" % inst.instid
         srv = ConstructorWebService(inst, service_id, inst.insttype, "ext")
+        srv.set("webbackend", inst.insttype)
         srv.serve_socket(extaddr, extsock)
+        app.call("cluster.register-service", srv)
         # run app.check on main application
         main_app = inst.appfactory.get_by_tag("main")
         main_app.call("app.check")
