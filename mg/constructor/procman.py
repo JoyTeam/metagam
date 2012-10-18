@@ -19,7 +19,10 @@ class ProcessManager(ConstructorModule):
     def fastidle(self):
         inst = self.app().inst
         cls = inst.cls
-        with self.lock(["Cluster"]):
+        lock = self.lock(["Cluster"])
+        if not lock.trylock():
+            return
+        try:
             # Check availability of all daemons and services
             hosts = []
             allServices = set()
@@ -91,3 +94,5 @@ class ProcessManager(ConstructorModule):
                         self.error("Error querying procman %s:%d: %s", host["addr"], host["port"], e)
             # Commit changes
             daemons.store()
+        finally:
+            lock.unlock()

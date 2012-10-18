@@ -116,11 +116,11 @@ class ClusterDaemon(mg.Module):
         if not info:
             self.error('Daemon record "%s" lost. Terminating' % inst.instid)
             self.call("cluster.terminate-daemon")
-            sys.exit(1)
+            raise SystemExit()
         if info.get("uuid") != inst.uuid:
             self.error('Daemon record "%s" changed UUID from "%s" to "%s". Terminating' % (inst.instid, inst.uuid, info.get("uuid")))
             self.call("cluster.terminate-daemon")
-            sys.exit(1)
+            raise SystemExit()
         info["updated"] = self.now()
         if inst.services:
             services = {}
