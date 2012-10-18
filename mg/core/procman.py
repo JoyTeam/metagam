@@ -32,7 +32,7 @@ class ProcessManager(mg.Module):
         self.call("cluster.register-service", srv)
 
     def spawn(self, args, env=None):
-        self.debug("Spawning process %s with env %s" % (args, env))
+        self.debug("Spawning process %s" % args)
         return Popen(args, close_fds=True, env=env)
 
     def newdaemon(self, procid, executable):

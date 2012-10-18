@@ -154,7 +154,7 @@ sql_table('modifiers',
 		'target' => [ -type=>'varchar(32)' ],
 	], [
 		'index' => 'app,target,till',
-		'index' => 'till',
+		'index' => 'cls,till',
 	]
 );
 sql_table('shops_sell',

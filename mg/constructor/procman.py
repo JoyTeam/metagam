@@ -3,12 +3,6 @@ from mg.core.cluster import DBCluster, ClusterError
 from uuid import uuid4
 import json
 
-PERSISTENT_SERVICES = {
-    "realplexor": {
-        "exec": "daemons/mg_realplexor"
-    }
-}
-
 class ProcessManager(ConstructorModule):
     def register(self):
         self.rhook("core.fastidle", self.fastidle)
@@ -48,7 +42,9 @@ class ProcessManager(ConstructorModule):
                         })
             # Check whether all required services are running
             hostsSorted = False
-            for svctype, svcinfo in PERSISTENT_SERVICES.items():
+            services = {}
+            self.call("services.list", services)
+            for svctype, svcinfo in services.iteritems():
                 if svctype not in allServices:
                     self.info('Service "%s" is not running. Looking where to launch it', svctype)
                     if not hosts:

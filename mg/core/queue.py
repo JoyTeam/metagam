@@ -150,13 +150,18 @@ class QueueRunner(Module):
             # Free tasks locked too long
             self.sql_write.do("update queue_tasks set locked='', priority=priority-1 where locked_till<?", instid, self.now())
             while True:
-                with self.lock(["queue"]):
+                lock = self.lock(["queue"])
+                if not lock.trylock():
+                    return
+                try:
                     # Find task to run
                     tasks = self.sql_write.selectall_dict("select * from queue_tasks where cls=? and locked='' and at<=? order by priority desc limit 1", cls, self.now())
                     if not tasks:
                         return
                     task = tasks[0]
                     self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(1800), task["id"])
+                finally:
+                    lock.unlock()
                 # Execute task
                 self.debug("Executing task %s", task["id"])
                 app_tag = str(task["app"])

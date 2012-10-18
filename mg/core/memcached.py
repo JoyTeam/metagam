@@ -368,3 +368,20 @@ class MemcachedLock(object):
                 for key in self.keys:
                     self.mc.delete(key)
             self.locked = None
+
+    def trylock(self):
+        if self.mc is None:
+            return False
+        locked = []
+        for key in self.keys:
+            if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                locked.append(key)
+            else:
+                for k in locked:
+                    self.mc.delete(k)
+                return False
+        self.locked = time.time()
+        return True
+
+    def unlock(self):
+        self.__exit__(None, None, None)

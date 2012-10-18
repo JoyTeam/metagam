@@ -30,6 +30,7 @@ def main():
             "mg.constructor.admin.Constructor",
             "mg.core.queue.Queue",
             "mg.core.queue.QueueRunner",
+            "mg.core.modifiers.ModifiersChecker",
         ])
         app.call("cluster.register-daemon")
         app.call("cluster.run-int-service")

@@ -360,6 +360,15 @@ class Realplexor(mg.Module):
                 self.exception(e)
             Tasklet.sleep(1)
 
+class RealplexorService(mg.Module):
+    def register(self):
+        self.rhook("services.list", self.services_list)
+
+    def services_list(self, services):
+        services["realplexor"] = {
+            "exec": "daemons/mg_realplexor"
+        }
+
 class RealplexorAdmin(mg.Module):
     def register(self):
         self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)

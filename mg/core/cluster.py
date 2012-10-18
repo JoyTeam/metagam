@@ -64,6 +64,7 @@ class ClusterDaemon(mg.Module):
         self.rhook("cluster.run-int-service", self.run_int_service)
         self.rhook("cluster.register-service", self.register_service)
         self.rhook("cluster.unregister-service", self.unregister_service)
+        self.rhook("cluster.cleanup-host", self.cleanup_host)
 
     def objclasses_list(self, objclasses):
         objclasses["Cluster"] = (DBCluster,)
@@ -169,6 +170,18 @@ class ClusterDaemon(mg.Module):
         srv = mg.SingleApplicationWebService(self.app(), service_id, "int", "int")
         srv.serve_any_port()
         self.call("cluster.register-service", srv)
+
+    def cleanup_host(self):
+        inst = self.app().inst
+        addr = inst.instaddr
+        self.debug("Dropping all daemons from host %s", addr)
+        with self.cluster_lock:
+            obj = self.obj(DBCluster, "daemons", silent=True)
+            for dmnid, dmninfo in obj.data.items():
+                if dmninfo.get("addr") == addr:
+                    self.debug("Dropped daemon %s", dmnid)
+                    obj.delkey(dmnid)
+            obj.store()
 
 class Cluster(mg.Module):
     def register(self):

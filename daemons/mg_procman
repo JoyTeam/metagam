@@ -14,11 +14,13 @@ def main():
         app = inst.int_app
         app.load([
             "mg.core.web.Web",
+            "mg.core.realplexor.RealplexorService",
             "mg.core.cluster.Cluster",
             "mg.core.cluster.ClusterDaemon",
             "mg.core.procman.ProcessManager",
             "mg.constructor.procman.ProcessManager",
         ])
+        app.call("cluster.cleanup-host")
         app.call("cluster.register-daemon")
         app.call("cluster.run-int-service")
         app.call("cluster.run-daemon-loop")

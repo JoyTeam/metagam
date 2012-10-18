@@ -270,22 +270,34 @@ class MemberModifiers(Module):
 
     __repr__ = __str__
 
-#class ModifiersDaemon(Daemon):
-#    "This daemon constantly monitors expiring modifiers and sends notifications to the corresponding application"
-#    def __init__(self, app, id="modifiers"):
-#        Daemon.__init__(self, app, "mg.core.modifiers.ModifiersDaemon", id)
-#        self.persistent = True
-#
-#    def main(self):
-#        while not self.terminate:
-#            try:
-#                now = self.now()
-#                for mod in self.sql_write.selectall_dict("select target_type, target, app, cls from modifiers where ?>=till group by target_type, target, app, cls", now):
-#                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, app_tag=mod["app"], app_cls=mod["cls"], unique="mod-%s-%s" % (mod["app"], mod["target"]))
-#                    self.sql_write.do("delete from modifiers where app=? and target=? and ?>=till", mod["app"], mod["target"], now)
-#            except Exception as e:
-#                self.exception(e)
-#            Tasklet.sleep(3)
+class ModifiersChecker(Module):
+    def register(self):
+        self.rhook("core.fastidle", self.fastidle)
+        self.tasklet_running = False
+
+    def modifiers_checker_runner(self):
+        try:
+            inst = self.app().inst
+            cls = inst.cls
+            lock = self.lock(["modifiers"])
+            if not lock.trylock():
+                return
+            try:
+                now = self.now()
+                for mod in self.sql_write.selectall_dict("select target_type, target, app from modifiers where cls=? and till<=? group by target_type, target, app", cls, now):
+                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, app_tag=mod["app"], app_cls=cls, unique="mod-%s-%s" % (mod["app"], mod["target"]))
+                    self.sql_write.do("delete from modifiers where app=? and target=? and till<=?", mod["app"], mod["target"], now)
+            finally:
+                lock.unlock()
+        except Exception as e:
+            self.exception(e)
+        finally:
+            self.tasklet_running = False
+
+    def fastidle(self):
+        if not self.tasklet_running:
+            self.tasklet_running = True
+            Tasklet.new(self.modifiers_checker_runner)()
 
 class Modifiers(Module):
     def register(self):
