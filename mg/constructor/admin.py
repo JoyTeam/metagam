@@ -76,6 +76,7 @@ class Constructor(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("projects.cleanup_inactive", self.cleanup_inactive)
+        self.rhook("projects.appcheck", self.appcheck)
         self.rhook("core.appfactory", self.appfactory)
         self.rhook("core.webservice", self.webservice)
         self.rhook("project.title", self.project_title)
@@ -292,6 +293,7 @@ class Constructor(Module):
 
     def schedule(self, sched):
         sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
+        sched.add("projects.appcheck", "0 * * * *", priority=10)
 
     def cleanup_inactive(self):
         inst = self.app().inst
@@ -299,6 +301,13 @@ class Constructor(Module):
         for project in projects:
             self.info("Removing inactive project %s", project.uuid)
             self.call("project.cleanup", project.uuid)
+
+    def appcheck(self):
+        self.info("Starting daily check")
+        apps = []
+        self.call("applications.list", apps)
+        for app in apps:
+            self.call("queue.add", "app.check", priority=0, app_tag=app["tag"], unique="app-check-%s" % app["cls"], app_cls=app["cls"])
 
     def web_setup_design(self, vars):
         req = self.req()

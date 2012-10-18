@@ -1456,7 +1456,7 @@ class Forum(Module):
             self.subscribe(author.uuid, topic.uuid, cat["id"], created)
         catstat.store()
         if notify:
-            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid})
         return topic
 
     def tags_parse(self, tags_str):
@@ -1601,7 +1601,7 @@ class Forum(Module):
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
             page = (posts - 1) / posts_per_page + 1
             catstat.store()
-            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid})
             self.call("socio.fulltext_store", "ForumSearch", post.uuid, self.call("socio.word_extractor", content))
             raise Hooks.Return((post, page))
 
@@ -2593,7 +2593,6 @@ class Forum(Module):
                 key = "%s_*" % self.app().db.app
                 cf = "ForumTags_Search"
             self.db().batch_mutate({key: {cf: mutations}}, ConsistencyLevel.QUORUM)
-        self.call("web.response_json", {"ok": 1})
 
     def ext_tag(self):
         req = self.req()

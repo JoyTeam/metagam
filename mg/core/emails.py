@@ -127,7 +127,7 @@ class Email(Module):
                 "subtype": subtype,
                 "signature": signature,
                 "headers": headers,
-            }, retry_on_fail=True)
+            })
         params = {
             "email": "robot@%s" % self.main_host,
             "name": "Metagam Robot",
@@ -204,7 +204,7 @@ class Email(Module):
                 "immediately": True,
                 "subtype": subtype,
                 "signature": signature,
-            }, retry_on_fail=True)
+            })
         usr = self.objlist(UserList, users)
         usr.load(silent=True)
         for user in usr:

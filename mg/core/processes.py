@@ -84,9 +84,10 @@ class Instance(Loggable):
     """
     This is an executable instance. It keeps references to all major objects
     """
-    def __init__(self, insttype):
+    def __init__(self, insttype, cls):
         Loggable.__init__(self, "mg.core.processes.Instance")
         self.insttype = insttype
+        self.cls = cls
         self.init_modules()
         self.init_cmdline()
         self.init_config()

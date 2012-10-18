@@ -8,7 +8,7 @@ import sys
 
 def main():
     try:
-        inst = mg.Instance("procman")
+        inst = mg.Instance("procman", "metagam")
         if len(sys.argv) > 1:
             inst.instid = sys.argv[1]
         app = inst.int_app

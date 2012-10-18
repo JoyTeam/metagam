@@ -35,5 +35,19 @@ sub post
 	return decode_json($res->content);
 }
 
+sub encode
+{
+    my $self = shift;
+    my $data = shift;
+    return encode_json($data);
+}
+
+sub decode
+{
+    my $self = shift;
+    my $data = shift;
+    return decode_json($data);
+}
+
 1;
 

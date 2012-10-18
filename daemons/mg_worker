@@ -10,7 +10,7 @@ from mg.constructor.processes import ConstructorInstance, ConstructorWebService
 
 def main():
     try:
-        inst = ConstructorInstance("mmoconstructor")
+        inst = ConstructorInstance("mmoconstructor", "metagam")
         # shared socket for public web requests
         extport = inst.confint("constructor", "webport")
         if type(extport) != int:
@@ -27,7 +27,9 @@ def main():
         app.load([
             "mg.core.worker.Worker",
             "mg.core.cluster.ClusterDaemon",
-            "mg.constructor.admin.Constructor"
+            "mg.constructor.admin.Constructor",
+            "mg.core.queue.Queue",
+            "mg.core.queue.QueueRunner",
         ])
         app.call("cluster.register-daemon")
         app.call("cluster.run-int-service")
@@ -35,6 +37,9 @@ def main():
         service_id = "%s-ext" % inst.instid
         srv = ConstructorWebService(inst, service_id, inst.insttype, "ext")
         srv.serve_socket(extaddr, extsock)
+        # run app.check on main application
+        main_app = inst.appfactory.get_by_tag("main")
+        main_app.call("app.check")
         app.call("cluster.run-daemon-loop")
     except RuntimeError as e:
         logging.error(e)

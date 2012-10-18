@@ -12,7 +12,7 @@ def main():
         if len(sys.argv) != 2:
             logging.error("Usage: mg_realplexor <uuid>")
             os._exit(1)
-        inst = ConstructorInstance("realplexor")
+        inst = ConstructorInstance("realplexor", "metagam")
         inst.instid = sys.argv[1]
         # internal application
         app = inst.int_app

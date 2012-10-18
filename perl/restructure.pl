@@ -129,16 +129,20 @@ sql_table('money_descriptions',
 sql_table('queue_tasks',
 	[
 		'id' => [ -type=>'varchar(32)', -null=>0 ],
+                'cls' => [ -type=>'varchar(10)', -null=>1 ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'at' => [ -type=>'datetime', -null=>0 ],
 		'priority' => [ -type=>'integer', -null=>0 ],
 		'unique' => [ -type=>'varchar(84)', -null=>1 ],
+                'hook' => [ -type=>'varchar(32)', -null=>0 ],
 		'data' => [ -type=>'longblob' ],
+		'locked' => [ -type=>'varchar(50)', -null=>0 ],
+		'locked_till' => [ -type=>'datetime', -null=>1 ],
 	], [
 		'index' => 'id',
-		'index' => 'app,at',
-		'index' => 'at',
 		'index' => 'app,unique',
+		'index' => 'cls,locked,at',
+		'index' => 'locked_till',
 	]
 );
 sql_table('modifiers',

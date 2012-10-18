@@ -353,7 +353,6 @@ class WebService(Loggable):
         "Process single HTTP request"
         request = Request(environ, start_response)
         Tasklet.current().req = request
-        print "Received request: %s" % request.uri()
         try:
             # remove doubling, leading and trailing slashes, unquote and convert to utf-8
             try:
@@ -486,6 +485,7 @@ class Web(Module):
     def register(self):
         self.rdep(["mg.core.l10n.L10n"])
         self.rhook("int-core.ping", self.core_ping, priv="public")
+        self.rhook("int-core.config", self.core_config, priv="public")
         self.rhook("int-core.abort", self.core_abort, priv="public")
         self.rhook("int-core.reload", self.core_reload, priv="public")
         self.rhook("int-core.reload-hard", self.core_reload_hard, priv="public")
@@ -565,6 +565,9 @@ class Web(Module):
     def core_abort(self):
         self.call("cluster.terminate-daemon")
         os._exit(3)
+
+    def core_config(self):
+        self.call("web.response_json", self.app().inst.dbconfig.data)
 
     def core_ping(self):
         request = self.req()
