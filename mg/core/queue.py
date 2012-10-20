@@ -163,7 +163,6 @@ class QueueRunner(Module):
                 finally:
                     lock.unlock()
                 # Execute task
-                self.debug("Executing task %s", task["id"])
                 app_tag = str(task["app"])
                 hook = str(task["hook"])
                 args = json.loads(task["data"])
@@ -188,7 +187,6 @@ class QueueRunner(Module):
                         self.exception(e)
                         success = False
                     if success:
-                        self.debug("Finished task %s", task["id"])
                         # Reschedule finished task to later time
                         if schedule:
                             try:
@@ -201,7 +199,7 @@ class QueueRunner(Module):
                                 self.call("queue.schedule_task", task.get("cls"), app_tag, hook, params)
                         self.sql_write.do("delete from queue_tasks where id=?", task["id"])
                     else:
-                        self.debug("Failed task %s", task["id"])
+                        self.debug("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
                         self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
         finally:
             self.queue_task_running = False
