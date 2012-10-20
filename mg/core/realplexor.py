@@ -293,6 +293,8 @@ class Realplexor(mg.Module):
         inst = self.app().inst
         int_app = inst.int_app
         srv = mg.SingleApplicationWebService(self.app(), "realplexor", "realplexor", "rpl")
+        srv.set("webbackend", "realplexor")
+        srv.set("webbackendport", 8088)
         srv.serve_any_port()
         int_app.call("cluster.register-service", srv)
         Tasklet.new(self.loop)()

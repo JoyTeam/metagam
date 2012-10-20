@@ -426,7 +426,7 @@ class Cluster(mg.Module):
         try:
             self.do_query_service(service_id, *args, **kwargs)
         except Exception as e:
-            self.error("Error calling service %s: %s", service_id, e)
+            self.error("Error calling service %s: %s" % (service_id, e))
 
     def do_query_service(self, service_id, svc, url, timeout, *args, **kwargs):
         try:
@@ -436,7 +436,7 @@ class Cluster(mg.Module):
                 try:
                     cnn.connect(addr)
                 except IOError as e:
-                    raise ClusterError("Error connecting to the %s:%s: %s" % (addr[0], addr[1], e))
+                    raise ClusterError("Error connecting to service %s(%s:%s): %s" % (service_id, addr[0], addr[1], e))
                 params = {
                     "args": json.dumps(args),
                     "kwargs": json.dumps(kwargs)
@@ -448,11 +448,11 @@ class Cluster(mg.Module):
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     if response.status_code != 200:
-                        raise ClusterError("Service %s returned status %d" % (service_id, response.status_code))
+                        raise ClusterError("Service %s (%s:%d) returned status %d for URL %s" % (service_id, addr[0], addr[1], response.status_code, uri))
                     res = json.loads(response.body)
                     if res.get("error"):
                         raise ClusterError(u"Service %s returned error: %s" % (service_id, res["error"]))
-                    return res["retval"]
+                    return res.get("retval")
                 finally:
                     cnn.close()
         except TimeoutError:

@@ -43,22 +43,25 @@ class Nginx(mg.Module):
 
     def reload(self):
         self.nginx_nextcheck = ""
+        self.call("web.response_json", {"retval": 1})
 
     def nginx_check(self):
         daemons = self.obj(DBCluster, "daemons", silent=True)
         backends = {}
         for cls in self.nginx_upstreams:
-            backends[cls] = []
+            backends[cls] = set()
         for dmnid, dmninfo in daemons.data.iteritems():
             for svcid, svcinfo in dmninfo.get("services", {}).iteritems():
                 webbackend = svcinfo.get("webbackend")
                 if not webbackend:
                     continue
-                ent = "%s:%d" % (svcinfo.get("addr"), svcinfo.get("port"))
-                try:
-                    backends[webbackend].append(ent)
-                except KeyError:
-                    backends[webbackend] = [ent]
+                port = svcinfo.get("webbackendport")
+                if port is None:
+                    port = svcinfo.get("port")
+                ent = "%s:%d" % (svcinfo.get("addr"), port)
+                if webbackend not in backends:
+                    backends[webbackend] = set()
+                backends[webbackend].add(ent)
         if self.nginx_backends != backends:
             self.debug("Nginx backends: %s", "%s" % backends)
             try:
