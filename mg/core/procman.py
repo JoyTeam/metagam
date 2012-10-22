@@ -6,6 +6,12 @@ import json
 mgDir = os.path.abspath(mg.__path__[0])
 daemonsDir = "%s/daemons" % os.path.dirname(mgDir)
 
+class ProcmanService(mg.SingleApplicationWebService):
+    def publish(self, svcinfo):
+        with open("/proc/loadavg") as f:
+            line = f.readline().split(" ")
+            svcinfo["load"] = float(line[0])
+
 class ProcessManager(mg.Module):
     def register(self):
         inst = self.app().inst
@@ -27,7 +33,7 @@ class ProcessManager(mg.Module):
         inst = self.app().inst
         # Register service
         service_id = "%s-procman" % inst.instid
-        srv = mg.SingleApplicationWebService(self.app(), service_id, "procman", "procman")
+        srv = ProcmanService(self.app(), service_id, "procman", "procman")
         srv.serve_any_port()
         self.call("cluster.register-service", srv)
 
