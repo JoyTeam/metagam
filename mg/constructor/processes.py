@@ -135,5 +135,5 @@ class ConstructorWebService(ApplicationWebService):
 
 class ConstructorInstance(mg.Instance):
     def init_appfactory(self):
-        self.appfactory = ConstructorApplicationFactory(self)
+        self._appfactory = ConstructorApplicationFactory(self)
 

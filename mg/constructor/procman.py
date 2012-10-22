@@ -83,6 +83,7 @@ class ProcessManager(ConstructorModule):
                                 "registered": self.now(),
                                 "updated": self.now(),
                                 "addr": host["addr"],
+                                "cls": cls,
                                 "services": {
                                     "%s-%s" % (uuid, svctype): {
                                         "type": svctype
