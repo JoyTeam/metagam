@@ -21,7 +21,6 @@ def main():
 
         def child(n):
             try:
-                inst.reopen_all()
                 # internal application
                 inst.instid = "%s-%d" % (inst.instid, n)
                 app = inst.int_app

@@ -599,32 +599,56 @@ class Application(Loggable):
                 storage = 1
             else:
                 storage = 0
+        self.storage = storage
         self.inst = inst
-        self.mc = Memcached(inst.mcpool, prefix="%s-" % tag)
-        if storage == 2:
-            self.db = inst.dbpool.dbget(keyspace, self.mc, storage, tag)
-        else:
-            self.db = inst.dbpool.dbget(tag, self.mc, storage)
-        self.keyspace = tag
         self.tag = tag
+        self.keyspace = tag
         self.hooks = Hooks(self)
         self.config = Config(self)
         self.modules = Modules(self)
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.dynamic = False
+
+    @property
+    def db(self):
         try:
-            sql_read_pool = inst.sql_read
+            return self._db
         except AttributeError:
             pass
+        if self.storage == 2:
+            self._db = self.inst.dbpool.dbget(self.keyspace, self.mc, self.storage, self.tag)
         else:
-            self.sql_read = sql_read_pool.dbget(self)
+            self._db = self.inst.dbpool.dbget(self.tag, self.mc, self.storage)
+        print "CREATED DB %s WITH STORAGE %s" % (self.tag, self.storage)
+        return self._db
+
+    @property
+    def mc(self):
         try:
-            sql_write_pool = inst.sql_write
+            return self._mc
         except AttributeError:
             pass
-        else:
-            self.sql_write = sql_write_pool.dbget(self)
+        self._mc = Memcached(self.inst.mcpool, prefix="%s-" % self.tag)
+        return self._mc
+
+    @property
+    def sql_read(self):
+        try:
+            return self._sql_read
+        except AttributeError:
+            pass
+        self._sql_read = self.inst.sql_read.dbget(self)
+        return self._sql_read
+
+    @property
+    def sql_write(self):
+        try:
+            return self._sql_write
+        except AttributeError:
+            pass
+        self._sql_write = self.inst.sql_write.dbget(self)
+        return self._sql_write
 
     def reload(self):
         "Reload all loaded modules"

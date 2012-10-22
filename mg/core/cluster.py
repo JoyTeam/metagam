@@ -92,6 +92,7 @@ class ClusterDaemon(mg.Module):
         inst = self.app().inst
         inst.uuid = uuid4().hex
         with self.cluster_lock:
+            self.debug("Registered daemon %s", inst.instid)
             now = self.now()
             obj = self.obj(DBCluster, "daemons", silent=True)
             daemon = obj.get(inst.instid)

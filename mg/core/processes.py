@@ -90,13 +90,7 @@ class Instance(Loggable):
         self.cls = cls
         self.init_modules()
         self.init_cmdline()
-        self.init_config()
         self.init_logger()
-        self.init_cassandra()
-        self.init_memcached()
-        self.init_mysql()
-        self.init_appfactory()
-        self.init_app()
 
     def init_modules(self):
         self.modules = set()
@@ -108,14 +102,56 @@ class Instance(Loggable):
         self.cmdline_options = options
         self.cmdline_args = args
 
+    @property
+    def config(self):
+        try:
+            return self._config
+        except AttributeError:
+            pass
+        self.init_config()
+        return self._config
+
+    @property
+    def instaddr(self):
+        try:
+            return self._instaddr
+        except AttributeError:
+            pass
+        self.init_config()
+        return self._instaddr
+
+    def get_instid(self):
+        try:
+            return self._instid
+        except AttributeError:
+            pass
+        self.init_config()
+        return self._instid
+
+    def set_instid(self, val):
+        if not hasattr(self, "_instid"):
+            self.init_config()
+        self._instid = val
+
+    instid = property(get_instid, set_instid)
+
+    @property
+    def config_filename(self):
+        try:
+            return self._config_filename
+        except AttributeError:
+            pass
+        self.init_config()
+        return self._config_filename
+
     def init_config(self):
-        self.config = ConfigParser.RawConfigParser()
-        self.config_filename = self.cmdline_options.config or CONFIG_FILE
-        self.config.read(self.config_filename)
-        self.instaddr = self.conf("global", "addr")
-        if not self.instaddr:
+        self._config = ConfigParser.RawConfigParser()
+        self._config_filename = self.cmdline_options.config or CONFIG_FILE
+        self._config.read(self._config_filename)
+        self._instaddr = self.conf("global", "addr")
+        if not self._instaddr:
             raise RuntimeError("Config key global.addr not found")
-        self.instid = "%s-%s" % (self.insttype, self.instaddr)
+        self._instid = "%s-%s" % (self.insttype, self.instaddr)
 
     def conf(self, section, option, default=None):
         try:
@@ -159,41 +195,91 @@ class Instance(Loggable):
         self.stderr_channel.setFormatter(formatter)
         modlogger.addHandler(self.stderr_channel)
 
+    @property
+    def dbpool(self):
+        try:
+            return self._dbpool
+        except AttributeError:
+            pass
+        self.init_cassandra()
+        return self._dbpool
+
+    @property
+    def sys_conn(self):
+        try:
+            return self._sys_conn
+        except AttributeError:
+            pass
+        self.init_cassandra()
+        return self._sys_conn
+
     def init_cassandra(self):
-        if not hasattr(self, "dbpool"):
+        if not hasattr(self, "_dbpool"):
             cass_hosts = []
             for host in re_comma.split(self.conf("global", "cassandra", "127.0.0.1").strip()):
                 cass_hosts.append((host, 9160))
             self.debug("Cassandra seed hosts: %s", cass_hosts)
-            self.dbpool = CassandraPool(cass_hosts, primary_host_id=0)
+            self._dbpool = CassandraPool(cass_hosts, primary_host_id=0)
         # get actual database cluster configuration from the database itself
-        self.sys_conn = self.dbpool.sys_connection()
+        self._sys_conn = self._dbpool.sys_connection()
         cass_hosts = []
-        for ent in self.sys_conn.cass.describe_ring("main"):
+        for ent in self._sys_conn.cass.describe_ring("main"):
             for ip in ent.endpoints:
                 cass_hosts.append((ip, 9160))
         self.debug("Cassandra hosts: %s", cass_hosts)
-        self.dbpool.set_host(cass_hosts, primary_host_id=self.conf("global", "cassandra_primary_host_id", 0) % len(cass_hosts))
-        self.load_dbconfig()
+        self._dbpool.set_host(cass_hosts, primary_host_id=self.conf("global", "cassandra_primary_host_id", 0) % len(cass_hosts))
 
     def close_cassandra(self):
-        delattr(self, "dbpool")
+        if hasattr(self, "_dbpool"):
+            delattr(self, "_dbpool")
+            delattr(self, "_sys_conn")
 
-    def load_dbconfig(self):
+    @property
+    def dbconfig(self):
+        try:
+            return self._dbconfig
+        except AttributeError:
+            pass
         db = self.dbpool.dbget("int", mc=None, storage=1)
-        self.dbconfig = DBConfigGroup(db, uuid="sysconfig", silent=True)
+        self._dbconfig = DBConfigGroup(db, uuid="sysconfig", silent=True)
+        return self._dbconfig
 
-    def init_memcached(self):
+    @property
+    def mcpool(self):
+        try:
+            return self._mcpool
+        except AttributeError:
+            pass
         mc_hosts = self.dbconfig.get("memcached", ["127.0.0.1"])
         mc_hosts = [(host, 11211) for host in mc_hosts]
         self.debug("Memcached hosts: %s", mc_hosts)
-        if hasattr(self, "mcpool"):
-            self.mcpool.set_host(mc_hosts[0])
+        if hasattr(self, "_mcpool"):
+            self._mcpool.set_host(mc_hosts[0])
         else:
-            self.mcpool = MemcachedPool(mc_hosts[0])
+            self._mcpool = MemcachedPool(mc_hosts[0])
+        return self._mcpool
 
     def close_memcached(self):
-        delattr(self, "mcpool")
+        if hasattr(self, "_mcpool"):
+            delattr(self, "_mcpool")
+
+    @property
+    def sql_read(self):
+        try:
+            return self._sql_read
+        except AttributeError:
+            pass
+        self.init_mysql()
+        return self._sql_read
+
+    @property
+    def sql_write(self):
+        try:
+            return self._sql_write
+        except AttributeError:
+            pass
+        self.init_mysql()
+        return self._sql_write
 
     def init_mysql(self):
         # read hosts
@@ -212,32 +298,50 @@ class Instance(Loggable):
         self.debug("MySQL user: %s", user)
         # connect
         primary_host_id = self.conf("global", "mysql_primary_host_id", 0) % len(sql_read_hosts)
-        if hasattr(self, "sql_read"):
-            self.sql_read.set_servers(sql_read_hosts, user, password, database, primary_host_id)
+        if hasattr(self, "_sql_read"):
+            self._sql_read.set_servers(sql_read_hosts, user, password, database, primary_host_id)
         else:
-            self.sql_read = MySQLPool(sql_read_hosts, user, password, database, primary_host_id=primary_host_id)
+            self._sql_read = MySQLPool(sql_read_hosts, user, password, database, primary_host_id=primary_host_id)
         primary_host_id = self.conf("global", "mysql_primary_host_id", 0) % len(sql_write_hosts)
-        if hasattr(self, "sql_write"):
-            self.sql_write.set_servers(sql_write_hosts, user, password, database, primary_host_id)
+        if hasattr(self, "_sql_write"):
+            self._sql_write.set_servers(sql_write_hosts, user, password, database, primary_host_id)
         else:
-            self.sql_write = MySQLPool(sql_write_hosts, user, password, database, primary_host_id=primary_host_id)
+            self._sql_write = MySQLPool(sql_write_hosts, user, password, database, primary_host_id=primary_host_id)
 
     def close_mysql(self):
-        delattr(self, "sql_read")
-        delattr(self, "sql_write")
+        if hasattr(self, "_sql_read"):
+            delattr(self, "_sql_read")
+            delattr(self, "_sql_write")
+
+    @property
+    def appfactory(self):
+        try:
+            return self._appfactory
+        except AttributeError:
+            pass
+        self.init_appfactory()
+        return self._appfactory
 
     def init_appfactory(self):
-        self.appfactory = ApplicationFactory(self)
+        self._appfactory = ApplicationFactory(self)
 
     def close_appfactory(self):
-        delattr(self, "appfactory")
+        if hasattr(self, "_appfactory"):
+            delattr(self, "_appfactory")
 
-    def init_app(self):
-        self.int_app = Application(self, "int", storage=1)
+    @property
+    def int_app(self):
+        try:
+            return self._int_app
+        except AttributeError:
+            pass
+        self._int_app = Application(self, "int", storage=1)
         self.appfactory.add(self.int_app)
+        return self._int_app
 
     def close_app(self):
-        delattr(self, "int_app")
+        if hasattr(self, "_int_app"):
+            delattr(self, "_int_app")
 
     def close_all(self):
         self.close_app();
@@ -246,16 +350,8 @@ class Instance(Loggable):
         self.close_memcached()
         self.close_cassandra()
 
-    def reopen_all(self):
-        self.init_cassandra()
-        self.init_memcached()
-        self.init_mysql()
-        self.init_appfactory()
-        self.init_app()
-
     def reload(self):
         "Reloads instance. Return value: number of errors"
-        self.init_config()
         self.load_dbconfig()
         if self.appfactory is None:
             return 0
