@@ -61,6 +61,7 @@ class Nginx(mg.Module):
                 ent = "%s:%d" % (svcinfo.get("addr"), port)
                 if webbackend not in backends:
                     backends[webbackend] = set()
+                    self.nginx_upstreams.add(webbackend)
                 backends[webbackend].add(ent)
         if self.nginx_backends != backends:
             self.debug("Nginx backends: %s", "%s" % backends)
