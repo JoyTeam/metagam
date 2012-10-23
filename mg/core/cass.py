@@ -110,8 +110,6 @@ class Cassandra(object):
                             ksdef.cf_defs = []
                             sys_conn = self.pool.sys_connection()
                             sys_conn.cass.set_keyspace("system")
-                            import traceback
-                            traceback.print_stack()
                             logger.debug("Created keyspace %s (replication factor %d): %s", ksdef.name, ksdef.replication_factor, sys_conn.cass.system_add_keyspace(ksdef))
                             # Setting flag that KS is created already
                             if self.mc:
