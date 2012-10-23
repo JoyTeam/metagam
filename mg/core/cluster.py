@@ -390,8 +390,6 @@ class Cluster(mg.Module):
         daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
         tasklets = []
         for dmnid, dmninfo in daemons.data.items():
-            if dmninfo.get("cls") != inst.cls:
-                continue
             services = dmninfo.get("services", {})
             for svcid, svcinfo in services.items():
                 if svcinfo.get("type") != service_type:
