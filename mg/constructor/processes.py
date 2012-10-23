@@ -74,7 +74,6 @@ class ConstructorApplicationFactory(ApplicationFactory):
                 domain = "%s.%s" % (tag, projects_domain)
                 canonical_domain = domain
             storage = project.get("storage", 0)
-            print "STORAGE: %s" % storage
             if storage == 2:
                 app = mg.Application(self.inst, tag, storage, utf2str(project.get("keyspace")))
             else:

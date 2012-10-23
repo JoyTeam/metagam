@@ -364,18 +364,7 @@ class Cluster(mg.Module):
         except AttributeError:
             pass
         if tag is not None:
-            def reload_server(info):
-                try:
-                    self.int_app().hooks.call("cluster.query_server", info["host"], info["port"], "/core/appconfig/%s" % tag, {})
-                except HTTPError as e:
-                    self.error(e)
-                except Exception as e:
-                    self.exception(e)
-            tasklets = []
-            for server, info in self.servers_online().items():
-                if info["type"] == "worker":
-                    tasklets.append(Tasklet.new(reload_server)(info))
-            Tasklet.join_all(tasklets)
+            self.call("cluster.query-services", "int", "/core/appconfig/%s" % tag)
     
     def objclasses_list(self, objclasses):
         objclasses["TempFile"] = (DBTempFile, DBTempFileList)
@@ -397,6 +386,8 @@ class Cluster(mg.Module):
         daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
         tasklets = []
         for dmnid, dmninfo in daemons.data.items():
+            if dmninfo.get("cls") != inst.cls:
+                continue
             for svcid, svcinfo in dmninfo.get("services", {}).items():
                 if svcinfo.get("type") != service_type:
                     continue

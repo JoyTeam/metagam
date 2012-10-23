@@ -502,8 +502,6 @@ class Web(Module):
         self.rhook("int-core.ping", self.core_ping, priv="public")
         self.rhook("int-core.config", self.core_config, priv="public")
         self.rhook("int-core.abort", self.core_abort, priv="public")
-        self.rhook("int-core.reload", self.core_reload, priv="public")
-        self.rhook("int-core.reload-hard", self.core_reload_hard, priv="public")
         self.rhook("int-core.appconfig", self.core_appconfig, priv="public")
         self.rhook("web.before_content", self.before_content)
         self.rhook("web.parse_template", self.web_parse_template)
@@ -552,34 +550,14 @@ class Web(Module):
         objclasses["ConfigGroup"] = (DBConfigGroup, DBConfigGroupList)
         objclasses["HookGroupModules"] = (DBHookGroupModules, DBHookGroupModulesList)
 
-    def core_reload(self):
-        request = self.req()
-        config = request.param("config")
-        if config:
-            inst = self.app().inst
-            TODO(config_format_changed)
-            inst.config = json.loads(config)
-            inst.dbpool.set_host(self.clconf("cassandra"), primary_host_id=0)
-            inst.mcpool.set_host(self.clconf("memcached")[0])
-        errors = self.app().inst.reload()
-        if errors:
-            self.call("web.response_json", { "errors": errors })
-        else:
-            self.call("core.application_reloaded")
-            self.call("web.response_json", { "ok": 1 })
-
-    def reload_hard(self):
+    def core_abort_delayed(self):
         Tasklet.sleep(1)
         os._exit(0)
 
-    def core_reload_hard(self):
-        Tasklet.new(self.reload_hard)()
-        self.call("cluster.terminate-daemon")
-        self.call("web.response_json", { "ok": 1 })
-
     def core_abort(self):
         self.call("cluster.terminate-daemon")
-        os._exit(3)
+        Tasklet.new(self.core_abort_delayed)(1)
+        self.call("web.response_json", { "ok": 1 })
 
     def core_config(self):
         self.call("web.response_json", self.app().inst.dbconfig.data)
@@ -601,7 +579,9 @@ class Web(Module):
             if app.hooks.dynamic:
                 factory.remove_by_tag(req.args)
             else:
-                app.reload()
+                app.config.clear()
+                app.modules.clear()
+                app.hooks.clear()
         self.call("web.response_json", {"ok": 1})
 
     def web_parse_template(self, filename, vars, config=None):

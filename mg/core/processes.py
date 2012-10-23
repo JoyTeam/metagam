@@ -350,11 +350,3 @@ class Instance(Loggable):
         self.close_memcached()
         self.close_cassandra()
 
-    def reload(self):
-        "Reloads instance. Return value: number of errors"
-        self.load_dbconfig()
-        if self.appfactory is None:
-            return 0
-        return self.appfactory.reload()
-
-

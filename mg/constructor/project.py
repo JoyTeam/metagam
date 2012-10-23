@@ -29,7 +29,6 @@ class ConstructorProject(Module):
             "mg.constructor.domains.Domains",
             "mg.constructor.auth.Auth",
             "mg.constructor.players.CharactersMod",
-            "mg.core.daemons.Daemons",
             "mg.constructor.logo.LogoAdmin",
             "mg.core.dbexport.Export",
         ]

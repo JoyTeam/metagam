@@ -26,6 +26,7 @@ def main():
                 app = inst.int_app
                 app.load([
                     "mg.core.worker.Worker",
+                    "mg.core.cluster.Cluster",
                     "mg.core.cluster.ClusterDaemon",
                     "mg.constructor.admin.Constructor",
                     "mg.core.queue.Queue",

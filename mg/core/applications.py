@@ -94,7 +94,7 @@ class Hooks(object):
         lst.append((handler, priority, module_name, priv))
         lst.sort(key=itemgetter(1), reverse=True)
 
-    def unregister_all(self):
+    def clear(self):
         "Unregister all registered hooks"
         self.handlers.clear()
         self.loaded_groups.clear()
@@ -496,19 +496,10 @@ class Modules(object):
                     app.inst.modules.remove(module_name)
         return errors
 
-    def reload(self):
-        "Reload all modules"
+    def clear(self):
+        "Remove all modules"
         with self.modules_lock:
-            self.modules_locked_by = traceback.format_stack()
-            t = Tasklet.current()
-            t.modules_locked = True
-            modules = self.loaded_modules.keys()
             self.loaded_modules.clear()
-            self.app().hooks.unregister_all()
-            res = self._load(modules, auto_loaded=True)
-            t.modules_locked = False
-            self.modules_locked_by = None
-            return res
 
     def load_all(self):
         "Load all available modules"
@@ -523,7 +514,7 @@ class Modules(object):
                 if mod in self.not_auto_loaded:
                     modules.append(mod)
             self.loaded_modules.clear()
-            self.app().hooks.unregister_all()
+            self.app().hooks.clear()
             self._load(modules)
             repeat = True
             while repeat:
@@ -602,7 +593,7 @@ class Application(Loggable):
         self.storage = storage
         self.inst = inst
         self.tag = tag
-        self.keyspace = tag
+        self.keyspace = keyspace
         self.hooks = Hooks(self)
         self.config = Config(self)
         self.modules = Modules(self)
@@ -620,7 +611,6 @@ class Application(Loggable):
             self._db = self.inst.dbpool.dbget(self.keyspace, self.mc, self.storage, self.tag)
         else:
             self._db = self.inst.dbpool.dbget(self.tag, self.mc, self.storage)
-        print "CREATED DB %s WITH STORAGE %s" % (self.tag, self.storage)
         return self._db
 
     @property
@@ -649,13 +639,6 @@ class Application(Loggable):
             pass
         self._sql_write = self.inst.sql_write.dbget(self)
         return self._sql_write
-
-    def reload(self):
-        "Reload all loaded modules"
-        self.config.clear()
-        errors = 0
-        errors += self.modules.reload()
-        return errors
 
     def obj(self, cls, uuid=None, data=None, silent=False):
         "Create CassandraObject instance"
@@ -787,40 +770,3 @@ class ApplicationFactory(object):
     def load(self, tag):
         "Load application if not yet"
         return None
-
-    def _reload(self):
-        errors = 0
-        for i in range(0, 2):
-            for module_name in self.inst.modules:
-                module = sys.modules.get(module_name)
-                if module:
-                    try:
-                        reload(module)
-                    except Exception as e:
-                        errors += 1
-                        module = sys.modules.get(module_name)
-                        if module:
-                            logging.getLogger("mg.core.Modules").exception(e)
-                        else:
-                            raise
-        errors = errors + self._reload_applications()
-        return errors
-
-    def reload(self):
-        "Reload all modules and applications"
-        with self.lock:
-            return self._reload()
-
-    def _reload_applications(self):
-        errors = 0
-        for app in self.applications.values():
-            if app.dynamic:
-                self.remove(app)
-            else:
-                errors = errors + app.reload()
-        return errors
-
-    def reload_applications(self):
-        "Reload all applications"
-        with self.lock:
-            return self._reload_applications()
