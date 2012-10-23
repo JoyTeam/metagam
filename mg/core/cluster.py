@@ -364,7 +364,11 @@ class Cluster(mg.Module):
         except AttributeError:
             pass
         if tag is not None:
-            self.call("cluster.query-services", "int", "/core/appconfig/%s" % tag)
+            try:
+                with Timeout.push(3):
+                    self.call("cluster.query-services", "int", "/core/appconfig/%s" % tag)
+            except TimeoutError:
+                pass
     
     def objclasses_list(self, objclasses):
         objclasses["TempFile"] = (DBTempFile, DBTempFileList)
