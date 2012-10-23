@@ -385,16 +385,28 @@ class Cluster(mg.Module):
         else:
             tempfile.remove()
 
-    def query_services(self, service_type, url, timeout=10, *args, **kwargs):
+    def query_services(self, service_type, url, timeout=10, call_int=False, *args, **kwargs):
         inst = self.app().inst
         daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
         tasklets = []
         for dmnid, dmninfo in daemons.data.items():
             if dmninfo.get("cls") != inst.cls:
                 continue
-            for svcid, svcinfo in dmninfo.get("services", {}).items():
+            services = dmninfo.get("services", {})
+            for svcid, svcinfo in services.items():
                 if svcinfo.get("type") != service_type:
                     continue
+                if call_int:
+                    found = False
+                    for sid, sinfo in services.items():
+                        if sinfo.get("type") != "int":
+                            continue
+                        found = True
+                        svcid = sid
+                        svcinfo = sinfo
+                        break
+                    if not found:
+                        continue
                 if "addr" not in svcinfo:
                     continue
                 if "port" not in svcinfo:

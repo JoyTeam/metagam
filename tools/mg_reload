@@ -11,14 +11,17 @@ def main():
     # configuration
     parser = optparse.OptionParser()
     (options, args) = parser.parse_args()
+    if not args:
+        print "Usage: mg_reload <class>"
+        os._exit(1)
     # load everything
-    inst = mg.Instance("reload", "metagam")
+    inst = mg.Instance("reload", args[0])
     app = inst.int_app
     app.load([
         "mg.core.cluster.Cluster",
     ])
     try:
-        print "calling reload"    
+        app.call("cluster.query-services", args[0], "/core/abort", call_int=True)
     except RuntimeError as e:
         logging.error(e)
     except Exception as e:

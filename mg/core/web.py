@@ -556,7 +556,7 @@ class Web(Module):
 
     def core_abort(self):
         self.call("cluster.terminate-daemon")
-        Tasklet.new(self.core_abort_delayed)(1)
+        Tasklet.new(self.core_abort_delayed)()
         self.call("web.response_json", { "ok": 1 })
 
     def core_config(self):
