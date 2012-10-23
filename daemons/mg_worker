@@ -15,7 +15,7 @@ def main():
         # shared socket for public web requests
         extport = inst.confint("metagam", "webport")
         if type(extport) != int:
-            raise RuntimeError("webport not specified in [constructor] section of the config file")
+            raise RuntimeError("webport not specified in [metagam] section of the config file")
         extaddr = (inst.instaddr, extport)
         extsock = Socket.server(extaddr)
 
@@ -82,8 +82,6 @@ def main():
         os._exit(1)
     except:
         os._exit(1)
-
-
 
 dispatch(main)
 
