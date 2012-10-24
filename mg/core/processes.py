@@ -172,36 +172,29 @@ class Instance(Loggable):
             return default
 
     def init_logger(self):
-        self.close_logger()
-        modlogger = logging.getLogger("")
-        modlogger.setLevel(logging.DEBUG)
+        if not getattr(logging, "mg_initialized", False):
+            logging.mg_initialized = True
 
-        # syslog
-        self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
-        self.syslog_channel.setLevel(logging.DEBUG)
-        formatter = Formatter(unicode(self.insttype + " cls=%(name)s %(message)s"))
-        self.syslog_channel.setFormatter(formatter)
-        filter = Filter()
-        self.syslog_channel.addFilter(filter)
-        modlogger.addHandler(self.syslog_channel)
+            modlogger = logging.getLogger("")
+            modlogger.setLevel(logging.DEBUG)
 
-        # stderr
-        self.stderr_channel = logging.StreamHandler()
-        self.stderr_channel.setLevel(logging.DEBUG)
-        filter = StderrFilter()
-        self.stderr_channel.addFilter(filter)
-        formatter = Formatter(unicode("%(asctime)s " + self.insttype + " cls=%(name)s %(message)s"))
-        self.stderr_channel.setFormatter(formatter)
-        modlogger.addHandler(self.stderr_channel)
+            # syslog
+            syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
+            syslog_channel.setLevel(logging.DEBUG)
+            formatter = Formatter(unicode(self.insttype + " cls=%(name)s %(message)s"))
+            syslog_channel.setFormatter(formatter)
+            filter = Filter()
+            syslog_channel.addFilter(filter)
+            modlogger.addHandler(syslog_channel)
 
-    def close_logger(self):
-        modlogger = logging.getLogger("")
-        if getattr(self, "syslog_channel", None):
-            modlogger.removeHandler(self.syslog_channel)
-            self.syslog_channel = None
-        if getattr(self, "stderr_channel", None):
-            modlogger.removeHandler(self.stderr_channel)
-            self.stderr_channel = None
+            # stderr
+            stderr_channel = logging.StreamHandler()
+            stderr_channel.setLevel(logging.DEBUG)
+            filter = StderrFilter()
+            stderr_channel.addFilter(filter)
+            formatter = Formatter(unicode("%(asctime)s " + self.insttype + " cls=%(name)s %(message)s"))
+            stderr_channel.setFormatter(formatter)
+            modlogger.addHandler(stderr_channel)
 
     @property
     def dbpool(self):
@@ -357,7 +350,6 @@ class Instance(Loggable):
         self.close_mysql()
         self.close_memcached()
         self.close_cassandra()
-        self.close_logger()
 
 def dispatch(main):
     def _dispatch():

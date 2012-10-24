@@ -88,15 +88,19 @@ class ConstructorApplicationFactory(ApplicationFactory):
     def added(self, app):
         project = getattr(app, "project", None)
         if project:
-            ver = self.get_by_tag("int").config.get("application.version", 0)
+            ver = self.inst.dbconfig.get("application.version", 10000)
             if project.get("app_version") != ver:
+                notify = False
                 with app.lock(["ReconfigureHooks"]):
                     project.load()
                     if project.get("app_version") != ver:
+                        print "Reconfiguring hooks of application %s due to application.version change to %s" % (app.tag, ver)
                         app.store_config_hooks(notify=False)
                         project.set("app_version", ver)
                         project.store()
-                        app.hooks.call("cluster.appconfig_changed")
+                        notify = True
+                if notify:
+                    app.call("cluster.appconfig_changed")
 
     def add(self, app):
         ApplicationFactory.add(self, app)

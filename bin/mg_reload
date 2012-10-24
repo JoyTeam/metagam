@@ -8,7 +8,11 @@ def main():
     app.load([
         "mg.core.cluster.Cluster",
     ])
-    app.call("cluster.query-services", "metagam", "/core/abort", call_int=True, verbose=True)
-    app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True, verbose=True)
+    ver = inst.dbconfig.get("application.version", 10000) + 1
+    inst.dbconfig.set("application.version", ver)
+    inst.dbconfig.store()
+    app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
+    app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
+    print "Reloaded to version %d" % ver
 
 mg.dispatch(main)

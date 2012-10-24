@@ -194,6 +194,7 @@ class Module(Loggable):
         """
         Loggable.__init__(self, fqn)
         self.app = weakref.ref(app)
+        self.inst = app.inst
 
     def db(self):
         return self.app().db
@@ -754,13 +755,14 @@ class ApplicationFactory(object):
     def get_by_tag(self, tag, load=True):
         "Find application by tag and load it"
         tag = utf2str(tag)
+        # Query without locking
+        if not load:
+            return self.applications.get(tag)
         with self.lock:
             try:
                 return self.applications[tag]
             except KeyError:
                 pass
-            if not load:
-                return None
             app = self.load(tag)
             if app is None:
                 return None

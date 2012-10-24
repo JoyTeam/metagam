@@ -162,7 +162,7 @@ class AdminInterface(Module):
 
     def response_params(self):
         return {
-            "ver": self.int_app().config.get("application.version", 0),
+            "ver": self.inst.dbconfig.get("application.version", 10000),
             "success": True,
         }
 

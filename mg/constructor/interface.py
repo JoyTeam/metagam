@@ -40,7 +40,7 @@ class Dynamic(Module):
         self.rhook("project.closed", self.invalidate)
 
     def indexpage_js_mcid(self):
-        ver = self.int_app().config.get("application.version", 0)
+        ver = self.inst.dbconfig.get("application.version", 10000)
         return "indexpage-js-%s" % ver
 
     def invalidate(self):
@@ -72,7 +72,7 @@ class Dynamic(Module):
         self.call("web.response", data, "text/javascript; charset=utf-8")
 
     def indexpage_css_mcid(self):
-        ver = self.int_app().config.get("application.version", 0)
+        ver = self.inst.dbconfig.get("application.version", 10000)
         return "indexpage-css--%s" % ver
 
     def indexpage_css(self):

@@ -641,7 +641,7 @@ class Web(Module):
             conf["LOAD_TEMPLATES"] = Provider(conf)
         tpl_engine = Template(conf)
         if vars.get("universal_variables") is None:
-            vars["ver"] = self.int_app().config.get("application.version", 0)
+            vars["ver"] = self.inst.dbconfig.get("application.version", 10000)
             vars["universal_variables"] = True
             try:
                 try:
