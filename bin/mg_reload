@@ -8,7 +8,7 @@ def main():
     app.load([
         "mg.core.cluster.Cluster",
     ])
-    app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
-    app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
+    app.call("cluster.query-services", "metagam", "/core/abort", call_int=True, delay=1, verbose=True)
+    app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True, verbose=True)
 
 mg.dispatch(main)

@@ -395,7 +395,7 @@ class Cluster(mg.Module):
         else:
             tempfile.remove()
 
-    def query_services(self, service_type, url, timeout=10, call_int=False, *args, **kwargs):
+    def query_services(self, service_type, url, timeout=10, call_int=False, delay=0, *args, **kwargs):
         inst = self.app().inst
         daemons = inst.int_app.obj(DBCluster, "daemons", silent=True)
         tasklets = []
@@ -422,6 +422,8 @@ class Cluster(mg.Module):
                 task = Tasklet.new(self.do_query_service_exc)
                 tasklets.append(task)
                 task(svcid, svcinfo, url, timeout, *args, **kwargs)
+                if delay > 0:
+                    Tasklet.sleep(delay)
         Tasklet.join_all(tasklets)
 
     def query_service(self, service_id, url, timeout=30, *args, **kwargs):
@@ -444,7 +446,7 @@ class Cluster(mg.Module):
         except Exception as e:
             self.error("Error calling service %s: %s" % (service_id, e))
 
-    def do_query_service(self, service_id, svc, url, timeout, *args, **kwargs):
+    def do_query_service(self, service_id, svc, url, timeout, verbose=False, *args, **kwargs):
         try:
             with Timeout.push(timeout):
                 cnn = HTTPConnection()
@@ -462,6 +464,8 @@ class Cluster(mg.Module):
                     request = cnn.post(uri, urlencode(params))
                     request.add_header("Content-type", "application/x-www-form-urlencoded")
                     request.add_header("Connection", "close")
+                    if verbose:
+                        self.debug("Query http://%s:%s%s", addr[0], addr[1], uri)
                     response = cnn.perform(request)
                     if response.status_code != 200:
                         raise ClusterError("Service %s (%s:%d) returned status %d for URL %s" % (service_id, addr[0], addr[1], response.status_code, uri))
