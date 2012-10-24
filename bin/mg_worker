@@ -2,15 +2,17 @@
 
 from concurrence import Tasklet
 from concurrence.io.socket import Socket
-from mg.constructor.processes import ConstructorInstance, ConstructorWebService
 from multiprocessing import Process
 import mg
 import logging
 import os
 import sys
+import re
+
+re_mg_module = re.compile(r'^mg\.')
 
 def main():
-    inst = ConstructorInstance("metagam", "metagam")
+    inst = mg.Instance("metagam", "metagam")
     # shared socket for public web requests
     extport = inst.confint("metagam", "webport")
     if type(extport) != int:
@@ -20,6 +22,13 @@ def main():
 
     def child(n):
         try:
+            # reset all code
+            for modid, module in sys.modules.items():
+                if re_mg_module.match(modid):
+                    del sys.modules[modid]
+            # recreate instance
+            from mg.constructor.processes import ConstructorInstance, ConstructorWebService
+            inst = ConstructorInstance("metagam", "metagam")
             # internal application
             inst.instid = "%s-%d" % (inst.instid, n)
             app = inst.int_app
@@ -54,6 +63,7 @@ def main():
     nproc = inst.confint("metagam", "webchildren", 16)
     processes = []
     inst.close_all()
+    del inst
     for i in xrange(0, nproc):
         proc = Process(target=child, args=(i + 1,))
         processes.append(proc)

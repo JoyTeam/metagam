@@ -59,6 +59,7 @@ class ClusterDaemon(mg.Module):
         if not hasattr(inst, "services"):
             inst.services = {}
         self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("cluster.daemons", self.daemons)
         self.rhook("cluster.register-daemon", self.register_daemon)
         self.rhook("cluster.run-daemon-loop", self.run_daemon_loop)
         self.rhook("cluster.run-int-service", self.run_int_service)
@@ -94,6 +95,9 @@ class ClusterDaemon(mg.Module):
             except Exception as e:
                 self.exception(e)
             Tasklet.sleep(1)
+
+    def daemons(self):
+        return self.obj(DBCluster, "daemons", silent=True).data
 
     def register_daemon(self, must_exist=False):
         "Register daemon in the DB"
@@ -203,9 +207,7 @@ class ClusterDaemon(mg.Module):
 class Cluster(mg.Module):
     def register(self):
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("cluster.query_director", self.query_director)
         self.rhook("cluster.query_server", self.query_server)
-        self.rhook("cluster.servers_online", self.servers_online)
         self.rhook("cluster.static_upload", self.static_upload)
         self.rhook("cluster.appconfig_changed", self.appconfig_changed)
         self.rhook("cluster.static_upload_temp", self.static_upload_temp)
@@ -217,15 +219,6 @@ class Cluster(mg.Module):
         self.rhook("cluster.services", self.services)
         self.rhook("cluster.query-services", self.query_services)
 
-    def query_director(self, uri, params={}):
-        """
-        Connect to Director and query given URI
-        uri - URI
-        params - HTTP form params
-        Return value: received response (application/json will be decoded automatically)
-        """
-        return dir_query(uri, params)
-
     def query_server(self, host, port, uri, params={}, timeout=20):
         """
         Connect to an arbitrary server and query given URI
@@ -235,17 +228,6 @@ class Cluster(mg.Module):
         Return value: received response (application/json will be decoded automatically)
         """
         return query(host, port, uri, params, timeout=timeout)
-
-    def servers_online(self):
-        """
-        Returns list of internal servers currently online
-        """
-        config = self.app().inst.int_app.config
-        config.clear()
-        online = config.get("director.servers", {})
-        if online is None:
-            online = {}
-        return online
 
     def static_put(self, uri, content_type, data):
         if uri is None:
@@ -503,9 +485,6 @@ class Cluster(mg.Module):
                     services[tp] = [svc]
         return services
 
-def dir_query(uri, params):
-    return query("director", 3000, uri, params)
-
 def query(host, port, uri, params, timeout=20):
     try:
         with Timeout.push(timeout):
@@ -533,37 +512,70 @@ class ClusterAdmin(mg.Module):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-cluster.monitoring", self.menu_cluster_monitoring)
-        self.rhook("ext-admin-workers.monitor", self.workers_monitor, priv="monitoring")
-        self.rhook("headmenu-admin-workers.monitor", self.headmenu_workers_monitor)
+        self.rhook("menu-admin-metagam.cluster", self.menu_metagam_cluster)
+        self.rhook("ext-admin-cluster.monitor", self.cluster_monitor, priv="monitoring")
+        self.rhook("headmenu-admin-cluster.monitor", self.headmenu_cluster_monitor)
+        self.rhook("ext-admin-cluster.config", self.cluster_config, priv="clusterconfig")
 
     def permissions_list(self, perms):
+        perms.append({"id": "clusterconfig", "name": self._("Cluster configuration")})
         perms.append({"id": "monitoring", "name": self._("Cluster monitoring")})
 
     def menu_root_index(self, menu):
-        menu.append({"id": "constructor.cluster", "text": self._("Cluster"), "order": 28})
-        menu.append({"id": "cluster.monitoring", "text": self._("Monitoring"), "order": 29})
+        menu.append({"id": "metagam.cluster", "text": self._("Cluster"), "order": 28})
 
-    def menu_cluster_monitoring(self, menu):
+    def menu_metagam_cluster(self, menu):
         req = self.req()
+        if req.has_access("clusterconfig"):
+            menu.append({"id": "cluster/config", "text": self._("Cluster configuration"), "leaf": True})
         if req.has_access("monitoring"):
-            menu.append({"id": "workers/monitor", "text": self._("Workers"), "leaf": True})
+            menu.append({"id": "cluster/monitor", "text": self._("Cluster monitor"), "leaf": True})
 
-    def workers_monitor(self):
-        rows = []
+    def cluster_config(self):
+        req = self.req()
+        inst = self.app().inst
+        dbconfig = inst.dbconfig
+        params = ["memcached", "storage", "admin_user", "smtp_server", "mysql_write_server",
+            "mysql_database", "mysql_user", "mysql_password", "wm_w3s_gate", "wm_login_gate",
+            "wm_passport_gate", "locale", "mysql_read_server"]
+        if req.ok():
+            errors = {}
+            values = {}
+            listParams = set(["memcached", "storage", "mysql_read_server", "mysql_write_server"])
+            for param in params:
+                val = req.param(param).strip()
+                values[param] = val
+                if val == "":
+                    dbconfig.delkey(param)
+                else:
+                    if param in listParams:
+                        val = re.split(r'\s*,\s*', val)
+                    dbconfig.set(param, val)
+            dbconfig.store()
+            self.call("cluster.query-services", "int", "/core/dbconfig")
+            self.call("admin.response", self._("Configuration stored"), {})
+        fields = []
+        fields.append({"name": "admin_user", "label": self._("Administrator UUID"), "value": dbconfig.get("admin_user")})
+        fields.append({"name": "memcached", "label": self._("Memcached servers (comma separated list)"), "value": ", ".join(dbconfig.get("memcached", ["127.0.0.1"]))})
+        fields.append({"name": "storage", "label": self._("Storage servers (comma separated list)"), "value": ", ".join(dbconfig.get("storage", ["storage"]))})
+        fields.append({"name": "smtp_server", "label": self._("SMTP server"), "value": dbconfig.get("smtp_server", "127.0.0.1")})
+        fields.append({"name": "mysql_write_server", "label": self._("MySQL write server (master)"), "value": ", ".join(dbconfig.get("mysql_write_server", ["127.0.0.1"]))})
+        fields.append({"name": "mysql_read_server", "label": self._("MySQL read servers (master + slaves; comma separated list)"), "value": ", ".join(dbconfig.get("mysql_read_server", ["127.0.0.1"]))})
+        fields.append({"name": "mysql_database", "label": self._("MySQL database name"), "value": dbconfig.get("mysql_database", "metagam")})
+        fields.append({"name": "mysql_user", "label": self._("MySQL user name"), "value": dbconfig.get("mysql_user", "metagam")})
+        fields.append({"name": "mysql_password", "label": self._("MySQL user password"), "value": dbconfig.get("mysql_password")})
+        fields.append({"name": "wm_w3s_gate", "label": self._("Gate to WebMoney w3s API"), "value": dbconfig.get("wm_w3s_gate", "localhost:85")})
+        fields.append({"name": "wm_login_gate", "label": self._("Gate to WebMoney login API"), "value": dbconfig.get("wm_login_gate", "localhost:86")})
+        fields.append({"name": "wm_passport_gate", "label": self._("Gate to WebMoney passport API"), "value": dbconfig.get("wm_passport_gate", "localhost:87")})
+        fields.append({"name": "locale", "label": self._("Server locale"), "value": dbconfig.get("locale", "en")})
+        self.call("admin.form", fields=fields)
+
+    def cluster_monitor(self):
+        daemons = self.app().inst.int_app.call("cluster.daemons")
         vars = {
-            "tables": [
-                {
-                    "header": [self._("ID"), self._("Class"), self._("Interface"), self._("Version"), self._("Status"), self._("Web"), self._("Daemons")],
-                    "rows": rows
-                }
-            ]
+            "state": json.dumps(daemons, indent=4)
         }
-        lst = self.int_app().objlist(WorkerStatusList, query_index="all")
-        lst.load(silent=True)
-        for ent in lst:
-            rows.append([ent.uuid, ent.get("cls"), "%s:%d" % (ent.get("host"), ent.get("port")), ent.get("ver"), self._("Reloading") if ent.get("reloading") else self._("OK")])
-        self.call("admin.response_template", "admin/common/tables.html", vars)
+        self.call("admin.response_template", "admin/cluster/monitor.html", vars)
 
-    def headmenu_workers_monitor(self, args):
-        return self._("Workers monitor")
+    def headmenu_cluster_monitor(self, args):
+        return self._("Cluster monitor")

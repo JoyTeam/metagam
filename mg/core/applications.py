@@ -687,7 +687,7 @@ class Application(Loggable):
 
     @property
     def main_host(self):
-        return self.clconf("main_host", "main")
+        return self.inst.conf("metagam", "domain", "main")
 
     def load(self, *args, **kwargs):
         "Syntactic sugar for modules.load(...)"
