@@ -146,9 +146,9 @@ class QueueRunner(Module):
         cls = inst.cls
         try:
             # Free my tasks
-            self.sql_write.do("update queue_tasks set locked='' where cls=? and locked=?", cls, instid)
+            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where cls=? and locked=?", cls, instid)
             # Free tasks locked too long
-            self.sql_write.do("update queue_tasks set locked='', priority=priority-1 where locked_till<?", instid, self.now())
+            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where locked_till<?", self.now())
             while True:
                 lock = self.lock(["queue"])
                 if not lock.trylock():
@@ -160,6 +160,7 @@ class QueueRunner(Module):
                         return
                     task = tasks[0]
                     self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(1800), task["id"])
+                    ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
                 finally:
                     lock.unlock()
                 # Execute task
@@ -199,7 +200,7 @@ class QueueRunner(Module):
                                 self.call("queue.schedule_task", task.get("cls"), app_tag, hook, params)
                         self.sql_write.do("delete from queue_tasks where id=?", task["id"])
                     else:
-                        self.debug("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
+                        self.error("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
                         self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
         finally:
             self.queue_task_running = False
