@@ -4,7 +4,7 @@ from subprocess import Popen
 import json
 
 mgDir = os.path.abspath(mg.__path__[0])
-daemonsDir = "%s/daemons" % os.path.dirname(mgDir)
+daemonsDir = "%s/bin" % os.path.dirname(mgDir)
 
 class ProcmanService(mg.SingleApplicationWebService):
     def publish(self, svcinfo):
