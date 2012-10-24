@@ -7,12 +7,14 @@ from mg.core.memcached import MemcachedPool
 from mg.core.config import DBConfigGroup
 from mg.core.applications import Application, ApplicationFactory
 from concurrence import Tasklet
+from concurrence import dispatch as concurrence_dispatch
 from concurrence.extra import Lock
 import ConfigParser
 import optparse
 import logging
 import logging.handlers
 import re
+import os
 
 re_comma = re.compile('\s*,\s*')
 
@@ -350,3 +352,14 @@ class Instance(Loggable):
         self.close_memcached()
         self.close_cassandra()
 
+def dispatch(main):
+    def _dispatch():
+        try:
+            main()
+        except RuntimeError as e:
+            logging.error(e)
+        except Exception as e:
+            logging.exception(e)
+        finally:
+            os._exit(0)
+    concurrence_dispatch(_dispatch)

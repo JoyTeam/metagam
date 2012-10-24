@@ -1,35 +1,22 @@
 #!/usr/bin/python2.6
 
-from concurrence import dispatch, Tasklet
+from mg.constructor.processes import ConstructorInstance
 import mg
-import logging
-import os
-from mg.constructor.processes import ConstructorInstance, ConstructorWebService
 
 def main():
-    try:
-        inst = ConstructorInstance("nginx", "metagam")
-        inst.instid = "nginx-%s" % inst.instaddr
-        # internal application
-        app = inst.int_app
-        app.load([
-            "mg.core.web.Web",
-            "mg.core.cluster.ClusterDaemon",
-            "mg.core.nginx.Nginx",
-        ])
-        app.call("cluster.register-daemon")
-        app.call("cluster.run-int-service")
-        app.call("nginx.register")
-        # run background processing
-        app.call("cluster.run-daemon-loop")
-    except RuntimeError as e:
-        logging.error(e)
-        os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
-    except:
-        os._exit(1)
+    inst = ConstructorInstance("nginx", "metagam")
+    inst.instid = "nginx-%s" % inst.instaddr
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.nginx.Nginx",
+    ])
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    app.call("nginx.register")
+    # run background processing
+    app.call("cluster.run-daemon-loop")
 
-dispatch(main)
-
+mg.dispatch(main)

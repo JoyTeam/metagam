@@ -1,42 +1,26 @@
 #!/usr/bin/python2.6
 
-from concurrence import dispatch
-import mg
-import logging
-import os
-import sys
 from mg.constructor.processes import ConstructorInstance
+import mg
 
 def main():
-    try:
-        inst = ConstructorInstance("procman", "metagam")
-        if len(sys.argv) > 1:
-            inst.instid = sys.argv[1]
-        app = inst.int_app
-        app.load([
-            "mg.core.web.Web",
-            "mg.core.cluster.Cluster",
-            "mg.core.cluster.ClusterDaemon",
-            "mg.core.procman.ProcessManager",
-            "mg.constructor.procman.ProcessManager",
-            "mg.core.realplexor.RealplexorDaemon",
-        ])
-        app.call("cluster.cleanup-host")
-        app.call("cluster.register-daemon")
-        app.call("cluster.run-int-service")
-        app.call("procman.run")
-        # run app.check on main application
-        main_app = inst.appfactory.get_by_tag("main")
-        main_app.call("app.check")
-        app.call("cluster.run-daemon-loop")
-    except RuntimeError as e:
-        logging.error(e)
-        os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
-    except:
-        os._exit(1)
+    inst = ConstructorInstance("procman", "metagam")
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.Cluster",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.procman.ProcessManager",
+        "mg.constructor.procman.ProcessManager",
+        "mg.core.realplexor.RealplexorDaemon",
+    ])
+    app.call("cluster.cleanup-host")
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    app.call("procman.run")
+    # run app.check on main application
+    main_app = inst.appfactory.get_by_tag("main")
+    main_app.call("app.check")
+    app.call("cluster.run-daemon-loop")
 
-dispatch(main)
-
+mg.dispatch(main)

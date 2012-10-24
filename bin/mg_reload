@@ -1,11 +1,6 @@
 #!/usr/bin/python2.6
 
-from concurrence import dispatch
 import mg
-import os
-import optparse
-import sys
-import logging
 
 def main():
     inst = mg.Instance("reload", "metagam")
@@ -13,14 +8,7 @@ def main():
     app.load([
         "mg.core.cluster.Cluster",
     ])
-    try:
-        app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
-        app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
-    except RuntimeError as e:
-        logging.error(e)
-    except Exception as e:
-        logging.exception(e)
-    finally:
-        os._exit(1)
+    app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
+    app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
 
-dispatch(main)
+mg.dispatch(main)
