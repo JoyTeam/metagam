@@ -8,5 +8,5 @@ export HOME=/home/metagam
 export PYTHONPATH=$dir
 
 while true ; do
-	screen -D -m -S procman daemons/mg_procman
+	screen -D -m -S procman bin/mg_procman
 done
