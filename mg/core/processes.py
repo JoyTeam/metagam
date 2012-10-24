@@ -172,12 +172,11 @@ class Instance(Loggable):
             return default
 
     def init_logger(self):
+        self.close_logger()
         modlogger = logging.getLogger("")
         modlogger.setLevel(logging.DEBUG)
 
         # syslog
-        if getattr(self, "syslog_channel", None):
-            modlogger.removeHandler(self.syslog_channel)
         self.syslog_channel = logging.handlers.SysLogHandler(address="/dev/log")
         self.syslog_channel.setLevel(logging.DEBUG)
         formatter = Formatter(unicode(self.insttype + " cls=%(name)s %(message)s"))
@@ -187,8 +186,6 @@ class Instance(Loggable):
         modlogger.addHandler(self.syslog_channel)
 
         # stderr
-        if getattr(self, "stderr_channel", None):
-            modlogger.removeHandler(self.stderr_channel)
         self.stderr_channel = logging.StreamHandler()
         self.stderr_channel.setLevel(logging.DEBUG)
         filter = StderrFilter()
@@ -196,6 +193,15 @@ class Instance(Loggable):
         formatter = Formatter(unicode("%(asctime)s " + self.insttype + " cls=%(name)s %(message)s"))
         self.stderr_channel.setFormatter(formatter)
         modlogger.addHandler(self.stderr_channel)
+
+    def close_logger(self):
+        modlogger = logging.getLogger("")
+        if getattr(self, "syslog_channel", None):
+            modlogger.removeHandler(self.syslog_channel)
+            self.syslog_channel = None
+        if getattr(self, "stderr_channel", None):
+            modlogger.removeHandler(self.stderr_channel)
+            self.stderr_channel = None
 
     @property
     def dbpool(self):
@@ -351,6 +357,7 @@ class Instance(Loggable):
         self.close_mysql()
         self.close_memcached()
         self.close_cassandra()
+        self.close_logger()
 
 def dispatch(main):
     def _dispatch():
