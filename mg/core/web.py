@@ -323,7 +323,7 @@ class WebService(Loggable):
             self.exception("Listen %s:%d: %s", addr[0], addr[1], err)
             os._exit(1)
 
-    def serve_any_port(self, hostaddr=None, port_min=3000, port_max=3999):
+    def serve_any_port(self, hostaddr=None, port_min=4000, port_max=4999):
         "Runs a WebService instance listening arbitrarily selected port"
         if hostaddr is None:
             hostaddr = self.inst.instaddr

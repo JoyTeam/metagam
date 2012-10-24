@@ -65,6 +65,14 @@ class ClusterDaemon(mg.Module):
         self.rhook("cluster.register-service", self.register_service)
         self.rhook("cluster.unregister-service", self.unregister_service)
         self.rhook("cluster.cleanup-host", self.cleanup_host)
+        self.rhook("cluster.terminate-daemon", self.terminate_daemon)
+
+    def terminate_daemon(self):
+        inst = self.app().inst
+        for svcid, svcinfo in inst.services.items():
+            self.debug("Stopping service %s", svcid)
+            service = svcinfo["service"]
+            service.stop()
 
     def objclasses_list(self, objclasses):
         objclasses["Cluster"] = (DBCluster,)
