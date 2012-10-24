@@ -63,7 +63,7 @@ class ProcessManager(ConstructorModule):
                     if not hostsSorted:
                         hosts.sort(lambda x, y: cmp(x["load"], y["load"]))
                         self.debug("Available hosts: %s", hosts)
-                    # Rotate hosts list and fetch a node with minimal load
+                    # Fetch a node with minimal load and put it to the end
                     host = hosts.pop(0)
                     hosts.append(host)
                     # Query procman to launch a daemon
