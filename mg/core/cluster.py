@@ -185,6 +185,8 @@ class ClusterDaemon(mg.Module):
         with self.cluster_lock:
             obj = self.obj(DBCluster, "daemons", silent=True)
             for dmnid, dmninfo in obj.data.items():
+                if dmninfo.get("cls") != inst.cls:
+                    continue
                 if dmninfo.get("addr") == addr:
                     self.debug("Dropped daemon %s", dmnid)
                     obj.delkey(dmnid)
