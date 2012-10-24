@@ -23,7 +23,7 @@ sub new
         }
         close $f;
         $self->{ip} = $self->{ldata}->{global}->{addr} or die "global.addr not specified in $self->{conffile}\n";
-	$self->{data} = $self->json_get("http://$self->{ip}:3000/core/config");
+	$self->{data} = $self->json_get("http://$self->{ip}:4000/core/config");
 	return $self;
 }
 
