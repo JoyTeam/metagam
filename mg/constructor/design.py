@@ -11,6 +11,7 @@ import mg
 import cssutils
 from cssutils import *
 import mg
+from concurrence import Tasklet
 
 max_design_size = 10000000
 max_design_files = 100
@@ -352,6 +353,7 @@ class DesignZip(Module):
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
+                    Tasklet.yield_()
                     data = self.zip.read(file["zipname"])
                     validator.validate(file["filename"], data, file_obj=file)
         design = self.obj(Design)
@@ -416,6 +418,7 @@ class DesignGenerator(Module):
         pass
 
     def upload_image(self, param, errors):
+        Tasklet.yield_()
         req = self.req()
         image = req.param_raw(param)
         if image is None or not len(image):
@@ -506,7 +509,7 @@ class DesignGenerator(Module):
                 except KeyError:
                     with open(file["path"], "r") as f:
                         data = f.read()
-                    stackless.schedule()
+                    Tasklet.yield_()
                 try:
                     if file["filename"] == "blocks.html":
                         fragment = True
@@ -532,7 +535,7 @@ class DesignGenerator(Module):
                     if e.offset is not None:
                         msg += self._(", column %d") % (e.offset + 1)
                     errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
-                stackless.schedule()
+                Tasklet.yield_()
         if len(errors):
             raise RuntimeError(", ".join(errors))
         self.puzzle = Puzzle(1280, 1024)
@@ -546,12 +549,13 @@ class DesignGenerator(Module):
     def edit_css(self, filename):
         parser = CSSParser()
         css = parser.parseFile("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename), "utf-8")
+        Tasklet.yield_()
         self.css[filename] = css
         return css
 
     def load_image(self, filename):
         image = Image.open("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename)).convert("RGBA")
-        stackless.schedule()
+        Tasklet.yield_()
         return image
 
     def store_image(self, image, filename, format):
@@ -609,7 +613,7 @@ class DesignGenerator(Module):
                 image, format = el
                 stream = cStringIO.StringIO()
                 image.save(stream, format, quality=95)
-                stackless.schedule()
+                Tasklet.yield_()
                 ent["data"] = stream.getvalue()
             css = self.css.get(ent["filename"])
             if css:
