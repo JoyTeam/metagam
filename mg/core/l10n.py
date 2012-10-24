@@ -176,7 +176,7 @@ class L10n(Module):
         if lang is None:
             if type(value) == str:
                 value = unicode(value, "utf-8")
-            return value 
+            return value
         domain = self.call("l10n.domain")
         trans = self.call("l10n.translation", domain, lang)
         if request:

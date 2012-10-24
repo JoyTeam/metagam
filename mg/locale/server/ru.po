@@ -7621,7 +7621,7 @@ msgstr "Ваша подпись на форуме"
 msgid ""
 "Your game '{0}' hasn't passed moderation.\n"
 "Reason: {1}"
-msgstr "Ваша игра '{0}' не прошла модерацию.Причина: {1}"
+msgstr "Ваша игра '{0}' не прошла модерацию. Причина: {1}"
 
 msgid "Your game has no configured description. Before publishing your game you must provide a relevant description."
 msgstr "Для вашей игры не указано описание. Перед публикацией игры вы должны предоставить подходящее описание."

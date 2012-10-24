@@ -586,8 +586,6 @@ class Web(Module):
                 factory.remove_by_tag(req.args)
             else:
                 app.config.clear()
-                app.modules.clear()
-                app.hooks.clear()
         self.call("web.response_json", {"ok": 1})
 
     def web_parse_template(self, filename, vars, config=None):
