@@ -349,7 +349,7 @@ class Realplexor(mg.Module):
                     resync = True
                     env = os.environ.copy()
                     env["PERL5LIB"] = "/usr/lib/realplexor"
-                    self.app().inst.int_app.call("procman.newproc", "realplexor",
+                    self.app().inst.int_app.call("procman.spawn",
                         ["/usr/sbin/realplexorbin", "/etc/realplexor.conf"],
                         env)
                     # Let procman start. If it won't start in 3 seconds one more attempt will be made. Multiple

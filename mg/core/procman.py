@@ -20,6 +20,7 @@ class ProcessManager(mg.Module):
         self.rhook("procman.run", self.run)
         self.rhook("core.fastidle", self.fastidle)
         self.rhook("cluster.terminate-daemon", self.terminate_daemon)
+        self.rhook("procman.spawn", self.spawn)
         self.rhook("procman.newproc", self.newproc)
         self.rhook("procman.newdaemon", self.newdaemon)
         self.rhook("procman-spawn.index", self.spawn_index, priv="public")
@@ -72,7 +73,7 @@ class ProcessManager(mg.Module):
                 self.debug("Process %s finished with code %s" % (proc["args"][0], retval))
                 if proc.get("respawn"):
                     # Respawn
-                    proc["process"] = self.spawn(proc["args"])
+                    proc["process"] = self.spawn(proc["args"], proc["env"])
                 else:
                     # Cleanup
                     del inst.child_processes[i:i+1]
