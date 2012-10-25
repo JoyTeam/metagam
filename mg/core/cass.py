@@ -18,7 +18,7 @@ import stackless
 import concurrence
 import re
 
-cache_interval = 3600
+cache_interval = 300
 max_index_length = 10000000
 max_memcached_list_store = 1000
 max_chunk_size = 1000
