@@ -115,6 +115,7 @@ class ClusterDaemon(mg.Module):
                 daemon = {}
                 obj.set(inst.instid, daemon)
             daemon["registered"] = now
+            daemon["type"] = inst.insttype
             daemon["updated"] = now
             daemon["addr"] = inst.instaddr
             daemon["hostid"] = inst.conf("global", "id")

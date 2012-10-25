@@ -516,6 +516,7 @@ class Web(Module):
         self.rhook("int-core.abort", self.core_abort, priv="public")
         self.rhook("int-core.appconfig", self.core_appconfig, priv="public")
         self.rhook("int-core.dbconfig", self.core_dbconfig, priv="public")
+        self.rhook("int-core.daemons", self.core_daemons, priv="public")
         self.rhook("web.before_content", self.before_content)
         self.rhook("web.parse_template", self.web_parse_template)
         self.rhook("web.cache", self.web_cache)
@@ -588,6 +589,9 @@ class Web(Module):
         inst = self.app().inst
         inst.dbconfig.load()
         self.call("web.response_json", {"ok": 1})
+
+    def core_daemons(self):
+        self.call("web.response_json", self.call("cluster.daemons"))
 
     def core_appconfig(self):
         req = self.req()
