@@ -2,6 +2,7 @@ from mg.constructor import *
 from mg.core.auth import AuthLogList
 from mg.constructor.player_classes import DBCharacterOnlineList, DBPlayerList
 from mg.constructor.interface import DBFirstVisitList
+from mg.core.config import DBConfigGroup, DBConfigGroupList
 import re
 
 class DBDailyStat(CassandraObject):
