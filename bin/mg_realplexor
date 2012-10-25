@@ -5,7 +5,6 @@ import mg
 
 def main():
     inst = ConstructorInstance("realplexor", "metagam")
-    inst.instid = "realplexor-%s" % inst.instaddr
     # internal application
     app = inst.int_app
     app.load([

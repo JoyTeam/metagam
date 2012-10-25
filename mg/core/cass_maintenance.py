@@ -1,11 +1,11 @@
-from mg import *
+import mg
 from cassandra.ttypes import *
 import logging
 import re
 import json
 import time
 
-class CassandraMaintenance(Module):
+class CassandraMaintenance(mg.Module):
     def register(self):
         self.rhook("cassmaint.validate", self.validate)
 
@@ -79,3 +79,15 @@ class CassandraMaintenance(Module):
             "missing": missing_cnt,
             "orphaned": orphaned_cnt
         }
+
+class CassandraMonitor(mg.Module):
+    def register(self):
+        self.rhook("cassandra.register", self.register_cassandra)
+
+    def register_cassandra(self):
+        inst = self.app().inst
+        # Register service
+        int_app = inst.int_app
+        srv = mg.SingleApplicationWebService(self.app(), "%s-cassandra" % inst.instid, "cassandra", "cass")
+        srv.serve_any_port()
+        int_app.call("cluster.register-service", srv)

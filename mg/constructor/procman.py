@@ -15,6 +15,10 @@ class ProcessManager(ConstructorModule):
             self.call("procman.newdaemon", "worker", "mg_worker")
         if inst.conf("procman", "runNginxManager"):
             self.call("procman.newdaemon", "worker", "mg_nginx")
+        if inst.conf("procman", "runCassandraManager"):
+            self.call("procman.newdaemon", "worker", "mg_cassandra")
+        if inst.conf("procman", "runMySQLManager"):
+            self.call("procman.newdaemon", "worker", "mg_mysql")
 
     def fastidle(self):
         inst = self.app().inst
@@ -70,7 +74,7 @@ class ProcessManager(ConstructorModule):
                     self.debug('Querying %s "%s:%d" to launch daemon %s', host["id"], host["addr"], host["port"], svctype)
                     try:
                         inst = self.app().inst
-                        uuid = "%s-%s" % (svctype, inst.instaddr)
+                        uuid = "%s-%s" % (svctype, inst.conf("global", "id", inst.instaddr))
                         val = self.call("cluster.query_server", host["addr"], host["port"], "/service/call/%s/spawn" % host["svcid"], timeout=20, params={
                             "procid": uuid,
                             "executable": svcinfo["executable"]

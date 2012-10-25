@@ -19,6 +19,12 @@ def main():
         raise RuntimeError("webport not specified in [metagam] section of the config file")
     extaddr = (inst.instaddr, extport)
     extsock = Socket.server(extaddr)
+    # shared socket for monitoring web requests
+    extmonport = inst.confint("metagam", "webmonport")
+    if type(extmonport) != int:
+        raise RuntimeError("webmonport not specified in [metagam] section of the config file")
+    extmonaddr = (inst.instaddr, extmonport)
+    extmonsock = Socket.server(extmonaddr)
 
     def child(n):
         try:
@@ -46,6 +52,13 @@ def main():
             srv.set("webbackend", inst.insttype)
             srv.serve_socket(extaddr, extsock)
             app.call("cluster.register-service", srv)
+            # run service handling monitoring web requests
+            service_id = "%s-mon" % inst.instid
+            srv = mg.SingleApplicationWebService(inst.appfactory.get_by_tag("main"), service_id, "monitoring", "mon")
+            srv.set("webbackend", "monitoring")
+            srv.serve_socket(extmonaddr, extmonsock)
+            app.call("cluster.register-service", srv)
+            # run daemon
             app.call("cluster.run-daemon-loop")
         except RuntimeError as e:
             logging.error(e)

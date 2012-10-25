@@ -117,6 +117,7 @@ class ClusterDaemon(mg.Module):
             daemon["registered"] = now
             daemon["updated"] = now
             daemon["addr"] = inst.instaddr
+            daemon["hostid"] = inst.conf("global", "id")
             daemon["uuid"] = inst.uuid
             daemon["cls"] = inst.cls
             obj.touch()

@@ -2,15 +2,51 @@ import mg
 import os.path
 from subprocess import Popen
 import json
+import re
+import time
 
 mgDir = os.path.abspath(mg.__path__[0])
 daemonsDir = "%s/bin" % os.path.dirname(mgDir)
+re_spaces = re.compile(r'\s+')
+USER_HZ = 100.0
 
 class ProcmanService(mg.SingleApplicationWebService):
+    def __init__(self, *args, **kwargs):
+        mg.SingleApplicationWebService.__init__(self, *args, **kwargs)
+        self.cpustat = self.get_cpustat()
+
+    def get_cpustat(self):
+        now = time.time()
+        with open("/proc/stat") as f:
+            line = re_spaces.split(f.readline())
+            user = int(line[1]) + int(line[2])
+            system = int(line[3]) + int(line[6]) + int(line[7])
+            idle = int(line[4])
+            iowait = int(line[5])
+            stolen = int(line[8])
+            cpus = 0
+            for line in f:
+                if line.startswith("cpu"):
+                    cpus += 1
+            return (now, user, system, idle, iowait, stolen, cpus)
+
     def publish(self, svcinfo):
+        mg.SingleApplicationWebService.publish(self, svcinfo)
+        inst = self.inst
         with open("/proc/loadavg") as f:
             line = f.readline().split(" ")
-            svcinfo["load"] = float(line[0])
+            svcinfo["cpu-load"] = float(line[0])
+            old_cpustat = self.cpustat
+            new_cpustat = self.get_cpustat()
+            elapsed = new_cpustat[0] - old_cpustat[0]
+            cpus = new_cpustat[6]
+            if elapsed > 5:
+                svcinfo["cpu-user"] = (new_cpustat[1] - old_cpustat[1]) / USER_HZ / elapsed / cpus
+                svcinfo["cpu-system"] = (new_cpustat[2] - old_cpustat[2]) / USER_HZ / elapsed / cpus
+                svcinfo["cpu-idle"] = (new_cpustat[3] - old_cpustat[3]) / USER_HZ / elapsed / cpus
+                svcinfo["cpu-iowait"] = (new_cpustat[4] - old_cpustat[4]) / USER_HZ / elapsed / cpus
+                svcinfo["cpu-stolen"] = (new_cpustat[5] - old_cpustat[5]) / USER_HZ / elapsed / cpus
+                self.cpustat = new_cpustat
 
 class ProcessManager(mg.Module):
     def register(self):

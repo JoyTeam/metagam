@@ -153,7 +153,7 @@ class Instance(Loggable):
         self._instaddr = self.conf("global", "addr")
         if not self._instaddr:
             raise RuntimeError("Config key global.addr not found")
-        self._instid = "%s-%s" % (self.insttype, self.instaddr)
+        self._instid = "%s-%s" % (self.insttype, self.conf("global", "id", self.instaddr))
 
     def conf(self, section, option, default=None):
         try:

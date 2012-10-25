@@ -295,6 +295,12 @@ class WebService(Loggable):
         self.id = service_id
         self.type = service_type
         self.svcinfo = {}
+        self.reqs = 0
+        self.old_reqstat = self.get_reqstat()
+
+    def get_reqstat(self):
+        now = time.time()
+        return (now, self.reqs)
 
     def serve_socket(self, addr, socket):
         "Runs a WebService instance accepting connections from given socket"
@@ -389,6 +395,7 @@ class WebService(Loggable):
 
     def request_uri(self, request, uri):
         "Process HTTP request after URI was extracted, normalized and converted to utf-8"
+        self.reqs += 1
         # /service/call/<svcid>/method
         m = re_service_call.match(uri)
         if m:
@@ -427,7 +434,12 @@ class WebService(Loggable):
 
     def publish(self, svcinfo):
         "Service may fill svcinfo dict with any additional properties that will be announced in service record"
-        pass
+        old_reqstat = self.old_reqstat
+        new_reqstat = self.get_reqstat()
+        elapsed = new_reqstat[0] - old_reqstat[0]
+        if elapsed > 3:
+            svcinfo["svc-rps"] = (new_reqstat[1] - old_reqstat[1]) / elapsed
+            self.old_reqstat = new_reqstat
 
     def set(self, key, val):
         self.svcinfo[key] = val

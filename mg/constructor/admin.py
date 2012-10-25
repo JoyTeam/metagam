@@ -68,6 +68,7 @@ class Constructor(Module):
             "mg.constructor.marketing.MarketingAdmin",
             "mg.constructor.marketing.GoogleAnalytics", "mg.constructor.marketing.GoogleAnalyticsAdmin",
             "mg.constructor.socialnets.SocialNets", "mg.constructor.socialnets.SocialNetsAdmin",
+            "mg.core.monitoring.ClusterMonitor",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
