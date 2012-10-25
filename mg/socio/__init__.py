@@ -2452,7 +2452,6 @@ class Forum(Module):
             else:
                 sex = 0
             self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
 
     def notify_reply(self, topic_uuid, page, post_uuid):
         try:
@@ -2502,7 +2501,6 @@ class Forum(Module):
             else:
                 sex = 0
             self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
 
     def catstat(self, cat_id):
         return self.obj(ForumCategoryStat, cat_id, silent=True)
