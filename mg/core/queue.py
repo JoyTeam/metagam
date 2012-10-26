@@ -13,6 +13,7 @@ import re
 import weakref
 import datetime
 import calendar
+import random
 
 class Schedule(CassandraObject):
     clsname = "Schedule"
@@ -75,12 +76,17 @@ class Queue(Module):
                 at = next.strftime("%Y-%m-%d %H:%M:%S")
             else:
                 raise CronError("Invalid cron time")
-        with int_app.lock(["queue"]):
-            # Not reliable. May lose queue task if interrupted between queries.
-            # Problem will be fixed automatically at midnight app.check.
-            if unique is not None:
-                int_app.sql_write.do("delete from queue_tasks where app=? and `unique`=?", app_tag, unique)
+        # Store queue entry
+        def insert():
             int_app.sql_write.do("insert into queue_tasks(id, cls, app, at, priority, `unique`, hook, data) values (?, ?, ?, ?, ?, ?, ?, ?)", uuid4().hex, app_cls, app_tag, at, int(priority), unique, hook, json.dumps(args))
+        if unique is not None:
+            with int_app.lock(["queue"]):
+                # Not reliable. May lose queue task if interrupted between queries.
+                # Problem will be fixed automatically at midnight app.check.
+                int_app.sql_write.do("delete from queue_tasks where app=? and `unique`=?", app_tag, unique)
+                insert()
+        else:
+            insert()
 
     def queue_schedule(self, empty=False):
         "Return application schedule object"
@@ -152,6 +158,7 @@ class QueueRunner(Module):
             while True:
                 lock = self.lock(["queue"])
                 if not lock.trylock():
+                    Tasklet.sleep(random.randrange(4, 10))
                     return
                 try:
                     # Find task to run
