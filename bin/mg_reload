@@ -19,6 +19,7 @@ def main():
         inst.dbconfig.store()
     app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
     app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
+    app.call("cluster.query-services", "queue", "/core/abort", call_int=True)
     print "Reloaded to version %d" % inst.dbconfig.get("application.version", 10000)
 
 mg.dispatch(main)

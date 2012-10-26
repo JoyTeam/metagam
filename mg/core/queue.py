@@ -13,7 +13,6 @@ import re
 import weakref
 import datetime
 import calendar
-import random
 
 class Schedule(CassandraObject):
     clsname = "Schedule"
@@ -158,7 +157,6 @@ class QueueRunner(Module):
             while True:
                 lock = self.lock(["queue"])
                 if not lock.trylock():
-                    Tasklet.sleep(random.randrange(4, 10))
                     return
                 try:
                     # Find task to run

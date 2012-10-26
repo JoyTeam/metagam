@@ -19,6 +19,8 @@ class ProcessManager(ConstructorModule):
             self.call("procman.newdaemon", "worker", "mg_cassandra")
         if inst.conf("procman", "runMySQLManager"):
             self.call("procman.newdaemon", "worker", "mg_mysql")
+        if inst.conf("procman", "runQueue"):
+            self.call("procman.newdaemon", "queue", "mg_queue")
 
     def fastidle(self):
         inst = self.app().inst

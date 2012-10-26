@@ -1,0 +1,27 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+
+def main():
+    inst = ConstructorInstance("queue", "metagam")
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.queue.Queue",
+        "mg.core.queue.QueueRunner",
+        "mg.core.modifiers.ModifiersChecker",
+    ])
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    # run service for identifying daemon
+    service_id = "%s-queue" % inst.instid
+    srv = mg.SingleApplicationWebService(app, service_id, "queue", "que")
+    srv.serve_any_port()
+    app.call("cluster.register-service", srv)
+    # run background processing
+    app.call("cluster.run-daemon-loop")
+
+mg.dispatch(main)

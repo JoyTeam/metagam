@@ -1,6 +1,5 @@
 from mg import *
 import re
-import random
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_aggr = re.compile(r'^(max|min|sum|cnt)_(.+)$')
@@ -282,7 +281,6 @@ class ModifiersChecker(Module):
             cls = inst.cls
             lock = self.lock(["modifiers"])
             if not lock.trylock():
-                Tasklet.sleep(random.randrange(4, 10))
                 return
             try:
                 now = self.now()
