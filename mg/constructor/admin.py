@@ -3,6 +3,7 @@ from mg.core.auth import UserPermissions, UserPermissionsList
 from mg.core.queue import Schedule
 from mg.core.cluster import DBTempFileList
 from mg.constructor.players import DBPlayer, DBCharacter, DBCharacterForm, DBCharacterList
+from mg.core.config import DBConfigGroupList
 import mg.constructor.common
 from mg.core.projects import Project, ProjectList
 from uuid import uuid4
