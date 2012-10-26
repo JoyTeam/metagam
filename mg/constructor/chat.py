@@ -1275,7 +1275,6 @@ class Chat(ConstructorModule):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "chat_colours",
             "name": self._("Colours in the chat"),
