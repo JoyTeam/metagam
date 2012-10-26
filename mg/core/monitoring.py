@@ -54,15 +54,15 @@ class ClusterMonitor(mg.Module):
             if "cpu-load" in procmaninfo:
                 hostinfo["cpu_load"] = "%.2f" % procmaninfo["cpu-load"]
             if "cpu-user" in procmaninfo:
-                hostinfo["cpu_user"] = "%.2f" % (procmaninfo["cpu-user"] * 100)
+                hostinfo["cpu_user"] = "%.2f%%" % (procmaninfo["cpu-user"] * 100)
             if "cpu-system" in procmaninfo:
-                hostinfo["cpu_system"] = "%.2f" % (procmaninfo["cpu-system"] * 100)
+                hostinfo["cpu_system"] = "%.2f%%" % (procmaninfo["cpu-system"] * 100)
             if "cpu-idle" in procmaninfo:
-                hostinfo["cpu_idle"] = "%.2f" % (procmaninfo["cpu-idle"] * 100)
+                hostinfo["cpu_idle"] = "%.2f%%" % (procmaninfo["cpu-idle"] * 100)
             if "cpu-iowait" in procmaninfo:
-                hostinfo["cpu_iowait"] = "%.2f" % (procmaninfo["cpu-iowait"] * 100)
+                hostinfo["cpu_iowait"] = "%.2f%%" % (procmaninfo["cpu-iowait"] * 100)
             if "cpu-stolen" in procmaninfo:
-                hostinfo["cpu_stolen"] = "%.2f" % (procmaninfo["cpu-stolen"] * 100)
+                hostinfo["cpu_stolen"] = "%.2f%%" % (procmaninfo["cpu-stolen"] * 100)
             if hostid in srvhost:
                 servers.append(hostinfo)
             if hostid in dbhost:
