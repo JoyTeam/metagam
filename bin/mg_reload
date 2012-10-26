@@ -3,16 +3,22 @@
 import mg
 
 def main():
-    inst = mg.Instance("reload", "metagam")
+    inst = mg.Instance("reload", "metagam", addopt=[
+        [["-i", "--increment"], {
+            "action": "store_true",
+            "help": "Increment constructor version",
+        }]
+    ])
     app = inst.int_app
     app.load([
         "mg.core.cluster.Cluster",
     ])
-    ver = inst.dbconfig.get("application.version", 10000) + 1
-    inst.dbconfig.set("application.version", ver)
-    inst.dbconfig.store()
+    if inst.cmdline_options.increment:
+        ver = inst.dbconfig.get("application.version", 10000) + 1
+        inst.dbconfig.set("application.version", ver)
+        inst.dbconfig.store()
     app.call("cluster.query-services", "metagam", "/core/abort", call_int=True)
     app.call("cluster.query-services", "realplexor", "/core/abort", call_int=True)
-    print "Reloaded to version %d" % ver
+    print "Reloaded to version %d" % inst.dbconfig.get("application.version", 10000)
 
 mg.dispatch(main)

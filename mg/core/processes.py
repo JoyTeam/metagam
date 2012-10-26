@@ -86,20 +86,22 @@ class Instance(Loggable):
     """
     This is an executable instance. It keeps references to all major objects
     """
-    def __init__(self, insttype, cls):
+    def __init__(self, insttype, cls, addopt=[]):
         Loggable.__init__(self, "mg.core.processes.Instance")
         self.insttype = insttype
         self.cls = cls
         self.init_modules()
-        self.init_cmdline()
+        self.init_cmdline(addopt)
         self.init_logger()
 
     def init_modules(self):
         self.modules = set()
 
-    def init_cmdline(self):
+    def init_cmdline(self, addopt):
         parser = optparse.OptionParser()
         parser.add_option("-c", "--config", action="store", help="Configuration file")
+        for opt in addopt:
+            parser.add_option(*opt[0], **opt[1])
         (options, args) = parser.parse_args()
         self.cmdline_options = options
         self.cmdline_args = args
