@@ -1,7 +1,6 @@
 from concurrence.http import HTTPConnection, HTTPRequest
 import json
 import re
-import mg.core
 from mg.core.tools import *
 from mg.core.memcached import MemcachedLock
 from concurrence.thr import Socket

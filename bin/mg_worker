@@ -30,7 +30,7 @@ def main():
         try:
             # reset all code
             for modid, module in sys.modules.items():
-                if re_mg_module.match(modid):
+                if re_mg_module.match(modid) or modid == "mg":
                     del sys.modules[modid]
             # recreate instance
             from mg.constructor.processes import ConstructorInstance, ConstructorWebService
