@@ -16,7 +16,6 @@ class ProcmanService(mg.SingleApplicationWebService):
         self.cpustat = self.get_cpustat()
 
     def get_cpustat(self):
-        now = time.time()
         with open("/proc/stat") as f:
             line = re_spaces.split(f.readline())
             user = int(line[1]) + int(line[2])
@@ -24,6 +23,7 @@ class ProcmanService(mg.SingleApplicationWebService):
             idle = int(line[4])
             iowait = int(line[5])
             stolen = int(line[8])
+            now = time.time()
             cpus = 0
             for line in f:
                 if line.startswith("cpu"):
