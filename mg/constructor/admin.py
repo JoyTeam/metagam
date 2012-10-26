@@ -298,7 +298,7 @@ class Constructor(Module):
 
     def schedule(self, sched):
         sched.add("projects.cleanup_inactive", "10 1 * * *", priority=10)
-        sched.add("projects.appcheck", "0 * * * *", priority=10)
+        sched.add("projects.appcheck", "0 0 * * *", priority=10)
 
     def cleanup_inactive(self):
         inst = self.app().inst
