@@ -1035,12 +1035,12 @@ class Xsolla(Module):
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
-                cnn.connect(("2pay.ru", 80))
+                cnn.connect(("api.xsolla.com", 80))
                 try:
                     request = HTTPRequest()
                     request.method = "POST"
-                    request.path = "/api/game/index.php"
-                    request.host = "2pay.ru"
+                    request.path = "/game/index.php"
+                    request.host = "api.xsolla.com"
                     request.body = query
                     request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
                     request.add_header("Connection", "close")
