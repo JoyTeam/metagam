@@ -32,6 +32,7 @@ class ProcessManager(ConstructorModule):
             allServices = set()
             expire = self.now(-120)
             daemons = self.obj(DBCluster, "daemons", silent=True)
+            metagam_running = set()
             for dmnid, dmninfo in daemons.data.items():
                 if dmninfo.get("updated") < expire:
                     self.info('Daemon "%s" last time updated at %s. Clearing it from the configuration',
@@ -49,11 +50,17 @@ class ProcessManager(ConstructorModule):
                         # Record a host
                         hosts.append({
                             "id": dmnid,
+                            "hostid": dmninfo.get("hostid"),
                             "svcid": svcid,
                             "addr": svcinfo.get("addr"),
                             "port": svcinfo.get("port"),
                             "load": svcinfo.get("load", 0),
                         })
+                    elif tp == "metagam":
+                        # Host is a valid metagam instance
+                        metagam_running.add(dmninfo.get("hostid"))
+            # Filter hosts
+            hosts = [host for host in hosts if host["hostid"] in metagam_running]
             # Check whether all required services are running
             hostsSorted = False
             services = {}
