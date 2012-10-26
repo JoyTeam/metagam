@@ -16,6 +16,7 @@ class ProcmanService(mg.SingleApplicationWebService):
         self.cpustat = self.get_cpustat()
 
     def get_cpustat(self):
+        started = time.time()
         with open("/proc/stat") as f:
             line = re_spaces.split(f.readline())
             user = int(line[1]) + int(line[2])
@@ -23,12 +24,11 @@ class ProcmanService(mg.SingleApplicationWebService):
             idle = int(line[4])
             iowait = int(line[5])
             stolen = int(line[8])
-            now = time.time()
             cpus = 0
             for line in f:
                 if line.startswith("cpu"):
                     cpus += 1
-            return (now, user, system, idle, iowait, stolen, cpus)
+            return (started, user, system, idle, iowait, stolen, cpus)
 
     def publish(self, svcinfo):
         mg.SingleApplicationWebService.publish(self, svcinfo)
@@ -41,11 +41,16 @@ class ProcmanService(mg.SingleApplicationWebService):
             elapsed = new_cpustat[0] - old_cpustat[0]
             cpus = new_cpustat[6]
             if elapsed > 5:
-                svcinfo["cpu-user"] = (new_cpustat[1] - old_cpustat[1]) / USER_HZ / elapsed / cpus
-                svcinfo["cpu-system"] = (new_cpustat[2] - old_cpustat[2]) / USER_HZ / elapsed / cpus
-                svcinfo["cpu-idle"] = (new_cpustat[3] - old_cpustat[3]) / USER_HZ / elapsed / cpus
-                svcinfo["cpu-iowait"] = (new_cpustat[4] - old_cpustat[4]) / USER_HZ / elapsed / cpus
-                svcinfo["cpu-stolen"] = (new_cpustat[5] - old_cpustat[5]) / USER_HZ / elapsed / cpus
+                params = ["cpu-user", "cpu-system", "cpu-idle", "cpu-iowait", "cpu-stolen"]
+                total = 0
+                for i in xrange(0, len(params)):
+                    val = (new_cpustat[i + 1] - old_cpustat[i + 1]) / USER_HZ / elapsed / cpus
+                    svcinfo[params[i]] = val
+                    total += val
+                # Normalization
+                if total > 0:
+                    for p in params:
+                        svcinfo[p] /= total
                 self.cpustat = new_cpustat
 
 class ProcessManager(mg.Module):

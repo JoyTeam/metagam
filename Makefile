@@ -76,3 +76,6 @@ deploy: translations
 	find depl/static -name robots.txt -exec rm -rf {} \;
 	rsync --links --delete -r depl/* admin.mmoconstructor.ru:/home/mg/
 	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-frontend-1:/home/mg/'
+	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-1:/home/mg/'
+	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-2:/home/mg/'
+	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-3:/home/mg/'
