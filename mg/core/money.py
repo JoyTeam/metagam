@@ -19,6 +19,7 @@ re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
 re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
 re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
 re_decimal_comma = re.compile(',')
+re_valid_project_id = re.compile(r'^[a-z0-9]+$')
 
 default_rates = {
     "RUB": 1,
@@ -751,6 +752,15 @@ class Xsolla(Module):
 
     def payment_xsolla(self):
         req = self.req()
+        if req.args:
+            if re_valid_project_id.match(req.args):
+                app = self.inst.appfactory.get_by_id(req.args)
+                if not app:
+                    self.call("web.not_found")
+            else:
+                self.call("web.not_found")
+        else:
+            app = self.app()
         command = req.param_raw("command")
         sign = req.param_raw("md5")
         result = None
@@ -760,7 +770,7 @@ class Xsolla(Module):
         sum = None
         self.debug("Xsolla Request: %s", [req.param_dict()])
         try:
-            secret = self.conf("xsolla.secret")
+            secret = app.config.get("xsolla.secret")
             if type(secret) == unicode:
                 secret = secret.encode("windows-1251")
             if secret is None or secret == "":
@@ -774,7 +784,7 @@ class Xsolla(Module):
                 else:
                     v1 = v1.decode("windows-1251")
                     self.debug("Xsolla Request: command=check, v1=%s", v1)
-                    if self.call("session.find_user", v1):
+                    if app.call("session.find_user", v1):
                         result = 0
                     else:
                         result = 2
@@ -790,30 +800,30 @@ class Xsolla(Module):
                     v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
                     self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
-                    user = self.call("session.find_user", v1)
+                    user = app.call("session.find_user", v1)
                     if user:
-                        with self.lock(["PaymentXsolla.%s" % id]):
+                        with app.lock(["PaymentXsolla.%s" % id]):
                             try:
-                                existing = self.obj(PaymentXsolla, id)
+                                existing = app.obj(PaymentXsolla, id)
                                 result = 0
                                 id_shop = id
                                 sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
-                                currency = self.call("money.real-currency")
-                                cinfo = self.call("money.currency-info", currency)
+                                currency = app.call("money.real-currency")
+                                cinfo = app.call("money.currency-info", currency)
                                 amount_rub = floatz(req.param("transfer_sum"))
 #                               amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
-                                payment = self.obj(PaymentXsolla, id, data={})
+                                payment = app.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 payment.set("amount_rub", amount_rub)
-                                member = MemberMoney(self.app(), "user", user.uuid)
+                                member = MemberMoney(app, "user", user.uuid)
                                 member.credit(sum_v, currency, "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
-                                self.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
+                                app.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
                                 result = 0
                                 id_shop = id
                     else:
@@ -825,17 +835,17 @@ class Xsolla(Module):
                     comment = "Invalid MD5 signature"
                 else:
                     self.debug("Xsolla Request: command=cancel, id=%s", id)
-                    with self.lock(["PaymentXsolla.%s" % id]):
+                    with app.lock(["PaymentXsolla.%s" % id]):
                         try:
-                            payment = self.obj(PaymentXsolla, id)
+                            payment = app.obj(PaymentXsolla, id)
                             if payment.get("cancelled"):
                                 result = 0
                             else:
                                 payment.set("cancelled", self.now())
-                                member = MemberMoney(self.app(), "user", payment.get("user"))
-                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
+                                member = MemberMoney(app, "user", payment.get("user"))
+                                member.force_debit(payment.get("sum"), app.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
-                                self.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
+                                app.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
                                 result = 0
                         except ObjectNotFoundException:
                             result = 2
@@ -1008,7 +1018,7 @@ class Xsolla(Module):
         request.appendChild(elt)
         # payURL
         elt = doc.createElement("payUrl")
-        elt.appendChild(doc.createTextNode("http://%s/ext-payment/2pay" % self.app().canonical_domain))
+        elt.appendChild(doc.createTextNode("http://www.%s/ext-payment/xsolla/%s" % (self.main_host, self.app().tag)))
         request.appendChild(elt)
         # Description
         elt = doc.createElement("desc")
@@ -1118,7 +1128,7 @@ class XsollaAdmin(Module):
                 "secret_addgame": htmlescape(app.config.get("xsolla.secret-addgame")),
                 "project_id": htmlescape(app.config.get("xsolla.project-id")),
                 "contragent_id": htmlescape(app.config.get("xsolla.contragent-id")),
-                "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
+                "payment_url": "http://www.%s/ext-payment/2pay/%s" % (self.main_host, app.tag),
             }
             self.call("admin.response_template", "admin/money/xsolla-dashboard.html", vars)
         elif cmd == "settings":
