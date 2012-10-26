@@ -227,8 +227,10 @@ class Realplexor(mg.Module):
         return realplexor[0]["addr"]
 
     def send(self, ids, data):
-        rpl = RealplexorConcurrence(self.call("realplexor.host"), 10010, self.app().tag + "_")
-        rpl.send(ids, data)
+        host = self.call("realplexor.host")
+        if host:
+            rpl = RealplexorConcurrence(host, 10010, self.app().tag + "_")
+            rpl.send(ids, data)
 
     def packet(self, ids, method_cls, method, **kwargs):
         if ids == None:
