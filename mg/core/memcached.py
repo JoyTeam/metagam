@@ -335,30 +335,36 @@ class MemcachedLock(object):
         start = None
         while True:
             locked = []
-            success = True
-            badlock = None
-            for key in self.keys:
-                if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
-                    locked.append(key)
-                else:
-                    for k in locked:
-                        self.mc.delete(k)
-                    success = False
-                    badlock = (key, self.mc.get(key))
-                    break
-            if success:
-                self.locked = time.time()
-                return
-            Tasklet.sleep(self.delay)
-            if start is None:
-                start = time.time()
-            elif time.time() > start + self.patience:
-                logging.getLogger("mg.core.memcached.MemcachedLock").error("Timeout waiting lock %s (locked by %s)" % badlock)
-                logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
+            try:
+                success = True
+                badlock = None
                 for key in self.keys:
-                    self.mc.set(key, self.value, self.ttl)
-                self.locked = time.time()
-                return
+                    if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                        locked.append(key)
+                    else:
+                        for k in locked:
+                            self.mc.delete(k)
+                        success = False
+                        badlock = (key, self.mc.get(key))
+                        break
+                if success:
+                    self.locked = time.time()
+                    return
+                Tasklet.sleep(self.delay)
+                if start is None:
+                    start = time.time()
+                elif time.time() > start + self.patience:
+                    logging.getLogger("mg.core.memcached.MemcachedLock").error("Timeout waiting lock %s (locked by %s)" % badlock)
+                    logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
+                    for key in self.keys:
+                        self.mc.set(key, self.value, self.ttl)
+                    self.locked = time.time()
+                    return
+            except Exception:
+                logging.getLogger("mg.core.memcached.MemcachedLock").error("Exception during locking. Unlock everything immediately")
+                for k in locked:
+                    self.mc.delete(k)
+                raise
 
     def __exit__(self, type, value, traceback):
         if self.mc is None:
@@ -373,13 +379,19 @@ class MemcachedLock(object):
         if self.mc is None:
             return False
         locked = []
-        for key in self.keys:
-            if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
-                locked.append(key)
-            else:
-                for k in locked:
-                    self.mc.delete(k)
-                return False
+        try:
+            for key in self.keys:
+                if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                    locked.append(key)
+                else:
+                    for k in locked:
+                        self.mc.delete(k)
+                    return False
+        except Exception:
+            logging.getLogger("mg.core.memcached.MemcachedLock").error("Exception during trylock. Unlock everything immediately")
+            for k in locked:
+                self.mc.delete(k)
+            raise
         self.locked = time.time()
         return True
 
