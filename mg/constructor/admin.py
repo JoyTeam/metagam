@@ -224,7 +224,10 @@ class Constructor(Module):
         perms.append({"id": "cassmaint.validate", "name": self._("Validating and repairing cassandra database")})
 
     def payment_args(self, args, options):
-        req = self.req()
+        try:
+            req = self.req()
+        except AttributeError:
+            req = None
         if req and req.user():
             user = self.obj(User, req.user())
             args["v1"] = user.get("name")
