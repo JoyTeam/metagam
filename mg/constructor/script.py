@@ -488,7 +488,10 @@ class ScriptEngine(ConstructorModule):
         if not issubclass(type(exception), ScriptError) and not issubclass(type(exception), TemplateException):
             return
         try:
-            req = self.req()
+            try:
+                req = self.req()
+            except AttributeError:
+                req = None
             project = self.app().project
             owner = self.main_app().obj(User, project.get("owner"))
             name = owner.get("name")
@@ -502,17 +505,19 @@ class ScriptEngine(ConstructorModule):
                 "Expression": self._("Expression"),
             }
             params = []
-            for key, values in req.param_dict().iteritems():
-                params.append({"key": htmlescape(key), "values": []})
-                for val in values:
-                    params[-1]["values"].append(htmlescape(val))
+            if req:
+                for key, values in req.param_dict().iteritems():
+                    params.append({"key": htmlescape(key), "values": []})
+                    for val in values:
+                        params[-1]["values"].append(htmlescape(val))
             if len(params):
                 vars["params"] = params
-            vars["host"] = htmlescape(req.host())
-            vars["uri"] = htmlescape(req.uri())
-            session = req.session()
-            if session:
-                vars["session"] = session.data_copy()
+            if req:
+                vars["host"] = htmlescape(req.host())
+                vars["uri"] = htmlescape(req.uri())
+                session = req.session()
+                if session:
+                    vars["session"] = session.data_copy()
             try:
                 vars["text"] = htmlescape(exception.val)
             except AttributeError:
