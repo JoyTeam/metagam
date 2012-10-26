@@ -683,6 +683,7 @@ class MoneyAdmin(Module):
 class Xsolla(Module):
     def register(self):
         self.rhook("ext-ext-payment.2pay", self.payment_xsolla, priv="public")
+        self.rhook("ext-ext-payment.xsolla", self.payment_xsolla, priv="public")
         self.rhook("money-description.xsolla-pay", self.money_description_xsolla_pay)
         self.rhook("money-description.xsolla-chargeback", self.money_description_xsolla_chargeback)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -754,7 +755,7 @@ class Xsolla(Module):
         req = self.req()
         if req.args:
             if re_valid_project_id.match(req.args):
-                app = self.inst.appfactory.get_by_id(req.args)
+                app = self.inst.appfactory.get_by_tag(req.args)
                 if not app:
                     self.call("web.not_found")
             else:
