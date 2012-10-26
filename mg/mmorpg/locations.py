@@ -652,7 +652,6 @@ class Locations(ConstructorModule):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "fastmove",
             "name": self._("Fast movement across the locations"),
