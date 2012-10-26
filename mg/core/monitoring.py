@@ -63,10 +63,10 @@ class ClusterMonitor(mg.Module):
                 hostinfo["cpu_iowait"] = "%.2f%%" % (procmaninfo["cpu-iowait"] * 100)
             if "cpu-stolen" in procmaninfo:
                 hostinfo["cpu_stolen"] = "%.2f%%" % (procmaninfo["cpu-stolen"] * 100)
-            if hostid in srvhost:
-                servers.append(hostinfo)
             if hostid in dbhost:
                 databases.append(hostinfo)
+            else:
+                servers.append(hostinfo)
         webservices = webservices.values()
         for srv in webservices:
             if "rps" in srv:
