@@ -16,16 +16,21 @@ sub workers_of_class
 {
 	my $self = shift;
 	my $class = shift;
-	my $servers = $self->json_get('http://director:3000/director/servers');
+        my $ip = $self->conf('ip');
+	my $daemons = $self->json_get("http://$ip:4000/core/daemons");
 	my @workers;
-	while (my ($server_id, $info) = each %$servers) {
-		if ($info->{params}->{class} eq $class) {
-			push @workers, {
-				id => $server_id,
-				host => $info->{host},
-				port => $info->{port},
-			};
-		}
+	while (my ($dmnid, $dmninfo) = each %$daemons) {
+            next if $dmninfo->{type} ne $class;
+            if ($dmninfo->{services}) {
+                while (my ($svcid, $svcinfo) = each %{$dmninfo->{services}}) {
+                    next if $svcinfo->{type} ne 'int';
+                    push @workers, {
+                        id => $svcid,
+                        addr => $svcinfo->{addr},
+                        port => $svcinfo->{port},
+                    };
+                }
+            }
 	}
 	return @workers;
 }
@@ -35,7 +40,7 @@ sub get
 	my $self = shift;
 	my $srv = shift;
 	my $url = shift;
-	return $self->json_get("http://$srv->{host}:$srv->{port}$url");
+	return $self->json_get("http://$srv->{addr}:$srv->{port}$url");
 }
 
 sub post
@@ -44,7 +49,7 @@ sub post
 	my $srv = shift;
 	my $url = shift;
 	my $params = shift;
-	return $self->json_post("http://$srv->{host}:$srv->{port}$url", $params);
+	return $self->json_post("http://$srv->{addr}:$srv->{port}$url", $params);
 }
 
 1;

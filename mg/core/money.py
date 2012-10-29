@@ -19,6 +19,7 @@ re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
 re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
 re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
 re_decimal_comma = re.compile(',')
+re_valid_project_id = re.compile(r'^[a-z0-9]+$')
 
 default_rates = {
     "RUB": 1,
@@ -682,6 +683,7 @@ class MoneyAdmin(Module):
 class Xsolla(Module):
     def register(self):
         self.rhook("ext-ext-payment.2pay", self.payment_xsolla, priv="public")
+        self.rhook("ext-ext-payment.xsolla", self.payment_xsolla, priv="public")
         self.rhook("money-description.xsolla-pay", self.money_description_xsolla_pay)
         self.rhook("money-description.xsolla-chargeback", self.money_description_xsolla_chargeback)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -691,6 +693,7 @@ class Xsolla(Module):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
         self.rhook("money.donate-message", self.donate_message)
+        self.rhook("money.donate-url", self.donate_url)
         self.rhook("constructor.project-options", self.project_options)
 
     def project_options(self, options):
@@ -700,10 +703,15 @@ class Xsolla(Module):
     def append_args(self, options):
         args = {}
         self.call("xsolla.payment-args", args, options)
+        for key in ["v1", "email", "amount"]:
+            if key not in args and key in options:
+                args[key] = options[key]
         append = ""
         for key, val in args.iteritems():
             if type(val) == unicode:
                 val = val.encode("cp1251")
+            elif type(val) != str:
+                val = str(val)
             append += '&%s=%s' % (key, urlencode(val))
         return append
 
@@ -713,6 +721,13 @@ class Xsolla(Module):
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
                 return '<a href="//2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
+
+    def donate_url(self, currency, **kwargs):
+        project_id = intz(self.conf("xsolla.project-id"))
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                return '//2pay.ru/oplata/?id=%d%s' % (project_id, self.append_args(kwargs))
 
     def not_enough_funds(self, currency, **kwargs):
         project_id = intz(self.conf("xsolla.project-id"))
@@ -738,6 +753,15 @@ class Xsolla(Module):
 
     def payment_xsolla(self):
         req = self.req()
+        if req.args:
+            if re_valid_project_id.match(req.args):
+                app = self.inst.appfactory.get_by_tag(req.args)
+                if not app:
+                    self.call("web.not_found")
+            else:
+                self.call("web.not_found")
+        else:
+            app = self.app()
         command = req.param_raw("command")
         sign = req.param_raw("md5")
         result = None
@@ -747,7 +771,7 @@ class Xsolla(Module):
         sum = None
         self.debug("Xsolla Request: %s", [req.param_dict()])
         try:
-            secret = self.conf("xsolla.secret")
+            secret = app.config.get("xsolla.secret")
             if type(secret) == unicode:
                 secret = secret.encode("windows-1251")
             if secret is None or secret == "":
@@ -761,7 +785,7 @@ class Xsolla(Module):
                 else:
                     v1 = v1.decode("windows-1251")
                     self.debug("Xsolla Request: command=check, v1=%s", v1)
-                    if self.call("session.find_user", v1):
+                    if app.call("session.find_user", v1):
                         result = 0
                     else:
                         result = 2
@@ -777,30 +801,30 @@ class Xsolla(Module):
                     v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
                     self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
-                    user = self.call("session.find_user", v1)
+                    user = app.call("session.find_user", v1)
                     if user:
-                        with self.lock(["PaymentXsolla.%s" % id]):
+                        with app.lock(["PaymentXsolla.%s" % id]):
                             try:
-                                existing = self.obj(PaymentXsolla, id)
+                                existing = app.obj(PaymentXsolla, id)
                                 result = 0
                                 id_shop = id
                                 sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
-                                currency = self.call("money.real-currency")
-                                cinfo = self.call("money.currency-info", currency)
+                                currency = app.call("money.real-currency")
+                                cinfo = app.call("money.currency-info", currency)
                                 amount_rub = floatz(req.param("transfer_sum"))
 #                               amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
-                                payment = self.obj(PaymentXsolla, id, data={})
+                                payment = app.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 payment.set("amount_rub", amount_rub)
-                                member = MemberMoney(self.app(), "user", user.uuid)
+                                member = MemberMoney(app, "user", user.uuid)
                                 member.credit(sum_v, currency, "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
-                                self.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
+                                app.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
                                 result = 0
                                 id_shop = id
                     else:
@@ -812,17 +836,17 @@ class Xsolla(Module):
                     comment = "Invalid MD5 signature"
                 else:
                     self.debug("Xsolla Request: command=cancel, id=%s", id)
-                    with self.lock(["PaymentXsolla.%s" % id]):
+                    with app.lock(["PaymentXsolla.%s" % id]):
                         try:
-                            payment = self.obj(PaymentXsolla, id)
+                            payment = app.obj(PaymentXsolla, id)
                             if payment.get("cancelled"):
                                 result = 0
                             else:
                                 payment.set("cancelled", self.now())
-                                member = MemberMoney(self.app(), "user", payment.get("user"))
-                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
+                                member = MemberMoney(app, "user", payment.get("user"))
+                                member.force_debit(payment.get("sum"), app.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
-                                self.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
+                                app.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
                                 result = 0
                         except ObjectNotFoundException:
                             result = 2
@@ -995,7 +1019,7 @@ class Xsolla(Module):
         request.appendChild(elt)
         # payURL
         elt = doc.createElement("payUrl")
-        elt.appendChild(doc.createTextNode("http://%s/ext-payment/2pay" % self.app().canonical_domain))
+        elt.appendChild(doc.createTextNode("http://www.%s/ext-payment/xsolla/%s" % (self.main_host, self.app().tag)))
         request.appendChild(elt)
         # Description
         elt = doc.createElement("desc")
@@ -1012,15 +1036,14 @@ class Xsolla(Module):
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
-                cnn.connect(("2pay.ru", 80))
+                cnn.connect(("api.xsolla.com", 80))
                 try:
                     request = HTTPRequest()
                     request.method = "POST"
-                    request.path = "/api/game/index.php"
-                    request.host = "2pay.ru"
+                    request.path = "/game/index.php"
+                    request.host = "api.xsolla.com"
                     request.body = query
                     request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
-                    request.add_header("Content-length", len(query))
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     self.debug(u"Xsolla response: %s %s", response.status_code, response.body)
@@ -1106,7 +1129,7 @@ class XsollaAdmin(Module):
                 "secret_addgame": htmlescape(app.config.get("xsolla.secret-addgame")),
                 "project_id": htmlescape(app.config.get("xsolla.project-id")),
                 "contragent_id": htmlescape(app.config.get("xsolla.contragent-id")),
-                "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
+                "payment_url": "http://www.%s/ext-payment/2pay/%s" % (self.main_host, app.tag),
             }
             self.call("admin.response_template", "admin/money/xsolla-dashboard.html", vars)
         elif cmd == "settings":
@@ -1322,7 +1345,7 @@ class WebMoney(Module):
             request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
             request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
             request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
-            response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
+            response = self.wm_query(self.clconf("wm_login_gate", "localhost:86"), "login.wmtransfer.com", "/ws/authorize.xiface", request)
             doc = response.documentElement
             if doc.tagName != "response":
                 raise RuntimeError("Unexpected response from WMLogin")
@@ -1336,10 +1359,10 @@ class WebMoney(Module):
         except HTTPError:
             self.call("web.response_global", self._("Error connecting to the WebMoney server. Try again later"), {})
 
-    def wm_query(self, gate_name, gate_host, url, request):
+    def wm_query(self, gate, real_host, url, request):
         reqdata = request.toxml("utf-8")
         self.debug("WM reqdata: %s", reqdata)
-        wm_gate = self.app().inst.config.get(gate_name, "unknown:0").split(":")
+        wm_gate = gate.split(":")
         host = str(wm_gate[0])
         port = int(wm_gate[1])
         try:
@@ -1351,9 +1374,8 @@ class WebMoney(Module):
                     raise HTTPError("Error connecting to %s:%d" % (host, port))
                 try:
                     request = cnn.post(str(url), reqdata)
-                    request.host = gate_host
+                    request.host = real_host
                     request.add_header("Content-type", "application/xml")
-                    request.add_header("Content-length", len(reqdata))
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
                     if response.status_code != 200:
@@ -1378,7 +1400,7 @@ class WebMoney(Module):
         params.appendChild(doc.createElement("dict")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("info")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("mode")).appendChild(doc.createTextNode("0"))
-        response = self.wm_query("wm_passport_gate", "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
+        response = self.wm_query(self.clconf("wm_passport_gate", "localhost:87"), "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
         doc = response.documentElement
         if doc.tagName != "response":
             raise RuntimeError("Unexpected response from WMPassport")

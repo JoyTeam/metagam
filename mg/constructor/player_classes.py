@@ -369,7 +369,7 @@ class Character(Module):
             return "[ch:%s]" % self.uuid
         elif attr == "sex":
             return self.sex
-        elif attr == "mod":
+        elif attr == "mod" or attr == "modifiers":
             return self.modifiers
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
@@ -419,6 +419,9 @@ class Character(Module):
         return "[char %s]" % utf2str(self.name)
 
     __repr__ = __str__
+
+    def __unicode__(self):
+        return u"[char %s]" % str2unicode(self.name)
 
     @property
     def restraints(self):
@@ -544,7 +547,7 @@ class Player(Module):
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
-        elif attr == "mod":
+        elif attr == "mod" or attr == "modifiers":
             return self.call("modifiers.obj", self.uuid)
         else:
             raise AttributeError(attr)

@@ -1,0 +1,26 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+
+def main():
+    inst = ConstructorInstance("procman", "metagam")
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.Cluster",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.procman.ProcessManager",
+        "mg.constructor.procman.ProcessManager",
+        "mg.core.realplexor.RealplexorDaemon",
+    ])
+    app.call("cluster.cleanup-host")
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    app.call("procman.run")
+    # run app.check on main application
+    main_app = inst.appfactory.get_by_tag("main")
+    main_app.call("app.check")
+    app.call("cluster.run-daemon-loop")
+
+mg.dispatch(main)

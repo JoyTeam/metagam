@@ -31,4 +31,4 @@ class Security(ConstructorModule):
         ent.store()
 
     def icon(self):
-        return ' <a href="//www.%s/doc/security" target="_blank"><img class="inline-icon" src="/st-mg/icons/security-check.png" alt="[sec]" title="%s" /></a>' % (self.app().inst.config["main_host"], self._("Read security note"))
+        return ' <a href="//www.%s/doc/security" target="_blank"><img class="inline-icon" src="/st-mg/icons/security-check.png" alt="[sec]" title="%s" /></a>' % (self.main_host, self._("Read security note"))

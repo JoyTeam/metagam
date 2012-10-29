@@ -177,8 +177,8 @@ class Auth(ConstructorModule):
         self.rhook("advice-admin-auth.index", self.advice_auth)
 
     def advice_auth(self, hook, args, advice):
-        advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.app().inst.config["main_host"]})
-        advice.append({"title": self._("Permissions documentation"), "content": self._('You can find detailed information on the permissions system in the <a href="//www.%s/doc/permissions" target="_blank">permissions page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.main_host})
+        advice.append({"title": self._("Permissions documentation"), "content": self._('You can find detailed information on the permissions system in the <a href="//www.%s/doc/permissions" target="_blank">permissions page</a> in the reference manual.') % self.main_host})
 
     def user_email(self, user_obj):
         email = user_obj.get("email")
@@ -406,7 +406,7 @@ class Auth(ConstructorModule):
 
     def admin_players_auth(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="//www.%s/doc/auth" target="_blank">authentication manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="//www.%s/doc/auth" target="_blank">authentication manual</a>.') % self.main_host})
         currencies = {}
         self.call("currencies.list", currencies)
         if req.param("ok"):

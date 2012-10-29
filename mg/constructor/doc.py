@@ -29,7 +29,7 @@ class Documentation(Module):
         vars = {
             "lang": lang,
             "htmlmeta": {},
-            "main_host": self.app().inst.config["main_host"]
+            "main_host": self.main_host
         }
         try:
             content = self.call("web.parse_template", "constructor/docs/%s/%s.html" % (lang, req.args), vars)

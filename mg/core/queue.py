@@ -1,4 +1,4 @@
-from mg.core import Module
+from mg.core.applications import Module
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
 from mg.core.tools import *
 from concurrence import Tasklet
@@ -49,63 +49,46 @@ class ScheduleList(CassandraObjectList):
 class Queue(Module):
     def register(self):
         self.rhook("queue.add", self.queue_add)
-        self.rhook("int-queue.run", self.queue_run, priv="public")
         self.rhook("queue.schedule", self.queue_schedule)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("app.check", self.check)
-        self.rhook("queue.generate", self.queue_generate)
+        self.rhook("queue.schedule_task", self.schedule_task)
 
     def objclasses_list(self, objclasses):
         objclasses["Schedule"] = (Schedule, ScheduleList)
 
-    def queue_add(self, hook, args={}, at=None, priority=100, unique=None, retry_on_fail=False, app_tag=None, app_cls=None):
+    def queue_add(self, hook, args={}, at=None, priority=100, unique=None, app_tag=None, app_cls=None):
+        "Add single event to queue"
         int_app = self.app().inst.int_app
-        with int_app.lock(["queue"]):
-            if app_tag is None:
-                app_tag = self.app().tag
-            if app_cls is None:
-                app_cls = self.app().inst.cls
-            if at is None:
-                at = self.now()
-            elif not re_datetime.match(at):
-                ct = CronTime(at)
-                if ct.valid:
-                    next = ct.next()
-                    if next is None:
-                        raise CronError("Invalid cron time")
-                    at = next.strftime("%Y-%m-%d %H:%M:%S")
-                else:
+        if app_tag is None:
+            app_tag = self.app().tag
+        if app_cls is None:
+            app_cls = self.app().inst.cls
+        if at is None:
+            at = self.now()
+        elif not re_datetime.match(at):
+            ct = CronTime(at)
+            if ct.valid:
+                next = ct.next()
+                if next is None:
                     raise CronError("Invalid cron time")
-            data = {
-                "cls": app_cls,
-                "hook": hook,
-                "args": args,
-            }
-            if retry_on_fail:
-                data["retry_on_fail"] = True
-            if unique is not None:
+                at = next.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                raise CronError("Invalid cron time")
+        # Store queue entry
+        def insert():
+            int_app.sql_write.do("insert into queue_tasks(id, cls, app, at, priority, `unique`, hook, data) values (?, ?, ?, ?, ?, ?, ?, ?)", uuid4().hex, app_cls, app_tag, at, int(priority), unique, hook, json.dumps(args))
+        if unique is not None:
+            with int_app.lock(["queue"]):
+                # Not reliable. May lose queue task if interrupted between queries.
+                # Problem will be fixed automatically at midnight app.check.
                 int_app.sql_write.do("delete from queue_tasks where app=? and `unique`=?", app_tag, unique)
-            int_app.sql_write.do("insert into queue_tasks(id, app, at, priority, `unique`, data) values (?, ?, ?, ?, ?, ?)", uuid4().hex, app_tag, at, int(priority), unique, json.dumps(data))
-
-    def queue_run(self):
-        req = self.req()
-        m = re.match(r'(\S+?)\/(\S+)', req.args)
-        if not m:
-            self.call("web.not_found")
-        app_tag, hook = m.group(1, 2)
-        args = json.loads(req.param("args")) if req.param("args") != "" else {}
-        app = self.app().inst.appfactory.get_by_tag(app_tag)
-        if app is None:
-            self.call("web.not_found")
-        if args.get("schedule"):
-            del args["schedule"]
-            if args.has_key("at"):
-                del args["at"]
-        req.app = app
-        app.hooks.call(hook, **args)
-        self.call("web.response_json", {"ok": 1})
+                insert()
+        else:
+            insert()
 
     def queue_schedule(self, empty=False):
+        "Return application schedule object"
         int_app = self.app().inst.int_app
         app_cls = self.app().inst.cls
         app_tag = self.app().tag
@@ -126,144 +109,111 @@ class Queue(Module):
         return sched
 
     def check(self):
-        self.queue_generate()
-
-    def queue_generate(self):
+        "Fast-check application (on create / nightly)"
         sched = self.call("queue.schedule", empty=True)
         self.call("queue-gen.schedule", sched)
-        self.debug("generated schedule for the project %s: %s", sched.uuid, sched.data["entries"])
+        self.debug("Generated schedule for the project %s: %s", sched.uuid, sched.data["entries"])
         sched.store()
-        self.call("cluster.query_director", "/schedule/update/%s" % sched.uuid)
+        self.schedule_update(sched)
 
-class QueueRunner(Module):
-    "This module runs on the Director and controls schedule execution"
-    def register(self):
-        self.rhook("queue.process", self.queue_process)
-        self.rhook("queue.processing", self.queue_processing)
-        self.rhook("int-schedule.update", self.schedule_update, priv="public")
-        self.processing = set()
-        self.processing_uniques = set()
-        self.workers = 4
-        self.last_check = None
-
-    def check(self):
-        self.info("Starting daily check")
-        apps = []
-        self.call("applications.list", apps)
-        for app in apps:
-            self.call("queue.add", "app.check", priority=0, app_tag=app["tag"], unique="app-check-%s" % app["cls"], app_cls=app["cls"])
-
-    def queue_process(self):
-        self.wait_free = channel()
-        while True:
-            try:
-                nd = self.nowdate()
-                if nd != self.last_check:
-                    self.last_check = nd
-                    Tasklet.new(self.check)()
-                while self.workers <= 0:
-                    self.wait_free.receive()
-                # it is important to read queue tasks from the same database they are deleted from (i.e. sql_write)
-                tasks = self.sql_write.selectall_dict("select * from queue_tasks where at<=? order by priority desc limit ?", self.now(), self.workers)
-                anything_processed = False
-                no_workers_shown = set()
-                queue_workers = self.call("director.queue_workers")
-                if len(tasks) and queue_workers:
-                    for task in tasks:
-                        data = json.loads(task["data"])
-                        if data and data.get("cls"):
-                            workers = queue_workers.get(data.get("cls"), None)
-                            if workers:
-                                self.sql_write.do("delete from queue_tasks where id=?", task["id"])
-                                worker = workers.pop(0)
-                                workers.append(worker)
-                                self.workers = self.workers - 1
-                                Tasklet.new(self.queue_run)(task, data, worker)
-                                anything_processed = True
-                            else:
-                                if data.get("cls") not in no_workers_shown:
-                                    self.warning("No workers for class %s. Delaying job" % data.get("cls"))
-                                    no_workers_shown.add(data.get("cls"))
-                                self.sql_write.do("update queue_tasks set priority=priority-1 where id=?", task["id"])
-                        else:
-                            self.error("Missing cls: %s" % data)
-                            self.sql_write.do("delete from queue_tasks where id=?", task["id"])
-                if not anything_processed:
-                    Tasklet.sleep(3)
-            except Exception as e:
-                logging.getLogger("mg.core.queue.Queue").exception(e)
-
-    def queue_run(self, task, data, worker):
-        self.processing.add(task["id"])
-        unique = task["unique"]
-        if unique is not None:
-            self.processing_uniques.add(unique)
-        success = False
-        tag = str(task["app"])
-        try:
-            res = self.call("cluster.query_server", worker["host"], worker["port"], "/queue/run/%s/%s" % (tag, str(data.get("hook"))), {
-                "args": json.dumps(data.get("args")),
-            }, timeout=3600)
-            if res.get("error"):
-                self.warning("%s.%s(%s) - %s", tag, data.get("hook"), data.get("args"), res)
-            success = True
-        except HTTPError as e:
-            self.error("Error executing task %s: %s" % (data.get("hook"), e))
-            main_app = self.main_app()
-            if main_app:
-                if main_app.hooks.call("project.missing", tag):
-                    self.info("Removing missing project %s", tag)
-                    self.main_app().hooks.call("project.cleanup", tag)
-        except Exception as e:
-            self.exception(e)
-        self.workers = self.workers + 1
-        self.processing.discard(task["id"])
-        if unique is not None:
-            self.processing_uniques.discard(unique)
-        if self.wait_free.balance < 0:
-            self.wait_free.send(None)
-        if not success:
-            if data.get("retry_on_fail"):
-                self.sql_write.do("insert into queue_tasks(id, app, at, priority, `unique`, data) values (?, ?, ?, ?, ?, ?)", uuid4().hex, tag, self.now(5), task["priority"] - 10, task["unique"], json.dumps(data))
-        elif data.get("args").get("schedule"):
-            try:
-                sched = self.obj(Schedule, tag)
-                entries = sched.get("entries")
-            except ObjectNotFoundException:
-                entries = {}
-            params = entries.get(data.get("hook"))
-            if params is not None:
-                self.schedule_task(data.get("cls"), tag, data.get("hook"), params)
-
-    def queue_processing(self):
-        return (self.processing, self.processing_uniques, self.workers)
-
-    def schedule_update(self):
-        req = self.req()
-        app_tag = req.args
-        try:
-            sched = self.obj(Schedule, app_tag)
-            entries = sched.get("entries")
-        except ObjectNotFoundException:
-            entries = {}
-        existing = self.sql_read.selectall_dict("select * from queue_tasks where app=?", app_tag)
+    def schedule_update(self, sched):
+        app_tag = sched.uuid
+        inst = self.app().inst
+        cls = inst.cls
+        int_app = inst.int_app
+        entries = sched.get("entries")
+        existing = int_app.sql_write.selectall_dict("select * from queue_tasks where cls=? and app=?", cls, app_tag)
         for task in existing:
             task["data"] = json.loads(task["data"])
-        existing = dict([(task.get("unique"), task) for task in existing if task["data"].get("args").get("schedule")])
+        existing = dict([(task.get("unique"), task) for task in existing if task["data"].get("schedule")])
         for hook, params in entries.iteritems():
             existing_params = existing.get(hook)
             if not existing_params:
                 self.schedule_task(sched.get("cls"), app_tag, hook, params)
-            elif existing_params.get("priority") != params.get("priority") or existing_params.get("args").get("at") != params.get("at"):
+            elif existing_params.get("priority") != params.get("priority") or existing_params.get("at") != params.get("at"):
                 self.schedule_task(sched.get("cls"), app_tag, hook, params)
         for hook, task in existing.iteritems():
             if not entries.get(hook):
-                self.sql_write.do("delete from queue_tasks where id=?", task["id"])
-        self.call("web.response_json", {"ok": 1})
+                int_app.sql_write.do("delete from queue_tasks where id=?", task["id"])
 
     def schedule_task(self, cls, app, hook, params):
         if cls is not None:
-            self.call("queue.add", hook, {"schedule": True, "at": params["at"]}, at=params["at"], priority=params["priority"], unique="%s.%s.%s" % (cls, app, hook), retry_on_fail=False, app_tag=app, app_cls=cls)
+            self.call("queue.add", hook, {"schedule": True, "at": params["at"]}, at=params["at"], priority=params["priority"], unique="%s.%s.%s" % (cls, app, hook), app_tag=app, app_cls=cls)
+
+class QueueRunner(Module):
+    def register(self):
+        self.rhook("core.fastidle", self.fastidle)
+        self.queue_task_running = False
+
+    def queue_task_runner(self):
+        inst = self.app().inst
+        instid = inst.instid
+        cls = inst.cls
+        try:
+            # Free my tasks
+            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where cls=? and locked=?", cls, instid)
+            # Free tasks locked too long
+            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where locked_till<?", self.now())
+            while True:
+                lock = self.lock(["queue"])
+                if not lock.trylock():
+                    return
+                try:
+                    # Find task to run
+                    tasks = self.sql_write.selectall_dict("select * from queue_tasks where cls=? and locked='' and at<=? order by priority desc limit 1", cls, self.now())
+                    if not tasks:
+                        return
+                    task = tasks[0]
+                    self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(1800), task["id"])
+                    ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
+                finally:
+                    lock.unlock()
+                # Execute task
+                app_tag = str(task["app"])
+                hook = str(task["hook"])
+                args = json.loads(task["data"])
+                app = self.app().inst.appfactory.get_by_tag(app_tag)
+                if app is None:
+                    self.info("Found queue event for unknown application %s", app_tag)
+                    main_app = self.main_app()
+                    if main_app.call("project.missing", app_tag):
+                        self.info("Removing missing project %s", app_tag)
+                        main_app.call("project.cleanup", app_tag)
+                else:
+                    schedule = args.get("schedule")
+                    at = args.get("at")
+                    if schedule:
+                        del args["schedule"]
+                        if at:
+                            del args["at"]
+                    try:
+                        app.call(hook, **args)
+                        success = True
+                    except Exception as e:
+                        self.exception(e)
+                        success = False
+                    if success:
+                        # Reschedule finished task to later time
+                        if schedule:
+                            try:
+                                sched = self.obj(Schedule, app_tag)
+                                entries = sched.get("entries")
+                            except ObjectNotFoundException:
+                                entries = {}
+                            params = entries.get(hook)
+                            if params is not None:
+                                self.call("queue.schedule_task", task.get("cls"), app_tag, hook, params)
+                        self.sql_write.do("delete from queue_tasks where id=?", task["id"])
+                    else:
+                        self.error("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
+                        self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
+        finally:
+            self.queue_task_running = False
+
+    def fastidle(self):
+        if not self.queue_task_running:
+            self.queue_task_running = True
+            Tasklet.new(self.queue_task_runner)()
 
 re_cron_num = re.compile('^\d+$')
 re_cron_interval = re.compile('^(\d+)-(\d+)$')

@@ -1,5 +1,5 @@
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
-from mg.core import Module
+from mg.core.applications import Module
 from uuid import uuid4
 from wsgiref.handlers import format_date_time
 from datetime import datetime
@@ -969,7 +969,7 @@ class Interface(Module):
     def auth_permissions(self, user_id):
         perms = {}
         if user_id:
-            if user_id == self.app().inst.config.get("admin_user"):
+            if user_id == self.clconf("admin_user"):
                 perms["admin"] = True
                 perms["global.admin"] = True
                 perms["global_admin"] = True

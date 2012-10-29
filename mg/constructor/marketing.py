@@ -19,7 +19,7 @@ class MarketingStat(ConstructorModule):
         return ["mg.constructor.marketing.MarketingAdmin"]
 
     def advice_marketing(self, hook, args, advice):
-        advice.append({"title": self._("Marketing documentation"), "content": self._('You can find detailed information on the marketing of online games in the <a href="//www.%s/doc/marketing" target="_blank">Marketing page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Marketing documentation"), "content": self._('You can find detailed information on the marketing of online games in the <a href="//www.%s/doc/marketing" target="_blank">Marketing page</a> in the reference manual.') % self.main_host})
 
     def permissions_list(self, perms):
         perms.append({"id": "marketing.users", "name": self._("Marketing: statistics on users")})

@@ -125,7 +125,6 @@ class PaidServices(Module):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "socio_coloured_avatar",
             "name": self._("Coloured avatar on the forum"),
@@ -155,7 +154,6 @@ class PaidServices(Module):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "socio_signature_images",
             "name": self._("Images in the signature"),
@@ -185,7 +183,6 @@ class PaidServices(Module):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "socio_signature_smiles",
             "name": self._("Smiles in the signature"),
@@ -215,7 +212,6 @@ class PaidServices(Module):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "socio_signature_colours",
             "name": self._("Colours in the signature"),
@@ -243,7 +239,6 @@ class PaidServices(Module):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         pack = []
         return {
             "id": "socio_premium_pack",

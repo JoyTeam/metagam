@@ -13,6 +13,10 @@ re_phone = re.compile(r'^\+\d[ \d]+$')
 re_i7_response = re.compile(r'^<html><body>(\S*):\s*(\d*)\s+(\S*)\s+(\S*)(,\s*in progress|)</body></html>$')
 re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
 re_double_dash = re.compile(r'--')
+re_newline = re.compile(r'\r\n|\r|\n')
+re_response_line = re.compile(r'^(\S+)\s*:\s*(.+)$')
+re_reg_date = re.compile(r'(\d\d)\.(\d\d)\.(\d\d\d\d)')
+re_tld = re.compile(r'\.([a-z]+)$')
 
 class DNSCheckError(Exception):
     pass
@@ -414,6 +418,7 @@ class DomainsAdmin(Module):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("money-description.domain-reg", self.money_description_domain_reg)
+        self.rhook("money-description.domain-prolong", self.money_description_domain_reg)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-domains.index", self.menu_domains_index)
@@ -425,6 +430,8 @@ class DomainsAdmin(Module):
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-domains.unassign", self.ext_unassign, priv="domains.unassign")
+        self.rhook("admin-domains.prolong", self.prolong)
+        self.rhook("queue-gen.schedule", self.schedule)
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
@@ -433,10 +440,19 @@ class DomainsAdmin(Module):
         perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
         perms.append({"id": "domains.unassign", "name": self._("Domains: unassigning")})
 
+    def schedule(self, sched):
+        sched.add("admin-domains.prolong", "0 17 * * *", priority=150)
+
     def money_description_domain_reg(self):
         return {
             "args": ["domain"],
             "text": self._("Domain registration: {domain}"),
+        }
+
+    def money_description_domain_prolong(self):
+        return {
+            "args": ["domain"],
+            "text": self._("Domain prolongation: {domain}"),
         }
 
     def objclasses_list(self, objclasses):
@@ -688,6 +704,142 @@ class DomainsAdmin(Module):
             obj.remove()
             project.store()
         self.call("admin.redirect", "constructor/project-dashboard/%s" % project.uuid)
+
+    def prolong(self):
+        main_config = self.main_app().config
+        prev_month = self.now(-86400 * 30)
+        next_month = self.now(86400 * 30)
+        # get domain prices
+        tlds = []
+        self.call("domains.tlds", tlds)
+        prices = {}
+        self.call("domains.prices", prices)
+        tlds = [tld for tld in tlds if prices.get(tld)]
+        # get list of domains to prolong
+        lst = self.objlist(DomainList, query_index="registered", query_equal="yes")
+        lst.load(silent=True)
+        for domain in lst:
+            reg_till = domain.get("reg_till")
+            # skip not expiring domains
+            if reg_till and reg_till > next_month:
+                continue
+            # skip domains already expired
+            if reg_till and reg_till < prev_month: 
+                continue
+            # get actual domain data from the registrar
+            cnn = HTTPConnection()
+            try:
+                cnn.connect(("my.i7.ru", 80))
+            except IOError as e:
+                self.error("Error connecting to the registrar")
+                continue
+            try:
+                params = []
+                params.append(("action", "GET"))
+                params.append(("login", main_config.get("domains.login")))
+                params.append(("passwd", main_config.get("domains.password")))
+                params.append(("domain", domain.uuid))
+                self.info("Querying registrar: %s", params)
+                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                request = cnn.get("/c/registrar?%s" % params_url)
+                request.add_header("Connection", "close")
+                response = cnn.perform(request)
+            finally:
+                cnn.close()
+            # parse response
+            if response.status_code != 200:
+                self.error("Registrar response: %s", response.status)
+                continue
+            params = {}
+            for line in re_newline.split(response.body.decode("koi8-r")):
+                if not line:
+                    continue
+                m = re_response_line.match(line)
+                if not m:
+                    continue
+                key, val = m.group(1, 2)
+                params[key] = val
+            if "reg-till" not in params:
+                self.error("No reg-till field in params of domain %s", domain.uuid)
+                continue
+            m = re_reg_date.search(params["reg-till"])
+            if not m:
+                self.error("Reg-till is not parseable: %s", params["reg-till"])
+            dd, mm, yyyy = m.group(1, 2, 3)
+            actual_reg_till = "%s-%s-%s 04:00:00" % (yyyy, mm, dd)
+            # get admin credentials
+            project_id = domain.get("project")
+            if project_id:
+                project = self.int_app().obj(Project, project_id)
+                admin_uuid = project.get("owner")
+            else:
+                admin_uuid = domain.get("user")
+            admin = self.obj(User, domain.get("user"))
+            admin_name = admin.get("name")
+            admin_email = admin.get("email")
+            money = self.call("money.obj", "user", admin.uuid)
+            # update reg till
+            if reg_till != actual_reg_till:
+                print "Storing reg-till for %s: %s" % (domain.uuid, actual_reg_till)
+                domain.set("reg_till", actual_reg_till)
+                reg_till = actual_reg_till
+                # commit money
+                if domain.get("prolong_lock"):
+                    lock = money.unlock(domain.get("prolong_lock"))
+                    domain.delkey("prolong_lock")
+                    if lock:
+                        money.force_debit(float(lock.get("amount")), lock.get("currency"), "domain-prolong", domain=domain.uuid)
+                    self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolonged") % domain.uuid, self._("Domain {domain} is now prolonged.").format(domain=domain.uuid))
+                domain.store()
+            if reg_till > next_month:
+                continue
+            # get domain price
+            m = re_tld.search(domain.uuid)
+            if not m:
+                self.error("Invalid domain name: %s", domain.uuid)
+                continue
+            tld = m.group(1)
+            # get domain price
+            price = None
+            if tld in tlds:
+                price = prices.get(tld)
+            print "Price for prolonging %s: %s" % (domain.uuid, price)
+            if price is None:
+                # domain is no longer supported. notify admin
+                self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
+                continue
+            # reserve money
+            if not domain.get("prolong_lock"):
+                lock = money.lock(float(price), "MM$", "domain-prolong", domain=domain.uuid)
+                if not lock:
+                    url = self.call("money.donate-url", "MM$", v1=admin_name, email=admin_email, amount=price)
+                    if url:
+                        url = "http:%s" % url
+                    self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: prolong your domain") % domain.uuid, self._("Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n\nPayment interface: {url}").format(domain=domain.uuid, price=price, reg_till=self.call("l10n.date_local", reg_till), url=url))
+                    continue
+                domain.set("prolong_lock", lock.uuid)
+                domain.store()
+            # send a request to prolong
+            cnn = HTTPConnection()
+            try:
+                cnn.connect(("my.i7.ru", 80))
+            except IOError as e:
+                self.error("Error connecting to the registrar")
+                continue
+            try:
+                params = []
+                params.append(("action", "PROLONG"))
+                params.append(("login", main_config.get("domains.login")))
+                params.append(("passwd", main_config.get("domains.password")))
+                params.append(("domain", domain.uuid))
+                self.info("Querying registrar: %s", params)
+                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                request = cnn.get("/c/registrar?%s" % params_url)
+                request.add_header("Connection", "close")
+                response = cnn.perform(request)
+            finally:
+                cnn.close()
+            self.debug("Prolong response: %s", response.body)
 
 class DomainWizard(Wizard):
     def new(self, **kwargs):

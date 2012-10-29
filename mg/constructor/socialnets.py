@@ -91,7 +91,7 @@ class SocialNetsAdmin(ConstructorModule):
         self.rhook("advice-admin-site.socialnets", self.advice_socialnets)
 
     def advice_socialnets(self, args, advice):
-        advice.append({"title": self._("Social networks documentation"), "content": self._('You can find detailed information on the social networks interconnection in the <a href="//www.%s/doc/socialnets" target="_blank">Social networks page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Social networks documentation"), "content": self._('You can find detailed information on the social networks interconnection in the <a href="//www.%s/doc/socialnets" target="_blank">Social networks page</a> in the reference manual.') % self.main_host})
 
     def permissions_list(self, perms):
         perms.append({"id": "site.socialnets", "name": self._("Interoperation with social networks")})

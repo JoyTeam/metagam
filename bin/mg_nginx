@@ -1,0 +1,21 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+
+def main():
+    inst = ConstructorInstance("nginx", "metagam")
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.nginx.Nginx",
+    ])
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    app.call("nginx.register")
+    # run background processing
+    app.call("cluster.run-daemon-loop")
+
+mg.dispatch(main)

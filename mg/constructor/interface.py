@@ -40,7 +40,7 @@ class Dynamic(Module):
         self.rhook("project.closed", self.invalidate)
 
     def indexpage_js_mcid(self):
-        ver = self.int_app().config.get("application.version", 0)
+        ver = self.inst.dbconfig.get("application.version", 10000)
         return "indexpage-js-%s" % ver
 
     def invalidate(self):
@@ -72,7 +72,7 @@ class Dynamic(Module):
         self.call("web.response", data, "text/javascript; charset=utf-8")
 
     def indexpage_css_mcid(self):
-        ver = self.int_app().config.get("application.version", 0)
+        ver = self.inst.dbconfig.get("application.version", 10000)
         return "indexpage-css--%s" % ver
 
     def indexpage_css(self):
@@ -144,7 +144,7 @@ class Interface(ConstructorModule):
         files.append({"filename": "tables.html", "description": self._("Web form"), "doc": "/doc/design/tables"})
 
     def advice_gameinterface(self, hook, args, advice):
-        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="//www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Game interface structure"), "content": self._('You can find detailed information on the game interface rendering in the <a href="//www.%s/doc/design/gameinterface-structure" target="_blank">game interface structure documentation</a>.') % self.main_host})
 
     def buttons(self, buttons):
         buttons.append({
@@ -206,7 +206,7 @@ class Interface(ConstructorModule):
                 player = self.player(userobj.uuid)
                 return self.game_cabinet(player)
         if self.app().project.get("inactive"):
-            self.call("web.redirect", "//www.%s/cabinet" % self.app().inst.config["main_host"])
+            self.call("web.redirect", "//www.%s/cabinet" % self.main_host)
         design = self.design("indexpage")
         project = self.app().project
         author_name = self.conf("gameprofile.author_name")
@@ -338,7 +338,7 @@ class Interface(ConstructorModule):
     def game_interface_render(self, character, vars, design):
         req = self.req()
         session = req.session()
-        main_host = self.app().inst.config["main_host"]
+        main_host = self.main_host
         mg_path = mg.__path__[0]
         project = self.app().project
         vars["title"] = htmlescape("%s - %s" % (character.name, project.get("title_full")))

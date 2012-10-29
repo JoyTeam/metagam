@@ -1,7 +1,6 @@
 from concurrence.http import HTTPConnection, HTTPRequest
 import json
 import re
-import mg.core
 from mg.core.tools import *
 from mg.core.memcached import MemcachedLock
 from concurrence.thr import Socket
@@ -18,7 +17,7 @@ import stackless
 import concurrence
 import re
 
-cache_interval = 3600
+cache_interval = 300
 max_index_length = 10000000
 max_memcached_list_store = 1000
 max_chunk_size = 1000
@@ -327,7 +326,7 @@ class CassandraPool(object):
         logging.getLogger("mg.core.cass.CassandraPool").debug(*args, **kwargs)
 
     def sys_connection(self):
-        "Create a new CassandraConnection and connect to the system host (for schema changed)"
+        "Create a new CassandraConnection and connect to the system host (for schema changes)"
         connection = CassandraConnection(self.sys_host)
         connection.connect()
         return connection

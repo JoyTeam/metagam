@@ -1,24 +1,96 @@
 #!/usr/bin/python2.6
 
-from mg import *
-from concurrence import dispatch
+from concurrence import Tasklet
+from concurrence.io.socket import Socket
+from multiprocessing import Process
+import mg
 import logging
 import os
 import sys
+import re
+
+re_mg_module = re.compile(r'^mg\.')
 
 def main():
-    try:
-        inst = Instance("worker")
-        inst.download_config()
-        int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
-        int_app.hooks.call("worker.run", "metagam", sys.argv[1], sys.argv[2])
-    except RuntimeError as e:
-        logging.error(e)
-        os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
+    inst = mg.Instance("metagam", "metagam")
+    # shared socket for public web requests
+    extport = inst.confint("metagam", "webport")
+    if type(extport) != int:
+        raise RuntimeError("webport not specified in [metagam] section of the config file")
+    extaddr = (inst.instaddr, extport)
+    extsock = Socket.server(extaddr)
+    # shared socket for monitoring web requests
+    extmonport = inst.confint("metagam", "webmonport")
+    if type(extmonport) != int:
+        raise RuntimeError("webmonport not specified in [metagam] section of the config file")
+    extmonaddr = (inst.instaddr, extmonport)
+    extmonsock = Socket.server(extmonaddr)
 
-dispatch(main)
+    def child(n):
+        try:
+            # reset all code
+            for modid, module in sys.modules.items():
+                if re_mg_module.match(modid):
+                    del sys.modules[modid]
+            reload(mg)
+            # recreate instance
+            from mg.constructor.processes import ConstructorInstance, ConstructorWebService
+            inst = ConstructorInstance("metagam", "metagam")
+            # internal application
+            inst.instid = "%s-%d" % (inst.instid, n)
+            app = inst.int_app
+            app.load([
+                "mg.core.worker.Worker",
+                "mg.constructor.admin.Constructor",
+            ])
+            app.call("cluster.register-daemon")
+            app.call("cluster.run-int-service")
+            # run service handling public web requests
+            service_id = "%s-ext" % inst.instid
+            srv = ConstructorWebService(inst, service_id, inst.insttype, "ext")
+            srv.set("webbackend", inst.insttype)
+            srv.serve_socket(extaddr, extsock)
+            app.call("cluster.register-service", srv)
+            # run service handling monitoring web requests
+            service_id = "%s-mon" % inst.instid
+            srv = mg.SingleApplicationWebService(inst.appfactory.get_by_tag("main"), service_id, "monitoring", "mon")
+            srv.set("webbackend", "monitoring")
+            srv.serve_socket(extmonaddr, extmonsock)
+            app.call("cluster.register-service", srv)
+            # run daemon
+            app.call("cluster.run-daemon-loop")
+        except RuntimeError as e:
+            logging.error(e)
+            os._exit(1)
+        except Exception as e:
+            logging.exception(e)
+            os._exit(1)
+        except:
+            os._exit(1)
+
+    # fork children
+    nproc = inst.confint("metagam", "webchildren", 16)
+    processes = []
+    inst.close_all()
+    del inst
+    for i in xrange(0, nproc):
+        proc = Process(target=child, args=(i + 1,))
+        processes.append(proc)
+        proc.start()
+
+    # monitor children
+    while True:
+        try:
+            for i in xrange(0, nproc):
+                proc = processes[i]
+                if not proc.is_alive():
+                    logging.debug("Child %d died. Restarting", i + 1)
+                    proc = Process(target=child, args=(i + 1,))
+                    processes[i] = proc
+                    proc.start()
+        except Exception as e:
+            logging.exception(e)
+        Tasklet.sleep(1)
+
+mg.dispatch(main)
 

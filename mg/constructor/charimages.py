@@ -353,7 +353,7 @@ class CharImagesAdmin(ConstructorModule):
         files.append({"filename": "charimage-construct-layout.html", "description": self._("Character image constructor layout"), "doc": "/doc/design/character-images"})
 
     def advice_charimages(self, hook, args, advice):
-        advice.append({"title": self._("Characters images documentation"), "content": self._('You can find detailed information on the characters images system in the <a href="//www.%s/doc/character-images" target="_blank">characters images page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Characters images documentation"), "content": self._('You can find detailed information on the characters images system in the <a href="//www.%s/doc/character-images" target="_blank">characters images page</a> in the reference manual.') % self.main_host})
 
     def permissions_list(self, perms):
         perms.append({"id": "charimages.config", "name": self._("Character images configuration")})

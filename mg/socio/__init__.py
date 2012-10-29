@@ -3,7 +3,7 @@
 from mg import *
 from operator import itemgetter
 from uuid import uuid4
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image, ImageEnhance
@@ -1456,7 +1456,7 @@ class Forum(Module):
             self.subscribe(author.uuid, topic.uuid, cat["id"], created)
         catstat.store()
         if notify:
-            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid})
         return topic
 
     def tags_parse(self, tags_str):
@@ -1601,7 +1601,7 @@ class Forum(Module):
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
             page = (posts - 1) / posts_per_page + 1
             catstat.store()
-            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid})
             self.call("socio.fulltext_store", "ForumSearch", post.uuid, self.call("socio.word_extractor", content))
             raise Hooks.Return((post, page))
 
@@ -2452,7 +2452,6 @@ class Forum(Module):
             else:
                 sex = 0
             self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
 
     def notify_reply(self, topic_uuid, page, post_uuid):
         try:
@@ -2502,7 +2501,6 @@ class Forum(Module):
             else:
                 sex = 0
             self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
 
     def catstat(self, cat_id):
         return self.obj(ForumCategoryStat, cat_id, silent=True)
@@ -2593,7 +2591,6 @@ class Forum(Module):
                 key = "%s_*" % self.app().db.app
                 cf = "ForumTags_Search"
             self.db().batch_mutate({key: {cf: mutations}}, ConsistencyLevel.QUORUM)
-        self.call("web.response_json", {"ok": 1})
 
     def ext_tag(self):
         req = self.req()

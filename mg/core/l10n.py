@@ -124,7 +124,7 @@ class L10n(Module):
         except AttributeError:
             pass
         try:
-            return str(self.app().inst.config["locale"])
+            return str(self.clconf("locale", "en"))
         except KeyError:
             pass
         return None
@@ -176,7 +176,7 @@ class L10n(Module):
         if lang is None:
             if type(value) == str:
                 value = unicode(value, "utf-8")
-            return value 
+            return value
         domain = self.call("l10n.domain")
         trans = self.call("l10n.translation", domain, lang)
         if request:

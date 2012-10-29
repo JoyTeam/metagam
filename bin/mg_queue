@@ -1,32 +1,27 @@
 #!/usr/bin/python2.6
-# -*- coding: utf-8 -*-
 
-from mg import *
-from mg.core.queue import QueueTaskList
-from concurrence import dispatch, quit
-import os
-import logging
+from mg.constructor.processes import ConstructorInstance
+import mg
 
 def main():
-    try:
-        inst = Instance("dump")
-        inst.download_config()
-        int_app = WebApplication(inst, "int", "int")
-        tasks = int_app.objlist(QueueTaskList, query_index="at")
-        tasks.load(silent=True)
-        for task in tasks:
-            at = from_unixtime(task.get("at"))
-            print "%s - %s.%s.%s - %s" % (at, task.get("cls"), task.get("app"), task.get("hook"), task.get("args"))
-            if task.get("cls") == "main":
-                task.set("cls", "metagam")
-                task.store()
-        quit(0)
-    except RuntimeError as e:
-        logging.error(e)
-        os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
+    inst = ConstructorInstance("queue", "metagam")
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.queue.Queue",
+        "mg.core.queue.QueueRunner",
+        "mg.core.modifiers.ModifiersChecker",
+    ])
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    # run service for identifying daemon
+    service_id = "%s-queue" % inst.instid
+    srv = mg.SingleApplicationWebService(app, service_id, "queue", "que")
+    srv.serve_any_port()
+    app.call("cluster.register-service", srv)
+    # run background processing
+    app.call("cluster.run-daemon-loop")
 
-dispatch(main)
-
+mg.dispatch(main)

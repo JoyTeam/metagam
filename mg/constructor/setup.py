@@ -22,7 +22,7 @@ class ProjectSetupWizard(Wizard):
 
     def request(self, cmd):
         req = self.req()
-        self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about creating the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about creating the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.main_host})
         state = self.config.get("state")
         project = self.app().project
         if state == "intro":
@@ -46,7 +46,7 @@ class ProjectSetupWizard(Wizard):
             author = self.main_app().obj(User, project.get("owner"))
             vars = {
                 "author": htmlescape(author.get("name")),
-                "main_host": self.app().inst.config["main_host"],
+                "main_host": self.main_host,
             }
             fields = [
                 {"type": "html", "html": self.call("web.parse_template", "constructor/setup/offer-%s.html" % self.call("l10n.lang"), vars)},
@@ -299,4 +299,4 @@ class ProjectSetupWizard(Wizard):
         perms.sync()
         perms.store()
         # entering new project
-        self.call("admin.redirect_top", "//www.%s/constructor/game/%s" % (self.app().inst.config["main_host"], project.uuid))
+        self.call("admin.redirect_top", "//www.%s/constructor/game/%s" % (self.main_host, project.uuid))

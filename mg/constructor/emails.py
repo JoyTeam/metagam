@@ -188,7 +188,7 @@ class EmailSender(ConstructorModule):
         self.rhook("advice-admin-email.sender", self.advice)
 
     def advice(self, args, advice):
-        advice.append({"title": self._("Email sender documentation"), "content": self._('You can find detailed information on the email sending system in the <a href="//www.%s/doc/emailsender" target="_blank">email sender page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Email sender documentation"), "content": self._('You can find detailed information on the email sending system in the <a href="//www.%s/doc/emailsender" target="_blank">email sender page</a> in the reference manual.') % self.main_host})
 
     def message_form_render(self, message, fields):
         fields.append({"name": "cond", "label": self._("Script condition to evaluate whether a character must receive this letter") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", message.get("cond", 1))})
@@ -218,7 +218,7 @@ class EmailSender(ConstructorModule):
         del commands[:]
         commands.append(self._("[% ... %] will be parsed by the templating engine"))
         commands.append(self._("[% char.name %] is a character's name"))
-        self.call("admin.advice", {"title": self._("Templating engine"), "content": self._('You can find detailed information on the templating engine in the <a href="//www.%s/doc/design/templates" target="_blank">templating engine</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 10})
+        self.call("admin.advice", {"title": self._("Templating engine"), "content": self._('You can find detailed information on the templating engine in the <a href="//www.%s/doc/design/templates" target="_blank">templating engine</a> in the reference manual.') % self.main_host, "order": 10})
 
     def sample_params(self, params):
         req = self.req()
@@ -269,7 +269,7 @@ class EmailSender(ConstructorModule):
         message.store()
         email = self.int_app().config.get("email.moderation")
         if email:
-            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\nhttp://www.%s/admin#email/moderation") % self.app().inst.config["main_host"], immediately=True)
+            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\nhttp://www.%s/admin#email/moderation") % self.main_host, immediately=True)
         raise Hooks.Return({
             "status": u'<span class="yes">%s</span>' % self._("You email was enqueued to be checked by the moderator")
         })

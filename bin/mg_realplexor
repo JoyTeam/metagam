@@ -1,0 +1,23 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+
+def main():
+    inst = ConstructorInstance("realplexor", "metagam")
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.ClusterDaemon",
+        "mg.core.procman.ProcessManager",
+    ])
+    app.call("cluster.register-daemon")
+    app.call("cluster.run-int-service")
+    # constructor application
+    main_app = inst.appfactory.get_by_tag("main")
+    main_app.call("realplexor.tasklet")
+    # run background processing
+    app.call("cluster.run-daemon-loop")
+
+mg.dispatch(main)
