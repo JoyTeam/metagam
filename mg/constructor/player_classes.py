@@ -63,6 +63,12 @@ class DBCharacterSettings(CassandraObject):
 class DBCharacterSettingsList(CassandraObjectList):
     objcls = DBCharacterSettings
 
+class DBCharacterBusy(CassandraObject):
+    clsname = "CharacterBusy"
+
+class DBCharacterBusyList(CassandraObjectList):
+    objcls = DBCharacterBusy
+
 # Business logic objects
 
 class Character(Module):
@@ -260,6 +266,50 @@ class Character(Module):
         self.qevent("teleported", char=self, old_loc=old_location, new_loc=location, old_inst=old_instance, new_inst=instance)
 
     @property
+    def busy(self):
+        try:
+            return self._busy
+        except AttributeError:
+            self._busy = self.db_busy.get("busy") or None
+            return self._busy
+
+    @property
+    def db_busy(self):
+        try:
+            return self._db_busy
+        except AttributeError:
+            self._db_busy = self.obj(DBCharacterBusy, self.uuid, silent=True)
+            return self._db_busy
+
+    @property
+    def busy_lock(self):
+        return "Busy.Character.%s" % self.uuid
+
+    def set_busy(self, tp, options, dry_run=False):
+        old_busy = self.busy
+        if old_busy:
+            priority = options.get("priority", 0)
+            old_priority = old_busy.get("priority", 0)
+            if old_priority >= priority:
+                return False
+            if not dry_run:
+                abort = old_busy("abort_event")
+                if abort:
+                    self.call(abort, self)
+        if not dry_run:
+            options = options.copy()
+            options["tp"] = tp
+            self._db_busy.set("busy", options)
+            self._db_busy.store()
+            self._busy = options
+        return True
+
+    def unset_busy(self):
+        self._db_busy.set("busy", None)
+        self._db_busy.store()
+        self._busy = None
+
+    @property
     def db_settings(self):
         try:
             return self._db_settings
@@ -452,6 +502,9 @@ class Character(Module):
 
     def main_open(self, uri):
         self.call("stream.character", self, "game", "main_open", uri=uri)
+
+    def combat_member(self, combat):
+        return self.call("combats.character-member", combat, self)
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
