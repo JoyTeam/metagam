@@ -313,6 +313,8 @@ class Instance(Loggable):
 
     def close_mysql(self):
         if hasattr(self, "_sql_read"):
+            self._sql_read.close_all()
+            self._sql_write.close_all()
             delattr(self, "_sql_read")
             delattr(self, "_sql_write")
 

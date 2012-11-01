@@ -79,6 +79,7 @@ class MySQLPool(object):
         self.user = user
         self.passwd = passwd
         self.db = db
+        self._ping_tasklet = None
 
     def set_servers(self, hosts, user, passwd, db, primary_host_id=0):
         self.hosts = [tuple(host) for host in hosts]
@@ -92,6 +93,9 @@ class MySQLPool(object):
     def close_all(self):
         del self.connections[:]
         self.allocated = 0
+        if self._ping_tasklet is not None:
+            self._ping_tasklet.kill()
+            self._ping_tasklet = None
 
     def exception(self, *args, **kwargs):
         logging.getLogger("mg.core.mysql.MySQLPool").exception(*args, **kwargs)
@@ -103,6 +107,9 @@ class MySQLPool(object):
         "Create a new MySQLConnection and connect to the first host in the list"
         connection = MySQLConnection(self.hosts[0], self.user, self.passwd, self.db)
         connection.connect()
+        if self._ping_tasklet is None:
+            self._ping_tasklet = Tasklet.new(self.ping_tasklet)
+            self._ping_tasklet()
         return connection
 
     def new_primary_connection(self):
@@ -209,12 +216,9 @@ class MySQLPool(object):
             else:
                 self.cput(conn)
 
-    def run_ping_tasklet(self):
-        Tasklet.new(self.ping_tasklet)()
-
     def ping_tasklet(self):
         while True:
-            Tasklet.sleep(random.randrange(250, 300))
+            Tasklet.sleep(random.randrange(25, 30))
             self.ping()
 
 class MySQLConnection(object):
