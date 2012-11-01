@@ -12,7 +12,6 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
 "PO-Revision-Date: 2012-07-23 11:07+0300\n"
-||||||| /tmp/ru.po~base.o_PzWe
 "PO-Revision-Date: 2012-05-13 16:42+0300\n"
 "PO-Revision-Date: 2012-10-24 10:58+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
@@ -9026,7 +9025,6 @@ msgstr "{price} навсегда"
 #~ msgstr "действия"
 #~ msgid "profile"
 #~ msgstr "профиль"
-||||||| /tmp/ru.po~base.o_PzWe
 #~ msgid "Class"
 #~ msgstr "Класс"
 #~ msgid "Daemons"
@@ -9209,13 +9207,10 @@ msgstr "{price} навсегда"
 
 #~ msgid "User permissions editor"
 #~ msgstr "Редактор привилегий пользователей"
-||||||| /tmp/ru.po~base.o_PzWe
 
 #~ msgid "Validated %d objects"
 #~ msgstr "Проверено %d объектов"
 
-#~ msgid "Validated %d objects"
-#~ msgstr "Проверено %d объектов"
 #~ msgid "Image format must be GIF"
 #~ msgstr "Формат изображения должен быть GIF"
 

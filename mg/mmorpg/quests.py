@@ -1655,7 +1655,7 @@ class Quests(ConstructorModule):
                                         rules = options.get("rules")
                                         if rules is None:
                                             raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
-                                        creq.rules = rules
+                                        creq.set_rules(rules)
                                         # members
                                         for member in options["members"]:
                                             mtype = member["type"]

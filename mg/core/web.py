@@ -499,11 +499,11 @@ class SingleApplicationWebService(ApplicationWebService):
     "WebService passing all requests to the single application"
     def __init__(self, app, service_id, service_type, hook_prefix, fqn="mg.core.web.SingleApplicationWebService"):
         ApplicationWebService.__init__(self, app.inst, service_id, service_type, hook_prefix, fqn)
-        self.app = app
+        self.service_app = app
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
-        return self.deliver_request(self.app, request, group, hook, args)
+        return self.deliver_request(self.service_app, request, group, hook, args)
 
 class Web(Module):
     def __init__(self, *args, **kwargs):

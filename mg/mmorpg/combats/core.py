@@ -15,6 +15,10 @@ class CombatError(Exception):
     def __str__(self):
         return utf2str(self.val)
 
+class CombatUnavailableError(CombatError):
+    def __init__(self, combat_id):
+        CombatError.__init__("Combat %s is unavailable" % combat_id)
+
 class CombatAlreadyRunning(CombatError):
     pass
 

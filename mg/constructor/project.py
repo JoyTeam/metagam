@@ -90,7 +90,7 @@ class ConstructorProject(Module):
             if self.conf("module.emailsender"):
                 lst.extend(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
             if self.conf("module.combats"):
-                lst.extend(["mg.mmorpg.combats.interfaces.Combats"])
+                lst.extend(["mg.mmorpg.combats.interfaces.Combats", "mg.mmorpg.combats.daemon.CombatRunner"])
         return lst
 
     def modules_list(self, modules):
