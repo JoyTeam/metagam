@@ -1660,13 +1660,17 @@ class Quests(ConstructorModule):
                                         for member in options["members"]:
                                             mtype = member["type"]
                                             if mtype[0] == "virtual":
-                                                mtype = "virtual"
+                                                cmember = ["virtual"]
                                             elif mtype[0] == "expr":
-                                                mtype = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
+                                                cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
+                                                makemember = getattr(cmemberobj, "combat_member", None)
+                                                if makemember is None:
+                                                    raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
+                                                cmember = makemember()
                                             else:
                                                 raise QuestError(self._("Unknown combat type %s") % mtype[0])
                                             rmember = {
-                                                "type": mtype,
+                                                "object": cmember,
                                             }
                                             team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
                                             if type(team) != int:
@@ -1695,6 +1699,11 @@ class Quests(ConstructorModule):
                                             raise AbortHandler()
                                         except CombatRunError as e:
                                             raise QuestError(e.val)
+                                        else:
+                                            try:
+                                                tasklet.quest_combat_started[char.uuid] = creq.uuid
+                                            except AttributeError:
+                                                tasklet.quest_combat_started = {char.uuid: creq.uuid}
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1745,6 +1754,18 @@ class Quests(ConstructorModule):
                 req = self.req()
             except AttributeError:
                 req = None
+            quest_combat_started = getattr(tasklet, "quest_combat_started", None)
+            if quest_combat_started:
+                for char_uuid, combat_id in quest_combat_started.iteritems():
+                    uri = "/combat/interface/%s" % combat_id
+                    if req and req.user() == char_uuid:
+                        try:
+                            req.quest_redirects[char.uuid] = uri
+                        except AttributeError:
+                            req.quest_redirects = {char.uuid: uri}
+                    else:
+                        char = self.character(char_uuid)
+                        char.main_open(uri)
             quest_teleported = getattr(tasklet, "quest_teleported", None)
             if quest_teleported:
                 for char_uuid in quest_teleported:
@@ -1754,6 +1775,7 @@ class Quests(ConstructorModule):
                         except AttributeError:
                             req.quest_redirects = {char.uuid: "/location"}
                     else:
+                        char = self.character(char_uuid)
                         char.main_open("/location")
                 del tasklet.quest_teleported
             if char.quests.dialogs:

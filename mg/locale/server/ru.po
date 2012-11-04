@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-11-04 05:31+0300\n"
+"PO-Revision-Date: 2012-11-04 08:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -87,6 +87,10 @@ msgstr "У \"%s\" нет изменяемых атрибутов"
 #, python-format
 msgid "'%s' is not a combat member"
 msgstr "\"%s\" - не участник боя"
+
+#, python-format
+msgid "'%s' is not a valid combat member"
+msgstr "\"%s\" - недопустимый участник боя"
 
 #, python-format
 msgid "'%s' is not an object"
@@ -888,6 +892,9 @@ msgstr "Вызвать квестовое событие \"clicked\""
 msgid "Cancel"
 msgstr "Отмена"
 
+msgid "Cancelling combat {combat} ({reason}). Freeing members"
+msgstr "Отменяем бой {combat} ({reason}). Освобождаем участников"
+
 msgid "Cargo amount expression"
 msgstr "Выражение для величины груза"
 
@@ -1050,8 +1057,9 @@ msgstr "Список образов персонажей"
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
 
-msgid "Character is a member of missing combat. Freeing lock"
-msgstr "Персонаж - участник завершённого боя. Снимаем блокировку"
+#, python-format
+msgid "Character is a member of missing combat (%s). Freeing lock"
+msgstr "Персонаж - участник завершённого боя (%s). Снимаем блокировку"
 
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
@@ -1334,13 +1342,8 @@ msgstr "Цвета в подписи на {period_a}"
 msgid "Combat %s interface"
 msgstr "Интерфейс боя %s"
 
-#, python-format
-msgid "Combat %s server is unavailable"
-msgstr "Сервер боя %s недоступен"
-
-#, python-format
-msgid "Combat %s terminated"
-msgstr "Бой %s завершён"
+msgid "Combat disappeared"
+msgstr "Бой исчез"
 
 msgid "Combat member control"
 msgstr "Контроллер участника боя"
@@ -1356,6 +1359,9 @@ msgstr "Команда участника боя"
 
 msgid "Combat member type"
 msgstr "Тип участника боя"
+
+msgid "Combat not found"
+msgstr "Бой не найден"
 
 msgid "Combat rules code"
 msgstr "Код правил боёв"
@@ -1444,6 +1450,9 @@ msgstr "Поздравляем! Ваша игра '{0}' успешно прош�
 
 msgid "Congratulations! Your game is ready to be published."
 msgstr "Поздравляем! Ваша игра готова к публикации."
+
+msgid "Connection refused"
+msgstr "В соединении отказано"
 
 msgid "Connection secured"
 msgstr "Установлено безопасное соединение"
@@ -1545,6 +1554,10 @@ msgstr "Переписка"
 
 msgid "Correspondence with {0}"
 msgstr "Переписка с {0}"
+
+#, python-format
+msgid "Could not create combat member '%s'"
+msgstr "Не удалось создать участника боя \"%s\""
 
 msgid "Couldn't convert '{token}' (type '{type}') to string"
 msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку"
@@ -2475,6 +2488,9 @@ msgstr "Дополнительные настройки"
 msgid "Facebook application identifier"
 msgstr "Идентификатор приложения Facebook"
 
+msgid "Failed to start combat server"
+msgstr "Не удалось запустить боевой сервер"
+
 msgid "Fast movement across the locations"
 msgstr "Быстрое перемещение по локациям"
 
@@ -3298,9 +3314,11 @@ msgstr "Неверный цвет"
 msgid "Invalid color format"
 msgstr "Неверный формат цвета"
 
-#, python-format
-msgid "Invalid combat response (expected: %s, received: %s)"
-msgstr "Неверный ответ от боя (ожидался: %s, получен: %s)"
+msgid "Invalid combat idenfifier"
+msgstr "Неверный идентификатор боя"
+
+msgid "Invalid combat response (expected: {expected}, received: {received})"
+msgstr "Неверный ответ от боя (ожидался: {expected}, получен: {received})"
 
 #, python-format
 msgid "Invalid combat response: %s"
@@ -6764,10 +6782,6 @@ msgstr "У этой локации есть направление \"Выход\
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
 
-#, python-format
-msgid "This object cannot be a combat member: %s"
-msgstr "Объект не может быть участником боя: %s"
-
 msgid "This option allows you to use coloured avatar and to include images, smiles and coloured text to your signature on the forum"
 msgstr "Эта опция позволяет вам использовать на форуме цветной аватар и включать в подпись картинки, смайлики и цвета"
 
@@ -9027,6 +9041,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "Combat %s server is unavailable"
+#~ msgstr "Сервер боя %s недоступен"
 #~ msgid "Expression unexpectedly ended"
 #~ msgstr "Выражение внезапно закончилось"
 #~ msgid "Profile of '%s'"

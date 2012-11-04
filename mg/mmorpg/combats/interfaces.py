@@ -1,7 +1,8 @@
-from mg.constructor import *
-from mg.mmorpg.combats.core import Combat, CombatMember
+import mg.constructor
+from mg.core.tools import *
+from mg.mmorpg.combats.core import Combat, CombatMember, CombatUnavailable
 from mg.mmorpg.combats.characters import CombatCharacterMember, CombatGUIController
-from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList, CombatUnavailable
+from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -10,10 +11,9 @@ re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 
-class Combats(ConstructorModule):
+class Combats(mg.constructor.ConstructorModule):
     def register(self):
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("combats.character-member", self.character_member)
         self.rhook("ext-combat.interface", self.combat_interface, priv="logged")
 
     def child_modules(self):
@@ -21,40 +21,32 @@ class Combats(ConstructorModule):
             "mg.mmorpg.combats.interfaces.CombatsAdmin",
             "mg.mmorpg.combats.wizards.AttackBlock",
             "mg.mmorpg.combats.scripts.CombatScripts",
+            "mg.mmorpg.combats.daemon.CombatRunner",
+            "mg.mmorpg.combats.characters.Combats",
         ]
 
     def objclasses_list(self, objclasses):
         objclasses["RunningCombat"] = (DBRunningCombat, DBRunningCombatList)
 
-    def character_member(self, combat, character):
-        member = CombatCharacterMember(combat, character)
-        control = CombatGUIController(member)
-        member.add_controller(control)
-        return member
-
     def combat_interface(self):
         req = self.req()
         char = self.character(req.user())
-        combat_uuid = req.args
+        combat_id = req.args
         try:
-            combat = CombatInterface(self.app(), combat_uuid)
-        except ObjectNotFoundException:
-            # combat terminated already
+            combat = CombatInterface(self.app(), combat_id)
+            combat.ping()
+        except CombatUnavailable as e:
             with self.lock([char.busy_lock]):
                 busy = char.busy
-                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_uuid:
+                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
                     # character is a member of a missing combat. free him
+                    self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
                     char.unset_busy()
-                    self.call("debug-channel.character", char, self._("Character is a member of missing combat. Freeing lock"))
-            self.call("main-frame.error", self._("Combat %s terminated") % combat_uuid)
-        try:
-            combat.ping()
-        except CombatUnavailable:
-            self.call("main-frame.error", self._("Combat %s server is unavailable") % combat_uuid)
+            self.call("web.redirect", "/location")
         else:
-            self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_uuid))
+            self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_id))
 
-class CombatsAdmin(ConstructorModule):
+class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
@@ -384,7 +376,7 @@ class CombatsAdmin(ConstructorModule):
         req = self.req()
         if req.ok():
             # test objects
-            combat = Combat(self.app(), code)
+            combat = Combat(self.app(), None, code)
             # parsing form
             errors = {}
             config = self.app().config_updater()
@@ -412,7 +404,7 @@ class CombatsAdmin(ConstructorModule):
             self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
         if req.ok():
             # test objects
-            combat = Combat(self.app(), code)
+            combat = Combat(self.app(), None, code)
             member1 = CombatMember(combat)
             member2 = CombatMember(combat)
             # parsing form

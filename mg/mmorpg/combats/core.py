@@ -15,9 +15,8 @@ class CombatError(Exception):
     def __str__(self):
         return utf2str(self.val)
 
-class CombatUnavailableError(CombatError):
-    def __init__(self, combat_id):
-        CombatError.__init__("Combat %s is unavailable" % combat_id)
+class CombatUnavailable(CombatError):
+    pass
 
 class CombatAlreadyRunning(CombatError):
     pass
@@ -31,16 +30,53 @@ class CombatRunError(CombatError):
 class CombatMemberBusyError(CombatRunError):
     pass
 
+class CombatLocker(ConstructorModule):
+    "CombatLocker is an interface for locking and unlocking combat members."
+    def __init__(self, app, cobj, fqn="mg.mmorpg.combats.core.CombatLocker"):
+        ConstructorModule.__init__(self, app, fqn)
+        self.cobj = cobj
+
+    def busy_lock(self):
+        lock_keys = []
+        for minfo in self.cobj.get("members", []):
+            obj = minfo["object"]
+            mtype = obj[0]
+            key = self.call("combats-%s.busy-lock" % mtype, *obj[1:])
+            if key:
+                lock_keys.append(key)
+        return self.lock(lock_keys)
+
+    def set_busy(self):
+        "Mark all members busy. If impossible raise CombatMemberBusyError"
+        with self.busy_lock():
+            for minfo in self.cobj.get("members", []):
+                obj = minfo["object"]
+                mtype = obj[0]
+                if self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:], dry_run=True):
+                    raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % member.name))
+            for minfo in self.cobj.get("members", []):
+                obj = minfo["object"]
+                mtype = obj[0]
+                self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:])
+
+    def unset_busy(self):
+        "Mark all members not busy"
+        with self.busy_lock():
+            for minfo in self.cobj.get("members", []):
+                obj = minfo["object"]
+                mtype = obj[0]
+                self.call("combats-%s.unset-busy" % mtype, self.cobj.uuid, *obj[1:])
+
 class Combat(ConstructorModule):
     "Combat is the combat itself. It is created in the combat daemon process."
-    def __init__(self, app, rules, fqn="mg.mmorpg.combats.core.Combat"):
+    def __init__(self, app, uuid, rules, fqn="mg.mmorpg.combats.core.Combat"):
         ConstructorModule.__init__(self, app, fqn)
         self.members = []
         self.stage = "init"
         self.log = None
         self.member_id = 0
         self.rules = rules
-        self.uuid = uuid4().hex
+        self.uuid = uuid
 
     def join(self, member):
         "Join member to the combat"
@@ -62,7 +98,6 @@ class Combat(ConstructorModule):
         if self.stage != "init":
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self._turn_order = turn_order
-        self.set_busy()
         self.set_stage("combat")
 
     def set_stage(self, stage):
@@ -126,45 +161,6 @@ class Combat(ConstructorModule):
     def stop(self):
         "Terminate combat"
         self.set_stage("done")
-        self.unset_busy()
-
-    def set_busy(self):
-        "Mark all members as busy. If impossible raise CombatRunError"
-        lock_keys = set()
-        for member in self.members:
-            try:
-                key = member.busy_lock
-            except AttributeError:
-                pass
-            else:
-                lock_keys.add("BusyLock-%s" % key)
-        if lock_keys:
-            with self.lock([key for key in lock_keys]):
-                for member in self.members:
-                    fn = getattr(member, "set_busy", None)
-                    if fn and not fn(dry_run=True):
-                        raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % member.name))
-                for member in self.members:
-                    fn = getattr(member, "set_busy", None)
-                    if fn:
-                        fn()
-
-    def unset_busy(self):
-        "Mark all members as not busy"
-        lock_keys = set()
-        for member in self.members:
-            try:
-                key = member.busy_lock
-            except AttributeError:
-                pass
-            else:
-                lock_keys.add("BusyLock-%s" % key)
-        if lock_keys:
-            with self.lock([key for key in lock_keys]):
-                for member in self.members:
-                    fn = getattr(member, "unset_busy", None)
-                    if fn:
-                        fn()
 
 class CombatObject(ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"

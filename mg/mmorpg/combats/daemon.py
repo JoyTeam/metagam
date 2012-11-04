@@ -1,8 +1,8 @@
 import mg
 import mg.constructor
-from mg.mmorpg.combats.core import CombatObject, Combat, CombatMember, CombatRunError, CombatUnavailableError
+from mg.mmorpg.combats.core import CombatObject, Combat, CombatMember, CombatRunError, CombatUnavailable, CombatLocker
 from mg.mmorpg.combats.turn_order import *
-from mg.core.cluster import DBCluster
+from mg.core.cluster import DBCluster, HTTPConnectionRefused
 from concurrence import Tasklet, http
 from concurrence.http import HTTPError
 import re
@@ -11,9 +11,6 @@ import os
 from uuid import uuid4
 
 re_valid_uuid = re.compile('^[a-f0-9]{32}$')
-
-class CombatUnavailable(Exception):
-    pass
 
 class DBRunningCombat(mg.CassandraObject):
     clsname = "RunningCombat"
@@ -24,10 +21,20 @@ class DBRunningCombat(mg.CassandraObject):
 class DBRunningCombatList(mg.CassandraObjectList):
     objcls = DBRunningCombat
 
+class CombatDaemonModule(mg.constructor.ConstructorModule):
+    def register(self):
+        self.rhook("cmb-combat.ping", self.ping, priv="public")
+        self.rhook("web.response_json", self.response_json, priority=10)
+
+    def response_json(self, data):
+        data["combat"] = self.app().inst.csrv.combat.uuid
+
+    def ping(self):
+        self.call("web.response_json", {"reply": "pong"})
+
 class CombatRunner(mg.constructor.ConstructorModule):
     def register(self):
         self.rhook("combat-run.daemon", self.run_daemon)
-        self.rhook("cmb-combat.ping", self.ping, priv="public")
 
     def run_daemon(self, cobj):
         daemon_id = uuid4().hex
@@ -76,13 +83,11 @@ class CombatRunner(mg.constructor.ConstructorModule):
             ])
         })
 
-    def ping(self):
-        self.call("web.response_json", {"reply": "pong"})
-
 class CombatRequest(mg.constructor.ConstructorModule):
     def __init__(self, app, fqn="mg.mmorpg.combats.requests.CombatRequest"):
-        ConstructorModule.__init__(self, app, fqn)
-        self.cobj = self.obj(DBRunningCombat, {})
+        mg.constructor.ConstructorModule.__init__(self, app, fqn)
+        self.cobj = self.obj(DBRunningCombat, data={})
+        self.uuid = self.cobj.uuid
         self.members = []
         self.cobj.set("members", self.members)
 
@@ -90,11 +95,16 @@ class CombatRequest(mg.constructor.ConstructorModule):
         self.members.append(member)
 
     def set_rules(self, rules):
-        mg.constructor.self.cobj.sent("rules", rules)
+        self.cobj.set("rules", rules)
 
     def run(self):
         self.debug("Launching combat %s", self.cobj.uuid)
+        self.set_busy()
         self.call("combat-run.daemon", self.cobj)
+
+    def set_busy(self):
+        locker = CombatLocker(self.app(), self.cobj)
+        locker.set_busy()
 
 class CombatService(CombatObject, mg.SingleApplicationWebService):
     def __init__(self, app, combat_id, daemon_id, fqn="mg.mmorpg.combats.daemon.CombatDaemon"):
@@ -109,20 +119,20 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.error("Combat daemon %s started (combat %s), but RunningCombat contains another daemon id (%s)", daemon_id, combat_id, cobj.get("daemonid"))
             os._exit(0)
         self.cobj = cobj
-        combat = Combat(app, cobj.get("rules", {}))
+        combat = Combat(app, cobj.uuid, cobj.get("rules", {}))
         CombatObject.__init__(self, combat, fqn, weak=False)
 
     def add_members(self):
         for minfo in self.cobj.get("members", []):
             # member
-            mtype = minfo["type"]
+            obj = minfo["object"]
+            mtype = obj[0]
             if mtype == "virtual":
                 member = CombatMember(self.combat)
             else:
-                makemember = getattr(mtype, "combat_member", None)
-                if makemember is None:
-                    raise CombatRunError(self._("This object cannot be a combat member: %s") % mtype)
-                member = makemember(self.combat)
+                member = self.call("combats-%s.member" % mtype, self.combat, *obj[1:])
+                if member is None:
+                    raise CombatRunError(self._("Could not create combat member '%s'") % mtype)
             member.set_team(minfo["team"])
             # control
             if "control" in minfo:
@@ -158,7 +168,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             # main loop
             while not self.combat.stage_flag("done"):
                 self.combat.process()
-                Tasklet.yield_()
+                Tasklet.sleep(1)
         finally:
             self.app().inst.csrv = None
 
@@ -167,51 +177,75 @@ class CombatInterface(mg.constructor.ConstructorModule):
         mg.constructor.ConstructorModule.__init__(self, app, fqn)
         # access RunningCombat object
         if not re_valid_uuid.match(combat_id):
-            raise CombatUnavailableError(combat_id)
+            raise CombatUnavailable(self._("Invalid combat idenfifier"))
+        self.combat_id = combat_id
         try:
             cobj = self.obj(DBRunningCombat, combat_id)
         except mg.ObjectNotFoundException:
-            raise CombatUnavailableError(combat_id)
-        # restart combat if needed
-        attempts = 3
-        while not cobj.get("host"):
-            # wait for combat to run
-            if cobj.get("started") > self.now(-10):
-                Tasklet.sleep(1)
-                try:
-                    cobj.load()
-                except mg.ObjectNotFoundException:
-                    raise CombatUnavailableError(combat_id)
-                continue
-            # restart failed combat
-            attempts -= 1
-            if attempts < 0:
-                raise CombatUnavailableError(combat_id)
-            with self.lock(["CombatRun-%s" % combat_id]):
-                try:
-                    cobj.load()
-                except mg.ObjectNotFoundException:
-                    raise CombatUnavailableError(combat_id)
-                if not cobj.get("host"):
-                    self.debug("Relaunching combat %s", cobj.uuid)
-                    self.call("combat-run.daemon", cobj)
-        # combat daemon found
-        self.combat_id = combat_id
-        # find connection
-        self.api_host = cobj.get("host")
-        self.api_port = cobj.get("port")
-        self.debug("Remote combat API URI: %s:%s", self.api_host, self.api_port)
+            raise CombatUnavailable(self._("Combat not found"))
+        self.cobj = cobj
+        try:
+            # restart combat if needed
+            attempts = 3
+            while not cobj.get("host"):
+                # wait for combat to run
+                if cobj.get("started") > self.now(-10):
+                    Tasklet.sleep(1)
+                    try:
+                        cobj.load()
+                    except mg.ObjectNotFoundException:
+                        raise CombatUnavailable(self._("Combat disappeared"))
+                    continue
+                # restart failed combat
+                attempts -= 1
+                if attempts < 0:
+                    raise CombatUnavailable(self._("Failed to start combat server"))
+                with self.lock(["Combat-%s" % combat_id]):
+                    try:
+                        cobj.load()
+                    except mg.ObjectNotFoundException:
+                        raise CombatUnavailable(self._("Combat disappeared"))
+                    if not cobj.get("host"):
+                        self.debug("Relaunching combat %s", cobj.uuid)
+                        self.call("combat-run.daemon", cobj)
+            # find connection
+            self.api_host = cobj.get("host")
+            self.api_port = cobj.get("port")
+            self.debug("Remote combat API URI: %s:%s", self.api_host, self.api_port)
+        except CombatUnavailable as e:
+            self.cancel_combat(e)
+            raise
+
+    def cancel_combat(self, reason):
+        with self.lock(["Combat-%s" % self.combat_id]):
+            try:
+                self.cobj.load()
+            except mg.ObjectNotFoundException:
+                return
+            for minfo in self.cobj.get("members", []):
+                obj = minfo["object"]
+                mtype = obj[0]
+                if mtype == "character":
+                    char = self.character(obj[1])
+                    self.call("debug-channel.character", char, self._("Cancelling combat {combat} ({reason}). Freeing members").format(combat=self.combat_id, reason=reason))
+            locker = CombatLocker(self.app(), self.cobj)
+            locker.unset_busy()
+            self.cobj.remove()
 
     def query(self, uri, args={}):
         args["combat"] = self.combat_id
         try:
-            res = self.call("cluster.query-server", self.api_host, self.api_port, "/service/call/combat-%s-%s%s" % (self.app().tag, self.combat_id, uri), args)
-            if type(res) != dict:
-                raise CombatUnavailable(self._("Invalid combat response: %s") % type(res).__name__)
-            if type(res) != dict or res.get("combat") != self.combat_id:
-                raise CombatUnavailable(self._("Invalid combat response (expected: %s, received: %s)") % (self.combat_id, res.get("combat")))
-        except HTTPError as e:
-            raise CombatUnavailable(e)
+            try:
+                res = self.call("cluster.query_server", self.api_host, self.api_port, "/service/call/combat-%s-%s%s" % (self.app().tag, self.combat_id, uri), args)
+                if type(res) != dict:
+                    raise CombatUnavailable(self._("Invalid combat response: %s") % type(res).__name__)
+                if type(res) != dict or res.get("combat") != self.combat_id:
+                    raise CombatUnavailable(self._("Invalid combat response (expected: {expected}, received: {received})").format(expected=self.combat_id, received=res.get("combat")))
+            except HTTPConnectionRefused:
+                raise CombatUnavailable(self._("Connection refused"))
+        except CombatUnavailable as e:
+            self.cancel_combat(e)
+            raise
 
     def ping(self):
         return self.query("/combat/ping")

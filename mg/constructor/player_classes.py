@@ -503,8 +503,8 @@ class Character(Module):
     def main_open(self, uri):
         self.call("stream.character", self, "game", "main_open", uri=uri)
 
-    def combat_member(self, combat):
-        return self.call("combats.character-member", combat, self)
+    def combat_member(self):
+        return ["character", self.uuid]
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):

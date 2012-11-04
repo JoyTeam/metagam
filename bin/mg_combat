@@ -24,6 +24,9 @@ def main():
         "mg.core.cluster.Cluster",
     ])
     # run combat service
+    ext_app.load([
+        "mg.mmorpg.combats.daemon.CombatDaemonModule",
+    ])
     srv = CombatService(ext_app, combat_id, daemon_id)
     srv.run()
 
