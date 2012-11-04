@@ -1,6 +1,13 @@
 import mg.constructor
 from mg.core.tools import *
 from mg.mmorpg.combats.core import Combat, CombatMember
+import re
+
+re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
+re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script)$', re.IGNORECASE)
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
+re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
+re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -181,31 +188,85 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
     def rules_edit_profile(self, rules, code):
         req = self.req()
         rules = rules.copy()
-        info = rules[code].copy()
         # processing request
         if req.ok():
             errors = {}
+            info = {}
             # name
             name = req.param("name")
             if not name:
                 errors["name"] = self._("This field is mandatory")
+            else:
+                info["name"] = name
             # order
-            order = floatz(req.param("order"))
+            info["order"] = floatz(req.param("order"))
+            # generic interface
+            info["generic"] = 1 if req.param("generic") else 0
+            if info["generic"]:
+                # my avatar
+                info["generic_myavatar"] = 1 if req.param("generic_myavatar") else 0
+                if info["generic_myavatar"]:
+                    width = info["generic_myavatar_width"] = intz(req.param("generic_myavatar_width"))
+                    if width < 50:
+                        errors["generic_myavatar_width"] = self._("Miminal value is %d") % 50
+                    elif width > 1000:
+                        errors["generic_myavatar_width"] = self._("Maximal value is %d") % 1000
+                    info["generic_myavatar_resize"] = True if req.param("generic_myavatar_resize") else False
+                # enemy avatar
+                info["generic_enemyavatar"] = 1 if req.param("generic_enemyavatar") else 0
+                if info["generic_enemyavatar"]:
+                    width = info["generic_enemyavatar_width"] = intz(req.param("generic_enemyavatar_width"))
+                    if width < 50:
+                        errors["generic_enemyavatar_width"] = self._("Miminal value is %d") % 50
+                    elif width > 1000:
+                        errors["generic_enemyavatar_width"] = self._("Maximal value is %d") % 1000
+                    info["generic_enemyavatar_resize"] = True if req.param("generic_enemyavatar_resize") else False
+                # combat log
+                info["generic_log"] = 1 if req.param("generic_log") else 0
+                if info["generic_log"]:
+                    layout = info["generic_log_layout"] = intz(req.param("v_generic_log_layout"))
+                    if layout < 0 or layout > 1:
+                        errors["v_generic_log_layout"] = self._("Invalid selection")
+                    elif layout == 0:
+                        height = info["generic_combat_height"] = intz(req.param("generic_combat_height"))
+                        if height < 50:
+                            errors["generic_combat_height"] = self._("Miminal value is %d") % 50
+                        elif height > 500:
+                            errors["generic_combat_height"] = self._("Maximal value is %d") % 500
+                    elif layout == 1:
+                        height = info["generic_log_height"] = intz(req.param("generic_log_height"))
+                        if height < 50:
+                            errors["generic_log_height"] = self._("Miminal value is %d") % 50
+                        elif height > 500:
+                            errors["generic_log_height"] = self._("Maximal value is %d") % 500
+                    info["generic_log_resize"] = True if req.param("generic_log_resize") else False
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # saving changes
-            info["order"] = order
-            info["name"] = name
             rules[code] = info
             config = self.app().config_updater()
             config.set("combats.rules", rules)
             config.store()
             self.call("admin.redirect", "combats/rules")
         # rendering form
+        info = rules[code]
         fields = [
             {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
             {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
+            {"name": "generic", "type": "checkbox", "label": self._("Use generic GUI for this type of combats"), "checked": info.get("generic", 1)},
+            {"type": "header", "html": self._("Generic interface settings"), "condition": "[generic]"},
+            {"name": "generic_myavatar", "type": "checkbox", "label": self._("Show player's avatar on the left side"), "checked": info.get("generic_myavatar", 1), "condition": "[generic]"},
+            {"name": "generic_myavatar_width", "label": self._("Player's avatar width"), "value": info.get("generic_myavatar_width", 300), "condition": "[generic] && [generic_myavatar]"},
+            {"name": "generic_myavatar_resize", "label": self._("Allow player to resize player's avatar block"), "type": "checkbox", "checked": info.get("generic_myavatar_resize", False), "condition": "[generic] && [generic_myavatar]", "inline": True},
+            {"name": "generic_enemyavatar", "type": "checkbox", "label": self._("Show enemy's avatar on the right side"), "checked": info.get("generic_enemyavatar", 1), "condition": "[generic]"},
+            {"name": "generic_enemyavatar_width", "label": self._("Enemy's avatar width"), "value": info.get("generic_enemyavatar_width", 300), "condition": "[generic] && [generic_enemyavatar]"},
+            {"name": "generic_enemyavatar_resize", "label": self._("Allow player to resize enemy's avatar block"), "type": "checkbox", "checked": info.get("generic_enemyavatar_resize", False), "condition": "[generic] && [generic_enemyavatar]", "inline": True},
+            {"name": "generic_log", "type": "checkbox", "label": self._("Show combat log on the bottom side"), "checked": info.get("generic_log", 1), "condition": "[generic]"},
+            {"name": "generic_log_layout", "type": "combo", "label": self._("Combat log layout"), "values": [(0, self._("Fixed combat height, variable log height")), (1, self._("Variable combat height, fixed log height"))], "value": info.get("generic_log_layout", 0), "condition": "[generic] && [generic_log]"},
+            {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
+            {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
+            {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
         ]
         self.call("admin.form", fields=fields)
 

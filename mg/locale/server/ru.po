@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-11-04 09:30+0300\n"
+"PO-Revision-Date: 2012-11-04 22:27+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -391,6 +391,15 @@ msgstr "Разрешить изображения в подписях"
 
 msgid "Allow moderation"
 msgstr "Разрешено модерировать"
+
+msgid "Allow player to resize combat log"
+msgstr "Позволить игроку растягивать лог боя"
+
+msgid "Allow player to resize enemy's avatar block"
+msgstr "Позволить игроку растягивать блок аватара врага"
+
+msgid "Allow player to resize player's avatar block"
+msgstr "Позволить игроку растягивать блок своего аватара"
 
 msgid "Allow reading"
 msgstr "Разрешено читать"
@@ -1344,8 +1353,17 @@ msgstr "Бой исчез"
 msgid "Combat interface for combat rules '{code}' ({name})"
 msgstr "Боевой интерфейс для правил боя \"{code}\" ({name})"
 
+msgid "Combat interface height"
+msgstr "Высота интерфейса боя"
+
 msgid "Combat interface template (used when no specific combat-rules-*.html exist)"
 msgstr "Шаблон боевого интерфейса (используется, когда не существуют конкретные combat-rules-*.html)"
+
+msgid "Combat log height"
+msgstr "Высота лога боя"
+
+msgid "Combat log layout"
+msgstr "Размещение лога боя"
 
 msgid "Combat member control"
 msgstr "Контроллер участника боя"
@@ -2146,6 +2164,9 @@ msgstr "Конец месяца"
 msgid "End of week"
 msgstr "Конец недели"
 
+msgid "Enemy's avatar width"
+msgstr "Ширина аватара врага"
+
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
@@ -2554,6 +2575,9 @@ msgstr "Пройденные квесты"
 msgid "First image selection after registration is free"
 msgstr "После регистрации персонажа выбор первого образа предоставляется бесплатно"
 
+msgid "Fixed combat height, variable log height"
+msgstr "Фиксированная ширина боя, переменная ширина лога"
+
 msgid "Float '{val}' has no attributes"
 msgstr "У числа \"{val}\" нет атрибутов"
 
@@ -2840,6 +2864,9 @@ msgstr "Сгенерировать пригласительный код"
 
 msgid "Generate library description automatically"
 msgstr "Сгенерировать описание для библиотеки автоматически"
+
+msgid "Generic interface settings"
+msgstr "Настройки универсального интерфейса"
 
 msgid "Give"
 msgstr "Выдать"
@@ -4129,6 +4156,10 @@ msgstr "Металл №3"
 msgid "Mike"
 msgstr "Mike"
 
+#, python-format
+msgid "Miminal value is %d"
+msgstr "Минимальное значение - %d"
+
 msgid "Min/max/sum"
 msgstr "Мин/макс/сум"
 
@@ -4986,6 +5017,9 @@ msgstr "Игрок"
 
 msgid "Player account"
 msgstr "Аккаунт игрока"
+
+msgid "Player's avatar width"
+msgstr "Ширина аватара основного персонажа"
 
 msgid "Players authentication settings"
 msgstr "Настройки аутентификации игроков"
@@ -5994,6 +6028,12 @@ msgstr "Показывать знак \"+\" перед положительны�
 msgid "Show abitrary HTML from the table of values"
 msgstr "Показать произвольный HTML из таблицы значений"
 
+msgid "Show combat log on the bottom side"
+msgstr "Показать лог боя снизу"
+
+msgid "Show enemy's avatar on the right side"
+msgstr "Показать аватар врага справа"
+
 msgid "Show on registration"
 msgstr "Показывать при регистрации"
 
@@ -6002,6 +6042,9 @@ msgstr "Показать с левой стороны"
 
 msgid "Show parameters of the character"
 msgstr "Показать параметры персонажа"
+
+msgid "Show player's avatar on the left side"
+msgstr "Показать аватар активного персонажа слева"
 
 msgid "Show reverted value in the inventory (0 means whole item)"
 msgstr "В инвентаре показывать обратное значение (\"0\" обозначает нулевой износ)"
@@ -7215,6 +7258,9 @@ msgstr "Загрузка статических объектов  в храни�
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."
 
+msgid "Use generic GUI for this type of combats"
+msgstr "Использовать универсальный GUI для этого типа боёв"
+
 msgid "User"
 msgstr "Пользователь"
 
@@ -7287,6 +7333,9 @@ msgstr "Точность значений (количество разрядов
 
 msgid "Values you entered are not valid. Try again please"
 msgstr "Введённые вами значения неверны. Попробуйте ещё раз"
+
+msgid "Variable combat height, fixed log height"
+msgstr "Переменная ширина боя, фиксированная ширина лога"
 
 msgid "Verified WMID required"
 msgstr "Требуется проверенный WMID"
@@ -9046,8 +9095,6 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
-#~ msgid "Combat %s interface"
-#~ msgstr "Интерфейс боя %s"
 #~ msgid "Combat is starting"
 #~ msgstr "Начинается бой"
 #~ msgid "Combat %s server is unavailable"

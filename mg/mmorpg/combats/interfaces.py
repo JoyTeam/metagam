@@ -3,13 +3,6 @@ from mg.core.tools import *
 from mg.mmorpg.combats.core import CombatUnavailable
 from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
 from mg.constructor.design import TemplateNotFound
-import re
-
-re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script)$', re.IGNORECASE)
-re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
-re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
-re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 
 class Combats(mg.constructor.ConstructorModule):
     def register(self):
@@ -46,12 +39,31 @@ class Combats(mg.constructor.ConstructorModule):
             self.call("web.redirect", "/location")
         else:
             # Show combat interface to user
+            rules = self.conf("combats.rules", {}).get(combat.rules, {})
             vars = {
                 "combat": combat_id,
                 "load_extjs": {
                     "full": True
                 },
+                "generic": rules.get("generic", 1),
             }
+            if vars["generic"]:
+                vars["generic_myavatar"] = rules.get("generic_myavatar", 1)
+                if vars["generic_myavatar"]:
+                    vars["generic_myavatar_width"] = rules.get("generic_myavatar_width", 300)
+                    vars["generic_myavatar_resize"] = "true" if rules.get("generic_myavatar_resize") else "false"
+                vars["generic_enemyavatar"] = rules.get("generic_enemyavatar", 1)
+                if vars["generic_enemyavatar"]:
+                    vars["generic_enemyavatar_width"] = rules.get("generic_enemyavatar_width", 300)
+                    vars["generic_enemyavatar_resize"] = "true" if rules.get("generic_enemyavatar_resize") else "false"
+                vars["generic_log"] = rules.get("generic_log", 1)
+                if vars["generic_log"]:
+                    layout = vars["generic_log_layout"] = rules.get("generic_log_layout", 0)
+                    if layout == 0:
+                        vars["generic_combat_height"] = rules.get("generic_combat_height", 300)
+                    elif layout == 1:
+                        vars["generic_log_height"] = rules.get("generic_log_height", 300)
+                    vars["generic_log_resize"] = "true" if rules.get("generic_log_resize", True) else "false"
             try:
                 content = self.call("game.parse_internal", "combat-rules-%s.html" % combat.rules, vars)
             except TemplateNotFound:
