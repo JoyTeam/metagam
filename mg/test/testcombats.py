@@ -81,11 +81,40 @@ class DebugCombatLog(CombatLog):
     def syslog(self, entry):
         self._syslog.append(entry)
 
+class FakeObj(object):
+    def set(self, key, val):
+        pass
+
+    def store(self):
+        pass
+
+class DebugCombatService(CombatService):
+    def __init__(self, combat, fqn="mg.test.combats.DebugCombatService"):
+        mg.SingleApplicationWebService.__init__(self, combat.app(), "combat", "combat", "cmb", fqn)
+        self.combat_id = None
+        self.cobj = FakeObj()
+        CombatObject.__init__(self, combat, fqn, weak=False)
+        self.running = False
+
+    def add_members(self):
+        pass
+
+    def serve_any_port(self):
+        self.addr = (None, None)
+
+    def run_combat(self):
+        if self.running:
+            return
+        self.running = True
+        turn_order = CombatRoundRobinTurnOrder(self.combat)
+        turn_order.timeout = 1
+        self.combat.run(turn_order)
+
 class TestCombats(unittest.TestCase):
     def setUp(self):
-        self.inst = Instance()
-        self.inst.dbpool = CassandraPool((("director-db", 9160),))
-        self.inst.mcpool = MemcachedPool(("director-mc", 11211))
+        self.inst = Instance("combat-test", "metagam")
+        self.inst._dbpool = CassandraPool((("localhost", 9160),))
+        self.inst._mcpool = MemcachedPool(("localhost", 11211))
         self.app = Application(self.inst, "mgtest")
         self.app.modules.load(["mg.core.l10n.L10n", "mg.constructor.script.ScriptEngine", "mg.mmorpg.combats.scripts.CombatScripts", "mg.mmorpg.combats.scripts.CombatScriptsAdmin"])
 
@@ -106,7 +135,7 @@ class TestCombats(unittest.TestCase):
 
     def test_01_turn_order(self):
         combat = SimulationCombat(self.app)
-        daemon = CombatDaemon(combat)
+        service = DebugCombatService(combat)
         # joining member 1
         member1 = CombatMember(combat)
         ai1 = ManualDebugController(member1)
@@ -125,22 +154,19 @@ class TestCombats(unittest.TestCase):
         self.assertEqual(combat.members, [member1, member2])
         self.assertFalse(member1.may_turn)
         self.assertFalse(member2.may_turn)
-        # running combat
-        turn_order = CombatRoundRobinTurnOrder(combat)
-        turn_order.timeout = 1
-        combat.run(turn_order)
+        service.run_combat()
         # member1 must have right of turn
         self.assertTrue(member1.may_turn)
         self.assertFalse(member2.may_turn)
         # waiting for turn timeout
         with Timeout.push(3):
-            self.assertRaises(TurnTimeout, daemon.main)
+            self.assertRaises(TurnTimeout, service.run)
         # member2 must have right of turn
         self.assertFalse(member1.may_turn)
         self.assertTrue(member2.may_turn)
         # waiting for turn timeout
         with Timeout.push(3):
-            self.assertRaises(TurnTimeout, daemon.main)
+            self.assertRaises(TurnTimeout, service.run)
         # member1 must have right of turn
         self.assertTrue(member1.may_turn)
         self.assertFalse(member2.may_turn)
@@ -185,7 +211,7 @@ class TestCombats(unittest.TestCase):
 
     def test_03_log(self):
         combat = SimulationCombat(self.app)
-        daemon = CombatDaemon(combat)
+        service = DebugCombatService(combat)
         # attaching logger
         log = DebugCombatLog(combat)
         combat.set_log(log)
