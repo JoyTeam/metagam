@@ -23,14 +23,32 @@ class DBRunningCombatList(mg.CassandraObjectList):
 
 class CombatDaemonModule(mg.constructor.ConstructorModule):
     def register(self):
-        self.rhook("cmb-combat.ping", self.ping, priv="public")
         self.rhook("web.response_json", self.response_json, priority=10)
+        self.rhook("cmb-combat.ping", self.combat_ping, priv="public")
+        self.rhook("cmb-combat.info", self.combat_info, priv="public")
+
+    @property
+    def combat(self):
+        try:
+            return self._combat
+        except AttributeError:
+            pass
+        self._combat = self.app().inst.csrv.combat
+        return self._combat
 
     def response_json(self, data):
-        data["combat"] = self.app().inst.csrv.combat.uuid
+        data["combat"] = self.combat.uuid
 
-    def ping(self):
-        self.call("web.response_json", {"reply": "pong"})
+    def combat_ping(self):
+        self.call("web.response_json", {
+            "reply": "pong"
+        })
+
+    def combat_info(self):
+        self.call("web.response_json", {
+            "rules": self.combat.rules,
+            "stage": self.combat.stage,
+        })
 
 class CombatRunner(mg.constructor.ConstructorModule):
     def register(self):
@@ -241,6 +259,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
                     raise CombatUnavailable(self._("Invalid combat response: %s") % type(res).__name__)
                 if type(res) != dict or res.get("combat") != self.combat_id:
                     raise CombatUnavailable(self._("Invalid combat response (expected: {expected}, received: {received})").format(expected=self.combat_id, received=res.get("combat")))
+                return res
             except HTTPConnectionRefused:
                 raise CombatUnavailable(self._("Connection refused"))
         except CombatUnavailable as e:
@@ -249,3 +268,16 @@ class CombatInterface(mg.constructor.ConstructorModule):
 
     def ping(self):
         return self.query("/combat/ping")
+    
+    @property
+    def rules(self):
+        return self.cinfo["rules"]
+
+    @property
+    def cinfo(self):
+        try:
+            return self._cinfo
+        except AttributeError:
+            pass
+        self._cinfo = self.query("/combat/info")
+        return self._cinfo

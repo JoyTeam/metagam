@@ -29,12 +29,15 @@ class Combats(mg.constructor.ConstructorModule):
 
     def set_busy(self, combat_id, uuid, dry_run=False):
         character = self.character(uuid)
-        return not character.set_busy("combat", {
+        res = character.set_busy("combat", {
             "priority": 100,
             "show_uri": "/combat/interface/%s" % combat_id,
             "abort_event": "combats-character.abort-busy",
             "combat": combat_id
         }, dry_run)
+        if not dry_run and res:
+            character.message(self._("You have entered a combat"))
+        return not res
 
     def unset_busy(self, combat_id, uuid):
         character = self.character(uuid)

@@ -3,6 +3,7 @@ from mg.core.tools import *
 from mg.mmorpg.combats.core import Combat, CombatMember, CombatUnavailable
 from mg.mmorpg.combats.characters import CombatCharacterMember, CombatGUIController
 from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
+from mg.constructor.design import TemplateNotFound
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -44,7 +45,15 @@ class Combats(mg.constructor.ConstructorModule):
                     char.unset_busy()
             self.call("web.redirect", "/location")
         else:
-            self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_id))
+            # Show combat interface to user
+            vars = {
+                "combat": combat_id
+            }
+            try:
+                vars["content"] = self.call("game.parse_internal", "combat-rules-%s.html" % combat.rules, vars)
+            except TemplateNotFound:
+                vars["content"] = self.call("game.parse_internal", "combat-interface.html", vars)
+            self.call("web.response_template", "combat.html", vars)
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -55,6 +64,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("headmenu-admin-combats.rules", self.headmenu_rules)
         self.rhook("ext-admin-combats.config", self.admin_config, priv="combats.config")
         self.rhook("headmenu-admin-combats.config", self.headmenu_config)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
 
     def menu_root_index(self, menu):
         menu.append({"id": "combats.index", "text": self._("Combats"), "order": 24})
@@ -428,3 +438,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         ]
         self.call("admin.form", fields=fields)
 
+    def design_files(self, files):
+        files.append({"filename": "combat-interface.html", "description": self._("Combat interface template (used when no specific combat-rules-*.html exist)"), "doc": "/doc/combats"})
+        rules = self.conf("combats.rules", {})
+        rules = rules.items()
+        rules.sort(cmp=lambda x, y: cmp(x[1]["order"], y[1]["order"]) or cmp(x[0], y[0]))
+        for code, info in rules:
+            files.append({"filename": "combat-rules-%s.html" % code, "description": self._("Combat interface for combat rules '{code}' ({name})").format(code=code, name=htmlescape(info["name"])), "doc": "/doc/combats"})

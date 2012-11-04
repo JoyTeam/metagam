@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-11-04 08:04+0300\n"
+"PO-Revision-Date: 2012-11-04 09:30+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1338,12 +1338,14 @@ msgstr "Цвета в подписи"
 msgid "Colours in the signature for {period}"
 msgstr "Цвета в подписи на {period_a}"
 
-#, python-format
-msgid "Combat %s interface"
-msgstr "Интерфейс боя %s"
-
 msgid "Combat disappeared"
 msgstr "Бой исчез"
+
+msgid "Combat interface for combat rules '{code}' ({name})"
+msgstr "Боевой интерфейс для правил боя \"{code}\" ({name})"
+
+msgid "Combat interface template (used when no specific combat-rules-*.html exist)"
+msgstr "Шаблон боевого интерфейса (используется, когда не существуют конкретные combat-rules-*.html)"
 
 msgid "Combat member control"
 msgstr "Контроллер участника боя"
@@ -7717,6 +7719,9 @@ msgstr "Вы перешли в локацию"
 msgid "You have assigned domain name <strong>{0}</strong> to your game. Now you can enter the game only via this domain. It may take several hours for your local DNS server to make your domain available. Please be patient. <a href=\"//{1}/cabinet\" target=\"_top\">Return to the cabinet</a>"
 msgstr "Вы успешно назначили вашей игре доменное имя <strong>{0}</strong>. Теперь вы сможете войти в игру только через этот домен. Может пройти несколько часов, пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь терпением. <a href=\"//{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
 
+msgid "You have entered a combat"
+msgstr "Вы вступили в бой"
+
 msgid "You have got:"
 msgstr "Вы получили:"
 
@@ -9041,6 +9046,10 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "Combat %s interface"
+#~ msgstr "Интерфейс боя %s"
+#~ msgid "Combat is starting"
+#~ msgstr "Начинается бой"
 #~ msgid "Combat %s server is unavailable"
 #~ msgstr "Сервер боя %s недоступен"
 #~ msgid "Expression unexpectedly ended"
