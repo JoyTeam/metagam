@@ -26,6 +26,7 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         self.rhook("web.response_json", self.response_json, priority=10)
         self.rhook("cmb-combat.ping", self.combat_ping, priv="public")
         self.rhook("cmb-combat.info", self.combat_info, priv="public")
+        self.rhook("cmb-combat.state", self.combat_state, priv="public")
 
     @property
     def combat(self):
@@ -48,6 +49,18 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         self.call("web.response_json", {
             "rules": self.combat.rules,
             "stage": self.combat.stage,
+        })
+
+    def combat_state(self):
+        rmembers = []
+        for member in self.combat.members:
+            rmembers.append({
+                "id": member.id,
+                "name": member.name,
+                "sex": member.sex,
+            })
+        self.call("web.response_json", {
+            "members": rmembers
         })
 
 class CombatRunner(mg.constructor.ConstructorModule):
@@ -281,3 +294,12 @@ class CombatInterface(mg.constructor.ConstructorModule):
             pass
         self._cinfo = self.query("/combat/info")
         return self._cinfo
+
+    @property
+    def state(self):
+        try:
+            return self._state
+        except AttributeError:
+            pass
+        self._state = self.query("/combat/state")
+        return self._state

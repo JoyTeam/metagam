@@ -1,1 +1,8 @@
-Generic combat [%combat%] interface
+<script type="text/javascript" src="/st/[%ver%]/js/combat-generic.js"></script>
+<!--HEAD-->
+<script type="text/javascript">
+    Ext.onReady(function() {
+        var combat = new GenericCombat('[%combat%]');
+        combat.run();
+    });
+</script>

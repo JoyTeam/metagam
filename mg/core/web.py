@@ -686,7 +686,7 @@ class Web(Module):
             if vars.get("head") is None:
                 vars["head"] = head
             else:
-                vars["head"] = vars["head"] + head
+                vars["head"] = head + vars["head"]
         return content
 
     def web_cache(self):
