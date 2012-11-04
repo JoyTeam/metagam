@@ -2147,6 +2147,7 @@ class Inventory(ConstructorModule):
         self.rhook("item-types.item", self.item_types_item)
 
     def item_types_item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
+        uuid = str(uuid)
         if dna_suffix is None:
             dna_suffix = dna_make(mods)
         dna = dna_join(uuid, dna_suffix)
