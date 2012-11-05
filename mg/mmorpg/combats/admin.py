@@ -4,10 +4,16 @@ from mg.mmorpg.combats.core import Combat, CombatMember
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script)$', re.IGNORECASE)
+re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script|params)(?:|/(.+))$', re.IGNORECASE)
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
+re_combat_params = re.compile('^combat/(new|p_[a-z0-9]+)$', re.IGNORECASE)
+re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9]+)$', re.IGNORECASE)
+re_member_params = re.compile('^member/(new|p_[a-z0-9]+)$', re.IGNORECASE)
+re_member_param_del = re.compile('^member/del/(p_[a-z0-9]+)$', re.IGNORECASE)
+re_valid_parameter = re.compile(r'^p_[a-z_][a-z0-9_]*$', re.IGNORECASE)
+re_shorten = re.compile(r'^(.{30}).{3,}$')
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -45,7 +51,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         elif args:
             m = re_edit.match(args)
             if m:
-                code, action = m.group(1, 2)
+                code, action, cmd = m.group(1, 2, 3)
                 rules = self.conf("combats.rules", {})
                 info = rules.get(code)
                 if info:
@@ -55,6 +61,17 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         return [self._("Actions of '%s'") % htmlescape(info["name"]), "combats/rules"]
                     elif action == "script":
                         return [self._("Scripts of '%s'") % htmlescape(info["name"]), "combats/rules"]
+                    elif action == "params":
+                        if cmd:
+                            m = re_combat_params.match(cmd)
+                            if m:
+                                paramid = m.group(1)
+                                return [self._("Combat parameter '%s'") % paramid, "combats/rules/edit/%s/params" % code]
+                            m = re_member_params.match(cmd)
+                            if m:
+                                paramid = m.group(1)
+                                return [self._("Member parameter '%s'") % paramid, "combats/rules/edit/%s/params" % code]
+                        return [self._("Parameters of '%s' delivered to client") % htmlescape(info["name"]), "combats/rules"]
                     else:
                         m = re_action_cmd.match(action)
                         if m:
@@ -93,9 +110,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             # editing
             m = re_edit.match(req.args)
             if m:
-                code, action = m.group(1, 2)
+                code, action, cmd = m.group(1, 2, 3)
                 if code in rules:
-                    return self.rules_edit(rules, code, action)
+                    return self.rules_edit(rules, code, action, cmd)
                 self.call("admin.redirect", "combats/rules")
             # not found
             self.call("web.not_found")
@@ -109,6 +126,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 info["order"],
                 u'<br />'.join([
                     u'<hook:admin.link href="combats/rules/edit/%s/profile" title="%s" />' % (code, self._("combat system profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/params" title="%s" />' % (code, self._("parameters delivery to client")),
                     u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
                     u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("combat actions")),
                 ]),
@@ -172,13 +190,15 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         ]
         self.call("admin.form", fields=fields, buttons=buttons)
 
-    def rules_edit(self, rules, code, action):
+    def rules_edit(self, rules, code, action, cmd):
         if action == "profile":
             return self.rules_edit_profile(rules, code)
         elif action == "actions":
             return self.rules_edit_actions(code)
         elif action == "script":
             return self.rules_edit_script(code)
+        elif action == "params":
+            return self.rules_edit_params(code, cmd)
         else:
             m = re_action_cmd.match(action)
             if m:
@@ -251,6 +271,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             self.call("admin.redirect", "combats/rules")
         # rendering form
         info = rules[code]
+        dim_avatar = info.get("dim_avatar", [120, 220])
+        dim_avatar = [str(i) for i in dim_avatar]
+        dim_avatar = "x".join(dim_avatar)
         fields = [
             {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
             {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
@@ -267,7 +290,11 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
             {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
             {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
+            {"type": "header", "html": self._("Combat avatars settings")},
+            {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
         ]
+        fields.append({"type": "header2", "html": self._("Items above avatar")})
+        fields.append({"type": "header2", "html": self._("Items below avatar")})
         self.call("admin.form", fields=fields)
 
     def rules_edit_actions(self, code):
@@ -410,6 +437,184 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         ]
         self.call("admin.form", fields=fields)
 
+    def rules_edit_params(self, code, cmd):
+        req = self.req()
+        params = self.conf("combats-%s.params" % code, {})
+        params["combat"] = combat_params = params.get("combat", {})
+        params["member"] = member_params = params.get("member", {})
+        if cmd:
+            m = re_combat_param_del.match(cmd)
+            if m:
+                paramid = m.group(1)
+                if paramid in combat_params:
+                    del combat_params[paramid]
+                    config = self.app().config_updater()
+                    config.set("combats-%s.params" % code, params)
+                    config.store()
+                    self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+            m = re_combat_params.match(cmd)
+            if m:
+                paramid = m.group(1)
+                if req.ok():
+                    errors = {}
+                    # test objects
+                    combat = Combat(self.app(), None, code)
+                    member1 = CombatMember(combat)
+                    member2 = CombatMember(combat)
+                    combat.join(member1)
+                    combat.join(member2)
+                    # code
+                    pcode = req.param("code")
+                    if not re_valid_parameter.match(pcode):
+                        errors["code"] = self._("Parameter code must start with p_ and contain only latin letters, digits and underscode characters")
+                    elif pcode in combat_params and pcode != paramid:
+                        errors["code"] = self._("Parameter with this code is already delivered to client")
+                    # visible
+                    visible = self.call("script.admin-expression", "visible", errors, globs={"combat": combat, "viewer": member1})
+                    # process errors
+                    if errors:
+                        self.call("web.response_json", {"success": False, "errors": errors})
+                    # store configuration
+                    if paramid != "new":
+                        del combat_params[paramid]
+                    combat_params[pcode] = {
+                        "visible": visible
+                    }
+                    config = self.app().config_updater()
+                    config.set("combats-%s.params" % code, params)
+                    config.store()
+                    self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+                if paramid == "new":
+                    code = "p_"
+                    visible = 1
+                else:
+                    code = paramid
+                    paraminfo = combat_params.get(code)
+                    if not paraminfo:
+                        self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+                    visible = paraminfo.get("visible")
+                fields = [
+                    {"name": "code", "label": self._("Parameter code (prefixed with 'p_')"), "value": code},
+                    {"name": "visible", "label": self._("Whether parameter is visible to member 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", visible)},
+                ]
+                self.call("admin.form", fields=fields)
+            m = re_member_param_del.match(cmd)
+            if m:
+                paramid = m.group(1)
+                if paramid in member_params:
+                    del member_params[paramid]
+                    config = self.app().config_updater()
+                    config.set("combats-%s.params" % code, params)
+                    config.store()
+                    self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+            m = re_member_params.match(cmd)
+            if m:
+                paramid = m.group(1)
+                if req.ok():
+                    errors = {}
+                    # test objects
+                    combat = Combat(self.app(), None, code)
+                    member1 = CombatMember(combat)
+                    member2 = CombatMember(combat)
+                    combat.join(member1)
+                    combat.join(member2)
+                    # code
+                    pcode = req.param("code")
+                    if not re_valid_parameter.match(pcode):
+                        errors["code"] = self._("Parameter code must start with p_ and contain only latin letters, digits and underscode characters")
+                    elif pcode in member_params and pcode != paramid:
+                        errors["code"] = self._("Parameter with this code is already delivered to client")
+                    # visible
+                    visible = self.call("script.admin-expression", "visible", errors, globs={"combat": combat, "member": member1, "viewer": member2})
+                    # process errors
+                    if errors:
+                        self.call("web.response_json", {"success": False, "errors": errors})
+                    # store configuration
+                    if paramid != "new":
+                        del member_params[paramid]
+                    member_params[pcode] = {
+                        "visible": visible
+                    }
+                    config = self.app().config_updater()
+                    config.set("combats-%s.params" % code, params)
+                    config.store()
+                    self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+                if paramid == "new":
+                    code = "p_"
+                    visible = 1
+                else:
+                    code = paramid
+                    paraminfo = member_params.get(code)
+                    if not paraminfo:
+                        self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+                    visible = paraminfo.get("visible")
+                fields = [
+                    {"name": "code", "label": self._("Parameter code (prefixed with 'p_')"), "value": code},
+                    {"name": "visible", "label": self._("Whether parameter of member 'member' is visible to member 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", visible)},
+                ]
+                self.call("admin.form", fields=fields)
+        combat_rows = []
+        combat_params = combat_params.items()
+        combat_params.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+        for paramid, info in combat_params:
+            visible = re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"]))
+            combat_rows.append([
+                paramid,
+                visible,
+                u'<hook:admin.link href="combats/rules/edit/%s/params/combat/%s" title="%s" />' % (code, paramid, self._("edit")),
+                u'<hook:admin.link href="combats/rules/edit/%s/params/combat/del/%s" title="%s" confirm="%s" />' % (code, paramid, self._("delete"), self._("Are you sure want to delete this parameter?")),
+            ])
+        member_rows = []
+        member_params = member_params.items()
+        member_params.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+        for paramid, info in member_params:
+            visible = re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"]))
+            member_rows.append([
+                paramid,
+                visible,
+                u'<hook:admin.link href="combats/rules/edit/%s/params/member/%s" title="%s" />' % (code, paramid, self._("edit")),
+                u'<hook:admin.link href="combats/rules/edit/%s/params/member/del/%s" title="%s" confirm="%s" />' % (code, paramid, self._("delete"), self._("Are you sure want to delete this parameter?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "title": self._("Combat parameters"),
+                    "header": [
+                        self._("Code"),
+                        self._("Visibility"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": combat_rows,
+                    "links": [
+                        {
+                            "hook": "combats/rules/edit/%s/params/combat/new" % code,
+                            "text": self._("Deliver new combat parameter"),
+                            "lst": True,
+                        },
+                    ]
+                },
+                {
+                    "title": self._("Combat member parameters"),
+                    "header": [
+                        self._("Code"),
+                        self._("Visibility"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": member_rows,
+                    "links": [
+                        {
+                            "hook": "combats/rules/edit/%s/params/member/new" % code,
+                            "text": self._("Deliver new combat member parameter"),
+                            "lst": True,
+                        },
+                    ]
+                },
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
     def rules_action_script(self, code, action_code):
         req = self.req()
         actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
@@ -425,6 +630,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             combat = Combat(self.app(), None, code)
             member1 = CombatMember(combat)
             member2 = CombatMember(combat)
+            combat.join(member1)
+            combat.join(member2)
             # parsing form
             errors = {}
             info["script-before-execute"] = self.call("combats-admin.script-field", combat, "before-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)

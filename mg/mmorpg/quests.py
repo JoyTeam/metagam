@@ -1683,6 +1683,10 @@ class Quests(ConstructorModule):
                                                     rmember["team"] = team
                                             if "control" in member:
                                                 rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
+                                            elif cmember[0] == "character":
+                                                rmember["control"] = "web"
+                                            else:
+                                                rmember["control"] = "ai"
                                             if "name" in member:
                                                 rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
                                             if "sex" in member:

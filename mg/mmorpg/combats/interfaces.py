@@ -9,6 +9,7 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("ext-combat.interface", self.combat_interface, priv="logged")
         self.rhook("ext-combat.state", self.combat_state, priv="logged")
+        self.rhook("gameinterface.render", self.gameinterface_render)
 
     def child_modules(self):
         return [
@@ -76,6 +77,9 @@ class Combats(mg.constructor.ConstructorModule):
         combat_id = req.args
         try:
             combat = CombatInterface(self.app(), combat_id)
-            self.call("web.response_json", combat.state)
+            self.call("web.response_json", combat.state_for_interface(char, req.param("marker")))
         except CombatUnavailable:
             self.call("web.not_found")
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("combat-stream")

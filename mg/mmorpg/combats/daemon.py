@@ -1,7 +1,8 @@
 import mg
 import mg.constructor
-from mg.mmorpg.combats.core import CombatObject, Combat, CombatMember, CombatRunError, CombatUnavailable, CombatLocker
+from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
+from mg.mmorpg.combats.ai import AIController
 from mg.core.cluster import DBCluster, HTTPConnectionRefused
 from concurrence import Tasklet, http
 from concurrence.http import HTTPError
@@ -56,12 +57,20 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         for member in self.combat.members:
             rmembers.append({
                 "id": member.id,
-                "name": member.name,
-                "sex": member.sex,
+                "params": member.all_params()
             })
-        self.call("web.response_json", {
-            "members": rmembers
-        })
+        data = {
+            "members": rmembers,
+            "params": self.combat.all_params()
+        }
+        # Send marker to a character
+        req = self.req()
+        char_id = req.param("char")
+        marker = req.param("marker")
+        if char_id and marker:
+            char = self.character(char_id)
+            self.call("stream.character", char, "combat", "state_marker", combat=self.combat.uuid, marker=marker)
+        self.call("web.response_json", data)
 
 class CombatRunner(mg.constructor.ConstructorModule):
     def register(self):
@@ -169,10 +178,15 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             if "control" in minfo:
                 control = minfo["control"]
                 if control == "ai":
-                    ai = AIController(member)
-                    member.add_controller(ai)
+                    ctl = AIController(member)
+                elif control == "web":
+                    char = minfo.get("control_char") or member.param("char")
+                    if not char:
+                        raise CombatRunError(self._("Controlling character not specified for combat member '%s' with web controller") % mtype)
+                    ctl = WebController(member, char)
                 else:
                     raise CombatRunError(self._("Invalid controller type: %s") % control)
+                member.add_controller(ctl)
             # properties
             if "name" in minfo:
                 member.set_name(minfo["name"])
@@ -303,3 +317,17 @@ class CombatInterface(mg.constructor.ConstructorModule):
             pass
         self._state = self.query("/combat/state")
         return self._state
+
+    def state_for_interface(self, char, marker):
+        return self.query("/combat/state", {"char": char.uuid, "marker": marker})
+
+class WebController(CombatMemberController):
+    def __init__(self, member, char, fqn="mg.mmorpg.combats.daemons.WebController"):
+        CombatMemberController.__init__(self, member, fqn)
+        self.char = char
+
+    def deliver_combat_params(self, params):
+        self.call("stream.character", self.char, "combat", "combat_params", combat=self.combat.uuid, params=params)
+
+    def deliver_member_params(self, member, params):
+        self.call("stream.character", self.char, "combat", "member_params", combat=self.combat.uuid, member=member.id, params=params)

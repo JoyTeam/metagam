@@ -1,9 +1,10 @@
-from mg.constructor import *
+import mg.constructor
+from mg.core.tools import *
 import weakref
 import re
 from uuid import uuid4
 
-re_param_attr = re.compile(r'^p_(.+)')
+re_param_attr = re.compile(r'^p_')
 
 class CombatError(Exception):
     def __init__(self, val):
@@ -30,10 +31,10 @@ class CombatRunError(CombatError):
 class CombatMemberBusyError(CombatRunError):
     pass
 
-class CombatLocker(ConstructorModule):
+class CombatLocker(mg.constructor.ConstructorModule):
     "CombatLocker is an interface for locking and unlocking combat members."
     def __init__(self, app, cobj, fqn="mg.mmorpg.combats.core.CombatLocker"):
-        ConstructorModule.__init__(self, app, fqn)
+        mg.constructor.ConstructorModule.__init__(self, app, fqn)
         self.cobj = cobj
 
     def busy_lock(self):
@@ -67,16 +68,63 @@ class CombatLocker(ConstructorModule):
                 mtype = obj[0]
                 self.call("combats-%s.unset-busy" % mtype, self.cobj.uuid, *obj[1:])
 
-class Combat(ConstructorModule):
+class CombatParamsContainer(object):
+    def __init__(self):
+        self._params = {}
+        self._changed_params = set()
+        self._last_sent_params = None
+
+    def param(self, key, handle_exceptions=True):
+        return self._params.get(key)
+
+    def set_param(self, key, val):
+        self._params[key] = val
+        self._changed_params.add(key)
+
+    def all_params(self):
+        "Return map(param => value) of all parameters"
+        params = {}
+        for key in self.__class__.system_params:
+            params[key] = getattr(self, key)
+        for key, val in self._params.iteritems():
+            if re_param_attr.match(key):
+                params[key] = val
+        return params
+
+    def changed_params(self):
+        "Returns map(param => value) of all changed parameters since last call to changed_params"
+        if self._last_sent_params is None:
+            # send all parameters
+            params = self._last_sent_params = self.all_params()
+            self._changed_params.clear()
+            return params
+        else:
+            # send changed parameters only
+            params = {}
+            for key in self._changed_params:
+                if not re_param_attr.match(key) and key not in self.__class__.system_params:
+                    continue
+                val = self.param(key)
+                if val != self._last_sent_params.get(key):
+                    params[key] = self._last_sent_params[key] = val
+            self._changed_params.clear()
+            return params
+
+class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
+    system_params = set(["stage"])
+
     "Combat is the combat itself. It is created in the combat daemon process."
     def __init__(self, app, uuid, rules, fqn="mg.mmorpg.combats.core.Combat"):
-        ConstructorModule.__init__(self, app, fqn)
+        mg.constructor.ConstructorModule.__init__(self, app, fqn)
+        CombatParamsContainer.__init__(self)
         self.members = []
-        self.stage = "init"
         self.log = None
         self.member_id = 0
         self.rules = rules
         self.uuid = uuid
+        self.controllers = []
+        self.rulesinfo = self.conf("combat-%s.rules" % rules, {})
+        self.paramsinfo = self.conf("combat-%s.params" % rules, {})
 
     def join(self, member):
         "Join member to the combat"
@@ -100,11 +148,15 @@ class Combat(ConstructorModule):
         self._turn_order = turn_order
         self.set_stage("combat")
 
+    @property
+    def stage(self):
+        return self._params.get("stage", "init")
+
     def set_stage(self, stage):
         "Switch combat stage"
         if self.stages.get(stage) is None:
             raise CombatInvalidStage(self._("Combat stage '%s' is not defined") % stage)
-        self.stage = stage
+        self.set_param("stage", stage)
         # logging stage
         if self.log:
             self.log.syslog({
@@ -114,6 +166,10 @@ class Combat(ConstructorModule):
         # notifying turn order manager
         if self.stage_flag("actions"):
             self._turn_order.start()
+
+    def add_controller(self, controller):
+        "Register member controller"
+        self.controllers.append(controller)
 
     @property
     def stages(self):
@@ -147,6 +203,21 @@ class Combat(ConstructorModule):
         "Process combat logic"
         if self.stage_flag("actions"):
             self.process_actions()
+        self.idle()
+
+    def idle(self):
+        "Do background processing"
+        # deliver changed parameters
+        params = self.changed_params()
+        if params:
+            for controller in self.controllers:
+                controller.combat_params_changed(params)
+        for member in self.members:
+            params = member.changed_params()
+            if params:
+                for controller in self.controllers:
+                    controller.member_params_changed(member, params)
+        # call idle for all objects
         self._turn_order.idle()
         for member in self.members:
             member.idle()
@@ -162,10 +233,26 @@ class Combat(ConstructorModule):
         "Terminate combat"
         self.set_stage("done")
 
-class CombatObject(ConstructorModule):
+    # Scripting
+
+    def script_attr(self, attr, handle_exceptions=True):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            return self.param(attr, handle_exceptions)
+        raise AttributeError(attr)
+
+    def script_set_attr(self, attr, val, env):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            return self.set_param(attr, val)
+        raise AttributeError(attr)
+
+class CombatObject(mg.constructor.ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
     def __init__(self, combat, fqn, weak=True):
-        ConstructorModule.__init__(self, combat.app(), fqn)
+        mg.constructor.ConstructorModule.__init__(self, combat.app(), fqn)
         self._combat_weak = weak
         if weak:
             self._combat = weakref.ref(combat)
@@ -205,46 +292,23 @@ class CombatAction(CombatObject):
     def end(self):
         "Do any processing in the end of the action"
 
-class CombatMember(CombatObject):
+class CombatMember(CombatObject, CombatParamsContainer):
+    system_params = set(["name", "sex", "team", "may_turn", "active"])
+
     "Members take part in combats. Every fighting entity is a member"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
         CombatObject.__init__(self, combat, fqn)
+        CombatParamsContainer.__init__(self)
         self.pending_actions = []
-        self.may_turn = False
-        self.active = True
         self.controllers = []
-        self._params = {}
-        self.name = "Anonymous"
-        self.sex = 0
 
     def is_a_combat_member(self):
         return True
 
-    def set_team(self, team):
-        "Change team of the member"
-        self.team = team
-
     def add_controller(self, controller):
         "Attach CombatMemberController to the member"
         self.controllers.append(controller)
-
-    def turn_give(self):
-        "Grant right of making turn to the member"
-        self.may_turn = True
-        for controller in self.controllers:
-            controller.turn_got()
-
-    def turn_take(self):
-        "Revoke right of making turn from the member"
-        self.may_turn = False
-        for controller in self.controllers:
-           controller.turn_lost()
-
-    def turn_timeout(self):
-        "Revoke right of making turn from the member due to timeout"
-        self.may_turn = False
-        for controller in self.controllers:
-            controller.turn_timeout()
+        self.combat.add_controller(controller)
 
     def idle(self):
         "Called when member can do any background processing"
@@ -266,35 +330,82 @@ class CombatMember(CombatObject):
         act.source = self
         self.pending_actions.append(act)
 
-    def param(self, key, handle_exceptions=True):
-        return self._params.get(key)
-
-    def set_param(self, key, val):
-        self._params[key] = val
+    # Scripting
 
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.id
+        elif attr == "name":
+            return self.name
+        elif attr == "sex":
+            return self.sex
+        elif attr == "team":
+            return self.team
+        elif attr == "combat":
+            return self.combat
         # parameters
         m = re_param_attr.match(attr)
         if m:
-            param = m.group(1)
-            return self.param(param, handle_exceptions)
+            return self.param(attr, handle_exceptions)
         raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
         # parameters
         m = re_param_attr.match(attr)
         if m:
-            param = m.group(1)
-            return self.set_param(param, val)
+            return self.set_param(attr, val)
         raise AttributeError(attr)
 
-    def set_name(self, name):
-        self.name = name
+    # System parameters
 
+    @property
+    def name(self):
+        return self._params.get("name", "Anonymous")
+    def set_name(self, name):
+        self.set_param("name", name)
+
+    @property
+    def sex(self):
+        return self._params.get("sex", 0)
     def set_sex(self, sex):
-        self.sex = sex
+        self.set_param("sex", sex)
+
+    @property
+    def active(self):
+        return self._params.get("active", True)
+    def set_active(self, active):
+        self.set_param("active", active)
+
+    @property
+    def team(self):
+        return self._params.get("team")
+    def set_team(self, team):
+        "Change team of the member"
+        self.set_param("team", team)
+
+    # Turn order
+
+    @property
+    def may_turn(self):
+        return self._params.get("may_turn", False)
+
+    def turn_give(self):
+        "Grant right of making turn to the member"
+        self.set_param("may_turn", True)
+        for controller in self.controllers:
+            controller.turn_got()
+
+    def turn_take(self):
+        "Revoke right of making turn from the member"
+        self.set_param("may_turn", False)
+        for controller in self.controllers:
+           controller.turn_lost()
+
+    def turn_timeout(self):
+        "Revoke right of making turn from the member due to timeout"
+        self.set_param("may_turn", False)
+        for controller in self.controllers:
+            controller.turn_timeout()
 
 class CombatMemberController(CombatObject):
     """
@@ -304,6 +415,8 @@ class CombatMemberController(CombatObject):
     def __init__(self, member, fqn):
         CombatObject.__init__(self, member.combat, fqn)
         self.member = member
+        self._last_combat_sent_params = {}
+        self._last_member_sent_params = {}
 
     def turn_got(self):
         "This command notifies controller that member has got a right to make a turn"
@@ -316,6 +429,56 @@ class CombatMemberController(CombatObject):
 
     def idle(self):
         "Called when controller can do any background processing"
+
+    def combat_params_changed(self, params):
+        "Called when combat parameters changed"
+        paramsinfo = self.combat.paramsinfo.get("combat", {})
+        deliver = {}
+        for key, val in params.iteritems():
+            if re_param_attr.match(key):
+                paraminfo = paramsinfo.get(key)
+                if paraminfo:
+                    # visibility check
+                    visible_script = paraminfo.get("visible")
+                    visible = self.call("script.evaluate-expression", visible_script, globs={"combat": self.combat, "viewer": self.member}, description=self._("Visibility of combat parameter %s") % key)
+                    if not visible:
+                        val = None
+                else:
+                    val = None
+            # deliver parameter
+            if val != self._last_combat_sent_params.get(key):
+                deliver[key] = self._last_combat_sent_params[key] = val
+        self.deliver_combat_params(deliver)
+
+    def member_params_changed(self, member, params):
+        "Called when member parameters changed"
+        paramsinfo = self.combat.paramsinfo.get("member", {})
+        deliver = {}
+        try:
+            last_sent_params = self._last_member_sent_params[member.id]
+        except KeyError:
+            last_sent_params = self._last_member_sent_params[member.id] = {}
+        for key, val in params.iteritems():
+            if re_param_attr.match(key):
+                paraminfo = paramsinfo.get(key)
+                if paraminfo:
+                    # visibility check
+                    visible_script = paraminfo.get("visible")
+                    visible = self.call("script.evaluate-expression", visible_script, globs={"combat": self.combat, "member": member, "viewer": self.member}, description=self._("Visibility of combat parameter %s") % key)
+                    if not visible:
+                        val = None
+                else:
+                    val = None
+            # deliver parameter
+            if val != last_sent_params.get(key):
+                deliver[key] = last_sent_params[key] = val
+        self.deliver_member_params(member, deliver)
+
+    def deliver_combat_params(self, params):
+        "Called when we have to deliver combat 'params' to client"
+
+    def deliver_member_params(self, member, params):
+        "Called when we have to deliver member 'params' to client"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

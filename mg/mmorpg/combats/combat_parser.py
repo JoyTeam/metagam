@@ -75,6 +75,8 @@ class CombatStatement(Parsing.Nonterm):
     "%nonterm"
     def reduceDamage(self, cmd, obj, dot, attr, val):
         "%reduce damage Expr dot AttrKey Expr"
+        if not re_param.match(attr.val):
+            raise Parsing.SyntaxError(dot.script_parser._("Damage parameter must start with 'p_'"))
         self.val = ["damage", obj.val, attr.val, val.val]
 
     def reduceSet(self, st, lvalue, assign, rvalue):

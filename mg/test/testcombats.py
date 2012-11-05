@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from concurrence import dispatch, Tasklet
+from concurrence import dispatch, Tasklet, Timeout, TimeoutError
 from mg.core import *
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
 from cassandra.ttypes import *
 import logging
 import os
+import mg
 from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.simulation import *
@@ -112,10 +113,10 @@ class DebugCombatService(CombatService):
 
 class TestCombats(unittest.TestCase):
     def setUp(self):
-        self.inst = Instance("combat-test", "metagam")
+        self.inst = mg.Instance("combat-test", "metagam")
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
         self.inst._mcpool = MemcachedPool(("localhost", 11211))
-        self.app = Application(self.inst, "mgtest")
+        self.app = mg.Application(self.inst, "mgtest")
         self.app.modules.load(["mg.core.l10n.L10n", "mg.constructor.script.ScriptEngine", "mg.mmorpg.combats.scripts.CombatScripts", "mg.mmorpg.combats.scripts.CombatScriptsAdmin"])
 
     def test_00_stages(self):
@@ -174,10 +175,10 @@ class TestCombats(unittest.TestCase):
     def test_02_scripts(self):
         combat = SimulationCombat(self.app)
         # compiling script
-        script_text = 'damage target.hp 5 set source.p_damage = source.p_damage + last_damage'
+        script_text = 'damage target.p_hp 5 set source.p_damage = source.p_damage + last_damage'
         code = self.app.hooks.call("combats-admin.parse-script", script_text)
         self.assertEqual(code, [
-            ['damage', ['glob', 'target'], 'hp', 5],
+            ['damage', ['glob', 'target'], 'p_hp', 5],
             ['set', ['glob', 'source'], 'p_damage', ['+', ['.', ['glob', 'source'], 'p_damage'], ['glob', 'last_damage']]],
         ])
         # joining members
@@ -190,19 +191,19 @@ class TestCombats(unittest.TestCase):
         globs = {"source": member1, "target": member2}
         # executing script
         self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
-        self.assertEqual(member1.param("damage"), 0)
-        self.assertEqual(member2.param("hp"), 0)
+        self.assertEqual(member1.param("p_damage"), 0)
+        self.assertEqual(member2.param("p_hp"), 0)
         self.assertEqual(globs["last_damage"], 0)
         # executing script again
-        member2.set_param("hp", 7)
+        member2.set_param("p_hp", 7)
         self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
-        self.assertEqual(member1.param("damage"), 5)
-        self.assertEqual(member2.param("hp"), 2)
+        self.assertEqual(member1.param("p_damage"), 5)
+        self.assertEqual(member2.param("p_hp"), 2)
         self.assertEqual(globs["last_damage"], 5)
         # executing script one more time
         self.app.hooks.call("combats.execute-script", combat, code, globs=globs, handle_exceptions=False)
-        self.assertEqual(member1.param("damage"), 7)
-        self.assertEqual(member2.param("hp"), 0)
+        self.assertEqual(member1.param("p_damage"), 7)
+        self.assertEqual(member2.param("p_hp"), 0)
         self.assertEqual(globs["last_damage"], 2)
         # unparsing
         script = self.app.hooks.call("combats-admin.unparse-script", code)

@@ -12,8 +12,6 @@ class Combats(mg.constructor.ConstructorModule):
     def member(self, combat, uuid):
         character = self.character(uuid)
         member = CombatCharacterMember(combat, character)
-        control = CombatGUIController(member)
-        member.add_controller(control)
         return member
 
     def free(self, combat_id, uuid):
@@ -48,10 +46,6 @@ class Combats(mg.constructor.ConstructorModule):
 class CombatCharacterMember(CombatMember):
     def __init__(self, combat, character, fqn="mg.mmorpg.combats.characters.CombatCharacterMember"):
         CombatMember.__init__(self, combat, fqn)
-        self.character = character
+        self.set_param("char", character)
         self.set_name(character.name)
         self.set_sex(character.sex)
-
-class CombatGUIController(CombatMemberController):
-    def __init__(self, member, fqn="mg.mmorpg.combats.characters.CombatGUIController"):
-        CombatMemberController.__init__(self, member, fqn)

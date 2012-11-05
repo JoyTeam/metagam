@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-11-04 22:27+0300\n"
+"PO-Revision-Date: 2012-11-05 09:46+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1347,6 +1347,12 @@ msgstr "Цвета в подписи"
 msgid "Colours in the signature for {period}"
 msgstr "Цвета в подписи на {period_a}"
 
+msgid "Combat avatar dimensions (example: 100x200)"
+msgstr "Размеры аватара в бою (например: 100x200)"
+
+msgid "Combat avatars settings"
+msgstr "Настройки аватаров в бою"
+
 msgid "Combat disappeared"
 msgstr "Бой исчез"
 
@@ -1371,6 +1377,9 @@ msgstr "Контроллер участника боя"
 msgid "Combat member name"
 msgstr "Имя участника боя"
 
+msgid "Combat member parameters"
+msgstr "Параметры участника боя"
+
 msgid "Combat member sex"
 msgstr "Пол участника боя"
 
@@ -1382,6 +1391,13 @@ msgstr "Тип участника боя"
 
 msgid "Combat not found"
 msgstr "Бой не найден"
+
+#, python-format
+msgid "Combat parameter '%s'"
+msgstr "Параметр боя \"%s\""
+
+msgid "Combat parameters"
+msgstr "Параметры боя"
 
 msgid "Combat rules code"
 msgstr "Код правил боёв"
@@ -1799,6 +1815,12 @@ msgstr "Удаление модификаторов пользователей"
 
 msgid "Deletion"
 msgstr "Удаление"
+
+msgid "Deliver new combat member parameter"
+msgstr "Доставить новый параметр участника боя"
+
+msgid "Deliver new combat parameter"
+msgstr "Доставить новый параметр боя"
 
 msgid "Delivery options"
 msgstr "Опции доставки"
@@ -3594,8 +3616,14 @@ msgstr "Типы предметов"
 msgid "Items"
 msgstr "Предметы"
 
+msgid "Items above avatar"
+msgstr "Элементы над аватаром"
+
 msgid "Items and inventory"
 msgstr "Предметы и инвентарь"
+
+msgid "Items below avatar"
+msgstr "Элементы под аватаром"
 
 msgid "Items catalog"
 msgstr "Каталог предметов"
@@ -4092,6 +4120,10 @@ msgstr "Может входить даже в закрытую игру"
 
 msgid "Medieval"
 msgstr "Средневековье"
+
+#, python-format
+msgid "Member parameter '%s'"
+msgstr "Параметр участника \"%s\""
 
 msgid "Memcached servers (comma separated list)"
 msgstr "Серверы memcached (список, разделённый запятыми)"
@@ -4862,8 +4894,14 @@ msgstr "Панели"
 msgid "Parameter %s is not stored in the database"
 msgstr "Параметр %s не сохраняется в базе данных"
 
+msgid "Parameter code (prefixed with 'p_')"
+msgstr "Код параметра (с префиксом \"p_\")"
+
 msgid "Parameter code (used in scripting)"
 msgstr "Код параметра (для использования в скриптах)"
+
+msgid "Parameter code must start with p_ and contain only latin letters, digits and underscode characters"
+msgstr "Код параметра должен начинаться с \"p_\" и содержать только латинские буквы, цифры и символы подчёркивания"
 
 msgid "Parameter description (for players)"
 msgstr "Описание параметра (для игроков)"
@@ -4919,11 +4957,18 @@ msgstr "Визуализация параметра"
 msgid "Parameter with the same code already exists"
 msgstr "Параметр с таким кодом уже существует"
 
+msgid "Parameter with this code is already delivered to client"
+msgstr "Параметр с этим кодом уже доставляется в клиент"
+
 msgid "Parameters"
 msgstr "Параметры"
 
 msgid "Parameters documentation"
 msgstr "Документация на систему параметров"
+
+#, python-format
+msgid "Parameters of '%s' delivered to client"
+msgstr "Параметры \"%s\", доставляемые в клиент"
 
 msgid "Passport number"
 msgstr "Номер паспорта"
@@ -7376,6 +7421,9 @@ msgstr "Просмотр досье пользователей"
 msgid "Viewing users' modifiers"
 msgstr "Просмотр модификаторов пользователей"
 
+msgid "Visibility"
+msgstr "Видимость"
+
 msgid "Visibility condition"
 msgstr "Условие видимости"
 
@@ -7473,6 +7521,12 @@ msgstr "Требуется ли выбор класса \"%s\""
 
 msgid "Whether item {item} ({name}) is wearable"
 msgstr "Является ли предмет {item} ({name}) надеваемым"
+
+msgid "Whether parameter is visible to member 'viewer'"
+msgstr "Виден ли параметр участнику \"viewer\""
+
+msgid "Whether parameter of member 'member' is visible to member 'viewer'"
+msgstr "Виден ли параметр участника \"member\" участнику \"viewer\""
 
 msgid "Whether selection of this class is required for the character (0 - never require, 1 - require for everybody)"
 msgstr "В каком случае требовать от игрока выбор этого класса (0 - никогда не требовать, 1 - требовать для всех)"
@@ -8566,6 +8620,9 @@ msgstr "параметр"
 msgid "parameter///Name"
 msgstr "Название"
 
+msgid "parameters delivery to client"
+msgstr "доставка параметров в клиент"
+
 msgid "payment///Performed"
 msgstr "Произведен"
 
@@ -9095,8 +9152,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
-#~ msgid "Combat is starting"
-#~ msgstr "Начинается бой"
+#~ msgid "parameters delivery"
+#~ msgstr "доставка параметров"
 #~ msgid "Combat %s server is unavailable"
 #~ msgstr "Сервер боя %s недоступен"
 #~ msgid "Expression unexpectedly ended"
