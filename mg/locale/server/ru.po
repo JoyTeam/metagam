@@ -1197,6 +1197,9 @@ msgstr "Конфигурация цветов в чате"
 msgid "Chat command for writing to the current location channel"
 msgstr "Команда чата для написания в канал текущей локации"
 
+msgid "Chat command for writing to the diplomacy channel"
+msgstr "Команда чата для написания в дипломатический канал"
+
 msgid "Chat command for writing to the entire world channel"
 msgstr "Команда чата для написания сообщения на весь мир"
 
