@@ -330,7 +330,7 @@ class Chat(ConstructorModule):
             {"name": "cmd-wld", "label": self._("Chat command for writing to the entire world channel"), "value": cmd_wld, "condition": "[chatmode]>0"},
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
-            {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
+            {"name": "cmd-dip", "label": self._("Chat command for writing to the diplomacy channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
             {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld", "condition": "[chatmode]>0"},
             {"name": "msg_went_online", "label": self._("Message about character went online") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_online())},
             {"name": "msg_went_offline", "label": self._("Message about character went offline") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_offline())},

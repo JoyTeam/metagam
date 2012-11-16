@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-10-24 10:58+0300\n"
+"PO-Revision-Date: 2012-10-30 13:57+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1133,6 +1133,9 @@ msgstr "Конфигурация цветов в чате"
 
 msgid "Chat command for writing to the current location channel"
 msgstr "Команда чата для написания в канал текущей локации"
+
+msgid "Chat command for writing to the diplomacy channel"
+msgstr "Команда чата для написания в дипломатический канал"
 
 msgid "Chat command for writing to the entire world channel"
 msgstr "Команда чата для написания сообщения на весь мир"
