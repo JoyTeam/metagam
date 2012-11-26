@@ -251,7 +251,10 @@ def nn(num):
     num = str(num)
     if re_frac_part.search(num) or re_exp_format.match(num):
         return float(num)
-    return int(re_remove_frac.sub('', num))
+    try:
+        return int(re_remove_frac.sub('', num))
+    except ValueError:
+        return 0
 
 class curry:
     def __init__(self, fun, *args, **kwargs):
