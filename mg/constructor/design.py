@@ -1595,7 +1595,7 @@ class DesignAdmin(Module):
                     try:
                         content = self.download(template_uri)
                     except DownloadError:
-                        self.call("admin.response", self._("Error downloading template"))
+                        self.call("admin.response", self._("Error downloading template"), {})
                 else:
                     subdir = {
                         "gameinterface": "game",
