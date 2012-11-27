@@ -1145,18 +1145,18 @@ class Chat(ConstructorModule):
                 # design-specific channel button image
                 ok = True
                 res = self.call("design.prepare_button", design, "%s-on.png" % filename, "chat-channel-button-on.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-on.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-on.png") % filename)
                 if not res:
                     ok = False
                 res = self.call("design.prepare_button", design, "%s-off.png" % filename, "chat-channel-button-off.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-off.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-off.png") % filename)
                 if not res:
                     ok = False
                 res = self.call("design.prepare_button", design, "%s-new.png" % filename, "chat-channel-button-new.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-new.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-new.png") % filename)
                 if not res:
                     ok = False
                 if ok:
