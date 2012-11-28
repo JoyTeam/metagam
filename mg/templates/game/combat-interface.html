@@ -1,0 +1,28 @@
+<script type="text/javascript" src="/st/[%ver%]/js/combat-generic.js"></script>
+<!--HEAD-->
+[%if generic%]
+<script type="text/javascript">
+    Ext.onReady(function() {
+        var combat = new GenericCombat('[%combat%]');
+        [%if generic_myavatar%]
+            combat.createMyAvatar();
+            combat.myAvatarWidth = [%generic_myavatar_width%];
+            combat.myAvatarResize = [%generic_myavatar_resize%];
+        [%end%]
+        [%if generic_enemyavatar%]
+            combat.createEnemyAvatar();
+            combat.enemyAvatarWidth = [%generic_enemyavatar_width%];
+            combat.enemyAvatarResize = [%generic_enemyavatar_resize%];
+        [%end%]
+        [%if generic_log%]
+            combat.createLog();
+            combat.logLayout = [%generic_log_layout%];
+            [%if generic_log_layout == 0%]combat.combatHeight = [%generic_combat_height%];[%end%]
+            [%if generic_log_layout == 1%]combat.logHeight = [%generic_log_height%];[%end%]
+            combat.logResize = [%generic_log_resize%];
+        [%end%]
+        combat.render();
+        combat.run();
+    });
+</script>
+[%end%]
