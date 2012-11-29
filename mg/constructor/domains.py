@@ -606,7 +606,7 @@ class DomainsAdmin(Module):
                                 try:
                                     cnn.connect(("my.i7.ru", 80))
                                 except IOError as e:
-                                    self.error("Error coonecting to the registrar")
+                                    self.error("Error connecting to the registrar")
                                 try:
                                     request = cnn.get("/c/registrar?%s" % params)
                                     request.add_header("Connection", "close")
@@ -728,31 +728,38 @@ class DomainsAdmin(Module):
             if reg_till and reg_till < prev_month: 
                 continue
             # get actual domain data from the registrar
-            cnn = HTTPConnection()
             try:
-                cnn.connect(("my.i7.ru", 80))
-            except IOError as e:
-                self.error("Error connecting to the registrar")
+                with Timeout.push(180):
+                    cnn = HTTPConnection()
+                    try:
+                        cnn.connect(("my.i7.ru", 80))
+                    except IOError as e:
+                        self.error("Error connecting to the registrar")
+                        continue
+                    try:
+                        params = []
+                        params.append(("action", "GET"))
+                        params.append(("login", main_config.get("domains.login")))
+                        params.append(("passwd", main_config.get("domains.password")))
+                        params.append(("domain", domain.uuid))
+                        self.info("Querying registrar: %s", params)
+                        params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                        request = cnn.get("/c/registrar?%s" % params_url)
+                        request.add_header("Connection", "close")
+                        response = cnn.perform(request)
+                    finally:
+                        cnn.close()
+            except TimeoutError:
+                self.error("Timeout querying registrar")
                 continue
-            try:
-                params = []
-                params.append(("action", "GET"))
-                params.append(("login", main_config.get("domains.login")))
-                params.append(("passwd", main_config.get("domains.password")))
-                params.append(("domain", domain.uuid))
-                self.info("Querying registrar: %s", params)
-                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
-                request = cnn.get("/c/registrar?%s" % params_url)
-                request.add_header("Connection", "close")
-                response = cnn.perform(request)
-            finally:
-                cnn.close()
             # parse response
             if response.status_code != 200:
                 self.error("Registrar response: %s", response.status)
                 continue
+            content = response.body.decode("koi8-r")
+            self.debug("Registrar response: %s", content)
             params = {}
-            for line in re_newline.split(response.body.decode("koi8-r")):
+            for line in re_newline.split(content):
                 if not line:
                     continue
                 m = re_response_line.match(line)
@@ -781,7 +788,7 @@ class DomainsAdmin(Module):
             money = self.call("money.obj", "user", admin.uuid)
             # update reg till
             if reg_till != actual_reg_till:
-                print "Storing reg-till for %s: %s" % (domain.uuid, actual_reg_till)
+                self.debug("Storing reg-till for %s: %s", domain.uuid, actual_reg_till)
                 domain.set("reg_till", actual_reg_till)
                 reg_till = actual_reg_till
                 # commit money
@@ -804,7 +811,7 @@ class DomainsAdmin(Module):
             price = None
             if tld in tlds:
                 price = prices.get(tld)
-            print "Price for prolonging %s: %s" % (domain.uuid, price)
+            self.debug("Price for prolonging %s: %s", domain.uuid, price)
             if price is None:
                 # domain is no longer supported. notify admin
                 self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
@@ -821,26 +828,30 @@ class DomainsAdmin(Module):
                 domain.set("prolong_lock", lock.uuid)
                 domain.store()
             # send a request to prolong
-            cnn = HTTPConnection()
             try:
-                cnn.connect(("my.i7.ru", 80))
-            except IOError as e:
-                self.error("Error connecting to the registrar")
-                continue
-            try:
-                params = []
-                params.append(("action", "PROLONG"))
-                params.append(("login", main_config.get("domains.login")))
-                params.append(("passwd", main_config.get("domains.password")))
-                params.append(("domain", domain.uuid))
-                self.info("Querying registrar: %s", params)
-                params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
-                request = cnn.get("/c/registrar?%s" % params_url)
-                request.add_header("Connection", "close")
-                response = cnn.perform(request)
-            finally:
-                cnn.close()
-            self.debug("Prolong response: %s", response.body)
+                with Timeout.push(180):
+                    cnn = HTTPConnection()
+                    try:
+                        cnn.connect(("my.i7.ru", 80))
+                    except IOError as e:
+                        self.error("Error connecting to the registrar")
+                        continue
+                    try:
+                        params = []
+                        params.append(("action", "PROLONG"))
+                        params.append(("login", main_config.get("domains.login")))
+                        params.append(("passwd", main_config.get("domains.password")))
+                        params.append(("domain", domain.uuid))
+                        self.info("Querying registrar: %s", params)
+                        params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                        request = cnn.get("/c/registrar?%s" % params_url)
+                        request.add_header("Connection", "close")
+                        response = cnn.perform(request)
+                    finally:
+                        cnn.close()
+                    self.debug("Prolong response: %s", response.body)
+            except TimeoutError:
+                self.error("Timeout querying registrar")
 
 class DomainWizard(Wizard):
     def new(self, **kwargs):
