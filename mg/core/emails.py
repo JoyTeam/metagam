@@ -12,12 +12,15 @@ import sys
 import datetime
 import time
 import traceback
+import hashlib
 
 re_sender_actions = re.compile(r'^(options)/(\S+)$');
 re_format_name = re.compile(r'\[name\]')
 re_image = re.compile(r'(<img[^>]*src="[^>]*>)', re.IGNORECASE)
 re_image_src = re.compile(r'^(<img.*src=")([^"]+)(".*>)', re.IGNORECASE)
 re_image_type = re.compile(r'^image/(.+)$')
+
+MAX_SIMILAR_EMAILS = 10
 
 class BulkEmailMessage(CassandraObject):
     clsname = "BulkEmailMessage"
@@ -113,8 +116,19 @@ class Email(Module):
         menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
-        if to_email == "al-be-rt@yandex.ru":
+        fingerprint = utf2str(from_email) + "/" + utf2str(to_email) + "/" + utf2str(subject)
+        m = hashlib.md5()
+        m.update(fingerprint)
+        fingerprint = m.hexdigest()
+        mcid = "email-sent-%s" % fingerprint
+        sent = intz(self.app().mc.get(mcid))
+        if sent < 0:
             return
+        if sent >= MAX_SIMILAR_EMAILS:
+            self.warning("Blocked email flood to %s: %s", to_email, subject)
+            self.app().mc.set(mcid, -1, 3600)
+            return
+        self.app().mc.set(mcid, sent + 1, 600)
         if not immediately:
             return self.call("queue.add", "email.send", {
                 "to_email": to_email,
@@ -137,7 +151,7 @@ class Email(Module):
         if from_email is None or from_name is None:
             from_email = params["email"]
             from_name = params["name"]
-        self.info("To %s <%s>: %s", utf2str(to_name), utf2str(to_email), utf2str(subject))
+        self.info("%s: To %s <%s>: %s", mcid, utf2str(to_name), utf2str(to_email), utf2str(subject))
         s = SMTP(self.clconf("smtp_server", "127.0.0.1"))
         try:
             if type(content) == unicode:
