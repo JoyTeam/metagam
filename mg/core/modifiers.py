@@ -65,7 +65,7 @@ class MemberModifiers(Module):
         # storing mobjs
         if self.mobjs:
             for mobj in self.mobjs:
-                self.sql_write.do("insert into modifiers(till, cls, app, target_type, target) values (?, ?, ?, ?, ?)", *mobj)
+                self.sql_write.do("insert into modifiers(till, cls, app, target_type, target, priority) values (?, ?, ?, ?, ?, ?)", *mobj)
             self.mobjs = []
 
     def notify(self):
@@ -192,8 +192,15 @@ class MemberModifiers(Module):
         self._mods.get("mods").append(ent)
         self._mods.touch()
         self.created[ent["uuid"]] = ent
+        if till and till < self.now(600):
+            mcid = "modifiers-cooldown"
+            cnt = intz(self.app().mc.get(mcid)) + 1
+            self.app().mc.set(mcid, cnt, 60)
+            priority = 100 - cnt
+        else:
+            priority = 100
         if till:
-            mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid]
+            mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid, priority]
             self.mobjs.append(mobj)
         return ent
 
@@ -284,8 +291,8 @@ class ModifiersChecker(Module):
                 return
             try:
                 now = self.now()
-                for mod in self.sql_write.selectall_dict("select target_type, target, app from modifiers where cls=? and till<=? group by target_type, target, app", cls, now):
-                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, app_tag=mod["app"], app_cls=cls, unique="mod-%s-%s" % (mod["app"], mod["target"]))
+                for mod in self.sql_write.selectall_dict("select target_type, target, app, priority from modifiers where cls=? and till<=? group by target_type, target, app", cls, now):
+                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, app_tag=mod["app"], app_cls=cls, unique="mod-%s-%s" % (mod["app"], mod["target"]), priority=mod["priority"])
                     self.sql_write.do("delete from modifiers where app=? and target=? and till<=?", mod["app"], mod["target"], now)
             finally:
                 lock.unlock()

@@ -152,6 +152,7 @@ sql_table('modifiers',
 		'app' => [ -type=>'varchar(32)' ],
 		'target_type' => [ -type=>'varchar(16)' ],
 		'target' => [ -type=>'varchar(32)' ],
+		'priority' => [ -type=>'integer', -null=>0, -default=>'100' ],
 	], [
 		'index' => 'app,target,till',
 		'index' => 'cls,till',
