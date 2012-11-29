@@ -720,6 +720,7 @@ class DomainsAdmin(Module):
         lst.load(silent=True)
         for domain in lst:
             reg_till = domain.get("reg_till")
+            self.debug("Domain %s registered till %s", domain.uuid, reg_till)
             # skip not expiring domains
             if reg_till and reg_till > next_month:
                 continue
