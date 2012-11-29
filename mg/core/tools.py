@@ -124,8 +124,7 @@ def parse_color(color):
 def htmlescape(val):
     if val is None:
         return ""
-    if type(val) != type("") and type(val) != unicode:
-        val = unicode(val)
+    val = str2unicode(val)
     val = string.replace(val, "&", "&amp;")
     val = string.replace(val, '"', "&quot;")
     val = string.replace(val, "<", "&lt;")
@@ -135,8 +134,7 @@ def htmlescape(val):
 def htmldecode(val):
     if val is None:
         return ""
-    if type(val) != type("") and type(val) != unicode:
-        val = unicode(val)
+    val = str2unicode(val)
     val = string.replace(val, "&quot;", '"')
     val = string.replace(val, "&lt;", "<")
     val = string.replace(val, "&gt;", ">")
