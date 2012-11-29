@@ -129,7 +129,7 @@ sql_table('money_descriptions',
 sql_table('queue_tasks',
 	[
 		'id' => [ -type=>'varchar(32)', -null=>0 ],
-                'cls' => [ -type=>'varchar(10)', -null=>1 ],
+                'cls' => [ -type=>'varchar(16)', -null=>1 ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'at' => [ -type=>'datetime', -null=>0 ],
 		'priority' => [ -type=>'integer', -null=>0 ],
