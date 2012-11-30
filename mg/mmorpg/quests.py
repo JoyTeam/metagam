@@ -1700,7 +1700,7 @@ class Quests(ConstructorModule):
                 globs = {"char": character, "item": item_type}
             available = self.call("script.evaluate-expression", action["available"], globs=globs, description=lambda: self._("Item action: %s") % action["code"])
             if available:
-                menu.append({"href": "/item/action/%s/%s" % (action["code"], item_type.dna), "html": htmlescape(action["text"]), "order": action["order"]})
+                menu.append({"href": "/item/action/%s/%s" % (utf2str(action["code"]), utf2str(item_type.dna)), "html": htmlescape(action["text"]), "order": action["order"]})
 
     def action(self):
         req = self.req()
