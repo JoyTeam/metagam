@@ -80,7 +80,7 @@ class Documentation(Module):
                 "title": '%s - %s' % (req.args, self._("Game interface template")),
             }
             with open("%s/templates/game/%s" % (mg.__path__[0], req.args)) as f:
-                content = re.sub(r'\n', '<br />', htmlescape(f.read())).decode("utf-8")
+                content = re.sub(r'\n', '<br />', htmlescape(f.read()))
                 self.call("socio.response", u'<div class="doc-content"><h1>%s</h1><pre class="doc-code-sample">%s</pre><p><a href="/doc/design/templates">%s</a></div>' % (req.args, content, self._("Description of the templates engine")), vars)
         except IOError:
             self.call("web.not_found")
@@ -94,7 +94,7 @@ class Documentation(Module):
                 "title": '%s - %s' % (req.args, self._("Socio interface template")),
             }
             with open("%s/templates/socio/%s" % (mg.__path__[0], req.args)) as f:
-                content = re.sub(r'\n', '<br />', htmlescape(f.read())).decode("utf-8")
+                content = re.sub(r'\n', '<br />', htmlescape(f.read()))
                 self.call("socio.response", u'<div class="doc-content"><h1>%s</h1><pre class="doc-code-sample">%s</pre><p><a href="/doc/design/templates">%s</a></div>' % (req.args, content, self._("Description of the templates engine")), vars)
         except IOError:
             self.call("web.not_found")
