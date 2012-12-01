@@ -317,6 +317,12 @@ class Character(Module):
             self._db_settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._db_settings
 
+    def invalidate_sessions(self):
+        try:
+            del self._sessions
+        except AttributeError:
+            pass
+
     @property
     def sessions(self):
         try:

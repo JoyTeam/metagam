@@ -153,6 +153,7 @@ class Auth(ConstructorModule):
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
         self.rhook("stream.character", self.stream_character)
+        self.rhook("stream.character-list", self.stream_character_list)
         self.rhook("auth.user-auth-table", self.user_auth_table)
         self.rhook("auth.user-tables", self.user_tables, priority=-100)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -1269,6 +1270,12 @@ class Auth(ConstructorModule):
         ids = ["id_%s" % sess_uuid for sess_uuid in character.sessions]
         if ids:
             self.call("stream.packet", ids, method_cls, method, **kwargs)
+
+    def stream_character_list(self, character, pkt_list):
+        "pkt_list is an array of kwargs for stream.character. Every entry must have method_cls and method"
+        ids = ["id_%s" % sess_uuid for sess_uuid in character.sessions]
+        if ids:
+            self.call("stream.packet-list", ids, pkt_list)
 
     def user_auth_table(self, user, table):
         req = self.req()

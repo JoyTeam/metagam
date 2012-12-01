@@ -8,7 +8,7 @@ import re
 import socket
 import os
 
-max_packets_in_frame = 5
+max_frame_length = 50000
 
 re_valid_id = re.compile('^\w+$')
 re_split_headers = re.compile('\r?\n\r?\n')
@@ -213,6 +213,8 @@ class Realplexor(mg.Module):
     def register(self):
         self.rhook("stream.send", self.send)
         self.rhook("stream.packet", self.packet)
+        self.rhook("stream.packet-list", self.packet_list)
+        self.rhook("stream.flush", self.flush)
         # It is important that Realplexor's request_processed called after all other handlers
         # that can send something via Realplexor
         self.rhook("web.request_processed", self.request_processed, priority=-10)
@@ -233,13 +235,16 @@ class Realplexor(mg.Module):
             rpl.send(ids, data)
 
     def packet(self, ids, method_cls, method, **kwargs):
+        kwargs["method_cls"] = method_cls
+        kwargs["method"] = method
+        self.packet_list(ids, [kwargs])
+
+    def packet_list(self, ids, pkt_list):
         if ids == None:
             session = self.req().session()
             if session is None:
                 self.call("web.require_login")
             ids = "id_%s" % session.uuid
-        kwargs["method_cls"] = method_cls
-        kwargs["method"] = method
         # [a, b, c] will be sent immediately
         # a will be delayed
         # [a] will be delayed
@@ -248,27 +253,27 @@ class Realplexor(mg.Module):
                 ids = ids[0]
             else:
                 self.flush()
-                self.call("stream.send", ids, {"packets": [kwargs]})
+                self.call("stream.send", ids, {"packets": pkt_list})
                 return
         try:
             req = self.req()
         except AttributeError:
-            self.call("stream.send", ids, {"packets": [kwargs]})
+            self.call("stream.send", ids, {"packets": pkt_list})
         else:
             try:
                 packets = req.stream_packets
             except AttributeError:
                 packets = {}
                 req.stream_packets = packets
-                req.stream_packets_cnt = 0
+                req.stream_packets_len = 0
             try:
                 queue = packets[ids]
             except KeyError:
                 queue = []
                 packets[ids] = queue
-            queue.append(kwargs)
-            req.stream_packets_cnt += 1
-            if req.stream_packets_cnt >= max_packets_in_frame:
+            queue.extend(pkt_list)
+            req.stream_packets_len += len("%s" % pkt_list)
+            if req.stream_packets_len >= max_frame_length:
                 self.flush()
 
     def flush(self):
@@ -284,7 +289,7 @@ class Realplexor(mg.Module):
             for session_uuid, lst in packets.iteritems():
                 self.call("stream.send", session_uuid, {"packets": lst})
             req.stream_packets = {}
-            req.stream_packets_cnt = 0
+            req.stream_packets_len = 0
 
     def request_processed(self):
         self.flush()
