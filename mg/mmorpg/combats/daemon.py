@@ -52,25 +52,22 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
             "stage": self.combat.stage,
         })
 
-    def combat_state(self):
-        rmembers = []
-        for member in self.combat.members:
-            rmembers.append({
-                "id": member.id,
-                "params": member.all_params()
-            })
-        data = {
-            "members": rmembers,
-            "params": self.combat.all_params()
-        }
-        # Send marker to a character
+    @property
+    def controller(self):
         req = self.req()
         char_id = req.param("char")
-        marker = req.param("marker")
-        if char_id and marker:
-            char = self.character(char_id)
-            self.call("stream.character", char, "combat", "state_marker", combat=self.combat.uuid, marker=marker)
-        self.call("web.response_json", data)
+        if not char_id:
+            self.call("web.forbidden");
+        tag = "character-%s" % char_id
+        for controller in self.combat.controllers:
+            if tag in controller.tags:
+                return controller
+        self.call("web.forbidden")
+
+    def combat_state(self):
+        req = self.req()
+        self.controller.request_state(req.param("marker"))
+        self.call("web.response_json", {"ok": 1})
 
 class CombatRunner(mg.constructor.ConstructorModule):
     def register(self):
@@ -213,7 +210,6 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             # main loop
             while not self.combat.stage_flag("done"):
                 self.combat.process()
-                Tasklet.sleep(1)
         finally:
             self.app().inst.csrv = None
 
@@ -325,9 +321,33 @@ class WebController(CombatMemberController):
     def __init__(self, member, char, fqn="mg.mmorpg.combats.daemons.WebController"):
         CombatMemberController.__init__(self, member, fqn)
         self.char = char
+        self.tags.add("character-%s" % char.uuid)
+        self.outbound = []
+
+    def send(self, method, **kwargs):
+        kwargs["method_cls"] = "combat"
+        kwargs["method"] = method
+        self.outbound.append(kwargs)
+
+    def idle(self):
+        print "idle"
+        if self.outbound:
+            outbound = self.outbound
+            self.outbound = []
+            self.call("stream.character-list", self.char, outbound)
+            #for msg in outbound:
+            #    print "====== %s" % msg
+
+    def deliver_marker(self, marker):
+        self.outbound = []
+        self.char.invalidate_sessions()
+        self.send("state_marker", combat=self.combat.uuid, marker=marker)
 
     def deliver_combat_params(self, params):
-        self.call("stream.character", self.char, "combat", "combat_params", combat=self.combat.uuid, params=params)
+        self.send("combat_params", combat=self.combat.uuid, params=params)
+
+    def deliver_member_joined(self, member):
+        self.send("member_joined", combat=self.combat.uuid, member=member.id)
 
     def deliver_member_params(self, member, params):
-        self.call("stream.character", self.char, "combat", "member_params", combat=self.combat.uuid, member=member.id, params=params)
+        self.send("member_params", combat=self.combat.uuid, member=member.id, params=params)

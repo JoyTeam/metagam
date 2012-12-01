@@ -67,15 +67,6 @@ Ext.override(Combat, {
                     return failure();
                 }
                 delete self._queryStateMarker;
-                self.applyState(Ext.util.JSON.decode(response.responseText));
-                self.stateReceived = true;
-                if (self.methodsQueue) {
-                    self.methodsQueue.forEach(function (meth) {
-                        alert('Executing queued method');
-                        meth[0].apply(self, meth[1]);
-                    });
-                    delete self.methodsQueue;
-                }
             },
             failure: function (response, opts) {
                 delete self._queryStateReq;
@@ -111,16 +102,7 @@ Ext.override(Combat, {
         }
         /* If combat is already received its full state then
          * call the method immediately. Otherwise enqueue it */
-        if (self.stateReceived) {
-            alert('Executing method immediately');
-            method.apply(self, args);
-        } else {
-            alert('Enqueuing method');
-            if (!self.methodsQueue) {
-                self.methodsQueue = [];
-            }
-            self.methodsQueue.push([method, args]);
-        }
+        method.apply(self, args);
     },
 
     /*
@@ -172,5 +154,6 @@ Ext.override(Combat, {
      */
     memberParamsChanged: function (member_id, params) {
         var self = this;
+        console.log(member_id, params);
     }
 });

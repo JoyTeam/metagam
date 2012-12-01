@@ -29,16 +29,6 @@ class Combats(mg.constructor.ConstructorModule):
         combat_id = req.args
         try:
             combat = CombatInterface(self.app(), combat_id)
-            combat.ping()
-        except CombatUnavailable as e:
-            with self.lock([char.busy_lock]):
-                busy = char.busy
-                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
-                    # character is a member of a missing combat. free him
-                    self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
-                    char.unset_busy()
-            self.call("web.redirect", "/location")
-        else:
             # Show combat interface to user
             rules = self.conf("combats.rules", {}).get(combat.rules, {})
             vars = {
@@ -70,6 +60,14 @@ class Combats(mg.constructor.ConstructorModule):
             except TemplateNotFound:
                 content = self.call("game.parse_internal", "combat-interface.html", vars)
             self.call("game.response_internal", "combat.html", vars, content)
+        except CombatUnavailable as e:
+            with self.lock([char.busy_lock]):
+                busy = char.busy
+                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
+                    # character is a member of a missing combat. free him
+                    self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
+                    char.unset_busy()
+            self.call("web.redirect", "/location")
 
     def combat_state(self):
         req = self.req()

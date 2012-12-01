@@ -1,5 +1,6 @@
 import mg.constructor
 from mg.core.tools import *
+from concurrence import TimeoutError, Channel
 import weakref
 import re
 from uuid import uuid4
@@ -73,22 +74,29 @@ class CombatParamsContainer(object):
         self._params = {}
         self._changed_params = set()
         self._last_sent_params = None
+        self._all_params = None
 
     def param(self, key, handle_exceptions=True):
+        "Get parameter value"
         return self._params.get(key)
 
     def set_param(self, key, val):
+        "Set parameter value"
         self._params[key] = val
         self._changed_params.add(key)
+        self._all_params = None
 
     def all_params(self):
         "Return map(param => value) of all parameters"
+        if self._all_params is not None:
+            return self._all_params
         params = {}
         for key in self.__class__.system_params:
             params[key] = getattr(self, key)
         for key, val in self._params.iteritems():
             if re_param_attr.match(key):
                 params[key] = val
+        self._all_params = params
         return params
 
     def changed_params(self):
@@ -125,25 +133,40 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.controllers = []
         self.rulesinfo = self.conf("combat-%s.rules" % rules, {})
         self.paramsinfo = self.conf("combat-%s.params" % rules, {})
+        self.commands = []
+        self.commands_channel = Channel()
 
     def join(self, member):
         "Join member to the combat"
         self.member_id += 1
         member.id = self.member_id
         self.members.append(member)
-        # logging join
+        # if combat is started already, notify all other members
+        if self.running:
+            for controller in self.controllers:
+                if controller.connected:
+                    controller.deliver_member_joined(member)
+        # registering member's controllers
+        for controller in member.controllers:
+            self.add_controller(controller)
+        # log join
         if self.log:
             self.log.syslog({
                 "type": "join",
                 "member": member.id,
             })
 
+    @property
+    def running(self):
+        "True when combat is running"
+        return self.stage != "init"
+
     def run(self, turn_order):
         """
         Run combat (switch to 'combat' stage).
         turn_order - CombatTurnOrder object
         """
-        if self.stage != "init":
+        if self.running:
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self._turn_order = turn_order
         self.set_stage("combat")
@@ -199,11 +222,28 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         "Returns flag value of the current stage. If no flag with such code defined return None"
         return self.stages[self.stage].get(flag)
 
+    def add_command(self, command):
+        "Put command to the combat queue to be executed immediately"
+        self.commands.append(command)
+        if self.commands_channel.has_receiver():
+            self.commands_channel.send(None)
+
     def process(self):
         "Process combat logic"
+        self.process_commands()
         if self.stage_flag("actions"):
             self.process_actions()
         self.idle()
+        try:
+            self.commands_channel.receive(1)
+        except TimeoutError:
+            pass
+
+    def process_commands(self):
+        "Process enqueued commands"
+        while self.commands:
+            cmd = self.commands.pop(0)
+            cmd.execute()
 
     def idle(self):
         "Do background processing"
@@ -221,6 +261,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self._turn_order.idle()
         for member in self.members:
             member.idle()
+        self.call("stream.flush")
 
     def process_actions(self):
         "Process actions logic"
@@ -266,6 +307,14 @@ class CombatObject(mg.constructor.ConstructorModule):
         else:
             return self._combat
 
+class CombatCommand(CombatObject):
+    "CombatActions are executed immediately in the main combat loop"
+    def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatCommand"):
+        CombatObject.__init__(self, combat, fqn)
+
+    def execute(self):
+        "Called when it's allowed to run"
+
 class CombatAction(CombatObject):
     "CombatMembers perform CombatActions according to the schedule"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatAction"):
@@ -308,7 +357,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def add_controller(self, controller):
         "Attach CombatMemberController to the member"
         self.controllers.append(controller)
-        self.combat.add_controller(controller)
 
     def idle(self):
         "Called when member can do any background processing"
@@ -407,6 +455,22 @@ class CombatMember(CombatObject, CombatParamsContainer):
         for controller in self.controllers:
             controller.turn_timeout()
 
+class RequestStateCommand(CombatCommand):
+    "Request combat state and deliver it to the controller"
+    def __init__(self, controller, marker, fqn="mg.mmorpg.combats.core.RequestStateCommand"):
+        CombatCommand.__init__(self, controller.combat, fqn)
+        self.controller = controller
+        self.marker = marker
+
+    def execute(self):
+        self.controller.connected = True
+        self.controller.clear_last_params()
+        self.controller.deliver_marker(self.marker)
+        self.controller.combat_params_changed(self.combat.all_params())
+        for member in self.combat.members:
+            self.controller.deliver_member_joined(member)
+            self.controller.member_params_changed(member, member.all_params())
+
 class CombatMemberController(CombatObject):
     """
     Controller is an interface to CombatMember. Controller receives notifications about changes in the combat
@@ -415,6 +479,12 @@ class CombatMemberController(CombatObject):
     def __init__(self, member, fqn):
         CombatObject.__init__(self, member.combat, fqn)
         self.member = member
+        self.connected = False
+        self.clear_last_params()
+        self.tags = set()
+
+    def clear_last_params(self):
+        "Mark all parameters as never sent"
         self._last_combat_sent_params = {}
         self._last_member_sent_params = {}
 
@@ -432,6 +502,8 @@ class CombatMemberController(CombatObject):
 
     def combat_params_changed(self, params):
         "Called when combat parameters changed"
+        if not self.connected:
+            return
         paramsinfo = self.combat.paramsinfo.get("combat", {})
         deliver = {}
         for key, val in params.iteritems():
@@ -448,10 +520,13 @@ class CombatMemberController(CombatObject):
             # deliver parameter
             if val != self._last_combat_sent_params.get(key):
                 deliver[key] = self._last_combat_sent_params[key] = val
-        self.deliver_combat_params(deliver)
+        if deliver:
+            self.deliver_combat_params(deliver)
 
     def member_params_changed(self, member, params):
         "Called when member parameters changed"
+        if not self.connected:
+            return
         paramsinfo = self.combat.paramsinfo.get("member", {})
         deliver = {}
         try:
@@ -472,13 +547,24 @@ class CombatMemberController(CombatObject):
             # deliver parameter
             if val != last_sent_params.get(key):
                 deliver[key] = last_sent_params[key] = val
-        self.deliver_member_params(member, deliver)
+        if deliver:
+            self.deliver_member_params(member, deliver)
 
     def deliver_combat_params(self, params):
         "Called when we have to deliver combat 'params' to client"
 
     def deliver_member_params(self, member, params):
         "Called when we have to deliver member 'params' to client"
+
+    def deliver_member_joined(self, member):
+        "Called when we have to notify client about joined member"
+
+    def request_state(self, marker):
+        "Query current combat state and deliver it to client"
+        self.combat.add_command(RequestStateCommand(self, marker))
+
+    def deliver_marker(self, marker):
+        "Called when we have to deliver marker to the client"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"
