@@ -452,6 +452,7 @@ class ApplicationWebService(WebService):
     def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.core.web.ApplicationWebService"):
         WebService.__init__(self, inst, service_id, service_type, fqn)
         self.hook_prefix = hook_prefix
+        self.request_locks = False
 
     def deliver_request(self, app, request, group, hook, args):
         "Deliver HTTP request with parsed URI: /<group>/<hook>/<args> to the given application"
@@ -465,7 +466,7 @@ class ApplicationWebService(WebService):
                 res = lambda: app.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
                 # POST requests with authenticated user are automatically locked
                 # to avoid multiple concurrent requests from a single user
-                if request.environ.get("REQUEST_METHOD") == "POST" and self.hook_prefix != "int":
+                if request.environ.get("REQUEST_METHOD") == "POST" and self.request_locks:
                     user = request.user()
                     if user:
                         with app.lock(["UserRequest.%s.%s" % (app.tag, user)]):
