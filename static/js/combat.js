@@ -149,11 +149,20 @@ Ext.override(Combat, {
     },
 
     /*
+     * Called when a new member joined combat
+     * Format: map(key => value)
+     */
+    memberJoined: function (member_id) {
+        var self = this;
+        console.log(member_id + ' joined');
+    },
+
+    /*
      * Called when listed member parameters changed
      * Format: map(key => value)
      */
     memberParamsChanged: function (member_id, params) {
         var self = this;
-        console.log(member_id, params);
+        console.log(member_id + ' params: ' + JSON.stringify(params));
     }
 });
