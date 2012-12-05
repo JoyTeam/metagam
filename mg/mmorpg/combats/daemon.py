@@ -335,8 +335,6 @@ class WebController(CombatMemberController):
             outbound = self.outbound
             self.outbound = []
             self.call("stream.character-list", self.char, outbound)
-            #for msg in outbound:
-            #    print "====== %s" % msg
 
     def deliver_marker(self, marker):
         self.outbound = []
@@ -351,3 +349,6 @@ class WebController(CombatMemberController):
 
     def deliver_member_params(self, member, params):
         self.send("member_params", combat=self.combat.uuid, member=member.id, params=params)
+
+    def deliver_myself(self):
+        self.send("myself", combat=self.combat.uuid, member=self.member.id)

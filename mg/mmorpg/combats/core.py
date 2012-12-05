@@ -470,6 +470,7 @@ class RequestStateCommand(CombatCommand):
         for member in self.combat.members:
             self.controller.deliver_member_joined(member)
             self.controller.member_params_changed(member, member.all_params())
+        self.controller.deliver_myself()
 
 class CombatMemberController(CombatObject):
     """
@@ -565,6 +566,9 @@ class CombatMemberController(CombatObject):
 
     def deliver_marker(self, marker):
         "Called when we have to deliver marker to the client"
+
+    def deliver_myself(self):
+        "Called when we have to deliver myself identifier to client"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

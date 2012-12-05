@@ -16,6 +16,10 @@ Combat.member_params = function(pkt) {
     this.call(pkt.combat, 'memberParamsChanged', pkt.member, pkt.params);
 };
 
+Combat.myself = function(pkt) {
+    this.call(pkt.combat, 'setMyself', pkt.member);
+};
+
 /* Call combat method */
 Combat.call = function (combat_id, method) {
     var args = Array.prototype.slice.call(arguments, 2);

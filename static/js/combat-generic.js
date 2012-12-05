@@ -1,7 +1,7 @@
 var GenericCombat = Ext.extend(Combat, {
-    constructor: function (id) {
+    constructor: function (combatId) {
         var self = this;
-        GenericCombat.superclass.constructor.call(self, id);
+        GenericCombat.superclass.constructor.call(self, combatId);
         self.createMain();
     },
 
@@ -148,5 +148,25 @@ var GenericCombat = Ext.extend(Combat, {
             id: 'combat-viewport',
             items: self.viewportItems()
         });
+    },
+
+    /*
+     * React to "set myself" event
+     */
+    setMyself: function (memberId) {
+        var self = this;
+        GenericCombat.superclass.setMyself.call(self, memberId);
+        self.myAvatarComponent.update('Myself ' + memberId);
+        // TODO: Implement admin interface for edititing
+        // avatar layout. Then transfer this layout to client
+        // and render it in JavaScript (ExtJS template engine?)
+    }
+});
+
+var GenericCombatMember = Ext.extend(CombatMember, {
+    setParam: function (key, value) {
+        var self = this;
+        GenericCombatMember.superclass.setParam(self, key, value);
+        console.log('member ' + self.id + ' param ' + key + ' = ' + value);
     }
 });

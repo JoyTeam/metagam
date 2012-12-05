@@ -1,14 +1,14 @@
-function Combat(id)
+function Combat(combatId)
 {
     var self = this;
-    self.id = id;
-    self.members = [];
+    self.id = combatId;
     self.initConstants();
+    self.cleanup();
 }
 
 Ext.override(Combat, {
     /*
-     * Run combat interface (query current combat state and subscribe to events
+     * Run combat interface (query current combat state and subscribe to events)
      */
     run: function () {
         var self = this;
@@ -114,30 +114,11 @@ Ext.override(Combat, {
     },
 
     /*
-     * Combat state loaded. Apply it to the interface
-     */
-    applyState: function (state) {
-        var self = this;
-        self.cleanup();
-        state.members.forEach(function (member) {
-            self.addMember(member);
-        });
-    },
-
-    /*
      * Wipe all data
      */
     cleanup: function () {
         var self = this;
-        self.members = [];
-    },
-
-    /*
-     * Add a member to the combat
-     */
-    addMember: function (member) {
-        var self = this;
-        self.members.push(member);
+        self.members = {};
     },
 
     /*
@@ -149,20 +130,66 @@ Ext.override(Combat, {
     },
 
     /*
-     * Called when a new member joined combat
+     * Called when a new member joins combat
      * Format: map(key => value)
      */
-    memberJoined: function (member_id) {
+    memberJoined: function (memberId) {
         var self = this;
-        console.log(member_id + ' joined');
+        if (!self.members[memberId]) {
+            self.members[memberId] = self.newMember(memberId);
+        }
+    },
+
+    /*
+     * Method for creating new members. Usually it's overriden
+     * by combat implementations.
+     */
+    newMember: function (memberId) {
+        var self = this;
+        return new CombatMember(self, memberId);
     },
 
     /*
      * Called when listed member parameters changed
      * Format: map(key => value)
      */
-    memberParamsChanged: function (member_id, params) {
+    memberParamsChanged: function (memberId, params) {
         var self = this;
-        console.log(member_id + ' params: ' + JSON.stringify(params));
+        var member = self.members[memberId];
+        if (!member) {
+            return;
+        }
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                member.setParam(key, params[key]);
+            }
+        }
+    },
+
+    /*
+     * Called when server notifies client about member
+     * controller by this client
+     */
+    setMyself: function (memberId) {
+        var self = this;
+        self.myself = self.members[memberId];
+    }
+});
+
+function CombatMember(combat, memberId)
+{
+    var self = this;
+    self.combat = combat;
+    self.id = memberId;
+    self.params = {};
+}
+
+Ext.override(CombatMember, {
+    /*
+     * Set member parameter "key" to value "value"
+     */
+    setParam: function (key, value) {
+        var self = this;
+        self.params[key] = value;
     }
 });
