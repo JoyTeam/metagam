@@ -294,7 +294,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
     
     @property
     def rules(self):
-        return self.cinfo["rules"]
+        return self.cobj.get("rules")
 
     @property
     def cinfo(self):
