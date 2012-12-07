@@ -131,8 +131,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.rules = rules
         self.uuid = uuid
         self.controllers = []
-        self.rulesinfo = self.conf("combat-%s.rules" % rules, {})
-        self.paramsinfo = self.conf("combat-%s.params" % rules, {})
+        self.rulesinfo = self.conf("combats-%s.rules" % rules, {})
+        self.paramsinfo = self.conf("combats-%s.params" % rules, {})
         self.commands = []
         self.commands_channel = Channel()
 

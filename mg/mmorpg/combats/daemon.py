@@ -330,7 +330,6 @@ class WebController(CombatMemberController):
         self.outbound.append(kwargs)
 
     def idle(self):
-        print "idle"
         if self.outbound:
             outbound = self.outbound
             self.outbound = []

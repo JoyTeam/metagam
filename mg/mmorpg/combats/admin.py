@@ -105,6 +105,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     self.app().config.delete_group("combats-%s" % code)
                     config = self.app().config_updater()
                     config.set("combats.rules", rules)
+                    config.delete("combats-%s.rules" % code)
                     config.store()
                 self.call("admin.redirect", "combats/rules")
             # editing
@@ -192,7 +193,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
 
     def rules_edit(self, rules, code, action, cmd):
         if action == "profile":
-            return self.rules_edit_profile(rules, code)
+            return self.rules_edit_profile(code)
         elif action == "actions":
             return self.rules_edit_actions(code)
         elif action == "script":
@@ -205,21 +206,37 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 cmd = m.group(1)
                 return self.rules_action(code, cmd)
 
-    def rules_edit_profile(self, rules, code):
+    def rules_edit_profile(self, code):
         req = self.req()
-        rules = rules.copy()
+        shortRules = self.conf("combats.rules", {})
         # processing request
         if req.ok():
             errors = {}
+            shortInfo = {}
             info = {}
             # name
-            name = req.param("name")
+            name = req.param("name").strip()
             if not name:
                 errors["name"] = self._("This field is mandatory")
             else:
-                info["name"] = name
+                shortInfo["name"] = name
             # order
-            info["order"] = floatz(req.param("order"))
+            shortInfo["order"] = floatz(req.param("order"))
+            # avatar dimensions
+            dim_avatar = req.param("dim_avatar").strip()
+            if not dim_avatar:
+                errors["dim_avatar"] = self._("This field is mandatory")
+            else:
+                val = None
+                dimensions = self.call("charimages.dimensions")
+                for dim in self.call("charimages.dimensions"):
+                    if dim_avatar == "%dx%d" % (dim["width"], dim["height"]):
+                        val = [dim["width"], dim["height"]]
+                        break
+                if val is None:
+                    errors["dim_avatar"] = self._("This dimension must be listed in the list of available dimensions on characters images configuration page. Current settings: %s") % ", ".join(["%dx%d" % (dim["width"], dim["height"]) for dim in dimensions])
+                else:
+                    info["dim_avatar"] = val
             # generic interface
             info["generic"] = 1 if req.param("generic") else 0
             if info["generic"]:
@@ -264,19 +281,23 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # saving changes
-            rules[code] = info
+            shortRules[code] = shortInfo
             config = self.app().config_updater()
-            config.set("combats.rules", rules)
+            config.set("combats.rules", shortRules)
+            config.set("combats-%s.rules" % code, info)
             config.store()
             self.call("admin.redirect", "combats/rules")
         # rendering form
-        info = rules[code]
+        shortInfo = shortRules[code]
+        info = self.conf("combats-%s.rules" % code, {})
         dim_avatar = info.get("dim_avatar", [120, 220])
         dim_avatar = [str(i) for i in dim_avatar]
         dim_avatar = "x".join(dim_avatar)
         fields = [
-            {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
-            {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
+            {"name": "name", "label": self._("Combat rules name"), "value": shortInfo["name"]},
+            {"name": "order", "label": self._("Sorting order"), "value": shortInfo["order"], "inline": True},
+            {"type": "header", "html": self._("Combat avatars settings")},
+            {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
             {"name": "generic", "type": "checkbox", "label": self._("Use generic GUI for this type of combats"), "checked": info.get("generic", 1)},
             {"type": "header", "html": self._("Generic interface settings"), "condition": "[generic]"},
             {"name": "generic_myavatar", "type": "checkbox", "label": self._("Show player's avatar on the left side"), "checked": info.get("generic_myavatar", 1), "condition": "[generic]"},
@@ -290,11 +311,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
             {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
             {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
-            {"type": "header", "html": self._("Combat avatars settings")},
-            {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
+            {"type": "header", "html": self._("Items above avatar in the generic interface"), "condition": "[generic]"},
+            {"type": "header", "html": self._("Items below avatar in the generic interface"), "condition": "[generic]"},
         ]
-        fields.append({"type": "header2", "html": self._("Items above avatar")})
-        fields.append({"type": "header2", "html": self._("Items below avatar")})
         self.call("admin.form", fields=fields)
 
     def rules_edit_actions(self, code):

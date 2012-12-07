@@ -49,3 +49,7 @@ class CombatCharacterMember(CombatMember):
         self.set_param("char", character)
         self.set_name(character.name)
         self.set_sex(character.sex)
+        # get avatar of desired size
+        print self.combat.rules
+        rules = self.combat.rulesinfo
+        print rules
