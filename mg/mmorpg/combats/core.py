@@ -342,7 +342,7 @@ class CombatAction(CombatObject):
         "Do any processing in the end of the action"
 
 class CombatMember(CombatObject, CombatParamsContainer):
-    system_params = set(["name", "sex", "team", "may_turn", "active"])
+    system_params = set(["name", "sex", "team", "may_turn", "active", "image"])
 
     "Members take part in combats. Every fighting entity is a member"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
@@ -430,6 +430,13 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def set_team(self, team):
         "Change team of the member"
         self.set_param("team", team)
+
+    @property
+    def image(self):
+        return self._params.get("image")
+    def set_image(self, image):
+        "Change image of the member"
+        self.set_param("image", image)
 
     # Turn order
 

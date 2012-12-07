@@ -50,6 +50,10 @@ class CombatCharacterMember(CombatMember):
         self.set_name(character.name)
         self.set_sex(character.sex)
         # get avatar of desired size
-        print self.combat.rules
         rules = self.combat.rulesinfo
-        print rules
+        dim = rules.get("dim_avatar", [120, 220])
+        dim = "%dx%d" % (dim[0], dim[1])
+        charimage = self.call("charimages.get", character, dim)
+        if charimage is None:
+            charimage = "/st-mg/constructor/avatars/%s-240x440.jpg" % ("female" if character.sex else "male")
+        self.set_param("image", charimage)
