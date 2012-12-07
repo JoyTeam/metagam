@@ -30,7 +30,7 @@ class Combats(mg.constructor.ConstructorModule):
         try:
             combat = CombatInterface(self.app(), combat_id)
             # Show combat interface to user
-            rules = self.conf("combats.rules", {}).get(combat.rules, {})
+            rules = self.conf("combats-%s.rules" % combat.rules, {})
             vars = {
                 "combat": combat_id,
                 "load_extjs": {

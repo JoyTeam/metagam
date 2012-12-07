@@ -55,5 +55,5 @@ class CombatCharacterMember(CombatMember):
         dim = "%dx%d" % (dim[0], dim[1])
         charimage = self.call("charimages.get", character, dim)
         if charimage is None:
-            charimage = "/st-mg/constructor/avatars/%s-240x440.jpg" % ("female" if character.sex else "male")
+            charimage = "/st-mg/constructor/avatars/%s-120x220.jpg" % ("female" if character.sex else "male")
         self.set_param("image", charimage)

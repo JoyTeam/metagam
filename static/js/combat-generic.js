@@ -19,7 +19,7 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createMyAvatar: function () {
         var self = this;
-        self.myAvatarComponent = new Ext.Container({
+        self.myAvatarComponent = new Ext.BoxComponent({
             id: 'combat-myavatar',
             border: false,
             autoWidth: true,
@@ -32,7 +32,7 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createEnemyAvatar: function () {
         var self = this;
-        self.enemyAvatarComponent = new Ext.Container({
+        self.enemyAvatarComponent = new Ext.BoxComponent({
             id: 'combat-enemyavatar',
             border: false,
             autoWidth: true,
@@ -45,7 +45,7 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createLog: function () {
         var self = this;
-        self.logComponent = new Ext.Container({
+        self.logComponent = new Ext.BoxComponent({
             id: 'combat-log',
             border: false,
             autoWidth: true,
@@ -58,7 +58,7 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createMain: function () {
         var self = this;
-        self.mainComponent = new Ext.Container({
+        self.mainComponent = new Ext.BoxComponent({
             id: 'combat-main',
             border: false,
             autoWidth: true,
@@ -74,6 +74,7 @@ var GenericCombat = Ext.extend(Combat, {
         var viewportItems = [];
         if (self.myAvatarComponent) {
             viewportItems.push({
+                xtype: 'container',
                 region: 'west',
                 width: self.myAvatarWidth,
                 autoScroll: false,
@@ -85,6 +86,7 @@ var GenericCombat = Ext.extend(Combat, {
         }
         if (self.enemyAvatarComponent) {
             viewportItems.push({
+                xtype: 'container',
                 region: 'east',
                 width: self.enemyAvatarWidth,
                 autoScroll: false,
@@ -96,6 +98,7 @@ var GenericCombat = Ext.extend(Combat, {
         }
         if (self.mainComponent) {
             viewportItems.push({
+                xtype: 'container',
                 region: 'center',
                 border: false,
                 autoScroll: true,
@@ -109,6 +112,7 @@ var GenericCombat = Ext.extend(Combat, {
             if (self.logLayout == 0) {
                 viewportItems = [
                     {
+                        xtype: 'container',
                         region: 'north',
                         layout: 'border',
                         height: self.combatHeight,
@@ -117,6 +121,7 @@ var GenericCombat = Ext.extend(Combat, {
                         items: viewportItems
                     },
                     {
+                        xtype: 'container',
                         region: 'center',
                         border: false,
                         autoScroll: true,
@@ -125,6 +130,7 @@ var GenericCombat = Ext.extend(Combat, {
                 ];
             } else if (self.logLayout == 1) {
                 viewportItems.push({
+                    xtype: 'container',
                     region: 'south',
                     height: self.logHeight,
                     autoScroll: true,
@@ -145,9 +151,17 @@ var GenericCombat = Ext.extend(Combat, {
         var self = this;
         self.viewportComponent = new Ext.Viewport({
             layout: 'border',
-            id: 'combat-viewport',
             items: self.viewportItems()
         });
+    },
+
+    /*
+     * Method for creating new members. Usually it's overriden
+     * by combat implementations.
+     */
+    newMember: function (memberId) {
+        var self = this;
+        return new GenericCombatMember(self, memberId);
     },
 
     /*
@@ -156,17 +170,76 @@ var GenericCombat = Ext.extend(Combat, {
     setMyself: function (memberId) {
         var self = this;
         GenericCombat.superclass.setMyself.call(self, memberId);
-        self.myAvatarComponent.update('Myself ' + memberId);
-        // TODO: Implement admin interface for edititing
-        // avatar layout. Then transfer this layout to client
-        // and render it in JavaScript (ExtJS template engine?)
+        self.myAvatarComponent.update(self.myself.getAvatarHTML());
+    },
+
+    /*
+     * For every element with class "combat-<cls>"
+     * run callback provided.
+     */
+    forEachElement: function (cls, callback) {
+        var self = this;
+        Ext.getBody().query('.combat-' + cls).forEach(callback);
     }
 });
 
 var GenericCombatMember = Ext.extend(CombatMember, {
+    constructor: function (combat, memberId) {
+        var self = this;
+        GenericCombatMember.superclass.constructor.call(self, combat, memberId);
+    },
+
+    /*
+     * Set member parameter "key" to value "value"
+     */
     setParam: function (key, value) {
         var self = this;
-        GenericCombatMember.superclass.setParam(self, key, value);
-        console.log('member ' + self.id + ' param ' + key + ' = ' + value);
+        GenericCombatMember.superclass.setParam.call(self, key, value);
+        self.renderChangedParam(key, value);
+    },
+
+    /*
+     * Apply changed parameter value to currently
+     * displayed interface
+     */
+    renderChangedParam: function (key, value) {
+        var self = this;
+        if (key === 'image') {
+            self.forEachElement('image', function (el) {
+                el.src = value;
+            });
+        }
+    },
+
+    /*
+     * For every element with class "combat-member-<memberId>-<cls>"
+     * run callback provided.
+     */
+    forEachElement: function (cls, callback) {
+        var self = this;
+        self.combat.forEachElement('member-' + self.id + '-' + cls, callback);
+    },
+
+    /*
+     * Generate HTML for rendering member's avatar
+     */
+    getAvatarHTML: function () {
+        var self = this;
+        var html = '<div class="combat-member-avatar">';
+        html += self.getImageHTML();
+        html += '</div>';
+        return html;
+    },
+
+    /*
+     * Generate HTML for rendering member's image
+     */
+    getImageHTML: function () {
+        var self = this;
+        var image = self.params.image;
+        if (!image) {
+            return '';
+        }
+        return '<div class="combat-member-image"><img class="combat-member-' + self.id + '-image" src="' + image + '" alt="" /></div>';
     }
 });

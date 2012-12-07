@@ -1,12 +1,11 @@
-function Combat(combatId)
-{
-    var self = this;
-    self.id = combatId;
-    self.initConstants();
-    self.cleanup();
-}
+var Combat = Ext.extend(Object, {
+    constructor: function (combatId) {
+        var self = this;
+        self.id = combatId;
+        self.initConstants();
+        self.cleanup();
+    },
 
-Ext.override(Combat, {
     /*
      * Run combat interface (query current combat state and subscribe to events)
      */
@@ -176,15 +175,14 @@ Ext.override(Combat, {
     }
 });
 
-function CombatMember(combat, memberId)
-{
-    var self = this;
-    self.combat = combat;
-    self.id = memberId;
-    self.params = {};
-}
+var CombatMember = Ext.extend(Object, {
+    constructor: function (combat, memberId) {
+        var self = this;
+        self.combat = combat;
+        self.id = memberId;
+        self.params = {};
+    },
 
-Ext.override(CombatMember, {
     /*
      * Set member parameter "key" to value "value"
      */
