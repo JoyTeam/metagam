@@ -1034,7 +1034,7 @@ class Interface(ConstructorModule):
             {"type": "combo", "name": "width_type", "label": self._("Block height") if panel.get("vert") else self._("Block width"), "value": width_type, "values": [("static", self._("width///Static")), ("flex", self._("width///Flexible"))], "condition": "[type]!='buttons'"},
             {"name": "width_static", "label": self._("Height in pixels") if panel.get("vert") else self._("Width in pixels"), "value": width_static, "condition": "[type]!='buttons' && [width_type]=='static'", "inline": True},
             {"name": "width_flex", "label": self._("Relative height") if panel.get("vert") else self._("Relative width"), "value": width_flex, "condition": "[type]!='buttons' && [width_type]=='flex'", "inline": True},
-            {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html' || [type]=='header'"},
+            {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html' || [type]=='header'", "height": 300},
             {"name": "progress_types", "label": '%s<ul>%s</ul>' % (self._("Progress bars in this block (delimited by commas). Valid values are:"), progress_values), "value": progress_types, "condition": "[type]=='progress'", "remove_label_separator": True},
             {"name": "order", "label": self._("Sort order"), "value": order},
         ]
