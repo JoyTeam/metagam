@@ -345,6 +345,8 @@ class ScriptEngine(ConstructorModule):
             if arg1 and env.used_globs is None:
                 return arg1
             arg2 = self._evaluate(val[2], env)
+            if arg1:
+                return arg1
             return arg2
         elif cmd == '?':
             arg1 = self._evaluate(val[1], env)
