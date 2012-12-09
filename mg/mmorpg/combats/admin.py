@@ -1,10 +1,11 @@
 import mg.constructor
 from mg.core.tools import *
 from mg.mmorpg.combats.core import Combat, CombatMember
+from uuid import uuid4
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script|params)(?:|/(.+))$', re.IGNORECASE)
+re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script|params|aboveavatar/.+|belowavatar/.+)(?:|/(.+))$', re.IGNORECASE)
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
@@ -13,7 +14,8 @@ re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9]+)$', re.IGNORECASE)
 re_member_params = re.compile('^member/(new|p_[a-z0-9]+)$', re.IGNORECASE)
 re_member_param_del = re.compile('^member/del/(p_[a-z0-9]+)$', re.IGNORECASE)
 re_valid_parameter = re.compile(r'^p_[a-z_][a-z0-9_]*$', re.IGNORECASE)
-re_shorten = re.compile(r'^(.{30}).{3,}$')
+re_shorten = re.compile(r'^(.{100}).{3,}$')
+re_avatar_params_cmd = re.compile('^(aboveavatar|belowavatar)/(.+)$', re.IGNORECASE)
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -88,6 +90,19 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                                                 return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
                                             elif cmd == "script":
                                                 return [self._("Scripts of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
+                        m = re_avatar_params_cmd.match(action)
+                        if m:
+                            pos, paramid = m.group(1, 2)
+                            if pos == "aboveavatar":
+                                if paramid == "new":
+                                    return [self._("New item above avatar"), "combats/rules/edit/%s/profile" % code]
+                                else:
+                                    return [self._("Item above avatar"), "combats/rules/edit/%s/profile" % code]
+                            elif pos == "belowavatar":
+                                if paramid == "new":
+                                    return [self._("New item below avatar"), "combats/rules/edit/%s/profile" % code]
+                                else:
+                                    return [self._("Item below avatar"), "combats/rules/edit/%s/profile" % code]
         return self._("Combats rules")
 
     def admin_rules(self):
@@ -205,10 +220,15 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             if m:
                 cmd = m.group(1)
                 return self.rules_action(code, cmd)
+            m = re_avatar_params_cmd.match(action)
+            if m:
+                pos, cmd = m.group(1, 2)
+                return self.rules_avatar_param(code, pos, cmd)
 
     def rules_edit_profile(self, code):
         req = self.req()
         shortRules = self.conf("combats.rules", {})
+        oldInfo = self.conf("combats-%s.rules" % code, {})
         # processing request
         if req.ok():
             errors = {}
@@ -277,19 +297,23 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         elif height > 500:
                             errors["generic_log_height"] = self._("Maximal value is %d") % 500
                     info["generic_log_resize"] = True if req.param("generic_log_resize") else False
-            # processing errors
+                # keep some parameters of generic interface
+                for key in ["aboveavatar", "belowavatar"]:
+                    if key in oldInfo:
+                        info[key] = oldInfo[key]
+            # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
-            # saving changes
+            # save changes
             shortRules[code] = shortInfo
             config = self.app().config_updater()
             config.set("combats.rules", shortRules)
             config.set("combats-%s.rules" % code, info)
             config.store()
             self.call("admin.redirect", "combats/rules")
-        # rendering form
+        # render form
         shortInfo = shortRules[code]
-        info = self.conf("combats-%s.rules" % code, {})
+        info = oldInfo
         dim_avatar = info.get("dim_avatar", [120, 220])
         dim_avatar = [str(i) for i in dim_avatar]
         dim_avatar = "x".join(dim_avatar)
@@ -311,9 +335,64 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
             {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
             {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
-            {"type": "header", "html": self._("Items above avatar in the generic interface"), "condition": "[generic]"},
-            {"type": "header", "html": self._("Items below avatar in the generic interface"), "condition": "[generic]"},
         ]
+
+        def render_params(pos, header, newtitle):
+            rows = []
+            params = info.get(pos)
+            if params is None:
+                params = self.call("combat.default-%s" % pos)
+            for ent in params:
+                tp = ent["type"]
+                if tp == "tpl":
+                    text = self.call("script.unparse-text", ent["tpl"])
+                    text = htmlescape(re_shorten.sub(r'\1...', text))
+                    rows.append([
+                        self._("Template"),
+                        text
+                    ])
+                else:
+                    rows.append([
+                        htmlescape(tp),
+                        None
+                    ])
+                rows[-1].extend([
+                    ent["order"],
+                    u'<hook:admin.link href="combats/rules/edit/%s/%s/%s" title="%s" />' % (code, pos, ent["id"], self._("edit")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/%s/del/%s" title="%s" confirm="%s" />' % (code, pos, ent["id"], self._("delete"),
+                        self._("Are you sure want to delete this item?")),
+                ])
+            vars = {
+                "tables": [
+                    {
+                        "links": [
+                            {"hook": "combats/rules/edit/%s/%s/new" % (code, pos), "text": newtitle, "lst": True}
+                        ],
+                        "header": [
+                            self._("Type"),
+                            self._("Parameters"),
+                            self._("Sort order"),
+                            self._("Editing"),
+                            self._("Deletion"),
+                        ],
+                        "rows": rows,
+                    }
+                ]
+            }
+            fields.extend([
+                {"type": "header", "html": header, "condition": "[generic]"},
+                {"type": "html", "html": self.call("web.parse_layout", "admin/common/tables.html", vars), "condition": "[generic]"}
+            ])
+        render_params(
+            pos = "aboveavatar",
+            header = self._("Items above avatar in the generic interface"),
+            newtitle = self._("Create new item above avatar"),
+        )
+        render_params(
+            pos = "belowavatar",
+            header = self._("Items below avatar in the generic interface"),
+            newtitle = self._("Create new item below avatar"),
+        )
         self.call("admin.form", fields=fields)
 
     def rules_edit_actions(self, code):
@@ -352,6 +431,82 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def rules_avatar_param(self, code, pos, cmd):
+        req = self.req()
+        # load list of parameters
+        rules = self.conf("combats-%s.rules" % code, {})
+        params = rules.get(pos)
+        if params is None:
+            params = self.call("combat.default-%s" % pos)
+        # handle delete
+        m = re_del.match(cmd)
+        if m:
+            paramid = m.group(1)
+            params = [p for p in params if p["id"] != paramid]
+            rules[pos] = params
+            config = self.app().config_updater()
+            config.set("combats-%s.rules" % code, rules)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/profile" % code)
+        # find requested item
+        if cmd == "new":
+            order = 10.0
+            for p in params:
+                if p["order"] + 10 > order:
+                    order = p["order"] + 10
+            ent = {
+                "type": "tpl",
+                "order": order,
+            }
+        else:
+            ent = None
+            for p in params:
+                if p["id"] == cmd:
+                    ent = p
+                    break
+            if ent is None:
+                self.call("admin.redirect", "combats/rules/edit/%s/profile" % code)
+        # parse form parameters
+        if req.ok():
+            errors = {}
+            ent = {
+                "id": uuid4().hex if cmd == "new" else cmd,
+            }
+            # order
+            ent["order"] = floatz(req.param("order"))
+            # type
+            tp = req.param("v_type")
+            ent["type"] = tp
+            if tp == "tpl":
+                # test objects
+                combat = Combat(self.app(), None, code)
+                member = CombatMember(combat)
+                viewer = CombatMember(combat)
+                combat.join(member)
+                combat.join(viewer)
+                ent["tpl"] = self.call("script.admin-text", "tpl", errors, globs={"combat": combat, "member": member, "viewer": viewer})
+            else:
+                errors["v_type"] = self._("Make a valid selection")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # save changes
+            params = [p for p in params if p["id"] != cmd]
+            params.append(ent)
+            params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
+            rules[pos] = params
+            config = self.app().config_updater()
+            config.set("combats-%s.rules" % code, rules)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/profile" % code)
+        # render form
+        fields = [
+            {"name": "order", "label": self._("Sorting order"), "value": ent.get("order")},
+            {"name": "type", "label": self._("Type of item"), "type": "combo", "value": ent.get("type"), "values": [("tpl", self._("MMOScript HTML template"))]},
+            {"name": "tpl", "label": self._("Item HTML template") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-text", ent.get("tpl")), "type": "textarea", "height": 300},
+        ]
+        self.call("admin.form", fields=fields)
 
     def rules_action(self, code, cmd):
         if cmd == "new":
@@ -576,7 +731,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         combat_params = combat_params.items()
         combat_params.sort(cmp=lambda x, y: cmp(x[0], y[0]))
         for paramid, info in combat_params:
-            visible = re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"]))
+            visible = htmlescape(re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"])))
             combat_rows.append([
                 paramid,
                 visible,
@@ -587,7 +742,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         member_params = member_params.items()
         member_params.sort(cmp=lambda x, y: cmp(x[0], y[0]))
         for paramid, info in member_params:
-            visible = re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"]))
+            visible = htmlescape(re_shorten.sub(r'\1...', self.call("script.unparse-expression", info["visible"])))
             member_rows.append([
                 paramid,
                 visible,

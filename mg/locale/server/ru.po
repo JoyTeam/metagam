@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2012-11-30 11:12+0300\n"
+"PO-Revision-Date: 2012-12-09 13:19+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -496,6 +496,9 @@ msgstr "Вы уверены, что хотите удалить это изоб�
 
 msgid "Are you sure want to delete this interface?"
 msgstr "Вы уверены, что хотите удалить этот интерфейс?"
+
+msgid "Are you sure want to delete this item?"
+msgstr "Вы уверены, что хотите удалить этот элемент?"
 
 msgid "Are you sure want to delete this modifier?"
 msgstr "Вы уверены, что хотите удалить этот модификатор?"
@@ -1637,6 +1640,12 @@ msgstr "Создать новый раздел"
 
 msgid "Create new field"
 msgstr "Создать новое поле"
+
+msgid "Create new item above avatar"
+msgstr "Создать новый элемент над аватаром"
+
+msgid "Create new item below avatar"
+msgstr "Создать новый элемент под аватаром"
 
 msgid "Created"
 msgstr "Создано"
@@ -2999,6 +3008,9 @@ msgstr "Зелёный"
 msgid "Grey"
 msgstr "Серый"
 
+msgid "HP"
+msgstr "HP"
+
 msgid "HTML content"
 msgstr "HTML-содержимое"
 
@@ -3566,9 +3578,18 @@ msgstr "Курсив"
 msgid "Item / DNA"
 msgstr "Предмет / ДНК"
 
+msgid "Item HTML template"
+msgstr "HTML-шаблон элемента"
+
+msgid "Item above avatar"
+msgstr "Элемент над аватаром"
+
 #, python-format
 msgid "Item action: %s"
 msgstr "Действие на предмете: %s"
+
+msgid "Item below avatar"
+msgstr "Элемент под аватаром"
 
 msgid "Item description"
 msgstr "Описание предмета"
@@ -3617,11 +3638,17 @@ msgstr "Предметы"
 msgid "Items above avatar"
 msgstr "Элементы над аватаром"
 
+msgid "Items above avatar in the generic interface"
+msgstr "Элементы над аватаром в универсальном интерфейсе"
+
 msgid "Items and inventory"
 msgstr "Предметы и инвентарь"
 
 msgid "Items below avatar"
 msgstr "Элементы под аватаром"
+
+msgid "Items below avatar in the generic interface"
+msgstr "Элементы под аватаром в универсальном интерфейсе"
 
 msgid "Items catalog"
 msgstr "Каталог предметов"
@@ -3961,6 +3988,9 @@ msgstr "MMO Constructor — сервис, позволяющий вам созд
 
 msgid "MMO Constructor will be the owner of the domain"
 msgstr "Владельцем домена будет MMO Constructor"
+
+msgid "MMOScript HTML template"
+msgstr "HTML-шаблон с MMOScript"
 
 msgid "Magenta"
 msgstr "Фиолетовый"
@@ -4464,6 +4494,12 @@ msgstr "Новый интерфейс"
 
 msgid "New invitation"
 msgstr "Новое приглашение"
+
+msgid "New item above avatar"
+msgstr "Новый элемент над аватаром"
+
+msgid "New item below avatar"
+msgstr "Новый элемент под аватаром"
 
 msgid "New item type"
 msgstr "Новый тип предмета"
@@ -6736,6 +6772,10 @@ msgstr "Это название валюты занято"
 msgid "This dimension must be listed in the list of available dimensions above"
 msgstr "Размер должен быть перечислен в списке доступных размеров выше"
 
+#, python-format
+msgid "This dimension must be listed in the list of available dimensions on characters images configuration page. Current settings: %s"
+msgstr "Этот размер должен числиться в списке доступных размеров на странице настройки образом персонажей. Текущая настройка: %s"
+
 msgid "This doesn't look like a number"
 msgstr "Это не похоже на число"
 
@@ -7145,6 +7185,9 @@ msgstr "Тип"
 
 msgid "Type of combat system"
 msgstr "Тип боевой системы"
+
+msgid "Type of item"
+msgstr "Тип элемента"
 
 msgid "URI"
 msgstr "URI"

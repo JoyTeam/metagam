@@ -10,6 +10,8 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("ext-combat.interface", self.combat_interface, priv="logged")
         self.rhook("ext-combat.state", self.combat_state, priv="logged")
         self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("combat.default-aboveavatar", self.default_aboveavatar)
+        self.rhook("combat.default-belowavatar", self.default_belowavatar)
 
     def child_modules(self):
         return [
@@ -81,3 +83,22 @@ class Combats(mg.constructor.ConstructorModule):
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("combat-stream")
+
+    def default_aboveavatar(self):
+        return [
+            {
+                "id": "1",
+                "type": "tpl",
+                "tpl": [
+                    u'<div class="combat-param combat-member-hp">\n  <span class="combat-param-name">%s</span>:\n  <span class="combat-param-value">' % self._("HP"),
+                    [".", ["glob", "member"], "p_hp"],
+                    ' / ',
+                    [".", ["glob", "member"], "p_max_hp"],
+                    '</span>\n</div>'
+                ],
+                "order": 10.0
+            },
+        ]
+
+    def default_belowavatar(self):
+        return []
