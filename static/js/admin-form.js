@@ -44,11 +44,17 @@ Form = Ext.extend(AdminResponsePanel, {
 				elem = {
 					border: false
 				};
-			} else if (it.type == 'header') {
+                        } else if (it.type == 'header') {
+                                elem = {
+                                        border: false,
+                                        cls: 'text',
+                                        html: '<h1 class="admin-form-header">' + it.html + '</h1>'
+                                };
+			} else if (it.type == 'header2') {
 				elem = {
 					border: false,
 					cls: 'text',
-					html: '<h1 class="admin-form-header">' + it.html + '</h1>'
+					html: '<h2 class="admin-form-header2">' + it.html + '</h2>'
 				};
 			} else if (it.type == 'html') {
 				elem = {

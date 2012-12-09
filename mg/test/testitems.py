@@ -17,6 +17,8 @@ class TestItems(unittest.TestCase, ConstructorModule):
         self.app_obj = Application(self.inst, "mgtest")
         self.app_obj.modules.load(["mg.mmorpg.inventory.Inventory", "mg.core.l10n.L10n"])
         ConstructorModule.__init__(self, self.app_obj, "mg.test.testitems.TestItems")
+        mc = Memcached(prefix="mgtest-")
+        mc.delete("Cassandra-CF-mgtest-Data")
         self.cleanup()
 
     def test(self):

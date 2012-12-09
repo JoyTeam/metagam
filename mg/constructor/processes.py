@@ -120,6 +120,10 @@ class ConstructorApplicationFactory(ApplicationFactory):
 
 class ConstructorWebService(ApplicationWebService):
     "This is a WebService that accesses application depending on HTTP host"
+    def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.constructor.processes.ConstructorWebService"):
+        ApplicationWebService.__init__(self, inst, service_id, service_type, hook_prefix, fqn)
+        self.request_locks = True
+
     def req_handler(self, request, group, hook, args):
         host = request.host()
         app = self.inst.appfactory.get_by_domain(host)

@@ -61,6 +61,9 @@ class Design(CassandraObject):
 class DesignList(CassandraObjectList):
     objcls = Design
 
+class TemplateNotFound(TemplateException):
+    pass
+
 class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     "HTML parser validating HTML file received from the user and modifying it adding [%design_root%] prefixes"
     def __init__(self, app, fragment=False):
@@ -1165,7 +1168,9 @@ class DesignMod(Module):
                 try:
                     return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
                 except TemplateException as e:
-                    raise e
+                    if not re_not_found.search(str(e)):
+                        raise e
+                    raise TemplateNotFound("NotFound", e.info())
 
     def response(self, design, template, content, vars, design_type="game"):
         self.call("web.setup_design", vars)
