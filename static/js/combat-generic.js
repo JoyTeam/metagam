@@ -12,6 +12,8 @@ var GenericCombat = Ext.extend(Combat, {
         var self = this;
         GenericCombat.superclass.initConstants.call(self);
         self.logHeight = 50;
+        self.aboveAvatarParams = [];
+        self.belowAvatarParams = [];
     },
 
     /*
@@ -170,16 +172,16 @@ var GenericCombat = Ext.extend(Combat, {
     setMyself: function (memberId) {
         var self = this;
         GenericCombat.superclass.setMyself.call(self, memberId);
-        self.myAvatarComponent.update(self.myself.getAvatarHTML());
+        self.myAvatarComponent.update(self.myself.renderAvatarHTML());
     },
 
     /*
-     * For every element with class "combat-<cls>"
+     * For every element with class "c-<cls>"
      * run callback provided.
      */
     forEachElement: function (cls, callback) {
         var self = this;
-        Ext.getBody().query('.combat-' + cls).forEach(callback);
+        Ext.getBody().query('.c-' + cls).forEach(callback);
     }
 });
 
@@ -187,6 +189,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
     constructor: function (combat, memberId) {
         var self = this;
         GenericCombatMember.superclass.constructor.call(self, combat, memberId);
+        self.avatarDeps = {};
     },
 
     /*
@@ -212,21 +215,30 @@ var GenericCombatMember = Ext.extend(CombatMember, {
     },
 
     /*
-     * For every element with class "combat-member-<memberId>-<cls>"
+     * For every element with class "c-m-<memberId>-<cls>"
      * run callback provided.
      */
     forEachElement: function (cls, callback) {
         var self = this;
-        self.combat.forEachElement('member-' + self.id + '-' + cls, callback);
+        self.combat.forEachElement('m-' + self.id + '-' + cls, callback);
     },
 
     /*
      * Generate HTML for rendering member's avatar
+     * Side effects: reset dependencies
      */
-    getAvatarHTML: function () {
+    renderAvatarHTML: function () {
         var self = this;
+        self.avatarDeps = {};
+        self.avatarDepCnt = 0;
         var html = '<div class="combat-member-avatar">';
-        html += self.getImageHTML();
+        for (var i = 0; i < self.combat.aboveAvatarParams.length; i++) {
+            html += self.renderAvatarParamHTML(self.combat.aboveAvatarParams[i]);
+        }
+        html += self.renderImageHTML();
+        for (var i = 0; i < self.combat.belowAvatarParams.length; i++) {
+            html += self.renderAvatarParamHTML(self.combat.belowAvatarParams[i]);
+        }
         html += '</div>';
         return html;
     },
@@ -234,12 +246,121 @@ var GenericCombatMember = Ext.extend(CombatMember, {
     /*
      * Generate HTML for rendering member's image
      */
-    getImageHTML: function () {
+    renderImageHTML: function () {
         var self = this;
         var image = self.params.image;
         if (!image) {
             return '';
         }
-        return '<div class="combat-member-image"><img class="combat-member-' + self.id + '-image" src="' + image + '" alt="" /></div>';
+        return '<div class="combat-member-image"><img class="c-m-' + self.id + '-image" src="' + image + '" alt="" /></div>';
+    },
+
+    /*
+     * Parse syntax tree provided and register dependencies between "member" parameters and
+     * CSS classes of displayed expressions.
+     */
+    registerAvatarParamDeps: function (cls, type, val) {
+        var self = this;
+        var deps = MMOScript.dependencies(val);
+        for (var i = 0; i < deps.length; i++) {
+            var dep = deps[i];
+            if (dep.length >= 2 && dep[0] == 'member') {
+                var param = dep[1];
+                if (!self.avatarDeps[param]) {
+                    self.avatarDeps[param] = {};
+                }
+                self.avatarDeps[param][cls] = [type, val];
+            }
+        }
+    },
+
+    /*
+     * Generate HTML code for avatar parameter.
+     * Side effects: register dependencies
+     */
+    renderAvatarParamHTML: function (param) {
+        var self = this;
+        var env = {
+            globs: {
+                combat: self.combat,
+                member: self,
+                viewer: self.combat.myself
+            }
+        };
+        var html = '';
+        var val = MMOScript.evaluate(param.visible, env);
+        var id = ++self.avatarDepCnt;
+        html += '<div class="c-m-' + self.id + '-ap-' + id + '" style="display: ' + (val ? 'block' : 'none') + '">';
+        self.registerAvatarParamDeps('ap-' + id, 'visibility', param.visible);
+        if (param.type == 'tpl') {
+            for (var i = 0; i < param.tpl.length; i++) {
+                var ent = param.tpl[i];
+                if (typeof(ent) == 'string') {
+                    html += ent;
+                } else {
+                    var id = ++self.avatarDepCnt;
+                    html += '<span class="c-m-' + self.id + '-ap-' + id + '">';
+                    var val = MMOScript.toString(MMOScript.evaluate(ent, env));
+                    html += val;
+                    html += '</span>';
+                    self.registerAvatarParamDeps('ap-' + id, 'html', ent);
+                }
+            }
+        }
+        html += '</div>';
+        return html;
+    },
+
+    /*
+     * Called when member parameters changed
+     * Format: map(key => value)
+     */
+    paramsChanged: function (params) {
+        var self = this;
+        GenericCombatMember.superclass.paramsChanged.call(self, params);
+        // prepare list of avatar parameters that may be affected by
+        // parameters change
+        var affectedClasses;
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                var deps = self.avatarDeps[key];
+                for (var dkey in deps) {
+                    if (deps.hasOwnProperty(dkey)) {
+                        if (!affectedClasses) {
+                            affectedClasses = {};
+                        }
+                        affectedClasses[dkey] = deps[dkey];
+                    }
+                }
+            }
+        }
+        // for every "possibly changed" parameter evaluate its value
+        if (affectedClasses) {
+            var env = {
+                globs: {
+                    combat: self.combat,
+                    member: self,
+                    viewer: self.combat.myself
+                }
+            };
+            for (var cls in affectedClasses) {
+                if (affectedClasses.hasOwnProperty(cls)) {
+                    var ent = affectedClasses[cls];
+                    var type = ent[0];
+                    var script = ent[1];
+                    var val = MMOScript.evaluate(script, env);
+                    if (type == 'visibility') {
+                        self.forEachElement(cls, function (el) {
+                            el.style.display = val ? 'block' : 'none';
+                        });
+                    } else if (type == 'html') {
+                        val = MMOScript.toString(val);
+                        self.forEachElement(cls, function (el) {
+                            el.innerHTML = val;
+                        });
+                    }
+                }
+            }
+        }
     }
 });

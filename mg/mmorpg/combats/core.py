@@ -4,6 +4,7 @@ from concurrence import TimeoutError, Channel
 import weakref
 import re
 from uuid import uuid4
+import random
 
 re_param_attr = re.compile(r'^p_')
 
@@ -360,6 +361,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     def idle(self):
         "Called when member can do any background processing"
+        # DEBUG: Make some parameter change randomly
+        self.set_param("p_test", random.random())
         for controller in self.controllers:
             controller.idle()
 
@@ -389,8 +392,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
             return self.sex
         elif attr == "team":
             return self.team
-        elif attr == "combat":
-            return self.combat
         # parameters
         m = re_param_attr.match(attr)
         if m:

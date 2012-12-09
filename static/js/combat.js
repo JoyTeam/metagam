@@ -65,7 +65,6 @@ var Combat = Ext.extend(Object, {
                 if (!response.getResponseHeader("Content-Type").match(/json/)) {
                     return failure();
                 }
-                delete self._queryStateMarker;
             },
             failure: function (response, opts) {
                 delete self._queryStateReq;
@@ -118,14 +117,28 @@ var Combat = Ext.extend(Object, {
     cleanup: function () {
         var self = this;
         self.members = {};
+        self.params = {};
     },
 
     /*
-     * Called when listed combat parameters changed
+     * Set combat parameter "key" to value "value"
+     */
+    setParam: function (key, value) {
+        var self = this;
+        self.params[key] = value;
+    },
+
+    /*
+     * Called when combat parameters changed
      * Format: map(key => value)
      */
     combatParamsChanged: function (params) {
         var self = this;
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                self.setParam(key, params[key]);
+            }
+        }
     },
 
     /*
@@ -158,11 +171,7 @@ var Combat = Ext.extend(Object, {
         if (!member) {
             return;
         }
-        for (var key in params) {
-            if (params.hasOwnProperty(key)) {
-                member.setParam(key, params[key]);
-            }
-        }
+        member.paramsChanged(params);
     },
 
     /*
@@ -172,6 +181,18 @@ var Combat = Ext.extend(Object, {
     setMyself: function (memberId) {
         var self = this;
         self.myself = self.members[memberId];
+    },
+
+    /*
+     * Get attribute value from script
+     */
+    scriptAttr: function (key) {
+        var self = this;
+        var m = key.match(/^p_([a-zA-Z0-9]+)$/);
+        if (m) {
+            return self.params[m[1]];
+        }
+        return undefined;
     }
 });
 
@@ -189,5 +210,29 @@ var CombatMember = Ext.extend(Object, {
     setParam: function (key, value) {
         var self = this;
         self.params[key] = value;
+    },
+
+    /*
+     * Called when member parameters changed
+     * Format: map(key => value)
+     */
+    paramsChanged: function (params) {
+        var self = this;
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                self.setParam(key, params[key]);
+            }
+        }
+    },
+
+    /*
+     * Get attribute value from script
+     */
+    scriptAttr: function (key) {
+        var self = this;
+        if (key == 'id') {
+            return self.id;
+        }
+        return self.params[key];
     }
 });

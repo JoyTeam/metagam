@@ -341,7 +341,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             rows = []
             params = info.get(pos)
             if params is None:
-                params = self.call("combat.default-%s" % pos)
+                params = []
+                self.call("combats.default-%s" % pos, params)
+                params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
             for ent in params:
                 tp = ent["type"]
                 if tp == "tpl":
@@ -438,7 +440,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         rules = self.conf("combats-%s.rules" % code, {})
         params = rules.get(pos)
         if params is None:
-            params = self.call("combat.default-%s" % pos)
+            params = []
+            self.call("combats.default-%s" % pos, params)
+            params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
         # handle delete
         m = re_del.match(cmd)
         if m:
@@ -458,6 +462,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             ent = {
                 "type": "tpl",
                 "order": order,
+                "tpl": '<div class="combat-param">\n  <span class="combat-param-name"></span>:\n  <span class="combat-param-value">{member.}</span>\n</div>'
             }
         else:
             ent = None

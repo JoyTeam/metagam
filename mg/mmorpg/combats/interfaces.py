@@ -3,6 +3,7 @@ from mg.core.tools import *
 from mg.mmorpg.combats.core import CombatUnavailable
 from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
 from mg.constructor.design import TemplateNotFound
+import json
 
 class Combats(mg.constructor.ConstructorModule):
     def register(self):
@@ -57,6 +58,13 @@ class Combats(mg.constructor.ConstructorModule):
                     elif layout == 1:
                         vars["generic_log_height"] = rules.get("generic_log_height", 300)
                     vars["generic_log_resize"] = "true" if rules.get("generic_log_resize", True) else "false"
+                for pos in ["aboveavatar", "belowavatar"]:
+                    params = rules.get(pos)
+                    if params is None:
+                        params = []
+                        self.call("combats.default-%s" % pos, params)
+                        params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
+                    vars["generic_%s" % pos] = json.dumps(params)
             try:
                 content = self.call("game.parse_internal", "combat-rules-%s.html" % combat.rules, vars)
             except TemplateNotFound:
@@ -84,13 +92,13 @@ class Combats(mg.constructor.ConstructorModule):
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("combat-stream")
 
-    def default_aboveavatar(self):
-        return [
+    def default_aboveavatar(self, lst):
+        lst.extend([
             {
                 "id": "1",
                 "type": "tpl",
                 "tpl": [
-                    u'<div class="combat-param combat-member-hp">\n  <span class="combat-param-name">%s</span>:\n  <span class="combat-param-value">' % self._("HP"),
+                    u'<div class="combat-param">\n  <span class="combat-param-name">%s</span>:\n  <span class="combat-param-value">' % self._("HP"),
                     [".", ["glob", "member"], "p_hp"],
                     ' / ',
                     [".", ["glob", "member"], "p_max_hp"],
@@ -98,7 +106,7 @@ class Combats(mg.constructor.ConstructorModule):
                 ],
                 "order": 10.0
             },
-        ]
+        ])
 
-    def default_belowavatar(self):
-        return []
+    def default_belowavatar(self, lst):
+        pass
