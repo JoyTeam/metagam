@@ -473,21 +473,23 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             ent = {
                 "id": uuid4().hex if cmd == "new" else cmd,
             }
+            # test objects
+            combat = Combat(self.app(), None, code)
+            member = CombatMember(combat)
+            viewer = CombatMember(combat)
+            combat.join(member)
+            combat.join(viewer)
+            globs = {"combat": combat, "member": member, "viewer": viewer}
             # order
             ent["order"] = floatz(req.param("order"))
             # type
             tp = req.param("v_type")
             ent["type"] = tp
             if tp == "tpl":
-                # test objects
-                combat = Combat(self.app(), None, code)
-                member = CombatMember(combat)
-                viewer = CombatMember(combat)
-                combat.join(member)
-                combat.join(viewer)
-                ent["tpl"] = self.call("script.admin-text", "tpl", errors, globs={"combat": combat, "member": member, "viewer": viewer})
+                ent["tpl"] = self.call("script.admin-text", "tpl", errors, globs=globs)
             else:
                 errors["v_type"] = self._("Make a valid selection")
+            ent["visible"] = self.call("script.admin-expression", "visible", errors, globs=globs)
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -503,8 +505,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         # render form
         fields = [
             {"name": "order", "label": self._("Sorting order"), "value": ent.get("order")},
+            {"name": "visible", "label": self._("Visibility condition") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-expression", ent.get("visible", 1))},
             {"name": "type", "label": self._("Type of item"), "type": "combo", "value": ent.get("type"), "values": [("tpl", self._("MMOScript HTML template"))]},
-            {"name": "tpl", "label": self._("Item HTML template") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-text", ent.get("tpl")), "type": "textarea", "height": 300},
+            {"name": "tpl", "label": self._("Item HTML template") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-text", ent.get("tpl")), "type": "textarea", "height": 300, "condition": "[type] == 'tpl'"},
         ]
         self.call("admin.form", fields=fields)
 
