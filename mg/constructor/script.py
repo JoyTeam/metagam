@@ -418,6 +418,8 @@ class ScriptEngine(ConstructorModule):
                 raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=val[2]), env)
             return attval
         elif cmd == "index":
+            if len(val) < 3:
+                return None
             index = intz(self._evaluate(val[1], env)) + 2
             if index < 2:
                 index = 2
