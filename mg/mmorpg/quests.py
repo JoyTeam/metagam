@@ -1607,7 +1607,10 @@ class Quests(ConstructorModule):
                                                 self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
                                             self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
                                     elif cmd_code == "teleport":
-                                        loc = self.call("location.info", cmd[1])
+                                        locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                        if type(locid) != str and type(locid) != unicode:
+                                            raise QuestError(self._("Location id must be a string. Found %s" % type(locid).__name__))
+                                        loc = self.call("location.info", locid)
                                         if loc:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("teleporting %s") % htmlescape(loc.name_t), cls="quest-action", indent=indent+2)
@@ -1618,7 +1621,7 @@ class Quests(ConstructorModule):
                                                 tasklet.quest_teleported = set()
                                                 tasklet.quest_teleported.add(char.uuid)
                                         else:
-                                            raise QuestError(self._("Missing location %s") % cmd[1])
+                                            raise QuestError(self._("Missing location %s") % locid)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
