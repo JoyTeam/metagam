@@ -562,6 +562,12 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             existing_codes.add(act["code"])
         # processing request
         if req.ok():
+            combat = Combat(self.app(), None, code)
+            member1 = CombatMember(combat)
+            member2 = CombatMember(combat)
+            combat.join(member1)
+            combat.join(member2)
+            info = {}
             errors = {}
             # code
             act_code = req.param("code")
@@ -571,21 +577,51 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 errors["code"] = self._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
             elif act_code in existing_codes and act_code != action_code:
                 errors["code"] = self._("Action with the same code already exists")
+            else:
+                info["code"] = code
             # name
             name = req.param("name")
             if not name:
                 errors["name"] = self._("This field is mandatory")
+            else:
+                info["name"] = name
             # order
-            order = floatz(req.param("order"))
+            info["order"] = floatz(req.param("order"))
+            # available
+            info["available"] = self.call("script.admin-expression", "available", errors, globs={"combat": combat, "member": member1})
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
+            # targets
+            valid_targets = set(["none", "all", "enemies", "allies", "allies-myself", "myself", "script"])
+            targets = req.param("v_targets")
+            if not targets in valid_targets:
+                errors["v_targets"] = self._("Make a valid selection")
+            else:
+                info["targets"] = targets
+                if targets == "script":
+                    info["target_available"] = self.call("script.admin-expression", "target_available", errors, globs={"combat": combat, "member": member1, "target": member2})
+            if targets != "none" and targets != "myself":
+                info["target_all"] = True if req.param("target_all") else False
+                if not info["target_all"]:
+                    info["targets_limit"] = self.call("script.admin-expression", "targets_limit", errors, globs={"combat": combat, "member": member1})
+                    if req.param("targets_sort"):
+                        targets_sort = []
+                        for i in xrange(0, 5):
+                            if req.param("targets_sort_%d" % i).strip() != "":
+                                order = "desc" if req.param("v_targets_sort_order_%d" % i) == "desc" else "asc"
+                                targets_sort.append({
+                                    "expression": self.call("script.admin-expression", "targets_sort_%d" % i, errors, globs={"combat": combat, "member": member1}),
+                                    "order": order
+                                })
+                        if targets_sort:
+                            info["targets_sort"] = targets_sort
+                info["targets_min"] = self.call("script.admin-expression", "targets_min", errors, globs={"combat": combat, "member": member1})
+                info["targets_max"] = self.call("script.admin-expression", "targets_max", errors, globs={"combat": combat, "member": member1})
             # saving changes
-            info["code"] = act_code
-            info["name"] = name
-            info["order"] = order
-            if action_code is None:
-                actions.append(info)
+            if action_code:
+                actions = [a for a in actions if a["code"] != action_code]
+            actions.append(info)
             actions.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["code"], y["code"]))
             config = self.app().config_updater()
             config.set("combats-%s.actions" % code, actions)
@@ -596,7 +632,36 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "code", "label": self._("Action code"), "value": info.get("code")},
             {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
+            {"name": "available", "label": self._("Whether action is available to member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))},
+            {"type": "header", "html": self._("Available targets filter")},
+            {"name": "targets", "type": "combo", "label": self._("Available action targets"), "values": [
+                ("none", self._("None (not applicable)")),
+                ("all", self._("All combat members")),
+                ("enemies", self._("All enemies")),
+                ("allies", self._("All allies")),
+                ("allies-myself", self._("All allies and myself")),
+                ("myself", self._("Myself only")),
+                ("script", self._("Script expression")),
+            ], "value": info.get("targets", "enemies")},
+            {"name": "target_available", "label": self._("Member 'target' can be targeted by member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("target_available")) if "target_available" in info else "", "condition": "[targets]=='script'"},
+            {"type": "header", "html": self._("Available targets randomization"), "condition": "[targets] != 'none' && [targets] != 'myself'"},
+            {"name": "target_all", "label": self._("All matching targets are available for selection"), "type": "checkbox", "checked": info.get("target_all", True), "condition": "[targets] != 'none' && [targets] != 'myself'"},
+            {"name": "targets_limit", "label": self._("Targets number limit") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("targets_limit", 1)), "condition": "[targets] != 'none' && [targets] != 'myself' && ![target_all]"},
+            {"name": "targets_sort", "label": self._("Sort members before applying limit"), "type": "checkbox", "checked": True if info.get("targets_sort") else False, "condition": "![target_all] && [targets] != 'none' && [targets] != 'myself'"},
         ]
+        targets_sort = info.get("targets_sort", [])
+        for i in xrange(0, 5):
+            val = targets_sort[i] if i < len(targets_sort) else None
+            fields.append({"name": "targets_sort_%d" % i, "label": self._("Expression") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", val["expression"]) if val else "", "condition": "![target_all] && [targets_sort] && [targets] != 'none' && [targets] != 'myself'"})
+            fields.append({"name": "targets_sort_order_%d" % i, "label": self._("Sorting order"), "type": "combo", "values": [
+                ("asc", self._("Ascending")),
+                ("desc", self._("Descending")),
+            ], "value": val["order"] if val else "asc", "condition": "![target_all] && [targets_sort] && [targets] != 'none' && [targets] != 'myself'", "inline": True})
+        fields.extend([
+            {"type": "header", "html": self._("Number of possible targets"), "condition": "[targets] != 'none' && [targets] != 'myself'"},
+            {"name": "targets_min", "label": self._("Minimal number of targets allowed to select") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("targets_min", 1)), "condition": "[targets] != 'none' && [targets] != 'myself'"},
+            {"name": "targets_max", "label": self._("Maximal number of targets allowed to select") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("targets_max", 1)), "condition": "[targets] != 'none' && [targets] != 'myself'", "inline": True},
+        ])
         self.call("admin.form", fields=fields)
 
     def rules_edit_script(self, code):
