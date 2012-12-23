@@ -56,7 +56,7 @@ class CombatLocker(mg.constructor.ConstructorModule):
                 obj = minfo["object"]
                 mtype = obj[0]
                 if self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:], dry_run=True):
-                    raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % member.name))
+                    raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % obj.name))
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
@@ -134,6 +134,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.controllers = []
         self.rulesinfo = self.conf("combats-%s.rules" % rules, {})
         self.paramsinfo = self.conf("combats-%s.params" % rules, {})
+        self.actionsinfo = self.conf("combats-%s.actions" % rules, [])
         self.commands = []
         self.commands_channel = Channel()
 
@@ -351,6 +352,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         CombatParamsContainer.__init__(self)
         self.pending_actions = []
         self.controllers = []
+        self.clear_available_action_cache()
 
     def is_a_combat_member(self):
         return True
@@ -448,6 +450,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def turn_give(self):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
+        self.clear_available_action_cache()
         for controller in self.controllers:
             controller.turn_got()
 
@@ -463,6 +466,65 @@ class CombatMember(CombatObject, CombatParamsContainer):
         for controller in self.controllers:
             controller.turn_timeout()
 
+    # actions
+
+    def available_actions(self):
+        "Return list of actions available for the member"
+        if not self.may_turn:
+            return []
+        res = []
+        for act in self.combat.actionsinfo:
+            if self.action_available(act):
+                res.append(act)
+        return res
+
+    def clear_available_action_cache(self):
+        "Invalidate available actions cache"
+        self._available_action_cache = {}
+
+    def action_available(self, act):
+        "Return True if action is available for the member (cacheable)"
+        if not self.may_turn:
+            return False
+        try:
+            return False if self._available_action_cache[act["code"]] is None else True
+        except KeyError:
+            pass
+        available = self.call("script.evaluate-expression", act.get("available", 1), globs={"combat": self.combat, "member": self}, description=self._("Availability of combat action %s") % act["code"])
+        self._available_action_cache[act["code"]] = {} if available else None
+        return available
+
+    def target_available(self, act, target):
+        "Return True if given action can be targeted to given target (cacheable)"
+        if not self.may_turn:
+            return False
+        if not self.action_available(act):
+            return False
+        act_cache = self._available_action_cache[act["code"]]
+        try:
+            return act_cache[target.id]
+        except KeyError:
+            pass
+        targets = act.get("targets", "enemies")
+        if targets == "none":
+            available = False
+        elif targets == "all":
+            available = True
+        elif targets == "enemies":
+            available = self.team != target.team
+        elif targets == "allies":
+            available = self.team == target.team and self.id != target.id
+        elif targets == "allies-myself":
+            available = self.team == target.team
+        elif targets == "myself":
+            available = self.id == target.id
+        elif targets == "script":
+            available = self.call("script.evaluate-expression", act.get("target_available"), globs={"combat": self.combat, "member": self, "target": target}, description=self._("Availability of combat action %s targeted to specific target") % act["code"])
+        else:
+            available = False
+        act_cache[target.id] = available
+        return available
+
 class RequestStateCommand(CombatCommand):
     "Request combat state and deliver it to the controller"
     def __init__(self, controller, marker, fqn="mg.mmorpg.combats.core.RequestStateCommand"):
@@ -473,6 +535,7 @@ class RequestStateCommand(CombatCommand):
     def execute(self):
         self.controller.connected = True
         self.controller.clear_last_params()
+        self.controller.clear_sent_actions()
         self.controller.deliver_marker(self.marker)
         self.controller.combat_params_changed(self.combat.all_params())
         for member in self.combat.members:
@@ -490,6 +553,7 @@ class CombatMemberController(CombatObject):
         self.member = member
         self.connected = False
         self.clear_last_params()
+        self.clear_sent_actions()
         self.tags = set()
 
     def clear_last_params(self):
@@ -497,8 +561,28 @@ class CombatMemberController(CombatObject):
         self._last_combat_sent_params = {}
         self._last_member_sent_params = {}
 
+    def clear_sent_actions(self):
+        "Mark all actions as never sent"
+        self._sent_actions = set()
+
     def turn_got(self):
         "This command notifies controller that member has got a right to make a turn"
+        actions = []
+        for act in self.member.available_actions():
+            targets = []
+            for target in self.combat.members:
+                if self.member.target_available(act, target):
+                    targets.append(target.id)
+            if targets:
+                actions.append({
+                    "action": act["code"],
+                    "targets": targets,
+                })
+                # deliver action description
+                if act["code"] not in self._sent_actions:
+                    self._sent_actions.add(act["code"])
+                    self.deliver_action(act)
+        self.deliver_available_actions(actions)
 
     def turn_lost(self):
         "This command notifies controller that member has lost a right to make a turn"
@@ -577,6 +661,12 @@ class CombatMemberController(CombatObject):
 
     def deliver_myself(self):
         "Called when we have to deliver myself identifier to client"
+
+    def deliver_action(self, action):
+        "Called when we have to deliver action description to the client"
+
+    def deliver_available_actions(self, actions):
+        "Called when we have to deliver list of available actions to the client"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

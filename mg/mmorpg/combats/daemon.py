@@ -327,6 +327,7 @@ class WebController(CombatMemberController):
     def send(self, method, **kwargs):
         kwargs["method_cls"] = "combat"
         kwargs["method"] = method
+        kwargs["combat"] = self.combat.uuid
         self.outbound.append(kwargs)
 
     def idle(self):
@@ -338,16 +339,28 @@ class WebController(CombatMemberController):
     def deliver_marker(self, marker):
         self.outbound = []
         self.char.invalidate_sessions()
-        self.send("state_marker", combat=self.combat.uuid, marker=marker)
+        self.send("state_marker", marker=marker)
 
     def deliver_combat_params(self, params):
-        self.send("combat_params", combat=self.combat.uuid, params=params)
+        self.send("combat_params", params=params)
 
     def deliver_member_joined(self, member):
-        self.send("member_joined", combat=self.combat.uuid, member=member.id)
+        self.send("member_joined", member=member.id)
 
     def deliver_member_params(self, member, params):
-        self.send("member_params", combat=self.combat.uuid, member=member.id, params=params)
+        self.send("member_params", member=member.id, params=params)
 
     def deliver_myself(self):
-        self.send("myself", combat=self.combat.uuid, member=self.member.id)
+        self.send("myself", member=self.member.id)
+
+    def deliver_action(self, action):
+        act = {
+            "code": action.get("code"),
+            "name": action.get("name"),
+        }
+        self.send("action", action=act)
+        print "action: %s" % act
+
+    def deliver_available_actions(self, actions):
+        self.send("available_actions", actions=actions)
+        print "actions: %s" % actions
