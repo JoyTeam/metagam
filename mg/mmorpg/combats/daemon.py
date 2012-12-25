@@ -359,8 +359,15 @@ class WebController(CombatMemberController):
             "name": action.get("name"),
         }
         self.send("action", action=act)
-        print "action: %s" % act
 
     def deliver_available_actions(self, actions):
         self.send("available_actions", actions=actions)
-        print "actions: %s" % actions
+
+    def deliver_turn_got(self):
+        self.send("turn_got")
+
+    def deliver_turn_lost(self):
+        self.send("turn_lost")
+
+    def deliver_turn_timeout(self):
+        self.send("turn_timeout")

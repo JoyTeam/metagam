@@ -60,11 +60,12 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createMain: function () {
         var self = this;
-        self.mainComponent = new Ext.BoxComponent({
+        self.mainComponent = new Ext.Container({
             id: 'combat-main',
+            layout: 'fit',
             border: false,
             autoWidth: true,
-            html: 'Main content'
+            items: []
         });
     },
 
@@ -104,6 +105,7 @@ var GenericCombat = Ext.extend(Combat, {
                 region: 'center',
                 border: false,
                 autoScroll: true,
+                layout: 'fit',
                 bodyCfg: {
                     cls: 'x-panel-body combat-main'
                 },
@@ -182,6 +184,59 @@ var GenericCombat = Ext.extend(Combat, {
     forEachElement: function (cls, callback) {
         var self = this;
         Ext.getBody().query('.c-' + cls).forEach(callback);
+    },
+
+    /*
+     * Notify combat that its controlled member
+     * got right of turn
+     */
+    turnGot: function () {
+        var self = this;
+        GenericCombat.superclass.turnGot.call(self);
+        self.showActionSelector();
+    },
+
+    /*
+     * Notify combat that its controlled member
+     * lost right of turn
+     */
+    turnLost: function () {
+        var self = this;
+        GenericCombat.superclass.turnLost.call(self);
+        self.hideActionSelector();
+    },
+
+    /*
+     * Show interface where player can choose an action
+     */
+    showActionSelector: function () {
+        var self = this;
+        if (!self.myself) {
+            return;
+        }
+        if (!self.actionSelector) {
+            self.actionSelector = self.newActionSelector();
+        }
+        self.actionSelector.show();
+    },
+
+    /*
+     * Hide interface where player can choose an action
+     */
+    hideActionSelector: function () {
+        var self = this;
+        if (!self.actionSelector) {
+            return;
+        }
+        self.actionSelector.hide();
+    },
+
+    /*
+     * Create new action selector (override to use another class)
+     */
+    newActionSelector: function () {
+        var self = this;
+        return new GenericCombatActionSelector(self);
     }
 });
 
@@ -361,6 +416,223 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                     }
                 }
             }
+        }
+    }
+});
+
+var GenericCombatActionSelector = Ext.extend(Object, {
+    constructor: function (combat) {
+        var self = this;
+        self.combat = combat;
+        self.shown = false;
+    },
+
+    /*
+     * Show action selector
+     */
+    show: function () {
+        var self = this;
+        if (self.shown) {
+            return;
+        }
+        if (!self.actionItems) {
+            self.action = null;
+            self.actionInfo = null;
+            self.actionItems = self.newActionItems();
+        }
+        self.cmp = new Ext.Container({
+            xtype: 'container',
+            layout: 'hbox',
+            border: false,
+            layoutConfig: {
+                align: 'middle'
+            },
+            items: [
+                self.actionItems
+            ]
+        });
+        self.combat.mainComponent.removeAll(true);
+        self.combat.mainComponent.add(self.cmp);
+        self.combat.mainComponent.doLayout();
+        self.shown = true;
+    },
+
+    /*
+     * Hide action selector
+     */
+    hide: function () {
+        var self = this;
+        if (!self.shown) {
+            return;
+        }
+        self.shown = false;
+        // Detach reusable items
+        if (self.actionItems) {
+            self.actionItems.parent.remove(self.actionItems.ownerCt, false);
+        }
+        if (self.targetItems) {
+            self.targetItems.parent.remove(self.targetItems.ownerCt, false);
+        }
+        // Destroy all other items
+        self.combat.mainComponent.removeAll(true);
+        self.combat.mainComponent.doLayout();
+        delete self.cmp;
+    },
+
+    /*
+     * Create action selector component
+     */
+    newActionItems: function () {
+        var self = this;
+        var items = [];
+        for (var i = 0; i < self.combat.availableActions.length; i++) {
+            var ent = self.combat.availableActions[i];
+            var act = self.combat.actions[ent.action];
+            if (!act) {
+                continue;
+            }
+            (function (ent, act) {
+                var cmp = new Ext.BoxComponent({
+                    id: 'combat-action-id-' + act.code,
+                    cls: 'combat-action-selector combat-item-deselected combat-action-deselected',
+                    overCls: 'combat-item-over',
+                    html: act.name,
+                    listeners: {
+                        render: function () {
+                            this.getEl().on('click', function () {
+                                self.selectAction(ent, act);
+                            });
+                        }
+                    }
+                });
+                items.push(cmp);
+            })(ent, act);
+        }
+        return new Ext.Container({
+            id: 'combat-actions-box',
+            items: items,
+            flex: 1,
+            border: false
+        });
+    },
+
+    /*
+     * Select specified action and show prompt to the user to choose action attributes
+     */
+    selectAction: function(act, actInfo) {
+        var self = this;
+        Ext.select('.combat-action-selected', self.actionItems).
+            removeClass('combat-item-selected').
+            removeClass('combat-action-selected').
+            addClass('combat-item-deselected').
+            addClass('combat-action-deselected');
+        self.action = act;
+        self.actionInfo = actInfo;
+        if (act) {
+            Ext.select('#combat-action-id-' + actInfo.code).
+                removeClass('combat-item-deselected').
+                removeClass('combat-action-deselected').
+                addClass('combat-item-selected').
+                addClass('combat-action-selected');
+            if (act.targets_max > 0) {
+                if (!self.targetItems) {
+                    self.targetItems = self.newTargetItems();
+                }
+                if (!self.targetItems.ownerCt) {
+                    self.cmp.add(self.targetItems);
+                }
+                // TODO: show/hide targets
+                self.cmp.doLayout();
+            } else if (self.targetItems && self.targetItems.ownerCt) {
+                self.targetItems.ownerCt.remove(self.targetItems, false);
+            }
+        }
+    },
+
+    /*
+     * Create action selector component.
+     */
+    newTargetItems: function () {
+        var self = this;
+        var items = [];
+        for (var memberId in self.combat.members) {
+            if (!self.combat.members.hasOwnProperty(memberId)) {
+                continue;
+            }
+            (function (memberId) {
+                var member = self.combat.members[memberId];
+                var cmp = new Ext.BoxComponent({
+                    html: member.params.name,
+                    overCls: 'combat-item-over',
+                    listeners: {
+                        render: function () {
+                            this.getEl().on('click', function () {
+                                self.toggleTarget(member);
+                            });
+                            this.getEl().on('mouseover', function () {
+                                self.showEnemy(member);
+                            });
+                        }
+                    }
+                });
+                member.targetCmp = cmp;
+                items.push(cmp);
+            })(memberId);
+        }
+        return new Ext.Container({
+            id: 'combat-targets-box',
+            items: items,
+            border: false,
+            flex: 1,
+            listeners: {
+                render: function () {
+                    for (var memberId in self.combat.members) {
+                        if (!self.combat.members.hasOwnProperty(memberId)) {
+                            continue;
+                        }
+                        self.selectTarget(self.combat.members[memberId], false);
+                    }
+                }
+            }
+        });
+    },
+
+    /*
+     * Select/deselect action target
+     */
+    selectTarget: function (member, state) {
+        var self = this;
+        member.targeted = state;
+        if (member.targetCmp) {
+            if (state) {
+                member.targetCmp.removeClass('combat-item-deselected');
+                member.targetCmp.removeClass('combat-target-deselected');
+                member.targetCmp.addClass('combat-item-selected');
+                member.targetCmp.addClass('combat-target-selected');
+            } else {
+                member.targetCmp.removeClass('combat-item-selected');
+                member.targetCmp.removeClass('combat-target-selected');
+                member.targetCmp.addClass('combat-item-deselected');
+                member.targetCmp.addClass('combat-target-deselected');
+            }
+        }
+    },
+
+    /*
+     * Toggle "selected" state for given member
+     */
+    toggleTarget: function (member) {
+        var self = this;
+        self.selectTarget(member, !member.targeted);
+    },
+
+    /*
+     * Show enemy avatar
+     */
+    showEnemy: function (member) {
+        var self = this;
+        if (self.combat.enemyAvatarComponent) {
+            self.combat.enemyAvatarComponent.update(member.renderAvatarHTML());
         }
     }
 });

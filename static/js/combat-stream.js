@@ -20,6 +20,26 @@ Combat.myself = function(pkt) {
     this.call(pkt.combat, 'setMyself', pkt.member);
 };
 
+Combat.action = function(pkt) {
+    this.call(pkt.combat, 'actionInfo', pkt.action);
+};
+
+Combat.available_actions = function(pkt) {
+    this.call(pkt.combat, 'setAvailableActions', pkt.actions);
+};
+
+Combat.turn_got = function(pkt) {
+    this.call(pkt.combat, 'turnGot');
+};
+
+Combat.turn_lost = function(pkt) {
+    this.call(pkt.combat, 'turnLost');
+};
+
+Combat.turn_timeout = function(pkt) {
+    this.call(pkt.combat, 'turnTimeout');
+};
+
 /* Call combat method */
 Combat.call = function (combat_id, method) {
     var args = Array.prototype.slice.call(arguments, 2);
@@ -38,7 +58,7 @@ Combat.call = function (combat_id, method) {
             }
         }
     } catch (e) {
-        Game.error(gt.gettext('Exception'), e);
+        Game.error(sprintf(gt.gettext('Exception in %s'), 'combat.' + method), e);
     }
 };
 

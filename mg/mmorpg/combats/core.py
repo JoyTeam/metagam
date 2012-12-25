@@ -364,7 +364,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def idle(self):
         "Called when member can do any background processing"
         # DEBUG: Make some parameter change randomly
-        self.set_param("p_test", random.random())
+        #self.set_param("p_test", random.random())
         for controller in self.controllers:
             controller.idle()
 
@@ -542,6 +542,8 @@ class RequestStateCommand(CombatCommand):
             self.controller.deliver_member_joined(member)
             self.controller.member_params_changed(member, member.all_params())
         self.controller.deliver_myself()
+        if self.controller.member.may_turn:
+            self.controller.turn_got()
 
 class CombatMemberController(CombatObject):
     """
@@ -569,26 +571,41 @@ class CombatMemberController(CombatObject):
         "This command notifies controller that member has got a right to make a turn"
         actions = []
         for act in self.member.available_actions():
-            targets = []
-            for target in self.combat.members:
-                if self.member.target_available(act, target):
-                    targets.append(target.id)
-            if targets:
+            show = False
+            if act.get("targets") == "none":
+                show = True
+                targets_min = 0
+                targets_max = 0
+            else:
+                targets = []
+                for target in self.combat.members:
+                    if self.member.target_available(act, target):
+                        targets.append(target.id)
+                if targets:
+                    targets_min = self.call("script.evaluate-expression", act.get("targets_min", 1), globs={"combat": self.combat, "viewer": self.member}, description=self._("Minimal number of targets for combat action %s") % act["code"])
+                    targets_max = self.call("script.evaluate-expression", act.get("targets_max", 1), globs={"combat": self.combat, "viewer": self.member}, description=self._("Maximal number of targets for combat action %s") % act["code"])
+                    show = True
+            if show:
                 actions.append({
                     "action": act["code"],
                     "targets": targets,
+                    "targets_min": targets_min,
+                    "targets_max": targets_max,
                 })
                 # deliver action description
                 if act["code"] not in self._sent_actions:
                     self._sent_actions.add(act["code"])
                     self.deliver_action(act)
         self.deliver_available_actions(actions)
+        self.deliver_turn_got()
 
     def turn_lost(self):
         "This command notifies controller that member has lost a right to make a turn"
+        self.deliver_turn_lost()
 
     def turn_timeout(self):
         "This command notifies controller that member hasn't made a turn"
+        self.deliver_turn_timeout()
 
     def idle(self):
         "Called when controller can do any background processing"
@@ -667,6 +684,15 @@ class CombatMemberController(CombatObject):
 
     def deliver_available_actions(self, actions):
         "Called when we have to deliver list of available actions to the client"
+
+    def deliver_turn_got(self):
+        "Called when we have to notify client about its controlled member got a turn"
+
+    def deliver_turn_lost(self):
+        "Called when we have to notify client about its controlled member lost a turn"
+
+    def deliver_turn_timeout(self):
+        "Called when we have to notify client about its controlled member timed out"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

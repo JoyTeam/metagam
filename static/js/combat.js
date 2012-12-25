@@ -87,11 +87,17 @@ var Combat = Ext.extend(Object, {
         if (method == 'stateMarker') {
             if (self._callsBlocked && args[0] == self._queryStateMarker) {
                 self._callsBlocked = false;
+                console.log('combat.init');
             }
             return;
         }
         if (self._callsBlocked) {
             return;
+        }
+        if (args.length) {
+            console.log('combat.' + method, (JSON && JSON.stringify) ? JSON.stringify(args) : args);
+        } else {
+            console.log('combat.' + method);
         }
         /* Look for method by its name */
         method = self[method];
@@ -118,6 +124,8 @@ var Combat = Ext.extend(Object, {
         var self = this;
         self.members = {};
         self.params = {};
+        self.actions = {};
+        self.availableActions = [];
     },
 
     /*
@@ -193,6 +201,45 @@ var Combat = Ext.extend(Object, {
             return self.params[m[1]];
         }
         return undefined;
+    },
+
+    /*
+     * Called when server sends action description
+     * to the client
+     */
+    actionInfo: function (action) {
+        var self = this;
+        self.actions[action.code] = action;
+    },
+
+    /*
+     * Called every time when server notifies client
+     * about its controlled member may perform listed
+     * actions
+     */
+    setAvailableActions: function (actions) {
+        var self = this;
+        self.availableActions = actions;
+    },
+
+    /*
+     * Called when client gets turn right
+     */
+    turnGot: function () {
+        var self = this;
+    },
+
+    /*
+     * Called when client loses turn right
+     */
+    turnLost: function () {
+        var self = this;
+    },
+
+    /*
+     * Called when client times out
+     */
+    turnTimeout: function () {
     }
 });
 

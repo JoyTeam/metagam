@@ -578,7 +578,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             elif act_code in existing_codes and act_code != action_code:
                 errors["code"] = self._("Action with the same code already exists")
             else:
-                info["code"] = code
+                info["code"] = act_code
             # name
             name = req.param("name")
             if not name:
