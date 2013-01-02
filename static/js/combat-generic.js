@@ -14,6 +14,7 @@ var GenericCombat = Ext.extend(Combat, {
         self.logHeight = 50;
         self.aboveAvatarParams = [];
         self.belowAvatarParams = [];
+        self.goButtonText = 'Go';
     },
 
     /*
@@ -495,7 +496,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 var cmp = new Ext.BoxComponent({
                     id: 'combat-action-id-' + act.code,
                     cls: 'combat-action-selector combat-item-deselected combat-action-deselected',
-                    overCls: 'combat-item-over',
                     html: act.name,
                     listeners: {
                         render: function () {
@@ -563,7 +563,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 var member = self.combat.members[memberId];
                 var cmp = new Ext.BoxComponent({
                     html: member.params.name,
-                    overCls: 'combat-item-over',
                     listeners: {
                         render: function () {
                             this.getEl().on('click', function () {
@@ -616,6 +615,28 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 member.targetCmp.addClass('combat-target-deselected');
             }
         }
+        // Display "Go" button
+        var anyTargeted = false;
+        for (var memberId in self.combat.members) {
+            if (!self.combat.members.hasOwnProperty(memberId)) {
+                continue;
+            }
+            if (self.combat.members[memberId].targeted) {
+                anyTargeted = true;
+                break;
+            }
+        }
+        if (anyTargeted) {
+            if (!self.goButton) {
+                self.goButton = self.newGoButton();
+            }
+            if (!self.goButton.ownerCt) {
+                self.cmp.add(self.goButton);
+            }
+            self.cmp.doLayout();
+        } else if (self.goButton && self.goButton.ownerCt) {
+            self.goButton.ownerCt.remove(self.goButton, false);
+        }
     },
 
     /*
@@ -634,5 +655,21 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (self.combat.enemyAvatarComponent) {
             self.combat.enemyAvatarComponent.update(member.renderAvatarHTML());
         }
+    },
+
+    /*
+     * Create go button component.
+     */
+    newGoButton: function () {
+        var self = this;
+        return new Ext.Container({
+            id: 'combat-go-box',
+            items: [{
+                xtype: 'button',
+                text: self.combat.goButtonText
+            }],
+            border: false,
+            flex: 1
+        });
     }
 });

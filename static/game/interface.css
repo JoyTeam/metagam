@@ -269,5 +269,6 @@ area { border: none }
 .combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer; padding: 10px }
 #combat-actions-box { padding: 10px 40px 10px 10px }
 #combat-targets-box { padding: 10px 40px 10px 10px }
-.combat-item-over { background-color: #606060 !important; color: #ffffff !important }
+.combat-item-deselected:hover { background-color: #607060; color: #ffffff }
+.combat-item-selected:hover { background-color: #505050; color: #ffffff }
 
