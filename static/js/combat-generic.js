@@ -71,82 +71,100 @@ var GenericCombat = Ext.extend(Combat, {
     },
 
     /*
-     * Generate list of viewport items
+     * Generate viewport parameters
      */
-    viewportItems: function () {
+    viewportParams: function () {
         var self = this;
-        var viewportItems = [];
+
+        // myAvatar, mainComponent, enemyAvatar
+        var topItems = [];
         if (self.myAvatarComponent) {
-            viewportItems.push({
+            topItems.push({
                 xtype: 'container',
-                region: 'west',
                 width: self.myAvatarWidth,
                 autoScroll: false,
-                layout: 'fit',
                 border: false,
                 split: self.myAvatarResize,
                 items: self.myAvatarComponent
             });
         }
-        if (self.enemyAvatarComponent) {
-            viewportItems.push({
+        if (self.mainComponent) {
+            topItems.push({
                 xtype: 'container',
-                region: 'east',
+                border: false,
+                autoScroll: true,
+                bodyCfg: {
+                    cls: 'x-panel-body combat-main'
+                },
+                flex: 1,
+                items: self.mainComponent
+            });
+        }
+        if (self.enemyAvatarComponent) {
+            topItems.push({
+                xtype: 'container',
                 width: self.enemyAvatarWidth,
                 autoScroll: false,
-                layout: 'fit',
                 border: false,
                 split: self.enemyAvatarResize,
                 items: self.enemyAvatarComponent
             });
         }
-        if (self.mainComponent) {
-            viewportItems.push({
-                xtype: 'container',
-                region: 'center',
-                border: false,
-                autoScroll: true,
-                layout: 'fit',
-                bodyCfg: {
-                    cls: 'x-panel-body combat-main'
-                },
-                items: self.mainComponent
-            });
-        }
+        var viewportParams = {
+            xtype: 'container',
+            border: false,
+            layout: 'hbox',
+            layoutConfig: {
+                align: 'middle'
+            },
+            items: topItems
+        };
+
         if (self.logComponent) {
             if (self.logLayout == 0) {
-                viewportItems = [
-                    {
-                        xtype: 'container',
-                        region: 'north',
-                        layout: 'border',
-                        height: self.combatHeight,
-                        border: false,
-                        split: self.logResize,
-                        items: viewportItems
-                    },
-                    {
-                        xtype: 'container',
-                        region: 'center',
-                        border: false,
-                        autoScroll: true,
-                        items: self.logComponent
-                    }
-                ];
-            } else if (self.logLayout == 1) {
-                viewportItems.push({
+                viewportParams.region = 'north';
+                viewportParams.height = self.combatHeight;
+                viewportParams.split = self.logResize;
+                viewportParams = {
                     xtype: 'container',
-                    region: 'south',
-                    height: self.logHeight,
-                    autoScroll: true,
-                    layout: 'fit',
+                    layout: 'border',
                     border: false,
-                    split: self.logResize,
-                    items: self.logComponent
-                });
+                    items: [
+                        viewportParams,
+                        {
+                            xtype: 'container',
+                            region: 'center',
+                            border: false,
+                            autoScroll: true,
+                            layout: 'fit',
+                            items: self.logComponent
+                        }
+                    ]
+                };
+            } else if (self.logLayout == 1) {
+                viewportParams.region = 'center';
+                viewportParams = {
+                    xtype: 'container',
+                    layout: 'border',
+                    border: false,
+                    items: [
+                        viewportParams,
+                        {
+                            xtype: 'container',
+                            region: 'south',
+                            height: self.logHeight,
+                            border: false,
+                            autoScroll: true,
+                            layout: 'fit',
+                            split: self.logResize,
+                            items: self.logComponent
+                        }
+                    ]
+                };
             }
         }
-        return viewportItems;
+
+        return viewportParams;
     },
 
     /*
@@ -154,10 +172,7 @@ var GenericCombat = Ext.extend(Combat, {
      */
     render: function () {
         var self = this;
-        self.viewportComponent = new Ext.Viewport({
-            layout: 'border',
-            items: self.viewportItems()
-        });
+        self.viewportComponent = new Ext.Viewport(self.viewportParams());
     },
 
     /*
@@ -219,6 +234,7 @@ var GenericCombat = Ext.extend(Combat, {
             self.actionSelector = self.newActionSelector();
         }
         self.actionSelector.show();
+        self.viewportComponent.doLayout();
     },
 
     /*
@@ -230,6 +246,7 @@ var GenericCombat = Ext.extend(Combat, {
             return;
         }
         self.actionSelector.hide();
+        self.viewportComponent.doLayout();
     },
 
     /*
@@ -454,7 +471,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         });
         self.combat.mainComponent.removeAll(true);
         self.combat.mainComponent.add(self.cmp);
-        self.combat.mainComponent.doLayout();
+        self.combat.viewportComponent.doLayout();
         self.shown = true;
     },
 
@@ -467,16 +484,11 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             return;
         }
         self.shown = false;
-        // Detach reusable items
-        if (self.actionItems) {
-            self.actionItems.parent.remove(self.actionItems.ownerCt, false);
-        }
-        if (self.targetItems) {
-            self.targetItems.parent.remove(self.targetItems.ownerCt, false);
-        }
         // Destroy all other items
+        self.actionItems = undefined;
+        self.targetItems = undefined;
         self.combat.mainComponent.removeAll(true);
-        self.combat.mainComponent.doLayout();
+        self.combat.viewportComponent.doLayout();
         delete self.cmp;
     },
 
@@ -537,14 +549,13 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             if (act.targets_max > 0) {
                 if (!self.targetItems) {
                     self.targetItems = self.newTargetItems();
-                }
-                if (!self.targetItems.ownerCt) {
                     self.cmp.add(self.targetItems);
                 }
                 // TODO: show/hide targets
-                self.cmp.doLayout();
-            } else if (self.targetItems && self.targetItems.ownerCt) {
-                self.targetItems.ownerCt.remove(self.targetItems, false);
+                self.combat.viewportComponent.doLayout();
+            } else if (self.targetItems) {
+                self.targetItems.ownerCt.remove(self.targetItems, true);
+                self.targetItems = undefined;
             }
         }
     },
@@ -629,14 +640,13 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (anyTargeted) {
             if (!self.goButton) {
                 self.goButton = self.newGoButton();
-            }
-            if (!self.goButton.ownerCt) {
                 self.cmp.add(self.goButton);
             }
-            self.cmp.doLayout();
-        } else if (self.goButton && self.goButton.ownerCt) {
-            self.goButton.ownerCt.remove(self.goButton, false);
+        } else if (self.goButton) {
+            self.goButton.ownerCt.remove(self.goButton, true);
+            self.goButton = undefined;
         }
+        self.combat.viewportComponent.doLayout();
     },
 
     /*
@@ -654,6 +664,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         var self = this;
         if (self.combat.enemyAvatarComponent) {
             self.combat.enemyAvatarComponent.update(member.renderAvatarHTML());
+            self.combat.viewportComponent.doLayout();
         }
     },
 
