@@ -15,6 +15,8 @@ var GenericCombat = Ext.extend(Combat, {
         self.aboveAvatarParams = [];
         self.belowAvatarParams = [];
         self.goButtonText = 'Go';
+        self.avatarWidth = 120;
+        self.avatarHeight = 220;
     },
 
     /*
@@ -325,7 +327,9 @@ var GenericCombatMember = Ext.extend(CombatMember, {
         if (!image) {
             return '';
         }
-        return '<div class="combat-member-image"><img class="c-m-' + self.id + '-image" src="' + image + '" alt="" /></div>';
+        return '<div class="combat-member-image"><img class="c-m-' +
+            self.id + '-image" src="' + image + '" alt="" style="width: ' +
+            self.combat.avatarWidth + 'px; height: ' + self.combat.avatarHeight + 'px" /></div>';
     },
 
     /*

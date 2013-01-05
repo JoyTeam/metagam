@@ -65,6 +65,9 @@ class Combats(mg.constructor.ConstructorModule):
                         self.call("combats.default-%s" % pos, params)
                         params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
                     vars["generic_%s" % pos] = json.dumps(params)
+            dim_avatar = rules.get("dim_avatar", [120, 220])
+            vars["combat_avatar_width"] = dim_avatar[0]
+            vars["combat_avatar_height"] = dim_avatar[1]
             try:
                 content = self.call("game.parse_internal", "combat-rules-%s.html" % combat.rules, vars)
             except TemplateNotFound:
