@@ -130,10 +130,9 @@ var Combat = Ext.extend(Object, {
 
     /*
      * Set combat parameter "key" to value "value"
+     * Old value is passed in oldValue argument.
      */
-    setParam: function (key, value) {
-        var self = this;
-        self.params[key] = value;
+    setParam: function (key, value, oldValue) {
     },
 
     /*
@@ -142,9 +141,16 @@ var Combat = Ext.extend(Object, {
      */
     combatParamsChanged: function (params) {
         var self = this;
+        var oldvals = [];
         for (var key in params) {
             if (params.hasOwnProperty(key)) {
-                self.setParam(key, params[key]);
+                oldvals[key] = self.params[key];
+                self.params[key] = params[key];
+            }
+        }
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                self.setParam(key, params[key], oldvals[key]);
             }
         }
     },
@@ -252,11 +258,10 @@ var CombatMember = Ext.extend(Object, {
     },
 
     /*
-     * Set member parameter "key" to value "value"
+     * Set member parameter "key" to value "value".
+     * Old value is passed in oldValue argument.
      */
-    setParam: function (key, value) {
-        var self = this;
-        self.params[key] = value;
+    setParam: function (key, value, oldvalue) {
     },
 
     /*
@@ -265,9 +270,16 @@ var CombatMember = Ext.extend(Object, {
      */
     paramsChanged: function (params) {
         var self = this;
+        var oldvals = [];
         for (var key in params) {
             if (params.hasOwnProperty(key)) {
-                self.setParam(key, params[key]);
+                oldvals[key] = self.params[key];
+                self.params[key] = params[key];
+            }
+        }
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                self.setParam(key, params[key], oldvals[key]);
             }
         }
     },

@@ -79,6 +79,8 @@ class PCompareOp(Parsing.Precedence):
     "%left pCompareOp >pNotOp"
 class TokenEquals(Parsing.Token):
     "%token equals [pCompareOp]"
+class TokenNotEquals(Parsing.Token):
+    "%token notequals [pCompareOp]"
 class TokenLessThan(Parsing.Token):
     "%token lt [pCompareOp]"
 class TokenGreaterThan(Parsing.Token):
@@ -234,6 +236,10 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr equals Expr [pCompareOp]"
         self.val = ["==", exprA.val, exprB.val]
 
+    def reduceNotEquals(self, exprA, NotEqualsOp, exprB):
+        "%reduce Expr notequals Expr [pCompareOp]"
+        self.val = ["!=", exprA.val, exprB.val]
+
     def reduceLessThan(self, exprA, LessThanOp, exprB):
         "%reduce Expr lt Expr [pCompareOp]"
         self.val = ["<", exprA.val, exprB.val]
@@ -292,7 +298,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Lr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -307,6 +313,7 @@ class ScriptParser(Parsing.Lr, Module):
         ".": TokenDot,
         ",": TokenComma,
         "==": TokenEquals,
+        "!=": TokenNotEquals,
         "=": TokenAssign,
         ">": TokenGreaterThan,
         "<": TokenLessThan,

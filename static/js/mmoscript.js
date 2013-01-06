@@ -1,10 +1,14 @@
 var MMOScript = {
     unaryOps: {
+        'not': true
+    },
+    binaryOps: {
         '+': true,
         '-': true,
         '*': true,
         '/': true,
         '==': true,
+        '!=': true,
         'in': true,
         '<': true,
         '>': true,
@@ -12,9 +16,6 @@ var MMOScript = {
         '>=': true,
         'and': true,
         'or': true
-    },
-    binaryOps: {
-        'not': true
     },
     ternaryOps: {
         '?': true
@@ -60,7 +61,7 @@ MMOScript.evaluate = function (val, env) {
             return arg1 / arg2;
         }
     }
-    if (cmd == '==') {
+    if (cmd == '==' || cmd == '!=') {
         var arg1 = self.evaluate(val[1], env);
         var arg2 = self.evaluate(val[2], env);
         var s1 = self.isString(arg1);
@@ -70,7 +71,11 @@ MMOScript.evaluate = function (val, env) {
         } else if (s2 && !s1) {
             arg2 = self.toNumber(arg2);
         }
-        return (arg1 == arg2) ? 1 : 0;
+        if (cmd == '==') {
+            return (arg1 == arg2) ? 1 : 0;
+        } else {
+            return (arg1 != arg2) ? 1 : 0;
+        }
     }
     if (cmd == 'in') {
         var arg1 = self.toString(self.evaluate(val[1], env));

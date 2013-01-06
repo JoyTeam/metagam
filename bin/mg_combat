@@ -22,6 +22,7 @@ def main():
     app.load([
         "mg.core.web.Web",
         "mg.core.cluster.Cluster",
+        "mg.core.emails.Email",
     ])
     # run combat service
     ext_app.load([

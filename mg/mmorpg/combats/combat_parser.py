@@ -17,6 +17,12 @@ class TokenDamage(Parsing.Token):
 class TokenSet(Parsing.Token):
     "%token set"
 
+class TokenSelectTarget(Parsing.Token):
+    "%token selecttarget"
+
+class TokenWhere(Parsing.Token):
+    "%token where"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -85,6 +91,10 @@ class CombatStatement(Parsing.Nonterm):
             raise Parsing.SyntaxError(assign.script_parser._("Invalid usage of assignment operator"))
         self.val = ["set", lvalue.val[1], lvalue.val[2], rvalue.val]
 
+    def reduceSelectTarget(self, st, member, where, cond):
+        "%reduce selecttarget Expr where Expr"
+        self.val = ["selecttarget", member.val, cond.val]
+
 class CombatScript(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -107,6 +117,8 @@ class CombatScriptParser(ScriptParser):
     syms = ScriptParser.syms.copy()
     syms["damage"] = TokenDamage
     syms["set"] = TokenSet
+    syms["selecttarget"] = TokenSelectTarget
+    syms["where"] = TokenWhere
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.combats.combat_parser.CombatScriptParser")

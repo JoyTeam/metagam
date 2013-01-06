@@ -5,6 +5,7 @@ import weakref
 import re
 from uuid import uuid4
 import random
+from mg.constructor.script_classes import ScriptRuntimeError
 
 re_param_attr = re.compile(r'^p_')
 
@@ -56,7 +57,7 @@ class CombatLocker(mg.constructor.ConstructorModule):
                 obj = minfo["object"]
                 mtype = obj[0]
                 if self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:], dry_run=True):
-                    raise CombatMemberBusyError(format_gender(member.sex, self._("%s can't join combat. [gender?She:He] is busy") % obj.name))
+                    raise CombatMemberBusyError(format_gender(minfo.get("sex", 0), self._("%s can't join combat. [gender?She:He] is busy") % minfo.get("name", mtype)))
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
@@ -83,6 +84,8 @@ class CombatParamsContainer(object):
 
     def set_param(self, key, val):
         "Set parameter value"
+        if self._params.get(key) == val:
+            return
         self._params[key] = val
         self._changed_params.add(key)
         self._all_params = None
@@ -283,14 +286,17 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         m = re_param_attr.match(attr)
         if m:
             return self.param(attr, handle_exceptions)
-        raise AttributeError(attr)
+        if handle_exceptions:
+            return None
+        else:
+            raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
         # parameters
         m = re_param_attr.match(attr)
         if m:
             return self.set_param(attr, val)
-        raise AttributeError(attr)
+        raise ScriptRuntimeError(self._("Invalid attribute '%s'") % attr, env)
 
 class CombatObject(mg.constructor.ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
@@ -344,7 +350,7 @@ class CombatAction(CombatObject):
         "Do any processing in the end of the action"
 
 class CombatMember(CombatObject, CombatParamsContainer):
-    system_params = set(["name", "sex", "team", "may_turn", "active", "image"])
+    system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
 
     "Members take part in combats. Every fighting entity is a member"
     def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatMember"):
@@ -398,14 +404,16 @@ class CombatMember(CombatObject, CombatParamsContainer):
         m = re_param_attr.match(attr)
         if m:
             return self.param(attr, handle_exceptions)
-        raise AttributeError(attr)
+        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr)
 
     def script_set_attr(self, attr, val, env):
         # parameters
+        if attr == "targets":
+            return self.set_param(attr, val)
         m = re_param_attr.match(attr)
         if m:
             return self.set_param(attr, val)
-        raise AttributeError(attr)
+        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env)
 
     # System parameters
 
@@ -441,6 +449,12 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Change image of the member"
         self.set_param("image", image)
 
+    @property
+    def targets(self):
+        return self._params.get("targets")
+    def set_targets(self, targets):
+        self.set_param("targets", targets)
+
     # Turn order
 
     @property
@@ -451,6 +465,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
         self.clear_available_action_cache()
+        desc = lambda: self._("'After get turn' script")
+        self.call("combats.execute-script", self.combat, self.conf("combats-%s.script-turngot" % self.combat.rules), globs={"combat": self.combat, "member": self}, description=desc)
         for controller in self.controllers:
             controller.turn_got()
 
@@ -524,6 +540,19 @@ class CombatMember(CombatObject, CombatParamsContainer):
             available = False
         act_cache[target.id] = available
         return available
+
+    def select_target(self, condition, env):
+        targets = []
+        globs = {"combat": self.combat, "member": self}
+        for target in self.combat.members:
+            globs["target"] = target
+            val = self.call("script.evaluate-expression", condition, globs=globs, description=lambda: self._("Evaluation of target availability"))
+            if val:
+                targets.append(target.id)
+        if not targets:
+            self.set_param("targets", None)
+        else:
+            self.set_param("targets", [random.choice(targets)])
 
 class RequestStateCommand(CombatCommand):
     "Request combat state and deliver it to the controller"

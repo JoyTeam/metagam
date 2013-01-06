@@ -28,7 +28,7 @@ var GenericCombat = Ext.extend(Combat, {
             id: 'combat-myavatar',
             border: false,
             autoWidth: true,
-            html: 'My Avatar'
+            html: ''
         });
     },
 
@@ -41,7 +41,7 @@ var GenericCombat = Ext.extend(Combat, {
             id: 'combat-enemyavatar',
             border: false,
             autoWidth: true,
-            html: 'Enemy Avatar'
+            html: ''
         });
     },
 
@@ -447,6 +447,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         var self = this;
         self.combat = combat;
         self.shown = false;
+        self.myself = combat.myself;
     },
 
     /*
@@ -455,13 +456,11 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     show: function () {
         var self = this;
         if (self.shown) {
-            return;
+            self.hide();
         }
-        if (!self.actionItems) {
-            self.action = null;
-            self.actionInfo = null;
-            self.actionItems = self.newActionItems();
-        }
+        self.action = null;
+        self.actionInfo = null;
+        self.actionItems = self.newActionItems();
         self.cmp = new Ext.Container({
             xtype: 'container',
             layout: 'hbox',
@@ -475,6 +474,30 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         });
         self.combat.mainComponent.removeAll(true);
         self.combat.mainComponent.add(self.cmp);
+
+        /* Display preselected target member */
+        if (self.combat.enemyAvatarComponent) {
+            var targets = self.myself.params.targets;
+            if (targets != 'selectable') {
+                if (targets) {
+                    // targets == [1, 2, 3]
+                    var targetId = targets[0];
+                    if (targetId) {
+                        var target = self.combat.members[targetId];
+                        if (target) {
+                            self.combat.enemyAvatarComponent.update(target.renderAvatarHTML());
+                        }
+                    }
+                } else {
+                    // targets == null
+                    self.combat.enemyAvatarComponent.update('');
+                }
+            } else {
+                // targets are to be selected by player
+                self.combat.enemyAvatarComponent.update('');
+            }
+        }
+
         self.combat.viewportComponent.doLayout();
         self.shown = true;
     },
@@ -512,6 +535,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 var cmp = new Ext.BoxComponent({
                     id: 'combat-action-id-' + act.code,
                     cls: 'combat-action-selector combat-item-deselected combat-action-deselected',
+                    autoHeight: true,
+                    style: {
+                        padding: '10px'
+                    },
                     html: act.name,
                     listeners: {
                         render: function () {
@@ -528,6 +555,9 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             id: 'combat-actions-box',
             items: items,
             flex: 1,
+            style: {
+                paddingRight: '40px'
+            },
             border: false
         });
     },
@@ -550,17 +580,42 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 removeClass('combat-action-deselected').
                 addClass('combat-item-selected').
                 addClass('combat-action-selected');
-            if (act.targets_max > 0) {
-                if (!self.targetItems) {
-                    self.targetItems = self.newTargetItems();
-                    self.cmp.add(self.targetItems);
+            if (self.myself.params.targets == 'selectable') {
+                if (act.targets_max > 0) {
+                    self.showTargets();
+                } else {
+                    self.hideTargets();
                 }
-                // TODO: show/hide targets
-                self.combat.viewportComponent.doLayout();
-            } else if (self.targetItems) {
-                self.targetItems.ownerCt.remove(self.targetItems, true);
-                self.targetItems = undefined;
+                self.hideGoButton();
+            } else {
+                self.hideTargets();
+                self.showGoButton();
             }
+            self.combat.viewportComponent.doLayout();
+        }
+    },
+
+    /*
+     * Show targets selector
+     */
+    showTargets: function () {
+        var self = this;
+        if (self.targetItems) {
+            self.hideTargets();
+        }
+        self.targetItems = self.newTargetItems();
+        self.cmp.add(self.targetItems);
+        // TODO: show/hide specific targets
+    },
+
+    /*
+     * Hide targets selector
+     */
+    hideTargets: function () {
+        var self = this;
+        if (self.targetItems) {
+            self.targetItems.ownerCt.remove(self.targetItems, true);
+            self.targetItems = undefined;
         }
     },
 
@@ -578,6 +633,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 var member = self.combat.members[memberId];
                 var cmp = new Ext.BoxComponent({
                     html: member.params.name,
+                    autoHeight: true,
+                    style: {
+                        padding: '10px'
+                    },
                     listeners: {
                         render: function () {
                             this.getEl().on('click', function () {
@@ -598,6 +657,9 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             items: items,
             border: false,
             flex: 1,
+            style: {
+                paddingRight: '40px'
+            },
             listeners: {
                 render: function () {
                     for (var memberId in self.combat.members) {
@@ -616,6 +678,9 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     selectTarget: function (member, state) {
         var self = this;
+        if (self.myself.params.targets != 'selectable') {
+            return;
+        }
         member.targeted = state;
         if (member.targetCmp) {
             if (state) {
@@ -642,15 +707,33 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             }
         }
         if (anyTargeted) {
-            if (!self.goButton) {
-                self.goButton = self.newGoButton();
-                self.cmp.add(self.goButton);
-            }
-        } else if (self.goButton) {
+            self.showGoButton();
+        } else {
+            self.hideGoButton();
+        }
+        self.combat.viewportComponent.doLayout();
+    },
+
+    /*
+     * Show "Go" button
+     */
+    showGoButton: function () {
+        var self = this;
+        if (!self.goButton) {
+            self.goButton = self.newGoButton();
+            self.cmp.add(self.goButton);
+        }
+    },
+
+    /*
+     * Hide "Go" button
+     */
+    hideGoButton: function () {
+        var self = this;
+        if (self.goButton) {
             self.goButton.ownerCt.remove(self.goButton, true);
             self.goButton = undefined;
         }
-        self.combat.viewportComponent.doLayout();
     },
 
     /*
@@ -681,7 +764,9 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             id: 'combat-go-box',
             items: [{
                 xtype: 'button',
-                text: self.combat.goButtonText
+                text: self.combat.goButtonText,
+                width: 100,
+                height: 40
             }],
             border: false,
             flex: 1

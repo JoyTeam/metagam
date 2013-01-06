@@ -1,6 +1,14 @@
 from mg.constructor import *
 from mg.mmorpg.combats.combat_parser import *
-from mg.mmorpg.combats.core import CombatAction
+from mg.mmorpg.combats.core import CombatAction, CombatError
+
+class CombatScriptError(CombatError):
+    def __init__(self, val, env):
+        CombatError.__init__(self, val)
+        self.env = env
+
+    def __str__(self):
+        return utf2str(self.val)
 
 class CombatSystemError(Exception):
     def __init__(self, val):
@@ -55,6 +63,8 @@ class CombatScriptsAdmin(ConstructorModule):
                 lines.append(u"%sdamage %s %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
             elif st_cmd == "set":
                 lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+            elif st_cmd == "selecttarget":
+                lines.append(u"%sselecttarget %s where %s\n" % ("  " * indent, self.call("script.unparse-expression", st[1]), self.call("script.unparse-expression", st[2])))
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
@@ -75,18 +85,19 @@ class CombatScriptsAdmin(ConstructorModule):
                 html += "\n%s" % e.exc
             errors[name] = html
             return
-        # Dry run
-        try:
-            self.call("combats.execute-script", combat, expression, globs, handle_exceptions=False, real_execute=False)
-        except ScriptError as e:
-            errors[name] = e.val
-            return
+        ## Dry run - generally impossible because uninitialized member parameters may lead to division errors
+        #try:
+        #    self.call("combats.execute-script", combat, expression, globs, handle_exceptions=False, real_execute=False)
+        #except ScriptError as e:
+        #    errors[name] = e.val
+        #    return
         # Returning result
         return expression
 
 class CombatScripts(ConstructorModule):
     def register(self):
         self.rhook("combats.execute-script", self.execute_script)
+        self.rhook("exception.report", self.exception_report, priority=20)
 
     def child_modules(self):
         return ["mg.mmorpg.combats.scripts.CombatScriptsAdmin"]
@@ -94,17 +105,16 @@ class CombatScripts(ConstructorModule):
     def combat_debug(self, combat, msg, **kwargs):
         "Delivering debug message to all combat members having access to debugging info"
         for member in combat.members:
-            try:
-                char = member.character
-            except AttributeError:
-                pass
-            else:
+            char = member.param("char")
+            if char:
                 if self.call("character.debug-access", char):
                     if callable(msg):
                         msg = msg()
                     self.call("debug-channel.character", char, msg, **kwargs)
 
-    def execute_script(self, combat, code, globs={}, handle_exceptions=True, real_execute=True):
+    def execute_script(self, combat, code, globs={}, handle_exceptions=True, real_execute=True, description=None):
+        if code is None:
+            return
         globs["combat"] = combat
         # indenting
         tasklet = Tasklet.current()
@@ -120,20 +130,23 @@ class CombatScripts(ConstructorModule):
             "Execute statement of a combat script"
             def env():
                 env = ScriptEnvironment()
+                env.combat = combat
                 env.globs = globs
-                env.description = self._("Statement '{statement}'").format(statement=self.call("combats.unparse-script", st).strip())
+                env.statement = st
+                env.description = description
+                env.combat_script = True
                 return env
             st_cmd = st[0]
             if st_cmd == "damage":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of damage target member"))
                 attr = st[2]
                 damage = nn(self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of damage value")))
-                if debug:
-                    self.combat_debug(combat, lambda: self._("damaging {obj}.{attr}: {damage}").format(obj=obj, attr=attr, damage=damage), cls="combat-action", indent=indent)
                 try:
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
+                if debug:
+                    self.combat_debug(combat, lambda: self._("damaging {obj}.{attr}: {damage}").format(obj=obj, attr=attr, damage=damage), cls="combat-action", indent=indent)
                 old_val = nn(obj.param(attr, handle_exceptions))
                 if old_val > 0:
                     new_val = old_val - damage
@@ -166,14 +179,24 @@ class CombatScripts(ConstructorModule):
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
                 attr = st[2]
                 val = self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of value"))
-                if debug:
-                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
                 try:
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
+                if debug:
+                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
                 if real_execute:
                     obj.script_set_attr(attr, val, env)
+            elif st_cmd == "selecttarget":
+                obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of member"))
+                try:
+                    obj.is_a_combat_member()
+                except AttributeError:
+                    raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
+                if debug:
+                    self.combat_debug(combat, lambda: self._("selecting target for {member}").format(member=obj), cls="combat-action", indent=indent)
+                if real_execute:
+                    obj.select_target(st[2], env)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):
@@ -183,7 +206,17 @@ class CombatScripts(ConstructorModule):
                     execute_statement(st, indent)
                 except ScriptError as e:
                     if handle_exceptions:
-                        self.call("exception.report", e)
+                        # Promote ScriptError to CombatScriptError
+                        if callable(e.env):
+                            e.env = e.env()
+                        if callable(e.env.description):
+                            e.env.description = e.env.description()
+                        desc = description() if callable(description) else description
+                        if desc != e.env.description:
+                            e.env.description = u"%s / %s" % (desc, e.env.description)
+                        e.env.combat = combat
+                        e.env.statement = st
+                        self.call("exception.report", CombatScriptError(e.val, e.env))
                         self.combat_debug(combat, e.val, cls="combat-error", indent=indent)
                     else:
                         raise
@@ -197,6 +230,82 @@ class CombatScripts(ConstructorModule):
             execute_block(code, 0)
         finally:
             tasklet.combat_indent = old_indent
+
+    def exception_report(self, exception):
+        if not issubclass(type(exception), CombatScriptError):
+            return
+        try:
+            try:
+                req = self.req()
+            except AttributeError:
+                req = None
+            project = self.app().project
+            owner = self.main_app().obj(User, project.get("owner"))
+            name = owner.get("name")
+            email = owner.get("email")
+            vars = {
+                "RequestParameters": self._("Request parameters"),
+                "Session": self._("Session"),
+                "Host": self._("Host"),
+                "URL": self._("URL"),
+                "Context": self._("Context"),
+                "Expression": self._("Expression"),
+                "Rules": self._("Rules"),
+                "Combat": self._("Combat"),
+                "Statement": self._("Statement"),
+            }
+            params = []
+            if req:
+                for key, values in req.param_dict().iteritems():
+                    params.append({"key": htmlescape(key), "values": []})
+                    for val in values:
+                        params[-1]["values"].append(htmlescape(val))
+            if len(params):
+                vars["params"] = params
+            if req:
+                vars["host"] = htmlescape(req.host())
+                vars["uri"] = htmlescape(req.uri())
+                session = req.session()
+                if session:
+                    vars["session"] = session.data_copy()
+            try:
+                vars["text"] = htmlescape(exception.val)
+            except AttributeError:
+                vars["text"] = htmlescape(str(exception))
+            try:
+                env = exception.env
+            except AttributeError:
+                pass
+            else:
+                if callable(env):
+                    env = env()
+                if callable(env.description):
+                    env.description = env.description()
+                vars["context"] = htmlescape(env.description)
+                if getattr(env, "statement", None):
+                    vars["statement"] = htmlescape(self.call("combats-admin.unparse-script", [env.statement]).strip())
+                try:
+                    if env.text:
+                        vars["expression"] = htmlescape(self.call("script.unparse-text", env.val))
+                    else:
+                        vars["expression"] = htmlescape(self.call("script.unparse-expression", env.val))
+                except AttributeError:
+                    pass
+                try:
+                    combat = env.combat
+                except AttributeError:
+                    pass
+                else:
+                    vars["combat"] = combat.uuid
+                    vars["rules"] = combat.rules
+                subj = str(exception)
+                content = self.call("web.parse_template", "constructor/script-exception.html", vars)
+                self.call("email.send", email, name, subj, content, immediately=True, subtype="html")
+                raise Hooks.Return()
+        except Hooks.Return:
+            raise
+        except Exception as e:
+            self.critical("Exception during exception reporting: %s", traceback.format_exc())
 
 class ScriptedCombatAction(CombatAction):
     "Behaviour of this CombatAction is defined via combat script"

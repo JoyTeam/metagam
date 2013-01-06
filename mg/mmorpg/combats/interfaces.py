@@ -32,6 +32,7 @@ class Combats(mg.constructor.ConstructorModule):
         combat_id = req.args
         try:
             combat = CombatInterface(self.app(), combat_id)
+            combat.ping()
             # Show combat interface to user
             rules = self.conf("combats-%s.rules" % combat.rules, {})
             vars = {

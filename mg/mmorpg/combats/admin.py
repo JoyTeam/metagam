@@ -669,10 +669,13 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         if req.ok():
             # test objects
             combat = Combat(self.app(), None, code)
+            member = CombatMember(combat)
+            combat.join(member)
             # parsing form
             errors = {}
             config = self.app().config_updater()
             config.set("combats-%s.script-start" % code, self.call("combats-admin.script-field", combat, "start", errors, globs={"combat": combat}, mandatory=False))
+            config.set("combats-%s.script-turngot" % code, self.call("combats-admin.script-field", combat, "turngot", errors, globs={"combat": combat, "member": member}, mandatory=False))
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -680,7 +683,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             config.store()
             self.call("admin.redirect", "combats/rules")
         fields = [
-            {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 150},
+            {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 300},
+            {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
         ]
         self.call("admin.form", fields=fields)
 

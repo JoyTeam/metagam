@@ -65,7 +65,7 @@ class ScriptEngine(ConstructorModule):
                 prio = 7
             elif cmd == '+' or cmd == '-':
                 prio = 6
-            elif cmd == "==" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<" or cmd == "in":
+            elif cmd == "==" or cmd == "!=" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<" or cmd == "in":
                 prio = 5
             elif cmd == "not":
                 prio = 4
@@ -102,7 +102,7 @@ class ScriptEngine(ConstructorModule):
             elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
-            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
+            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "!=" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
                 # (a OP b) OP c != a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val, False))
             elif cmd == '?':
@@ -289,7 +289,7 @@ class ScriptEngine(ConstructorModule):
                     raise ScriptRuntimeError(self._("Division by zero: '{val}' == 0").format(val=self.unparse_expression(val[2])), env)
                 else:
                     return float(arg1) / arg2
-        elif cmd == "==":
+        elif cmd == "==" or cmd == "!=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
             s1 = type(arg1) is str or type(arg1) is unicode
@@ -301,7 +301,10 @@ class ScriptEngine(ConstructorModule):
             if s2 and not s1:
                 arg2 = floatz(arg2)
             # Evaluating
-            return 1 if arg1 == arg2 else 0
+            if cmd == "==":
+                return 1 if arg1 == arg2 else 0
+            else:
+                return 1 if arg1 != arg2 else 0
         elif cmd == "in":
             arg1 = str2unicode(self._evaluate(val[1], env))
             arg2 = str2unicode(self._evaluate(val[2], env))
