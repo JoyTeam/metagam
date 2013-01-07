@@ -13,6 +13,8 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("combat.default-aboveavatar", self.default_aboveavatar)
         self.rhook("combat.default-belowavatar", self.default_belowavatar)
+        self.rhook("ext-combat.action", self.combat_action, priv="logged")
+        self.rhook("combat.unavailable-exception-char", self.unavailable_exception_char)
 
     def child_modules(self):
         return [
@@ -75,12 +77,7 @@ class Combats(mg.constructor.ConstructorModule):
                 content = self.call("game.parse_internal", "combat-interface.html", vars)
             self.call("game.response_internal", "combat.html", vars, content)
         except CombatUnavailable as e:
-            with self.lock([char.busy_lock]):
-                busy = char.busy
-                if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
-                    # character is a member of a missing combat. free him
-                    self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
-                    char.unset_busy()
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.redirect", "/location")
 
     def combat_state(self):
@@ -91,6 +88,7 @@ class Combats(mg.constructor.ConstructorModule):
             combat = CombatInterface(self.app(), combat_id)
             self.call("web.response_json", combat.state_for_interface(char, req.param("marker")))
         except CombatUnavailable:
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.not_found")
 
     def gameinterface_render(self, character, vars, design):
@@ -114,3 +112,27 @@ class Combats(mg.constructor.ConstructorModule):
 
     def default_belowavatar(self, lst):
         pass
+
+    def unavailable_exception_char(self, combat_id, char, e):
+        with self.lock([char.busy_lock]):
+            busy = char.busy
+            if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
+                # character is a member of a missing combat. free him
+                self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
+                char.unset_busy()
+
+    def combat_action(self):
+        req = self.req()
+        data = req.param("data")
+        try:
+            data = json.loads(data)
+        except ValueError:
+            self.call("web.response_json", {"error": self._("Invalid JSON data submitted")})
+        char = self.character(req.user())
+        combat_id = req.args
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            self.call("web.response_json", combat.action(char, data))
+        except CombatUnavailable as e:
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
+            self.call("web.not_found")

@@ -161,6 +161,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 "member": member.id,
             })
 
+    def member(self, memberId):
+        for m in self.members:
+            if m.id == memberId:
+                return m
+        return None
+
     @property
     def running(self):
         "True when combat is running"
@@ -329,6 +335,7 @@ class CombatAction(CombatObject):
         CombatObject.__init__(self, combat, fqn)
         self.targets = []
         self.source = None
+        self.code = None
 
     def set_source(self, source):
         "Set combat action source"
@@ -348,6 +355,10 @@ class CombatAction(CombatObject):
 
     def end(self):
         "Do any processing in the end of the action"
+
+    def set_code(self, code):
+        "Set action code"
+        self.code = code
 
 class CombatMember(CombatObject, CombatParamsContainer):
     system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
@@ -386,8 +397,9 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     def enqueue_action(self, act):
         "Enqueue action for the member"
-        act.source = self
+        act.set_source(self)
         self.pending_actions.append(act)
+        print "Action %s enqueued for member %s" % (act, self.name)
 
     # Scripting
 

@@ -22,6 +22,7 @@ var Combat = Ext.extend(Object, {
         var self = this;
         self.queryStateTimeout = 10000;
         self.queryStateRetry = 3000;
+        self.submitActionTimeout = 10000;
     },
 
     /*
@@ -95,7 +96,7 @@ var Combat = Ext.extend(Object, {
             return;
         }
         if (args.length) {
-            console.log('combat.' + method, (JSON && JSON.stringify) ? JSON.stringify(args) : args);
+            console.log('combat.' + method, Ext.util.JSON.encode(args));
         } else {
             console.log('combat.' + method);
         }
@@ -246,6 +247,63 @@ var Combat = Ext.extend(Object, {
      * Called when client times out
      */
     turnTimeout: function () {
+    },
+
+    /*
+     * Submit action selected by the player to the server.
+     * data - structure to be sent to the server
+     * callback - is a function reference that will be called with single arg:
+     *   null - when the request has been sent successfully
+     *   errcode - when an error occurred:
+     *     "sendInProgress" - previous request hasn't been completed yet
+     *     "combatTerminated" - combat was terminated by some reason
+     *     "serverError" - response from server is not valid JSON
+     *     "Text error description" - all other values are explicit error messages
+     */
+    submitAction: function (data, callback) {
+        var self = this;
+        if (self._submitActionReq) {
+            callback('sendInProgress');
+            return;
+        }
+        self._submitActionReq = Ext.Ajax.request({
+            url: '/combat/action/' + self.id,
+            method: 'POST',
+            params: {
+                data: Ext.util.JSON.encode(data)
+            },
+            timeout: self.submitActionTimeout,
+            success: function (response, opts) {
+                delete self._submitActionReq;
+                if (!response || !response.getResponseHeader) {
+                    callback('serverError');
+                    return;
+                }
+                if (!response.getResponseHeader("Content-Type").match(/json/)) {
+                    callback('serverError');
+                    return;
+                }
+                var res = Ext.util.JSON.decode(response.responseText);
+                if (!res) {
+                    callback('serverError');
+                    return;
+                }
+                if (res.error) {
+                    callback(res.error);
+                    return;
+                }
+                callback(null);
+            },
+            failure: function (response, opts) {
+                delete self._submitActionReq;
+                if (response.status == 404 || response.status == 403) {
+                    callback('combatTerminated');
+                    self.abort();
+                } else {
+                    callback('serverError');
+                }
+            }
+        });
     }
 });
 

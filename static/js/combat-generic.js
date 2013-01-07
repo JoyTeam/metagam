@@ -1,3 +1,7 @@
+var gt = parent.gt;
+var Game = parent.Game;
+var sprintf = parent.sprintf;
+
 var GenericCombat = Ext.extend(Combat, {
     constructor: function (combatId) {
         var self = this;
@@ -766,10 +770,77 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 xtype: 'button',
                 text: self.combat.goButtonText,
                 width: 100,
-                height: 40
+                height: 40,
+                handler: function () {
+                    self.go();
+                }
             }],
             border: false,
             flex: 1
         });
+    },
+
+    /*
+     * Submit player's action to the server
+     */
+    go: function () {
+        var self = this;
+        var data = self.actionData();
+        if (!data) {
+            return;
+        }
+        console.log('Selected action:', Ext.util.JSON.encode(data));
+        self.hide();
+        self.combat.viewportComponent.doLayout();
+        self.combat.submitAction(data, function (err) {
+            if (err == 'sendInProgress') {
+                Game.error(undefined, gt.gettext('Your action is already being sent to server'));
+                self.show();
+            } else if (err == 'serverError') {
+                Game.error(undefined, gt.gettext('Error connecting to the server'));
+                self.show();
+            } else if (err == 'combatTerminated') {
+                Game.error(undefined, gt.gettext('Combat was terminated'));
+            } else if (err) {
+                Game.error(undefined, err);
+                self.show();
+            }
+        });
+    },
+
+    /*
+     * Prepare action data to be sent to the server. In case of error show message to player and
+     * return null.
+     */
+    actionData: function () {
+        var self = this;
+        if (!self.action) {
+            Game.error(undefined, gt.gettext('Action is not selected'));
+            return null;
+        }
+        var data = {
+            action: self.action.action
+        };
+        if (self.combat.myself.params.targets == 'selectable') {
+            var targets = [];
+            for (var i = 0; i < self.action.targets.length; i++) {
+                var targetId = self.action.targets[i];
+                if (self.combat.members[targetId].targeted) {
+                    targets.push(targetId);
+                }
+            }
+            if (targets.length < self.action.targets_min) {
+                Game.error(undefined, sprintf(gt.gettext('Minimal number of targets for this action is %d'), self.action.targets_min));
+                return null;
+            }
+            if (targets.length > self.action.targets_max) {
+                Game.error(undefined, sprintf(gt.gettext('Maximal number of targets for this action is %d'), self.action.targets_max));
+                return null;
+            }
+            data.targets = targets;
+        } else if (self.combat.myself.params.targets) {
+            data.targets = self.combat.myself.params.targets;
+        }
+        return data;
     }
 });

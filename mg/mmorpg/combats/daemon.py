@@ -12,6 +12,7 @@ import os
 from uuid import uuid4
 
 re_valid_uuid = re.compile('^[a-f0-9]{32}$')
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 
 class DBRunningCombat(mg.CassandraObject):
     clsname = "RunningCombat"
@@ -28,6 +29,7 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         self.rhook("cmb-combat.ping", self.combat_ping, priv="public")
         self.rhook("cmb-combat.info", self.combat_info, priv="public")
         self.rhook("cmb-combat.state", self.combat_state, priv="public")
+        self.rhook("cmb-combat.action", self.combat_action, priv="public")
 
     @property
     def combat(self):
@@ -67,6 +69,25 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
     def combat_state(self):
         req = self.req()
         self.controller.request_state(req.param("marker"))
+        self.call("web.response_json", {"ok": 1})
+
+    def combat_action(self):
+        req = self.req()
+        data = json.loads(req.param("data"))
+        code = data.get("action")
+        if (type(code) != str and type(code) != unicode) or not re_valid_identifier.match(code):
+            self.call("web.response_json", {"error": self._("Invalid combat action")})
+        action = CombatAction(self.combat)
+        action.set_code(data.get("action"))
+        if type(data.get("targets")) == list:
+            for targetId in data.get("targets"):
+                if type(targetId) != int:
+                    self.call("web.response_json", {"error": self._("Invalid target identifier")})
+                member = self.combat.member(targetId)
+                if not member:
+                    self.call("web.response_json", {"error": self._("Target with given id not found")})
+                action.add_target(member)
+        self.controller.member.enqueue_action(action)
         self.call("web.response_json", {"ok": 1})
 
 class CombatRunner(mg.constructor.ConstructorModule):
@@ -316,6 +337,9 @@ class CombatInterface(mg.constructor.ConstructorModule):
 
     def state_for_interface(self, char, marker):
         return self.query("/combat/state", {"char": char.uuid, "marker": marker})
+
+    def action(self, char, data):
+        return self.query("/combat/action", {"char": char.uuid, "data": json.dumps(data)})
 
 class WebController(CombatMemberController):
     def __init__(self, member, char, fqn="mg.mmorpg.combats.daemons.WebController"):
