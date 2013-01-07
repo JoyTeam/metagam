@@ -2,6 +2,8 @@ from concurrence import Tasklet, http
 from concurrence.http import server
 from mg import *
 from mg.core.tools import *
+from mg.core.config import DBConfigGroup, DBConfigGroupList
+from mg.core.applications import DBHookGroupModules, DBHookGroupModulesList
 from template import Template, TemplateException, TooManyLoops
 from template.provider import Provider
 import urlparse

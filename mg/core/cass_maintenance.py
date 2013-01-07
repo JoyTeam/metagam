@@ -4,6 +4,7 @@ import logging
 import re
 import json
 import time
+from mg.core.tools import *
 
 class CassandraMaintenance(mg.Module):
     def register(self):

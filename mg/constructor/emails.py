@@ -80,6 +80,7 @@ class EmailSenderAdmin(ConstructorModule):
                             if not char:
                                 return False
                             return app.hooks.call("script.evaluate-expression", cond, globs={"char": char}, description=lambda: self._("Script condition whether to deliver an e-mail"))
+                        app.modules.load(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
                         info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
                         if errors:
                             self.call("admin.response", u'<br />'.join(errors.values()), {})

@@ -485,11 +485,7 @@ class QuestAction(Parsing.Nonterm):
         self.val = ["random", content.val]
 
     def reduceTeleport(self, cmd, loc):
-        "%reduce teleport scalar"
-        if type(loc.val) != str and type(loc.val) != unicode:
-            raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
-        if not cmd.script_parser.call("location.info", loc.val):
-            raise Parsing.SyntaxError(cmd.script_parser._("Invalid location identifier"))
+        "%reduce teleport Expr"
         self.val = ["teleport", loc.val]
 
     def reduceChat(self, cmd, attrs):
