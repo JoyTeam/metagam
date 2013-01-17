@@ -1036,9 +1036,9 @@ class InventoryAdmin(ConstructorModule):
                 item_type = self.item_type(ent.get("type"))
                 item_name = htmlescape(item_type.name)
                 if col_owner:
-                    row.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(title=item_name, type=item_type.uuid, date=date, next_date=next_date(date)))
+                    row.append('<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(title=utf2str(item_name), type=utf2str(item_type.uuid), date=date, next_date=next_date(date)))
                 else:
-                    row.append(u'<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(owtype=owtype, owner=ent.get("owner"), title=item_name, type=item_type.uuid, month=month, next_month=next_month(month)))
+                    row.append('<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(owtype=owtype, owner=utf2str(ent.get("owner")), title=utf2str(item_name), type=utf2str(item_type.uuid), month=month, next_month=next_month(month)))
             if ent.get("dna"):
                 mod = ent.get("mod")
                 if mod:
