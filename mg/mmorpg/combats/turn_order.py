@@ -43,6 +43,9 @@ class CombatTurnOrder(CombatObject):
             if member.may_turn and member.turn_till and now > member.turn_till:
                 self.turn_timeout(member)
 
+    def check(self):
+        "This method asks CombatTurnOrder to check whether some actions may be executed"
+
 class CombatRoundRobinTurnOrder(CombatTurnOrder):
     """
     This turn order assumes every member makes turn one after another"
@@ -57,15 +60,6 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
 
     def idle(self):
         self.timeout_check()
-        for member in self.combat.members:
-            if member.may_turn and member.pending_actions:
-                act = member.pending_actions.pop(0)
-                act.begin()
-                act.end()
-                next_member = self.next_turn()
-                if next_member:
-                    self.turn_give(next_member)
-                break
 
     def turn_timeout(self, member):
         next_member = self.next_turn()
@@ -74,7 +68,7 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
             self.turn_give(next_member)
 
     def next_turn(self):
-        "Calculate the next member who will take right of turn"
+        "Evaluate the next member who will take right of turn"
         first_active = None
         previous_turn = None
         for member in self.combat.members:
@@ -90,3 +84,15 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
         # if no active members after member who had a right to turn
         # select first active member
         return first_active
+
+    def check(self):
+        for member in self.combat.members:
+            if member.active and member.may_turn and member.pending_actions:
+                next_member = self.next_turn()
+                self.turn_take(member)
+                act = member.pending_actions.pop(0)
+                self.combat.execute_action(act)
+                self.combat.process_actions()
+                if next_member:
+                    self.turn_give(next_member)
+                break

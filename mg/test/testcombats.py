@@ -44,6 +44,7 @@ class ManualDebugController(CombatMemberController):
 class DebugCombatAction(ScriptedCombatAction):
     def __init__(self, combat, fqn="DebugCombatAction"):
         ScriptedCombatAction.__init__(self, combat, fqn)
+        self.set_code("foo")
 
     def script_code(self, tag):
         if tag == "end-target":
@@ -69,7 +70,7 @@ class TrivialAIController(CombatMemberController):
         self.app().mc.get("test")
 
     def turn_got(self):
-        act = ScriptedCombatAction(self.combat)
+        act = DebugCombatAction(self.combat)
         for m in self.member.enemies:
             act.add_target(m)
         self.member.enqueue_action(act)
@@ -77,7 +78,11 @@ class TrivialAIController(CombatMemberController):
 class DebugCombatLog(CombatLog):
     def __init__(self, combat, fqn="DebugCombatLog"):
         CombatLog.__init__(self, combat, fqn)
+        self._textlog = []
         self._syslog = []
+
+    def textlog(self, entry):
+        self._textlog.append(entry)
 
     def syslog(self, entry):
         self._syslog.append(entry)
@@ -213,32 +218,117 @@ class TestCombats(unittest.TestCase):
     def test_03_log(self):
         combat = SimulationCombat(self.app)
         service = DebugCombatService(combat)
-        # attaching logger
+        # attach logger
         log = DebugCombatLog(combat)
         combat.set_log(log)
-        # joining member 1
+        # join member 1
         member1 = CombatMember(combat)
         ai1 = TrivialAIController(member1)
         member1.add_controller(ai1)
         member1.set_team(1)
+        member1.set_param("hp", 8)
+        member1.set_name("M1")
         combat.join(member1)
-        # joining member 2
+        # join member 2
         member2 = CombatMember(combat)
         ai2 = TrivialAIController(member2)
         member2.add_controller(ai2)
         member2.set_team(2)
+        member2.set_param("hp", 15)
+        member2.set_name("M2")
         combat.join(member2)
-        # running combat
+        # run combat
         turn_order = CombatRoundRobinTurnOrder(combat)
         combat.run(turn_order)
-        # checking combat log
-        self.assertEqual(len(log._syslog), 3)
+        # check combat log
+        self.assertEqual(len(log._syslog), 4)
         self.assertEqual(log._syslog[0]["type"], "join")
         self.assertEqual(log._syslog[0]["member"], 1)
         self.assertEqual(log._syslog[1]["type"], "join")
         self.assertEqual(log._syslog[1]["member"], 2)
         self.assertEqual(log._syslog[2]["type"], "stage")
         self.assertEqual(log._syslog[2]["stage"], "combat")
+        self.assertEqual(log._syslog[3]["type"], "enq")
+        self.assertEqual(log._syslog[3]["code"], "foo")
+        self.assertEqual(log._syslog[3]["source"], 1)
+        self.assertEqual(log._syslog[3]["targets"][0], 2)
+        self.assertEqual(len(log._textlog), 0)
+        # clear log
+        log._syslog = []
+        log._textlog = []
+        # perform iteration of combat loop
+        combat.process(0)
+        self.assertEqual(len(log._syslog), 2)
+        self.assertEqual(log._syslog[0]["type"], "damage")
+        self.assertEqual(log._syslog[0]["source"], 1)
+        self.assertEqual(log._syslog[0]["target"], 2)
+        self.assertEqual(log._syslog[0]["damage"], 5)
+        self.assertEqual(log._syslog[0]["param"], "hp")
+        self.assertEqual(log._syslog[0]["oldval"], 15)
+        self.assertEqual(log._syslog[0]["newval"], 10)
+        self.assertEqual(log._syslog[1]["type"], "enq")
+        self.assertEqual(log._syslog[1]["code"], "foo")
+        self.assertEqual(log._syslog[1]["source"], 2)
+        self.assertEqual(log._syslog[1]["targets"][0], 1)
+        self.assertEqual(len(log._textlog), 1)
+        self.assertEqual(log._textlog[0]["text"], "M1 damaged M2")
+        # clear log
+        log._syslog = []
+        log._textlog = []
+        # perform iteration of combat loop
+        combat.process(0)
+        self.assertEqual(len(log._syslog), 2)
+        self.assertEqual(log._syslog[0]["type"], "damage")
+        self.assertEqual(log._syslog[0]["source"], 2)
+        self.assertEqual(log._syslog[0]["target"], 1)
+        self.assertEqual(log._syslog[0]["damage"], 5)
+        self.assertEqual(log._syslog[0]["param"], "hp")
+        self.assertEqual(log._syslog[0]["oldval"], 8)
+        self.assertEqual(log._syslog[0]["newval"], 3)
+        self.assertEqual(log._syslog[1]["type"], "enq")
+        self.assertEqual(log._syslog[1]["code"], "foo")
+        self.assertEqual(log._syslog[1]["source"], 1)
+        self.assertEqual(log._syslog[1]["targets"][0], 2)
+        self.assertEqual(len(log._textlog), 1)
+        self.assertEqual(log._textlog[0]["text"], "M2 damaged M1")
+        # clear log
+        log._syslog = []
+        log._textlog = []
+        # perform iteration of combat loop
+        combat.process(0)
+        self.assertEqual(len(log._syslog), 2)
+        self.assertEqual(log._syslog[0]["type"], "damage")
+        self.assertEqual(log._syslog[0]["source"], 1)
+        self.assertEqual(log._syslog[0]["target"], 2)
+        self.assertEqual(log._syslog[0]["damage"], 5)
+        self.assertEqual(log._syslog[0]["param"], "hp")
+        self.assertEqual(log._syslog[0]["oldval"], 10)
+        self.assertEqual(log._syslog[0]["newval"], 5)
+        self.assertEqual(log._syslog[1]["type"], "enq")
+        self.assertEqual(log._syslog[1]["code"], "foo")
+        self.assertEqual(log._syslog[1]["source"], 2)
+        self.assertEqual(log._syslog[1]["targets"][0], 1)
+        self.assertEqual(len(log._textlog), 1)
+        self.assertEqual(log._textlog[0]["text"], "M1 damaged M2")
+        # clear log
+        log._syslog = []
+        log._textlog = []
+        # perform iteration of combat loop
+        combat.process(0)
+        self.assertEqual(len(log._syslog), 2)
+        self.assertEqual(log._syslog[0]["type"], "damage")
+        self.assertEqual(log._syslog[0]["source"], 2)
+        self.assertEqual(log._syslog[0]["target"], 1)
+        self.assertEqual(log._syslog[0]["damage"], 5)
+        self.assertEqual(log._syslog[0]["param"], "hp")
+        self.assertEqual(log._syslog[0]["oldval"], 3)
+        self.assertEqual(log._syslog[0]["newval"], 0)
+        self.assertEqual(log._syslog[1]["type"], "enq")
+        self.assertEqual(log._syslog[1]["code"], "foo")
+        self.assertEqual(log._syslog[1]["source"], 1)
+        self.assertEqual(log._syslog[1]["targets"][0], 2)
+        self.assertEqual(len(log._textlog), 1)
+        self.assertEqual(log._textlog[0]["text"], "M2 damaged M1")
 
 def main():
     try:

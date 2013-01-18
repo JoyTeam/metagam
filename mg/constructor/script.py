@@ -401,6 +401,9 @@ class ScriptEngine(ConstructorModule):
             obj = env.globs.get(name)
             if env.used_globs is not None:
                 env.used_globs.add(name)
+            if callable(obj):
+                obj = obj()
+                env.globs[name] = obj
             return obj
         elif cmd == ".":
             obj = self._evaluate(val[1], env)

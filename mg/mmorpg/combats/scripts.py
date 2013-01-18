@@ -159,13 +159,13 @@ class CombatScripts(ConstructorModule):
                     if real_execute:
                         obj.set_param(attr, old_val)
                     globs["last_damage"] = 0
+                    new_val = old_val
                 if real_execute:
                     # logging damage
                     log = combat.log
                     if log:
                         logent = {
                             "type": "damage",
-                            "source": source_id,
                             "target": obj.id,
                             "param": attr,
                             "damage": damage,
@@ -197,6 +197,16 @@ class CombatScripts(ConstructorModule):
                     self.combat_debug(combat, lambda: self._("selecting target for {member}").format(member=obj), cls="combat-action", indent=indent)
                 if real_execute:
                     obj.select_target(st[2], env)
+            elif st_cmd == "log":
+                log = combat.log
+                if log:
+                    text = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of log text"))
+                    if debug:
+                        self.combat_debug(combat, lambda: self._("writing to log: {text}").format(text=text), cls="combat-log", indent=indent)
+                    if real_execute:
+                        log.textlog({
+                            "text": text
+                        })
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):
@@ -239,7 +249,9 @@ class CombatScripts(ConstructorModule):
                 req = self.req()
             except AttributeError:
                 req = None
-            project = self.app().project
+            project = getattr(self.app(), "project", None)
+            if not project:
+                raise exception
             owner = self.main_app().obj(User, project.get("owner"))
             name = owner.get("name")
             email = owner.get("email")
@@ -311,21 +323,27 @@ class ScriptedCombatAction(CombatAction):
     "Behaviour of this CombatAction is defined via combat script"
     def __init__(self, combat, fqn="mg.mmorpg.combats.scripts.ScriptedCombatAction"):
         CombatAction.__init__(self, combat, fqn)
-
-    def begin(self):
-        globs = {"source": self.source}
-        self.for_every_target(self.execute_script, self.script_code("begin-target"), globs)
-        self.call("combats.execute-script", self.combat, self.script_code("begin"), globs=globs)
-
-    def end(self):
-        globs = {"source": self.source}
-        self.for_every_target(self.execute_script, self.script_code("end-target"), globs)
-        self.call("combats.execute-script", self.combat, self.script_code("end"), globs=globs)
-
-    def script_code(self, tag):
-        "Get combat script code (syntax tree)"
-        return self.conf("combats-%s.action-%s" % (self.combat.rules, tag), [])
         
     def execute_script(self, target, code, globs):
         globs["target"] = target
         self.call("combats.execute-script", self.combat, code, globs=globs)
+
+    def globs(self):
+        return {
+            "source": self.source,
+            "targets": lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
+        }
+
+    def begin(self):
+        globs = self.globs()
+        self.call("combats.execute-script", self.combat, self.script_code("begin"), globs=globs)
+        self.for_every_target(self.execute_script, self.script_code("begin-target"), globs)
+
+    def end(self):
+        globs = self.globs()
+        self.call("combats.execute-script", self.combat, self.script_code("end"), globs=globs)
+        self.for_every_target(self.execute_script, self.script_code("end-target"), globs)
+
+    def script_code(self, tag):
+        "Get combat script code (syntax tree)"
+        return self.conf("combats-%s.action-%s" % (self.combat.rules, tag), [])

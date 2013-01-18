@@ -140,6 +140,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.actionsinfo = self.conf("combats-%s.actions" % rules, [])
         self.commands = []
         self.commands_channel = Channel()
+        self.running_actions = []
+        self.ready_actions = []
+        self._turn_order_check = False
 
     def join(self, member):
         "Join member to the combat"
@@ -179,8 +182,11 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         """
         if self.running:
             raise CombatAlreadyRunning(self._("Combat was started twice"))
-        self._turn_order = turn_order
+        self.turn_order = turn_order
         self.set_stage("combat")
+        # notify turn order manager
+        if self.stage_flag("actions"):
+            self.turn_order.start()
 
     @property
     def stage(self):
@@ -191,15 +197,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self.stages.get(stage) is None:
             raise CombatInvalidStage(self._("Combat stage '%s' is not defined") % stage)
         self.set_param("stage", stage)
-        # logging stage
+        # log stage
         if self.log:
             self.log.syslog({
                 "type": "stage",
                 "stage": stage,
             })
-        # notifying turn order manager
-        if self.stage_flag("actions"):
-            self._turn_order.start()
 
     def add_controller(self, controller):
         "Register member controller"
@@ -239,14 +242,17 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self.commands_channel.has_receiver():
             self.commands_channel.send(None)
 
-    def process(self):
+    def process(self, timeout=1):
         "Process combat logic"
+        if self._turn_order_check:
+            self._turn_order_check = False
+            self.turn_order.check()
         self.process_commands()
         if self.stage_flag("actions"):
             self.process_actions()
         self.idle()
         try:
-            self.commands_channel.receive(1)
+            self.commands_channel.receive(timeout)
         except TimeoutError:
             pass
 
@@ -269,13 +275,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 for controller in self.controllers:
                     controller.member_params_changed(member, params)
         # call idle for all objects
-        self._turn_order.idle()
+        self.turn_order.idle()
         for member in self.members:
             member.idle()
         self.call("stream.flush")
-
-    def process_actions(self):
-        "Process actions logic"
 
     def set_log(self, log):
         "Attach logging system to the combat"
@@ -303,6 +306,49 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if m:
             return self.set_param(attr, val)
         raise ScriptRuntimeError(self._("Invalid attribute '%s'") % attr, env)
+
+    # Actions
+
+    def execute_action(self, action):
+        "Start executing action"
+        self.ready_actions.append(action)
+    
+    def process_actions(self):
+        "Process actions logic"
+        self.process_ready_actions()
+        self.process_stopped_actions()
+
+    def process_ready_actions(self):
+        """
+        For every ready action call begin() method and move the action to the list
+        of running actions
+        """
+        if self.ready_actions:
+            actions = self.ready_actions
+            self.ready_actions = []
+            for act in actions:
+                act.begin()
+                self.running_actions.append(act)
+            self.enqueue_turn_order_check()
+
+    def process_stopped_actions(self):
+        "For every stopped action call end() method and remove the action from the list"
+        if self.running_actions:
+            i = 0
+            while i < len(self.running_actions):
+                act = self.running_actions[i]
+                if act.stopped():
+                    act.end()
+                    del self.running_actions[i]
+                else:
+                    i += 1
+            self.enqueue_turn_order_check()
+
+    def enqueue_turn_order_check(self):
+        "Ask combat server to call turn_order check() on the next iteration"
+        self._turn_order_check = True
+        if self.commands_channel.has_receiver():
+            self.commands_channel.send(None)
 
 class CombatObject(mg.constructor.ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
@@ -360,6 +406,10 @@ class CombatAction(CombatObject):
         "Set action code"
         self.code = code
 
+    def stopped(self):
+        "Ask action whether it is stopped. By default all actions are stopped immediately after start"
+        return True
+
 class CombatMember(CombatObject, CombatParamsContainer):
     system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
 
@@ -370,6 +420,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         self.pending_actions = []
         self.controllers = []
         self.clear_available_action_cache()
+        self.log = combat.log
 
     def is_a_combat_member(self):
         return True
@@ -399,7 +450,18 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Enqueue action for the member"
         act.set_source(self)
         self.pending_actions.append(act)
-        print "Action %s enqueued for member %s" % (act, self.name)
+        # log action
+        if self.log:
+            self.log.syslog({
+                "type": "enq",
+                "source": self.id,
+                "code": act.code,
+                "targets": [t.id for t in act.targets],
+            })
+        # if this member has turn right already, notify turn manager
+        if self.may_turn:
+            if self.combat.stage_flag("actions"):
+                self.combat.enqueue_turn_order_check()
 
     # Scripting
 

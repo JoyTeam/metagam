@@ -224,7 +224,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.run_combat()
             # external interface
             self.serve_any_port()
-            self.debug("Combat %s listening at %s:%s", self.combat_id, self.addr[0], self.addr[1])
+            if self.addr and self.addr[0] and self.addr[1]:
+                self.debug("Combat %s listening at %s:%s", self.combat_id, self.addr[0], self.addr[1])
             self.cobj.set("host", self.addr[0])
             self.cobj.set("port", self.addr[1])
             self.cobj.store()
