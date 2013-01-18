@@ -685,7 +685,11 @@ class CombatMemberController(CombatObject):
         except KeyError:
             last_sent_params = self._last_member_sent_params[member.id] = {}
         for key, val in params.iteritems():
-            if re_param_attr.match(key):
+            if key == "targets":
+                # available only for member
+                if self.member.id != member.id:
+                    val = None
+            elif re_param_attr.match(key):
                 paraminfo = paramsinfo.get(key)
                 if paraminfo:
                     # visibility check
