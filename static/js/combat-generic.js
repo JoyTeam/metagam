@@ -635,6 +635,20 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             }
             (function (memberId) {
                 var member = self.combat.members[memberId];
+                // Targets filter
+                if (self.action && self.action.targets) {
+                    var found = false;
+                    var targets = self.action.targets;
+                    for (var i = 0; i < targets.length; i++) {
+                        if (targets[i] == memberId) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return;
+                    }
+                }
                 var cmp = new Ext.BoxComponent({
                     html: member.params.name,
                     autoHeight: true,
