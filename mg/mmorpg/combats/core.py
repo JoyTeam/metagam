@@ -188,6 +188,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self.turn_order = turn_order
         self.set_stage("combat")
+        # execute start script
+        globs = self.globs()
+        self.execute_script("start", globs, lambda: self._("Combat start script"))
         # notify turn order manager
         if self.stage_flag("actions"):
             self.turn_order.start()
@@ -616,7 +619,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
         self.clear_available_action_cache()
-        self.combat.execute_member_script(self, "turngot", {}, lambda: self._("'After get turn' script"))
+        globs = self.globs()
+        self.combat.execute_member_script(self, "turngot", globs, lambda: self._("'After get turn' script"))
         for controller in self.controllers:
             controller.turn_got()
 

@@ -674,8 +674,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             # parsing form
             errors = {}
             config = self.app().config_updater()
-            config.set("combats-%s.script-start" % code, self.call("combats-admin.script-field", combat, "start", errors, globs={"combat": combat}, mandatory=False))
-            config.set("combats-%s.script-turngot" % code, self.call("combats-admin.script-field", combat, "turngot", errors, globs={"combat": combat, "member": member}, mandatory=False))
+            for tag in ["start", "turngot", "heartbeat", "idle", "actions-started", "actions-stopped"]:
+                config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat}, mandatory=False))
+            for tag in ["turngot", "heartbeat-member", "idle-member"]:
+                config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat, "member": member}, mandatory=False))
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -685,6 +687,12 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         fields = [
             {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 300},
             {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
+            {"name": "heartbeat", "label": self._("Combat script running for every main loop iteration ('heartbeat script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat" % code)), "height": 300},
+            {"name": "heartbeat-member", "label": self._("Member heartbeat script running for every member") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat-member" % code)), "height": 300},
+            {"name": "idle", "label": self._("Combat script running after combat was idle for every 1 full second ('idlee script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-idle" % code)), "height": 300},
+            {"name": "idle-member", "label": self._("Member idle script running for every member") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-idle-member" % code)), "height": 300},
+            {"name": "actions-started", "label": self._("Combat script running after some actions are started") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-actions-started" % code)), "height": 300},
+            {"name": "actions-stopped", "label": self._("Combat script running after some actions are stopped") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-actions-stopped" % code)), "height": 300},
         ]
         self.call("admin.form", fields=fields)
 
