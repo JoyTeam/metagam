@@ -139,10 +139,14 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.paramsinfo = self.conf("combats-%s.params" % rules, {})
         self.actionsinfo = self.conf("combats-%s.actions" % rules, [])
         self.commands = []
-        self.commands_channel = Channel()
+        self.wakeup_channel = Channel()
         self.running_actions = []
         self.ready_actions = []
         self._turn_order_check = False
+
+    def script_code(self, tag):
+        "Get combat script code (syntax tree)"
+        return self.conf("combats-%s.script-%s" % (self.rules, tag), [])
 
     def join(self, member):
         "Join member to the combat"
@@ -239,8 +243,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def add_command(self, command):
         "Put command to the combat queue to be executed immediately"
         self.commands.append(command)
-        if self.commands_channel.has_receiver():
-            self.commands_channel.send(None)
+        self.wakeup()
+
+    def wakeup(self):
+        "Wake up main combat loop if it's busy with processing now"
+        if self.wakeup_channel.has_receiver():
+            self.wakeup_channel.send(None)
 
     def process(self, timeout=1):
         "Process combat logic"
@@ -250,11 +258,29 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.process_commands()
         if self.stage_flag("actions"):
             self.process_actions()
-        self.idle()
+        self.heartbeat()
         try:
-            self.commands_channel.receive(timeout)
+            self.wakeup_channel.receive(timeout)
         except TimeoutError:
-            pass
+            self.idle()
+
+    def globs(self):
+        return {}
+
+    def execute_script(self, tag, globs, description=None):
+        "Execute combat script with given code"
+        self.call("combats.execute-script", self, self.script_code(tag), globs, description)
+
+    def execute_member_script(self, member, tag, globs, description=None):
+        "Execute combat script for given member"
+        globs["member"] = member
+        self.execute_script(tag, globs, description)
+
+    def heartbeat(self):
+        "Called on every iteration of the main loop"
+        globs = self.globs()
+        self.execute_script("heartbeat", globs, lambda: self._("Combat heartbeat script"))
+        self.for_every_member(self.execute_member_script, "heartbeat-member", globs, lambda: self._("Member heartbeat script"))
 
     def process_commands(self):
         "Process enqueued commands"
@@ -264,6 +290,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def idle(self):
         "Do background processing"
+        # execute scripts
+        globs = self.globs()
+        self.execute_script("idle", globs, lambda: self._("Combat idle script"))
+        self.for_every_member(self.execute_member_script, "idle-member", globs, lambda: self._("Member idle script"))
         # deliver changed parameters
         params = self.changed_params()
         if params:
@@ -330,6 +360,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 act.begin()
                 self.running_actions.append(act)
             self.enqueue_turn_order_check()
+            self.actions_started()
 
     def process_stopped_actions(self):
         "For every stopped action call end() method and remove the action from the list"
@@ -343,12 +374,27 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 else:
                     i += 1
             self.enqueue_turn_order_check()
+            self.actions_stopped()
+
+    def actions_started(self):
+        "Called after ready actions started"
+        globs = self.globs()
+        self.execute_script("actions-started", globs, lambda: self._("Combat actions started script"))
+
+    def actions_stopped(self):
+        "Called after ready actions stopped"
+        globs = self.globs()
+        self.execute_script("actions-stopped", globs, lambda: self._("Combat actions stopped script"))
 
     def enqueue_turn_order_check(self):
         "Ask combat server to call turn_order check() on the next iteration"
         self._turn_order_check = True
-        if self.commands_channel.has_receiver():
-            self.commands_channel.send(None)
+        self.wakeup()
+
+    def for_every_member(self, callback, *args, **kwargs):
+        "Call callback for every combat member. Member is passed as a first argument"
+        for member in self.members:
+            callback(member, *args, **kwargs)
 
 class CombatObject(mg.constructor.ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
@@ -396,11 +442,24 @@ class CombatAction(CombatObject):
         for target in self.targets:
             callback(target, *args, **kwargs)
 
+    def script_code(self, tag):
+        "Get combat script code (syntax tree)"
+        return self.conf("combats-%s.action-%s-%s" % (self.combat.rules, self.code, tag), [])
+
+    def execute_script(self, tag, globs, description=None):
+        self.call("combats.execute-script", self.combat, self.script_code(tag), globs, description)
+
     def begin(self):
         "Do any processing in the beginning of the action"
+        globs = self.globs()
+        self.execute_script("begin", globs, lambda: self._("Combat action '%s' begin script") % self.code)
+        self.for_every_target(self.execute_targeted_script, "begin-target", globs, lambda: self._("Combat action '%s' begin target script") % self.code)
 
     def end(self):
         "Do any processing in the end of the action"
+        globs = self.globs()
+        self.execute_script("end", globs, lambda: self._("Combat action '%s' end script") % self.code)
+        self.for_every_target(self.execute_targeted_script, "end-target", globs, lambda: self._("Combat action '%s' end target script") % self.code)
 
     def set_code(self, code):
         "Set action code"
@@ -409,6 +468,16 @@ class CombatAction(CombatObject):
     def stopped(self):
         "Ask action whether it is stopped. By default all actions are stopped immediately after start"
         return True
+
+    def execute_targeted_script(self, target, tag, globs, description=None):
+        globs["target"] = target
+        self.execute_script(tag, globs, description)
+
+    def globs(self):
+        return {
+            "source": self.source,
+            "targets": lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
+        }
 
 class CombatMember(CombatObject, CombatParamsContainer):
     system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
@@ -539,8 +608,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
         self.clear_available_action_cache()
-        desc = lambda: self._("'After get turn' script")
-        self.call("combats.execute-script", self.combat, self.conf("combats-%s.script-turngot" % self.combat.rules), globs={"combat": self.combat, "member": self}, description=desc)
+        self.combat.execute_member_script(self, "turngot", {}, lambda: self._("'After get turn' script"))
         for controller in self.controllers:
             controller.turn_got()
 

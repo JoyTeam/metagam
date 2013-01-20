@@ -319,31 +319,3 @@ class CombatScripts(ConstructorModule):
         except Exception as e:
             self.critical("Exception during exception reporting: %s", traceback.format_exc())
 
-class ScriptedCombatAction(CombatAction):
-    "Behaviour of this CombatAction is defined via combat script"
-    def __init__(self, combat, fqn="mg.mmorpg.combats.scripts.ScriptedCombatAction"):
-        CombatAction.__init__(self, combat, fqn)
-        
-    def execute_script(self, target, code, globs):
-        globs["target"] = target
-        self.call("combats.execute-script", self.combat, code, globs=globs)
-
-    def globs(self):
-        return {
-            "source": self.source,
-            "targets": lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
-        }
-
-    def begin(self):
-        globs = self.globs()
-        self.call("combats.execute-script", self.combat, self.script_code("begin"), globs=globs)
-        self.for_every_target(self.execute_script, self.script_code("begin-target"), globs)
-
-    def end(self):
-        globs = self.globs()
-        self.call("combats.execute-script", self.combat, self.script_code("end"), globs=globs)
-        self.for_every_target(self.execute_script, self.script_code("end-target"), globs)
-
-    def script_code(self, tag):
-        "Get combat script code (syntax tree)"
-        return self.conf("combats-%s.action-%s" % (self.combat.rules, tag), [])

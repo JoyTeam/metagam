@@ -14,7 +14,6 @@ from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.simulation import *
 from mg.mmorpg.combats.daemon import *
-from mg.mmorpg.combats.scripts import ScriptedCombatAction
 from mg.mmorpg.combats.logs import *
 import re
 
@@ -41,9 +40,9 @@ class ManualDebugController(CombatMemberController):
             self.timeout_fired = False
             raise TurnTimeout()
 
-class DebugCombatAction(ScriptedCombatAction):
+class DebugCombatAction(CombatAction):
     def __init__(self, combat, fqn="DebugCombatAction"):
-        ScriptedCombatAction.__init__(self, combat, fqn)
+        CombatAction.__init__(self, combat, fqn)
         self.set_code("foo")
 
     def script_code(self, tag):
