@@ -4,6 +4,16 @@ import re
 
 re_newline = re.compile(r'\n')
 
+class ScriptMemoryObject(object):
+    def __init__(self):
+        self.data = {}
+
+    def script_attr(self, attr, handle_exceptions=True):
+        return self.data.get(attr)
+
+    def script_set_attr(self, attr, val, env):
+        self.data[attr] = val
+
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
         self.val = val

@@ -86,13 +86,14 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
         return first_active
 
     def check(self):
-        for member in self.combat.members:
-            if member.active and member.may_turn and member.pending_actions:
-                next_member = self.next_turn()
-                self.turn_take(member)
-                act = member.pending_actions.pop(0)
-                self.combat.execute_action(act)
-                self.combat.process_actions()
-                if next_member:
-                    self.turn_give(next_member)
-                break
+        if self.combat.stage_flag("actions"):
+            for member in self.combat.members:
+                if member.active and member.may_turn and member.pending_actions:
+                    next_member = self.next_turn()
+                    self.turn_take(member)
+                    act = member.pending_actions.pop(0)
+                    self.combat.execute_action(act)
+                    self.combat.process_actions()
+                    if next_member and self.combat.stage_flag("actions"):
+                        self.turn_give(next_member)
+                    break

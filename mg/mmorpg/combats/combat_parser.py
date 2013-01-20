@@ -32,6 +32,12 @@ class TokenFrom(Parsing.Token):
 class TokenMembers(Parsing.Token):
     "%token members"
 
+class TokenIf(Parsing.Token):
+    "%token if"
+
+class TokenElse(Parsing.Token):
+    "%token else"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -114,6 +120,14 @@ class CombatStatement(Parsing.Nonterm):
             raise Parsing.SyntaxError(assign.script_parser._("Function %s is not supported in selector context") % func.fname)
         self.val = ["select", lvalue.val[1], lvalue.val[2], func.fname, val.val, datasrc.val, where.val]
 
+    def reduceIf(self, cmd, expr, curlyleft, actions, curlyright):
+        "%reduce if Expr curlyleft CombatScript curlyright"
+        self.val = ["if", expr.val, actions.val]
+
+    def reduceIfElse(self, cmd, expr, curlyleft1, actions1, curlyright1, els, curlyleft2, actions2, curlyright2):
+        "%reduce if Expr curlyleft CombatScript curlyright else curlyleft CombatScript curlyright"
+        self.val = ["if", expr.val, actions1.val, actions2.val]
+
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
     def reduceMembers(self, val):
@@ -157,6 +171,8 @@ class CombatScriptParser(ScriptParser):
     syms["from"] = TokenFrom
     syms["members"] = TokenMembers
     syms["select"] = TokenSelect
+    syms["if"] = TokenIf
+    syms["else"] = TokenElse
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

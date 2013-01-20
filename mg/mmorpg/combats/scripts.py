@@ -67,6 +67,13 @@ class CombatScriptsAdmin(ConstructorModule):
                 lines.append(u"%sselecttarget %s where %s\n" % ("  " * indent, self.call("script.unparse-expression", st[1]), self.call("script.unparse-expression", st[2])))
             elif st_cmd == "select":
                 lines.append(u"%sset %s = select %s(%s) from %s%s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), st[3], self.call("script.unparse-expression", st[4]), st[5], ("" if st[6] == 1 else " where %s" % self.call("script.unparse-expression", st[6]))))
+            elif st_cmd == "if":
+                result = "  " * indent + ("if %s {" % self.call("script.unparse-expression", st[1]))
+                result += "\n%s%s}" % (self.unparse_script(st[2], indent + 1), "  " * indent)
+                if len(st) >= 4 and st[3]:
+                    result += " else {\n%s%s}" % (self.unparse_script(st[3], indent + 1), "  " * indent)
+                result += "\n"
+                lines.append(result)
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
@@ -260,6 +267,16 @@ class CombatScripts(ConstructorModule):
                         log.textlog({
                             "text": text
                         })
+            elif st_cmd == "if":
+                expr = st[1]
+                val = self.call("script.evaluate-expression", expr, globs=globs, description=lambda: self._("Evaluation of condition"))
+                if debug:
+                    self.combat_debug(combat, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="combat-condition", indent=indent + 2)
+                if val:
+                    execute_block(st[2], indent + 1)
+                else:
+                    if len(st) >= 4:
+                        execute_actions(st[3], indent + 1)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):

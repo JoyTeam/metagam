@@ -5,7 +5,7 @@ import weakref
 import re
 from uuid import uuid4
 import random
-from mg.constructor.script_classes import ScriptRuntimeError
+from mg.constructor.script_classes import ScriptRuntimeError, ScriptMemoryObject
 
 re_param_attr = re.compile(r'^p_')
 
@@ -123,9 +123,9 @@ class CombatParamsContainer(object):
             return params
 
 class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
-    system_params = set(["stage"])
-
     "Combat is the combat itself. It is created in the combat daemon process."
+
+    system_params = set(["stage"])
     def __init__(self, app, uuid, rules, fqn="mg.mmorpg.combats.core.Combat"):
         mg.constructor.ConstructorModule.__init__(self, app, fqn)
         CombatParamsContainer.__init__(self)
@@ -273,7 +273,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             self.idle()
 
     def globs(self):
-        return {}
+        return {
+            "local": ScriptMemoryObject()
+        }
 
     def execute_script(self, tag, globs, description=None):
         "Execute combat script with given code"
@@ -288,7 +290,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         "Called on every iteration of the main loop"
         globs = self.globs()
         self.execute_script("heartbeat", globs, lambda: self._("Combat heartbeat script"))
-        self.for_every_member(self.execute_member_script, "heartbeat-member", globs, lambda: self._("Member heartbeat script"))
+        self.for_each_member(self.execute_member_script, "heartbeat-member", globs, lambda: self._("Member heartbeat script"))
 
     def process_commands(self):
         "Process enqueued commands"
@@ -301,7 +303,11 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         # execute scripts
         globs = self.globs()
         self.execute_script("idle", globs, lambda: self._("Combat idle script"))
-        self.for_every_member(self.execute_member_script, "idle-member", globs, lambda: self._("Member idle script"))
+        self.for_each_member(self.execute_member_script, "idle-member", globs, lambda: self._("Member idle script"))
+        # call idle for all objects
+        self.turn_order.idle()
+        for member in self.members:
+            member.idle()
         # deliver changed parameters
         params = self.changed_params()
         if params:
@@ -312,10 +318,6 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             if params:
                 for controller in self.controllers:
                     controller.member_params_changed(member, params)
-        # call idle for all objects
-        self.turn_order.idle()
-        for member in self.members:
-            member.idle()
         self.call("stream.flush")
 
     def set_log(self, log):
@@ -329,6 +331,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     # Scripting
 
     def script_attr(self, attr, handle_exceptions=True):
+        if attr == "stage":
+            return self.stage
+        elif attr == "stage_flags":
+            return CombatStageFlags(self)
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -339,6 +345,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
+        if attr == "stage":
+            return self.set_stage(val)
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -399,7 +407,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self._turn_order_check = True
         self.wakeup()
 
-    def for_every_member(self, callback, *args, **kwargs):
+    def for_each_member(self, callback, *args, **kwargs):
         "Call callback for every combat member. Member is passed as a first argument"
         for member in self.members:
             callback(member, *args, **kwargs)
@@ -420,6 +428,15 @@ class CombatObject(mg.constructor.ConstructorModule):
             return self._combat()
         else:
             return self._combat
+
+class CombatStageFlags(CombatObject):
+    "CombatStageFlags is a script object (combat.stage_flags)"
+
+    def __init__(self, combat, fqn="mg.mmorpg.combats.core.CombatStageFlags"):
+        CombatObject.__init__(self, combat, fqn)
+
+    def script_attr(self, attr, handle_exceptions=True):
+        return self.combat.stage_flag(attr)
 
 class CombatCommand(CombatObject):
     "CombatActions are executed immediately in the main combat loop"
@@ -445,7 +462,7 @@ class CombatAction(CombatObject):
         "This method adds another target to the action"
         self.targets.append(member)
 
-    def for_every_target(self, callback, *args, **kwargs):
+    def for_each_target(self, callback, *args, **kwargs):
         "Call callback for every action target. Target is passed as a first argument"
         for target in self.targets:
             callback(target, *args, **kwargs)
@@ -461,13 +478,13 @@ class CombatAction(CombatObject):
         "Do any processing in the beginning of the action"
         globs = self.globs()
         self.execute_script("begin", globs, lambda: self._("Combat action '%s' begin script") % self.code)
-        self.for_every_target(self.execute_targeted_script, "begin-target", globs, lambda: self._("Combat action '%s' begin target script") % self.code)
+        self.for_each_target(self.execute_targeted_script, "begin-target", globs, lambda: self._("Combat action '%s' begin target script") % self.code)
 
     def end(self):
         "Do any processing in the end of the action"
         globs = self.globs()
         self.execute_script("end", globs, lambda: self._("Combat action '%s' end script") % self.code)
-        self.for_every_target(self.execute_targeted_script, "end-target", globs, lambda: self._("Combat action '%s' end target script") % self.code)
+        self.for_each_target(self.execute_targeted_script, "end-target", globs, lambda: self._("Combat action '%s' end target script") % self.code)
 
     def set_code(self, code):
         "Set action code"
@@ -482,10 +499,10 @@ class CombatAction(CombatObject):
         self.execute_script(tag, globs, description)
 
     def globs(self):
-        return {
-            "source": self.source,
-            "targets": lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
-        }
+        globs = self.combat.globs()
+        globs["source"] = self.source
+        globs["targets"] = lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
+        return globs
 
 class CombatMember(CombatObject, CombatParamsContainer):
     system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
@@ -619,7 +636,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
         self.clear_available_action_cache()
-        globs = self.globs()
+        globs = self.combat.globs()
         self.combat.execute_member_script(self, "turngot", globs, lambda: self._("'After get turn' script"))
         for controller in self.controllers:
             controller.turn_got()
