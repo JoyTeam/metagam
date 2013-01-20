@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-01-20 12:33+0300\n"
+"PO-Revision-Date: 2013-01-20 18:37+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -753,6 +753,12 @@ msgstr "Перед исполнением"
 
 msgid "Before launching your game perform the steps listed above"
 msgstr "Перед запуском игры выполните шаги, перечисленные выше"
+
+msgid "Begin execution"
+msgstr "Начало исполнения"
+
+msgid "Begin execution on target 'target'"
+msgstr "Начало исполнения на цель \"target\""
 
 msgid "Birthday"
 msgstr "День рождения"
@@ -1509,6 +1515,9 @@ msgstr "Боевой скрипт, выполняемый для участни�
 
 msgid "Combat script running when combat starts"
 msgstr "Боевой скрипт, выполняемый, когда бой начинается"
+
+msgid "Combat script running when member 'member' is joined"
+msgstr "Боевой скрипт, выполняемый, когда присоединяется участник \"member\""
 
 #, python-format
 msgid "Combat stage '%s' is not defined"
@@ -2286,6 +2295,12 @@ msgstr "Включить панель справа от главного фре�
 msgid "Enabled layered character images"
 msgstr "Послойные образы персонажей включены"
 
+msgid "End execution"
+msgstr "Конец исполнения"
+
+msgid "End execution on target 'target'"
+msgstr "Конец исполнения на цель \"target\""
+
 msgid "End of day"
 msgstr "Конец дня"
 
@@ -2532,6 +2547,9 @@ msgstr "Вычисление \"{cls}.{uuid}.{param}\""
 
 msgid "Evaluation of '{cls}.{uuid}.{param}' visibility condition"
 msgstr "Вычисление условия видимости параметра \"{cls}.{uuid}.{param}\""
+
+msgid "Evaluation of condition"
+msgstr "Вычисление условия"
 
 msgid "Evaluation of damage target member"
 msgstr "Определение цели урона"
@@ -4307,6 +4325,9 @@ msgstr "Idle-скрипт для участника \"member\""
 
 msgid "Member idle script running for every member"
 msgstr "Idle-скрипт, выполняемый для каждого участника \"member\""
+
+msgid "Member joined script"
+msgstr "Скрипт присоединения участника"
 
 #, python-format
 msgid "Member parameter '%s'"

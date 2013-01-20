@@ -215,6 +215,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
 
     def run_combat(self):
         turn_order = CombatRoundRobinTurnOrder(self.combat)
+        turn_order.timeout = 10
         self.combat.run(turn_order)
 
     def run(self):

@@ -9,10 +9,10 @@ re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script|para
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
-re_combat_params = re.compile('^combat/(new|p_[a-z0-9]+)$', re.IGNORECASE)
-re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9]+)$', re.IGNORECASE)
-re_member_params = re.compile('^member/(new|p_[a-z0-9]+)$', re.IGNORECASE)
-re_member_param_del = re.compile('^member/del/(p_[a-z0-9]+)$', re.IGNORECASE)
+re_combat_params = re.compile('^combat/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
+re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9_]+)$', re.IGNORECASE)
+re_member_params = re.compile('^member/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
+re_member_param_del = re.compile('^member/del/(p_[a-z0-9_]+)$', re.IGNORECASE)
 re_valid_parameter = re.compile(r'^p_[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_shorten = re.compile(r'^(.{100}).{3,}$')
 re_avatar_params_cmd = re.compile('^(aboveavatar|belowavatar)/(.+)$', re.IGNORECASE)
@@ -674,7 +674,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             # parsing form
             errors = {}
             config = self.app().config_updater()
-            for tag in ["start", "turngot", "heartbeat", "idle", "actions-started", "actions-stopped"]:
+            for tag in ["start", "turngot", "heartbeat", "idle", "actions-started", "actions-stopped", "joined"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat}, mandatory=False))
             for tag in ["turngot", "heartbeat-member", "idle-member"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat, "member": member}, mandatory=False))
@@ -686,6 +686,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             self.call("admin.redirect", "combats/rules")
         fields = [
             {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 300},
+            {"name": "joined", "label": self._("Combat script running when member 'member' is joined") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-joined" % code)), "height": 300},
             {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
             {"name": "heartbeat", "label": self._("Combat script running for every main loop iteration ('heartbeat script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat" % code)), "height": 300},
             {"name": "heartbeat-member", "label": self._("Member heartbeat script running for every member") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat-member" % code)), "height": 300},
@@ -893,9 +894,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             combat.join(member2)
             # parsing form
             errors = {}
-            info["script-before-execute"] = self.call("combats-admin.script-field", combat, "before-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
-            info["script-execute"] = self.call("combats-admin.script-field", combat, "execute", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
-            info["script-after-execute"] = self.call("combats-admin.script-field", combat, "after-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
+            info["script-begin"] = self.call("combats-admin.script-field", combat, "begin", errors, globs={"combat": combat, "source": member1}, mandatory=False)
+            info["script-begin-target"] = self.call("combats-admin.script-field", combat, "begin-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
+            info["script-end"] = self.call("combats-admin.script-field", combat, "end", errors, globs={"combat": combat, "source": member1}, mandatory=False)
+            info["script-end-target"] = self.call("combats-admin.script-field", combat, "end-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
             # processing errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -906,9 +908,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
         # rendering form
         fields = [
-            {"name": "before-execute", "label": self._("Before execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-before-execute")), "height": 150},
-            {"name": "execute", "label": self._("Execution itself (applying action effect to targets)") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-execute")), "height": 150},
-            {"name": "after-execute", "label": self._("After execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-after-execute")), "height": 150},
+            {"name": "begin", "label": self._("Begin execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin")), "height": 100},
+            {"name": "begin-target", "label": self._("Begin execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin-target")), "height": 100},
+            {"name": "end", "label": self._("End execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end")), "height": 100},
+            {"name": "end-target", "label": self._("End execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end-target")), "height": 100},
         ]
         self.call("admin.form", fields=fields)
 

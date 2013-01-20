@@ -749,7 +749,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     hideGoButton: function () {
         var self = this;
         if (self.goButton) {
-            self.goButton.ownerCt.remove(self.goButton, true);
+            self.goButton.destroy();
             self.goButton = undefined;
         }
     },

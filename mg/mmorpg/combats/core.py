@@ -153,12 +153,16 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.member_id += 1
         member.id = self.member_id
         self.members.append(member)
+        # script event
+        globs = self.globs()
+        globs["member"] = member
+        self.execute_script("joined", globs, lambda: self._("Member joined script"))
         # if combat is started already, notify all other members
         if self.running:
             for controller in self.controllers:
                 if controller.connected:
                     controller.deliver_member_joined(member)
-        # registering member's controllers
+        # register member's controllers
         for controller in member.controllers:
             self.add_controller(controller)
         # log join
@@ -173,6 +177,18 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             if m.id == memberId:
                 return m
         return None
+
+    @property
+    def actions(self):
+        "Dictionary of available combat actions"
+        try:
+            return self._actions
+        except AttributeError:
+            pass
+        self._actions = {}
+        for act in self.conf("combats-%s.actions" % self.rules, []):
+            self._actions[act["code"]] = act
+        return self._actions
 
     @property
     def running(self):
@@ -469,7 +485,9 @@ class CombatAction(CombatObject):
 
     def script_code(self, tag):
         "Get combat script code (syntax tree)"
-        return self.conf("combats-%s.action-%s-%s" % (self.combat.rules, self.code, tag), [])
+        if self.code not in self.combat.actions:
+            return []
+        return self.combat.actions[self.code].get("script-%s" % tag, [])
 
     def execute_script(self, tag, globs, description=None):
         self.call("combats.execute-script", self.combat, self.script_code(tag), globs, description)
@@ -525,8 +543,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     def idle(self):
         "Called when member can do any background processing"
-        # DEBUG: Make some parameter change randomly
-        #self.set_param("p_test", random.random())
         for controller in self.controllers:
             controller.idle()
 
@@ -568,6 +584,10 @@ class CombatMember(CombatObject, CombatParamsContainer):
             return self.sex
         elif attr == "team":
             return self.team
+        elif attr == "may_turn":
+            return self.may_turn
+        #elif attr == "may_turn":
+        #    return self.may_turn
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -575,7 +595,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         if handle_exceptions:
             return None
         else:
-            raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr)
+            raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, None)
 
     def script_set_attr(self, attr, val, env):
         # parameters
@@ -584,7 +604,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         m = re_param_attr.match(attr)
         if m:
             return self.set_param(attr, val)
-        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env)
+        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env, None)
 
     # System parameters
 
