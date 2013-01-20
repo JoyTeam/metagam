@@ -230,7 +230,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.cobj.set("port", self.addr[1])
             self.cobj.store()
             # main loop
-            while not self.combat.stage_flag("done"):
+            while not self.combat.stopped():
                 self.combat.process()
         finally:
             self.app().inst.csrv = None

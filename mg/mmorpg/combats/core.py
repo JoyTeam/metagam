@@ -207,6 +207,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 "type": "stage",
                 "stage": stage,
             })
+        self.wakeup()
 
     def add_controller(self, controller):
         "Register member controller"
@@ -239,6 +240,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def stage_flag(self, flag):
         "Returns flag value of the current stage. If no flag with such code defined return None"
         return self.stages[self.stage].get(flag)
+
+    def stopped(self):
+        "Return True when the combat is stopped"
+        return self.stage_flag("done")
 
     def add_command(self, command):
         "Put command to the combat queue to be executed immediately"
@@ -547,7 +552,10 @@ class CombatMember(CombatObject, CombatParamsContainer):
         m = re_param_attr.match(attr)
         if m:
             return self.param(attr, handle_exceptions)
-        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr)
+        if handle_exceptions:
+            return None
+        else:
+            raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr)
 
     def script_set_attr(self, attr, val, env):
         # parameters

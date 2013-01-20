@@ -17,11 +17,20 @@ class TokenDamage(Parsing.Token):
 class TokenSet(Parsing.Token):
     "%token set"
 
+class TokenSelect(Parsing.Token):
+    "%token select"
+
 class TokenSelectTarget(Parsing.Token):
     "%token selecttarget"
 
 class TokenWhere(Parsing.Token):
     "%token where"
+
+class TokenFrom(Parsing.Token):
+    "%token from"
+
+class TokenMembers(Parsing.Token):
+    "%token members"
 
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
@@ -95,6 +104,32 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce selecttarget Expr where Expr"
         self.val = ["selecttarget", member.val, cond.val]
 
+    selectorFuncs = set(["min", "max", "count", "distinct", "sum", "mult"])
+
+    def reduceSelect(self, st, lvalue, assign, select, func, parleft, val, parright, fr, datasrc, where):
+        "%reduce set Expr assign select func parleft Expr parright from SelectorDataSource Where"
+        if type(lvalue.val) != list or lvalue.val[0] != ".":
+            raise Parsing.SyntaxError(assign.script_parser._("Invalid usage of assignment operator"))
+        if func.fname not in self.selectorFuncs:
+            raise Parsing.SyntaxError(assign.script_parser._("Function %s is not supported in selector context") % func.fname)
+        self.val = ["select", lvalue.val[1], lvalue.val[2], func.fname, val.val, datasrc.val, where.val]
+
+class SelectorDataSource(Parsing.Nonterm):
+    "%nonterm"
+    def reduceMembers(self, val):
+        "%reduce members"
+        self.val = "members"
+
+class Where(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = 1
+
+    def reduceWhere(self, where, expr):
+        "%reduce where Expr"
+        self.val = expr.val
+
 class CombatScript(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -119,6 +154,15 @@ class CombatScriptParser(ScriptParser):
     syms["set"] = TokenSet
     syms["selecttarget"] = TokenSelectTarget
     syms["where"] = TokenWhere
+    syms["from"] = TokenFrom
+    syms["members"] = TokenMembers
+    syms["select"] = TokenSelect
+
+    funcs = ScriptParser.funcs.copy()
+    funcs.add("count")
+    funcs.add("distinct")
+    funcs.add("sum")
+    funcs.add("mult")
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.combats.combat_parser.CombatScriptParser")

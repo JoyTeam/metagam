@@ -65,6 +65,8 @@ class CombatScriptsAdmin(ConstructorModule):
                 lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
             elif st_cmd == "selecttarget":
                 lines.append(u"%sselecttarget %s where %s\n" % ("  " * indent, self.call("script.unparse-expression", st[1]), self.call("script.unparse-expression", st[2])))
+            elif st_cmd == "select":
+                lines.append(u"%sset %s = select %s(%s) from %s%s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), st[3], self.call("script.unparse-expression", st[4]), st[5], ("" if st[6] == 1 else " where %s" % self.call("script.unparse-expression", st[6]))))
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
@@ -179,14 +181,13 @@ class CombatScripts(ConstructorModule):
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
                 attr = st[2]
                 val = self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of value"))
-                try:
-                    obj.is_a_combat_member()
-                except AttributeError:
+                set_attr = getattr(obj, "script_set_attr", None)
+                if not set_attr:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
                 if debug:
                     self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
                 if real_execute:
-                    obj.script_set_attr(attr, val, env)
+                    set_attr(attr, val, env)
             elif st_cmd == "selecttarget":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of member"))
                 try:
@@ -197,6 +198,58 @@ class CombatScripts(ConstructorModule):
                     self.combat_debug(combat, lambda: self._("selecting target for {member}").format(member=obj), cls="combat-action", indent=indent)
                 if real_execute:
                     obj.select_target(st[2], env)
+            elif st_cmd == "select":
+                obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of object"))
+                attr = st[2]
+                datasrc = st[5]
+                data = []
+                if datasrc == "members":
+                    if combat.members:
+                        for member in combat.members:
+                            globs["member"] = member
+                            if self.call("script.evaluate-expression", st[6], globs=globs, description=lambda: self._("Evaluation of the condition")):
+                                data.append(self.call("script.evaluate-expression", st[4], globs=globs, description=lambda: self._("Evaluation of the data")))
+                        del globs["member"]
+                else:
+                    raise ScriptRuntimeError(self._("Unknown data source for select: %s") % datasrc)
+                func = st[3]
+                try:
+                    if func == "max":
+                        val = None
+                        for v in data:
+                            if val is None or v > val:
+                                val = v
+                    elif func == "min":
+                        val = None
+                        for v in data:
+                            if val is None or v < val:
+                                val = v
+                    elif func == "distinct":
+                        values = set()
+                        val = 0
+                        for v in data:
+                            if v not in values:
+                                values.add(v)
+                                val += 1
+                    elif func == "sum":
+                        val = 0
+                        for v in data:
+                            val += v
+                    elif func == "mult":
+                        val = 1
+                        for v in data:
+                            val *= v
+                    else:
+                        raise ScriptRuntimeError(self._("Unknown data aggregation function: %s") % func)
+                except TypeError:
+                    raise ScriptRuntimeError(self._("Type mismatch error occured during data aggregation"))
+                set_attr = getattr(obj, "script_set_attr", None)
+                if not set_attr:
+                    raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
+                if debug:
+                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {func}({data}) = {val}").format(obj=obj, attr=attr, val=val, func=func, data=u", ".join(data)), cls="combat-action", indent=indent)
+                if real_execute:
+                    set_attr(attr, val, env)
             elif st_cmd == "log":
                 log = combat.log
                 if log:

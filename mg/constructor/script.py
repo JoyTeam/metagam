@@ -391,7 +391,7 @@ class ScriptEngine(ConstructorModule):
                 elif fname == "uc":
                     return v.upper()
             else:
-                raise ScriptRuntimeError(self._("Unknown script engine function: {fname}").format(fname=fname), env)
+                raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":
             return random.random()
         elif cmd == "glob":

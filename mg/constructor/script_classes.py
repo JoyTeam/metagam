@@ -282,8 +282,12 @@ class Expr(Parsing.Nonterm):
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
 
+    exprFuncs = set(["min", "max", "uc", "lc"])
+
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
+        if func.fname not in self.exprFuncs:
+            raise Parsing.SyntaxError(func.script_parser._("Function %s is not supported in expression context") % func.fname)
         self.val = ["call", func.fname] + lst.val
 
     def reduceIn(self, exprA, op, exprB):
