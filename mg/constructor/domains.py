@@ -743,7 +743,6 @@ class DomainsAdmin(Module):
                         params = []
                         params.append(("action", "GET"))
                         params.append(("login", main_config.get("domains.login")))
-                        l
                         params.append(("passwd", main_config.get("domains.password")))
                         params.append(("domain", domain.uuid))
                         self.info("Querying registrar: %s", params)
