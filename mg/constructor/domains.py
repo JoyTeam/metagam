@@ -366,6 +366,9 @@ class DomainRegWizard(Wizard):
                                         rec.remove()
                         finally:
                             cnn.close()
+                except IOError as e:
+                    self.error("Error querying registrar: %s", e)
+                    error = self._("Request to the registrar failed. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
                 except TimeoutError:
                     self.error("Timeout querying registrar")
                     error = self._("Request to the registrar timed out. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
@@ -740,6 +743,7 @@ class DomainsAdmin(Module):
                         params = []
                         params.append(("action", "GET"))
                         params.append(("login", main_config.get("domains.login")))
+                        l
                         params.append(("passwd", main_config.get("domains.password")))
                         params.append(("domain", domain.uuid))
                         self.info("Querying registrar: %s", params)
@@ -749,6 +753,9 @@ class DomainsAdmin(Module):
                         response = cnn.perform(request)
                     finally:
                         cnn.close()
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
             except TimeoutError:
                 self.error("Timeout querying registrar")
                 continue
@@ -850,6 +857,9 @@ class DomainsAdmin(Module):
                     finally:
                         cnn.close()
                     self.debug("Prolong response: %s", response.body)
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
             except TimeoutError:
                 self.error("Timeout querying registrar")
 
