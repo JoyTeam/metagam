@@ -10,3 +10,8 @@ class CombatLog(CombatObject):
 
     def textlog(self, entry):
         "Record entry to the user readable log"
+
+class CombatDatabaseLog(CombatLog):
+    def __init__(self, combat, fqn="mg.mmorpg.combats.logs.CombatDatabaseLog"):
+        CombatLog.__init__(self, combat, fqn)
+
