@@ -837,8 +837,8 @@ class LocationsStaticImagesAdmin(ConstructorModule):
         fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static'"})
         fields.append({"type": "header", "html": self._("Resizing"), "condition": "[image_type]=='static'"})
         fields.append({"name": "image_static_stretch", "type": "checkbox", "label": self._("Resize image to fill entire frame"), "checked": db_loc.get("image_static_stretch"), "condition": "[image_type]=='static'"})
-        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "[image_type]=='static' && [image_static_stretch]"})
-        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "[image_type]=='static' && [image_static_stretch]", "inline": True})
+        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "[image_type]=='static' && [image_static_stretch] || [image_type]=='multistatic'"})
+        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "[image_type]=='static' && [image_static_stretch] || [image_type]=='multistatic'", "inline": True})
 
     def form_validate(self, db_loc, flags, errors):
         req = self.req()
@@ -892,7 +892,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             db_loc.set("image_static", uri)
             db_loc.set("image_static_w", flags["image_static_w"])
             db_loc.set("image_static_h", flags["image_static_h"])
-        if db_loc.get("image_static") and req.param("image_static_stretch"):
+        if db_loc.get("image_static") and req.param("image_static_stretch") or db_loc.get("images_multistatic"):
             db_loc.set("image_static_stretch", True)
             db_loc.set("image_static_margin_x", intz(req.param("image_static_margin_x")))
             db_loc.set("image_static_margin_y", intz(req.param("image_static_margin_y")))
@@ -973,6 +973,9 @@ class LocationsMultiStaticImages(ConstructorModule):
             # initialization script
             loc_init = vars.get("loc_init", [])
             vars["loc_init"] = loc_init
+            margin_x = location.db_location.get("image_static_margin_x", 200)
+            margin_y = location.db_location.get("image_static_margin_y", 80)
+            loc_init.append("Loc.margins(%d, %d);" % (margin_x, margin_y))
             # images
             images = []
             for img in location.db_location.get("images_multistatic", []):
