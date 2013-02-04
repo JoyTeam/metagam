@@ -45,7 +45,16 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         return self._("Combats configuration")
 
     def admin_config(self):
-        self.call("admin.response", "TODO", {})
+        req = self.req()
+        if req.param("ok"):
+            config = self.app().config_updater()
+            config.set("combats.debug", True if req.param("debug") else False)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "debug", "label": self._("Write combat debug messages to the chat"), "checked": self.conf("combats.debug"), "type": "checkbox"},
+        ]
+        self.call("admin.form", fields=fields)
 
     def headmenu_rules(self, args):
         if args == "new":

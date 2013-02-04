@@ -301,7 +301,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def execute_script(self, tag, globs, description=None):
         "Execute combat script with given code"
-        self.call("combats.execute-script", self, self.script_code(tag), globs, description)
+        self.call("combats.execute-script", self, self.script_code(tag), globs, description=description)
 
     def execute_member_script(self, member, tag, globs, description=None):
         "Execute combat script for given member"
@@ -459,6 +459,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         for member in self.members:
             callback(member, *args, **kwargs)
 
+    def __unicode__(self):
+        return self._("[Combat %s]") % self.uuid
+
+    def __str__(self):
+        return utf2str(unicode(self))
+
 class CombatObject(mg.constructor.ConstructorModule):
     "Any object related to the combat. Link to combat is weakref"
     def __init__(self, combat, fqn, weak=True):
@@ -521,7 +527,7 @@ class CombatAction(CombatObject):
         return self.combat.actions[self.code].get("script-%s" % tag, [])
 
     def execute_script(self, tag, globs, description=None):
-        self.call("combats.execute-script", self.combat, self.script_code(tag), globs, description)
+        self.call("combats.execute-script", self.combat, self.script_code(tag), globs, description=description)
 
     def begin(self):
         "Do any processing in the beginning of the action"
@@ -775,6 +781,12 @@ class CombatMember(CombatObject, CombatParamsContainer):
             self.set_param("targets", None)
         else:
             self.set_param("targets", [random.choice(targets)])
+
+    def __unicode__(self):
+        return self._("[CombatMember {id}/{name}]").format(id=self.id, name=self.name)
+
+    def __str__(self):
+        return utf2str(unicode(self))
 
 class RequestStateCommand(CombatCommand):
     "Request combat state and deliver it to the controller"

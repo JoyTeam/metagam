@@ -117,11 +117,9 @@ class CombatScripts(ConstructorModule):
 
     def combat_debug(self, combat, msg, **kwargs):
         "Delivering debug message to all combat members having access to debugging info"
-        print "debug msg"
         for member in combat.members:
             char = member.param("char")
             if char:
-                print "char=%s" % char
                 if self.call("character.debug-access", char):
                     if callable(msg):
                         msg = msg()
@@ -260,7 +258,7 @@ class CombatScripts(ConstructorModule):
                 if not set_attr:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
                 if debug:
-                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {func}({data}) = {val}").format(obj=obj, attr=attr, val=val, func=func, data=u", ".join(data)), cls="combat-action", indent=indent)
+                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {func}({data}) = {val}").format(obj=obj, attr=attr, val=val, func=func, data=u", ".join([str2unicode(item) for item in data])), cls="combat-action", indent=indent)
                 if real_execute:
                     set_attr(attr, val, env)
             elif st_cmd == "log":

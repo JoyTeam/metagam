@@ -14,6 +14,12 @@ class ScriptMemoryObject(object):
     def script_set_attr(self, attr, val, env):
         self.data[attr] = val
 
+    def __unicode__(self):
+        return "local"
+
+    def __str__(self):
+        return "local"
+
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
         self.val = val

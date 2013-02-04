@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-02-04 04:49+0300\n"
+"PO-Revision-Date: 2013-02-04 06:58+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2560,6 +2560,9 @@ msgstr "Вычисление участника"
 msgid "Evaluation of object"
 msgstr "Вычисление объекта"
 
+msgid "Evaluation of system log text"
+msgstr "Вычисление текста для системного лога"
+
 msgid "Evaluation of target availability"
 msgstr "Вычисление доступности цели \"target\""
 
@@ -4064,6 +4067,9 @@ msgstr "Заблокировано"
 
 msgid "Log in"
 msgstr "Вход"
+
+msgid "Log message"
+msgstr "Сообщение в лог"
 
 msgid "Logged in"
 msgstr "Вошедший в систему"
@@ -7838,6 +7844,9 @@ msgstr "История мира"
 msgid "Write a message to the dossier"
 msgstr "Сделать запись в досье"
 
+msgid "Write combat debug messages to the chat"
+msgstr "Выводить отладочные сообщения боёв в чат"
+
 msgid "Write debugging information to the debug channel"
 msgstr "Выводить отладочную информацию в отладочный канал"
 
@@ -8270,6 +8279,13 @@ msgstr "[% ... %] будут обработаны движком шаблони�
 
 msgid "[% char.name %] is a character's name"
 msgstr "[% char.name %] будет заменено на имя персонажа"
+
+#, python-format
+msgid "[Combat %s]"
+msgstr "[Combat %s]"
+
+msgid "[CombatMember {id}/{name}]"
+msgstr "[CombatMember {id}/{name}]"
 
 msgid "[gender?FEMALE:MALE] will be replaced with FEMALE if recipient is female and MALE if recipient is male"
 msgstr "[gender?FEMALE:MALE] будет заменяться на FEMALE в случае, если получатель - женщина, и MALE, если получатель мужчина. Например: \"Ты давно не [gender?заходила:заходил] на сайт\""
@@ -9356,6 +9372,9 @@ msgstr "псевдонима"
 
 msgid "writing to log: {text}"
 msgstr "пишем в лог: {text}"
+
+msgid "writing to system log: {text}"
+msgstr "пишем в системный лог: {text}"
 
 msgid "written at"
 msgstr "написано"
