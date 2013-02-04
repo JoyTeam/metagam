@@ -366,6 +366,9 @@ class DomainRegWizard(Wizard):
                                         rec.remove()
                         finally:
                             cnn.close()
+                except IOError as e:
+                    self.error("Error querying registrar: %s", e)
+                    error = self._("Request to the registrar failed. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
                 except TimeoutError:
                     self.error("Timeout querying registrar")
                     error = self._("Request to the registrar timed out. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
@@ -749,6 +752,9 @@ class DomainsAdmin(Module):
                         response = cnn.perform(request)
                     finally:
                         cnn.close()
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
             except TimeoutError:
                 self.error("Timeout querying registrar")
                 continue
@@ -797,7 +803,7 @@ class DomainsAdmin(Module):
                     domain.delkey("prolong_lock")
                     if lock:
                         money.force_debit(float(lock.get("amount")), lock.get("currency"), "domain-prolong", domain=domain.uuid)
-                    self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolonged") % domain.uuid, self._("Domain {domain} is now prolonged.").format(domain=domain.uuid))
+                    self.call("email.send", admin_email, admin_name, self._("%s: domain prolonged") % domain.uuid, self._("Domain {domain} is now prolonged.").format(domain=domain.uuid))
                 domain.store()
             if reg_till > next_month:
                 continue
@@ -814,7 +820,7 @@ class DomainsAdmin(Module):
             self.debug("Price for prolonging %s: %s", domain.uuid, price)
             if price is None:
                 # domain is no longer supported. notify admin
-                self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
+                self.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
                 continue
             # reserve money
             if not domain.get("prolong_lock"):
@@ -823,7 +829,7 @@ class DomainsAdmin(Module):
                     url = self.call("money.donate-url", "MM$", v1=admin_name, email=admin_email, amount=price)
                     if url:
                         url = "http:%s" % url
-                    self.int_app().hooks.call("email.send", admin_email, admin_name, self._("%s: prolong your domain") % domain.uuid, self._("Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n\nPayment interface: {url}").format(domain=domain.uuid, price=price, reg_till=self.call("l10n.date_local", reg_till), url=url))
+                    self.call("email.send", admin_email, admin_name, self._("%s: prolong your domain") % domain.uuid, self._("Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n\nPayment interface: {url}").format(domain=domain.uuid, price=price, reg_till=self.call("l10n.date_local", reg_till), url=url))
                     continue
                 domain.set("prolong_lock", lock.uuid)
                 domain.store()
@@ -850,6 +856,9 @@ class DomainsAdmin(Module):
                     finally:
                         cnn.close()
                     self.debug("Prolong response: %s", response.body)
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
             except TimeoutError:
                 self.error("Timeout querying registrar")
 
