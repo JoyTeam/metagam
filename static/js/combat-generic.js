@@ -54,11 +54,12 @@ var GenericCombat = Ext.extend(Combat, {
      */
     createLog: function () {
         var self = this;
-        self.logComponent = new Ext.BoxComponent({
+        self.logComponent = new Ext.Container({
             id: 'combat-log',
             border: false,
             autoWidth: true,
-            html: 'Combat log'
+            autoScroll: true,
+            html: ''
         });
     },
 
@@ -261,6 +262,24 @@ var GenericCombat = Ext.extend(Combat, {
     newActionSelector: function () {
         var self = this;
         return new GenericCombatActionSelector(self);
+    },
+    
+    /*
+     * Show received log entries on the screen
+     */
+    log: function (entries) {
+        var self = this;
+        if (!self.logComponent) {
+            return;
+        }
+        for (var i = 0; i < entries.length; i++) {
+            self.logComponent.add({
+                xtype: 'box',
+                html: entries[i].text
+            });
+        }
+        self.logComponent.doLayout();
+        self.logComponent.el.scroll('down', 1000000, true);
     }
 });
 

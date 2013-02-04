@@ -40,6 +40,10 @@ Combat.turn_timeout = function(pkt) {
     this.call(pkt.combat, 'turnTimeout');
 };
 
+Combat.log = function(pkt) {
+    this.call(pkt.combat, 'log', pkt.entries);
+};
+
 /* Call combat method */
 Combat.call = function (combat_id, method) {
     var args = Array.prototype.slice.call(arguments, 2);

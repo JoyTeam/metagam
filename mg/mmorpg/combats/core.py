@@ -143,6 +143,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.running_actions = []
         self.ready_actions = []
         self._turn_order_check = False
+        self.not_delivered_log = []
 
     def script_code(self, tag):
         "Get combat script code (syntax tree)"
@@ -177,6 +178,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             if m.id == memberId:
                 return m
         return None
+
+    def close(self):
+        "Notify combat about it's terminated and about to be destroyed"
+        self.flush()
 
     @property
     def actions(self):
@@ -283,6 +288,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self.stage_flag("actions"):
             self.process_actions()
         self.heartbeat()
+        self.flush()
         try:
             self.wakeup_channel.receive(timeout)
         except TimeoutError:
@@ -324,6 +330,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.turn_order.idle()
         for member in self.members:
             member.idle()
+
+    def flush(self):
+        "Flush pending messages"
         # deliver changed parameters
         params = self.changed_params()
         if params:
@@ -334,11 +343,33 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             if params:
                 for controller in self.controllers:
                     controller.member_params_changed(member, params)
+        # commit logs
+        if self.log:
+            self.log.flush()
+        # deliver new log entries
+        if self.not_delivered_log:
+            for controller in self.controllers:
+                controller.deliver_log(self.not_delivered_log)
+            self.not_delivered_log = []
+        # flush everything to the clients
+        for controller in self.controllers:
+            controller.flush()
         self.call("stream.flush")
 
     def set_log(self, log):
         "Attach logging system to the combat"
         self.log = log
+
+    def textlog(self, entry):
+        "Add entry to combat log"
+        self.not_delivered_log.append(entry)
+        if self.log:
+            self.log.textlog(entry)
+
+    def syslog(self, entry):
+        "Add entry to combat debug log"
+        if self.log:
+            self.log.syslog(entry)
 
     def stop(self):
         "Terminate combat"
@@ -830,6 +861,9 @@ class CombatMemberController(CombatObject):
     def idle(self):
         "Called when controller can do any background processing"
 
+    def flush(self):
+        "Called when needed to flush all pending messages"
+
     def combat_params_changed(self, params):
         "Called when combat parameters changed"
         if not self.connected:
@@ -917,6 +951,9 @@ class CombatMemberController(CombatObject):
 
     def deliver_turn_timeout(self):
         "Called when we have to notify client about its controlled member timed out"
+
+    def deliver_log(self, entries):
+        "Called when we have to deliver some combat log entries to the client"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

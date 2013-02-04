@@ -304,6 +304,12 @@ var Combat = Ext.extend(Object, {
                 }
             }
         });
+    },
+
+    /*
+     * Called when new log entries arrived from the server
+     */
+    log: function (entries) {
     }
 });
 

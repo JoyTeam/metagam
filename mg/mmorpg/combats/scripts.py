@@ -74,6 +74,10 @@ class CombatScriptsAdmin(ConstructorModule):
                     result += " else {\n%s%s}" % (self.unparse_script(st[3], indent + 1), "  " * indent)
                 result += "\n"
                 lines.append(result)
+            elif st_cmd == "log":
+                lines.append(u"%slog %s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", st[1]))))
+            elif st_cmd == "syslog":
+                lines.append(u"%ssyslog %s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", st[1]))))
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
@@ -113,9 +117,11 @@ class CombatScripts(ConstructorModule):
 
     def combat_debug(self, combat, msg, **kwargs):
         "Delivering debug message to all combat members having access to debugging info"
+        print "debug msg"
         for member in combat.members:
             char = member.param("char")
             if char:
+                print "char=%s" % char
                 if self.call("character.debug-access", char):
                     if callable(msg):
                         msg = msg()
@@ -258,15 +264,21 @@ class CombatScripts(ConstructorModule):
                 if real_execute:
                     set_attr(attr, val, env)
             elif st_cmd == "log":
-                log = combat.log
-                if log:
-                    text = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of log text"))
-                    if debug:
-                        self.combat_debug(combat, lambda: self._("writing to log: {text}").format(text=text), cls="combat-log", indent=indent)
-                    if real_execute:
-                        log.textlog({
-                            "text": text
-                        })
+                text = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of log text"))
+                if debug:
+                    self.combat_debug(combat, lambda: self._("writing to log: {text}").format(text=text), cls="combat-log", indent=indent)
+                if real_execute:
+                    combat.textlog({
+                        "text": text
+                    })
+            elif st_cmd == "syslog":
+                text = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of system log text"))
+                if debug:
+                    self.combat_debug(combat, lambda: self._("writing to system log: {text}").format(text=text), cls="combat-log", indent=indent)
+                if real_execute:
+                    combat.syslog({
+                        "text": text
+                    })
             elif st_cmd == "if":
                 expr = st[1]
                 val = self.call("script.evaluate-expression", expr, globs=globs, description=lambda: self._("Evaluation of condition"))

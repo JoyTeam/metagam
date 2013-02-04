@@ -38,6 +38,12 @@ class TokenIf(Parsing.Token):
 class TokenElse(Parsing.Token):
     "%token else"
 
+class TokenLog(Parsing.Token):
+    "%token log"
+
+class TokenSyslog(Parsing.Token):
+    "%token syslog"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -128,6 +134,14 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce if Expr curlyleft CombatScript curlyright else curlyleft CombatScript curlyright"
         self.val = ["if", expr.val, actions1.val, actions2.val]
 
+    def reduceLog(self, cmd, expr):
+        "%reduce log scalar"
+        self.val = ["log", cmd.script_parser.parse_text(expr.val, cmd.script_parser._("Log message"))]
+
+    def reduceSyslog(self, cmd, expr):
+        "%reduce syslog scalar"
+        self.val = ["syslog", cmd.script_parser.parse_text(expr.val, cmd.script_parser._("Log message"))]
+
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
     def reduceMembers(self, val):
@@ -173,6 +187,8 @@ class CombatScriptParser(ScriptParser):
     syms["select"] = TokenSelect
     syms["if"] = TokenIf
     syms["else"] = TokenElse
+    syms["log"] = TokenLog
+    syms["syslog"] = TokenSyslog
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

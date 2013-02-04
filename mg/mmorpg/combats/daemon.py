@@ -3,6 +3,7 @@ import mg.constructor
 from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.ai import AIController
+from mg.mmorpg.combats.logs import CombatDatabaseLog
 from mg.core.cluster import DBCluster, HTTPConnectionRefused
 from concurrence import Tasklet, http
 from concurrence.http import HTTPError
@@ -178,6 +179,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             os._exit(0)
         self.cobj = cobj
         combat = Combat(app, cobj.uuid, cobj.get("rules", {}))
+        log = CombatDatabaseLog(combat)
+        combat.set_log(log)
         CombatObject.__init__(self, combat, fqn, weak=False)
 
     def add_members(self):
@@ -234,6 +237,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             while not self.combat.stopped():
                 self.combat.process()
         finally:
+            self.combat.close()
             self.app().inst.csrv = None
 
 class CombatInterface(mg.constructor.ConstructorModule):
@@ -275,7 +279,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
             # find connection
             self.api_host = cobj.get("host")
             self.api_port = cobj.get("port")
-            self.debug("Remote combat API URI: %s:%s", self.api_host, self.api_port)
+            #self.debug("Remote combat API URI: %s:%s", self.api_host, self.api_port)
         except CombatUnavailable as e:
             self.cancel_combat(e)
             raise
@@ -356,7 +360,7 @@ class WebController(CombatMemberController):
         kwargs["combat"] = self.combat.uuid
         self.outbound.append(kwargs)
 
-    def idle(self):
+    def flush(self):
         if self.outbound:
             outbound = self.outbound
             self.outbound = []
@@ -397,3 +401,6 @@ class WebController(CombatMemberController):
 
     def deliver_turn_timeout(self):
         self.send("turn_timeout")
+
+    def deliver_log(self, entries):
+        self.send("log", entries=entries)
