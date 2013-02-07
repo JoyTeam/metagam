@@ -495,7 +495,7 @@ class ApplicationWebService(WebService):
         except SystemExit:
             os._exit(0)
         except Exception as e:
-            app.hooks.call("exception.report", e)
+            Tasklet.new(app.call)("exception.report", e)
             raise
 
 class SingleApplicationWebService(ApplicationWebService):
