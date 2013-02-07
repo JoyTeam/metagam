@@ -378,7 +378,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     # Scripting
 
     def script_attr(self, attr, handle_exceptions=True):
-        if attr == "stage":
+        if attr == "id":
+            return self.uuid
+        elif attr == "stage":
             return self.stage
         elif attr == "stage_flags":
             return CombatStageFlags(self)

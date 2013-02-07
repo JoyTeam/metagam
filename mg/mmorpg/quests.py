@@ -1625,7 +1625,7 @@ class Quests(ConstructorModule):
                                             channel = self.call("script.evaluate-expression", args["channel"], globs=kwargs, description=eval_description)
                                             channel = utf2str(unicode(channel))
                                         else:
-                                            channel = "loc"
+                                            channel = "wld"
                                         if public:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)

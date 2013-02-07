@@ -44,6 +44,9 @@ class TokenLog(Parsing.Token):
 class TokenSyslog(Parsing.Token):
     "%token syslog"
 
+class TokenChat(Parsing.Token):
+    "%token chat"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -142,6 +145,17 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce syslog scalar"
         self.val = ["syslog", cmd.script_parser.parse_text(expr.val, cmd.script_parser._("Log message"))]
 
+    def reduceChat(self, cmd, attrs):
+        "%reduce chat ExprAttrs"
+        text = get_str_attr(cmd, "chat", attrs, "text", require=True)
+        text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
+        channel = get_attr(cmd, "chat", attrs, "channel")
+        validate_attrs(cmd, "chat", attrs, ["text", "channel"])
+        args = {}
+        if channel is not None:
+            args["channel"] = channel
+        self.val = ["chat", text, args]
+
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
     def reduceMembers(self, val):
@@ -169,6 +183,38 @@ class CombatScript(Parsing.Nonterm):
         self.val = script.val[:]
         self.val.append(statement.val)
 
+class Attrs(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+    
+    def reduceAttr(self, attrs, key, a, value):
+        "%reduce Attrs CombatAttrKey assign scalar"
+        if key.val in attrs.val:
+            raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
+        self.val = attrs.val.copy()
+        self.val[key.val] = value.val
+
+class ExprAttrs(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+    
+    def reduceAttr(self, attrs, key, a, expr):
+        "%reduce ExprAttrs CombatAttrKey assign Expr"
+        if key.val in attrs.val:
+            raise Parsing.SyntaxError(a.script_parser._("Attribute '%s' was specified twice") % key.val)
+        self.val = attrs.val.copy()
+        self.val[key.val] = expr.val
+
+class CombatAttrKey(Parsing.Nonterm):
+    "%nonterm"
+    def reduceAttrKey(self, attrkey):
+        "%reduce AttrKey"
+        self.val = attrkey.val
+
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
     "%start"
@@ -189,6 +235,7 @@ class CombatScriptParser(ScriptParser):
     syms["else"] = TokenElse
     syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
+    syms["chat"] = TokenChat
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")
