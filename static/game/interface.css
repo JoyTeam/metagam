@@ -257,11 +257,10 @@ area { border: none }
 
 /* COMBATS */
 .chat-msg-combat { color: #0000a0 }
-.chat-msg-combat-condition { color: #d7d741 }
+.chat-msg-combat-condition { color: #575710 }
 .chat-msg-combat-action { color: #008020 }
 .chat-msg-combat-error { color: #c00020 }
 .chat-msg-combat-log { color: #808080 }
-.chat-msg-combat-condition { color: #d7d721 }
 #combat-myavatar { overflow: hidden }
 #combat-enemyavatar { overflow: hidden }
 .x-border-layout-ct { background: none }

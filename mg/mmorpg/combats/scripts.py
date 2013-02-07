@@ -288,7 +288,7 @@ class CombatScripts(ConstructorModule):
                 expr = st[1]
                 val = self.call("script.evaluate-expression", expr, globs=globs, description=lambda: self._("Evaluation of condition"))
                 if debug:
-                    self.combat_debug(combat, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="combat-condition", indent=indent + 2)
+                    self.combat_debug(combat, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="combat-condition", indent=indent)
                 if val:
                     execute_block(st[2], indent + 1)
                 else:
@@ -303,7 +303,7 @@ class CombatScripts(ConstructorModule):
                 else:
                     channel = "wld"
                 if debug:
-                    self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent + 2)
+                    self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent)
                 self.call("chat.message", html=html, cls="combat", hide_time=True, hl=True, channel=channel)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
