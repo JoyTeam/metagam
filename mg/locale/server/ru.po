@@ -47,10 +47,6 @@ msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
 
 #, python-format
-msgid "%s can't join combat. [gender?She:He] is busy"
-msgstr ""
-
-#, python-format
 msgid "%s registry is temporarily unavailable. Try again later"
 msgstr "Реестр %s временно недоступен. Попробуйте позже"
 
@@ -85,20 +81,8 @@ msgstr "&lt;&lt;&lt; Раньше"
 msgid "'%s' has no settable attributes"
 msgstr "У \"%s\" нет изменяемых атрибутов"
 
-#, fuzzy, python-format
-msgid "'%s' is not a combat member"
-msgstr "\"%s\" - не объект"
-
-#, fuzzy, python-format
-msgid "'%s' is not a valid combat member"
-msgstr "Это не число"
-
 #, python-format
 msgid "'%s' is not an object"
-msgstr "\"%s\" - не объект"
-
-#, fuzzy, python-format
-msgid "'%s' is not settable"
 msgstr "\"%s\" - не объект"
 
 msgid "'{obj}' has no attribute '{attr}'"
@@ -370,10 +354,6 @@ msgstr "Активация аккаунта"
 msgid "Action"
 msgstr "Действие"
 
-#, fuzzy
-msgid "Action code"
-msgstr "Код активации"
-
 msgid "Action code must be a string"
 msgstr "Код действия должен быть строкой"
 
@@ -384,22 +364,10 @@ msgstr ""
 "Код действия должен начинаться латинской буквы или \"_\". Остальные символы "
 "могут быть латинскими буквами, цифрами или \"_\""
 
-#, fuzzy
-msgid "Action name"
-msgstr "Название локации"
-
-#, fuzzy
-msgid "Action with the same code already exists"
-msgstr "Параметр с таким кодом уже существует"
-
 msgid "Actions"
 msgstr "Действия"
 
 msgid "Actions for items"
-msgstr "Действия для предметов"
-
-#, fuzzy, python-format
-msgid "Actions of '%s'"
 msgstr "Действия для предметов"
 
 msgid "Activate"
@@ -472,9 +440,6 @@ msgstr "Пароль администратора"
 msgid "Administrator's personal data"
 msgstr "Персональные данные администратора"
 
-msgid "After execution"
-msgstr ""
-
 msgid "Aggregate amount (for instance, 'char.inv.sum_weight')"
 msgstr "Агрегированное количество (например, 'char.inv.sum_weight')"
 
@@ -501,15 +466,6 @@ msgstr "Разрешить изображения в подписях"
 
 msgid "Allow moderation"
 msgstr "Разрешено модерировать"
-
-msgid "Allow player to resize combat log"
-msgstr ""
-
-msgid "Allow player to resize enemy's avatar block"
-msgstr ""
-
-msgid "Allow player to resize player's avatar block"
-msgstr ""
 
 msgid "Allow reading"
 msgstr "Разрешено читать"
@@ -592,10 +548,6 @@ msgstr "Разрешено ли игрокам играть более, чем 1
 msgid "Are you sure want do delete this image?"
 msgstr "Вы уверены, что хотите удалить это изображение?"
 
-#, fuzzy
-msgid "Are you sure want to delete these rules?"
-msgstr "Вы уверены, что хотите удалить этот квест?"
-
 msgid "Are you sure want to delete this WMID?"
 msgstr "Вы уверены, что хотите удалить этот WMID?"
 
@@ -610,10 +562,6 @@ msgstr "Вы уверены, что хотите удалить эту кате�
 
 msgid "Are you sure want to delete this color?"
 msgstr "Вы уверены, что хотите удалить этот цвет?"
-
-#, fuzzy
-msgid "Are you sure want to delete this combat action?"
-msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
 msgid "Are you sure want to delete this constraint?"
 msgstr "Вы уверены, что хотите удалить это ограничение?"
@@ -687,14 +635,6 @@ msgstr "Назначить доменное имя"
 #, python-format
 msgid "Assortment of '%s'"
 msgstr "Ассортимент \"%s\""
-
-msgid "Attack-block system"
-msgstr ""
-
-msgid ""
-"Attack-block system. Combat members choose arbitrary targets and zones being "
-"attacked or blocked"
-msgstr ""
 
 #, python-format
 msgid "Attribute '%s' was specified twice"
@@ -875,9 +815,6 @@ msgid ""
 msgstr ""
 "Изначально вы не можете вставлять смайлики в подпись на форуме. Если вы "
 "хотите иметь подпись со смайликами, воспользуйтесь этой опцией"
-
-msgid "Before execution"
-msgstr ""
 
 msgid "Before launching your game perform the steps listed above"
 msgstr "Перед запуском игры выполните шаги, перечисленные выше"
@@ -1098,9 +1035,6 @@ msgstr "Вызвать квестовое событие \"clicked\""
 msgid "Cancel"
 msgstr "Отмена"
 
-msgid "Cancelling combat {combat} ({reason}). Freeing members"
-msgstr ""
-
 msgid "Cargo amount expression"
 msgstr "Выражение для величины груза"
 
@@ -1262,10 +1196,6 @@ msgstr "Список образов персонажей"
 
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
-
-#, python-format
-msgid "Character is a member of missing combat (%s). Freeing lock"
-msgstr ""
 
 msgid "Character is not active. Check your e-mail and follow activation link"
 msgstr "Персонаж неактивен. Проверьте почту и перейдите по ссылке активации"
@@ -1560,131 +1490,6 @@ msgstr "Цвета в подписи"
 msgid "Colours in the signature for {period}"
 msgstr "Цвета в подписи на {period_a}"
 
-#, fuzzy
-msgid "Combat avatar dimensions (example: 100x200)"
-msgstr "Размеры слота (например: 60x60)"
-
-#, fuzzy
-msgid "Combat avatars settings"
-msgstr "Глобальные настройки"
-
-msgid "Combat disappeared"
-msgstr ""
-
-msgid "Combat interface for combat rules '{code}' ({name})"
-msgstr ""
-
-#, fuzzy
-msgid "Combat interface height"
-msgstr "Настройки глобального интерфейса"
-
-msgid ""
-"Combat interface template (used when no specific combat-rules-*.html exist)"
-msgstr ""
-
-#, fuzzy
-msgid "Combat log height"
-msgstr "Высота чата"
-
-#, fuzzy
-msgid "Combat log layout"
-msgstr "Разметка страницы локации"
-
-#, fuzzy
-msgid "Combat member control"
-msgstr "Управление демонами"
-
-#, fuzzy
-msgid "Combat member name"
-msgstr "Название категории"
-
-#, fuzzy
-msgid "Combat member parameters"
-msgstr "Параметры персонажа"
-
-#, fuzzy
-msgid "Combat member sex"
-msgstr "Пол персонажа"
-
-msgid "Combat member team"
-msgstr ""
-
-#, fuzzy
-msgid "Combat member type"
-msgstr "Тип контента"
-
-#, fuzzy
-msgid "Combat not found"
-msgstr "Персонаж не найден"
-
-#, fuzzy, python-format
-msgid "Combat parameter '%s'"
-msgstr "Параметры персонажа"
-
-#, fuzzy
-msgid "Combat parameters"
-msgstr "Параметры персонажа"
-
-msgid "Combat rules code"
-msgstr ""
-
-#, fuzzy
-msgid ""
-"Combat rules code must start with latin letter or '_'. Other symbols may be "
-"latin letters, digits or '_'"
-msgstr ""
-"Код действия должен начинаться латинской буквы или \"_\". Остальные символы "
-"могут быть латинскими буквами, цифрами или \"_\""
-
-#, fuzzy
-msgid ""
-"Combat rules identifier must start with latin letter or '_'. Other symbols "
-"may be latin letters, digits or '_'"
-msgstr ""
-"Идентификатор квеста должен начинаться латинской буквы или \"_\". Остальные "
-"символы могут быть латинскими буквами, цифрами или \"_\""
-
-#, fuzzy
-msgid "Combat rules name"
-msgstr "Имя персонажа"
-
-msgid ""
-"Combat rules not specified. Specify default combat rules in the combat "
-"comfiguration"
-msgstr ""
-
-#, fuzzy
-msgid "Combat rules with the same code already exist"
-msgstr "Параметр с таким кодом уже существует"
-
-msgid "Combat script running when combat starts"
-msgstr ""
-
-#, fuzzy, python-format
-msgid "Combat stage '%s' is not defined"
-msgstr "В слоте %s нет предмета"
-
-msgid "Combat was started twice"
-msgstr ""
-
-msgid "Combats"
-msgstr ""
-
-#, fuzzy
-msgid "Combats configuration"
-msgstr "Конфигурация чата"
-
-#, fuzzy
-msgid "Combats engine"
-msgstr "Квестовый движок"
-
-msgid "Combats rules"
-msgstr ""
-
-#, fuzzy
-msgid "Combats rules editor"
-msgstr "Редактор смайликов"
-
 msgid "Comment"
 msgstr "Комментировать"
 
@@ -1735,10 +1540,6 @@ msgstr "Поздравляем! Ваша игра '{0}' успешно прош�
 
 msgid "Congratulations! Your game is ready to be published."
 msgstr "Поздравляем! Ваша игра готова к публикации."
-
-#, fuzzy
-msgid "Connection refused"
-msgstr "Установлено безопасное соединение"
 
 msgid "Connection secured"
 msgstr "Установлено безопасное соединение"
@@ -1819,12 +1620,6 @@ msgstr "ID контрагента"
 msgid "Control"
 msgstr "Управление"
 
-#, python-format
-msgid ""
-"Controlling character not specified for combat member '%s' with web "
-"controller"
-msgstr ""
-
 msgid ""
 "Conversion table (format: min_value - resulting_level). Sample 'experience "
 "to level' conversion:<br />0: 1<br />100: 2<br />500: 3<br />3000: 4"
@@ -1855,10 +1650,6 @@ msgstr "Переписка"
 
 msgid "Correspondence with {0}"
 msgstr "Переписка с {0}"
-
-#, python-format
-msgid "Could not create combat member '%s'"
-msgstr ""
 
 msgid "Couldn't convert '{token}' (type '{type}') to string"
 msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку"
@@ -1902,9 +1693,6 @@ msgstr "Создать новое поле"
 
 msgid "Created"
 msgstr "Создано"
-
-msgid "Creating highly customizable combats"
-msgstr ""
 
 msgid "Cult of the dead cow"
 msgstr "Культ мёртвой коровы"
@@ -2032,10 +1820,6 @@ msgstr "Настройки DNS сохранены"
 msgid "DOCTYPE not specified"
 msgstr "DOCTYPE не указан"
 
-#, fuzzy
-msgid "Damage parameter must start with 'p_'"
-msgstr "Идентификатор должен начинаться с 'u_'"
-
 msgid "Dark"
 msgstr "Тёмный"
 
@@ -2108,14 +1892,6 @@ msgstr "Удаление модификаторов пользователей"
 
 msgid "Deletion"
 msgstr "Удаление"
-
-#, fuzzy
-msgid "Deliver new combat member parameter"
-msgstr "Производный (вычисляемый) параметр"
-
-#, fuzzy
-msgid "Deliver new combat parameter"
-msgstr "Производный (вычисляемый) параметр"
 
 msgid "Delivery options"
 msgstr "Опции доставки"
@@ -2526,9 +2302,6 @@ msgstr "Конец месяца"
 msgid "End of week"
 msgstr "Конец недели"
 
-msgid "Enemy's avatar width"
-msgstr ""
-
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
@@ -2770,20 +2543,6 @@ msgstr "Вычисление \"{cls}.{uuid}.{param}\""
 msgid "Evaluation of '{cls}.{uuid}.{param}' visibility condition"
 msgstr "Вычисление условия видимости параметра \"{cls}.{uuid}.{param}\""
 
-msgid "Evaluation of damage target member"
-msgstr ""
-
-msgid "Evaluation of damage value"
-msgstr ""
-
-#, fuzzy
-msgid "Evaluation of object"
-msgstr "Проверено %d объектов"
-
-#, fuzzy
-msgid "Evaluation of value"
-msgstr "Валидация не удалась"
-
 msgid ""
 "Even with legal protection, women victims of rape still face a social stigma "
 "that is hard to overcome. He said: \"Women are still afraid to complain if "
@@ -2856,9 +2615,6 @@ msgstr "Цена в рублях"
 msgid "Execute JavaScript"
 msgstr "Выполнить JavaScript"
 
-msgid "Execution itself (applying action effect to targets)"
-msgstr ""
-
 msgid "Exit"
 msgstr "Выход"
 
@@ -2892,9 +2648,6 @@ msgstr "Дополнительные настройки"
 
 msgid "Facebook application identifier"
 msgstr "Идентификатор приложения Facebook"
-
-msgid "Failed to start combat server"
-msgstr ""
 
 msgid "Fast movement across the locations"
 msgstr "Быстрое перемещение по локациям"
@@ -2966,9 +2719,6 @@ msgstr "Пройденные квесты"
 msgid "First image selection after registration is free"
 msgstr ""
 "После регистрации персонажа выбор первого образа предоставляется бесплатно"
-
-msgid "Fixed combat height, variable log height"
-msgstr ""
 
 msgid "Float '{val}' has no attributes"
 msgstr "У числа \"{val}\" нет атрибутов"
@@ -3263,10 +3013,6 @@ msgstr ""
 "Общая рекомендация - устанавливать балансировочную цену пропорционально "
 "сложности получения предмета. Это поможет сохранить игровой баланс."
 
-#, fuzzy
-msgid "Generate combat system"
-msgstr "Общая схема интерфейса"
-
 msgid "Generate design template"
 msgstr "Сформировать шаблон оформления"
 
@@ -3275,10 +3021,6 @@ msgstr "Сгенерировать пригласительный код"
 
 msgid "Generate library description automatically"
 msgstr "Сгенерировать описание для библиотеки автоматически"
-
-#, fuzzy
-msgid "Generic interface settings"
-msgstr "Настройки глобального интерфейса"
 
 msgid "Give"
 msgstr "Выдать"
@@ -3854,23 +3596,6 @@ msgstr "Неверный цвет"
 msgid "Invalid color format"
 msgstr "Неверный формат цвета"
 
-#, fuzzy
-msgid "Invalid combat idenfifier"
-msgstr "Неверный идентификатор локации"
-
-#, fuzzy
-msgid "Invalid combat response (expected: {expected}, received: {received})"
-msgstr ""
-"Неверный объект состояний квеста. Ожидалось: {expected}. Найдено: {found}"
-
-#, fuzzy, python-format
-msgid "Invalid combat response: %s"
-msgstr "Неверная валюта: %s"
-
-#, fuzzy, python-format
-msgid "Invalid controller type: %s"
-msgstr "Неверная валюта: %s"
-
 msgid "Invalid currency"
 msgstr "Неверная валюта"
 
@@ -3929,9 +3654,6 @@ msgstr "Неверный пригласительный код"
 #, python-format
 msgid "Invalid line format: '%s'"
 msgstr "Неверный формат строки: \"%s\""
-
-msgid "Invalid location identifier"
-msgstr "Неверный идентификатор локации"
 
 msgid "Invalid location selected"
 msgstr "Выбрана неверная локация"
@@ -4133,15 +3855,8 @@ msgstr "Типы предметов"
 msgid "Items"
 msgstr "Предметы"
 
-#, fuzzy
-msgid "Items above avatar"
-msgstr "У предметов нет параметра %s"
-
 msgid "Items and inventory"
 msgstr "Предметы и инвентарь"
-
-msgid "Items below avatar"
-msgstr ""
 
 msgid "Items catalog"
 msgstr "Каталог предметов"
@@ -4666,10 +4381,6 @@ msgstr "Может входить даже в закрытую игру"
 msgid "Medieval"
 msgstr "Средневековье"
 
-#, fuzzy, python-format
-msgid "Member parameter '%s'"
-msgstr "Параметры предметов"
-
 msgid "Memcached servers (comma separated list)"
 msgstr "Серверы memcached (список, разделённый запятыми)"
 
@@ -4732,10 +4443,6 @@ msgstr "Металл №3"
 
 msgid "Mike"
 msgstr "Mike"
-
-#, fuzzy, python-format
-msgid "Miminal value is %d"
-msgstr "Максимальное значение - %d"
 
 msgid "Min/max/sum"
 msgstr "Мин/макс/сум"
@@ -4983,13 +4690,6 @@ msgstr "Новый персонаж: {name}"
 msgid "New color"
 msgstr "Новый цвет"
 
-#, fuzzy
-msgid "New combat action"
-msgstr "Новое действие"
-
-msgid "New combats rules"
-msgstr ""
-
 msgid "New constraint"
 msgstr "Новое ограничение"
 
@@ -5102,10 +4802,6 @@ msgstr "Новое состояние квеста"
 #, python-format
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
-
-#, fuzzy
-msgid "New rules"
-msgstr "Новый квест"
 
 msgid "New slot"
 msgstr "Новый слот"
@@ -5490,20 +5186,8 @@ msgstr "Панели"
 msgid "Parameter %s is not stored in the database"
 msgstr "Параметр %s не сохраняется в базе данных"
 
-#, fuzzy
-msgid "Parameter code (prefixed with 'p_')"
-msgstr "Код параметра (для использования в скриптах)"
-
 msgid "Parameter code (used in scripting)"
 msgstr "Код параметра (для использования в скриптах)"
-
-#, fuzzy
-msgid ""
-"Parameter code must start with p_ and contain only latin letters, digits and "
-"underscode characters"
-msgstr ""
-"Код группы страниц (должен начинаться с \"u_\" и содержать только латинские "
-"буквы, цифры и символы \"_\")"
 
 msgid "Parameter description (for players)"
 msgstr "Описание параметра (для игроков)"
@@ -5563,19 +5247,11 @@ msgstr "Визуализация параметра"
 msgid "Parameter with the same code already exists"
 msgstr "Параметр с таким кодом уже существует"
 
-#, fuzzy
-msgid "Parameter with this code is already delivered to client"
-msgstr "Параметр с таким кодом уже существует"
-
 msgid "Parameters"
 msgstr "Параметры"
 
 msgid "Parameters documentation"
 msgstr "Документация на систему параметров"
-
-#, python-format
-msgid "Parameters of '%s' delivered to client"
-msgstr ""
 
 msgid "Passport number"
 msgstr "Номер паспорта"
@@ -5681,9 +5357,6 @@ msgstr "Игрок"
 
 msgid "Player account"
 msgstr "Аккаунт игрока"
-
-msgid "Player's avatar width"
-msgstr ""
 
 msgid "Players authentication settings"
 msgstr "Настройки аутентификации игроков"
@@ -6433,10 +6106,6 @@ msgstr "Рубрикатор"
 msgid "Rubricators"
 msgstr "Рубрикаторы"
 
-#, fuzzy
-msgid "Rules name"
-msgstr "Название квеста"
-
 msgid "Rusted Metal"
 msgstr "Ржавый Металл"
 
@@ -6494,10 +6163,6 @@ msgstr "Скриптовое условие, есть ли у этого пре�
 msgid "Script condition whether to deliver an e-mail"
 msgstr "Скриптовое условие, определяющее необходимость доставки e-mail"
 
-#, fuzzy
-msgid "Script unexpectedly ended"
-msgstr "Выражение внезапно закончилось"
-
 #, python-format
 msgid "Script unparse error. Expected list, received %s"
 msgstr "Ошибка при восстановлении скрипта. Ожидался список, получено: %s"
@@ -6511,10 +6176,6 @@ msgstr "Описание скриптового языка"
 
 msgid "Scripts documentation"
 msgstr "Документация на скрипты"
-
-#, fuzzy, python-format
-msgid "Scripts of '%s'"
-msgstr "История '%s'"
 
 msgid "Search"
 msgstr "Искать"
@@ -6799,14 +6460,6 @@ msgstr "Показывать знак \"+\" перед положительны�
 msgid "Show abitrary HTML from the table of values"
 msgstr "Показать произвольный HTML из таблицы значений"
 
-#, fuzzy
-msgid "Show combat log on the bottom side"
-msgstr "Показать с левой стороны"
-
-#, fuzzy
-msgid "Show enemy's avatar on the right side"
-msgstr "Показать с левой стороны"
-
 msgid "Show on registration"
 msgstr "Показывать при регистрации"
 
@@ -6815,10 +6468,6 @@ msgstr "Показать с левой стороны"
 
 msgid "Show parameters of the character"
 msgstr "Показать параметры персонажа"
-
-#, fuzzy
-msgid "Show player's avatar on the left side"
-msgstr "Показать с левой стороны"
 
 msgid "Show reverted value in the inventory (0 means whole item)"
 msgstr ""
@@ -7235,9 +6884,6 @@ msgstr ""
 msgid "State with the same identifier already exists"
 msgstr "Состояние с таким идентификатором уже существует"
 
-msgid "Statement '{statement}'"
-msgstr ""
-
 msgid "Static image"
 msgstr "Статическая картинка"
 
@@ -7399,14 +7045,6 @@ msgstr "В каком фрейме открыть"
 
 msgid "Target location"
 msgstr "Целевая локация"
-
-#, python-format
-msgid "Team number must be in range 1 .. 1000. Got: %s"
-msgstr ""
-
-#, python-format
-msgid "Team number must be integer. Got: %s"
-msgstr ""
 
 msgid ""
 "Technical error during debiting {amount} {currency} (available={available})"
@@ -8073,9 +7711,6 @@ msgstr "Попытайтесь описать свой выбор"
 msgid "Type"
 msgstr "Тип"
 
-msgid "Type of combat system"
-msgstr ""
-
 msgid "URI"
 msgstr "URI"
 
@@ -8104,14 +7739,6 @@ msgstr ""
 
 msgid "Unjoining"
 msgstr "Исключение"
-
-#, fuzzy, python-format
-msgid "Unknown combat action '%s'"
-msgstr "Неизвестное действие в квесте: %s"
-
-#, fuzzy, python-format
-msgid "Unknown combat type %s"
-msgstr "Неизвестный элемент: %s"
 
 msgid "Unknown error uploading image"
 msgstr "Неизвестная ошибка при загрузке изображения"
@@ -8241,9 +7868,6 @@ msgstr ""
 "функцией предварительного просмотра. Затем несколько раз нажмите кнопку "
 "\"Обновить\", чтобы проверить оформление на различных данных."
 
-msgid "Use generic GUI for this type of combats"
-msgstr ""
-
 msgid "User"
 msgstr "Пользователь"
 
@@ -8322,9 +7946,6 @@ msgstr "Точность значений (количество разрядов
 msgid "Values you entered are not valid. Try again please"
 msgstr "Введённые вами значения неверны. Попробуйте ещё раз"
 
-msgid "Variable combat height, fixed log height"
-msgstr ""
-
 msgid "Verified WMID required"
 msgstr "Требуется проверенный WMID"
 
@@ -8364,19 +7985,11 @@ msgstr "Просмотр досье пользователей"
 msgid "Viewing users' modifiers"
 msgstr "Просмотр модификаторов пользователей"
 
-#, fuzzy
-msgid "Visibility"
-msgstr "Условие видимости"
-
 msgid "Visibility condition"
 msgstr "Условие видимости"
 
 msgid "Visibility condition (empty field means 'always visible')"
 msgstr "Условие видимости (пустое поле означает \"всегда видим\")"
-
-#, fuzzy, python-format
-msgid "Visibility of combat parameter %s"
-msgstr "Видимость слота \"%s\""
 
 #, python-format
 msgid "Visibility of slot '%s'"
@@ -8499,13 +8112,6 @@ msgstr "Требуется ли выбор класса \"%s\""
 
 msgid "Whether item {item} ({name}) is wearable"
 msgstr "Является ли предмет {item} ({name}) надеваемым"
-
-#, fuzzy
-msgid "Whether parameter is visible to member 'viewer'"
-msgstr "Параметр видим владельцу"
-
-msgid "Whether parameter of member 'member' is visible to member 'viewer'"
-msgstr ""
 
 msgid ""
 "Whether selection of this class is required for the character (0 - never "
@@ -9002,10 +8608,6 @@ msgstr ""
 "пока ваш локальный DNS-сервер сделает игру доступной. Пожалуйста, запаситесь "
 "терпением. <a href=\"//{1}/cabinet\" target=\"_top\">Возврат в кабинет</a>"
 
-#, fuzzy
-msgid "You have entered a combat"
-msgstr "Вы перешли в локацию"
-
 msgid "You have got:"
 msgstr "Вы получили:"
 
@@ -9418,18 +9020,6 @@ msgstr "чат"
 msgid "class"
 msgstr "класс"
 
-#, fuzzy
-msgid "combat action profile"
-msgstr "Действие не выбрано"
-
-#, fuzzy
-msgid "combat actions"
-msgstr "Нет действия"
-
-#, fuzzy
-msgid "combat system profile"
-msgstr "Профиль пользователя социалки"
-
 msgid "combo box"
 msgstr "выпадающий список"
 
@@ -9456,10 +9046,6 @@ msgstr "Создано"
 
 msgid "currency///Auto"
 msgstr "Авто"
-
-#, fuzzy
-msgid "damaging {obj}.{attr}: {damage}"
-msgstr "устанавливаем {obj}.{attr} = {val}"
 
 msgid "database///DB"
 msgstr "БД"
@@ -9672,10 +9258,6 @@ msgstr "параметры предметов"
 msgid "items, list, catalog"
 msgstr "предметы, список, каталог"
 
-#, fuzzy
-msgid "launching combat"
-msgstr "Запуск вашей игры"
-
 msgid "letters sent"
 msgstr "писем отправлено"
 
@@ -9880,10 +9462,6 @@ msgstr "параметр"
 
 msgid "parameter///Name"
 msgstr "Название"
-
-#, fuzzy
-msgid "parameters delivery to client"
-msgstr "Документация на систему параметров"
 
 msgid "payment///Performed"
 msgstr "Произведен"
@@ -10132,9 +9710,6 @@ msgstr "Поиск"
 
 msgid "script"
 msgstr "скрипт"
-
-msgid "script handlers"
-msgstr ""
 
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"
@@ -10425,6 +10000,294 @@ msgstr "{price} на {period_a}"
 
 msgid "{price} forever"
 msgstr "{price} навсегда"
+
+#, fuzzy
+#~ msgid "'%s' is not a combat member"
+#~ msgstr "\"%s\" - не объект"
+
+#, fuzzy
+#~ msgid "'%s' is not a valid combat member"
+#~ msgstr "Это не число"
+
+#, fuzzy
+#~ msgid "'%s' is not settable"
+#~ msgstr "\"%s\" - не объект"
+
+#, fuzzy
+#~ msgid "Action code"
+#~ msgstr "Код активации"
+
+#, fuzzy
+#~ msgid "Action name"
+#~ msgstr "Название локации"
+
+#, fuzzy
+#~ msgid "Action with the same code already exists"
+#~ msgstr "Параметр с таким кодом уже существует"
+
+#, fuzzy
+#~ msgid "Actions of '%s'"
+#~ msgstr "Действия для предметов"
+
+#, fuzzy
+#~ msgid "Are you sure want to delete these rules?"
+#~ msgstr "Вы уверены, что хотите удалить этот квест?"
+
+#, fuzzy
+#~ msgid "Are you sure want to delete this combat action?"
+#~ msgstr "Вы уверены, что хотите удалить эту кнопку?"
+
+#, fuzzy
+#~ msgid "Combat avatar dimensions (example: 100x200)"
+#~ msgstr "Размеры слота (например: 60x60)"
+
+#, fuzzy
+#~ msgid "Combat avatars settings"
+#~ msgstr "Глобальные настройки"
+
+#, fuzzy
+#~ msgid "Combat interface height"
+#~ msgstr "Настройки глобального интерфейса"
+
+#, fuzzy
+#~ msgid "Combat log height"
+#~ msgstr "Высота чата"
+
+#, fuzzy
+#~ msgid "Combat log layout"
+#~ msgstr "Разметка страницы локации"
+
+#, fuzzy
+#~ msgid "Combat member control"
+#~ msgstr "Управление демонами"
+
+#, fuzzy
+#~ msgid "Combat member name"
+#~ msgstr "Название категории"
+
+#, fuzzy
+#~ msgid "Combat member parameters"
+#~ msgstr "Параметры персонажа"
+
+#, fuzzy
+#~ msgid "Combat member sex"
+#~ msgstr "Пол персонажа"
+
+#, fuzzy
+#~ msgid "Combat member type"
+#~ msgstr "Тип контента"
+
+#, fuzzy
+#~ msgid "Combat not found"
+#~ msgstr "Персонаж не найден"
+
+#, fuzzy
+#~ msgid "Combat parameter '%s'"
+#~ msgstr "Параметры персонажа"
+
+#, fuzzy
+#~ msgid "Combat parameters"
+#~ msgstr "Параметры персонажа"
+
+#, fuzzy
+#~ msgid ""
+#~ "Combat rules code must start with latin letter or '_'. Other symbols may "
+#~ "be latin letters, digits or '_'"
+#~ msgstr ""
+#~ "Код действия должен начинаться латинской буквы или \"_\". Остальные "
+#~ "символы могут быть латинскими буквами, цифрами или \"_\""
+
+#, fuzzy
+#~ msgid ""
+#~ "Combat rules identifier must start with latin letter or '_'. Other "
+#~ "symbols may be latin letters, digits or '_'"
+#~ msgstr ""
+#~ "Идентификатор квеста должен начинаться латинской буквы или \"_\". "
+#~ "Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+#, fuzzy
+#~ msgid "Combat rules name"
+#~ msgstr "Имя персонажа"
+
+#, fuzzy
+#~ msgid "Combat rules with the same code already exist"
+#~ msgstr "Параметр с таким кодом уже существует"
+
+#, fuzzy
+#~ msgid "Combat stage '%s' is not defined"
+#~ msgstr "В слоте %s нет предмета"
+
+#, fuzzy
+#~ msgid "Combats configuration"
+#~ msgstr "Конфигурация чата"
+
+#, fuzzy
+#~ msgid "Combats engine"
+#~ msgstr "Квестовый движок"
+
+#, fuzzy
+#~ msgid "Combats rules editor"
+#~ msgstr "Редактор смайликов"
+
+#, fuzzy
+#~ msgid "Connection refused"
+#~ msgstr "Установлено безопасное соединение"
+
+#, fuzzy
+#~ msgid "Damage parameter must start with 'p_'"
+#~ msgstr "Идентификатор должен начинаться с 'u_'"
+
+#, fuzzy
+#~ msgid "Deliver new combat member parameter"
+#~ msgstr "Производный (вычисляемый) параметр"
+
+#, fuzzy
+#~ msgid "Deliver new combat parameter"
+#~ msgstr "Производный (вычисляемый) параметр"
+
+#, fuzzy
+#~ msgid "Evaluation of object"
+#~ msgstr "Проверено %d объектов"
+
+#, fuzzy
+#~ msgid "Evaluation of value"
+#~ msgstr "Валидация не удалась"
+
+#, fuzzy
+#~ msgid "Generate combat system"
+#~ msgstr "Общая схема интерфейса"
+
+#, fuzzy
+#~ msgid "Generic interface settings"
+#~ msgstr "Настройки глобального интерфейса"
+
+#, fuzzy
+#~ msgid "Invalid combat idenfifier"
+#~ msgstr "Неверный идентификатор локации"
+
+#, fuzzy
+#~ msgid "Invalid combat response (expected: {expected}, received: {received})"
+#~ msgstr ""
+#~ "Неверный объект состояний квеста. Ожидалось: {expected}. Найдено: {found}"
+
+#, fuzzy
+#~ msgid "Invalid combat response: %s"
+#~ msgstr "Неверная валюта: %s"
+
+#, fuzzy
+#~ msgid "Invalid controller type: %s"
+#~ msgstr "Неверная валюта: %s"
+
+#~ msgid "Invalid location identifier"
+#~ msgstr "Неверный идентификатор локации"
+
+#, fuzzy
+#~ msgid "Items above avatar"
+#~ msgstr "У предметов нет параметра %s"
+
+#, fuzzy
+#~ msgid "Member parameter '%s'"
+#~ msgstr "Параметры предметов"
+
+#, fuzzy
+#~ msgid "Miminal value is %d"
+#~ msgstr "Максимальное значение - %d"
+
+#, fuzzy
+#~ msgid "New combat action"
+#~ msgstr "Новое действие"
+
+#, fuzzy
+#~ msgid "New rules"
+#~ msgstr "Новый квест"
+
+#, fuzzy
+#~ msgid "Parameter code (prefixed with 'p_')"
+#~ msgstr "Код параметра (для использования в скриптах)"
+
+#, fuzzy
+#~ msgid ""
+#~ "Parameter code must start with p_ and contain only latin letters, digits "
+#~ "and underscode characters"
+#~ msgstr ""
+#~ "Код группы страниц (должен начинаться с \"u_\" и содержать только "
+#~ "латинские буквы, цифры и символы \"_\")"
+
+#, fuzzy
+#~ msgid "Parameter with this code is already delivered to client"
+#~ msgstr "Параметр с таким кодом уже существует"
+
+#, fuzzy
+#~ msgid "Rules name"
+#~ msgstr "Название квеста"
+
+#, fuzzy
+#~ msgid "Script unexpectedly ended"
+#~ msgstr "Выражение внезапно закончилось"
+
+#, fuzzy
+#~ msgid "Scripts of '%s'"
+#~ msgstr "История '%s'"
+
+#, fuzzy
+#~ msgid "Show combat log on the bottom side"
+#~ msgstr "Показать с левой стороны"
+
+#, fuzzy
+#~ msgid "Show enemy's avatar on the right side"
+#~ msgstr "Показать с левой стороны"
+
+#, fuzzy
+#~ msgid "Show player's avatar on the left side"
+#~ msgstr "Показать с левой стороны"
+
+#, fuzzy
+#~ msgid "Unknown combat action '%s'"
+#~ msgstr "Неизвестное действие в квесте: %s"
+
+#, fuzzy
+#~ msgid "Unknown combat type %s"
+#~ msgstr "Неизвестный элемент: %s"
+
+#, fuzzy
+#~ msgid "Visibility"
+#~ msgstr "Условие видимости"
+
+#, fuzzy
+#~ msgid "Visibility of combat parameter %s"
+#~ msgstr "Видимость слота \"%s\""
+
+#, fuzzy
+#~ msgid "Whether parameter is visible to member 'viewer'"
+#~ msgstr "Параметр видим владельцу"
+
+#, fuzzy
+#~ msgid "You have entered a combat"
+#~ msgstr "Вы перешли в локацию"
+
+#, fuzzy
+#~ msgid "combat action profile"
+#~ msgstr "Действие не выбрано"
+
+#, fuzzy
+#~ msgid "combat actions"
+#~ msgstr "Нет действия"
+
+#, fuzzy
+#~ msgid "combat system profile"
+#~ msgstr "Профиль пользователя социалки"
+
+#, fuzzy
+#~ msgid "damaging {obj}.{attr}: {damage}"
+#~ msgstr "устанавливаем {obj}.{attr} = {val}"
+
+#, fuzzy
+#~ msgid "launching combat"
+#~ msgstr "Запуск вашей игры"
+
+#, fuzzy
+#~ msgid "parameters delivery to client"
+#~ msgstr "Документация на систему параметров"
 
 #~ msgid "Error generating %s-new.png"
 #~ msgstr "Ошибка при генерации %s-new.png"
