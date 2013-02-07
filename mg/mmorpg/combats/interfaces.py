@@ -1,9 +1,14 @@
 import mg.constructor
+import mg
 from mg.core.tools import *
 from mg.mmorpg.combats.core import CombatUnavailable
 from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
 from mg.constructor.design import TemplateNotFound
+from mg.mmorpg.combats.logs import CombatLogViewer
 import json
+import re
+
+re_valid_uuid = re.compile(r'^[0-9a-f]{32}$')
 
 class Combats(mg.constructor.ConstructorModule):
     def register(self):
@@ -15,6 +20,7 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("combat.default-belowavatar", self.default_belowavatar)
         self.rhook("ext-combat.action", self.combat_action, priv="logged")
         self.rhook("combat.unavailable-exception-char", self.unavailable_exception_char)
+        self.rhook("ext-combat.handler", self.combat_log, priv="public")
 
     def child_modules(self):
         return [
@@ -136,3 +142,16 @@ class Combats(mg.constructor.ConstructorModule):
         except CombatUnavailable as e:
             self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.not_found")
+
+    def combat_log(self):
+        req = self.req()
+        uuid = req.args
+        if not re_valid_uuid.match(uuid):
+            self.call("web.not_found")
+        log = CombatLogViewer(self.app(), "user", uuid)
+        if not log.valid:
+            self.call("web.not_found")
+        result = ""
+        for ent in log.entries(0, len(log)):
+            result += utf2str(ent.get("text")) + "\n"
+        self.call("web.response", result, "text/plain; charset=utf-8")

@@ -310,6 +310,8 @@ class CombatInterface(mg.constructor.ConstructorModule):
                 if type(res) != dict or res.get("combat") != self.combat_id:
                     raise CombatUnavailable(self._("Invalid combat response (expected: {expected}, received: {received})").format(expected=self.combat_id, received=res.get("combat")))
                 return res
+            except HTTPError:
+                raise CombatUnavailable(self._("Port reused by another service"))
             except HTTPConnectionRefused:
                 raise CombatUnavailable(self._("Connection refused"))
         except CombatUnavailable as e:
