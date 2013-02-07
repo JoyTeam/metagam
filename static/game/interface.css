@@ -254,3 +254,21 @@ area { border: none }
 
 /* LOCATIONS */
 #location-static-image { visibility: hidden }
+
+/* COMBATS */
+.chat-msg-combat { color: #0000a0 }
+.chat-msg-combat-condition { color: #d7d741 }
+.chat-msg-combat-action { color: #008020 }
+.chat-msg-combat-error { color: #c00020 }
+.chat-msg-combat-log { color: #808080 }
+.chat-msg-combat-condition { color: #d7d721 }
+#combat-myavatar { overflow: hidden }
+#combat-enemyavatar { overflow: hidden }
+.x-border-layout-ct { background: none }
+.combat-member-avatar { padding: 5px; text-align: center }
+.combat-member-image { margin: 5px 0 5px 0 }
+.combat-item-deselected { cursor: pointer }
+.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
+.combat-item-deselected:hover { background-color: #607060; color: #ffffff }
+.combat-item-selected:hover { background-color: #505050; color: #ffffff }
+

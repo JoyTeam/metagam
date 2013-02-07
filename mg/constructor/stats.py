@@ -257,7 +257,7 @@ class GameReporter(ConstructorModule):
         self.debug("Storing config changes of the project %s", self.app().tag)
         config = {}
         lst = self.objlist(DBConfigGroupList, query_index="all")
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             config[ent.uuid] = ent.data
         self.call("dbexport.add", "config", config=config)

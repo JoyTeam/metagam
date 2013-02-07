@@ -30,6 +30,7 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .admin-headmenu a:link, .admin-headmenu a:visited { color: #0078ac }
 .admin-headmenu a:hover, .admin-headmenu a:active { color: #0098ec }
 .text h1.admin-form-header { font-size: 18px; color: #0078ac; font-weight: normal }
+.text h2.admin-form-header2 { font-size: 16px; color: #0078ac; font-weight: normal }
 .admin-submenu { padding-bottom: 10px }
 .admin-description { padding-bottom: 20px }
 .admin-doc-link { padding-bottom: 20px }

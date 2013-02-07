@@ -4,6 +4,22 @@ import re
 
 re_newline = re.compile(r'\n')
 
+class ScriptMemoryObject(object):
+    def __init__(self):
+        self.data = {}
+
+    def script_attr(self, attr, handle_exceptions=True):
+        return self.data.get(attr)
+
+    def script_set_attr(self, attr, val, env):
+        self.data[attr] = val
+
+    def __unicode__(self):
+        return "local"
+
+    def __str__(self):
+        return "local"
+
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
         self.val = val
@@ -79,6 +95,8 @@ class PCompareOp(Parsing.Precedence):
     "%left pCompareOp >pNotOp"
 class TokenEquals(Parsing.Token):
     "%token equals [pCompareOp]"
+class TokenNotEquals(Parsing.Token):
+    "%token notequals [pCompareOp]"
 class TokenLessThan(Parsing.Token):
     "%token lt [pCompareOp]"
 class TokenGreaterThan(Parsing.Token):
@@ -234,6 +252,10 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr equals Expr [pCompareOp]"
         self.val = ["==", exprA.val, exprB.val]
 
+    def reduceNotEquals(self, exprA, NotEqualsOp, exprB):
+        "%reduce Expr notequals Expr [pCompareOp]"
+        self.val = ["!=", exprA.val, exprB.val]
+
     def reduceLessThan(self, exprA, LessThanOp, exprB):
         "%reduce Expr lt Expr [pCompareOp]"
         self.val = ["<", exprA.val, exprB.val]
@@ -276,8 +298,12 @@ class Expr(Parsing.Nonterm):
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
 
+    exprFuncs = set(["min", "max", "uc", "lc"])
+
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
+        if func.fname not in self.exprFuncs:
+            raise Parsing.SyntaxError(func.script_parser._("Function %s is not supported in expression context") % func.fname)
         self.val = ["call", func.fname] + lst.val
 
     def reduceIn(self, exprA, op, exprB):
@@ -292,7 +318,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Lr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -307,6 +333,7 @@ class ScriptParser(Parsing.Lr, Module):
         ".": TokenDot,
         ",": TokenComma,
         "==": TokenEquals,
+        "!=": TokenNotEquals,
         "=": TokenAssign,
         ">": TokenGreaterThan,
         "<": TokenLessThan,

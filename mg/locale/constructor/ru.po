@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-17 17:59+0300\n"
+"PO-Revision-Date: 2013-01-07 12:50+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -20,6 +20,9 @@ msgstr ""
 
 msgid "Abort wizard"
 msgstr "Прервать мастер"
+
+msgid "Action is not selected"
+msgstr "Действие не выбрано"
 
 msgid "Add arbitrary image"
 msgstr "Добавить произвольное изображение"
@@ -44,6 +47,9 @@ msgstr "Проверить доступность"
 
 msgid "Click action"
 msgstr "Действие при клике"
+
+msgid "Combat was terminated"
+msgstr "Бой завершён"
 
 msgid "Connection terminated"
 msgstr "Соединение прервано"
@@ -72,6 +78,10 @@ msgstr "Идентификатор события"
 msgid "Exception"
 msgstr "Исключение"
 
+#, python-format
+msgid "Exception in %s"
+msgstr "Исключение в %s"
+
 msgid "Fill"
 msgstr "Заливка"
 
@@ -95,6 +105,14 @@ msgstr "Вставка изображения"
 
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
+
+#, python-format
+msgid "Maximal number of targets for this action is %d"
+msgstr "Максимальное количество целей для этого действия - %d"
+
+#, python-format
+msgid "Minimal number of targets for this action is %d"
+msgstr "Минимальное количество целей для этого действия - %d"
 
 msgid "Minimal number of vertices - 3"
 msgstr "Минимальное количество вершин - 3"
@@ -198,6 +216,9 @@ msgstr "Загрузите изображение"
 
 msgid "Uploading data..."
 msgstr "Отправка данных..."
+
+msgid "Your action is already being sent to server"
+msgstr "Ваше действие уже отправляется на сервер"
 
 msgid "Zone"
 msgstr "Зона"

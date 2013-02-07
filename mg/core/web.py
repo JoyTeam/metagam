@@ -454,6 +454,7 @@ class ApplicationWebService(WebService):
     def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.core.web.ApplicationWebService"):
         WebService.__init__(self, inst, service_id, service_type, fqn)
         self.hook_prefix = hook_prefix
+        self.request_locks = False
 
     def deliver_request(self, app, request, group, hook, args):
         "Deliver HTTP request with parsed URI: /<group>/<hook>/<args> to the given application"
@@ -467,7 +468,7 @@ class ApplicationWebService(WebService):
                 res = lambda: app.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
                 # POST requests with authenticated user are automatically locked
                 # to avoid multiple concurrent requests from a single user
-                if request.environ.get("REQUEST_METHOD") == "POST" and self.hook_prefix != "int":
+                if request.environ.get("REQUEST_METHOD") == "POST" and self.request_locks:
                     user = request.user()
                     if user:
                         with app.lock(["UserRequest.%s.%s" % (app.tag, user)]):
@@ -501,11 +502,11 @@ class SingleApplicationWebService(ApplicationWebService):
     "WebService passing all requests to the single application"
     def __init__(self, app, service_id, service_type, hook_prefix, fqn="mg.core.web.SingleApplicationWebService"):
         ApplicationWebService.__init__(self, app.inst, service_id, service_type, hook_prefix, fqn)
-        self.app = app
+        self.service_app = app
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
-        return self.deliver_request(self.app, request, group, hook, args)
+        return self.deliver_request(self.service_app, request, group, hook, args)
 
 class Web(Module):
     def __init__(self, *args, **kwargs):
@@ -688,7 +689,7 @@ class Web(Module):
             if vars.get("head") is None:
                 vars["head"] = head
             else:
-                vars["head"] = vars["head"] + head
+                vars["head"] = head + vars["head"]
         return content
 
     def web_cache(self):
