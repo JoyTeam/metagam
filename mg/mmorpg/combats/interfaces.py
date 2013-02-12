@@ -29,6 +29,8 @@ class Combats(mg.constructor.ConstructorModule):
             "mg.mmorpg.combats.daemon.CombatRunner",
             "mg.mmorpg.combats.characters.Combats",
             "mg.mmorpg.combats.admin.CombatsAdmin",
+            "mg.mmorpg.combats.design.CombatInterface",
+            "mg.mmorpg.combats.design.CombatInterfaceAdmin",
         ]
 
     def objclasses_list(self, objclasses):

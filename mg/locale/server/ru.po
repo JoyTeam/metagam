@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-02-12 06:58+0300\n"
+"PO-Revision-Date: 2013-02-13 01:08+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1298,6 +1298,10 @@ msgstr "Выбор названий"
 msgid "Circle"
 msgstr "Круг"
 
+#, python-format
+msgid "Class name expression '%s' is invalid: unexpected end of line"
+msgstr "Выражение для имени класса \"%s\" внезапно оборвалось"
+
 msgid "Class name must begin with a symbol a-z, continue with symbols a-z, 0-9 and '-' and end with a symbol a-z or a digit"
 msgstr "Имя класса должно начинаться с символа a-z, продолжаться символами a-z, 0-9 и '-' и заканчиваться символами a-z или 0-9"
 
@@ -1431,6 +1435,9 @@ msgstr "Heartbeat-скрипт"
 msgid "Combat idle script"
 msgstr "Idle-скрипт"
 
+msgid "Combat interface design package must contain a CSS file"
+msgstr "Пакет с оформлением боевого интерфейса должен содержать CSS-файл"
+
 msgid "Combat interface for combat rules '{code}' ({name})"
 msgstr "Боевой интерфейс для правил боя \"{code}\" ({name})"
 
@@ -1439,6 +1446,9 @@ msgstr "Высота интерфейса боя"
 
 msgid "Combat interface template (used when no specific combat-rules-*.html exist)"
 msgstr "Шаблон боевого интерфейса (используется, когда не существуют конкретные combat-rules-*.html)"
+
+msgid "Combat log"
+msgstr "Лог боя"
 
 msgid "Combat log height"
 msgstr "Высота лога боя"
@@ -2445,6 +2455,9 @@ msgstr "Введите ваше имя пользователя"
 msgid "Entire world channel"
 msgstr "Общемировой канал"
 
+msgid "Epic battle near the main gates of the Rockbridge Castle"
+msgstr "Эпическая битва у главных ворот замка Рокбридж"
+
 msgid "Epic war event"
 msgstr "Эпическое событие: война"
 
@@ -2547,6 +2560,15 @@ msgstr "Вычисление HTML для чата"
 
 msgid "Evaluation of chat channel"
 msgstr "Вычисление канала чата"
+
+msgid "Evaluation of chat class"
+msgstr "Вычисление класса для чата"
+
+msgid "Evaluation of combat log {key} attribute"
+msgstr "Вычисление атрибута боя {key}"
+
+msgid "Evaluation of combat system log {key} attribute"
+msgstr "Вычисление атрибута {key} текста для системного лога"
 
 msgid "Evaluation of condition"
 msgstr "Вычисление условия"
@@ -2659,6 +2681,9 @@ msgstr "Внешний глобальный шаблон"
 
 msgid "Extra settings"
 msgstr "Дополнительные настройки"
+
+msgid "Extremely long combat name involving names of participating characters, NPCs and so on"
+msgstr "Крайне длинное название боя, включающее имена участвующих персонажей, NPC и так далее"
 
 msgid "Facebook application identifier"
 msgstr "Идентификатор приложения Facebook"
@@ -5594,6 +5619,10 @@ msgid "Reactivate"
 msgstr "Активировать повторно"
 
 #, python-format
+msgid "Read <a href=\"//www.%s/doc/design/combatinterface\" target=\"_blank\">the combat interface design reference manual</a> to create your own template or edit generated one"
+msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/combatinterface\" target=\"_blank\">руководство по оформлению боевых интерфейсов</a>."
+
+#, python-format
 msgid "Read <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">the game interface design reference manual</a> to create your own template or edit generated one"
 msgstr "О том, как создать ваш собственный шаблон или отредактировать сгенерированный, прочитайте <a href=\"//www.%s/doc/design/gameinterface\" target=\"_blank\">руководство по оформлению игры</a>."
 
@@ -6912,6 +6941,9 @@ msgstr "Цвет текста в блоке \"Ссылки\""
 
 msgid "Text color of the footer, rating participants"
 msgstr "Цвет текста в нижней части страницы и у имён участников рейтинга"
+
+msgid "The Monster attacks John"
+msgstr "Монстр атакует Ивана"
 
 msgid "The best dragon hunter"
 msgstr "Лучший охотник на драконов"
@@ -8459,8 +8491,15 @@ msgstr "профиль боевого действия"
 msgid "combat actions"
 msgstr "боевые действия"
 
+msgid "combat design templates"
+msgstr "шаблоны оформления боя"
+
 msgid "combat system profile"
 msgstr "профиль боевой системы"
+
+#, python-format
+msgid "combats///%s: design"
+msgstr "%s: оформление"
 
 msgid "combo box"
 msgstr "выпадающий список"
@@ -9447,6 +9486,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "Game '[%game.title_short%]' Combat Log"
+#~ msgstr "Лог боя в игре \"[%game.title_short%]\""
 #~ msgid "Expression unexpectedly ended"
 #~ msgstr "Выражение внезапно закончилось"
 #~ msgid "Unknown script engine function: {fname}"

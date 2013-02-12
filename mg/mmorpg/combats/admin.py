@@ -154,6 +154,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     u'<hook:admin.link href="combats/rules/edit/%s/params" title="%s" />' % (code, self._("parameters delivery to client")),
                     u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
                     u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("combat actions")),
+                    u'<hook:admin.link href="combatinterface-%s/design" title="%s" />' % (code, self._("combat design templates")),
                 ]),
                 u'<hook:admin.link href="combats/rules/del/%s" title="%s" confirm="%s" />' % (code, self._("delete"), self._("Are you sure want to delete these rules?")),
             ])

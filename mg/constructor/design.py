@@ -1602,10 +1602,12 @@ class DesignAdmin(Module):
                     except DownloadError:
                         self.call("admin.response", self._("Error downloading template"), {})
                 else:
-                    subdir = {
+                    subdirs = {
                         "gameinterface": "game",
                         "sociointerface": "socio",
-                    }.get(group)
+                    }
+                    self.call("admin-designs.subdirs", subdirs)
+                    subdir = subdirs.get(group)
                     try:
                         with open("%s/templates/%s/%s" % (mg.__path__[0], subdir, fn), "r") as f:
                             content = f.read()

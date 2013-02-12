@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+[% tags [* *] %]
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+[%if title%]<title>[%title%][%title_suffix%]</title>[%end%]
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+[%if htmlmeta.keywords%]<meta name="keywords" content="[%htmlmeta.keywords%]" />[%end%]
+[%if htmlmeta.description%]<meta name="description" content="[%htmlmeta.description%]" />[%end%]
+<link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/game/common.css" />
+[%if game_design_uri%]<link rel="stylesheet" type="text/css" href="[%game_design_uri%]/game.css" />[%end%]
+<link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/combat/main.css" />
+<link rel="stylesheet" type="text/css" href="[%design_root%]/main.css" />
+[%head%]</head><body class="combat-body">
+<table id="page-layout">
+	<tr> 
+		<td id="page-left"><div></div></td>
+		<td id="page-layout-content">
+			<div id="page-content">
+				<div id="page-width"></div>
+				[%if menu_left or menu_right%]
+				<table id="combat-menu"><tr>
+					[%if menu_left%]<td id="combat-menu-left">[%for ent in menu_left%]
+						[%if ent.href%]<a href="[%ent.href%]">[%ent.html%]</a>
+						[%else%][%ent.html%][%end%]
+						[%unless ent.lst +%] / [%+ end%]
+					[%end%]</td>[%end%]
+					[%if menu_right%]<td id="combat-menu-right">[%for ent in menu_right%]
+						[%if ent.href%]<a href="[%ent.href%]">[%ent.html%]</a>
+						[%else%][%ent.html%][%end%]
+						[%unless ent.lst +%] / [%+ end%]
+					[%end%]</td>[%end%]
+				</tr></table>
+				[%end%]
+				[%if combat_message_top%]<div class="combat-message-top">[%combat_message_top%]</div>[%end%]
+				[%content%]
+				<div id="combat-counters">[%counters%]</div>
+			</div>
+		</td>
+		<td id="page-right"><div></div></td>
+	</tr>
+</table>
+<div id="page-top">
+	<div id="page-top1"><div id="page-top2"><div id="page-top3"><div id="page-top4">
+            <div id="combat-topmenu">
+                    [%combat_title%]
+            </div>
+	</div></div></div></div>
+</div>
+</body></html>
