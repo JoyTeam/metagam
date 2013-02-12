@@ -4,6 +4,15 @@ from mg.constructor.script_classes import *
 import re
 import traceback
 
+class HTMLFormatter(object):
+    @staticmethod
+    def clsbegin(clsname):
+        return u'<span class="%s">' % clsname
+
+    @staticmethod
+    def clsend():
+        return u'</span>';
+
 class ScriptEngine(ConstructorModule):
     def register(self):
         self.rhook("script.help-icon-expressions", self.help_icon_expressions)
@@ -166,6 +175,10 @@ class ScriptEngine(ConstructorModule):
                             empty = False
                     if not empty:
                         res += u"[%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
+                elif cmd == "clsbegin":
+                    res += u"{class=%s}" % self.unparse_expression(arg[1])
+                elif cmd == "clsend":
+                    res += u"{/class}"
                 else:
                     res += u'{%s}' % self.unparse_expression(arg)
             elif arg is not None:
@@ -432,8 +445,15 @@ class ScriptEngine(ConstructorModule):
             if index >= len(val):
                 index = len(val) - 1
             return val[index]
+        elif cmd == "clsbegin":
+            return self.formatter(env).clsbegin(self._evaluate(val[1], env))
+        elif cmd == "clsend":
+            return self.formatter(env).clsend()
         else:
             raise ScriptRuntimeError(self._("Unknown script engine operation: {op}").format(op=cmd), env)
+
+    def formatter(self, env):
+        return getattr(env, "formatter", HTMLFormatter)
 
     def validate_expression(self, *args, **kwargs):
         kwargs["text"] = False

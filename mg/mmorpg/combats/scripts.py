@@ -83,6 +83,8 @@ class CombatScriptsAdmin(ConstructorModule):
                 args = st[2]
                 if "channel" in args:
                     result += " channel=%s" % self.call("script.unparse-expression", args["channel"])
+                if "cls" in args:
+                    result += " cls=%s" % self.call("script.unparse-expression", args["cls"])
                 result += "\n"
                 lines.append(result)
             else:
@@ -302,9 +304,13 @@ class CombatScripts(ConstructorModule):
                     channel = utf2str(unicode(channel))
                 else:
                     channel = "wld"
+                if "cls" in args:
+                    cls = self.call("script.evaluate-expression", args["cls"], globs=globs, description=self._("Evaluation of chat class"))
+                else:
+                    cls = "combat"
                 if debug:
                     self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent)
-                self.call("chat.message", html=html, cls="combat", hide_time=True, hl=True, channel=channel)
+                self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):

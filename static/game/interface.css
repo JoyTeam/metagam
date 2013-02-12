@@ -270,4 +270,5 @@ area { border: none }
 .combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
 .combat-item-deselected:hover { background-color: #607060; color: #ffffff }
 .combat-item-selected:hover { background-color: #505050; color: #ffffff }
-
+.chat-msg-combat-started { font-weight: bold; padding: 2px; margin: 2px 0 2px 0; border: solid 1px #ff0000 }
+.chat-msg-combat-stopped { font-weight: bold }

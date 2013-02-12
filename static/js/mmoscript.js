@@ -1,3 +1,20 @@
+/*
+ * MMOScriptHTMLFormatter class is a formatter instance that converts
+ * {class=...}...{/class} to HTML-valid <span class="...">...</span>
+ * constructions.
+ */
+function MMOScriptHTMLFormatter()
+{
+}
+
+MMOScriptHTMLFormatter.prototype.clsBegin = function (clsname) {
+    return '<span class="' + clsname + '">';
+};
+
+MMOScriptHTMLFormatter.prototype.clsEnd = function () {
+    return '</span>';
+};
+
 var MMOScript = {
     unaryOps: {
         'not': true
@@ -19,7 +36,8 @@ var MMOScript = {
     },
     ternaryOps: {
         '?': true
-    }
+    },
+    defaultFormatter: new MMOScriptHTMLFormatter()
 };
 
 /*
@@ -175,7 +193,7 @@ MMOScript.evaluate = function (val, env) {
         if (val.length < 3) {
             return undefined;
         }
-        var index = Math.floor(self.toNumber(self.evaluate(val[1]))) + 2;
+        var index = Math.floor(self.toNumber(self.evaluate(val[1], env))) + 2;
         if (index < 2) {
             index = 2;
         }
@@ -184,6 +202,20 @@ MMOScript.evaluate = function (val, env) {
         }
         return val[index];
     }
+    if (cmd == 'clsbegin') {
+        return self.formatter(env).clsBegin(self.evaluate(val[1]));
+    }
+    if (cmd == 'clsend') {
+        return self.formatter(env).clsEnd();
+    }
+};
+
+/*
+ * Return string formatter object to convert various {class=...}...{/class} to
+ * output in desired string format.
+ */
+MMOScript.formatter = function (env) {
+    return env.formatter || MMOScript.defaultFormatter;
 };
 
 /*

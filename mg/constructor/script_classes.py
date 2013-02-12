@@ -413,7 +413,7 @@ class ScriptParser(Parsing.Lr, Module):
             last_dot = dot
 
 class ScriptTextParser(Module):
-    re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)
+    re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{class=([^}]+)}|({/class})|{([^}]+)})', re.DOTALL)
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptTextParser")
@@ -434,7 +434,7 @@ class ScriptTextParser(Module):
             if res[0]:
                 self.tokens.append(res[0])
             if res[1] is not None:
-                # parsing index expression: {...?val1,val2,val3}
+                # parsing index expression: [...:val1,val2,val3]
                 parser = ScriptParser(self.app(), self.spec)
                 try:
                     parser.scan(res[1])
@@ -445,19 +445,33 @@ class ScriptTextParser(Module):
                 except ScriptParserResult as e:
                     self.tokens.append(["index", e.val] + res[2].split(","))
             elif res[3] is not None:
+                # class token start: {class=...}
+                parser = ScriptParser(self.app(), self.spec)
+                try:
+                    parser.scan(res[3])
+                    try:
+                        parser.eoi()
+                    except Parsing.SyntaxError as e:
+                        raise ScriptParserError(self._("Class name expression '%s' is invalid: unexpected end of line") % res[3])
+                except ScriptParserResult as e:
+                    self.tokens.append(["clsbegin", e.val])
+            elif res[4] is not None:
+                # class token end: {/class}
+                self.tokens.append(["clsend"])
+            elif res[5] is not None:
                 # parsing script include: {...}
-                if self.skip_tokens and res[3] in self.skip_tokens:
+                if self.skip_tokens and res[5] in self.skip_tokens:
                     # reserved tokens
-                    self.tokens.append('{%s}' % res[3])
+                    self.tokens.append('{%s}' % res[5])
                 else:
                     # calling parser
                     parser = ScriptParser(self.app(), self.spec)
                     try:
-                        parser.scan(res[3])
+                        parser.scan(res[5])
                         try:
                             parser.eoi()
                         except Parsing.SyntaxError as e:
-                            raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[2])
+                            raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[5])
                     except ScriptParserResult as e:
                         self.tokens.append(e.val)
             pos = token_match.end()

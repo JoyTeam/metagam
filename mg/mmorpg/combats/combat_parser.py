@@ -150,10 +150,13 @@ class CombatStatement(Parsing.Nonterm):
         text = get_str_attr(cmd, "chat", attrs, "text", require=True)
         text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
         channel = get_attr(cmd, "chat", attrs, "channel")
-        validate_attrs(cmd, "chat", attrs, ["text", "channel"])
+        cls = get_attr(cmd, "chat", attrs, "cls")
+        validate_attrs(cmd, "chat", attrs, ["text", "channel", "cls"])
         args = {}
         if channel is not None:
             args["channel"] = channel
+        if cls is not None:
+            args["cls"] = cls
         self.val = ["chat", text, args]
 
 class SelectorDataSource(Parsing.Nonterm):
