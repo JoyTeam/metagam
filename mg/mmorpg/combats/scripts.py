@@ -87,7 +87,7 @@ class CombatScriptsAdmin(ConstructorModule):
                         args += u" %s=%s" % (key, self.call("script.unparse-expression", st[2][key]))
                 lines.append(u"%ssyslog %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", st[1])), args))
             elif st_cmd == "chat":
-                result = "  " * indent + "chat text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", st[1]))
+                result = "  " * indent + "chat %s" % self.call("script.unparse-expression", self.call("script.unparse-text", st[1]))
                 args = st[2]
                 if "channel" in args:
                     result += " channel=%s" % self.call("script.unparse-expression", args["channel"])

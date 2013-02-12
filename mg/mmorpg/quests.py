@@ -870,12 +870,14 @@ class QuestsAdmin(ConstructorModule):
                 result += "  " * indent + "}\n"
                 return result
             elif val[0] == "chat":
-                result = "  " * indent + "chat text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                result = "  " * indent + "chat %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
                 args = val[2]
                 if "channel" in args:
                     result += " channel=%s" % self.call("script.unparse-expression", args["channel"])
                 if "public" in args:
                     result += " public=%s" % self.call("script.unparse-expression", args["public"])
+                if "cls" in args:
+                    result += " cls=%s" % self.call("script.unparse-expression", args["cls"])
                 result += "\n"
                 return result
             elif val[0] == "javascript":
@@ -1626,14 +1628,18 @@ class Quests(ConstructorModule):
                                             channel = utf2str(unicode(channel))
                                         else:
                                             channel = "wld"
+                                        if "cls" in args:
+                                            cls = self.call("script.evaluate-expression", args["cls"], globs=kwargs, description=eval_description)
+                                        else:
+                                            cls = "quest"
                                         if public:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
                                     elif cmd_code == "teleport":
                                         locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         if type(locid) != str and type(locid) != unicode:

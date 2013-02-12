@@ -142,7 +142,7 @@ expired "<strong>идентификатор</strong>" {
 <p>Когда у персонажа заканчивается действие какого-либо модификатора (например, платной услуги), то это событие можно обработать. Например, если заканчивается ускоренное перемещение по локациям, пишем сообщение в чат:</p>
 <pre class="doc-code-sample">
 expired "fastmove" {
-  chat text="Подписка кончилась"
+  chat "Подписка кончилась"
 }
 </pre>
 
@@ -537,7 +537,7 @@ teleport "8b73e73fa83bd847"
 <a name="chat"></a>
 <h2>Вывод сообщения в чат</h2>
 <pre class="doc-code-sample">
-chat text="<strong>текст</strong>" channel=<strong>выражение</strong> public=<strong>выражение</strong>
+chat "<strong>текст</strong>" channel=<strong>выражение</strong> public=<strong>выражение</strong> cls=<strong>выражение</strong>
 </pre>
 <p>Выводит указанный текст в чат персонажа. Текст &mdash; это текстовое выражение. В нём разрешено использование тегов HTML, т.е. можно в чат выводить хоть картинки, хоть видеоролики с youtube. Это обязательный параметр.</p>
 <p>Параметр channel определяет канал, в который следует отправить сообщение. Допустимыми значениями являются:<ul>
@@ -552,7 +552,17 @@ chat text="<strong>текст</strong>" channel=<strong>выражение</stro
 <p>Параметр public позволяет сделать сообщение видимым для всех, кто подключен к данному каналу. Если public ложен (или не указан), то считается, что сообщение приватное &mdash; видимое только персонажу, проходящему квест.</p>
 <p>К примеру, чтобы сообщение увидели все персонажи из текущей локации, можно написать так:</p>
 <pre class="doc-code-sample">
-chat text="{char.name} [char.sex:погиб,погибла] в бою" channel=char.location.channel public=1
+chat "{char.name} [char.sex:погиб,погибла] в бою" channel=char.location.channel public=1
+</pre>
+<p>Параметр cls позволяет задать CSS-класс для сообщения. Строка будет склеена с префиксом "chat-msg-". Например, если вывести:</p>
+<pre class="doc-code-sample">
+chat "Авария на 4 энергоблоке ЧАЭС" cls="major-alert"
+</pre>
+то в чат попадёт блок:
+<pre class="doc-code-sample">
+<![CDATA[
+<div class="chat-msg-major-alert">Авария на 4 энергоблоке ЧАЭС</div>
+]]>
 </pre>
 
 <a name="javascript"></a>
