@@ -137,13 +137,13 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce if Expr curlyleft CombatScript curlyright else curlyleft CombatScript curlyright"
         self.val = ["if", expr.val, actions1.val, actions2.val]
 
-    def reduceLog(self, cmd, expr):
-        "%reduce log scalar"
-        self.val = ["log", cmd.script_parser.parse_text(expr.val, cmd.script_parser._("Log message"))]
+    def reduceLog(self, cmd, text, expr):
+        "%reduce log scalar ExprAttrs"
+        self.val = ["log", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
 
-    def reduceSyslog(self, cmd, expr):
-        "%reduce syslog scalar"
-        self.val = ["syslog", cmd.script_parser.parse_text(expr.val, cmd.script_parser._("Log message"))]
+    def reduceSyslog(self, cmd, text, expr):
+        "%reduce syslog scalar ExprAttrs"
+        self.val = ["syslog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
 
     def reduceChat(self, cmd, attrs):
         "%reduce chat ExprAttrs"
