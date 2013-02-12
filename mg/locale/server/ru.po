@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-02-07 10:51+0300\n"
+"PO-Revision-Date: 2013-02-12 06:58+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5314,6 +5314,9 @@ msgstr "Выпадающее меню: %s"
 
 msgid "Popup menus"
 msgstr "Выпадающие меню"
+
+msgid "Port reused by another service"
+msgstr "Порт занят другим сервисом"
 
 msgid "Possible options. Format: 0:first value|1:second value|2:third value"
 msgstr "Возможные варианты. Формат: 0:первое значение|1:второе значение|3:третье значение"
