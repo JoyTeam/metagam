@@ -154,14 +154,6 @@ class ProjectDashboard(Module):
         except ObjectNotFoundException:
             self.call("web.not_found")
         vars = {
-            "Id": self._("Game id"),
-            "TitleFull": self._("Full title"),
-            "TitleShort": self._("Short title"),
-            "TitleCode": self._("Title code"),
-            "TitleEn": self._("Title in English"),
-            "GameDescription": self._("Game description"),
-            "Owner": self._("Game owner"),
-            "Domain": self._("Game domain"),
             "Created": self._("game///Created"),
             "Moderation": self._("Moderation required"),
             "Published": self._("game///Published"),
@@ -170,7 +162,6 @@ class ProjectDashboard(Module):
             "yes": self._("yes"),
             "ConfirmUnpublish": self._("Are you sure want to unpublish the project?"),
             "Update": self._("Update"),
-            "Logo": self._("Logo"),
             "permit": self._("moderation///permit"),
             "reject": self._("moderation///reject"),
             "by": self._("created///by"),
@@ -182,6 +173,7 @@ class ProjectDashboard(Module):
             "ConfirmUnassign": self._("domain///Are you sure want to unassign domain from this game?"),
             "may_unassign": req.has_access("domains.unassign"),
         }
+        app.call("gameprofile.moderation-form", vars)
         project = getattr(app, "project", None)
         if project:
             owner = self.obj(User, project.get("owner"))
@@ -241,6 +233,7 @@ class ProjectDashboard(Module):
         reqauction_email = req.param("reqauction_email")
         projects_domain = req.param("projects_domain")
         invitations_text = req.param("invitations_text")
+        ssl_enabled = req.param("ssl_enabled")
         if req.param("ok"):
             changed = False
             config = self.main_app().config_updater()
@@ -251,6 +244,7 @@ class ProjectDashboard(Module):
             config.set("constructor.moderator-email", moderator_email)
             config.set("constructor.reqauction-email", reqauction_email)
             config.set("constructor.projects-domain", projects_domain)
+            config.set("ssl.enabled", True if ssl_enabled else False)
             config.store()
             self.call("admin.response", self._("Constructor settings stored"), {})
         else:
@@ -260,12 +254,14 @@ class ProjectDashboard(Module):
             reqauction_email = config.get("constructor.reqauction-email")
             projects_domain = config.get("constructor.projects-domain", self.main_host)
             invitations_text = config.get("constructor.invitations-text", self._("Open registration of new games is unavailable at the moment"))
+            ssl_enabled = config.get("ssl.enabled")
         fields = [
             {"type": "combo", "name": "invitations", "label": self._("Registration on invitations"), "value": invitations, "values": [(0, self._("Open registration")), (1, self._("Registration on invitations")), (2, self._("Registration closed"))]},
             {"name": "invitations_text", "label": self._("HTML message about registration on invitations"), "value": invitations_text},
             {"name": "moderator_email", "label": self._("Email of projects moderator"), "value": moderator_email},
             {"name": "reqauction_email", "label": self._("Email of the request auction moderator"), "value": reqauction_email},
             {"name": "projects_domain", "label": self._("Projects domain"), "value": projects_domain},
+            {"name": "ssl_enabled", "label": self._("SSL is enabled on the main domain"), "checked": ssl_enabled, "type": "checkbox"},
         ]
         self.call("admin.form", fields=fields)
 

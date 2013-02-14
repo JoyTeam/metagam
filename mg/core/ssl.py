@@ -2,7 +2,11 @@ import mg
 
 class RedirectSSLModule(mg.Module):
     def register(self):
-        self.rhook("web.security_check", self.check, priority=100)
+        if self.conf("ssl.enabled"):
+            self.app().protocol = "https"
+            self.rhook("web.security_check", self.check, priority=100)
+        else:
+            self.app().protocol = "http"
 
     def check(self):
         req = self.req()

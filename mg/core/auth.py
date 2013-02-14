@@ -400,10 +400,10 @@ class Interface(Module):
                 self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                 params = {
                     "subject": self._("Account activation"),
-                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
                 }
                 self.call("auth.activation_email", params)
-                self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid, protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         if redirect is not None:
             form.hidden("redirect", redirect)
@@ -530,10 +530,10 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("Account activation"),
-                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
                 }
                 self.call("auth.activation_email", params)
-                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid, protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         form.input(self._("New e-mail"), "email", email)
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
@@ -939,10 +939,10 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("E-mail confirmation"),
-                    "content": self._("Someone possibly you requested e-mail change on the {host}. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}"),
+                    "content": self._("Someone possibly you requested e-mail change on the {host}. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/email/confirm?code={code}"),
                 }
                 self.call("auth.email_change_email", params)
-                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host()))
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host(), protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/email/confirm")
         form.hidden("prefix", prefix)
         form.input(self._("New e-mail address"), "email", email)

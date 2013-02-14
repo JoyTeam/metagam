@@ -601,6 +601,7 @@ class Application(Loggable):
         self.config_lock = Lock()
         self.hook_lock = Lock()
         self.dynamic = False
+        self.protocol = "http"
 
     @property
     def db(self):

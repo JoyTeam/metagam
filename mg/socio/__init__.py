@@ -1748,7 +1748,7 @@ class Forum(Module):
                 last_show = show
             pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
-        vars["share_url"] = htmlescape("http://%s%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
+        vars["share_url"] = htmlescape("%s://%s%s" % (self.app().protocol, getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
         self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
 
@@ -2444,6 +2444,7 @@ class Forum(Module):
                 "author_name": topic.get("author_name"),
                 "topic_subject": topic.get("subject"),
                 "domain": self.app().domain,
+                "protocol": self.app().protocol,
                 "topic_uuid": topic.uuid,
             }
             if author:
@@ -2451,7 +2452,7 @@ class Forum(Module):
                 sex = author_obj.get("sex", 0)
             else:
                 sex = 0
-            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
+            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\n{protocol}://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
 
     def notify_reply(self, topic_uuid, page, post_uuid):
         try:
@@ -2491,6 +2492,7 @@ class Forum(Module):
                 "author_name": post.get("author_name"),
                 "topic_subject": topic.get("subject"),
                 "domain": self.app().domain,
+                "protocol": self.app().protocol,
                 "topic_uuid": topic.uuid,
                 "post_uuid": post.uuid,
                 "post_page": page,
@@ -2500,7 +2502,7 @@ class Forum(Module):
                 sex = author_obj.get("sex", 0)
             else:
                 sex = 0
-            self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
+            self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\n{protocol}://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
 
     def catstat(self, cat_id):
         return self.obj(ForumCategoryStat, cat_id, silent=True)

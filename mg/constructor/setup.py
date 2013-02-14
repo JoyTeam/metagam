@@ -46,6 +46,7 @@ class ProjectSetupWizard(Wizard):
             author = self.main_app().obj(User, project.get("owner"))
             vars = {
                 "author": htmlescape(author.get("name")),
+                "main_protocol": self.main_app().protocol,
                 "main_host": self.main_host,
             }
             fields = [

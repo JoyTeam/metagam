@@ -661,6 +661,10 @@ class Web(Module):
             vars["universal_variables"] = True
             try:
                 try:
+                    vars["protocol"] = self.app().protocol
+                except AttributeError:
+                    pass
+                try:
                     vars["domain"] = self.app().canonical_domain
                 except AttributeError:
                     vars["domain"] = self.app().domain
