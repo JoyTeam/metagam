@@ -2,10 +2,16 @@ import mg
 
 class RedirectSSLModule(mg.Module):
     def register(self):
-        self.rhook("web.security_check", self.check, priority=100)
+        if self.conf("ssl.enabled"):
+            self.app().protocol = "https"
+            self.rhook("web.security_check", self.check, priority=100)
+        else:
+            self.app().protocol = "http"
 
     def check(self):
         req = self.req()
+        if req.group == "ext-payment":
+            return
         if req.environ.get("HTTP_X_INSECURE"):
             uri = 'https://%s' % self.app().canonical_domain
             if req.environ.get("REQUEST_METHOD") == "POST":

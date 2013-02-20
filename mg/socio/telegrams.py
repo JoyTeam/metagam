@@ -193,7 +193,7 @@ class Telegrams(Module):
             tel_user_2.store()
             tel_cont_2.store()
         # Sending notification
-        self.call("email.users", [recipient_uuid], self._("New message"), self._("You have received a new message.\n\nhttp://www.%s/telegrams/list") % self.app().domain, immediately=True)
+        self.call("email.users", [recipient_uuid], self._("New message"), self._("You have received a new message.\n\n{protocol}://www.{host}/telegrams/list").format(protocol=self.app().protocol, host=self.app().domain), immediately=True)
 
     def telegrams_user(self):
         params = {}

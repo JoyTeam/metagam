@@ -1619,7 +1619,7 @@ class DesignAdmin(Module):
                     fields.append({"type": "html", "html": '<div class="admin-description">%s</div>' % fl["description"]})
                     doc = fl.get("doc")
                     if doc:
-                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.main_host, doc, self._("Open documentation page")), "inline": True})
+                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="%s://www.%s%s" target="_blank">%s</a></div>' % (self.main_app().protocol, self.main_host, doc, self._("Open documentation page")), "inline": True})
                 fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
                 try:
                     self.call("admin.form", fields=fields)
@@ -1638,7 +1638,7 @@ class DesignAdmin(Module):
                         label = u"<strong>%s</strong> &mdash; %s" % (fl["filename"], fl["description"])
                         doc = fl.get("doc")
                         if doc:
-                            label = u'%s &mdash; <a href="http://www.%s%s" target="_blank">%s</a>' % (label, self.main_host, doc, self._("documentation"))
+                            label = u'%s &mdash; <a href="%s://www.%s%s" target="_blank">%s</a>' % (label, self.main_app().protocol, self.main_host, doc, self._("documentation"))
                         fields.append({"id": "filename-%s" % fl["filename"], "type": "radio", "name": "filename", "value": fl["filename"], "boxLabel": label})
                 buttons = [
                     {"text": self._("Edit")},
@@ -1746,11 +1746,11 @@ class IndexPageAdmin(Module):
                 for form in parser.forms:
                     if form.get("name") == "loginform" and form.get("id") == "loginform":
                         loginform_ok = True
-                        if form["onsubmit"] != "return auth_login();":
+                        if form.get("onsubmit") != "return auth_login();":
                             errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
                         name_ok = False
                         password_ok = False
-                        for inp in form["inputs"]:
+                        for inp in form.get("inputs", []):
                             if inp.get("name") == "name":
                                 name_ok = True
                                 if inp.get("id") != "name":
@@ -2254,7 +2254,7 @@ class GameInterfaceAdmin(ConstructorModule):
             fn = f.get("filename")
             doc = f.get("doc")
             if doc:
-                fn = u'<a href="http://www.%s%s" target="_blank">%s</a>' % (self.main_host, doc, fn)
+                fn = u'<a href="%s://www.%s%s" target="_blank">%s</a>' % (self.main_app().protocol, self.main_host, doc, fn)
             html.append("<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (fn, f.get("description")))
         files = "".join(html)
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files, "order": 50})

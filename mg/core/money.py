@@ -155,15 +155,16 @@ class MoneyAdmin(Module):
                             errors["name_en"] = self._("Currency name is mandatory")
                     if len(errors):
                         self.call("web.response_json", {"success": False, "errors": errors})
+                    name_en_s = re.sub(r's$', '', name_en)
                     self.call("admin.redirect", "money/currencies/new", {
                         "name_local": self.call("l10n.literal_values_sample", name_local),
-                        "name_plural": u"%s???" % self.stem(name_local),
-                        "name_en": u"{0}???/{0}???".format(name_en),
+                        "name_plural": name_local,
+                        "name_en": u"{1}/{0}".format(name_en, name_en_s),
                     })
                 fields = []
-                fields.append({"name": "name_local", "label": self._('Currency name')})
+                fields.append({"name": "name_local", "label": self._('Currency name (ex: Gold, Diamonds, Roubles, Dollars, Coins)')})
                 if lang != "en":
-                    fields.append({"name": "name_en", "label": self._('Currency name in English')})
+                    fields.append({"name": "name_en", "label": self._('Currency name in English (ex: Gold, Diamonds, Roubles, Dollars, Coins)')})
                 self.call("admin.form", fields=fields)
             elif req.args:
                 if req.ok():
@@ -386,10 +387,10 @@ class MoneyAdmin(Module):
                 if req.args == "new":
                     fields.append({"name": "code", "label": self._('Currency code (for example, GLD for gold, SLVR for silver, DMND for diamonds and so on).<br /><span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>')})
                 fields.append({"name": "order", "label": self._("Sorting order"), "value": order, "inline": True})
-                fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_local})
-                fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars"'), "value": name_plural})
+                fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars", "Gold/Gold", "Coin/Coins", "Diamond/Diamonds", "Rouble/Roubles"'), "value": name_local})
+                fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars", "Gold", "Coins", "Diamonds", "Roubles"'), "value": name_plural})
                 if lang != "en":
-                    fields.append({"name": "name_en", "label": self._('Currency name in English: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_en})
+                    fields.append({"name": "name_en", "label": self._('Currency name in English: singular and plural forms delimited by "/". For example: "Dollar/Dollars", "Gold/Gold", "Coin/Coins", "Diamond/Diamonds", "Rouble/Roubles"'), "value": name_en})
                 fields.append({"name": "precision", "label": self._("Values precision (number of digits after decimal point)"), "value": precision})
                 fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
                 fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})

@@ -115,7 +115,7 @@ class Constructor(Module):
         self.rhook("project.description", self.project_description)
 
     def project_logo(self):
-        return "http://www.%s/st/constructor/logo/rounded.jpg" % self.main_host
+        return "%s://www.%s/st/constructor/logo/rounded.jpg" % (self.main_app().protocol, self.main_host)
 
     def project_description(self):
         return self._("MMO Constructor is a service allowing users to create their own online games")
@@ -698,10 +698,10 @@ class Constructor(Module):
         params["telegrams_with"] = self._("Correspondence with {0}")
 
     def email_sender(self, params):
-        params["email"] = "robot@mmoconstructor.ru"
+        params["email"] = "robot@%s" % self.main_app().main_host
         params["name"] = self._("MMO Constructor")
         params["prefix"] = "[mmo] "
-        params["signature"] = self._("MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-based online games")
+        params["signature"] = self._("MMO Constructor - {protocol}://www.{host} - constructor of browser-based online games").format(protocol=self.main_app().protocol, host=self.main_host)
 
     def wmlogin_authorized(self, authtype, remote_addr, wmid):
         req = self.req()

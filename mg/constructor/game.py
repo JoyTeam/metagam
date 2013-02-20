@@ -141,11 +141,11 @@ class Game(Module):
                 title_en = project.get("title_en")
         fields = []
         if not project.get("published") and not project.get("moderation"):
-            fields.append({"name": "title_full", "label": self._("Full game title"), "value": title_full})
-            fields.append({"name": "title_short", "label": self._("Short game title"), "value": title_short})
-            fields.append({"name": "title_code", "label": self._("Game code"), "value": title_code})
+            fields.append({"name": "title_full", "label": self._("Full official game title (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_full})
+            fields.append({"name": "title_short", "label": self._("Short game title for displaying in the games catalog (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_short})
+            fields.append({"name": "title_code", "label": self._("Game code (should be an abbreviation)"), "value": title_code})
             if lang != "en":
-                fields.append({"name": "title_en", "label": self._("Short game title in English"), "value": title_en})
+                fields.append({"name": "title_en", "label": self._("Short game title in English for displaying in the payment system interface (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_en})
         fields.append({"name": "author_name", "label": self._("Game author name"), "value": author_name})
         fields.append({"type": "textarea", "name": "description", "label": self._("Game description"), "value": description})
         fields.append({"name": "indexpage_description", "label": self._("SEO HTML description for the index page"), "value": indexpage_description})

@@ -173,7 +173,8 @@ class Email(Module):
                 if getattr(self.app(), "canonical_domain", None):
                     sig += "\n"
                     sig += self._("Remind password - {href}").format(
-                        href="http://{domain}/auth/remind".format(
+                        href="{protocol}://{domain}/auth/remind".format(
+                            protocol=self.app().protocol,
                             domain=self.app().canonical_domain,
                         ),
                     )
@@ -286,7 +287,7 @@ class Email(Module):
 
     def unsubscribe_text(self, email):
         code = self.call("email.unsubscribe-code", email)
-        return self._("Unsubscribe - http://{domain}/email/unsubscribe/{code}").format(domain=self.app().canonical_domain, code=code)
+        return self._("Unsubscribe - {protocol}://{domain}/email/unsubscribe/{code}").format(protocol=self.app().protocol, domain=self.app().canonical_domain, code=code)
 
     def unsubscribe(self):
         vars = {
@@ -659,18 +660,22 @@ class EmailSender(Module):
         # converting data
         content = str2unicode(content)
         domain = self.app().canonical_domain
-        content += u'<br>--<br>{project_title} &mdash; <a href="http://{domain}/" target="_blank">http://{domain}</a><br>{your_name}<br>{unsubscribe}'.format(
+        protocol = self.app().protocol
+        content += u'<br>--<br>{project_title} &mdash; <a href="{protocol}://{domain}/" target="_blank">{protocol}://{domain}</a><br>{your_name}<br>{unsubscribe}'.format(
+            protocol=protocol,
             domain=domain,
             project_title=htmlescape(self.call("project.title")),
             your_name=self._('Your name is {user_name} &mdash; <a href="{href}" target="_blank">remind password</a>').format(
                 user_name=htmlescape(params.get("recipient_name")),
-                href="http://{domain}/auth/remind?email={email}".format(
+                href="{protocol}://{domain}/auth/remind?email={email}".format(
+                    protocol=protocol,
                     domain=domain,
                     email=urlencode(email),
                 ),
             ),
             unsubscribe=self._('To stop receiving letters press <a href="{href}" target="_blank">here</a>').format(
-                href="http://{domain}/email/unsubscribe/{code}".format(
+                href="{protocol}://{domain}/email/unsubscribe/{code}".format(
+                    protocol=protocol,
                     domain=domain,
                     code=self.call("email.unsubscribe-code", email),
                 ),

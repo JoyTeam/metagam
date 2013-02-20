@@ -60,6 +60,7 @@ class Dynamic(Module):
                     "%s/../static/js/gettext.js" % mg_path,
                     "%s/../static/constructor/gettext-%s.js" % (mg_path, lang),
                 ],
+                "protocol": self.app().protocol,
                 "game_domain": self.app().canonical_domain,
                 "closed": self.conf("auth.closed"),
                 "close_message": jsencode(htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))),
@@ -81,6 +82,7 @@ class Dynamic(Module):
         if not data or not caching:
             mg_path = mg.__path__[0]
             vars = {
+                "protocol": self.app().protocol,
                 "game_domain": self.app().canonical_domain
             }
             data = self.call("web.parse_template", "game/indexpage.css", vars)
@@ -226,6 +228,7 @@ class Interface(ConstructorModule):
             },
             "year": re.sub(r'-.*', '', self.now()),
             "copyright": "Joy Team, %s" % htmlescape(author_name),
+            "protocol": self.app().protocol,
             "game_domain": self.app().canonical_domain
         }
         links = []
@@ -344,6 +347,7 @@ class Interface(ConstructorModule):
         vars["title"] = htmlescape("%s - %s" % (character.name, project.get("title_full")))
         vars["design_root"] = design.get("uri") if design else ""
         vars["main_host"] = main_host
+        vars["protocol"] = self.app().protocol
         vars["game_domain"] = self.app().canonical_domain
         vars["character"] = character.uuid
         vars["layout"] = {

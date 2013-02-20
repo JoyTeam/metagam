@@ -342,7 +342,7 @@ class ReqAuction(ConstructorModule):
             # sending notification
             email = self.main_app().config.get("constructor.reqauction-email")
             if email:
-                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.main_host, request=request.uuid)
+                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: {protocol}://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.main_host, request=request.uuid, protocol=self.main_app().protocol)
                 self.main_app().hooks.call("email.send", email, self._("Request auction moderator"), self._("reqauction///Request moderation: %s") % request.get("title"), content)
             self.call("web.redirect", "/reqauction/mine")
 
@@ -690,7 +690,7 @@ class ReqAuction(ConstructorModule):
                                 for uuid in recalculate:
                                     self.recalculate(uuid)
                             # sending e-mails
-                            self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: http://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid))
+                            self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: {protocol}://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid, protocol=self.app().protocol))
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("publish"):
                         request.set("title", title)

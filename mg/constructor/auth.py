@@ -671,10 +671,10 @@ class Auth(ConstructorModule):
         if activation_code:
             params = {
                 "subject": self._("Account activation"),
-                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
             }
             self.call("auth.activation_email", params)
-            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
+            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid, protocol=self.app().protocol))
         self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=player.uuid)
         self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=character_user.uuid)
         if activation_code and (not self.conf("auth.activate_email_days", 7)):
