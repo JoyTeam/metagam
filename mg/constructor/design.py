@@ -1739,11 +1739,11 @@ class IndexPageAdmin(Module):
                 for form in parser.forms:
                     if form.get("name") == "loginform" and form.get("id") == "loginform":
                         loginform_ok = True
-                        if form["onsubmit"] != "return auth_login();":
+                        if form.get("onsubmit") != "return auth_login();":
                             errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
                         name_ok = False
                         password_ok = False
-                        for inp in form["inputs"]:
+                        for inp in form.get("inputs", []):
                             if inp.get("name") == "name":
                                 name_ok = True
                                 if inp.get("id") != "name":
