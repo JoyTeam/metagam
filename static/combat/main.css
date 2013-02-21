@@ -7,3 +7,5 @@ img { vertical-align: middle; border: none }
 #combat-menu-left { padding: 0px 10px 5px 0px; }
 #combat-menu-right { padding: 0px 0px 5px 0px; text-align: right; }
 #combat-counters { padding-top: 50px; text-align: right }
+
+.combat-pages { padding: 10px 0 10px 0 }

@@ -273,7 +273,3 @@ area { border: none }
 .chat-msg-combat-start { color: red }
 .chat-msg-combat-started { font-weight: bold; padding: 2px; margin: 2px 0 2px 0; border: solid 1px #ff0000 }
 .chat-msg-combat-stopped { font-weight: bold }
-.combat-log-joined { color: green }
-.combat-log-turn { color: #808080 }
-.combat-log-attack { color: #e00000 }
-.combat-hp { color: green; font-weight: bold }

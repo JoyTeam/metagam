@@ -36,15 +36,16 @@ def design_class_wrapper(cls, tp):
 
 class CombatInterface(mg.constructor.ConstructorModule):
     def register(self):
-        self.rhook("forum.vars-log", self.forum_vars_log)
+        self.rhook("combat.vars-log", self.combat_vars_log)
         self.rhook("combat.parse", self.parse, priority=10)
         self.rhook("combat.response", self.response, priority=10)
         self.rhook("combat.response_template", self.response_template, priority=10)
         self.rhook("combat.response_simple", self.response_simple, priority=10)
         self.rhook("combat.response_simple_template", self.response_simple_template, priority=10)
 
-    def forum_vars_log(self, vars):
+    def combat_vars_log(self, vars):
         vars["title"] = self._("Combat log")
+        vars["to_page"] = self._("Pages")
 
     def parse(self, template, vars):
         self.call("combat.setup-interface", vars)
@@ -133,7 +134,54 @@ class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
             vars["counters"] = ""
             for i in range(0, random.randrange(0, 5)):
                 vars["counters"] += ' <img src="/st/constructor/design/counter%d.gif" alt="" />' % random.randrange(0, 4)
-            self.call("combat.vars-combat", vars)
+            if random.random() < 0.5:
+                pages = []
+                for i in range(0, random.randrange(2, random.choice([3, 5, 10, 20, 50]))):
+                    pages.append({"entry": {"text": i + 1, "a": {"href": "#"}}})
+                pages[-1]["lst"] = True
+                vars["pages"] = pages
+            entries = []
+            members = [
+                self._("God"),
+                self._("Devil"),
+                self._("Angel"),
+                self._("Daemon"),
+                self._("Spirit"),
+                self._("Ghost"),
+            ]
+            attacks = [
+                self._("combat///attacked"),
+                self._("combat///kicked"),
+                self._("combat///pushed"),
+                self._("combat///jumped on"),
+                self._("combat///killed"),
+                self._("combat///frozen"),
+            ]
+            show_time = random.random() < 0.8
+            time = 0
+            for i in range(0, random.choice([10, 50, 100, 200])):
+                participants = random.sample(members, 2)
+                source = participants[0]
+                target = participants[1]
+                attack = random.choice(attacks)
+                max_hp = random.randrange(50, 10000)
+                damage = random.randrange(30, max_hp - 20)
+                hp = random.randrange(0, max_hp - damage)
+                if random.random() < 0.2:
+                    cls = "combat-log-important"
+                else:
+                    cls = None
+                text = u'<span class="combat-log-member">%s</span> <span class="combat-log-attack">%s</span> <span class="combat-log-member">%s</span> <span class="combat-log-damage">-%d</span> <span class="combat-log-hp">[%d/%d]</span>' % (source, attack, target, damage, hp, max_hp)
+                if show_time:
+                    time += random.choice([1, 3, 5, 10, 20])
+                    text = u'<span class="combat-log-time">%d:%02d</span> %s' % (time / 60, time % 60, text)
+                entries.append({
+                    "cls": cls,
+                    "text": text
+                })
+            entries[-1]["lst"] = True
+            vars["entries"] = entries
+            self.call("combat.vars-log", vars)
         else:
             self.call("web.not_found")
         content = self.call("design.parse", design, filename, None, vars, "combat")
