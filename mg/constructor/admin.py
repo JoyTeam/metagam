@@ -43,7 +43,7 @@ class Constructor(Module):
         self.rdep([
             "mg.core.l10n.L10n",
             "mg.socio.Socio", "mg.socio.SocioAdmin", "mg.socio.Forum", "mg.admin.AdminInterface", "mg.socio.ForumAdmin",
-            "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster",
+            "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster", "mg.core.hetzner.HetznerAdmin",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
             "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.core.money.MoneyAdmin", "mg.constructor.dashboard.ProjectDashboard",

@@ -27,7 +27,7 @@ class TestWizards(unittest.TestCase):
     def setUp(self):
         self.inst = Instance("test", "test")
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
-        self.inst._mcpool = MemcachedPool(("localhost", 11211))
+        self.inst._mcpool = MemcachedPool()
         self.app = Application(self.inst, "mgtest")
         self.app.modules.load(["mg.admin.wizards.Wizards"])
         mc = Memcached(self.inst.mcpool, "mgtest-")

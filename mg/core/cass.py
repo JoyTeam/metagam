@@ -22,7 +22,8 @@ max_index_length = 10000000
 max_memcached_list_store = 1000
 max_chunk_size = 1000
 
-re_unconfigured_ks = re.compile(r'^Keyspace (.+) does not exist$')
+re_unconfigured_ks_1 = re.compile(r'^Keyspace (.+) does not exist$')
+re_unconfigured_ks_2 = re.compile(r'^There is no ring for the keyspace: (.+)$')
 re_unconfigured_cf = re.compile(r'^unconfigured columnfamily (.+)$')
 re_notagree = re.compile(r'not yet agree')
 re_remove_index_prefix = re.compile(r'^.+?_Index_eq-')
@@ -92,7 +93,7 @@ class Cassandra(object):
                         raise DatabaseError(e.why)
                     if re_notagree.search(e.why):
                         raise RetryException
-                    m = re_unconfigured_ks.match(e.why)
+                    m = re_unconfigured_ks_1.match(e.why) or re_unconfigured_ks_2.match(e.why)
                     if m:
                         keyspace = m.group(1)
                         with MemcachedLock(self.mc, ["Cassandra-Reconfigure"], patience=1800):
@@ -105,11 +106,11 @@ class Cassandra(object):
                             ksdef = KsDef()
                             ksdef.name = keyspace
                             ksdef.strategy_class = "org.apache.cassandra.locator.SimpleStrategy"
-                            ksdef.replication_factor = self.replication_factor(conn.cass)
+                            ksdef.strategy_options = {"replication_factor": str(self.replication_factor(conn.cass))}
                             ksdef.cf_defs = []
                             sys_conn = self.pool.sys_connection()
                             sys_conn.cass.set_keyspace("system")
-                            logger.debug("Created keyspace %s (replication factor %d): %s", ksdef.name, ksdef.replication_factor, sys_conn.cass.system_add_keyspace(ksdef))
+                            logger.debug("Created keyspace %s (replication factor %s): %s", ksdef.name, ksdef.strategy_options["replication_factor"], sys_conn.cass.system_add_keyspace(ksdef))
                             # Setting flag that KS is created already
                             if self.mc:
                                 self.mc.set("Cassandra-KS-%s" % keyspace, 1, 600)
@@ -252,7 +253,7 @@ class Cassandra(object):
         keyspaces = [ksdef.name for ksdef in cass.describe_keyspaces()]
         if "ringtest" not in keyspaces:
             logger = logging.getLogger("mg.core.cass.Cassandra")
-            logger.debug("Created keyspace ringtest: %s", cass.system_add_keyspace(KsDef(name="ringtest", strategy_class="org.apache.cassandra.locator.SimpleStrategy", replication_factor=1, cf_defs=[])))
+            logger.debug("Created keyspace ringtest: %s", cass.system_add_keyspace(KsDef(name="ringtest", strategy_class="org.apache.cassandra.locator.SimpleStrategy", strategy_options={"replication_factor": "1"}, cf_defs=[])))
             cfdef = CfDef()
             cfdef.keyspace = "ringtest"
             cfdef.name = "ringtest"

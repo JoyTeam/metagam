@@ -98,7 +98,7 @@ class TestCore(unittest.TestCase):
     def setUp(self):
         self.inst = Instance("test", "test")
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
-        self.inst._mcpool = MemcachedPool(("localhost", 11211))
+        self.inst._mcpool = MemcachedPool()
 
     def test00(self):
         conn = self.inst.dbpool.cget()

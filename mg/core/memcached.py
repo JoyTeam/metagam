@@ -1,4 +1,4 @@
-from concurrence.memcache.client import MemcacheConnection, MemcacheResult
+from concurrence.memcache.client import Memcache, MemcacheResult
 from concurrence import Tasklet
 import stackless
 import re
@@ -11,47 +11,34 @@ import random
 class MemcachedEmptyKeyError(Exception):
     pass
 
-class MemcachedConnection(MemcacheConnection):
-    def __init__(self, *args, **kwargs):
-        MemcacheConnection.__init__(self, *args, **kwargs)
-        #print "init %s" % self
-
-    def __del__(self):
-        #print "del %s" % self
-        #self.close()
-        pass
-
 class MemcachedPool(object):
     """
-    Handles pool of MemcachedConnection objects, allowing get and put operations.
+    Handles pool of Memcache objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=8):
+    def __init__(self, hosts=[("127.0.0.1", 11211)], size=8):
         """
         size - max amount of active memcached connections (None if no limit)
         """
-        self.host = tuple(host)
+        self.hosts = [(a, 100) for a in hosts]
+        self.hosts_version = 0
         self.connections = []
         self.size = size
         self.allocated = 0
         self.channel = None
         self.last_debug = 0
 
-    def set_host(self, host):
-        self.host = tuple(host)
+    def set_hosts(self, hosts):
+        self.hosts = hosts
+        self.hosts_version += 1
         del self.connections[:]
         self.allocated = 0
 
     def new_connection(self):
-        "Create a new MemcachedConnection and connect it"
-        while True:
-            try:
-                connection = MemcachedConnection(self.host)
-                connection.connect()
-                return connection
-            except IOError as e:
-                logging.getLogger("mg.core.memcached.MemcachedPool").error("Error connecting to memcached: %s", e)
-            Tasklet.sleep(0.3)
+        "Create a new Memcached and connect it"
+        conn = Memcache(self.hosts)
+        conn._hosts_version = self.hosts_version
+        return conn
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
@@ -79,7 +66,7 @@ class MemcachedPool(object):
     def put(self, connection):
         "Return a connection to the pool"
         # If memcached host changed
-        if connection._address != self.host:
+        if connection._hosts_version != self.hosts_version:
             self.put(self.new_connection())
         else:
             # If somebody waits on the channel
