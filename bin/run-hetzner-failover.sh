@@ -8,5 +8,5 @@ export HOME=/home/metagam
 export PYTHONPATH=$dir
 
 while true ; do
-	screen -D -m -S mmoconstructor bin/mg_procman
+	screen -D -m -S failover perl/hetzner_failover.pl
 done

@@ -270,7 +270,7 @@ class EmailSender(ConstructorModule):
         message.store()
         email = self.int_app().config.get("email.moderation")
         if email:
-            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\n%s://www.%s/admin#email/moderation") % (self.main_app().protocol, self.main_host), immediately=True)
+            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\n{protocol}://www.{domain}/admin#email/moderation").format(protocol=self.main_app().protocol, domain=self.main_host), immediately=True)
         raise Hooks.Return({
             "status": u'<span class="yes">%s</span>' % self._("You email was enqueued to be checked by the moderator")
         })

@@ -1,0 +1,27 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+import sys
+import os
+import json
+import re
+
+def main():
+    inst = ConstructorInstance("dbconf_get", "metagam")
+    app = inst.int_app
+    app.load(["mg.core.cluster.Cluster"])
+    if len(sys.argv) != 2 and len(sys.argv) != 3:
+        print "usage: mg_clconf_set <key> [<val>]"
+        os._exit(1)
+    if len(sys.argv) == 3:
+        val = sys.argv[2]
+        if re.match(r'^[\[{]', val):
+            val = json.loads(val)
+        inst.dbconfig.set(sys.argv[1], val)
+    else:
+        inst.dbconfig.delkey(sys.argv[1])
+    inst.dbconfig.store()
+    app.call("cluster.query-services", "int", "/core/dbconfig")
+
+mg.dispatch(main)

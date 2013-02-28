@@ -66,17 +66,17 @@ clean:
 	find \( -name '*.pyc' -or -name '*~' \) -exec rm {} \;
 
 deploy: translations
-	rm -rf depl
-	find -name '*.pyc' -exec rm {} \;
-	devbin/mg_compile .
-	mkdir -p depl/bin
-	cp bin/* depl/bin/
-	cp -R mg static perl depl/
-	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
-	find depl/static -name robots.txt -exec rm -rf {} \;
-	rsync --links --delete -r depl/* admin.mmoconstructor.ru:/home/mg/
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-frontend-1:/home/mg/' || true
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-1:/home/mg/' || true
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-2:/home/mg/' || true
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-db-3:/home/mg/' || true
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-sql-1:/home/mg/' || true
+	@echo Preparing package...
+	@rm -rf depl
+	@find -name '*.pyc' -exec rm {} \;
+	@devbin/mg_compile .
+	@mkdir -p depl/bin
+	@cp bin/* depl/bin/
+	@cp -R mg static perl depl/
+	@find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
+	@find depl/static -name robots.txt -exec rm -rf {} \;
+	@echo Uploading package to mg-storage...
+	@rsync --links --delete -r depl/* mg-storage@213.248.47.138:/home/mg-storage/mg/
+	@echo Deploying to servers...
+	@knife ssh -a ipaddress roles:mmoconstructor 'sudo chef-client -l error'
+	@echo Success

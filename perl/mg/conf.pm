@@ -33,6 +33,7 @@ sub lget
     my $self = shift;
     my $group = shift;
     my $key = shift;
+    return $self->{ldata}->{$group}->{$key};
 }
 
 sub get

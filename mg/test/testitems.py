@@ -13,7 +13,7 @@ class TestItems(unittest.TestCase, ConstructorModule):
         unittest.TestCase.__init__(self, *args, **kwargs)
         self.inst = Instance("test", "test")
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
-        self.inst._mcpool = MemcachedPool(("localhost", 11211))
+        self.inst._mcpool = MemcachedPool()
         self.app_obj = Application(self.inst, "mgtest")
         self.app_obj.modules.load(["mg.mmorpg.inventory.Inventory", "mg.core.l10n.L10n"])
         ConstructorModule.__init__(self, self.app_obj, "mg.test.testitems.TestItems")

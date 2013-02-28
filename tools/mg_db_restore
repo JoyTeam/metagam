@@ -49,8 +49,14 @@ def main():
                                     if type(col_value) is unicode:
                                         col_value = col_value.encode("utf-8")
                                     mutations.append(Mutation(ColumnOrSuperColumn(Column(name=col_name, value=col_value, timestamp=now))))
-                                mutations = {key: {family: mutations}}
-                                db.batch_mutate(mutations, ConsistencyLevel.ONE)
+                                    if len(mutations) >= 1000:
+                                        mutations = {key: {family: mutations}}
+                                        db.batch_mutate(mutations, ConsistencyLevel.ONE)
+                                        mutations = []
+                                if mutations:
+                                    mutations = {key: {family: mutations}}
+                                    db.batch_mutate(mutations, ConsistencyLevel.ONE)
+                                    mutations = []
                         f.close()
         sys.stdout.flush()
         os._exit(0)

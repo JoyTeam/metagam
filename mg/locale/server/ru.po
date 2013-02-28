@@ -577,6 +577,9 @@ msgstr ""
 "в чьей-то другой программе; сообщения о проблемах, которые оборачивались "
 "сбоями сети."
 
+msgid "Angel"
+msgstr ""
+
 msgid "Animated GIF must be exactly 16x16"
 msgstr "Анимированный GIF должен быть точно 16x16"
 
@@ -2153,6 +2156,10 @@ msgstr "Настройки DNS сохранены"
 msgid "DOCTYPE not specified"
 msgstr "DOCTYPE не указан"
 
+#, fuzzy
+msgid "Daemon"
+msgstr "Демоны"
+
 msgid "Damage parameter must start with 'p_'"
 msgstr "Параметр урона должен начинаться с \"p_\""
 
@@ -2312,6 +2319,9 @@ msgstr ""
 
 msgid "Developers club"
 msgstr "Клуб разработчиков"
+
+msgid "Devil"
+msgstr ""
 
 msgid "Dialog can't contain more than 1 default button"
 msgstr "В диалоге не может быть более одной кнопки по умолчанию"
@@ -3459,6 +3469,9 @@ msgstr "Сгенерировать описание для библиотеки 
 msgid "Generic interface settings"
 msgstr "Настройки универсального интерфейса"
 
+msgid "Ghost"
+msgstr ""
+
 msgid "Give"
 msgstr "Выдать"
 
@@ -3540,6 +3553,10 @@ msgstr "Перейти к редактору кнопок"
 
 msgid "Go to the domain checker"
 msgstr "Перейдите к проверке домена"
+
+#, fuzzy
+msgid "God"
+msgstr "Золото"
 
 msgid "Good name"
 msgstr "Хорошее имя"
@@ -3646,6 +3663,18 @@ msgstr "Здесь мы можете зарегистрировать домен
 
 msgid "Here you have to create unique logo for your project."
 msgstr "Здесь вам необходимо создать уникальный логотип для вашего проекта"
+
+msgid "Hetzner configuration"
+msgstr "Конфигурация Hetzner"
+
+msgid "Hetzner failover ip addresses (comma separated list)"
+msgstr "Резервируемые IP-адреса Hetzner (список, разделённый запятыми)"
+
+msgid "Hetzner password"
+msgstr "Пароль Hetzner"
+
+msgid "Hetzner username"
+msgstr "Имя пользователя Hetzner"
 
 msgid "Hide info"
 msgstr "Скрыть инфо"
@@ -5264,15 +5293,14 @@ msgstr "Новый e-mail"
 msgid "New e-mail address"
 msgstr "Новый адрес e-mail"
 
-#, python-format
 msgid ""
 "New e-mail moderation request received. Go to the admin panel please and "
 "perform required moderation actions:\n"
-"%s://www.%s/admin#email/moderation"
+"{protocol}://www.{domain}/admin#email/moderation"
 msgstr ""
 "Получен новый запрос на модерацию e-mail. Пожалуйста, зайдите в панель "
 "администрирования и произведите необходимые действия по модерации:\n"
-"%s://www.%s/admin#email/moderation"
+"{protocol}://www.{domain}/admin#email/moderation"
 
 msgid "New field"
 msgstr "Новое поле"
@@ -7494,6 +7522,9 @@ msgstr "Укажите ваше доменное имя"
 
 msgid "Specify your weight"
 msgstr "Укажите ваш вас"
+
+msgid "Spirit"
+msgstr ""
 
 msgid "Square"
 msgstr "Квадрат"
@@ -9774,6 +9805,26 @@ msgstr "шаблоны оформления боя"
 msgid "combat system profile"
 msgstr "профиль боевой системы"
 
+msgid "combat///attacked"
+msgstr ""
+
+#, fuzzy
+msgid "combat///frozen"
+msgstr " "
+
+msgid "combat///jumped on"
+msgstr ""
+
+msgid "combat///kicked"
+msgstr ""
+
+msgid "combat///killed"
+msgstr ""
+
+#, fuzzy
+msgid "combat///pushed"
+msgstr "опубликован"
+
 #, python-format
 msgid "combats///%s: design"
 msgstr "%s: оформление"
@@ -10785,6 +10836,21 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid ""
+#~ "New e-mail moderation request received. Go to the admin panel please and "
+#~ "perform required moderation actions:\n"
+#~ "%s://www.%s/admin#email/moderation"
+#~ msgstr ""
+#~ "Получен новый запрос на модерацию e-mail. Пожалуйста, зайдите в панель "
+#~ "администрирования и произведите необходимые действия по модерации:\n"
+#~ "%s://www.%s/admin#email/moderation"
+
+#~ msgid "Expression unexpectedly ended"
+#~ msgstr "Выражение внезапно закончилось"
+
+#~ msgid "Unknown script engine function: {fname}"
+#~ msgstr "Неизвестная функция скриптового движка: {fname}"
+
 #~ msgid "Currency name in English"
 #~ msgstr "Название валюты на английском языке"
 
@@ -10927,12 +10993,6 @@ msgstr "{price} навсегда"
 #~ "\n"
 #~ "http://www.{domain}/forum/topic/{topic_uuid}"
 
-#~ msgid "Expression unexpectedly ended"
-#~ msgstr "Выражение внезапно закончилось"
-
-#~ msgid "Unknown script engine function: {fname}"
-#~ msgstr "Неизвестная функция скриптового движка: {fname}"
-
 #~ msgid "Game '[%game.title_short%]' Combat Log"
 #~ msgstr "Лог боя в игре \"[%game.title_short%]\""
 
@@ -10983,9 +11043,6 @@ msgstr "{price} навсегда"
 
 #~ msgid "Class"
 #~ msgstr "Класс"
-
-#~ msgid "Daemons"
-#~ msgstr "Демоны"
 
 #~ msgid "Interface"
 #~ msgstr "Интерфейс"
@@ -11529,9 +11586,6 @@ msgstr "{price} навсегда"
 
 #~ msgid "Error storing object %s: %s"
 #~ msgstr "Ошибка при сохранении объекта %s: %s"
-
-#~ msgid "Gold"
-#~ msgstr "Золото"
 
 #~ msgid ""
 #~ "<p>We don't offer free domain names &mdash; you have to register it "

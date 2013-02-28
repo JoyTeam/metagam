@@ -226,12 +226,17 @@ class Instance(Loggable):
             self._dbpool = CassandraPool(cass_hosts, primary_host_id=0)
         # get actual database cluster configuration from the database itself
         self._sys_conn = self._dbpool.sys_connection()
-        cass_hosts = []
-        for ent in self._sys_conn.cass.describe_ring("main"):
-            for ip in ent.endpoints:
-                cass_hosts.append((ip, 9160))
-        self.debug("Cassandra hosts: %s", cass_hosts)
-        self._dbpool.set_host(cass_hosts, primary_host_id=self.conf("global", "cassandra_primary_host_id", 0) % len(cass_hosts))
+        try:
+            ring = self._sys_conn.cass.describe_ring("main")
+        except InvalidRequestException as e:
+            pass
+        else:
+            cass_hosts = []
+            for ent in ring:
+                for ip in ent.endpoints:
+                    cass_hosts.append((ip, 9160))
+            self.debug("Cassandra hosts: %s", cass_hosts)
+            self._dbpool.set_host(cass_hosts, primary_host_id=self.conf("global", "cassandra_primary_host_id", 0) % len(cass_hosts))
 
     def close_cassandra(self):
         if hasattr(self, "_dbpool"):
@@ -258,9 +263,9 @@ class Instance(Loggable):
         mc_hosts = [(host, 11211) for host in mc_hosts]
         self.debug("Memcached hosts: %s", mc_hosts)
         if hasattr(self, "_mcpool"):
-            self._mcpool.set_host(mc_hosts[0])
+            self._mcpool.set_hosts(mc_hosts)
         else:
-            self._mcpool = MemcachedPool(mc_hosts[0])
+            self._mcpool = MemcachedPool(mc_hosts)
         return self._mcpool
 
     def close_memcached(self):
