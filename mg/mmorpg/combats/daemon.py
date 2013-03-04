@@ -52,6 +52,7 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
     def combat_info(self):
         self.call("web.response_json", {
             "rules": self.combat.rules,
+            "title": self.combat.title,
             "stage": self.combat.stage,
         })
 
@@ -156,6 +157,9 @@ class CombatRequest(mg.constructor.ConstructorModule):
     def set_rules(self, rules):
         self.cobj.set("rules", rules)
 
+    def set_title(self, title):
+        self.cobj.set("title", title)
+
     def run(self):
         self.debug("Launching combat %s", self.cobj.uuid)
         self.set_busy()
@@ -182,6 +186,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
         log = CombatDatabaseLog(combat)
         combat.set_log(log)
         CombatObject.__init__(self, combat, fqn, weak=False)
+        combat.set_title(cobj.get("title", self._("Combat")))
 
     def add_members(self):
         for minfo in self.cobj.get("members", []):

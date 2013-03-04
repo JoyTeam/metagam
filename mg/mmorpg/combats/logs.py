@@ -47,6 +47,7 @@ class CombatDatabaseLog(CombatLog):
         now = self.now()
         # create user log
         self.db_textlog = self.obj(DBCombatLog, "%s-user" % combat.uuid, data={})
+        self.db_textlog.set("rules", combat.rules)
         self.db_textlog.set("keep", 0)
         self.db_textlog.set("started", now)
         self.db_textlog.set("debug", 0)
@@ -54,6 +55,7 @@ class CombatDatabaseLog(CombatLog):
         self.db_textlog.store()
         # create debug log
         self.db_syslog = self.obj(DBCombatLog, "%s-debug" % combat.uuid, data={})
+        self.db_syslog.set("rules", combat.rules)
         self.db_syslog.set("keep", 0)
         self.db_syslog.set("started", now)
         self.db_syslog.set("debug", 1)
@@ -119,6 +121,10 @@ class CombatDatabaseLog(CombatLog):
         self.syslog_flush()
         self.textlog_flush()
 
+    def set_title(self, title):
+        self.db_syslog.set("title", title)
+        self.db_textlog.set("title", title)
+
 class CombatLogViewer(mg.constructor.ConstructorModule):
     def __init__(self, app, tp, uuid, fqn="mg.mmorpg.combats.logs.CombatLogViewer"):
         mg.constructor.ConstructorModule.__init__(self, app, fqn)
@@ -129,6 +135,14 @@ class CombatLogViewer(mg.constructor.ConstructorModule):
     @property
     def valid(self):
         return self.log.get("started") is not None
+
+    @property
+    def rules(self):
+        return self.log.get("rules")
+
+    @property
+    def title(self):
+        return self.log.get("title")
 
     @property
     def started(self):

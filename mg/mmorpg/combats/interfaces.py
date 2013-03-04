@@ -153,7 +153,13 @@ class Combats(mg.constructor.ConstructorModule):
         log = CombatLogViewer(self.app(), "user", uuid)
         if not log.valid:
             self.call("web.not_found")
-        result = ""
+        title = log.title
+        vars = {
+            "title": title,
+            "combat_title": title,
+            "entries": []
+        }
         for ent in log.entries(0, len(log)):
-            result += utf2str(ent.get("text")) + "\n"
-        self.call("web.response", result, "text/plain; charset=utf-8")
+            vars["entries"].append(ent)
+        print json.dumps(vars, indent=4)
+        self.call("combat.response_template", log.rules, "log.html", vars)

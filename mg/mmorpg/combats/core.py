@@ -125,7 +125,7 @@ class CombatParamsContainer(object):
 class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     "Combat is the combat itself. It is created in the combat daemon process."
 
-    system_params = set(["stage"])
+    system_params = set(["stage", "title"])
     def __init__(self, app, uuid, rules, fqn="mg.mmorpg.combats.core.Combat"):
         mg.constructor.ConstructorModule.__init__(self, app, fqn)
         CombatParamsContainer.__init__(self)
@@ -231,6 +231,17 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 "type": "stage",
                 "stage": stage,
             })
+        self.wakeup()
+
+    @property
+    def title(self):
+        return self._params.get("title", self._("Combat"))
+
+    def set_title(self, title):
+        "Set combat title"
+        self.set_param("title", title)
+        if self.log:
+            self.log.set_title(title)
         self.wakeup()
 
     def add_controller(self, controller):

@@ -889,6 +889,8 @@ class QuestsAdmin(ConstructorModule):
                 result = "  " * indent + "combat"
                 if "rules" in options:
                     result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
+                if "title" in options:
+                    result += " title=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
                 result += " {\n"
                 for member in options.get("members", []):
                     mtype = member["type"]
@@ -1665,6 +1667,10 @@ class Quests(ConstructorModule):
                                         if rules is None:
                                             raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
                                         creq.set_rules(rules)
+                                        # combat title
+                                        title = options.get("title")
+                                        if options:
+                                            creq.set_title(title)
                                         # members
                                         for member in options["members"]:
                                             mtype = member["type"]

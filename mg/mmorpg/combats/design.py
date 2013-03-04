@@ -47,30 +47,30 @@ class CombatInterface(mg.constructor.ConstructorModule):
         vars["title"] = self._("Combat log")
         vars["to_page"] = self._("Pages")
 
-    def parse(self, template, vars):
-        self.call("combat.setup-interface", vars)
-        design = self.design("combatinterface")
+    def parse(self, rules, template, vars):
+        design = self.design("combatinterface-%s" % rules)
+        self.call("combat.setup-interface", rules, vars)
         return self.call("design.parse", design, template, None, vars, "combat")
 
-    def response(self, content, vars):
-        self.call("combat.setup-interface", vars)
-        design = self.design("combatinterface")
+    def response(self, rules, content, vars):
+        design = self.design("combatinterface-%s" % rules)
+        self.call("combat.setup-interface", rules, vars)
         self.call("design.response", design, "global.html", content, vars, "combat")
 
-    def response_template(self, template, vars):
-        self.call("combat.setup-interface", vars)
-        design = self.design("combatinterface")
+    def response_template(self, rules, template, vars):
+        design = self.design("combatinterface-%s" % rules)
+        self.call("combat.setup-interface", rules, vars)
         content = self.call("design.parse", design, template, None, vars, "combat")
         self.call("design.response", design, "global.html", content, vars, "combat")
 
-    def response_simple(self, content, vars):
-        self.call("combat.setup-interface", vars)
-        design = self.design("combatinterface")
+    def response_simple(self, rules, content, vars):
+        design = self.design("combatinterface-%s" % rules)
+        self.call("combat.setup-interface", rules, vars)
         self.call("design.response", design, "global-simple.html", content, vars, "combat")
 
-    def response_simple_template(self, template, vars):
-        self.call("combat.setup-interface", vars)
-        design = self.design("combatinterface")
+    def response_simple_template(self, rules, template, vars):
+        design = self.design("combatinterface-%s" % rules)
+        self.call("combat.setup-interface", rules, vars)
         content = self.call("design.parse", design, template, None, vars, "combat")
         self.call("design.response", design, "global-simple.html", content, vars, "combat")
 
