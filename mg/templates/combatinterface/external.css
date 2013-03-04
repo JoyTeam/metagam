@@ -13,5 +13,5 @@ td { padding: 0 }
 #page-layout-content { vertical-align: top }
 #page-content { padding: 110px 40px 25px 40px }
 
-[% include "combatinterface/${tpl}.css" %]
+[% include "combatinterface/${tpl}-external.css" %]
 

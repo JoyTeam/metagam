@@ -79,11 +79,8 @@ class Combats(mg.constructor.ConstructorModule):
             dim_avatar = rules.get("dim_avatar", [120, 220])
             vars["combat_avatar_width"] = dim_avatar[0]
             vars["combat_avatar_height"] = dim_avatar[1]
-            try:
-                content = self.call("game.parse_internal", "combat-rules-%s.html" % combat.rules, vars)
-            except TemplateNotFound:
-                content = self.call("game.parse_internal", "combat-interface.html", vars)
-            self.call("game.response_internal", "combat.html", vars, content)
+            content = self.call("combat.parse", combat.rules, "combat-interface.html", vars)
+            self.call("combat.response_main_frame", combat.rules, "combat.html", vars, content)
         except CombatUnavailable as e:
             self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.redirect", "/location")
@@ -161,5 +158,4 @@ class Combats(mg.constructor.ConstructorModule):
         }
         for ent in log.entries(0, len(log)):
             vars["entries"].append(ent)
-        print json.dumps(vars, indent=4)
         self.call("combat.response_template", log.rules, "log.html", vars)

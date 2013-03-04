@@ -15,13 +15,15 @@ class DesignCombatCommonBlocks(DesignGenerator):
             "tpl": self.id(),
             "lang": self.call("l10n.lang"),
         }
-        data = self.call("web.parse_template", "combatinterface/common-blocks.html", vars)
+        data = self.call("web.parse_template", "combatinterface/global.html", vars)
         self.add_file("global.html", "text/html", data)
         vars = {
             "tpl": self.id(),
             "lang": self.call("l10n.lang"),
         }
-        self.add_file("main.css", "text/css", self.call("web.parse_template", "combatinterface/common-blocks.css", vars))
+        self.add_file("common.css", "text/css", self.call("web.parse_template", "combatinterface/common.css", vars))
+        self.add_file("internal.css", "text/css", self.call("web.parse_template", "combatinterface/internal.css", vars))
+        self.add_file("external.css", "text/css", self.call("web.parse_template", "combatinterface/external.css", vars))
 
 class DesignCombatRustedMetal(DesignCombatCommonBlocks):
     def id(self): return "combat-rusted-metal"
@@ -42,6 +44,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
         self.rhook("combat.response_template", self.response_template, priority=10)
         self.rhook("combat.response_simple", self.response_simple, priority=10)
         self.rhook("combat.response_simple_template", self.response_simple_template, priority=10)
+        self.rhook("combat.response_main_frame", self.response_main_frame, priority=10)
 
     def combat_vars_log(self, vars):
         vars["title"] = self._("Combat log")
@@ -73,6 +76,14 @@ class CombatInterface(mg.constructor.ConstructorModule):
         self.call("combat.setup-interface", rules, vars)
         content = self.call("design.parse", design, template, None, vars, "combat")
         self.call("design.response", design, "global-simple.html", content, vars, "combat")
+
+    def response_main_frame(self, rules, template, vars, content):
+        combat_design = self.design("combatinterface-%s" % rules)
+        game_design = self.design("gameinterface")
+        self.call("combat.setup-interface", rules, vars)
+        content = self.call("design.parse", combat_design, template, content, vars, "combat")
+        vars["head"] = vars.get("head", u"") + u'<link rel="stylesheet" type="text/css" src="/st-mg/{ver}/combat/common.css" /><link rel="stylesheet" type="text/css" src="/st-mg/{ver}/combat/internal.css" /><link rel="stylesheet" type="text/css" src="{design_root}/common.css" /><link rel="stylesheet" type="text/css" src="{design_root}/internal.css" />'.format(ver=vars["ver"], design_root=combat_design.get("uri"))
+        self.call("design.response", game_design, "internal.html", content, vars, "game")
 
 class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -116,8 +127,9 @@ class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
 
     def validate(self, design, parsed_html, errors):
         files = design.get("files")
-        if not design.get("css"):
-            errors.append(self._("Combat interface design package must contain a CSS file"))
+        for name in ["global.html", "common.css", "internal.css", "external.css"]:
+            if name not in design.get("files"):
+                errors.append(self._("Combat interface design package must contain %s file") % name)
 
     def previews(self, design, previews):
         previews.append({"filename": "log.html", "title": self._("Combat log")})
