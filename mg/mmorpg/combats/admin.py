@@ -5,10 +5,12 @@ from uuid import uuid4
 import re
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script|params|aboveavatar/.+|belowavatar/.+)(?:|/(.+))$', re.IGNORECASE)
+re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|ai/.+|ai|script|params|aboveavatar/.+|belowavatar/.+)(?:|/(.+))$', re.IGNORECASE)
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
 re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
+re_ai_cmd = re.compile(r'ai/(.+)', re.IGNORECASE)
+re_ai_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
 re_combat_params = re.compile('^combat/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
 re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9_]+)$', re.IGNORECASE)
 re_member_params = re.compile('^member/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
@@ -70,6 +72,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         return [htmlescape(info["name"]), "combats/rules"]
                     elif action == "actions":
                         return [self._("Actions of '%s'") % htmlescape(info["name"]), "combats/rules"]
+                    elif action == "ai":
+                        return [self._("AI types of '%s'") % htmlescape(info["name"]), "combats/rules"]
                     elif action == "script":
                         return [self._("Scripts of '%s'") % htmlescape(info["name"]), "combats/rules"]
                     elif action == "params":
@@ -99,6 +103,21 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                                                 return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
                                             elif cmd == "script":
                                                 return [self._("Scripts of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
+                        m = re_ai_cmd.match(action)
+                        if m:
+                            cmd = m.group(1)
+                            if cmd == "new":
+                                return [self._("New AI type"), "combats/rules/edit/%s/ai" % code]
+                            else:
+                                m = re_ai_edit.match(cmd)
+                                if m:
+                                    ai_code, cmd = m.group(1, 2)
+                                    for ai_type in self.conf("combats-%s.ai-types" % code, []):
+                                        if ai_type["code"] == ai_code:
+                                            if cmd == "profile":
+                                                return [htmlescape(ai_type["name"]), "combats/rules/edit/%s/ai" % code]
+                                            elif cmd == "script":
+                                                return [self._("Scripts of '%s'") % htmlescape(ai_type["name"]), "combats/rules/edit/%s/ai" % code]
                         m = re_avatar_params_cmd.match(action)
                         if m:
                             pos, paramid = m.group(1, 2)
@@ -154,6 +173,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     u'<hook:admin.link href="combats/rules/edit/%s/params" title="%s" />' % (code, self._("parameters delivery to client")),
                     u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
                     u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("combat actions")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/ai" title="%s" />' % (code, self._("artifical intelligence algorithms")),
                     u'<hook:admin.link href="combatinterface-%s/design" title="%s" />' % (code, self._("combat design templates")),
                 ]),
                 u'<hook:admin.link href="combats/rules/del/%s" title="%s" confirm="%s" />' % (code, self._("delete"), self._("Are you sure want to delete these rules?")),
@@ -221,6 +241,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             return self.rules_edit_profile(code)
         elif action == "actions":
             return self.rules_edit_actions(code)
+        elif action == "ai":
+            return self.rules_edit_ai(code)
         elif action == "script":
             return self.rules_edit_script(code)
         elif action == "params":
@@ -230,6 +252,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             if m:
                 cmd = m.group(1)
                 return self.rules_action(code, cmd)
+            m = re_ai_cmd.match(action)
+            if m:
+                cmd = m.group(1)
+                return self.rules_ai(code, cmd)
             m = re_avatar_params_cmd.match(action)
             if m:
                 pos, cmd = m.group(1, 2)
@@ -932,3 +958,163 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         rules.sort(cmp=lambda x, y: cmp(x[1]["order"], y[1]["order"]) or cmp(x[0], y[0]))
         for code, info in rules:
             files.append({"filename": "combat-rules-%s.html" % code, "description": self._("Combat interface for combat rules '{code}' ({name})").format(code=code, name=htmlescape(info["name"])), "doc": "/doc/combats"})
+
+    def rules_edit_ai(self, code):
+        ai_types = self.conf("combats-%s.ai-types" % code, [])
+        rows = []
+        for ai_type in ai_types:
+            rows.append([
+                ai_type["code"],
+                htmlescape(ai_type["name"]),
+                ai_type["order"],
+                u'<br />'.join([
+                    u'<hook:admin.link href="combats/rules/edit/%s/ai/edit/%s/profile" title="%s" />' % (code, ai_type["code"], self._("AI type profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/ai/edit/%s/script" title="%s" />' % (code, ai_type["code"], self._("script handlers")),
+                ]),
+                u'<hook:admin.link href="combats/rules/edit/%s/ai/del/%s" title="%s" confirm="%s" />' % (code, ai_type["code"], self._("delete"), self._("Are you sure want to delete this AI type?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "combats/rules/edit/%s/ai/new" % code,
+                            "text": self._("New AI type"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Code"),
+                        self._("AI type name"),
+                        self._("Order"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def rules_ai(self, code, cmd):
+        if cmd == "new":
+            return self.rules_ai_type_edit(code, None)
+        else:
+            m = re_del.match(cmd)
+            if m:
+                ai_code = m.group(1)
+                ai_types = [ai_type for ai_type in self.conf("combats-%s.ai-types" % code, []) if ai_type["code"] != ai_code]
+                config = self.app().config_updater()
+                config.set("combats-%s.ai-types" % code, ai_types)
+                config.store()
+                self.call("admin.redirect", "combats/rules/edit/%s/ai" % code)
+            m = re_ai_edit.match(cmd)
+            if m:
+                ai_code, cmd = m.group(1, 2)
+                if cmd == "profile":
+                    return self.rules_ai_type_edit(code, ai_code)
+                elif cmd == "script":
+                    return self.rules_ai_type_script(code, ai_code)
+
+    def rules_ai_type_edit(self, combat_code, ai_code):
+        req = self.req()
+        ai_types = [ai_type.copy() for ai_type in self.conf("combats-%s.ai-types" % combat_code, [])]
+        if ai_code is None:
+            info = {}
+            order = None
+            for ai_type in ai_types:
+                if order is None or ai_type["order"] > order:
+                    order = ai_type["order"]
+            if order is None:
+                info["order"] = 0.0
+            else:
+                info["order"] = order + 10.0
+        else:
+            info = None
+            for ai_type in ai_types:
+                if ai_type["code"] == ai_code:
+                    info = ai_type
+                    break
+            if info is None:
+                self.call("admin.redirect", "combats/rules/edit/%s/ai" % combat_code)
+        existing_codes = set()
+        for ai_type in ai_types:
+            existing_codes.add(ai_type["code"])
+        # processing request
+        if req.ok():
+            combat = Combat(self.app(), None, combat_code)
+            member1 = CombatMember(combat)
+            member2 = CombatMember(combat)
+            combat.join(member1)
+            combat.join(member2)
+            info = {}
+            errors = {}
+            # code
+            code = req.param("code")
+            if not code:
+                errors["code"] = self._("This field is mandatory")
+            elif not re_valid_identifier.match(code):
+                errors["code"] = self._("AI type code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+            elif code in existing_codes and code != ai_code:
+                errors["code"] = self._("AI type with the same code already exists")
+            else:
+                info["code"] = code
+            # name
+            name = req.param("name")
+            if not name:
+                errors["name"] = self._("This field is mandatory")
+            else:
+                info["name"] = name
+            # order
+            info["order"] = floatz(req.param("order"))
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # save changes
+            if ai_code:
+                ai_types = [a for a in ai_types if a["code"] != ai_code]
+            ai_types.append(info)
+            ai_types.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["code"], y["code"]))
+            config = self.app().config_updater()
+            config.set("combats-%s.ai-types" % combat_code, ai_types)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/ai" % combat_code)
+        # render form
+        fields = [
+            {"name": "code", "label": self._("AI type code"), "value": info.get("code")},
+            {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
+            {"name": "name", "label": self._("AI type name"), "value": info.get("name")},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def rules_ai_type_script(self, code, ai_code):
+        req = self.req()
+        ai_types = [ai_type.copy() for ai_type in self.conf("combats-%s.ai-types" % code, [])]
+        info = None
+        for ai_type in ai_types:
+            if ai_type["code"] == ai_code:
+                info = ai_type
+                break
+        if info is None:
+            self.call("admin.redirect", "combats/rules/edit/%s/ai" % code)
+        if req.ok():
+            # test objects
+            combat = Combat(self.app(), None, code)
+            member = CombatMember(combat)
+            combat.join(member)
+            # parse form
+            errors = {}
+            info["script-turn-got"] = self.call("combats-admin.script-field", combat, "turn-got", errors, globs={"combat": combat, "member": member}, mandatory=False)
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # store
+            config = self.app().config_updater()
+            config.set("combats-%s.ai-types" % code, ai_types)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/ai" % code)
+        # rendering form
+        fields = [
+            {"name": "turn-got", "label": self._("Executed when AI member gets right of turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-turn-got")), "height": 100},
+        ]
+        self.call("admin.form", fields=fields)
