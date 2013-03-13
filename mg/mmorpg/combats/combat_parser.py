@@ -47,6 +47,9 @@ class TokenSyslog(Parsing.Token):
 class TokenChat(Parsing.Token):
     "%token chat"
 
+class TokenAction(Parsing.Token):
+    "%token action"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -158,6 +161,14 @@ class CombatStatement(Parsing.Nonterm):
             args["cls"] = cls
         self.val = ["chat", text, args]
 
+    def reduceAction(self, cmd, source, tp, attrs):
+        "%reduce action Expr Expr ExprAttrs"
+        validate_attrs(cmd, "action", attrs, [])
+        args = {
+            "source": source.val
+        }
+        self.val = ["action", tp.val, args]
+
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
     def reduceMembers(self, val):
@@ -238,6 +249,7 @@ class CombatScriptParser(ScriptParser):
     syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
     syms["chat"] = TokenChat
+    syms["action"] = TokenAction
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

@@ -515,7 +515,7 @@ class ScriptEngine(ConstructorModule):
         return expression
 
     def exception_report(self, exception):
-        if not issubclass(type(exception), ScriptError) and not issubclass(type(exception), TemplateException):
+        if not isinstance(exception, ScriptError) and not isinstance(exception, TemplateException):
             return
         try:
             try:

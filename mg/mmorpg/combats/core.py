@@ -788,6 +788,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         for target in self.combat.members:
             globs["target"] = target
             val = self.call("script.evaluate-expression", condition, globs=globs, description=lambda: self._("Evaluation of target availability"))
+            del globs["target"]
             if val:
                 targets.append(target.id)
         if not targets:

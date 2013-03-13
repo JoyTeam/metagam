@@ -909,6 +909,8 @@ class QuestsAdmin(ConstructorModule):
                         result += " name=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", member["name"]))
                     if "sex" in member:
                         result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
+                    if "ai" in member:
+                        result += " ai=%s" % self.call("script.unparse-expression", member["ai"])
                     result += "\n"
                 result += "  " * indent + "}\n"
                 return result
@@ -1706,6 +1708,8 @@ class Quests(ConstructorModule):
                                                 rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
                                             if "sex" in member:
                                                 rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                            if "ai" in member:
+                                                rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
                                             creq.add_member(rmember)
                                         # launch combat
                                         if debug:

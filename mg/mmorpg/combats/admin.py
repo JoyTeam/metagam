@@ -151,7 +151,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     config.delete("combats-%s.rules" % code)
                     config.store()
                 self.call("admin.redirect", "combats/rules")
-            # editing
+            # edit
             m = re_edit.match(req.args)
             if m:
                 code, action, cmd = m.group(1, 2, 3)
@@ -203,14 +203,14 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
 
     def rules_new(self):
         req = self.req()
-        # loading list of combat types
+        # load list of combat types
         combat_types = []
         self.call("admin-combats.types", combat_types)
         combat_types.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         combat_types_dict = dict([(tp.get("id"), tp) for tp in combat_types])
         combat_types = [(tp.get("id"), tp.get("name")) for tp in combat_types]
         combat_types.insert(0, (None, None))
-        # processing request
+        # process request
         if req.ok():
             errors = {}
             # tp
@@ -221,13 +221,13 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 type_info = combat_types_dict.get(tp)
                 if not type_info:
                     errors["v_tp"] = self._("Make a valid selection")
-            # processing errors
+            # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
-            # running dialog
+            # run dialog
             dialog = type_info["dialog"](self.app())
             dialog.show()
-        # rendering form
+        # render form
         fields = [
             {"name": "tp", "type": "combo", "label": self._("Type of combat system"), "values": combat_types},
         ]
@@ -265,7 +265,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         req = self.req()
         shortRules = self.conf("combats.rules", {})
         oldInfo = self.conf("combats-%s.rules" % code, {})
-        # processing request
+        # process request
         if req.ok():
             errors = {}
             shortInfo = {}
@@ -596,7 +596,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         existing_codes = set()
         for act in actions:
             existing_codes.add(act["code"])
-        # processing request
+        # process request
         if req.ok():
             combat = Combat(self.app(), None, code)
             member1 = CombatMember(combat)
@@ -625,7 +625,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             info["order"] = floatz(req.param("order"))
             # available
             info["available"] = self.call("script.admin-expression", "available", errors, globs={"combat": combat, "member": member1})
-            # processing errors
+            # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # targets
@@ -654,7 +654,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                             info["targets_sort"] = targets_sort
                 info["targets_min"] = self.call("script.admin-expression", "targets_min", errors, globs={"combat": combat, "member": member1})
                 info["targets_max"] = self.call("script.admin-expression", "targets_max", errors, globs={"combat": combat, "member": member1})
-            # saving changes
+            # save changes
             if action_code:
                 actions = [a for a in actions if a["code"] != action_code]
             actions.append(info)
@@ -663,7 +663,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             config.set("combats-%s.actions" % code, actions)
             config.store()
             self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        # rendering form
+        # render form
         fields = [
             {"name": "code", "label": self._("Action code"), "value": info.get("code")},
             {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
@@ -707,17 +707,17 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             combat = Combat(self.app(), None, code)
             member = CombatMember(combat)
             combat.join(member)
-            # parsing form
+            # parse form
             errors = {}
             config = self.app().config_updater()
             for tag in ["start", "turngot", "heartbeat", "idle", "actions-started", "actions-stopped", "joined"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat}, mandatory=False))
             for tag in ["turngot", "heartbeat-member", "idle-member"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat, "member": member}, mandatory=False))
-            # processing errors
+            # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
-            # storing
+            # store
             config.store()
             self.call("admin.redirect", "combats/rules")
         fields = [
@@ -928,21 +928,21 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             member2 = CombatMember(combat)
             combat.join(member1)
             combat.join(member2)
-            # parsing form
+            # parse form
             errors = {}
             info["script-begin"] = self.call("combats-admin.script-field", combat, "begin", errors, globs={"combat": combat, "source": member1}, mandatory=False)
             info["script-begin-target"] = self.call("combats-admin.script-field", combat, "begin-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
             info["script-end"] = self.call("combats-admin.script-field", combat, "end", errors, globs={"combat": combat, "source": member1}, mandatory=False)
             info["script-end-target"] = self.call("combats-admin.script-field", combat, "end-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
-            # processing errors
+            # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
-            # storing
+            # store
             config = self.app().config_updater()
             config.set("combats-%s.actions" % code, actions)
             config.store()
             self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        # rendering form
+        # render form
         fields = [
             {"name": "begin", "label": self._("Begin execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin")), "height": 100},
             {"name": "begin-target", "label": self._("Begin execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin-target")), "height": 100},
@@ -1040,7 +1040,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         existing_codes = set()
         for ai_type in ai_types:
             existing_codes.add(ai_type["code"])
-        # processing request
+        # process request
         if req.ok():
             combat = Combat(self.app(), None, combat_code)
             member1 = CombatMember(combat)
@@ -1113,7 +1113,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             config.set("combats-%s.ai-types" % code, ai_types)
             config.store()
             self.call("admin.redirect", "combats/rules/edit/%s/ai" % code)
-        # rendering form
+        # render form
         fields = [
             {"name": "turn-got", "label": self._("Executed when AI member gets right of turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-turn-got")), "height": 100},
         ]

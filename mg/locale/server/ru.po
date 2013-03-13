@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-04 11:38+0300\n"
+"PO-Revision-Date: 2013-03-13 11:27+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -219,6 +219,14 @@ msgstr "Простое значение"
 msgid "A very long forum category title"
 msgstr "Очень длинное название раздела на форуме"
 
+#, python-format
+msgid "AI '%s' script when it has got turn right"
+msgstr "ИИ-скрипт \"%s\", когда он получил право хода"
+
+#, python-format
+msgid "AI type '%s' is not defined'"
+msgstr "Тип ИИ \"%s\" не определён"
+
 msgid "AI type code"
 msgstr "Код типа ИИ"
 
@@ -228,8 +236,12 @@ msgstr "Код типа ИИ должен начинаться латинско�
 msgid "AI type name"
 msgstr "Название типа ИИ"
 
+#, python-format
+msgid "AI type not specified for combat member '%s'"
+msgstr "Для участника боя \"%s\" не указан тип ИИ"
+
 msgid "AI type profile"
-msgstr "Профиль типа ИИ"
+msgstr "профиль типа ИИ"
 
 msgid "AI type with the same code already exists"
 msgstr "Тип ИИ с таким кодом уже существует"
@@ -307,6 +319,10 @@ msgstr "Код действия должен начинаться латинск
 
 msgid "Action name"
 msgstr "Название действия"
+
+#, python-format
+msgid "Action type '%s' is not a string"
+msgstr "Тип действия \"%s\" не является строкой"
 
 msgid "Action with the same code already exists"
 msgstr "Действие с таким кодом уже существует"
@@ -1482,6 +1498,13 @@ msgstr "Высота лога боя"
 msgid "Combat log layout"
 msgstr "Размещение лога боя"
 
+#, python-format
+msgid "Combat member '%s' not found"
+msgstr "Участник боя \"%s\" не найден"
+
+msgid "Combat member AI"
+msgstr "ИИ участника боя"
+
 msgid "Combat member control"
 msgstr "Контроллер участника боя"
 
@@ -2604,6 +2627,12 @@ msgstr "Вычисление канала чата"
 
 msgid "Evaluation of chat class"
 msgstr "Вычисление класса для чата"
+
+msgid "Evaluation of combat action"
+msgstr "Вычисление боевого действия"
+
+msgid "Evaluation of combat action source"
+msgstr "Вычисление инициатора (source) боевого действия"
 
 msgid "Evaluation of combat log {key} attribute"
 msgstr "Вычисление атрибута боя {key}"
@@ -6726,6 +6755,10 @@ msgstr "Порядок сортировки"
 msgid "Sorting order"
 msgstr "Порядок сортировки"
 
+#, python-format
+msgid "Source '%s' is not a combat member"
+msgstr "Инициатор (source) \"%s\" не является участником боя"
+
 msgid "South Korea will hold its largest-ever winter live-fire drills Thursday in an area adjacent to North Korea, amid heightened tensions, the South Korean Army says."
 msgstr "Баварские фермеры отказались уступать землю под олимпийские объекты. По всей Европе вводятся новые сборы с туристов."
 
@@ -6964,6 +6997,9 @@ msgstr "Целевая локация"
 
 msgid "Target with given id not found"
 msgstr "Цель с данным идентификатором не найдена"
+
+msgid "Targets list is empty"
+msgstr "Список целей пуст"
 
 msgid "Targets number limit"
 msgstr "Ограничение числа целей"

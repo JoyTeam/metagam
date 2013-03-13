@@ -204,7 +204,10 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             if "control" in minfo:
                 control = minfo["control"]
                 if control == "ai":
-                    ctl = AIController(member)
+                    aitype = minfo.get("ai")
+                    if not aitype:
+                        raise CombatRunError(self._("AI type not specified for combat member '%s'") % mtype)
+                    ctl = AIController(member, aitype)
                 elif control == "web":
                     char = minfo.get("control_char") or member.param("char")
                     if not char:
@@ -241,6 +244,9 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             # main loop
             while not self.combat.stopped():
                 self.combat.process()
+        except CombatRunError as e:
+            self.call("exception.report", e)
+            self.call("combats.debug", self.combat, e.val, cls="combat-error")
         finally:
             self.combat.close()
             self.app().inst.csrv = None
