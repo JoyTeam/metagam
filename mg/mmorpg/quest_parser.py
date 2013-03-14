@@ -141,6 +141,15 @@ class TokenDefault(Parsing.Token):
 class TokenPaidService(Parsing.Token):
     "%token paidservice"
 
+class TokenCombat(Parsing.Token):
+    "%token combat"
+
+class TokenVirtual(Parsing.Token):
+    "%token virtual"
+
+class TokenMember(Parsing.Token):
+    "%token member"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -479,18 +488,20 @@ class QuestAction(Parsing.Nonterm):
         "%reduce teleport Expr"
         self.val = ["teleport", loc.val]
 
-    def reduceChat(self, cmd, attrs):
-        "%reduce chat ExprAttrs"
-        text = get_str_attr(cmd, "chat", attrs, "text", require=True)
-        text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
+    def reduceChat(self, cmd, text, attrs):
+        "%reduce chat scalar ExprAttrs"
+        text = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Chat message"))
         channel = get_attr(cmd, "chat", attrs, "channel")
         public = get_attr(cmd, "chat", attrs, "public")
-        validate_attrs(cmd, "chat", attrs, ["text", "channel", "public"])
+        cls = get_attr(cmd, "chat", attrs, "cls")
+        validate_attrs(cmd, "chat", attrs, ["text", "channel", "public", "cls"])
         args = {}
         if channel is not None:
             args["channel"] = channel
         if public is not None:
             args["public"] = public
+        if cls is not None:
+            args["cls"] = cls
         self.val = ["chat", text, args]
 
     def reduceJavaScript(self, cmd, javascript):
@@ -498,6 +509,17 @@ class QuestAction(Parsing.Nonterm):
         if type(javascript.val) != str and type(javascript.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
         self.val = ["javascript", javascript.val]
+
+    def reduceCombat(self, cmd, attrs, curlyleft, content, curlyright):
+        "%reduce combat ExprAttrs curlyleft CombatContent curlyright"
+        options = content.val.copy()
+        rules = get_str_attr(cmd, "combat", attrs, "rules")
+        validate_attrs(cmd, "combat", attrs, ["rules"])
+        if rules is not None and not re_valid_identifier.match(rules):
+            raise Parsing.SyntaxError(cmd.script_parser._("Combat rules identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        if rules is not None:
+            options["rules"] = rules
+        self.val = ["combat", options]
 
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
@@ -509,6 +531,57 @@ class RandomContent(Parsing.Nonterm):
         "%reduce RandomContent weight Expr colon QuestActions"
         self.val = [ent for ent in content.val]
         self.val.append([weight.val, actions.val])
+
+class CombatContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {
+            "members": []
+        }
+
+    def reduceMember(self, content, cmd, mtype, attrs):
+        "%reduce CombatContent member CombatMemberType ExprAttrs"
+        # validating attributes
+        team = get_attr(cmd, "member", attrs, "team", require=True)
+        control = get_attr(cmd, "member", attrs, "control")
+        name = get_str_attr(cmd, "member", attrs, "name")
+        sex = get_attr(cmd, "member", attrs, "sex")
+        ai = get_attr(cmd, "member", attrs, "ai")
+        validate_attrs(cmd, "member", attrs, ["team", "name", "sex", "control", "ai"])
+        # reducing
+        self.val = content.val.copy()
+        member = {
+            "type": mtype.val,
+            "team": team,
+        }
+        if name is not None:
+            member["name"] = cmd.script_parser.parse_text(name, cmd.script_parser._("Combat member name"))
+        if control is not None:
+            member["control"] = control
+        if sex is not None:
+            member["sex"] = sex
+        if ai is not None:
+            member["ai"] = ai
+        self.val["members"] = self.val["members"] + [member]
+
+    def reduceTitle(self, content, cmd, title):
+        "%reduce CombatContent title scalar"
+        if type(title) != str and type(title) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Combat title must be a string"))
+        title = cmd.script_parser.parse_text(title, cmd.script_parser._("Combat title"))
+        self.val = content.val.copy()
+        self.val["title"] = title
+
+class CombatMemberType(Parsing.Nonterm):
+    "%nonterm"
+    def reduceExpression(self, expr):
+        "%reduce Expr"
+        self.val = ["expr", expr.val]
+
+    def reduceVirtual(self, cmd):
+        "%reduce virtual"
+        self.val = ["virtual"]
 
 class DialogContent(Parsing.Nonterm):
     "%nonterm"
@@ -718,6 +791,9 @@ class QuestScriptParser(ScriptParser):
     syms["input"] = TokenInput
     syms["default"] = TokenDefault
     syms["paidservice"] = TokenPaidService
+    syms["combat"] = TokenCombat
+    syms["virtual"] = TokenVirtual
+    syms["member"] = TokenMember
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

@@ -48,6 +48,8 @@ class TestDatabase(unittest.TestCase):
             self.assertTrue(False)
         except DatabaseError as e:
             self.assertEqual(e.why, "Key may not be empty")
+        else:
+            self.assertTrue(False)
 
 if __name__ == "__main__":
     dispatch(unittest.main)

@@ -1,3 +1,4 @@
+import mg
 from mg.core.cass import CassandraPool
 from cassandra.ttypes import *
 from mg.core.common import *
@@ -359,6 +360,16 @@ class Instance(Loggable):
         self.close_mysql()
         self.close_memcached()
         self.close_cassandra()
+
+    @property
+    def daemons_dir(self):
+        try:
+            return self._daemons_dir
+        except AttributeError:
+            pass
+        mgDir = os.path.abspath(mg.__path__[0])
+        self._daemons_dir = "%s/bin" % os.path.dirname(mgDir)
+        return self._daemons_dir
 
 def dispatch(main):
     def _dispatch():
