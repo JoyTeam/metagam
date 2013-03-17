@@ -57,3 +57,7 @@ class CombatCharacterMember(CombatMember):
         if charimage is None:
             charimage = "/st-mg/constructor/avatars/%s-120x220.jpg" % ("female" if character.sex else "male")
         self.set_param("image", charimage)
+        # copy character parameters into member parameters
+        for param in self.call("characters.params"):
+            val = self.call("characters.param-value", character, param["code"])
+            self.set_param("p_%s" % param["code"], val)
