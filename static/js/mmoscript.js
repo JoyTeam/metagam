@@ -289,7 +289,7 @@ MMOScript._varname = function (val) {
 };
 
 /*
- * Evaluate MMO Script text expressions
+ * Evaluate MMO Script text expression
  *
  * @param{String} val       Syntax tree
  * @param{Object} env       Environment
