@@ -21,6 +21,10 @@
             [%if generic_log_layout == 1%]combat.logHeight = [%generic_log_height%];[%end%]
             combat.logResize = [%generic_log_resize%];
         [%end%]
+        [%if generic_gobutton%]
+        combat.goButtonText = '[%generic_gobutton_text%]';
+        combat.goButtonEnabled = true;
+        [%end%]
         combat.aboveAvatarParams = [%generic_aboveavatar%];
         combat.belowAvatarParams = [%generic_belowavatar%];
         combat.avatarWidth = [%combat_avatar_width%];

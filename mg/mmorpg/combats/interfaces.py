@@ -69,6 +69,9 @@ class Combats(mg.constructor.ConstructorModule):
                     elif layout == 1:
                         vars["generic_log_height"] = rules.get("generic_log_height", 300)
                     vars["generic_log_resize"] = "true" if rules.get("generic_log_resize", True) else "false"
+                if rules.get("generic_gobutton", True):
+                    vars["generic_gobutton"] = True
+                    vars["generic_gobutton_text"] = jsencode(rules.get("generic_gobutton_text", "Go"))
                 for pos in ["aboveavatar", "belowavatar"]:
                     params = rules.get(pos)
                     if params is None:

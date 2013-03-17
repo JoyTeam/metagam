@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-17 07:40+0300\n"
+"PO-Revision-Date: 2013-03-17 11:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -7061,6 +7061,9 @@ msgstr "Цвет текста в блоке \"Ссылки\""
 msgid "Text color of the footer, rating participants"
 msgstr "Цвет текста в нижней части страницы и у имён участников рейтинга"
 
+msgid "Text on the 'Go' button"
+msgstr "Текст кнопки \"Go\""
+
 msgid "The Monster attacks John"
 msgstr "Монстр атакует Ивана"
 
@@ -7719,6 +7722,9 @@ msgstr "Загрузка статических объектов  в храни�
 
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."
+
+msgid "Use 'Go' button to perform an action"
+msgstr "Использовать кнопку \"Go\", чтобы выполнить действие"
 
 msgid "Use generic GUI for this type of combats"
 msgstr "Использовать универсальный GUI для этого типа боёв"

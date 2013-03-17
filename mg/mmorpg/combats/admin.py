@@ -333,6 +333,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         elif height > 500:
                             errors["generic_log_height"] = self._("Maximal value is %d") % 500
                     info["generic_log_resize"] = True if req.param("generic_log_resize") else False
+                # go button
+                info["generic_gobutton"] = 1 if req.param("generic_gobutton") else 0
+                if info["generic_gobutton"]:
+                    info["generic_gobutton_text"] = req.param("generic_gobutton_text")
                 # keep some parameters of generic interface
                 for key in ["aboveavatar", "belowavatar"]:
                     if key in oldInfo:
@@ -371,6 +375,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
             {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
             {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
+            {"name": "generic_gobutton", "label": self._("Use 'Go' button to perform an action"), "type": "checkbox", "checked": info.get("generic_gobutton", True), "condition": "[generic]"},
+            {"name": "generic_gobutton_text", "label": self._("Text on the 'Go' button"), "value": info.get("generic_gobutton_text", "Go"), "condition": "[generic] && [generic_gobutton]"},
         ]
 
         def render_params(pos, header, newtitle):

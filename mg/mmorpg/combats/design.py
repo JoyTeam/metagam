@@ -82,7 +82,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
         game_design = self.design("gameinterface")
         self.call("combat.setup-interface", rules, vars)
         content = self.call("design.parse", combat_design, template, content, vars, "combat")
-        vars["head"] = vars.get("head", u"") + u'<link rel="stylesheet" type="text/css" src="/st-mg/{ver}/combat/common.css" /><link rel="stylesheet" type="text/css" src="/st-mg/{ver}/combat/internal.css" /><link rel="stylesheet" type="text/css" src="{design_root}/common.css" /><link rel="stylesheet" type="text/css" src="{design_root}/internal.css" />'.format(ver=vars["ver"], design_root=combat_design.get("uri"))
+        vars["head"] = vars.get("head", u"") + u'<link rel="stylesheet" type="text/css" href="/st-mg/{ver}/combat/common.css" /><link rel="stylesheet" type="text/css" href="/st-mg/{ver}/combat/internal.css" /><link rel="stylesheet" type="text/css" href="{design_root}/common.css" /><link rel="stylesheet" type="text/css" href="{design_root}/internal.css" />'.format(ver=vars["ver"], design_root=combat_design.get("uri"))
         self.call("design.response", game_design, "internal.html", content, vars, "game")
 
 class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
