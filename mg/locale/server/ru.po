@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-13 11:27+0300\n"
+"PO-Revision-Date: 2013-03-17 07:40+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1510,6 +1510,10 @@ msgstr "Контроллер участника боя"
 
 msgid "Combat member name"
 msgstr "Имя участника боя"
+
+#, python-format
+msgid "Combat member parameter '%s'"
+msgstr "Параметр \"%s\" участника боя"
 
 msgid "Combat member parameters"
 msgstr "Параметры участника боя"

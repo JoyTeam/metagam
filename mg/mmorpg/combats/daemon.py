@@ -221,6 +221,10 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
                 member.set_name(minfo["name"])
             if "sex" in minfo:
                 member.set_sex(minfo["sex"])
+            # override parameters
+            if "params" in minfo:
+                for key, val in minfo["params"].iteritems():
+                    member.set_param(key, val)
             # join
             self.combat.join(member)
 

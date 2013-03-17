@@ -548,7 +548,13 @@ class CombatContent(Parsing.Nonterm):
         name = get_str_attr(cmd, "member", attrs, "name")
         sex = get_attr(cmd, "member", attrs, "sex")
         ai = get_attr(cmd, "member", attrs, "ai")
-        validate_attrs(cmd, "member", attrs, ["team", "name", "sex", "control", "ai"])
+        params = {}
+        valid_params = ["team", "name", "sex", "control", "ai"]
+        for key, val in attrs.val.iteritems():
+            if re_param.match(key):
+                params[key] = val
+                valid_params.append(key)
+        validate_attrs(cmd, "member", attrs, valid_params)
         # reducing
         self.val = content.val.copy()
         member = {
@@ -563,6 +569,8 @@ class CombatContent(Parsing.Nonterm):
             member["sex"] = sex
         if ai is not None:
             member["ai"] = ai
+        if params:
+            member["params"] = params
         self.val["members"] = self.val["members"] + [member]
 
     def reduceTitle(self, content, cmd, title):
