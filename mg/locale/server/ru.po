@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-18 10:51+0300\n"
+"PO-Revision-Date: 2013-03-18 12:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -403,17 +403,17 @@ msgstr "Персональные данные администратора"
 msgid "Aggregate amount (for instance, 'char.inv.sum_weight')"
 msgstr "Агрегированное количество (например, 'char.inv.sum_weight')"
 
-msgid "All allies"
-msgstr "Все союзники"
+msgid "All allies alive"
+msgstr "Все активные союзники"
 
-msgid "All allies and myself"
-msgstr "Все союзники и я сам"
+msgid "All allies alive and myself"
+msgstr "Все активные союзники и я сам"
 
-msgid "All combat members"
-msgstr "Все участники боя"
+msgid "All combat members alive"
+msgstr "Все активные участники боя"
 
-msgid "All enemies"
-msgstr "Все враги"
+msgid "All enemies alive"
+msgstr "Все активные враги"
 
 msgid "All matching targets are available for selection"
 msgstr "Все отобранные цели доступны для выбора"
@@ -1458,8 +1458,14 @@ msgstr "Скрипт окончания действия \"%s\" на цель \"
 msgid "Combat actions started script"
 msgstr "Скрипт после начала выполнения действий"
 
+msgid "Combat actions started script for a member"
+msgstr "Скрипт после начала выполнения действий для участника \"member\""
+
 msgid "Combat actions stopped script"
 msgstr "Скрипт после окончания выполнения действий"
+
+msgid "Combat actions stopped script for a member"
+msgstr "Скрипт после окончания выполнения действий  для участника \"member\""
 
 msgid "Combat avatar dimensions (example: 100x200)"
 msgstr "Размеры аватара в бою (например: 100x200)"
@@ -1569,6 +1575,12 @@ msgstr "Боевой скрипт, выполняемый на каждой ит
 
 msgid "Combat script running for member 'member' immediately after he gets turn"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он получает право хода"
+
+msgid "Combat script running on every member after some actions are started"
+msgstr "Боевой скрипт, выполняемый для участника \"member\" после того, как начали выполняться какие-то действия"
+
+msgid "Combat script running on every member after some actions are stopped"
+msgstr "Боевой скрипт, выполняемый для участника \"member\" после того, как закончили выполняться какие-то действия"
 
 msgid "Combat script running when combat starts"
 msgstr "Боевой скрипт, выполняемый, когда бой начинается"

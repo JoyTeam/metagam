@@ -771,19 +771,20 @@ class CombatMember(CombatObject, CombatParamsContainer):
         if targets == "none":
             available = False
         elif targets == "all":
-            available = True
+            available = target.active
         elif targets == "enemies":
-            available = self.team != target.team
+            available = self.team != target.team and target.active
         elif targets == "allies":
-            available = self.team == target.team and self.id != target.id
+            available = self.team == target.team and self.id != target.id and target.active
         elif targets == "allies-myself":
-            available = self.team == target.team
+            available = self.team == target.team and target.active
         elif targets == "myself":
             available = self.id == target.id
         elif targets == "script":
             available = self.call("script.evaluate-expression", act.get("target_available"), globs={"combat": self.combat, "member": self, "target": target}, description=self._("Availability of combat action %s targeted to specific target") % act["code"])
         else:
             available = False
+        print "Action %s on member %s: available=%s" % (act["code"], target.id, available)
         act_cache[target.id] = available
         return available
 
@@ -862,10 +863,11 @@ class CombatMemberController(CombatObject):
         actions = []
         for act in self.member.available_actions():
             show = False
-            if act.get("targets") == "none":
+            if act.get("targets") == "none" or act.get("targets") == "myself":
                 show = True
                 targets_min = 0
                 targets_max = 0
+                targets = None
             else:
                 targets = []
                 for target in self.combat.members:

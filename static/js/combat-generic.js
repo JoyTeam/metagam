@@ -238,8 +238,6 @@ var GenericCombat = Ext.extend(Combat, {
             self.actionSelector = self.newActionSelector();
         }
         self.actionSelector.show();
-        self.viewportComponent.doLayout();
-        self.viewportComponent.doLayout();  // FIXME: workaround for unknown bug
     },
 
     /*
@@ -513,8 +511,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                     setTimeout(function () {
                         if (self.combat.goButtonEnabled) {
                             self.selectLastAction();
+                            self.updateTargets();
                             self.updateGoButtonAvailability();
                         } else {
+                            self.selectLastAction();
                             self.updateTargets();
                         }
                     }, 1);
@@ -524,6 +524,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         self.combat.mainComponent.removeAll(true);
         self.combat.mainComponent.add(self.cmp);
         self.shown = true;
+        self.combat.viewportComponent.doLayout();
+        self.combat.viewportComponent.doLayout();  // FIXME: workaround for unknown bug
     },
 
     /*
@@ -566,6 +568,18 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                         render: function () {
                             this.getEl().on('click', function () {
                                 self.selectAction(ent, act);
+                                /*
+                                 * Untargeted actions are executed immediately.
+                                 * Combat actions in absense of selectable targets are
+                                 * executed immediately too.
+                                 */
+                                console.log('clicked', ent.action);
+                                console.log('self.action', self.action);
+                                if (!self.goButtonEnabled && self.action && (!self.action.targets ||
+                                        self.myself.params.targets != 'selectable')) {
+                                    console.log('go!');
+                                    self.go();
+                                }
                             });
                         }
                     }
@@ -610,19 +624,12 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (self.combat.goButtonEnabled) {
             self.updateTargets();
             self.deselectExcessiveTargets();
-            self.showSelectedEnemy();
+            if (self.showSelectedEnemy()) {
+                self.autoSelectTargets();
+            }
             self.updateGoButtonAvailability();
         } else {
             self.updateTargets();
-            /*
-             * Untargeted actions are executed immediately.
-             * Combat actions in absense of selectable targets are
-             * executed immediately too.
-             */
-            if (self.action && (!self.action.targets ||
-                    self.myself.params.targets != 'selectable')) {
-                self.go();
-            }
         }
     },
 
@@ -631,6 +638,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     updateTargets: function () {
         var self = this;
+        console.log('updateTargets');
         var targeted;
         if (self.action) {
             targeted = {};
@@ -641,6 +649,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 }
             }
         }
+        console.log('targeted=', targeted);
         for (var memberId in self.combat.members) {
             if (!self.combat.members.hasOwnProperty(memberId)) {
                 continue;
@@ -904,13 +913,27 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     selectLastAction: function () {
         var self = this;
         if (!self.lastAction) {
+            self.updateTargets();
             return;
         }
-        var act = self.combat.actions[self.lastAction.action];
-        if (!act) {
-            return;
+        for (var i = 0; i < self.combat.availableActions.length; i++) {
+            var ent = self.combat.availableActions[i];
+            if (ent.action == self.lastAction) {
+                var act = self.combat.actions[ent.action];
+                if (act) {
+                    /*
+                     * If the interface is running without "Go" button, don't
+                     * autoselect untargeted actions.
+                     */
+                    if (!ent.targets && !self.goButtonEnabled) {
+                        break;
+                    }
+                    self.selectAction(ent, act);
+                    return;
+                }
+            }
         }
-        self.selectAction(self.lastAction, act);
+        self.updateTargets();
     },
 
     /*
@@ -918,19 +941,21 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      * show first selected enemy in the right frame. If no enemies
      * are selected, then select random enemies and show first selected
      * enemy in the right frame.
+     *
+     * Return true if needed to select new targets
      */
     showSelectedEnemy: function () {
         var self = this;
         /* If no action with target is selected, just return */
         if (!self.action || !self.action.targets) {
-            return;
+            return false;
         }
         /* If currently shown enemy is a valid target, return */
         if (self.shownEnemy) {
             for (var i = 0; i < self.action.targets.length; i++) {
                 var targetId = self.action.targets[i];
                 if (self.shownEnemy.id == targetId) {
-                    return;
+                    return false;
                 }
             }
         }
@@ -940,9 +965,17 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             var member = self.combat.members[targetId];
             if (member.targeted) {
                 self.showEnemy(member);
-                return;
+                return false;
             }
         }
+        return true;
+    },
+
+    /*
+     * Autoselect targets for the action
+     */
+    autoSelectTargets: function () {
+        var self = this;
         /* Automatically select random targets (not available without "Go" button) */
         if (self.combat.myself.params.targets == 'selectable' && self.combat.goButtonEnabled) {
             var targets = self.action.targets.slice();
@@ -1001,22 +1034,22 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (!data) {
             return;
         }
-        self.lastAction = self.action;
+        self.lastAction = self.action.action;
         console.log('Selected action:', Ext.util.JSON.encode(data));
         self.hide();
         self.combat.viewportComponent.doLayout();
         self.combat.submitAction(data, function (err) {
             if (err == 'sendInProgress') {
+                self.show();
                 Game.error(undefined, gt.gettext('Your action is already being sent to server'));
-                self.show();
             } else if (err == 'serverError') {
-                Game.error(undefined, gt.gettext('Error connecting to the server'));
                 self.show();
+                Game.error(undefined, gt.gettext('Error connecting to the server'));
             } else if (err == 'combatTerminated') {
                 Game.error(undefined, gt.gettext('Combat was terminated'));
             } else if (err) {
-                Game.error(undefined, err);
                 self.show();
+                Game.error(undefined, err);
             }
         });
     },
@@ -1037,26 +1070,28 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             action: self.action.action
         };
         if (self.combat.myself.params.targets == 'selectable') {
-            var targets = [];
-            for (var i = 0; i < self.action.targets.length; i++) {
-                var targetId = self.action.targets[i];
-                if (self.combat.members[targetId].targeted) {
-                    targets.push(targetId);
+            if (self.action.targets) {
+                var targets = [];
+                for (var i = 0; i < self.action.targets.length; i++) {
+                    var targetId = self.action.targets[i];
+                    if (self.combat.members[targetId].targeted) {
+                        targets.push(targetId);
+                    }
                 }
-            }
-            if (targets.length < self.action.targets_min) {
-                if (!silent) {
-                    Game.error(undefined, sprintf(gt.gettext('Minimal number of targets for this action is %d'), self.action.targets_min));
+                if (targets.length < self.action.targets_min) {
+                    if (!silent) {
+                        Game.error(undefined, sprintf(gt.gettext('Minimal number of targets for this action is %d'), self.action.targets_min));
+                    }
+                    return null;
                 }
-                return null;
-            }
-            if (targets.length > self.action.targets_max) {
-                if (!silent) {
-                    Game.error(undefined, sprintf(gt.gettext('Maximal number of targets for this action is %d'), self.action.targets_max));
+                if (targets.length > self.action.targets_max) {
+                    if (!silent) {
+                        Game.error(undefined, sprintf(gt.gettext('Maximal number of targets for this action is %d'), self.action.targets_max));
+                    }
+                    return null;
                 }
-                return null;
+                data.targets = targets;
             }
-            data.targets = targets;
         } else if (self.combat.myself.params.targets) {
             data.targets = self.combat.myself.params.targets;
         }
