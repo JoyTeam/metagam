@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-18 13:54+0300\n"
+"PO-Revision-Date: 2013-03-18 16:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1438,6 +1438,14 @@ msgstr "Цвета в подписи на {period_a}"
 
 msgid "Combat"
 msgstr "Бой"
+
+#, python-format
+msgid "Combat %s terminated due to too long timeout"
+msgstr "Бой %s завершён из-на слишком долгого таймаута"
+
+#, python-format
+msgid "Combat %s timed out"
+msgstr "Таймаут боя %s"
 
 #, python-format
 msgid "Combat action '%s' begin script"
@@ -3163,6 +3171,9 @@ msgstr "Шлюз к WebMoney passport API"
 msgid "Gate to WebMoney w3s API"
 msgstr "Шлюз к WebMoney w3s API"
 
+msgid "General combat timeout (in seconds)"
+msgstr "Общий таймаут боя (в секундах)"
+
 msgid "General layout scheme"
 msgstr "Общая схема интерфейса"
 
@@ -4473,6 +4484,10 @@ msgid "Maximal supported precision is 4"
 msgstr "Максимальная поддерживаемая точность - 4"
 
 #, python-format
+msgid "Maximal timeout is %d seconds"
+msgstr "Максимальный таймаут - %d секунд"
+
+#, python-format
 msgid "Maximal value is %d"
 msgstr "Максимальное значение - %d"
 
@@ -4617,6 +4632,10 @@ msgstr "Минимальный размер - 32x32"
 
 msgid "Minimal step of payment in this currency is {min_step:f} roubles (1 {currency} = {rate} RUB, precision = {precision}). It is too big for micropayments. Lower you currency rate"
 msgstr "Минимальный шаг платежа в этой валюте получается {min_step:f} руб (1 {currency} = {rate} руб, точность = {precision}). Это слишком много для микроплатежей. Снизьте стоимость единицы валюты"
+
+#, python-format
+msgid "Minimal timeout is %d seconds"
+msgstr "Минимальный таймаут - %d секунд"
 
 msgid "Minimal value - 1"
 msgstr "Минимальное значение - 1"
@@ -9962,8 +9981,6 @@ msgstr "{price} навсегда"
 #~ msgstr "Указан неверный пол"
 #~ msgid "Send options"
 #~ msgstr "Опции отправки"
-#~ msgid "Period (in seconds)"
-#~ msgstr "Период (в секундах)"
 #~ msgid "Image map saved successfully"
 #~ msgstr "Карта изображения успешно сохранена"
 #~ msgid "Add template"

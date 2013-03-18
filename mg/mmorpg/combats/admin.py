@@ -279,6 +279,14 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 shortInfo["name"] = name
             # order
             shortInfo["order"] = floatz(req.param("order"))
+            # timeout
+            timeout = intz(req.param("timeout"))
+            if timeout < 60:
+                errors["timeout"] = self._("Minimal timeout is %d seconds") % 60
+            elif timeout > 86400:
+                errors["timeout"] = self._("Maximal timeout is %d seconds") % 86400
+            else:
+                info["timeout"] = timeout
             # avatar dimensions
             dim_avatar = req.param("dim_avatar").strip()
             if not dim_avatar:
@@ -361,6 +369,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         fields = [
             {"name": "name", "label": self._("Combat rules name"), "value": shortInfo["name"]},
             {"name": "order", "label": self._("Sorting order"), "value": shortInfo["order"], "inline": True},
+            {"name": "timeout", "label": self._("General combat timeout (in seconds)"), "value": info.get("timeout", 3600 * 4)},
             {"type": "header", "html": self._("Combat avatars settings")},
             {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
             {"name": "generic", "type": "checkbox", "label": self._("Use generic GUI for this type of combats"), "checked": info.get("generic", 1)},

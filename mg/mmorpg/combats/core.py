@@ -5,6 +5,8 @@ import weakref
 import re
 from uuid import uuid4
 import random
+import os
+import time
 from mg.constructor.script_classes import ScriptRuntimeError, ScriptMemoryObject
 
 re_param_attr = re.compile(r'^p_')
@@ -144,6 +146,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.ready_actions = []
         self._turn_order_check = False
         self.not_delivered_log = []
+        self.start_time = time.time()
 
     def script_code(self, tag):
         "Get combat script code (syntax tree)"
@@ -341,6 +344,16 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.turn_order.idle()
         for member in self.members:
             member.idle()
+        # process general timeouts
+        elapsed = time.time() - self.start_time
+        timeout = self.rulesinfo.get("timeout", 4 * 3600)
+        print "elapsed=%s, timeout=%s" % (elapsed, timeout)
+        if elapsed > timeout + 600:
+            self.warning(self._("Combat %s terminated due to too long timeout"), self.uuid)
+            os._exit(0)
+        elif self.stage_flag("actions") and elapsed > timeout:
+            self.info(self._("Combat %s timed out"), self.uuid)
+            self.draw()
 
     def flush(self):
         "Flush pending messages"
@@ -456,15 +469,16 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def check_end_condition(self):
         "Check combat end condition (0 or 1 teams active)"
-        teams = set()
-        for member in self.members:
-            if member.active:
-                teams.add(member.team)
-        teams = list(teams)
-        if len(teams) == 0:
-            self.draw()
-        elif len(teams) == 1:
-            self.victory(teams[0])
+        if self.stage_flag("actions"):
+            teams = set()
+            for member in self.members:
+                if member.active:
+                    teams.add(member.team)
+            teams = list(teams)
+            if len(teams) == 0:
+                self.draw()
+            elif len(teams) == 1:
+                self.victory(teams[0])
 
     def draw(self):
         "Combat finished with draw"
@@ -815,7 +829,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
             available = self.call("script.evaluate-expression", act.get("target_available"), globs={"combat": self.combat, "member": self, "target": target}, description=self._("Availability of combat action %s targeted to specific target") % act["code"])
         else:
             available = False
-        print "Action %s on member %s: available=%s" % (act["code"], target.id, available)
         act_cache[target.id] = available
         return available
 

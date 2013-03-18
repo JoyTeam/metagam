@@ -95,7 +95,7 @@ class Combats(mg.constructor.ConstructorModule):
         try:
             combat = CombatInterface(self.app(), combat_id)
             self.call("web.response_json", combat.state_for_interface(char, req.param("marker")))
-        except CombatUnavailable:
+        except CombatUnavailable as e:
             self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.not_found")
 
