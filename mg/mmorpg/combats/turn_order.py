@@ -39,9 +39,15 @@ class CombatTurnOrder(CombatObject):
         For every member with right of turning check timeout. For timed out members call turn_timeout.
         """
         now = time.time()
+        waiting = False
         for member in self.combat.members:
-            if member.may_turn and member.turn_till and now > member.turn_till:
-                self.turn_timeout(member)
+            if member.may_turn:
+                if not member.active:
+                    self.turn_take(member)
+                    return
+                if member.turn_till and now > member.turn_till:
+                    self.turn_timeout(member)
+                    return
 
     def check(self):
         "This method asks CombatTurnOrder to check whether some actions may be executed"
@@ -64,6 +70,12 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
     def turn_timeout(self, member):
         next_member = self.next_turn()
         CombatTurnOrder.turn_timeout(self, member)
+        if next_member:
+            self.turn_give(next_member)
+
+    def turn_take(self, member):
+        next_member = self.next_turn()
+        CombatTurnOrder.turn_take(self, member)
         if next_member:
             self.turn_give(next_member)
 

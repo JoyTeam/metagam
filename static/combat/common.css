@@ -6,3 +6,4 @@
 .combat-log-heal { color: #008000 }
 .combat-log-damage { color: #c00000 }
 .combat-log-hp { color: green; font-weight: bold }
+.combat-log-dead { color: #000000; font-weight: bold }

@@ -433,8 +433,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             actions = self.ready_actions
             self.ready_actions = []
             for act in actions:
-                act.begin()
-                self.running_actions.append(act)
+                if act.source.active:
+                    act.begin()
+                    self.running_actions.append(act)
             self.enqueue_turn_order_check()
             self.actions_started()
 
@@ -455,11 +456,13 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def actions_started(self):
         "Called after ready actions started"
         globs = self.globs()
+        self.for_each_member(self.execute_member_script, "actions-started-member", globs, lambda: self._("Combat actions started script for a member"))
         self.execute_script("actions-started", globs, lambda: self._("Combat actions started script"))
 
     def actions_stopped(self):
         "Called after ready actions stopped"
         globs = self.globs()
+        self.for_each_member(self.execute_member_script, "actions-stopped-member", globs, lambda: self._("Combat actions stopped script for a member"))
         self.execute_script("actions-stopped", globs, lambda: self._("Combat actions stopped script"))
 
     def enqueue_turn_order_check(self):
@@ -636,8 +639,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
             return self.team
         elif attr == "may_turn":
             return self.may_turn
-        #elif attr == "may_turn":
-        #    return self.may_turn
+        elif attr == "active":
+            return 1 if self.active else 0
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -651,6 +654,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
         # parameters
         if attr == "targets":
             return self.set_param(attr, val)
+        elif attr == "active":
+            return self.set_param(attr, 1 if val else 0)
         m = re_param_attr.match(attr)
         if m:
             return self.set_param(attr, val)
