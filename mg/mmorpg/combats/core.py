@@ -796,6 +796,14 @@ class CombatMember(CombatObject, CombatParamsContainer):
         else:
             self.set_param("targets", [random.choice(targets)])
 
+    def targets_min(self, act):
+        "Minimal number of targets of the given action"
+        return self.call("script.evaluate-expression", act.get("targets_min", 1), globs={"combat": self.combat, "viewer": self}, description=self._("Minimal number of targets for combat action %s") % act["code"])
+
+    def targets_max(self, act):
+        "Maximal number of targets of the given action"
+        return self.call("script.evaluate-expression", act.get("targets_max", 1), globs={"combat": self.combat, "viewer": self}, description=self._("Maximal number of targets for combat action %s") % act["code"])
+
     def __unicode__(self):
         return self._("[CombatMember {id}/{name}]").format(id=self.id, name=self.name)
 
@@ -859,8 +867,8 @@ class CombatMemberController(CombatObject):
                     if self.member.target_available(act, target):
                         targets.append(target.id)
                 if targets:
-                    targets_min = self.call("script.evaluate-expression", act.get("targets_min", 1), globs={"combat": self.combat, "viewer": self.member}, description=self._("Minimal number of targets for combat action %s") % act["code"])
-                    targets_max = self.call("script.evaluate-expression", act.get("targets_max", 1), globs={"combat": self.combat, "viewer": self.member}, description=self._("Maximal number of targets for combat action %s") % act["code"])
+                    targets_min = self.member.targets_min(act)
+                    targets_max = self.member.targets_max(act)
                     show = True
             if show:
                 actions.append({

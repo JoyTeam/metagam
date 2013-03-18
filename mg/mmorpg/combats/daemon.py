@@ -79,8 +79,19 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         code = data.get("action")
         if (type(code) != str and type(code) != unicode) or not re_valid_identifier.match(code):
             self.call("web.response_json", {"error": self._("Invalid combat action")})
+        # check action availability
+        act = None
+        for a in self.combat.actionsinfo:
+            if a["code"] == code:
+                act = a
+                break
+        if act is None:
+            self.call("web.response_json", {"error": self._("Non-existent combat action")})
+        if not self.controller.member.action_available(act):
+            self.call("web.response_json", {"error": self._("This action is not available")})
         action = CombatAction(self.combat)
-        action.set_code(data.get("action"))
+        action.set_code(code)
+        target_cnt = 0
         if type(data.get("targets")) == list:
             for targetId in data.get("targets"):
                 if type(targetId) != int:
@@ -88,7 +99,16 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
                 member = self.combat.member(targetId)
                 if not member:
                     self.call("web.response_json", {"error": self._("Target with given id not found")})
+                if not self.controller.member.target_available(act, member):
+                    self.call("web.response_json", {"error": self._("Target '%s' is not available for this action") % member.name})
                 action.add_target(member)
+                target_cnt += 1
+        targets_min = self.controller.member.targets_min(act)
+        if target_cnt < targets_min:
+            self.call("web.response_json", {"error": self._("Minimal number of targets is %d") % targets_min})
+        targets_max = self.controller.member.targets_max(act)
+        if target_cnt > targets_max:
+            self.call("web.response_json", {"error": self._("Maximal number of targets is %d") % targets_max})
         self.controller.member.enqueue_action(action)
         self.call("web.response_json", {"ok": 1})
 

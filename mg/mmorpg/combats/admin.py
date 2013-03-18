@@ -18,6 +18,7 @@ re_member_param_del = re.compile('^member/del/(p_[a-z0-9_]+)$', re.IGNORECASE)
 re_valid_parameter = re.compile(r'^p_[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_shorten = re.compile(r'^(.{100}).{3,}$')
 re_avatar_params_cmd = re.compile('^(aboveavatar|belowavatar)/(.+)$', re.IGNORECASE)
+re_script_prefix = re.compile(r'^script-')
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -609,7 +610,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             member2 = CombatMember(combat)
             combat.join(member1)
             combat.join(member2)
-            info = {}
+            # preserve scripts
+            info = dict([(k, v) for k, v in info.iteritems() if re_script_prefix.match(k)])
             errors = {}
             # code
             act_code = req.param("code")

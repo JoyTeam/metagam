@@ -470,6 +470,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         self.combat = combat;
         self.shown = false;
         self.myself = combat.myself;
+        self.targetedList = [];
     },
 
     /*
@@ -480,11 +481,25 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (self.shown) {
             self.hide();
         }
+        /*
+         * When action selector is shown without "Go" button,
+         * all targets have to be deselected.
+         */
+        if (!self.combat.goButtonEnabled) {
+            self.deselectTargets(false);
+        }
         self.action = null;
         self.actionInfo = null;
         self.actionItems = self.newActionItems();
         self.targetItems = self.newTargetItems();
-        self.goButton = self.newGoButton();
+        var items = [
+            self.actionItems,
+            self.targetItems
+        ];
+        if (self.combat.goButtonEnabled) {
+            self.goButton = self.newGoButton();
+            items.push(self.goButton);
+        }
         self.cmp = new Ext.Container({
             xtype: 'container',
             layout: 'hbox',
@@ -492,16 +507,16 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             layoutConfig: {
                 align: 'middle'
             },
-            items: [
-                self.actionItems,
-                self.targetItems,
-                self.goButton
-            ],
+            items: items,
             listeners: {
                 render: function () {
                     setTimeout(function () {
-                        self.selectLastAction();
-                        self.updateGoButtonAvailability();
+                        if (self.combat.goButtonEnabled) {
+                            self.selectLastAction();
+                            self.updateGoButtonAvailability();
+                        } else {
+                            self.updateTargets();
+                        }
                     }, 1);
                 }
             }
@@ -588,9 +603,27 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 addClass('combat-item-selected').
                 addClass('combat-action-selected');
         }
-        self.updateTargets();
-        self.showSelectedEnemy();
-        self.updateGoButtonAvailability();
+        /* 
+         * If "Go" button is available, preserve the list of targets and check
+         * "Go" button visibility. Otherwize just clear the list of targets
+         */
+        if (self.combat.goButtonEnabled) {
+            self.updateTargets();
+            self.deselectExcessiveTargets();
+            self.showSelectedEnemy();
+            self.updateGoButtonAvailability();
+        } else {
+            self.updateTargets();
+            /*
+             * Untargeted actions are executed immediately.
+             * Combat actions in absense of selectable targets are
+             * executed immediately too.
+             */
+            if (self.action && (!self.action.targets ||
+                    self.myself.params.targets != 'selectable')) {
+                self.go();
+            }
+        }
     },
 
     /*
@@ -613,10 +646,18 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 continue;
             }
             var member = self.combat.members[memberId];
-            if (self.myself.params.targets == 'selectable') {
+            if (!self.action && !self.combat.goButtonEnabled) {
+                self.disableTarget(member, false);
+            } else if (self.myself.params.targets == 'selectable') {
                 // Selectable targets
                 if (targeted && targeted[memberId]) {
-                    self.enableTarget(member, member.targeted);
+                    /* If "Go" button is available, preserve old selection.
+                     * Otherwize clear selection */
+                    if (self.combat.goButtonEnabled) {
+                        self.enableTarget(member, member.targeted);
+                    } else {
+                        self.enableTarget(member, false);
+                    }
                 } else {
                     self.disableTarget(member, false);
                 }
@@ -657,11 +698,32 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     updateGoButtonAvailability: function () {
         var self = this;
+        if (!self.goButton) {
+            return;
+        }
         if (self.actionData(true)) {
             self.goButton.enable();
         } else {
             self.goButton.disable();
         }
+    },
+
+    /*
+     * Deselect all targets
+     */
+    deselectTargets: function (updateComponents) {
+        var self = this;
+        for (var memberId in self.combat.members) {
+            if (!self.combat.members.hasOwnProperty(memberId)) {
+                continue;
+            }
+            var member = self.combat.members[memberId];
+            member.targeted = false;
+            if (member.targetCmp && updateComponents !== false) {
+                member.targetCmp.deselect();
+            }
+        }
+        self.targetedList = [];
     },
 
     /*
@@ -753,18 +815,67 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 member.targetCmp.deselect();
             }
         }
-        // Display "Go" button
-        var anyTargeted = false;
-        for (var memberId in self.combat.members) {
-            if (!self.combat.members.hasOwnProperty(memberId)) {
-                continue;
-            }
-            if (self.combat.members[memberId].targeted) {
-                anyTargeted = true;
-                break;
+        /*
+         * Update self.targetedList (remove old occurencies
+         * and add new one if needed).
+         */
+        for (var i = 0; i < self.targetedList.length; i++) {
+            if (self.targetedList[i].id == member.id) {
+                self.targetedList.splice(i, 1);
+                i--;
             }
         }
-        self.updateGoButtonAvailability();
+        if (state) {
+            self.targetedList.push(member);
+        }
+        /* 
+         * If "Go" button is available, update visibility of the button.
+         * Otherwize check whether target list is filled
+         */
+        if (self.combat.goButtonEnabled) {
+            self.deselectExcessiveTargets();
+            self.updateGoButtonAvailability();
+        } else {
+            /* The alhorithm in absense of "Go" button fires action when
+             * either targets_max is reached, or targets_min is reached AND
+             * no other possible targets present. */
+            if (self.action && self.action.targets) {
+                var fire = self.targetedList.length == self.action.targets_max;
+                if (!fire && self.targetedList.length >= self.action.targets_min) {
+                    fire = true;
+                    for (var i = 0; i < self.action.targets.length; i++) {
+                        var targetId = self.action.targets[i];
+                        var target = self.combat.members[targetId];
+                        if (!target.targeted) {
+                            fire = false;
+                            break;
+                        }
+                    }
+                }
+                if (fire) {
+                    self.go();
+                }
+            }
+        }
+    },
+
+    /*
+     * Deselect oldmost targets if their total number is greater than
+     * targets_max.
+     */
+    deselectExcessiveTargets: function () {
+        var self = this;
+        if (!self.action) {
+            return;
+        }
+        while (self.targetedList.length > self.action.targets_max) {
+            var member = self.targetedList[0];
+            self.targetedList.splice(0, 1);
+            member.targeted = false;
+            if (member.targetCmp) {
+                member.targetCmp.deselect();
+            }
+        }
     },
 
     /*
@@ -832,8 +943,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 return;
             }
         }
-        /* Select random targets */
-        if (self.combat.myself.params.targets == 'selectable') {
+        /* Automatically select random targets (not available without "Go" button) */
+        if (self.combat.myself.params.targets == 'selectable' && self.combat.goButtonEnabled) {
             var targets = self.action.targets.slice();
             var targeted = 0;
             var shown = false;
