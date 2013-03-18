@@ -60,7 +60,21 @@ class CombatScriptsAdmin(ConstructorModule):
         for st in code:
             st_cmd = st[0]
             if st_cmd == "damage":
-                lines.append(u"%sdamage %s %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
+                result = u"%sdamage %s %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
+                if len(st) >= 5:
+                    attrs = st[4]
+                    if "maxval" in attrs:
+                        result += u" maxval=%s" % self.call("script.unparse-expression", attrs["maxval"])
+                result += "\n"
+                lines.append(result)
+            elif st_cmd == "heal":
+                result = u"%sheal %s %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
+                if len(st) >= 5:
+                    attrs = st[4]
+                    if "maxval" in attrs:
+                        result += u" maxval=%s" % self.call("script.unparse-expression", attrs["maxval"])
+                result += "\n"
+                lines.append(result)
             elif st_cmd == "set":
                 lines.append(u"%sset %s = %s\n" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3])))
             elif st_cmd == "selecttarget":
@@ -122,6 +136,20 @@ class CombatScriptsAdmin(ConstructorModule):
             return
         return expression
 
+class ActionLog(ConstructorModule):
+    def __init__(self, app, fqn="mg.mmorpg.combat.scripts.ActionLog"):
+        ConstructorModule.__init__(self, app, fqn)
+        self.hits = []
+
+    def add(self, hit):
+        self.hits.append(hit)
+
+    def __unicode__(self):
+        return self.call("l10n.literal_enumeration", self.hits)
+
+    def __str__(self):
+        return utf2str(unicode(self))
+
 class CombatScripts(ConstructorModule):
     def register(self):
         self.rhook("combats.execute-script", self.execute_script)
@@ -170,6 +198,10 @@ class CombatScripts(ConstructorModule):
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of damage target member"))
                 attr = st[2]
                 damage = nn(self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of damage value")))
+                if len(st) >= 5:
+                    attrs = st[4]
+                else:
+                    attrs = {}
                 try:
                     obj.is_a_combat_member()
                 except AttributeError:
@@ -177,6 +209,8 @@ class CombatScripts(ConstructorModule):
                 if debug:
                     self.combat_debug(combat, lambda: self._("damaging {obj}.{attr}: {damage}").format(obj=obj, attr=attr, damage=damage), cls="combat-action", indent=indent)
                 old_val = nn(obj.param(attr, handle_exceptions))
+                if not globs.get("action_log") or not isinstance(globs["action_log"], ActionLog):
+                    globs["action_log"] = ActionLog(self.app())
                 if old_val > 0:
                     new_val = old_val - damage
                     if new_val < 0:
@@ -189,6 +223,11 @@ class CombatScripts(ConstructorModule):
                         obj.set_param(attr, old_val)
                     globs["last_damage"] = 0
                     new_val = old_val
+                new_val_str = unicode(nn(new_val))
+                if "maxval" in attrs:
+                    maxval = self.call("script.evaluate-expression", attrs["maxval"], globs=globs, description=lambda: self._("Evaluation of maximal value"))
+                    new_val_str += u"/%s" % maxval
+                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-damage">-%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(old_val - new_val), new_val_str))
                 if real_execute:
                     # logging damage
                     log = combat.log
@@ -198,6 +237,58 @@ class CombatScripts(ConstructorModule):
                             "target": obj.id,
                             "param": attr,
                             "damage": damage,
+                            "oldval": old_val,
+                            "newval": new_val,
+                        }
+                        if "source" in globs:
+                            logent["source"] = globs["source"].id
+                        log.syslog(logent)
+            elif st_cmd == "heal":
+                obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of heal target member"))
+                attr = st[2]
+                heal = nn(self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of heal value")))
+                if len(st) >= 5:
+                    attrs = st[4]
+                else:
+                    attrs = {}
+                try:
+                    obj.is_a_combat_member()
+                except AttributeError:
+                    raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
+                if debug:
+                    self.combat_debug(combat, lambda: self._("healing {obj}.{attr}: {heal}").format(obj=obj, attr=attr, heal=heal), cls="combat-action", indent=indent)
+                old_val = nn(obj.param(attr, handle_exceptions))
+                if not globs.get("action_log") or not isinstance(globs["action_log"], ActionLog):
+                    globs["action_log"] = ActionLog(self.app())
+                if "maxval" in attrs:
+                    maxval = self.call("script.evaluate-expression", attrs["maxval"], globs=globs, description=lambda: self._("Evaluation of maximal value"))
+                else:
+                    maxval = None
+                if old_val > 0:
+                    new_val = old_val + heal
+                    if maxval is not None and new_val > maxval:
+                        new_val = maxval
+                    if real_execute:
+                        obj.set_param(attr, new_val)
+                    globs["last_heal"] = new_val - old_val
+                else:
+                    if real_execute:
+                        obj.set_param(attr, old_val)
+                    globs["last_heal"] = 0
+                    new_val = old_val
+                new_val_str = unicode(nn(new_val))
+                if "maxval" in attrs:
+                    new_val_str += u"/%s" % maxval
+                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-heal">+%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(new_val - old_val), new_val_str))
+                if real_execute:
+                    # logging heal
+                    log = combat.log
+                    if log:
+                        logent = {
+                            "type": "heal",
+                            "target": obj.id,
+                            "param": attr,
+                            "heal": heal,
                             "oldval": old_val,
                             "newval": new_val,
                         }

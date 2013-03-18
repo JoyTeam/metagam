@@ -5,6 +5,7 @@ div.combat-member-image { position: relative; margin: 5px auto 5px auto }
 
 #combat-myavatar { overflow: hidden }
 #combat-enemyavatar { overflow: hidden }
+#combat-log { padding: 5px 5px 0 5px }
 .x-border-layout-ct { background: none }
 .combat-item-deselected { cursor: pointer }
 .combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }

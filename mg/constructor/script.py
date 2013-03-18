@@ -223,8 +223,8 @@ class ScriptEngine(ConstructorModule):
                 else:
                     try:
                         res += unicode(val)
-                    except Exception:
-                        raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string").format(token=self.unparse_expression(token), type=type(val).__name__), env)
+                    except Exception as e:
+                        raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string: {exception}").format(token=self.unparse_expression(token), type=type(val).__name__, exception=e.__class__.__name__), env)
             else:
                 res += u"%s" % token
         # restoring

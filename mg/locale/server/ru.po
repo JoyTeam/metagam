@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-17 11:59+0300\n"
+"PO-Revision-Date: 2013-03-18 10:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1764,8 +1764,8 @@ msgstr "Переписка с {0}"
 msgid "Could not create combat member '%s'"
 msgstr "Не удалось создать участника боя \"%s\""
 
-msgid "Couldn't convert '{token}' (type '{type}') to string"
-msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку"
+msgid "Couldn't convert '{token}' (type '{type}') to string: {exception}"
+msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку: {exception}"
 
 msgid "Counters"
 msgstr "Счётчики"
@@ -2653,8 +2653,17 @@ msgstr "Определение цели урона"
 msgid "Evaluation of damage value"
 msgstr "Определение величины урона"
 
+msgid "Evaluation of heal target member"
+msgstr "Вычисление пациента (участника, являющегося целью лечения)"
+
+msgid "Evaluation of heal value"
+msgstr "Вычисление величины лечения"
+
 msgid "Evaluation of log text"
 msgstr "Вычисление текста для логгирования"
+
+msgid "Evaluation of maximal value"
+msgstr "Вычисление максимального значения"
 
 msgid "Evaluation of member"
 msgstr "Вычисление участника"
@@ -3265,6 +3274,9 @@ msgstr "В списке обработчиков ожидался обработ
 
 msgid "Header"
 msgstr "Заголовок"
+
+msgid "Heal parameter must start with 'p_'"
+msgstr "Параметр лечения должен начинаться с \"p_\""
 
 msgid "Height"
 msgstr "Высота"
@@ -4402,6 +4414,10 @@ msgid "Maximal number of targets for combat action %s"
 msgstr "Максимальное количество целей для боевого действия %s"
 
 #, python-format
+msgid "Maximal number of targets is %d"
+msgstr "Максимальное количество целей - %d"
+
+#, python-format
 msgid "Maximal quantity is %d"
 msgstr "Максимальное количество - %d"
 
@@ -4536,6 +4552,10 @@ msgstr "Минимальное количество целей, разрешён
 #, python-format
 msgid "Minimal number of targets for combat action %s"
 msgstr "Минимальное количество целей для боевого действия %s"
+
+#, python-format
+msgid "Minimal number of targets is %d"
+msgstr "Минимальное количество целей - %d"
 
 msgid "Minimal password length - 6 characters"
 msgstr "Минимальная длина пароля - 6 символов"
@@ -5011,6 +5031,9 @@ msgstr "Пользователей с этим e-mail не найдено"
 
 msgid "No way"
 msgstr "Нет пути"
+
+msgid "Non-existent combat action"
+msgstr "Несуществующее боевое действие"
 
 msgid "None (not applicable)"
 msgstr "Нет (не применимо)"
@@ -6990,6 +7013,10 @@ msgstr "Изъято {money_amount}: {comment}"
 msgid "Talks about game activities: gameplay, news, wars, politics etc."
 msgstr "Здесь можно обсудить всё, связанное с игрой: правила, нововведения, войны, политику и т.д."
 
+#, python-format
+msgid "Target '%s' is not available for this action"
+msgstr "Цель %s недоступна для этого действия"
+
 msgid "Target character name"
 msgstr "Имя целевого персонажа"
 
@@ -7103,6 +7130,9 @@ msgstr "Тщательно продумайте структуру раздел�
 #, python-format
 msgid "This WMID is assigned already to the user <strong>%s</strong>. You can't assign one WMID to several accounts"
 msgstr "Этот WMID уже назначен пользователю <strong>%s</strong>. Вы не можете назначить один WMID нескольким аккаунтам"
+
+msgid "This action is not available"
+msgstr "Это действие не доступно"
 
 msgid "This block is shown on the every library page"
 msgstr "Этот блок показывается на каждой странице библиотеки"
@@ -8824,6 +8854,9 @@ msgstr " "
 
 msgid "google///browser statistics"
 msgstr "статистика браузеров"
+
+msgid "healing {obj}.{attr}: {heal}"
+msgstr "лечим {obj}.{attr}: {heal}"
 
 msgid "hour/hours"
 msgstr "час/часа/часов"

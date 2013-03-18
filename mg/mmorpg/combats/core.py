@@ -545,14 +545,14 @@ class CombatAction(CombatObject):
     def begin(self):
         "Do any processing in the beginning of the action"
         globs = self.globs()
-        self.execute_script("begin", globs, lambda: self._("Combat action '%s' begin script") % self.code)
         self.for_each_target(self.execute_targeted_script, "begin-target", globs, lambda: self._("Combat action '%s' begin target script") % self.code)
+        self.execute_script("begin", globs, lambda: self._("Combat action '%s' begin script") % self.code)
 
     def end(self):
         "Do any processing in the end of the action"
         globs = self.globs()
-        self.execute_script("end", globs, lambda: self._("Combat action '%s' end script") % self.code)
         self.for_each_target(self.execute_targeted_script, "end-target", globs, lambda: self._("Combat action '%s' end target script") % self.code)
+        self.execute_script("end", globs, lambda: self._("Combat action '%s' end script") % self.code)
 
     def set_code(self, code):
         "Set action code"

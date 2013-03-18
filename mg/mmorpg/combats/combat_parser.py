@@ -14,6 +14,9 @@ re_param = re.compile(r'^p_([a-z_][a-z0-9_]*)$', re.IGNORECASE)
 class TokenDamage(Parsing.Token):
     "%token damage"
 
+class TokenHeal(Parsing.Token):
+    "%token heal"
+
 class TokenSet(Parsing.Token):
     "%token set"
 
@@ -56,9 +59,13 @@ class CombatAttrKey(Parsing.Nonterm):
         "%reduce AttrKey"
         self.val = attrkey.val
 
-    def reduceEvent(self, event):
+    def reduceDamage(self, event):
         "%reduce damage"
         self.val = "damage"
+
+    def reduceHeal(self, event):
+        "%reduce heal"
+        self.val = "heal"
 
 class Attrs(Parsing.Nonterm):
     "%nonterm"
@@ -106,11 +113,27 @@ def validate_attrs(any_obj, obj_name, attrs, valid_attrs):
 
 class CombatStatement(Parsing.Nonterm):
     "%nonterm"
-    def reduceDamage(self, cmd, obj, dot, attr, val):
-        "%reduce damage Expr dot AttrKey Expr"
+    def reduceDamage(self, cmd, obj, dot, attr, val, attrs):
+        "%reduce damage Expr dot AttrKey Expr ExprAttrs"
         if not re_param.match(attr.val):
             raise Parsing.SyntaxError(dot.script_parser._("Damage parameter must start with 'p_'"))
-        self.val = ["damage", obj.val, attr.val, val.val]
+        maxval = get_attr(cmd, "damage", attrs, "maxval")
+        validate_attrs(cmd, "damage", attrs, ["maxval"])
+        attrs = {}
+        if maxval is not None:
+            attrs["maxval"] = maxval
+        self.val = ["damage", obj.val, attr.val, val.val, attrs]
+
+    def reduceHeal(self, cmd, obj, dot, attr, val, attrs):
+        "%reduce heal Expr dot AttrKey Expr ExprAttrs"
+        if not re_param.match(attr.val):
+            raise Parsing.SyntaxError(dot.script_parser._("Heal parameter must start with 'p_'"))
+        maxval = get_attr(cmd, "heal", attrs, "maxval")
+        validate_attrs(cmd, "heal", attrs, ["maxval"])
+        attrs = {}
+        if maxval is not None:
+            attrs["maxval"] = maxval
+        self.val = ["heal", obj.val, attr.val, val.val, attrs]
 
     def reduceSet(self, st, lvalue, assign, rvalue):
         "%reduce set Expr assign Expr"
@@ -238,6 +261,7 @@ class Result(Parsing.Nonterm):
 class CombatScriptParser(ScriptParser):
     syms = ScriptParser.syms.copy()
     syms["damage"] = TokenDamage
+    syms["heal"] = TokenHeal
     syms["set"] = TokenSet
     syms["selecttarget"] = TokenSelectTarget
     syms["where"] = TokenWhere

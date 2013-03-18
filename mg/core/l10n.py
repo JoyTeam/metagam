@@ -318,6 +318,7 @@ class L10n(Module):
                 res += values[i]
             res += u' и '
             res += values[-1]
+            return res
         elif lang == "en":
             res = values[0]
             for i in xrange(1, len(values) - 1):
@@ -325,6 +326,7 @@ class L10n(Module):
                 res += values[i]
             res += u', and '
             res += values[-1]
+            return res
         else:
             return u", ".join(values)
 
