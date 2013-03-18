@@ -347,7 +347,6 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         # process general timeouts
         elapsed = time.time() - self.start_time
         timeout = self.rulesinfo.get("timeout", 4 * 3600)
-        print "elapsed=%s, timeout=%s" % (elapsed, timeout)
         if elapsed > timeout + 600:
             self.warning(self._("Combat %s terminated due to too long timeout"), self.uuid)
             os._exit(0)
