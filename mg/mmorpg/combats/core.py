@@ -452,6 +452,37 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                     i += 1
             self.enqueue_turn_order_check()
             self.actions_stopped()
+            self.check_end_condition()
+
+    def check_end_condition(self):
+        "Check combat end condition (0 or 1 teams active)"
+        teams = set()
+        for member in self.members:
+            if member.active:
+                teams.add(member.team)
+        teams = list(teams)
+        if len(teams) == 0:
+            self.draw()
+        elif len(teams) == 1:
+            self.victory(teams[0])
+
+    def draw(self):
+        "Combat finished with draw"
+        globs = self.globs()
+        self.for_each_member(self.execute_member_script, "draw-member", globs, lambda: self._("Combat draw script for a member"))
+        self.execute_script("draw", globs, lambda: self._("Combat draw script"))
+
+    def victory(self, team):
+        "Combat finished with victory of specified team"
+        globs = self.globs()
+        globs["winner_team"] = team
+        for member in self.members:
+            if member.team != team:
+                self.execute_member_script(member, "defeat-member", globs, lambda: self._("Combat defeat script for a member"))
+        for member in self.members:
+            if member.team == team:
+                self.execute_member_script(member, "victory-member", globs, lambda: self._("Combat victory script for a member"))
+        self.execute_script("victory", globs, lambda: self._("Combat victory script"))
 
     def actions_started(self):
         "Called after ready actions started"

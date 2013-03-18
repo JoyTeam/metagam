@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-18 12:04+0300\n"
+"PO-Revision-Date: 2013-03-18 13:54+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1473,8 +1473,17 @@ msgstr "Размеры аватара в бою (например: 100x200)"
 msgid "Combat avatars settings"
 msgstr "Настройки аватаров в бою"
 
+msgid "Combat defeat script for a member"
+msgstr "Скрипт поражения для участника \"member\""
+
 msgid "Combat disappeared"
 msgstr "Бой исчез"
+
+msgid "Combat draw script"
+msgstr "Боевой скрипт поражения"
+
+msgid "Combat draw script for a member"
+msgstr "Боевой скрипт поражения для участника \"member\""
 
 msgid "Combat heartbeat script"
 msgstr "Heartbeat-скрипт"
@@ -1576,17 +1585,32 @@ msgstr "Боевой скрипт, выполняемый на каждой ит
 msgid "Combat script running for member 'member' immediately after he gets turn"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он получает право хода"
 
+msgid "Combat script running on every defeated member (member of defeated team, not called on a draw)"
+msgstr "Боевой скрипт, выполняемый на каждого проигравшего участника (члена проигравшей команды; не вызывается при ничьей)"
+
 msgid "Combat script running on every member after some actions are started"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" после того, как начали выполняться какие-то действия"
 
 msgid "Combat script running on every member after some actions are stopped"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" после того, как закончили выполняться какие-то действия"
 
+msgid "Combat script running on every member when the combat was a draw"
+msgstr "Боевой скрипт, выполняемый для каждого участника \"member\", когда бой закончился ничьей"
+
+msgid "Combat script running on every winner member (member of winner team, not called on a draw, called even on inactive members)"
+msgstr "Боевой скрипт, выполняемый на каждого участника-победителя (члена победившей команды; не вызывается при ничьей; вызывается даже на неактивных участников)"
+
 msgid "Combat script running when combat starts"
 msgstr "Боевой скрипт, выполняемый, когда бой начинается"
 
 msgid "Combat script running when member 'member' is joined"
 msgstr "Боевой скрипт, выполняемый, когда присоединяется участник \"member\""
+
+msgid "Combat script running when the combat finished with victory of team 'winner_team'"
+msgstr "Боевой скрипт, выполняемый, когда бой закончился победой команды \"winner_team\""
+
+msgid "Combat script running when the combat was a draw"
+msgstr "Боевой скрипт, выполняемый, когда бой закончился ничьей"
 
 #, python-format
 msgid "Combat stage '%s' is not defined"
@@ -1600,6 +1624,12 @@ msgstr "Название боя"
 
 msgid "Combat title must be a string"
 msgstr "Название боя должно быть строкой"
+
+msgid "Combat victory script"
+msgstr "Боевой скрипт победы"
+
+msgid "Combat victory script for a member"
+msgstr "Боевой скрипт победы участника \"member\""
 
 msgid "Combat was started twice"
 msgstr "Бой был начат дважды"
