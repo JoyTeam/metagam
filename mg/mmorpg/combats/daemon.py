@@ -185,6 +185,9 @@ class CombatRequest(mg.constructor.ConstructorModule):
     def set_title(self, title):
         self.cobj.set("title", title)
 
+    def set_flags(self, flags):
+        self.cobj.set("flags", flags)
+
     def run(self):
         self.debug("Launching combat %s", self.cobj.uuid)
         self.set_busy()
@@ -212,6 +215,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
         combat.set_log(log)
         CombatObject.__init__(self, combat, fqn, weak=False)
         combat.set_title(cobj.get("title", self._("Combat")))
+        if cobj.get("flags"):
+            combat.set_flags(cobj.get("flags"))
 
     def add_members(self):
         for minfo in self.cobj.get("members", []):

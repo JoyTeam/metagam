@@ -228,7 +228,8 @@ def parse_quest_tp(qid, tp):
             return "expired-timer-%s-%s" % (qid, tp[2])
     elif tp[0] == "button":
         return "button-%s-%s" % (qid, tp[1])
-    return "-".join(tp)
+    else:
+        return "-".join(tp)
 
 class QuestsAdmin(ConstructorModule):
     def register(self):
@@ -698,11 +699,30 @@ class QuestsAdmin(ConstructorModule):
                 return self.quest_admin_unparse_script(val[1].get("hdls"))
             elif val[0] == "hdl":
                 result = "  " * indent + self.quest_admin_unparse_script(val[1]["type"])
+                evtype = val[1]["type"][0]
                 attrs = val[1].get("attrs")
                 if attrs:
+                    attrs = attrs.copy()
+                    if evtype == "oncombat":
+                        events = attrs["events"]
+                        del attrs["events"]
+                        if events.get("start"):
+                            result += " start"
+                        if events.get("victory"):
+                            result += " victory"
+                        if events.get("defeat"):
+                            result += " defeat"
+                        if events.get("draw"):
+                            result += " draw"
+                        if "flags" in attrs:
+                            if attrs.get("flags"):
+                                attrs["flags"] = u','.join(attrs["flags"])
+                            else:
+                                del attrs["flags"]
                     attrs = [(k, v) for k, v in attrs.iteritems()]
                     attrs.sort(cmp=lambda x, y: cmp(x[0], y[0]))
-                    result += u"".join([" %s=%s" % (k, self.call("script.unparse-expression", v)) for k, v in attrs])
+                    for k, v in attrs:
+                        result += u" %s=%s" % (k, self.call("script.unparse-expression", v))
                 actions = val[1].get("act")
                 if actions:
                     result += " {\n" + self.quest_admin_unparse_script(actions, indent + 1) + "  " * indent + "}\n\n"
@@ -734,6 +754,8 @@ class QuestsAdmin(ConstructorModule):
                 return "class selected"
             elif val[0] == "paidservice":
                 return "paidservice"
+            elif val[0] == "oncombat":
+                return "combat"
             elif val[0] == "shop-bought":
                 return "shop bought"
             elif val[0] == "shop-sold":
@@ -891,6 +913,8 @@ class QuestsAdmin(ConstructorModule):
                     result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
                 if "title" in options:
                     result += " title=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "flags" in options:
+                    result += " flags=%s" % self.call("script.unparse-expression", u','.join(options["flags"]))
                 result += " {\n"
                 for member in options.get("members", []):
                     mtype = member["type"]
@@ -1291,6 +1315,18 @@ class Quests(ConstructorModule):
                                 continue
                             if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
                                 continue
+                        elif event == "oncombat":
+                            if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
+                                continue
+                            if attrs and attrs.get("flags"):
+                                match = False
+                                cflags = kwargs["combat"].flags
+                                for flag in attrs.get("flags"):
+                                    if flag in cflags:
+                                        match = True
+                                        break
+                                if not match:
+                                    continue
                         act = handler.get("act")
                         if not act:
                             continue
@@ -1677,6 +1713,10 @@ class Quests(ConstructorModule):
                                         title = options.get("title")
                                         if options:
                                             creq.set_title(title)
+                                        # combat flags
+                                        flags = options.get("flags")
+                                        if flags:
+                                            creq.set_flags(flags)
                                         # members
                                         for member in options["members"]:
                                             mtype = member["type"]

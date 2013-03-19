@@ -4,6 +4,7 @@ from mg.constructor.script_classes import *
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_param = re.compile(r'^p_([a-z_][a-z0-9_]*)$', re.IGNORECASE)
 re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
+re_comma = re.compile(r'\s*,\s*')
 
 # To add a new event, condition or action:
 #   1. create TokenXXX class
@@ -149,6 +150,18 @@ class TokenVirtual(Parsing.Token):
 
 class TokenMember(Parsing.Token):
     "%token member"
+
+class TokenStart(Parsing.Token):
+    "%token start"
+
+class TokenVictory(Parsing.Token):
+    "%token victory"
+
+class TokenDefeat(Parsing.Token):
+    "%token defeat"
+
+class TokenDraw(Parsing.Token):
+    "%token draw"
 
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
@@ -311,6 +324,46 @@ class EventType(Parsing.Nonterm):
     def reducePaidService(self, ev):
         "%reduce paidservice"
         self.val = [["paidservice"], None]
+
+    def reduceCombat(self, ev, events, attrs):
+        "%reduce combat CombatEvents Attrs"
+        get_str_attr(ev, "combat", attrs, "type")
+        flags = get_str_attr(ev, "combat", attrs, "flags")
+        validate_attrs(ev, "combat", attrs, ["type", "flags"])
+        if flags is not None:
+            flags = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
+        else:
+            flags = None
+        attrs = attrs.val.copy()
+        attrs["events"] = events.val
+        attrs["flags"] = flags
+        self.val = [["oncombat"], attrs]
+
+class CombatEvents(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceStart(self, events, cmd):
+        "%reduce CombatEvents start"
+        self.val = events.val.copy()
+        self.val["start"] = True
+
+    def reduceVictory(self, events, cmd):
+        "%reduce CombatEvents victory"
+        self.val = events.val.copy()
+        self.val["victory"] = True
+
+    def reduceDefeat(self, events, cmd):
+        "%reduce CombatEvents defeat"
+        self.val = events.val.copy()
+        self.val["defeat"] = True
+
+    def reduceDraw(self, events, cmd):
+        "%reduce CombatEvents draw"
+        self.val = events.val.copy()
+        self.val["draw"] = True
 
 # ============================
 #          ACTIONS
@@ -514,11 +567,14 @@ class QuestAction(Parsing.Nonterm):
         "%reduce combat ExprAttrs curlyleft CombatContent curlyright"
         options = content.val.copy()
         rules = get_str_attr(cmd, "combat", attrs, "rules")
-        validate_attrs(cmd, "combat", attrs, ["rules"])
+        flags = get_str_attr(cmd, "combat", attrs, "flags")
+        validate_attrs(cmd, "combat", attrs, ["rules", "flags"])
         if rules is not None and not re_valid_identifier.match(rules):
             raise Parsing.SyntaxError(cmd.script_parser._("Combat rules identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         if rules is not None:
             options["rules"] = rules
+        if flags is not None:
+            options["flags"] = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
         self.val = ["combat", options]
 
 class RandomContent(Parsing.Nonterm):
@@ -802,6 +858,10 @@ class QuestScriptParser(ScriptParser):
     syms["combat"] = TokenCombat
     syms["virtual"] = TokenVirtual
     syms["member"] = TokenMember
+    syms["start"] = TokenStart
+    syms["victory"] = TokenVictory
+    syms["defeat"] = TokenDefeat
+    syms["draw"] = TokenDraw
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

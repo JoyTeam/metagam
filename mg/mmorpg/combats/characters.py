@@ -61,3 +61,19 @@ class CombatCharacterMember(CombatMember):
         for param in self.call("characters.params"):
             val = self.call("characters.param-value", character, param["code"])
             self.set_param("p_%s" % param["code"], val)
+
+    def start(self):
+        CombatMember.start(self)
+        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="start")
+
+    def victory(self):
+        CombatMember.victory(self)
+        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="victory")
+
+    def defeat(self):
+        CombatMember.defeat(self)
+        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="defeat")
+
+    def draw(self):
+        CombatMember.draw(self)
+        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="draw")

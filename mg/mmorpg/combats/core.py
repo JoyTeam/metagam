@@ -147,6 +147,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self._turn_order_check = False
         self.not_delivered_log = []
         self.start_time = time.time()
+        self._flags = set()
 
     def script_code(self, tag):
         "Get combat script code (syntax tree)"
@@ -215,6 +216,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         # execute start script
         globs = self.globs()
         self.execute_script("start", globs, lambda: self._("Combat start script"))
+        # notify all members
+        for member in self.members:
+            member.start()
         # notify turn order manager
         if self.stage_flag("actions"):
             self.turn_order.start()
@@ -235,6 +239,13 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 "stage": stage,
             })
         self.wakeup()
+
+    @property
+    def flags(self):
+        return self._flags
+
+    def set_flags(self, flags):
+        self._flags = set(flags)
 
     @property
     def title(self):
@@ -481,12 +492,20 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def draw(self):
         "Combat finished with draw"
+        for member in self.members:
+            member.draw()
         globs = self.globs()
         self.for_each_member(self.execute_member_script, "draw-member", globs, lambda: self._("Combat draw script for a member"))
         self.execute_script("draw", globs, lambda: self._("Combat draw script"))
 
     def victory(self, team):
         "Combat finished with victory of specified team"
+        for member in self.members:
+            if member.team != team:
+                member.defeat()
+        for member in self.members:
+            if member.team == team:
+                member.victory()
         globs = self.globs()
         globs["winner_team"] = team
         for member in self.members:
@@ -744,6 +763,22 @@ class CombatMember(CombatObject, CombatParamsContainer):
         return self._params.get("targets")
     def set_targets(self, targets):
         self.set_param("targets", targets)
+
+    # combat start
+
+    def start(self):
+        "Called on combat start"
+
+    # combat end
+
+    def victory(self):
+        "Called on victory of this member"
+
+    def defeat(self):
+        "Called on defeat of this member"
+
+    def draw(self):
+        "Called on draw of this member"
 
     # Turn order
 
