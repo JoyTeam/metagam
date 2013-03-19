@@ -902,6 +902,18 @@ class QuestsAdmin(ConstructorModule):
                     result += " cls=%s" % self.call("script.unparse-expression", args["cls"])
                 result += "\n"
                 return result
+            elif val[0] == "combatlog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat log %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
+            elif val[0] == "combatsyslog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat syslog %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
             elif val[0] == "javascript":
                 return "  " * indent + "javascript %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleport":
@@ -1655,6 +1667,34 @@ class Quests(ConstructorModule):
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
+                                    elif cmd_code == "combatlog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat log' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=globs, description=lambda: self._("Evaluation of log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=globs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        if real_execute:
+                                            kwargs["combat"].textlog(args)
+                                    elif cmd_code == "combatsyslog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=globs, description=lambda: self._("Evaluation of system log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=globs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        if real_execute:
+                                            kwargs["combat"].syslog(args)
                                     elif cmd_code == "javascript":
                                         script = cmd[1]
                                         if debug:

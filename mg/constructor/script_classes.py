@@ -170,6 +170,9 @@ class TokenRandom(Parsing.Token):
 class TokenEquip(Parsing.Token):
     "%token equip"
 
+class TokenMember(Parsing.Token):
+    "%token member"
+
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
 # productions would look something like:
@@ -310,6 +313,10 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr in Expr [pCompareOp]"
         self.val = ["in", exprA.val, exprB.val]
 
+    def reduceMember(self, m):
+        "%reduce member"
+        self.val = ["glob", "member"]
+
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
     "%start"
@@ -347,6 +354,7 @@ class ScriptParser(Parsing.Lr, Module):
         "online": TokenOnline,
         "equip": TokenEquip,
         "in": TokenIn,
+        "member": TokenMember,
     }
     funcs = set(["min", "max", "uc", "lc"])
 

@@ -192,7 +192,7 @@ area { border: none }
 .chat-msg-quest-first-event { color: #4040c0; padding-top: 3px; border-top: solid 1px #808080; margin-top: 3px }
 .chat-msg-quest-event { color: #4040c0 }
 .chat-msg-quest-handler { color: #c95200 }
-.chat-msg-quest-condition { color: #d7d721 }
+.chat-msg-quest-condition { color: #676721 }
 .chat-msg-quest-action { color: #008000 }
 .chat-msg-quest-error { color: #c00000 }
 .quest-button-td { padding: 20px 40px 20px 0 }

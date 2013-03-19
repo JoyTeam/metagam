@@ -148,9 +148,6 @@ class TokenCombat(Parsing.Token):
 class TokenVirtual(Parsing.Token):
     "%token virtual"
 
-class TokenMember(Parsing.Token):
-    "%token member"
-
 class TokenStart(Parsing.Token):
     "%token start"
 
@@ -162,6 +159,12 @@ class TokenDefeat(Parsing.Token):
 
 class TokenDraw(Parsing.Token):
     "%token draw"
+
+class TokenLog(Parsing.Token):
+    "%token log"
+
+class TokenSyslog(Parsing.Token):
+    "%token syslog"
 
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm"
@@ -577,6 +580,14 @@ class QuestAction(Parsing.Nonterm):
             options["flags"] = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
         self.val = ["combat", options]
 
+    def reduceCombatLog(self, cmb, cmd, text, expr):
+        "%reduce combat log scalar ExprAttrs"
+        self.val = ["combatlog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
+
+    def reduceCombatSyslog(self, cmb, cmd, text, expr):
+        "%reduce combat syslog scalar ExprAttrs"
+        self.val = ["combatsyslog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
+
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -857,11 +868,12 @@ class QuestScriptParser(ScriptParser):
     syms["paidservice"] = TokenPaidService
     syms["combat"] = TokenCombat
     syms["virtual"] = TokenVirtual
-    syms["member"] = TokenMember
     syms["start"] = TokenStart
     syms["victory"] = TokenVictory
     syms["defeat"] = TokenDefeat
     syms["draw"] = TokenDraw
+    syms["log"] = TokenLog
+    syms["syslog"] = TokenSyslog
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
