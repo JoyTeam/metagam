@@ -573,11 +573,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                                  * Combat actions in absense of selectable targets are
                                  * executed immediately too.
                                  */
-                                console.log('clicked', ent.action);
-                                console.log('self.action', self.action);
                                 if (!self.goButtonEnabled && self.action && (!self.action.targets ||
                                         self.myself.params.targets != 'selectable')) {
-                                    console.log('go!');
                                     self.go();
                                 }
                             });
@@ -624,9 +621,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         if (self.combat.goButtonEnabled) {
             self.updateTargets();
             self.deselectExcessiveTargets();
-            if (self.showSelectedEnemy()) {
-                self.autoSelectTargets();
-            }
+            self.autoSelectTargets();
+            self.showSelectedEnemy();
             self.updateGoButtonAvailability();
         } else {
             self.updateTargets();
@@ -638,7 +634,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     updateTargets: function () {
         var self = this;
-        console.log('updateTargets');
         var targeted;
         if (self.action) {
             targeted = {};
@@ -649,7 +644,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 }
             }
         }
-        console.log('targeted=', targeted);
         for (var memberId in self.combat.members) {
             if (!self.combat.members.hasOwnProperty(memberId)) {
                 continue;
