@@ -278,6 +278,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             # main loop
             while not self.combat.stopped():
                 self.combat.process()
+            self.combat.notify_stopped()
         except CombatRunError as e:
             self.call("exception.report", e)
             self.call("combats.debug", self.combat, e.val, cls="combat-error")

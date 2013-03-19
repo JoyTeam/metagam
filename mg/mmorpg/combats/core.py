@@ -218,7 +218,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.execute_script("start", globs, lambda: self._("Combat start script"))
         # notify all members
         for member in self.members:
-            member.start()
+            member.started()
         # notify turn order manager
         if self.stage_flag("actions"):
             self.turn_order.start()
@@ -516,6 +516,11 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                 self.execute_member_script(member, "victory-member", globs, lambda: self._("Combat victory script for a member"))
         self.execute_script("victory", globs, lambda: self._("Combat victory script"))
 
+    def notify_stopped(self):
+        "Call this method to signal combat that it's finally stopped"
+        for member in self.members:
+            member.stopped()
+
     def actions_started(self):
         "Called after ready actions started"
         globs = self.globs()
@@ -766,7 +771,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     # combat start
 
-    def start(self):
+    def started(self):
         "Called on combat start"
 
     # combat end
@@ -779,6 +784,9 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     def draw(self):
         "Called on draw of this member"
+
+    def stopped(self):
+        "Called on combat stop"
 
     # Turn order
 

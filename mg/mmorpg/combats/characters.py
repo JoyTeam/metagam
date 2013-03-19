@@ -62,8 +62,8 @@ class CombatCharacterMember(CombatMember):
             val = self.call("characters.param-value", character, param["code"])
             self.set_param("p_%s" % param["code"], val)
 
-    def start(self):
-        CombatMember.start(self)
+    def started(self):
+        CombatMember.started(self)
         self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="start")
 
     def victory(self):
@@ -77,3 +77,25 @@ class CombatCharacterMember(CombatMember):
     def draw(self):
         CombatMember.draw(self)
         self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="draw")
+
+    def stopped(self):
+        CombatMember.stopped(self)
+        char = self.param("char")
+        tokens = []
+        quest_given_items = getattr(char, "quest_given_items", None)
+        if quest_given_items:
+            for key, val in quest_given_items.iteritems():
+                name = u'<li class="combat-log-item"><span class="combat-log-itemname">%s</span> &mdash; <span class="combat-log-itemquantity">%d</span> %s</li>' % (htmlescape(key), val, self._("pcs"))
+                tokens.append(name)
+        quest_given_money = getattr(char, "quest_given_money", None)
+        if quest_given_money:
+            for currency, amount in quest_given_money.iteritems():
+                tokens.append(u'<li class="combat-log-item">%s</li>' % self.call("money.price-html", amount, currency))
+        if tokens:
+            self.combat.textlog({
+                "text": u'<span class="combat-log-member">%s</span> %s: <ul class="combat-log-itemlist">%s</ul>' % (
+                    htmlescape(self.name),
+                    self._("female///has got") if self.sex else self._("male///has got"),
+                    u''.join(tokens)
+                )
+            })
