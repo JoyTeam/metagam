@@ -37,7 +37,8 @@ var MMOScript = {
     ternaryOps: {
         '?': true
     },
-    defaultFormatter: new MMOScriptHTMLFormatter()
+    defaultFormatter: new MMOScriptHTMLFormatter(),
+    lang: 'en'
 };
 
 /*
@@ -202,12 +203,36 @@ MMOScript.evaluate = function (val, env) {
         }
         return val[index];
     }
+    if (cmd == 'numdecl') {
+        var num = self.toNumber(self.evaluate(val[1], env));
+        if (self.lang == 'ru') {
+            if (num != Math.floor(num)) {
+                return val[3];
+            }
+            if ((num % 100) >= 10 && (num % 100) <= 20) {
+                return val[4];
+            }
+            if ((num % 10) >= 2 && (num % 10) <= 4) {
+                return val[3];
+            }
+            if ((num % 10) == 1) {
+                return val[2];
+            }
+            return val[4];
+        }
+        // English fallback
+        if (num == 1) {
+            return val[2];
+        }
+        return val[3];
+    }
     if (cmd == 'clsbegin') {
         return self.formatter(env).clsBegin(self.evaluate(val[1]));
     }
     if (cmd == 'clsend') {
         return self.formatter(env).clsEnd();
     }
+    return undefined;
 };
 
 /*
@@ -250,7 +275,7 @@ MMOScript._dependencies = function (val, res) {
     if (self.binaryOps[cmd]) {
         self._dependencies(val[1], res);
         self._dependencies(val[2], res);
-    } else if (self.unaryOps[cmd] || cmd == 'index') {
+    } else if (self.unaryOps[cmd] || cmd == 'index' || cmd == 'numdecl') {
         self._dependencies(val[1], res);
     } else if (self.ternaryOps[cmd]) {
         self._dependencies(val[1], res);
