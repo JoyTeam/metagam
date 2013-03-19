@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-18 16:51+0300\n"
+"PO-Revision-Date: 2013-03-19 08:40+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -102,6 +102,12 @@ msgstr "\"%s\" изменить нельзя"
 
 msgid "'After get turn' script"
 msgstr "Скрипт \"после получения права хода\""
+
+msgid "'combat log' operator can be used in combat events only"
+msgstr "Оператор \"combat log\" может быть использован только в боевых событиях"
+
+msgid "'combat syslog' operator can be used in combat events only"
+msgstr "Оператор \"combat syslog\" может быть использован только в боевых событиях"
 
 msgid "'{obj}' has no attribute '{attr}'"
 msgstr "У \"{obj}\" нет атрибута \"{attr}\""
@@ -9665,6 +9671,12 @@ msgstr "персональный"
 
 msgid "wmcert///pseudonymous"
 msgstr "псевдонима"
+
+msgid "writing to combat log: {text}"
+msgstr "пишем в боевой лог: {text}"
+
+msgid "writing to combat system log: {text}"
+msgstr "пишем в боевой системный лог: {text}"
 
 msgid "writing to log: {text}"
 msgstr "пишем в лог: {text}"
