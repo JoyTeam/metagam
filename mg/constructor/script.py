@@ -175,6 +175,16 @@ class ScriptEngine(ConstructorModule):
                             empty = False
                     if not empty:
                         res += u"[%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
+                elif cmd == "numdecl":
+                    tokens = []
+                    empty = True
+                    for i in xrange(2, len(arg)):
+                        argtxt = self.unparse_text([arg[i]])
+                        tokens.append(argtxt)
+                        if argtxt.strip():
+                            empty = False
+                    if not empty:
+                        res += u"[#%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
                 elif cmd == "clsbegin":
                     res += u"{class=%s}" % self.unparse_expression(arg[1])
                 elif cmd == "clsend":
@@ -445,6 +455,10 @@ class ScriptEngine(ConstructorModule):
             if index >= len(val):
                 index = len(val) - 1
             return val[index]
+        elif cmd == "numdecl":
+            if len(val) < 3:
+                return None
+            return self.call("l10n.literal_value", intz(self._evaluate(val[1], env)), val[2:])
         elif cmd == "clsbegin":
             return self.formatter(env).clsbegin(self._evaluate(val[1], env))
         elif cmd == "clsend":

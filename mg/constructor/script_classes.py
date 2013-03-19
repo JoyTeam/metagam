@@ -3,6 +3,7 @@ from mg.core import Parsing
 import re
 
 re_newline = re.compile(r'\n')
+re_numeric = re.compile(r'^#(.+)')
 
 class ScriptMemoryObject(object):
     def __init__(self):
@@ -445,16 +446,27 @@ class ScriptTextParser(Module):
             if res[0]:
                 self.tokens.append(res[0])
             if res[1] is not None:
-                # parsing index expression: [...:val1,val2,val3]
+                # parse index expression: [...:val1,val2,val3]
+                # also numeric declensions: [#...:val1,val2,val5]
+                m = re_numeric.match(res[1])
+                if m:
+                    numeric = True
+                    line = m.group(1)
+                else:
+                    numeric = False
+                    line = res[1]
                 parser = ScriptParser(self.app(), self.spec)
                 try:
-                    parser.scan(res[1])
+                    parser.scan(line)
                     try:
                         parser.eoi()
                     except Parsing.SyntaxError as e:
-                        raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[1])
+                        raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % line)
                 except ScriptParserResult as e:
-                    self.tokens.append(["index", e.val] + res[2].split(","))
+                    if numeric:
+                        self.tokens.append(["numdecl", e.val] + res[2].split(","))
+                    else:
+                        self.tokens.append(["index", e.val] + res[2].split(","))
             elif res[3] is not None:
                 # class token start: {class=...}
                 parser = ScriptParser(self.app(), self.spec)
