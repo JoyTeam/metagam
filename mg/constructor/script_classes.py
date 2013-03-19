@@ -20,6 +20,9 @@ class ScriptMemoryObject(object):
     def __str__(self):
         return "local"
 
+    def store(self):
+        pass
+
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
         self.val = val

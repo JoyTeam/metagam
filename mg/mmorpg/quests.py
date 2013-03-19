@@ -3,6 +3,7 @@ from mg.mmorpg.quest_parser import *
 from mg.core.money_classes import MoneyError
 from mg.mmorpg.combats.daemon import CombatRequest
 from mg.mmorpg.combats.core import CombatRunError, CombatMemberBusyError
+from mg.constructor.script_classes import ScriptMemoryObject
 from uuid import uuid4
 import re
 import random
@@ -1250,6 +1251,8 @@ class Quests(ConstructorModule):
             indent = 0
         else:
             indent = old_indent + 4
+        if not "local" in kwargs:
+            kwargs["local"] = ScriptMemoryObject()
         tasklet.quest_indent = indent
         try:
             def event_str():
@@ -1679,8 +1682,7 @@ class Quests(ConstructorModule):
                                                 args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
-                                        if real_execute:
-                                            kwargs["combat"].textlog(args)
+                                        kwargs["combat"].textlog(args)
                                     elif cmd_code == "combatsyslog":
                                         if not kwargs.get("combat"):
                                             raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
@@ -1693,8 +1695,7 @@ class Quests(ConstructorModule):
                                                 args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
-                                        if real_execute:
-                                            kwargs["combat"].syslog(args)
+                                        kwargs["combat"].syslog(args)
                                     elif cmd_code == "javascript":
                                         script = cmd[1]
                                         if debug:
