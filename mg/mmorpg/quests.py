@@ -1670,13 +1670,13 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "combatlog":
                                         if not kwargs.get("combat"):
                                             raise QuestError(self._("'combat log' operator can be used in combat events only"))
-                                        text = self.call("script.evaluate-text", cmd[1], globs=globs, description=lambda: self._("Evaluation of log text"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of log text"))
                                         args = {
                                             "text": text
                                         }
                                         if len(cmd) >= 3:
                                             for key in cmd[2].keys():
-                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=globs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
                                         if real_execute:
@@ -1684,13 +1684,13 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "combatsyslog":
                                         if not kwargs.get("combat"):
                                             raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
-                                        text = self.call("script.evaluate-text", cmd[1], globs=globs, description=lambda: self._("Evaluation of system log text"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of system log text"))
                                         args = {
                                             "text": text
                                         }
                                         if len(cmd) >= 3:
                                             for key in cmd[2].keys():
-                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=globs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
                                         if real_execute:
