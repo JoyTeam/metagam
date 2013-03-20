@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-19 09:40+0300\n"
+"PO-Revision-Date: 2013-03-20 08:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1657,11 +1657,17 @@ msgstr "Конфигурация боёв"
 msgid "Combats engine"
 msgstr "Боевой движок"
 
+msgid "Combats history configuration"
+msgstr "Конфигурация истории боёв"
+
 msgid "Combats rules"
 msgstr "Правила боёв"
 
 msgid "Combats rules editor"
 msgstr "Редактор правил боёв"
+
+msgid "Combats statistics"
+msgstr "Статистика по боям"
 
 msgid "Comment"
 msgstr "Комментировать"
@@ -1822,6 +1828,9 @@ msgstr "Не удалось создать участника боя \"%s\""
 
 msgid "Couldn't convert '{token}' (type '{type}') to string: {exception}"
 msgstr "Не удалось преобразовать \"{token}\" (тип \"{type}\") в строку: {exception}"
+
+msgid "Count"
+msgstr "Количество"
 
 msgid "Counters"
 msgstr "Счётчики"
@@ -3565,6 +3574,9 @@ msgstr "Реализовано: %s"
 msgid "Important"
 msgstr "Важное"
 
+msgid "Important combat logs (keep=1)"
+msgstr "Важные боевые логи (keep=1)"
+
 msgid "Important parameter (show on the overview page)"
 msgstr "Важный параметр (показывается на странице обзора)"
 
@@ -5125,6 +5137,9 @@ msgstr "Недостаточно предметов данного типа"
 
 msgid "Not enough {item_name_gp}  ({available} pcs available)"
 msgstr "Недостаточно {item_name_gp} (доступно {available} шт)"
+
+msgid "Not important combat logs (keep=0)"
+msgstr "Неважные боевые логи (keep=0)"
 
 msgid "Not logged in"
 msgstr "Не вошедший в систему"
@@ -7040,6 +7055,12 @@ msgstr "Система"
 msgid "System exception: %s"
 msgstr "Системная ошибка: %s"
 
+msgid "System logs"
+msgstr "Системные логи"
+
+msgid "System logs retention (for how many days to keep system logs)"
+msgstr "Интервал хранения системных логов (сколько дней хранить системные логи)"
+
 msgid "System messages in the chat"
 msgstr "Системные сообщения в чате"
 
@@ -7424,6 +7445,9 @@ msgstr "Этот пользователь не может иметь имени"
 
 msgid "This user can't have a password"
 msgstr "Этот пользователь не может иметь пароль"
+
+msgid "This value must be a valid integer number"
+msgstr "Это значение должно быть корректным положительным числом"
 
 msgid "Till"
 msgstr "До"
@@ -7851,6 +7875,12 @@ msgstr "Пользователь неактивен. Проверьте почт
 msgid "User login"
 msgstr "Вход пользователя"
 
+msgid "User logs"
+msgstr "Пользовательские логи"
+
+msgid "User logs retention (for how many days to keep user combat logs)"
+msgstr "Интервал хранения пользовательских логов (сколько дней хранить пользовательские логи)"
+
 msgid "User name"
 msgstr "Имя пользователя"
 
@@ -7922,6 +7952,9 @@ msgstr "Очень важное значение"
 
 msgid "Very strange signature"
 msgstr "Очень странная подпись"
+
+msgid "View combats statistics"
+msgstr "Посмотреть статистику по боям"
 
 msgid "View inventory"
 msgstr "Просмотр инвентаря"

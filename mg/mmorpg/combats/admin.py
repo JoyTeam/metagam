@@ -1,8 +1,10 @@
 import mg.constructor
 from mg.core.tools import *
 from mg.mmorpg.combats.core import Combat, CombatMember
+from mg.mmorpg.combats.logs import DBCombatLogList, DBCombatLogPage, DBCombatLogStat, DBCombatLogStatList
 from uuid import uuid4
 import re
+import datetime
 
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
 re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|ai/.+|ai|script|params|aboveavatar/.+|belowavatar/.+)(?:|/(.+))$', re.IGNORECASE)
@@ -30,6 +32,15 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("ext-admin-combats.config", self.admin_config, priv="combats.config")
         self.rhook("headmenu-admin-combats.config", self.headmenu_config)
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("ext-admin-combats.history", self.admin_history, priv="combats.config")
+        self.rhook("headmenu-admin-combats.history", self.headmenu_history)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-combats.stats-cleanup", self.stats_cleanup)
+        self.rhook("ext-admin-combats.stats", self.admin_stats, priv="combats.stats")
+        self.rhook("headmenu-admin-combats.stats", self.headmenu_stats)
+
+    def schedule(self, sched):
+        sched.add("admin-combats.stats-cleanup", "20 0 * * *", priority=5)
 
     def menu_root_index(self, menu):
         menu.append({"id": "combats.index", "text": self._("Combats"), "order": 24})
@@ -39,10 +50,14 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         if req.has_access("combats.config"):
             menu.append({"id": "combats/rules", "text": self._("Combats rules"), "order": 1, "leaf": True})
             menu.append({"id": "combats/config", "text": self._("Combats configuration"), "order": 2, "leaf": True})
+            menu.append({"id": "combats/history", "text": self._("Combats history configuration"), "order": 3, "leaf": True})
+        if req.has_access("combats.stats"):
+            menu.append({"id": "combats/stats", "text": self._("View combats statistics"), "order": 4, "leaf": True})
 
     def permissions_list(self, perms):
         perms.append({"id": "combats.rules", "name": self._("Combats rules editor")})
         perms.append({"id": "combats.config", "name": self._("Combats configuration")})
+        perms.append({"id": "combats.stats", "name": self._("Combats statistics")})
 
     def headmenu_config(self, args):
         return self._("Combats configuration")
@@ -1144,3 +1159,124 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "turn-got", "label": self._("Executed when AI member gets right of turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-turn-got")), "height": 100},
         ]
         self.call("admin.form", fields=fields)
+
+    def headmenu_history(self, args):
+        return self._("Combats history configuration")
+
+    def admin_history(self):
+        req = self.req()
+        if req.param("ok"):
+            errors = {}
+            config = self.app().config_updater()
+            val = req.param("syslog_retention")
+            if not valid_nonnegative_int(val):
+                errors["syslog_retention"] = self._("This value must be a valid integer number")
+            else:
+                val = intz(val)
+                if val < 1:
+                    errors["syslog_retention"] = self._("Minimal value is %d") % 1
+                elif val > 365:
+                    errors["syslog_retention"] = self._("Maximal value is %d") % 365
+                else:
+                    config.set("combats-history.syslog_retention", val)
+            val = req.param("log_retention")
+            if not valid_nonnegative_int(val):
+                errors["log_retention"] = self._("This value must be a valid integer number")
+            else:
+                val = intz(val)
+                if val < 1:
+                    errors["log_retention"] = self._("Minimal value is %d") % 1
+                elif val > 365:
+                    errors["log_retention"] = self._("Maximal value is %d") % 365
+                else:
+                    config.set("combats-history.log_retention", val)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "syslog_retention", "label": self._("System logs retention (for how many days to keep system logs)"), "value": self.conf("combats-history.syslog_retention", 7)},
+            {"name": "log_retention", "label": self._("User logs retention (for how many days to keep user combat logs)"), "value": self.conf("combats-history.log_retention", 30)},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def headmenu_stats(self, args):
+        return self._("Combats statistics")
+
+    def admin_stats(self):
+        rows = []
+        lst = self.objlist(DBCombatLogStatList, query_index="created", query_reversed=True, query_limit=365)
+        lst.load(silent=True)
+        for ent in lst:
+            rows.append([
+                self.call("l10n.date_local", ent.get("created")),
+                ent.get("log_keep0_cnt"),
+                ent.get("log_keep0_size"),
+                ent.get("syslog_keep0_cnt"),
+                ent.get("syslog_keep0_size"),
+                ent.get("log_keep1_cnt"),
+                ent.get("log_keep1_size"),
+                ent.get("syslog_keep1_cnt"),
+                ent.get("syslog_keep1_size"),
+            ])
+        vars = {
+            "Date": self._("Date"),
+            "NotImportant": self._("Not important combat logs (keep=0)"),
+            "Important": self._("Important combat logs (keep=1)"),
+            "UserLogs": self._("User logs"),
+            "SystemLogs": self._("System logs"),
+            "Count": self._("Count"),
+            "Size": self._("Size"),
+            "rows": rows,
+        }
+        self.call("admin.response_template", "admin/combats/stats.html", vars)
+
+    def stats_cleanup(self):
+        self.debug("Updating combats stats")
+        syslog_retention = self.conf("combats-history.syslog_retention", 7)
+        log_retention = self.conf("combats-history.log_retention", 30)
+        # To update combat statistics query the date of the last statistics entry first
+        lst = self.objlist(DBCombatLogStatList, query_index="created", query_reversed=True, query_limit=1)
+        lst.load(silent=True)
+        if len(lst):
+            laststat = lst[0].get("created")
+            self.debug("Last statistics date is %s", laststat)
+            since = datetime.datetime.strptime(laststat, "%Y-%m-%d") + datetime.timedelta(days=1)
+        else:
+            self.debug("No statistics exist. Query first combat date")
+            lst = self.objlist(DBCombatLogList, query_index="keep-started", query_equal="0", query_limit=10)
+            lst.load(silent=True)
+            if len(lst):
+                self.debug("First combat date is %s", lst[0].get("started"))
+                since = datetime.datetime.strptime(lst[0].get("started").split(" ")[0], "%Y-%m-%d")
+            else:
+                self.debug("No combats in the database. Giving up")
+                return
+        # Enumerate all dates from since to yesterday and calculate its statistics
+        till = datetime.datetime.strptime(self.now(-86400).split(" ")[0], "%Y-%m-%d")
+        self.debug("Enumerating combat logs from %s to %s", since.strftime("%Y-%m-%d"), till.strftime("%Y-%m-%d"))
+        cur = since
+        while cur <= till:
+            self.debug("Processing %s", cur.strftime("%Y-%m-%d"))
+            cur_str = cur.strftime("%Y-%m-%d")
+            stat = self.obj(DBCombatLogStat)
+            stat.set("created", cur_str)
+            stat.set("log_keep0_cnt", 0)
+            stat.set("log_keep0_size", 0)
+            stat.set("syslog_keep0_cnt", 0)
+            stat.set("syslog_keep0_size", 0)
+            stat.set("log_keep1_cnt", 0)
+            stat.set("log_keep1_size", 0)
+            stat.set("syslog_keep1_cnt", 0)
+            stat.set("syslog_keep1_size", 0)
+            stat.set("stored", 1)
+            for keep in ["0", "1"]:
+                lst = self.objlist(DBCombatLogList, query_index="keep-started", query_equal=keep, query_start="%s 00:00:00" % cur_str, query_finish="%s 24:00:00" % cur_str)
+                lst.load(silent=True)
+                for ent in lst:
+                    if ent.get("debug"):
+                        stat.set("syslog_keep%s_cnt" % keep, stat.get("syslog_keep%s_cnt" % keep) + 1)
+                        stat.set("syslog_keep%s_size" % keep, stat.get("syslog_keep%s_size" % keep) + ent.get("size", 0))
+                    else:
+                        stat.set("log_keep%s_cnt" % keep, stat.get("log_keep%s_cnt" % keep) + 1)
+                        stat.set("log_keep%s_size" % keep, stat.get("log_keep%s_size" % keep) + ent.get("size", 0))
+            stat.store()
+            cur += datetime.timedelta(days=1)
