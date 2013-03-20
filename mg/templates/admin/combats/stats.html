@@ -1,0 +1,26 @@
+<div class="text">
+    <table class="menu">
+        <tr class="header">
+            <td rowspan="3">[%Date%]</td>
+            <td colspan="4">[%NotImportant%]</td>
+            <td colspan="4">[%Important%]</td>
+        </tr>
+        <tr class="header">
+            <td colspan="2">[%UserLogs%]</td>
+            <td colspan="2">[%SystemLogs%]</td>
+            <td colspan="2">[%UserLogs%]</td>
+            <td colspan="2">[%SystemLogs%]</td>
+        </tr>
+        <tr class="header">
+            <td>[%Count%]</td>
+            <td>[%Size%]</td>
+            <td>[%Count%]</td>
+            <td>[%Size%]</td>
+            <td>[%Count%]</td>
+            <td>[%Size%]</td>
+            <td>[%Count%]</td>
+            <td>[%Size%]</td>
+        </tr>
+        [%foreach row in rows%]<tr>[%foreach col in row%]<td>[%col%]</td>[%end%]</tr>[%end%]
+    </table>
+</div>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from mg import *
 from operator import itemgetter
 import Stemmer
@@ -93,6 +94,7 @@ class L10n(Module):
         self.rhook("l10n.literal_values_sample", self.l10n_literal_values_sample)
         self.rhook("l10n.literal_interval", self.l10n_literal_interval)
         self.rhook("l10n.literal_interval_a", self.l10n_literal_interval_a)
+        self.rhook("l10n.literal_enumeration", self.l10n_literal_enumeration)
         self.rhook("menu-admin-site.index", self.menu_site)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-admin-site.timezone", self.admin_timezone, priv="site.timezone")
@@ -302,6 +304,31 @@ class L10n(Module):
             day=dt.day,
             th=th
         )
+
+    def l10n_literal_enumeration(self, values):
+        if not values:
+            return u""
+        if len(values) == 1:
+            return values[0]
+        lang = self.call("l10n.lang")
+        if lang == "ru":
+            res = values[0]
+            for i in xrange(1, len(values) - 1):
+                res += u', '
+                res += values[i]
+            res += u' и '
+            res += values[-1]
+            return res
+        elif lang == "en":
+            res = values[0]
+            for i in xrange(1, len(values) - 1):
+                res += u', '
+                res += values[i]
+            res += u', and '
+            res += values[-1]
+            return res
+        else:
+            return u", ".join(values)
 
     def l10n_literal_value(self, val, values):
         if values is None:

@@ -1,33 +1,23 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg import *
-from mg.core.queue import QueueTaskList
-from concurrence import dispatch, quit
+import mg
 import os
-import logging
+import json
 import sys
+from mg.constructor.processes import ConstructorInstance
 
 def main():
-    try:
-        if len(sys.argv) != 4:
-            print "usage: mg_enqueue <class> <app> <hook>"
-            os._exit(1)
-        inst = Instance("enqueue")
-        inst.download_config()
-        int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.queue.Queue"])
-        app_cls = sys.argv[1]
-        app_tag = sys.argv[2]
-        hook = sys.argv[3]
-        int_app.hooks.call("queue.add", hook, app_tag=app_tag, app_cls=app_cls)
-        quit(0)
-    except RuntimeError as e:
-        logging.error(e)
+    inst = ConstructorInstance("enqueue", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 3:
+        print "usage: mg_enqueue <class> <app> <hook>"
         os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
+    app_cls = inst.cmdline_args[0]
+    app_tag = inst.cmdline_args[1]
+    hook = inst.cmdline_args[2]
+    inst.int_app.load(["mg.core.queue.Queue"])
+    inst.int_app.call("queue.add", hook, app_tag=app_tag, app_cls=app_cls)
+    os._exit(0)
 
-dispatch(main)
-
+mg.dispatch(main)

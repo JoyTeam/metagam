@@ -19,6 +19,9 @@ re_extract_uuid = re.compile(r'-([a-f0-9]{32})\.[a-z0-9]+$')
 class ClusterError(Exception):
     pass
 
+class HTTPConnectionRefused(HTTPError):
+    pass
+
 class DBCluster(CassandraObject):
     clsname = "Cluster"
     indexes = {
@@ -506,7 +509,10 @@ def query(host, port, uri, params, timeout=20):
             finally:
                 cnn.close()
     except IOError as e:
-        raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
+        if e.errno == 111:
+            raise HTTPConnectionRefused("Connection refused during downloading http://%s:%s%s" % (host, port, uri))
+        else:
+            raise HTTPError("Error downloading http://%s:%s%s: %s" % (host, port, uri, e))
     except TimeoutError:
         raise HTTPError("Timeout downloading http://%s:%s%s" % (host, port, uri))
 
