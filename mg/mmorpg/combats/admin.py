@@ -1,5 +1,6 @@
 import mg.constructor
 from mg.core.tools import *
+from mg.core.cass import ObjectNotFoundException
 from mg.mmorpg.combats.core import Combat, CombatMember
 from mg.mmorpg.combats.logs import DBCombatLogList, DBCombatLogPage, DBCombatLogStat, DBCombatLogStatList
 from uuid import uuid4
@@ -1205,18 +1206,24 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         rows = []
         lst = self.objlist(DBCombatLogStatList, query_index="created", query_reversed=True, query_limit=365)
         lst.load(silent=True)
+        log_size = 0
+        syslog_size = 0
         for ent in lst:
             rows.append([
-                self.call("l10n.date_local", ent.get("created")),
-                ent.get("log_keep0_cnt"),
-                ent.get("log_keep0_size"),
-                ent.get("syslog_keep0_cnt"),
-                ent.get("syslog_keep0_size"),
-                ent.get("log_keep1_cnt"),
-                ent.get("log_keep1_size"),
-                ent.get("syslog_keep1_cnt"),
-                ent.get("syslog_keep1_size"),
+                { "text": self.call("l10n.date_local", ent.get("created")) },
+                { "text": ent.get("log_keep0_cnt"), "striked": ent.get("log_purged") },
+                { "text": ent.get("log_keep0_size"), "striked": ent.get("log_purged") },
+                { "text": ent.get("syslog_keep0_cnt"), "striked": ent.get("syslog_purged") },
+                { "text": ent.get("syslog_keep0_size"), "striked": ent.get("syslog_purged") },
+                { "text": ent.get("log_keep1_cnt") },
+                { "text": ent.get("log_keep1_size") },
+                { "text": ent.get("syslog_keep1_cnt") },
+                { "text": ent.get("syslog_keep1_size") },
             ])
+            if not ent.get("log_purged"):
+                log_size += ent.get("log_keep0_size")
+            if not ent.get("syslog_purged"):
+                syslog_size += ent.get("syslog_keep0_size")
         vars = {
             "Date": self._("Date"),
             "NotImportant": self._("Not important combat logs (keep=0)"),
@@ -1225,14 +1232,21 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             "SystemLogs": self._("System logs"),
             "Count": self._("Count"),
             "Size": self._("Size"),
+            "StoredSize": self._("Stored size"),
             "rows": rows,
+            "LogType": self._("Logs type"),
+            "Log": self._("User logs"),
+            "Syslog": self._("System logs"),
+            "Limit": self._("Limit for the game"),
+            "log_size": log_size,
+            "syslog_size": syslog_size,
+            "log_limit": self.conf("combats-history.max-log", 10000000),
+            "syslog_limit": self.conf("combats-history.max-syslog", 10000000),
         }
         self.call("admin.response_template", "admin/combats/stats.html", vars)
 
     def stats_cleanup(self):
         self.debug("Updating combats stats")
-        syslog_retention = self.conf("combats-history.syslog_retention", 7)
-        log_retention = self.conf("combats-history.log_retention", 30)
         # To update combat statistics query the date of the last statistics entry first
         lst = self.objlist(DBCombatLogStatList, query_index="created", query_reversed=True, query_limit=1)
         lst.load(silent=True)
@@ -1280,3 +1294,70 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         stat.set("log_keep%s_size" % keep, stat.get("log_keep%s_size" % keep) + ent.get("size", 0))
             stat.store()
             cur += datetime.timedelta(days=1)
+        # Load statistics of all logs still stored in the database
+        lst = self.objlist(DBCombatLogStatList, query_index="stored-created", query_equal="1")
+        lst.load(silent=True)
+        total_log = 0
+        total_syslog = 0
+        max_log = self.conf("combats-history.max-log", 10000000)
+        max_syslog = self.conf("combats-history.max-syslog", 10000000)
+        purge_log = None
+        purge_syslog = None
+        for ent in reversed(lst):
+            if not ent.get("log_purged"):
+                total_log += ent.get("log_keep0_size")
+            if not ent.get("syslog_purged"):
+                total_syslog += ent.get("syslog_keep0_size")
+            if total_log > max_log and purge_log is None:
+                purge_log = ent.get("created")
+                self.debug("Purge combat logs created before %s because of storage overflow (%d > %d)", purge_log, total_log, max_log)
+            if total_syslog > max_syslog and purge_syslog is None:
+                purge_syslog = ent.get("created")
+                self.debug("Purge combat system logs created before %s because of storage overflow (%d > %d)", purge_syslog, total_syslog, max_syslog)
+        log_retention = self.conf("combats-history.log_retention", 30)
+        syslog_retention = self.conf("combats-history.syslog_retention", 7)
+        retention_log_since = (datetime.datetime.utcnow() - datetime.timedelta(days=log_retention + 1)).strftime("%Y-%m-%d")
+        retention_syslog_since = (datetime.datetime.utcnow() - datetime.timedelta(days=syslog_retention + 1)).strftime("%Y-%m-%d")
+        self.debug("Retention logs since: %s", retention_log_since)
+        self.debug("Retention system logs since: %s", retention_syslog_since)
+        purge_log_before = retention_log_since
+        if purge_log and purge_log > purge_log_before:
+            purge_log_before = purge_log
+        self.debug("Purging logs before: %s", purge_log_before)
+        purge_syslog_before = retention_syslog_since
+        if purge_syslog and purge_syslog > purge_syslog_before:
+            purge_syslog_before = purge_syslog
+        self.debug("Purging system logs before: %s", purge_syslog_before)
+        for ent in lst:
+            if not ent.get("log_purged") and ent.get("created") <= purge_log_before:
+                self.debug("Purging logs at %s", ent.get("created"))
+                clst = self.objlist(DBCombatLogList, query_index="keep-started", query_equal="0",
+                        query_start="%s 00:00:00" % ent.get("created"), query_finish="%s 24:00:00" % ent.get("created"))
+                clst.load(silent=True)
+                for cent in clst:
+                    if cent.get("debug") == 0:
+                        self.purge_log(cent)
+                ent.set("log_purged", 1)
+            if not ent.get("syslog_purged") and ent.get("created") <= purge_syslog_before:
+                self.debug("Purging system logs at %s", ent.get("created"))
+                clst = self.objlist(DBCombatLogList, query_index="keep-started", query_equal="0",
+                        query_start="%s 00:00:00" % ent.get("created"), query_finish="%s 24:00:00" % ent.get("created"))
+                clst.load(silent=True)
+                for cent in clst:
+                    if cent.get("debug") == 1:
+                        self.purge_log(cent)
+                ent.set("syslog_purged", 1)
+            if ent.get("log_purged") and ent.get("syslog_purged"):
+                ent.delkey("stored")
+            ent.store()
+
+    def purge_log(self, cent):
+        for page in xrange(0, cent.get("pages", 0)):
+            try:
+                obj = self.obj(DBCombatLogPage, "%s-%s" % (cent.uuid, page))
+            except ObjectNotFoundException:
+                self.warning("Could not delete page %d of log %s", page, cent.uuid)
+                pass
+            else:
+                obj.remove()
+        cent.remove()

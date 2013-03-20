@@ -1,4 +1,17 @@
 <div class="text">
+    <h1>[%Settings%]</h1>
+    <table class="menu">
+        <tr class="header">
+            <td>[%LogType%]</td>
+            <td>[%StoredSize%]</td>
+            <td>[%Limit%]</td>
+        </tr>
+        <tr><td>[%Log%]</td><td>[%log_size%]</td><td>[%log_limit%]</tr>
+        <tr><td>[%Syslog%]</td><td>[%syslog_size%]</td><td>[%syslog_limit%]</td></tr>
+    </table>
+
+    <h1>[%Stats%]</h1>
+
     <table class="menu">
         <tr class="header">
             <td rowspan="3">[%Date%]</td>
@@ -21,6 +34,10 @@
             <td>[%Count%]</td>
             <td>[%Size%]</td>
         </tr>
-        [%foreach row in rows%]<tr>[%foreach col in row%]<td>[%col%]</td>[%end%]</tr>[%end%]
+        [%foreach row in rows%]<tr>[%foreach col in row%]<td>
+                [%if col.striked%]<strike>[%end%]
+                [%col.text%]
+                [%if col.striked%]</strike>[%end%]
+        </td>[%end%]</tr>[%end%]
     </table>
 </div>

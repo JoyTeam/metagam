@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-20 08:14+0300\n"
+"PO-Revision-Date: 2013-03-20 10:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4126,6 +4126,9 @@ msgstr "Ограничение суммарной высоты для всех �
 msgid "Limit for sum width of all images in the signature"
 msgstr "Ограничение суммарной ширины для всех изображений в подписи"
 
+msgid "Limit for the game"
+msgstr "Предел на игру"
+
 msgid "Link href"
 msgstr "Ссылка"
 
@@ -4304,6 +4307,9 @@ msgstr "Завершение сеанса"
 #, python-format
 msgid "Logout %s"
 msgstr "Завершение сеанса %s"
+
+msgid "Logs type"
+msgstr "Тип логов"
 
 msgid "Low limit"
 msgstr "Нижний предел"
@@ -7020,6 +7026,9 @@ msgstr "Склад {shop}"
 
 msgid "Stored in the database"
 msgstr "Сохраняется в базе данных"
+
+msgid "Stored size"
+msgstr "Сохранённый размер"
 
 msgid "Strike"
 msgstr "Зачёркивание"
@@ -9779,6 +9788,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "Limit"
+#~ msgstr "Предел"
 #~ msgid ""
 #~ "New e-mail moderation request received. Go to the admin panel please and "
 #~ "perform required moderation actions:\n"

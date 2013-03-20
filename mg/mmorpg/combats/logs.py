@@ -22,6 +22,7 @@ class DBCombatLogStat(mg.CassandraObject):
     clsname = "CombatLogStat"
     indexes = {
         "created": [[], "created"],
+        "stored-created": [["stored"], "created"],
     }
 
 class DBCombatLogStatList(mg.CassandraObjectList):
