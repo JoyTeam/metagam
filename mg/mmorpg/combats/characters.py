@@ -1,5 +1,16 @@
 import mg.constructor
 from mg.mmorpg.combats.core import *
+import mg
+
+class DBCombatCharacterLog(mg.CassandraObject):
+    clsname = "CombatCharacterLog"
+    indexes = {
+        "character-created": [["character"], "created"],
+        "combat": [["combat"], "created"],
+    }
+
+class DBCombatCharacterLogList(mg.CassandraObjectList):
+    objcls = DBCombatCharacterLog
 
 class Combats(mg.constructor.ConstructorModule):
     def register(self):
@@ -49,6 +60,7 @@ class CombatCharacterMember(CombatMember):
         self.set_param("char", character)
         self.set_name(character.name)
         self.set_sex(character.sex)
+        self._victory = False
         # get avatar of desired size
         rules = self.combat.rulesinfo
         dim = rules.get("dim_avatar", [120, 220])
@@ -69,6 +81,7 @@ class CombatCharacterMember(CombatMember):
     def victory(self):
         CombatMember.victory(self)
         self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="victory")
+        self._victory = True
 
     def defeat(self):
         CombatMember.defeat(self)
@@ -99,3 +112,10 @@ class CombatCharacterMember(CombatMember):
                     u''.join(tokens)
                 )
             })
+        # save combat log in the character's profile
+        log = self.obj(DBCombatCharacterLog)
+        log.set("created", self.now())
+        log.set("combat", self.combat.uuid)
+        log.set("character", char.uuid)
+        log.set("victory", self._victory)
+        log.store()

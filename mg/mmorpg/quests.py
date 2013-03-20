@@ -925,7 +925,7 @@ class QuestsAdmin(ConstructorModule):
                 if "rules" in options:
                     result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
                 if "title" in options:
-                    result += " title=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                    result += " ctitle=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
                 if "flags" in options:
                     result += " flags=%s" % self.call("script.unparse-expression", u','.join(options["flags"]))
                 result += " {\n"
@@ -1752,7 +1752,8 @@ class Quests(ConstructorModule):
                                         creq.set_rules(rules)
                                         # combat title
                                         title = options.get("title")
-                                        if options:
+                                        if title:
+                                            title = self.call("script.evaluate-text", title, globs=kwargs, description=lambda: self._("Combat title"))
                                             creq.set_title(title)
                                         # combat flags
                                         flags = options.get("flags")

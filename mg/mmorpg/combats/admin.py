@@ -3,6 +3,7 @@ from mg.core.tools import *
 from mg.core.cass import ObjectNotFoundException
 from mg.mmorpg.combats.core import Combat, CombatMember
 from mg.mmorpg.combats.logs import DBCombatLogList, DBCombatLogPage, DBCombatLogStat, DBCombatLogStatList
+from mg.mmorpg.combats.characters import DBCombatCharacterLogList
 from uuid import uuid4
 import re
 import datetime
@@ -39,6 +40,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("admin-combats.stats-cleanup", self.stats_cleanup)
         self.rhook("ext-admin-combats.stats", self.admin_stats, priv="combats.stats")
         self.rhook("headmenu-admin-combats.stats", self.headmenu_stats)
+        self.rhook("admin-gameinterface.design-files", self.design_files)
+
+    def design_files(self, files):
+        files.append({"filename": "character-combats.html", "description": self._("List of character's combats"), "doc": "/doc/design/combats"})
 
     def schedule(self, sched):
         sched.add("admin-combats.stats-cleanup", "20 0 * * *", priority=5)
@@ -1352,6 +1357,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             ent.store()
 
     def purge_log(self, cent):
+        # Purge log pages
         for page in xrange(0, cent.get("pages", 0)):
             try:
                 obj = self.obj(DBCombatLogPage, "%s-%s" % (cent.uuid, page))
@@ -1360,4 +1366,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 pass
             else:
                 obj.remove()
+        # Purge character log
+        lst = self.objList(DBCombatCharacterLogList, query_index="combat", query_equal=cent.uuid)
+        lst.load(silent=True)
+        lst.remove()
+        # Purge log itself
         cent.remove()

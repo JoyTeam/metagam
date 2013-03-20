@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-20 10:12+0300\n"
+"PO-Revision-Date: 2013-03-20 10:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1154,6 +1154,9 @@ msgstr "Список образов персонажей"
 msgid "Character info icon"
 msgstr "Иконка инфы персонажа"
 
+msgid "Character information"
+msgstr "Информация о персонаже"
+
 #, python-format
 msgid "Character is a member of missing combat (%s). Freeing lock"
 msgstr "Персонаж - участник завершённого боя (%s). Снимаем блокировку"
@@ -1659,6 +1662,13 @@ msgstr "Боевой движок"
 
 msgid "Combats history configuration"
 msgstr "Конфигурация истории боёв"
+
+#, python-format
+msgid "Combats of %s"
+msgstr "Бои %s"
+
+msgid "Combats of the character"
+msgstr "Бои персонажа"
 
 msgid "Combats rules"
 msgstr "Правила боёв"
@@ -4146,6 +4156,9 @@ msgstr "Ссылки"
 
 msgid "List is empty"
 msgstr "Список пуст"
+
+msgid "List of character's combats"
+msgstr "Список боёв персонажа"
 
 msgid "List of characters online"
 msgstr "Список пользователей онлайн"

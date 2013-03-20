@@ -570,12 +570,17 @@ class QuestAction(Parsing.Nonterm):
         "%reduce combat ExprAttrs curlyleft CombatContent curlyright"
         options = content.val.copy()
         rules = get_str_attr(cmd, "combat", attrs, "rules")
+        title = get_str_attr(cmd, "combat", attrs, "ctitle")
         flags = get_str_attr(cmd, "combat", attrs, "flags")
-        validate_attrs(cmd, "combat", attrs, ["rules", "flags"])
+        if title is not None:
+            title = cmd.script_parser.parse_text(title, cmd.script_parser._("Combat title"))
+        validate_attrs(cmd, "combat", attrs, ["rules", "flags", "ctitle"])
         if rules is not None and not re_valid_identifier.match(rules):
             raise Parsing.SyntaxError(cmd.script_parser._("Combat rules identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         if rules is not None:
             options["rules"] = rules
+        if title is not None:
+            options["title"] = title
         if flags is not None:
             options["flags"] = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
         self.val = ["combat", options]

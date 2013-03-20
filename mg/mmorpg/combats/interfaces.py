@@ -4,7 +4,9 @@ from mg.core.tools import *
 from mg.mmorpg.combats.core import CombatUnavailable
 from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
 from mg.constructor.design import TemplateNotFound
-from mg.mmorpg.combats.logs import CombatLogViewer
+from mg.mmorpg.combats.logs import CombatLogViewer, DBCombatLogList
+from mg.mmorpg.combats.characters import DBCombatCharacterLogList
+from mg.constructor.script_classes import ScriptTemplateObject
 import json
 import re
 
@@ -21,6 +23,8 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("ext-combat.action", self.combat_action, priv="logged")
         self.rhook("combat.unavailable-exception-char", self.unavailable_exception_char)
         self.rhook("ext-combat.handler", self.combat_log, priv="public")
+        self.rhook("character.public-info-menu", self.character_public_info_menu)
+        self.rhook("ext-character.combats", self.character_combats, priv="public")
 
     def child_modules(self):
         return [
@@ -162,3 +166,64 @@ class Combats(mg.constructor.ConstructorModule):
         for ent in log.entries(0, len(log)):
             vars["entries"].append(ent)
         self.call("combat.response_template", log.rules, "log.html", vars)
+
+    def character_public_info_menu(self, character, menu):
+        lst = self.objlist(DBCombatCharacterLogList, query_index="character-created", query_equal=character.uuid, query_limit=1)
+        if len(lst):
+            menu.append({
+                "href": "/character/combats/%s" % character.uuid,
+                "html": self._("Combats of the character"),
+                "order": 5,
+            })
+
+    def character_combats(self):
+        req = self.req()
+        character = self.character(req.args)
+        if not character.valid:
+            self.call("web.not_found")
+        vars = {
+            "title": self._("Combats of %s") % htmlescape(character.name),
+            "char": ScriptTemplateObject(character),
+            "character": {
+                "html": character.html(),
+                "name": character.name,
+                "sex": character.sex,
+            },
+        }
+        # List of combats
+        lst = self.objlist(DBCombatCharacterLogList, query_index="character-created", query_equal=character.uuid, query_reversed=True, query_limit=50)
+        lst.load(silent=True)
+        log_ids = ["%s-user" % ent.get("combat") for ent in lst]
+        clst = self.objlist(DBCombatLogList, log_ids)
+        clst.load(silent=True)
+        logs = dict([(ent.uuid, ent) for ent in clst])
+        last_date = None
+        params = []
+        for ent in lst:
+            log = logs.get("%s-user" % ent.get("combat"))
+            if not log:
+                continue
+            combat_date = ent.get("created").split(" ")[0]
+            if combat_date != last_date:
+                last_date = combat_date
+                params.append({
+                    "header": self.call("l10n.date_local", ent.get("created")),
+                })
+            params.append({
+                "combat": ent.get("combat"),
+                "date": self.call("l10n.time_local", ent.get("created")),
+                "title": htmlescape(log.get("title"))
+            })
+        if params:
+            vars["character"]["params"] = params
+        # Menu
+        menu = []
+        self.call("character.public-info-menu", character, menu)
+        if menu:
+            for ent in menu:
+                if ent["href"] == "/character/combats/%s" % character.uuid:
+                    del ent["href"]
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            menu[-1]["lst"] = True
+            vars["menu"] = menu
+        self.call("game.response_external", "character-combats.html", vars)
