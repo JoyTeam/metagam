@@ -57,3 +57,4 @@
 .combat-log-item { list-style: outside disc; padding: 0; margin: 0 }
 .combat-log-itemname { font-weight: bold }
 .combat-log-itemquantity { font-weight: bold; color: green }
+.combat-log-item { font-weight: bold; color: #000040 }

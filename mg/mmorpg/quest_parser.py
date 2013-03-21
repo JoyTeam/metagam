@@ -166,8 +166,11 @@ class TokenLog(Parsing.Token):
 class TokenSyslog(Parsing.Token):
     "%token syslog"
 
+class TokenEquipBreak(Parsing.Token):
+    "%token equipbreak"
+
 class QuestAttrKey(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
         "%reduce AttrKey"
         self.val = attrkey.val
@@ -183,6 +186,9 @@ class QuestAttrKey(Parsing.Nonterm):
     def reduceText(self, event):
         "%reduce text"
         self.val = "text"
+
+class PQuestActionOp(Parsing.Precedence):
+    "%left pQuestActionOp >pAttrKey"
 
 class Attrs(Parsing.Nonterm):
     "%nonterm"
@@ -372,7 +378,7 @@ class CombatEvents(Parsing.Nonterm):
 #          ACTIONS
 # ============================
 class QuestAction(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pQuestActionOp]"
     def reduceMessage(self, msg, expr):
         "%reduce message scalar"
         self.val = ["message", msg.script_parser.parse_text(expr.val, msg.script_parser._("action///Quest message"))]
@@ -592,6 +598,10 @@ class QuestAction(Parsing.Nonterm):
     def reduceCombatSyslog(self, cmb, cmd, text, expr):
         "%reduce combat syslog scalar ExprAttrs"
         self.val = ["combatsyslog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
+
+    def reduceEquipBreak(self, cmd, cond):
+        "%reduce equipbreak Expr"
+        self.val = ["equipbreak", cond.val]
 
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
@@ -879,10 +889,11 @@ class QuestScriptParser(ScriptParser):
     syms["draw"] = TokenDraw
     syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
+    syms["equipbreak"] = TokenEquipBreak
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
-        Parsing.Lr.__init__(self, spec)
+        Parsing.Glr.__init__(self, spec)
         self.general_spec = general_spec
 
     def parse_text(self, text, context):

@@ -211,8 +211,11 @@ class List(Parsing.Nonterm):
         "%reduce List comma Expr"
         self.val = lst.val + [expr.val]
 
+class PAttrKey(Parsing.Precedence):
+    "%left pAttrKey"
+
 class AttrKey(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pAttrKey]"
     def reduceIdentifier(self, identifier):
         "%reduce identifier"
         self.val = identifier.val
@@ -328,7 +331,7 @@ class Result(Parsing.Nonterm):
 	"%reduce Expr"
         raise ScriptParserResult(e.val)
 
-class ScriptParser(Parsing.Lr, Module):
+class ScriptParser(Parsing.Glr, Module):
     re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
@@ -364,7 +367,7 @@ class ScriptParser(Parsing.Lr, Module):
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")
-	Parsing.Lr.__init__(self, spec)
+	Parsing.Glr.__init__(self, spec)
 
     def scan(self, input):
         input = input.strip()

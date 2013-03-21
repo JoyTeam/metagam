@@ -283,7 +283,7 @@ class CombatScriptParser(ScriptParser):
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.combats.combat_parser.CombatScriptParser")
-        Parsing.Lr.__init__(self, spec)
+        Parsing.Glr.__init__(self, spec)
         self.general_spec = general_spec
 
     def parse_text(self, text, context):

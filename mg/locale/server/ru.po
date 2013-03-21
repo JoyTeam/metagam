@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-20 10:59+0300\n"
+"PO-Revision-Date: 2013-03-21 13:54+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -209,6 +209,9 @@ msgstr "<p>Мы не предоставляем бесплатное домен�
 
 msgid "<p>Your game is currently on moderation. You may continue setting it up.</p><p><a href=\"/admin\" target=\"_blank\">Administrative interface</a></p>"
 msgstr "<p>Ваша игра в данный момент находится на модерации. Вы можете продолжить её настройку.</p><p><a href=\"/admin\" target=\"_blank\">Административный интерфейс</a></p>"
+
+msgid "<span class=\"combat-log-item\">{item}</span> of character <span class=\"combat-log-member\">{name}</span> has been broken"
+msgstr "<span class=\"combat-log-item\">{item}</span> персонажа <span class=\"combat-log-member\">{name}</span> разрушается"
 
 msgid "<strong>{wmid}</strong> (certificate: <strong>{certificate}</strong>)"
 msgstr "<strong>{wmid}</strong> (аттестат: <strong>{certificate}</strong>)"
@@ -2724,6 +2727,9 @@ msgstr "Вычисление условия"
 
 msgid "Evaluation of damage target member"
 msgstr "Определение цели урона"
+
+msgid "Evaluation of damage to the equip"
+msgstr "Вычисления повреждений экипировки"
 
 msgid "Evaluation of damage value"
 msgstr "Определение величины урона"
@@ -8661,6 +8667,9 @@ msgstr "авторизовано"
 msgid "auto"
 msgstr "авто"
 
+msgid "breaking item {item} in slot {slot}. damage={damage}"
+msgstr "ломаем предмет {item} в слоте {slot}. повреждения={damage}"
+
 msgid "btn///Confirm"
 msgstr "Подтвердить"
 
@@ -8821,6 +8830,9 @@ msgstr "конструктор"
 
 msgid "copy"
 msgstr "копировать"
+
+msgid "could not break item {item} in slot {slot}"
+msgstr "не удалось сломать предмет {item} в слоте {slot}"
 
 msgid "created///by"
 msgstr "Создано"
@@ -9018,6 +9030,9 @@ msgstr "установить"
 
 msgid "installed"
 msgstr "установлено"
+
+msgid "item {item} in slot {slot} has broken completely"
+msgstr "предмет {item} в слоте {slot} полностью сломался"
 
 msgid "item///wear"
 msgstr "надеть"

@@ -243,10 +243,10 @@ area { border: none }
 /* ITEM HINTS */
 .quantity { color: #008000 }
 .item-hint-table .item-info-name { font-size: 13px }
-.item-hint-table .quantity { color: #80ff80 }
-.item-hint-table .money-amount { color: #80ff80 }
+.item-hint-table .quantity { color: #008000 }
+.item-hint-table .money-amount { color: #008000 }
 .item-hint-text { padding: 5px 0 5px 0 }
-.item-hint-table .item-description { color: #c0c0c0 }
+.item-hint-table .item-description { color: #606060 }
 .item-hint-table .param-mod-plus { color: #c0ffc0 }
 .item-hint-table .param-mod-minus { color: #ffc0c0 }
 

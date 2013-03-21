@@ -110,7 +110,8 @@ class CombatCharacterMember(CombatMember):
                     htmlescape(self.name),
                     self._("female///has got") if self.sex else self._("male///has got"),
                     u''.join(tokens)
-                )
+                ),
+                "cls": "combat-log-loot",
             })
         # save combat log in the character's profile
         log = self.obj(DBCombatCharacterLog)
