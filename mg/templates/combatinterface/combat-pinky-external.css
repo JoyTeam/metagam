@@ -1,0 +1,9 @@
+body { background: url(body-bg-1.jpg) }
+#page-top1, #page-layout-content { background: #f6c8ae; color: #3c3b39 }
+a:link, a:visited, #socio-topmenu a:link, #socio-topmenu a:visited { color: #7e4939 }
+a:hover, a:active, #socio-topmenu a:hover, #socio-topmenu a:active { color: #5d7d00 }
+#page-top2 { background-image: url(sbox-bottom.png); background-position: 0% 100%; background-repeat: repeat-x }
+#page-top3 { background-image: url(sbox-top.png); background-position: 0% 0%; background-repeat: repeat-x }
+#page-top4 { padding: 20px 60px 20px 60px }
+#page-left { background-image: url(sbox-left.png); background-position: 100% 0%; background-repeat: repeat-y }
+#page-right { background-image: url(sbox-right.png); background-position: 0% 0%; background-repeat: repeat-y }

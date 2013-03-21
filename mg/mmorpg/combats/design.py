@@ -30,6 +30,36 @@ class DesignCombatRustedMetal(DesignCombatCommonBlocks):
     def name(self): return self._("Rusted Metal")
     def preview(self): return "/st/constructor/design/gen/combat-rusted-metal.jpg"
 
+class DesignCombatJungle(DesignCombatCommonBlocks):
+    def id(self): return "combat-jungle"
+    def name(self): return self._("Jungle")
+    def preview(self): return "/st/constructor/design/gen/combat-jungle.jpg"
+
+class DesignCombatCelticCastle(DesignCombatCommonBlocks):
+    def id(self): return "combat-celtic-castle"
+    def name(self): return self._("Celtic Castle")
+    def preview(self): return "/st/constructor/design/gen/combat-celtic-castle.jpg"
+
+class DesignCombatSpace(DesignCombatCommonBlocks):
+    def id(self): return "combat-space"
+    def name(self): return self._("Space")
+    def preview(self): return "/st/constructor/design/gen/combat-space.jpg"
+
+class DesignCombatPinky(DesignCombatCommonBlocks):
+    def id(self): return "combat-pinky"
+    def name(self): return self._("Pinky")
+    def preview(self): return "/st/constructor/design/gen/combat-pinky.jpg"
+
+class DesignCombatMedieval(DesignCombatCommonBlocks):
+    def id(self): return "combat-medieval"
+    def name(self): return self._("Medieval")
+    def preview(self): return "/st/constructor/design/gen/combat-medieval.jpg"
+
+class DesignCombatSubmarine(DesignCombatCommonBlocks):
+    def id(self): return "combat-submarine"
+    def name(self): return self._("Submarine")
+    def preview(self): return "/st/constructor/design/gen/combat-submarine.jpg"
+
 def design_class_wrapper(cls, tp):
     class DesignClass(cls):
         def group(self):
@@ -103,12 +133,12 @@ class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
 
     def generators(self, tp, gens):
         gens.append(design_class_wrapper(DesignCombatRustedMetal, tp))
-        #gens.append(DesignCombatCelticCastle)
-        #gens.append(DesignCombatJungle)
-        #gens.append(DesignCombatMedieval)
-        #gens.append(DesignCombatPinky)
-        #gens.append(DesignCombatSpace)
-        #gens.append(DesignCombatSubmarine)
+        gens.append(design_class_wrapper(DesignCombatJungle, tp))
+        gens.append(design_class_wrapper(DesignCombatCelticCastle, tp))
+        gens.append(design_class_wrapper(DesignCombatSpace, tp))
+        gens.append(design_class_wrapper(DesignCombatPinky, tp))
+        gens.append(design_class_wrapper(DesignCombatMedieval, tp))
+        gens.append(design_class_wrapper(DesignCombatSubmarine, tp))
 
     def headmenu_design(self, tp, args):
         if args == "":
