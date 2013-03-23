@@ -4,6 +4,8 @@ import re
 
 re_charparam = re.compile(r'^charparam/(.+)$')
 re_char_params = re.compile(r'char\.p_([a-zA-Z_][a-zA-Z0-9_]*)')
+re_valid_parameter = re.compile('^p_[a-z0-9_]+$', re.IGNORECASE)
+re_del = re.compile('^del/(.+)$')
 
 class CharacterParamsAdmin(ParamsAdmin):
     def __init__(self, app, fqn):
@@ -24,6 +26,8 @@ class CharacterParamsAdmin(ParamsAdmin):
         self.rhook("characters.param-admin-changed", self.param_admin_changed)
         self.rhook("characters.script-globs", self.script_globs)
         self.rhook("characters.require-security-comment", self.require_security_comment)
+        self.rhook("headmenu-admin-characters.params-delivery", self.headmenu_delivery)
+        self.rhook("ext-admin-characters.params-delivery", self.admin_delivery, priv="characters.params")
 
     def require_security_comment(self):
         return True
@@ -45,6 +49,7 @@ class CharacterParamsAdmin(ParamsAdmin):
         req = self.req()
         if req.has_access("characters.params"):
             menu.append({"id": "characters/params", "text": self.title, "leaf": True, "order": 25})
+            menu.append({"id": "characters/params-delivery", "text": self._("Delivery of parameters to the client"), "leaf": True, "order": 26})
 
     def user_tables(self, user, tables):
         req = self.req()
@@ -70,6 +75,97 @@ class CharacterParamsAdmin(ParamsAdmin):
         req = self.req()
         self.call("security.suspicion", admin=req.user(), action="param.change", kind="characters", uuid=uuid, param=param["code"], old_value=old_value, new_value=new_value, comment=comment)
         self.call("dossier.write", user=uuid, admin=req.user(), content=self._("{param_name} ({param_code}) changed from {old_value} to {new_value}:\n{comment}").format(param_name=param["name"], param_code=param["code"], old_value=old_value, new_value=new_value, comment=comment))
+
+    def headmenu_delivery(self, args):
+        if args == "new":
+            return [self._("New parameter"), "characters/params-delivery"]
+        elif re_valid_parameter.match(args):
+            return [self._("Parameter %s") % args, "characters/params-delivery"]
+        else:
+            return self._("Characters parameters delivered to the client")
+
+    def admin_delivery(self):
+        req = self.req()
+        existing_params = self.conf("characters.params-delivery", {}).copy()
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                paramid = m.group(1)
+                if paramid in existing_params:
+                    del existing_params[paramid]
+                    config = self.app().config_updater()
+                    config.set("characters.params-delivery", existing_params)
+                    config.store()
+                self.call("admin.redirect", "characters/params-delivery")
+            paramid = req.args
+            if req.ok():
+                character = self.character(req.user())
+                errors = {}
+                # code
+                pcode = req.param("code")
+                if not re_valid_parameter.match(pcode):
+                    errors["code"] = self._("Parameter code must start with p_ and contain only latin letters, digits and underscode characters")
+                elif pcode in existing_params and pcode != paramid:
+                    errors["code"] = self._("Parameter with this code is already delivered to client")
+                # visible
+                visible = self.call("script.admin-expression", "visible", errors, globs={"char": character, "viewer": character})
+                # process errors
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # store configuration
+                if paramid != "new":
+                    del existing_params[paramid]
+                existing_params[pcode] = {
+                    "visible": visible
+                }
+                config = self.app().config_updater()
+                config.set("characters.params-delivery", existing_params)
+                config.store()
+                self.call("admin.redirect", "characters/params-delivery")
+            if paramid == "new":
+                code = "p_"
+                visible = 1
+            else:
+                code = paramid
+                paraminfo = existing_params.get(code)
+                if not paraminfo:
+                    self.call("admin.redirect", "characters/params-delivery")
+                visible = paraminfo.get("visible")
+            fields = [
+                {"name": "code", "label": self._("Character parameter"), "value": code},
+                {"name": "visible", "label": self._("Whether parameter of character 'char' is visible to character 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", visible)},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for pcode in sorted(existing_params.keys()):
+            param = existing_params[pcode]
+            rows.append([
+                pcode,
+                self.call("script.unparse-expression", param["visible"]),
+                u'<hook:admin.link href="characters/params-delivery/%s" title="%s" />' % (pcode, self._("edit")),
+                u'<hook:admin.link href="characters/params-delivery/del/%s" title="%s" confirm="%s" />' % (pcode, self._("delete"), self._("Are you sure want to remove this parameter from the delivery")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "characters/params-delivery/new",
+                            "text": self._("New parameter"),
+                            "lst": True
+                        }
+                    ],
+                    "header": [
+                        self._("Parameter code"),
+                        self._("Visibility"),
+                        self._("Edit"),
+                        self._("Delete"),
+                    ],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars=vars)
 
 class CharacterParams(Params):
     def __init__(self, app, fqn):

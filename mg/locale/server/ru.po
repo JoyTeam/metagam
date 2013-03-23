@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-21 13:54+0300\n"
+"PO-Revision-Date: 2013-03-23 07:55+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -610,6 +610,9 @@ msgstr "Вы уверены, что хотите удалить этот шаб�
 msgid "Are you sure want to remove this lock?"
 msgstr "Вы уверены, что хотите снять эту блокировку?"
 
+msgid "Are you sure want to remove this parameter from the delivery"
+msgstr "Вы уверены, что хотите удалить этот параметр из доставки?"
+
 msgid "Are you sure want to unpublish the project?"
 msgstr "Вы уверены, что хотите снять проект с публикации?"
 
@@ -1200,6 +1203,9 @@ msgstr "Страница персонажа (внешняя информация
 msgid "Character page (internal)"
 msgstr "Страница персонажа (внутренняя)"
 
+msgid "Character parameter"
+msgstr "Параметр персонажа"
+
 msgid "Character parameters"
 msgstr "Параметры персонажа"
 
@@ -1251,6 +1257,9 @@ msgstr "Параметры персонажей"
 
 msgid "Characters parameters are not defined"
 msgstr "Параметры персонажей не определены"
+
+msgid "Characters parameters delivered to the client"
+msgstr "Параметры персонажа, доставляемые в клиент"
 
 msgid "Chargeback"
 msgstr "Возврат платежа"
@@ -2083,6 +2092,9 @@ msgstr "Доставить новый параметр участника боя
 
 msgid "Deliver new combat parameter"
 msgstr "Доставить новый параметр боя"
+
+msgid "Delivery of parameters to the client"
+msgstr "Доставка параметров в клиент"
 
 msgid "Delivery options"
 msgstr "Опции доставки"
@@ -5376,8 +5388,15 @@ msgid "Panels"
 msgstr "Панели"
 
 #, python-format
+msgid "Parameter %s"
+msgstr "Параметр %s"
+
+#, python-format
 msgid "Parameter %s is not stored in the database"
 msgstr "Параметр %s не сохраняется в базе данных"
+
+msgid "Parameter code"
+msgstr "Код параметра"
 
 msgid "Parameter code (prefixed with 'p_')"
 msgstr "Код параметра (с префиксом \"p_\")"
@@ -8112,6 +8131,9 @@ msgstr "Является ли предмет {item} ({name}) надеваемы�
 
 msgid "Whether parameter is visible to member 'viewer'"
 msgstr "Виден ли параметр участнику \"viewer\""
+
+msgid "Whether parameter of character 'char' is visible to character 'viewer'"
+msgstr "Виден ли параметр персонажа \"char\" персонажу \"viewer\""
 
 msgid "Whether parameter of member 'member' is visible to member 'viewer'"
 msgstr "Виден ли параметр участника \"member\" участнику \"viewer\""

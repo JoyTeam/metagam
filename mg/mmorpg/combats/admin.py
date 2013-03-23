@@ -794,7 +794,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     config = self.app().config_updater()
                     config.set("combats-%s.params" % code, params)
                     config.store()
-                    self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
+                self.call("admin.redirect", "combats/rules/edit/%s/params" % code)
             m = re_combat_params.match(cmd)
             if m:
                 paramid = m.group(1)
