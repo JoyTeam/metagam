@@ -599,7 +599,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             items: items,
             flex: 1,
             style: {
-                paddingRight: '40px'
+                paddingRight: '10px'
             },
             border: false
         });
@@ -764,7 +764,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             border: false,
             flex: 1,
             style: {
-                paddingRight: '40px'
+                paddingRight: '10px'
             }
         });
     },
