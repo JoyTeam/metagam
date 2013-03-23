@@ -1029,7 +1029,9 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             return;
         }
         self.lastAction = self.action.action;
-        console.log('Selected action:', Ext.util.JSON.encode(data));
+        if (self.combat.consoleLog) {
+            console.log('Selected action:', Ext.util.JSON.encode(data));
+        }
         self.hide();
         self.combat.viewportComponent.doLayout();
         self.combat.submitAction(data, function (err) {

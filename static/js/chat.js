@@ -636,6 +636,7 @@ Chat.character_update = function(pkt) {
         if (character.element) {
             character.element.el.update(char_info.html);
         }
+        Characters.set_params(char_info.id, char_info.params);
     }
 };
 

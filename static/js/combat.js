@@ -88,17 +88,21 @@ var Combat = Ext.extend(Object, {
         if (method == 'stateMarker') {
             if (self._callsBlocked && args[0] == self._queryStateMarker) {
                 self._callsBlocked = false;
-                console.log('combat.init');
+                if (self.consoleLog) {
+                    console.log('combat.init');
+                }
             }
             return;
         }
         if (self._callsBlocked) {
             return;
         }
-        if (args.length) {
-            console.log('combat.' + method, Ext.util.JSON.encode(args));
-        } else {
-            console.log('combat.' + method);
+        if (self.consoleLog) {
+            if (args.length) {
+                console.log('combat.' + method, Ext.util.JSON.encode(args));
+            } else {
+                console.log('combat.' + method);
+            }
         }
         /* Look for method by its name */
         method = self[method];

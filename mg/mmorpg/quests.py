@@ -1791,7 +1791,9 @@ class Quests(ConstructorModule):
                                         for member in options["members"]:
                                             mtype = member["type"]
                                             if mtype[0] == "virtual":
-                                                cmember = ["virtual"]
+                                                cmember = {
+                                                    "object": ["virtual"]
+                                                }
                                             elif mtype[0] == "expr":
                                                 cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
                                                 makemember = getattr(cmemberobj, "combat_member", None)
@@ -1800,9 +1802,7 @@ class Quests(ConstructorModule):
                                                 cmember = makemember()
                                             else:
                                                 raise QuestError(self._("Unknown combat type %s") % mtype[0])
-                                            rmember = {
-                                                "object": cmember,
-                                            }
+                                            rmember = cmember
                                             team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
                                             if type(team) != int:
                                                 raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
@@ -1814,7 +1814,7 @@ class Quests(ConstructorModule):
                                                     rmember["team"] = team
                                             if "control" in member:
                                                 rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
-                                            elif cmember[0] == "character":
+                                            elif cmember["object"][0] == "character":
                                                 rmember["control"] = "web"
                                             else:
                                                 rmember["control"] = "ai"
@@ -1842,10 +1842,13 @@ class Quests(ConstructorModule):
                                         except CombatRunError as e:
                                             raise QuestError(e.val)
                                         else:
-                                            try:
-                                                tasklet.quest_combat_started[char.uuid] = creq.uuid
-                                            except AttributeError:
-                                                tasklet.quest_combat_started = {char.uuid: creq.uuid}
+                                            for member in creq.members:
+                                                if member["object"][0] == "character":
+                                                    char_uuid = member["object"][1]
+                                                    try:
+                                                        tasklet.quest_combat_started[char_uuid] = creq.uuid
+                                                    except AttributeError:
+                                                        tasklet.quest_combat_started = {char_uuid: creq.uuid}
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1902,9 +1905,9 @@ class Quests(ConstructorModule):
                     uri = "/combat/interface/%s" % combat_id
                     if req and req.user() == char_uuid:
                         try:
-                            req.quest_redirects[char.uuid] = uri
+                            req.quest_redirects[char_uuid] = uri
                         except AttributeError:
-                            req.quest_redirects = {char.uuid: uri}
+                            req.quest_redirects = {char_uuid: uri}
                     else:
                         char = self.character(char_uuid)
                         char.main_open(uri)
@@ -1996,10 +1999,10 @@ class Quests(ConstructorModule):
         redirs = getattr(req, "quest_redirects", None)
         if redirs:
             user = req.user()
-            for char_uuid, uri in redirs.iteritems():
-                if user == char_uuid:
-                    del redirs[char_uuid]
-                    self.call("web.redirect", uri)
+            uri = redirs.get(user)
+            if uri:
+                del redirs[user]
+                self.call("web.redirect", uri)
 
     def dialog(self):
         req = self.req()
@@ -2209,6 +2212,12 @@ class Quests(ConstructorModule):
                     elif re_arg_param.match(k):
                         args[k] = v
                 self.qevent("clicked-%s" % ev, char=character, args=args, **globs)
+                redirs = getattr(req, "quest_redirects", None)
+                if redirs:
+                    uri = redirs.get(character.uuid)
+                    if uri:
+                        del redirs[character.uuid]
+                        self.call("web.response_json", {"ok": True, "redirect": uri})
                 self.call("web.response_json", {"ok": True})
         self.call("web.response_json", {"error": True})
 

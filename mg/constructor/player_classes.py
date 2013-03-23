@@ -384,6 +384,12 @@ class Character(Module):
             return self.inventory
         elif attr == "equip":
             return self.equip
+        elif attr == "combat":
+            busy = self.busy
+            if busy:
+                return busy.get("combat")
+            else:
+                return None
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -510,7 +516,11 @@ class Character(Module):
         self.call("stream.character", self, "game", "main_open", uri=uri)
 
     def combat_member(self):
-        return ["character", self.uuid]
+        return {
+            "object": ["character", self.uuid],
+            "name": self.name,
+            "sex": self.sex
+        }
 
     def deliverable_params(self):
         return self.call("characters.deliverable-params", self)

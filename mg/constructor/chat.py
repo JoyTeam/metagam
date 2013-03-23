@@ -111,7 +111,7 @@ class Chat(ConstructorModule):
             "order": 5.0,
             "default_visible": True,
             "image": "/st-mg/icons/chat-message.png",
-            "visible": 1,
+            "visible": ["!=", [".", ["glob", "char"], "id"], [".", ["glob", "viewer"], "id"]],
         })
         menu.append({
             "code": "chatprivate",
@@ -120,7 +120,7 @@ class Chat(ConstructorModule):
             "order": 6.0,
             "default_visible": True,
             "image": "/st-mg/icons/chat-private.png",
-            "visible": 1,
+            "visible": ["!=", [".", ["glob", "char"], "id"], [".", ["glob", "viewer"], "id"]],
         })
 
     def library_index_pages(self, pages):

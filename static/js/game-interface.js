@@ -514,7 +514,15 @@ Game.qevent = function (ev, params) {
     Ext.Ajax.request({
         url: '/quest/event',
         method: 'POST',
-        params: params
+        params: params,
+        success: function (response, opts) {
+            if (response && response.getResponseHeader) {
+                var res = Ext.util.JSON.decode(response.responseText);
+                if (res.redirect) {
+                    Game.main_open(res.redirect);
+                }
+            }
+        }
     });
 };
 

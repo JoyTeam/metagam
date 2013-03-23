@@ -46,6 +46,7 @@ class Combats(mg.constructor.ConstructorModule):
         }, dry_run)
         if not dry_run and res:
             character.message(self._("You have entered a combat"))
+            self.call("characters.param-changed", character.uuid, "combat", None, combat_id)
         return not res
 
     def unset_busy(self, combat_id, uuid):
@@ -53,6 +54,7 @@ class Combats(mg.constructor.ConstructorModule):
         busy = character.busy
         if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
             character.unset_busy()
+            self.call("characters.param-changed", character.uuid, "combat", combat_id, None)
 
 class CombatCharacterMember(CombatMember):
     def __init__(self, combat, character, fqn="mg.mmorpg.combats.characters.CombatCharacterMember"):

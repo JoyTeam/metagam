@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-23 13:02+0300\n"
+"PO-Revision-Date: 2013-03-23 13:53+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -46,8 +46,8 @@ msgid "%s administration interface"
 msgstr "Административный интерфейс %s"
 
 #, python-format
-msgid "%s can't join combat. [gender?She:He] is busy"
-msgstr "%s не может присоединиться к бою. [gender?Она занята:Он занят]"
+msgid "%s is busy and can't join combat"
+msgstr "%s [gender?занята:занят] и не может присоединиться к бою"
 
 #, python-format
 msgid "%s registry is temporarily unavailable. Try again later"
@@ -9882,6 +9882,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "%s can't join combat. [gender?She:He] is busy"
+#~ msgstr "%s не может присоединиться к бою. [gender?Она занята:Он занят]"
 #~ msgid "Character's legend"
 #~ msgstr "Легенда персонажа"
 #~ msgid "Character's motto"

@@ -355,7 +355,7 @@ class CharacterParamsAdmin(ParamsAdmin):
         fields = [
             {"name": "title", "label": self._("Menu entry text") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", entry.get("title"))},
             {"name": "order", "label": self._("Sorting order"), "value": entry.get("order"), "inline": True},
-            {"name": "visible", "label": self._("Menu entry of character 'char' visible for character 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", entry.get("visible", 1))},
+            {"name": "visible", "label": self._("Menu entry of character 'char' visible for character 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", entry.get("visible", 1))},
             {"type": "fileuploadfield", "name": "image", "label": self._("Menu entry icon") if code == "new" else self._("Replace menu icon")},
             {"type": "combo", "name": "action", "value": action, "values": [("href", self._("Open hyperlink")), ("onclick", self._("Execute JavaScript code")), ("qevent", self._("Call quest event"))]},
             {"name": "href", "value": self.call("script.unparse-text", entry.get("href")), "label": self._("Hyperlink URL") + self.call("script.help-icon-expressions"), "condition": "[action]=='href'"},
@@ -456,6 +456,10 @@ class CharacterParams(Params):
         }
         for pcode, param in self.conf("characters.params-delivery", {}).items():
             result["p_%s" % pcode] = char.param(pcode)
+        if char.busy:
+            combat = char.busy.get("combat")
+            if combat:
+                result["combat"] = combat
         return result
 
 class CharacterParamsLibrary(ParamsLibrary):

@@ -43,6 +43,7 @@ area { border: none }
 .chat-msg-char-missing { text-decoration: line-through }
 .chat-msg-auth { color: #606060 }
 .chat-msg-move { color: #408040 }
+.char-combat { color: #c00000 }
 #chat-roster-header-content { text-align: center; overflow: auto }
 #chat-roster-buttons-content { text-align: center }
 #chat-channel-buttons img { vertical-align: top; margin: 0 auto 0 auto }
@@ -264,5 +265,5 @@ area { border: none }
 .chat-msg-combat-error { color: #c00020 }
 .chat-msg-combat-log { color: #808080 }
 .chat-msg-combat-start { color: red }
-.chat-msg-combat-started { font-weight: bold; padding: 2px; margin: 2px 0 2px 0; border: solid 1px #ff0000 }
+.chat-msg-combat-started { font-weight: bold }
 .chat-msg-combat-stopped { font-weight: bold }

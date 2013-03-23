@@ -10,6 +10,7 @@ import time
 from mg.constructor.script_classes import ScriptRuntimeError, ScriptMemoryObject
 
 re_param_attr = re.compile(r'^p_')
+re_team_list = re.compile(r'^team(\d+)_list')
 
 class CombatError(Exception):
     def __init__(self, val):
@@ -59,7 +60,7 @@ class CombatLocker(mg.constructor.ConstructorModule):
                 obj = minfo["object"]
                 mtype = obj[0]
                 if self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:], dry_run=True):
-                    raise CombatMemberBusyError(format_gender(minfo.get("sex", 0), self._("%s can't join combat. [gender?She:He] is busy") % minfo.get("name", mtype)))
+                    raise CombatMemberBusyError(format_gender(minfo.get("sex", 0), self._("%s is busy and can't join combat") % minfo.get("name", mtype)))
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
@@ -418,6 +419,11 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             return self.stage
         elif attr == "stage_flags":
             return CombatStageFlags(self)
+        # team list
+        m = re_team_list.match(attr)
+        if m:
+            team = intz(m.group(1))
+            return self.call("l10n.literal_enumeration", [u'<span class="combat-log-member">%s</span>' % member.name for member in self.members if member.team == team])
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -500,14 +506,30 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def victory(self, team):
         "Combat finished with victory of specified team"
+        winners_list = []
+        loosers_list = []
+        first_winner = None
+        first_looser = None
         for member in self.members:
             if member.team != team:
                 member.defeat()
+                loosers_list.append(member)
+                if first_looser is None:
+                    first_looser = member
         for member in self.members:
             if member.team == team:
                 member.victory()
+                winners_list.append(member)
+                if first_winner is None:
+                    first_winner = member
         globs = self.globs()
         globs["winner_team"] = team
+        globs["winners_list"] = self.call("l10n.literal_enumeration", [u'<span class="combat-log-member">%s</span>' % member.name for member in winners_list])
+        globs["loosers_list"] = self.call("l10n.literal_enumeration", [u'<span class="combat-log-member">%s</span>' % member.name for member in loosers_list])
+        globs["first_winner"] = first_winner
+        globs["first_looser"] = first_looser
+        globs["winners_count"] = len(winners_list)
+        globs["loosers_count"] = len(loosers_list)
         for member in self.members:
             if member.team != team:
                 self.execute_member_script(member, "defeat-member", globs, lambda: self._("Combat defeat script for a member"))

@@ -279,6 +279,10 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             while not self.combat.stopped():
                 self.combat.process()
             self.combat.notify_stopped()
+            # free members
+            locker = CombatLocker(self.app(), self.cobj)
+            locker.unset_busy()
+            self.cobj.remove()
         except CombatRunError as e:
             self.call("exception.report", e)
             self.call("combats.debug", self.combat, e.val, cls="combat-error")
