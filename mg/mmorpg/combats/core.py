@@ -12,6 +12,8 @@ from mg.constructor.script_classes import ScriptRuntimeError, ScriptMemoryObject
 re_param_attr = re.compile(r'^p_')
 re_team_list = re.compile(r'^team(\d+)_list')
 
+textlog_ring_size = 10
+
 class CombatError(Exception):
     def __init__(self, val):
         self.val = val
@@ -149,6 +151,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.not_delivered_log = []
         self.start_time = time.time()
         self._flags = set()
+        self._textlog_ring = []
 
     def script_code(self, tag):
         "Get combat script code (syntax tree)"
@@ -442,6 +445,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.not_delivered_log.append(entry)
         if self.log:
             self.log.textlog(entry)
+        self._textlog_ring.append(entry)
+        l = len(self._textlog_ring)
+        if l > textlog_ring_size:
+            del self._textlog_ring[0:l - textlog_ring_size]
 
     def syslog(self, entry):
         "Add entry to combat debug log"
@@ -997,6 +1004,8 @@ class RequestStateCommand(CombatCommand):
             self.controller.deliver_member_joined(member)
             self.controller.member_params_changed(member, member.all_params())
         self.controller.deliver_myself()
+        if self.combat._textlog_ring:
+            self.controller.deliver_log(self.combat._textlog_ring)
         if self.controller.member.may_turn:
             self.controller.turn_got()
 
