@@ -106,6 +106,7 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
                     act = member.pending_actions.pop(0)
                     self.combat.execute_action(act)
                     self.combat.process_actions()
+                    self.combat.add_time(1)
                     if next_member and self.combat.stage_flag("actions"):
                         self.turn_give(next_member)
                     break

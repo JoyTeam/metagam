@@ -58,3 +58,4 @@
 .combat-log-itemname { font-weight: bold }
 .combat-log-itemquantity { font-weight: bold; color: green }
 .combat-log-item { font-weight: bold; color: #000040 }
+.combat-log-time-header { font-size: 16px; font-weight: bold }

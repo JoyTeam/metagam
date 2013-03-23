@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-23 20:07+0300\n"
+"PO-Revision-Date: 2013-03-23 21:05+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1682,6 +1682,9 @@ msgstr "Этап боя \"%s\" неопределён"
 msgid "Combat start script"
 msgstr "Скрипт начала боя"
 
+msgid "Combat time"
+msgstr "Боевое время"
+
 msgid "Combat title"
 msgstr "Название боя"
 
@@ -2369,6 +2372,9 @@ msgstr "Домены: отсоединение"
 
 msgid "Don't check DNS servers"
 msgstr "Не проверять DNS-серверы"
+
+msgid "Don't show time"
+msgstr "Не показывать время"
 
 msgid "Dossier"
 msgstr "Досье"
@@ -3932,6 +3938,12 @@ msgstr "Неверный символ: '%s'"
 msgid "Invalid target identifier"
 msgstr "Неверный идентификатор цели"
 
+msgid "Invalid time format"
+msgstr "Неверный формат времени"
+
+msgid "Invalid time mode"
+msgstr "Неверный режим времени"
+
 msgid "Invalid usage of assignment operator"
 msgstr "Неверное использование оператора присвоения"
 
@@ -4405,6 +4417,9 @@ msgstr "Нижний предел"
 msgid "MAU"
 msgstr "MAU"
 
+msgid "MM:SS"
+msgstr "ММ:СС"
+
 msgid "MMO Constructor"
 msgstr "MMO Constructor"
 
@@ -4604,6 +4619,10 @@ msgid "Maximal timeout is %d seconds"
 msgstr "Максимальный таймаут - %d секунд"
 
 #, python-format
+msgid "Maximal turn timeout is %d seconds"
+msgstr "Максимальный таймаут хода - %d секунд"
+
+#, python-format
 msgid "Maximal value is %d"
 msgstr "Максимальное значение - %d"
 
@@ -4765,6 +4784,10 @@ msgstr "Минимальный шаг платежа в этой валюте п
 #, python-format
 msgid "Minimal timeout is %d seconds"
 msgstr "Минимальный таймаут - %d секунд"
+
+#, python-format
+msgid "Minimal turn timeout is %d seconds"
+msgstr "Минимальный таймаут хода - %d секунд"
 
 msgid "Minimal value - 1"
 msgstr "Минимальное значение - 1"
@@ -5398,6 +5421,9 @@ msgstr "Перемещение других персонажей"
 msgid "Our time"
 msgstr "Наше время"
 
+msgid "Output to log after every change"
+msgstr "Выводить в лог после каждого изменения"
+
 msgid "Override parameters"
 msgstr "Переопределение параметров"
 
@@ -5643,6 +5669,9 @@ msgstr "Закрепить"
 
 msgid "Pinky"
 msgstr "Розовенький"
+
+msgid "Plain number"
+msgstr "Обычное число"
 
 msgid "Player"
 msgstr "Игрок"
@@ -6697,6 +6726,9 @@ msgstr "Показать лог боя снизу"
 msgid "Show enemy's avatar on the right side"
 msgstr "Показать аватар врага справа"
 
+msgid "Show in the beginning of every log line"
+msgstr "Показывать в начале каждой строки лога"
+
 msgid "Show on registration"
 msgstr "Показывать при регистрации"
 
@@ -7600,8 +7632,14 @@ msgstr "До"
 msgid "Time"
 msgstr "Время"
 
+msgid "Time format"
+msgstr "Формат времени"
+
 msgid "Time in days to implement this feature"
 msgstr "Время в днях на реализацию этой фичи"
+
+msgid "Time visualization mode"
+msgstr "Режим визуализации времени"
 
 msgid "Time zone"
 msgstr "Часовой пояс"
@@ -7819,6 +7857,9 @@ msgstr "Треугольник 2"
 
 msgid "Try to describe your choice"
 msgstr "Попытайтесь описать свой выбор"
+
+msgid "Turn timeout (in seconds)"
+msgstr "Таймаут на ход (в секундах)"
 
 msgid "Type"
 msgstr "Тип"

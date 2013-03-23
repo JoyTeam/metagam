@@ -288,7 +288,8 @@ var GenericCombat = Ext.extend(Combat, {
         for (var i = 0; i < entries.length; i++) {
             self.logComponent.add({
                 xtype: 'box',
-                html: entries[i].text
+                html: entries[i].text,
+                cls: entries[i].cls
             });
         }
         self.logComponent.doLayout();
@@ -528,13 +529,15 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             listeners: {
                 render: function () {
                     setTimeout(function () {
-                        if (self.combat.goButtonEnabled) {
-                            self.selectLastAction();
-                            self.updateTargets();
-                            self.updateGoButtonAvailability();
-                        } else {
-                            self.selectLastAction();
-                            self.updateTargets();
+                        if (self.shown) {
+                            if (self.combat.goButtonEnabled) {
+                                self.selectLastAction();
+                                self.updateTargets();
+                                self.updateGoButtonAvailability();
+                            } else {
+                                self.selectLastAction();
+                                self.updateTargets();
+                            }
                         }
                     }, 1);
                 }

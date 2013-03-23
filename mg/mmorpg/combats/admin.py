@@ -324,6 +324,14 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 errors["timeout"] = self._("Maximal timeout is %d seconds") % 86400
             else:
                 info["timeout"] = timeout
+            # turn_timeout
+            turn_timeout = intz(req.param("turn_timeout"))
+            if turn_timeout < 5:
+                errors["turn_timeout"] = self._("Minimal turn timeout is %d seconds") % 5
+            elif turn_timeout > 300:
+                errors["turn_timeout"] = self._("Maximal turn timeout is %d seconds") % 300
+            else:
+                info["turn_timeout"] = turn_timeout
             # avatar dimensions
             dim_avatar = req.param("dim_avatar").strip()
             if not dim_avatar:
@@ -379,6 +387,18 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         elif height > 500:
                             errors["generic_log_height"] = self._("Maximal value is %d") % 500
                     info["generic_log_resize"] = True if req.param("generic_log_resize") else False
+                # time mode
+                time_mode = req.param("v_time_mode")
+                if time_mode != "none" and time_mode != "begin" and time_mode != "change":
+                    errors["v_time_mode"] = self._("Invalid time mode")
+                else:
+                    info["time_mode"] = time_mode
+                # time format
+                time_format = req.param("v_time_format")
+                if time_format != "num" and time_format != "mmss":
+                    errors["v_time_format"] = self._("Invalid time format")
+                else:
+                    info["time_format"] = time_format
                 # go button
                 info["generic_gobutton"] = 1 if req.param("generic_gobutton") else 0
                 if info["generic_gobutton"]:
@@ -407,6 +427,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "name", "label": self._("Combat rules name"), "value": shortInfo["name"]},
             {"name": "order", "label": self._("Sorting order"), "value": shortInfo["order"], "inline": True},
             {"name": "timeout", "label": self._("General combat timeout (in seconds)"), "value": info.get("timeout", 3600 * 4)},
+            {"name": "turn_timeout", "label": self._("Turn timeout (in seconds)"), "value": info.get("turn_timeout", 30)},
+            {"type": "header", "html": self._("Combat time")},
+            {"name": "time_mode", "label": self._("Time visualization mode"), "type": "combo", "value": info.get("time_mode", "begin"), "values": [("none", self._("Don't show time")), ("begin", self._("Show in the beginning of every log line")), ("change", self._("Output to log after every change"))]},
+            {"name": "time_format", "label": self._("Time format"), "type": "combo", "value": info.get("time_format", "mmss"), "values": [("mmss", self._("MM:SS")), ("num", self._("Plain number"))]},
             {"type": "header", "html": self._("Combat avatars settings")},
             {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
             {"name": "generic", "type": "checkbox", "label": self._("Use generic GUI for this type of combats"), "checked": info.get("generic", 1)},

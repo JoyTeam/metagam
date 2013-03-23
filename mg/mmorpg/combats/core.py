@@ -128,7 +128,7 @@ class CombatParamsContainer(object):
 class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     "Combat is the combat itself. It is created in the combat daemon process."
 
-    system_params = set(["stage", "title"])
+    system_params = set(["stage", "title", "time", "timetext"])
     def __init__(self, app, uuid, rules, fqn="mg.mmorpg.combats.core.Combat"):
         mg.constructor.ConstructorModule.__init__(self, app, fqn)
         CombatParamsContainer.__init__(self)
@@ -214,6 +214,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self.turn_order = turn_order
         self.set_stage("combat")
+        # output time
+        if self.time_mode == "change":
+            self.textlog({
+                "text": self.timetext,
+                "cls": "combat-log-time-header",
+            })
         # execute start script
         globs = self.globs()
         self.execute_script("start", globs, lambda: self._("Combat start script"))
@@ -258,6 +264,40 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self.log:
             self.log.set_title(title)
         self.wakeup()
+
+    @property
+    def timetext(self):
+        time_format = self.rulesinfo.get("time_format", "mmss")
+        time = self.time
+        if time_format == "mmss":
+            return "%d:%02d" % (time / 60, time % 60)
+        elif time_format == "num":
+            return self.time
+
+    @property
+    def time_mode(self):
+        try:
+            return self._time_mode
+        except AttributeError:
+            pass
+        self._time_mode = self.rulesinfo.get("time_mode", "begin")
+        return self._time_mode
+
+    @property
+    def time(self):
+        return self._params.get("time", 0)
+
+    def add_time(self, val):
+        val = intz(val)
+        if val < 1:
+            return
+        self.set_param("time", self.time + val)
+        self.set_param("timetext", self.timetext)
+        if self.time_mode == "change":
+            self.textlog({
+                "text": self.timetext,
+                "cls": "combat-log-time-header",
+            })
 
     def add_controller(self, controller):
         "Register member controller"
@@ -397,6 +437,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def textlog(self, entry):
         "Add entry to combat log"
+        if self.time_mode == "begin":
+            entry["text"] = u'<span class="combat-log-time">%s</span> %s' % (self.timetext, entry.get("text", u""))
         self.not_delivered_log.append(entry)
         if self.log:
             self.log.textlog(entry)
@@ -419,6 +461,10 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             return self.stage
         elif attr == "stage_flags":
             return CombatStageFlags(self)
+        elif attr == "time":
+            return self.time
+        elif attr == "timetext":
+            return self.timetext
         # team list
         m = re_team_list.match(attr)
         if m:
