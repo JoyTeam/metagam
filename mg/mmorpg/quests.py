@@ -19,6 +19,7 @@ re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
 re_mod_lock = re.compile(r'^q_(.+)_locked$')
 re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
 re_remove_lock = re.compile(r'^user/([a-f0-9]{32})/(.+)$')
+re_arg_param = re.compile(r'^arg_(.+)$')
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -1253,8 +1254,6 @@ class Quests(ConstructorModule):
             indent = 0
         else:
             indent = old_indent + 4
-        if not "local" in kwargs:
-            kwargs["local"] = ScriptMemoryObject()
         tasklet.quest_indent = indent
         try:
             def event_str():
@@ -1269,6 +1268,8 @@ class Quests(ConstructorModule):
                 self.call("debug-channel.character", char, event_str, cls="quest-first-event", indent=indent)
             else:
                 self.call("debug-channel.character", char, event_str, cls="quest-event", indent=indent)
+            if not "local" in kwargs:
+                kwargs["local"] = ScriptMemoryObject()
             # loading list of handlers
             quests_states = self.conf("qevent-%s.handlers" % event)
             if not quests_states:
@@ -2196,7 +2197,18 @@ class Quests(ConstructorModule):
             elif not re_valid_identifier.match(ev):
                 character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
             else:
-                self.qevent("clicked-%s" % ev, char=character)
+                args = {}
+                globs = {}
+                for k, v in req.param_dict().iteritems():
+                    if k == "targetchar":
+                        targetchar = self.character(v[0])
+                        if targetchar.valid:
+                            globs["targetchar"] = targetchar
+                        else:
+                            globs["targetchar"] = None
+                    elif re_arg_param.match(k):
+                        args[k] = v
+                self.qevent("clicked-%s" % ev, char=character, args=args, **globs)
                 self.call("web.response_json", {"ok": True})
         self.call("web.response_json", {"error": True})
 

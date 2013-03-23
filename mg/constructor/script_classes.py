@@ -16,10 +16,10 @@ class ScriptMemoryObject(object):
         self.data[attr] = val
 
     def __unicode__(self):
-        return "local"
+        return u"[local]"
 
     def __str__(self):
-        return "local"
+        return "[local]"
 
     def store(self):
         pass

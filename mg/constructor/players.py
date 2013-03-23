@@ -52,6 +52,18 @@ class CharactersMod(ConstructorModule):
         self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("character.public-info-menu", self.character_public_info_menu)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "charinfo",
+            "title": self._("Character info"),
+            "href": ["/character/info/", [".", ["glob", "char"], "id"]],
+            "order": 1.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/character-pubinfo.png",
+            "visible": 1,
+        })
 
     def design_files(self, files):
         files.append({"filename": "character-info.html", "description": self._("Character page (external information)"), "doc": "/doc/design/character-info"})

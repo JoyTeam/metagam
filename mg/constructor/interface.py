@@ -74,7 +74,7 @@ class Dynamic(Module):
 
     def indexpage_css_mcid(self):
         ver = self.inst.dbconfig.get("application.version", 10000)
-        return "indexpage-css--%s" % ver
+        return "indexpage-css-%s" % ver
 
     def indexpage_css(self):
         mcid = self.indexpage_css_mcid()

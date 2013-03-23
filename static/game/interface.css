@@ -1,5 +1,6 @@
 /* COMMON */
 body { font-family: Verdana; font-size: 12px }
+select, input { font-size: 13px }
 td { font-size: 12px }
 img { vertical-align: middle; border: 0 none }
 .clickable { cursor: pointer }

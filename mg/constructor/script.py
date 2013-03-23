@@ -29,6 +29,11 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.validate-text", self.validate_text)
         self.rhook("script.evaluate-text", self.evaluate_text)
         self.rhook("script.admin-text", self.admin_text)
+        self.rhook("gameinterface.render", self.gameinterface_render)
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("mmoscript")
+        vars["js_init"].append("MMOScript.lang = '%s';" % self.call("l10n.lang"))
 
     def help_icon_expressions(self, tag=None):
         icon = "%s-script.gif" % tag if tag else "script.gif"

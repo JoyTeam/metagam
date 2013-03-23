@@ -514,8 +514,8 @@ class Auth(ConstructorModule):
         if not len(fields):
             fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character's name"), "prompt": self._("Enter your character name")})
             fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Man")], ["1", self._("Woman")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
-            fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
-            fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
+            #fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
+            #fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
         return copy.deepcopy(fields)
 
     def jsencode_character_form(self, lst):

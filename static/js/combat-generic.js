@@ -358,7 +358,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
      */
     registerAvatarParamDeps: function (cls, type, val) {
         var self = this;
-        var deps = MMOScript.dependencies(val);
+        var deps = parent.MMOScript.dependencies(val);
         for (var i = 0; i < deps.length; i++) {
             var dep = deps[i];
             if (dep.length >= 2 && dep[0] == 'member') {
@@ -385,7 +385,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
             }
         };
         var html = '';
-        var val = MMOScript.evaluate(param.visible, env);
+        var val = parent.MMOScript.evaluate(param.visible, env);
         var id = ++self.avatarDepCnt;
         html += '<div class="c-m-' + self.id + '-ap-' + id + '" style="display: ' + (val ? 'block' : 'none') + '">';
         self.registerAvatarParamDeps('ap-' + id, 'visibility', param.visible);
@@ -397,7 +397,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                 } else {
                     var id = ++self.avatarDepCnt;
                     html += '<span class="c-m-' + self.id + '-ap-' + id + '">';
-                    var val = MMOScript.toString(MMOScript.evaluate(ent, env));
+                    var val = parent.MMOScript.toString(parent.MMOScript.evaluate(ent, env));
                     html += val;
                     html += '</span>';
                     self.registerAvatarParamDeps('ap-' + id, 'html', ent);
@@ -445,13 +445,13 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                     var ent = affectedClasses[cls];
                     var type = ent[0];
                     var script = ent[1];
-                    var val = MMOScript.evaluate(script, env);
+                    var val = parent.MMOScript.evaluate(script, env);
                     if (type == 'visibility') {
                         self.forEachElement(cls, function (el) {
                             el.style.display = val ? 'block' : 'none';
                         });
                     } else if (type == 'html') {
-                        val = MMOScript.toString(val);
+                        val = parent.MMOScript.toString(val);
                         self.forEachElement(cls, function (el) {
                             el.innerHTML = val;
                         });

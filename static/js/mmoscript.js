@@ -185,10 +185,14 @@ MMOScript.evaluate = function (val, env) {
     }
     if (cmd == '.') {
         var obj = self.evaluate(val[1], env);
-        if (!obj || !obj.scriptAttr) {
-            return undefined;
+        if (obj) {
+            if (obj.scriptAttr) {
+                return obj.scriptAttr(val[2]);
+            } else {
+                return obj[val[2]];
+            }
         }
-        return obj.scriptAttr(val[2]);
+        return undefined;
     }
     if (cmd == 'index') {
         if (val.length < 3) {
@@ -378,3 +382,5 @@ MMOScript.toString = function (val) {
     }
     return val + '';
 };
+
+loaded('mmoscript');
