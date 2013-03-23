@@ -137,7 +137,7 @@ class CharacterParamsAdmin(ParamsAdmin):
             ]
             self.call("admin.form", fields=fields)
         rows = []
-        for pcode in sorted(existing_params.keys()):
+        for pcode in sorted(existing_params.keys2()):
             param = existing_params[pcode]
             rows.append([
                 pcode,

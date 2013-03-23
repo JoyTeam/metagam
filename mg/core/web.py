@@ -20,6 +20,7 @@ import Cookie
 import time
 import os
 import random
+import sys
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_service_call = re.compile(r'^service/call/([a-z0-9\-\.]+)/(.+)$')
@@ -384,7 +385,7 @@ class WebService(Loggable):
             return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
         except Exception as e:
             try:
-                self.exception(utf2str(e))
+                self.exception(e)
             except Exception as e2:
                 print "Unhandled exception during logging: %s" % e2
                 print traceback.format_exc()
@@ -495,7 +496,8 @@ class ApplicationWebService(WebService):
         except SystemExit:
             os._exit(0)
         except Exception as e:
-            Tasklet.new(app.call)("exception.report", e)
+            e_type, e_value, e_traceback = sys.exc_info()
+            Tasklet.new(app.call)("exception.report", e, e_type, e_value, e_traceback)
             raise
 
 class SingleApplicationWebService(ApplicationWebService):

@@ -94,7 +94,6 @@ class ConstructorApplicationFactory(ApplicationFactory):
                 with app.lock(["ReconfigureHooks"]):
                     project.load()
                     if project.get("app_version") != ver:
-                        print "Reconfiguring hooks of application %s due to application.version change to %s" % (app.tag, ver)
                         app.store_config_hooks(notify=False)
                         project.set("app_version", ver)
                         project.store()

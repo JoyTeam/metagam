@@ -479,10 +479,12 @@ class CombatScripts(ConstructorModule):
         finally:
             tasklet.combat_indent = old_indent
 
-    def exception_report(self, exception):
+    def exception_report(self, exception, e_type=None, e_value=None, e_traceback=None):
         if not isinstance(exception, CombatScriptError) and not isinstance(exception, CombatRunError):
             return
         try:
+            if e_type is None:
+                e_type, e_value, e_traceback = sys.exc_info()
             try:
                 req = self.req()
             except AttributeError:
@@ -556,5 +558,5 @@ class CombatScripts(ConstructorModule):
         except Hooks.Return:
             raise
         except Exception as e:
-            self.critical("Exception during exception reporting: %s", traceback.format_exc())
+            self.critical("Exception during exception reporting: %s", "".join(traceback.format_exception(e_type, e_value, e_traceback)))
 
