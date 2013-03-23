@@ -4,6 +4,7 @@ strong { font-weight: bold }
 a:link, a:visited { color: #dd6419 }
 a:hover, a:active { color: #ed9439 }
 table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
+.x-form-field { font-size: 14px }
 #admin-project-title { font-weight: bold; padding: 3px 5px 0px 15px; font-size: 16px; color: #6a7274 }
 .x-border-layout-ct .x-splitbar-h { background-color: #d8d8d8 }
 #admin-topmenu { background: #ffffff; padding: 0px 35px 0px 50px; border: none }
