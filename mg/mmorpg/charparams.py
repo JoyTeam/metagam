@@ -116,6 +116,8 @@ class CharacterParamsAdmin(ParamsAdmin):
             for param in self.call("characters.params"):
                 available_params[param["code"]] = param
                 available_params_list.append((param["code"], u"%s (%s)" % (param["code"], param["name"])))
+            if not available_params:
+                self.call("admin.response", u'<div class="admin-alert">%s</div>' % (self._("To deliver parameters to the client go to the '{href}' page first and create one or more parameters").format(href=u'<hook:admin.link href="characters/params" title="%s" />' % self._("Characters parameters"))), {})
             if req.ok():
                 character = self.character(req.user())
                 errors = {}
