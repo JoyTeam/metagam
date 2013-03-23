@@ -512,6 +512,9 @@ class Character(Module):
     def combat_member(self):
         return ["character", self.uuid]
 
+    def deliverable_params(self):
+        return self.call("characters.deliverable-params", self)
+
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
         Module.__init__(self, app, fqn)

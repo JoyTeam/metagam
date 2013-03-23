@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-23 07:55+0300\n"
+"PO-Revision-Date: 2013-03-23 09:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4505,6 +4505,10 @@ msgid "Maximal number of characters per player allowed"
 msgstr "Максимальное количество разрешённых персонажей на игрока"
 
 #, python-format
+msgid "Maximal number of delivered parameters (%d) is already reached"
+msgstr "Достигнуто максимальное количество (%d) доставляемых пареметров"
+
+#, python-format
 msgid "Maximal number of dimensions is %d"
 msgstr "Максимальное количество размеров - %d"
 
@@ -5403,6 +5407,9 @@ msgstr "Код параметра (с префиксом \"p_\")"
 
 msgid "Parameter code (used in scripting)"
 msgstr "Код параметра (для использования в скриптах)"
+
+msgid "Parameter code must start with latin letter and contain only latin letters, digits and underscode characters"
+msgstr "Код параметра должен начинаться с латинской буквы и содержать только латинские буквы, цифры и символы подчёркивания"
 
 msgid "Parameter code must start with p_ and contain only latin letters, digits and underscode characters"
 msgstr "Код параметра должен начинаться с \"p_\" и содержать только латинские буквы, цифры и символы подчёркивания"
@@ -8132,9 +8139,6 @@ msgstr "Является ли предмет {item} ({name}) надеваемы�
 msgid "Whether parameter is visible to member 'viewer'"
 msgstr "Виден ли параметр участнику \"viewer\""
 
-msgid "Whether parameter of character 'char' is visible to character 'viewer'"
-msgstr "Виден ли параметр персонажа \"char\" персонажу \"viewer\""
-
 msgid "Whether parameter of member 'member' is visible to member 'viewer'"
 msgstr "Виден ли параметр участника \"member\" участнику \"viewer\""
 
@@ -9838,6 +9842,9 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid ""
+#~ "Whether parameter of character 'char' is visible to character 'viewer'"
+#~ msgstr "Виден ли параметр персонажа \"char\" персонажу \"viewer\""
 #~ msgid "Limit"
 #~ msgstr "Предел"
 #~ msgid ""

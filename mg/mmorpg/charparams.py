@@ -3,9 +3,11 @@ from mg.constructor.player_classes import *
 import re
 
 re_charparam = re.compile(r'^charparam/(.+)$')
-re_char_params = re.compile(r'char\.p_([a-zA-Z_][a-zA-Z0-9_]*)')
-re_valid_parameter = re.compile('^p_[a-z0-9_]+$', re.IGNORECASE)
+re_char_params = re.compile(r'char\.(p_[a-zA-Z_][a-zA-Z0-9_]*)')
+re_valid_parameter = re.compile('^[a-z][a-z0-9_]*$', re.IGNORECASE)
 re_del = re.compile('^del/(.+)$')
+
+max_delivered_params = 10
 
 class CharacterParamsAdmin(ParamsAdmin):
     def __init__(self, app, fqn):
@@ -98,50 +100,51 @@ class CharacterParamsAdmin(ParamsAdmin):
                     config.store()
                 self.call("admin.redirect", "characters/params-delivery")
             paramid = req.args
+            if paramid == "new":
+                if len(existing_params.keys()) >= max_delivered_params:
+                    self.call("admin.response", self._("Maximal number of delivered parameters (%d) is already reached") % max_delivered_params, {})
+            available_params_list = []
+            available_params = {}
+            for param in self.call("characters.params"):
+                available_params[param["code"]] = param
+                available_params_list.append((param["code"], u"%s (%s)" % (param["code"], param["name"])))
             if req.ok():
                 character = self.character(req.user())
                 errors = {}
                 # code
-                pcode = req.param("code")
-                if not re_valid_parameter.match(pcode):
-                    errors["code"] = self._("Parameter code must start with p_ and contain only latin letters, digits and underscode characters")
+                pcode = req.param("v_code")
+                if pcode not in available_params:
+                    errors["v_code"] = self._("Parameter code must start with latin letter and contain only latin letters, digits and underscode characters")
                 elif pcode in existing_params and pcode != paramid:
-                    errors["code"] = self._("Parameter with this code is already delivered to client")
-                # visible
-                visible = self.call("script.admin-expression", "visible", errors, globs={"char": character, "viewer": character})
+                    errors["v_code"] = self._("Parameter with this code is already delivered to client")
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # store configuration
                 if paramid != "new":
                     del existing_params[paramid]
-                existing_params[pcode] = {
-                    "visible": visible
-                }
+                existing_params[pcode] = {}
                 config = self.app().config_updater()
                 config.set("characters.params-delivery", existing_params)
                 config.store()
                 self.call("admin.redirect", "characters/params-delivery")
             if paramid == "new":
-                code = "p_"
+                code = ""
                 visible = 1
             else:
                 code = paramid
                 paraminfo = existing_params.get(code)
-                if not paraminfo:
+                if paraminfo is None:
                     self.call("admin.redirect", "characters/params-delivery")
-                visible = paraminfo.get("visible")
             fields = [
-                {"name": "code", "label": self._("Character parameter"), "value": code},
-                {"name": "visible", "label": self._("Whether parameter of character 'char' is visible to character 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", visible)},
+                {"name": "code", "label": self._("Character parameter"), "value": code, "type": "combo", "values": available_params_list},
             ]
             self.call("admin.form", fields=fields)
         rows = []
-        for pcode in sorted(existing_params.keys2()):
+        for pcode in sorted(existing_params.keys()):
             param = existing_params[pcode]
             rows.append([
                 pcode,
-                self.call("script.unparse-expression", param["visible"]),
                 u'<hook:admin.link href="characters/params-delivery/%s" title="%s" />' % (pcode, self._("edit")),
                 u'<hook:admin.link href="characters/params-delivery/del/%s" title="%s" confirm="%s" />' % (pcode, self._("delete"), self._("Are you sure want to remove this parameter from the delivery")),
             ])
@@ -157,7 +160,6 @@ class CharacterParamsAdmin(ParamsAdmin):
                     ],
                     "header": [
                         self._("Parameter code"),
-                        self._("Visibility"),
                         self._("Edit"),
                         self._("Delete"),
                     ],
@@ -180,6 +182,7 @@ class CharacterParams(Params):
         self.rhook("character-page.actions", self.charpage_actions)
         self.rhook("ext-character.params", self.charparams, priv="logged")
         self.rhook("characters.param-library", self.param_library)
+        self.rhook("characters.deliverable-params", self.deliverable_params)
 
     def param_library(self, param):
         if param.get("library_table"):
@@ -204,6 +207,15 @@ class CharacterParams(Params):
         if params:
             vars["character"]["params"] = params
         self.call("game.response_internal", "character-params.html", vars)
+
+    def deliverable_params(self, char):
+        result = {
+            "name": char.name,
+            "sex": char.sex,
+        }
+        for pcode, param in self.conf("characters.params-delivery", {}).items():
+            result["p_%s" % pcode] = char.param(pcode)
+        return result
 
 class CharacterParamsLibrary(ParamsLibrary):
     def __init__(self, app, fqn):

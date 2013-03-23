@@ -711,6 +711,11 @@ class Chat(ConstructorModule):
         message["channel"] = self.channel2tab(channel)
         message["priv"] = private
         message["manual"] = manual
+        if mentioned:
+            char_params = {}
+            for character in mentioned:
+                char_params[character.uuid] = character.deliverable_params()
+            message["characters"] = char_params
         html_head = u''
         html_tail = u''
         if div_attr:
@@ -1259,6 +1264,7 @@ class Chat(ConstructorModule):
                 "id": character.uuid,
                 "name": character.name,
                 "html": character.html("roster"),
+                "params": character.deliverable_params(),
             }
             return character._roster_info
 
