@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-23 13:53+0300\n"
+"PO-Revision-Date: 2013-03-23 20:07+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -535,6 +535,9 @@ msgstr "Вы уверены, что хотите удалить этот тип 
 msgid "Are you sure want to delete this WMID?"
 msgstr "Вы уверены, что хотите удалить этот WMID?"
 
+msgid "Are you sure want to delete this attribute?"
+msgstr "Вы уверены, что хотите удалить этот атрибут?"
+
 msgid "Are you sure want to delete this block?"
 msgstr "Вы уверены, что хотите удалить этот блок?"
 
@@ -651,6 +654,21 @@ msgstr "Атрибут \"{attr}\" у \"{obj}\" обязательно долже
 msgid "Attribute '{attr}' is required in the '{obj}'"
 msgstr "Атрибут \"{attr}\" у \"{obj}\" является обязательным"
 
+msgid "Attribute code"
+msgstr "Код атрибута"
+
+msgid "Attribute code must start with 'a_' prefix and contain latin letters, digits, and underscores only"
+msgstr "Код атрибута должен начинаться с \"a_\" и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Attribute name"
+msgstr "Название атрибута"
+
+msgid "Attribute values type"
+msgstr "Тип значений атрибута"
+
+msgid "Attribute with this code already exists"
+msgstr "Атрибут с таким кодом уже существует"
+
 msgid "Attributes '{attr1}' and '{attr2}' can't be used simultaneously in the '{obj}'"
 msgstr "Атрибуты \"{attr1}\" и \"{attr2}\" не могут быть одновременно использованы в \"{obj}\""
 
@@ -662,6 +680,10 @@ msgstr "Атрибуты \"{attr1}\",\"{attr2}\" и \"{attr3}\" не могут 
 
 msgid "Attributes '{attr1}', '{attr2}' or '{attr3}' are required in the '{obj}'"
 msgstr "В объекте \"{obj}\" обязательно должен быть атрибут \"{attr1}\", \"{attr2}\" или \"{attr3}\""
+
+#, python-format
+msgid "Attributes of '%s'"
+msgstr "%s: атрибуты"
 
 msgid "Auction"
 msgstr "Аукцион"
@@ -2047,6 +2069,9 @@ msgstr "Дорогие новички, задавайте вопросы, есл
 msgid "Debug chat channel"
 msgstr "Отладочный канал чата"
 
+msgid "Debug combat log"
+msgstr "Отладочный лог боя"
+
 msgid "Debugging channel enabled"
 msgstr "Включить отладочный канал"
 
@@ -2730,6 +2755,10 @@ msgstr "Вычисление класса для чата"
 
 msgid "Evaluation of combat action"
 msgstr "Вычисление боевого действия"
+
+#, python-format
+msgid "Evaluation of combat action attribute '%s'"
+msgstr "Вычисление атрибута \"%s\" боевого действия"
 
 msgid "Evaluation of combat action source"
 msgstr "Вычисление инициатора (source) боевого действия"
@@ -3704,6 +3733,9 @@ msgstr "Установка трекеров"
 msgid "Integer '{val}' has no attributes"
 msgstr "У целого числа \"{val}\" нет атрибутов"
 
+msgid "Integer value"
+msgstr "Целочисленное значение"
+
 msgid "Interface messages"
 msgstr "Сообщения интерфейса"
 
@@ -3744,6 +3776,9 @@ msgstr "Неверный атрибут: '%s'"
 #, python-format
 msgid "Invalid attribute name: '%s'"
 msgstr "Неверное имя атрибута: \"%s\""
+
+msgid "Invalid attribute values type"
+msgstr "Неверный тип значений атрибута"
 
 msgid "Invalid character set. Specify: content=\"text/html; charset=utf-8\""
 msgstr "Неверная кодировка. Укажите: content=\"text/html; charset=utf-8\""
@@ -3902,6 +3937,10 @@ msgstr "Неверное использование оператора прис�
 
 msgid "Invalid value"
 msgstr "Неверное значение"
+
+#, python-format
+msgid "Invalid value: %s"
+msgstr "Неверное значение: %s"
 
 msgid "Inventory"
 msgstr "Инвентарь"
@@ -4228,6 +4267,9 @@ msgstr "Список ожидающих доменов"
 
 msgid "List of transitions in the location"
 msgstr "Список переходов в локации"
+
+msgid "List of values (every value must start from new line and be in form code:title)"
+msgstr "Список значений (каждое значение должно начинаться с новой строки и быть в формате код:название)"
 
 msgid "Listeners"
 msgstr "Слушатели"
@@ -4914,8 +4956,14 @@ msgstr "Новый тип ИИ"
 msgid "New action"
 msgstr "Новое действие"
 
+msgid "New action attribute"
+msgstr "Новый атрибут действия"
+
 msgid "New action button"
 msgstr "Новая кнопка действия"
+
+msgid "New attribute"
+msgstr "Новый атрибут"
 
 msgid "New block"
 msgstr "Новый блок"
@@ -7065,6 +7113,9 @@ msgstr "Статическая картинка"
 msgid "Static image location interface"
 msgstr "Интерфейс локации в виде статического изображения"
 
+msgid "Static list"
+msgstr "Статический список"
+
 msgid "Static objects"
 msgstr "Статические объекты"
 
@@ -7480,6 +7531,9 @@ msgstr "Этот предмет делится на части"
 
 msgid "This item is wearable"
 msgstr "Предмет надеваемый"
+
+msgid "This list cannot be empty"
+msgstr "Этот список не может быть пустым"
 
 msgid "This location has 'Exit' direction pointing to this location"
 msgstr "У этой локации есть направление \"Выход\", и оно ведёт в локацию"
@@ -7957,6 +8011,9 @@ msgstr "Пользователь '{user}' имеет пароль '{password}'\n
 msgid "User activation"
 msgstr "Активация пользователя"
 
+msgid "User combat log"
+msgstr "Пользовательский лог боя"
+
 msgid "User defined permissions"
 msgstr "Привилегии, определяемые пользователем"
 
@@ -8046,6 +8103,9 @@ msgstr "Очень важное значение"
 
 msgid "Very strange signature"
 msgstr "Очень странная подпись"
+
+msgid "View combat debug logs"
+msgstr "Просмотр боевых отладочных логов"
 
 msgid "View combats statistics"
 msgstr "Посмотреть статистику по боям"
@@ -8841,6 +8901,9 @@ msgstr "чат"
 
 msgid "class"
 msgstr "класс"
+
+msgid "combat action attributes"
+msgstr "атрибуты боевого действия"
 
 msgid "combat action profile"
 msgstr "профиль боевого действия"
@@ -9882,6 +9945,8 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+#~ msgid "Debug log"
+#~ msgstr "Отладочный лог"
 #~ msgid "%s can't join combat. [gender?She:He] is busy"
 #~ msgstr "%s не может присоединиться к бою. [gender?Она занята:Он занят]"
 #~ msgid "Character's legend"
@@ -10477,8 +10542,6 @@ msgstr "{price} навсегда"
 #~ "игрой"
 #~ msgid "channel///Main"
 #~ msgstr "Главный"
-#~ msgid "Debug"
-#~ msgstr "Отладка"
 #~ msgid "{NAME} has {GENDER:wrote,wrote} a message"
 #~ msgstr "{NAME} {GENDER:написал,написала} сообщение"
 #~ msgid "Online"

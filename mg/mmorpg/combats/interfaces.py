@@ -23,6 +23,7 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("ext-combat.action", self.combat_action, priv="logged")
         self.rhook("combat.unavailable-exception-char", self.unavailable_exception_char)
         self.rhook("ext-combat.handler", self.combat_log, priv="public")
+        self.rhook("ext-combat.debug", self.combat_debug_log, priv="public")
         self.rhook("character.public-info-menu", self.character_public_info_menu)
         self.rhook("ext-character.combats", self.character_combats, priv="public")
 
@@ -165,6 +166,41 @@ class Combats(mg.constructor.ConstructorModule):
         }
         for ent in log.entries(0, len(log)):
             vars["entries"].append(ent)
+        if req.has_access("combats.debug-logs"):
+            if CombatLogViewer(self.app(), "debug", uuid).valid:
+                vars["menu_right"] = [
+                    {
+                        "href": "/combat/debug/%s" % uuid,
+                        "html": self._("Debug combat log"),
+                        "lst": True
+                    }
+                ]
+        self.call("combat.response_template", log.rules, "log.html", vars)
+
+    def combat_debug_log(self):
+        req = self.req()
+        uuid = req.args
+        if not re_valid_uuid.match(uuid):
+            self.call("web.not_found")
+        log = CombatLogViewer(self.app(), "debug", uuid)
+        if not log.valid:
+            self.call("web.not_found")
+        title = log.title
+        vars = {
+            "title": title,
+            "combat_title": title,
+            "entries": []
+        }
+        for ent in log.entries(0, len(log)):
+            vars["entries"].append(ent)
+        if CombatLogViewer(self.app(), "user", uuid).valid:
+            vars["menu_right"] = [
+                {
+                    "href": "/combat/%s" % uuid,
+                    "html": self._("User combat log"),
+                    "lst": True
+                }
+            ]
         self.call("combat.response_template", log.rules, "log.html", vars)
 
     def character_public_info_menu(self, character, menu):

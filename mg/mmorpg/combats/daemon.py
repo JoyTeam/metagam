@@ -91,6 +91,7 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
             self.call("web.response_json", {"error": self._("This action is not available")})
         action = CombatAction(self.combat)
         action.set_code(code)
+        # check targets
         if act["targets"] == "none":
             pass
         elif act["targets"] == "myself":
@@ -114,6 +115,21 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
             targets_max = self.controller.member.targets_max(act)
             if target_cnt > targets_max:
                 self.call("web.response_json", {"error": self._("Maximal number of targets is %d") % targets_max})
+        # check attributes
+        for attr in act.get("attributes", []):
+            val = data.get(attr["code"])
+            print attr["code"], "=", val
+            if attr["type"] == "static":
+                found = False
+                for v in attr["values"]:
+                    if v["code"] == val:
+                        found = True
+                        break
+                if not found:
+                    self.call("web.response_json", {"error": self._("Invalid value: %s") % attr["name"]})
+                action.set_attribute(attr["code"], val)
+            elif attr["type"] == "int":
+                action.set_attribute(attr["code"], intz(val))
         self.controller.member.enqueue_action(action)
         self.call("web.response_json", {"ok": 1})
 
@@ -439,6 +455,7 @@ class WebController(CombatMemberController):
         act = {
             "code": action.get("code"),
             "name": action.get("name"),
+            "attributes": action.get("attributes", []),
         }
         self.send("action", action=act)
 

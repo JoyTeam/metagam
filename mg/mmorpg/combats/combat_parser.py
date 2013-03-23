@@ -2,6 +2,7 @@ from mg.core import Parsing
 from mg.constructor.script_classes import *
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
+re_valid_attribute_code = re.compile(r'^a_[a-z0-9_]+$', re.IGNORECASE)
 re_param = re.compile(r'^p_([a-z_][a-z0-9_]*)$', re.IGNORECASE)
 
 # To add a new event, condition or action:
@@ -186,9 +187,12 @@ class CombatStatement(Parsing.Nonterm):
 
     def reduceAction(self, cmd, source, tp, attrs):
         "%reduce action Expr Expr ExprAttrs"
-        validate_attrs(cmd, "action", attrs, [])
+        for k, v in attrs.val.iteritems():
+            if not re_valid_attribute_code.match(k):
+                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj=obj_name, attr=k))
         args = {
-            "source": source.val
+            "source": source.val,
+            "attrs": attrs.val
         }
         self.val = ["action", tp.val, args]
 

@@ -96,10 +96,14 @@ var GenericCombat = Ext.extend(Combat, {
                 xtype: 'container',
                 border: false,
                 autoScroll: true,
+                style: {
+                    padding: '10px 30px 10px 0px'
+                },
                 bodyCfg: {
                     cls: 'x-panel-body combat-main'
                 },
                 flex: 1,
+                layout: 'fit',
                 items: self.mainComponent
             });
         }
@@ -118,7 +122,7 @@ var GenericCombat = Ext.extend(Combat, {
             border: false,
             layout: 'hbox',
             layoutConfig: {
-                align: 'middle'
+                align: 'stretch'
             },
             items: topItems
         };
@@ -132,6 +136,9 @@ var GenericCombat = Ext.extend(Combat, {
                     xtype: 'container',
                     layout: 'border',
                     border: false,
+                    style: {
+                        padding: '10px 30px 10px 0px'
+                    },
                     items: [
                         viewportParams,
                         {
@@ -509,12 +516,14 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             items.push(self.goButton);
         }
         self.cmp = new Ext.Container({
+            id: 'combat-actions-selector',
             xtype: 'container',
             layout: 'hbox',
             border: false,
             layoutConfig: {
                 align: 'middle'
             },
+            autoScroll: true,
             items: items,
             listeners: {
                 render: function () {
@@ -583,7 +592,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                                  * Combat actions in absense of selectable targets are
                                  * executed immediately too.
                                  */
-                                if (!self.goButtonEnabled && self.action && (!self.action.targets ||
+                                if (!self.combat.goButtonEnabled && self.action && (!self.action.targets ||
                                         self.myself.params.targets != 'selectable')) {
                                     self.go();
                                 }
@@ -592,6 +601,63 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                     }
                 });
                 items.push(cmp);
+                /* Action attributes */
+                if (act.attributes && act.attributes.length) {
+                    var attrItems = [];
+                    for (var j = 0; j < act.attributes.length; j++) {
+                        var attr = act.attributes[j];
+                        attrItems.push(new Ext.BoxComponent({
+                            cls: 'combat-action-attribute-name',
+                            style: {
+                                margin: '5px 0px 5px 0px'
+                            },
+                            html: attr.name
+                        }));
+                        if (attr.type === 'static') {
+                            for (var k = 0; k < attr.values.length; k++) {
+                                var value = attr.values[k];
+                                (function (attr, value) {
+                                    attrItems.push(new Ext.BoxComponent({
+                                        id: 'combat-attribute-' + act.code + '-' + attr.code + '-' + value.code,
+                                        cls: 'combat-attribute-selector combat-item-deselected combat-attribute-deselected',
+                                        style: {
+                                            margin: '3px 0px 3px 20px',
+                                            padding: '3px 10px 3px 10px',
+                                        },
+                                        html: value.title,
+                                        listeners: {
+                                            render: function () {
+                                                this.getEl().on('click', function () {
+                                                    self.selectAttribute(attr.code, value.code);
+                                                });
+                                            }
+                                        }
+                                    }));
+                                })(attr, value);
+                            }
+                        } else if (attr.type === 'int') {
+                            attrItems.push(new Ext.form.NumberField({
+                                id: 'combat-attribute-' + act.code + '-' + attr.code,
+                                style: {
+                                    margin: '3px 10px 3px 30px'
+                                },
+                                allowDecimals: false,
+                                value: 0,
+                                fieldClass: '',
+                                width: 50
+                            }));
+                        }
+                    }
+                    var attrCmp = new Ext.Container({
+                        id: 'combat-action-attributes-' + act.code,
+                        style: {
+                            padding: '0px 0px 0px 30px'
+                        },
+                        items: attrItems,
+                        hidden: true
+                    });
+                    items.push(attrCmp);
+                }
             })(ent, act);
         }
         return new Ext.Container({
@@ -599,9 +665,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             items: items,
             flex: 1,
             style: {
-                paddingRight: '10px'
+                paddingRight: '10px',
             },
-            border: false
+            border: false,
+            autoHeight: true
         });
     },
 
@@ -610,6 +677,12 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     selectAction: function(act, actInfo) {
         var self = this;
+        if (self.action) {
+            var attrsCmp = Ext.getCmp('combat-action-attributes-' + self.action.action);
+            if (attrsCmp) {
+                attrsCmp.hide();
+            }
+        }
         Ext.select('.combat-action-selected', self.actionItems).
             removeClass('combat-item-selected').
             removeClass('combat-action-selected').
@@ -617,12 +690,22 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             addClass('combat-action-deselected');
         self.action = act;
         self.actionInfo = actInfo;
+        self.actionAttrs = {};
         if (act) {
             Ext.select('#combat-action-id-' + actInfo.code).
                 removeClass('combat-item-deselected').
                 removeClass('combat-action-deselected').
                 addClass('combat-item-selected').
                 addClass('combat-action-selected');
+            var attrsCmp = Ext.getCmp('combat-action-attributes-' + self.action.action);
+            if (attrsCmp) {
+                Ext.select('.combat-attribute-selected', self.actionItems).
+                    removeClass('combat-item-selected').
+                    removeClass('combat-attribute-selected').
+                    addClass('combat-item-deselected').
+                    addClass('combat-attribute-deselected');
+                attrsCmp.show();
+            }
         }
         /* 
          * If "Go" button is available, preserve the list of targets and check
@@ -637,6 +720,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         } else {
             self.updateTargets();
         }
+        self.combat.viewportComponent.doLayout();
+        self.combat.viewportComponent.doLayout();
     },
 
     /*
@@ -807,6 +892,25 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 this.addClass('combat-target-deselected');
             }
         });
+    },
+    
+    /*
+     * Select action attribute
+     */
+    selectAttribute: function (attr, value) {
+        var self = this;
+        self.actionAttrs[attr] = value;
+        Ext.select('.combat-attribute-selected', self.actionItems).
+            removeClass('combat-item-selected').
+            removeClass('combat-attribute-selected').
+            addClass('combat-item-deselected').
+            addClass('combat-attribute-deselected');
+        Ext.select('#combat-attribute-' + self.action.action + '-' + attr + '-' + value).
+            removeClass('combat-item-deselected').
+            removeClass('combat-attribute-deselected').
+            addClass('combat-item-selected').
+            addClass('combat-attribute-selected');
+        self.updateGoButtonAvailability();
     },
 
     /*
@@ -981,7 +1085,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     autoSelectTargets: function () {
         var self = this;
         /* Automatically select random targets (not available without "Go" button) */
-        if (self.combat.myself.params.targets == 'selectable' && self.combat.goButtonEnabled) {
+        if (self.combat.myself.params.targets == 'selectable' && self.combat.goButtonEnabled && self.action.targets) {
             var targets = self.action.targets.slice();
             var targeted = 0;
             var shown = false;
@@ -1039,9 +1143,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             return;
         }
         self.lastAction = self.action.action;
-        if (self.combat.consoleLog) {
-            console.log('Selected action:', Ext.util.JSON.encode(data));
-        }
         self.hide();
         self.combat.viewportComponent.doLayout();
         self.combat.submitAction(data, function (err) {
@@ -1075,6 +1176,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         var data = {
             action: self.action.action
         };
+        /* Targets */
         if (self.combat.myself.params.targets == 'selectable') {
             if (self.action.targets) {
                 var targets = [];
@@ -1100,6 +1202,28 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             }
         } else if (self.combat.myself.params.targets) {
             data.targets = self.combat.myself.params.targets;
+        }
+        /* Attributes */
+        if (self.actionInfo.attributes) {
+            for (var i = 0; i < self.actionInfo.attributes.length; i++) {
+                var attr = self.actionInfo.attributes[i];
+                if (attr.type == 'static') {
+                    if (self.actionAttrs[attr.code] !== undefined) {
+                        data[attr.code] = self.actionAttrs[attr.code];
+                    } else {
+                        if (!silent) {
+                            Game.error(undefined, sprintf(gt.gettext('Not selected: %s'), attr.name));
+                        }
+                        return null;
+                    }
+                } else if (attr.type == 'int') {
+                    data[attr.code] = 0;
+                    var numberField = Ext.getCmp('combat-attribute-' + self.action.action + '-' + attr.code);
+                    if (numberField) {
+                        data[attr.code] = numberField.getValue();
+                    }
+                }
+            }
         }
         return data;
     }

@@ -112,6 +112,10 @@ class CombatScriptsAdmin(ConstructorModule):
             elif st_cmd == "action":
                 args = st[2]
                 result = "  " * indent + "action %s %s" % (self.call("script.unparse-expression", args["source"]), self.call("script.unparse-expression", st[1]))
+                attrs = args.get("attrs")
+                if attrs:
+                    for k in sorted(attrs.keys()):
+                        result += " %s=%s" % (k, self.call("script.unparse-expression", attrs[k]))
                 result += "\n"
                 lines.append(result)
             else:
@@ -227,7 +231,7 @@ class CombatScripts(ConstructorModule):
                 if "maxval" in attrs:
                     maxval = self.call("script.evaluate-expression", attrs["maxval"], globs=globs, description=lambda: self._("Evaluation of maximal value"))
                     new_val_str += u"/%s" % maxval
-                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-damage">-%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(old_val - new_val), new_val_str))
+                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-damage">-%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(damage), new_val_str))
                 if real_execute:
                     # logging damage
                     log = combat.log
@@ -279,7 +283,7 @@ class CombatScripts(ConstructorModule):
                 new_val_str = unicode(nn(new_val))
                 if "maxval" in attrs:
                     new_val_str += u"/%s" % maxval
-                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-heal">+%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(new_val - old_val), new_val_str))
+                globs["action_log"].add(u'<span class="combat-log-member combat-log-target">%s</span> <span class="combat-log-heal">+%s</span> <span class="combat-log-hp">[%s]</span>' % (obj.name, nn(heal), new_val_str))
                 if real_execute:
                     # logging heal
                     log = combat.log
@@ -437,6 +441,10 @@ class CombatScripts(ConstructorModule):
                     if not target:
                         raise ScriptRuntimeError(self._("Combat member '%s' not found") % self.call("script.unparse-expression", tid), env)
                     action.add_target(target)
+                attrs = args.get("attrs")
+                if attrs:
+                    for k, v in attrs.iteritems():
+                        action.set_attribute(k,  self.call("script.evaluate-expression", v, globs=globs, description=self._("Evaluation of combat action attribute '%s'") % k))
                 source.enqueue_action(action)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])

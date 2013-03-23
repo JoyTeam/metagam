@@ -615,6 +615,7 @@ class CombatAction(CombatObject):
         self.targets = []
         self.source = None
         self.code = None
+        self.attrs = {}
 
     def set_source(self, source):
         "Set combat action source"
@@ -623,6 +624,10 @@ class CombatAction(CombatObject):
     def add_target(self, member):
         "This method adds another target to the action"
         self.targets.append(member)
+
+    def set_attribute(self, key, value):
+        "This method sets action attribute to the specific value"
+        self.attrs[key] = value
 
     def for_each_target(self, callback, *args, **kwargs):
         "Call callback for every action target. Target is passed as a first argument"
@@ -666,6 +671,8 @@ class CombatAction(CombatObject):
         globs = self.combat.globs()
         globs["source"] = self.source
         globs["targets"] = lambda: self.call("l10n.literal_enumeration", [t.name for t in self.targets])
+        for k, v in self.attrs.iteritems():
+            globs[k] = v
         return globs
 
 class CombatMember(CombatObject, CombatParamsContainer):

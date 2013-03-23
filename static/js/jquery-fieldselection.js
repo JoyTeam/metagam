@@ -83,7 +83,6 @@
 						if (rl.findText("\r", 0, 536870912 + 131072)) { // \n is mysteriously undetectable!
 							// yes. now set range from found CR to selection/caret
 							rl.setEndPoint('EndToStart', re);
-							//console.log(rl.text.length);
 							if (rl.text == '') {
 								// hooray! we're at the beginning of a new column
 								// IE is stupid, so we have to zero col and inc row

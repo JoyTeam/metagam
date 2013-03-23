@@ -12,9 +12,10 @@ re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
 re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|ai/.+|ai|script|params|aboveavatar/.+|belowavatar/.+)(?:|/(.+))$', re.IGNORECASE)
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
-re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
+re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script|attributes|attribute/.+)$', re.IGNORECASE)
 re_ai_cmd = re.compile(r'ai/(.+)', re.IGNORECASE)
 re_ai_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
+re_attributes_cmd = re.compile(r'^attribute/(.+)$')
 re_combat_params = re.compile('^combat/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
 re_combat_param_del = re.compile('^combat/del/(p_[a-z0-9_]+)$', re.IGNORECASE)
 re_member_params = re.compile('^member/(new|p_[a-z0-9_]+)$', re.IGNORECASE)
@@ -23,6 +24,8 @@ re_valid_parameter = re.compile(r'^p_[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_shorten = re.compile(r'^(.{100}).{3,}$')
 re_avatar_params_cmd = re.compile('^(aboveavatar|belowavatar)/(.+)$', re.IGNORECASE)
 re_script_prefix = re.compile(r'^script-')
+re_valid_attribute_code = re.compile(r'^a_[a-z0-9_]+$', re.IGNORECASE)
+re_static_value = re.compile(r'(\S+)\s*:\s*(.+)')
 
 class CombatsAdmin(mg.constructor.ConstructorModule):
     def register(self):
@@ -64,6 +67,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         perms.append({"id": "combats.rules", "name": self._("Combats rules editor")})
         perms.append({"id": "combats.config", "name": self._("Combats configuration")})
         perms.append({"id": "combats.stats", "name": self._("Combats statistics")})
+        perms.append({"id": "combats.debug-logs", "name": self._("View combat debug logs")})
 
     def headmenu_config(self, args):
         return self._("Combats configuration")
@@ -125,6 +129,18 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                                                 return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
                                             elif cmd == "script":
                                                 return [self._("Scripts of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
+                                            elif cmd == "attributes":
+                                                return [self._("Attributes of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
+                                            else:
+                                                m = re_attributes_cmd.match(cmd)
+                                                if m:
+                                                    attr_code = m.group(1)
+                                                    if attr_code == "new":
+                                                        return [self._("New attribute"), "combats/rules/edit/%s/action/edit/%s/attributes" % (code, action_code)]
+                                                    else:
+                                                        for attr in act.get("attributes", []):
+                                                            if attr["code"] == attr_code:
+                                                                return [htmlescape(attr.get("name")), "combats/rules/edit/%s/action/edit/%s/attributes" % (code, action_code)]
                         m = re_ai_cmd.match(action)
                         if m:
                             cmd = m.group(1)
@@ -480,6 +496,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 act["order"],
                 u'<br />'.join([
                     u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/profile" title="%s" />' % (code, act["code"], self._("combat action profile")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/attributes" title="%s" />' % (code, act["code"], self._("combat action attributes")),
                     u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/script" title="%s" />' % (code, act["code"], self._("script handlers")),
                 ]),
                 u'<hook:admin.link href="combats/rules/edit/%s/action/del/%s" title="%s" confirm="%s" />' % (code, act["code"], self._("delete"), self._("Are you sure want to delete this combat action?")),
@@ -608,6 +625,13 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     return self.rules_action_edit(code, action_code)
                 elif cmd == "script":
                     return self.rules_action_script(code, action_code)
+                elif cmd == "attributes":
+                    return self.rules_action_attributes(code, action_code)
+                else:
+                    m = re_attributes_cmd.match(cmd)
+                    if m:
+                        attr_code = m.group(1)
+                        return self.rules_action_attribute_edit(code, action_code, attr_code)
 
     def rules_action_edit(self, code, action_code):
         req = self.req()
@@ -640,8 +664,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             member2 = CombatMember(combat)
             combat.join(member1)
             combat.join(member2)
-            # preserve scripts
-            info = dict([(k, v) for k, v in info.iteritems() if re_script_prefix.match(k)])
+            # preserve scripts and attributes
+            info = dict([(k, v) for k, v in info.iteritems() if re_script_prefix.match(k) or k == "attributes"])
             errors = {}
             # code
             act_code = req.param("code")
@@ -958,6 +982,155 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def rules_action_attribute_edit(self, code, action_code, attr_code):
+        req = self.req()
+        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
+        info = None
+        for act in actions:
+            if act["code"] == action_code:
+                info = act
+                break
+        if info is None:
+            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        attributes = act.get("attributes", [])
+        if attr_code == "new":
+            # new
+            order = 0.0
+            for attr in attributes:
+                if attr["order"] > order:
+                    order = attr["order"]
+            attr = {
+                "order": order + 10.0,
+                "code": "a_",
+            }
+        else:
+            m = re_del.match(attr_code)
+            if m:
+                # delete
+                attr_code = m.group(1)
+                config = self.app().config_updater()
+                attributes = [a for a in attributes if a["code"] != attr_code]
+                info["attributes"] = attributes
+                config.set("combats-%s.actions" % code, actions)
+                config.store()
+                self.call("admin.redirect", "combats/rules/edit/%s/action/edit/%s/attributes" % (code, action_code))
+            # edit
+            attr = None
+            for a in attributes:
+                if a["code"] == attr_code:
+                    attr = a.copy()
+                    break
+            if not attr:
+                self.call("admin.redirect", "combats/rules/edit/%s/action/edit/%s/attributes" % (code, action_code))
+        existing_codes = set()
+        for a in attributes:
+            existing_codes.add(a["code"])
+        if req.ok():
+            errors = {}
+            # code
+            new_code = req.param("code")
+            if not new_code:
+                errors["code"] = self._("This field is mandatory")
+            elif not re_valid_attribute_code.match(new_code):
+                errors["code"] = self._("Attribute code must start with 'a_' prefix and contain latin letters, digits, and underscores only")
+            elif new_code in existing_codes and new_code != attr.get("code"):
+                errors["code"] = self._("Attribute with this code already exists")
+            else:
+                attr["code"] = new_code
+            # order
+            attr["order"] = floatz(req.param("order"))
+            # name
+            name = req.param("name").strip()
+            if not name:
+                errors["name"] = self._("This field is mandatory")
+            else:
+                attr["name"] = name
+            # values
+            tp = req.param("v_type")
+            if tp == "static":
+                attr["type"] = "static"
+                values = req.param("values").strip()
+                attr["values"] = []
+                for v in values.split("\n"):
+                    v = v.strip()
+                    if not v:
+                        continue
+                    m = re_static_value.match(v)
+                    if not m:
+                        errors["values"] = self._("Invalid field format")
+                    else:
+                        v_code, v_title = m.group(1, 2)
+                        attr["values"].append({
+                            "code": v_code,
+                            "title": v_title,
+                        })
+                if not attr["values"]:
+                    errors["values"] = self._("This list cannot be empty")
+            elif tp == "int":
+                attr["type"] = "int"
+            else:
+                errors["v_type"] = self._("Invalid attribute values type")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # store
+            config = self.app().config_updater()
+            attributes = [a for a in attributes if a["code"] != attr_code]
+            attributes.append(attr)
+            attributes.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
+            info["attributes"] = attributes
+            config.set("combats-%s.actions" % code, actions)
+            config.store()
+            self.call("admin.redirect", "combats/rules/edit/%s/action/edit/%s/attributes" % (code, action_code))
+        fields = [
+            {"name": "code", "label": self._("Attribute code"), "value": attr.get("code")},
+            {"name": "order", "label": self._("Sorting order"), "value": attr.get("order"), "inline": True},
+            {"name": "name", "label": self._("Attribute name"), "value": attr.get("name")},
+            {"name": "type", "type": "combo", "label": self._("Attribute values type"), "value": attr.get("type", "static"), "values": [("static", self._("Static list")), ("int", self._("Integer value"))]},
+            {"name": "values", "label": self._("List of values (every value must start from new line and be in form code:title)"), "type": "textarea", "value": u"\n".join([u"%s: %s" % (val["code"], val["title"]) for val in attr.get("values", [])]), "condition": "[type]=='static'"},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def rules_action_attributes(self, code, action_code):
+        req = self.req()
+        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
+        info = None
+        for act in actions:
+            if act["code"] == action_code:
+                info = act
+                break
+        if info is None:
+            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
+        rows = []
+        for attr in act.get("attributes", []):
+            rows.append([
+                htmlescape(attr.get("name")),
+                attr.get("order", 0.0),
+                u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/attribute/%s" title="%s" />' % (code, action_code, attr["code"], self._("edit")),
+                u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/attribute/del/%s" title="%s" confirm="%s" />' % (code, action_code, attr["code"], self._("delete"), self._("Are you sure want to delete this attribute?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "combats/rules/edit/%s/action/edit/%s/attribute/new" % (code, action_code),
+                            "text": self._("New action attribute"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Name"),
+                        self._("Order"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
     def rules_action_script(self, code, action_code):
         req = self.req()
         actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
@@ -977,10 +1150,15 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             combat.join(member2)
             # parse form
             errors = {}
-            info["script-begin"] = self.call("combats-admin.script-field", combat, "begin", errors, globs={"combat": combat, "source": member1}, mandatory=False)
-            info["script-begin-target"] = self.call("combats-admin.script-field", combat, "begin-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
-            info["script-end"] = self.call("combats-admin.script-field", combat, "end", errors, globs={"combat": combat, "source": member1}, mandatory=False)
-            info["script-end-target"] = self.call("combats-admin.script-field", combat, "end-target", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
+            globs = {"combat": combat, "source": member1}
+            for attr in act.get("attributes", []):
+                globs[attr["code"]] = 0
+            globs_target = globs.copy()
+            globs_target["target"] = member2
+            info["script-begin"] = self.call("combats-admin.script-field", combat, "begin", errors, globs=globs, mandatory=False)
+            info["script-begin-target"] = self.call("combats-admin.script-field", combat, "begin-target", errors, globs=globs_target, mandatory=False)
+            info["script-end"] = self.call("combats-admin.script-field", combat, "end", errors, globs=globs, mandatory=False)
+            info["script-end-target"] = self.call("combats-admin.script-field", combat, "end-target", errors, globs=globs_target, mandatory=False)
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})

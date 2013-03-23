@@ -213,7 +213,6 @@ Form = Ext.extend(AdminResponsePanel, {
                     elt.listeners.keypress = (function(field, e) {
                         if (e.getKey() == e.ENTER) {
                             var dom = field.el.dom;
-                            console.log($(dom));
                             var range = $(dom).getSelection();
                             var pos = range.start;
                             var ws = $(dom).val().substr(0, pos);
