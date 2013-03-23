@@ -630,8 +630,9 @@ class CombatContent(Parsing.Nonterm):
         name = get_str_attr(cmd, "member", attrs, "name")
         sex = get_attr(cmd, "member", attrs, "sex")
         ai = get_attr(cmd, "member", attrs, "ai")
+        image = get_attr(cmd, "member", attrs, "image")
         params = {}
-        valid_params = ["team", "name", "sex", "control", "ai"]
+        valid_params = ["team", "name", "sex", "control", "ai", "image"]
         for key, val in attrs.val.iteritems():
             if re_param.match(key):
                 params[key] = val
@@ -651,6 +652,8 @@ class CombatContent(Parsing.Nonterm):
             member["sex"] = sex
         if ai is not None:
             member["ai"] = ai
+        if image is not None:
+            member["image"] = image
         if params:
             member["params"] = params
         self.val["members"] = self.val["members"] + [member]

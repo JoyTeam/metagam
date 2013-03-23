@@ -951,6 +951,8 @@ class QuestsAdmin(ConstructorModule):
                         result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
                     if "ai" in member:
                         result += " ai=%s" % self.call("script.unparse-expression", member["ai"])
+                    if "image" in member:
+                        result += " image=%s" % self.call("script.unparse-expression", member["image"])
                     if "params" in member:
                         params = member["params"]
                         for key in sorted(params.keys()):
@@ -1824,6 +1826,8 @@ class Quests(ConstructorModule):
                                                 rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
                                             if "ai" in member:
                                                 rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
+                                            if "image" in member:
+                                                rmember["image"] = self.call("script.evaluate-expression", member["image"], globs=kwargs, description=lambda: self._("Combat member image"))
                                             if "params" in member:
                                                 params = {}
                                                 rmember["params"] = params

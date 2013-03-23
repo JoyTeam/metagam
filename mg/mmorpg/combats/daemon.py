@@ -267,6 +267,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
                 member.set_name(minfo["name"])
             if "sex" in minfo:
                 member.set_sex(minfo["sex"])
+            if "image" in minfo:
+                member.set_image(minfo["image"])
             # override parameters
             if "params" in minfo:
                 for key, val in minfo["params"].iteritems():
