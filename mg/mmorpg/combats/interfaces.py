@@ -29,7 +29,7 @@ class Combats(mg.constructor.ConstructorModule):
 
     def child_modules(self):
         return [
-            "mg.mmorpg.combats.wizards.AttackBlock",
+            "mg.mmorpg.combats.wizards.CombatRulesDialogs",
             "mg.mmorpg.combats.scripts.CombatScripts",
             "mg.mmorpg.combats.daemon.CombatRunner",
             "mg.mmorpg.combats.characters.Combats",
