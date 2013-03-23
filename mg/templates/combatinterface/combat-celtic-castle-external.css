@@ -1,0 +1,9 @@
+.combat-body { background: url(body-bg-1.jpg) }
+#page-top1, #page-layout-content { background: #d8cbab; color: #013659 }
+a:link, a:visited, #combat-topmenu a:link, #combat-topmenu a:visited { color: #5080ad }
+a:hover, a:active, #combat-topmenu a:hover, #combat-topmenu a:active { color: #ce7328 }
+#page-top2 { background-image: url(sbox-bottom.png); background-position: 0% 100%; background-repeat: repeat-x }
+#page-top3 { background-image: url(sbox-top.png); background-position: 0% 0%; background-repeat: repeat-x }
+#page-top4 { padding: 20px 60px 20px 60px }
+#page-left { background-image: url(sbox-left.png); background-position: 100% 0%; background-repeat: repeat-y }
+#page-right { background-image: url(sbox-right.png); background-position: 0% 0%; background-repeat: repeat-y }

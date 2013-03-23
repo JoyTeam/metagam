@@ -5,8 +5,6 @@ import json
 import re
 import time
 
-mgDir = os.path.abspath(mg.__path__[0])
-daemonsDir = "%s/bin" % os.path.dirname(mgDir)
 re_spaces = re.compile(r'\s+')
 USER_HZ = 100.0
 
@@ -65,6 +63,7 @@ class ProcessManager(mg.Module):
         self.rhook("procman.newproc", self.newproc)
         self.rhook("procman.newdaemon", self.newdaemon)
         self.rhook("procman-spawn.index", self.spawn_index, priv="public")
+        self.rhook("procman-newproc.index", self.newproc_index, priv="public")
 
     def terminate_daemon(self):
         inst = self.app().inst
@@ -85,7 +84,7 @@ class ProcessManager(mg.Module):
 
     def newdaemon(self, procid, executable):
         inst = self.app().inst
-        self.newproc(procid, ["%s/%s" % (daemonsDir, executable), '-c', inst.config_filename])
+        self.newproc(procid, ["%s/%s" % (inst.daemons_dir, executable), '-c', inst.config_filename])
 
     def spawn_index(self):
         req = self.req()
@@ -94,13 +93,22 @@ class ProcessManager(mg.Module):
         self.newdaemon(procid, executable)
         self.call("web.response_json", {"ok": 1})
 
-    def newproc(self, procid, args, env=None):
+    def newproc_index(self):
+        req = self.req()
+        procid = req.param("procid")
+        args = json.loads(req.param("args"))
+        env = json.loads(req.param("env")) if req.param("env") else None
+        respawn = True if req.param("respawn") else False
+        self.newproc(procid, args, env, respawn)
+        self.call("web.response_json", {"ok": 1})
+
+    def newproc(self, procid, args, env=None, respawn=True):
         self.app().inst.child_processes.append({
             "id": procid,
             "args": args,
             "env": env,
             "process": self.spawn(args, env),
-            "respawn": True
+            "respawn": respawn
         })
 
     def fastidle(self):

@@ -3,6 +3,26 @@ from mg.core import Parsing
 import re
 
 re_newline = re.compile(r'\n')
+re_numeric = re.compile(r'^#(.+)')
+
+class ScriptMemoryObject(object):
+    def __init__(self):
+        self.data = {}
+
+    def script_attr(self, attr, handle_exceptions=True):
+        return self.data.get(attr)
+
+    def script_set_attr(self, attr, val, env):
+        self.data[attr] = val
+
+    def __unicode__(self):
+        return u"[local]"
+
+    def __str__(self):
+        return "[local]"
+
+    def store(self):
+        pass
 
 class ScriptParserError(Exception):
     def __init__(self, val, exc=None, **kwargs):
@@ -79,6 +99,8 @@ class PCompareOp(Parsing.Precedence):
     "%left pCompareOp >pNotOp"
 class TokenEquals(Parsing.Token):
     "%token equals [pCompareOp]"
+class TokenNotEquals(Parsing.Token):
+    "%token notequals [pCompareOp]"
 class TokenLessThan(Parsing.Token):
     "%token lt [pCompareOp]"
 class TokenGreaterThan(Parsing.Token):
@@ -152,6 +174,9 @@ class TokenRandom(Parsing.Token):
 class TokenEquip(Parsing.Token):
     "%token equip"
 
+class TokenMember(Parsing.Token):
+    "%token member"
+
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
 # productions would look something like:
@@ -186,8 +211,11 @@ class List(Parsing.Nonterm):
         "%reduce List comma Expr"
         self.val = lst.val + [expr.val]
 
+class PAttrKey(Parsing.Precedence):
+    "%left pAttrKey"
+
 class AttrKey(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pAttrKey]"
     def reduceIdentifier(self, identifier):
         "%reduce identifier"
         self.val = identifier.val
@@ -234,6 +262,10 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr equals Expr [pCompareOp]"
         self.val = ["==", exprA.val, exprB.val]
 
+    def reduceNotEquals(self, exprA, NotEqualsOp, exprB):
+        "%reduce Expr notequals Expr [pCompareOp]"
+        self.val = ["!=", exprA.val, exprB.val]
+
     def reduceLessThan(self, exprA, LessThanOp, exprB):
         "%reduce Expr lt Expr [pCompareOp]"
         self.val = ["<", exprA.val, exprB.val]
@@ -276,13 +308,21 @@ class Expr(Parsing.Nonterm):
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
 
+    exprFuncs = set(["min", "max", "uc", "lc"])
+
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
+        if func.fname not in self.exprFuncs:
+            raise Parsing.SyntaxError(func.script_parser._("Function %s is not supported in expression context") % func.fname)
         self.val = ["call", func.fname] + lst.val
 
     def reduceIn(self, exprA, op, exprB):
         "%reduce Expr in Expr [pCompareOp]"
         self.val = ["in", exprA.val, exprB.val]
+
+    def reduceMember(self, m):
+        "%reduce member"
+        self.val = ["glob", "member"]
 
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
@@ -291,8 +331,8 @@ class Result(Parsing.Nonterm):
 	"%reduce Expr"
         raise ScriptParserResult(e.val)
 
-class ScriptParser(Parsing.Lr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+class ScriptParser(Parsing.Glr, Module):
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -307,6 +347,7 @@ class ScriptParser(Parsing.Lr, Module):
         ".": TokenDot,
         ",": TokenComma,
         "==": TokenEquals,
+        "!=": TokenNotEquals,
         "=": TokenAssign,
         ">": TokenGreaterThan,
         "<": TokenLessThan,
@@ -320,12 +361,13 @@ class ScriptParser(Parsing.Lr, Module):
         "online": TokenOnline,
         "equip": TokenEquip,
         "in": TokenIn,
+        "member": TokenMember,
     }
     funcs = set(["min", "max", "uc", "lc"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")
-	Parsing.Lr.__init__(self, spec)
+	Parsing.Glr.__init__(self, spec)
 
     def scan(self, input):
         input = input.strip()
@@ -386,7 +428,7 @@ class ScriptParser(Parsing.Lr, Module):
             last_dot = dot
 
 class ScriptTextParser(Module):
-    re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{([^}]+)})', re.DOTALL)
+    re_token = re.compile(r'(.*?)(?:\[([^\]:{}]+)\:([^\]]+)\]|{class=([^}]+)}|({/class})|{([^}]+)})', re.DOTALL)
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptTextParser")
@@ -407,30 +449,55 @@ class ScriptTextParser(Module):
             if res[0]:
                 self.tokens.append(res[0])
             if res[1] is not None:
-                # parsing index expression: {...?val1,val2,val3}
+                # parse index expression: [...:val1,val2,val3]
+                # also numeric declensions: [#...:val1,val2,val5]
+                m = re_numeric.match(res[1])
+                if m:
+                    numeric = True
+                    line = m.group(1)
+                else:
+                    numeric = False
+                    line = res[1]
                 parser = ScriptParser(self.app(), self.spec)
                 try:
-                    parser.scan(res[1])
+                    parser.scan(line)
                     try:
                         parser.eoi()
                     except Parsing.SyntaxError as e:
-                        raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[1])
+                        raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % line)
                 except ScriptParserResult as e:
-                    self.tokens.append(["index", e.val] + res[2].split(","))
+                    if numeric:
+                        self.tokens.append(["numdecl", e.val] + res[2].split(","))
+                    else:
+                        self.tokens.append(["index", e.val] + res[2].split(","))
             elif res[3] is not None:
+                # class token start: {class=...}
+                parser = ScriptParser(self.app(), self.spec)
+                try:
+                    parser.scan(res[3])
+                    try:
+                        parser.eoi()
+                    except Parsing.SyntaxError as e:
+                        raise ScriptParserError(self._("Class name expression '%s' is invalid: unexpected end of line") % res[3])
+                except ScriptParserResult as e:
+                    self.tokens.append(["clsbegin", e.val])
+            elif res[4] is not None:
+                # class token end: {/class}
+                self.tokens.append(["clsend"])
+            elif res[5] is not None:
                 # parsing script include: {...}
-                if self.skip_tokens and res[3] in self.skip_tokens:
+                if self.skip_tokens and res[5] in self.skip_tokens:
                     # reserved tokens
-                    self.tokens.append('{%s}' % res[3])
+                    self.tokens.append('{%s}' % res[5])
                 else:
                     # calling parser
                     parser = ScriptParser(self.app(), self.spec)
                     try:
-                        parser.scan(res[3])
+                        parser.scan(res[5])
                         try:
                             parser.eoi()
                         except Parsing.SyntaxError as e:
-                            raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[2])
+                            raise ScriptParserError(self._("Expression '%s' is invalid: unexpected end of line") % res[5])
                     except ScriptParserResult as e:
                         self.tokens.append(e.val)
             pos = token_match.end()

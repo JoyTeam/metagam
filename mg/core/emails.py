@@ -225,9 +225,11 @@ class Email(Module):
         for user in usr:
             self.email_send(self.call("user.email", user), user.get("name"), subject, content, from_email, from_name, immediately=True)
 
-    def exception_report(self, exception):
+    def exception_report(self, exception, e_type=None, e_value=None, e_traceback=None):
         try:
-            dump = traceback.format_exc()
+            if e_type is None:
+                e_type, e_value, e_traceback = sys.exc_info()
+            dump = "".join(traceback.format_exception(e_type, e_value, e_traceback))
             try:
                 msg = u"%s %s" % (exception.__class__.__name__, exception)
             except Exception as e:

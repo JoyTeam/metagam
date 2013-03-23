@@ -17,12 +17,14 @@
 		[%else%]
 		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
 		[%end%]
-		<script type="text/javascript" src="/st/[%ver%]/ext/ext-base.js"></script>
-		<script type="text/javascript">debug_log('interface: ext-base loaded');</script>
 		[%if debug_ext%]
+                <script type="text/javascript" src="/st/[%ver%]/ext/ext-base-debug.js"></script>
+                <script type="text/javascript">debug_log('interface: ext-base loaded');</script>
 		<script type="text/javascript" src="/st/[%ver%]/ext/ext-all-debug-w-comments.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/ext/miframe-debug.js"></script>
 		[%else%]
+                <script type="text/javascript" src="/st/[%ver%]/ext/ext-base.js"></script>
+                <script type="text/javascript">debug_log('interface: ext-base loaded');</script>
 		<script type="text/javascript" src="/st/[%ver%]/ext/ext-all.js"></script>
 		<script type="text/javascript" src="/st/[%ver%]/ext/miframe.js"></script>
 		[%end%]

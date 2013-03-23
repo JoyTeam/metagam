@@ -1664,7 +1664,6 @@ class MemberInventory(ConstructorModule):
         # removing expired items
         if self.expired:
             for dna, expired in self.expired.iteritems():
-                #self._take_dna(dna, None, "expired", performed=expired)
                 self._take_dna(dna, None, "expired")
             self.expired = {}
         if self.worn:

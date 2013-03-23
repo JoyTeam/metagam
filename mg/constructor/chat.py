@@ -17,7 +17,7 @@ re_loc_channel = re.compile(r'^loc-(\S+)$')
 re_valid_command = re.compile(r'^/(\S+)$')
 re_after_dash = re.compile(r'-.*')
 re_unjoin = re.compile(r'^unjoin/(\S+)$')
-re_character_name = re.compile(r'(<span class="char-name">.*?</span>)')
+re_character_name = re.compile(r'(<span class="char-name">(.*?)</span>)')
 re_color = re.compile(r'^#[0-9a-f]{6}$')
 re_curly = re.compile(r'[{}]')
 re_valid_cls = re.compile(r'^[a-z][a-z\-]*$')
@@ -100,6 +100,28 @@ class Chat(ConstructorModule):
         self.rhook("library-grp-index.pages", self.library_index_pages)
         self.rhook("library-page-chat.content", self.library_page_chat)
         self.rhook("character.name-invalidated", self.character_name_invalidated)
+        self.rhook("character.debug-access", self.debug_access)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "chatmsg",
+            "title": self._("Chat message"),
+            "onclick": ["Chat.click(['", [".", ["glob", "char"], "name"], "'], false);"],
+            "order": 5.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/chat-message.png",
+            "visible": 1,
+        })
+        menu.append({
+            "code": "chatprivate",
+            "title": self._("Chat private message"),
+            "onclick": ["Chat.click(['", [".", ["glob", "char"], "name"], "'], true);"],
+            "order": 6.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/chat-private.png",
+            "visible": 1,
+        })
 
     def library_index_pages(self, pages):
         pages.append({"page": "chat", "order": 20})
@@ -143,7 +165,9 @@ class Chat(ConstructorModule):
     def name_fixup(self, character, purpose, params):
         if purpose == "roster":
             js = "Chat.click(['%s']); return false" % jsencode(character.name)
-            params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, params["NAME"])
+            html = re_character_name.sub(ur'<span class="char-name" oncontextmenu="Characters.menu(this); return false;">\2</span>', params["NAME"])
+            print params["NAME"], "=>", html
+            params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, html)
 
     def schedule(self, sched):
         sched.add("chat.cleanup", "10 1 * * *", priority=10)
@@ -710,6 +734,11 @@ class Chat(ConstructorModule):
         message["channel"] = self.channel2tab(channel)
         message["priv"] = private
         message["manual"] = manual
+        if mentioned:
+            char_params = {}
+            for character in mentioned:
+                char_params[character.uuid] = character.deliverable_params()
+            message["characters"] = char_params
         html_head = u''
         html_tail = u''
         if div_attr:
@@ -770,14 +799,17 @@ class Chat(ConstructorModule):
         if char:
             add_cls = u""
             add_tag = u""
+            add_tag_char_name = u""
             if token.get("missing"):
                 add_cls += u" chat-msg-char-missing"
             recipients = ["'%s'" % jsencode(ch.name) for ch in token["mentioned"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
             if recipients:
                 add_cls += " clickable"
-                js = u'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
-                add_tag += u' onclick="{0}" ondblclick="{0}"'.format(js)
-            return re_character_name.sub(ur'<span class="chat-msg-char%s"%s>\1</span>' % (add_cls, add_tag), char.html("chat"))
+                jschat = u'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
+                add_tag += u' onclick="{0}" ondblclick="{0}"'.format(jschat)
+            jsmenu = u'Characters.menu(this); return false'
+            add_tag_char_name += u' oncontextmenu="{0}"'.format(jsmenu)
+            return re_character_name.sub(ur'<span class="chat-msg-char%s"%s><span class="char-name"%s>\2</span></span>' % (add_cls, add_tag, add_tag_char_name), char.html("chat"))
         now = token.get("time")
         if now:
             recipients = [char for char in token["mentioned"] if char.uuid != viewer_uuid] if viewer_uuid else token["mentioned"]
@@ -1258,6 +1290,7 @@ class Chat(ConstructorModule):
                 "id": character.uuid,
                 "name": character.name,
                 "html": character.html("roster"),
+                "params": character.deliverable_params(),
             }
             return character._roster_info
 

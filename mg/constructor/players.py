@@ -51,6 +51,19 @@ class CharactersMod(ConstructorModule):
         self.rhook("user-modifier.expired", self.modifier_expired)
         self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("character.public-info-menu", self.character_public_info_menu)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "charinfo",
+            "title": self._("Character info"),
+            "href": ["/character/info/", [".", ["glob", "char"], "id"]],
+            "order": 1.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/character-pubinfo.png",
+            "visible": 1,
+        })
 
     def design_files(self, files):
         files.append({"filename": "character-info.html", "description": self._("Character page (external information)"), "doc": "/doc/design/character-info"})
@@ -283,6 +296,7 @@ class CharactersMod(ConstructorModule):
         objclasses["CharacterForm"] = (DBCharacterForm, DBCharacterFormList)
         objclasses["CharParams"] = (DBCharParams, DBCharParamsList)
         objclasses["CharacterSettings"] = (DBCharacterSettings, DBCharacterSettingsList)
+        objclasses["CharacterBusy"] = (DBCharacterBusy, DBCharacterBusyList)
 
     def dossier_record(self, rec):
         try:
@@ -556,7 +570,23 @@ class CharactersMod(ConstructorModule):
         self.call("characters.params-public", character, params)
         if params:
             vars["character"]["params"] = params
+        menu = []
+        self.call("character.public-info-menu", character, menu)
+        if len(menu) >= 2:
+            for ent in menu:
+                if ent["href"] == "/character/info/%s" % character.uuid:
+                    del ent["href"]
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            menu[-1]["lst"] = True
+            vars["menu"] = menu
         self.call("game.response_external", "character-info.html", vars)
+
+    def character_public_info_menu(self, character, menu):
+        menu.append({
+            "href": "/character/info/%s" % character.uuid,
+            "html": self._("Character information"),
+            "order": -10,
+        })
 
     def character_page_avatar(self, character, vars):
         design = self.design("gameinterface")

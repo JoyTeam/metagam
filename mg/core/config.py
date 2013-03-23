@@ -120,15 +120,29 @@ class Config(object):
             except KeyError:
                 pass
 
+    def delete_group(self, group):
+        """
+        Delete config group
+        group - group identifier
+        Note: to store configuration in the database use store() method
+        """
+        with self.app().config_lock:
+            self._config[group] = {}
+            self._modified.add(group)
+
     def store(self):
         if len(self._modified):
             with self.app().config_lock:
                 lst = self.app().objlist(DBConfigGroupList, [])
                 lst.load()
                 for g in self._modified:
-                    obj = self.app().obj(DBConfigGroup, g, data=self._config[g])
-                    obj.dirty = True
-                    lst.append(obj)
+                    data = self._config[g]
+                    obj = self.app().obj(DBConfigGroup, g, data=data)
+                    if data:
+                        obj.dirty = True
+                        lst.append(obj)
+                    else:
+                        obj.remove()
                 lst.store()
                 self._modified.clear()
 

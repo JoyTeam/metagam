@@ -1,0 +1,34 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+from mg.mmorpg.combats.daemon import CombatService
+import mg
+
+def main():
+    inst = ConstructorInstance("combat", "metagam")
+    if len(inst.cmdline_args) != 3:
+        raise RuntimeError("Invalid command line arguments. Expected project id, combat id, and daemon id")
+    app_tag = inst.cmdline_args[0]
+    combat_id = inst.cmdline_args[1]
+    daemon_id = inst.cmdline_args[2]
+    inst.insttype = "combat-%s" % combat_id
+    inst.instid = "combat-%s-%s" % (app_tag, combat_id)
+    # external application
+    ext_app = inst.appfactory.get_by_tag(app_tag)
+    if not ext_app:
+        raise RuntimeError("Application %s not found" % app_tag)
+    # internal application
+    app = inst.int_app
+    app.load([
+        "mg.core.web.Web",
+        "mg.core.cluster.Cluster",
+        "mg.core.emails.Email",
+    ])
+    # run combat service
+    ext_app.load([
+        "mg.mmorpg.combats.daemon.CombatDaemonModule",
+    ])
+    srv = CombatService(ext_app, combat_id, daemon_id)
+    srv.run()
+
+mg.dispatch(main)

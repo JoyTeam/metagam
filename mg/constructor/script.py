@@ -4,6 +4,15 @@ from mg.constructor.script_classes import *
 import re
 import traceback
 
+class HTMLFormatter(object):
+    @staticmethod
+    def clsbegin(clsname):
+        return u'<span class="%s">' % clsname
+
+    @staticmethod
+    def clsend():
+        return u'</span>';
+
 class ScriptEngine(ConstructorModule):
     def register(self):
         self.rhook("script.help-icon-expressions", self.help_icon_expressions)
@@ -20,6 +29,11 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.validate-text", self.validate_text)
         self.rhook("script.evaluate-text", self.evaluate_text)
         self.rhook("script.admin-text", self.admin_text)
+        self.rhook("gameinterface.render", self.gameinterface_render)
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("mmoscript")
+        vars["js_init"].append("MMOScript.lang = '%s';" % self.call("l10n.lang"))
 
     def help_icon_expressions(self, tag=None):
         icon = "%s-script.gif" % tag if tag else "script.gif"
@@ -65,7 +79,7 @@ class ScriptEngine(ConstructorModule):
                 prio = 7
             elif cmd == '+' or cmd == '-':
                 prio = 6
-            elif cmd == "==" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<" or cmd == "in":
+            elif cmd == "==" or cmd == "!=" or cmd == ">=" or cmd == "<=" or cmd == ">" or cmd == "<" or cmd == "in":
                 prio = 5
             elif cmd == "not":
                 prio = 4
@@ -76,7 +90,7 @@ class ScriptEngine(ConstructorModule):
             elif cmd == '?':
                 prio = 1
             elif cmd == 'random':
-                prio = 1
+                prio = 99
             else:
                 raise ScriptParserError("Invalid cmd: '%s'" % cmd)
         return prio
@@ -102,7 +116,7 @@ class ScriptEngine(ConstructorModule):
             elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
-            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
+            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "!=" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
                 # (a OP b) OP c != a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val, False))
             elif cmd == '?':
@@ -166,6 +180,20 @@ class ScriptEngine(ConstructorModule):
                             empty = False
                     if not empty:
                         res += u"[%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
+                elif cmd == "numdecl":
+                    tokens = []
+                    empty = True
+                    for i in xrange(2, len(arg)):
+                        argtxt = self.unparse_text([arg[i]])
+                        tokens.append(argtxt)
+                        if argtxt.strip():
+                            empty = False
+                    if not empty:
+                        res += u"[#%s:%s]" % (self.unparse_expression(arg[1]), ",".join(tokens))
+                elif cmd == "clsbegin":
+                    res += u"{class=%s}" % self.unparse_expression(arg[1])
+                elif cmd == "clsend":
+                    res += u"{/class}"
                 else:
                     res += u'{%s}' % self.unparse_expression(arg)
             elif arg is not None:
@@ -210,8 +238,8 @@ class ScriptEngine(ConstructorModule):
                 else:
                     try:
                         res += unicode(val)
-                    except Exception:
-                        raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string").format(token=self.unparse_expression(token), type=type(val).__name__), env)
+                    except Exception as e:
+                        raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string: {exception}").format(token=self.unparse_expression(token), type=type(val).__name__, exception=e.__class__.__name__), env)
             else:
                 res += u"%s" % token
         # restoring
@@ -289,7 +317,7 @@ class ScriptEngine(ConstructorModule):
                     raise ScriptRuntimeError(self._("Division by zero: '{val}' == 0").format(val=self.unparse_expression(val[2])), env)
                 else:
                     return float(arg1) / arg2
-        elif cmd == "==":
+        elif cmd == "==" or cmd == "!=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
             s1 = type(arg1) is str or type(arg1) is unicode
@@ -301,7 +329,10 @@ class ScriptEngine(ConstructorModule):
             if s2 and not s1:
                 arg2 = floatz(arg2)
             # Evaluating
-            return 1 if arg1 == arg2 else 0
+            if cmd == "==":
+                return 1 if arg1 == arg2 else 0
+            else:
+                return 1 if arg1 != arg2 else 0
         elif cmd == "in":
             arg1 = str2unicode(self._evaluate(val[1], env))
             arg2 = str2unicode(self._evaluate(val[2], env))
@@ -345,6 +376,8 @@ class ScriptEngine(ConstructorModule):
             if arg1 and env.used_globs is None:
                 return arg1
             arg2 = self._evaluate(val[2], env)
+            if arg1:
+                return arg1
             return arg2
         elif cmd == '?':
             arg1 = self._evaluate(val[1], env)
@@ -386,7 +419,7 @@ class ScriptEngine(ConstructorModule):
                 elif fname == "uc":
                     return v.upper()
             else:
-                raise ScriptRuntimeError(self._("Unknown script engine function: {fname}").format(fname=fname), env)
+                raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":
             return random.random()
         elif cmd == "glob":
@@ -396,6 +429,9 @@ class ScriptEngine(ConstructorModule):
             obj = env.globs.get(name)
             if env.used_globs is not None:
                 env.used_globs.add(name)
+            if callable(obj):
+                obj = obj()
+                env.globs[name] = obj
             return obj
         elif cmd == ".":
             obj = self._evaluate(val[1], env)
@@ -416,14 +452,27 @@ class ScriptEngine(ConstructorModule):
                 raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=val[2]), env)
             return attval
         elif cmd == "index":
+            if len(val) < 3:
+                return None
             index = intz(self._evaluate(val[1], env)) + 2
             if index < 2:
                 index = 2
             if index >= len(val):
                 index = len(val) - 1
             return val[index]
+        elif cmd == "numdecl":
+            if len(val) < 3:
+                return None
+            return self.call("l10n.literal_value", intz(self._evaluate(val[1], env)), val[2:])
+        elif cmd == "clsbegin":
+            return self.formatter(env).clsbegin(self._evaluate(val[1], env))
+        elif cmd == "clsend":
+            return self.formatter(env).clsend()
         else:
             raise ScriptRuntimeError(self._("Unknown script engine operation: {op}").format(op=cmd), env)
+
+    def formatter(self, env):
+        return getattr(env, "formatter", HTMLFormatter)
 
     def validate_expression(self, *args, **kwargs):
         kwargs["text"] = False
@@ -484,10 +533,12 @@ class ScriptEngine(ConstructorModule):
         # Returning result
         return expression
 
-    def exception_report(self, exception):
-        if not issubclass(type(exception), ScriptError) and not issubclass(type(exception), TemplateException):
+    def exception_report(self, exception, e_type=None, e_value=None, e_traceback=None):
+        if not isinstance(exception, ScriptError) and not isinstance(exception, TemplateException):
             return
         try:
+            if e_type is None:
+                e_type, e_value, e_traceback = sys.exc_info()
             try:
                 req = self.req()
             except AttributeError:
@@ -546,5 +597,5 @@ class ScriptEngine(ConstructorModule):
         except Hooks.Return:
             raise
         except Exception as e:
-            self.critical("Exception during exception reporting: %s", traceback.format_exc())
+            self.critical("Exception during exception reporting: %s", "".join(traceback.format_exception(e_type, e_value, e_traceback)))
 
