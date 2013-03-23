@@ -541,6 +541,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def notify_stopped(self):
         "Call this method to signal combat that it's finally stopped"
         for member in self.members:
+            if member.may_turn:
+                member.turn_take()
+        for member in self.members:
             member.stopped()
 
     def actions_started(self):

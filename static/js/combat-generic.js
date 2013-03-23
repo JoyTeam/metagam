@@ -227,6 +227,16 @@ var GenericCombat = Ext.extend(Combat, {
     },
 
     /*
+     * Notify combat that its controlled member
+     * lost right of turn due to timeout
+     */
+    turnTimeout: function () {
+        var self = this;
+        GenericCombat.superclass.turnTimeout.call(self);
+        self.hideActionSelector();
+    },
+
+    /*
      * Show interface where player can choose an action
      */
     showActionSelector: function () {
