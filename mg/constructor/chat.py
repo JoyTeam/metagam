@@ -166,7 +166,6 @@ class Chat(ConstructorModule):
         if purpose == "roster":
             js = "Chat.click(['%s']); return false" % jsencode(character.name)
             html = re_character_name.sub(ur'<span class="char-name" oncontextmenu="Characters.menu(this); return false;">\2</span>', params["NAME"])
-            print params["NAME"], "=>", html
             params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, html)
 
     def schedule(self, sched):
