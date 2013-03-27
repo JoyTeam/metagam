@@ -118,6 +118,14 @@ class CombatDatabaseLog(CombatLog):
         self.db_textlog.store()
         self.textlog_dirty = False
 
+    def close(self):
+        now = self.now()
+        self.db_textlog.set("stopped", now)
+        self.db_syslog.set("stopped", now)
+        self.textlog_dirty = True
+        self.syslog_dirty = True
+        self.flush()
+
     def flush(self):
         self.syslog_flush()
         self.textlog_flush()
@@ -148,6 +156,10 @@ class CombatLogViewer(mg.constructor.ConstructorModule):
     @property
     def started(self):
         return self.log.get("started")
+
+    @property
+    def stopped(self):
+        return self.log.get("stopped")
 
     @property
     def keep(self):

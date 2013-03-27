@@ -323,6 +323,14 @@ var GenericCombatMember = Ext.extend(CombatMember, {
             self.forEachElement('image', function (el) {
                 el.src = value;
             });
+        } else if (key === 'active') {
+            if (self.targetCmp && self.targetCmp.el && self.targetCmp.el.dom) {
+                if (value) {
+                    self.targetCmp.el.removeClass('combat-target-dead').addClass('combat-target-alive');
+                } else {
+                    self.targetCmp.el.removeClass('combat-target-alive').addClass('combat-target-dead');
+                }
+            }
         }
     },
 
@@ -622,7 +630,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                                 (function (attr, value) {
                                     attrItems.push(new Ext.BoxComponent({
                                         id: 'combat-attribute-' + act.code + '-' + attr.code + '-' + value.code,
-                                        cls: 'combat-attribute-selector combat-item-deselected combat-attribute-deselected',
+                                        cls: 'combat-attribute-selector combat-item-deselected combat-attribute-deselected combat-attribute-' + act.code + '-' + attr.code,
                                         style: {
                                             margin: '3px 0px 3px 20px',
                                             padding: '3px 10px 3px 10px',
@@ -631,7 +639,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                                         listeners: {
                                             render: function () {
                                                 this.getEl().on('click', function () {
-                                                    self.selectAttribute(attr.code, value.code);
+                                                    self.selectAttribute(attr.code, value.code, 'combat-attribute-' + act.code + '-' + attr.code);
                                                 });
                                             }
                                         }
@@ -732,13 +740,18 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     updateTargets: function () {
         var self = this;
-        var targeted;
+        var targeted = {};
         if (self.action) {
-            targeted = {};
-            if (self.action.targets) {
+            if (self.myself.params.targets && self.myself.params.targets.forEach) {
+                self.myself.params.targets.forEach(function (targetId) {
+                    targeted[targetId] = true;
+                });
+            } else {
                 var targets = self.action.targets;
-                for (var i = 0; i < targets.length; i++) {
-                    targeted[targets[i]] = true;
+                if (targets) {
+                    for (var i = 0; i < targets.length; i++) {
+                        targeted[targets[i]] = true;
+                    }
                 }
             }
         }
@@ -867,6 +880,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             style: {
                 padding: '10px'
             },
+            cls: ((member.params.team == self.myself.params.team) ? 'combat-target-ally' : 'combat-target-enemy') + ' ' +
+                (member.params.active ? 'combat-target-alive' : 'combat-target-dead'),
             listeners: {
                 render: function () {
                     this.getEl().on('click', function () {
@@ -900,10 +915,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     /*
      * Select action attribute
      */
-    selectAttribute: function (attr, value) {
+    selectAttribute: function (attr, value, cls) {
         var self = this;
         self.actionAttrs[attr] = value;
-        Ext.select('.combat-attribute-selected', self.actionItems).
+        Ext.select('.' + cls, self.actionItems).
             removeClass('combat-item-selected').
             removeClass('combat-attribute-selected').
             addClass('combat-item-deselected').
@@ -921,9 +936,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     selectTarget: function (member, state) {
         var self = this;
-        if (self.myself.params.targets != 'selectable') {
-            return;
-        }
         if (member.targeted == state) {
             return;
         }
@@ -1024,6 +1036,15 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     selectLastAction: function () {
         var self = this;
         if (!self.lastAction) {
+            /* Even if no last action selected, but we have only one
+             * possible action, auto select it */
+            if (self.combat.goButtonEnabled && (self.combat.availableActions.length == 1)) {
+                var ent = self.combat.availableActions[0];
+                var act = self.combat.actions[ent.action];
+                if (act) {
+                    self.selectAction(ent, act);
+                }
+            }
             self.updateTargets();
             return;
         }
@@ -1036,7 +1057,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                      * If the interface is running without "Go" button, don't
                      * autoselect untargeted actions.
                      */
-                    if (!ent.targets && !self.goButtonEnabled) {
+                    if (!ent.targets && !self.combat.goButtonEnabled) {
                         break;
                     }
                     self.selectAction(ent, act);

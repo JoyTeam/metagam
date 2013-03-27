@@ -10,6 +10,7 @@ import time
 from mg.constructor.script_classes import ScriptRuntimeError, ScriptMemoryObject
 
 re_param_attr = re.compile(r'^p_')
+re_attr = re.compile(r'^a_')
 re_team_list = re.compile(r'^team(\d+)_list')
 
 textlog_ring_size = 10
@@ -148,6 +149,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         self.running_actions = []
         self.ready_actions = []
         self._turn_order_check = False
+        self._check_end_condition = True
         self.not_delivered_log = []
         self.start_time = time.time()
         self._flags = set()
@@ -189,6 +191,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def close(self):
         "Notify combat about it's terminated and about to be destroyed"
+        if self.log:
+            self.log.close()
         self.flush()
 
     @property
@@ -276,6 +280,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             return "%d:%02d" % (time / 60, time % 60)
         elif time_format == "num":
             return self.time
+        elif time_format == "realhhmmss":
+            return self.now_local().split(" ")[1]
 
     @property
     def time_mode(self):
@@ -353,6 +359,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self._turn_order_check:
             self._turn_order_check = False
             self.turn_order.check()
+        if self._check_end_condition:
+            self._check_end_condition = False
+            self.check_end_condition()
         self.process_commands()
         if self.stage_flag("actions"):
             self.process_actions()
@@ -376,6 +385,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         "Execute combat script for given member"
         globs["member"] = member
         self.execute_script(tag, globs, description)
+        self.enqueue_check_end_condition()
 
     def heartbeat(self):
         "Called on every iteration of the main loop"
@@ -472,6 +482,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             return self.time
         elif attr == "timetext":
             return self.timetext
+        elif attr == "now":
+            return self.now_local()
         # team list
         m = re_team_list.match(attr)
         if m:
@@ -534,7 +546,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                     i += 1
             self.enqueue_turn_order_check()
             self.actions_stopped()
-            self.check_end_condition()
+            self.enqueue_check_end_condition()
+
+    def enqueue_check_end_condition(self):
+        "Enqueue check_end_condition() to be called on the next iteration of the main loop"
+        self._check_end_condition = True
+        self.wakeup()
 
     def check_end_condition(self):
         "Check combat end condition (0 or 1 teams active)"
@@ -696,6 +713,11 @@ class CombatAction(CombatObject):
     def execute_script(self, tag, globs, description=None):
         self.call("combats.execute-script", self.combat, self.script_code(tag), globs, description=description)
 
+    def enqueued(self):
+        "Do any processing when the action is enqueued"
+        globs = self.globs()
+        self.execute_script("enqueued", globs, lambda: self._("Combat action '%s' script when enqueued") % self.code)
+
     def begin(self):
         "Do any processing in the beginning of the action"
         globs = self.globs()
@@ -727,6 +749,15 @@ class CombatAction(CombatObject):
         for k, v in self.attrs.iteritems():
             globs[k] = v
         return globs
+
+    def script_attr(self, attr, handle_exceptions=True):
+        # parameters
+        if re_attr.match(attr):
+            return self.attrs.get(attr)
+        if handle_exceptions:
+            return None
+        else:
+            raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, None)
 
 class CombatMember(CombatObject, CombatParamsContainer):
     system_params = set(["name", "sex", "team", "may_turn", "active", "image", "targets"])
@@ -765,7 +796,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def enqueue_action(self, act):
         "Enqueue action for the member"
         act.set_source(self)
-        self.pending_actions.append(act)
         # log action
         if self.log:
             self.log.syslog({
@@ -774,6 +804,17 @@ class CombatMember(CombatObject, CombatParamsContainer):
                 "code": act.code,
                 "targets": [t.id for t in act.targets],
             })
+        act.enqueued()
+        if self.combat.actions[act.code].get("immediate"):
+            self.combat.execute_action(act)
+            if self.may_turn:
+                self.deliver_turn_got()
+            self.combat.wakeup()
+        else:
+            self.pending_actions.append(act)
+            # call appropriate script
+            globs = self.combat.globs()
+            self.combat.execute_member_script(self, "turnmade", globs, lambda: self._("'After turn made' script"))
         # if this member has turn right already, notify turn manager
         if self.may_turn:
             if self.combat.stage_flag("actions"):
@@ -794,6 +835,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
             return self.may_turn
         elif attr == "active":
             return 1 if self.active else 0
+        elif attr == "targets":
+            return u"%s" % self.targets
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -879,6 +922,11 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def may_turn(self):
         return self._params.get("may_turn", False)
 
+    def deliver_turn_got(self):
+        "Resend 'turn_got' event to the client"
+        for controller in self.controllers:
+            controller.deliver_turn_got()
+
     def turn_give(self):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
@@ -897,6 +945,8 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def turn_timeout(self):
         "Revoke right of making turn from the member due to timeout"
         self.set_param("may_turn", False)
+        globs = self.combat.globs()
+        self.combat.execute_member_script(self, "turntimeout", globs, lambda: self._("'After turn timeout' script"))
         for controller in self.controllers:
             controller.turn_timeout()
 

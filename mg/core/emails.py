@@ -237,10 +237,34 @@ class Email(Module):
             email = self.int_app().config.get("email.exceptions")
             if email:
                 try:
-                    tag = self.app().tag
+                    app = self.app()
+                    try:
+                        tag = app.tag
+                    except AttributeError:
+                        tag = "NOTAG"
+                    try:
+                        project = app.project
+                    except AttributeError:
+                        project = None
                 except AttributeError:
-                    tag = "NOTAG"
+                    tag = "NOAPP"
+                    app = None
+                    project = None
                 vars = {}
+                # project owner
+                if project:
+                    vars["project"] = project.uuid
+                    vars["project_title"] = htmlescape(project.get("title_short"))
+                    vars["project_owner"] = project.get("owner")
+                    if vars["project_owner"]:
+                        try:
+                            owner = self.main_app().obj(User, vars["project_owner"])
+                        except ObjectNotFoundException:
+                            pass
+                        else:
+                            vars["project_owner_name"] = htmlescape(owner.get("name"))
+                    vars["main_host"] = self.main_host
+                    vars["main_protocol"] = self.main_app().protocol
                 try:
                     req = self.req()
                 except AttributeError:

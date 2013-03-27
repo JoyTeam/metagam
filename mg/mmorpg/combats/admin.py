@@ -34,8 +34,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("menu-admin-combats.index", self.menu_combats_index)
         self.rhook("ext-admin-combats.rules", self.admin_rules, priv="combats.rules")
         self.rhook("headmenu-admin-combats.rules", self.headmenu_rules)
-        self.rhook("ext-admin-combats.config", self.admin_config, priv="combats.config")
-        self.rhook("headmenu-admin-combats.config", self.headmenu_config)
+        #self.rhook("ext-admin-combats.config", self.admin_config, priv="combats.config")
+        #self.rhook("headmenu-admin-combats.config", self.headmenu_config)
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("ext-admin-combats.history", self.admin_history, priv="combats.config")
         self.rhook("headmenu-admin-combats.history", self.headmenu_history)
@@ -44,6 +44,20 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("ext-admin-combats.stats", self.admin_stats, priv="combats.stats")
         self.rhook("headmenu-admin-combats.stats", self.headmenu_stats)
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "attack",
+            "title": self._("contextmenu///Attack"),
+            "qevent": "attack",
+            "order": 20.0,
+            "default_visible": False,
+            "image": "/st-mg/icons/attack.png",
+            "visible": ['and', ['and', ['not', ['.', ['glob', 'char'], 'combat']], ['not', ['.', ['glob', 'viewer'], 'combat']]],
+                ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
+            ],
+        })
 
     def design_files(self, files):
         files.append({"filename": "character-combats.html", "description": self._("List of character's combats"), "doc": "/doc/design/combats"})
@@ -58,7 +72,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         req = self.req()
         if req.has_access("combats.config"):
             menu.append({"id": "combats/rules", "text": self._("Combats rules"), "order": 1, "leaf": True})
-            menu.append({"id": "combats/config", "text": self._("Combats configuration"), "order": 2, "leaf": True})
+            #menu.append({"id": "combats/config", "text": self._("Combats configuration"), "order": 2, "leaf": True})
             menu.append({"id": "combats/history", "text": self._("Combats history configuration"), "order": 3, "leaf": True})
         if req.has_access("combats.stats"):
             menu.append({"id": "combats/stats", "text": self._("View combats statistics"), "order": 4, "leaf": True})
@@ -76,11 +90,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         req = self.req()
         if req.param("ok"):
             config = self.app().config_updater()
-            config.set("combats.debug", True if req.param("debug") else False)
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         fields = [
-            {"name": "debug", "label": self._("Write combat debug messages to the chat"), "checked": self.conf("combats.debug"), "type": "checkbox"},
         ]
         self.call("admin.form", fields=fields)
 
@@ -186,7 +198,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     self.app().config.delete_group("combats-%s" % code)
                     config = self.app().config_updater()
                     config.set("combats.rules", rules)
-                    config.delete("combats-%s.rules" % code)
                     config.store()
                 self.call("admin.redirect", "combats/rules")
             # edit
@@ -252,13 +263,13 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         if req.ok():
             errors = {}
             # tp
-            tp = req.param("v_tp")
+            tp = req.param("tp")
             if not tp:
-                errors["v_tp"] = self._("This field is mandatory")
+                errors["tp"] = self._("This field is mandatory")
             else:
                 type_info = combat_types_dict.get(tp)
                 if not type_info:
-                    errors["v_tp"] = self._("Make a valid selection")
+                    errors["tp"] = self._("Make a valid selection")
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -266,11 +277,12 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             dialog = type_info["dialog"](self.app())
             dialog.show()
         # render form
-        fields = [
-            {"name": "tp", "type": "combo", "label": self._("Type of combat system"), "values": combat_types},
-        ]
+        fields = []
+        for ct_id, ct_name in combat_types:
+            fields.append({"name": "tp", "type": "radio", "value": ct_id, "boxLabel": ct_name})
+            #{"name": "tp", "type": "combo", "label": self._("Type of combat system"), "values": combat_types},
         buttons = [
-            {"text": self._("Generate combat system")},
+            {"text": self._("Select combat system type")},
         ]
         self.call("admin.form", fields=fields, buttons=buttons)
 
@@ -324,6 +336,12 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 errors["timeout"] = self._("Maximal timeout is %d seconds") % 86400
             else:
                 info["timeout"] = timeout
+            # turn_order
+            turn_order = req.param("turn_order")
+            if not turn_order in ["round-robin", "pair-exchanges"]:
+                errors["turn_order"] = self._("This field is mandatory")
+            else:
+                info["turn_order"] = turn_order
             # turn_timeout
             turn_timeout = intz(req.param("turn_timeout"))
             if turn_timeout < 5:
@@ -387,18 +405,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         elif height > 500:
                             errors["generic_log_height"] = self._("Maximal value is %d") % 500
                     info["generic_log_resize"] = True if req.param("generic_log_resize") else False
-                # time mode
-                time_mode = req.param("v_time_mode")
-                if time_mode != "none" and time_mode != "begin" and time_mode != "change":
-                    errors["v_time_mode"] = self._("Invalid time mode")
-                else:
-                    info["time_mode"] = time_mode
-                # time format
-                time_format = req.param("v_time_format")
-                if time_format != "num" and time_format != "mmss":
-                    errors["v_time_format"] = self._("Invalid time format")
-                else:
-                    info["time_format"] = time_format
                 # go button
                 info["generic_gobutton"] = 1 if req.param("generic_gobutton") else 0
                 if info["generic_gobutton"]:
@@ -407,6 +413,21 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 for key in ["aboveavatar", "belowavatar"]:
                     if key in oldInfo:
                         info[key] = oldInfo[key]
+            # time mode
+            time_mode = req.param("v_time_mode")
+            if time_mode != "none" and time_mode != "begin" and time_mode != "change":
+                errors["v_time_mode"] = self._("Invalid time mode")
+            else:
+                info["time_mode"] = time_mode
+            # time format
+            time_format = req.param("v_time_format")
+            if time_format != "num" and time_format != "mmss" and time_format != "realhhmmss":
+                errors["v_time_format"] = self._("Invalid time format")
+            else:
+                info["time_format"] = time_format
+            # script debug
+            info["debug_script_chat"] = True if req.param("debug_script_chat") else False
+            info["debug_script_log"] = True if req.param("debug_script_log") else False
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -423,14 +444,21 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         dim_avatar = info.get("dim_avatar", [120, 220])
         dim_avatar = [str(i) for i in dim_avatar]
         dim_avatar = "x".join(dim_avatar)
+        turn_order = info.get("turn_order", "round-robin")
         fields = [
             {"name": "name", "label": self._("Combat rules name"), "value": shortInfo["name"]},
             {"name": "order", "label": self._("Sorting order"), "value": shortInfo["order"], "inline": True},
             {"name": "timeout", "label": self._("General combat timeout (in seconds)"), "value": info.get("timeout", 3600 * 4)},
+            {"type": "header", "html": self._("Combat turns")},
+            {"id": "turn_order-round-robin", "name": "turn_order", "type": "radio", "label": self._("Combat turn order"), "checked": turn_order == "round-robin", "value": "round-robin", "boxLabel": self._("Round robin. Combat members perform actions exactly each after another")},
+            {"id": "turn_order-pair-exchanges", "name": "turn_order", "type": "radio", "checked": turn_order == "pair-exchanges", "value": "pair-exchanges", "boxLabel": self._("Pair exchanges. Each opponent chooses an action on the randomly selected opponent. When their actions match, the system performs strike exchange")},
             {"name": "turn_timeout", "label": self._("Turn timeout (in seconds)"), "value": info.get("turn_timeout", 30)},
+            {"type": "header", "html": self._("Combat debugging")},
+            {"name": "debug_script_chat", "label": self._("Output script trace into debug chat"), "type": "checkbox", "checked": info.get("debug_script_chat")},
+            {"name": "debug_script_log", "label": self._("Output script trace into debug log"), "type": "checkbox", "checked": info.get("debug_script_log")},
             {"type": "header", "html": self._("Combat time")},
             {"name": "time_mode", "label": self._("Time visualization mode"), "type": "combo", "value": info.get("time_mode", "begin"), "values": [("none", self._("Don't show time")), ("begin", self._("Show in the beginning of every log line")), ("change", self._("Output to log after every change"))]},
-            {"name": "time_format", "label": self._("Time format"), "type": "combo", "value": info.get("time_format", "mmss"), "values": [("mmss", self._("MM:SS")), ("num", self._("Plain number"))]},
+            {"name": "time_format", "label": self._("Time format"), "type": "combo", "value": info.get("time_format", "mmss"), "values": [("mmss", self._("MM:SS")), ("num", self._("Plain number")), ("realhhmmss", self._("Realtime HH:MM:SS"))]},
             {"type": "header", "html": self._("Combat avatars settings")},
             {"name": "dim_avatar", "label": self._("Combat avatar dimensions (example: 100x200)"), "value": dim_avatar},
             {"name": "generic", "type": "checkbox", "label": self._("Use generic GUI for this type of combats"), "checked": info.get("generic", 1)},
@@ -474,8 +502,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 rows[-1].extend([
                     ent["order"],
                     u'<hook:admin.link href="combats/rules/edit/%s/%s/%s" title="%s" />' % (code, pos, ent["id"], self._("edit")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/%s/del/%s" title="%s" confirm="%s" />' % (code, pos, ent["id"], self._("delete"),
-                        self._("Are you sure want to delete this item?")),
+                    u'<hook:admin.link href="combats/rules/edit/%s/%s/del/%s" title="%s" confirm="%s" />' % (code, pos, ent["id"], self._("delete"), self._("Are you sure want to delete this item?")),
                 ])
             vars = {
                 "tables": [
@@ -711,9 +738,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             info["order"] = floatz(req.param("order"))
             # available
             info["available"] = self.call("script.admin-expression", "available", errors, globs={"combat": combat, "member": member1})
-            # process errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
+            # immediate
+            info["immediate"] = True if req.param("immediate") else False
             # targets
             valid_targets = set(["none", "all", "enemies", "allies", "allies-myself", "myself", "script"])
             targets = req.param("v_targets")
@@ -740,6 +766,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                             info["targets_sort"] = targets_sort
                 info["targets_min"] = self.call("script.admin-expression", "targets_min", errors, globs={"combat": combat, "member": member1})
                 info["targets_max"] = self.call("script.admin-expression", "targets_max", errors, globs={"combat": combat, "member": member1})
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
             # save changes
             if action_code:
                 actions = [a for a in actions if a["code"] != action_code]
@@ -755,6 +784,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
             {"name": "available", "label": self._("Whether action is available to member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))},
+            {"name": "immediate", "label": self._("Immediate execution (out of turn)"), "type": "checkbox", "checked": info.get("immediate")},
             {"type": "header", "html": self._("Available targets filter")},
             {"name": "targets", "type": "combo", "label": self._("Available action targets"), "values": [
                 ("none", self._("None (not applicable)")),
@@ -796,10 +826,10 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             # parse form
             errors = {}
             config = self.app().config_updater()
-            for tag in ["start", "turngot", "heartbeat", "idle", "actions-started",
+            for tag in ["start", "heartbeat", "idle", "actions-started",
                     "actions-stopped", "joined", "draw", "victory"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat}, mandatory=False))
-            for tag in ["turngot", "heartbeat-member", "idle-member", "actions-started-member",
+            for tag in ["turngot", "turnmade", "turntimeout", "heartbeat-member", "idle-member", "actions-started-member",
                     "actions-stopped-member", "draw-member", "victory-member", "defeat-member"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat, "member": member}, mandatory=False))
             # process errors
@@ -812,6 +842,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 300},
             {"name": "joined", "label": self._("Combat script running when member 'member' is joined") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-joined" % code)), "height": 300},
             {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
+            {"name": "turnmade", "label": self._("Combat script running for member 'member' immediately after he makes a turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turnmade" % code)), "height": 300},
+            {"name": "turntimeout", "label": self._("Combat script running for member 'member' when it is timed out making turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turntimeout" % code)), "height": 300},
             {"name": "heartbeat", "label": self._("Combat script running for every main loop iteration ('heartbeat script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat" % code)), "height": 300},
             {"name": "heartbeat-member", "label": self._("Member heartbeat script running for every member") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat-member" % code)), "height": 300},
             {"name": "idle", "label": self._("Combat script running after combat was idle for every 1 full second ('idle script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-idle" % code)), "height": 300},
@@ -1179,6 +1211,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 globs[attr["code"]] = 0
             globs_target = globs.copy()
             globs_target["target"] = member2
+            info["script-enqueued"] = self.call("combats-admin.script-field", combat, "enqueued", errors, globs=globs, mandatory=False)
             info["script-begin"] = self.call("combats-admin.script-field", combat, "begin", errors, globs=globs, mandatory=False)
             info["script-begin-target"] = self.call("combats-admin.script-field", combat, "begin-target", errors, globs=globs_target, mandatory=False)
             info["script-end"] = self.call("combats-admin.script-field", combat, "end", errors, globs=globs, mandatory=False)
@@ -1193,10 +1226,11 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
         # render form
         fields = [
-            {"name": "begin", "label": self._("Begin execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin")), "height": 100},
-            {"name": "begin-target", "label": self._("Begin execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin-target")), "height": 100},
-            {"name": "end", "label": self._("End execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end")), "height": 100},
-            {"name": "end-target", "label": self._("End execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end-target")), "height": 100},
+            {"name": "enqueued", "label": self._("Action enqueued") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-enqueued")), "height": 300},
+            {"name": "begin", "label": self._("Begin execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin")), "height": 300},
+            {"name": "begin-target", "label": self._("Begin execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-begin-target")), "height": 300},
+            {"name": "end", "label": self._("End execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end")), "height": 300},
+            {"name": "end-target", "label": self._("End execution on target 'target'") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-end-target")), "height": 300},
         ]
         self.call("admin.form", fields=fields)
 
@@ -1296,7 +1330,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             member2 = CombatMember(combat)
             combat.join(member1)
             combat.join(member2)
-            info = {}
+            # preserve scripts and attributes
+            info = dict([(k, v) for k, v in info.iteritems() if re_script_prefix.match(k)])
             errors = {}
             # code
             code = req.param("code")
@@ -1569,7 +1604,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             else:
                 obj.remove()
         # Purge character log
-        lst = self.objList(DBCombatCharacterLogList, query_index="combat", query_equal=cent.uuid)
+        lst = self.objlist(DBCombatCharacterLogList, query_index="combat", query_equal=cent.uuid)
         lst.load(silent=True)
         lst.remove()
         # Purge log itself

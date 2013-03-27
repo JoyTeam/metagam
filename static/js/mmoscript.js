@@ -17,7 +17,8 @@ MMOScriptHTMLFormatter.prototype.clsEnd = function () {
 
 var MMOScript = {
     unaryOps: {
-        'not': true
+        'not': true,
+        '~': true
     },
     binaryOps: {
         '+': true,
@@ -32,7 +33,9 @@ var MMOScript = {
         '<=': true,
         '>=': true,
         'and': true,
-        'or': true
+        'or': true,
+        '&': true,
+        '|': true
     },
     ternaryOps: {
         '?': true
@@ -117,6 +120,20 @@ MMOScript.evaluate = function (val, env) {
             return (arg1 >= arg2) ? 1 : 0;
         }
     }
+    if (cmd == '~') {
+        var arg1 = Math.floor(self.toNumber(self.evaluate(val[1], env)));
+        return ~arg1;
+    }
+    if (cmd == '&') {
+        var arg1 = Math.floor(self.toNumber(self.evaluate(val[1], env)));
+        var arg2 = Math.floor(self.toNumber(self.evaluate(val[2], env)));
+        return arg1 & arg2;
+    }
+    if (cmd == '|') {
+        var arg1 = Math.floor(self.toNumber(self.evaluate(val[1], env)));
+        var arg2 = Math.floor(self.toNumber(self.evaluate(val[2], env)));
+        return arg1 | arg2;
+    }
     if (cmd == 'not') {
         var arg1 = self.evaluate(val[1], env);
         return arg1 ? 0 : 1;
@@ -150,7 +167,7 @@ MMOScript.evaluate = function (val, env) {
         if (fname == 'min' || fname == 'max') {
             var res = undefined;
             for (var i = 2; i < val.length; i++) {
-                var v = self.toNumber(val[i]);
+                var v = self.toNumber(self.evaluate(val[i], env));
                 if (fname == 'min') {
                     if (res === undefined || v < res) {
                         res = v;
@@ -170,6 +187,13 @@ MMOScript.evaluate = function (val, env) {
             } else {
                 return v.toUpper();
             }
+        }
+        if (fname == 'selrand') {
+            var index = Math.floor(Math.random() * (val.length - 2));
+            if (index >= 2 && index < val.length) {
+                return self.evaluate(val[i], env);
+            }
+            return undefined;
         }
         return undefined;
     }
@@ -275,6 +299,9 @@ MMOScript.dependencies = function (val) {
  */
 MMOScript._dependencies = function (val, res) {
     var self = this;
+    if (!val) {
+        return;
+    }
     var cmd = val[0];
     if (self.binaryOps[cmd]) {
         self._dependencies(val[1], res);

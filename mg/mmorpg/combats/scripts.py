@@ -164,14 +164,21 @@ class CombatScripts(ConstructorModule):
         return ["mg.mmorpg.combats.scripts.CombatScriptsAdmin"]
 
     def combat_debug(self, combat, msg, **kwargs):
-        "Delivering debug message to all combat members having access to debugging info"
-        for member in combat.members:
-            char = member.param("char")
-            if char:
-                if self.call("character.debug-access", char):
-                    if callable(msg):
-                        msg = msg()
-                    self.call("debug-channel.character", char, msg, **kwargs)
+        "Show combat debug message"
+        if combat.rulesinfo.get("debug_script_chat"):
+            for member in combat.members:
+                char = member.param("char")
+                if char:
+                    if self.call("character.debug-access", char):
+                        if callable(msg):
+                            msg = msg()
+                        self.call("debug-channel.character", char, msg, **kwargs)
+        if combat.rulesinfo.get("debug_script_log"):
+            kwargs = kwargs.copy()
+            if callable(msg):
+                msg = msg()
+            kwargs["text"] = msg
+            combat.syslog(kwargs)
 
     def execute_script(self, combat, code, globs={}, handle_exceptions=True, real_execute=True, description=None):
         if code is None:
@@ -185,8 +192,6 @@ class CombatScripts(ConstructorModule):
         else:
             indent = old_indent + 4
             tasklet.combat_indent = indent
-        # debug info
-        debug = self.conf("combats.debug")
         def execute_statement(st, indent):
             "Execute statement of a combat script"
             def env():
@@ -210,8 +215,7 @@ class CombatScripts(ConstructorModule):
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
-                if debug:
-                    self.combat_debug(combat, lambda: self._("damaging {obj}.{attr}: {damage}").format(obj=obj, attr=attr, damage=damage), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("damaging {obj}.{attr}: {damage}").format(obj=obj, attr=attr, damage=damage), cls="combat-action", indent=indent)
                 old_val = nn(obj.param(attr, handle_exceptions))
                 if not globs.get("action_log") or not isinstance(globs["action_log"], ActionLog):
                     globs["action_log"] = ActionLog(self.app())
@@ -259,8 +263,7 @@ class CombatScripts(ConstructorModule):
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
-                if debug:
-                    self.combat_debug(combat, lambda: self._("healing {obj}.{attr}: {heal}").format(obj=obj, attr=attr, heal=heal), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("healing {obj}.{attr}: {heal}").format(obj=obj, attr=attr, heal=heal), cls="combat-action", indent=indent)
                 old_val = nn(obj.param(attr, handle_exceptions))
                 if not globs.get("action_log") or not isinstance(globs["action_log"], ActionLog):
                     globs["action_log"] = ActionLog(self.app())
@@ -306,8 +309,7 @@ class CombatScripts(ConstructorModule):
                 set_attr = getattr(obj, "script_set_attr", None)
                 if not set_attr:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
-                if debug:
-                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
                 if real_execute:
                     set_attr(attr, val, env)
             elif st_cmd == "selecttarget":
@@ -316,8 +318,7 @@ class CombatScripts(ConstructorModule):
                     obj.is_a_combat_member()
                 except AttributeError:
                     raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
-                if debug:
-                    self.combat_debug(combat, lambda: self._("selecting target for {member}").format(member=obj), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("selecting target for {member}").format(member=obj), cls="combat-action", indent=indent)
                 if real_execute:
                     obj.select_target(st[2], env)
             elif st_cmd == "select":
@@ -368,8 +369,7 @@ class CombatScripts(ConstructorModule):
                 set_attr = getattr(obj, "script_set_attr", None)
                 if not set_attr:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
-                if debug:
-                    self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {func}({data}) = {val}").format(obj=obj, attr=attr, val=val, func=func, data=u", ".join([str2unicode(item) for item in data])), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {func}({data}) = {val}").format(obj=obj, attr=attr, val=val, func=func, data=u", ".join([str2unicode(item) for item in data])), cls="combat-action", indent=indent)
                 if real_execute:
                     set_attr(attr, val, env)
             elif st_cmd == "log":
@@ -380,8 +380,7 @@ class CombatScripts(ConstructorModule):
                 if len(st) >= 3:
                     for key in st[2].keys():
                         args[key] = self.call("script.evaluate-expression", st[2][key], globs=globs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
-                if debug:
-                    self.combat_debug(combat, lambda: self._("writing to log: {text}").format(text=text), cls="combat-log", indent=indent)
+                self.combat_debug(combat, lambda: self._("writing to log: {text}").format(text=text), cls="combat-log", indent=indent)
                 if real_execute:
                     combat.textlog(args)
             elif st_cmd == "syslog":
@@ -392,20 +391,18 @@ class CombatScripts(ConstructorModule):
                 if len(st) >= 3:
                     for key in st[2].keys():
                         args[key] = self.call("script.evaluate-expression", st[2][key], globs=globs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
-                if debug:
-                    self.combat_debug(combat, lambda: self._("writing to system log: {text}").format(text=text), cls="combat-log", indent=indent)
+                self.combat_debug(combat, lambda: self._("writing to system log: {text}").format(text=text), cls="combat-log", indent=indent)
                 if real_execute:
                     combat.syslog(args)
             elif st_cmd == "if":
                 expr = st[1]
                 val = self.call("script.evaluate-expression", expr, globs=globs, description=lambda: self._("Evaluation of condition"))
-                if debug:
-                    self.combat_debug(combat, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="combat-condition", indent=indent)
+                self.combat_debug(combat, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="combat-condition", indent=indent)
                 if val:
                     execute_block(st[2], indent + 1)
                 else:
                     if len(st) >= 4:
-                        execute_actions(st[3], indent + 1)
+                        execute_block(st[3], indent + 1)
             elif st_cmd == "chat":
                 html = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of chat HTML"))
                 args = st[2]
@@ -418,8 +415,7 @@ class CombatScripts(ConstructorModule):
                     cls = self.call("script.evaluate-expression", args["cls"], globs=globs, description=self._("Evaluation of chat class"))
                 else:
                     cls = "combat"
-                if debug:
-                    self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent)
+                self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent)
                 self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
             elif st_cmd == "action":
                 tp = self.call("script.evaluate-expression", st[1], globs=globs, description=self._("Evaluation of combat action"))

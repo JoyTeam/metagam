@@ -84,19 +84,30 @@ class POrOp(Parsing.Precedence):
     "%left pOrOp >pQuestionOp"
 class TokenOr(Parsing.Token):
     "%token or [pOrOp]"
-
 class PAndOp(Parsing.Precedence):
     "%left pAndOp >pOrOp"
 class TokenAnd(Parsing.Token):
     "%token and [pAndOp]"
-
 class PNotOp(Parsing.Precedence):
     "%left pNotOp >pAndOp"
 class TokenNot(Parsing.Token):
     "%token not [pNotOp]"
 
+class PBitOrOp(Parsing.Precedence):
+    "%left pBitOrOp >pNotOp"
+class TokenBitOr(Parsing.Token):
+    "%token bitor [pBitOrOp]"
+class PBitAndOp(Parsing.Precedence):
+    "%left pBitAndOp >pBitOrOp"
+class TokenBitAnd(Parsing.Token):
+    "%token bitand [pBitAndOp]"
+class PBitNotOp(Parsing.Precedence):
+    "%left pBitNotOp >pBitAndOp"
+class TokenBitNot(Parsing.Token):
+    "%token bitnot [pBitNotOp]"
+
 class PCompareOp(Parsing.Precedence):
-    "%left pCompareOp >pNotOp"
+    "%left pCompareOp >pBitNotOp"
 class TokenEquals(Parsing.Token):
     "%token equals [pCompareOp]"
 class TokenNotEquals(Parsing.Token):
@@ -282,6 +293,18 @@ class Expr(Parsing.Nonterm):
         "%reduce Expr ge Expr [pCompareOp]"
         self.val = [">=", exprA.val, exprB.val]
 
+    def reduceBitNot(self, NotOp, exprA):
+        "%reduce bitnot Expr [pBitNotOp]"
+        self.val = ["~", exprA.val]
+
+    def reduceBitAnd(self, exprA, AndOp, exprB):
+        "%reduce Expr bitand Expr [pBitAndOp]"
+        self.val = ["&", exprA.val, exprB.val]
+
+    def reduceBitOr(self, exprA, OrOp, exprB):
+        "%reduce Expr bitor Expr [pBitOrOp]"
+        self.val = ["|", exprA.val, exprB.val]
+
     def reduceNot(self, NotOp, exprA):
         "%reduce not Expr [pNotOp]"
         self.val = ["not", exprA.val]
@@ -308,7 +331,7 @@ class Expr(Parsing.Nonterm):
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
 
-    exprFuncs = set(["min", "max", "uc", "lc"])
+    exprFuncs = set(["min", "max", "uc", "lc", "selrand"])
 
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
@@ -332,7 +355,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Glr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|\&|\||~|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -362,8 +385,11 @@ class ScriptParser(Parsing.Glr, Module):
         "equip": TokenEquip,
         "in": TokenIn,
         "member": TokenMember,
+        "~": TokenBitNot,
+        "&": TokenBitAnd,
+        "|": TokenBitOr,
     }
-    funcs = set(["min", "max", "uc", "lc"])
+    funcs = set(["min", "max", "uc", "lc", "selrand"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")

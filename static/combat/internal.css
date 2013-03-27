@@ -9,7 +9,16 @@ div.combat-member-image { position: relative; margin: 5px auto 5px auto }
 .x-border-layout-ct { background: none }
 .combat-item-deselected { cursor: pointer }
 .combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
-.combat-item-deselected:hover { background-color: #607060; color: #ffffff }
+.combat-item-deselected:hover { background-color: #606060; color: #ffffff }
 .combat-item-selected:hover { background-color: #505050; color: #ffffff }
 .combat-action-selector { overflow: hidden; white-space: nowrap }
 .combat-action-attribute-name { font-weight: bold }
+.combat-target-ally.combat-target-alive.combat-item-deselected { color: #008000 }
+.combat-target-ally.combat-target-alive.combat-item-selected { background-color: #008000; color: #000000 }
+.combat-target-ally.combat-target-dead.combat-item-deselected { color: #004000 }
+.combat-target-ally.combat-target-dead.combat-item-selected { background-color: #404040; color: #004000 }
+.combat-target-enemy.combat-target-alive.combat-item-deselected { color: #c00000 }
+.combat-target-enemy.combat-target-alive.combat-item-selected { background-color: #f00000; color: #000000 }
+.combat-target-enemy.combat-target-dead.combat-item-deselected { color: #600000 }
+.combat-target-enemy.combat-target-dead.combat-item-selected { background-color: #404040; color: #600000 }
+.combat-target-dead { text-decoration: line-through }

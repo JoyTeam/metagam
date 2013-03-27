@@ -1,4 +1,5 @@
 from mg.mmorpg.combats.core import CombatMemberController
+from mg.constructor.script_classes import ScriptRuntimeError
 
 class AIController(CombatMemberController):
     def __init__(self, member, aitype, fqn="mg.mmorpg.combats.ai.AIController"):
@@ -11,7 +12,7 @@ class AIController(CombatMemberController):
             return self._ai_types
         except AttributeError:
             pass
-        self._ai_types = self.conf("combats-%s.ai-types" % self.combat.rules)
+        self._ai_types = self.conf("combats-%s.ai-types" % self.combat.rules, [])
         return self._ai_types
 
     @property
@@ -24,7 +25,7 @@ class AIController(CombatMemberController):
             if ai_type["code"] == self.aitype:
                 self._ai_description = ai_type
                 return self._ai_description
-        raise ScriptRuntimeError(self._("AI type '%s' is not defined'") % self.aitype)
+        return {}
 
     def script_code(self, tag):
         return self.ai_description.get("script-%s" % tag, [])

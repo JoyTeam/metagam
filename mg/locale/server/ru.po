@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-23 21:23+0300\n"
+"PO-Revision-Date: 2013-03-27 07:52+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -103,6 +103,12 @@ msgstr "\"%s\" изменить нельзя"
 msgid "'After get turn' script"
 msgstr "Скрипт \"после получения права хода\""
 
+msgid "'After turn made' script"
+msgstr "Скрипт \"после совершения хода\""
+
+msgid "'After turn timeout' script"
+msgstr "Скрипт \"после таймаута хода\""
+
 msgid "'combat log' operator can be used in combat events only"
 msgstr "Оператор \"combat log\" может быть использован только в боевых событиях"
 
@@ -192,6 +198,9 @@ msgstr "7 февраля 2011 года в 23:17"
 msgid "90 days"
 msgstr "90 суток"
 
+msgid "<a href=\"/combat/{combat.id}\" target=\"_blank\">Combat</a> {combat.team1_list} vs {combat.team2_list} was a draw"
+msgstr "<a href=\"/combat/{combat.id}\" target=\"_blank\">Бой</a> {combat.team1_list} против {combat.team2_list} закончился ничьей"
+
 msgid "<h1>Welcome to your new game!</h1><p>Now you can open <a href=\"/admin\" target=\"_blank\">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>"
 msgstr "<h1>Добро пожаловать в вашу новую игру</h1><p>Игра успешно запущена и уже работает на движке MMO Constructor.</p><p>Сейчас вы можете открыть <a href=\"/admin\" target=\"_blank\">административный интерфейс</a> и выполнить несколько шагов, необходимых для её публикации.</p><p>Добро пожаловать в мир креативной разработки игр, и желаем удачи!</p>"
 
@@ -213,6 +222,12 @@ msgstr "<p>Ваша игра в данный момент находится н�
 msgid "<span class=\"combat-log-item\">{item}</span> of character <span class=\"combat-log-member\">{name}</span> has been broken"
 msgstr "<span class=\"combat-log-item\">{item}</span> персонажа <span class=\"combat-log-member\">{name}</span> разрушается"
 
+msgid "<span class=\"combat-log-member\">{member.name}</span> has got <span class=\"combat-log-xp-value\">{local.p_xp}</span> [#local.p_xp:point,points] of experience"
+msgstr "<span class=\"combat-log-member\">{member.name}</span> [member.sex:получил,получила] <span class=\"combat-log-xp-value\">{local.p_xp}</span> [#local.p_xp:очко,очка,очков] опыта"
+
+msgid "<span class=\"combat-log-member\">{member.name}</span> has joined the combat"
+msgstr "<span class=\"combat-log-member\">{member.name}</span> [member.sex:вступил,вступила] в бой"
+
 msgid "<strong>{wmid}</strong> (certificate: <strong>{certificate}</strong>)"
 msgstr "<strong>{wmid}</strong> (аттестат: <strong>{certificate}</strong>)"
 
@@ -231,10 +246,6 @@ msgstr "Очень длинное название раздела на фору�
 #, python-format
 msgid "AI '%s' script when it has got turn right"
 msgstr "ИИ-скрипт \"%s\", когда он получил право хода"
-
-#, python-format
-msgid "AI type '%s' is not defined'"
-msgstr "Тип ИИ \"%s\" не определён"
 
 msgid "AI type code"
 msgstr "Код типа ИИ"
@@ -325,6 +336,9 @@ msgstr "Код действия должен быть строкой"
 
 msgid "Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"
 msgstr "Код действия должен начинаться латинской буквы или \"_\". Остальные символы могут быть латинскими буквами, цифрами или \"_\""
+
+msgid "Action enqueued"
+msgstr "Действие поставлено в очередь"
 
 msgid "Action name"
 msgstr "Название действия"
@@ -638,11 +652,8 @@ msgstr "Назначить доменное имя"
 msgid "Assortment of '%s'"
 msgstr "Ассортимент \"%s\""
 
-msgid "Attack-block system"
-msgstr "Система атака-блок"
-
-msgid "Attack-block system. Combat members choose arbitrary targets and zones being attacked or blocked"
-msgstr "Система атака-блок. Участники боя выбирают произвольные цели и зоны, которые они атакуют и блокируют"
+msgid "Attack-block system. Combat members choose arbitrary targets and zones being attacked or blocked. Attacks are performed in pair exchanges."
+msgstr "Система атака-блок. Участники боя выбирают произвольные цели и зоны, которые они атакуют и блокируют. Атаки осуществляются в режиме парного обмена"
 
 #, python-format
 msgid "Attribute '%s' was specified twice"
@@ -807,6 +818,9 @@ msgstr "Бан IP-адресов"
 
 msgid "Banning users"
 msgstr "Бан пользователей"
+
+msgid "Basic AI algorithm"
+msgstr "Базовый алгоритм ИИ"
 
 msgid "Basic image for your logo"
 msgstr "Базовое изображение для вашего логотипа"
@@ -1137,6 +1151,9 @@ msgstr "Документация на классы персонажей"
 msgid "Character context menu"
 msgstr "Контекстное меню персонажа"
 
+msgid "Character experience"
+msgstr "Опыт персонажа"
+
 msgid "Character for the game administrator"
 msgstr "Персонаж для администратора игры"
 
@@ -1242,6 +1259,9 @@ msgstr "Страница персонажа (внутренняя)"
 
 msgid "Character parameter"
 msgstr "Параметр персонажа"
+
+msgid "Character parameter holding its experience"
+msgstr "Параметр персонажа, хранящий его опыт"
 
 msgid "Character parameters"
 msgstr "Параметры персонажа"
@@ -1385,6 +1405,12 @@ msgstr "Проверка доступности домена..."
 msgid "Checking domain..."
 msgstr "Проверка домена..."
 
+msgid "Chest"
+msgstr "Грудь"
+
+msgid "Chest and waist"
+msgstr "Грудь и пояс"
+
 msgid "Choose any template you want. Then setup its parameters and you will get a personalised variant of the template."
 msgstr "Выберите любой шаблон, который вам нравится. Затем настройте его параметры, и вы получите персонализированный вариант шаблона."
 
@@ -1518,6 +1544,10 @@ msgstr "Скрипт окончания действия \"%s\""
 msgid "Combat action '%s' end target script"
 msgstr "Скрипт окончания действия \"%s\" на цель \"target\""
 
+#, python-format
+msgid "Combat action '%s' script when enqueued"
+msgstr "Скрипт, когда боевое действие \"%s\" ставится в очередь"
+
 msgid "Combat actions started script"
 msgstr "Скрипт после начала выполнения действий"
 
@@ -1535,6 +1565,9 @@ msgstr "Размеры аватара в бою (например: 100x200)"
 
 msgid "Combat avatars settings"
 msgstr "Настройки аватаров в бою"
+
+msgid "Combat debugging"
+msgstr "Отладка боёв"
 
 msgid "Combat defeat script for a member"
 msgstr "Скрипт поражения для участника \"member\""
@@ -1651,6 +1684,12 @@ msgstr "Боевой скрипт, выполняемый на каждой ит
 msgid "Combat script running for member 'member' immediately after he gets turn"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он получает право хода"
 
+msgid "Combat script running for member 'member' immediately after he makes a turn"
+msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он делает ход"
+
+msgid "Combat script running for member 'member' when it is timed out making turn"
+msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как произошёл таймаут во время ожидания его хода"
+
 msgid "Combat script running on every defeated member (member of defeated team, not called on a draw)"
 msgstr "Боевой скрипт, выполняемый на каждого проигравшего участника (члена проигравшей команды; не вызывается при ничьей)"
 
@@ -1693,6 +1732,12 @@ msgstr "Название боя"
 
 msgid "Combat title must be a string"
 msgstr "Название боя должно быть строкой"
+
+msgid "Combat turn order"
+msgstr "Очередность ходов в бою"
+
+msgid "Combat turns"
+msgstr "Ходы в бою"
 
 msgid "Combat victory script"
 msgstr "Боевой скрипт победы"
@@ -2056,6 +2101,9 @@ msgstr "DOCTYPE не указан"
 
 msgid "Daemon"
 msgstr "Демон"
+
+msgid "Damage and defense modifiers"
+msgstr "Модификаторы урона и защиты"
 
 msgid "Damage parameter must start with 'p_'"
 msgstr "Параметр урона должен начинаться с \"p_\""
@@ -3270,9 +3318,6 @@ msgstr "Общая схема интерфейса"
 msgid "General recommendation is to set balance price in proportion to the difficulty of obtaining the item. This helps to keep the game well balanced."
 msgstr "Общая рекомендация - устанавливать балансировочную цену пропорционально сложности получения предмета. Это поможет сохранить игровой баланс."
 
-msgid "Generate combat system"
-msgstr "Сгенерировать боевую систему"
-
 msgid "Generate design template"
 msgstr "Сформировать шаблон оформления"
 
@@ -3281,6 +3326,9 @@ msgstr "Сгенерировать пригласительный код"
 
 msgid "Generate library description automatically"
 msgstr "Сгенерировать описание для библиотеки автоматически"
+
+msgid "Generic combat triggers"
+msgstr "Основные боевые триггеры"
 
 msgid "Generic interface settings"
 msgstr "Настройки универсального интерфейса"
@@ -3414,6 +3462,12 @@ msgstr "HTML-сообщение о регистрации по приглаше�
 #, python-format
 msgid "Handler expected in the handlers list. Received: %s"
 msgstr "В списке обработчиков ожидался обработчик. Получено: %s"
+
+msgid "Head"
+msgstr "Голова"
+
+msgid "Head and chest"
+msgstr "Голова и грудь"
 
 msgid "Header"
 msgstr "Заголовок"
@@ -3641,6 +3695,9 @@ msgstr "Изображения в подписи на {period_a}"
 #, python-format
 msgid "Images: %s"
 msgstr "Изображения: %s"
+
+msgid "Immediate execution (out of turn)"
+msgstr "Немедленное исполнение (вне очереди)"
 
 msgid "Implementation of action {type}.{action} ({id}) is missing"
 msgstr "Реализация действия {type}.{action} ({id}) отсутствует"
@@ -4186,6 +4243,9 @@ msgstr "Слева от главного фрейма"
 msgid "Left/right/up/down arrows for the location"
 msgstr "Стрелки влево/вправо/вверх/вниз в локации"
 
+msgid "Legs"
+msgstr "Ноги"
+
 msgid "Library"
 msgstr "Библиотека"
 
@@ -4648,6 +4708,9 @@ msgstr "Heartbeat-скрипт для участника"
 msgid "Member heartbeat script running for every member"
 msgstr "Heartbeat-скрипт, выполняемый для каждого участника \"member\""
 
+msgid "Member hitpoints"
+msgstr "Хитпоинты участника"
+
 msgid "Member idle script"
 msgstr "Idle-скрипт для участника \"member\""
 
@@ -4660,6 +4723,18 @@ msgstr "Скрипт присоединения участника"
 #, python-format
 msgid "Member parameter '%s'"
 msgstr "Параметр участника \"%s\""
+
+msgid "Member parameter holding its damage"
+msgstr "Параметр участника, хранящий его урон"
+
+msgid "Member parameter holding its defense"
+msgstr "Параметр персонажа, хранящий его защиту"
+
+msgid "Member parameter holding its hitpoints"
+msgstr "Параметр участника, хранящий его хитпоинты"
+
+msgid "Member parameter holding its maximal hitpoints"
+msgstr "Параметр персонажа, хранящий его максимальные хитпоинты"
 
 msgid "Memcached servers (comma separated list)"
 msgstr "Серверы memcached (список, разделённый запятыми)"
@@ -5424,6 +5499,12 @@ msgstr "Перемещение других персонажей"
 msgid "Our time"
 msgstr "Наше время"
 
+msgid "Output script trace into debug chat"
+msgstr "Выводить трассировку скрипта в отладочный чат"
+
+msgid "Output script trace into debug log"
+msgstr "Выводить трассировку скрипта в отладочный лог"
+
 msgid "Output to log after every change"
 msgstr "Выводить в лог после каждого изменения"
 
@@ -5493,6 +5574,9 @@ msgstr "Редактор платных услуг"
 msgid "Paid services interface"
 msgstr "Интерфейс платных услуг"
 
+msgid "Pair exchanges. Each opponent chooses an action on the randomly selected opponent. When their actions match, the system performs strike exchange"
+msgstr "Парный обмен. Каждый оппонент выбирает действие на случайно выбранного противника. Когда их действия взаимно совпадают, система производит обмен ударами"
+
 msgid "Panels"
 msgstr "Панели"
 
@@ -5551,6 +5635,9 @@ msgstr "Название параметра для магазинов (напр:
 
 msgid "Parameter name in genitive"
 msgstr "Название параметра в родительном падеже"
+
+msgid "Parameter name must start with 'p_' and contain latin letters, digits and underscores only"
+msgstr "Название параметра должно начинаться с \"p_\" и содержать только латинские буквы, цифры и символы подчёркивания"
 
 msgid "Parameter stored in the database"
 msgstr "Параметр сохраняется в базе данных"
@@ -6043,6 +6130,9 @@ msgstr "Realplexor"
 msgid "Realplexor monitor"
 msgstr "Монитор Realplexor"
 
+msgid "Realtime HH:MM:SS"
+msgstr "Реальное время ЧЧ:ММ:СС"
+
 msgid "Reason"
 msgstr "Причина"
 
@@ -6342,6 +6432,9 @@ msgstr "Высота списка персонажей (ростера)"
 msgid "Roster width"
 msgstr "Ширина списка персонажей (ростера)"
 
+msgid "Round robin. Combat members perform actions exactly each after another"
+msgstr "Круговая система. Участники боя совершают действия один за другим"
+
 msgid "Round value to this number of digits after decimal point (empty value means 'don't round')"
 msgstr "Округлять значение до указанного количества разрядов после десятичной точки (пустое значение означает \"не округлять\")"
 
@@ -6493,6 +6586,9 @@ msgstr "Выберите блок кнопок, куда поместить кн
 
 msgid "Select category"
 msgstr "Выберите раздел"
+
+msgid "Select combat system type"
+msgstr "Выберите тип боевой системы"
 
 msgid "Select correct mode"
 msgstr "Выберите верный режим"
@@ -7105,6 +7201,9 @@ msgstr "Дух"
 msgid "Square"
 msgstr "Квадрат"
 
+msgid "Started <a href=\"/combat/{combat.id}\" target=\"_blank\">combat</a> {combat.team1_list} vs {combat.team2_list}"
+msgstr "Начался <a href=\"/combat/{combat.id}\" target=\"_blank\">бой</a> {combat.team1_list} против {combat.team2_list}"
+
 msgid "Starting location"
 msgstr "Стартовая локация"
 
@@ -7200,6 +7299,21 @@ msgstr "Сохранённый размер"
 
 msgid "Strike"
 msgstr "Зачёркивание"
+
+msgid "Strike action failed text in the combat log"
+msgstr "Текст неудачного действия при ударе в логе боя"
+
+msgid "Strike action name"
+msgstr "Название действия удара"
+
+msgid "Strike action text in the combat log"
+msgstr "Текст действия удара в логе боя"
+
+msgid "Strike default damage"
+msgstr "Урон по умолчанию от удара"
+
+msgid "Strike parameters"
+msgstr "Параметры удара"
 
 msgid "String '{val}' has no attributes"
 msgstr "У строки \"{val}\" нет атрибутов"
@@ -7472,6 +7586,9 @@ msgstr "Это обязательное поле"
 
 msgid "This field must be a positive integer number"
 msgstr "Это значение должно быть целым положительным числом"
+
+msgid "This field must be a valid nonnegative integer"
+msgstr "Это поле должно быть целым положительным числом"
 
 msgid "This field must be greater than zero"
 msgstr "Это поле должно быть больше 0"
@@ -7870,9 +7987,6 @@ msgstr "Тип"
 msgid "Type mismatch error occured during data aggregation"
 msgstr "При агрегации данных произошла ошибка несоответствия типов"
 
-msgid "Type of combat system"
-msgstr "Тип боевой системы"
-
 msgid "Type of item"
 msgstr "Тип элемента"
 
@@ -7960,6 +8074,10 @@ msgstr "Неизвестная команда: /%s"
 
 msgid "Unsubscribe - {protocol}://{domain}/email/unsubscribe/{code}"
 msgstr "Отписаться - {protocol}://{domain}/email/unsubscribe/{code}"
+
+#, python-format
+msgid "Unsupported combat turn order: %s"
+msgstr "Неподдерживаемый режим очерёдности хода в бою: %s"
 
 msgid "Untitled"
 msgstr "Без имени"
@@ -8225,6 +8343,12 @@ msgstr "WMID проверен"
 msgid "WMID verified already"
 msgstr "WMID уже проверен"
 
+msgid "Waist"
+msgstr "Пояс"
+
+msgid "Waist and legs"
+msgstr "Пояс и ноги"
+
 msgid "Waiting for moderation"
 msgstr "Ожидает модерации"
 
@@ -8346,9 +8470,6 @@ msgstr "История мира"
 
 msgid "Write a message to the dossier"
 msgstr "Сделать запись в досье"
-
-msgid "Write combat debug messages to the chat"
-msgstr "Выводить отладочные сообщения боёв в чат"
 
 msgid "Write debugging information to the debug channel"
 msgstr "Выводить отладочную информацию в отладочный канал"
@@ -8776,6 +8897,12 @@ msgstr "ZIP64 не поддерживается"
 msgid "Zipped design package"
 msgstr "Пакет с оформлением в формате ZIP"
 
+msgid "Zone to attack"
+msgstr "Куда ударить"
+
+msgid "Zones to defend"
+msgstr "Что прикрыть"
+
 msgid "[% ... %] will be parsed by the templating engine"
 msgstr "[% ... %] будут обработаны движком шаблонизатора"
 
@@ -8819,6 +8946,9 @@ msgstr "error в квесте"
 msgid "action///Quest message"
 msgstr "message в квесте"
 
+msgid "actionname///Strike"
+msgstr "Ударить"
+
 msgid "adding modifier '{modifier}' for {sec} sec"
 msgstr "установка модификатора \"{modifier}\" на {sec} сек"
 
@@ -8842,6 +8972,9 @@ msgstr "ломаем предмет {item} в слоте {slot}. поврежд�
 
 msgid "btn///Confirm"
 msgstr "Подтвердить"
+
+msgid "button///Strike"
+msgstr "Ударить"
 
 msgid "by"
 msgstr "от"
@@ -8961,6 +9094,14 @@ msgstr "шаблоны оформления боя"
 msgid "combat system profile"
 msgstr "профиль боевой системы"
 
+#, python-format
+msgid "combat///Ended: %s"
+msgstr "Закончен: %s"
+
+#, python-format
+msgid "combat///Started: %s"
+msgstr "Начат: %s"
+
 msgid "combat///attacked"
 msgstr "атаковал"
 
@@ -9000,6 +9141,9 @@ msgstr "подтвердить"
 
 msgid "constructor"
 msgstr "конструктор"
+
+msgid "contextmenu///Attack"
+msgstr "Напасть"
 
 msgid "copy"
 msgstr "копировать"
@@ -9967,6 +10111,21 @@ msgstr ""
 "\n"
 "{protocol}://www.{domain}/forum/topic/{topic_uuid}"
 
+msgid "{char.name} has attacked {targetchar.name}"
+msgstr "{char.name} [char.sex:напал,напала] на {targetchar.name}"
+
+msgid "{class=\"combat-log-attack\"}could not strike{/class} {class=\"combat-log-member\"}{target.name}{/class} in blocked {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
+msgstr "{class=\"combat-log-attack\"}[source.sex:не смог,не смогла] ударить{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"заблокированную голову\" : a_attack_zone == 2 ? \"заблокированную грудь\" : a_attack_zone == 4 ? \"заблокированный пояс\" : a_attack_zone == 8 ? \"заблокированные ноги\" : a_attack_zone}"
+
+msgid "{class=\"combat-log-attack\"}has striked{/class} {class=\"combat-log-member\"}{target.name}{/class} in {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
+msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"голову\" : a_attack_zone == 2 ? \"грудь\" : a_attack_zone == 4 ? \"пояс\" : a_attack_zone == 8 ? \"ноги\" : a_attack_zone}"
+
+msgid "{class=\"combat-log-member\"}{member.name}{/class} {class=\"combat-log-dead\"}has become unconscious and died{/class}"
+msgstr "{class=\"combat-log-member\"}{member.name}{/class} {class=\"combat-log-dead\"}[member.sex:потерял сознание и погиб,потеряла сознание и погибла]{/class}"
+
+msgid "{class=\"combat-log-member\"}{member.name}{/class} {class=\"combat-log-dead\"}has died{/class}"
+msgstr "{class=\"combat-log-member\"}{member.name}{/class} {class=\"combat-log-dead\"}[member.sex:погиб,погибла]{/class}"
+
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
 
@@ -9989,6 +10148,19 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
+msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "source///has striked"
+#~ msgstr "[source.sex:ударил,ударила]"
+#~ msgid "AI type '%s' is not defined'"
+#~ msgstr "Тип ИИ \"%s\" не определён"
+#~ msgid "Write combat debug messages to the chat"
+#~ msgstr "Выводить отладочные сообщения боёв в чат"
+#~ msgid "Type of combat system"
+#~ msgstr "Тип боевой системы"
+#~ msgid "Attack-block system"
+#~ msgstr "Система атака-блок"
 #~ msgid "Debug log"
 #~ msgstr "Отладочный лог"
 #~ msgid "%s can't join combat. [gender?She:He] is busy"

@@ -74,6 +74,12 @@ class ScriptEngine(ConstructorModule):
             elif cmd == "call":
                 prio = 99
             elif cmd == '.':
+                prio = 98
+            elif cmd == '~':
+                prio = 10
+            elif cmd == '&':
+                prio = 9
+            elif cmd == '|':
                 prio = 8
             elif cmd == '*' or cmd == '/':
                 prio = 7
@@ -113,7 +119,9 @@ class ScriptEngine(ConstructorModule):
             cmd = val[0]
             if cmd == "not":
                 return 'not %s' % self.wrap(val[1], val)
-            elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or":
+            elif cmd == "~":
+                return '~%s' % self.wrap(val[1], val)
+            elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or" or cmd == "&" or cmd == "|":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
             elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "!=" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
@@ -358,6 +366,17 @@ class ScriptEngine(ConstructorModule):
                 return 1 if arg1 <= arg2 else 0
             if cmd == ">=":
                 return 1 if arg1 >= arg2 else 0
+        elif cmd == "~":
+            arg1 = intz(self._evaluate(val[1], env))
+            return ~arg1
+        elif cmd == "&":
+            arg1 = intz(self._evaluate(val[1], env))
+            arg2 = intz(self._evaluate(val[2], env))
+            return arg1 & arg2
+        elif cmd == "|":
+            arg1 = intz(self._evaluate(val[1], env))
+            arg2 = intz(self._evaluate(val[2], env))
+            return arg1 | arg2
         elif cmd == "not":
             arg1 = self._evaluate(val[1], env)
             return 0 if arg1 else 1
@@ -418,6 +437,10 @@ class ScriptEngine(ConstructorModule):
                     return v.lower()
                 elif fname == "uc":
                     return v.upper()
+            elif fname == "selrand":
+                if len(val) >= 3:
+                    return self._evaluate(random.choice(val[2:]), env)
+                return None
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":

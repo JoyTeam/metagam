@@ -175,6 +175,16 @@ class Combats(mg.constructor.ConstructorModule):
                         "lst": True
                     }
                 ]
+        menu_left = []
+        menu_left.append({
+            "html": self._("combat///Started: %s") % self.call("l10n.time_local", log.started)
+        })
+        if log.stopped:
+            menu_left.append({
+                "html": self._("combat///Ended: %s") % self.call("l10n.time_local", log.stopped)
+            })
+        menu_left[-1]["lst"] = True
+        vars["menu_left"] = menu_left
         self.call("combat.response_template", log.rules, "log.html", vars)
 
     def combat_debug_log(self):
@@ -201,6 +211,16 @@ class Combats(mg.constructor.ConstructorModule):
                     "lst": True
                 }
             ]
+        menu_left = []
+        menu_left.append({
+            "html": self._("combat///Started: %s") % self.call("l10n.time_local", log.started)
+        })
+        if log.stopped:
+            menu_left.append({
+                "html": self._("combat///Ended: %s") % self.call("l10n.time_local", log.stopped)
+            })
+        menu_left[-1]["lst"] = True
+        vars["menu_left"] = menu_left
         self.call("combat.response_template", log.rules, "log.html", vars)
 
     def character_public_info_menu(self, character, menu):

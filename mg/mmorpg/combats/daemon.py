@@ -118,7 +118,6 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         # check attributes
         for attr in act.get("attributes", []):
             val = data.get(attr["code"])
-            print attr["code"], "=", val
             if attr["type"] == "static":
                 found = False
                 for v in attr["values"]:
@@ -250,7 +249,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             if "control" in minfo:
                 control = minfo["control"]
                 if control == "ai":
-                    aitype = minfo.get("ai")
+                    aitype = minfo.get("ai", "default")
                     if not aitype:
                         raise CombatRunError(self._("AI type not specified for combat member '%s'") % mtype)
                     ctl = AIController(member, aitype)
@@ -277,7 +276,13 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.combat.join(member)
 
     def run_combat(self):
-        turn_order = CombatRoundRobinTurnOrder(self.combat)
+        tord = self.combat.rulesinfo.get("turn_order", "round-robin")
+        if tord == "round-robin":
+            turn_order = CombatRoundRobinTurnOrder(self.combat)
+        elif tord == "pair-exchanges":
+            turn_order = CombatPairExchangesTurnOrder(self.combat)
+        else:
+            raise CombatRunError(self._("Unsupported combat turn order: %s") % tord)
         turn_order.timeout = self.combat.rulesinfo.get("turn_timeout", 30)
         self.combat.run(turn_order)
 
@@ -304,6 +309,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
         except CombatRunError as e:
             self.call("exception.report", e)
             self.call("combats.debug", self.combat, e.val, cls="combat-error")
+        except Exception as e:
+            self.exception(e)
         finally:
             self.combat.close()
             self.app().inst.csrv = None

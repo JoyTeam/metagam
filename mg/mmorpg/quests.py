@@ -257,6 +257,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-interface.button-action", self.interface_button_action)
         self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
@@ -1753,9 +1754,9 @@ class Quests(ConstructorModule):
                                             globs["slot"] = slot_id
                                             globs["item"] = item
                                             fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
-                                            if fractions >= 0:
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                            if fractions > 0:
                                                 spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
                                                 if not spent and debug:
                                                     self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)

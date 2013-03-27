@@ -1,5 +1,8 @@
 var form_id = 0;
 
+Ext.form.Checkbox.prototype.markInvalid = Ext.form.Field.prototype.markInvalid;
+Ext.form.Radio.prototype.markInvalid = Ext.form.Field.prototype.markInvalid;
+
 Form = Ext.extend(AdminResponsePanel, {
     constructor: function(data) {
         Form.superclass.constructor.call(this, {
@@ -108,9 +111,11 @@ Form = Ext.extend(AdminResponsePanel, {
                 if (elt.xtype == 'checkbox') {
                     elt.fieldLabel = it.desc;
                     elt.boxLabel = it.label;
+                    elt.msgTarget = 'under';
                 } else if (elt.xtype == 'radio') {
                     elt.value = undefined;
                     elt.inputValue = it.value;
+                    elt.msgTarget = 'under';
                 } else if (elt.xtype == 'combo') {
                     elt.store = it.values;
                     elt.forceSelection = true;
