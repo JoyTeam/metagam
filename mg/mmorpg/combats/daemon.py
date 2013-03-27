@@ -97,6 +97,12 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         elif act["targets"] == "myself":
             action.add_target(self.controller.member)
         else:
+            if act.get("ignore_preselected"):
+                preselected_targets = None
+            else:
+                preselected_targets = self.controller.member.targets
+                if type(preselected_targets) != list:
+                    preselected_targets = None
             target_cnt = 0
             if type(data.get("targets")) == list:
                 for targetId in data.get("targets"):
@@ -107,6 +113,8 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
                         self.call("web.response_json", {"error": self._("Target with given id not found")})
                     if not self.controller.member.target_available(act, member):
                         self.call("web.response_json", {"error": self._("Target '%s' is not available for this action") % member.name})
+                    if preselected_targets and targetId not in preselected_targets:
+                        self.call("web.response_json", {"error": self._("Target '%s' is not selected for you by the rules") % member.name})
                     action.add_target(member)
                     target_cnt += 1
             targets_min = self.controller.member.targets_min(act)
@@ -464,6 +472,7 @@ class WebController(CombatMemberController):
         act = {
             "code": action.get("code"),
             "name": action.get("name"),
+            "ignore_preselected": action.get("ignore_preselected"),
             "attributes": action.get("attributes", []),
         }
         self.send("action", action=act)

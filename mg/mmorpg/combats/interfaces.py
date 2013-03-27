@@ -61,11 +61,9 @@ class Combats(mg.constructor.ConstructorModule):
                 vars["generic_myavatar"] = rules.get("generic_myavatar", 1)
                 if vars["generic_myavatar"]:
                     vars["generic_myavatar_width"] = rules.get("generic_myavatar_width", 300)
-                    vars["generic_myavatar_resize"] = "true" if rules.get("generic_myavatar_resize") else "false"
                 vars["generic_enemyavatar"] = rules.get("generic_enemyavatar", 1)
                 if vars["generic_enemyavatar"]:
                     vars["generic_enemyavatar_width"] = rules.get("generic_enemyavatar_width", 300)
-                    vars["generic_enemyavatar_resize"] = "true" if rules.get("generic_enemyavatar_resize") else "false"
                 vars["generic_log"] = rules.get("generic_log", 1)
                 if vars["generic_log"]:
                     layout = vars["generic_log_layout"] = rules.get("generic_log_layout", 0)

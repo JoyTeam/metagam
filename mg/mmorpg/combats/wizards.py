@@ -3,7 +3,7 @@ import re
 from uuid import uuid4
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
-re_valid_parameter = re.compile(r'^p_[a-zA-Z0-9_]*$')
+re_valid_parameter = re.compile(r'^p_([a-zA-Z0-9_]+)$')
 
 class CombatRulesDialogs(ConstructorModule):
     def register(self):
@@ -14,6 +14,11 @@ class CombatRulesDialogs(ConstructorModule):
             "id": "attack-block",
             "name": self._("Attack-block system. Combat members choose arbitrary targets and zones being attacked or blocked. Attacks are performed in pair exchanges."),
             "dialog": AttackBlock,
+        })
+        lst.append({
+            "id": "round-robin",
+            "name": self._("Round robin system. Combat members perform actions each after another in the same order."),
+            "dialog": RoundRobin,
         })
 
 class CombatRulesDialog(ConstructorModule):
@@ -51,7 +56,7 @@ class CombatRulesDialog(ConstructorModule):
             config.set("combats-%s.ai-types" % self.code, self.ai_types)
             for script_id, script_code in self.scripts.iteritems():
                 config.set("combats-%s.script-%s" % (self.code, script_id), script_code)
-            self.store_combat_quest(config)
+            self.store(config)
             config.store()
             self.call("admin.redirect", "combats/rules")
         # show form
@@ -60,6 +65,9 @@ class CombatRulesDialog(ConstructorModule):
         fields.append({"name": "form", "value": 1, "type": "hidden"})
         self.form_render(fields)
         self.call("admin.form", fields=fields)
+
+    def store(self, config):
+        self.store_combat_quest(config)
 
     def store_combat_quest(self, config):
         quests = self.conf("quests.list", {})
@@ -147,7 +155,7 @@ class CombatRulesDialog(ConstructorModule):
         self.rules["time_mode"] = "none"
         self.rules["time_format"] = "num"
         self.rules["generic_gobutton"] = 1
-        self.rules["generic_gobutton_text"] = self._("button///Strike")
+        self.rules["generic_gobutton_text"] = self._("button///Go")
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",
@@ -227,6 +235,37 @@ class CombatRulesDialog(ConstructorModule):
         self.script_append("joined", 'set member.%s = member.%s' % (self.param_max_hp, self.param_hp))
         self.script_append("actions-stopped-member", 'if member.active and member.%s <= 0 { set member.active = 0 log \'%s\' cls="dead" }' % (self.param_hp, self._('{class="combat-log-member"}{member.name}{/class} {class="combat-log-dead"}has died{/class}')))
 
+    def store_hp(self, config):
+        m = re_valid_parameter.match(self.param_hp)
+        param = self.call("characters.param", m.group(1))
+        if not param:
+            # register new parameter
+            params = config.get("characters.params", [])[:]
+            order = 0.0
+            for p in params:
+                if p["order"] > order:
+                    order = p["order"]
+            order += 10.0
+            params.append({
+                "code": m.group(1),
+                "order": order,
+                "name": self._("Hitpoints"),
+                "name_g": self._("genitive///Hitpoints"),
+                "owner_visible": True,
+                "zero_visible": True,
+                "important": True,
+                "public": True,
+                "condition": 1,
+                "description": self._("This parameter defines amount of damage that the character can get in the combat before died"),
+                "grp": self._("characters///Combat parameters"),
+                "type": 1,
+                "expression": 30,
+                "visual_mode": 0,
+                "library_visible": True,
+            })
+            config.set("characters.params", params)
+            self.call("admin-characters.params-stored", params, config)
+
     def form_render_damage(self, fields):
         fields.extend([
             {"type": "header", "html": self._("Damage and defense modifiers")},
@@ -256,6 +295,64 @@ class CombatRulesDialog(ConstructorModule):
     def generate_damage(self):
         self.script_append("joined", 'set member.p_inflicted_damage = 0')
 
+    def store_damage(self, config):
+        # register new parameter
+        params = config.get("characters.params", [])[:]
+        order = 0.0
+        for p in params:
+            if p["order"] > order:
+                order = p["order"]
+        order += 10.0
+        anything_changed = False
+        m = re_valid_parameter.match(self.param_damage)
+        param = self.call("characters.param", m.group(1))
+        if not param:
+            params.append({
+                "code": m.group(1),
+                "order": order,
+                "name": self._("Damage"),
+                "name_g": self._("genitive///Damage"),
+                "owner_visible": True,
+                "zero_visible": True,
+                "important": True,
+                "public": True,
+                "condition": 1,
+                "description": self._("Shows how much damage inflicted by the character is increased"),
+                "grp": self._("characters///Combat parameters"),
+                "type": 1,
+                "expression": 0,
+                "visual_mode": 0,
+                "library_visible": True,
+            })
+            anything_changed = True
+        m = re_valid_parameter.match(self.param_defense)
+        param = self.call("characters.param", m.group(1))
+        if not param:
+            params.append({
+                "code": m.group(1),
+                "order": order,
+                "name": self._("Defense"),
+                "name_g": self._("genitive///Defense"),
+                "owner_visible": True,
+                "zero_visible": True,
+                "important": True,
+                "public": True,
+                "condition": 1,
+                "description": self._("Shows how much damage inflicted to the character is decreased"),
+                "grp": self._("characters///Combat parameters"),
+                "type": 1,
+                "expression": 0,
+                "visual_mode": 0,
+                "library_visible": True,
+            })
+            anything_changed = True
+        if anything_changed:
+            config.set("characters.params", params)
+            self.call("admin-characters.params-stored", params, config)
+
+    def generate_selectable_targets(self):
+        self.script_append("joined", 'set member.targets = "selectable"')
+
 class AttackBlock(CombatRulesDialog):
     def __init__(self, app, fqn="mg.mmorpg.combats.wizards.AttackBlock"):
         CombatRulesDialog.__init__(self, app, fqn)
@@ -269,7 +366,11 @@ class AttackBlock(CombatRulesDialog):
             {"name": "strike_name", "label": self._("Strike action name"), "value": self._("actionname///Strike")},
             {"name": "strike_action", "label": self._("Strike action text in the combat log"), "value": self._('{class="combat-log-attack"}has striked{/class} {class="combat-log-member"}{target.name}{/class} in {a_attack_zone == 1 ? "head" : a_attack_zone == 2 ? "chest" : a_attack_zone == 4 ? "waist" : a_attack_zone == 8 ? "legs" : a_attack_zone}')},
             {"name": "strike_failed_action", "label": self._("Strike action failed text in the combat log"), "value": self._('{class="combat-log-attack"}could not strike{/class} {class="combat-log-member"}{target.name}{/class} in blocked {a_attack_zone == 1 ? "head" : a_attack_zone == 2 ? "chest" : a_attack_zone == 4 ? "waist" : a_attack_zone == 8 ? "legs" : a_attack_zone}')},
-            {"name": "default_damage", "label": self._("Strike default damage"), "value": 10},
+            {"name": "default_damage", "label": self._("Strike default damage"), "value": 5},
+            {"type": "header", "html": self._("Heal parameters")},
+            {"name": "heal_name", "label": self._("Heal action name"), "value": self._("actionname///Heal")},
+            {"name": "heal_action", "label": self._("Heal action text in the combat log"), "value": self._('{class="combat-log-heal"}has healed{/class} {class="combat-log-member"}{target.name}{/class}')},
+            {"name": "heal_value", "label": self._("Heal amount"), "value": 3},
         ])
 
     def form_parse(self, errors):
@@ -301,6 +402,24 @@ class AttackBlock(CombatRulesDialog):
             errors["default_damage"] = self._("This field must be a valid nonnegative integer")
         else:
             self.default_damage = intz(default_damage)
+        # heal_name
+        heal_name = req.param("heal_name").strip()
+        if not heal_name:
+            errors["heal_name"] = self._("This field is mandatory")
+        else:
+            self.heal_name = heal_name
+        # heal_action
+        heal_action = req.param("heal_action").strip()
+        if not heal_action:
+            errors["heal_action"] = self._("This field is mandatory")
+        else:
+            self.heal_action = heal_action
+        # heal_value
+        heal_value = req.param("heal_value").strip()
+        if not valid_nonnegative_int(heal_value):
+            errors["heal_value"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.heal_value = intz(heal_value)
 
     def generate(self):
         CombatRulesDialog.generate(self)
@@ -315,7 +434,7 @@ class AttackBlock(CombatRulesDialog):
             "name": self._("Basic AI algorithm"),
             "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.team != member.team action member "strike" a_attack_zone=selrand(1, 2, 4, 8) a_defend_zone=selrand(3, 6, 12)'),
         })
-        script_end_target = 'if a_pair and a_pair.a_defend_zone & a_attack_zone { log \'%s\' cls="attack" } else { set local.damage = max(1, %d + source.%s - target.%s) syslog \'Strike time=<b>{combat.now}</b>, ctime=<b>{combat.timetext}</b>, source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack" }' % (('{class="combat-log-member"}{source.name}{/class} %s' % self.strike_failed_action), self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{last_damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.strike_action, self.param_hp, self.param_max_hp)))
+        script_end_target = 'if a_pair and a_pair.a_defend_zone & a_attack_zone { log \'%s\' cls="attack" } else { set local.damage = max(1, %d + source.%s - target.%s) syslog \'Strike time=<b>{combat.now}</b>, ctime=<b>{combat.timetext}</b>, source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack" }' % (('{class="combat-log-member"}{source.name}{/class} %s' % self.strike_failed_action), self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.strike_action, self.param_hp, self.param_max_hp)))
         script_enqueued = 'syslog \'Enqueued time=<b>{combat.now}</b>, source=<b>{source.id}</b> ({source.name}), targets=<b>{source.targets}</b>, attack=<b>{a_attack_zone}</b>, defend=<b>{a_defend_zone}</b>\''
         self.actions.append({
             "code": "strike",
@@ -354,3 +473,127 @@ class AttackBlock(CombatRulesDialog):
                 },
             ],
         })
+        script_end_target = 'set source.p_healed = source.p_healed + 1 set local.heal = %d syslog \'Heal time=<b>{combat.now}</b>, ctime=<b>{combat.timetext}</b>, source=<b>{source.id}</b>, target=<b>{target.id}</b>, result_heal=<b>{local.heal}</b>\' heal target.%s local.heal maxval=target.%s log \'%s\' cls="heal"' % (self.heal_value, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-heal">+{local.heal}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.heal_action, self.param_hp, self.param_max_hp)))
+        self.actions.append({
+            "code": "heal",
+            "name": self.heal_name,
+            "order": 10.0,
+            "available": self.call("script.parse-expression", "member.p_healed < 3"),
+            "targets": "allies-myself",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 1,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+            "immediate": True,
+            "ignore_preselected": True,
+        })
+
+    def store(self, config):
+        CombatRulesDialog.store(self, config)
+        self.store_hp(config)
+        self.store_damage(config)
+
+class RoundRobin(CombatRulesDialog):
+    def __init__(self, app, fqn="mg.mmorpg.combats.wizards.RoundRobin"):
+        CombatRulesDialog.__init__(self, app, fqn)
+
+    def form_render(self, fields):
+        CombatRulesDialog.form_render(self, fields)
+        self.form_render_hp(fields)
+        self.form_render_damage(fields)
+        fields.extend([
+            {"type": "header", "html": self._("Strike parameters")},
+            {"name": "strike_name", "label": self._("Strike action name"), "value": self._("actionname///Strike")},
+            {"name": "strike_action", "label": self._("Strike action text in the combat log"), "value": self._('{class="combat-log-attack"}has striked{/class} {class="combat-log-member"}{target.name}{/class}')},
+            {"name": "default_damage", "label": self._("Strike default damage"), "value": 5},
+            {"type": "header", "html": self._("Heal parameters")},
+            {"name": "heal_name", "label": self._("Heal action name"), "value": self._("actionname///Heal")},
+            {"name": "heal_action", "label": self._("Heal action text in the combat log"), "value": self._('{class="combat-log-heal"}has healed{/class} {class="combat-log-member"}{target.name}{/class}')},
+            {"name": "heal_value", "label": self._("Heal amount"), "value": 3},
+        ])
+
+    def form_parse(self, errors):
+        CombatRulesDialog.form_parse(self, errors)
+        self.form_parse_hp(errors)
+        self.form_parse_damage(errors)
+        req = self.req()
+        # strike_name
+        strike_name = req.param("strike_name").strip()
+        if not strike_name:
+            errors["strike_name"] = self._("This field is mandatory")
+        else:
+            self.strike_name = strike_name
+        # strike_action
+        strike_action = req.param("strike_action").strip()
+        if not strike_action:
+            errors["strike_action"] = self._("This field is mandatory")
+        else:
+            self.strike_action = strike_action
+        # default_damage
+        default_damage = req.param("default_damage").strip()
+        if not valid_nonnegative_int(default_damage):
+            errors["default_damage"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.default_damage = intz(default_damage)
+        # heal_name
+        heal_name = req.param("heal_name").strip()
+        if not heal_name:
+            errors["heal_name"] = self._("This field is mandatory")
+        else:
+            self.heal_name = heal_name
+        # heal_action
+        heal_action = req.param("heal_action").strip()
+        if not heal_action:
+            errors["heal_action"] = self._("This field is mandatory")
+        else:
+            self.heal_action = heal_action
+        # heal_value
+        heal_value = req.param("heal_value").strip()
+        if not valid_nonnegative_int(heal_value):
+            errors["heal_value"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.heal_value = intz(heal_value)
+
+    def generate(self):
+        CombatRulesDialog.generate(self)
+        self.rules["turn_order"] = "round-robin"
+        self.rules["time_mode"] = "begin"
+        self.rules["time_format"] = "mmss"
+        self.generate_hp()
+        self.generate_damage()
+        self.generate_selectable_targets()
+        self.ai_types.append({
+            "code": "default",
+            "order": 0.0,
+            "name": self._("Basic AI algorithm"),
+            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.team != member.team action member "strike"'),
+        })
+        script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'Strike time=<b>{combat.now}</b>, ctime=<b>{combat.timetext}</b>, source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack"' % (self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.strike_action, self.param_hp, self.param_max_hp)))
+        self.actions.append({
+            "code": "strike",
+            "name": self.strike_name,
+            "order": 0.0,
+            "available": 1,
+            "targets": "enemies",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 2,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+        })
+        script_end_target = 'set local.heal = %d syslog \'Heal time=<b>{combat.now}</b>, ctime=<b>{combat.timetext}</b>, source=<b>{source.id}</b>, target=<b>{target.id}</b>, result_heal=<b>{local.heal}</b>\' heal target.%s local.heal maxval=target.%s log \'%s\' cls="heal"' % (self.heal_value, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-heal">+{local.heal}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.heal_action, self.param_hp, self.param_max_hp)))
+        self.actions.append({
+            "code": "heal",
+            "name": self.heal_name,
+            "order": 10.0,
+            "available": 1,
+            "targets": "allies-myself",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 1,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+        })
+
+    def store(self, config):
+        CombatRulesDialog.store(self, config)
+        self.store_hp(config)
+        self.store_damage(config)

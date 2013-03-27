@@ -258,7 +258,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         combat_types.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         combat_types_dict = dict([(tp.get("id"), tp) for tp in combat_types])
         combat_types = [(tp.get("id"), tp.get("name")) for tp in combat_types]
-        combat_types.insert(0, (None, None))
         # process request
         if req.ok():
             errors = {}
@@ -272,6 +271,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                     errors["tp"] = self._("Make a valid selection")
             # process errors
             if errors:
+                print errors
                 self.call("web.response_json", {"success": False, "errors": errors})
             # run dialog
             dialog = type_info["dialog"](self.app())
@@ -279,8 +279,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         # render form
         fields = []
         for ct_id, ct_name in combat_types:
-            fields.append({"name": "tp", "type": "radio", "value": ct_id, "boxLabel": ct_name})
-            #{"name": "tp", "type": "combo", "label": self._("Type of combat system"), "values": combat_types},
+            fields.append({"id": "tp-%s" % ct_id, "name": "tp", "type": "radio", "value": ct_id, "boxLabel": ct_name})
         buttons = [
             {"text": self._("Select combat system type")},
         ]
@@ -376,7 +375,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         errors["generic_myavatar_width"] = self._("Miminal value is %d") % 50
                     elif width > 1000:
                         errors["generic_myavatar_width"] = self._("Maximal value is %d") % 1000
-                    info["generic_myavatar_resize"] = True if req.param("generic_myavatar_resize") else False
                 # enemy avatar
                 info["generic_enemyavatar"] = 1 if req.param("generic_enemyavatar") else 0
                 if info["generic_enemyavatar"]:
@@ -385,7 +383,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         errors["generic_enemyavatar_width"] = self._("Miminal value is %d") % 50
                     elif width > 1000:
                         errors["generic_enemyavatar_width"] = self._("Maximal value is %d") % 1000
-                    info["generic_enemyavatar_resize"] = True if req.param("generic_enemyavatar_resize") else False
                 # combat log
                 info["generic_log"] = 1 if req.param("generic_log") else 0
                 if info["generic_log"]:
@@ -465,10 +462,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"type": "header", "html": self._("Generic interface settings"), "condition": "[generic]"},
             {"name": "generic_myavatar", "type": "checkbox", "label": self._("Show player's avatar on the left side"), "checked": info.get("generic_myavatar", 1), "condition": "[generic]"},
             {"name": "generic_myavatar_width", "label": self._("Player's avatar width"), "value": info.get("generic_myavatar_width", 300), "condition": "[generic] && [generic_myavatar]"},
-            {"name": "generic_myavatar_resize", "label": self._("Allow player to resize player's avatar block"), "type": "checkbox", "checked": info.get("generic_myavatar_resize", False), "condition": "[generic] && [generic_myavatar]", "inline": True},
             {"name": "generic_enemyavatar", "type": "checkbox", "label": self._("Show enemy's avatar on the right side"), "checked": info.get("generic_enemyavatar", 1), "condition": "[generic]"},
             {"name": "generic_enemyavatar_width", "label": self._("Enemy's avatar width"), "value": info.get("generic_enemyavatar_width", 300), "condition": "[generic] && [generic_enemyavatar]"},
-            {"name": "generic_enemyavatar_resize", "label": self._("Allow player to resize enemy's avatar block"), "type": "checkbox", "checked": info.get("generic_enemyavatar_resize", False), "condition": "[generic] && [generic_enemyavatar]", "inline": True},
             {"name": "generic_log", "type": "checkbox", "label": self._("Show combat log on the bottom side"), "checked": info.get("generic_log", 1), "condition": "[generic]"},
             {"name": "generic_log_layout", "type": "combo", "label": self._("Combat log layout"), "values": [(0, self._("Fixed combat height, variable log height")), (1, self._("Variable combat height, fixed log height"))], "value": info.get("generic_log_layout", 0), "condition": "[generic] && [generic_log]"},
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
@@ -740,6 +735,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             info["available"] = self.call("script.admin-expression", "available", errors, globs={"combat": combat, "member": member1})
             # immediate
             info["immediate"] = True if req.param("immediate") else False
+            # ignore_preselected
+            info["ignore_preselected"] = True if req.param("ignore_preselected") else False
             # targets
             valid_targets = set(["none", "all", "enemies", "allies", "allies-myself", "myself", "script"])
             targets = req.param("v_targets")
@@ -785,6 +782,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
             {"name": "available", "label": self._("Whether action is available to member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))},
             {"name": "immediate", "label": self._("Immediate execution (out of turn)"), "type": "checkbox", "checked": info.get("immediate")},
+            {"name": "ignore_preselected", "label": self._("Ignore preselected targets (allow player to select any)"), "type": "checkbox", "checked": info.get("ignore_preselected")},
             {"type": "header", "html": self._("Available targets filter")},
             {"name": "targets", "type": "combo", "label": self._("Available action targets"), "values": [
                 ("none", self._("None (not applicable)")),

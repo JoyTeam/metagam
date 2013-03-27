@@ -217,11 +217,9 @@ class CombatPairExchangesTurnOrder(CombatTurnOrder):
                         self.member_check(m1, self.active_members)
 
     def member_died(self, member):
-        print "MEMBER %s DIED" % member.name
         CombatTurnOrder.member_died(self, member)
         for m1 in self.combat.members:
             if m1.active and m1.may_turn and member.id in m1.targets:
-                print "TAKING TURN FROM MEMBER %s" % m1.name
                 self.turn_take(m1)
 
     def turn_timeout(self, member):

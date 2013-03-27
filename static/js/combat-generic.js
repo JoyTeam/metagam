@@ -87,7 +87,6 @@ var GenericCombat = Ext.extend(Combat, {
                 width: self.myAvatarWidth,
                 autoScroll: false,
                 border: false,
-                split: self.myAvatarResize,
                 items: self.myAvatarComponent
             });
         }
@@ -113,7 +112,6 @@ var GenericCombat = Ext.extend(Combat, {
                 width: self.enemyAvatarWidth,
                 autoScroll: false,
                 border: false,
-                split: self.enemyAvatarResize,
                 items: self.enemyAvatarComponent
             });
         }
@@ -604,7 +602,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                                  * executed immediately too.
                                  */
                                 if (!self.combat.goButtonEnabled && self.action && (!self.action.targets ||
-                                        self.myself.params.targets != 'selectable')) {
+                                        (self.myself.params.targets != 'selectable' && !self.actionInfo.ignore_preselected))) {
                                     self.go();
                                 }
                             });
@@ -742,7 +740,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         var self = this;
         var targeted = {};
         if (self.action) {
-            if (self.myself.params.targets && self.myself.params.targets.forEach) {
+            if (self.myself.params.targets && self.myself.params.targets.forEach && !self.actionInfo.ignore_preselected) {
                 self.myself.params.targets.forEach(function (targetId) {
                     targeted[targetId] = true;
                 });
@@ -762,7 +760,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             var member = self.combat.members[memberId];
             if (!self.action && !self.combat.goButtonEnabled) {
                 self.disableTarget(member, false);
-            } else if (self.myself.params.targets == 'selectable') {
+            } else if (self.myself.params.targets == 'selectable' || (self.action && self.actionInfo.ignore_preselected)) {
                 // Selectable targets
                 if (targeted && targeted[memberId]) {
                     /* If "Go" button is available, preserve old selection.
@@ -1109,7 +1107,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     autoSelectTargets: function () {
         var self = this;
         /* Automatically select random targets (not available without "Go" button) */
-        if (self.combat.myself.params.targets == 'selectable' && self.combat.goButtonEnabled && self.action.targets) {
+        if ((self.combat.myself.params.targets == 'selectable' || self.action && self.actionInfo.ignore_preselected) &&
+                self.combat.goButtonEnabled && self.action.targets) {
             var targets = self.action.targets.slice();
             var targeted = 0;
             var shown = false;
@@ -1201,7 +1200,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             action: self.action.action
         };
         /* Targets */
-        if (self.combat.myself.params.targets == 'selectable') {
+        if (self.combat.myself.params.targets == 'selectable' || self.actionInfo.ignore_preselected) {
             if (self.action.targets) {
                 var targets = [];
                 for (var i = 0; i < self.action.targets.length; i++) {
