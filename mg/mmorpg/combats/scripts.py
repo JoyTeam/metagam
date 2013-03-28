@@ -407,22 +407,22 @@ class CombatScripts(ConstructorModule):
                 html = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of chat HTML"))
                 args = st[2]
                 if "channel" in args:
-                    channel = self.call("script.evaluate-expression", args["channel"], globs=globs, description=self._("Evaluation of chat channel"))
+                    channel = self.call("script.evaluate-expression", args["channel"], globs=globs, description=lambda: self._("Evaluation of chat channel"))
                     channel = utf2str(unicode(channel))
                 else:
                     channel = "wld"
                 if "cls" in args:
-                    cls = self.call("script.evaluate-expression", args["cls"], globs=globs, description=self._("Evaluation of chat class"))
+                    cls = self.call("script.evaluate-expression", args["cls"], globs=globs, description=lambda: self._("Evaluation of chat class"))
                 else:
                     cls = "combat"
                 self.combat_debug(combat, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="combat-action", indent=indent)
                 self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
             elif st_cmd == "action":
-                tp = self.call("script.evaluate-expression", st[1], globs=globs, description=self._("Evaluation of combat action"))
+                tp = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of combat action"))
                 if type(tp) != str and type(tp) != unicode:
                     raise ScriptRuntimeError(self._("Action type '%s' is not a string") % self.call("script.unparse-expression", st[1]), env)
                 args = st[2]
-                source = self.call("script.evaluate-expression", args["source"], globs=globs, description=self._("Evaluation of combat action source"))
+                source = self.call("script.evaluate-expression", args["source"], globs=globs, description=lambda: self._("Evaluation of combat action source"))
                 try:
                     source.is_a_combat_member()
                 except AttributeError:
@@ -440,7 +440,7 @@ class CombatScripts(ConstructorModule):
                 attrs = args.get("attrs")
                 if attrs:
                     for k, v in attrs.iteritems():
-                        action.set_attribute(k,  self.call("script.evaluate-expression", v, globs=globs, description=self._("Evaluation of combat action attribute '%s'") % k))
+                        action.set_attribute(k,  self.call("script.evaluate-expression", v, globs=globs, description=lambda: self._("Evaluation of combat action attribute '%s'") % k))
                 source.enqueue_action(action)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])

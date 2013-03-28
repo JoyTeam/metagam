@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-27 10:31+0300\n"
+"PO-Revision-Date: 2013-03-28 12:26+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -201,6 +201,9 @@ msgstr "90 суток"
 msgid "<a href=\"/combat/{combat.id}\" target=\"_blank\">Combat</a> {combat.team1_list} vs {combat.team2_list} was a draw"
 msgstr "<a href=\"/combat/{combat.id}\" target=\"_blank\">Бой</a> {combat.team1_list} против {combat.team2_list} закончился ничьей"
 
+msgid "<b>[{time}]</b> Member {id} ({name}) has joined team {team}"
+msgstr "<b>[{time}]</b> Участник {id} ({name}) присоединился к команде {team}"
+
 msgid "<h1>Welcome to your new game!</h1><p>Now you can open <a href=\"/admin\" target=\"_blank\">Administrative interface</a> and follow several steps to launch your game.</p><p>Welcome to the world of creative game development and good luck!</p>"
 msgstr "<h1>Добро пожаловать в вашу новую игру</h1><p>Игра успешно запущена и уже работает на движке MMO Constructor.</p><p>Сейчас вы можете открыть <a href=\"/admin\" target=\"_blank\">административный интерфейс</a> и выполнить несколько шагов, необходимых для её публикации.</p><p>Добро пожаловать в мир креативной разработки игр, и желаем удачи!</p>"
 
@@ -349,6 +352,12 @@ msgstr "Тип действия \"%s\" не является строкой"
 
 msgid "Action with the same code already exists"
 msgstr "Действие с таким кодом уже существует"
+
+msgid "Action {action} has started"
+msgstr "Действие {action} началось"
+
+msgid "Action {action} has stopped"
+msgstr "Действие {action} завершилось"
 
 msgid "Actions"
 msgstr "Действия"
@@ -1715,11 +1724,19 @@ msgstr "Боевой скрипт, выполняемый, когда бой з�
 msgid "Combat stage '%s' is not defined"
 msgstr "Этап боя \"%s\" неопределён"
 
+#, python-format
+msgid "Combat stage: %s"
+msgstr "Боевая стадия: %s"
+
 msgid "Combat start script"
 msgstr "Скрипт начала боя"
 
 msgid "Combat time"
 msgstr "Боевое время"
+
+#, python-format
+msgid "Combat time: %s"
+msgstr "Боевое время: %s"
 
 msgid "Combat title"
 msgstr "Название боя"
@@ -1738,6 +1755,9 @@ msgstr "Боевой скрипт победы"
 
 msgid "Combat victory script for a member"
 msgstr "Боевой скрипт победы участника \"member\""
+
+msgid "Combat was a draw"
+msgstr "Бой завершился ничьей"
 
 msgid "Combat was started twice"
 msgstr "Бой был начат дважды"
@@ -2437,6 +2457,9 @@ msgstr "Ошибка при скачивании: %s"
 msgid "Duration"
 msgstr "Время действия"
 
+msgid "Duration of the action (in time units). Applicable to turn orders supporting time units only"
+msgstr "Продолжительность действия (в тайм-юнитах). Применимо, только если очерёдность ходов поддерживает тайм-юниты"
+
 msgid "E-mail"
 msgstr "E-mail"
 
@@ -2800,6 +2823,9 @@ msgstr "Вычисление \"{cls}.{uuid}.{param}\""
 
 msgid "Evaluation of '{cls}.{uuid}.{param}' visibility condition"
 msgstr "Вычисление условия видимости параметра \"{cls}.{uuid}.{param}\""
+
+msgid "Evaluation of action duration"
+msgstr "Выражение длительности действия"
 
 msgid "Evaluation of chat HTML"
 msgstr "Вычисление HTML для чата"
@@ -4492,6 +4518,18 @@ msgstr "Завершение сеанса %s"
 msgid "Logs type"
 msgstr "Тип логов"
 
+msgid "Long strike action name"
+msgstr "Название действия длинного удара"
+
+msgid "Long strike action text in the combat log"
+msgstr "Текст действия длинного удара в логе боя"
+
+msgid "Long strike default damage"
+msgstr "Урон по умолчанию от длинного удара"
+
+msgid "Long strike duration"
+msgstr "Длительность длинного удара"
+
 msgid "Low limit"
 msgstr "Нижний предел"
 
@@ -5691,6 +5729,9 @@ msgstr "Документация на систему параметров"
 msgid "Parameters of '%s' delivered to client"
 msgstr "Параметры \"%s\", доставляемые в клиент"
 
+msgid "Parameters of the strikes"
+msgstr "Параметры ударов"
+
 msgid "Passport number"
 msgstr "Номер паспорта"
 
@@ -6819,6 +6860,18 @@ msgstr "Короткое название игры для отображения
 msgid "Short game title in English for displaying in the payment system interface (must start from capital letter, must not be in caps letter, must not be an abbreviation)"
 msgstr "Короткое название игры на английском языке для отображения в интерфейсе платёжной системы (обязательно <strong>должно</strong> начинаться с заглавной буквы, <strong>не должно</strong> быть написано капсом, <strong>не должно</strong> быть аббревиатурой)"
 
+msgid "Short strike action name"
+msgstr "Название действия короткого удара"
+
+msgid "Short strike action text in the combat log"
+msgstr "Текст действия короткого удара в логе боя"
+
+msgid "Short strike default damage"
+msgstr "Урон по умолчанию от короткого удара"
+
+msgid "Short strike duration"
+msgstr "Длительность короткого удара"
+
 msgid "Short title"
 msgstr "Короткое название"
 
@@ -7792,6 +7845,12 @@ msgstr "Формат времени"
 msgid "Time in days to implement this feature"
 msgstr "Время в днях на реализацию этой фичи"
 
+msgid "Time line. Every member gets right of turn when his previous action finished. Every action takes specific number of time units to execute"
+msgstr "Таймлайн. Каждый участник получает право хода, когда завершилось его предыдущее действие. Каждое действие занимает определённое количество тайм-юнитов."
+
+msgid "Time units system with continuous time line. Every action is performed in some number of time units. Combat members take right of turn when their previous action is finished."
+msgstr "Тайм-юнитовая система с непрерывной лентой времени. Каждое действие производится за некоторое количество тайм-юнитов. Участники боя получают право хода, когда завершается их предыдущее действие."
+
 msgid "Time visualization mode"
 msgstr "Режим визуализации времени"
 
@@ -8299,6 +8358,9 @@ msgstr "Очень важное значение"
 
 msgid "Very strange signature"
 msgstr "Очень странная подпись"
+
+msgid "Victory of team {team}"
+msgstr "Победа команды {team}"
 
 msgid "View combat debug logs"
 msgstr "Просмотр боевых отладочных логов"
@@ -8982,6 +9044,12 @@ msgstr "message в квесте"
 
 msgid "actionname///Heal"
 msgstr "Лечить"
+
+msgid "actionname///Long strike"
+msgstr "Ударить длинным ударом"
+
+msgid "actionname///Short strike"
+msgstr "Ударить коротким ударом"
 
 msgid "actionname///Strike"
 msgstr "Ударить"
@@ -10166,8 +10234,14 @@ msgstr "{char.name} [char.sex:напал,напала] на {targetchar.name}"
 msgid "{class=\"combat-log-attack\"}could not strike{/class} {class=\"combat-log-member\"}{target.name}{/class} in blocked {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
 msgstr "{class=\"combat-log-attack\"}[source.sex:не смог,не смогла] ударить{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"заблокированную голову\" : a_attack_zone == 2 ? \"заблокированную грудь\" : a_attack_zone == 4 ? \"заблокированный пояс\" : a_attack_zone == 8 ? \"заблокированные ноги\" : a_attack_zone}"
 
-msgid "{class=\"combat-log-attack\"}has striked{/class} {class=\"combat-log-member\"}{target.name}{/class}"
-msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/class} {class=\"combat-log-member\"}{target.name}{/class}"
+msgid "{class=\"combat-log-attack\"}has striked {/class} {class=\"combat-log-member\"}{target.name}{/class} long"
+msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила] длинным ударом{/class} {class=\"combat-log-member\"}{target.name}{/class}"
+
+msgid "{class=\"combat-log-attack\"}has striked {/class} {class=\"combat-log-member\"}{target.name}{/class} short"
+msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила] коротким ударом{/class} {class=\"combat-log-member\"}{target.name}{/class}"
+
+msgid "{class=\"combat-log-attack\"}has striked{/class}"
+msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/class}"
 
 msgid "{class=\"combat-log-attack\"}has striked{/class} {class=\"combat-log-member\"}{target.name}{/class} in {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
 msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"голову\" : a_attack_zone == 2 ? \"грудь\" : a_attack_zone == 4 ? \"пояс\" : a_attack_zone == 8 ? \"ноги\" : a_attack_zone}"
@@ -10206,6 +10280,8 @@ msgstr "{price} навсегда"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Action {action} has stopped: source={source}"
+#~ msgstr "Действие {action} завершилось: source={source}"
 #~ msgid "Allow player to resize enemy's avatar block"
 #~ msgstr "Позволить игроку растягивать блок аватара врага"
 #~ msgid "Allow player to resize player's avatar block"

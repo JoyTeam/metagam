@@ -1,4 +1,5 @@
 from mg.mmorpg.combats.core import CombatObject
+from mg.core.tools import *
 import time
 import random
 
@@ -19,6 +20,7 @@ class CombatTurnOrder(CombatObject):
         for member in self.combat.members:
             if member.active:
                 self.active_members.add(member)
+        self.check()
 
     def check(self):
         "This method asks CombatTurnOrder to check whether some actions may be executed"
@@ -79,10 +81,6 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
     """
     def __init__(self, combat, fqn="mg.mmorpg.combats.turn_order.CombatRoundRobinTurnOrder"):
         CombatTurnOrder.__init__(self, combat, fqn)
-
-    def start(self):
-        CombatTurnOrder.start(self)
-        self.check()
 
     def check(self):
         CombatTurnOrder.check(self)
@@ -146,10 +144,6 @@ class CombatPairExchangesTurnOrder(CombatTurnOrder):
     def __init__(self, combat, fqn="mg.mmorpg.combats.turn_order.CombatPairExchangesTurnOrder"):
         CombatTurnOrder.__init__(self, combat, fqn)
         self._actions = {}
-
-    def start(self):
-        CombatTurnOrder.start(self)
-        self.check()
 
     def actions(self, member):
         try:
@@ -239,3 +233,52 @@ class CombatPairExchangesTurnOrder(CombatTurnOrder):
             self.combat.add_time(1)
             self.update_active_members()
         CombatTurnOrder.turn_timeout(self, member)
+
+class CombatTimeLineTurnOrder(CombatTurnOrder):
+    """
+    Every member gets right of turn when his previous action finished. Every action takes specific number of time units to execute
+    """
+    def __init__(self, combat, fqn="mg.mmorpg.combats.turn_order.CombatPairExchangesTurnOrder"):
+        CombatTurnOrder.__init__(self, combat, fqn)
+        self._actions = {}
+
+    def check(self):
+        CombatTurnOrder.check(self)
+        if self.combat.stage_flag("actions"):
+            process_ready = False
+            for member in self.active_members:
+                if member.may_turn:
+                    if member.pending_actions:
+                        self.turn_take(member)
+                        act = member.pending_actions.pop(0)
+                        self._actions[member.id] = act
+                        duration = self.combat.actions[act.code].get("duration")
+                        globs = act.globs()
+                        duration = intz(self.call("script.evaluate-expression", duration, globs=globs, description=lambda: self._("Evaluation of action duration")))
+                        print "duration=%s" % duration
+                        act.till_time = self.combat.time + duration
+                        self.combat.execute_action(act)
+                        process_ready = True
+                else:
+                    act = self._actions.get(member.id)
+                    if act:
+                        if not act.executing:
+                            del self._actions[member.id]
+                            self.turn_give(member)
+                    else:
+                        self.turn_give(member)
+            if process_ready:
+                self.combat.process_ready_actions()
+        self.check_time()
+
+    def idle(self):
+        CombatTurnOrder.idle(self)
+        self.check_time()
+
+    def check_time(self):
+        if self.combat.stage_flag("actions"):
+            for member in self.active_members:
+                act = self._actions.get(member.id)
+                if not act or not act.executing:
+                    return
+            self.combat.add_time(1)

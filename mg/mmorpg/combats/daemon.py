@@ -289,6 +289,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             turn_order = CombatRoundRobinTurnOrder(self.combat)
         elif tord == "pair-exchanges":
             turn_order = CombatPairExchangesTurnOrder(self.combat)
+        elif tord == "time-line":
+            turn_order = CombatTimeLineTurnOrder(self.combat)
         else:
             raise CombatRunError(self._("Unsupported combat turn order: %s") % tord)
         turn_order.timeout = self.combat.rulesinfo.get("turn_timeout", 30)

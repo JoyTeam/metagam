@@ -255,7 +255,6 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         # load list of combat types
         combat_types = []
         self.call("admin-combats.types", combat_types)
-        combat_types.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         combat_types_dict = dict([(tp.get("id"), tp) for tp in combat_types])
         combat_types = [(tp.get("id"), tp.get("name")) for tp in combat_types]
         # process request
@@ -337,7 +336,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 info["timeout"] = timeout
             # turn_order
             turn_order = req.param("turn_order")
-            if not turn_order in ["round-robin", "pair-exchanges"]:
+            if not turn_order in ["round-robin", "pair-exchanges", "time-line"]:
                 errors["turn_order"] = self._("This field is mandatory")
             else:
                 info["turn_order"] = turn_order
@@ -449,6 +448,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"type": "header", "html": self._("Combat turns")},
             {"id": "turn_order-round-robin", "name": "turn_order", "type": "radio", "label": self._("Combat turn order"), "checked": turn_order == "round-robin", "value": "round-robin", "boxLabel": self._("Round robin. Combat members perform actions exactly each after another")},
             {"id": "turn_order-pair-exchanges", "name": "turn_order", "type": "radio", "checked": turn_order == "pair-exchanges", "value": "pair-exchanges", "boxLabel": self._("Pair exchanges. Each opponent chooses an action on the randomly selected opponent. When their actions match, the system performs strike exchange")},
+            {"id": "turn_order-time-line", "name": "turn_order", "type": "radio", "checked": turn_order == "time-line", "value": "time-line", "boxLabel": self._("Time line. Every member gets right of turn when his previous action finished. Every action takes specific number of time units to execute")},
             {"name": "turn_timeout", "label": self._("Turn timeout (in seconds)"), "value": info.get("turn_timeout", 30)},
             {"type": "header", "html": self._("Combat debugging")},
             {"name": "debug_script_chat", "label": self._("Output script trace into debug chat"), "type": "checkbox", "checked": info.get("debug_script_chat")},
@@ -737,6 +737,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             info["immediate"] = True if req.param("immediate") else False
             # ignore_preselected
             info["ignore_preselected"] = True if req.param("ignore_preselected") else False
+            # available
+            if not info["immediate"]:
+                info["duration"] = self.call("script.admin-expression", "duration", errors, globs={"combat": combat, "member": member1}, mandatory=False)
             # targets
             valid_targets = set(["none", "all", "enemies", "allies", "allies-myself", "myself", "script"])
             targets = req.param("v_targets")
@@ -782,6 +785,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
             {"name": "available", "label": self._("Whether action is available to member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))},
             {"name": "immediate", "label": self._("Immediate execution (out of turn)"), "type": "checkbox", "checked": info.get("immediate")},
+            {"name": "duration", "label": self._("Duration of the action (in time units). Applicable to turn orders supporting time units only") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("duration")) if info.get("duration") is not None else "", "condition": "![immediate]"},
             {"name": "ignore_preselected", "label": self._("Ignore preselected targets (allow player to select any)"), "type": "checkbox", "checked": info.get("ignore_preselected")},
             {"type": "header", "html": self._("Available targets filter")},
             {"name": "targets", "type": "combo", "label": self._("Available action targets"), "values": [

@@ -91,10 +91,11 @@ class CombatParamsContainer(object):
     def set_param(self, key, val):
         "Set parameter value"
         if self._params.get(key) == val:
-            return
+            return False
         self._params[key] = val
         self._changed_params.add(key)
         self._all_params = None
+        return True
 
     def all_params(self):
         "Return map(param => value) of all parameters"
@@ -177,11 +178,17 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         for controller in member.controllers:
             self.add_controller(controller)
         # log join
-        if self.log:
-            self.log.syslog({
-                "type": "join",
-                "member": member.id,
-            })
+        self.syslog({
+            "type": "join",
+            "member": member.id,
+            "text": self._("<b>[{time}]</b> Member {id} ({name}) has joined team {team}").format(
+                time=self.now(),
+                id=member.id,
+                name=member.name,
+                team=member.team,
+            ),
+            "cls": "combat-syslog-joined",
+        })
 
     def member(self, memberId):
         for m in self.members:
@@ -221,12 +228,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             raise CombatAlreadyRunning(self._("Combat was started twice"))
         self.turn_order = turn_order
         self.set_stage("combat")
-        # output time
-        if self.time_mode == "change":
-            self.textlog({
-                "text": self.timetext,
-                "cls": "combat-log-time-header",
-            })
+        self.log_combat_time()
         # execute start script
         globs = self.globs()
         self.execute_script("start", globs, lambda: self._("Combat start script"))
@@ -246,12 +248,12 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
         if self.stages.get(stage) is None:
             raise CombatInvalidStage(self._("Combat stage '%s' is not defined") % stage)
         self.set_param("stage", stage)
-        # log stage
-        if self.log:
-            self.log.syslog({
-                "type": "stage",
-                "stage": stage,
-            })
+        self.syslog({
+            "type": "stage",
+            "stage": stage,
+            "text": self._("Combat stage: %s") % stage,
+            "cls": "combat-syslog-stage",
+        })
         self.wakeup()
 
     @property
@@ -296,17 +298,25 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def time(self):
         return self._params.get("time", 0)
 
+    def log_combat_time(self):
+        self.syslog({
+            "text": self._("Combat time: %s") % self.time,
+            "time": self.time,
+            "cls": "combat-syslog-time",
+        })
+        if self.time_mode == "change":
+            self.textlog({
+                "text": self.timetext,
+                "cls": "combat-log-time-header",
+            })
+
     def add_time(self, val):
         val = intz(val)
         if val < 1:
             return
         self.set_param("time", self.time + val)
         self.set_param("timetext", self.timetext)
-        if self.time_mode == "change":
-            self.textlog({
-                "text": self.timetext,
-                "cls": "combat-log-time-header",
-            })
+        self.log_combat_time()
 
     def add_controller(self, controller):
         "Register member controller"
@@ -532,6 +542,7 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
                     self.running_actions.append(act)
             self.enqueue_turn_order_check()
             self.actions_started()
+            self.enqueue_check_end_condition()
 
     def process_stopped_actions(self):
         "For every stopped action call end() method and remove the action from the list"
@@ -568,6 +579,11 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def draw(self):
         "Combat finished with draw"
+        self.syslog({
+            "type": "draw",
+            "text": self._("Combat was a draw"),
+            "cls": "combat-syslog-end",
+        })
         for member in self.members:
             member.draw()
         globs = self.globs()
@@ -576,6 +592,14 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
 
     def victory(self, team):
         "Combat finished with victory of specified team"
+        self.syslog({
+            "type": "victory",
+            "team": team,
+            "text": self._("Victory of team {team}").format(
+                team=team,
+            ),
+            "cls": "combat-syslog-end",
+        })
         winners_list = []
         loosers_list = []
         first_winner = None
@@ -686,6 +710,8 @@ class CombatAction(CombatObject):
         self.source = None
         self.code = None
         self.attrs = {}
+        self.till_time = None
+        self.executing = False
 
     def set_source(self, source):
         "Set combat action source"
@@ -720,23 +746,48 @@ class CombatAction(CombatObject):
 
     def begin(self):
         "Do any processing in the beginning of the action"
+        text = u"{text}: source={source}, targets={targets}".format(
+            text=self._("Action {action} has started").format(action=self.code),
+            source=self.source.id,
+            targets=[t.id for t in self.targets] if type(self.targets) == list else self.targets,
+        )
+        if self.till_time is not None:
+            text += u", till_time=%s" % self.till_time
+        self.combat.syslog({
+            "text": text,
+            "cls": "combat-syslog-action-begin",
+        })
         globs = self.globs()
         self.for_each_target(self.execute_targeted_script, "begin-target", globs, lambda: self._("Combat action '%s' begin target script") % self.code)
         self.execute_script("begin", globs, lambda: self._("Combat action '%s' begin script") % self.code)
+        self.executing = True
 
     def end(self):
         "Do any processing in the end of the action"
+        text = self._("Action {action} has stopped").format(action=self.code)
+        self.combat.syslog({
+            "text": u"{text}: source={source}, targets={targets}".format(
+                text=text,
+                source=self.source.id,
+                targets=[t.id for t in self.targets] if type(self.targets) == list else self.targets,
+            ),
+            "cls": "combat-syslog-action-end",
+        })
         globs = self.globs()
         self.for_each_target(self.execute_targeted_script, "end-target", globs, lambda: self._("Combat action '%s' end target script") % self.code)
         self.execute_script("end", globs, lambda: self._("Combat action '%s' end script") % self.code)
+        self.executing = False
 
     def set_code(self, code):
         "Set action code"
         self.code = code
 
     def stopped(self):
-        "Ask action whether it is stopped. By default all actions are stopped immediately after start"
-        return True
+        "Ask action whether it is stopped"
+        if self.till_time is not None:
+            return self.combat.time >= self.till_time
+        else:
+            return True
 
     def execute_targeted_script(self, target, tag, globs, description=None):
         globs["target"] = target
@@ -770,6 +821,13 @@ class CombatMember(CombatObject, CombatParamsContainer):
         self.controllers = []
         self.clear_available_action_cache()
         self.log = combat.log
+
+    def set_param(self, key, val):
+        if CombatParamsContainer.set_param(self, key, val):
+            self.clear_available_action_cache()
+            return True
+        else:
+            return False
 
     def is_a_combat_member(self):
         return True
