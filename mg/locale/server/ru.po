@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-28 12:26+0300\n"
+"PO-Revision-Date: 2013-03-28 14:20+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3431,6 +3431,9 @@ msgstr "Глобальный шаблон для всех страниц соц�
 msgid "Global variable '{glob}' not found"
 msgstr "Глобальная переменная \"{glob}\" не найдена"
 
+msgid "Go button"
+msgstr "Кнопка действия"
+
 msgid "Go to the Constructor forum"
 msgstr "Перейти на форум Конструктора"
 
@@ -4775,6 +4778,9 @@ msgstr "Idle-скрипт, выполняемый для каждого учас
 
 msgid "Member joined script"
 msgstr "Скрипт присоединения участника"
+
+msgid "Member name templates"
+msgstr "Шаблоны имен участников"
 
 #, python-format
 msgid "Member parameter '%s'"
@@ -7526,6 +7532,12 @@ msgstr "Телеграммы с {0}"
 
 msgid "Template"
 msgstr "Шаблон"
+
+msgid "Template to show member name in the list of action targets"
+msgstr "Шаблон имени участника в списке целей действия"
+
+msgid "Template to show member name in the list of members when waiting for turn right"
+msgstr "Шаблон имени участника в списке участников во время ожидания права хода"
 
 msgid "Templates of '{design}'"
 msgstr "Шаблоны \"{design}\""

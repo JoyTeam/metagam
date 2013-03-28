@@ -63,6 +63,12 @@ Combat.call = function (combat_id, method) {
         }
     } catch (e) {
         Game.error(sprintf(gt.gettext('Exception in %s'), 'combat.' + method), e);
+        if (e.stack) {
+            try {
+                debug_log('<b>Exception: ' + e + '</b>' + e.stack);
+            } catch (e) {
+            }
+        }
     }
 };
 

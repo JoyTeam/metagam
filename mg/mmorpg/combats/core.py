@@ -931,7 +931,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     @property
     def active(self):
-        return self._params.get("active", True)
+        return self._params.get("active", 1)
     def set_active(self, active):
         self.set_param("active", active)
 

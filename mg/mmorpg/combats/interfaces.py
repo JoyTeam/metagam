@@ -82,6 +82,8 @@ class Combats(mg.constructor.ConstructorModule):
                         self.call("combats.default-%s" % pos, params)
                         params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
                     vars["generic_%s" % pos] = json.dumps(params)
+                vars["generic_target_template"] = json.dumps(rules.get("generic_target_template", [[".", ["glob", "member"], "name"]]))
+                vars["generic_member_list_template"] = json.dumps(rules.get("generic_member_list_template", [[".", ["glob", "member"], "name"]]))
             dim_avatar = rules.get("dim_avatar", [120, 220])
             vars["combat_avatar_width"] = dim_avatar[0]
             vars["combat_avatar_height"] = dim_avatar[1]

@@ -218,6 +218,7 @@ var GenericCombat = Ext.extend(Combat, {
     turnGot: function () {
         var self = this;
         GenericCombat.superclass.turnGot.call(self);
+        self.hideMemberList();
         self.showActionSelector();
     },
 
@@ -229,6 +230,7 @@ var GenericCombat = Ext.extend(Combat, {
         var self = this;
         GenericCombat.superclass.turnLost.call(self);
         self.hideActionSelector();
+        self.showMemberList();
     },
 
     /*
@@ -239,6 +241,27 @@ var GenericCombat = Ext.extend(Combat, {
         var self = this;
         GenericCombat.superclass.turnTimeout.call(self);
         self.hideActionSelector();
+        self.showMemberList();
+    },
+
+    /*
+     * Notify combat that the action has just been submitted
+     */
+    actionSubmitted: function () {
+        var self = this;
+        GenericCombat.superclass.turnLost.call(self);
+        self.hideActionSelector();
+        self.showMemberList();
+    },
+
+    /*
+     * Notify combat that the action has just been submitted
+     */
+    actionFailed: function () {
+        var self = this;
+        GenericCombat.superclass.turnLost.call(self);
+        self.hideMemberList();
+        self.showActionSelector();
     },
 
     /*
@@ -253,6 +276,7 @@ var GenericCombat = Ext.extend(Combat, {
             self.actionSelector = self.newActionSelector();
         }
         self.actionSelector.show();
+        self.viewportComponent.doLayout();
     },
 
     /*
@@ -268,11 +292,43 @@ var GenericCombat = Ext.extend(Combat, {
     },
 
     /*
+     * Show interface with list of members
+     */
+    showMemberList: function () {
+        var self = this;
+        if (!self.memberList) {
+            self.memberList = self.newMemberList();
+        }
+        self.memberList.show();
+        self.viewportComponent.doLayout();
+    },
+
+    /*
+     * Hide interface with list of members
+     */
+    hideMemberList: function () {
+        var self = this;
+        if (!self.memberList) {
+            return;
+        }
+        self.memberList.hide();
+        self.viewportComponent.doLayout();
+    },
+
+    /*
      * Create new action selector (override to use another class)
      */
     newActionSelector: function () {
         var self = this;
         return new GenericCombatActionSelector(self);
+    },
+    
+    /*
+     * Create new member list (override to use another class)
+     */
+    newMemberList: function () {
+        var self = this;
+        return new GenericCombatMemberList(self);
     },
     
     /*
@@ -439,9 +495,11 @@ var GenericCombatMember = Ext.extend(CombatMember, {
     paramsChanged: function (params) {
         var self = this;
         GenericCombatMember.superclass.paramsChanged.call(self, params);
+        var repaint = false;
+        var targetCmp = self.targetCmp && self.targetCmp.el && self.targetCmp.el.dom;
         // prepare list of avatar parameters that may be affected by
         // parameters change
-        var affectedClasses;
+        var affectedClasses, affectedTargetCmp;
         for (var key in params) {
             if (params.hasOwnProperty(key)) {
                 var deps = self.avatarDeps[key];
@@ -451,6 +509,11 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                             affectedClasses = {};
                         }
                         affectedClasses[dkey] = deps[dkey];
+                    }
+                }
+                if (targetCmp) {
+                    if (self.targetCmpDeps[key]) {
+                        affectedTargetCmp = true;
                     }
                 }
             }
@@ -482,6 +545,78 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                     }
                 }
             }
+            repaint = true;
+        }
+        // targetCmp needs to be updated
+        if (affectedTargetCmp) {
+            var env = {
+                globs: {
+                    combat: self.combat,
+                    member: self,
+                    viewer: self.combat.myself
+                }
+            };
+            self.targetCmp.update(parent.MMOScript.evaluateText(self.targetCmpTemplate, env));
+            repaint = true;
+        }
+        if (repaint) {
+            self.combat.viewportComponent.doLayout();
+        }
+    },
+
+    /*
+     * Create component serving as an item in the list of members
+     * template is a MMOScript text template
+     */
+    newListItem: function (template) {
+        var self = this;
+        self.targetCmpDeps = {};
+        var env = {
+            globs: {
+                combat: self.combat,
+                member: self,
+                viewer: self.combat.myself
+            }
+        };
+        var deps = parent.MMOScript.dependenciesStr(template);
+        for (var i = 0; i < deps.length; i++) {
+            var dep = deps[i];
+            if (dep.length >= 2 && dep[0] == 'member') {
+                var param = dep[1];
+                self.targetCmpDeps[param] = true;
+            }
+        }
+        self.targetCmpTemplate = template;
+        self.targetCmp = new Ext.BoxComponent({
+            html: parent.MMOScript.evaluateText(template, env),
+            style: {
+                padding: '10px'
+            },
+            cls: ((self.combat.myself && self.params.team == self.combat.myself.params.team) ? 'combat-target-ally' : 'combat-target-enemy') + ' ' +
+                (self.params.active ? 'combat-target-alive' : 'combat-target-dead'),
+            select: function () {
+                this.removeClass('combat-item-deselected');
+                this.removeClass('combat-target-deselected');
+                this.addClass('combat-item-selected');
+                this.addClass('combat-target-selected');
+            },
+            deselect: function () {
+                this.removeClass('combat-item-selected');
+                this.removeClass('combat-target-selected');
+                this.addClass('combat-item-deselected');
+                this.addClass('combat-target-deselected');
+            }
+        });
+    },
+
+    /*
+     * Show avatar of this member in the enemy frame
+     */
+    showEnemy: function () {
+        var self = this;
+        if (self.combat.enemyAvatarComponent) {
+            self.combat.enemyAvatarComponent.update(self.renderAvatarHTML());
+            self.combat.viewportComponent.doLayout();
         }
     }
 });
@@ -849,7 +984,23 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 continue;
             }
             var member = self.combat.members[memberId];
-            member.targetCmp = self.newTargetItem(member);
+            (function (member) {
+                member.newListItem(self.combat.targetTemplate);
+                member.targetCmp.addListener('render', function () {
+                    this.getEl().on('click', function () {
+                        if (!this.dom.disabled) {
+                            self.toggleTarget(member);
+                        }
+                    });
+                    this.getEl().on('mouseover', function () {
+                        member.showEnemy();
+                        self.shownEnemy = member;
+                    });
+                    this.getEl().on('mouseout', function () {
+                        self.showSelectedEnemy();
+                    });
+                });
+            })(member);
             if (member.targeted) {
                 member.targetCmp.select();
             } else {
@@ -868,48 +1019,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         });
     },
 
-    /*
-     * Create component serving as an item in the targets list
-     */
-    newTargetItem: function (member) {
-        var self = this;
-        return new Ext.BoxComponent({
-            html: member.params.name,
-            style: {
-                padding: '10px'
-            },
-            cls: ((member.params.team == self.myself.params.team) ? 'combat-target-ally' : 'combat-target-enemy') + ' ' +
-                (member.params.active ? 'combat-target-alive' : 'combat-target-dead'),
-            listeners: {
-                render: function () {
-                    this.getEl().on('click', function () {
-                        if (!this.dom.disabled) {
-                            self.toggleTarget(member);
-                        }
-                    });
-                    this.getEl().on('mouseover', function () {
-                        self.showEnemy(member);
-                    });
-                    this.getEl().on('mouseout', function () {
-                        self.showSelectedEnemy();
-                    });
-                }
-            },
-            select: function () {
-                this.removeClass('combat-item-deselected');
-                this.removeClass('combat-target-deselected');
-                this.addClass('combat-item-selected');
-                this.addClass('combat-target-selected');
-            },
-            deselect: function () {
-                this.removeClass('combat-item-selected');
-                this.removeClass('combat-target-selected');
-                this.addClass('combat-item-deselected');
-                this.addClass('combat-target-deselected');
-            }
-        });
-    },
-    
     /*
      * Select action attribute
      */
@@ -1017,18 +1126,6 @@ var GenericCombatActionSelector = Ext.extend(Object, {
     },
 
     /*
-     * Show enemy avatar
-     */
-    showEnemy: function (member) {
-        var self = this;
-        if (self.combat.enemyAvatarComponent) {
-            self.combat.enemyAvatarComponent.update(member.renderAvatarHTML());
-            self.combat.viewportComponent.doLayout();
-            self.shownEnemy = member;
-        }
-    },
-
-    /*
      * Select the same action as previously sent to the server
      */
     selectLastAction: function () {
@@ -1094,7 +1191,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             var targetId = self.action.targets[i];
             var member = self.combat.members[targetId];
             if (member.targeted) {
-                self.showEnemy(member);
+                member.showEnemy();
+                self.shownMember = member;
                 return false;
             }
         }
@@ -1121,7 +1219,8 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                 targeted++;
                 if (!shown) {
                     shown = true;
-                    self.showEnemy(member);
+                    member.showEnemy();
+                    self.shownMember = member;
                 }
             }
         }
@@ -1166,19 +1265,19 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             return;
         }
         self.lastAction = self.action.action;
-        self.hide();
-        self.combat.viewportComponent.doLayout();
+        self.combat.actionSubmitted();
         self.combat.submitAction(data, function (err) {
             if (err == 'sendInProgress') {
-                self.show();
+                self.combat.actionFailed();
                 Game.error(undefined, gt.gettext('Your action is already being sent to server'));
             } else if (err == 'serverError') {
-                self.show();
+                self.combat.actionFailed();
                 Game.error(undefined, gt.gettext('Error connecting to the server'));
             } else if (err == 'combatTerminated') {
+                self.combat.actionFailed();
                 Game.error(undefined, gt.gettext('Combat was terminated'));
             } else if (err) {
-                self.show();
+                self.combat.actionFailed();
                 Game.error(undefined, err);
             }
         });
@@ -1249,5 +1348,79 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             }
         }
         return data;
+    }
+});
+
+var GenericCombatMemberList = Ext.extend(Object, {
+    constructor: function (combat) {
+        var self = this;
+        self.combat = combat;
+        self.shown = false;
+    },
+
+    /*
+     * Show member list
+     */
+    show: function () {
+        var self = this;
+        if (self.shown) {
+            self.hide();
+        }
+        var items = [];
+        for (var memberId in self.combat.members) {
+            if (!self.combat.members.hasOwnProperty(memberId)) {
+                continue;
+            }
+            var member = self.combat.members[memberId];
+            (function (member) {
+                member.newListItem(self.combat.memberListTemplate);
+                member.targetCmp.addListener('render', function () {
+                    this.getEl().on('mouseover', function () {
+                        member.showEnemy();
+                    });
+                });
+            })(member);
+            member.targetCmp.deselect();
+            items.push(member.targetCmp);
+        }
+        self.cmp = new Ext.Container({
+            id: 'combat-member-list-interface',
+            xtype: 'container',
+            layout: 'hbox',
+            border: false,
+            layoutConfig: {
+                align: 'middle'
+            },
+            autoScroll: true,
+            items: [
+                {
+                    xtype: 'container',
+                    id: 'combat-member-list',
+                    items: items,
+                    border: false,
+                    flex: 1,
+                    style: {
+                        paddingRight: '10px'
+                    }
+                }
+            ]
+        });
+        self.combat.mainComponent.removeAll(true);
+        self.combat.mainComponent.add(self.cmp);
+        self.shown = true;
+        self.combat.viewportComponent.doLayout();
+    },
+
+    /*
+     * Hide member list
+     */
+    hide: function () {
+        var self = this;
+        if (!self.shown) {
+            return;
+        }
+        self.shown = false;
+        self.combat.mainComponent.removeAll(true);
+        delete self.cmp;
     }
 });

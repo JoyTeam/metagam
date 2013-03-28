@@ -294,6 +294,36 @@ MMOScript.dependencies = function (val) {
 }
 
 /*
+ * Traverse MMO Script string syntax tree and extract all used parameters
+ *
+ * @param{String} val       String syntax tree
+ * 
+ * @returns{Array}          List of parameters. Every parameter is an
+ *      array of components. For example: member.p_hp => ["member", "p_hp"]
+ *
+ */
+MMOScript.dependenciesStr = function (val) {
+    var self = this;
+    if (!val.length) {
+        return {};
+    }
+    if (typeof(val[0]) === 'string') {
+        return {};
+    }
+    var res = {};
+    for (var i = 0; i < val.length; i++) {
+        self._dependencies(val[i], res);
+    }
+    var resList = [];
+    for (var key in res) {
+        if (res.hasOwnProperty(key)) {
+            resList.push(key.split('.'));
+        }
+    }
+    return resList;
+}
+
+/*
  * Traverse MMO Script syntax tree and extract all used parameters.
  * Found parameters are stored in dict "res"
  */

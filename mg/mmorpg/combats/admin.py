@@ -318,6 +318,13 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             errors = {}
             shortInfo = {}
             info = {}
+            # test objects
+            combat = Combat(self.app(), None, code)
+            member = CombatMember(combat)
+            viewer = CombatMember(combat)
+            combat.join(member)
+            combat.join(viewer)
+            globs = {"combat": combat, "member": member, "viewer": viewer}
             # name
             name = req.param("name").strip()
             if not name:
@@ -382,6 +389,9 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                         errors["generic_enemyavatar_width"] = self._("Miminal value is %d") % 50
                     elif width > 1000:
                         errors["generic_enemyavatar_width"] = self._("Maximal value is %d") % 1000
+                # template in the target list
+                info["generic_target_template"] = self.call("script.admin-text", "generic_target_template", errors, globs=globs)
+                info["generic_member_list_template"] = self.call("script.admin-text", "generic_member_list_template", errors, globs=globs)
                 # combat log
                 info["generic_log"] = 1 if req.param("generic_log") else 0
                 if info["generic_log"]:
@@ -469,8 +479,12 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "generic_combat_height", "label": self._("Combat interface height"), "value": info.get("generic_combat_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 0)"},
             {"name": "generic_log_height", "label": self._("Combat log height"), "value": info.get("generic_log_height", 300), "condition": "[generic] && [generic_log] && ([generic_log_layout] == 1)"},
             {"name": "generic_log_resize", "label": self._("Allow player to resize combat log"), "type": "checkbox", "checked": info.get("generic_log_resize", True), "condition": "[generic] && [generic_log]", "inline": True},
+            {"type": "header", "html": self._("Go button"), "condition": "[generic]"},
             {"name": "generic_gobutton", "label": self._("Use 'Go' button to perform an action"), "type": "checkbox", "checked": info.get("generic_gobutton", True), "condition": "[generic]"},
             {"name": "generic_gobutton_text", "label": self._("Text on the 'Go' button"), "value": info.get("generic_gobutton_text", "Go"), "condition": "[generic] && [generic_gobutton]"},
+            {"type": "header", "html": self._("Member name templates"), "condition": "[generic]"},
+            {"name": "generic_target_template", "label": self._("Template to show member name in the list of action targets") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-text", info.get("generic_target_template", [[".", ["glob", "member"], "name"]])), "condition": "[generic]"},
+            {"name": "generic_member_list_template", "label": self._("Template to show member name in the list of members when waiting for turn right") + self.call("script.help-icon-expressions", "combats"), "value": self.call("script.unparse-text", info.get("generic_member_list_template", [[".", ["glob", "member"], "name"]])), "condition": "[generic]"},
         ]
 
         def render_params(pos, header, newtitle):
