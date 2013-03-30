@@ -458,7 +458,7 @@ class ScriptEngine(ConstructorModule):
         elif cmd == "glob":
             name = val[1]
             if name not in env.globs:
-                raise ScriptUnknownVariableError(self._("Global variable '{glob}' not found").format(glob=name), env)
+                return None
             obj = env.globs.get(name)
             if env.used_globs is not None:
                 env.used_globs.add(name)

@@ -4,7 +4,7 @@ import mg.constructor
 import json
 from mg.core.tools import utf2str
 
-ENTRIES_PER_PAGE = 100
+ENTRIES_PER_PAGE = 1000
 
 class DBCombatLog(mg.CassandraObject):
     clsname = "CombatLog"

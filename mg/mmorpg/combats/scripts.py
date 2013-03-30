@@ -1,6 +1,12 @@
 from mg.constructor import *
 from mg.mmorpg.combats.combat_parser import *
 from mg.mmorpg.combats.core import CombatAction, CombatError, CombatRunError
+import re
+import random
+import json
+
+re_comma = re.compile(r'\s*,\s*')
+re_colon = re.compile(r'\s*:\s*')
 
 class CombatScriptError(CombatError):
     def __init__(self, val, env):
@@ -117,6 +123,24 @@ class CombatScriptsAdmin(ConstructorModule):
                     for k in sorted(attrs.keys()):
                         result += " %s=%s" % (k, self.call("script.unparse-expression", attrs[k]))
                 result += "\n"
+                lines.append(result)
+            elif st_cmd == "turn":
+                cmd = st[1]
+                args = st[2]
+                result = "  " * indent + "turn %s" % self.call("script.unparse-expression", cmd)
+                for k in sorted(args.keys()):
+                    result += " %s=%s" % (k, self.call("script.unparse-expression", args[k]))
+                result += "\n"
+                lines.append(result)
+            elif st_cmd == "randomaction":
+                result = "  " * indent + "randomaction %s %s" % (self.call("script.unparse-expression", st[1]), self.call("script.unparse-expression", self.call("script.unparse-text", st[2])))
+                attrs = st[3]
+                for k in sorted(attrs.keys()):
+                    result += " %s=%s" % (k, self.call("script.unparse-expression", attrs[k]))
+                result += "\n"
+                lines.append(result)
+            elif st_cmd == "giveturn":
+                result = "  " * indent + "giveturn %s\n" % self.call("script.unparse-expression", st[1])
                 lines.append(result)
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
@@ -440,8 +464,82 @@ class CombatScripts(ConstructorModule):
                 attrs = args.get("attrs")
                 if attrs:
                     for k, v in attrs.iteritems():
-                        action.set_attribute(k,  self.call("script.evaluate-expression", v, globs=globs, description=lambda: self._("Evaluation of combat action attribute '%s'") % k))
+                        action.set_attribute(k, self.call("script.evaluate-expression", v, globs=globs, description=lambda: self._("Evaluation of combat action attribute '%s'") % k))
+                self.combat_debug(combat, lambda: self._("selecting action {act} for member {source}: targets={targets}, attrs={attrs}").format(act=tp, source=source.id, targets=targets, attrs=json.dumps(action.attrs)), cls="combat-action", indent=indent)
                 source.enqueue_action(action)
+            elif st_cmd == "turn":
+                cmd = st[1]
+                args = st[2]
+                combat.turn_order.command(cmd, args)
+                self.combat_debug(combat, lambda: self._("executing turn order command: {cmd}").format(cmd=cmd), cls="combat-action", indent=indent)
+            elif st_cmd == "randomaction":
+                source = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of combat action source"))
+                actions = self.call("script.evaluate-text", st[2], globs=globs, description=lambda: self._("Evaluation of random actions list"))
+                attrs = st[3]
+                actions = re_comma.split(actions)
+                selected_actions = []
+                for act in actions:
+                    act = act.strip()
+                    tokens = re_colon.split(act)
+                    if len(tokens) != 2:
+                        raise ScriptRuntimeError(self._("Invalid action descriptor: '%s'. Expected format: ACTIONCODE:WEIGHT") % act, env)
+                    if not valid_nonnegative_float(tokens[1]):
+                        raise ScriptRuntimeError(self._("Invalid action descriptor: '%s'. Weight must be a valid number") % act, env)
+                    actinfo = combat.actions.get(tokens[0])
+                    if actinfo is None:
+                        raise ScriptRuntimeError(self._("Invalid action descriptor: '%s'. This action does not exist") % act, env)
+                    weight = floatz(tokens[1])
+                    if weight > 0:
+                        if source.action_available(actinfo):
+                            selected_actions.append({
+                                "action": actinfo,
+                                "weight": weight
+                            })
+                # Try to choose random actions from the list provided
+                while selected_actions:
+                    total_weight = 0
+                    for act in selected_actions:
+                        total_weight += act["weight"]
+                    num = random.random() * total_weight
+                    for i in xrange(0, len(selected_actions)):
+                        act = selected_actions[i]
+                        if num < act["weight"]:
+                            act = act["action"]
+                            del selected_actions[i]
+                            # Try to choose targets for the action
+                            targets = []
+                            for m in combat.members:
+                                if not m.active:
+                                    continue
+                                if source.target_available(act, m):
+                                    targets.append(m)
+                            # Evaluate number of targets
+                            targets_min = source.targets_min(act)
+                            targets_max = source.targets_max(act)
+                            random.shuffle(targets)
+                            self.combat_debug(combat, lambda: self._("trying to choose targets for action {act} of member {source} (min={min}, max={max}, targets={targets})").format(act=act["code"], source=source.id, targets=[t.id for t in targets], min=targets_min, max=targets_max), cls="combat-action", indent=indent)
+                            if len(targets) > targets_max:
+                                del targets[targets_max:]
+                            if len(targets) < targets_min:
+                                break
+                            # Execute selected action
+                            action = CombatAction(combat)
+                            action.set_code(act["code"])
+                            for m in targets:
+                                action.add_target(m)
+                            for k, v in attrs.iteritems():
+                                action.set_attribute(k, self.call("script.evaluate-expression", v, globs=globs, description=lambda: self._("Evaluation of combat action attribute '%s'") % k))
+                            self.combat_debug(combat, lambda: self._("selecting action {act} for member {source}: targets={targets}, attrs={attrs}").format(act=act["code"], source=source.id, targets=[t.id for t in targets], attrs=json.dumps(action.attrs)), cls="combat-action", indent=indent)
+                            source.enqueue_action(action)
+                            return
+                        num -= act["weight"]
+            elif st_cmd == "giveturn":
+                member = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of combat action source"))
+                if member.may_turn:
+                    self.combat_debug(combat, lambda: self._("can't give right turn to member {member}").format(member=member), cls="combat-action", indent=indent)
+                else:
+                    self.combat_debug(combat, lambda: self._("giving turn right to member {member}").format(member=member), cls="combat-action", indent=indent)
+                    member.turn_give()
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):

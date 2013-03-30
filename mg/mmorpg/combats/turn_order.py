@@ -66,18 +66,18 @@ class CombatTurnOrder(CombatObject):
         if not waiting_with_timeout:
             self.check_watchdog(now)
 
-    def turn_give(self, member):
+    def turn_give(self, member, **kwargs):
         "Give member right of turn"
-        member.turn_give()
+        member.turn_give(**kwargs)
         if self.timeout is None:
             member.turn_till = None
         else:
             member.turn_till = time.time() + self.timeout
         self.reset_watchdog()
 
-    def turn_take(self, member):
+    def turn_take(self, member, **kwargs):
         "Revoke right of turn from the member"
-        member.turn_take()
+        member.turn_take(**kwargs)
         member.turn_till = None
 
     def turn_timeout(self, member):
@@ -101,12 +101,19 @@ class CombatTurnOrder(CombatObject):
             })
             self.combat.draw()
 
+    def command(self, text, args):
+        "Execute script command 'turn'"
+
 class CombatRoundRobinTurnOrder(CombatTurnOrder):
     """
     This turn order assumes every member makes turn each after another"
     """
     def __init__(self, combat, fqn="mg.mmorpg.combats.turn_order.CombatRoundRobinTurnOrder"):
         CombatTurnOrder.__init__(self, combat, fqn)
+
+    def command(self, text, args):
+        if text == "done":
+            self.turn_done = True
 
     def check(self):
         CombatTurnOrder.check(self)
@@ -115,27 +122,31 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
             for member in self.combat.members:
                 if member.may_turn:
                     if member.active and member.pending_actions:
+                        self.turn_done = False
                         next_member = self.next_turn()
                         self.turn_take(member)
                         act = member.pending_actions.pop(0)
                         self.combat.execute_action(act)
                         self.combat.process_actions()
-                        self.combat.add_time(1)
-                        if next_member and self.combat.stage_flag("actions"):
-                            self.turn_give(next_member)
+                        if self.turn_done:
+                            self.combat.add_time(1)
+                            if next_member and self.combat.stage_flag("actions"):
+                                self.turn_give(next_member, new_turn=1)
+                        else:
+                            self.turn_give(member)
                     return
                 if member.active:
                     any_active = True
             if any_active:
                 member = self.next_turn()
                 if member:
-                    self.turn_give(member)
+                    self.turn_give(member, new_turn=1)
 
     def turn_timeout(self, member):
         next_member = self.next_turn()
         CombatTurnOrder.turn_timeout(self, member)
         if next_member:
-            self.turn_give(next_member)
+            self.turn_give(next_member, new_turn=1)
 
     def member_died(self, member):
         may_turn = member.may_turn
@@ -143,7 +154,7 @@ class CombatRoundRobinTurnOrder(CombatTurnOrder):
             next_member = self.next_turn()
         CombatTurnOrder.member_died(self, member)
         if may_turn and next_member:
-            self.turn_give(next_member)
+            self.turn_give(next_member, new_turn=1)
 
     def next_turn(self):
         "Evaluate the next member who will take right of turn"
@@ -281,7 +292,6 @@ class CombatTimeLineTurnOrder(CombatTurnOrder):
                         duration = self.combat.actions[act.code].get("duration")
                         globs = act.globs()
                         duration = intz(self.call("script.evaluate-expression", duration, globs=globs, description=lambda: self._("Evaluation of action duration")))
-                        print "duration=%s" % duration
                         act.till_time = self.combat.time + duration
                         self.combat.execute_action(act)
                         process_ready = True

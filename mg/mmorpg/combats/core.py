@@ -985,18 +985,24 @@ class CombatMember(CombatObject, CombatParamsContainer):
         for controller in self.controllers:
             controller.deliver_turn_got()
 
-    def turn_give(self):
+    def turn_give(self, **kwargs):
         "Grant right of making turn to the member"
         self.set_param("may_turn", True)
         self.clear_available_action_cache()
         globs = self.combat.globs()
+        for k, v in kwargs.iteritems():
+            globs[k] = v
         self.combat.execute_member_script(self, "turngot", globs, lambda: self._("'After get turn' script"))
         for controller in self.controllers:
             controller.turn_got()
 
-    def turn_take(self):
+    def turn_take(self, **kwargs):
         "Revoke right of making turn from the member"
         self.set_param("may_turn", False)
+        globs = self.combat.globs()
+        for k, v in kwargs.iteritems():
+            globs[k] = v
+        self.combat.execute_member_script(self, "turnlost", globs, lambda: self._("'After lost turn' script"))
         for controller in self.controllers:
            controller.turn_lost()
 
@@ -1026,8 +1032,6 @@ class CombatMember(CombatObject, CombatParamsContainer):
 
     def action_available(self, act):
         "Return True if action is available for the member (cacheable)"
-        if not self.may_turn:
-            return False
         try:
             return False if self._available_action_cache[act["code"]] is None else True
         except KeyError:

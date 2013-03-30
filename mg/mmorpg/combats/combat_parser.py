@@ -54,6 +54,15 @@ class TokenChat(Parsing.Token):
 class TokenAction(Parsing.Token):
     "%token action"
 
+class TokenTurn(Parsing.Token):
+    "%token turn"
+
+class TokenRandomAction(Parsing.Token):
+    "%token randomaction"
+
+class TokenGiveTurn(Parsing.Token):
+    "%token giveturn"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -189,12 +198,30 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce action Expr Expr ExprAttrs"
         for k, v in attrs.val.iteritems():
             if not re_valid_attribute_code.match(k):
-                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj=obj_name, attr=k))
+                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="action", attr=k))
         args = {
             "source": source.val,
             "attrs": attrs.val
         }
         self.val = ["action", tp.val, args]
+
+    def reduceTurn(self, cmd, text, attrs):
+        "%reduce turn scalar ExprAttrs"
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Argument must be a string"))
+        self.val = ["turn", text.val, attrs.val]
+
+    def reduceRandomAction(self, cmd, source, text, attrs):
+        "%reduce randomaction Expr scalar ExprAttrs"
+        text = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Random actions list"))
+        for k, v in attrs.val.iteritems():
+            if not re_valid_attribute_code.match(k):
+                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="randomaction", attr=k))
+        self.val = ["randomaction", source.val, text, attrs.val]
+
+    def reduceGiveTurn(self, cmd, member):
+        "%reduce giveturn Expr"
+        self.val = ["giveturn", member.val]
 
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
@@ -278,6 +305,9 @@ class CombatScriptParser(ScriptParser):
     syms["syslog"] = TokenSyslog
     syms["chat"] = TokenChat
     syms["action"] = TokenAction
+    syms["turn"] = TokenTurn
+    syms["randomaction"] = TokenRandomAction
+    syms["giveturn"] = TokenGiveTurn
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

@@ -848,7 +848,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             for tag in ["start", "heartbeat", "idle", "actions-started",
                     "actions-stopped", "joined", "draw", "victory"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat}, mandatory=False))
-            for tag in ["turngot", "turnmade", "turntimeout", "heartbeat-member", "idle-member", "actions-started-member",
+            for tag in ["turngot", "turnlost", "turnmade", "turntimeout", "heartbeat-member", "idle-member", "actions-started-member",
                     "actions-stopped-member", "draw-member", "victory-member", "defeat-member"]:
                 config.set("combats-%s.script-%s" % (code, tag), self.call("combats-admin.script-field", combat, tag, errors, globs={"combat": combat, "member": member}, mandatory=False))
             # process errors
@@ -860,7 +860,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         fields = [
             {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 300},
             {"name": "joined", "label": self._("Combat script running when member 'member' is joined") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-joined" % code)), "height": 300},
-            {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
+            {"name": "turngot", "label": self._("Combat script running for member 'member' immediately after he gets right of turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turngot" % code)), "height": 300},
+            {"name": "turnlost", "label": self._("Combat script running for member 'member' immediately after he loses right turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turnlost" % code)), "height": 300},
             {"name": "turnmade", "label": self._("Combat script running for member 'member' immediately after he makes a turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turnmade" % code)), "height": 300},
             {"name": "turntimeout", "label": self._("Combat script running for member 'member' when it is timed out making turn") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-turntimeout" % code)), "height": 300},
             {"name": "heartbeat", "label": self._("Combat script running for every main loop iteration ('heartbeat script')") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-heartbeat" % code)), "height": 300},

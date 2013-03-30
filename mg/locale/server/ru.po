@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-30 08:19+0300\n"
+"PO-Revision-Date: 2013-03-30 18:22+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -102,6 +102,9 @@ msgstr "\"%s\" изменить нельзя"
 
 msgid "'After get turn' script"
 msgstr "Скрипт \"после получения права хода\""
+
+msgid "'After lost turn' script"
+msgstr "Скрипт \"после потери права хода\""
 
 msgid "'After turn made' script"
 msgstr "Скрипт \"после совершения хода\""
@@ -348,6 +351,9 @@ msgstr "Действие поставлено в очередь"
 
 msgid "Action name"
 msgstr "Название действия"
+
+msgid "Action points"
+msgstr "Очки действия"
 
 #, python-format
 msgid "Action type '%s' is not a string"
@@ -644,6 +650,9 @@ msgstr "Вы уверены, что хотите снять проект с пу
 
 msgid "Are you sure?"
 msgstr "Вы уверены?"
+
+msgid "Argument must be a string"
+msgstr "Аргумент должен быть строкой"
 
 msgid "Art"
 msgstr "Творчество"
@@ -1687,8 +1696,11 @@ msgstr "Боевой скрипт, выполняемый после того, �
 msgid "Combat script running for every main loop iteration ('heartbeat script')"
 msgstr "Боевой скрипт, выполняемый на каждой итерации главного цикла (heartbeat-скрипт)"
 
-msgid "Combat script running for member 'member' immediately after he gets turn"
+msgid "Combat script running for member 'member' immediately after he gets right of turn"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он получает право хода"
+
+msgid "Combat script running for member 'member' immediately after he loses right turn"
+msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он теряет право хода"
 
 msgid "Combat script running for member 'member' immediately after he makes a turn"
 msgstr "Боевой скрипт, выполняемый для участника \"member\" сразу после того, как он делает ход"
@@ -2889,6 +2901,9 @@ msgstr "Вычисление участника"
 msgid "Evaluation of object"
 msgstr "Вычисление объекта"
 
+msgid "Evaluation of random actions list"
+msgstr "Вычисление списка случайных действий"
+
 msgid "Evaluation of system log text"
 msgstr "Вычисление текста для системного лога"
 
@@ -3435,9 +3450,6 @@ msgstr "Глобальные настройки"
 msgid "Global template for all socio pages"
 msgstr "Глобальный шаблон для всех страниц социалки"
 
-msgid "Global variable '{glob}' not found"
-msgstr "Глобальная переменная \"{glob}\" не найдена"
-
 msgid "Go button"
 msgstr "Кнопка действия"
 
@@ -3511,6 +3523,9 @@ msgstr "Заголовок"
 msgid "Heal action name"
 msgstr "Название действия лечения"
 
+msgid "Heal action points"
+msgstr "Очки действия лечения"
+
 msgid "Heal action text in the combat log"
 msgstr "Текст действия лечения в логе боя"
 
@@ -3527,11 +3542,23 @@ msgstr ""
 msgid ""
 "Heal any allied member<br />\n"
 "Value: <b>{value}</b><br />\n"
+"Action points: <b>{action_points}</b>"
+msgstr ""
+"Вылечить любого союзника<br />\n"
+"Значение: <b>{value}</b><br />\n"
+"Очки действия: <b>{action_points}</b>"
+
+msgid ""
+"Heal any allied member<br />\n"
+"Value: <b>{value}</b><br />\n"
 "Duration: <b>{duration}</b>"
 msgstr ""
 "Вылечить любого союзника<br />\n"
 "Значение: <b>{value}</b><br />\n"
 "Длительность: <b>{duration}</b>"
+
+msgid "Heal duration"
+msgstr "Длительность лечения"
 
 msgid "Heal parameter must start with 'p_'"
 msgstr "Параметр лечения должен начинаться с \"p_\""
@@ -3898,6 +3925,18 @@ msgstr "Интервал слишком велик"
 
 msgid "Invalid JSON data submitted"
 msgstr "Отправлены неверные данные JSON"
+
+#, python-format
+msgid "Invalid action descriptor: '%s'. Expected format: ACTIONCODE:WEIGHT"
+msgstr "Неверный дескриптор действия: \"%s\". Ожидаемый формат: ДЕЙСТВИЕ:ВЕС"
+
+#, python-format
+msgid "Invalid action descriptor: '%s'. This action does not exist"
+msgstr "Неверный дескриптор действия: \"%s\". Действие не существует"
+
+#, python-format
+msgid "Invalid action descriptor: '%s'. Weight must be a valid number"
+msgstr "Неверный дескриптор действия: \"%s\". Вес должен быть допустимым числом"
 
 msgid "Invalid activation code"
 msgstr "Неверный код активации"
@@ -4546,6 +4585,9 @@ msgstr "Тип логов"
 
 msgid "Long strike action name"
 msgstr "Название действия длинного удара"
+
+msgid "Long strike action points"
+msgstr "Очки действия длинного удара"
 
 msgid "Long strike action text in the combat log"
 msgstr "Текст действия длинного удара в логе боя"
@@ -5484,6 +5526,9 @@ msgstr "Теперь загрузите ваш новый цветной ава�
 msgid "Now you can use all premium forum settings"
 msgstr "Теперь вы можете воспользоваться премиум-услугами в настройках форума"
 
+msgid "Number of actions points per turn"
+msgstr "Количество очков действия на ход"
+
 msgid "Number of characters per player allowed for free"
 msgstr "Количество персонажей на игрока, разрешённое иметь бесплатно"
 
@@ -6151,6 +6196,9 @@ msgstr "RID для URL '%s'"
 msgid "Races and classes"
 msgstr "Расы и классы"
 
+msgid "Random actions list"
+msgstr "Список случайных действий"
+
 msgid "Rating"
 msgstr "Рейтинг"
 
@@ -6519,6 +6567,9 @@ msgstr "Высота списка персонажей (ростера)"
 
 msgid "Roster width"
 msgstr "Ширина списка персонажей (ростера)"
+
+msgid "Round robin system with action points. Combat members perform actions each after another in the same order. Every turn may consist of several actions with limited total action points."
+msgstr "Круговая система с очками действия. Участники боя совершают действия один за другим в одном и том же порядке. Каждый ход может состоять из нескольких действий с ограниченным количеством суммарных очков действия."
 
 msgid "Round robin system. Combat members perform actions each after another in the same order."
 msgstr "Круговая система. Участники боя совершают действия один за другим в одном и том же порядке."
@@ -6891,6 +6942,9 @@ msgstr "Короткое название игры на английском я�
 
 msgid "Short strike action name"
 msgstr "Название действия короткого удара"
+
+msgid "Short strike action points"
+msgstr "Очки действия короткого удара"
 
 msgid "Short strike action text in the combat log"
 msgstr "Текст действия короткого удара в логе боя"
@@ -7427,6 +7481,15 @@ msgid ""
 msgstr ""
 "Ударить противника<br />\n"
 "Урон: <b>{damage}</b>"
+
+msgid ""
+"Strike opponent<br />\n"
+"Damage: <b>{damage}</b><br />\n"
+"Action points: <b>{action_points}</b>"
+msgstr ""
+"Ударить противника<br />\n"
+"Урон: <b>{damage}</b><br />\n"
+"Очки действия: <b>{action_points}</b>"
 
 msgid ""
 "Strike opponents<br />\n"
@@ -9156,6 +9219,9 @@ msgstr "вызываем событие %s"
 msgid "calling event {event} for character {character}"
 msgstr "вызываем событие {event} для персонажа {character}"
 
+msgid "can't give right turn to member {member}"
+msgstr "не удалось дать право хода участнику {member}"
+
 msgid "cancel"
 msgstr "отменить"
 
@@ -9403,6 +9469,9 @@ msgstr "войти"
 msgid "event=%s"
 msgstr "событие=%s"
 
+msgid "executing turn order command: {cmd}"
+msgstr "исполняем команду очерёдности ходов: {cmd}"
+
 msgid "external"
 msgstr "внешняя"
 
@@ -9475,6 +9544,9 @@ msgstr "выдать"
 
 msgid "giving money, amount={amount}, currency={currency}"
 msgstr "выдаём деньги, количество={amount}, валюта={currency}"
+
+msgid "giving turn right to member {member}"
+msgstr "предоставляем право хода участнику {member}"
 
 msgid "giving {item_name}, quantity={quantity}"
 msgstr "выдаём {item_name}, количество={quantity}"
@@ -10013,6 +10085,9 @@ msgstr "скриптовые обработчики"
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"
 
+msgid "selecting action {act} for member {source}: targets={targets}, attrs={attrs}"
+msgstr "выбираем действие {act} для участника {source}: цели={targets}, атрибуты={attrs}"
+
 msgid "selecting random execution branch"
 msgstr "выбираем случайную ветвь исполнения"
 
@@ -10167,6 +10242,9 @@ msgstr "передать"
 msgid "true"
 msgstr "истина"
 
+msgid "trying to choose targets for action {act} of member {source} (min={min}, max={max}, targets={targets})"
+msgstr "пытаемся выбрать цели для действия {act} участника {source} (мин={min}, макс={max}, цели={targets})"
+
 msgid "unexpected end"
 msgstr "неожиданный конец"
 
@@ -10299,6 +10377,12 @@ msgstr "{char.name} [char.sex:напал,напала] на {targetchar.name}"
 msgid "{class=\"combat-log-attack\"}could not strike{/class} {class=\"combat-log-member\"}{target.name}{/class} in blocked {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
 msgstr "{class=\"combat-log-attack\"}[source.sex:не смог,не смогла] ударить{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"заблокированную голову\" : a_attack_zone == 2 ? \"заблокированную грудь\" : a_attack_zone == 4 ? \"заблокированный пояс\" : a_attack_zone == 8 ? \"заблокированные ноги\" : a_attack_zone}"
 
+msgid "{class=\"combat-log-attack\"}has striked long{/class}"
+msgstr "{class=\"combat-log-attack\"}длинно [source.sex:ударил,ударила]{/class}"
+
+msgid "{class=\"combat-log-attack\"}has striked short{/class}"
+msgstr "{class=\"combat-log-attack\"}коротко [source.sex:ударил,ударила]{/class}"
+
 msgid "{class=\"combat-log-attack\"}has striked {/class} {class=\"combat-log-member\"}{target.name}{/class} long"
 msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила] длинным ударом{/class} {class=\"combat-log-member\"}{target.name}{/class}"
 
@@ -10310,6 +10394,9 @@ msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/c
 
 msgid "{class=\"combat-log-attack\"}has striked{/class} {class=\"combat-log-member\"}{target.name}{/class} in {a_attack_zone == 1 ? \"head\" : a_attack_zone == 2 ? \"chest\" : a_attack_zone == 4 ? \"waist\" : a_attack_zone == 8 ? \"legs\" : a_attack_zone}"
 msgstr "{class=\"combat-log-attack\"}[source.sex:ударил,ударила]{/class} {class=\"combat-log-member\"}{target.name}{/class} в {a_attack_zone == 1 ? \"голову\" : a_attack_zone == 2 ? \"грудь\" : a_attack_zone == 4 ? \"пояс\" : a_attack_zone == 8 ? \"ноги\" : a_attack_zone}"
+
+msgid "{class=\"combat-log-heal\"}has healed{/class}"
+msgstr "{class=\"combat-log-attack\"}[source.sex:вылечил,вылечила]{/class}"
 
 msgid "{class=\"combat-log-heal\"}has healed{/class} {class=\"combat-log-member\"}{target.name}{/class}"
 msgstr "{class=\"combat-log-heal\"}[source.sex:вылечил,вылечила]{/class} {class=\"combat-log-member\"}{target.name}{/class}"
@@ -10345,6 +10432,14 @@ msgstr "{price} навсегда"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid ""
+#~ "selecting action {act} for source {source}: targets={targets}, attrs="
+#~ "{attrs}"
+#~ msgstr ""
+#~ "выбираем действие {act} для участника {source}: цели={targets}, атрибуты="
+#~ "{attrs}"
+#~ msgid "Global variable '{glob}' not found"
+#~ msgstr "Глобальная переменная \"{glob}\" не найдена"
 #~ msgid "Action {action} has stopped: source={source}"
 #~ msgstr "Действие {action} завершилось: source={source}"
 #~ msgid "Allow player to resize enemy's avatar block"
@@ -10917,8 +11012,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr "Для локации '%s' отсутствует визуальное изображение"
 #~ msgid "{NAME_CHAT} {GENDER:entered,entered} {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:пришёл,пришла} {LOCATION_T}"
-#~ msgid "Locations list"
-#~ msgstr "Список локаций"
 #~ msgid "Image map"
 #~ msgstr "Карта изображения"
 #~ msgid "edit image map"

@@ -80,11 +80,7 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         if (type(code) != str and type(code) != unicode) or not re_valid_identifier.match(code):
             self.call("web.response_json", {"error": self._("Invalid combat action")})
         # check action availability
-        act = None
-        for a in self.combat.actionsinfo:
-            if a["code"] == code:
-                act = a
-                break
+        act = self.combat.actions.get(code)
         if act is None:
             self.call("web.response_json", {"error": self._("Non-existent combat action")})
         if not self.controller.member.action_available(act):

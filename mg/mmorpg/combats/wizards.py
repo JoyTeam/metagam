@@ -25,6 +25,11 @@ class CombatRulesDialogs(ConstructorModule):
             "name": self._("Time units system with continuous time line. Every action is performed in some number of time units. Combat members take right of turn when their previous action is finished."),
             "dialog": TimeLine,
         })
+        lst.append({
+            "id": "action-points",
+            "name": self._("Round robin system with action points. Combat members perform actions each after another in the same order. Every turn may consist of several actions with limited total action points."),
+            "dialog": ActionPoints,
+        })
 
 class CombatRulesDialog(ConstructorModule):
     def show(self):
@@ -161,7 +166,7 @@ class CombatRulesDialog(ConstructorModule):
         self.rules["time_format"] = "num"
         self.rules["generic_gobutton"] = 1
         self.rules["generic_gobutton_text"] = self._("button///Go")
-        self.rules["generic_member_list_template"] = self.call('script.parse-text', '<span class="combat-bar"><span class="combat-bar-indicator" style="background-color: green; width: {floor(member.%s * 100 / (member.%s or 1))}%%"></span></span> {member.name}{member.may_turn ? " (%s)" : ""}' % (self.param_hp, self.param_max_hp, self._("waiting for turn")))
+        self.rules["generic_member_list_template"] = self.call('script.parse-text', '<span class="combat-bar"><span class="combat-bar-indicator" style="background-color: {(member.team == viewer.team) ? "green" : "red"}; width: {floor(member.%s * 100 / (member.%s or 1))}%%"></span></span> {member.name}{member.may_turn ? " (%s)" : ""}' % (self.param_hp, self.param_max_hp, self._("waiting for turn")))
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",
@@ -220,26 +225,14 @@ class CombatRulesDialog(ConstructorModule):
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",
-            "tpl": [
-                '<div class="combat-bar">\n<div class="combat-bar-indicator" style="background-color: green; width: ',
-                ['call', 'floor', ['/', ['*', ['.', ['glob', 'member'], self.param_hp], 100], ['or', ['.', ['glob', 'member'], self.param_max_hp], 1]]],
-                '%">\n</div>\n</div>'
-            ],
+            "tpl": self.call('script.parse-text', '<div class="combat-bar">\n<div class="combat-bar-indicator" style="background-color: {{(member.team == viewer.team) ? "green" : "red"}}; width: {{floor(member.{hp} * 100 / (member.{max_hp} or 1))}}%">\n</div>\n</div>'.format(hp=self.param_hp, max_hp=self.param_max_hp)),
             "visible": 1,
             "order": 10.0,
         })
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",
-            "tpl": [
-                '<div class="combat-param combat-member-hp"><span class="combat-param-name">',
-                self._("HP"),
-                '</span>: <span class="combat-param-value">',
-                ['.', ['glob', 'member'], self.param_hp],
-                ' / ',
-                ['.', ['glob', 'member'], self.param_max_hp],
-                '</span></div>'
-            ],
+            "tpl": self.call('script.parse-text', '<div class="combat-param combat-member-hp"><span class="combat-param-name">{HP}</span>: <span class="combat-param-value">{{member.{hp}}} / {{member.{max_hp}}}</span></div>'.format(HP=self._("HP"), hp=self.param_hp, max_hp=self.param_max_hp)),
             "visible": 1,
             "order": 20.0,
         })
@@ -449,7 +442,7 @@ class AttackBlock(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member "strike" a_attack_zone=selrand(1, 2, 4, 8) a_defend_zone=selrand(3, 6, 12)'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'randomaction member "strike: 1" a_attack_zone=selrand(1, 2, 4, 8) a_defend_zone=selrand(3, 6, 12)'),
         })
         script_end_target = 'if a_pair and a_pair.a_defend_zone & a_attack_zone { log \'%s\' cls="attack" } else { set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack" }' % (('{class="combat-log-member"}{source.name}{/class} %s' % self.strike_failed_action), self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.strike_action, self.param_hp, self.param_max_hp)))
         script_enqueued = 'syslog \'<b>[{combat.now}]</b> Enqueued: source=<b>{source.id}</b> ({source.name}), targets=<b>{source.targets}</b>, attack=<b>{a_attack_zone}</b>, defend=<b>{a_defend_zone}</b>\''
@@ -585,10 +578,10 @@ class RoundRobin(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member "strike"'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'randomaction member "strike: 2, heal: 1"'),
         })
         script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage' % (self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp)
-        script_end = ' log \'%s\' cls="attack"' % ('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.strike_action)
+        script_end = 'log \'%s\' cls="attack" turn "done"' % ('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.strike_action)
         self.actions.append({
             "code": "strike",
             "name": self.strike_name,
@@ -603,6 +596,7 @@ class RoundRobin(CombatRulesDialog):
             "script-end": self.call("combats-admin.parse-script", script_end),
         })
         script_end_target = 'set source.p_healed = source.p_healed + 1 set local.heal = %d syslog \'<b>[{combat.now}]</b> Heal: source=<b>{source.id}</b>, target=<b>{target.id}</b>, result_heal=<b>{local.heal}</b>\' heal target.%s local.heal maxval=target.%s log \'%s\' cls="heal"' % (self.heal_value, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-heal">+{local.heal}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.heal_action, self.param_hp, self.param_max_hp)))
+        script_end = 'turn "done"'
         self.actions.append({
             "code": "heal",
             "name": self.heal_name,
@@ -614,6 +608,7 @@ class RoundRobin(CombatRulesDialog):
             "targets_min": 1,
             "targets_max": 1,
             "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+            "script-end": self.call("combats-admin.parse-script", script_end),
         })
 
     def store(self, config):
@@ -637,13 +632,13 @@ class TimeLine(CombatRulesDialog):
             {"name": "short_default_duration", "label": self._("Short strike duration"), "value": 3},
             {"name": "long_strike_name", "label": self._("Long strike action name"), "value": self._("actionname///Long strike")},
             {"name": "long_strike_action", "label": self._("Long strike action text in the combat log"), "value": self._('{class="combat-log-attack"}has striked {/class} {class="combat-log-member"}{target.name}{/class} long')},
-            {"name": "long_default_damage", "label": self._("Long strike default damage"), "value": 8},
+            {"name": "long_default_damage", "label": self._("Long strike default damage"), "value": 9},
             {"name": "long_default_duration", "label": self._("Long strike duration"), "value": 5},
             {"type": "header", "html": self._("Heal parameters")},
             {"name": "heal_name", "label": self._("Heal action name"), "value": self._("actionname///Heal")},
             {"name": "heal_action", "label": self._("Heal action text in the combat log"), "value": self._('{class="combat-log-heal"}has healed{/class} {class="combat-log-member"}{target.name}{/class}')},
             {"name": "heal_value", "label": self._("Heal amount"), "value": 3},
-            {"name": "heal_duration", "label": self._("Heal amount"), "value": 2},
+            {"name": "heal_duration", "label": self._("Heal duration"), "value": 2},
         ])
 
     def form_parse(self, errors):
@@ -736,7 +731,7 @@ class TimeLine(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member random < 0.5 ? "short_strike" : "long_strike"'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'randomaction member "short_strike: 2, long_strike: 2, heal: 1"'),
         })
         # short strike
         script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Short strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack"' % (self.short_default_damage, self.param_damage, self.param_defense, self.short_default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.short_strike_action, self.param_hp, self.param_max_hp)))
@@ -783,8 +778,191 @@ class TimeLine(CombatRulesDialog):
             "script-end-target": self.call("combats-admin.parse-script", script_end_target),
             "duration": self.heal_duration,
         })
+        # timeout rule
+        self.script_append("turntimeout", 'if member.active { giveturn member randomaction member "short_strike: 2, long_strike: 2, heal: 1" }')
 
     def store(self, config):
         CombatRulesDialog.store(self, config)
         self.store_hp(config)
         self.store_damage(config)
+
+class ActionPoints(CombatRulesDialog):
+    def __init__(self, app, fqn="mg.mmorpg.combats.wizards.RoundRobin"):
+        CombatRulesDialog.__init__(self, app, fqn)
+
+    def form_render(self, fields):
+        CombatRulesDialog.form_render(self, fields)
+        self.form_render_hp(fields)
+        self.form_render_damage(fields)
+        fields.extend([
+            {"type": "header", "html": self._("Action points")},
+            {"name": "action_points", "label": self._("Number of actions points per turn"), "value": 6},
+            {"type": "header", "html": self._("Parameters of the strikes")},
+            {"name": "short_strike_name", "label": self._("Short strike action name"), "value": self._("actionname///Short strike")},
+            {"name": "short_strike_action", "label": self._("Short strike action text in the combat log"), "value": self._('{class="combat-log-attack"}has striked short{/class}')},
+            {"name": "short_default_damage", "label": self._("Short strike default damage"), "value": 5},
+            {"name": "short_action_points", "label": self._("Short strike action points"), "value": 3},
+            {"name": "long_strike_name", "label": self._("Long strike action name"), "value": self._("actionname///Long strike")},
+            {"name": "long_strike_action", "label": self._("Long strike action text in the combat log"), "value": self._('{class="combat-log-attack"}has striked long{/class}')},
+            {"name": "long_default_damage", "label": self._("Long strike default damage"), "value": 11},
+            {"name": "long_action_points", "label": self._("Long strike action points"), "value": 5},
+            {"type": "header", "html": self._("Heal parameters")},
+            {"name": "heal_name", "label": self._("Heal action name"), "value": self._("actionname///Heal")},
+            {"name": "heal_action", "label": self._("Heal action text in the combat log"), "value": self._('{class="combat-log-heal"}has healed{/class}')},
+            {"name": "heal_value", "label": self._("Heal amount"), "value": 3},
+            {"name": "heal_action_points", "label": self._("Heal action points"), "value": 2},
+        ])
+
+    def form_parse(self, errors):
+        CombatRulesDialog.form_parse(self, errors)
+        self.form_parse_hp(errors)
+        self.form_parse_damage(errors)
+        req = self.req()
+        # action_points
+        action_points = req.param("action_points").strip()
+        if not valid_nonnegative_int(action_points):
+            errors["action_points"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.action_points = intz(action_points)
+        # short_strike_name
+        short_strike_name = req.param("short_strike_name").strip()
+        if not short_strike_name:
+            errors["short_strike_name"] = self._("This field is mandatory")
+        else:
+            self.short_strike_name = short_strike_name
+        # short_strike_action
+        short_strike_action = req.param("short_strike_action").strip()
+        if not short_strike_action:
+            errors["short_strike_action"] = self._("This field is mandatory")
+        else:
+            self.short_strike_action = short_strike_action
+        # short_default_damage
+        short_default_damage = req.param("short_default_damage").strip()
+        if not valid_nonnegative_int(short_default_damage):
+            errors["short_default_damage"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.short_default_damage = intz(short_default_damage)
+        # short_action_points
+        short_action_points = req.param("short_action_points").strip()
+        if not valid_nonnegative_int(short_action_points):
+            errors["short_action_points"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.short_action_points = intz(short_action_points)
+        # long_strike_name
+        long_strike_name = req.param("long_strike_name").strip()
+        if not long_strike_name:
+            errors["long_strike_name"] = self._("This field is mandatory")
+        else:
+            self.long_strike_name = long_strike_name
+        # long_strike_action
+        long_strike_action = req.param("long_strike_action").strip()
+        if not long_strike_action:
+            errors["long_strike_action"] = self._("This field is mandatory")
+        else:
+            self.long_strike_action = long_strike_action
+        # long_default_damage
+        long_default_damage = req.param("long_default_damage").strip()
+        if not valid_nonnegative_int(long_default_damage):
+            errors["long_default_damage"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.long_default_damage = intz(long_default_damage)
+        # long_action_points
+        long_action_points = req.param("long_action_points").strip()
+        if not valid_nonnegative_int(long_action_points):
+            errors["long_action_points"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.long_action_points = intz(long_action_points)
+        # heal_name
+        heal_name = req.param("heal_name").strip()
+        if not heal_name:
+            errors["heal_name"] = self._("This field is mandatory")
+        else:
+            self.heal_name = heal_name
+        # heal_action
+        heal_action = req.param("heal_action").strip()
+        if not heal_action:
+            errors["heal_action"] = self._("This field is mandatory")
+        else:
+            self.heal_action = heal_action
+        # heal_value
+        heal_value = req.param("heal_value").strip()
+        if not valid_nonnegative_int(heal_value):
+            errors["heal_value"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.heal_value = intz(heal_value)
+        # heal_action_points
+        heal_action_points = req.param("heal_action_points").strip()
+        if not valid_nonnegative_int(heal_action_points):
+            errors["heal_action_points"] = self._("This field must be a valid nonnegative integer")
+        else:
+            self.heal_action_points = intz(heal_action_points)
+
+    def generate(self):
+        CombatRulesDialog.generate(self)
+        self.rules["turn_order"] = "round-robin"
+        self.rules["time_mode"] = "begin"
+        self.rules["time_format"] = "mmss"
+        self.generate_hp()
+        self.generate_damage()
+        self.generate_selectable_targets()
+        self.ai_types.append({
+            "code": "default",
+            "order": 0.0,
+            "name": self._("Basic AI algorithm"),
+            "script-turn-got": self.call("combats-admin.parse-script", 'randomaction member "long_strike: 3, short_strike: 2, heal: 1"'),
+        })
+        # short strike
+        script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Short strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage' % (self.short_default_damage, self.param_damage, self.param_defense, self.short_default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp)
+        script_end = 'log \'%s\' cls="attack" set source.p_ap = source.p_ap - %d if source.p_ap < 2 { turn "done" }' % ('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.short_strike_action, self.short_action_points)
+        self.actions.append({
+            "code": "short_strike",
+            "name": self.short_strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponent<br />\nDamage: <b>{damage}</b><br />\nAction points: <b>{action_points}</b>').format(damage=self.short_default_damage, action_points=self.short_action_points)),
+            "order": 0.0,
+            "available": self.call("script.parse-expression", 'member.p_ap >= %d' % self.short_action_points),
+            "targets": "enemies",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 1,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+            "script-end": self.call("combats-admin.parse-script", script_end),
+        })
+        # long strike
+        script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Long strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage' % (self.long_default_damage, self.param_damage, self.param_defense, self.long_default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp)
+        script_end = 'log \'%s\' cls="attack" set source.p_ap = source.p_ap - %d if source.p_ap < 2 { turn "done" }' % ('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.long_strike_action, self.long_action_points)
+        self.actions.append({
+            "code": "long_strike",
+            "name": self.long_strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponent<br />\nDamage: <b>{damage}</b><br />\nAction points: <b>{action_points}</b>').format(damage=self.long_default_damage, action_points=self.long_action_points)),
+            "order": 10.0,
+            "available": self.call("script.parse-expression", 'member.p_ap >= %d' % self.long_action_points),
+            "targets": "enemies",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 1,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+            "script-end": self.call("combats-admin.parse-script", script_end),
+        })
+        # heal
+        script_end_target = 'set source.p_healed = source.p_healed + 1 set local.heal = %d syslog \'<b>[{combat.now}]</b> Heal: source=<b>{source.id}</b>, target=<b>{target.id}</b>, result_heal=<b>{local.heal}</b>\' heal target.%s local.heal maxval=target.%s' % (self.heal_value, self.param_hp, self.param_max_hp)
+        script_end = 'log \'%s\' cls="heal" set source.p_ap = source.p_ap - %d if source.p_ap < 2 { turn "done" }' % (('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.heal_action), self.heal_action_points)
+        self.actions.append({
+            "code": "heal",
+            "name": self.heal_name,
+            "description": self.call("script.parse-text", self._('Heal any allied member<br />\nValue: <b>{value}</b><br />\nAction points: <b>{action_points}</b>').format(value=self.heal_value, action_points=self.heal_action_points)),
+            "order": 20.0,
+            "available": self.call("script.parse-expression", 'member.p_ap >= %d' % self.heal_action_points),
+            "targets": "allies-myself",
+            "target_all": True,
+            "targets_min": 1,
+            "targets_max": 1,
+            "script-end-target": self.call("combats-admin.parse-script", script_end_target),
+            "script-end": self.call("combats-admin.parse-script", script_end),
+        })
+        self.script_append("turngot", 'if new_turn { set member.p_ap = %d }' % self.action_points)
+
+    def store(self, config):
+        CombatRulesDialog.store(self, config)
+        self.store_hp(config)
+        self.store_damage(config)
+
