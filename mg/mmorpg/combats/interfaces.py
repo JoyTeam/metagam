@@ -10,6 +10,8 @@ from mg.constructor.script_classes import ScriptTemplateObject
 import json
 import re
 
+show_entries_per_page = 100
+
 re_valid_uuid = re.compile(r'^[0-9a-f]{32}$')
 
 class Combats(mg.constructor.ConstructorModule):
@@ -150,12 +152,12 @@ class Combats(mg.constructor.ConstructorModule):
             self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.not_found")
 
-    def combat_log(self):
+    def show_combat_log(self, tp):
         req = self.req()
         uuid = req.args
         if not re_valid_uuid.match(uuid):
             self.call("web.not_found")
-        log = CombatLogViewer(self.app(), "user", uuid)
+        log = CombatLogViewer(self.app(), tp, uuid)
         if not log.valid:
             self.call("web.not_found")
         title = log.title
@@ -164,17 +166,57 @@ class Combats(mg.constructor.ConstructorModule):
             "combat_title": title,
             "entries": []
         }
-        for ent in log.entries(0, len(log)):
+        # show pager
+        pages = int((len(log) + show_entries_per_page - 1) / show_entries_per_page)
+        if pages < 1:
+            pages = 1
+        show_page = intz(req.param("page"))
+        if show_page < 0:
+            show_page = 0
+        if show_page >= pages:
+            show_page = pages - 1
+        if pages >= 2:
+            vars["to_page"] = self._("Pages")
+            rpages = []
+            for page in xrange(0, pages):
+                if tp == "debug":
+                    href = "/combat/debug/%s" % uuid
+                else:
+                    href = "/combat/%s" % uuid
+                if page > 0:
+                    href += "?page=%d" % page
+                rpages.append({
+                    "entry": {
+                        "text": page + 1,
+                        "a": { "href": href } if page != show_page else None,
+                    }
+                })
+            rpages[-1]["lst"] = True
+            vars["pages"] = rpages
+        # show log
+        for ent in log.entries(show_page * show_entries_per_page, (show_page + 1) * show_entries_per_page):
             vars["entries"].append(ent)
-        if req.has_access("combats.debug-logs"):
-            if CombatLogViewer(self.app(), "debug", uuid).valid:
+        # show right menu
+        if tp == "user":
+            if req.has_access("combats.debug-logs"):
+                if CombatLogViewer(self.app(), "debug", uuid).valid:
+                    vars["menu_right"] = [
+                        {
+                            "href": "/combat/debug/%s" % uuid,
+                            "html": self._("Debug combat log"),
+                            "lst": True
+                        }
+                    ]
+        else:
+            if CombatLogViewer(self.app(), "user", uuid).valid:
                 vars["menu_right"] = [
                     {
-                        "href": "/combat/debug/%s" % uuid,
-                        "html": self._("Debug combat log"),
+                        "href": "/combat/%s" % uuid,
+                        "html": self._("User combat log"),
                         "lst": True
                     }
                 ]
+        # show left menu
         menu_left = []
         menu_left.append({
             "html": self._("combat///Started: %s") % self.call("l10n.time_local", log.started)
@@ -187,41 +229,11 @@ class Combats(mg.constructor.ConstructorModule):
         vars["menu_left"] = menu_left
         self.call("combat.response_template", log.rules, "log.html", vars)
 
+    def combat_log(self):
+        self.show_combat_log("user")
+
     def combat_debug_log(self):
-        req = self.req()
-        uuid = req.args
-        if not re_valid_uuid.match(uuid):
-            self.call("web.not_found")
-        log = CombatLogViewer(self.app(), "debug", uuid)
-        if not log.valid:
-            self.call("web.not_found")
-        title = log.title
-        vars = {
-            "title": title,
-            "combat_title": title,
-            "entries": []
-        }
-        for ent in log.entries(0, len(log)):
-            vars["entries"].append(ent)
-        if CombatLogViewer(self.app(), "user", uuid).valid:
-            vars["menu_right"] = [
-                {
-                    "href": "/combat/%s" % uuid,
-                    "html": self._("User combat log"),
-                    "lst": True
-                }
-            ]
-        menu_left = []
-        menu_left.append({
-            "html": self._("combat///Started: %s") % self.call("l10n.time_local", log.started)
-        })
-        if log.stopped:
-            menu_left.append({
-                "html": self._("combat///Ended: %s") % self.call("l10n.time_local", log.stopped)
-            })
-        menu_left[-1]["lst"] = True
-        vars["menu_left"] = menu_left
-        self.call("combat.response_template", log.rules, "log.html", vars)
+        self.show_combat_log("debug")
 
     def character_public_info_menu(self, character, menu):
         lst = self.objlist(DBCombatCharacterLogList, query_index="character-created", query_equal=character.uuid, query_limit=1)
