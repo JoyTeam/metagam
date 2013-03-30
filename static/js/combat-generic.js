@@ -437,9 +437,8 @@ var GenericCombatMember = Ext.extend(CombatMember, {
      * Parse syntax tree provided and register dependencies between "member" parameters and
      * CSS classes of displayed expressions.
      */
-    registerAvatarParamDeps: function (cls, type, val) {
+    registerAvatarParamDeps: function (cls, type, val, deps) {
         var self = this;
-        var deps = parent.MMOScript.dependencies(val);
         for (var i = 0; i < deps.length; i++) {
             var dep = deps[i];
             if (dep.length >= 2 && dep[0] == 'member') {
@@ -447,7 +446,10 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                 if (!self.avatarDeps[param]) {
                     self.avatarDeps[param] = {};
                 }
-                self.avatarDeps[param][cls] = [type, val];
+                if (!self.avatarDeps[param][cls]) {
+                    self.avatarDeps[param][cls] = {};
+                }
+                self.avatarDeps[param][cls][type] = val;
             }
         }
     },
@@ -469,21 +471,13 @@ var GenericCombatMember = Ext.extend(CombatMember, {
         var val = parent.MMOScript.evaluate(param.visible, env);
         var id = ++self.avatarDepCnt;
         html += '<div class="c-m-' + self.id + '-ap-' + id + '" style="display: ' + (val ? 'block' : 'none') + '">';
-        self.registerAvatarParamDeps('ap-' + id, 'visibility', param.visible);
+        var deps = parent.MMOScript.dependencies(param.visible);
+        self.registerAvatarParamDeps('ap-' + id, 'visibility', param.visible, deps);
         if (param.type == 'tpl') {
-            for (var i = 0; i < param.tpl.length; i++) {
-                var ent = param.tpl[i];
-                if (typeof(ent) == 'string') {
-                    html += ent;
-                } else {
-                    var id = ++self.avatarDepCnt;
-                    html += '<span class="c-m-' + self.id + '-ap-' + id + '">';
-                    var val = parent.MMOScript.toString(parent.MMOScript.evaluate(ent, env));
-                    html += val;
-                    html += '</span>';
-                    self.registerAvatarParamDeps('ap-' + id, 'html', ent);
-                }
-            }
+            deps = parent.MMOScript.dependenciesText(param.tpl);
+            val = parent.MMOScript.evaluateText(param.tpl, env);
+            html += val;
+            self.registerAvatarParamDeps('ap-' + id, 'html', param.tpl, deps);
         }
         html += '</div>';
         return html;
@@ -531,18 +525,22 @@ var GenericCombatMember = Ext.extend(CombatMember, {
             for (var cls in affectedClasses) {
                 if (affectedClasses.hasOwnProperty(cls)) {
                     var ent = affectedClasses[cls];
-                    var type = ent[0];
-                    var script = ent[1];
-                    var val = parent.MMOScript.evaluate(script, env);
-                    if (type == 'visibility') {
-                        self.forEachElement(cls, function (el) {
-                            el.style.display = val ? 'block' : 'none';
-                        });
-                    } else if (type == 'html') {
-                        val = parent.MMOScript.toString(val);
-                        self.forEachElement(cls, function (el) {
-                            el.innerHTML = val;
-                        });
+                    for (var type in ent) {
+                        if (ent.hasOwnProperty(type)) {
+                            var script = ent[type];
+                            var val;
+                            if (type == 'visibility') {
+                                val = parent.MMOScript.evaluate(script, env);
+                                self.forEachElement(cls, function (el) {
+                                    el.style.display = val ? 'block' : 'none';
+                                });
+                            } else if (type == 'html') {
+                                val = parent.MMOScript.evaluateText(script, env);
+                                self.forEachElement(cls, function (el) {
+                                    el.innerHTML = val;
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -579,7 +577,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
                 viewer: self.combat.myself
             }
         };
-        var deps = parent.MMOScript.dependenciesStr(template);
+        var deps = parent.MMOScript.dependenciesText(template);
         for (var i = 0; i < deps.length; i++) {
             var dep = deps[i];
             if (dep.length >= 2 && dep[0] == 'member') {

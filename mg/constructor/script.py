@@ -3,6 +3,7 @@ from mg.constructor import *
 from mg.constructor.script_classes import *
 import re
 import traceback
+import math
 
 class HTMLFormatter(object):
     @staticmethod
@@ -441,6 +442,15 @@ class ScriptEngine(ConstructorModule):
                 if len(val) >= 3:
                     return self._evaluate(random.choice(val[2:]), env)
                 return None
+            elif fname == "floor":
+                if len(val) != 3:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
+                v = self._evaluate(val[2], env)
+                if type(v) is str or type(v) is unicode:
+                    v = floatz(v)
+                elif type(v) is not int and type(v) is not float:
+                    return 0
+                return nn(math.floor(v))
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":

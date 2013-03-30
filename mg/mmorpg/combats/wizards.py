@@ -161,7 +161,7 @@ class CombatRulesDialog(ConstructorModule):
         self.rules["time_format"] = "num"
         self.rules["generic_gobutton"] = 1
         self.rules["generic_gobutton_text"] = self._("button///Go")
-        self.rules["generic_member_list_template"] = self.call('script.parse-text', '{member.name}{member.may_turn ? " (%s)" : ""}' % self._("waiting for turn"))
+        self.rules["generic_member_list_template"] = self.call('script.parse-text', '<span class="combat-bar"><span class="combat-bar-indicator" style="background-color: green; width: {floor(member.%s * 100 / (member.%s or 1))}%%"></span></span> {member.name}{member.may_turn ? " (%s)" : ""}' % (self.param_hp, self.param_max_hp, self._("waiting for turn")))
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",
@@ -217,6 +217,17 @@ class CombatRulesDialog(ConstructorModule):
             self.param_max_hp = param_max_hp
 
     def generate_hp(self):
+        self.rules["aboveavatar"].append({
+            "id": uuid4().hex,
+            "type": "tpl",
+            "tpl": [
+                '<div class="combat-bar">\n<div class="combat-bar-indicator" style="background-color: green; width: ',
+                ['call', 'floor', ['/', ['*', ['.', ['glob', 'member'], self.param_hp], 100], ['or', ['.', ['glob', 'member'], self.param_max_hp], 1]]],
+                '%">\n</div>\n</div>'
+            ],
+            "visible": 1,
+            "order": 10.0,
+        })
         self.rules["aboveavatar"].append({
             "id": uuid4().hex,
             "type": "tpl",

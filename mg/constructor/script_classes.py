@@ -331,7 +331,7 @@ class Expr(Parsing.Nonterm):
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
 
-    exprFuncs = set(["min", "max", "uc", "lc", "selrand"])
+    exprFuncs = set(["min", "max", "uc", "lc", "selrand", "floor"])
 
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
@@ -389,7 +389,7 @@ class ScriptParser(Parsing.Glr, Module):
         "&": TokenBitAnd,
         "|": TokenBitOr,
     }
-    funcs = set(["min", "max", "uc", "lc", "selrand"])
+    funcs = set(["min", "max", "uc", "lc", "selrand", "floor"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")

@@ -195,6 +195,10 @@ MMOScript.evaluate = function (val, env) {
             }
             return undefined;
         }
+        if (fname == 'floor') {
+            var v = self.toNumber(self.evaluate(val[2], env));
+            return Math.floor(v);
+        }
         return undefined;
     }
     if (cmd == 'random') {
@@ -302,13 +306,13 @@ MMOScript.dependencies = function (val) {
  *      array of components. For example: member.p_hp => ["member", "p_hp"]
  *
  */
-MMOScript.dependenciesStr = function (val) {
+MMOScript.dependenciesText = function (val) {
     var self = this;
     if (!val.length) {
-        return {};
+        return [];
     }
-    if (typeof(val[0]) === 'string') {
-        return {};
+    if (typeof(val) === 'string') {
+        return [];
     }
     var res = {};
     for (var i = 0; i < val.length; i++) {

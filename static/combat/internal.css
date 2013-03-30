@@ -7,8 +7,8 @@ div.combat-member-image { position: relative; margin: 5px auto 5px auto }
 #combat-enemyavatar { overflow: hidden }
 #combat-log { padding: 5px 5px 0 5px }
 .x-border-layout-ct { background: none }
-.combat-item-deselected { cursor: pointer; text-align: center }
-.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer; text-align: center }
+.combat-item-deselected { cursor: pointer }
+.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
 .combat-item-deselected:hover { background-color: #606060; color: #ffffff }
 .combat-item-selected:hover { background-color: #505050; color: #ffffff }
 .combat-action-selector { overflow: hidden; white-space: nowrap }
@@ -22,3 +22,7 @@ div.combat-member-image { position: relative; margin: 5px auto 5px auto }
 .combat-target-enemy.combat-target-dead.combat-item-deselected { color: #600000 }
 .combat-target-enemy.combat-target-dead.combat-item-selected { background-color: #404040; color: #600000 }
 .combat-target-dead { text-decoration: line-through }
+span.combat-bar { width: 200px; display: inline-block; height: 6px }
+div.combat-bar { margin: 2px 0 2px 0 }
+.combat-bar { border: solid 1px #404040; text-align: left }
+.combat-bar-indicator { display: inline-block; height: 6px }
