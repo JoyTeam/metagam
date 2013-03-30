@@ -1791,6 +1791,7 @@ class Quests(ConstructorModule):
                                         if flags:
                                             creq.set_flags(flags)
                                         # members
+                                        any_char = False
                                         for member in options["members"]:
                                             mtype = member["type"]
                                             if mtype[0] == "virtual":
@@ -1803,6 +1804,8 @@ class Quests(ConstructorModule):
                                                 if makemember is None:
                                                     raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
                                                 cmember = makemember()
+                                                if cmember["object"][0] == "character":
+                                                    any_char = True
                                             else:
                                                 raise QuestError(self._("Unknown combat type %s") % mtype[0])
                                             rmember = cmember
@@ -1835,6 +1838,9 @@ class Quests(ConstructorModule):
                                                 for key, val in member["params"].iteritems():
                                                     params[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Combat member parameter '%s'") % key)
                                             creq.add_member(rmember)
+                                        # npc combat check
+                                        if not any_char:
+                                            raise QuestError(self._("Combats without character members are forbidden"))
                                         # launch combat
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
