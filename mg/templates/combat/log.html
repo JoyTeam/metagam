@@ -1,0 +1,13 @@
+[%if pages%]<div class="combat-pages">
+[%to_page%]: <span class="combat-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
+</div>[%end%]
+
+<div class="combat-log">
+[%foreach ent in entries%]
+<div class="combat-log-entry[%if ent.cls +%] [%+ ent.cls%][%end%]">[%ent.text%]</div>
+[%end%]
+</div>
+
+[%if pages%]<div class="combat-pages">
+[%to_page%]: <span class="combat-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
+</div>[%end%]

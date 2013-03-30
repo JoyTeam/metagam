@@ -446,10 +446,7 @@ class Modules(object):
             wasLocked = False
             if self.modules_lock.is_locked():
                 wasLocked = True
-                print "wait modules_lock load (app %s, locked by %s)" % (self.app().tag, self.modules_locked_by)
             with self.modules_lock:
-                if wasLocked:
-                    print "modules_lock load acquired (app %s)" % self.app().tag
                 self.modules_locked_by = traceback.format_stack()
                 t.modules_locked = True
                 res = self._load(modules, silent, auto_loaded)

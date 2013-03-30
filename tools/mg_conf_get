@@ -1,38 +1,25 @@
 #!/usr/bin/python2.6
 # -*- coding: utf-8 -*-
 
-from mg import *
-from concurrence import dispatch, quit
-from mg.constructor.common import ApplicationFactory
+import mg
 import os
-import logging
-import sys
 import json
+import sys
+from mg.constructor.processes import ConstructorInstance
 
 def main():
-    try:
-        if len(sys.argv) != 3:
-            print "usage: mg_conf_get <app> <config.key>"
-            os._exit(1)
-        inst = Instance("conf_get")
-        inst.download_config()
-        int_app = WebApplication(inst, "int", "int")
-        int_app.modules.load(["mg.core.worker.Worker", "mg.constructor.admin.Constructor"])
-        inst.int_app = int_app
-        app_tag = sys.argv[1]
-        appfactory = ApplicationFactory(inst)
-        appfactory.add(int_app)
-        app = appfactory.get_by_tag(app_tag)
-        val = app.config.get(sys.argv[2])
-        print json.dumps(val)
-        sys.stdout.flush()
-        os._exit(0)
-    except RuntimeError as e:
-        logging.error(e)
+    inst = ConstructorInstance("conf_get", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 2:
+        print "usage: mg_conf_get <app> <config.key>"
         os._exit(1)
-    except Exception as e:
-        logging.exception(e)
-        os._exit(1)
+    app_tag = inst.cmdline_args[0]
+    key = inst.cmdline_args[1]
+    # perform actions
+    app = inst.appfactory.get_by_tag(app_tag)
+    val = app.config.get(key)
+    print json.dumps(val, indent=4, sort_keys=True)
+    sys.stdout.flush()
+    os._exit(0)
 
-dispatch(main)
-
+mg.dispatch(main)

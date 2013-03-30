@@ -4,6 +4,7 @@ from mg.constructor.script_classes import *
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_param = re.compile(r'^p_([a-z_][a-z0-9_]*)$', re.IGNORECASE)
 re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
+re_comma = re.compile(r'\s*,\s*')
 
 # To add a new event, condition or action:
 #   1. create TokenXXX class
@@ -141,8 +142,35 @@ class TokenDefault(Parsing.Token):
 class TokenPaidService(Parsing.Token):
     "%token paidservice"
 
+class TokenCombat(Parsing.Token):
+    "%token combat"
+
+class TokenVirtual(Parsing.Token):
+    "%token virtual"
+
+class TokenStart(Parsing.Token):
+    "%token start"
+
+class TokenVictory(Parsing.Token):
+    "%token victory"
+
+class TokenDefeat(Parsing.Token):
+    "%token defeat"
+
+class TokenDraw(Parsing.Token):
+    "%token draw"
+
+class TokenLog(Parsing.Token):
+    "%token log"
+
+class TokenSyslog(Parsing.Token):
+    "%token syslog"
+
+class TokenEquipBreak(Parsing.Token):
+    "%token equipbreak"
+
 class QuestAttrKey(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
         "%reduce AttrKey"
         self.val = attrkey.val
@@ -158,6 +186,9 @@ class QuestAttrKey(Parsing.Nonterm):
     def reduceText(self, event):
         "%reduce text"
         self.val = "text"
+
+class PQuestActionOp(Parsing.Precedence):
+    "%left pQuestActionOp >pAttrKey"
 
 class Attrs(Parsing.Nonterm):
     "%nonterm"
@@ -303,11 +334,51 @@ class EventType(Parsing.Nonterm):
         "%reduce paidservice"
         self.val = [["paidservice"], None]
 
+    def reduceCombat(self, ev, events, attrs):
+        "%reduce combat CombatEvents Attrs"
+        get_str_attr(ev, "combat", attrs, "type")
+        flags = get_str_attr(ev, "combat", attrs, "flags")
+        validate_attrs(ev, "combat", attrs, ["type", "flags"])
+        if flags is not None:
+            flags = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
+        else:
+            flags = None
+        attrs = attrs.val.copy()
+        attrs["events"] = events.val
+        attrs["flags"] = flags
+        self.val = [["oncombat"], attrs]
+
+class CombatEvents(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceStart(self, events, cmd):
+        "%reduce CombatEvents start"
+        self.val = events.val.copy()
+        self.val["start"] = True
+
+    def reduceVictory(self, events, cmd):
+        "%reduce CombatEvents victory"
+        self.val = events.val.copy()
+        self.val["victory"] = True
+
+    def reduceDefeat(self, events, cmd):
+        "%reduce CombatEvents defeat"
+        self.val = events.val.copy()
+        self.val["defeat"] = True
+
+    def reduceDraw(self, events, cmd):
+        "%reduce CombatEvents draw"
+        self.val = events.val.copy()
+        self.val["draw"] = True
+
 # ============================
 #          ACTIONS
 # ============================
 class QuestAction(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pQuestActionOp]"
     def reduceMessage(self, msg, expr):
         "%reduce message scalar"
         self.val = ["message", msg.script_parser.parse_text(expr.val, msg.script_parser._("action///Quest message"))]
@@ -479,18 +550,20 @@ class QuestAction(Parsing.Nonterm):
         "%reduce teleport Expr"
         self.val = ["teleport", loc.val]
 
-    def reduceChat(self, cmd, attrs):
-        "%reduce chat ExprAttrs"
-        text = get_str_attr(cmd, "chat", attrs, "text", require=True)
-        text = cmd.script_parser.parse_text(text, cmd.script_parser._("Chat message"))
+    def reduceChat(self, cmd, text, attrs):
+        "%reduce chat scalar ExprAttrs"
+        text = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Chat message"))
         channel = get_attr(cmd, "chat", attrs, "channel")
         public = get_attr(cmd, "chat", attrs, "public")
-        validate_attrs(cmd, "chat", attrs, ["text", "channel", "public"])
+        cls = get_attr(cmd, "chat", attrs, "cls")
+        validate_attrs(cmd, "chat", attrs, ["text", "channel", "public", "cls"])
         args = {}
         if channel is not None:
             args["channel"] = channel
         if public is not None:
             args["public"] = public
+        if cls is not None:
+            args["cls"] = cls
         self.val = ["chat", text, args]
 
     def reduceJavaScript(self, cmd, javascript):
@@ -498,6 +571,37 @@ class QuestAction(Parsing.Nonterm):
         if type(javascript.val) != str and type(javascript.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Location id must be a string"))
         self.val = ["javascript", javascript.val]
+
+    def reduceCombat(self, cmd, attrs, curlyleft, content, curlyright):
+        "%reduce combat ExprAttrs curlyleft CombatContent curlyright"
+        options = content.val.copy()
+        rules = get_str_attr(cmd, "combat", attrs, "rules")
+        title = get_str_attr(cmd, "combat", attrs, "ctitle")
+        flags = get_str_attr(cmd, "combat", attrs, "flags")
+        if title is not None:
+            title = cmd.script_parser.parse_text(title, cmd.script_parser._("Combat title"))
+        validate_attrs(cmd, "combat", attrs, ["rules", "flags", "ctitle"])
+        if rules is not None and not re_valid_identifier.match(rules):
+            raise Parsing.SyntaxError(cmd.script_parser._("Combat rules identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        if rules is not None:
+            options["rules"] = rules
+        if title is not None:
+            options["title"] = title
+        if flags is not None:
+            options["flags"] = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
+        self.val = ["combat", options]
+
+    def reduceCombatLog(self, cmb, cmd, text, expr):
+        "%reduce combat log scalar ExprAttrs"
+        self.val = ["combatlog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
+
+    def reduceCombatSyslog(self, cmb, cmd, text, expr):
+        "%reduce combat syslog scalar ExprAttrs"
+        self.val = ["combatsyslog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
+
+    def reduceEquipBreak(self, cmd, cond):
+        "%reduce equipbreak Expr"
+        self.val = ["equipbreak", cond.val]
 
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
@@ -509,6 +613,68 @@ class RandomContent(Parsing.Nonterm):
         "%reduce RandomContent weight Expr colon QuestActions"
         self.val = [ent for ent in content.val]
         self.val.append([weight.val, actions.val])
+
+class CombatContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {
+            "members": []
+        }
+
+    def reduceMember(self, content, cmd, mtype, attrs):
+        "%reduce CombatContent member CombatMemberType ExprAttrs"
+        # validating attributes
+        team = get_attr(cmd, "member", attrs, "team", require=True)
+        control = get_attr(cmd, "member", attrs, "control")
+        name = get_str_attr(cmd, "member", attrs, "name")
+        sex = get_attr(cmd, "member", attrs, "sex")
+        ai = get_attr(cmd, "member", attrs, "ai")
+        image = get_attr(cmd, "member", attrs, "image")
+        params = {}
+        valid_params = ["team", "name", "sex", "control", "ai", "image"]
+        for key, val in attrs.val.iteritems():
+            if re_param.match(key):
+                params[key] = val
+                valid_params.append(key)
+        validate_attrs(cmd, "member", attrs, valid_params)
+        # reducing
+        self.val = content.val.copy()
+        member = {
+            "type": mtype.val,
+            "team": team,
+        }
+        if name is not None:
+            member["name"] = cmd.script_parser.parse_text(name, cmd.script_parser._("Combat member name"))
+        if control is not None:
+            member["control"] = control
+        if sex is not None:
+            member["sex"] = sex
+        if ai is not None:
+            member["ai"] = ai
+        if image is not None:
+            member["image"] = image
+        if params:
+            member["params"] = params
+        self.val["members"] = self.val["members"] + [member]
+
+    def reduceTitle(self, content, cmd, title):
+        "%reduce CombatContent title scalar"
+        if type(title) != str and type(title) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Combat title must be a string"))
+        title = cmd.script_parser.parse_text(title, cmd.script_parser._("Combat title"))
+        self.val = content.val.copy()
+        self.val["title"] = title
+
+class CombatMemberType(Parsing.Nonterm):
+    "%nonterm"
+    def reduceExpression(self, expr):
+        "%reduce Expr"
+        self.val = ["expr", expr.val]
+
+    def reduceVirtual(self, cmd):
+        "%reduce virtual"
+        self.val = ["virtual"]
 
 class DialogContent(Parsing.Nonterm):
     "%nonterm"
@@ -718,10 +884,19 @@ class QuestScriptParser(ScriptParser):
     syms["input"] = TokenInput
     syms["default"] = TokenDefault
     syms["paidservice"] = TokenPaidService
+    syms["combat"] = TokenCombat
+    syms["virtual"] = TokenVirtual
+    syms["start"] = TokenStart
+    syms["victory"] = TokenVictory
+    syms["defeat"] = TokenDefeat
+    syms["draw"] = TokenDraw
+    syms["log"] = TokenLog
+    syms["syslog"] = TokenSyslog
+    syms["equipbreak"] = TokenEquipBreak
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
-        Parsing.Lr.__init__(self, spec)
+        Parsing.Glr.__init__(self, spec)
         self.general_spec = general_spec
 
     def parse_text(self, text, context):

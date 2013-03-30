@@ -1,6 +1,9 @@
 from mg.constructor import *
 from mg.mmorpg.quest_parser import *
 from mg.core.money_classes import MoneyError
+from mg.mmorpg.combats.daemon import CombatRequest
+from mg.mmorpg.combats.core import CombatRunError, CombatMemberBusyError
+from mg.constructor.script_classes import ScriptMemoryObject
 from uuid import uuid4
 import re
 import random
@@ -16,6 +19,7 @@ re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
 re_mod_lock = re.compile(r'^q_(.+)_locked$')
 re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
 re_remove_lock = re.compile(r'^user/([a-f0-9]{32})/(.+)$')
+re_arg_param = re.compile(r'^arg_(.+)$')
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -226,7 +230,8 @@ def parse_quest_tp(qid, tp):
             return "expired-timer-%s-%s" % (qid, tp[2])
     elif tp[0] == "button":
         return "button-%s-%s" % (qid, tp[1])
-    return "-".join(tp)
+    else:
+        return "-".join(tp)
 
 class QuestsAdmin(ConstructorModule):
     def register(self):
@@ -252,6 +257,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-interface.button-action", self.interface_button_action)
         self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
@@ -696,11 +702,30 @@ class QuestsAdmin(ConstructorModule):
                 return self.quest_admin_unparse_script(val[1].get("hdls"))
             elif val[0] == "hdl":
                 result = "  " * indent + self.quest_admin_unparse_script(val[1]["type"])
+                evtype = val[1]["type"][0]
                 attrs = val[1].get("attrs")
                 if attrs:
+                    attrs = attrs.copy()
+                    if evtype == "oncombat":
+                        events = attrs["events"]
+                        del attrs["events"]
+                        if events.get("start"):
+                            result += " start"
+                        if events.get("victory"):
+                            result += " victory"
+                        if events.get("defeat"):
+                            result += " defeat"
+                        if events.get("draw"):
+                            result += " draw"
+                        if "flags" in attrs:
+                            if attrs.get("flags"):
+                                attrs["flags"] = u','.join(attrs["flags"])
+                            else:
+                                del attrs["flags"]
                     attrs = [(k, v) for k, v in attrs.iteritems()]
                     attrs.sort(cmp=lambda x, y: cmp(x[0], y[0]))
-                    result += u"".join([" %s=%s" % (k, self.call("script.unparse-expression", v)) for k, v in attrs])
+                    for k, v in attrs:
+                        result += u" %s=%s" % (k, self.call("script.unparse-expression", v))
                 actions = val[1].get("act")
                 if actions:
                     result += " {\n" + self.quest_admin_unparse_script(actions, indent + 1) + "  " * indent + "}\n\n"
@@ -732,6 +757,8 @@ class QuestsAdmin(ConstructorModule):
                 return "class selected"
             elif val[0] == "paidservice":
                 return "paidservice"
+            elif val[0] == "oncombat":
+                return "combat"
             elif val[0] == "shop-bought":
                 return "shop bought"
             elif val[0] == "shop-sold":
@@ -868,18 +895,72 @@ class QuestsAdmin(ConstructorModule):
                 result += "  " * indent + "}\n"
                 return result
             elif val[0] == "chat":
-                result = "  " * indent + "chat text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                result = "  " * indent + "chat %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
                 args = val[2]
                 if "channel" in args:
                     result += " channel=%s" % self.call("script.unparse-expression", args["channel"])
                 if "public" in args:
                     result += " public=%s" % self.call("script.unparse-expression", args["public"])
+                if "cls" in args:
+                    result += " cls=%s" % self.call("script.unparse-expression", args["cls"])
                 result += "\n"
                 return result
+            elif val[0] == "combatlog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat log %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
+            elif val[0] == "combatsyslog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat syslog %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
             elif val[0] == "javascript":
                 return "  " * indent + "javascript %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleport":
                 return "  " * indent + "teleport %s\n" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "equipbreak":
+                return "  " * indent + "equipbreak %s\n" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "combat":
+                options = val[1]
+                result = "  " * indent + "combat"
+                if "rules" in options:
+                    result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
+                if "title" in options:
+                    result += " ctitle=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "flags" in options:
+                    result += " flags=%s" % self.call("script.unparse-expression", u','.join(options["flags"]))
+                result += " {\n"
+                for member in options.get("members", []):
+                    mtype = member["type"]
+                    if mtype[0] == "virtual":
+                        mtype = "virtual"
+                    elif mtype[0] == "expr":
+                        mtype = self.call("script.unparse-expression", mtype[1])
+                    else:
+                        mtype = "??? (%s)" % mtype[0]
+                    result += "  " * indent + "  member %s" % mtype
+                    if "team" in member:
+                        result += " team=%s" % self.call("script.unparse-expression", member["team"])
+                    if "control" in member:
+                        result += " control=%s" % self.call("script.unparse-expression", member["control"])
+                    if "name" in member:
+                        result += " name=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", member["name"]))
+                    if "sex" in member:
+                        result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
+                    if "ai" in member:
+                        result += " ai=%s" % self.call("script.unparse-expression", member["ai"])
+                    if "image" in member:
+                        result += " image=%s" % self.call("script.unparse-expression", member["image"])
+                    if "params" in member:
+                        params = member["params"]
+                        for key in sorted(params.keys()):
+                            result += " %s=%s" % (key, self.call("script.unparse-expression", params[key]))
+                    result += "\n"
+                result += "  " * indent + "}\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -1161,7 +1242,7 @@ class Quests(ConstructorModule):
             try:
                 parser.eoi()
             except Parsing.SyntaxError as e:
-                raise ScriptParserError(self._("Expression unexpectedly ended"), e)
+                raise ScriptParserError(self._("Script unexpectedly ended"), e)
         except ScriptParserResult as e:
             return e.val
 
@@ -1190,6 +1271,8 @@ class Quests(ConstructorModule):
                 self.call("debug-channel.character", char, event_str, cls="quest-first-event", indent=indent)
             else:
                 self.call("debug-channel.character", char, event_str, cls="quest-event", indent=indent)
+            if not "local" in kwargs:
+                kwargs["local"] = ScriptMemoryObject()
             # loading list of handlers
             quests_states = self.conf("qevent-%s.handlers" % event)
             if not quests_states:
@@ -1253,6 +1336,18 @@ class Quests(ConstructorModule):
                                 continue
                             if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
                                 continue
+                        elif event == "oncombat":
+                            if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
+                                continue
+                            if attrs and attrs.get("flags"):
+                                match = False
+                                cflags = kwargs["combat"].flags
+                                for flag in attrs.get("flags"):
+                                    if flag in cflags:
+                                        match = True
+                                        break
+                                if not match:
+                                    continue
                         act = handler.get("act")
                         if not act:
                             continue
@@ -1581,6 +1676,32 @@ class Quests(ConstructorModule):
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
+                                    elif cmd_code == "combatlog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat log' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        kwargs["combat"].textlog(args)
+                                    elif cmd_code == "combatsyslog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of system log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        kwargs["combat"].syslog(args)
                                     elif cmd_code == "javascript":
                                         script = cmd[1]
                                         if debug:
@@ -1597,15 +1718,19 @@ class Quests(ConstructorModule):
                                             channel = self.call("script.evaluate-expression", args["channel"], globs=kwargs, description=eval_description)
                                             channel = utf2str(unicode(channel))
                                         else:
-                                            channel = "loc"
+                                            channel = "wld"
+                                        if "cls" in args:
+                                            cls = self.call("script.evaluate-expression", args["cls"], globs=kwargs, description=eval_description)
+                                        else:
+                                            cls = "quest"
                                         if public:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
                                     elif cmd_code == "teleport":
                                         locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         if type(locid) != str and type(locid) != unicode:
@@ -1622,6 +1747,119 @@ class Quests(ConstructorModule):
                                                 tasklet.quest_teleported.add(char.uuid)
                                         else:
                                             raise QuestError(self._("Missing location %s") % locid)
+                                    elif cmd_code == "equipbreak":
+                                        globs = kwargs.copy()
+                                        changed = False
+                                        for slot_id, item in char.equip.equipped_slots():
+                                            globs["slot"] = slot_id
+                                            globs["item"] = item
+                                            fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                            if fractions > 0:
+                                                spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
+                                                if not spent and debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
+                                                if spent and destroyed:
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
+                                                    if kwargs.get("combat") and kwargs.get("member"):
+                                                        kwargs["combat"].textlog({
+                                                            "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
+                                                            "cls": "combat-log-equipbreak",
+                                                        })
+                                                changed = True
+                                        if changed:
+                                            char.equip.validate()
+                                            char.inventory.store()
+                                    elif cmd_code == "combat":
+                                        options = cmd[1]
+                                        # prepare combat request
+                                        creq = CombatRequest(self.app())
+                                        # combat system
+                                        rules = options.get("rules")
+                                        if rules is None:
+                                            raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
+                                        creq.set_rules(rules)
+                                        # combat title
+                                        title = options.get("title")
+                                        if title:
+                                            title = self.call("script.evaluate-text", title, globs=kwargs, description=lambda: self._("Combat title"))
+                                            creq.set_title(title)
+                                        # combat flags
+                                        flags = options.get("flags")
+                                        if flags:
+                                            creq.set_flags(flags)
+                                        # members
+                                        any_char = False
+                                        for member in options["members"]:
+                                            mtype = member["type"]
+                                            if mtype[0] == "virtual":
+                                                cmember = {
+                                                    "object": ["virtual"]
+                                                }
+                                            elif mtype[0] == "expr":
+                                                cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
+                                                makemember = getattr(cmemberobj, "combat_member", None)
+                                                if makemember is None:
+                                                    raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
+                                                cmember = makemember()
+                                                if cmember["object"][0] == "character":
+                                                    any_char = True
+                                            else:
+                                                raise QuestError(self._("Unknown combat type %s") % mtype[0])
+                                            rmember = cmember
+                                            team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                            if type(team) != int:
+                                                raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
+                                            else:
+                                                team = int(team)
+                                                if team < 1 or team > 1000:
+                                                    raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
+                                                else:
+                                                    rmember["team"] = team
+                                            if "control" in member:
+                                                rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
+                                            elif cmember["object"][0] == "character":
+                                                rmember["control"] = "web"
+                                            else:
+                                                rmember["control"] = "ai"
+                                            if "name" in member:
+                                                rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
+                                            if "sex" in member:
+                                                rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                            if "ai" in member:
+                                                rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
+                                            if "image" in member:
+                                                rmember["image"] = self.call("script.evaluate-expression", member["image"], globs=kwargs, description=lambda: self._("Combat member image"))
+                                            if "params" in member:
+                                                params = {}
+                                                rmember["params"] = params
+                                                for key, val in member["params"].iteritems():
+                                                    params[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Combat member parameter '%s'") % key)
+                                            creq.add_member(rmember)
+                                        # npc combat check
+                                        if not any_char:
+                                            raise QuestError(self._("Combats without character members are forbidden"))
+                                        # launch combat
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
+                                        try:
+                                            creq.run()
+                                        except CombatMemberBusyError as e:
+                                            self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                            char.error(e.val)
+                                            raise AbortHandler()
+                                        except CombatRunError as e:
+                                            raise QuestError(e.val)
+                                        else:
+                                            for member in creq.members:
+                                                if member["object"][0] == "character":
+                                                    char_uuid = member["object"][1]
+                                                    try:
+                                                        tasklet.quest_combat_started[char_uuid] = creq.uuid
+                                                    except AttributeError:
+                                                        tasklet.quest_combat_started = {char_uuid: creq.uuid}
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1672,6 +1910,18 @@ class Quests(ConstructorModule):
                 req = self.req()
             except AttributeError:
                 req = None
+            quest_combat_started = getattr(tasklet, "quest_combat_started", None)
+            if quest_combat_started:
+                for char_uuid, combat_id in quest_combat_started.iteritems():
+                    uri = "/combat/interface/%s" % combat_id
+                    if req and req.user() == char_uuid:
+                        try:
+                            req.quest_redirects[char_uuid] = uri
+                        except AttributeError:
+                            req.quest_redirects = {char_uuid: uri}
+                    else:
+                        char = self.character(char_uuid)
+                        char.main_open(uri)
             quest_teleported = getattr(tasklet, "quest_teleported", None)
             if quest_teleported:
                 for char_uuid in quest_teleported:
@@ -1681,6 +1931,7 @@ class Quests(ConstructorModule):
                         except AttributeError:
                             req.quest_redirects = {char.uuid: "/location"}
                     else:
+                        char = self.character(char_uuid)
                         char.main_open("/location")
                 del tasklet.quest_teleported
             if char.quests.dialogs:
@@ -1691,7 +1942,6 @@ class Quests(ConstructorModule):
                         req.quest_redirects = {char.uuid: "/quest/dialog"}
                 else:
                     char.main_open("/quest/dialog")
-                
                 
     def get_char(self, uuid):
         return CharQuests(self.app(), uuid)
@@ -1749,6 +1999,9 @@ class Quests(ConstructorModule):
     def check_dialogs(self):
         req = self.req()
         character = self.character(req.user())
+        busy = character.busy
+        if busy and busy.get("show_uri"):
+            self.call("web.redirect", busy.get("show_uri"))
         if character.quests.dialogs:
             self.call("web.redirect", "/quest/dialog")
 
@@ -1757,10 +2010,10 @@ class Quests(ConstructorModule):
         redirs = getattr(req, "quest_redirects", None)
         if redirs:
             user = req.user()
-            for char_uuid, uri in redirs.iteritems():
-                if user == char_uuid:
-                    del redirs[char_uuid]
-                    self.call("web.redirect", uri)
+            uri = redirs.get(user)
+            if uri:
+                del redirs[user]
+                self.call("web.redirect", uri)
 
     def dialog(self):
         req = self.req()
@@ -1958,7 +2211,24 @@ class Quests(ConstructorModule):
             elif not re_valid_identifier.match(ev):
                 character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
             else:
-                self.qevent("clicked-%s" % ev, char=character)
+                args = {}
+                globs = {}
+                for k, v in req.param_dict().iteritems():
+                    if k == "targetchar":
+                        targetchar = self.character(v[0])
+                        if targetchar.valid:
+                            globs["targetchar"] = targetchar
+                        else:
+                            globs["targetchar"] = None
+                    elif re_arg_param.match(k):
+                        args[k] = v
+                self.qevent("clicked-%s" % ev, char=character, args=args, **globs)
+                redirs = getattr(req, "quest_redirects", None)
+                if redirs:
+                    uri = redirs.get(character.uuid)
+                    if uri:
+                        del redirs[character.uuid]
+                        self.call("web.response_json", {"ok": True, "redirect": uri})
                 self.call("web.response_json", {"ok": True})
         self.call("web.response_json", {"error": True})
 

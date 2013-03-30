@@ -94,7 +94,6 @@ class ConstructorApplicationFactory(ApplicationFactory):
                 with app.lock(["ReconfigureHooks"]):
                     project.load()
                     if project.get("app_version") != ver:
-                        print "Reconfiguring hooks of application %s due to application.version change to %s" % (app.tag, ver)
                         app.store_config_hooks(notify=False)
                         project.set("app_version", ver)
                         project.store()
@@ -120,6 +119,10 @@ class ConstructorApplicationFactory(ApplicationFactory):
 
 class ConstructorWebService(ApplicationWebService):
     "This is a WebService that accesses application depending on HTTP host"
+    def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.constructor.processes.ConstructorWebService"):
+        ApplicationWebService.__init__(self, inst, service_id, service_type, hook_prefix, fqn)
+        self.request_locks = True
+
     def req_handler(self, request, group, hook, args):
         host = request.host()
         app = self.inst.appfactory.get_by_domain(host)

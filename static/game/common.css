@@ -42,3 +42,27 @@
 
 /* CHARACTER IMAGES */
 .charimage-background { background: #000000 }
+
+/* COMBATS */
+.combat-log-important { font-weight: bold; font-size: 18px }
+.combat-log-joined { color: green }
+.combat-log-turn { color: #808080 }
+.combat-log-member { font-weight: bold }
+.combat-log-attack { color: #800000 }
+.combat-log-heal { color: #008000 }
+.combat-log-damage { color: #c00000 }
+.combat-log-hp { color: green; font-weight: bold }
+.combat-log-dead { color: #000000; font-weight: bold }
+.combat-log-itemlist { margin: 0; padding: 0 0 0 2em }
+.combat-log-item { list-style: outside disc; padding: 0; margin: 0 }
+.combat-log-itemname { font-weight: bold }
+.combat-log-itemquantity { font-weight: bold; color: green }
+.combat-log-item { font-weight: bold; color: #000040 }
+.combat-log-time-header { font-size: 16px; font-weight: bold }
+.combat-log-xp { color: #c00000 }
+.combat-log-xp-value { font-weight: bold }
+.combat-syslog-time { background-color: #404040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+.combat-syslog-action-begin, .combat-syslog-action-end { background-color: #808080; padding: 2px; color: #ffffff; margin: 2px 0 2px 0 }
+.combat-syslog-stage { background-color: #404080; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+.combat-syslog-end { background-color: #408040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+.combat-syslog-watchdog { background-color: #804040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }

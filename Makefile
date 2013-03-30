@@ -63,7 +63,7 @@ debug:
 	@echo "JS Files: $(foreach module,$(js_modules),$($(module)_js_files))"
 
 clean:
-	find \( -name '*.pyc' -or -name '*~' \) -exec rm {} \;
+	find \( -name '*.pyc' -or -name '*~' -or -name '*.orig' -or -name '*.rej' \) -exec rm {} \;
 
 deploy: translations
 	@echo Preparing package...

@@ -1,32 +1,41 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" id="page-external-html">
-	<head>
-		<title>[%title%]</title>
-		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-		<script type="text/javascript">var ver='[%ver%]'; document.domain = '[%base_domain%]';</script>
-		[%head%]
-		[%include game/extjs.html%]
-		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
-		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/interface.css" />
-		[%if design_root%]
-		<link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
-		<link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
-		[%else%]
-		<link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
-		[%end%]
-		<script type="text/javascript" src="/st/[%ver%]/js/depend.js"></script>
-		[%head%]
-	</head>
-	<body id="page-external-body">
-		<table id="page-external-1"><tr><td id="page-external-2">
-			<table id="page-external-3"><tr><td id="page-external-4" class="box-0">
-				<div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8">
-					<div class="box-9">
-						[%content%]
-					</div>
-				</div></div></div></div></div></div></div></div>
-			</td></tr></table>
-		</td></tr></table>
-	</body>
+    <head>
+        <title>[%title%]</title>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <script type="text/javascript">var ver='[%ver%]'; document.domain = '[%base_domain%]';</script>
+        [%head%]
+        [%include game/extjs.html%]
+        <link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/common.css" />
+        <link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/interface.css" />
+        [%if design_root%]
+        <link rel="stylesheet" type="text/css" href="[%design_root%]/game.css" />
+        <link rel="stylesheet" type="text/css" href="[%design_root%]/interface.css" />
+        [%else%]
+        <link rel="stylesheet" type="text/css" href="/st/[%ver%]/game/default-interface/main.css" />
+        [%end%]
+        <script type="text/javascript" src="/st/[%ver%]/js/depend.js"></script>
+        [%head%]
+    </head>
+    <body id="page-external-body">
+        <table id="page-external-1"><tr><td id="page-external-2">
+            <table id="page-external-3"><tr><td id="page-external-4" class="box-0">
+                <div class="box-1"><div class="box-2"><div class="box-3"><div class="box-4"><div class="box-5"><div class="box-6"><div class="box-7"><div class="box-8">
+                    <div class="box-9">
+                        [%if menu%]
+                        <div id="external-menu">
+                            [%for ent in menu%]
+                                [%if ent.href%]<a href="[%ent.href%]">[%ent.html%]</a>
+                                [%else%][%ent.html%][%end%]
+                                [%unless ent.lst +%] / [%+ end%]
+                            [%end%]
+                        </div>
+                        [%end%]
+                        [%content%]
+                    </div>
+                </div></div></div></div></div></div></div></div>
+            </td></tr></table>
+        </td></tr></table>
+    </body>
 </html>

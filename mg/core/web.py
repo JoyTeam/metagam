@@ -20,6 +20,7 @@ import Cookie
 import time
 import os
 import random
+import sys
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_service_call = re.compile(r'^service/call/([a-z0-9\-\.]+)/(.+)$')
@@ -384,7 +385,7 @@ class WebService(Loggable):
             return request.send_response("500 Internal Server Error", request.headers, "<html><body><h1>500 Internal Server Error</h1>%s</body></html>" % htmlescape(e))
         except Exception as e:
             try:
-                self.exception(utf2str(e))
+                self.exception(e)
             except Exception as e2:
                 print "Unhandled exception during logging: %s" % e2
                 print traceback.format_exc()
@@ -454,6 +455,7 @@ class ApplicationWebService(WebService):
     def __init__(self, inst, service_id, service_type, hook_prefix, fqn="mg.core.web.ApplicationWebService"):
         WebService.__init__(self, inst, service_id, service_type, fqn)
         self.hook_prefix = hook_prefix
+        self.request_locks = False
 
     def deliver_request(self, app, request, group, hook, args):
         "Deliver HTTP request with parsed URI: /<group>/<hook>/<args> to the given application"
@@ -467,7 +469,7 @@ class ApplicationWebService(WebService):
                 res = lambda: app.hooks.call("%s-%s.%s" % (self.hook_prefix, group, hook), check_priv=True)
                 # POST requests with authenticated user are automatically locked
                 # to avoid multiple concurrent requests from a single user
-                if request.environ.get("REQUEST_METHOD") == "POST" and self.hook_prefix != "int":
+                if request.environ.get("REQUEST_METHOD") == "POST" and self.request_locks:
                     user = request.user()
                     if user:
                         with app.lock(["UserRequest.%s.%s" % (app.tag, user)]):
@@ -494,18 +496,19 @@ class ApplicationWebService(WebService):
         except SystemExit:
             os._exit(0)
         except Exception as e:
-            app.hooks.call("exception.report", e)
+            e_type, e_value, e_traceback = sys.exc_info()
+            Tasklet.new(app.call)("exception.report", e, e_type, e_value, e_traceback)
             raise
 
 class SingleApplicationWebService(ApplicationWebService):
     "WebService passing all requests to the single application"
     def __init__(self, app, service_id, service_type, hook_prefix, fqn="mg.core.web.SingleApplicationWebService"):
         ApplicationWebService.__init__(self, app.inst, service_id, service_type, hook_prefix, fqn)
-        self.app = app
+        self.service_app = app
 
     def req_handler(self, request, group, hook, args):
         "Process HTTP request with parsed URI"
-        return self.deliver_request(self.app, request, group, hook, args)
+        return self.deliver_request(self.service_app, request, group, hook, args)
 
 class Web(Module):
     def __init__(self, *args, **kwargs):
@@ -692,7 +695,7 @@ class Web(Module):
             if vars.get("head") is None:
                 vars["head"] = head
             else:
-                vars["head"] = vars["head"] + head
+                vars["head"] = head + vars["head"]
         return content
 
     def web_cache(self):
