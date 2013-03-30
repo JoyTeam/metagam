@@ -438,13 +438,14 @@ class AttackBlock(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.team != member.team action member "strike" a_attack_zone=selrand(1, 2, 4, 8) a_defend_zone=selrand(3, 6, 12)'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member "strike" a_attack_zone=selrand(1, 2, 4, 8) a_defend_zone=selrand(3, 6, 12)'),
         })
         script_end_target = 'if a_pair and a_pair.a_defend_zone & a_attack_zone { log \'%s\' cls="attack" } else { set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack" }' % (('{class="combat-log-member"}{source.name}{/class} %s' % self.strike_failed_action), self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.strike_action, self.param_hp, self.param_max_hp)))
         script_enqueued = 'syslog \'<b>[{combat.now}]</b> Enqueued: source=<b>{source.id}</b> ({source.name}), targets=<b>{source.targets}</b>, attack=<b>{a_attack_zone}</b>, defend=<b>{a_defend_zone}</b>\''
         self.actions.append({
             "code": "strike",
             "name": self.strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponent<br />\nDamage: <b>{damage}</b>').format(damage=self.default_damage)),
             "order": 0.0,
             "available": 1,
             "targets": "enemies",
@@ -483,6 +484,7 @@ class AttackBlock(CombatRulesDialog):
         self.actions.append({
             "code": "heal",
             "name": self.heal_name,
+            "description": self.call("script.parse-text", self._('Heal any allied member<br />\nValue: <b>{value}</b>').format(value=self.heal_value)),
             "order": 10.0,
             "available": self.call("script.parse-expression", "member.p_healed < 3"),
             "targets": "allies-myself",
@@ -572,13 +574,14 @@ class RoundRobin(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.team != member.team action member "strike"'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member "strike"'),
         })
         script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage' % (self.default_damage, self.param_damage, self.param_defense, self.default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp)
         script_end = ' log \'%s\' cls="attack"' % ('{class="combat-log-member"}{source.name}{/class} %s {action_log}' % self.strike_action)
         self.actions.append({
             "code": "strike",
             "name": self.strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponents<br />\nDamage: <b>{damage}</b><br />\nMaximal number of targets: <b>2</b>').format(damage=self.default_damage)),
             "order": 0.0,
             "available": 1,
             "targets": "enemies",
@@ -592,6 +595,7 @@ class RoundRobin(CombatRulesDialog):
         self.actions.append({
             "code": "heal",
             "name": self.heal_name,
+            "description": self.call("script.parse-text", self._('Heal any allied member<br />\nValue: <b>{value}</b>').format(value=self.heal_value)),
             "order": 10.0,
             "available": self.call("script.parse-expression", "member.p_healed < 3"),
             "targets": "allies-myself",
@@ -721,13 +725,14 @@ class TimeLine(CombatRulesDialog):
             "code": "default",
             "order": 0.0,
             "name": self._("Basic AI algorithm"),
-            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.team != member.team action member random < 0.2 ? "heal" : random < 0.5 ? "short_strike" : "long_strike"'),
+            "script-turn-got": self.call("combats-admin.parse-script", 'selecttarget member where target.active and target.team != member.team action member random < 0.5 ? "short_strike" : "long_strike"'),
         })
         # short strike
         script_end_target = 'set local.damage = max(1, %d + source.%s - target.%s) syslog \'<b>[{combat.now}]</b> Short strike: source=<b>{source.id}</b>, target=<b>{target.id}</b>, base_damage=<b>%d</b>, damage_mod=<b>{source.%s}</b>, defense_mod=<b>{target.%s}</b>, result_damage=<b>{local.damage}</b>\' damage target.%s local.damage maxval=target.%s set source.p_inflicted_damage = source.p_inflicted_damage + last_damage log \'%s\' cls="attack"' % (self.short_default_damage, self.param_damage, self.param_defense, self.short_default_damage, self.param_damage, self.param_defense, self.param_hp, self.param_max_hp, ('{class="combat-log-member"}{source.name}{/class} %s <span class="combat-log-damage">-{local.damage}</span> <span class="combat-log-hp">[{target.%s}/{target.%s}]</span>' % (self.short_strike_action, self.param_hp, self.param_max_hp)))
         self.actions.append({
             "code": "short_strike",
             "name": self.short_strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponents<br />\nDamage: <b>{damage}</b><br />\nMaximal number of targets: <b>2</b><br />\nDuration: <b>{duration}</b>').format(damage=self.short_default_damage, duration=self.short_default_duration)),
             "order": 0.0,
             "available": 1,
             "targets": "enemies",
@@ -742,6 +747,7 @@ class TimeLine(CombatRulesDialog):
         self.actions.append({
             "code": "long_strike",
             "name": self.long_strike_name,
+            "description": self.call("script.parse-text", self._('Strike opponents<br />\nDamage: <b>{damage}</b><br />\nMaximal number of targets: <b>2</b><br />\nDuration: <b>{duration}</b>').format(damage=self.long_default_damage, duration=self.long_default_duration)),
             "order": 10.0,
             "available": 1,
             "targets": "enemies",
@@ -756,6 +762,7 @@ class TimeLine(CombatRulesDialog):
         self.actions.append({
             "code": "heal",
             "name": self.heal_name,
+            "description": self.call("script.parse-text", self._('Heal any allied member<br />\nValue: <b>{value}</b><br />\nDuration: <b>{duration}</b>').format(value=self.heal_value, duration=self.heal_duration)),
             "order": 20.0,
             "available": 1,
             "targets": "allies-myself",

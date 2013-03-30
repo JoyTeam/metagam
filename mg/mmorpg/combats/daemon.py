@@ -474,6 +474,7 @@ class WebController(CombatMemberController):
         act = {
             "code": action.get("code"),
             "name": action.get("name"),
+            "description": action.get("description", []),
             "ignore_preselected": action.get("ignore_preselected"),
             "attributes": action.get("attributes", []),
         }

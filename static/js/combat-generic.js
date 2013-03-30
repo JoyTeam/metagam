@@ -713,6 +713,12 @@ var GenericCombatActionSelector = Ext.extend(Object, {
      */
     newActionItems: function () {
         var self = this;
+        var env = {
+            globs: {
+                combat: self.combat,
+                member: self.combat.myself
+            }
+        };
         var items = [];
         for (var i = 0; i < self.combat.availableActions.length; i++) {
             var ent = self.combat.availableActions[i];
@@ -730,6 +736,7 @@ var GenericCombatActionSelector = Ext.extend(Object, {
                     html: act.name,
                     listeners: {
                         render: function () {
+                            self.registerActionTip(cmp, act, env);
                             this.getEl().on('click', function () {
                                 self.selectAction(ent, act);
                                 /*
@@ -814,6 +821,19 @@ var GenericCombatActionSelector = Ext.extend(Object, {
             },
             border: false,
             autoHeight: true
+        });
+    },
+
+    /*
+     * Register quicktip for the action selector item
+     */
+    registerActionTip: function (cmp, action, env) {
+        var self = this;
+        Ext.QuickTips.register({
+            target: cmp,
+            title: action.name,
+            text: parent.MMOScript.evaluateText(action.description, env),
+            dismissDelay: 10000
         });
     },
 

@@ -743,6 +743,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 errors["name"] = self._("This field is mandatory")
             else:
                 info["name"] = name
+            # description
+            info["description"] = self.call("script.admin-text", "description", errors, globs={"combat": combat, "member": member1}, mandatory=False)
             # order
             info["order"] = floatz(req.param("order"))
             # available
@@ -797,6 +799,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             {"name": "code", "label": self._("Action code"), "value": info.get("code")},
             {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
             {"name": "name", "label": self._("Action name"), "value": info.get("name")},
+            {"name": "description", "type": "textarea", "label": self._("Action description") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", info.get("description", ""))},
             {"name": "available", "label": self._("Whether action is available to member 'member'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("available", 1))},
             {"name": "immediate", "label": self._("Immediate execution (out of turn)"), "type": "checkbox", "checked": info.get("immediate")},
             {"name": "duration", "label": self._("Duration of the action (in time units). Applicable to turn orders supporting time units only") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", info.get("duration")) if info.get("duration") is not None else "", "condition": "![immediate]"},

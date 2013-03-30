@@ -532,9 +532,12 @@ class ScriptEngine(ConstructorModule):
         req = self.req()
         if expression is None:
             expression = req.param(name).strip()
-        if mandatory and expression == "":
-            errors[name] = self._("This field is mandatory")
-            return
+        if expression == "":
+            if mandatory:
+                errors[name] = self._("This field is mandatory")
+                return
+            else:
+                return None
         # Parsing
         try:
             if text:
