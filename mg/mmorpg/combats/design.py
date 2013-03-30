@@ -231,4 +231,5 @@ class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
 
     def design_files(self, files):
         files.append({"filename": "log.html", "description": self._("Combat log"), "doc": "/doc/design/combatinterface"})
+        files.append({"filename": "combat-interface.html", "description": self._("Combat interface"), "doc": "/doc/design/combatinterface"})
 

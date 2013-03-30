@@ -378,14 +378,6 @@ var GenericCombatMember = Ext.extend(CombatMember, {
             self.forEachElement('image', function (el) {
                 el.src = value;
             });
-        } else if (key === 'active') {
-            if (self.targetCmp && self.targetCmp.el && self.targetCmp.el.dom) {
-                if (value) {
-                    self.targetCmp.el.removeClass('combat-target-dead').addClass('combat-target-alive');
-                } else {
-                    self.targetCmp.el.removeClass('combat-target-alive').addClass('combat-target-dead');
-                }
-            }
         }
     },
 
@@ -591,8 +583,7 @@ var GenericCombatMember = Ext.extend(CombatMember, {
             style: {
                 padding: '10px'
             },
-            cls: ((self.combat.myself && self.params.team == self.combat.myself.params.team) ? 'combat-target-ally' : 'combat-target-enemy') + ' ' +
-                (self.params.active ? 'combat-target-alive' : 'combat-target-dead'),
+            cls: ((self.combat.myself && self.params.team == self.combat.myself.params.team) ? 'combat-target-ally' : 'combat-target-enemy'),
             select: function () {
                 this.removeClass('combat-item-deselected');
                 this.removeClass('combat-target-deselected');
