@@ -200,6 +200,7 @@ var GenericCombat = Ext.extend(Combat, {
         GenericCombat.superclass.setMyself.call(self, memberId);
         self.myAvatarComponent.update(self.myself.renderAvatarHTML());
         self.viewportComponent.doLayout();
+        self.showMemberList();
     },
 
     /*

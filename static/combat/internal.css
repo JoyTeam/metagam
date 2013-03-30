@@ -7,8 +7,8 @@ div.combat-member-image { position: relative; margin: 5px auto 5px auto }
 #combat-enemyavatar { overflow: hidden }
 #combat-log { padding: 5px 5px 0 5px }
 .x-border-layout-ct { background: none }
-.combat-item-deselected { cursor: pointer }
-.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
+.combat-item-deselected { cursor: pointer; text-align: center }
+.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer; text-align: center }
 .combat-item-deselected:hover { background-color: #606060; color: #ffffff }
 .combat-item-selected:hover { background-color: #505050; color: #ffffff }
 .combat-action-selector { overflow: hidden; white-space: nowrap }

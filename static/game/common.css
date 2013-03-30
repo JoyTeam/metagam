@@ -63,5 +63,6 @@
 .combat-log-xp-value { font-weight: bold }
 .combat-syslog-time { background-color: #404040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
 .combat-syslog-action-begin, .combat-syslog-action-end { background-color: #808080; padding: 2px; color: #ffffff; margin: 2px 0 2px 0 }
-.combat-syslog-stage { background-color: #804040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+.combat-syslog-stage { background-color: #404080; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
 .combat-syslog-end { background-color: #408040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+.combat-syslog-watchdog { background-color: #804040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }

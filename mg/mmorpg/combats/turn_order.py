@@ -3,6 +3,8 @@ from mg.core.tools import *
 import time
 import random
 
+WATCHDOG_TIMEOUT = 300
+
 class CombatTurnOrder(CombatObject):
     """
     Determines order of members to turns. It gives and takes back a right of making
@@ -21,6 +23,7 @@ class CombatTurnOrder(CombatObject):
             if member.active:
                 self.active_members.add(member)
         self.check()
+        self.reset_watchdog()
 
     def check(self):
         "This method asks CombatTurnOrder to check whether some actions may be executed"
@@ -50,12 +53,18 @@ class CombatTurnOrder(CombatObject):
         "This method is called to allow CombatTurnOrder to make some background processing"
         now = time.time()
         any_timeout = False
+        waiting_with_timeout = False
         for member in self.combat.members:
-            if member.may_turn and member.turn_till and now > member.turn_till:
-                self.turn_timeout(member)
-                any_timeout = True
+            if member.may_turn:
+                if member.turn_till and now > member.turn_till:
+                    self.turn_timeout(member)
+                    any_timeout = True
+                if member.turn_till:
+                    waiting_with_timeout = True
         if any_timeout:
             self.check()
+        if not waiting_with_timeout:
+            self.check_watchdog(now)
 
     def turn_give(self, member):
         "Give member right of turn"
@@ -64,6 +73,7 @@ class CombatTurnOrder(CombatObject):
             member.turn_till = None
         else:
             member.turn_till = time.time() + self.timeout
+        self.reset_watchdog()
 
     def turn_take(self, member):
         "Revoke right of turn from the member"
@@ -74,6 +84,22 @@ class CombatTurnOrder(CombatObject):
         "Revoke right of turn from the member due to timeout"
         member.turn_timeout()
         member.turn_till = None
+        self.reset_watchdog()
+
+    def reset_watchdog(self):
+        "Reset watchdog timer that tries to abort stuck combats"
+        self.watchdog_till = time.time() + WATCHDOG_TIMEOUT
+
+    def check_watchdog(self, now):
+        "Check whether watchdog is activated"
+        if now > self.watchdog_till:
+            self.reset_watchdog()
+            self.combat.syslog({
+                "type": "watchdog",
+                "text": self._("Combat watchdog detected no combat activity during %d seconds") % WATCHDOG_TIMEOUT,
+                "cls": "combat-syslog-watchdog",
+            })
+            self.combat.draw()
 
 class CombatRoundRobinTurnOrder(CombatTurnOrder):
     """

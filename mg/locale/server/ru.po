@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-28 14:20+0300\n"
+"PO-Revision-Date: 2013-03-30 07:20+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1761,6 +1761,10 @@ msgstr "Бой завершился ничьей"
 
 msgid "Combat was started twice"
 msgstr "Бой был начат дважды"
+
+#, python-format
+msgid "Combat watchdog detected no combat activity during %d seconds"
+msgstr "Боевой сторожевой таймер зафиксировал отсутствие активности в течение %d секунд"
 
 msgid "Combats"
 msgstr "Бои"
@@ -10156,6 +10160,9 @@ msgstr "просмотреть"
 
 msgid "viewing"
 msgstr "просмотр"
+
+msgid "waiting for turn"
+msgstr "ждём хода"
 
 msgid "wear"
 msgstr "надеть"
