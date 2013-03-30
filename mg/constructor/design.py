@@ -260,11 +260,11 @@ class DesignTemplateValidator(Module):
         self.errors = errors
         self.parsed_html = parsed_html
 
-    def validate(self, fn, data, file_obj=None):
+    def validate(self, group, fn, data, file_obj=None, fragment=False):
         if fn != "blocks.html" and fn != "index.html" and fn != "global.html":
             return
         try:
-            if fn == "blocks.html":
+            if fn == "blocks.html" or (fn == "index.html" and group == "sociointerface"):
                 fragment = True
             else:
                 fragment = False
@@ -355,7 +355,7 @@ class DesignZip(Module):
                 if file["content-type"] == "text/html":
                     Tasklet.yield_()
                     data = self.zip.read(file["zipname"])
-                    validator.validate(file["filename"], data, file_obj=file)
+                    validator.validate(group, file["filename"], data, file_obj=file)
         design = self.obj(Design)
         design.set("group", group)
         design.set("uploaded", self.now())
@@ -1570,7 +1570,7 @@ class DesignAdmin(Module):
                     errors = []
                     parsed_html = {}
                     validator = DesignTemplateValidator(self.app(), group, errors, parsed_html)
-                    validator.validate(fn, content)
+                    validator.validate(group, fn, content)
                     self.call("admin-%s.validate" % group, design, parsed_html, errors)
                     if errors:
                         self.call("web.response_json", {"success": False, "errormsg": "\n".join(errors)})
