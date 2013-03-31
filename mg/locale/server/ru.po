@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-30 19:03+0300\n"
+"PO-Revision-Date: 2013-03-31 22:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1052,6 +1052,9 @@ msgstr "Вызвать квестовое событие \"clicked\""
 msgid "Call quest event"
 msgstr "Вызвать квестовое событие"
 
+msgid "Can't assign compound values ({val}) to the attributes"
+msgstr "Присваивать атрибутам составные значения ({val}) невозможно"
+
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -1758,9 +1761,6 @@ msgstr "Боевое время: %s"
 
 msgid "Combat title"
 msgstr "Название боя"
-
-msgid "Combat title must be a string"
-msgstr "Название боя должно быть строкой"
 
 msgid "Combat turn order"
 msgstr "Очередность ходов в бою"
@@ -10438,6 +10438,8 @@ msgstr "{price} навсегда"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Combat title must be a string"
+#~ msgstr "Название боя должно быть строкой"
 #~ msgid ""
 #~ "selecting action {act} for source {source}: targets={targets}, attrs="
 #~ "{attrs}"

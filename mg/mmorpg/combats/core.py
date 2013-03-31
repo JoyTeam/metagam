@@ -517,6 +517,9 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
             return self.set_param(attr, val)
         raise ScriptRuntimeError(self._("Invalid attribute '%s'") % attr, env)
 
+    def store(self):
+        pass
+
     # Actions
 
     def execute_action(self, action):
@@ -914,6 +917,9 @@ class CombatMember(CombatObject, CombatParamsContainer):
         if m:
             return self.set_param(attr, val)
         raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env, None)
+
+    def store(self):
+        pass
 
     # System parameters
 
