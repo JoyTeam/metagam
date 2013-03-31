@@ -664,6 +664,28 @@ combat rules=<strong>"правила"</strong> [ctitle=<strong>"название
     </ul></li>
 </ul>
 
+<p>Примеры запуска боёв:</p>
+<ul>
+    <li>персонаж против ботов:
+<pre class="doc-code-sample">clicked "gop" {
+    combat rules="demo" ctitle="Нападение {char.name} на гопников" flags="gop" {
+        member char team=1
+        member virtual team=2 name="Крутой" sex=0 image="..." p_damage=5 p_defense=10 p_hp=40
+        member virtual team=2 name="Борзый" sex=0 image="..." p_damage=8 p_defense=11 p_hp=40
+        member virtual team=2 name="Дерзкий" sex=0 image="..." p_damage=4 p_defense=8 p_hp=40
+    }
+}</pre></li>
+    <li>нападение одним персонажем на другого (через ссылку "Напасть" в контекстном меню:
+<pre class="doc-code-sample">clicked "attack" {
+    if char.id != targetchar.id {
+        combat rules="demo" ctitle="{char.name} [char.sex:напал,напала] на {targetchar.name}" flags="pvp" {
+            member char team=1
+            member targetchar team=2
+        }
+    }
+}</pre></li>
+</ul>
+
 <p>Если хотя бы один из перечисленных в бою персонажей занят, то бой начат не будет. Если в бою вообще нет персонажей, то бой также начат не будет.</p>
 
 <a name="object"></a>
