@@ -1558,14 +1558,17 @@ class Quests(ConstructorModule):
                                         obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         attr = cmd[2]
                                         val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
                                         set_attr = getattr(obj, "script_set_attr", None)
                                         if not set_attr:
                                             if getattr(obj, "script_attr", None):
                                                 raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env)
                                             else:
                                                 raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
+                                        tval = type(val)
+                                        if tval != str and tval != None and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
+                                            raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
                                         try:
                                             set_attr(attr, val, env)
                                             modified_objects.add(obj)
